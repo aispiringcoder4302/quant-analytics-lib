@@ -141,5 +141,4 @@ dmypy.json
 /venvs/
 /work/
 /*.ipynb
-members
 .virtual_documents/

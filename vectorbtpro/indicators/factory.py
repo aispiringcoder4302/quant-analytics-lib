@@ -1464,6 +1464,12 @@ class IndicatorBase(Analyzable):
         out = self.to_dict(include_all=include_all)
         return pd.concat(list(out.values()), axis=1, keys=pd.Index(list(out.keys()), name="output"))
 
+    def get(self, key: tp.Optional[tp.Hashable] = None) -> tp.Optional[tp.SeriesFrame]:
+        """Get a time series."""
+        if key is None:
+            return self.main_output
+        return getattr(self, key)
+
     def dropna(self: IndicatorBaseT, include_all: bool = True, **kwargs) -> IndicatorBaseT:
         """Drop missing values.
 
