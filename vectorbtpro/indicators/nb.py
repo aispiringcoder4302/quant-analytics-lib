@@ -1961,11 +1961,11 @@ def get_hurst_nb(
 
     Uses the following methods:
 
-    * `HurstMethod.Standard`: `vectorbtpro.generic.nb.base.get_standard_hurst_nb`
-    * `HurstMethod.LogRS`: `vectorbtpro.generic.nb.base.get_log_rs_hurst_nb`
-    * `HurstMethod.RS`: `vectorbtpro.generic.nb.base.get_rs_hurst_nb`
-    * `HurstMethod.DMA`: `vectorbtpro.generic.nb.base.get_dma_hurst_nb`
-    * `HurstMethod.DSOD`: `vectorbtpro.generic.nb.base.get_dsod_hurst_nb`
+    * `HurstMethod.Standard`: `vectorbtpro.indicators.nb.get_standard_hurst_nb`
+    * `HurstMethod.LogRS`: `vectorbtpro.indicators.nb.get_log_rs_hurst_nb`
+    * `HurstMethod.RS`: `vectorbtpro.indicators.nb.get_rs_hurst_nb`
+    * `HurstMethod.DMA`: `vectorbtpro.indicators.nb.get_dma_hurst_nb`
+    * `HurstMethod.DSOD`: `vectorbtpro.indicators.nb.get_dsod_hurst_nb`
     """
     if method == HurstMethod.Standard:
         return get_standard_hurst_nb(close, max_lag=max_lag, stabilize=stabilize)

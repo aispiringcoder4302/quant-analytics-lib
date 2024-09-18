@@ -359,6 +359,7 @@ Value Counts: test_16.0                  0
 Value Counts: test_17.0                  0
 Value Counts: test_18.0                  0
 Name: a, dtype: object
+```
 
 `MappedArray.stats` also supports (re-)grouping:
 

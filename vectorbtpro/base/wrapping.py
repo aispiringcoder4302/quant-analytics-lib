@@ -1526,7 +1526,6 @@ class ArrayWrapper(Configured, IndexApplier, ExtPandasIndexer, Itemable, Paramab
             2020-01-04  NaN  NaN  NaN
             2020-01-05  NaN  NaN  NaN
 
-            ```pycon
             >>> wrapper.fill_and_set(vbt.index_dict({
             ...     vbt.hslice("2020-01-02", "2020-01-04"): 2
             ... }))

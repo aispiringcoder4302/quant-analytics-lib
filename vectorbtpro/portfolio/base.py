@@ -8448,7 +8448,7 @@ class Portfolio(Analyzable, PortfolioWithInOutputs, SimRangeMixin, metaclass=Met
     ) -> tp.BaseFigure:
         """Plot one column of orders.
 
-        `**kwargs` are passed to `vectorbtpro.generic.orders.Orders.plot`."""
+        `**kwargs` are passed to `vectorbtpro.portfolio.orders.Orders.plot`."""
         if not isinstance(cls_or_self, type):
             if orders is None:
                 orders = cls_or_self.resolve_shortcut_attr(
