@@ -1109,14 +1109,14 @@ __pdoc__[
     "SimulationOutput.sim_start"
 ] = """Start of the simulation per column.
 
-Use `vectorbtpro.generic.nb.base.prepare_ungrouped_sim_range_nb` to ungroup the array.
+Use `vectorbtpro.generic.nb.sim_range.prepare_ungrouped_sim_range_nb` to ungroup the array.
 
 If not tracked, becomes None."""
 __pdoc__[
     "SimulationOutput.sim_end"
 ] = """End of the simulation per column.
 
-Use `vectorbtpro.generic.nb.base.prepare_ungrouped_sim_range_nb` to ungroup the array.
+Use `vectorbtpro.generic.nb.sim_range.prepare_ungrouped_sim_range_nb` to ungroup the array.
 
 If not tracked, becomes None."""
 
