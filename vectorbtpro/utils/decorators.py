@@ -211,6 +211,7 @@ def custom_function(*args, **options) -> tp.Union[tp.Callable, custom_functionT]
         wrapper.name = func.__name__
         wrapper.options = options
         wrapper.is_method = False
+        wrapper.is_custom = True
 
         return wrapper
 
@@ -270,7 +271,10 @@ def cacheable(
         wrapper.name = func.__name__
         wrapper.options = options
         wrapper.is_method = False
+        wrapper.is_custom = True
         wrapper.is_cacheable = True
+        wrapper.is_cached = use_cache
+        wrapper.is_whitelisted = whitelist
         wrapper.get_ca_setup = get_ca_setup
         if not caching_cfg["register_lazily"]:
             wrapper.get_ca_setup()
@@ -312,6 +316,7 @@ def custom_method(*args, **options) -> tp.Union[tp.Callable, custom_methodT]:
         wrapper.name = func.__name__
         wrapper.options = options
         wrapper.is_method = True
+        wrapper.is_custom = True
 
         return wrapper
 
@@ -365,7 +370,10 @@ def cacheable_method(
         wrapper.name = func.__name__
         wrapper.options = options
         wrapper.is_method = True
+        wrapper.is_custom = True
         wrapper.is_cacheable = True
+        wrapper.is_cached = use_cache
+        wrapper.is_whitelisted = whitelist
         wrapper.get_ca_setup = get_ca_setup
         if not caching_cfg["register_lazily"]:
             wrapper.get_ca_setup()
