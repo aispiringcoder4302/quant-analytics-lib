@@ -199,7 +199,11 @@ class custom_functionT(tp.Protocol):
         pass
 
 
-def custom_function(*args, **options) -> tp.Union[tp.Callable, custom_functionT]:
+def custom_function(
+    *args,
+    _decorator_name: tp.Optional[str] = None,
+    **options,
+) -> tp.Union[tp.Callable, custom_functionT]:
     """Custom function decorator."""
 
     def decorator(func: tp.Callable) -> custom_functionT:
@@ -207,6 +211,7 @@ def custom_function(*args, **options) -> tp.Union[tp.Callable, custom_functionT]
         def wrapper(*args, **kwargs) -> tp.Any:
             return func(*args, **kwargs)
 
+        wrapper.decorator_name = "custom_function" if _decorator_name is None else _decorator_name
         wrapper.func = func
         wrapper.name = func.__name__
         wrapper.options = options
@@ -233,6 +238,7 @@ def cacheable(
     whitelist: bool = False,
     max_size: tp.Optional[int] = None,
     ignore_args: tp.Optional[tp.Iterable[tp.AnnArgQuery]] = None,
+    _decorator_name: tp.Optional[str] = None,
     **options,
 ) -> tp.Union[tp.Callable, cacheable_functionT]:
     """Cacheable function decorator.
@@ -267,14 +273,13 @@ def cacheable(
                 ignore_args=ignore_args,
             )
 
+        wrapper.decorator_name = "cacheable" if _decorator_name is None else _decorator_name
         wrapper.func = func
         wrapper.name = func.__name__
         wrapper.options = options
         wrapper.is_method = False
         wrapper.is_custom = True
         wrapper.is_cacheable = True
-        wrapper.is_cached = use_cache
-        wrapper.is_whitelisted = whitelist
         wrapper.get_ca_setup = get_ca_setup
         if not caching_cfg["register_lazily"]:
             wrapper.get_ca_setup()
@@ -293,7 +298,7 @@ def cached(*args, **options) -> tp.Union[tp.Callable, cacheable_functionT]:
 
     !!! note
         To decorate an instance method, use `cached_method`."""
-    return cacheable(*args, use_cache=True, **options)
+    return cacheable(*args, use_cache=True, _decorator_name="cached", **options)
 
 
 # ############# Custom methods ############# #
@@ -304,7 +309,11 @@ class custom_methodT(custom_functionT):
         pass
 
 
-def custom_method(*args, **options) -> tp.Union[tp.Callable, custom_methodT]:
+def custom_method(
+    *args,
+    _decorator_name: tp.Optional[str] = None,
+    **options,
+) -> tp.Union[tp.Callable, custom_methodT]:
     """Custom method decorator."""
 
     def decorator(func: tp.Callable) -> custom_methodT:
@@ -312,6 +321,7 @@ def custom_method(*args, **options) -> tp.Union[tp.Callable, custom_methodT]:
         def wrapper(instance: object, *args, **kwargs) -> tp.Any:
             return func(instance, *args, **kwargs)
 
+        wrapper.decorator_name = "custom_method" if _decorator_name is None else _decorator_name
         wrapper.func = func
         wrapper.name = func.__name__
         wrapper.options = options
@@ -337,6 +347,7 @@ def cacheable_method(
     whitelist: bool = False,
     max_size: tp.Optional[int] = None,
     ignore_args: tp.Optional[tp.Iterable[tp.AnnArgQuery]] = None,
+    _decorator_name: tp.Optional[str] = None,
     **options,
 ) -> tp.Union[tp.Callable, cacheable_methodT]:
     """Cacheable method decorator.
@@ -366,14 +377,13 @@ def cacheable_method(
                 return unbound_setup
             return CARunSetup.get(wrapper, instance=instance, max_size=max_size, ignore_args=ignore_args)
 
+        wrapper.decorator_name = "cacheable_method" if _decorator_name is None else _decorator_name
         wrapper.func = func
         wrapper.name = func.__name__
         wrapper.options = options
         wrapper.is_method = True
         wrapper.is_custom = True
         wrapper.is_cacheable = True
-        wrapper.is_cached = use_cache
-        wrapper.is_whitelisted = whitelist
         wrapper.get_ca_setup = get_ca_setup
         if not caching_cfg["register_lazily"]:
             wrapper.get_ca_setup()
@@ -389,7 +399,7 @@ def cacheable_method(
 
 def cached_method(*args, **options) -> tp.Union[tp.Callable, cacheable_methodT]:
     """`cacheable_method` with `use_cache` set to True."""
-    return cacheable_method(*args, use_cache=True, **options)
+    return cacheable_method(*args, use_cache=True, _decorator_name="cached_method", **options)
 
 
 cacheableT = tp.Union[cacheable_property, cacheable_functionT, cacheable_methodT]
