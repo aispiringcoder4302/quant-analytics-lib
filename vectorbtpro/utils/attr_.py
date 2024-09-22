@@ -15,7 +15,7 @@ from attr.exceptions import NotAnAttrsClassError
 import vectorbtpro as vbt
 from vectorbtpro import _typing as tp
 from vectorbtpro.utils import checks
-from vectorbtpro.utils.decorators import class_or_instanceproperty, class_or_instancemethod
+from vectorbtpro.utils.decorators import hybrid_property, hybrid_method
 from vectorbtpro.utils.hashing import Hashable
 
 __all__ = [
@@ -54,7 +54,7 @@ class DefineMixin(Hashable):
 
         self.__attrs_init__(*args, **kwargs)
 
-    @class_or_instanceproperty
+    @hybrid_property
     def fields(cls_or_self) -> tp.Optional[tp.Tuple[attr.Attribute]]:
         """Get a tuple of fields."""
         if isinstance(cls_or_self, type):
@@ -65,7 +65,7 @@ class DefineMixin(Hashable):
             cls = type(cls_or_self)
         return attr.fields(cls)
 
-    @class_or_instanceproperty
+    @hybrid_property
     def fields_dict(cls_or_self) -> tp.Optional[tp.Dict[str, attr.Attribute]]:
         """Get a dict of fields."""
         if isinstance(cls_or_self, type):
@@ -76,12 +76,12 @@ class DefineMixin(Hashable):
             cls = type(cls_or_self)
         return attr.fields_dict(cls)
 
-    @class_or_instancemethod
+    @hybrid_method
     def get_field(cls_or_self, field_name: str) -> attr.Attribute:
         """Get field."""
         return cls_or_self.fields_dict[field_name]
 
-    @class_or_instancemethod
+    @hybrid_method
     def is_field_required(cls_or_self, field_or_name: tp.Union[str, attr.Attribute]) -> None:
         """Return whether a field is required."""
         if isinstance(field_or_name, str):
@@ -90,7 +90,7 @@ class DefineMixin(Hashable):
             field = field_or_name
         return field.default is MISSING and "default" not in field.metadata
 
-    @class_or_instancemethod
+    @hybrid_method
     def is_field_optional(cls_or_self, field_or_name: tp.Union[str, attr.Attribute]) -> None:
         """Return whether a field is optional."""
         if isinstance(field_or_name, str):

@@ -135,7 +135,7 @@ from vectorbtpro.registries.jit_registry import jit_reg
 from vectorbtpro.returns import nb
 from vectorbtpro.utils import checks, chunking as ch, datetime_ as dt
 from vectorbtpro.utils.config import resolve_dict, merge_dicts, HybridConfig, Config
-from vectorbtpro.utils.decorators import class_or_instanceproperty, class_or_instancemethod
+from vectorbtpro.utils.decorators import hybrid_property, hybrid_method
 
 __all__ = [
     "ReturnsAccessor",
@@ -319,12 +319,12 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         self._year_freq = year_freq
         self._defaults = defaults
 
-    @class_or_instanceproperty
+    @hybrid_property
     def sr_accessor_cls(cls_or_self) -> tp.Type["ReturnsSRAccessor"]:
         """Accessor class for `pd.Series`."""
         return ReturnsSRAccessor
 
-    @class_or_instanceproperty
+    @hybrid_property
     def df_accessor_cls(cls_or_self) -> tp.Type["ReturnsDFAccessor"]:
         """Accessor class for `pd.DataFrame`."""
         return ReturnsDFAccessor
@@ -478,7 +478,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
                 return True
         return False
 
-    @class_or_instancemethod
+    @hybrid_method
     def get_year_freq(
         cls_or_self,
         year_freq: tp.Optional[tp.FrequencyLike] = None,
@@ -541,7 +541,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         """Year frequency."""
         return self.get_year_freq()
 
-    @class_or_instancemethod
+    @hybrid_method
     def get_ann_factor(
         cls_or_self,
         year_freq: tp.Optional[tp.FrequencyLike] = None,
@@ -589,7 +589,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         """Annualization factor."""
         return self.get_ann_factor(raise_error=True)
 
-    @class_or_instancemethod
+    @hybrid_method
     def get_period(
         cls_or_self,
         period: tp.Union[None, str, tp.ArrayLike] = None,

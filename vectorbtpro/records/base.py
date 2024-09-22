@@ -426,7 +426,7 @@ from vectorbtpro.registries.jit_registry import jit_reg
 from vectorbtpro.utils import checks
 from vectorbtpro.utils.attr_ import get_dict_attr
 from vectorbtpro.utils.config import resolve_dict, merge_dicts, Config, HybridConfig
-from vectorbtpro.utils.decorators import cached_method, class_or_instancemethod
+from vectorbtpro.utils.decorators import cached_method, hybrid_method
 from vectorbtpro.utils.random_ import set_seed_nb
 from vectorbtpro.utils.template import Sub
 
@@ -1170,7 +1170,7 @@ class Records(Analyzable, RecordsWithFields, metaclass=MetaRecords):
         mapped_arr = self.values[field]
         return self.map_array(mapped_arr, **kwargs)
 
-    @class_or_instancemethod
+    @hybrid_method
     def map(
         cls_or_self,
         map_func_nb: tp.Union[tp.RecordsMapFunc, tp.RecordsMapMetaFunc],
@@ -1202,7 +1202,7 @@ class Records(Analyzable, RecordsWithFields, metaclass=MetaRecords):
             mapped_arr = np.asarray(mapped_arr, dtype=dtype)
             return cls_or_self.map_array(mapped_arr, **kwargs)
 
-    @class_or_instancemethod
+    @hybrid_method
     def apply(
         cls_or_self,
         apply_func_nb: tp.Union[tp.ApplyFunc, tp.ApplyMetaFunc],

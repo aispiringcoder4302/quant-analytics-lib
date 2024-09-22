@@ -18,7 +18,7 @@ from vectorbtpro.utils import checks, datetime_ as dt
 from vectorbtpro.utils.array_ import is_range, cast_to_min_precision, cast_to_max_precision
 from vectorbtpro.utils.attr_ import AttrResolverMixin, AttrResolverMixinT
 from vectorbtpro.utils.config import Configured, merge_dicts, resolve_dict
-from vectorbtpro.utils.decorators import class_or_instancemethod, cached_method, cached_property
+from vectorbtpro.utils.decorators import hybrid_method, cached_method, cached_property
 from vectorbtpro.utils.params import Param, Itemable, Paramable
 from vectorbtpro.utils.parsing import get_func_arg_names
 
@@ -2202,7 +2202,7 @@ class Wrapping(Configured, IndexApplier, ExtPandasIndexer, AttrResolverMixin, It
             return _self
         raise TypeError("Only one column is allowed. Use indexing or column argument.")
 
-    @class_or_instancemethod
+    @hybrid_method
     def select_col_from_obj(
         cls_or_self,
         obj: tp.Optional[tp.SeriesFrame],

@@ -3,7 +3,7 @@
 """Utilities for caching."""
 
 from vectorbtpro import _typing as tp
-from vectorbtpro.utils.decorators import class_or_instancemethod
+from vectorbtpro.utils.decorators import hybrid_method
 from vectorbtpro.utils.path_ import remove_dir
 
 __all__ = [
@@ -41,7 +41,7 @@ class Cacheable:
                 for unbound_setup in instance_setup.unbound_setups:
                     unbound_setup.cacheable.get_ca_setup(self)
 
-    @class_or_instancemethod
+    @hybrid_method
     def get_ca_setup(cls_or_self) -> tp.Union["CAClassSetup", "CAInstanceSetup"]:
         """Get instance setup of type `vectorbtpro.registries.ca_registry.CAInstanceSetup` if the instance method
         was called and class setup of type `vectorbtpro.registries.ca_registry.CAClassSetup` otherwise."""

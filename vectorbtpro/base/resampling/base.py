@@ -13,7 +13,7 @@ from vectorbtpro.base.resampling import nb
 from vectorbtpro.registries.jit_registry import jit_reg
 from vectorbtpro.utils import checks, datetime_ as dt
 from vectorbtpro.utils.config import Configured
-from vectorbtpro.utils.decorators import cached_property, class_or_instancemethod
+from vectorbtpro.utils.decorators import cached_property, hybrid_method
 
 __all__ = [
     "Resampler",
@@ -324,7 +324,7 @@ class Resampler(Configured):
             before=before,
         )
 
-    @class_or_instancemethod
+    @hybrid_method
     def map_bounds_to_source_ranges(
         cls_or_self,
         source_index: tp.Optional[tp.IndexLike] = None,

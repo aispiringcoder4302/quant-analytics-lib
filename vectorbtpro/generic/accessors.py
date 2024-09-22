@@ -216,7 +216,7 @@ from vectorbtpro.registries.jit_registry import jit_reg
 from vectorbtpro.utils import checks, chunking as ch, datetime_ as dt
 from vectorbtpro.utils.colors import adjust_opacity, map_value_to_cmap
 from vectorbtpro.utils.config import merge_dicts, resolve_dict, Config, ReadonlyConfig, HybridConfig
-from vectorbtpro.utils.decorators import class_or_instancemethod, class_or_instanceproperty
+from vectorbtpro.utils.decorators import hybrid_method, hybrid_property
 from vectorbtpro.utils.enum_ import map_enum_fields
 from vectorbtpro.utils.mapping import apply_mapping, to_value_mapping
 from vectorbtpro.utils.template import substitute_templates
@@ -322,12 +322,12 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
         self._mapping = mapping
 
-    @class_or_instanceproperty
+    @hybrid_property
     def sr_accessor_cls(cls_or_self) -> tp.Type["GenericSRAccessor"]:
         """Accessor class for `pd.Series`."""
         return GenericSRAccessor
 
-    @class_or_instanceproperty
+    @hybrid_property
     def df_accessor_cls(cls_or_self) -> tp.Type["GenericDFAccessor"]:
         """Accessor class for `pd.DataFrame`."""
         return GenericDFAccessor
@@ -815,7 +815,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
     # ############# Mapping ############# #
 
-    @class_or_instancemethod
+    @hybrid_method
     def map(
         cls_or_self,
         map_func_nb: tp.Union[str, tp.MapFunc, tp.MapMetaFunc],
@@ -929,7 +929,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
     # ############# Applying ############# #
 
-    @class_or_instancemethod
+    @hybrid_method
     def apply_along_axis(
         cls_or_self,
         apply_func_nb: tp.Union[str, tp.ApplyFunc, tp.ApplyMetaFunc],
@@ -1051,19 +1051,19 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
         return wrapper.wrap(out, group_by=False, **resolve_dict(wrap_kwargs))
 
-    @class_or_instancemethod
+    @hybrid_method
     def row_apply(self, *args, **kwargs) -> tp.SeriesFrame:
         """`GenericAccessor.apply_along_axis` with `axis=0`."""
         return self.apply_along_axis(*args, axis=0, **kwargs)
 
-    @class_or_instancemethod
+    @hybrid_method
     def column_apply(self, *args, **kwargs) -> tp.SeriesFrame:
         """`GenericAccessor.apply_along_axis` with `axis=1`."""
         return self.apply_along_axis(*args, axis=1, **kwargs)
 
     # ############# Reducing ############# #
 
-    @class_or_instancemethod
+    @hybrid_method
     def rolling_apply(
         cls_or_self,
         window: tp.Optional[tp.FrequencyLike],
@@ -1223,12 +1223,12 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
         return wrapper.wrap(out, group_by=False, **resolve_dict(wrap_kwargs))
 
-    @class_or_instancemethod
+    @hybrid_method
     def expanding_apply(cls_or_self, *args, **kwargs) -> tp.SeriesFrame:
         """`GenericAccessor.rolling_apply` but expanding."""
         return cls_or_self.rolling_apply(None, *args, **kwargs)
 
-    @class_or_instancemethod
+    @hybrid_method
     def groupby_apply(
         cls_or_self,
         by: tp.AnyGroupByLike,
@@ -1360,7 +1360,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         wrap_kwargs = merge_dicts(dict(name_or_index=grouper.get_index()), wrap_kwargs)
         return wrapper.wrap_reduced(out, group_by=False, **wrap_kwargs)
 
-    @class_or_instancemethod
+    @hybrid_method
     def groupby_transform(
         cls_or_self,
         by: tp.AnyGroupByLike,
@@ -1466,7 +1466,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
         return wrapper.wrap(out, group_by=False, **wrap_kwargs)
 
-    @class_or_instancemethod
+    @hybrid_method
     def resample_apply(
         cls_or_self,
         rule: tp.AnyRuleLike,
@@ -1622,7 +1622,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             **kwargs,
         )
 
-    @class_or_instancemethod
+    @hybrid_method
     def apply_and_reduce(
         cls_or_self,
         apply_func_nb: tp.Union[str, tp.ApplyFunc, tp.ApplyMetaFunc],
@@ -1745,7 +1745,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         wrap_kwargs = merge_dicts(dict(name_or_index="apply_and_reduce"), wrap_kwargs)
         return wrapper.wrap_reduced(out, group_by=False, **wrap_kwargs)
 
-    @class_or_instancemethod
+    @hybrid_method
     def reduce(
         cls_or_self,
         reduce_func_nb: tp.Union[
@@ -2004,7 +2004,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         )
         return wrapper.wrap_reduced(out, group_by=group_by, **wrap_kwargs)
 
-    @class_or_instancemethod
+    @hybrid_method
     def proximity_apply(
         cls_or_self,
         window: int,
@@ -2129,7 +2129,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
     # ############# Squeezing ############# #
 
-    @class_or_instancemethod
+    @hybrid_method
     def squeeze_grouped(
         cls_or_self,
         squeeze_func_nb: tp.Union[str, tp.ReduceFunc, tp.GroupSqueezeMetaFunc],
@@ -2469,7 +2469,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             The timestamps in the source and target index should denote the open time."""
         return self.realign(*args, source_rbound=True, target_rbound=True, **kwargs)
 
-    @class_or_instancemethod
+    @hybrid_method
     def resample_to_index(
         cls_or_self,
         index: tp.AnyRuleLike,
@@ -2652,7 +2652,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         wrap_kwargs = merge_dicts(dict(index=resampler.target_index), wrap_kwargs)
         return wrapper.wrap(out, group_by=False, **wrap_kwargs)
 
-    @class_or_instancemethod
+    @hybrid_method
     def resample_between_bounds(
         cls_or_self,
         target_lbound_index: tp.IndexLike,

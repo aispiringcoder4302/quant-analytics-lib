@@ -237,7 +237,7 @@ def get_method_class(meth: tp.Callable) -> tp.Type:
 
 def parse_refname(obj: tp.Any) -> str:
     """Get the reference name of an object."""
-    from vectorbtpro.utils.decorators import classproperty, class_or_instanceproperty, custom_property
+    from vectorbtpro.utils.decorators import class_property, hybrid_property, custom_property
 
     if inspect.ismodule(obj):
         return obj.__name__
@@ -249,7 +249,7 @@ def parse_refname(obj: tp.Any) -> str:
             return parse_refname(cls) + "." + obj.__name__
         if hasattr(obj, "func"):
             return parse_refname(obj.func)
-    if isinstance(obj, (classproperty, class_or_instanceproperty, custom_property)):
+    if isinstance(obj, (class_property, hybrid_property, custom_property)):
         return parse_refname(obj.func)
     if isinstance(obj, property):
         return parse_refname(obj.fget)

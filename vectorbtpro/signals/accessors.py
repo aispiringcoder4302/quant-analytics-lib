@@ -185,7 +185,7 @@ from vectorbtpro.utils import checks
 from vectorbtpro.utils import chunking as ch
 from vectorbtpro.utils.colors import adjust_lightness
 from vectorbtpro.utils.config import resolve_dict, merge_dicts, Config, HybridConfig
-from vectorbtpro.utils.decorators import class_or_instancemethod, class_or_instanceproperty
+from vectorbtpro.utils.decorators import hybrid_method, hybrid_property
 from vectorbtpro.utils.enum_ import map_enum_fields
 from vectorbtpro.utils.random_ import set_seed_nb
 from vectorbtpro.utils.template import RepEval, substitute_templates
@@ -215,12 +215,12 @@ class SignalsAccessor(GenericAccessor):
 
         checks.assert_dtype(self._obj, np.bool_)
 
-    @class_or_instanceproperty
+    @hybrid_property
     def sr_accessor_cls(cls_or_self) -> tp.Type["SignalsSRAccessor"]:
         """Accessor class for `pd.Series`."""
         return SignalsSRAccessor
 
-    @class_or_instanceproperty
+    @hybrid_property
     def df_accessor_cls(cls_or_self) -> tp.Type["SignalsDFAccessor"]:
         """Accessor class for `pd.DataFrame`."""
         return SignalsDFAccessor
@@ -567,7 +567,7 @@ class SignalsAccessor(GenericAccessor):
 
     # ############# Cleaning ############# #
 
-    @class_or_instancemethod
+    @hybrid_method
     def clean(
         cls_or_self,
         *objs,
@@ -2171,7 +2171,7 @@ class SignalsAccessor(GenericAccessor):
         new_columns = indexes.stack_indexes((signal_index, self.wrapper.columns[col_idxs]), **clean_index_kwargs)
         return self.wrapper.wrap(new_mask, columns=new_columns, group_by=False, **wrap_kwargs)
 
-    @class_or_instancemethod
+    @hybrid_method
     def unravel_between(
         cls_or_self,
         *objs,

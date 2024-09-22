@@ -48,7 +48,7 @@ from vectorbtpro.registries.jit_registry import jit_reg
 from vectorbtpro.utils import checks
 from vectorbtpro.utils.array_ import build_nan_mask, squeeze_nan, unsqueeze_nan
 from vectorbtpro.utils.config import merge_dicts, resolve_dict, Config, Configured, HybridConfig
-from vectorbtpro.utils.decorators import classproperty, cacheable_property, class_or_instancemethod
+from vectorbtpro.utils.decorators import class_property, cacheable_property, hybrid_method
 from vectorbtpro.utils.enum_ import map_enum_fields
 from vectorbtpro.utils.eval_ import multiline_eval
 from vectorbtpro.utils.execution import Task
@@ -1391,47 +1391,42 @@ class IndicatorBase(Analyzable):
             mapper_list=mapper_list,
         )
 
-    @classproperty
+    @class_property
     def short_name(cls_or_self) -> str:
         """Name of the indicator."""
         return cls_or_self._short_name
 
-    @classproperty
+    @class_property
     def input_names(cls_or_self) -> tp.Tuple[str, ...]:
         """Names of the input arrays."""
         return cls_or_self._input_names
 
-    @classproperty
+    @class_property
     def param_names(cls_or_self) -> tp.Tuple[str, ...]:
         """Names of the parameters."""
         return cls_or_self._param_names
 
-    @classproperty
+    @class_property
     def in_output_names(cls_or_self) -> tp.Tuple[str, ...]:
         """Names of the in-place output arrays."""
         return cls_or_self._in_output_names
 
-    @classproperty
+    @class_property
     def output_names(cls_or_self) -> tp.Tuple[str, ...]:
         """Names of the regular output arrays."""
         return cls_or_self._output_names
 
-    @classproperty
+    @class_property
     def lazy_output_names(cls_or_self) -> tp.Tuple[str, ...]:
         """Names of the lazy output arrays."""
         return cls_or_self._lazy_output_names
 
-    @classproperty
+    @class_property
     def output_flags(cls_or_self) -> tp.Kwargs:
         """Dictionary of output flags."""
         return cls_or_self._output_flags
 
-    @property
-    def level_names(self) -> tp.Tuple[str]:
-        """Column level names corresponding to each parameter."""
-        return self._level_names
-
-    @classproperty
+    @class_property
     def param_defaults(cls_or_self) -> tp.Dict[str, tp.Any]:
         """Parameter defaults extracted from the signature of `IndicatorBase.run`."""
         func_kwargs = get_func_kwargs(cls_or_self.run)
@@ -1443,6 +1438,11 @@ class IndicatorBase(Analyzable):
                 else:
                     out[k] = v
         return out
+
+    @property
+    def level_names(self) -> tp.Tuple[str]:
+        """Column level names corresponding to each parameter."""
+        return self._level_names
 
     def unpack(self) -> tp.MaybeTuple[tp.SeriesFrame]:
         """Return outputs, either one output or a tuple if there are multiple."""
@@ -3179,7 +3179,7 @@ Other keyword arguments are passed to `{0}.run`.
 
     _custom_indicators: tp.ClassVar[Config] = HybridConfig()
 
-    @classproperty
+    @class_property
     def custom_indicators(cls) -> Config:
         """Custom indicators keyed by custom locations."""
         return cls._custom_indicators
@@ -4779,7 +4779,7 @@ Other keyword arguments are passed to `{0}.run`.
 
     # ############# Expressions ############# #
 
-    @class_or_instancemethod
+    @hybrid_method
     def from_expr(
         cls_or_self,
         expr: str,

@@ -7,6 +7,9 @@ from functools import wraps
 from vectorbtpro import _typing as tp
 
 __all__ = [
+    "class_property",
+    "hybrid_property",
+    "hybrid_method",
     "cacheable_property",
     "cached_property",
     "cacheable",
@@ -19,7 +22,7 @@ __all__ = [
 # ############# Generic ############# #
 
 
-class classproperty(object):
+class class_property(object):
     """Property that can be called on a class."""
 
     def __init__(self, func: tp.Callable) -> None:
@@ -38,7 +41,7 @@ class classproperty(object):
         raise AttributeError("can't set attribute")
 
 
-class class_or_instanceproperty(object):
+class hybrid_property(object):
     """Property that binds `self` to a class if the function is called as class method,
     otherwise to an instance."""
 
@@ -60,7 +63,7 @@ class class_or_instanceproperty(object):
         raise AttributeError("can't set attribute")
 
 
-class class_or_instancemethod(classmethod):
+class hybrid_method(classmethod):
     """Function decorator that binds `self` to a class if the function is called as class method,
     otherwise to an instance."""
 

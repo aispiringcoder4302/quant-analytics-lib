@@ -12,7 +12,7 @@ from vectorbtpro.utils.attr_ import MISSING
 from vectorbtpro.utils.caching import Cacheable
 from vectorbtpro.utils.chaining import Chainable
 from vectorbtpro.utils.checks import Comparable, is_deep_equal, assert_in, assert_instance_of
-from vectorbtpro.utils.decorators import class_or_instancemethod
+from vectorbtpro.utils.decorators import hybrid_method
 from vectorbtpro.utils.formatting import Prettified, prettify_dict, prettify_inited
 from vectorbtpro.utils.pickling import RecState, Pickleable, pdict
 
@@ -1286,7 +1286,7 @@ class Configured(HasSettings, Cacheable, Comparable, Pickleable, Prettified, Cha
         """Initialization config."""
         return self._config
 
-    @class_or_instancemethod
+    @hybrid_method
     def get_writeable_attrs(cls_or_self) -> tp.Optional[tp.Set[str]]:
         """Get set of attributes that are writeable by this class or by any of its base classes."""
         if isinstance(cls_or_self, type):

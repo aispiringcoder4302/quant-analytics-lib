@@ -24,7 +24,7 @@ from vectorbtpro.returns.accessors import ReturnsAccessor
 from vectorbtpro.utils import checks, datetime_ as dt
 from vectorbtpro.utils.attr_ import get_dict_attr
 from vectorbtpro.utils.config import merge_dicts, Config, HybridConfig, copy_dict
-from vectorbtpro.utils.decorators import cached_property, class_or_instancemethod
+from vectorbtpro.utils.decorators import cached_property, hybrid_method
 from vectorbtpro.utils.execution import Task, NoResult, NoResultsException, filter_out_no_results, execute
 from vectorbtpro.utils.merging import MergeFunc
 from vectorbtpro.utils.parsing import get_func_arg_names, extend_args
@@ -941,7 +941,7 @@ class Data(Analyzable, DataWithFeatures, OHLCDataMixin, metaclass=MetaData):
             return self.classes
         return None
 
-    @class_or_instancemethod
+    @hybrid_method
     def get_level_name(
         cls_or_self,
         keys: tp.Optional[tp.Keys] = None,
@@ -989,7 +989,7 @@ class Data(Analyzable, DataWithFeatures, OHLCDataMixin, metaclass=MetaData):
         If False, no level names will be used."""
         return self.get_level_name()
 
-    @class_or_instancemethod
+    @hybrid_method
     def get_key_index(
         cls_or_self,
         keys: tp.Optional[tp.Keys] = None,
@@ -1852,7 +1852,7 @@ class Data(Analyzable, DataWithFeatures, OHLCDataMixin, metaclass=MetaData):
             return symbol_dict(new_dct2)
         return new_dct2
 
-    @class_or_instancemethod
+    @hybrid_method
     def align_data(
         cls_or_self,
         data: dict,
@@ -2101,7 +2101,7 @@ class Data(Analyzable, DataWithFeatures, OHLCDataMixin, metaclass=MetaData):
                     return True
         return False
 
-    @class_or_instancemethod
+    @hybrid_method
     def check_dict_type(
         cls_or_self,
         arg: tp.Any,
@@ -2118,7 +2118,7 @@ class Data(Analyzable, DataWithFeatures, OHLCDataMixin, metaclass=MetaData):
         if issubclass(dict_type, symbol_dict):
             checks.assert_not_instance_of(arg, feature_dict, arg_name=arg_name)
 
-    @class_or_instancemethod
+    @hybrid_method
     def select_key_kwargs(
         cls_or_self,
         key: tp.Key,
@@ -2161,7 +2161,7 @@ class Data(Analyzable, DataWithFeatures, OHLCDataMixin, metaclass=MetaData):
         """Select the keyword arguments belonging to a symbol."""
         return cls.select_key_kwargs(symbol, kwargs, dict_type=symbol_dict, **kwargs_)
 
-    @class_or_instancemethod
+    @hybrid_method
     def select_key_from_dict(
         cls_or_self,
         key: tp.Key,
@@ -2559,7 +2559,7 @@ class Data(Analyzable, DataWithFeatures, OHLCDataMixin, metaclass=MetaData):
             return self.remove_symbols(keys, **kwargs)
         raise ValueError("Cannot determine orientation. Use remove_features or remove_symbols.")
 
-    @class_or_instancemethod
+    @hybrid_method
     def merge(
         cls_or_self: tp.Union[tp.Type[DataT], DataT],
         *datas: DataT,

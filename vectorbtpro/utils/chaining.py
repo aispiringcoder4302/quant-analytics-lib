@@ -5,7 +5,7 @@
 import inspect
 
 from vectorbtpro import _typing as tp
-from vectorbtpro.utils.decorators import class_or_instancemethod
+from vectorbtpro.utils.decorators import hybrid_method
 
 __all__ = [
     "Chainable",
@@ -17,7 +17,7 @@ ChainableT = tp.TypeVar("ChainableT", bound="Chainable")
 class Chainable:
     """Class representing an object that can be chained."""
 
-    @class_or_instancemethod
+    @hybrid_method
     def pipe(
         cls_or_self: tp.Union[tp.Type[ChainableT], ChainableT],
         func: tp.Union[str, tp.Callable, tp.Tuple[tp.Union[str, tp.Callable], str]],

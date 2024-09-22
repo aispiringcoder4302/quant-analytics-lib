@@ -12,7 +12,7 @@ from vectorbtpro.base.wrapping import ArrayWrapper
 from vectorbtpro.generic import nb
 from vectorbtpro.utils import checks
 from vectorbtpro.utils.config import merge_dicts
-from vectorbtpro.utils.decorators import class_or_instancemethod
+from vectorbtpro.utils.decorators import hybrid_method
 
 SimRangeMixinT = tp.TypeVar("SimRangeMixinT", bound="SimRangeMixin")
 
@@ -220,7 +220,7 @@ class SimRangeMixin:
             new_sim_end = None
         return new_sim_end
 
-    @class_or_instancemethod
+    @hybrid_method
     def resolve_sim_start_value(
         cls_or_self,
         value: tp.Scalar,
@@ -236,7 +236,7 @@ class SimRangeMixin:
         auto_idxr = AutoIdxr(value, indexer_method="bfill", below_to_zero=True)
         return auto_idxr.get(wrapper.index, freq=wrapper.freq)
 
-    @class_or_instancemethod
+    @hybrid_method
     def resolve_sim_end_value(
         cls_or_self,
         value: tp.Scalar,
@@ -252,7 +252,7 @@ class SimRangeMixin:
         auto_idxr = AutoIdxr(value, indexer_method="bfill", above_to_len=True)
         return auto_idxr.get(wrapper.index, freq=wrapper.freq)
 
-    @class_or_instancemethod
+    @hybrid_method
     def resolve_sim_start(
         cls_or_self,
         sim_start: tp.Optional[tp.ArrayLike] = None,
@@ -312,7 +312,7 @@ class SimRangeMixin:
             )
         return sim_start
 
-    @class_or_instancemethod
+    @hybrid_method
     def resolve_sim_end(
         cls_or_self,
         sim_end: tp.Optional[tp.ArrayLike] = None,
@@ -372,7 +372,7 @@ class SimRangeMixin:
             )
         return sim_end
 
-    @class_or_instancemethod
+    @hybrid_method
     def get_sim_start(
         cls_or_self,
         sim_start: tp.Optional[tp.ArrayLike] = None,
@@ -407,7 +407,7 @@ class SimRangeMixin:
         """`SimRangeMixin.get_sim_start` with default arguments."""
         return self.get_sim_start()
 
-    @class_or_instancemethod
+    @hybrid_method
     def get_sim_end(
         cls_or_self,
         sim_end: tp.Optional[tp.ArrayLike] = None,
@@ -442,7 +442,7 @@ class SimRangeMixin:
         """`SimRangeMixin.get_sim_end` with default arguments."""
         return self.get_sim_end()
 
-    @class_or_instancemethod
+    @hybrid_method
     def get_sim_start_index(
         cls_or_self,
         sim_start: tp.Optional[tp.ArrayLike] = None,
@@ -488,7 +488,7 @@ class SimRangeMixin:
         """`SimRangeMixin.get_sim_start_index` with default arguments."""
         return self.get_sim_start_index()
 
-    @class_or_instancemethod
+    @hybrid_method
     def get_sim_end_index(
         cls_or_self,
         sim_end: tp.Optional[tp.ArrayLike] = None,
@@ -544,7 +544,7 @@ class SimRangeMixin:
         """`SimRangeMixin.get_sim_end_index` with default arguments."""
         return self.get_sim_end_index()
 
-    @class_or_instancemethod
+    @hybrid_method
     def get_sim_duration(
         cls_or_self,
         sim_start: tp.Optional[tp.ArrayLike] = None,
@@ -581,7 +581,7 @@ class SimRangeMixin:
         """`SimRangeMixin.get_sim_duration` with default arguments."""
         return self.get_sim_duration()
 
-    @class_or_instancemethod
+    @hybrid_method
     def fit_fig_to_sim_range(
         cls_or_self,
         fig: tp.BaseFigure,

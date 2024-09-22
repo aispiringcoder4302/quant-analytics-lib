@@ -28,7 +28,7 @@ from vectorbtpro.utils.array_ import is_range
 from vectorbtpro.utils.attr_ import DefineMixin, define, MISSING
 from vectorbtpro.utils.colors import adjust_opacity
 from vectorbtpro.utils.config import resolve_dict, merge_dicts, Config, HybridConfig
-from vectorbtpro.utils.decorators import class_or_instancemethod
+from vectorbtpro.utils.decorators import hybrid_method
 from vectorbtpro.utils.eval_ import Evaluable
 from vectorbtpro.utils.execution import Task, NoResult, NoResultsException, filter_out_no_results, execute
 from vectorbtpro.utils.merging import parse_merge_func, MergeFunc
@@ -2214,7 +2214,7 @@ class Splitter(Analyzable):
         """Return whether a range is relative."""
         return checks.is_number(range_) or checks.is_td_like(range_) or isinstance(range_, RelRange)
 
-    @class_or_instancemethod
+    @hybrid_method
     def get_ready_range(
         cls_or_self,
         range_: tp.FixRangeLike,
@@ -2444,7 +2444,7 @@ class Splitter(Analyzable):
             return meta
         return range_
 
-    @class_or_instancemethod
+    @hybrid_method
     def split_range(
         cls_or_self,
         range_: tp.FixRangeLike,
@@ -2620,7 +2620,7 @@ class Splitter(Analyzable):
             return tuple(new_ranges)[::-1]
         return tuple(new_ranges)
 
-    @class_or_instancemethod
+    @hybrid_method
     def merge_split(
         cls_or_self,
         split: tp.FixSplit,
@@ -2855,7 +2855,7 @@ class Splitter(Analyzable):
             merge_split_kwargs = {}
         return self.merge_split(ranges, **merge_split_kwargs)
 
-    @class_or_instancemethod
+    @hybrid_method
     def remap_range(
         cls_or_self,
         range_: tp.FixRangeLike,
@@ -2905,7 +2905,7 @@ class Splitter(Analyzable):
             return obj.wrapper.index
         raise ValueError("Must provide object index")
 
-    @class_or_instancemethod
+    @hybrid_method
     def get_ready_obj_range(
         cls_or_self,
         obj: tp.Any,
@@ -2976,7 +2976,7 @@ class Splitter(Analyzable):
             return tuple(obj[i] for i in np.arange(len(obj))[ready_range])
         return obj[ready_range]
 
-    @class_or_instancemethod
+    @hybrid_method
     def take_range_from_takeable(
         cls_or_self,
         takeable: Takeable,
@@ -4507,7 +4507,7 @@ class Splitter(Analyzable):
 
     # ############# Bounds ############# #
 
-    @class_or_instancemethod
+    @hybrid_method
     def map_bounds_to_index(
         cls_or_self,
         start: int,
@@ -4532,7 +4532,7 @@ class Splitter(Analyzable):
             return index[start], index[stop - 1] + freq
         return index[start], index[stop]
 
-    @class_or_instancemethod
+    @hybrid_method
     def get_range_bounds(
         cls_or_self,
         range_: tp.FixRangeLike,
@@ -4693,7 +4693,7 @@ class Splitter(Analyzable):
 
     # ############# Masks ############# #
 
-    @class_or_instancemethod
+    @hybrid_method
     def get_range_mask(
         cls_or_self,
         range_: tp.FixRangeLike,

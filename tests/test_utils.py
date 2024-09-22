@@ -1003,9 +1003,9 @@ class TestConfig:
 
 
 class TestDecorators:
-    def test_class_or_instancemethod(self):
+    def test_hybrid_method(self):
         class G:
-            @decorators.class_or_instancemethod
+            @decorators.hybrid_method
             def g(cls_or_self):
                 if isinstance(cls_or_self, type):
                     return True  # class
@@ -1014,9 +1014,9 @@ class TestDecorators:
         assert G.g()
         assert not G().g()
 
-    def test_class_or_instanceproperty(self):
+    def test_hybrid_property(self):
         class G:
-            @decorators.class_or_instanceproperty
+            @decorators.hybrid_property
             def g(cls_or_self):
                 if isinstance(cls_or_self, type):
                     return True  # class

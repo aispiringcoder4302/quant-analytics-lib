@@ -49,7 +49,7 @@ from vectorbtpro.utils import checks
 from vectorbtpro.utils.attr_ import get_dict_attr
 from vectorbtpro.utils.colors import adjust_opacity
 from vectorbtpro.utils.config import resolve_dict, merge_dicts, Config, ReadonlyConfig, HybridConfig, atomic_dict
-from vectorbtpro.utils.decorators import custom_property, cached_property, class_or_instancemethod
+from vectorbtpro.utils.decorators import custom_property, cached_property, hybrid_method
 from vectorbtpro.utils.enum_ import map_enum_fields
 from vectorbtpro.utils.parsing import get_func_kwargs
 from vectorbtpro.utils.template import Rep, RepEval, RepFunc
@@ -3176,7 +3176,7 @@ class Portfolio(Analyzable, PortfolioWithInOutputs, SimRangeMixin, metaclass=Met
                 Will broadcast.
 
                 Set an element to `np.nan` to disable. Use `delta_format` to specify the format.
-            tsl_stop (array_like of float): Trailing stop loss for the trailing stop loss.
+            tsl_stop (array_like of float): Trailing stop loss.
                 Will broadcast.
 
                 Set an element to `np.nan` to disable. Use `delta_format` to specify the format.
@@ -5061,7 +5061,7 @@ class Portfolio(Analyzable, PortfolioWithInOutputs, SimRangeMixin, metaclass=Met
         """Last asset price at each time step."""
         return self.wrapper.wrap(self.close_flex, group_by=False)
 
-    @class_or_instancemethod
+    @hybrid_method
     def get_filled_close(
         cls_or_self,
         close: tp.Optional[tp.SeriesFrame] = None,
@@ -5099,7 +5099,7 @@ class Portfolio(Analyzable, PortfolioWithInOutputs, SimRangeMixin, metaclass=Met
             return bm_close
         return self.wrapper.wrap(bm_close, group_by=False)
 
-    @class_or_instancemethod
+    @hybrid_method
     def get_filled_bm_close(
         cls_or_self,
         bm_close: tp.Optional[tp.SeriesFrame] = None,
@@ -5127,7 +5127,7 @@ class Portfolio(Analyzable, PortfolioWithInOutputs, SimRangeMixin, metaclass=Met
         filled_bm_close = func(to_2d_array(bm_close))
         return wrapper.wrap(filled_bm_close, group_by=False, **resolve_dict(wrap_kwargs))
 
-    @class_or_instancemethod
+    @hybrid_method
     def get_weights(
         cls_or_self,
         weights: tp.Union[None, bool, tp.ArrayLike] = None,
@@ -5273,7 +5273,7 @@ class Portfolio(Analyzable, PortfolioWithInOutputs, SimRangeMixin, metaclass=Met
         """A structured NumPy array of order records."""
         return self._order_records
 
-    @class_or_instancemethod
+    @hybrid_method
     def get_orders(
         cls_or_self,
         order_records: tp.Optional[tp.RecordArray] = None,
@@ -5354,7 +5354,7 @@ class Portfolio(Analyzable, PortfolioWithInOutputs, SimRangeMixin, metaclass=Met
         """A structured NumPy array of log records."""
         return self._log_records
 
-    @class_or_instancemethod
+    @hybrid_method
     def get_logs(
         cls_or_self,
         log_records: tp.Optional[tp.RecordArray] = None,
@@ -5417,7 +5417,7 @@ class Portfolio(Analyzable, PortfolioWithInOutputs, SimRangeMixin, metaclass=Met
             **kwargs,
         ).regroup(group_by)
 
-    @class_or_instancemethod
+    @hybrid_method
     def get_entry_trades(
         cls_or_self,
         orders: tp.Optional[Orders] = None,
@@ -5476,7 +5476,7 @@ class Portfolio(Analyzable, PortfolioWithInOutputs, SimRangeMixin, metaclass=Met
             **kwargs,
         )
 
-    @class_or_instancemethod
+    @hybrid_method
     def get_exit_trades(
         cls_or_self,
         orders: tp.Optional[Orders] = None,
@@ -5535,7 +5535,7 @@ class Portfolio(Analyzable, PortfolioWithInOutputs, SimRangeMixin, metaclass=Met
             **kwargs,
         )
 
-    @class_or_instancemethod
+    @hybrid_method
     def get_positions(
         cls_or_self,
         trades: tp.Optional[Trades] = None,
@@ -5617,7 +5617,7 @@ class Portfolio(Analyzable, PortfolioWithInOutputs, SimRangeMixin, metaclass=Met
             )
         raise NotImplementedError
 
-    @class_or_instancemethod
+    @hybrid_method
     def get_trade_history(
         cls_or_self,
         orders: tp.Optional[Orders] = None,
@@ -5711,7 +5711,7 @@ class Portfolio(Analyzable, PortfolioWithInOutputs, SimRangeMixin, metaclass=Met
         trade_history["Position Id"] = trade_history.pop("Position Id")
         return trade_history
 
-    @class_or_instancemethod
+    @hybrid_method
     def get_drawdowns(
         cls_or_self,
         value: tp.Optional[tp.SeriesFrame] = None,
@@ -5759,7 +5759,7 @@ class Portfolio(Analyzable, PortfolioWithInOutputs, SimRangeMixin, metaclass=Met
 
     # ############# Assets ############# #
 
-    @class_or_instancemethod
+    @hybrid_method
     def get_init_position(
         cls_or_self,
         init_position_raw: tp.Optional[tp.ArrayLike] = None,
@@ -5795,7 +5795,7 @@ class Portfolio(Analyzable, PortfolioWithInOutputs, SimRangeMixin, metaclass=Met
         wrap_kwargs = merge_dicts(dict(name_or_index="init_position"), wrap_kwargs)
         return wrapper.wrap_reduced(init_position, group_by=False, **wrap_kwargs)
 
-    @class_or_instancemethod
+    @hybrid_method
     def get_asset_flow(
         cls_or_self,
         direction: tp.Union[str, int] = "both",
@@ -5853,7 +5853,7 @@ class Portfolio(Analyzable, PortfolioWithInOutputs, SimRangeMixin, metaclass=Met
         )
         return wrapper.wrap(asset_flow, group_by=False, **resolve_dict(wrap_kwargs))
 
-    @class_or_instancemethod
+    @hybrid_method
     def get_assets(
         cls_or_self,
         direction: tp.Union[str, int] = "both",
@@ -5911,7 +5911,7 @@ class Portfolio(Analyzable, PortfolioWithInOutputs, SimRangeMixin, metaclass=Met
         )
         return wrapper.wrap(assets, group_by=False, **resolve_dict(wrap_kwargs))
 
-    @class_or_instancemethod
+    @hybrid_method
     def get_position_mask(
         cls_or_self,
         direction: tp.Union[str, int] = "both",
@@ -5968,7 +5968,7 @@ class Portfolio(Analyzable, PortfolioWithInOutputs, SimRangeMixin, metaclass=Met
             )
         return wrapper.wrap(position_mask, group_by=group_by, **resolve_dict(wrap_kwargs))
 
-    @class_or_instancemethod
+    @hybrid_method
     def get_position_coverage(
         cls_or_self,
         direction: tp.Union[str, int] = "both",
@@ -6028,7 +6028,7 @@ class Portfolio(Analyzable, PortfolioWithInOutputs, SimRangeMixin, metaclass=Met
         wrap_kwargs = merge_dicts(dict(name_or_index="position_coverage"), wrap_kwargs)
         return wrapper.wrap_reduced(position_coverage, group_by=group_by, **wrap_kwargs)
 
-    @class_or_instancemethod
+    @hybrid_method
     def get_position_entry_price(
         cls_or_self,
         orders: tp.Optional[Orders] = None,
@@ -6095,7 +6095,7 @@ class Portfolio(Analyzable, PortfolioWithInOutputs, SimRangeMixin, metaclass=Met
         )
         return wrapper.wrap(entry_price, group_by=False, **resolve_dict(wrap_kwargs))
 
-    @class_or_instancemethod
+    @hybrid_method
     def get_position_exit_price(
         cls_or_self,
         orders: tp.Optional[Orders] = None,
@@ -6166,7 +6166,7 @@ class Portfolio(Analyzable, PortfolioWithInOutputs, SimRangeMixin, metaclass=Met
 
     # ############# Cash ############# #
 
-    @class_or_instancemethod
+    @hybrid_method
     def get_cash_deposits(
         cls_or_self,
         cash_deposits_raw: tp.Optional[tp.ArrayLike] = None,
@@ -6246,7 +6246,7 @@ class Portfolio(Analyzable, PortfolioWithInOutputs, SimRangeMixin, metaclass=Met
             return cash_deposits
         return wrapper.wrap(cash_deposits, group_by=group_by, **resolve_dict(wrap_kwargs))
 
-    @class_or_instancemethod
+    @hybrid_method
     def get_total_cash_deposits(
         cls_or_self,
         cash_deposits_raw: tp.Optional[tp.ArrayLike] = None,
@@ -6286,7 +6286,7 @@ class Portfolio(Analyzable, PortfolioWithInOutputs, SimRangeMixin, metaclass=Met
         total_cash_deposits = np.nansum(cash_deposits, axis=0)
         return wrapper.wrap_reduced(total_cash_deposits, group_by=group_by, **resolve_dict(wrap_kwargs))
 
-    @class_or_instancemethod
+    @hybrid_method
     def get_cash_earnings(
         cls_or_self,
         cash_earnings_raw: tp.Optional[tp.ArrayLike] = None,
@@ -6354,7 +6354,7 @@ class Portfolio(Analyzable, PortfolioWithInOutputs, SimRangeMixin, metaclass=Met
             return cash_earnings
         return wrapper.wrap(cash_earnings, group_by=group_by, **resolve_dict(wrap_kwargs))
 
-    @class_or_instancemethod
+    @hybrid_method
     def get_total_cash_earnings(
         cls_or_self,
         cash_earnings_raw: tp.Optional[tp.ArrayLike] = None,
@@ -6390,7 +6390,7 @@ class Portfolio(Analyzable, PortfolioWithInOutputs, SimRangeMixin, metaclass=Met
         total_cash_earnings = np.nansum(cash_earnings, axis=0)
         return wrapper.wrap_reduced(total_cash_earnings, group_by=group_by, **resolve_dict(wrap_kwargs))
 
-    @class_or_instancemethod
+    @hybrid_method
     def get_cash_flow(
         cls_or_self,
         free: bool = False,
@@ -6475,7 +6475,7 @@ class Portfolio(Analyzable, PortfolioWithInOutputs, SimRangeMixin, metaclass=Met
             )
         return wrapper.wrap(cash_flow, group_by=group_by, **resolve_dict(wrap_kwargs))
 
-    @class_or_instancemethod
+    @hybrid_method
     def get_init_cash(
         cls_or_self,
         init_cash_raw: tp.Optional[tp.ArrayLike] = None,
@@ -6578,7 +6578,7 @@ class Portfolio(Analyzable, PortfolioWithInOutputs, SimRangeMixin, metaclass=Met
         wrap_kwargs = merge_dicts(dict(name_or_index="init_cash"), wrap_kwargs)
         return wrapper.wrap_reduced(init_cash, group_by=group_by, **wrap_kwargs)
 
-    @class_or_instancemethod
+    @hybrid_method
     def get_cash(
         cls_or_self,
         free: bool = False,
@@ -6657,7 +6657,7 @@ class Portfolio(Analyzable, PortfolioWithInOutputs, SimRangeMixin, metaclass=Met
 
     # ############# Value ############# #
 
-    @class_or_instancemethod
+    @hybrid_method
     def get_init_price(
         cls_or_self,
         init_price_raw: tp.Optional[tp.ArrayLike] = None,
@@ -6683,7 +6683,7 @@ class Portfolio(Analyzable, PortfolioWithInOutputs, SimRangeMixin, metaclass=Met
         wrap_kwargs = merge_dicts(dict(name_or_index="init_price"), wrap_kwargs)
         return wrapper.wrap_reduced(init_price, group_by=False, **wrap_kwargs)
 
-    @class_or_instancemethod
+    @hybrid_method
     def get_init_position_value(
         cls_or_self,
         init_position: tp.Optional[tp.ArrayLike] = None,
@@ -6733,7 +6733,7 @@ class Portfolio(Analyzable, PortfolioWithInOutputs, SimRangeMixin, metaclass=Met
         wrap_kwargs = merge_dicts(dict(name_or_index="init_position_value"), wrap_kwargs)
         return wrapper.wrap_reduced(init_position_value, group_by=group_by, **wrap_kwargs)
 
-    @class_or_instancemethod
+    @hybrid_method
     def get_init_value(
         cls_or_self,
         init_position_value: tp.Optional[tp.MaybeSeries] = None,
@@ -6783,7 +6783,7 @@ class Portfolio(Analyzable, PortfolioWithInOutputs, SimRangeMixin, metaclass=Met
         wrap_kwargs = merge_dicts(dict(name_or_index="init_value"), wrap_kwargs)
         return wrapper.wrap_reduced(init_value, group_by=group_by, **wrap_kwargs)
 
-    @class_or_instancemethod
+    @hybrid_method
     def get_input_value(
         cls_or_self,
         total_cash_deposits: tp.Optional[tp.ArrayLike] = None,
@@ -6835,7 +6835,7 @@ class Portfolio(Analyzable, PortfolioWithInOutputs, SimRangeMixin, metaclass=Met
         wrap_kwargs = merge_dicts(dict(name_or_index="input_value"), wrap_kwargs)
         return wrapper.wrap_reduced(input_value, group_by=group_by, **wrap_kwargs)
 
-    @class_or_instancemethod
+    @hybrid_method
     def get_asset_value(
         cls_or_self,
         direction: tp.Union[str, int] = "both",
@@ -6897,7 +6897,7 @@ class Portfolio(Analyzable, PortfolioWithInOutputs, SimRangeMixin, metaclass=Met
             )
         return wrapper.wrap(asset_value, group_by=group_by, **resolve_dict(wrap_kwargs))
 
-    @class_or_instancemethod
+    @hybrid_method
     def get_value(
         cls_or_self,
         cash: tp.Optional[tp.SeriesFrame] = None,
@@ -6958,7 +6958,7 @@ class Portfolio(Analyzable, PortfolioWithInOutputs, SimRangeMixin, metaclass=Met
         )
         return wrapper.wrap(value, group_by=group_by, **resolve_dict(wrap_kwargs))
 
-    @class_or_instancemethod
+    @hybrid_method
     def get_gross_exposure(
         cls_or_self,
         direction: tp.Union[str, int] = "both",
@@ -7048,7 +7048,7 @@ class Portfolio(Analyzable, PortfolioWithInOutputs, SimRangeMixin, metaclass=Met
         )
         return wrapper.wrap(gross_exposure, group_by=group_by, **resolve_dict(wrap_kwargs))
 
-    @class_or_instancemethod
+    @hybrid_method
     def get_net_exposure(
         cls_or_self,
         long_exposure: tp.Optional[tp.SeriesFrame] = None,
@@ -7107,7 +7107,7 @@ class Portfolio(Analyzable, PortfolioWithInOutputs, SimRangeMixin, metaclass=Met
         )
         return wrapper.wrap(net_exposure, group_by=group_by, **resolve_dict(wrap_kwargs))
 
-    @class_or_instancemethod
+    @hybrid_method
     def get_allocations(
         cls_or_self,
         direction: tp.Union[str, int] = "both",
@@ -7168,7 +7168,7 @@ class Portfolio(Analyzable, PortfolioWithInOutputs, SimRangeMixin, metaclass=Met
         )
         return wrapper.wrap(allocations, group_by=False, **resolve_dict(wrap_kwargs))
 
-    @class_or_instancemethod
+    @hybrid_method
     def get_total_profit(
         cls_or_self,
         close: tp.Optional[tp.SeriesFrame] = None,
@@ -7265,7 +7265,7 @@ class Portfolio(Analyzable, PortfolioWithInOutputs, SimRangeMixin, metaclass=Met
         wrap_kwargs = merge_dicts(dict(name_or_index="total_profit"), wrap_kwargs)
         return wrapper.wrap_reduced(total_profit, group_by=group_by, **wrap_kwargs)
 
-    @class_or_instancemethod
+    @hybrid_method
     def get_final_value(
         cls_or_self,
         input_value: tp.Optional[tp.MaybeSeries] = None,
@@ -7314,7 +7314,7 @@ class Portfolio(Analyzable, PortfolioWithInOutputs, SimRangeMixin, metaclass=Met
         wrap_kwargs = merge_dicts(dict(name_or_index="final_value"), wrap_kwargs)
         return wrapper.wrap_reduced(final_value, group_by=group_by, **wrap_kwargs)
 
-    @class_or_instancemethod
+    @hybrid_method
     def get_total_return(
         cls_or_self,
         input_value: tp.Optional[tp.MaybeSeries] = None,
@@ -7363,7 +7363,7 @@ class Portfolio(Analyzable, PortfolioWithInOutputs, SimRangeMixin, metaclass=Met
         wrap_kwargs = merge_dicts(dict(name_or_index="total_return"), wrap_kwargs)
         return wrapper.wrap_reduced(total_return, group_by=group_by, **wrap_kwargs)
 
-    @class_or_instancemethod
+    @hybrid_method
     def get_returns(
         cls_or_self,
         init_value: tp.Optional[tp.MaybeSeries] = None,
@@ -7448,7 +7448,7 @@ class Portfolio(Analyzable, PortfolioWithInOutputs, SimRangeMixin, metaclass=Met
             returns = returns.vbt.returns(log_returns=log_returns).daily(jitted=jitted)
         return returns
 
-    @class_or_instancemethod
+    @hybrid_method
     def get_asset_pnl(
         cls_or_self,
         init_position_value: tp.Optional[tp.MaybeSeries] = None,
@@ -7515,7 +7515,7 @@ class Portfolio(Analyzable, PortfolioWithInOutputs, SimRangeMixin, metaclass=Met
         )
         return wrapper.wrap(asset_pnl, group_by=group_by, **resolve_dict(wrap_kwargs))
 
-    @class_or_instancemethod
+    @hybrid_method
     def get_asset_returns(
         cls_or_self,
         init_position_value: tp.Optional[tp.MaybeSeries] = None,
@@ -7593,7 +7593,7 @@ class Portfolio(Analyzable, PortfolioWithInOutputs, SimRangeMixin, metaclass=Met
             asset_returns = asset_returns.vbt.returns(log_returns=log_returns).daily(jitted=jitted)
         return asset_returns
 
-    @class_or_instancemethod
+    @hybrid_method
     def get_market_value(
         cls_or_self,
         close: tp.Optional[tp.SeriesFrame] = None,
@@ -7709,7 +7709,7 @@ class Portfolio(Analyzable, PortfolioWithInOutputs, SimRangeMixin, metaclass=Met
             )
         return wrapper.wrap(market_value, group_by=group_by, **resolve_dict(wrap_kwargs))
 
-    @class_or_instancemethod
+    @hybrid_method
     def get_market_returns(
         cls_or_self,
         init_value: tp.Optional[tp.MaybeSeries] = None,
@@ -7794,7 +7794,7 @@ class Portfolio(Analyzable, PortfolioWithInOutputs, SimRangeMixin, metaclass=Met
             market_returns = market_returns.vbt.returns(log_returns=log_returns).daily(jitted=jitted)
         return market_returns
 
-    @class_or_instancemethod
+    @hybrid_method
     def get_total_market_return(
         cls_or_self,
         input_value: tp.Optional[tp.MaybeSeries] = None,
@@ -7851,7 +7851,7 @@ class Portfolio(Analyzable, PortfolioWithInOutputs, SimRangeMixin, metaclass=Met
         wrap_kwargs = merge_dicts(dict(name_or_index="total_market_return"), wrap_kwargs)
         return wrapper.wrap_reduced(total_market_return, group_by=group_by, **wrap_kwargs)
 
-    @class_or_instancemethod
+    @hybrid_method
     def get_bm_value(
         cls_or_self,
         bm_close: tp.Optional[tp.ArrayLike] = None,
@@ -7893,7 +7893,7 @@ class Portfolio(Analyzable, PortfolioWithInOutputs, SimRangeMixin, metaclass=Met
             wrap_kwargs=wrap_kwargs,
         )
 
-    @class_or_instancemethod
+    @hybrid_method
     def get_bm_returns(
         cls_or_self,
         init_value: tp.Optional[tp.MaybeSeries] = None,
@@ -7942,7 +7942,7 @@ class Portfolio(Analyzable, PortfolioWithInOutputs, SimRangeMixin, metaclass=Met
             wrap_kwargs=wrap_kwargs,
         )
 
-    @class_or_instancemethod
+    @hybrid_method
     def get_returns_acc(
         cls_or_self,
         returns: tp.Optional[tp.SeriesFrame] = None,
@@ -8042,7 +8042,7 @@ class Portfolio(Analyzable, PortfolioWithInOutputs, SimRangeMixin, metaclass=Met
         """`Portfolio.get_returns_acc` with default arguments."""
         return self.get_returns_acc()
 
-    @class_or_instancemethod
+    @hybrid_method
     def get_qs(
         cls_or_self,
         returns: tp.Optional[tp.SeriesFrame] = None,
@@ -8432,7 +8432,7 @@ class Portfolio(Analyzable, PortfolioWithInOutputs, SimRangeMixin, metaclass=Met
 
     # ############# Plotting ############# #
 
-    @class_or_instancemethod
+    @hybrid_method
     def plot_orders(
         cls_or_self,
         column: tp.Optional[tp.Label] = None,
@@ -8478,7 +8478,7 @@ class Portfolio(Analyzable, PortfolioWithInOutputs, SimRangeMixin, metaclass=Met
             )
         return fig
 
-    @class_or_instancemethod
+    @hybrid_method
     def plot_trades(
         cls_or_self,
         column: tp.Optional[tp.Label] = None,
@@ -8522,7 +8522,7 @@ class Portfolio(Analyzable, PortfolioWithInOutputs, SimRangeMixin, metaclass=Met
             )
         return fig
 
-    @class_or_instancemethod
+    @hybrid_method
     def plot_trade_pnl(
         cls_or_self,
         column: tp.Optional[tp.Label] = None,
@@ -8567,7 +8567,7 @@ class Portfolio(Analyzable, PortfolioWithInOutputs, SimRangeMixin, metaclass=Met
             )
         return fig
 
-    @class_or_instancemethod
+    @hybrid_method
     def plot_trade_signals(
         cls_or_self,
         column: tp.Optional[tp.Label] = None,
@@ -8732,7 +8732,7 @@ class Portfolio(Analyzable, PortfolioWithInOutputs, SimRangeMixin, metaclass=Met
             )
         return fig
 
-    @class_or_instancemethod
+    @hybrid_method
     def plot_cash_flow(
         cls_or_self,
         column: tp.Optional[tp.Label] = None,
@@ -8824,7 +8824,7 @@ class Portfolio(Analyzable, PortfolioWithInOutputs, SimRangeMixin, metaclass=Met
             )
         return fig
 
-    @class_or_instancemethod
+    @hybrid_method
     def plot_cash(
         cls_or_self,
         column: tp.Optional[tp.Label] = None,
@@ -8937,7 +8937,7 @@ class Portfolio(Analyzable, PortfolioWithInOutputs, SimRangeMixin, metaclass=Met
             )
         return fig
 
-    @class_or_instancemethod
+    @hybrid_method
     def plot_asset_flow(
         cls_or_self,
         column: tp.Optional[tp.Label] = None,
@@ -9027,7 +9027,7 @@ class Portfolio(Analyzable, PortfolioWithInOutputs, SimRangeMixin, metaclass=Met
             )
         return fig
 
-    @class_or_instancemethod
+    @hybrid_method
     def plot_assets(
         cls_or_self,
         column: tp.Optional[tp.Label] = None,
@@ -9126,7 +9126,7 @@ class Portfolio(Analyzable, PortfolioWithInOutputs, SimRangeMixin, metaclass=Met
             )
         return fig
 
-    @class_or_instancemethod
+    @hybrid_method
     def plot_asset_value(
         cls_or_self,
         column: tp.Optional[tp.Label] = None,
@@ -9227,7 +9227,7 @@ class Portfolio(Analyzable, PortfolioWithInOutputs, SimRangeMixin, metaclass=Met
             )
         return fig
 
-    @class_or_instancemethod
+    @hybrid_method
     def plot_value(
         cls_or_self,
         column: tp.Optional[tp.Label] = None,
@@ -9334,7 +9334,7 @@ class Portfolio(Analyzable, PortfolioWithInOutputs, SimRangeMixin, metaclass=Met
             )
         return fig
 
-    @class_or_instancemethod
+    @hybrid_method
     def plot_cum_returns(
         cls_or_self,
         column: tp.Optional[tp.Label] = None,
@@ -9402,7 +9402,7 @@ class Portfolio(Analyzable, PortfolioWithInOutputs, SimRangeMixin, metaclass=Met
         )
         return fig
 
-    @class_or_instancemethod
+    @hybrid_method
     def plot_drawdowns(
         cls_or_self,
         column: tp.Optional[tp.Label] = None,
@@ -9461,7 +9461,7 @@ class Portfolio(Analyzable, PortfolioWithInOutputs, SimRangeMixin, metaclass=Met
             )
         return fig
 
-    @class_or_instancemethod
+    @hybrid_method
     def plot_underwater(
         cls_or_self,
         column: tp.Optional[tp.Label] = None,
@@ -9570,7 +9570,7 @@ class Portfolio(Analyzable, PortfolioWithInOutputs, SimRangeMixin, metaclass=Met
             )
         return fig
 
-    @class_or_instancemethod
+    @hybrid_method
     def plot_gross_exposure(
         cls_or_self,
         column: tp.Optional[tp.Label] = None,
@@ -9671,7 +9671,7 @@ class Portfolio(Analyzable, PortfolioWithInOutputs, SimRangeMixin, metaclass=Met
             )
         return fig
 
-    @class_or_instancemethod
+    @hybrid_method
     def plot_net_exposure(
         cls_or_self,
         column: tp.Optional[tp.Label] = None,
@@ -9770,7 +9770,7 @@ class Portfolio(Analyzable, PortfolioWithInOutputs, SimRangeMixin, metaclass=Met
             )
         return fig
 
-    @class_or_instancemethod
+    @hybrid_method
     def plot_allocations(
         cls_or_self,
         column: tp.Optional[tp.Label] = None,

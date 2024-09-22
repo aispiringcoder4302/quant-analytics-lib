@@ -426,7 +426,7 @@ from vectorbtpro.utils import checks
 from vectorbtpro.utils import chunking as ch
 from vectorbtpro.utils.array_ import index_repeating_rows_nb
 from vectorbtpro.utils.config import resolve_dict, merge_dicts, Config, HybridConfig
-from vectorbtpro.utils.decorators import class_or_instancemethod, cached_method
+from vectorbtpro.utils.decorators import hybrid_method, cached_method
 from vectorbtpro.utils.magic_decorators import attach_binary_magic_methods, attach_unary_magic_methods
 from vectorbtpro.utils.mapping import to_value_mapping, apply_mapping
 
@@ -1039,7 +1039,7 @@ class MappedArray(Analyzable):
             raise ValueError("Cannot get index at position -1")
         return self.wrapper.columns[self.values]
 
-    @class_or_instancemethod
+    @hybrid_method
     def apply(
         cls_or_self: tp.Union[tp.Type[MappedArrayT], MappedArrayT],
         apply_func_nb: tp.Union[tp.ApplyFunc, tp.ApplyMetaFunc],
@@ -1151,7 +1151,7 @@ class MappedArray(Analyzable):
             **kwargs,
         ).regroup(group_by)
 
-    @class_or_instancemethod
+    @hybrid_method
     def reduce(
         cls_or_self,
         reduce_func_nb: tp.Union[

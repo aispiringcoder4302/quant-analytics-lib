@@ -93,7 +93,7 @@ from vectorbtpro.data.base import OHLCDataMixin
 from vectorbtpro.generic import nb as generic_nb
 from vectorbtpro.generic.accessors import GenericAccessor, GenericDFAccessor
 from vectorbtpro.utils.config import merge_dicts, Config, HybridConfig
-from vectorbtpro.utils.decorators import class_or_instanceproperty
+from vectorbtpro.utils.decorators import hybrid_property
 
 if tp.TYPE_CHECKING:
     from vectorbtpro.data.base import Data as DataT
@@ -130,7 +130,7 @@ class OHLCVDFAccessor(OHLCDataMixin, GenericDFAccessor):
 
         self._feature_map = feature_map
 
-    @class_or_instanceproperty
+    @hybrid_property
     def df_accessor_cls(cls_or_self) -> tp.Type["OHLCVDFAccessor"]:
         """Accessor class for `pd.DataFrame`."""
         return OHLCVDFAccessor
