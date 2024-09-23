@@ -927,6 +927,7 @@ class Records(Analyzable, RecordsWithFields, metaclass=MetaRecords):
 
     @property
     def recarray(self) -> tp.RecArray:
+        """Records with field access using attributes."""
         return self.values.view(np.recarray)
 
     @property

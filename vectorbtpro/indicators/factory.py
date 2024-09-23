@@ -2269,6 +2269,7 @@ class IndicatorFactory(Configured):
         all_input_names = input_names + param_names + in_output_names
 
         setattr(Indicator, "custom_func", custom_func)
+        __pdoc__[Indicator.__name__ + ".custom_func"] = "Custom function."
 
         def _split_args(
             args: tp.Sequence,
@@ -2783,7 +2784,9 @@ Other keyword arguments are passed to `{0}.run`.
         Indicator = self.Indicator
 
         setattr(Indicator, "apply_func", apply_func)
+        __pdoc__[Indicator.__name__ + ".apply_func"] = "Apply function."
         setattr(Indicator, "cache_func", cache_func)
+        __pdoc__[Indicator.__name__ + ".cache_func"] = "Cache function."
 
         module_name = self.module_name
         input_names = self.input_names
@@ -2845,6 +2848,7 @@ Other keyword arguments are passed to `{0}.run`.
             param_select_func_nb = njit(param_select_func_nb, **jit_kwargs)
 
             setattr(Indicator, "param_select_func_nb", param_select_func_nb)
+            __pdoc__[Indicator.__name__ + ".param_select_func_nb"] = "Parameter selection function."
 
         def custom_func(
             input_tuple: tp.Tuple[tp.AnyArray, ...],

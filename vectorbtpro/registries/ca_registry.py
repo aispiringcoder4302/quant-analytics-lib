@@ -1295,6 +1295,7 @@ class CABaseSetup(CAMetrics, DefineMixin):
 
     @property
     def same_type_setups(self) -> ValuesView:
+        """Setups of the same type."""
         raise NotImplementedError
 
     @property
@@ -2099,6 +2100,7 @@ class CARunResult(DefineMixin):
 
     @property
     def hits(self) -> int:
+        """Number of hits."""
         return object.__getattribute__(self, "_hits")
 
     @property

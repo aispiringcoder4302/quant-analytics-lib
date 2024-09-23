@@ -18,6 +18,8 @@ __all__ = [
     "cached_method",
 ]
 
+__pdoc__ = {}
+
 
 # ############# Generic ############# #
 
@@ -190,13 +192,18 @@ class cached_property(cacheable_property):
 
 
 class custom_functionT(tp.Protocol):
+    decorator_name: str
     func: tp.Callable
     name: str
     options: tp.Kwargs
     is_method: bool
+    is_custom: bool
 
     def __call__(*args, **kwargs) -> tp.Any:
         pass
+
+
+__pdoc__["custom_functionT"] = False
 
 
 def custom_function(
@@ -230,6 +237,9 @@ def custom_function(
 class cacheable_functionT(custom_functionT):
     is_cacheable: bool
     get_ca_setup: tp.Callable[[], tp.Optional["CARunSetup"]]
+
+
+__pdoc__["cacheable_functionT"] = False
 
 
 def cacheable(
