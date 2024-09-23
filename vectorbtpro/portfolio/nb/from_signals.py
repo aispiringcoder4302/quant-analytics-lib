@@ -243,7 +243,6 @@ def signal_to_size_nb(
     accumulate: int,
 ) -> tp.Tuple[float, int, int]:
     """Translate direction-aware signals into size, size type, and direction."""
-
     if (
         accumulate != AccumulationMode.Disabled
         and accumulate != AccumulationMode.Both

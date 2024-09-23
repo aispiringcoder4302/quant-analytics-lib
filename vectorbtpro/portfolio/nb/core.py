@@ -109,6 +109,10 @@ def long_buy_nb(
         return order_not_filled_nb(OrderStatus.Rejected, OrderStatusInfo.NoCash), _account_state
     cash_limit = cash_limit * leverage
 
+    # Adjust for granularity
+    if not np.isnan(size_granularity) and adj_size_granularity_nb(size, size_granularity):
+        size = size // size_granularity * size_granularity
+
     # Adjust for max size
     if not np.isnan(max_size) and size > max_size:
         if not allow_partial:
@@ -117,10 +121,6 @@ def long_buy_nb(
         size = max_size
     if np.isinf(size) and np.isinf(cash_limit):
         raise ValueError("Attempt to go in long direction infinitely")
-
-    # Adjust for granularity
-    if not np.isnan(size_granularity) and adj_size_granularity_nb(size, size_granularity):
-        size = size // size_granularity * size_granularity
 
     # Get price adjusted with slippage
     adj_price = price * (1 + slippage)
@@ -262,16 +262,17 @@ def long_sell_nb(
     if not np.isnan(percent):
         size_limit = size_limit * percent
 
+    # Adjust for granularity
+    if not np.isnan(size_granularity) and adj_size_granularity_nb(size_limit, size_granularity):
+        size = size // size_granularity * size_granularity
+        size_limit = size_limit // size_granularity * size_granularity
+
     # Adjust for max size
     if not np.isnan(max_size) and size_limit > max_size:
         if not allow_partial:
             return order_not_filled_nb(OrderStatus.Rejected, OrderStatusInfo.MaxSizeExceeded), _account_state
 
         size_limit = max_size
-
-    # Adjust for granularity
-    if not np.isnan(size_granularity) and adj_size_granularity_nb(size_limit, size_granularity):
-        size_limit = size_limit // size_granularity * size_granularity
 
     # Check against size of zero
     if is_close_nb(size_limit, 0):
@@ -384,6 +385,11 @@ def short_sell_nb(
     if size_limit <= 0:
         return order_not_filled_nb(OrderStatus.Rejected, OrderStatusInfo.CantCoverFees), _account_state
 
+    # Adjust for granularity
+    if not np.isnan(size_granularity) and adj_size_granularity_nb(size_limit, size_granularity):
+        size = size // size_granularity * size_granularity
+        size_limit = size_limit // size_granularity * size_granularity
+
     # Adjust for max size
     if not np.isnan(max_size) and size_limit > max_size:
         if not allow_partial:
@@ -392,10 +398,6 @@ def short_sell_nb(
         size_limit = max_size
     if np.isinf(size_limit):
         raise ValueError("Attempt to go in short direction infinitely")
-
-    # Adjust for granularity
-    if not np.isnan(size_granularity) and adj_size_granularity_nb(size_limit, size_granularity):
-        size_limit = size_limit // size_granularity * size_granularity
 
     # Check against size of zero
     if is_close_nb(size_limit, 0):
@@ -504,16 +506,16 @@ def short_buy_nb(
     if not np.isnan(percent):
         size_limit = size_limit * percent
 
+    # Adjust for granularity
+    if not np.isnan(size_granularity) and adj_size_granularity_nb(size_limit, size_granularity):
+        size_limit = size_limit // size_granularity * size_granularity
+
     # Adjust for max size
     if not np.isnan(max_size) and size_limit > max_size:
         if not allow_partial:
             return order_not_filled_nb(OrderStatus.Rejected, OrderStatusInfo.MaxSizeExceeded), _account_state
 
         size_limit = max_size
-
-    # Adjust for granularity
-    if not np.isnan(size_granularity) and adj_size_granularity_nb(size_limit, size_granularity):
-        size_limit = size_limit // size_granularity * size_granularity
 
     # Get price adjusted with slippage
     adj_price = price * (1 + slippage)
