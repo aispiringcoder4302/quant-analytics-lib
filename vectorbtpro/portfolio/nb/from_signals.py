@@ -3466,7 +3466,7 @@ def init_FSInOutputs_nb(
 
 @register_jitted
 def no_signal_func_nb(c: SignalContext, *args) -> tp.Tuple[bool, bool, bool, bool]:
-    """Placeholder signal function that returns no signal."""
+    """Placeholder `signal_func_nb` that returns no signal."""
     return False, False, False, False
 
 
@@ -6156,7 +6156,7 @@ AdjustFuncT = tp.Callable[[SignalContext, tp.VarArg()], None]
 
 @register_jitted
 def no_adjust_func_nb(c: SignalContext, *args) -> None:
-    """Placeholder adjustment function."""
+    """Placeholder `adjust_func_nb` that does nothing."""
     return None
 
 
@@ -6186,7 +6186,7 @@ def holding_enex_signal_func_nb(  # % line.replace("holding_enex_signal_func_nb"
     adjust_func_nb: AdjustFuncT = no_adjust_func_nb,  # % None
     adjust_args: tp.Args = (),
 ) -> tp.Tuple[bool, bool, bool, bool]:
-    """Resolve direction-aware signals for holding."""
+    """`signal_func_nb` that returns direction-aware signals from holding."""
     adjust_func_nb(c, *adjust_args)
 
     if c.last_position[c.col] == 0:
@@ -6216,7 +6216,7 @@ def dir_signal_func_nb(  # % line.replace("dir_signal_func_nb", "signal_func_nb"
     adjust_func_nb: AdjustFuncT = no_adjust_func_nb,  # % None
     adjust_args: tp.Args = (),
 ) -> tp.Tuple[bool, bool, bool, bool]:
-    """Resolve direction-aware signals out of entries, exits, and direction.
+    """`signal_func_nb` that converts entries, exits, and direction into direction-aware signals.
 
     The direction of each pair of signals is taken from `direction` argument:
 
@@ -6260,7 +6260,7 @@ def ls_signal_func_nb(  # % line.replace("ls_signal_func_nb", "signal_func_nb")
     adjust_func_nb: AdjustFuncT = no_adjust_func_nb,  # % None
     adjust_args: tp.Args = (),
 ) -> tp.Tuple[bool, bool, bool, bool]:
-    """Get an element of direction-aware signals.
+    """`signal_func_nb` that gets an element of direction-aware signals.
 
     The direction is already built into the arrays. Best to use when the direction changes frequently
     (for example, if you have one indicator providing long signals and one providing short signals).
@@ -6299,7 +6299,7 @@ def order_signal_func_nb(  # % line.replace("order_signal_func_nb", "signal_func
     adjust_func_nb: AdjustFuncT = no_adjust_func_nb,  # % None
     adjust_args: tp.Args = (),
 ) -> tp.Tuple[bool, bool, bool, bool]:
-    """Resolve direction-aware signals out of orders.
+    """`signal_func_nb` that converts orders into direction-aware signals.
 
     You must ensure that `size`, `size_type`, `min_size`, and `max_size` are writeable non-flexible arrays
     and accumulation is enabled."""
@@ -6391,6 +6391,7 @@ def save_post_segment_func_nb(  # % line.replace("save_post_segment_func_nb", "p
     save_value: bool = True,
     save_returns: bool = True,
 ) -> None:
+    """`post_segment_func_nb` that saves state, value, and returns."""
     if save_state:
         for col in range(c.from_col, c.to_col):
             c.in_outputs.position[c.i, col] = c.last_position[col]

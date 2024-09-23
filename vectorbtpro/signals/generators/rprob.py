@@ -12,6 +12,8 @@ __all__ = [
     "RPROB",
 ]
 
+__pdoc__ = {}
+
 RPROB = SignalFactory(
     class_name="RPROB",
     module_name=__name__,
@@ -76,3 +78,4 @@ class _RPROB(RPROB):
 
 
 setattr(RPROB, "__doc__", _RPROB.__doc__)
+RPROB.fix_docstrings(__pdoc__)

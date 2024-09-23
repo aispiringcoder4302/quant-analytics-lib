@@ -495,6 +495,7 @@ def is_notebook() -> bool:
 
 
 def safe_assert(arg: bool, msg: tp.Optional[str] = None) -> None:
+    """Assert a condition in a safe way."""
     if not arg:
         raise AssertionError(msg)
 

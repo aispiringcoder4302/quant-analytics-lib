@@ -12,6 +12,8 @@ __all__ = [
     "RANDX",
 ]
 
+__pdoc__ = {}
+
 RANDX = SignalFactory(
     class_name="RANDX",
     module_name=__name__,
@@ -57,3 +59,4 @@ class _RANDX(RANDX):
 
 
 setattr(RANDX, "__doc__", _RANDX.__doc__)
+RANDX.fix_docstrings(__pdoc__)

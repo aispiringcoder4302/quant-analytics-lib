@@ -16,6 +16,8 @@ __all__ = [
     "OHLCSTX",
 ]
 
+__pdoc__ = {}
+
 ohlcstx_config = ReadonlyConfig(
     dict(
         class_name="OHLCSTX",
@@ -71,7 +73,7 @@ ohlcstx_func_config = ReadonlyConfig(
 OHLCSTX = SignalFactory(**ohlcstx_config).with_place_func(**ohlcstx_func_config)
 
 
-def bind_ohlcstx_plot(base_cls: type, entries_attr: str) -> tp.Callable:
+def _bind_ohlcstx_plot(base_cls: type, entries_attr: str) -> tp.Callable:
     base_cls_plot = base_cls.plot
 
     def plot(
@@ -239,8 +241,9 @@ class _OHLCSTX(OHLCSTX):
         ```
     """
 
-    plot = bind_ohlcstx_plot(OHLCSTX, "entries")
+    plot = _bind_ohlcstx_plot(OHLCSTX, "entries")
 
 
 setattr(OHLCSTX, "__doc__", _OHLCSTX.__doc__)
 setattr(OHLCSTX, "plot", _OHLCSTX.plot)
+OHLCSTX.fix_docstrings(__pdoc__)

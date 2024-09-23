@@ -14,6 +14,8 @@ __all__ = [
     "OLS",
 ]
 
+__pdoc__ = {}
+
 OLS = IndicatorFactory(
     class_name="OLS",
     module_name=__name__,
@@ -211,3 +213,4 @@ class _OLS(OLS):
 setattr(OLS, "__doc__", _OLS.__doc__)
 setattr(OLS, "plot", _OLS.plot)
 setattr(OLS, "plot_zscore", _OLS.plot_zscore)
+OLS.fix_docstrings(__pdoc__)

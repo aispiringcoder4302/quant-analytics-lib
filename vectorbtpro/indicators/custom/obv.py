@@ -11,6 +11,8 @@ __all__ = [
     "OBV",
 ]
 
+__pdoc__ = {}
+
 OBV = IndicatorFactory(
     class_name="OBV",
     module_name=__name__,
@@ -82,3 +84,4 @@ class _OBV(OBV):
 
 setattr(OBV, "__doc__", _OBV.__doc__)
 setattr(OBV, "plot", _OBV.plot)
+OBV.fix_docstrings(__pdoc__)

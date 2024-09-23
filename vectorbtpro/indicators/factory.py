@@ -1556,6 +1556,27 @@ class IndicatorBase(Analyzable):
         ):
             yield k, v
 
+    # ############# Documentation ############# #
+
+    @classmethod
+    def fix_docstrings(cls, __pdoc__: dict) -> None:
+        """Fix docstrings."""
+        if hasattr(cls, "custom_func"):
+            if cls.__name__ + ".custom_func" not in __pdoc__:
+                __pdoc__[cls.__name__ + ".custom_func"] = "Custom function."
+        if hasattr(cls, "apply_func"):
+            if cls.__name__ + ".apply_func" not in __pdoc__:
+                __pdoc__[cls.__name__ + ".apply_func"] = "Apply function."
+        if hasattr(cls, "cache_func"):
+            if cls.__name__ + ".cache_func" not in __pdoc__:
+                __pdoc__[cls.__name__ + ".cache_func"] = "Cache function."
+        if hasattr(cls, "entry_place_func_nb"):
+            if cls.__name__ + ".entry_place_func_nb" not in __pdoc__:
+                __pdoc__[cls.__name__ + ".entry_place_func_nb"] = "Entry placement function."
+        if hasattr(cls, "exit_place_func_nb"):
+            if cls.__name__ + ".exit_place_func_nb" not in __pdoc__:
+                __pdoc__[cls.__name__ + ".exit_place_func_nb"] = "Exit placement function."
+
 
 class IndicatorFactory(Configured):
     _expected_keys: tp.ExpectedKeys = (Configured._expected_keys or set()) | {
@@ -2269,7 +2290,6 @@ class IndicatorFactory(Configured):
         all_input_names = input_names + param_names + in_output_names
 
         setattr(Indicator, "custom_func", custom_func)
-        __pdoc__[Indicator.__name__ + ".custom_func"] = "Custom function."
 
         def _split_args(
             args: tp.Sequence,
@@ -2784,9 +2804,7 @@ Other keyword arguments are passed to `{0}.run`.
         Indicator = self.Indicator
 
         setattr(Indicator, "apply_func", apply_func)
-        __pdoc__[Indicator.__name__ + ".apply_func"] = "Apply function."
         setattr(Indicator, "cache_func", cache_func)
-        __pdoc__[Indicator.__name__ + ".cache_func"] = "Cache function."
 
         module_name = self.module_name
         input_names = self.input_names
@@ -2842,13 +2860,13 @@ Other keyword arguments are passed to `{0}.run`.
             code = compile(func_str, filename, "single")
             exec(code, scope)
             param_select_func_nb = scope["param_select_func_nb"]
+            param_select_func_nb.__doc__ = "Parameter selection function."
             if module_name is not None:
                 param_select_func_nb.__module__ = module_name
             jit_kwargs = merge_dicts(dict(nogil=True), jit_kwargs)
             param_select_func_nb = njit(param_select_func_nb, **jit_kwargs)
 
             setattr(Indicator, "param_select_func_nb", param_select_func_nb)
-            __pdoc__[Indicator.__name__ + ".param_select_func_nb"] = "Parameter selection function."
 
         def custom_func(
             input_tuple: tp.Tuple[tp.AnyArray, ...],

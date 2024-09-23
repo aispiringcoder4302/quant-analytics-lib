@@ -10,7 +10,7 @@ from numba.np.numpy_support import as_dtype
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.base import chunking as base_ch
-from vectorbtpro.base.flex_indexing import flex_select_1d_nb, flex_select_1d_pc_nb, flex_select_col_nb
+from vectorbtpro.base.flex_indexing import flex_select_1d_nb, flex_select_col_nb
 from vectorbtpro.base.reshaping import to_1d_array_nb, to_2d_array_nb
 from vectorbtpro.registries.ch_registry import register_chunkable
 from vectorbtpro.registries.jit_registry import register_jitted
@@ -42,7 +42,7 @@ def _select_indices_1d_nb(arr, indices, fill_value):
     return impl
 
 
-ol_select_indices_1d_nb = overload(_select_indices_1d_nb)(_select_indices_1d_nb)
+overload(_select_indices_1d_nb)(_select_indices_1d_nb)
 
 
 @register_jitted(cache=True)
@@ -77,7 +77,7 @@ def _select_indices_nb(arr, indices, fill_value):
     return impl
 
 
-ol_select_indices_nb = overload(_select_indices_nb)(_select_indices_nb)
+overload(_select_indices_nb)(_select_indices_nb)
 
 
 @register_jitted(cache=True)
@@ -134,7 +134,7 @@ def _set_by_mask_1d_nb(arr, mask, value):
     return impl
 
 
-ol_set_by_mask_1d_nb = overload(_set_by_mask_1d_nb)(_set_by_mask_1d_nb)
+overload(_set_by_mask_1d_nb)(_set_by_mask_1d_nb)
 
 
 @register_jitted(cache=True)
@@ -165,7 +165,7 @@ def _set_by_mask_nb(arr, mask, value):
     return impl
 
 
-ol_set_by_mask_nb = overload(_set_by_mask_nb)(_set_by_mask_nb)
+overload(_set_by_mask_nb)(_set_by_mask_nb)
 
 
 @register_jitted(cache=True)
@@ -195,7 +195,7 @@ def _set_by_mask_mult_1d_nb(arr, mask, values):
     return impl
 
 
-ol_set_by_mask_mult_1d_nb = overload(_set_by_mask_mult_1d_nb)(_set_by_mask_mult_1d_nb)
+overload(_set_by_mask_mult_1d_nb)(_set_by_mask_mult_1d_nb)
 
 
 @register_jitted(cache=True)
@@ -228,7 +228,7 @@ def _set_by_mask_mult_nb(arr, mask, values):
     return impl
 
 
-ol_set_by_mask_mult_nb = overload(_set_by_mask_mult_nb)(_set_by_mask_mult_nb)
+overload(_set_by_mask_mult_nb)(_set_by_mask_mult_nb)
 
 
 @register_jitted(cache=True)
@@ -361,7 +361,7 @@ def _bshift_1d_nb(arr, n, fill_value):
     return impl
 
 
-ol_bshift_1d_nb = overload(_bshift_1d_nb)(_bshift_1d_nb)
+overload(_bshift_1d_nb)(_bshift_1d_nb)
 
 
 @register_jitted(cache=True)
@@ -400,7 +400,7 @@ def _bshift_nb(arr, n, fill_value):
     return impl
 
 
-ol_bshift_nb = overload(_bshift_nb)(_bshift_nb)
+overload(_bshift_nb)(_bshift_nb)
 
 
 @register_chunkable(
@@ -442,7 +442,7 @@ def _fshift_1d_nb(arr, n, fill_value):
     return impl
 
 
-ol_fshift_1d_nb = overload(_fshift_1d_nb)(_fshift_1d_nb)
+overload(_fshift_1d_nb)(_fshift_1d_nb)
 
 
 @register_jitted(cache=True)
@@ -478,7 +478,7 @@ def _fshift_nb(arr, n, fill_value):
     return impl
 
 
-ol_fshift_nb = overload(_fshift_nb)(_fshift_nb)
+overload(_fshift_nb)(_fshift_nb)
 
 
 @register_chunkable(
@@ -629,7 +629,7 @@ def _nanprod_nb(arr):
     return impl
 
 
-ol_nanprod_nb = overload(_nanprod_nb)(_nanprod_nb)
+overload(_nanprod_nb)(_nanprod_nb)
 
 
 @register_chunkable(
@@ -663,7 +663,7 @@ def _nancumsum_nb(arr):
     return impl
 
 
-ol_nancumsum_nb = overload(_nancumsum_nb)(_nancumsum_nb)
+overload(_nancumsum_nb)(_nancumsum_nb)
 
 
 @register_chunkable(
@@ -697,7 +697,7 @@ def _nancumprod_nb(arr):
     return impl
 
 
-ol_nancumprod_nb = overload(_nancumprod_nb)(_nancumprod_nb)
+overload(_nancumprod_nb)(_nancumprod_nb)
 
 
 @register_chunkable(
@@ -731,7 +731,7 @@ def _nansum_nb(arr):
     return impl
 
 
-ol_nansum_nb = overload(_nansum_nb)(_nansum_nb)
+overload(_nansum_nb)(_nansum_nb)
 
 
 @register_chunkable(
@@ -1676,7 +1676,7 @@ def _realign_1d_nb(
     return impl
 
 
-ol_realign_1d_nb = overload(_realign_1d_nb)(_realign_1d_nb)
+overload(_realign_1d_nb)(_realign_1d_nb)
 
 
 @register_jitted(cache=True)
@@ -1776,7 +1776,7 @@ def _realign_nb(
     return impl
 
 
-ol_realign_nb = overload(_realign_nb)(_realign_nb)
+overload(_realign_nb)(_realign_nb)
 
 
 @register_chunkable(

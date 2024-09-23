@@ -13,6 +13,8 @@ __all__ = [
     "STX",
 ]
 
+__pdoc__ = {}
+
 stx_config = ReadonlyConfig(
     dict(
         class_name="STX",
@@ -62,3 +64,4 @@ class _STX(STX):
 
 
 setattr(STX, "__doc__", _STX.__doc__)
+STX.fix_docstrings(__pdoc__)

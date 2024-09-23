@@ -319,6 +319,9 @@ class custom_methodT(custom_functionT):
         pass
 
 
+__pdoc__["custom_methodT"] = False
+
+
 def custom_method(
     *args,
     _decorator_name: tp.Optional[str] = None,
@@ -349,6 +352,9 @@ def custom_method(
 
 class cacheable_methodT(custom_methodT):
     get_ca_setup: tp.Callable[[tp.Optional[object]], tp.Optional["CARunSetup"]]
+
+
+__pdoc__["cacheable_methodT"] = False
 
 
 def cacheable_method(

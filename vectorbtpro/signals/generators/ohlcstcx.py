@@ -3,11 +3,13 @@
 """Module with `OHLCSTCX`."""
 
 from vectorbtpro.signals.factory import SignalFactory
-from vectorbtpro.signals.generators.ohlcstx import ohlcstx_config, ohlcstx_func_config, bind_ohlcstx_plot
+from vectorbtpro.signals.generators.ohlcstx import ohlcstx_config, ohlcstx_func_config, _bind_ohlcstx_plot
 
 __all__ = [
     "OHLCSTCX",
 ]
+
+__pdoc__ = {}
 
 OHLCSTCX = SignalFactory(
     **ohlcstx_config.merge_with(
@@ -30,8 +32,9 @@ class _OHLCSTCX(OHLCSTCX):
 
     See `OHLCSTX` for notes on parameters."""
 
-    plot = bind_ohlcstx_plot(OHLCSTCX, "new_entries")
+    plot = _bind_ohlcstx_plot(OHLCSTCX, "new_entries")
 
 
 setattr(OHLCSTCX, "__doc__", _OHLCSTCX.__doc__)
 setattr(OHLCSTCX, "plot", _OHLCSTCX.plot)
+OHLCSTCX.fix_docstrings(__pdoc__)

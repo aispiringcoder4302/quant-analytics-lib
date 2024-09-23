@@ -8,6 +8,8 @@ __all__ = [
     "FIXLB",
 ]
 
+__pdoc__ = {}
+
 FIXLB = IndicatorFactory(
     class_name="FIXLB",
     module_name=__name__,
@@ -42,3 +44,4 @@ class _FIXLB(FIXLB):
 
 setattr(FIXLB, "__doc__", _FIXLB.__doc__)
 setattr(FIXLB, "plot", _FIXLB.plot)
+FIXLB.fix_docstrings(__pdoc__)

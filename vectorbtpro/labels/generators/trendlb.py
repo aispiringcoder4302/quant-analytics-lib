@@ -10,6 +10,8 @@ __all__ = [
     "TRENDLB",
 ]
 
+__pdoc__ = {}
+
 TRENDLB = IndicatorFactory(
     class_name="TRENDLB",
     module_name=__name__,
@@ -53,3 +55,4 @@ class _TRENDLB(TRENDLB):
 
 setattr(TRENDLB, "__doc__", _TRENDLB.__doc__)
 setattr(TRENDLB, "plot", _TRENDLB.plot)
+TRENDLB.fix_docstrings(__pdoc__)

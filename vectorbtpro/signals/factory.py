@@ -28,8 +28,6 @@ __all__ = [
     "SignalFactory",
 ]
 
-__pdoc__ = {}
-
 
 class SignalFactory(IndicatorFactory):
     """A factory for building signal generators.
@@ -499,9 +497,7 @@ class SignalFactory(IndicatorFactory):
         Indicator = self.Indicator
 
         setattr(Indicator, "entry_place_func_nb", entry_place_func_nb)
-        __pdoc__[Indicator.__name__ + ".entry_place_func_nb"] = "Entry placement function."
         setattr(Indicator, "exit_place_func_nb", exit_place_func_nb)
-        __pdoc__[Indicator.__name__ + ".exit_place_func_nb"] = "Exit placement function."
 
         module_name = self.module_name
         mode = self.mode
@@ -701,7 +697,6 @@ class SignalFactory(IndicatorFactory):
             apply_func = njit(apply_func, **jit_kwargs)
 
         setattr(Indicator, "apply_func", apply_func)
-        __pdoc__[Indicator.__name__ + ".apply_func"] = "Apply function."
 
         def custom_func(
             input_list: tp.List[tp.AnyArray],

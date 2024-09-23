@@ -9,6 +9,8 @@ __all__ = [
     "FMIN",
 ]
 
+__pdoc__ = {}
+
 FMIN = IndicatorFactory(
     class_name="FMIN",
     module_name=__name__,
@@ -95,3 +97,4 @@ class _FMIN(FMIN):
 
 setattr(FMIN, "__doc__", _FMIN.__doc__)
 setattr(FMIN, "plot", _FMIN.plot)
+FMIN.fix_docstrings(__pdoc__)

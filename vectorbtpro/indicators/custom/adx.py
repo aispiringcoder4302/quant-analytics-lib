@@ -12,6 +12,8 @@ __all__ = [
     "ADX",
 ]
 
+__pdoc__ = {}
+
 ADX = IndicatorFactory(
     class_name="ADX",
     module_name=__name__,
@@ -122,3 +124,4 @@ class _ADX(ADX):
 
 setattr(ADX, "__doc__", _ADX.__doc__)
 setattr(ADX, "plot", _ADX.plot)
+ADX.fix_docstrings(__pdoc__)

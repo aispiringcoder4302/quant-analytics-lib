@@ -263,6 +263,9 @@ class TransformerT(tp.Protocol):
     def fit_transform(self, *args, **kwargs) -> tp.Array2d: ...
 
 
+__pdoc__["TransformerT"] = False
+
+
 nb_config = ReadonlyConfig(
     {
         "shuffle": dict(func=nb.shuffle_nb, disable_chunked=True),

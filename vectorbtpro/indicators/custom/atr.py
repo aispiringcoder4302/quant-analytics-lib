@@ -12,6 +12,8 @@ __all__ = [
     "ATR",
 ]
 
+__pdoc__ = {}
+
 ATR = IndicatorFactory(
     class_name="ATR",
     module_name=__name__,
@@ -111,3 +113,4 @@ class _ATR(ATR):
 
 setattr(ATR, "__doc__", _ATR.__doc__)
 setattr(ATR, "plot", _ATR.plot)
+ATR.fix_docstrings(__pdoc__)

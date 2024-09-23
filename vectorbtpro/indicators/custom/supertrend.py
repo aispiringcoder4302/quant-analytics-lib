@@ -11,6 +11,8 @@ __all__ = [
     "SUPERTREND",
 ]
 
+__pdoc__ = {}
+
 SUPERTREND = IndicatorFactory(
     class_name="SUPERTREND",
     module_name=__name__,
@@ -107,3 +109,4 @@ class _SUPERTREND(SUPERTREND):
 
 setattr(SUPERTREND, "__doc__", _SUPERTREND.__doc__)
 setattr(SUPERTREND, "plot", _SUPERTREND.plot)
+SUPERTREND.fix_docstrings(__pdoc__)

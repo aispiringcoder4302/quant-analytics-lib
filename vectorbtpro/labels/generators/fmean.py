@@ -10,6 +10,8 @@ __all__ = [
     "FMEAN",
 ]
 
+__pdoc__ = {}
+
 FMEAN = IndicatorFactory(
     class_name="FMEAN",
     module_name=__name__,
@@ -106,3 +108,4 @@ class _FMEAN(FMEAN):
 
 setattr(FMEAN, "__doc__", _FMEAN.__doc__)
 setattr(FMEAN, "plot", _FMEAN.plot)
+FMEAN.fix_docstrings(__pdoc__)

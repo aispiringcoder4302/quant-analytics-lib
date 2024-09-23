@@ -27,7 +27,14 @@ __all__ = [
 
 __pdoc__ = {}
 
-package_shortcut_config = HybridConfig(dict(vbt="vectorbtpro", pd="pandas", np="numpy", nb="numba"))
+package_shortcut_config = HybridConfig(
+    dict(
+        vbt="vectorbtpro",
+        pd="pandas",
+        np="numpy",
+        nb="numba",
+    )
+)
 """_"""
 
 __pdoc__[

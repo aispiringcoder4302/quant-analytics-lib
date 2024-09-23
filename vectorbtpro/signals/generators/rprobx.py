@@ -11,6 +11,8 @@ __all__ = [
     "RPROBX",
 ]
 
+__pdoc__ = {}
+
 rprobx_config = ReadonlyConfig(
     dict(
         class_name="RPROBX",
@@ -51,3 +53,4 @@ class _RPROBX(RPROBX):
 
 
 setattr(RPROBX, "__doc__", _RPROBX.__doc__)
+RPROBX.fix_docstrings(__pdoc__)

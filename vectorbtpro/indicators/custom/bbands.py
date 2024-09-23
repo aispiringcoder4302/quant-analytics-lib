@@ -14,6 +14,8 @@ __all__ = [
     "BBANDS",
 ]
 
+__pdoc__ = {}
+
 BBANDS = IndicatorFactory(
     class_name="BBANDS",
     module_name=__name__,
@@ -168,3 +170,4 @@ class _BBANDS(BBANDS):
 
 setattr(BBANDS, "__doc__", _BBANDS.__doc__)
 setattr(BBANDS, "plot", _BBANDS.plot)
+BBANDS.fix_docstrings(__pdoc__)

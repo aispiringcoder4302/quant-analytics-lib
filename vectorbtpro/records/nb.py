@@ -932,7 +932,7 @@ def _unstack_mapped_nb(
     return impl
 
 
-ol_unstack_mapped_nb = overload(_unstack_mapped_nb)(_unstack_mapped_nb)
+overload(_unstack_mapped_nb)(_unstack_mapped_nb)
 
 
 @register_jitted(cache=True)
@@ -978,7 +978,7 @@ def _ignore_unstack_mapped_nb(mapped_arr, col_map, fill_value):
     return impl
 
 
-ol_ignore_unstack_mapped_nb = overload(_ignore_unstack_mapped_nb)(_ignore_unstack_mapped_nb)
+overload(_ignore_unstack_mapped_nb)(_ignore_unstack_mapped_nb)
 
 
 @register_jitted(cache=True)
@@ -1034,7 +1034,7 @@ def _repeat_unstack_mapped_nb(
     return impl
 
 
-ol_repeat_unstack_mapped_nb = overload(_repeat_unstack_mapped_nb)(_repeat_unstack_mapped_nb)
+overload(_repeat_unstack_mapped_nb)(_repeat_unstack_mapped_nb)
 
 
 @register_jitted(cache=True)
