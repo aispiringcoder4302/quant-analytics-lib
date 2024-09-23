@@ -1,5 +1,7 @@
 # Copyright (c) 2021-2024 Oleg Polakow. All rights reserved.
 
+"""Welcome to the Matrix."""
+
 import importlib
 import pkgutil
 import typing
