@@ -1827,8 +1827,8 @@ ${config_doc}
 
 _settings["pfopt"] = pfopt
 
-messaging = frozen_cfg(
-    telegram=flex_cfg(
+telegram = frozen_cfg(
+    bot=flex_cfg(
         token=None,
         use_context=True,
         persistence=True,
@@ -1842,8 +1842,8 @@ messaging = frozen_cfg(
 )
 """_"""
 
-__pdoc__["messaging"] = Sub(
-    """Sub-config with settings applied across `vectorbtpro.messaging`.
+__pdoc__["telegram"] = Sub(
+    """Sub-config with settings applied across `vectorbtpro.utils.telegram`.
 
 ```python
 ${config_doc}
@@ -1863,7 +1863,7 @@ GIPHY:
 """
 )
 
-_settings["messaging"] = messaging
+_settings["telegram"] = telegram
 
 pbar = frozen_cfg(
     disable=False,

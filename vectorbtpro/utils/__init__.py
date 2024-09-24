@@ -47,3 +47,4 @@ if TYPE_CHECKING:
 
 __import_if_installed__ = dict()
 __import_if_installed__["figure"] = "plotly"
+__import_if_installed__["telegram"] = "telegram"

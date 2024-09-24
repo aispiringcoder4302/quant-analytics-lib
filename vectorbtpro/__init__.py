@@ -12,7 +12,6 @@ if typing.TYPE_CHECKING:
     from vectorbtpro.generic import *
     from vectorbtpro.indicators import *
     from vectorbtpro.labels import *
-    from vectorbtpro.messaging import *
     from vectorbtpro.ohlcv import *
     from vectorbtpro.portfolio import *
     from vectorbtpro.px import *
