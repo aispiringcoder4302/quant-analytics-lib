@@ -549,6 +549,7 @@ pickling = frozen_cfg(
             config={"config", "cfg", "ini"},
         ),
         compression=flex_cfg(
+            zip={"zip"},
             bz2={"bzip2", "bz2", "bz"},
             gzip={"gzip", "gz"},
             lzma={"lzma", "xz"},
@@ -1931,6 +1932,26 @@ ${config_doc}
 )
 
 _settings["search"] = search
+
+knowledge = frozen_cfg(
+    cache_dir="./knowledge",
+    cache_save_kwargs=flex_cfg(
+        mkdir_kwargs=dict(
+            mkdir=True,
+        ),
+    ),
+)
+"""_"""
+
+__pdoc__["knowledge"] = Sub(
+    """Sub-config with settings applied across `vectorbtpro.utils.knowledge`.
+
+```python
+${config_doc}
+```"""
+)
+
+_settings["knowledge"] = knowledge
 
 
 # ############# Settings config ############# #

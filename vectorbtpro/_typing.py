@@ -299,3 +299,6 @@ StaticizedOption = Union[None, bool, Kwargs, TaskId]
 
 # Selection
 Selection = Union[PosSel, LabelSel, MaybeIterable[Union[PosSel, LabelSel, Hashable]]]
+
+# Knowledge
+JsonArray = List[Dict]

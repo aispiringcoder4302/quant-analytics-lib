@@ -3213,14 +3213,17 @@ class TestPickling:
         with pytest.raises(Exception):
             vbt.Config(a=1).save(tmp_path, compression=True)
         vbt.Config(a=2).save(tmp_path, compression=False)
-        vbt.Config(a=3).save(tmp_path, compression="gzip")
-        vbt.Config(a=4).save(tmp_path, compression="gz")
-        vbt.Config(a=5).save(tmp_path, compression="bz2")
+        vbt.Config(a=3).save(tmp_path, compression="zip")
+        vbt.Config(a=4).save(tmp_path, compression="gzip")
+        vbt.Config(a=5).save(tmp_path, compression="gz")
+        vbt.Config(a=6).save(tmp_path, compression="bz2")
+
         assert vbt.Config.load(tmp_path)["a"] == 2
         assert vbt.Config.load(tmp_path, compression=False)["a"] == 2
-        assert vbt.Config.load(tmp_path, compression="gzip")["a"] == 3
-        assert vbt.Config.load(tmp_path, compression="gz")["a"] == 4
-        assert vbt.Config.load(tmp_path, compression="bz")["a"] == 5
+        assert vbt.Config.load(tmp_path, compression="zip")["a"] == 3
+        assert vbt.Config.load(tmp_path, compression="gzip")["a"] == 4
+        assert vbt.Config.load(tmp_path, compression="gz")["a"] == 5
+        assert vbt.Config.load(tmp_path, compression="bz")["a"] == 6
         (tmp_path / "Config.pickle").unlink()
         with pytest.raises(Exception):
             vbt.Config.load(tmp_path)
