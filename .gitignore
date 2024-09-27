@@ -142,3 +142,4 @@ dmypy.json
 /work/
 /*.ipynb
 .virtual_documents/
+/knowledge/

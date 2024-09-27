@@ -133,7 +133,7 @@ from vectorbtpro import _typing as tp
 from vectorbtpro.utils.checks import is_instance_of
 from vectorbtpro.utils.config import Config
 from vectorbtpro.utils.module_ import check_installed
-from vectorbtpro.utils.template import Sub, RepEval, substitute_templates
+from vectorbtpro.utils.template import Sub, Rep, RepEval, substitute_templates
 
 __all__ = [
     "settings",
@@ -1916,6 +1916,7 @@ ${config_doc}
 _settings["path"] = path
 
 search = frozen_cfg(
+    traversal="DFS",
     excl_types=(list, set, frozenset),
     incl_types=None,
     max_len=None,
@@ -1934,10 +1935,35 @@ ${config_doc}
 _settings["search"] = search
 
 knowledge = frozen_cfg(
-    cache_dir="./knowledge",
-    cache_save_kwargs=flex_cfg(
-        mkdir_kwargs=dict(
-            mkdir=True,
+    asset_name=None,
+    release_name=None,
+    repo_owner="polakowo",
+    repo_name="vectorbt.pro",
+    token=None,
+    token_required=False,
+    use_pygithub=None,
+    chunk_size=8192,
+    cache=True,
+    cache_dir=Sub("./knowledge/$current_release"),
+    cache_mkdir_kwargs=dict(
+        mkdir=True,
+    ),
+    show_progress=True,
+    pbar_kwargs=flex_cfg(
+        unit="iB",
+        unit_scale=True,
+        desc=Sub("Downloading $asset_name"),
+    ),
+    template_context=flex_cfg(),
+    engine=None,
+    assets=flex_cfg(
+        messages=flex_cfg(
+            asset_name="messages.json.zip",
+            token_required=True,
+        ),
+        pages=flex_cfg(
+            asset_name="pages.json.zip",
+            token_required=True,
         ),
     ),
 )

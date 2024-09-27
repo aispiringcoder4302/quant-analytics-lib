@@ -2,27 +2,108 @@
 
 """Utilities for searching."""
 
+import re
 from copy import copy
+from functools import partial
+from collections import deque
+
+import pandas as pd
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.utils import checks
 from vectorbtpro.utils.config import set_dict_item
 
 
+def any_in_obj(
+    obj: tp.Any,
+    match_func: tp.Callable,
+    traversal: tp.Optional[str] = None,
+    excl_types: tp.Union[None, bool, tp.MaybeSequence[type]] = None,
+    incl_types: tp.Union[None, bool, tp.MaybeSequence[type]] = None,
+    max_len: tp.Optional[int] = None,
+    max_depth: tp.Optional[int] = None,
+    **kwargs,
+) -> bool:
+    """Return whether there is any match in an object in an iterative manner.
+
+    Argument `traversal` can be "DFS" for depth-first search or "BFS" for breadth-first search.
+
+    See `find_in_obj` for arguments."""
+    from vectorbtpro._settings import settings
+
+    search_cfg = settings["search"]
+
+    if traversal is None:
+        traversal = search_cfg["traversal"]
+    if excl_types is None:
+        excl_types = search_cfg["excl_types"]
+    if isinstance(excl_types, bool) and excl_types:
+        raise ValueError("Argument excl_types cannot be True")
+    if incl_types is None:
+        incl_types = search_cfg["incl_types"]
+    if isinstance(incl_types, bool) and not incl_types:
+        raise ValueError("Argument incl_types cannot be False")
+    if max_len is None:
+        max_len = search_cfg["max_len"]
+    if max_depth is None:
+        max_depth = search_cfg["max_depth"]
+
+    if traversal.upper() == "DFS":
+        stack = [(None, 0, obj)]
+    elif traversal.upper() == "BFS":
+        stack = deque([(None, 0, obj)])
+    else:
+        raise ValueError(f"Invalid option traversal='{traversal}'")
+    while stack:
+        if not isinstance(stack, deque):
+            key, depth, obj = stack.pop()
+        else:
+            key, depth, obj = stack.popleft()
+        if match_func(key, obj, **kwargs):
+            return True
+        if max_depth is not None and depth >= max_depth:
+            continue
+        if excl_types not in (None, False) and checks.is_instance_of(obj, excl_types):
+            if incl_types is None or not (incl_types is True or checks.is_instance_of(obj, incl_types)):
+                continue
+        if isinstance(obj, dict):
+            if max_len is None or len(obj) <= max_len:
+                obj_items = obj.items()
+                if not isinstance(stack, deque):
+                    obj_items = reversed(obj_items)
+                for k, v in obj_items:
+                    new_key = k if key is None else (*key, k) if isinstance(key, tuple) else (key, k)
+                    stack.append((new_key, depth + 1, v))
+        if isinstance(obj, (tuple, list, set, frozenset)):
+            if max_len is None or len(obj) <= max_len:
+                if isinstance(obj, (set, frozenset)):
+                    obj = list(obj)
+                obj_len = len(obj)
+                if not isinstance(stack, deque):
+                    obj = reversed(obj)
+                for i, v in enumerate(obj):
+                    if not isinstance(stack, deque):
+                        i = obj_len - 1 - i
+                    new_key = i if key is None else (*key, i) if isinstance(key, tuple) else (key, i)
+                    stack.append((new_key, depth + 1, v))
+    return False
+
+
 def find_in_obj(
     obj: tp.Any,
     match_func: tp.Callable,
-    excl_types: tp.Union[None, bool, tp.Sequence[type]] = None,
-    incl_types: tp.Union[None, bool, tp.Sequence[type]] = None,
+    traversal: tp.Optional[str] = None,
+    excl_types: tp.Union[None, bool, tp.MaybeSequence[type]] = None,
+    incl_types: tp.Union[None, bool, tp.MaybeSequence[type]] = None,
     max_len: tp.Optional[int] = None,
     max_depth: tp.Optional[int] = None,
-    _key: tp.Optional[tp.Hashable] = None,
-    _depth: int = 0,
     **kwargs,
 ) -> dict:
-    """Find matches in an object in a recursive manner.
+    """Find matches in an object in an iterative manner.
 
     Traverses dicts, tuples, lists and (frozen-)sets. Does not look for matches in keys.
+
+    Argument `traversal` can be "DFS" for depth-first search or "BFS" for breadth-first search.
 
     If `excl_types` is not None, uses `vectorbtpro.utils.checks.is_instance_of` to check whether
     the object is one of the types that are blacklisted. If so, the object is simply returned.
@@ -40,6 +121,8 @@ def find_in_obj(
 
     search_cfg = settings["search"]
 
+    if traversal is None:
+        traversal = search_cfg["traversal"]
     if excl_types is None:
         excl_types = search_cfg["excl_types"]
     if isinstance(excl_types, bool) and excl_types:
@@ -53,51 +136,47 @@ def find_in_obj(
     if max_depth is None:
         max_depth = search_cfg["max_depth"]
 
-    if match_func(_key, obj, **kwargs):
-        return {_key: obj}
-    if max_depth is None or _depth < max_depth:
+    match_dct = {}
+    if traversal.upper() == "DFS":
+        stack = [(None, 0, obj)]
+    elif traversal.upper() == "BFS":
+        stack = deque([(None, 0, obj)])
+    else:
+        raise ValueError(f"Invalid option traversal='{traversal}'")
+    while stack:
+        if not isinstance(stack, deque):
+            key, depth, obj = stack.pop()
+        else:
+            key, depth, obj = stack.popleft()
+        if match_func(key, obj, **kwargs):
+            match_dct[key] = obj
+            continue
+        if max_depth is not None and depth >= max_depth:
+            continue
         if excl_types not in (None, False) and checks.is_instance_of(obj, excl_types):
             if incl_types is None or not (incl_types is True or checks.is_instance_of(obj, incl_types)):
-                return {}
+                continue
         if isinstance(obj, dict):
             if max_len is None or len(obj) <= max_len:
-                match_dct = {}
-                for k, v in obj.items():
-                    new_key = k if _key is None else (*_key, k) if isinstance(_key, tuple) else (_key, k)
-                    match_dct.update(
-                        find_in_obj(
-                            v,
-                            match_func,
-                            excl_types=excl_types,
-                            incl_types=incl_types,
-                            max_len=max_len,
-                            max_depth=max_depth,
-                            _key=new_key,
-                            _depth=_depth + 1,
-                            **kwargs,
-                        )
-                    )
-                return match_dct
+                obj_items = obj.items()
+                if not isinstance(stack, deque):
+                    obj_items = reversed(obj_items)
+                for k, v in obj_items:
+                    new_key = k if key is None else (*key, k) if isinstance(key, tuple) else (key, k)
+                    stack.append((new_key, depth + 1, v))
         if isinstance(obj, (tuple, list, set, frozenset)):
             if max_len is None or len(obj) <= max_len:
-                match_dct = {}
-                for i, o in enumerate(obj):
-                    new_key = i if _key is None else (*_key, i) if isinstance(_key, tuple) else (_key, i)
-                    match_dct.update(
-                        find_in_obj(
-                            o,
-                            match_func,
-                            excl_types=excl_types,
-                            incl_types=incl_types,
-                            max_len=max_len,
-                            max_depth=max_depth,
-                            _key=new_key,
-                            _depth=_depth + 1,
-                            **kwargs,
-                        )
-                    )
-                return match_dct
-    return {}
+                if isinstance(obj, (set, frozenset)):
+                    obj = list(obj)
+                obj_len = len(obj)
+                if not isinstance(stack, deque):
+                    obj = reversed(obj)
+                for i, v in enumerate(obj):
+                    if not isinstance(stack, deque):
+                        i = obj_len - 1 - i
+                    new_key = i if key is None else (*key, i) if isinstance(key, tuple) else (key, i)
+                    stack.append((new_key, depth + 1, v))
+    return match_dct
 
 
 def replace_in_obj(obj: tp.Any, match_dct: dict, _key: tp.Optional[tp.Hashable] = None) -> tp.Any:
@@ -149,84 +228,12 @@ def replace_in_obj(obj: tp.Any, match_dct: dict, _key: tp.Optional[tp.Hashable] 
     return obj
 
 
-def any_in_obj(
-    obj: tp.Any,
-    match_func: tp.Callable,
-    excl_types: tp.Union[None, bool, tp.Sequence[type]] = None,
-    incl_types: tp.Union[None, bool, tp.Sequence[type]] = None,
-    max_len: tp.Optional[int] = None,
-    max_depth: tp.Optional[int] = None,
-    _key: tp.Optional[tp.Hashable] = None,
-    _depth: int = 0,
-    **kwargs,
-) -> bool:
-    """Return whether there is any match in an object in a recursive manner.
-
-    See `find_in_obj` for arguments."""
-    from vectorbtpro._settings import settings
-
-    search_cfg = settings["search"]
-
-    if excl_types is None:
-        excl_types = search_cfg["excl_types"]
-    if isinstance(excl_types, bool) and excl_types:
-        raise ValueError("Argument excl_types cannot be True")
-    if incl_types is None:
-        incl_types = search_cfg["incl_types"]
-    if isinstance(incl_types, bool) and not incl_types:
-        raise ValueError("Argument incl_types cannot be False")
-    if max_len is None:
-        max_len = search_cfg["max_len"]
-    if max_depth is None:
-        max_depth = search_cfg["max_depth"]
-
-    if match_func(_key, obj, **kwargs):
-        return True
-    if max_depth is None or _depth < max_depth:
-        if excl_types not in (None, False) and checks.is_instance_of(obj, excl_types):
-            if incl_types is None or not (incl_types is True or checks.is_instance_of(obj, incl_types)):
-                return False
-        if isinstance(obj, dict):
-            if max_len is None or len(obj) <= max_len:
-                for k, v in obj.items():
-                    new_key = k if _key is None else (*_key, k) if isinstance(_key, tuple) else (_key, k)
-                    if find_in_obj(
-                        v,
-                        match_func,
-                        excl_types=excl_types,
-                        incl_types=incl_types,
-                        max_len=max_len,
-                        max_depth=max_depth,
-                        _key=new_key,
-                        _depth=_depth + 1,
-                        **kwargs,
-                    ):
-                        return True
-        if isinstance(obj, (tuple, list, set, frozenset)):
-            if max_len is None or len(obj) <= max_len:
-                for i, o in enumerate(obj):
-                    new_key = i if _key is None else (*_key, i) if isinstance(_key, tuple) else (_key, i)
-                    if find_in_obj(
-                        o,
-                        match_func,
-                        excl_types=excl_types,
-                        incl_types=incl_types,
-                        max_len=max_len,
-                        max_depth=max_depth,
-                        _key=new_key,
-                        _depth=_depth + 1,
-                        **kwargs,
-                    ):
-                        return True
-    return False
-
-
 def find_and_replace_in_obj(
     obj: tp.Any,
     match_func: tp.Callable,
     replace_func: tp.Callable,
-    excl_types: tp.Union[None, bool, tp.Sequence[type]] = None,
-    incl_types: tp.Union[None, bool, tp.Sequence[type]] = None,
+    excl_types: tp.Union[None, bool, tp.MaybeSequence[type]] = None,
+    incl_types: tp.Union[None, bool, tp.MaybeSequence[type]] = None,
     max_len: tp.Optional[int] = None,
     max_depth: tp.Optional[int] = None,
     make_copy: bool = True,
@@ -268,8 +275,6 @@ def find_and_replace_in_obj(
         incl_types=incl_types,
         max_len=max_len,
         max_depth=max_depth,
-        _key=_key,
-        _depth=_depth,
         **kwargs,
     ):
         return obj
@@ -352,3 +357,107 @@ def find_and_replace_in_obj(
                     return type(obj)(*result)
                 return type(obj)(result)
     return obj
+
+
+def search_text(string: tp.MaybeIterable[str], query: str, ignore_case: bool = False) -> tp.MaybeList[bool]:
+    """Check if query is a substring of string."""
+    if not isinstance(string, str):
+        if isinstance(string, pd.Series):
+            return string.apply(
+                partial(
+                    search_text,
+                    query=query,
+                    ignore_case=ignore_case,
+                )
+            )
+        return list(
+            map(
+                partial(
+                    search_text,
+                    query=query,
+                    ignore_case=ignore_case,
+                ),
+                string,
+            )
+        )
+    if ignore_case:
+        string = string.casefold()
+        query = query.casefold()
+    return query in string
+
+
+def search_regex(
+    string: tp.MaybeIterable[str],
+    pattern: str,
+    ignore_case: bool = False,
+    flags: int = 0,
+) -> tp.MaybeList[bool]:
+    """Check if the string string matches the given regex pattern."""
+    if ignore_case:
+        flags = flags | re.IGNORECASE
+    regex = re.compile(pattern, flags=flags)
+    if not isinstance(string, str):
+        if isinstance(string, pd.Series):
+            return string.apply(
+                partial(
+                    search_regex,
+                    pattern=pattern,
+                    ignore_case=ignore_case,
+                    flags=flags,
+                )
+            )
+        return list(
+            map(
+                partial(
+                    search_regex,
+                    pattern=pattern,
+                    ignore_case=ignore_case,
+                    flags=flags,
+                ),
+                string,
+            )
+        )
+    return bool(regex.search(string))
+
+
+def search_fuzzy(
+    string: tp.MaybeIterable[str],
+    query: str,
+    ignore_case: bool = False,
+    processor: tp.Optional[tp.Callable] = None,
+    threshold: float = 70,
+) -> tp.MaybeList[bool]:
+    """Perform fuzzy matching between string and query using RapidFuzz."""
+    from vectorbtpro.utils.module_ import assert_can_import
+
+    assert_can_import("rapidfuzz")
+    from rapidfuzz import fuzz
+
+    if not isinstance(string, str):
+        if isinstance(string, pd.Series):
+            return string.apply(
+                partial(
+                    search_fuzzy,
+                    query=query,
+                    ignore_case=ignore_case,
+                    processor=processor,
+                    threshold=threshold,
+                )
+            )
+        return list(
+            map(
+                partial(
+                    search_fuzzy,
+                    query=query,
+                    ignore_case=ignore_case,
+                    processor=processor,
+                    threshold=threshold,
+                ),
+                string,
+            )
+        )
+    if ignore_case:
+        string = string.casefold()
+        query = query.casefold()
+    score = fuzz.partial_ratio(string, query, processor=processor)
+    return score >= threshold

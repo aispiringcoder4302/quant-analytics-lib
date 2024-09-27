@@ -76,29 +76,66 @@ data = [
     "findatapy",
 ]
 ind-base = ["TA-Lib"]
-ind = ["vectorbtpro[ind-base]", "ta", "pandas_ta", "technical", "smartmoneyconcepts"]
+ind = [
+    "vectorbtpro[ind-base]",
+    "ta",
+    "pandas_ta",
+    "technical",
+    "smartmoneyconcepts"
+]
 perf-base = ["numexpr"]
-perf = ["vectorbtpro[perf-base]", "Bottleneck"]
-opt-base = ["hyperopt", "optuna"]
+perf = [
+    "vectorbtpro[perf-base]",
+    "Bottleneck"
+]
+opt-base = [
+    "hyperopt",
+    "optuna"
+]
 opt = ["vectorbtpro[opt-base]"]
-exec-base = ["dask", "pathos"]
-exec = ["vectorbtpro[exec-base]", "mpire", "ray>=1.4.1"]
+exec-base = [
+    "dask",
+    "pathos"
+]
+exec = [
+    "vectorbtpro[exec-base]",
+    "mpire",
+    "ray>=1.4.1"
+]
 plot-base = [
     "matplotlib>=3.2.0",
     "plotly>=5.0.0",
     "ipywidgets>=7.0.0",
     "kaleido",
 ]
-plot = ["vectorbtpro[plot-base]", "plotly-resampler"]
-pfopt-base = ["PyPortfolioOpt>=1.5.1", "Riskfolio-Lib>=3.3.0"]
-pfopt = ["vectorbtpro[pfopt-base]", "universal-portfolios"]
+plot = [
+    "vectorbtpro[plot-base]",
+    "plotly-resampler"
+]
+pfopt-base = [
+    "PyPortfolioOpt>=1.5.1",
+    "Riskfolio-Lib>=3.3.0"
+]
+pfopt = [
+    "vectorbtpro[pfopt-base]",
+    "universal-portfolios"
+]
 stats-base = ["quantstats>=0.0.37"]
 stats = ["vectorbtpro[stats-base]"]
 msg = ["python-telegram-bot"]
 io-base = ["dill", "blosc2"]
-io = ["vectorbtpro[io-base]", "lz4"]
+io = [
+    "vectorbtpro[io-base]",
+    "lz4"
+]
 other-base = ["tabulate"]
-other = ["vectorbtpro[other-base]"]
+other = [
+    "vectorbtpro[other-base]",
+    "PyGithub>=1.59.0",
+    "jmespath",
+    "jsonpath-ng",
+    "rapidfuzz",
+]
 base = [
     "vectorbtpro[data-base,ind-base,perf-base,opt-base,exec-base,plot-base,pfopt-base,stats-base,io-base]"
 ]

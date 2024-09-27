@@ -36,7 +36,7 @@ class MergeFunc(Evaluable, Annotatable, DefineMixin):
     context: tp.KwargsLike = define.field(default=None)
     """Context for substituting templates in `MergeFunc.merge_func` and `MergeFunc.merge_kwargs`."""
 
-    sub_id_prefix: str = define.field(default="")
+    eval_id_prefix: str = define.field(default="")
     """Prefix for the substitution id."""
 
     eval_id: tp.Optional[tp.MaybeSequence[tp.Hashable]] = define.field(default=None)
@@ -75,8 +75,8 @@ class MergeFunc(Evaluable, Annotatable, DefineMixin):
         merge_kwargs = self.merge_kwargs
         if merge_kwargs is None:
             merge_kwargs = {}
-        merge_func = substitute_templates(merge_func, self.context, eval_id=self.sub_id_prefix + "merge_func")
-        merge_kwargs = substitute_templates(merge_kwargs, self.context, eval_id=self.sub_id_prefix + "merge_kwargs")
+        merge_func = substitute_templates(merge_func, self.context, eval_id=self.eval_id_prefix + "merge_func")
+        merge_kwargs = substitute_templates(merge_kwargs, self.context, eval_id=self.eval_id_prefix + "merge_kwargs")
         return partial(merge_func, **merge_kwargs)
 
     def __call__(self, *objs, **kwargs) -> tp.Any:

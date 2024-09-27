@@ -21,6 +21,7 @@ __all__ = [
     "atomic_dict",
     "unsetkey",
     "merge_dicts",
+    "flat_merge_dicts",
     "child_dict",
     "Config",
     "FrozenConfig",
@@ -342,6 +343,11 @@ def merge_dicts(
             same_keys=same_keys,
         )
     return x
+
+
+def flat_merge_dicts(*dicts: InConfigLikeT, **kwargs) -> OutConfigLikeT:
+    """Merge dicts with default arguments and `nested=False`."""
+    return merge_dicts(*dicts, nested=False, **kwargs)
 
 
 class child_dict(pdict):

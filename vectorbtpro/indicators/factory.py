@@ -50,7 +50,7 @@ from vectorbtpro.utils.array_ import build_nan_mask, squeeze_nan, unsqueeze_nan
 from vectorbtpro.utils.config import merge_dicts, resolve_dict, Config, Configured, HybridConfig
 from vectorbtpro.utils.decorators import class_property, cacheable_property, hybrid_method
 from vectorbtpro.utils.enum_ import map_enum_fields
-from vectorbtpro.utils.eval_ import multiline_eval
+from vectorbtpro.utils.eval_ import evaluate
 from vectorbtpro.utils.execution import Task
 from vectorbtpro.utils.formatting import camel_to_snake_case, prettify
 from vectorbtpro.utils.magic_decorators import attach_binary_magic_methods, attach_unary_magic_methods
@@ -4849,7 +4849,7 @@ Other keyword arguments are passed to `{0}.run`.
 
                 Defaults to False.
 
-                Otherwise, uses `vectorbtpro.utils.eval_.multiline_eval`.
+                Otherwise, uses `vectorbtpro.utils.eval_.evaluate`.
 
                 !!! hint
                     By default, operates on NumPy objects using NumExpr.
@@ -5349,7 +5349,7 @@ Other keyword arguments are passed to `{0}.run`.
             # Evaluate the expression using resolved variables as a context
             if use_pd_eval:
                 return pd.eval(expr, local_dict=context, **resolve_dict(pd_eval_kwargs))
-            return multiline_eval(expr, context=context)
+            return evaluate(expr, context=context)
 
         return factory.with_apply_func(apply_func, pass_packed=True, pass_wrapper=True, **kwargs)
 

@@ -434,14 +434,16 @@ def is_subclass_of(arg: tp.Any, types: tp.TypeLike) -> bool:
     """Check whether the argument is a subclass of `types`.
 
     `types` can be one or multiple types, strings, or patterns of type `vectorbtpro.utils.parsing.Regex`."""
-    from vectorbtpro.utils.parsing import Regex
-
-    if isinstance(types, type):
+    try:
         return issubclass(arg, types)
+    except TypeError:
+        pass
     if isinstance(types, str):
         for base_t in getmro(arg):
             if str(base_t) == types or base_t.__name__ == types:
                 return True
+    from vectorbtpro.utils.parsing import Regex
+
     if isinstance(types, Regex):
         for base_t in getmro(arg):
             if types.matches(str(base_t)) or types.matches(base_t.__name__):

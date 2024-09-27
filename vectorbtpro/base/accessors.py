@@ -27,7 +27,7 @@ from vectorbtpro.base.wrapping import ArrayWrapper, Wrapping
 from vectorbtpro.utils import checks, datetime_ as dt
 from vectorbtpro.utils.config import merge_dicts, resolve_dict, Configured
 from vectorbtpro.utils.decorators import hybrid_property, hybrid_method
-from vectorbtpro.utils.eval_ import multiline_eval
+from vectorbtpro.utils.eval_ import evaluate
 from vectorbtpro.utils.magic_decorators import attach_binary_magic_methods, attach_unary_magic_methods
 from vectorbtpro.utils.parsing import get_context_vars
 from vectorbtpro.utils.template import substitute_templates
@@ -1694,7 +1694,7 @@ class BaseAccessor(Wrapping):
         """Evaluate a simple array expression element-wise using NumExpr or NumPy.
 
         If NumExpr is enables, only one-line statements are supported. Otherwise, uses
-        `vectorbtpro.utils.eval_.multiline_eval`.
+        `vectorbtpro.utils.eval_.evaluate`.
 
         !!! note
             All required variables will broadcast against each other prior to the evaluation.
@@ -1745,7 +1745,7 @@ class BaseAccessor(Wrapping):
 
             out = numexpr.evaluate(expr, local_dict=objs, **numexpr_kwargs)
         else:
-            out = multiline_eval(expr, context=objs)
+            out = evaluate(expr, context=objs)
         return wrapper.wrap(out, **wrap_kwargs)
 
     def split(self, *args, splitter_cls: tp.Optional[tp.Type[SplitterT]] = None, **kwargs) -> tp.Any:

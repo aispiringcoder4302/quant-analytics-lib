@@ -165,6 +165,21 @@ opt_dep_config = HybridConfig(
         findatapy=dict(
             link="https://pypi.org/project/findatapy/",
         ),
+        github=dict(
+            dist_name="PyGithub",
+            link="https://pypi.org/project/PyGithub/",
+            version=">=1.59.0",
+        ),
+        jmespath=dict(
+            link="https://pypi.org/project/jmespath/",
+        ),
+        jsonpath_ng=dict(
+            dist_name="jsonpath-ng",
+            link="https://pypi.org/project/jsonpath-ng/",
+        ),
+        rapidfuzz=dict(
+            link="https://pypi.org/project/rapidfuzz/",
+        ),
     )
 )
 """_"""

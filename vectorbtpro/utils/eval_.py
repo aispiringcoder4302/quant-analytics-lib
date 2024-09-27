@@ -8,18 +8,25 @@ import inspect
 from vectorbtpro import _typing as tp
 from vectorbtpro.utils import checks
 
-__all__ = []
+__all__ = [
+    "evaluate",
+]
 
 
-def multiline_eval(expr: str, context: tp.KwargsLike = None) -> tp.Any:
-    """Evaluate several lines of input, returning the result of the last line."""
+def evaluate(expr: str, context: tp.KwargsLike = None) -> tp.Any:
+    """Evaluate one to multiple lines of expression.
+
+    Returns the result of the last line."""
+    expr = inspect.cleandoc(expr)
     if context is None:
         context = {}
-    tree = ast.parse(inspect.cleandoc(expr))
-    eval_expr = ast.Expression(tree.body[-1].value)
-    exec_expr = ast.Module(tree.body[:-1], type_ignores=[])
-    exec(compile(exec_expr, "file", "exec"), context)
-    return eval(compile(eval_expr, "file", "eval"), context)
+    if "\n" in expr:
+        tree = ast.parse(expr)
+        eval_expr = ast.Expression(tree.body[-1].value)
+        exec_expr = ast.Module(tree.body[:-1], type_ignores=[])
+        exec(compile(exec_expr, "file", "exec"), context)
+        return eval(compile(eval_expr, "file", "eval"), context)
+    return eval(compile(expr, "file", "eval"), context)
 
 
 class Evaluable:

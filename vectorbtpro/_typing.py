@@ -301,4 +301,5 @@ StaticizedOption = Union[None, bool, Kwargs, TaskId]
 Selection = Union[PosSel, LabelSel, MaybeIterable[Union[PosSel, LabelSel, Hashable]]]
 
 # Knowledge
-JsonArray = List[Dict]
+JSONPrimitive = Union[str, int, float, bool, None]
+JSON = Union[Dict[str, "JSON"], List["JSON"], JSONPrimitive]

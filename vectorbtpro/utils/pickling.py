@@ -15,7 +15,7 @@ import vectorbtpro as vbt
 from vectorbtpro import _typing as tp
 from vectorbtpro.utils.attr_ import DefineMixin, define
 from vectorbtpro.utils.checks import Comparable, is_hashable, is_deep_equal
-from vectorbtpro.utils.eval_ import multiline_eval
+from vectorbtpro.utils.eval_ import evaluate
 from vectorbtpro.utils.formatting import Prettified, prettify_dict
 from vectorbtpro.utils.path_ import check_mkdir
 
@@ -63,7 +63,11 @@ def compress(
     file_name: tp.Optional[str] = None,
     **compress_kwargs,
 ) -> bytes:
-    """Compress bytes."""
+    """Compress bytes.
+
+    For compression options, see `extensions.compression` under `vectorbtpro._settings.pickling`.
+
+    Keyword arguments `compress_kwargs` are passed to the `compress` method of the compressing package."""
     from vectorbtpro.utils.module_ import (
         assert_can_import,
         assert_can_import_any,
@@ -87,62 +91,64 @@ def compress(
                 if file_name is None:
                     file_name = "data.bin"
                 zip_file.writestr(file_name, bytes_)
-            compressed_bytes = zip_buffer.getvalue()
+            bytes_ = zip_buffer.getvalue()
         elif compression.lower() in get_compression_extensions("bz2"):
             import bz2
 
-            compressed_bytes = bz2.compress(bytes_, **compress_kwargs)
+            bytes_ = bz2.compress(bytes_, **compress_kwargs)
         elif compression.lower() in get_compression_extensions("gzip"):
             import gzip
 
-            compressed_bytes = gzip.compress(bytes_, **compress_kwargs)
+            bytes_ = gzip.compress(bytes_, **compress_kwargs)
         elif compression.lower() in get_compression_extensions("lzma"):
             import lzma
 
-            compressed_bytes = lzma.compress(bytes_, **compress_kwargs)
+            bytes_ = lzma.compress(bytes_, **compress_kwargs)
         elif compression.lower() in get_compression_extensions("lz4"):
             assert_can_import("lz4")
 
             import lz4.frame
 
-            compressed_bytes = lz4.frame.compress(bytes_, return_bytearray=True, **compress_kwargs)
+            bytes_ = lz4.frame.compress(bytes_, return_bytearray=True, **compress_kwargs)
         elif compression.lower() in get_compression_extensions("blosc1"):
             assert_can_import("blosc")
 
             import blosc
 
-            compressed_bytes = blosc.compress(bytes_, **compress_kwargs)
+            bytes_ = blosc.compress(bytes_, **compress_kwargs)
         elif compression.lower() in get_compression_extensions("blosc2"):
             assert_can_import("blosc2")
 
             import blosc2
 
-            compressed_bytes = blosc2.compress(bytes_, **compress_kwargs)
+            bytes_ = blosc2.compress(bytes_, **compress_kwargs)
         elif compression.lower() in get_compression_extensions("blosc"):
             assert_can_import_any("blosc2", "blosc")
 
             if check_installed("blosc2"):
                 import blosc2
 
-                compressed_bytes = blosc2.compress(bytes_, **compress_kwargs)
+                bytes_ = blosc2.compress(bytes_, **compress_kwargs)
             else:
                 import blosc
 
-                compressed_bytes = blosc.compress(bytes_, **compress_kwargs)
+                bytes_ = blosc.compress(bytes_, **compress_kwargs)
         else:
             raise ValueError(f"Invalid compression format '{compression}'")
-    else:
-        compressed_bytes = bytes_
-    return compressed_bytes
+    return bytes_
 
 
 def decompress(
-    compressed_bytes: bytes,
+    bytes_: bytes,
     compression: tp.Union[None, bool, str] = None,
     file_name: tp.Optional[str] = None,
     **decompress_kwargs,
 ) -> bytes:
-    """Decompress bytes."""
+    """Decompress bytes.
+
+    For compression options, see `extensions.compression` under `vectorbtpro._settings.pickling`.
+
+    Keyword arguments `decompress_kwargs` are passed to the `decompress` method of the decompressing package."""
     from vectorbtpro.utils.module_ import (
         assert_can_import,
         assert_can_import_any,
@@ -159,7 +165,7 @@ def decompress(
             raise ValueError("Set default compression in settings")
     if compression not in (None, False):
         if compression.lower() in get_compression_extensions("zip"):
-            zip_buffer = io.BytesIO(compressed_bytes)
+            zip_buffer = io.BytesIO(bytes_)
             with zipfile.ZipFile(zip_buffer, "r", **decompress_kwargs) as zip_file:
                 namelist = zip_file.namelist()
                 if len(namelist) == 0:
@@ -177,48 +183,46 @@ def decompress(
         elif compression.lower() in get_compression_extensions("bz2"):
             import bz2
 
-            bytes_ = bz2.decompress(compressed_bytes, **decompress_kwargs)
+            bytes_ = bz2.decompress(bytes_, **decompress_kwargs)
         elif compression.lower() in get_compression_extensions("gzip"):
             import gzip
 
-            bytes_ = gzip.decompress(compressed_bytes, **decompress_kwargs)
+            bytes_ = gzip.decompress(bytes_, **decompress_kwargs)
         elif compression.lower() in get_compression_extensions("lzma"):
             import lzma
 
-            bytes_ = lzma.decompress(compressed_bytes, **decompress_kwargs)
+            bytes_ = lzma.decompress(bytes_, **decompress_kwargs)
         elif compression.lower() in get_compression_extensions("lz4"):
             assert_can_import("lz4")
 
             import lz4.frame
 
-            bytes_ = lz4.frame.decompress(compressed_bytes, return_bytearray=True, **decompress_kwargs)
+            bytes_ = lz4.frame.decompress(bytes_, return_bytearray=True, **decompress_kwargs)
         elif compression.lower() in get_compression_extensions("blosc1"):
             assert_can_import("blosc")
 
             import blosc
 
-            bytes_ = blosc.decompress(compressed_bytes, as_bytearray=True, **decompress_kwargs)
+            bytes_ = blosc.decompress(bytes_, as_bytearray=True, **decompress_kwargs)
         elif compression.lower() in get_compression_extensions("blosc2"):
             assert_can_import("blosc2")
 
             import blosc2
 
-            bytes_ = blosc2.decompress(compressed_bytes, as_bytearray=True, **decompress_kwargs)
+            bytes_ = blosc2.decompress(bytes_, as_bytearray=True, **decompress_kwargs)
         elif compression.lower() in get_compression_extensions("blosc"):
             assert_can_import_any("blosc2", "blosc")
 
             if check_installed("blosc2"):
                 import blosc2
 
-                bytes_ = blosc2.decompress(compressed_bytes, as_bytearray=True, **decompress_kwargs)
+                bytes_ = blosc2.decompress(bytes_, as_bytearray=True, **decompress_kwargs)
             else:
                 import blosc
 
-                bytes_ = blosc.decompress(compressed_bytes, as_bytearray=True, **decompress_kwargs)
+                bytes_ = blosc.decompress(bytes_, as_bytearray=True, **decompress_kwargs)
         else:
             raise ValueError(f"Invalid compression format '{compression}'")
-    else:
-        bytes_ = compressed_bytes
     return bytes_
 
 
@@ -232,9 +236,7 @@ def dumps(
 
     Uses `dill` when available.
 
-    For compression options, see `extensions`.
-
-    Keyword arguments `compress_kwargs` are passed to the `compress` method of the compressing package.
+    Compression is done with `compress`.
 
     Other keyword arguments are passed to the `dumps` method of the pickling package."""
     from vectorbtpro.utils.module_ import warn_cannot_import
@@ -258,7 +260,9 @@ def loads(
 ) -> tp.Any:
     """Unpickle an object from a byte stream.
 
-    Accepts the same options for `compression` as in the `dumps` method.
+    Uses `dill` when available.
+
+    Decompression is done with `decompress`.
 
     Other keyword arguments are passed to the `loads` method of the pickling package."""
     from vectorbtpro.utils.module_ import warn_cannot_import
@@ -274,6 +278,67 @@ def loads(
     return pickle.loads(bytes_, **kwargs)
 
 
+def suggest_compression(file_name: str) -> tp.Optional[str]:
+    """Suggest compression based on the file name."""
+    suffixes = [suffix.lower() for suffix in file_name.split(".")[1:]]
+    if len(suffixes) > 0 and suffixes[-1] in get_compression_extensions():
+        compression = suffixes[-1]
+    else:
+        compression = None
+    return compression
+
+
+def save_bytes(
+    bytes_: bytes,
+    path: tp.PathLike,
+    mkdir_kwargs: tp.KwargsLike = None,
+    compression: tp.Union[None, bool, str] = None,
+    compress_kwargs: tp.KwargsLike = None,
+) -> Path:
+    """Write a byte stream to a file.
+
+    Can recognize the compression algorithm based on the extension."""
+    path = Path(path)
+    file_name = None
+    if compression is None:
+        compression = suggest_compression(path.name)
+        if compression is not None:
+            file_name = path.with_suffix("").name
+    if file_name is not None:
+        if compress_kwargs is None:
+            compress_kwargs = {}
+        if "file_name" not in compress_kwargs:
+            compress_kwargs = dict(compress_kwargs)
+            compress_kwargs["file_name"] = file_name
+    if compress_kwargs is None:
+        compress_kwargs = {}
+    bytes_ = compress(bytes_, compression=compression, **compress_kwargs)
+    if mkdir_kwargs is None:
+        mkdir_kwargs = {}
+    check_mkdir(path.parent, **mkdir_kwargs)
+    with open(path, "wb") as f:
+        f.write(bytes_)
+    return path
+
+
+def load_bytes(
+    path: tp.PathLike,
+    compression: tp.Union[None, bool, str] = None,
+    decompress_kwargs: tp.KwargsLike = None,
+) -> bytes:
+    """Read a byte stream from a file.
+
+    Can recognize the compression algorithm based on the extension."""
+    path = Path(path)
+    with open(path, "rb") as f:
+        bytes_ = f.read()
+    if compression is None:
+        compression = suggest_compression(path.name)
+    if decompress_kwargs is None:
+        decompress_kwargs = {}
+    return decompress(bytes_, compression=compression, **decompress_kwargs)
+
+
 def save(
     obj: tp.Any,
     path: tp.Optional[tp.PathLike] = None,
@@ -284,33 +349,20 @@ def save(
 ) -> Path:
     """Pickle an object to a byte stream and write to a file.
 
-    Can recognize the compression algorithm based on the extension (see `dumps` for options).
-
-    Uses `dumps` for serialization."""
+    Uses `dumps` for serialization and `save_bytes` for compression and writing."""
+    bytes_ = dumps(obj, **kwargs)
     if path is None:
         path = type(obj).__name__
     path = Path(path)
     if path.is_dir():
         path /= type(obj).__name__
-    file_name = None
-    if compression is None:
-        suffixes = [suffix[1:].lower() for suffix in path.suffixes]
-        if len(suffixes) > 0 and suffixes[-1] in get_compression_extensions():
-            compression = suffixes[-1]
-            file_name = path.with_suffix("").name
-    if file_name is not None:
-        if compress_kwargs is None:
-            compress_kwargs = {}
-        if "file_name" not in compress_kwargs:
-            compress_kwargs = dict(compress_kwargs)
-            compress_kwargs["file_name"] = file_name
-    bytes_ = dumps(obj, compression=compression, compress_kwargs=compress_kwargs, **kwargs)
-    if mkdir_kwargs is None:
-        mkdir_kwargs = {}
-    check_mkdir(path.parent, **mkdir_kwargs)
-    with open(path, "wb") as f:
-        f.write(bytes_)
-    return path
+    return save_bytes(
+        bytes_,
+        path,
+        mkdir_kwargs=mkdir_kwargs,
+        compression=compression,
+        compress_kwargs=compress_kwargs,
+    )
 
 
 def load(
@@ -321,17 +373,13 @@ def load(
 ) -> tp.Any:
     """Read a byte stream from a file and unpickle.
 
-    Can recognize the compression algorithm based on the extension (see `dumps` for options).
-
-    Uses `loads` for deserialization."""
-    path = Path(path)
-    with open(path, "rb") as f:
-        bytes_ = f.read()
-    if compression is None:
-        suffixes = [suffix[1:].lower() for suffix in path.suffixes]
-        if len(suffixes) > 0 and suffixes[-1] in get_compression_extensions():
-            compression = suffixes[-1]
-    return loads(bytes_, compression=compression, decompress_kwargs=decompress_kwargs, **kwargs)
+    Uses `load_bytes` for reading and decompression and `loads` for deserialization."""
+    bytes_ = load_bytes(
+        path,
+        compression=compression,
+        decompress_kwargs=decompress_kwargs,
+    )
+    return loads(bytes_, **kwargs)
 
 
 @define
@@ -832,9 +880,9 @@ class Pickleable:
                         v2 = get_class_from_id(v2[1:])
                     elif run_code and v2.startswith("!"):
                         if v2.startswith("!vbt.loads(") and v2.endswith(")"):
-                            v2 = multiline_eval(v2[5:], context=code_context)
+                            v2 = evaluate(v2[5:], context=code_context)
                         else:
-                            v2 = multiline_eval(v2.lstrip("!"), context=code_context)
+                            v2 = evaluate(v2.lstrip("!"), context=code_context)
                     else:
                         if (v2.startswith("'") and v2.endswith("'")) or (v2.startswith('"') and v2.endswith('"')):
                             v2 = v2[1:-1]

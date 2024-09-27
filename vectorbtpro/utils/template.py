@@ -9,7 +9,7 @@ import vectorbtpro as vbt
 from vectorbtpro import _typing as tp
 from vectorbtpro.utils.attr_ import DefineMixin, define
 from vectorbtpro.utils.config import merge_dicts
-from vectorbtpro.utils.eval_ import multiline_eval, Evaluable
+from vectorbtpro.utils.eval_ import evaluate, Evaluable
 from vectorbtpro.utils.module_ import package_shortcut_config
 from vectorbtpro.utils.parsing import get_func_arg_names
 from vectorbtpro.utils.search import any_in_obj, find_and_replace_in_obj
@@ -153,7 +153,7 @@ class Rep(CustomTemplate):
 
 
 class RepEval(CustomTemplate):
-    """Template expression to be evaluated using `vectorbtpro.utils.eval_.multiline_eval`
+    """Template expression to be evaluated using `vectorbtpro.utils.eval_.evaluate`
     with `context` used as locals."""
 
     def substitute(
@@ -169,7 +169,7 @@ class RepEval(CustomTemplate):
         strict = self.resolve_strict(strict=strict)
 
         try:
-            return multiline_eval(self.template, context)
+            return evaluate(self.template, context)
         except NameError as e:
             if strict:
                 raise e
