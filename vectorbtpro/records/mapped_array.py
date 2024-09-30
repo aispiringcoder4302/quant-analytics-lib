@@ -1124,7 +1124,7 @@ class MappedArray(Analyzable):
             if segment_arr.lower() == "idx":
                 segment_arr = idx_arr
             else:
-                raise ValueError(f"Invalid option segment_arr='{segment_arr}'")
+                raise ValueError(f"Invalid segment_arr: '{segment_arr}'")
         if isinstance(segment_arr, tuple):
             stacked_segment_arr = column_stack_arrays(segment_arr)
             segment_arr = index_repeating_rows_nb(stacked_segment_arr)

@@ -67,7 +67,7 @@ class ProgressBar:
         elif bar_type.lower() == "tqdm":
             from tqdm import tqdm as bar_type
         else:
-            raise ValueError(f"Invalid option bar_type='{bar_type}'")
+            raise ValueError(f"Invalid bar_type: '{bar_type}'")
         if force_open_bar is None:
             force_open_bar = pbar_cfg["force_open_bar"]
         if reuse is None:

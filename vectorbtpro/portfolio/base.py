@@ -4099,7 +4099,7 @@ class Portfolio(Analyzable, PortfolioWithInOutputs, SimRangeMixin, metaclass=Met
                 **kwargs,
             )
         else:
-            raise ValueError(f"Invalid option pf_method='{pf_method}'")
+            raise ValueError(f"Invalid pf_method: '{pf_method}'")
 
     @classmethod
     def from_order_func(
@@ -8699,7 +8699,7 @@ class Portfolio(Analyzable, PortfolioWithInOutputs, SimRangeMixin, metaclass=Met
                     )
                 )
             else:
-                raise ValueError(f"Invalid option plot_positions='{plot_positions}'")
+                raise ValueError(f"Invalid plot_positions: '{plot_positions}'")
             fig = positions.direction_long.plot_shapes(
                 column=column,
                 plot_ohlc=False,

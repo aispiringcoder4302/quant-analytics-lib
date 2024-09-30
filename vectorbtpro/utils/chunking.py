@@ -302,7 +302,7 @@ def yield_chunk_meta(
                 if n_chunks.lower() == "auto":
                     n_chunks = multiprocessing.cpu_count()
                 else:
-                    raise ValueError(f"Invalid option n_chunks='{n_chunks}'")
+                    raise ValueError(f"Invalid n_chunks: '{n_chunks}'")
             if n_chunks == 0:
                 raise ValueError("Chunk count cannot be zero")
             if size is not None:
@@ -327,7 +327,7 @@ def yield_chunk_meta(
                 if chunk_len.lower() == "auto":
                     chunk_len = multiprocessing.cpu_count()
                 else:
-                    raise ValueError(f"Invalid option chunk_len='{chunk_len}'")
+                    raise ValueError(f"Invalid chunk_len: '{chunk_len}'")
             if chunk_len == 0:
                 raise ValueError("Chunk length cannot be zero")
             for chunk_i, i in enumerate(range(0, size, chunk_len)):

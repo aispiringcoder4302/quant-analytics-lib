@@ -138,7 +138,7 @@ elif star_import.lower() == "none":
     imported_stuff = dict()
     __all__ = []
 else:
-    raise ValueError(f"Invalid option '{star_import}'")
+    raise ValueError(f"Invalid star import: '{star_import}'")
 
 
 def whats_imported():

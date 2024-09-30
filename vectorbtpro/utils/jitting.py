@@ -195,7 +195,7 @@ def resolve_jitter_type(
         if jitter in globals_dict:
             jitter = globals_dict[jitter]
         else:
-            raise ValueError(f"Invalid jitter name '{jitter}'")
+            raise ValueError(f"Invalid jitter name: '{jitter}'")
     if isinstance(jitter, type) and issubclass(jitter, Jitter):
         return jitter
     if isinstance(jitter, Jitter):
@@ -216,7 +216,7 @@ def get_id_of_jitter_type(jitter_type: tp.Type[Jitter]) -> tp.Optional[tp.Hashab
             if jitter_cls in globals_dict:
                 jitter_cls = globals_dict[jitter_cls]
             else:
-                raise ValueError(f"Invalid jitter name '{jitter_cls}'")
+                raise ValueError(f"Invalid jitter name: '{jitter_cls}'")
         if jitter_type is jitter_cls:
             return jitter_id
     return None

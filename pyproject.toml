@@ -134,6 +134,7 @@ other = [
     "PyGithub>=1.59.0",
     "jmespath",
     "jsonpath-ng",
+    "fuzzysearch",
     "rapidfuzz",
 ]
 base = [

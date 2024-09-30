@@ -177,6 +177,9 @@ opt_dep_config = HybridConfig(
             dist_name="jsonpath-ng",
             link="https://pypi.org/project/jsonpath-ng/",
         ),
+        fuzzysearch=dict(
+            link="https://pypi.org/project/fuzzysearch/",
+        ),
         rapidfuzz=dict(
             link="https://pypi.org/project/rapidfuzz/",
         ),

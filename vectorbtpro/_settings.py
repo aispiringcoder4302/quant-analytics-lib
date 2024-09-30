@@ -1949,13 +1949,11 @@ knowledge = frozen_cfg(
         mkdir=True,
     ),
     show_progress=True,
-    pbar_kwargs=flex_cfg(
-        unit="iB",
-        unit_scale=True,
-        desc=Sub("Downloading $asset_name"),
-    ),
+    pbar_kwargs=flex_cfg(),
     template_context=flex_cfg(),
     engine=None,
+    as_filter=True,
+    in_dumps=False,
     assets=flex_cfg(
         messages=flex_cfg(
             asset_name="messages.json.zip",

@@ -5,7 +5,6 @@
 import inspect
 import warnings
 from copy import copy, deepcopy
-from pathlib import Path
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.utils.attr_ import MISSING
@@ -88,34 +87,14 @@ def convert_to_dict(dct: InConfigLikeT, nested: bool = True) -> dict:
     return dct
 
 
-def resolve_pathlike_key(k: tp.PathLikeKey) -> tp.Tuple[tp.Hashable, ...]:
-    """Convert a path-like key into a tuple."""
-    if isinstance(k, Path):
-        k = k.parts
-    if isinstance(k, str) and "." in k:
-        k = tuple(k.split("."))
-    if isinstance(k, tuple):
-        return k
-    return (k,)
-
-
-def combine_pathlike_keys(k1: tp.PathLikeKey, k2: tp.PathLikeKey) -> tp.PathLikeKey:
-    """Combine two path-like keys."""
-    if isinstance(k1, Path) and isinstance(k2, Path):
-        return k1 / k2
-    if isinstance(k1, str) and isinstance(k2, str):
-        return k1 + "." + k2
-    k1 = resolve_pathlike_key(k1)
-    k2 = resolve_pathlike_key(k2)
-    return k1 + k2
-
-
 def get_dict_item(dct: dict, k: tp.PathLikeKey, populate: bool = False) -> tp.Any:
     """Get dict item under the key `k`.
 
     The key can be nested using the dot notation, `pathlib.Path`, or a tuple, and must be hashable."""
     if k in dct:
         return dct[k]
+    from vectorbtpro.utils.search import resolve_pathlike_key
+
     k = resolve_pathlike_key(k)
     if len(k) == 1:
         k = k[0]
@@ -919,6 +898,8 @@ class HasSettings:
 
         sub_path_settings = None
         if sub_path is not None:
+            from vectorbtpro.utils.search import combine_pathlike_keys
+
             sub_path = combine_pathlike_keys(path, sub_path)
             try:
                 sub_path_settings = cls.get_path_settings(sub_path)
@@ -1030,6 +1011,8 @@ class HasSettings:
         from vectorbtpro._settings import settings
 
         if sub_path is not None:
+            from vectorbtpro.utils.search import combine_pathlike_keys
+
             sub_path = combine_pathlike_keys(path, sub_path)
             try:
                 sub_path_settings = cls.get_path_settings(sub_path)
@@ -1203,6 +1186,8 @@ class HasSettings:
         if path is None:
             raise SettingsNotFoundError(f"Found no settings associated with the class {cls.__name__}")
         if sub_path is not None:
+            from vectorbtpro.utils.search import combine_pathlike_keys
+
             path = combine_pathlike_keys(path, sub_path)
         cls_cfg = get_dict_item(settings, path, populate=populate_)
         for k, v in kwargs.items():
@@ -1359,7 +1344,7 @@ class Configured(HasSettings, Cacheable, Comparable, Pickleable, Prettified, Cha
                         if k in config:
                             v = config[k]
                     else:
-                        raise ValueError(f"Invalid option on_merge_conflict='{_on_merge_conflict}'")
+                        raise ValueError(f"Invalid on_merge_conflict: '{_on_merge_conflict}'")
                 kwargs[k] = v
         return kwargs
 

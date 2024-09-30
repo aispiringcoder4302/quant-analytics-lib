@@ -686,7 +686,7 @@ class DTC(DefineMixin):
             return cls.from_time(dtc)
         if isinstance(dtc, (int, str)):
             return cls.parse_time_str(str(dtc), **parse_kwargs)
-        raise TypeError(f"Invalid type {type(dtc)}")
+        raise TypeError(f"Invalid type: {type(dtc)}")
 
     @classmethod
     def is_parsable(

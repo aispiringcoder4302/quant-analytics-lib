@@ -136,16 +136,16 @@ class RelRange(DefineMixin):
     def __attrs_post_init__(self):
         object.__setattr__(self, "offset_anchor", self.offset_anchor.lower())
         if self.offset_anchor not in ("start", "end", "prev_start", "prev_end", "next_start", "next_end"):
-            raise ValueError(f"Invalid option offset_anchor='{self.offset_anchor}'")
+            raise ValueError(f"Invalid offset_anchor: '{self.offset_anchor}'")
         object.__setattr__(self, "offset_space", self.offset_space.lower())
         if self.offset_space not in ("all", "free", "prev"):
-            raise ValueError(f"Invalid option offset_space='{self.offset_space}'")
+            raise ValueError(f"Invalid offset_space: '{self.offset_space}'")
         object.__setattr__(self, "length_space", self.length_space.lower())
         if self.length_space not in ("all", "free", "free_or_prev"):
-            raise ValueError(f"Invalid option length_space='{self.length_space}'")
+            raise ValueError(f"Invalid length_space: '{self.length_space}'")
         object.__setattr__(self, "out_of_bounds", self.out_of_bounds.lower())
         if self.out_of_bounds not in ("keep", "ignore", "warn", "raise"):
-            raise ValueError(f"Invalid option out_of_bounds='{self.out_of_bounds}'")
+            raise ValueError(f"Invalid out_of_bounds: '{self.out_of_bounds}'")
 
     def to_slice(
         self,
@@ -584,7 +584,7 @@ class Splitter(Analyzable):
             if backwards.lower() == "sorted":
                 sort_backwards = True
             else:
-                raise ValueError(f"Invalid option backwards='{backwards}'")
+                raise ValueError(f"Invalid backwards: '{backwards}'")
             backwards = True
         else:
             sort_backwards = False
@@ -2256,7 +2256,7 @@ class Splitter(Analyzable):
             "slice_or_mask",
             "slice_or_any",
         ):
-            raise ValueError(f"Invalid option range_format='{range_format}'")
+            raise ValueError(f"Invalid range_format: '{range_format}'")
 
         meta = dict()
         meta["was_fixed"] = False
@@ -3162,7 +3162,7 @@ class Splitter(Analyzable):
                 attach_bounds = attach_bounds.split("_")[0]
                 index_bounds = True
             if attach_bounds.lower() not in ("source", "target"):
-                raise ValueError(f"Invalid option attach_bounds='{attach_bounds}'")
+                raise ValueError(f"Invalid attach_bounds: '{attach_bounds}'")
         if index_combine_kwargs is None:
             index_combine_kwargs = {}
         if stack_axis not in (0, 1):
@@ -3423,7 +3423,7 @@ class Splitter(Analyzable):
                 if attach_bounds is not None:
                     return pd.Series(new_set_objs, index=_attach_bounds(set_labels, one_split_bounds), dtype=object)
             return pd.Series(new_set_objs, index=set_labels, dtype=object)
-        raise ValueError(f"Invalid option into='{into}'")
+        raise ValueError(f"Invalid into: '{into}'")
 
     # ############# Applying ############# #
 
@@ -3608,7 +3608,7 @@ class Splitter(Analyzable):
                 attach_bounds = attach_bounds.split("_")[0]
                 index_bounds = True
             if attach_bounds.lower() not in ("source", "target"):
-                raise ValueError(f"Invalid option attach_bounds='{attach_bounds}'")
+                raise ValueError(f"Invalid attach_bounds: '{attach_bounds}'")
         if index_combine_kwargs is None:
             index_combine_kwargs = {}
         if execute_kwargs is None:
@@ -3942,7 +3942,7 @@ class Splitter(Analyzable):
             execute_kwargs = merge_dicts(dict(show_progress=False if one_set else None), execute_kwargs)
             results = execute(tasks, size=n_sets, keys=keys, **execute_kwargs)
         else:
-            raise ValueError(f"Invalid option iteration='{iteration}'")
+            raise ValueError(f"Invalid iteration: '{iteration}'")
 
         if merge_all:
             if iteration.lower() in ("split_wise", "set_wise"):
@@ -5132,7 +5132,7 @@ class Splitter(Analyzable):
                     index_combine_kwargs = {}
                 index = combine_indexes((split_labels, set_labels), **index_combine_kwargs)
         else:
-            raise ValueError(f"Invalid option by='{by}'")
+            raise ValueError(f"Invalid by: '{by}'")
         return pd.DataFrame(overlap_matrix, index=index, columns=index)
 
     @property

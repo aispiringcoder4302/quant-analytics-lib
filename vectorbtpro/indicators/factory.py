@@ -943,7 +943,7 @@ class IndicatorBase(Analyzable):
                         )
                     return outputs
                 else:
-                    raise ValueError(f"Invalid option return_raw='{return_raw}'")
+                    raise ValueError(f"Invalid return_raw: '{return_raw}'")
 
             # Return cache
             if kwargs.get("return_cache", False):
@@ -3309,7 +3309,7 @@ Other keyword arguments are passed to `{0}.run`.
                     return None
                 if if_exists.lower() == "override":
                     break
-                raise ValueError(f"Invalid option if_exists='{if_exists}'")
+                raise ValueError(f"Invalid if_exists: '{if_exists}'")
         cls.custom_indicators[location][name] = indicator
 
     @classmethod

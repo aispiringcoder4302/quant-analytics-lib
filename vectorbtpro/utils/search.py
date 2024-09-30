@@ -6,15 +6,159 @@ import re
 from copy import copy
 from functools import partial
 from collections import deque
+from pathlib import Path
 
 import pandas as pd
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.utils import checks
-from vectorbtpro.utils.config import set_dict_item
+from vectorbtpro.utils.config import set_dict_item, ReadonlyConfig
+
+__pdoc__ = {}
 
 
-def any_in_obj(
+PATH_TOKEN_REGEX = re.compile(
+    r"""
+    \.([a-zA-Z_][a-zA-Z0-9_]*)
+    |\[['"]([^'"\]]+)['"]\]
+    |\[(\d+)\]
+    """,
+    re.VERBOSE,
+)
+"""Path token regex for `parse_path_str`.
+
+Matches `.key`, `['key']`, `["key"]`, `[0]`, etc."""
+
+FIRST_TOKEN_REGEX = re.compile(
+    r"""
+    ^([a-zA-Z_][a-zA-Z0-9_]*)
+    |\[['"]([^'"\]]+)['"]\]
+    |\[(\d+)\]
+    """,
+    re.VERBOSE,
+)
+"""First token regex for `parse_path_str`.
+
+Matches the same as `PATH_TOKEN_REGEX` but at the start."""
+
+
+def parse_path_str(path_str: str) -> tp.PathKey:
+    """Parse the path string into a list of tokens."""
+    if "'" not in path_str and '"' not in path_str and "[" not in path_str:
+        return tuple(path_str.split(".")) if path_str != "" else ()
+    tokens = []
+    first_match = FIRST_TOKEN_REGEX.match(path_str)
+    if not first_match:
+        raise ValueError(f"Invalid path syntax: '{path_str}'")
+    if first_match.group(1):
+        tokens.append(first_match.group(1))
+    elif first_match.group(2):
+        tokens.append(first_match.group(2))
+    elif first_match.group(3):
+        tokens.append(int(first_match.group(3)))
+    pos = first_match.end()
+    for match in PATH_TOKEN_REGEX.finditer(path_str, pos):
+        key_dot, key_bracket, index = match.groups()
+        if key_dot:
+            tokens.append(key_dot)
+        elif key_bracket:
+            tokens.append(key_bracket)
+        elif index:
+            tokens.append(int(index))
+        pos = match.end()
+    if pos != len(path_str):
+        raise ValueError(f"Invalid path syntax at position {pos}: '{path_str}'")
+    return tuple(tokens)
+
+
+def combine_path_str(path_str1: str, path_str2: str) -> str:
+    """Combine two path strings into one."""
+    if path_str1 == "":
+        return path_str2
+    if path_str2 == "":
+        return path_str1
+    path_str1 = path_str1.rstrip()
+    path_str2 = path_str2.lstrip()
+    path_str1 = path_str1.rstrip(".")
+    path_str2 = path_str2.lstrip(".")
+    ends_with_bracket = path_str1.endswith("]")
+    starts_with_bracket = path_str2.startswith("[")
+    if ends_with_bracket:
+        if starts_with_bracket:
+            combined = path_str1 + path_str2
+        else:
+            combined = path_str1 + "." + path_str2
+    else:
+        if starts_with_bracket:
+            combined = path_str1 + path_str2
+        else:
+            combined = path_str1 + "." + path_str2
+    return combined
+
+
+def minimize_pathlike_key(k: tp.PathLikeKey) -> tp.MaybePathKey:
+    """Minimize a path-like key."""
+    k = resolve_pathlike_key(k)
+    if len(k) == 0:
+        return None
+    if len(k) == 1:
+        return k[0]
+    return k
+
+
+def resolve_pathlike_key(k: tp.PathLikeKey, minimize: bool = False) -> tp.PathKey:
+    """Convert a path-like key into a path key."""
+    if k is None:
+        k = ()
+    if isinstance(k, Path):
+        k = k.parts
+    if isinstance(k, str):
+        k = parse_path_str(k)
+    if not isinstance(k, tuple):
+        k = (k,)
+    if minimize:
+        k = minimize_pathlike_key(k)
+    return k
+
+
+def combine_pathlike_keys(
+    k1: tp.PathLikeKey,
+    k2: tp.PathLikeKey,
+    resolve: bool = False,
+    minimize: bool = False,
+) -> tp.PathLikeKey:
+    """Combine two path-like keys."""
+    if not resolve:
+        if isinstance(k1, Path) and isinstance(k2, Path):
+            new_k = k1 / k2
+            if minimize:
+                return minimize_pathlike_key(new_k)
+            return new_k
+        if isinstance(k1, str) and isinstance(k2, str):
+            new_k = combine_path_str(k1, k2)
+            if minimize:
+                return minimize_pathlike_key(new_k)
+            return new_k
+    k1 = resolve_pathlike_key(k1)
+    k2 = resolve_pathlike_key(k2)
+    new_k = k1 + k2
+    if minimize:
+        return minimize_pathlike_key(new_k)
+    return new_k
+
+
+def navigate_pathlike_key(obj: tp.Any, k: tp.PathLikeKey) -> tp.Any:
+    """Navigate a path-like key in an object."""
+    tokens = resolve_pathlike_key(k)
+    for token in tokens:
+        if isinstance(obj, (set, frozenset)):
+            obj = list(obj)[token]
+        else:
+            obj = obj[token]
+    return obj
+
+
+def contains_in_obj(
     obj: tp.Any,
     match_func: tp.Callable,
     traversal: tp.Optional[str] = None,
@@ -53,7 +197,7 @@ def any_in_obj(
     elif traversal.upper() == "BFS":
         stack = deque([(None, 0, obj)])
     else:
-        raise ValueError(f"Invalid option traversal='{traversal}'")
+        raise ValueError(f"Invalid traversal: '{traversal}'")
     while stack:
         if not isinstance(stack, deque):
             key, depth, obj = stack.pop()
@@ -72,7 +216,7 @@ def any_in_obj(
                 if not isinstance(stack, deque):
                     obj_items = reversed(obj_items)
                 for k, v in obj_items:
-                    new_key = k if key is None else (*key, k) if isinstance(key, tuple) else (key, k)
+                    new_key = combine_pathlike_keys(key, k, minimize=True)
                     stack.append((new_key, depth + 1, v))
         if isinstance(obj, (tuple, list, set, frozenset)):
             if max_len is None or len(obj) <= max_len:
@@ -84,7 +228,7 @@ def any_in_obj(
                 for i, v in enumerate(obj):
                     if not isinstance(stack, deque):
                         i = obj_len - 1 - i
-                    new_key = i if key is None else (*key, i) if isinstance(key, tuple) else (key, i)
+                    new_key = combine_pathlike_keys(key, i, minimize=True)
                     stack.append((new_key, depth + 1, v))
     return False
 
@@ -142,7 +286,7 @@ def find_in_obj(
     elif traversal.upper() == "BFS":
         stack = deque([(None, 0, obj)])
     else:
-        raise ValueError(f"Invalid option traversal='{traversal}'")
+        raise ValueError(f"Invalid traversal: '{traversal}'")
     while stack:
         if not isinstance(stack, deque):
             key, depth, obj = stack.pop()
@@ -162,7 +306,7 @@ def find_in_obj(
                 if not isinstance(stack, deque):
                     obj_items = reversed(obj_items)
                 for k, v in obj_items:
-                    new_key = k if key is None else (*key, k) if isinstance(key, tuple) else (key, k)
+                    new_key = combine_pathlike_keys(key, k, minimize=True)
                     stack.append((new_key, depth + 1, v))
         if isinstance(obj, (tuple, list, set, frozenset)):
             if max_len is None or len(obj) <= max_len:
@@ -174,7 +318,7 @@ def find_in_obj(
                 for i, v in enumerate(obj):
                     if not isinstance(stack, deque):
                         i = obj_len - 1 - i
-                    new_key = i if key is None else (*key, i) if isinstance(key, tuple) else (key, i)
+                    new_key = combine_pathlike_keys(key, i, minimize=True)
                     stack.append((new_key, depth + 1, v))
     return match_dct
 
@@ -182,12 +326,14 @@ def find_in_obj(
 def replace_in_obj(obj: tp.Any, match_dct: dict, _key: tp.Optional[tp.Hashable] = None) -> tp.Any:
     """Replace matches in an object in a recursive manner.
 
-    See `find_in_obj` for `match_dct` (returned value)."""
+    See `find_in_obj` for `match_dct` (returned value).
+
+    Keys in `match_dct` can be path-like keys."""
     if len(match_dct) == 0:
         return obj
+    match_dct = {minimize_pathlike_key(k): v for k, v in match_dct.items()}
     if _key in match_dct:
         return match_dct[_key]
-    match_dct = dict(match_dct)
 
     if isinstance(obj, dict):
         new_obj = {}
@@ -203,12 +349,16 @@ def replace_in_obj(obj: tp.Any, match_dct: dict, _key: tp.Optional[tp.Hashable] 
                 if len(new_match_dct) == 0:
                     new_obj[k] = obj[k]
                 else:
-                    new_key = k if _key is None else (*_key, k) if isinstance(_key, tuple) else (_key, k)
+                    new_key = combine_pathlike_keys(_key, k, minimize=True)
                     new_obj[k] = replace_in_obj(obj[k], new_match_dct, _key=new_key)
         return new_obj
     if isinstance(obj, (tuple, list, set, frozenset)):
+        if isinstance(obj, list):
+            obj_list = obj
+        else:
+            obj_list = list(obj)
         new_obj = []
-        for i in range(len(obj)):
+        for i in range(len(obj_list)):
             if i in match_dct:
                 new_obj.append(match_dct.pop(i))
             else:
@@ -218,10 +368,10 @@ def replace_in_obj(obj: tp.Any, match_dct: dict, _key: tp.Optional[tp.Hashable] 
                         new_k2 = k2[1:] if len(k2) > 2 else k2[1]
                         new_match_dct[new_k2] = match_dct.pop(k2)
                 if len(new_match_dct) == 0:
-                    new_obj.append(obj[i])
+                    new_obj.append(obj_list[i])
                 else:
-                    new_key = i if _key is None else (*_key, i) if isinstance(_key, tuple) else (_key, i)
-                    new_obj.append(replace_in_obj(obj[i], new_match_dct, _key=new_key))
+                    new_key = combine_pathlike_keys(_key, i, minimize=True)
+                    new_obj.append(replace_in_obj(obj_list[i], new_match_dct, _key=new_key))
         if checks.is_namedtuple(obj):
             return type(obj)(*new_obj)
         return type(obj)(new_obj)
@@ -268,7 +418,7 @@ def find_and_replace_in_obj(
     if max_depth is None:
         max_depth = search_cfg["max_depth"]
 
-    if check_any_first and not any_in_obj(
+    if check_any_first and not contains_in_obj(
         obj,
         match_func,
         excl_types=excl_types,
@@ -290,7 +440,7 @@ def find_and_replace_in_obj(
                 if make_copy:
                     obj = copy(obj)
                 for k, v in obj.items():
-                    new_key = k if _key is None else (*_key, k) if isinstance(_key, tuple) else (_key, k)
+                    new_key = combine_pathlike_keys(_key, k, minimize=True)
                     set_dict_item(
                         obj,
                         k,
@@ -316,7 +466,7 @@ def find_and_replace_in_obj(
                 if make_copy:
                     obj = copy(obj)
                 for i in range(len(obj)):
-                    new_key = i if _key is None else (*_key, i) if isinstance(_key, tuple) else (_key, i)
+                    new_key = combine_pathlike_keys(_key, i, minimize=True)
                     obj[i] = find_and_replace_in_obj(
                         obj[i],
                         match_func,
@@ -334,9 +484,13 @@ def find_and_replace_in_obj(
                 return obj
         if isinstance(obj, (tuple, set, frozenset)):
             if max_len is None or len(obj) <= max_len:
+                if isinstance(obj, list):
+                    obj_list = obj
+                else:
+                    obj_list = list(obj)
                 result = []
-                for i, o in enumerate(obj):
-                    new_key = i if _key is None else (*_key, i) if isinstance(_key, tuple) else (_key, i)
+                for i, o in enumerate(obj_list):
+                    new_key = combine_pathlike_keys(_key, i, minimize=True)
                     result.append(
                         find_and_replace_in_obj(
                             o,
@@ -359,22 +513,26 @@ def find_and_replace_in_obj(
     return obj
 
 
-def search_text(string: tp.MaybeIterable[str], query: str, ignore_case: bool = False) -> tp.MaybeList[bool]:
-    """Check if query is a substring of string."""
+def contains_exact(
+    string: tp.MaybeIterable[str],
+    substring: str,
+    ignore_case: bool = False,
+) -> tp.Union[bool, tp.List[bool], tp.Series]:
+    """Check if string contains a substring."""
     if not isinstance(string, str):
         if isinstance(string, pd.Series):
             return string.apply(
                 partial(
-                    search_text,
-                    query=query,
+                    contains_exact,
+                    substring=substring,
                     ignore_case=ignore_case,
                 )
             )
         return list(
             map(
                 partial(
-                    search_text,
-                    query=query,
+                    contains_exact,
+                    substring=substring,
                     ignore_case=ignore_case,
                 ),
                 string,
@@ -382,26 +540,62 @@ def search_text(string: tp.MaybeIterable[str], query: str, ignore_case: bool = F
         )
     if ignore_case:
         string = string.casefold()
-        query = query.casefold()
-    return query in string
+        substring = substring.casefold()
+    return substring in string
 
 
-def search_regex(
+def replace_exact(
     string: tp.MaybeIterable[str],
-    pattern: str,
+    substring: str,
+    replacement: str,
     ignore_case: bool = False,
-    flags: int = 0,
-) -> tp.MaybeList[bool]:
-    """Check if the string string matches the given regex pattern."""
-    if ignore_case:
-        flags = flags | re.IGNORECASE
-    regex = re.compile(pattern, flags=flags)
+) -> tp.Union[str, tp.List[str], tp.Series]:
+    """Replace a substring with replacement in string."""
     if not isinstance(string, str):
         if isinstance(string, pd.Series):
             return string.apply(
                 partial(
-                    search_regex,
-                    pattern=pattern,
+                    replace_exact,
+                    substring=substring,
+                    replacement=replacement,
+                    ignore_case=ignore_case,
+                )
+            )
+        return list(
+            map(
+                partial(
+                    replace_exact,
+                    substring=substring,
+                    replacement=replacement,
+                    ignore_case=ignore_case,
+                ),
+                string,
+            )
+        )
+    if ignore_case:
+        pattern = re.compile(re.escape(substring), re.IGNORECASE)
+        return pattern.sub(replacement, string)
+    else:
+        return string.replace(substring, replacement)
+
+
+def contains_regex(
+    string: tp.MaybeIterable[str],
+    substring: str,
+    ignore_case: bool = False,
+    flags: int = 0,
+) -> tp.Union[bool, tp.List[bool], tp.Series]:
+    """Check if the string matches the given regex substring."""
+    if ignore_case:
+        flags = flags | re.IGNORECASE
+    regex = re.compile(substring, flags=flags)
+
+    if not isinstance(string, str):
+        if isinstance(string, pd.Series):
+            return string.apply(
+                partial(
+                    contains_regex,
+                    substring=substring,
                     ignore_case=ignore_case,
                     flags=flags,
                 )
@@ -409,8 +603,8 @@ def search_regex(
         return list(
             map(
                 partial(
-                    search_regex,
-                    pattern=pattern,
+                    contains_regex,
+                    substring=substring,
                     ignore_case=ignore_case,
                     flags=flags,
                 ),
@@ -420,14 +614,193 @@ def search_regex(
     return bool(regex.search(string))
 
 
-def search_fuzzy(
+def replace_regex(
     string: tp.MaybeIterable[str],
-    query: str,
+    pattern: str,
+    replacement: str,
+    ignore_case: bool = False,
+    flags: int = 0,
+) -> tp.Union[str, tp.List[str], tp.Series]:
+    """Replace regex substring with replacement in string."""
+    if ignore_case:
+        flags = flags | re.IGNORECASE
+    regex = re.compile(pattern, flags=flags)
+
+    if not isinstance(string, str):
+        if isinstance(string, pd.Series):
+            return string.apply(
+                partial(
+                    replace_regex,
+                    pattern=pattern,
+                    replacement=replacement,
+                    ignore_case=ignore_case,
+                    flags=flags,
+                )
+            )
+        return list(
+            map(
+                partial(
+                    replace_regex,
+                    pattern=pattern,
+                    replacement=replacement,
+                    ignore_case=ignore_case,
+                    flags=flags,
+                ),
+                string,
+            )
+        )
+    return regex.sub(replacement, string)
+
+
+def contains_fuzzy(
+    string: tp.MaybeIterable[str],
+    substring: str,
+    ignore_case: bool = False,
+    threshold: tp.Optional[float] = 70,
+    max_insertions: tp.Optional[int] = None,
+    max_substitutions: tp.Optional[int] = None,
+    max_deletions: tp.Optional[int] = None,
+    max_l_dist: tp.Optional[int] = None,
+) -> tp.Union[bool, tp.List[bool], tp.Series]:
+    """Perform fuzzy matching between string and substring using fuzzysearch."""
+    from vectorbtpro.utils.module_ import assert_can_import
+
+    assert_can_import("fuzzysearch")
+    from fuzzysearch import find_near_matches
+
+    if not isinstance(string, str):
+        if isinstance(string, pd.Series):
+            return string.apply(
+                partial(
+                    contains_fuzzy,
+                    substring=substring,
+                    ignore_case=ignore_case,
+                    threshold=threshold,
+                    max_insertions=max_insertions,
+                    max_substitutions=max_substitutions,
+                    max_deletions=max_deletions,
+                    max_l_dist=max_l_dist,
+                )
+            )
+        return list(
+            map(
+                partial(
+                    contains_fuzzy,
+                    substring=substring,
+                    ignore_case=ignore_case,
+                    threshold=threshold,
+                    max_insertions=max_insertions,
+                    max_substitutions=max_substitutions,
+                    max_deletions=max_deletions,
+                    max_l_dist=max_l_dist,
+                ),
+                string,
+            )
+        )
+
+    if ignore_case:
+        string = string.casefold()
+        substring = substring.casefold()
+    if threshold is not None and max_l_dist is None:
+        max_l_dist = max(1, len(substring) - int(len(substring) * (threshold / 100)))
+    matches = find_near_matches(
+        substring,
+        string,
+        max_insertions=max_insertions,
+        max_substitutions=max_substitutions,
+        max_deletions=max_deletions,
+        max_l_dist=max_l_dist,
+    )
+    return len(matches) > 0
+
+
+def replace_fuzzy(
+    string: tp.MaybeIterable[str],
+    substring: str,
+    replacement: str,
+    ignore_case: bool = False,
+    threshold: tp.Optional[float] = 70,
+    max_insertions: tp.Optional[int] = None,
+    max_substitutions: tp.Optional[int] = None,
+    max_deletions: tp.Optional[int] = None,
+    max_l_dist: tp.Optional[int] = None,
+) -> tp.Union[str, tp.List[str], tp.Series]:
+    """Perform fuzzy matching and replacement between string and substring using fuzzysearch."""
+    from vectorbtpro.utils.module_ import assert_can_import
+
+    assert_can_import("fuzzysearch")
+    from fuzzysearch import find_near_matches
+
+    if not isinstance(string, str):
+        if isinstance(string, pd.Series):
+            return string.apply(
+                partial(
+                    replace_fuzzy,
+                    substring=substring,
+                    replacement=replacement,
+                    ignore_case=ignore_case,
+                    threshold=threshold,
+                    max_insertions=max_insertions,
+                    max_substitutions=max_substitutions,
+                    max_deletions=max_deletions,
+                    max_l_dist=max_l_dist,
+                )
+            )
+        return list(
+            map(
+                partial(
+                    replace_fuzzy,
+                    substring=substring,
+                    replacement=replacement,
+                    ignore_case=ignore_case,
+                    threshold=threshold,
+                    max_insertions=max_insertions,
+                    max_substitutions=max_substitutions,
+                    max_deletions=max_deletions,
+                    max_l_dist=max_l_dist,
+                ),
+                string,
+            )
+        )
+
+    original_string = string
+    if ignore_case:
+        string = string.casefold()
+        substring = substring.casefold()
+    else:
+        string = string
+        substring = substring
+    if threshold is not None and max_l_dist is None:
+        max_l_dist = max(1, len(substring) - int(len(substring) * (threshold / 100)))
+    matches = find_near_matches(
+        substring,
+        string,
+        max_insertions=max_insertions,
+        max_substitutions=max_substitutions,
+        max_deletions=max_deletions,
+        max_l_dist=max_l_dist,
+    )
+    if len(matches) == 0:
+        return original_string
+    matches_sorted = sorted(matches, key=lambda m: m.start)
+    replaced_string = ""
+    last_idx = 0
+    for match in matches_sorted:
+        replaced_string += original_string[match.start : match.end]
+        replaced_string += replacement
+        last_idx = match.end
+    replaced_string += original_string[last_idx:]
+    return replaced_string
+
+
+def contains_rapidfuzz(
+    string: tp.MaybeIterable[str],
+    substring: str,
     ignore_case: bool = False,
     processor: tp.Optional[tp.Callable] = None,
     threshold: float = 70,
-) -> tp.MaybeList[bool]:
-    """Perform fuzzy matching between string and query using RapidFuzz."""
+) -> tp.Union[bool, tp.List[bool], tp.Series]:
+    """Perform fuzzy matching between string and substring using RapidFuzz."""
     from vectorbtpro.utils.module_ import assert_can_import
 
     assert_can_import("rapidfuzz")
@@ -437,8 +810,8 @@ def search_fuzzy(
         if isinstance(string, pd.Series):
             return string.apply(
                 partial(
-                    search_fuzzy,
-                    query=query,
+                    contains_rapidfuzz,
+                    substring=substring,
                     ignore_case=ignore_case,
                     processor=processor,
                     threshold=threshold,
@@ -447,8 +820,8 @@ def search_fuzzy(
         return list(
             map(
                 partial(
-                    search_fuzzy,
-                    query=query,
+                    contains_rapidfuzz,
+                    substring=substring,
                     ignore_case=ignore_case,
                     processor=processor,
                     threshold=threshold,
@@ -458,6 +831,72 @@ def search_fuzzy(
         )
     if ignore_case:
         string = string.casefold()
-        query = query.casefold()
-    score = fuzz.partial_ratio(string, query, processor=processor)
+        substring = substring.casefold()
+    score = fuzz.partial_ratio(string, substring, processor=processor)
     return score >= threshold
+
+
+def contains(
+    string: tp.MaybeIterable[str],
+    substring: str,
+    mode: str = "exact",
+    ignore_case: bool = False,
+    **kwargs,
+) -> tp.Union[bool, tp.List[bool], tp.Series]:
+    """Search for a target string within a source string using the specified mode."""
+    if mode.lower() == "exact":
+        return contains_exact(string, substring, ignore_case=ignore_case, **kwargs)
+    elif mode.lower() == "regex":
+        return contains_regex(string, substring, ignore_case=ignore_case, **kwargs)
+    elif mode.lower() == "fuzzy":
+        return contains_fuzzy(string, substring, ignore_case=ignore_case, **kwargs)
+    elif mode.lower() == "rapidfuzz":
+        return contains_rapidfuzz(string, substring, ignore_case=ignore_case, **kwargs)
+    else:
+        raise ValueError(f"Invalid mode: '{mode}'")
+
+
+def replace(
+    string: tp.MaybeIterable[str],
+    substring: str,
+    replacement: str,
+    mode: str = "exact",
+    ignore_case: bool = False,
+    **kwargs,
+) -> tp.Union[bool, tp.List[bool], tp.Series]:
+    """Search for a target string within a source string using the specified mode."""
+    if mode.lower() == "exact":
+        return replace_exact(string, substring, replacement, ignore_case=ignore_case, **kwargs)
+    elif mode.lower() == "regex":
+        return replace_regex(string, substring, replacement, ignore_case=ignore_case, **kwargs)
+    elif mode.lower() == "fuzzy":
+        return replace_fuzzy(string, substring, replacement, ignore_case=ignore_case, **kwargs)
+    elif mode.lower() == "rapidfuzz":
+        raise ValueError("RapidFuzz doesn't support replacement")
+    else:
+        raise ValueError(f"Invalid mode: '{mode}'")
+
+
+search_config = ReadonlyConfig(
+    {
+        "contains_exact": contains_exact,
+        "contains_regex": contains_regex,
+        "contains_fuzzy": contains_fuzzy,
+        "contains_rapidfuzz": contains_rapidfuzz,
+        "contains": contains,
+        "replace_exact": replace_exact,
+        "replace_regex": replace_regex,
+        "replace_fuzzy": replace_fuzzy,
+        "replace": replace,
+    }
+)
+"""_"""
+
+__pdoc__[
+    "search_config"
+] = f"""Config of functions that can be used in searching and replacement.
+
+```python
+{search_config.prettify()}
+```
+"""

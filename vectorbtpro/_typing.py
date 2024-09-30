@@ -175,7 +175,10 @@ Kwargs = Dict[str, Any]
 KwargsLike = Union[None, Kwargs]
 KwargsLikeSequence = MaybeSequence[KwargsLike]
 PathLike = Union[str, Path]
-PathLikeKey = Union[Hashable, Path]
+PathKeyToken = Hashable
+PathKey = Tuple[PathKeyToken, ...]
+MaybePathKey = Union[None, PathKeyToken, PathKey]
+PathLikeKey = Union[MaybePathKey, Path]
 SettingsPath = ClassVar[Union[None, Hashable, Dict[Hashable, Hashable]]]
 WriteableAttrs = ClassVar[Optional[Set[str]]]
 ExpectedKeys = ClassVar[Optional[Set[str]]]
@@ -301,5 +304,5 @@ StaticizedOption = Union[None, bool, Kwargs, TaskId]
 Selection = Union[PosSel, LabelSel, MaybeIterable[Union[PosSel, LabelSel, Hashable]]]
 
 # Knowledge
-JSONPrimitive = Union[str, int, float, bool, None]
+JSONPrimitive = Union[None, int, float, bool, str]
 JSON = Union[Dict[str, "JSON"], List["JSON"], JSONPrimitive]

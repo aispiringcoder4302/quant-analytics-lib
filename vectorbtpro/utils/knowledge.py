@@ -1,6 +1,20 @@
 # Copyright (c) 2021-2024 Oleg Polakow. All rights reserved.
 
-"""Utilities for working with knowledge."""
+"""Utilities for working with knowledge.
+
+Run for the examples:
+
+```pycon
+>>> dataset = [
+...     {"s": "ABC", "b": True, "d": {"c": "red", "l": [1, 2]}},
+...     {"s": "BCD", "b": True, "d": {"c": "blue", "l": [3, 4]}},
+...     {"s": "CDE", "b": False, "d": {"c": "green", "l": [5, 6]}},
+...     {"s": "DEF", "b": False, "d": {"c": "yellow", "l": [7, 8]}},
+...     {"s": "EFG", "b": False, "d": {"c": "black", "l": [9, 10]}, "xyz": 123}
+... ]
+>>> json_asset = vbt.JSONAsset(dataset)
+```
+"""
 
 import os
 import io
@@ -11,13 +25,14 @@ from pathlib import Path
 import pandas as pd
 
 from vectorbtpro import _typing as tp
+from vectorbtpro.utils import search
 from vectorbtpro.utils.config import Configured
 from vectorbtpro.utils.pickling import suggest_compression, decompress, load_bytes
 from vectorbtpro.utils.path_ import check_mkdir
 from vectorbtpro.utils.pbar import ProgressBar
-from vectorbtpro.utils.template import CustomTemplate, RepEval, RepFunc, substitute_templates
+from vectorbtpro.utils.template import CustomTemplate, Sub, RepEval, RepFunc, substitute_templates
 from vectorbtpro.utils.config import flat_merge_dicts
-from vectorbtpro.utils.search import any_in_obj, search_text, search_regex, search_fuzzy
+from vectorbtpro.utils.parsing import get_func_arg_names
 
 __all__ = [
     "JSONAsset",
@@ -85,11 +100,13 @@ class JSONAsset(Configured):
         self,
         expression: tp.Union[str, CustomTemplate],
         engine: tp.Optional[str] = None,
-        as_filter: bool = True,
+        as_filter: tp.Optional[bool] = None,
+        show_progress: tp.Optional[bool] = None,
+        pbar_kwargs: tp.KwargsLike = None,
         template_context: tp.KwargsLike = None,
         **kwargs,
-    ) -> tp.Any:
-        """Query JSON object using an engine.
+    ) -> JSONAssetT:
+        """Query using an engine and return a new `JSONAsset` instance.
 
         Following engines are supported:
 
@@ -100,11 +117,7 @@ class JSONAsset(Configured):
             as "x" while its fields (if any) are represented by their names.
         * "pandas": Same as above but variables being columns
 
-        Templates can also use the following functions:
-
-        * `vectorbtpro.utils.search.search_text`
-        * `vectorbtpro.utils.search.search_regex`
-        * `vectorbtpro.utils.search.search_fuzzy`
+        Templates can also use the functions defined in `vectorbtpro.utils.search.search_config`.
 
         They work on single values and sequences alike.
 
@@ -112,47 +125,54 @@ class JSONAsset(Configured):
 
         Usage:
             ```pycon
-            >>> json_obj = [
-            ...     {"name": "Seattle", "state": "WA"},
-            ...     {"name": "New York", "state": "NY"},
-            ...     {"name": "Bellevue", "state": "WA"},
-            ...     {"name": "Olympia", "state": "WA"}
-            ... ]
-            >>> json_asset = vbt.JSONAsset(json_obj)
+            >>> json_asset.query("x['s'] == 'ABC'").json_obj
+            [{'s': 'ABC', 'b': True, 'd': {'c': 'red', 'l': [1, 2]}}]
 
-            >>> json_asset.query("x['state'] == 'NY'")
-            [{'name': 'New York', 'state': 'NY'}]
+            >>> json_asset.query("x['s'] == 'ABC'", as_filter=False).json_obj
+            [True, False, False, False, False]
 
-            >>> json_asset.query("x['state'] == 'NY'", as_filter=False)
-            [False, True, False, False]
+            >>> json_asset.query("s == 'ABC'").json_obj
+            [{'s': 'ABC', 'b': True, 'd': {'c': 'red', 'l': [1, 2]}}]
 
-            >>> json_asset.query("state == 'NY'")
-            [{'name': 'New York', 'state': 'NY'}]
+            >>> json_asset.query("contains(s, 'BC')").json_obj
+            [{'s': 'ABC', 'b': True, 'd': {'c': 'red', 'l': [1, 2]}},
+             {'s': 'BCD', 'b': True, 'd': {'c': 'blue', 'l': [3, 4]}}]
 
-            >>> json_asset.query("search_text(name, 'York')")
-            [{'name': 'New York', 'state': 'NY'}]
+            >>> json_asset.query(lambda s: "BC" in s).json_obj
+            [{'s': 'ABC', 'b': True, 'd': {'c': 'red', 'l': [1, 2]}},
+             {'s': 'BCD', 'b': True, 'd': {'c': 'blue', 'l': [3, 4]}}]
 
-            >>> json_asset.query(lambda state: state == "NY")
-            [{'name': 'New York', 'state': 'NY'}]
+            >>> json_asset.query("[?b == `true`].s", engine="jmespath").json_obj
+            ['ABC', 'BCD']
 
-            >>> json_asset.query(lambda state: state == "NY")
-            [{'name': 'New York', 'state': 'NY'}]
+            >>> json_asset.query("[?contains(s, 'BC')].s", engine="jmespath").json_obj
+            ['ABC', 'BCD']
 
-            >>> json_asset.query("[?state == `NY`]", engine="jmespath")
-            [{'name': 'New York', 'state': 'NY'}]
+            >>> json_asset.query("[].d.c", engine="jmespath").json_obj
+            ['red', 'blue', 'green', 'yellow', 'black']
 
-            >>> json_asset.query("[?state == `NY`].name", engine="jmespath")
-            ['New York']
+            >>> json_asset.query("[?d.c != `blue`].d.l", engine="jmespath").json_obj
+            [[1, 2], [5, 6], [7, 8], [9, 10]]
 
-            >>> json_asset.query("$[?state == 'NY'].name", engine="jsonpath.ext")
-            ['New York']
+            >>> json_asset.query("$[?(@.b == true)].s", engine="jsonpath.ext").json_obj
+            ['ABC', 'BCD']
 
-            >>> json_asset.query("name[state == 'NY']", engine="pandas")
-            ['New York']
+            >>> json_asset.query("$[*].d.c", engine="jsonpath.ext").json_obj
+            ['red', 'blue', 'green', 'yellow', 'black']
+
+            >>> json_asset.query("$[?(@.b == false)].['s', 'd.c']", engine="jsonpath.ext").json_obj
+            ['CDE', 'DEF', 'EFG']
+
+            >>> json_asset.query("s[b]", engine="pandas").json_obj
+            ['ABC', 'BCD']
             ```
 
         """
         engine = self.resolve_setting(engine, "engine")
+        as_filter = self.resolve_setting(as_filter, "as_filter")
+        show_progress = self.resolve_setting(show_progress, "show_progress")
+        pbar_kwargs = self.resolve_setting(pbar_kwargs, "pbar_kwargs", merge=True)
+        template_context = self.resolve_setting(template_context, "template_context", merge=True)
 
         if engine is None or engine.lower() in ("template", "pandas"):
             if isinstance(expression, str):
@@ -162,7 +182,6 @@ class JSONAsset(Configured):
             elif not isinstance(expression, CustomTemplate):
                 raise TypeError(f"Expression must be a template")
         if engine is None or engine.lower() == "template":
-            template_context = self.resolve_setting(template_context, "template_context", merge=True)
             json_obj = self.json_obj
             if not isinstance(json_obj, list):
                 json_obj = [json_obj]
@@ -170,23 +189,24 @@ class JSONAsset(Configured):
             else:
                 single_obj = False
             new_json_obj = []
-            for obj in json_obj:
-                _template_context = flat_merge_dicts(
-                    {
-                        "x": obj,
-                        "search_text": search_text,
-                        "search_regex": search_regex,
-                        "search_fuzzy": search_fuzzy,
-                        **(obj if isinstance(obj, dict) else {}),
-                    },
-                    template_context,
-                )
-                new_obj = expression.substitute(_template_context, eval_id="expression", **kwargs)
-                if as_filter and isinstance(new_obj, bool):
-                    if new_obj:
-                        new_json_obj.append(obj)
-                else:
-                    new_json_obj.append(new_obj)
+            pbar_kwargs = flat_merge_dicts(dict(bar_id=self.query.__qualname__), pbar_kwargs)
+            with ProgressBar(total=len(json_obj), show_progress=show_progress, **pbar_kwargs) as pbar:
+                for obj in json_obj:
+                    _template_context = flat_merge_dicts(
+                        {
+                            "x": obj,
+                            **search.search_config,
+                            **(obj if isinstance(obj, dict) else {}),
+                        },
+                        template_context,
+                    )
+                    new_obj = expression.substitute(_template_context, eval_id="expression", **kwargs)
+                    if as_filter and isinstance(new_obj, bool):
+                        if new_obj:
+                            new_json_obj.append(obj)
+                    else:
+                        new_json_obj.append(new_obj)
+                    pbar.update()
             if single_obj:
                 if len(new_json_obj) > 0:
                     new_json_obj = new_json_obj[0]
@@ -221,9 +241,7 @@ class JSONAsset(Configured):
                 _template_context = flat_merge_dicts(
                     {
                         "x": df,
-                        "search_text": search_text,
-                        "search_regex": search_regex,
-                        "search_fuzzy": search_fuzzy,
+                        **search.search_config,
                         **df.to_dict(orient="series"),
                     },
                     template_context,
@@ -238,80 +256,122 @@ class JSONAsset(Configured):
                 else:
                     new_json_obj = result
             else:
-                raise ValueError(f"Invalid option engine='{engine}'")
-        return new_json_obj
-
-    def filter(self, *args, **kwargs) -> JSONAssetT:
-        """Build a new instance from `JSONAsset.query`."""
-        new_json_obj = self.query(*args, **kwargs)
+                raise ValueError(f"Invalid engine: '{engine}'")
         return self.replace(json_obj=new_json_obj)
 
     def match_func(
         self,
         key: tp.Optional[tp.Hashable],
-        obj: object,
-        query: tp.MaybeIterable[tp.JSONPrimitive],
-        search_method: str = "text",
+        obj: tp.Any,
+        target: tp.MaybeIterable[tp.JSONPrimitive],
         **kwargs,
     ) -> bool:
-        """Match function for `JSONAsset.find`."""
-        if query is None or isinstance(query, (str, int, float, bool)):
-            queries = [query]
+        """Match function for `JSONAsset.find`.
+
+        Uses `vectorbtpro.utils.search.contains` for text and equality checks for other types."""
+        if target is None or isinstance(target, (bool, int, float, str)):
+            targets = [target]
         else:
-            queries = query
-        for query in queries:
-            if obj is None and query is None:
+            targets = target
+        for target in targets:
+            if obj is None and target is None:
                 return True
-            elif isinstance(obj, str) and isinstance(query, str):
-                if search_method.lower() == "text":
-                    if search_text(obj, query, **kwargs):
-                        return True
-                elif search_method.lower() == "regex":
-                    if search_regex(obj, query, **kwargs):
-                        return True
-                elif search_method.lower() == "fuzzy":
-                    if search_fuzzy(obj, query, **kwargs):
-                        return True
-                else:
-                    raise ValueError(f"Invalid option search_method='{search_method}'")
-            elif isinstance(obj, (int, float)) and isinstance(query, (int, float)):
-                return True
-            elif isinstance(obj, bool) and isinstance(query, bool):
-                return True
+            elif isinstance(obj, bool) and isinstance(target, bool):
+                if obj == target:
+                    return True
+            elif (
+                isinstance(obj, (int, float))
+                and isinstance(target, (int, float))
+                and not isinstance(obj, bool)
+                and not isinstance(target, bool)
+            ):
+                if obj == target:
+                    return True
+            elif isinstance(obj, str) and isinstance(target, str):
+                if search.contains(obj, target, **kwargs):
+                    return True
         return False
 
     def find(
         self,
-        query: tp.MaybeIterable[tp.JSONPrimitive],
-        where: tp.Optional[str] = None,
-        search_method: str = "text",
-        stringify: bool = False,
+        target: tp.MaybeIterable[tp.JSONPrimitive],
+        path: tp.Optional[tp.PathLikeKey] = None,
+        source: tp.Union[None, str, tp.Callable, CustomTemplate] = None,
+        in_dumps: tp.Optional[bool] = None,
+        show_progress: tp.Optional[bool] = None,
+        pbar_kwargs: tp.KwargsLike = None,
         template_context: tp.KwargsLike = None,
         **kwargs,
     ) -> JSONAssetT:
-        """Find occurrences and build a new `JSONAsset` instance.
+        """Find occurrences and return a new `JSONAsset` instance.
 
-        Uses `vectorbtpro.utils.search.any_in_obj` (keyword arguments are passed here)
-        on `JSONAsset.match_func` to find occurrences in each object.
+        Uses `vectorbtpro.utils.search.contains_in_obj` (keyword arguments are passed here)
+        on `JSONAsset.match_func` to find any occurrences in each object.
 
-        Query can be one or multiple of JSON primitives.
+        Target can be one or multiple of JSON primitives.
 
-        Following search methods are supported:
+        Use argument `path` to specify where in the object should be searched. For example, "x.y[0].z"
+        to navigate nested dictionaries/lists.
 
-        * "text": `vectorbtpro.utils.search.search_text`
-        * "regex": `vectorbtpro.utils.search.search_regex`
-        * "fuzzy": `vectorbtpro.utils.search.search_fuzzy`
-
-        If `where` is provided, it becomes a template. In this template, the object is represented
+        Use argument `source` instead of `path` or in addition to `path` to also preprocess the source.
+        It can be a string, callable, or any custom template. In this template, the object is represented
         as "x" while its fields (if any) are represented by their names.
+
+        Set `in_dumps` to True to convert the entire object to string and search in that string.
+
+        Usage:
+            ```pycon
+            >>> json_asset.find("BC").json_obj
+            [{'s': 'ABC', 'b': True, 'd': {'c': 'red', 'l': [1, 2]}},
+             {'s': 'BCD', 'b': True, 'd': {'c': 'blue', 'l': [3, 4]}}]
+
+            >>> json_asset.find("bc", ignore_case=True).json_obj
+            [{'s': 'ABC', 'b': True, 'd': {'c': 'red', 'l': [1, 2]}},
+             {'s': 'BCD', 'b': True, 'd': {'c': 'blue', 'l': [3, 4]}}]
+
+            >>> json_asset.find("bl", path="d.c").json_obj
+            [{'s': 'BCD', 'b': True, 'd': {'c': 'blue', 'l': [3, 4]}},
+             {'s': 'EFG', 'b': False, 'd': {'c': 'black', 'l': [9, 10]}, 'xyz': 123}]
+
+            >>> json_asset.find(5, path="d.l[0]").json_obj
+            [{'s': 'CDE', 'b': False, 'd': {'c': 'green', 'l': [5, 6]}}]
+
+            >>> json_asset.find(True, path="d.l", source=lambda x: sum(x) >= 10).json_obj
+            [{'s': 'CDE', 'b': False, 'd': {'c': 'green', 'l': [5, 6]}},
+             {'s': 'DEF', 'b': False, 'd': {'c': 'yellow', 'l': [7, 8]}},
+             {'s': 'EFG', 'b': False, 'd': {'c': 'black', 'l': [9, 10]}, 'xyz': 123}]
+
+            >>> json_asset.find(["A", "B", "C"]).json_obj
+            [{'s': 'ABC', 'b': True, 'd': {'c': 'red', 'l': [1, 2]}},
+             {'s': 'BCD', 'b': True, 'd': {'c': 'blue', 'l': [3, 4]}},
+             {'s': 'CDE', 'b': False, 'd': {'c': 'green', 'l': [5, 6]}}]
+
+            >>> json_asset.find(r"[ABC]+", mode="regex").json_obj
+            [{'s': 'ABC', 'b': True, 'd': {'c': 'red', 'l': [1, 2]}},
+             {'s': 'BCD', 'b': True, 'd': {'c': 'blue', 'l': [3, 4]}},
+             {'s': 'CDE', 'b': False, 'd': {'c': 'green', 'l': [5, 6]}}]
+
+            >>> json_asset.find("yenlow", mode="fuzzy").json_obj
+            [{'s': 'DEF', 'b': False, 'd': {'c': 'yellow', 'l': [7, 8]}}]
+
+            >>> json_asset.find("xyz", in_dumps=True).json_obj
+            [{'s': 'EFG', 'b': False, 'd': {'c': 'black', 'l': [9, 10]}, 'xyz': 123}]
+            ```
         """
-        if where is not None:
-            if isinstance(where, str):
-                where = RepEval(where)
-            elif callable(where):
-                where = RepFunc(where)
-            elif not isinstance(where, CustomTemplate):
-                raise TypeError(f"Expression 'where' must be a template")
+        in_dumps = self.resolve_setting(in_dumps, "in_dumps")
+        show_progress = self.resolve_setting(show_progress, "show_progress")
+        pbar_kwargs = self.resolve_setting(pbar_kwargs, "pbar_kwargs", merge=True)
+        template_context = self.resolve_setting(template_context, "template_context", merge=True)
+
+        if path is not None:
+            path = search.resolve_pathlike_key(path)
+        if source is not None:
+            if isinstance(source, str):
+                source = RepEval(source)
+            elif callable(source):
+                source = RepFunc(source)
+            elif not isinstance(source, CustomTemplate):
+                raise TypeError(f"Source must be a template")
 
         json_obj = self.json_obj
         if not isinstance(json_obj, list):
@@ -320,26 +380,163 @@ class JSONAsset(Configured):
         else:
             single_obj = False
         new_json_obj = []
-        for obj in json_obj:
-            if where is not None:
-                _template_context = flat_merge_dicts({
-                    "x": obj,
-                    **(obj if isinstance(obj, dict) else {}),
-                }, template_context)
-                _obj = where.substitute(_template_context, eval_id="where", **kwargs)
+        pbar_kwargs = flat_merge_dicts(dict(bar_id=self.find.__qualname__), pbar_kwargs)
+        with ProgressBar(total=len(json_obj), show_progress=show_progress, **pbar_kwargs) as pbar:
+            for obj in json_obj:
+                x = obj
+                if path is not None:
+                    x = search.navigate_pathlike_key(x, path)
+                if source is not None:
+                    _template_context = flat_merge_dicts(
+                        {
+                            "x": x,
+                            **(x if isinstance(x, dict) else {}),
+                        },
+                        template_context,
+                    )
+                    x = source.substitute(_template_context, eval_id="source")
+                if not isinstance(x, str) and in_dumps:
+                    x = json.dumps(x, ensure_ascii=False)
+                if search.contains_in_obj(
+                    x,
+                    self.match_func,
+                    incl_types=list,
+                    target=target,
+                    **kwargs,
+                ):
+                    new_json_obj.append(obj)
+                pbar.update()
+        if single_obj:
+            if len(new_json_obj) > 0:
+                new_json_obj = new_json_obj[0]
             else:
-                _obj = obj
-            if not isinstance(_obj, str) and stringify:
-                _obj = json.dumps(_obj, ensure_ascii=False)
-            if any_in_obj(
-                _obj,
-                self.match_func,
-                incl_types=list,
-                query=query,
-                search_method=search_method,
-                **kwargs,
+                new_json_obj = None
+        return self.replace(json_obj=new_json_obj)
+
+    def replace_func(
+        self,
+        key: tp.Optional[tp.Hashable],
+        obj: tp.Any,
+        target: tp.MaybeIterable[tp.JSONPrimitive],
+        replacement: tp.JSONPrimitive,
+        **kwargs,
+    ) -> tp.Any:
+        """Replace function for `JSONAsset.find_and_replace`.
+
+        Uses `vectorbtpro.utils.search.replace` for text and returns replacement for other types."""
+        if target is None or isinstance(target, (bool, int, float, str)):
+            targets = [target]
+        else:
+            targets = target
+        new_obj = obj
+        for target in targets:
+            if obj is None and target is None:
+                return replacement
+            elif isinstance(obj, bool) and isinstance(target, bool):
+                if obj == target:
+                    return replacement
+            elif (
+                isinstance(obj, (int, float))
+                and isinstance(target, (int, float))
+                and not isinstance(obj, bool)
+                and not isinstance(target, bool)
             ):
-                new_json_obj.append(obj)
+                if obj == target:
+                    return replacement
+            elif isinstance(obj, str) and isinstance(target, str):
+                new_obj = search.replace(new_obj, target, replacement, **kwargs)
+        return new_obj
+
+    def find_and_replace(
+        self,
+        target: tp.MaybeIterable[tp.JSONPrimitive],
+        replacement: tp.JSONPrimitive,
+        path: tp.Optional[tp.PathLikeKey] = None,
+        changed_only: bool = False,
+        show_progress: tp.Optional[bool] = None,
+        pbar_kwargs: tp.KwargsLike = None,
+        **kwargs,
+    ) -> JSONAssetT:
+        """Find and replace occurrences and return a new `JSONAsset` instance.
+
+        Uses `vectorbtpro.utils.search.find_in_obj` (keyword arguments are passed here) on
+        `JSONAsset.match_func` to find occurrences in each object. Then, uses `JSONAsset.replace_func`
+        and `vectorbtpro.utils.search.replace_in_obj` to replaces these occurrences.
+
+        Target can be one or multiple of JSON primitives.
+
+        Use argument `path` to specify where in the object should be searched. For example, "x.y[0].z"
+        to navigate nested dictionaries/lists.
+
+        Usage:
+            ```pycon
+            >>> json_asset.find_and_replace("BC", "XY").json_obj
+            [{'s': 'AXY', 'b': True, 'd': {'c': 'red', 'l': [1, 2]}},
+             {'s': 'XYD', 'b': True, 'd': {'c': 'blue', 'l': [3, 4]}},
+             {'s': 'CDE', 'b': False, 'd': {'c': 'green', 'l': [5, 6]}},
+             {'s': 'DEF', 'b': False, 'd': {'c': 'yellow', 'l': [7, 8]}},
+             {'s': 'EFG', 'b': False, 'd': {'c': 'black', 'l': [9, 10]}, 'xyz': 123}]
+
+            >>> json_asset.find_and_replace("BC", "XY", changed_only=True).json_obj
+            [{'s': 'AXY', 'b': True, 'd': {'c': 'red', 'l': [1, 2]}},
+             {'s': 'XYD', 'b': True, 'd': {'c': 'blue', 'l': [3, 4]}}]
+
+            >>> json_asset.find_and_replace(r"(D)E(F)", r"\1X\2", mode="regex", changed_only=True).json_obj
+            [{'s': 'DXF', 'b': False, 'd': {'c': 'yellow', 'l': [7, 8]}}]
+
+            >>> json_asset.find_and_replace(True, False, changed_only=True).json_obj
+            [{'s': 'ABC', 'b': False, 'd': {'c': 'red', 'l': [1, 2]}},
+             {'s': 'BCD', 'b': False, 'd': {'c': 'blue', 'l': [3, 4]}}]
+
+            >>> json_asset.find_and_replace(3, 3000, path="d.l", changed_only=True).json_obj
+            [{'s': 'BCD', 'b': True, 'd': {'c': 'blue', 'l': [3000, 4]}}]
+            ```
+        """
+        show_progress = self.resolve_setting(show_progress, "show_progress")
+        pbar_kwargs = self.resolve_setting(pbar_kwargs, "pbar_kwargs", merge=True)
+
+        if path is not None:
+            path = search.resolve_pathlike_key(path)
+        find_arg_names = set(get_func_arg_names(search.find_in_obj))
+        replace_kwargs = {k: v for k, v in kwargs.items() if k not in find_arg_names}
+
+        json_obj = self.json_obj
+        if not isinstance(json_obj, list):
+            json_obj = [json_obj]
+            single_obj = True
+        else:
+            single_obj = False
+        new_json_obj = []
+        pbar_kwargs = flat_merge_dicts(dict(bar_id=self.find_and_replace.__qualname__), pbar_kwargs)
+        with ProgressBar(total=len(json_obj), show_progress=show_progress, **pbar_kwargs) as pbar:
+            for obj in json_obj:
+                x = obj
+                if path is not None:
+                    x = search.navigate_pathlike_key(x, path)
+                match_dct = search.find_in_obj(
+                    x,
+                    self.match_func,
+                    incl_types=list,
+                    target=target,
+                    **kwargs,
+                )
+                new_match_dct = {}
+                for k, v in match_dct.items():
+                    if path is not None:
+                        new_k = search.combine_pathlike_keys(path, k, minimize=True)
+                    else:
+                        new_k = k
+                    new_match_dct[new_k] = self.replace_func(
+                        k,
+                        v,
+                        target,
+                        replacement,
+                        **replace_kwargs,
+                    )
+                new_obj = search.replace_in_obj(obj, new_match_dct)
+                if not changed_only or len(new_match_dct) > 0:
+                    new_json_obj.append(new_obj)
+                pbar.update()
         if single_obj:
             if len(new_json_obj) > 0:
                 new_json_obj = new_json_obj[0]
@@ -505,6 +702,15 @@ class ReleaseAsset(JSONAsset):
         file_size = int(asset_response.headers.get("Content-Length", 0))
         if file_size == 0:
             file_size = asset.get("size", 0)
+        pbar_kwargs = flat_merge_dicts(
+            dict(
+                unit="iB",
+                unit_scale=True,
+                desc=Sub("Downloading $asset_name"),
+                bar_id=cls.pull.__qualname__,
+            ),
+            pbar_kwargs,
+        )
         pbar_kwargs = substitute_templates(pbar_kwargs, template_context, eval_id="pbar_kwargs")
 
         if cache:

@@ -12,7 +12,7 @@ from vectorbtpro.utils.config import merge_dicts
 from vectorbtpro.utils.eval_ import evaluate, Evaluable
 from vectorbtpro.utils.module_ import package_shortcut_config
 from vectorbtpro.utils.parsing import get_func_arg_names
-from vectorbtpro.utils.search import any_in_obj, find_and_replace_in_obj
+from vectorbtpro.utils.search import contains_in_obj, find_and_replace_in_obj
 
 __all__ = [
     "CustomTemplate",
@@ -208,7 +208,7 @@ class RepFunc(CustomTemplate):
 def has_templates(obj: tp.Any, **kwargs) -> tp.Any:
     """Check if the object has any templates.
 
-    Uses `vectorbtpro.utils.search.any_in_obj`.
+    Uses `vectorbtpro.utils.search.contains_in_obj`.
 
     Default can be overridden with `search_kwargs` under `vectorbtpro._settings.template`."""
     from vectorbtpro._settings import settings
@@ -220,7 +220,7 @@ def has_templates(obj: tp.Any, **kwargs) -> tp.Any:
     def _match_func(k, v):
         return isinstance(v, (CustomTemplate, Template))
 
-    return any_in_obj(obj, _match_func, **search_kwargs)
+    return contains_in_obj(obj, _match_func, **search_kwargs)
 
 
 def substitute_templates(

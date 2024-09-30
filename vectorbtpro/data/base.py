@@ -1150,7 +1150,7 @@ class Data(Analyzable, DataWithFeatures, OHLCDataMixin, metaclass=MetaData):
                         else:
                             yield key, self.select_keys(key)
         else:
-            raise ValueError(f"Invalid option='{over}'")
+            raise ValueError(f"Invalid over: '{over}'")
 
     # ############# Getting ############# #
 
@@ -1475,7 +1475,7 @@ class Data(Analyzable, DataWithFeatures, OHLCDataMixin, metaclass=MetaData):
                     if self.single_symbol:
                         return tuple([list(self.data.values())[i] for i in feature_idxs]), features
                     return tuple([list(self.data.values())[i].iloc[:, symbol_idxs] for i in feature_idxs]), features
-                raise ValueError(f"Invalid option per='{per}'")
+                raise ValueError(f"Invalid per: '{per}'")
             else:
                 if single_symbol:
                     if self.single_feature:
@@ -1495,7 +1495,7 @@ class Data(Analyzable, DataWithFeatures, OHLCDataMixin, metaclass=MetaData):
                     if self.single_feature:
                         return tuple([list(self.data.values())[i] for i in symbol_idxs]), symbols
                     return tuple([list(self.data.values())[i].iloc[:, feature_idxs] for i in symbol_idxs]), symbols
-                raise ValueError(f"Invalid option per='{per}'")
+                raise ValueError(f"Invalid per: '{per}'")
 
         objs, keys = _get_objs()
         if as_dict:
@@ -1726,7 +1726,7 @@ class Data(Analyzable, DataWithFeatures, OHLCDataMixin, metaclass=MetaData):
                     elif missing == "raise":
                         raise ValueError("Symbols have mismatching index")
                     else:
-                        raise ValueError(f"Invalid option missing='{missing}'")
+                        raise ValueError(f"Invalid missing: '{missing}'")
 
         if not index_changed:
             return data
@@ -1784,7 +1784,7 @@ class Data(Analyzable, DataWithFeatures, OHLCDataMixin, metaclass=MetaData):
                     elif missing == "raise":
                         raise ValueError("Symbols have mismatching columns")
                     else:
-                        raise ValueError(f"Invalid option missing='{missing}'")
+                        raise ValueError(f"Invalid missing: '{missing}'")
 
         if not columns_changed:
             return data
@@ -4050,7 +4050,7 @@ class Data(Analyzable, DataWithFeatures, OHLCDataMixin, metaclass=MetaData):
                 out = feature_dict({feature_name: out})
             out = Data.from_data(out, **data_kwargs)
         else:
-            raise ValueError(f"Invalid option unpack='{unpack}'")
+            raise ValueError(f"Invalid unpack: '{unpack}'")
         return out
 
     # ############# Persisting ############# #
@@ -4426,7 +4426,7 @@ class Data(Analyzable, DataWithFeatures, OHLCDataMixin, metaclass=MetaData):
             elif _engine == "auto":
                 assert_can_import_any("pyarrow", "fastparquet")
             else:
-                raise ValueError(f"Invalid option engine='{_engine}'")
+                raise ValueError(f"Invalid engine: '{_engine}'")
             if isinstance(v, pd.Series):
                 v = v.to_frame()
             if _partition_by is not None:
@@ -4863,7 +4863,7 @@ class Data(Analyzable, DataWithFeatures, OHLCDataMixin, metaclass=MetaData):
                 elif _write_format.upper() == "JSON":
                     _write_path /= f"{k}.json"
                 else:
-                    raise ValueError(f"Invalid write format '{_write_format}'")
+                    raise ValueError(f"Invalid write format: '{_write_format}'")
             if _write_path.suffix != "":
                 _mkdir_kwargs = self.resolve_key_arg(
                     mkdir_kwargs,

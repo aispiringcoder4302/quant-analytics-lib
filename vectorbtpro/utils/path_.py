@@ -2,6 +2,8 @@
 
 """Utilities for working with paths."""
 
+import ast
+import re
 import shutil
 from glob import glob
 from itertools import islice

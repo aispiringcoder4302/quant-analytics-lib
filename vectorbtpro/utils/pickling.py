@@ -134,7 +134,7 @@ def compress(
 
                 bytes_ = blosc.compress(bytes_, **compress_kwargs)
         else:
-            raise ValueError(f"Invalid compression format '{compression}'")
+            raise ValueError(f"Invalid compression format: '{compression}'")
     return bytes_
 
 
@@ -222,7 +222,7 @@ def decompress(
 
                 bytes_ = blosc.decompress(bytes_, as_bytearray=True, **decompress_kwargs)
         else:
-            raise ValueError(f"Invalid compression format '{compression}'")
+            raise ValueError(f"Invalid compression format: '{compression}'")
     return bytes_
 
 
@@ -1026,11 +1026,11 @@ class Pickleable:
         if file_format is not None:
             file_format = file_format.lower()
             if file_format not in serialization_extensions:
-                raise ValueError(f"Invalid file format '{file_format}'")
+                raise ValueError(f"Invalid file format: '{file_format}'")
         if compression not in (None, False):
             compression = compression.lower()
             if compression not in compression_extensions:
-                raise ValueError(f"Invalid compression format '{compression}'")
+                raise ValueError(f"Invalid compression format: '{compression}'")
         for _ in range(len(suffixes)):
             path = path.with_suffix("")
 
@@ -1161,7 +1161,7 @@ class Pickleable:
             with open(path, "w") as f:
                 f.write(str_)
         else:
-            raise ValueError(f"Invalid file extension '{path.suffix}'")
+            raise ValueError(f"Invalid file extension: '{path.suffix}'")
         return path
 
     @classmethod
@@ -1190,7 +1190,7 @@ class Pickleable:
                 str_ = f.read()
             return cls.decode_config(str_, **kwargs)
         else:
-            raise ValueError(f"Invalid file extension '{path.suffix}'")
+            raise ValueError(f"Invalid file extension: '{path.suffix}'")
 
     def __sizeof__(self) -> int:
         return len(self.dumps())

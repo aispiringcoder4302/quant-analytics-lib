@@ -382,11 +382,11 @@ def concat_indexes(
         return pd.RangeIndex(stop=sum(map(len, indexes)))
     else:
         if axis == 0:
-            raise ValueError(f"Invalid index concatenation method '{index_concat_method}'")
+            raise ValueError(f"Invalid index concatenation method: '{index_concat_method}'")
         elif axis == 1:
-            raise ValueError(f"Invalid column concatenation method '{index_concat_method}'")
+            raise ValueError(f"Invalid column concatenation method: '{index_concat_method}'")
         else:
-            raise ValueError(f"Invalid group concatenation method '{index_concat_method}'")
+            raise ValueError(f"Invalid group concatenation method: '{index_concat_method}'")
     if keys is not None:
         if isinstance(keys[0], pd.Index):
             keys = concat_indexes(
