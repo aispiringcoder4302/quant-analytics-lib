@@ -388,7 +388,7 @@ def get_col_position_value_nb(c: tp.NamedTuple, col: int) -> float:
     """Get position value of a column."""
     position = get_col_position_nb(c, col)
     val_price = get_col_val_price_nb(c, col)
-    if position:
+    if position == 0:
         return 0.0
     return position * val_price
 
