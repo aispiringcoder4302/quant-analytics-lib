@@ -7,6 +7,7 @@ from copy import copy
 from functools import partial
 from collections import deque
 from pathlib import Path
+from copy import copy
 
 import pandas as pd
 
@@ -96,66 +97,224 @@ def combine_path_str(path_str1: str, path_str2: str) -> str:
     return combined
 
 
-def minimize_pathlike_key(k: tp.PathLikeKey) -> tp.MaybePathKey:
+def minimize_pathlike_key(key: tp.PathLikeKey) -> tp.MaybePathKey:
     """Minimize a path-like key."""
-    k = resolve_pathlike_key(k)
-    if len(k) == 0:
+    key = resolve_pathlike_key(key)
+    if len(key) == 0:
         return None
-    if len(k) == 1:
-        return k[0]
-    return k
+    if len(key) == 1:
+        return key[0]
+    return key
 
 
-def resolve_pathlike_key(k: tp.PathLikeKey, minimize: bool = False) -> tp.PathKey:
+def resolve_pathlike_key(key: tp.PathLikeKey, minimize: bool = False) -> tp.PathKey:
     """Convert a path-like key into a path key."""
-    if k is None:
-        k = ()
-    if isinstance(k, Path):
-        k = k.parts
-    if isinstance(k, str):
-        k = parse_path_str(k)
-    if not isinstance(k, tuple):
-        k = (k,)
+    if key is None:
+        key = ()
+    if isinstance(key, Path):
+        key = key.parts
+    if isinstance(key, str):
+        key = parse_path_str(key)
+    if not isinstance(key, tuple):
+        key = (key,)
     if minimize:
-        k = minimize_pathlike_key(k)
-    return k
+        key = minimize_pathlike_key(key)
+    return key
 
 
 def combine_pathlike_keys(
-    k1: tp.PathLikeKey,
-    k2: tp.PathLikeKey,
+    key1: tp.PathLikeKey,
+    key2: tp.PathLikeKey,
     resolve: bool = False,
     minimize: bool = False,
 ) -> tp.PathLikeKey:
     """Combine two path-like keys."""
     if not resolve:
-        if isinstance(k1, Path) and isinstance(k2, Path):
-            new_k = k1 / k2
+        if isinstance(key1, Path) and isinstance(key2, Path):
+            new_k = key1 / key2
             if minimize:
                 return minimize_pathlike_key(new_k)
             return new_k
-        if isinstance(k1, str) and isinstance(k2, str):
-            new_k = combine_path_str(k1, k2)
+        if isinstance(key1, str) and isinstance(key2, str):
+            new_k = combine_path_str(key1, key2)
             if minimize:
                 return minimize_pathlike_key(new_k)
             return new_k
-    k1 = resolve_pathlike_key(k1)
-    k2 = resolve_pathlike_key(k2)
-    new_k = k1 + k2
+    key1 = resolve_pathlike_key(key1)
+    key2 = resolve_pathlike_key(key2)
+    new_k = key1 + key2
     if minimize:
         return minimize_pathlike_key(new_k)
     return new_k
 
 
-def navigate_pathlike_key(obj: tp.Any, k: tp.PathLikeKey) -> tp.Any:
-    """Navigate a path-like key in an object."""
-    tokens = resolve_pathlike_key(k)
+def get_pathlike_key(obj: tp.Any, key: tp.PathLikeKey, keep_path: bool = False) -> tp.Any:
+    """Get the value under a path-like key in an object."""
+    tokens = resolve_pathlike_key(key)
     for token in tokens:
         if isinstance(obj, (set, frozenset)):
             obj = list(obj)[token]
-        else:
+        elif hasattr(obj, "__getitem__"):
             obj = obj[token]
-    return obj
+        elif isinstance(token, str) and hasattr(obj, token):
+            obj = getattr(obj, token)
+        else:
+            raise TypeError(f"Cannot navigate object of type {type(obj).__name__}")
+    if not keep_path:
+        return obj
+    path = obj
+    for token in reversed(tokens):
+        path = {token: path}
+    return path
+
+
+def set_pathlike_key(
+    obj: tp.Any,
+    key: tp.PathLikeKey,
+    value: tp.Any,
+    make_copy: bool = True,
+    prev_keys: tp.Optional[tp.PathLikeKeys] = None,
+) -> tp.Any:
+    """Set the value under a path-like key in an object."""
+    tokens = resolve_pathlike_key(key)
+    parents = []
+    new_obj = obj
+    for i, token in enumerate(tokens):
+        parents.append((obj, token))
+        if i < len(tokens) - 1:
+            if isinstance(obj, (set, frozenset)):
+                obj = list(obj)[token]
+            elif hasattr(obj, "__getitem__"):
+                obj = obj[token]
+            elif isinstance(token, str) and hasattr(obj, token):
+                obj = getattr(obj, token)
+            else:
+                raise TypeError(f"Cannot navigate object of type {type(obj).__name__}")
+        elif not make_copy:
+            if hasattr(obj, "__setitem__"):
+                obj[token] = value
+            elif hasattr(obj, "__dict__"):
+                setattr(obj, token, value)
+            else:
+                raise TypeError(f"Cannot modify object of type {type(obj).__name__}")
+    if not make_copy:
+        return new_obj
+
+    if prev_keys is None:
+        prev_keys = []
+    prev_key_tokens = []
+    for prev_key in prev_keys:
+        prev_key_tokens.append(resolve_pathlike_key(prev_key))
+    new_value = value
+    for i, (parent, token) in enumerate(reversed(parents)):
+        i = len(parents) - 1 - i
+        if make_copy:
+            for prev_tokens in prev_key_tokens:
+                if tokens[:i] == prev_tokens[:i]:
+                    make_copy = False
+        if isinstance(parent, (tuple, set, frozenset)):
+            parent_list = list(parent)
+            parent_list[token] = new_value
+            if checks.is_namedtuple(parent):
+                parent_copy = type(parent)(*parent_list)
+            else:
+                parent_copy = type(parent)(parent_list)
+        elif hasattr(parent, "__setitem__"):
+            if make_copy:
+                parent_copy = copy(parent)
+            else:
+                parent_copy = parent
+            parent_copy[token] = new_value
+        elif hasattr(parent, "__dict__"):
+            if make_copy:
+                parent_copy = copy(parent)
+            else:
+                parent_copy = parent
+            setattr(parent_copy, token, new_value)
+        else:
+            raise TypeError(f"Cannot modify object of type {type(parent).__name__}")
+        new_value = parent_copy
+    prev_keys.append(key)
+    return new_value
+
+
+def remove_pathlike_key(
+    obj: tp.Any,
+    key: tp.PathLikeKey,
+    make_copy: bool = True,
+    prev_keys: tp.Optional[tp.PathLikeKeys] = None,
+) -> tp.Any:
+    """Remove the value under a path-like key in an object."""
+    tokens = resolve_pathlike_key(key)
+    parents = []
+    new_obj = obj
+    for i, token in enumerate(tokens):
+        parents.append((obj, token))
+        if i < len(tokens) - 1:
+            if isinstance(obj, (set, frozenset)):
+                obj = list(obj)[token]
+            elif hasattr(obj, "__getitem__"):
+                obj = obj[token]
+            elif isinstance(token, str) and hasattr(obj, token):
+                obj = getattr(obj, token)
+            else:
+                raise TypeError(f"Cannot navigate object of type {type(obj).__name__}")
+        elif not make_copy:
+            if isinstance(obj, set):
+                obj.remove(token)
+            elif hasattr(obj, "__delitem__"):
+                del obj[token]
+            elif hasattr(obj, "__dict__"):
+                delattr(obj, token)
+            else:
+                raise TypeError(f"Cannot modify object of type {type(obj).__name__}")
+    if not make_copy:
+        return new_obj
+
+    if prev_keys is None:
+        prev_keys = []
+    prev_key_tokens = []
+    for prev_key in prev_keys:
+        prev_key_tokens.append(resolve_pathlike_key(prev_key))
+    for i, (parent, token) in enumerate(reversed(parents)):
+        i = len(parents) - 1 - i
+        if make_copy:
+            for prev_tokens in prev_key_tokens:
+                if tokens[:i] == prev_tokens[:i]:
+                    make_copy = False
+        if isinstance(parent, (tuple, set, frozenset)):
+            parent_list = list(parent)
+            if i == len(parents) - 1:
+                parent_list.pop(token)
+            else:
+                parent_list[token] = new_value
+            if checks.is_namedtuple(parent):
+                parent_copy = type(parent)(*parent_list)
+            else:
+                parent_copy = type(parent)(parent_list)
+        elif hasattr(parent, "__setitem__"):
+            if make_copy:
+                parent_copy = copy(parent)
+            else:
+                parent_copy = parent
+            if i == len(parents) - 1:
+                del parent_copy[token]
+            else:
+                parent_copy[token] = new_value
+        elif hasattr(parent, "__dict__"):
+            if make_copy:
+                parent_copy = copy(parent)
+            else:
+                parent_copy = parent
+            if i == len(parents) - 1:
+                delattr(parent_copy, token)
+            else:
+                setattr(parent_copy, token, new_value)
+        else:
+            raise TypeError(f"Cannot modify object of type {type(parent).__name__}")
+        new_value = parent_copy
+    prev_keys.append(key)
+    return new_value
 
 
 def contains_in_obj(
@@ -211,25 +370,27 @@ def contains_in_obj(
             if incl_types is None or not (incl_types is True or checks.is_instance_of(obj, incl_types)):
                 continue
         if isinstance(obj, dict):
-            if max_len is None or len(obj) <= max_len:
-                obj_items = obj.items()
+            if max_len is not None and len(obj) > max_len:
+                continue
+            obj_items = obj.items()
+            if not isinstance(stack, deque):
+                obj_items = reversed(obj_items)
+            for k, v in obj_items:
+                new_key = combine_pathlike_keys(key, k, minimize=True)
+                stack.append((new_key, depth + 1, v))
+        elif isinstance(obj, (tuple, list, set, frozenset)):
+            if max_len is not None and len(obj) > max_len:
+                continue
+            if isinstance(obj, (set, frozenset)):
+                obj = list(obj)
+            obj_len = len(obj)
+            if not isinstance(stack, deque):
+                obj = reversed(obj)
+            for i, v in enumerate(obj):
                 if not isinstance(stack, deque):
-                    obj_items = reversed(obj_items)
-                for k, v in obj_items:
-                    new_key = combine_pathlike_keys(key, k, minimize=True)
-                    stack.append((new_key, depth + 1, v))
-        if isinstance(obj, (tuple, list, set, frozenset)):
-            if max_len is None or len(obj) <= max_len:
-                if isinstance(obj, (set, frozenset)):
-                    obj = list(obj)
-                obj_len = len(obj)
-                if not isinstance(stack, deque):
-                    obj = reversed(obj)
-                for i, v in enumerate(obj):
-                    if not isinstance(stack, deque):
-                        i = obj_len - 1 - i
-                    new_key = combine_pathlike_keys(key, i, minimize=True)
-                    stack.append((new_key, depth + 1, v))
+                    i = obj_len - 1 - i
+                new_key = combine_pathlike_keys(key, i, minimize=True)
+                stack.append((new_key, depth + 1, v))
     return False
 
 
@@ -242,7 +403,7 @@ def find_in_obj(
     max_len: tp.Optional[int] = None,
     max_depth: tp.Optional[int] = None,
     **kwargs,
-) -> dict:
+) -> tp.PathDict:
     """Find matches in an object in an iterative manner.
 
     Traverses dicts, tuples, lists and (frozen-)sets. Does not look for matches in keys.
@@ -280,7 +441,7 @@ def find_in_obj(
     if max_depth is None:
         max_depth = search_cfg["max_depth"]
 
-    match_dct = {}
+    path_dct = {}
     if traversal.upper() == "DFS":
         stack = [(None, 0, obj)]
     elif traversal.upper() == "BFS":
@@ -293,7 +454,7 @@ def find_in_obj(
         else:
             key, depth, obj = stack.popleft()
         if match_func(key, obj, **kwargs):
-            match_dct[key] = obj
+            path_dct[key] = obj
             continue
         if max_depth is not None and depth >= max_depth:
             continue
@@ -301,56 +462,56 @@ def find_in_obj(
             if incl_types is None or not (incl_types is True or checks.is_instance_of(obj, incl_types)):
                 continue
         if isinstance(obj, dict):
-            if max_len is None or len(obj) <= max_len:
-                obj_items = obj.items()
+            if max_len is not None and len(obj) > max_len:
+                continue
+            obj_items = obj.items()
+            if not isinstance(stack, deque):
+                obj_items = reversed(obj_items)
+            for k, v in obj_items:
+                new_key = combine_pathlike_keys(key, k, minimize=True)
+                stack.append((new_key, depth + 1, v))
+        elif isinstance(obj, (tuple, list, set, frozenset)):
+            if max_len is not None and len(obj) > max_len:
+                continue
+            if isinstance(obj, (set, frozenset)):
+                obj = list(obj)
+            obj_len = len(obj)
+            if not isinstance(stack, deque):
+                obj = reversed(obj)
+            for i, v in enumerate(obj):
                 if not isinstance(stack, deque):
-                    obj_items = reversed(obj_items)
-                for k, v in obj_items:
-                    new_key = combine_pathlike_keys(key, k, minimize=True)
-                    stack.append((new_key, depth + 1, v))
-        if isinstance(obj, (tuple, list, set, frozenset)):
-            if max_len is None or len(obj) <= max_len:
-                if isinstance(obj, (set, frozenset)):
-                    obj = list(obj)
-                obj_len = len(obj)
-                if not isinstance(stack, deque):
-                    obj = reversed(obj)
-                for i, v in enumerate(obj):
-                    if not isinstance(stack, deque):
-                        i = obj_len - 1 - i
-                    new_key = combine_pathlike_keys(key, i, minimize=True)
-                    stack.append((new_key, depth + 1, v))
-    return match_dct
+                    i = obj_len - 1 - i
+                new_key = combine_pathlike_keys(key, i, minimize=True)
+                stack.append((new_key, depth + 1, v))
+    return path_dct
 
 
-def replace_in_obj(obj: tp.Any, match_dct: dict, _key: tp.Optional[tp.Hashable] = None) -> tp.Any:
-    """Replace matches in an object in a recursive manner.
+def replace_in_obj(obj: tp.Any, path_dct: tp.PathDict, _key: tp.Optional[tp.Hashable] = None) -> tp.Any:
+    """Replace matches in an object in a recursive manner using a path dictionary.
 
-    See `find_in_obj` for `match_dct` (returned value).
-
-    Keys in `match_dct` can be path-like keys."""
-    if len(match_dct) == 0:
+    Keys in the path dictionary can be path-like keys."""
+    if len(path_dct) == 0:
         return obj
-    match_dct = {minimize_pathlike_key(k): v for k, v in match_dct.items()}
-    if _key in match_dct:
-        return match_dct[_key]
+    path_dct = {minimize_pathlike_key(k): v for k, v in path_dct.items()}
+    if _key in path_dct:
+        return path_dct[_key]
 
     if isinstance(obj, dict):
         new_obj = {}
         for k in obj:
-            if k in match_dct:
-                new_obj[k] = match_dct.pop(k)
+            if k in path_dct:
+                new_obj[k] = path_dct.pop(k)
             else:
-                new_match_dct = {}
-                for k2 in list(match_dct.keys()):
+                new_path_dct = {}
+                for k2 in list(path_dct.keys()):
                     if isinstance(k2, tuple) and k2[0] == k:
                         new_k2 = k2[1:] if len(k2) > 2 else k2[1]
-                        new_match_dct[new_k2] = match_dct.pop(k2)
-                if len(new_match_dct) == 0:
+                        new_path_dct[new_k2] = path_dct.pop(k2)
+                if len(new_path_dct) == 0:
                     new_obj[k] = obj[k]
                 else:
                     new_key = combine_pathlike_keys(_key, k, minimize=True)
-                    new_obj[k] = replace_in_obj(obj[k], new_match_dct, _key=new_key)
+                    new_obj[k] = replace_in_obj(obj[k], new_path_dct, _key=new_key)
         return new_obj
     if isinstance(obj, (tuple, list, set, frozenset)):
         if isinstance(obj, list):
@@ -359,19 +520,19 @@ def replace_in_obj(obj: tp.Any, match_dct: dict, _key: tp.Optional[tp.Hashable] 
             obj_list = list(obj)
         new_obj = []
         for i in range(len(obj_list)):
-            if i in match_dct:
-                new_obj.append(match_dct.pop(i))
+            if i in path_dct:
+                new_obj.append(path_dct.pop(i))
             else:
-                new_match_dct = {}
-                for k2 in list(match_dct.keys()):
+                new_path_dct = {}
+                for k2 in list(path_dct.keys()):
                     if isinstance(k2, tuple) and k2[0] == i:
                         new_k2 = k2[1:] if len(k2) > 2 else k2[1]
-                        new_match_dct[new_k2] = match_dct.pop(k2)
-                if len(new_match_dct) == 0:
+                        new_path_dct[new_k2] = path_dct.pop(k2)
+                if len(new_path_dct) == 0:
                     new_obj.append(obj_list[i])
                 else:
                     new_key = combine_pathlike_keys(_key, i, minimize=True)
-                    new_obj.append(replace_in_obj(obj_list[i], new_match_dct, _key=new_key))
+                    new_obj.append(replace_in_obj(obj_list[i], new_path_dct, _key=new_key))
         if checks.is_namedtuple(obj):
             return type(obj)(*new_obj)
         return type(obj)(new_obj)
@@ -431,86 +592,248 @@ def find_and_replace_in_obj(
 
     if match_func(_key, obj, **kwargs):
         return replace_func(_key, obj, **kwargs)
-    if max_depth is None or _depth < max_depth:
+    if max_depth is not None and _depth >= max_depth:
+        return obj
+    if excl_types not in (None, False) and checks.is_instance_of(obj, excl_types):
+        if incl_types is None or not (incl_types is True or checks.is_instance_of(obj, incl_types)):
+            return obj
+    if isinstance(obj, dict):
+        if max_len is not None and len(obj) > max_len:
+            return obj
+        if make_copy:
+            obj = copy(obj)
+        for k, v in obj.items():
+            new_key = combine_pathlike_keys(_key, k, minimize=True)
+            set_dict_item(
+                obj,
+                k,
+                find_and_replace_in_obj(
+                    v,
+                    match_func,
+                    replace_func,
+                    excl_types=excl_types,
+                    incl_types=incl_types,
+                    max_len=max_len,
+                    max_depth=max_depth,
+                    make_copy=make_copy,
+                    check_any_first=False,
+                    _key=new_key,
+                    _depth=_depth + 1,
+                    **kwargs,
+                ),
+                force=True,
+            )
+        return obj
+    if isinstance(obj, list):
+        if max_len is not None and len(obj) > max_len:
+            return obj
+        if make_copy:
+            obj = copy(obj)
+        for i in range(len(obj)):
+            new_key = combine_pathlike_keys(_key, i, minimize=True)
+            obj[i] = find_and_replace_in_obj(
+                obj[i],
+                match_func,
+                replace_func,
+                excl_types=excl_types,
+                incl_types=incl_types,
+                max_len=max_len,
+                max_depth=max_depth,
+                make_copy=make_copy,
+                check_any_first=False,
+                _key=new_key,
+                _depth=_depth + 1,
+                **kwargs,
+            )
+        return obj
+    if isinstance(obj, (tuple, set, frozenset)):
+        if max_len is not None and len(obj) > max_len:
+            return obj
+        if isinstance(obj, list):
+            obj_list = obj
+        else:
+            obj_list = list(obj)
+        result = []
+        for i, o in enumerate(obj_list):
+            new_key = combine_pathlike_keys(_key, i, minimize=True)
+            result.append(
+                find_and_replace_in_obj(
+                    o,
+                    match_func,
+                    replace_func,
+                    excl_types=excl_types,
+                    incl_types=incl_types,
+                    max_len=max_len,
+                    max_depth=max_depth,
+                    make_copy=make_copy,
+                    check_any_first=False,
+                    _key=new_key,
+                    _depth=_depth + 1,
+                    **kwargs,
+                )
+            )
+        if checks.is_namedtuple(obj):
+            return type(obj)(*result)
+        return type(obj)(result)
+    return obj
+
+
+def flatten_obj(
+    obj: tp.Any,
+    traversal: tp.Optional[str] = None,
+    annotate_all: bool = False,
+    excl_types: tp.Union[None, bool, tp.MaybeSequence[type]] = None,
+    incl_types: tp.Union[None, bool, tp.MaybeSequence[type]] = None,
+    max_len: tp.Optional[int] = None,
+    max_depth: tp.Optional[int] = None,
+) -> tp.PathDict:
+    """Flatten object.
+
+    Argument `traversal` can be "DFS" for depth-first search or "BFS" for breadth-first search.
+
+    See `find_in_obj` for arguments."""
+    from vectorbtpro._settings import settings
+
+    search_cfg = settings["search"]
+
+    if traversal is None:
+        traversal = search_cfg["traversal"]
+    if excl_types is None:
+        excl_types = search_cfg["excl_types"]
+    if isinstance(excl_types, bool) and excl_types:
+        raise ValueError("Argument excl_types cannot be True")
+    if incl_types is None:
+        incl_types = search_cfg["incl_types"]
+    if isinstance(incl_types, bool) and not incl_types:
+        raise ValueError("Argument incl_types cannot be False")
+    if max_len is None:
+        max_len = search_cfg["max_len"]
+    if max_depth is None:
+        max_depth = search_cfg["max_depth"]
+
+    path_dct = {}
+    if traversal.upper() == "DFS":
+        stack = [(None, 0, obj)]
+    elif traversal.upper() == "BFS":
+        stack = deque([(None, 0, obj)])
+    else:
+        raise ValueError(f"Invalid traversal: '{traversal}'")
+    while stack:
+        if not isinstance(stack, deque):
+            key, depth, obj = stack.pop()
+        else:
+            key, depth, obj = stack.popleft()
+        if max_depth is not None and depth >= max_depth:
+            path_dct[key] = obj
+            continue
         if excl_types not in (None, False) and checks.is_instance_of(obj, excl_types):
             if incl_types is None or not (incl_types is True or checks.is_instance_of(obj, incl_types)):
-                return obj
+                path_dct[key] = obj
+                continue
         if isinstance(obj, dict):
-            if max_len is None or len(obj) <= max_len:
-                if make_copy:
-                    obj = copy(obj)
-                for k, v in obj.items():
-                    new_key = combine_pathlike_keys(_key, k, minimize=True)
-                    set_dict_item(
-                        obj,
-                        k,
-                        find_and_replace_in_obj(
-                            v,
-                            match_func,
-                            replace_func,
-                            excl_types=excl_types,
-                            incl_types=incl_types,
-                            max_len=max_len,
-                            max_depth=max_depth,
-                            make_copy=make_copy,
-                            check_any_first=False,
-                            _key=new_key,
-                            _depth=_depth + 1,
-                            **kwargs,
-                        ),
-                        force=True,
-                    )
-                return obj
-        if isinstance(obj, list):
-            if max_len is None or len(obj) <= max_len:
-                if make_copy:
-                    obj = copy(obj)
-                for i in range(len(obj)):
-                    new_key = combine_pathlike_keys(_key, i, minimize=True)
-                    obj[i] = find_and_replace_in_obj(
-                        obj[i],
-                        match_func,
-                        replace_func,
-                        excl_types=excl_types,
-                        incl_types=incl_types,
-                        max_len=max_len,
-                        max_depth=max_depth,
-                        make_copy=make_copy,
-                        check_any_first=False,
-                        _key=new_key,
-                        _depth=_depth + 1,
-                        **kwargs,
-                    )
-                return obj
-        if isinstance(obj, (tuple, set, frozenset)):
-            if max_len is None or len(obj) <= max_len:
-                if isinstance(obj, list):
-                    obj_list = obj
+            if max_len is not None and len(obj) > max_len:
+                path_dct[key] = obj
+                continue
+            if annotate_all:
+                path_dct[key] = type(obj)
+            obj_items = obj.items()
+            if not isinstance(stack, deque):
+                obj_items = reversed(obj_items)
+            for k, v in obj_items:
+                new_key = combine_pathlike_keys(key, k, minimize=True)
+                stack.append((new_key, depth + 1, v))
+        elif isinstance(obj, (tuple, list, set, frozenset)):
+            if max_len is not None and len(obj) > max_len:
+                path_dct[key] = obj
+                continue
+            if annotate_all or not isinstance(obj, list):
+                path_dct[key] = type(obj)
+            if isinstance(obj, (set, frozenset)):
+                obj = list(obj)
+            obj_len = len(obj)
+            if not isinstance(stack, deque):
+                obj = reversed(obj)
+            for i, v in enumerate(obj):
+                if not isinstance(stack, deque):
+                    i = obj_len - 1 - i
+                new_key = combine_pathlike_keys(key, i, minimize=True)
+                stack.append((new_key, depth + 1, v))
+        else:
+            path_dct[key] = obj
+    return path_dct
+
+
+def unflatten_obj(path_dct):
+    """Unflatten object in a recursive manner using a path dictionary.
+
+    Keys in the path dictionary can be path-like keys."""
+    path_dct = {resolve_pathlike_key(k): v for k, v in path_dct.items()}
+
+    class _Leaf:
+        def __init__(self, value):
+            self.value = value
+
+    def _build_tree(paths):
+        tree = {}
+        root_defined = False
+        for path, value in paths.items():
+            if path == ():
+                if root_defined and isinstance(tree, _Leaf):
+                    raise ValueError("Multiple root definitions detected")
+                if isinstance(value, type):
+                    tree = {"__type__": value}
                 else:
-                    obj_list = list(obj)
-                result = []
-                for i, o in enumerate(obj_list):
-                    new_key = combine_pathlike_keys(_key, i, minimize=True)
-                    result.append(
-                        find_and_replace_in_obj(
-                            o,
-                            match_func,
-                            replace_func,
-                            excl_types=excl_types,
-                            incl_types=incl_types,
-                            max_len=max_len,
-                            max_depth=max_depth,
-                            make_copy=make_copy,
-                            check_any_first=False,
-                            _key=new_key,
-                            _depth=_depth + 1,
-                            **kwargs,
-                        )
-                    )
-                if checks.is_namedtuple(obj):
-                    return type(obj)(*result)
-                return type(obj)(result)
-    return obj
+                    if len(paths) > 1:
+                        raise ValueError("Cannot have an empty tuple key alongside other keys")
+                    tree = _Leaf(value)
+                root_defined = True
+                continue
+            current = tree
+            for key in path[:-1]:
+                if not isinstance(current, dict):
+                    raise ValueError(f"Conflicting path at {path[:path.index(key)+1]}")
+                if key not in current:
+                    current[key] = {}
+                elif not isinstance(current[key], dict):
+                    raise ValueError(f"Duplicate or conflicting key detected at path {path[:path.index(key)+1]}")
+                current = current[key]
+            last_key = path[-1]
+            if last_key in current:
+                raise ValueError(f"Duplicate key detected at path {path}")
+            if isinstance(value, type):
+                if "__type__" in current.get(last_key, {}):
+                    if current[last_key]["__type__"] != value:
+                        raise ValueError(f"Conflicting type specifications at path {path}")
+                current.setdefault(last_key, {})["__type__"] = value
+            else:
+                current[last_key] = _Leaf(value)
+        return tree
+
+    def _construct(node):
+        if isinstance(node, _Leaf):
+            return node.value
+        if not isinstance(node, dict):
+            return node
+        type_spec = node.pop("__type__", None)
+        if not node:
+            return type_spec()
+        keys = node.keys()
+        if all(isinstance(k, int) for k in keys):
+            sorted_indices = sorted(keys)
+            expected_indices = list(range(len(sorted_indices)))
+            if sorted_indices != expected_indices:
+                raise ValueError(f"{type_spec.__name__.capitalize()} indices must be contiguous starting from 0")
+            container = [_construct(node[k]) for k in sorted(keys)]
+        elif all(isinstance(k, str) for k in keys):
+            container = {k: _construct(v) for k, v in node.items()}
+        else:
+            raise ValueError("Cannot mix integer and non-integer keys at the same level")
+        if type_spec:
+            return type_spec(container)
+        return container
+
+    tree = _build_tree(path_dct)
+    return _construct(tree)
 
 
 def contains_exact(

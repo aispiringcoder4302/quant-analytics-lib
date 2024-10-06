@@ -41,6 +41,7 @@ if TYPE_CHECKING:
     from vectorbtpro.utils.datetime_ import DTC, DTCNT
     from vectorbtpro.utils.selection import PosSel, LabelSel
     from vectorbtpro.utils.merging import MergeFunc
+    from vectorbtpro.utils.knowledge import AssetFunc
     from vectorbtpro.base.indexing import hslice
     from vectorbtpro.base.grouping.base import Grouper
     from vectorbtpro.base.resampling.base import Resampler
@@ -62,6 +63,7 @@ else:
     PosSel = "PosSel"
     LabelSel = "LabelSel"
     MergeFunc = "MergeFunc"
+    AssetFunc = "AssetFunc"
     hslice = "hslice"
     Grouper = "Grouper"
     Resampler = "Resampler"
@@ -73,6 +75,7 @@ __all__ = []
 # Generic types
 T = TypeVar("T")
 F = TypeVar("F", bound=Callable[..., Any])
+MaybeType = Union[T, Type[T]]
 
 # Scalars
 Scalar = Union[str, float, int, complex, bool, object, np.generic]
@@ -174,11 +177,8 @@ ArgsLike = Union[None, Args]
 Kwargs = Dict[str, Any]
 KwargsLike = Union[None, Kwargs]
 KwargsLikeSequence = MaybeSequence[KwargsLike]
+ArgsKwargs = Tuple[Args, Kwargs]
 PathLike = Union[str, Path]
-PathKeyToken = Hashable
-PathKey = Tuple[PathKeyToken, ...]
-MaybePathKey = Union[None, PathKeyToken, PathKey]
-PathLikeKey = Union[MaybePathKey, Path]
 SettingsPath = ClassVar[Union[None, Hashable, Dict[Hashable, Hashable]]]
 WriteableAttrs = ClassVar[Optional[Set[str]]]
 ExpectedKeys = ClassVar[Optional[Set[str]]]
@@ -303,6 +303,16 @@ StaticizedOption = Union[None, bool, Kwargs, TaskId]
 # Selection
 Selection = Union[PosSel, LabelSel, MaybeIterable[Union[PosSel, LabelSel, Hashable]]]
 
+# Search
+PathKeyToken = Hashable
+PathKeyTokens = Sequence[Hashable]
+PathKey = Tuple[PathKeyToken, ...]
+MaybePathKey = Union[None, PathKeyToken, PathKey]
+PathLikeKey = Union[MaybePathKey, Path]
+PathLikeKeys = Sequence[PathLikeKey]
+PathMoveDict = Dict[PathLikeKey, PathLikeKey]
+PathRenameDict = Dict[PathLikeKey, PathKeyToken]
+PathDict = Dict[PathLikeKey, Any]
+
 # Knowledge
-JSONPrimitive = Union[None, int, float, bool, str]
-JSON = Union[Dict[str, "JSON"], List["JSON"], JSONPrimitive]
+AssetFuncLike = Union[str, Type[AssetFunc], FuncArgs, Task, Callable]

@@ -8,6 +8,7 @@ import warnings
 from collections.abc import Hashable, Mapping
 from inspect import signature, getmro
 from keyword import iskeyword
+from types import FunctionType, BuiltinFunctionType, MethodType
 
 import attr
 import numba
@@ -39,6 +40,11 @@ class Comparable:
 # ############# Checks ############# #
 
 
+def is_function(arg: tp.Any) -> bool:
+    """Check whether the argument is a lamdba, (built-in or Numba) function, or method."""
+    return isinstance(arg, (FunctionType, BuiltinFunctionType, MethodType)) or hasattr(arg, "py_func")
+
+
 def is_bool(arg: tp.Any) -> bool:
     """Check whether the argument is a bool."""
     return isinstance(arg, (bool, np.bool_))
@@ -46,7 +52,7 @@ def is_bool(arg: tp.Any) -> bool:
 
 def is_int(arg: tp.Any) -> bool:
     """Check whether the argument is an integer (and not a timedelta, for example)."""
-    return isinstance(arg, (int, np.integer)) and not isinstance(arg, np.timedelta64)
+    return isinstance(arg, (int, np.integer)) and not isinstance(arg, np.timedelta64) and not is_bool(arg)
 
 
 def is_float(arg: tp.Any) -> bool:

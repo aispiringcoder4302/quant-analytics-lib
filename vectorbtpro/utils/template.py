@@ -183,7 +183,7 @@ class RepFunc(CustomTemplate):
         self,
         context: tp.KwargsLike = None,
         strict: tp.Optional[bool] = None,
-        eval_id: int = 0,
+        eval_id: tp.Optional[tp.Hashable] = None,
     ) -> tp.Any:
         """Call `RepFunc.template` as a function."""
         if not self.meets_eval_id(eval_id):

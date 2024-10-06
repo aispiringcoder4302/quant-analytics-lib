@@ -206,6 +206,96 @@ def update_dict(
             set_dict_item(x, k, v, force=force)
 
 
+def reorder_dict(dct: dict, keys: tp.Iterable[tp.Union[tp.Hashable, type(...)]], skip_missing: bool = False) -> dict:
+    """Reorder a dict based on a list of keys.
+
+    The keys list can include all keys, or a subset of keys with a single Ellipsis (...)
+    representing all other keys."""
+    if not isinstance(dct, dict):
+        dct = dict(dct)
+    if not isinstance(keys, list):
+        keys = list(keys)
+    ellipsis_count = keys.count(...)
+    if ellipsis_count > 1:
+        raise ValueError("Keys list can contain at most one Ellipsis")
+    if skip_missing:
+        specified_keys = [k for k in keys if k is not Ellipsis and k in dct]
+    else:
+        specified_keys = [k for k in keys if k is not Ellipsis]
+        missing_keys = [k for k in specified_keys if k not in dct]
+        if missing_keys:
+            raise KeyError(f"Keys not found in dictionary: {missing_keys}")
+    remaining_keys = [k for k in dct if k not in specified_keys]
+    final_order = []
+    for key in keys:
+        if key is Ellipsis:
+            final_order.extend(remaining_keys)
+        elif key in dct:
+            final_order.append(key)
+    if ellipsis_count == 0 and not skip_missing:
+        final_order.extend(k for k in dct if k not in final_order)
+    elif ellipsis_count == 0 and skip_missing:
+        final_order.extend(k for k in dct if k not in final_order)
+    return {k: dct[k] for k in final_order}
+
+
+def reorder_list(lst: list, keys: tp.Iterable[tp.Union[int, type(...)]], skip_missing: bool = False) -> list:
+    """Reorder a list based on a list of integer indices.
+
+    The keys list can include all indices, or a subset of indices with a single Ellipsis (...)
+    representing all other indices."""
+    if not isinstance(lst, list):
+        lst = list(lst)
+    if not isinstance(keys, list):
+        keys = list(keys)
+    ellipsis_count = keys.count(...)
+    if ellipsis_count > 1:
+        raise ValueError("Keys list can contain at most one Ellipsis")
+    specified_keys = [k for k in keys if k is not Ellipsis]
+    if not all(isinstance(k, int) for k in specified_keys):
+        raise TypeError("All keys must be integers or Ellipsis")
+    if skip_missing:
+        seen = set()
+        valid_specified = []
+        for k in specified_keys:
+            if 0 <= k < len(lst) and k not in seen:
+                valid_specified.append(k)
+                seen.add(k)
+        specified_keys = valid_specified
+    else:
+        invalid_keys = [k for k in specified_keys if not (0 <= k < len(lst))]
+        if invalid_keys:
+            raise IndexError(f"Indices out of range: {invalid_keys}")
+        if len(specified_keys) != len(set(specified_keys)):
+            duplicates = set(k for k in specified_keys if specified_keys.count(k) > 1)
+            raise ValueError(f"Duplicate indices in keys list: {duplicates}")
+    remaining_indices = [i for i in range(len(lst)) if i not in specified_keys]
+    final_order = []
+    for key in keys:
+        if key is Ellipsis:
+            final_order.extend(remaining_indices)
+        else:
+            if skip_missing:
+                if 0 <= key < len(lst) and key not in final_order:
+                    final_order.append(key)
+            else:
+                final_order.append(key)
+    if ellipsis_count == 0:
+        if len(final_order) != len(lst):
+            raise ValueError("Reordered list does not include all elements from the original list")
+    else:
+        if len(final_order) != len(lst):
+            raise ValueError("Reordered list does not include all elements from the original list")
+    if set(final_order) != set(range(len(lst))):
+        missing = set(range(len(lst))) - set(final_order)
+        extra = set(final_order) - set(range(len(lst)))
+        if missing:
+            raise ValueError(f"Missing indices in reordered list: {missing}")
+        if extra:
+            raise ValueError(f"Invalid indices in reordered list: {extra}")
+    return [lst[i] for i in final_order]
+
+
 class _unsetkey:
     pass
 
@@ -327,6 +417,11 @@ def merge_dicts(
 def flat_merge_dicts(*dicts: InConfigLikeT, **kwargs) -> OutConfigLikeT:
     """Merge dicts with default arguments and `nested=False`."""
     return merge_dicts(*dicts, nested=False, **kwargs)
+
+
+def deep_merge_dicts(*dicts: InConfigLikeT, **kwargs) -> OutConfigLikeT:
+    """Merge dicts with default arguments and `nested=True`."""
+    return merge_dicts(*dicts, nested=True, **kwargs)
 
 
 class child_dict(pdict):

@@ -224,6 +224,31 @@ def import_module_from_path(module_path: tp.PathLike, reload: bool = False) -> M
     return module
 
 
+def get_caller_qualname() -> str:
+    """Returns the qualified name of the method or function that called this function."""
+    frame = inspect.currentframe()
+    try:
+        caller_frame = frame.f_back
+        code = caller_frame.f_code
+        func_name = code.co_name
+        locals_ = caller_frame.f_locals
+        if "self" in locals_:
+            cls = locals_["self"].__class__
+            return f"{cls.__qualname__}.{func_name}"
+        elif "cls" in locals_:
+            cls = locals_["cls"]
+            return f"{cls.__qualname__}.{func_name}"
+        else:
+            module = inspect.getmodule(caller_frame)
+            if module:
+                func = module.__dict__.get(func_name)
+                if func and hasattr(func, "__qualname__"):
+                    return func.__qualname__
+            return func_name
+    finally:
+        del frame
+
+
 def get_method_class(meth: tp.Callable) -> tp.Type:
     """Get the class of a method."""
     if inspect.ismethod(meth) or (

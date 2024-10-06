@@ -54,6 +54,7 @@ __all__ = [
     "iterated",
 ]
 
+TaskT = tp.TypeVar("TaskT", bound="Task")
 
 @define
 class Task(DefineMixin):
@@ -67,6 +68,19 @@ class Task(DefineMixin):
 
     kwargs: tp.Kwargs = define.field(factory=dict)
     """Keyword arguments."""
+
+    @classmethod
+    def from_tuple(cls: tp.Type[TaskT], tuple_: tp.Tuple[tp.Any, ...]) -> TaskT:
+        """Build `Task` instance from a tuple."""
+        if len(tuple_) == 2:
+            if isinstance(tuple_[1], tuple):
+                return cls(tuple_[0], *tuple_[1])
+            if isinstance(tuple_[1], dict):
+                return cls(tuple_[0], **tuple_[1])
+        if len(tuple_) == 3:
+            if isinstance(tuple_[1], tuple) and isinstance(tuple_[2], dict):
+                return cls(tuple_[0], *tuple_[1], **tuple_[2])
+        return cls(*tuple_)
 
     def __init__(self, func: tp.Callable, *args, **kwargs) -> None:
         DefineMixin.__init__(self, func=func, args=args, kwargs=kwargs)
