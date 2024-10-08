@@ -29,7 +29,8 @@ dependencies = [
     "attrs>=21.1.0",
     "websocket-client",
     "graphlib_backport; python_version<'3.9'",
-    "tomli>=1.1.0; python_version<'3.11'"
+    "tomli>=1.1.0; python_version<'3.11'",
+    "astor; python_version<'3.9'"
 ]
 classifiers = [
     "Intended Audience :: Developers",

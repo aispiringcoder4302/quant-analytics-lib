@@ -40,9 +40,46 @@ class Comparable:
 # ############# Checks ############# #
 
 
+def is_classic_func(arg: tp.Any) -> bool:
+    """Check whether the argument is a classic function."""
+    return isinstance(arg, FunctionType)
+
+
+def is_builtin_func(arg: tp.Any) -> bool:
+    """Check whether the argument is a built-in function."""
+    return isinstance(arg, BuiltinFunctionType)
+
+
+def is_method(arg: tp.Any) -> bool:
+    """Check whether the argument is a method."""
+    return isinstance(arg, MethodType)
+
+
+def is_numba_enabled() -> bool:
+    """Check whether Numba is enabled globally."""
+    return numba.config.DISABLE_JIT != 1
+
+
+def is_numba_func(arg: tp.Any) -> bool:
+    """Check whether the argument is a Numba-compiled function."""
+    from vectorbtpro._settings import settings
+
+    numba_cfg = settings["numba"]
+
+    if not numba_cfg["check_func_type"]:
+        return True
+    if not is_numba_enabled():
+        if numba_cfg["check_func_suffix"]:
+            if arg.__name__.endswith("_nb"):
+                return True
+            return False
+        return False
+    return isinstance(arg, CPUDispatcher)
+
+
 def is_function(arg: tp.Any) -> bool:
     """Check whether the argument is a lamdba, (built-in or Numba) function, or method."""
-    return isinstance(arg, (FunctionType, BuiltinFunctionType, MethodType)) or hasattr(arg, "py_func")
+    return is_classic_func(arg) or is_builtin_func(arg) or is_method(arg) or is_numba_func(arg)
 
 
 def is_bool(arg: tp.Any) -> bool:
@@ -190,28 +227,6 @@ def is_complex_iterable(arg: tp.Any) -> bool:
     if isinstance(arg, (str, bytes, bytearray)):
         return False
     return is_iterable(arg)
-
-
-def is_numba_enabled() -> bool:
-    """Check whether Numba is enabled globally."""
-    return numba.config.DISABLE_JIT != 1
-
-
-def is_numba_func(arg: tp.Any) -> bool:
-    """Check whether the argument is a Numba-compiled function."""
-    from vectorbtpro._settings import settings
-
-    numba_cfg = settings["numba"]
-
-    if not numba_cfg["check_func_type"]:
-        return True
-    if not is_numba_enabled():
-        if numba_cfg["check_func_suffix"]:
-            if arg.__name__.endswith("_nb"):
-                return True
-            return False
-        return False
-    return isinstance(arg, CPUDispatcher)
 
 
 def is_hashable(arg: tp.Any) -> bool:

@@ -16,12 +16,15 @@ Run for the examples:
 ```
 """
 
-from abc import ABC, abstractmethod
+import sys
+import ast
 import os
 import io
 import json
 from pathlib import Path
 import requests
+import builtins
+import importlib
 
 import pandas as pd
 
@@ -35,11 +38,14 @@ from vectorbtpro.utils.template import CustomTemplate, RepEval, RepFunc, substit
 from vectorbtpro.utils.config import merge_dicts, flat_merge_dicts, deep_merge_dicts
 from vectorbtpro.utils.parsing import get_func_arg_names
 from vectorbtpro.utils.execution import Task, execute, NoResult
-from vectorbtpro.utils.module_ import parse_refname, get_caller_qualname
+from vectorbtpro.utils.module_ import parse_refname, get_caller_qualname, package_shortcut_config
+from vectorbtpro.utils.eval_ import evaluate
 
 __all__ = [
     "AssetFunc",
     "AssetPipeline",
+    "BasicAssetPipeline",
+    "ComplexAssetPipeline",
     "KnowledgeAsset",
     "ReleaseAsset",
     "MessagesAsset",
@@ -50,29 +56,32 @@ __all__ = [
 KnowledgeAssetT = tp.TypeVar("KnowledgeAssetT", bound="KnowledgeAsset")
 
 
-class AssetFunc(ABC):
-    """Class representing a function to be applied to a knowledge asset."""
+class AssetFunc:
+    """Abstract class representing a function to be applied to a knowledge asset."""
 
-    _wrap = None
+    _short_name: tp.ClassVar[tp.Optional[str]] = None
+    """Short name of the function to be used in expressions."""
+
+    _wrap: tp.ClassVar[tp.Optional[str]] = None
+    """Whether the results are meant to be wrapped with `KnowledgeAsset`."""
 
     @classmethod
-    @abstractmethod
     def prepare_args(cls, *args, **kwargs) -> tp.ArgsKwargs:
         """Prepare positional and keyword arguments."""
         raise NotImplementedError
 
     @classmethod
-    @abstractmethod
     def func(cls, o: tp.Any, *args, **kwargs) -> tp.Any:
         """Function to be applied."""
         raise NotImplementedError
 
 
 class GetAssetFunc(AssetFunc):
-    """Class for `KnowledgeAsset.get`."""
+    """Asset function class for `KnowledgeAsset.get`."""
 
-    _wrap = False
-    """Whether the results are meant to be wrapped with `KnowledgeAsset`."""
+    _short_name: tp.ClassVar[tp.Optional[str]] = "get"
+
+    _wrap: tp.ClassVar[tp.Optional[str]] = False
 
     @classmethod
     def prepare_args(
@@ -100,7 +109,10 @@ class GetAssetFunc(AssetFunc):
             if isinstance(source, str):
                 source = RepEval(source)
             elif checks.is_function(source):
-                source = RepFunc(source)
+                if checks.is_builtin_func(source):
+                    source = RepFunc(lambda _source=source: _source)
+                else:
+                    source = RepFunc(source)
             elif not isinstance(source, CustomTemplate):
                 raise TypeError(f"Source must be a template")
         return (), {
@@ -154,14 +166,20 @@ class GetAssetFunc(AssetFunc):
                 },
                 template_context,
             )
-            x = source.substitute(_template_context, eval_id="source")
-        return x
+            new_o = source.substitute(_template_context, eval_id="source")
+            if checks.is_function(new_o):
+                new_o = new_o(x)
+        else:
+            new_o = x
+        return new_o
 
 
 class SetAssetFunc(AssetFunc):
-    """Class for `KnowledgeAsset.set`."""
+    """Asset function class for `KnowledgeAsset.set`."""
 
-    _wrap = True
+    _short_name: tp.ClassVar[tp.Optional[str]] = "set"
+
+    _wrap: tp.ClassVar[tp.Optional[str]] = True
 
     @classmethod
     def prepare_args(
@@ -183,7 +201,10 @@ class SetAssetFunc(AssetFunc):
         template_context = asset.resolve_setting(template_context, "template_context", merge=True)
 
         if checks.is_function(value):
-            value = RepFunc(value)
+            if checks.is_builtin_func(value):
+                value = RepFunc(lambda _value=value: _value)
+            else:
+                value = RepFunc(value)
         if path is not None:
             if isinstance(path, list):
                 paths = [search.resolve_pathlike_key(p) for p in path]
@@ -234,6 +255,8 @@ class SetAssetFunc(AssetFunc):
                 template_context,
             )
             v = value.substitute(_template_context, eval_id="value", **kwargs)
+            if checks.is_function(v):
+                v = v(x)
             o = search.set_pathlike_key(o, p, v, make_copy=make_copy, prev_keys=prev_keys)
         if not changed_only or len(prev_keys) > 0:
             return o
@@ -241,9 +264,11 @@ class SetAssetFunc(AssetFunc):
 
 
 class RemoveAssetFunc(AssetFunc):
-    """Class for `KnowledgeAsset.remove`."""
+    """Asset function class for `KnowledgeAsset.remove`."""
 
-    _wrap = True
+    _short_name: tp.ClassVar[tp.Optional[str]] = "remove"
+
+    _wrap: tp.ClassVar[tp.Optional[str]] = True
 
     @classmethod
     def prepare_args(
@@ -298,9 +323,11 @@ class RemoveAssetFunc(AssetFunc):
 
 
 class MoveAssetFunc(AssetFunc):
-    """Class for `KnowledgeAsset.move`."""
+    """Asset function class for `KnowledgeAsset.move`."""
 
-    _wrap = True
+    _short_name: tp.ClassVar[tp.Optional[str]] = "move"
+
+    _wrap: tp.ClassVar[tp.Optional[str]] = True
 
     @classmethod
     def prepare_args(
@@ -370,9 +397,11 @@ class MoveAssetFunc(AssetFunc):
 
 
 class RenameAssetFunc(MoveAssetFunc):
-    """Class for `KnowledgeAsset.rename`."""
+    """Asset function class for `KnowledgeAsset.rename`."""
 
-    _wrap = True
+    _short_name: tp.ClassVar[tp.Optional[str]] = "rename"
+
+    _wrap: tp.ClassVar[tp.Optional[str]] = True
 
     @classmethod
     def prepare_args(
@@ -416,9 +445,11 @@ class RenameAssetFunc(MoveAssetFunc):
 
 
 class ReorderAssetFunc(AssetFunc):
-    """Class for `KnowledgeAsset.reorder`."""
+    """Asset function class for `KnowledgeAsset.reorder`."""
 
-    _wrap = True
+    _short_name: tp.ClassVar[tp.Optional[str]] = "reorder"
+
+    _wrap: tp.ClassVar[tp.Optional[str]] = True
 
     @classmethod
     def prepare_args(
@@ -462,7 +493,10 @@ class ReorderAssetFunc(AssetFunc):
         if isinstance(new_order, str):
             new_order = RepEval(new_order)
         elif checks.is_function(new_order):
-            new_order = RepFunc(new_order)
+            if checks.is_builtin_func(new_order):
+                new_order = RepFunc(lambda _new_order=new_order: _new_order)
+            else:
+                new_order = RepFunc(new_order)
         if path is not None:
             if isinstance(path, list):
                 paths = [search.resolve_pathlike_key(p) for p in path]
@@ -514,6 +548,8 @@ class ReorderAssetFunc(AssetFunc):
                     template_context,
                 )
                 _new_order = new_order.substitute(_template_context, eval_id="new_order", **kwargs)
+                if checks.is_function(_new_order):
+                    _new_order = _new_order(x)
             else:
                 _new_order = new_order
             if isinstance(x, dict):
@@ -530,14 +566,16 @@ class ReorderAssetFunc(AssetFunc):
 
 
 class QueryAssetFunc(AssetFunc):
-    """Class for `KnowledgeAsset.query`."""
+    """Asset function class for `KnowledgeAsset.query`."""
 
-    _wrap = False
+    _short_name: tp.ClassVar[tp.Optional[str]] = "query"
+
+    _wrap: tp.ClassVar[tp.Optional[str]] = False
 
     @classmethod
     def prepare_args(
         cls,
-        expression: tp.Union[str, tp.CustomTemplate],
+        expression: tp.Union[str, tp.Callable, tp.CustomTemplate],
         as_filter: tp.Optional[bool] = None,
         template_context: tp.KwargsLike = None,
         asset: tp.Optional[tp.MaybeType["KnowledgeAsset"]] = None,
@@ -551,7 +589,10 @@ class QueryAssetFunc(AssetFunc):
         if isinstance(expression, str):
             expression = RepEval(expression)
         elif checks.is_function(expression):
-            expression = RepFunc(expression)
+            if checks.is_builtin_func(expression):
+                expression = RepFunc(lambda _expression=expression: _expression)
+            else:
+                expression = RepFunc(expression)
         elif not isinstance(expression, CustomTemplate):
             raise TypeError(f"Expression must be a template")
         return (), {
@@ -582,6 +623,8 @@ class QueryAssetFunc(AssetFunc):
             template_context,
         )
         new_o = expression.substitute(_template_context, eval_id="expression", **kwargs)
+        if checks.is_function(new_o):
+            new_o = new_o(o)
         if as_filter and isinstance(new_o, bool):
             if new_o:
                 return o
@@ -590,28 +633,36 @@ class QueryAssetFunc(AssetFunc):
 
 
 class FindAssetFunc(AssetFunc):
-    """Class for `KnowledgeAsset.find`."""
+    """Asset function class for `KnowledgeAsset.find`."""
 
-    _wrap = True
+    _short_name: tp.ClassVar[tp.Optional[str]] = "find"
+
+    _wrap: tp.ClassVar[tp.Optional[str]] = True
 
     @classmethod
     def prepare_args(
         cls,
         target: tp.MaybeList[tp.Any],
         path: tp.Optional[tp.MaybeList[tp.PathLikeKey]] = None,
+        per_path: tp.Optional[bool] = None,
+        find_any: tp.Optional[bool] = None,
         keep_path: tp.Optional[bool] = None,
         skip_missing: tp.Optional[bool] = None,
         source: tp.Union[None, str, tp.Callable, tp.CustomTemplate] = None,
-        in_dumps: tp.Optional[bool] = None,
+        in_json_dumps: tp.Optional[bool] = None,
+        as_filter: tp.Optional[bool] = None,
         template_context: tp.KwargsLike = None,
         asset: tp.Optional[tp.MaybeType["KnowledgeAsset"]] = None,
         **kwargs,
     ) -> tp.ArgsKwargs:
         if asset is None:
             asset = KnowledgeAsset
+        per_path = asset.resolve_setting(per_path, "per_path")
+        find_any = asset.resolve_setting(find_any, "find_any")
         keep_path = asset.resolve_setting(keep_path, "keep_path")
         skip_missing = asset.resolve_setting(skip_missing, "skip_missing")
-        in_dumps = asset.resolve_setting(in_dumps, "in_dumps")
+        in_json_dumps = asset.resolve_setting(in_json_dumps, "in_json_dumps")
+        as_filter = asset.resolve_setting(as_filter, "as_filter")
         template_context = asset.resolve_setting(template_context, "template_context", merge=True)
 
         if path is not None:
@@ -619,11 +670,21 @@ class FindAssetFunc(AssetFunc):
                 path = [search.resolve_pathlike_key(p) for p in path]
             else:
                 path = search.resolve_pathlike_key(path)
+        if per_path:
+            if not isinstance(target, list):
+                target = [target]
+            if not isinstance(path, list):
+                path = [path]
+            if len(target) != len(path):
+                raise ValueError("Number of targets must match number of paths")
         if source is not None:
             if isinstance(source, str):
                 source = RepEval(source)
             elif checks.is_function(source):
-                source = RepFunc(source)
+                if checks.is_builtin_func(source):
+                    source = RepFunc(lambda _source=source: _source)
+                else:
+                    source = RepFunc(source)
             elif not isinstance(source, CustomTemplate):
                 raise TypeError(f"Source must be a template")
         if "excl_types" not in kwargs:
@@ -632,10 +693,13 @@ class FindAssetFunc(AssetFunc):
             **dict(
                 target=target,
                 path=path,
+                per_path=per_path,
+                find_any=find_any,
                 keep_path=keep_path,
                 skip_missing=skip_missing,
                 source=source,
-                in_dumps=in_dumps,
+                in_json_dumps=in_json_dumps,
+                as_filter=as_filter,
                 template_context=template_context,
             ),
             **kwargs,
@@ -647,6 +711,7 @@ class FindAssetFunc(AssetFunc):
         k: tp.Optional[tp.Hashable],
         o: tp.Any,
         target: tp.MaybeList[tp.Any],
+        find_any: bool = False,
         **kwargs,
     ) -> bool:
         """Match function for `FindAssetFunc.func`.
@@ -658,21 +723,37 @@ class FindAssetFunc(AssetFunc):
             targets = target
         for target in targets:
             if o is target:
-                return True
+                if find_any:
+                    return True
+                continue
             if o is None and target is None:
-                return True
+                if find_any:
+                    return True
+                continue
             elif checks.is_bool(o) and checks.is_bool(target):
                 if o == target:
-                    return True
+                    if find_any:
+                        return True
+                    continue
             elif checks.is_number(o) and checks.is_number(target):
                 if o == target:
-                    return True
+                    if find_any:
+                        return True
+                    continue
             elif isinstance(o, str) and isinstance(target, str):
                 if search.contains(o, target, **kwargs):
-                    return True
+                    if find_any:
+                        return True
+                    continue
             elif type(o) is type(target):
                 if o == target:
-                    return True
+                    if find_any:
+                        return True
+                    continue
+            if not find_any:
+                return False
+        if not find_any:
+            return True
         return False
 
     @classmethod
@@ -681,60 +762,111 @@ class FindAssetFunc(AssetFunc):
         o: tp.Any,
         target: tp.MaybeList[tp.Any],
         path: tp.Optional[tp.MaybeList[tp.PathLikeKey]] = None,
+        per_path: bool = False,
+        find_any: bool = False,
         keep_path: bool = False,
         skip_missing: bool = False,
         source: tp.Union[None, str, tp.Callable, tp.CustomTemplate] = None,
-        in_dumps: bool = False,
+        in_json_dumps: bool = False,
+        as_filter: bool = True,
         template_context: tp.KwargsLike = None,
         **kwargs,
     ) -> tp.Any:
-        x = o
-        if path is not None:
-            if isinstance(path, list):
-                xs = []
-                for p in path:
-                    try:
-                        xs.append(search.get_pathlike_key(x, p, keep_path=True))
-                    except (KeyError, IndexError, AttributeError) as e:
-                        if not skip_missing:
-                            raise e
-                        continue
-                if len(xs) == 0:
-                    return NoResult
-                x = deep_merge_dicts(*xs)
-            else:
+        if per_path:
+            for i, p in enumerate(path):
+                x = o
                 try:
-                    x = search.get_pathlike_key(x, path, keep_path=keep_path)
+                    x = search.get_pathlike_key(x, p, keep_path=keep_path)
                 except (KeyError, IndexError, AttributeError) as e:
                     if not skip_missing:
                         raise e
-                    return NoResult
-        if source is not None:
-            _template_context = flat_merge_dicts(
-                {
-                    "o": o,
-                    "x": x,
-                    **(x if isinstance(x, dict) else {}),
-                },
-                template_context,
-            )
-            x = source.substitute(_template_context, eval_id="source")
-        if not isinstance(x, str) and in_dumps:
-            x = json.dumps(x, ensure_ascii=False)
-        if search.contains_in_obj(
-            x,
-            cls.match_func,
-            target=target,
-            **kwargs,
-        ):
-            return o
-        return NoResult
+                    continue
+                if source is not None:
+                    _template_context = flat_merge_dicts(
+                        {
+                            "o": o,
+                            "x": x,
+                            **(x if isinstance(x, dict) else {}),
+                        },
+                        template_context,
+                    )
+                    _x = source.substitute(_template_context, eval_id="source")
+                    if checks.is_function(_x):
+                        x = _x(x)
+                    else:
+                        x = _x
+                if not isinstance(x, str) and in_json_dumps:
+                    x = json.dumps(x, ensure_ascii=False)
+                if search.contains_in_obj(
+                    x,
+                    cls.match_func,
+                    target=target[i],
+                    find_any=find_any,
+                    **kwargs,
+                ):
+                    if find_any:
+                        return o if as_filter else True
+                    continue
+                if not find_any:
+                    return NoResult if as_filter else False
+            if not find_any:
+                return o if as_filter else True
+            return NoResult if as_filter else False
+        else:
+            x = o
+            if path is not None:
+                if isinstance(path, list):
+                    xs = []
+                    for p in path:
+                        try:
+                            xs.append(search.get_pathlike_key(x, p, keep_path=True))
+                        except (KeyError, IndexError, AttributeError) as e:
+                            if not skip_missing:
+                                raise e
+                            continue
+                    if len(xs) == 0:
+                        return NoResult if as_filter else False
+                    x = deep_merge_dicts(*xs)
+                else:
+                    try:
+                        x = search.get_pathlike_key(x, path, keep_path=keep_path)
+                    except (KeyError, IndexError, AttributeError) as e:
+                        if not skip_missing:
+                            raise e
+                        return NoResult if as_filter else False
+            if source is not None:
+                _template_context = flat_merge_dicts(
+                    {
+                        "o": o,
+                        "x": x,
+                        **(x if isinstance(x, dict) else {}),
+                    },
+                    template_context,
+                )
+                _x = source.substitute(_template_context, eval_id="source")
+                if checks.is_function(_x):
+                    x = _x(x)
+                else:
+                    x = _x
+            if not isinstance(x, str) and in_json_dumps:
+                x = json.dumps(x, ensure_ascii=False)
+            if search.contains_in_obj(
+                x,
+                cls.match_func,
+                target=target,
+                find_any=find_any,
+                **kwargs,
+            ):
+                return o if as_filter else True
+            return NoResult if as_filter else False
 
 
 class ReplaceAssetFunc(FindAssetFunc):
-    """Class for `KnowledgeAsset.replace_`."""
+    """Asset function class for `KnowledgeAsset.replace_`."""
 
-    _wrap = True
+    _short_name: tp.ClassVar[tp.Optional[str]] = "replace_"
+
+    _wrap: tp.ClassVar[tp.Optional[str]] = True
 
     @classmethod
     def prepare_args(
@@ -742,6 +874,8 @@ class ReplaceAssetFunc(FindAssetFunc):
         target: tp.MaybeList[tp.Any],
         replacement: tp.MaybeList[tp.Any],
         path: tp.Optional[tp.MaybeList[tp.PathLikeKey]] = None,
+        per_path: tp.Optional[bool] = None,
+        replace_any: tp.Optional[bool] = None,
         keep_path: tp.Optional[bool] = None,
         skip_missing: tp.Optional[bool] = None,
         make_copy: tp.Optional[bool] = None,
@@ -751,6 +885,8 @@ class ReplaceAssetFunc(FindAssetFunc):
     ) -> tp.ArgsKwargs:
         if asset is None:
             asset = KnowledgeAsset
+        per_path = asset.resolve_setting(per_path, "per_path")
+        replace_any = asset.resolve_setting(replace_any, "replace_any")
         keep_path = asset.resolve_setting(keep_path, "keep_path")
         skip_missing = asset.resolve_setting(skip_missing, "skip_missing")
         make_copy = asset.resolve_setting(make_copy, "make_copy")
@@ -763,6 +899,13 @@ class ReplaceAssetFunc(FindAssetFunc):
                 paths = [search.resolve_pathlike_key(path)]
         else:
             paths = [None]
+        if per_path:
+            if not isinstance(target, list):
+                target = [target]
+            if not isinstance(replacement, list):
+                replacement = [replacement]
+            if len(target) != len(replacement) != len(paths):
+                raise ValueError("Number of targets and replacements must match number of paths")
         find_arg_names = set(get_func_arg_names(search.find_in_obj))
         find_kwargs = {k: kwargs.pop(k) for k in list(kwargs.keys()) if k in find_arg_names}
         if "excl_types" not in find_kwargs:
@@ -772,6 +915,8 @@ class ReplaceAssetFunc(FindAssetFunc):
                 target=target,
                 replacement=replacement,
                 paths=paths,
+                per_path=per_path,
+                replace_any=replace_any,
                 keep_path=keep_path,
                 skip_missing=skip_missing,
                 make_copy=make_copy,
@@ -831,6 +976,8 @@ class ReplaceAssetFunc(FindAssetFunc):
         target: tp.MaybeList[tp.Any],
         replacement: tp.MaybeList[tp.Any],
         paths: tp.List[tp.PathLikeKey],
+        per_path: bool = False,
+        replace_any: bool = True,
         keep_path: bool = False,
         skip_missing: bool = False,
         make_copy: bool = True,
@@ -841,7 +988,8 @@ class ReplaceAssetFunc(FindAssetFunc):
         if find_kwargs is None:
             find_kwargs = {}
         prev_keys = []
-        for p in paths:
+        new_p_v_map = {}
+        for i, p in enumerate(paths):
             x = o
             if p is not None:
                 try:
@@ -853,10 +1001,14 @@ class ReplaceAssetFunc(FindAssetFunc):
             path_dct = search.find_in_obj(
                 x,
                 cls.match_func,
-                target=target,
+                target=target[i] if per_path else target,
+                find_any=replace_any,
                 **find_kwargs,
                 **kwargs,
             )
+            if len(path_dct) == 0 and not replace_any:
+                new_p_v_map = {}
+                break
             for k, v in path_dct.items():
                 if p is not None and not keep_path:
                     new_p = search.combine_pathlike_keys(p, k, minimize=True)
@@ -865,20 +1017,24 @@ class ReplaceAssetFunc(FindAssetFunc):
                 v = cls.replace_func(
                     k,
                     v,
-                    target,
-                    replacement,
+                    target[i] if per_path else target,
+                    replacement[i] if per_path else replacement,
                     **kwargs,
                 )
-                o = search.set_pathlike_key(o, new_p, v, make_copy=make_copy, prev_keys=prev_keys)
+                new_p_v_map[new_p] = v
+        for new_p, v in new_p_v_map.items():
+            o = search.set_pathlike_key(o, new_p, v, make_copy=make_copy, prev_keys=prev_keys)
         if not changed_only or len(prev_keys) > 0:
             return o
         return NoResult
 
 
 class FlattenAssetFunc(AssetFunc):
-    """Class for `KnowledgeAsset.flatten`."""
+    """Asset function class for `KnowledgeAsset.flatten`."""
 
-    _wrap = True
+    _short_name: tp.ClassVar[tp.Optional[str]] = "flatten"
+
+    _wrap: tp.ClassVar[tp.Optional[str]] = True
 
     @classmethod
     def prepare_args(
@@ -943,9 +1099,11 @@ class FlattenAssetFunc(AssetFunc):
 
 
 class UnflattenAssetFunc(AssetFunc):
-    """Class for `KnowledgeAsset.unflatten`."""
+    """Asset function class for `KnowledgeAsset.unflatten`."""
 
-    _wrap = True
+    _short_name: tp.ClassVar[tp.Optional[str]] = "unflatten"
+
+    _wrap: tp.ClassVar[tp.Optional[str]] = True
 
     @classmethod
     def prepare_args(
@@ -1008,19 +1166,7 @@ class UnflattenAssetFunc(AssetFunc):
 
 
 class AssetPipeline:
-    """Asset pipeline.
-
-    Usage:
-        ```pycon
-        >>> asset_pipeline = vbt.AssetPipeline()
-        >>> asset_pipeline.append("flatten")
-        >>> asset_pipeline.append("query", "len(x)")
-        >>> asset_pipeline.append("get")
-
-        >>> asset_pipeline(dataset[0])
-        5
-        ```
-    """
+    """Abstract class representing an asset pipeline."""
 
     @classmethod
     def resolve_task(
@@ -1028,12 +1174,12 @@ class AssetPipeline:
         func: tp.AssetFuncLike,
         *args,
         prepare_args: bool = True,
+        prepare_once: bool = True,
         cond_kwargs: tp.KwargsLike = None,
-        asset_func_meta: tp.KwargsLike = None,
+        asset_func_meta: tp.Union[None, dict, list] = None,
         **kwargs,
     ) -> tp.Task:
         """Resolve a task."""
-        func_wrap = None
         if isinstance(func, tuple):
             func = Task.from_tuple(func)
         if isinstance(func, Task):
@@ -1046,27 +1192,94 @@ class AssetPipeline:
             elif func.title() + "AssetFunc" in globals():
                 func = globals()[func.title() + "AssetFunc"]
             else:
-                raise ValueError(f"Function '{func}' not found")
+                found_func = False
+                for k, v in globals().items():
+                    if isinstance(v, type) and issubclass(v, AssetFunc):
+                        if v._short_name is not None:
+                            if func.lower() == v._short_name.lower():
+                                func = v
+                                found_func = True
+                if not found_func:
+                    raise ValueError(f"Function '{func}' not found")
         if isinstance(func, AssetFunc):
             raise TypeError("Function must be a subclass of AssetFunc, not an instance")
         if isinstance(func, type) and issubclass(func, AssetFunc):
+            _asset_func_meta = {
+                "_short_name": getattr(func, "_short_name"),
+                "_wrap": getattr(func, "_wrap"),
+            }
             if asset_func_meta is not None:
-                if hasattr(func, "_wrap"):
-                    asset_func_meta["_wrap"] = getattr(func, "_wrap")
+                if isinstance(asset_func_meta, dict):
+                    asset_func_meta.update(_asset_func_meta)
+                else:
+                    asset_func_meta.append(_asset_func_meta)
             if prepare_args:
-                if cond_kwargs is None:
-                    cond_kwargs = {}
-                if len(cond_kwargs) > 0:
-                    prepare_args_arg_names = get_func_arg_names(func.prepare_args)
-                    for k, v in cond_kwargs.items():
-                        if k in prepare_args_arg_names:
-                            kwargs[k] = v
-                args, kwargs = func.prepare_args(*args, **kwargs)
-            func = func.func
+                if prepare_once:
+                    if cond_kwargs is None:
+                        cond_kwargs = {}
+                    if len(cond_kwargs) > 0:
+                        prepare_args_arg_names = get_func_arg_names(func.prepare_args)
+                        for k, v in cond_kwargs.items():
+                            if k in prepare_args_arg_names:
+                                kwargs[k] = v
+                    args, kwargs = func.prepare_args(*args, **kwargs)
+                    func = func.func
+                else:
+
+                    def func(o, *args, _func=func, **kwargs):
+                        new_args, new_kwargs = _func.prepare_args(*args, **kwargs)
+                        return _func.func(o, *new_args, **new_kwargs)
+
+                    args, kwargs = (), {}
+            else:
+                func = func.func
         if not callable(func):
             raise TypeError("Function must be callable")
-        task = Task(func, *args, **kwargs)
-        return task
+        return Task(func, *args, **kwargs)
+
+    def run(self, o: tp.Any) -> tp.Any:
+        """Run the pipeline on an object."""
+        raise NotImplementedError
+
+    def __call__(self, o: tp.Any) -> tp.Any:
+        return self.run(o)
+
+
+class BasicAssetPipeline(AssetPipeline):
+    """Class representing a basic asset pipeline.
+
+    Builds a composite function out of all functions.
+
+    Usage:
+        ```pycon
+        >>> asset_pipeline = vbt.BasicAssetPipeline()
+        >>> asset_pipeline.append("flatten")
+        >>> asset_pipeline.append("query", len)
+        >>> asset_pipeline.append("get")
+
+        >>> asset_pipeline(dataset[0])
+        5
+        ```
+    """
+
+    def __init__(self, *args, **kwargs) -> None:
+        if len(args) == 0:
+            tasks = []
+        else:
+            tasks = args[0]
+            args = args[1:]
+        if not isinstance(tasks, list):
+            tasks = [tasks]
+        self._tasks = [self.resolve_task(task, *args, **kwargs) for task in tasks]
+
+    @property
+    def tasks(self) -> tp.List[tp.Task]:
+        """Tasks."""
+        return self._tasks
+
+    def append(self, func: tp.AssetFuncLike, *args, **kwargs) -> None:
+        """Append a task to the pipeline."""
+        self.tasks.append(self.resolve_task(func, *args, **kwargs))
 
     @classmethod
     def compose_tasks(cls, tasks: tp.List[tp.Task]) -> tp.Callable:
@@ -1080,32 +1293,222 @@ class AssetPipeline:
 
         return composed
 
-    def __init__(self, *args, **kwargs) -> None:
-        if len(args) == 0:
-            tasks = []
+    def run(self, o: tp.Any) -> tp.Any:
+        return self.compose_tasks(list(self.tasks))(o)
+
+
+class ComplexAssetPipeline(AssetPipeline):
+    """Class representing a complex asset pipeline.
+
+    Takes an expression string and a context. Resolves functions inside the expression.
+    Expression is evaluated with `vectorbtpro.utils.eval_.evaluate`.
+
+    Usage:
+        ```pycon
+        >>> asset_pipeline = vbt.ComplexAssetPipeline("query(flatten(o), len)")
+
+        >>> asset_pipeline(dataset[0])
+        5
+        ```
+    """
+
+    @classmethod
+    def is_expression(cls, expression: str) -> bool:
+        """Determine whether the input string is an expression."""
+        return not isinstance(ast.parse(expression).body, ast.Name)
+
+    @classmethod
+    def resolve_expression_and_context(
+        cls,
+        expression: str,
+        context: tp.KwargsLike = None,
+        prepare_args: bool = True,
+        prepare_once: bool = True,
+        **resolve_task_kwargs,
+    ) -> tp.Tuple[str, tp.Kwargs]:
+        """Resolve an expression and a context.
+
+        Parses an expression string, extracts function calls with their arguments,
+        removing the first positional argument from each function, and creates a new context."""
+        if context is None:
+            context = {}
+        for k, v in package_shortcut_config.items():
+            if k not in context:
+                try:
+                    context[k] = importlib.import_module(v)
+                except ImportError:
+                    pass
+        tree = ast.parse(expression)
+        builtin_functions = set(dir(builtins))
+        imported_functions = set()
+        imported_modules = set()
+        defined_functions = set()
+        func_context = {}
+
+        class _FunctionAnalyzer(ast.NodeVisitor):
+            def visit_Import(self, node):
+                for alias in node.names:
+                    name = alias.asname if alias.asname else alias.name.split(".")[0]
+                    imported_modules.add(name)
+                self.generic_visit(node)
+
+            def visit_ImportFrom(self, node):
+                for alias in node.names:
+                    name = alias.asname if alias.asname else alias.name
+                    imported_functions.add(name)
+                self.generic_visit(node)
+
+            def visit_FunctionDef(self, node):
+                defined_functions.add(node.name)
+                self.generic_visit(node)
+
+        analyzer = _FunctionAnalyzer()
+        analyzer.visit(tree)
+
+        class _NodeMixin:
+
+            def get_func_name(self, func):
+                attrs = []
+                while isinstance(func, ast.Attribute):
+                    attrs.append(func.attr)
+                    func = func.value
+                if isinstance(func, ast.Name):
+                    attrs.append(func.id)
+                return ".".join(reversed(attrs)) if attrs else "<unknown>"
+
+            def is_function_assigned(self, func):
+                func_name = self.get_func_name(func)
+                if "." in func_name:
+                    func_name = func_name.split(".")[0]
+                return (
+                    func_name in context
+                    or func_name in builtin_functions
+                    or func_name in imported_functions
+                    or func_name in imported_modules
+                    or func_name in defined_functions
+                )
+
+        class _FunctionCallVisitor(ast.NodeVisitor, _NodeMixin):
+
+            def process_argument(self, arg):
+                if isinstance(arg, ast.Constant):
+                    return arg.value
+                elif isinstance(arg, ast.Name):
+                    var_name = arg.id
+                    if var_name in context:
+                        return context[var_name]
+                    elif var_name in builtin_functions:
+                        return getattr(builtins, var_name)
+                    else:
+                        raise ValueError(f"Variable '{var_name}' is not defined in the context")
+                elif isinstance(arg, ast.List):
+                    return [self.process_argument(elem) for elem in arg.elts]
+                elif isinstance(arg, ast.Tuple):
+                    return tuple(self.process_argument(elem) for elem in arg.elts)
+                elif isinstance(arg, ast.Dict):
+                    return {self.process_argument(k): self.process_argument(v) for k, v in zip(arg.keys, arg.values)}
+                elif isinstance(arg, ast.Set):
+                    return {self.process_argument(elem) for elem in arg.elts}
+                elif isinstance(arg, ast.Call):
+                    if self.is_function_assigned(arg.func):
+                        return self.get_func_name(arg.func)
+                raise ValueError(f"Unsupported or dynamic argument: {ast.dump(arg)}")
+
+            def visit_Call(self, node):
+                if self.is_function_assigned(node.func):
+                    return
+                self.generic_visit(node)
+                func_name = self.get_func_name(node.func)
+                pos_args = []
+                for arg in node.args[1:]:
+                    arg_value = self.process_argument(arg)
+                    pos_args.append(arg_value)
+                kw_args = {}
+                for kw in node.keywords:
+                    if kw.arg is None:
+                        raise ValueError(f"Dynamic keyword argument names are not allowed in '{func_name}'")
+                    kw_name = kw.arg
+                    kw_value = self.process_argument(kw.value)
+                    kw_args[kw_name] = kw_value
+                task = cls.resolve_task(
+                    func_name,
+                    *pos_args,
+                    **kw_args,
+                    prepare_args=prepare_args,
+                    prepare_once=prepare_once,
+                    **resolve_task_kwargs,
+                )
+                if prepare_args and prepare_once:
+
+                    def func(o, _task=task):
+                        return _task.func(o, *_task.args, **_task.kwargs)
+
+                else:
+                    func = task.func
+
+                func_context[func_name] = func
+
+        visitor = _FunctionCallVisitor()
+        visitor.visit(tree)
+
+        if prepare_args and prepare_once:
+
+            class _ArgumentPruner(ast.NodeTransformer, _NodeMixin):
+
+                def visit_Call(self, node: ast.Call):
+                    if self.is_function_assigned(node.func):
+                        return node
+                    if node.args:
+                        node.args = [node.args[0]]
+                    else:
+                        node.args = []
+                    node.keywords = []
+                    self.generic_visit(node)
+                    return node
+
+            pruner = _ArgumentPruner()
+            modified_tree = pruner.visit(tree)
+            ast.fix_missing_locations(modified_tree)
+            if sys.version_info >= (3, 9):
+                new_expression = ast.unparse(modified_tree)
+            else:
+                import astor
+
+                new_expression = astor.to_source(modified_tree).strip()
         else:
-            tasks = args[0]
-            args = args[1:]
-        if not isinstance(tasks, list):
-            tasks = [tasks]
-        tasks = list(map(lambda task: self.resolve_task(task, *args, **kwargs), tasks))
-        self._tasks = tasks
+            new_expression = expression
+
+        new_context = merge_dicts(func_context, context)
+        return new_expression, new_context
+
+    def __init__(
+        self,
+        expression: str,
+        context: tp.KwargsLike = None,
+        prepare_once: bool = True,
+        **resolve_task_kwargs,
+    ) -> None:
+        self._expression, self._context = self.resolve_expression_and_context(
+            expression,
+            context=context,
+            prepare_once=prepare_once,
+            **resolve_task_kwargs,
+        )
 
     @property
-    def tasks(self) -> tp.List[tp.Task]:
-        """Tasks."""
-        return self._tasks
+    def expression(self) -> str:
+        """Expression."""
+        return self._expression
 
-    def append(self, func: tp.AssetFuncLike, *args, **kwargs):
-        """Append a task to the pipeline."""
-        self.tasks.append(self.resolve_task(func, *args, **kwargs))
+    @property
+    def context(self) -> tp.Kwargs:
+        """Context."""
+        return self._context
 
     def run(self, o: tp.Any) -> tp.Any:
         """Run the pipeline on an object."""
-        return self.compose_tasks(self.tasks)(o)
-
-    def __call__(self, o: tp.Any) -> tp.Any:
-        return self.run(o)
+        context = merge_dicts({"o": o, "x": o}, self.context)
+        return evaluate(self.expression, context=context)
 
 
 class KnowledgeAsset(Configured):
@@ -1237,8 +1640,8 @@ class KnowledgeAsset(Configured):
 
         Function can be either a callable, a tuple of function and its arguments,
         a `vectorbtpro.utils.execution.Task` instance, a subclass of `AssetFunc` or its prefix or full name.
-        Moreover, function can be a list of the above. In such a case, a composite function will be
-        built and applied to each element of the asset such that the asset is processed in a single pass.
+        Moreover, function can be a list of the above. In such a case, `BasicAssetPipeline` will be used.
+        If function is a valid expression, `ComplexAssetPipeline` will be used.
 
         Uses `vectorbtpro.utils.execution.execute` for execution.
 
@@ -1246,7 +1649,10 @@ class KnowledgeAsset(Configured):
 
         Usage:
             ```pycon
-            >>> asset.apply(["flatten", ("query", "len(x)"), "get"])
+            >>> asset.apply(["flatten", ("query", len)])
+            [5, 5, 5, 5, 6]
+
+            >>> asset.apply("query(flatten(o), len)")
             [5, 5, 5, 5, 6]
             ```
         """
@@ -1255,9 +1661,23 @@ class KnowledgeAsset(Configured):
 
         if isinstance(func, list):
             func, args, kwargs = (
-                AssetPipeline(
+                BasicAssetPipeline(
                     func,
                     *args,
+                    cond_kwargs=dict(asset=self),
+                    asset_func_meta=asset_func_meta,
+                    **kwargs,
+                ),
+                (),
+                {},
+            )
+        elif isinstance(func, str) and ComplexAssetPipeline.is_expression(func):
+            if len(args) > 0:
+                raise ValueError("No more positional arguments can be applied to ComplexAssetPipeline")
+            func, args, kwargs = (
+                ComplexAssetPipeline(
+                    func,
+                    context=kwargs.get("template_context", None),
                     cond_kwargs=dict(asset=self),
                     asset_func_meta=asset_func_meta,
                     **kwargs,
@@ -1655,7 +2075,7 @@ class KnowledgeAsset(Configured):
 
     def query(
         self,
-        expression: tp.Union[str, tp.CustomTemplate],
+        expression: tp.Union[str, tp.Callable, tp.CustomTemplate],
         engine: tp.Optional[str] = None,
         as_filter: tp.Optional[bool] = None,
         template_context: tp.KwargsLike = None,
@@ -1758,7 +2178,10 @@ class KnowledgeAsset(Configured):
             if isinstance(expression, str):
                 expression = RepEval(expression)
             elif checks.is_function(expression):
-                expression = RepFunc(expression)
+                if checks.is_builtin_func(expression):
+                    expression = RepFunc(lambda _expression=expression: _expression)
+                else:
+                    expression = RepFunc(expression)
             elif not isinstance(expression, CustomTemplate):
                 raise TypeError(f"Expression must be a template")
             df = pd.DataFrame.from_records(self.obj)
@@ -1772,6 +2195,8 @@ class KnowledgeAsset(Configured):
                 template_context,
             )
             result = expression.substitute(_template_context, eval_id="expression", **kwargs)
+            if checks.is_function(result):
+                result = result(df)
             if as_filter and isinstance(result, pd.Series) and result.dtype == "bool":
                 result = df[result]
             if isinstance(result, pd.Series):
@@ -1792,10 +2217,13 @@ class KnowledgeAsset(Configured):
         self,
         target: tp.MaybeList[tp.Any],
         path: tp.Optional[tp.MaybeList[tp.PathLikeKey]] = None,
+        per_path: tp.Optional[bool] = None,
+        find_any: tp.Optional[bool] = None,
         keep_path: tp.Optional[bool] = None,
         skip_missing: tp.Optional[bool] = None,
         source: tp.Union[None, str, tp.Callable, tp.CustomTemplate] = None,
-        in_dumps: tp.Optional[bool] = None,
+        in_json_dumps: tp.Optional[bool] = None,
+        as_filter: tp.Optional[bool] = None,
         template_context: tp.KwargsLike = None,
         **kwargs,
     ) -> KnowledgeAssetT:
@@ -1806,26 +2234,31 @@ class KnowledgeAsset(Configured):
         Uses `vectorbtpro.utils.search.contains_in_obj` (keyword arguments are passed here)
         to find any occurrences in each object.
 
-        Target can be one or multiple objects.
+        Target can be one or multiple objects. If there are multiple targets and `find_any` is True,
+        the match function will return True if any of the targets have been found.
 
         Use argument `path` to specify what part of the object should be searched. For example, "x.y[0].z"
         to navigate nested dictionaries/lists. If `keep_path` is True, object will be represented
         as a nested dictionary with path as keys. If multiple paths are provided, `keep_path` automatically
         becomes True, and they will be merged into one nested dictionary. If `skip_missing` is True
-        and path is missing in the object, will skip the object.
+        and path is missing in the object, will skip the object. If `per_path` is True, will consider
+        targets to be provided per path.
 
         Use argument `source` instead of `path` or in addition to `path` to also preprocess the source.
         It can be a string or function (will become a template), or any custom template. In this template,
         the object is represented by "o" and the object under the path is represented by "x" while its
         fields (if any) are represented by their names.
 
-        Set `in_dumps` to True to convert the entire object to string and search in that string.
+        Set `in_json_dumps` to True to convert the entire object to string and search in that string.
 
         Usage:
             ```pycon
             >>> asset.find("BC").get()
             [{'s': 'ABC', 'b': True, 'd': {'c': 'red', 'l': [1, 2]}},
              {'s': 'BCD', 'b': True, 'd': {'c': 'blue', 'l': [3, 4]}}]
+
+            >>> asset.find("BC", as_filter=False).get()
+            [True, True, False, False, False]
 
             >>> asset.find("bc", ignore_case=True).get()
             [{'s': 'ABC', 'b': True, 'd': {'c': 'red', 'l': [1, 2]}},
@@ -1844,9 +2277,15 @@ class KnowledgeAsset(Configured):
              {'s': 'EFG', 'b': False, 'd': {'c': 'black', 'l': [9, 10]}, 'xyz': 123}]
 
             >>> asset.find(["A", "B", "C"]).get()
+            [{'s': 'ABC', 'b': True, 'd': {'c': 'red', 'l': [1, 2]}}]
+
+            >>> asset.find(["A", "B", "C"], find_any=True).get()
             [{'s': 'ABC', 'b': True, 'd': {'c': 'red', 'l': [1, 2]}},
              {'s': 'BCD', 'b': True, 'd': {'c': 'blue', 'l': [3, 4]}},
              {'s': 'CDE', 'b': False, 'd': {'c': 'green', 'l': [5, 6]}}]
+
+            >>> asset.find(["A", True], ["s", "b"], per_path=True).get()
+            [{'s': 'ABC', 'b': True, 'd': {'c': 'red', 'l': [1, 2]}}]
 
             >>> asset.find(r"[ABC]+", mode="regex").get()
             [{'s': 'ABC', 'b': True, 'd': {'c': 'red', 'l': [1, 2]}},
@@ -1856,7 +2295,7 @@ class KnowledgeAsset(Configured):
             >>> asset.find("yenlow", mode="fuzzy").get()
             [{'s': 'DEF', 'b': False, 'd': {'c': 'yellow', 'l': [7, 8]}}]
 
-            >>> asset.find("xyz", in_dumps=True).get()
+            >>> asset.find("xyz", in_json_dumps=True).get()
             [{'s': 'EFG', 'b': False, 'd': {'c': 'black', 'l': [9, 10]}, 'xyz': 123}]
             ```
         """
@@ -1864,10 +2303,13 @@ class KnowledgeAsset(Configured):
             FindAssetFunc,
             target=target,
             path=path,
+            per_path=per_path,
+            find_any=find_any,
             keep_path=keep_path,
             skip_missing=skip_missing,
             source=source,
-            in_dumps=in_dumps,
+            in_json_dumps=in_json_dumps,
+            as_filter=as_filter,
             template_context=template_context,
             **kwargs,
         )
@@ -1877,6 +2319,8 @@ class KnowledgeAsset(Configured):
         target: tp.MaybeList[tp.Any],
         replacement: tp.MaybeList[tp.Any],
         path: tp.Optional[tp.MaybeList[tp.PathLikeKey]] = None,
+        per_path: tp.Optional[bool] = None,
+        replace_any: tp.Optional[bool] = None,
         keep_path: tp.Optional[bool] = None,
         skip_missing: tp.Optional[bool] = None,
         make_copy: tp.Optional[bool] = None,
@@ -1890,13 +2334,15 @@ class KnowledgeAsset(Configured):
         Uses `vectorbtpro.utils.search.find_in_obj` (keyword arguments are passed here) to find
         occurrences in each object. Then, uses `vectorbtpro.utils.search.replace_in_obj` to replace them.
 
-        Target can be one or multiple of objects.
+        Target can be one or multiple of objects. If there are multiple targets and `replace_any` is True,
+        the match function will return True if any of the targets have been found.
 
         Use argument `path` to specify what part of the object should be searched. For example, "x.y[0].z"
         to navigate nested dictionaries/lists. If `keep_path` is True, object will be represented
         as a nested dictionary with path as keys. If multiple paths are provided, `keep_path` automatically
         becomes True, and they will be merged into one nested dictionary. If `skip_missing` is True
-        and path is missing in the object, will skip the object.
+        and path is missing in the object, will skip the object. If `per_path` is True, will consider
+        targets and replacements to be provided per path.
 
         Set `make_copy` to True to not modify original data.
 
@@ -1922,12 +2368,19 @@ class KnowledgeAsset(Configured):
             [{'s': 'ABC', 'b': False, 'd': {'c': 'red', 'l': [1, 2]}},
              {'s': 'BCD', 'b': False, 'd': {'c': 'blue', 'l': [3, 4]}}]
 
-            >>> asset.replace_(3, 3000, path="d.l", changed_only=True).get()
-            [{'s': 'BCD', 'b': True, 'd': {'c': 'blue', 'l': [3000, 4]}}]
+            >>> asset.replace_(3, 30, path="d.l", changed_only=True).get()
+            [{'s': 'BCD', 'b': True, 'd': {'c': 'blue', 'l': [30, 4]}}]
 
-            >>> asset.replace_([1, 3], [1000, 3000], path="d.l", changed_only=True).get()
-            [{'s': 'ABC', 'b': True, 'd': {'c': 'red', 'l': [1000, 2]}},
-             {'s': 'BCD', 'b': True, 'd': {'c': 'blue', 'l': [3000, 4]}}]
+            >>> asset.replace_([1, 4], [10, 40], path="d.l", changed_only=True).get()
+            >>> asset.replace_([1, 4], [10, 40], path=["d.l[0]", "d.l[1]"], per_path=True, changed_only=True).get()
+            [{'s': 'ABC', 'b': True, 'd': {'c': 'red', 'l': [10, 2]}},
+             {'s': 'BCD', 'b': True, 'd': {'c': 'blue', 'l': [3, 40]}}]
+
+            >>> asset.replace_([1, 4], [10, 40], path="d.l", replace_any=False, changed_only=True).get()
+            []
+
+            >>> asset.replace_([1, 2], [10, 20], path="d.l", replace_any=False, changed_only=True).get()
+            [{'s': 'ABC', 'b': True, 'd': {'c': 'red', 'l': [10, 20]}}]
 
             >>> asset.replace_("a", "X", path=["s", "d.c"], ignore_case=True, changed_only=True).get()
             [{'s': 'XBC', 'b': True, 'd': {'c': 'red', 'l': [1, 2]}},
@@ -1942,6 +2395,8 @@ class KnowledgeAsset(Configured):
             target=target,
             replacement=replacement,
             path=path,
+            per_path=per_path,
+            replace_any=replace_any,
             keep_path=keep_path,
             skip_missing=skip_missing,
             make_copy=make_copy,

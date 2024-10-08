@@ -95,6 +95,9 @@ class Task(DefineMixin):
         """Execute the task."""
         return self.func(*self.args, **self.kwargs)
 
+    def __call__(self) -> tp.Any:
+        return self.execute()
+
 
 class _NoResult(enum.Enum):
     """Sentinel that represents no result."""

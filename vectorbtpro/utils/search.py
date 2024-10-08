@@ -3,7 +3,6 @@
 """Utilities for searching."""
 
 import re
-from copy import copy
 from functools import partial
 from collections import deque
 from pathlib import Path

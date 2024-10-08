@@ -9,7 +9,7 @@ import vectorbtpro as vbt
 from vectorbtpro import _typing as tp
 from vectorbtpro.utils.attr_ import DefineMixin, define
 from vectorbtpro.utils.config import merge_dicts
-from vectorbtpro.utils.eval_ import evaluate, Evaluable
+from vectorbtpro.utils.eval_ import evaluate, get_free_vars, Evaluable
 from vectorbtpro.utils.module_ import package_shortcut_config
 from vectorbtpro.utils.parsing import get_func_arg_names
 from vectorbtpro.utils.search import contains_in_obj, find_and_replace_in_obj
@@ -93,6 +93,10 @@ class CustomTemplate(Evaluable, DefineMixin):
             strict = template_cfg["strict"]
         return strict
 
+    def get_context_vars(self) -> tp.List[str]:
+        """Get context variables."""
+        raise NotImplementedError
+
     def substitute(
         self,
         context: tp.KwargsLike = None,
@@ -108,6 +112,18 @@ class Sub(CustomTemplate):
     """Template string to substitute parts with the respective values from `context`.
 
     Always returns a string."""
+
+    def get_context_vars(self) -> tp.List[str]:
+        tmpl = Template(self.template)
+        variables = []
+        for match in tmpl.pattern.finditer(tmpl.template):
+            named = match.group("named")
+            braced = match.group("braced")
+            if named is not None and named not in variables:
+                variables.append(named)
+            elif braced is not None and braced not in variables:
+                variables.append(braced)
+        return variables
 
     def substitute(
         self,
@@ -131,6 +147,9 @@ class Sub(CustomTemplate):
 
 class Rep(CustomTemplate):
     """Template string to be replaced with the respective value from `context`."""
+
+    def get_context_vars(self) -> tp.List[str]:
+        return [self.template]
 
     def substitute(
         self,
@@ -156,6 +175,9 @@ class RepEval(CustomTemplate):
     """Template expression to be evaluated using `vectorbtpro.utils.eval_.evaluate`
     with `context` used as locals."""
 
+    def get_context_vars(self) -> tp.List[str]:
+        return get_free_vars(self.template)
+
     def substitute(
         self,
         context: tp.KwargsLike = None,
@@ -178,6 +200,9 @@ class RepEval(CustomTemplate):
 
 class RepFunc(CustomTemplate):
     """Template function to be called with argument names from `context`."""
+
+    def get_context_vars(self) -> tp.List[str]:
+        return get_func_arg_names(self.template)
 
     def substitute(
         self,

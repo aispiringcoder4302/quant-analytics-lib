@@ -249,7 +249,7 @@ def get_caller_qualname() -> str:
         del frame
 
 
-def get_method_class(meth: tp.Callable) -> tp.Type:
+def get_method_class(meth: tp.Callable) -> tp.Optional[tp.Type]:
     """Get the class of a method."""
     if inspect.ismethod(meth) or (
         inspect.isbuiltin(meth)
