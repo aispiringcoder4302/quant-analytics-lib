@@ -25,6 +25,7 @@ from pathlib import Path
 import requests
 import builtins
 import importlib
+from collections.abc import MutableSequence
 
 import pandas as pd
 
@@ -1518,8 +1519,10 @@ class ComplexAssetPipeline(AssetPipeline):
         return evaluate(self.expression, context=context)
 
 
-class KnowledgeAsset(Configured):
+class KnowledgeAsset(Configured, MutableSequence):
     """Class for working with a knowledge asset.
+
+    This class behaves like a mutable sequence.
 
     For defaults, see `vectorbtpro._settings.knowledge`."""
 
@@ -1615,6 +1618,8 @@ class KnowledgeAsset(Configured):
     def __init__(self, data: tp.List[tp.Any], **kwargs) -> None:
         if not isinstance(data, list):
             data = [data]
+        else:
+            data = list(data)
         Configured.__init__(
             self,
             data=data,
@@ -1627,6 +1632,8 @@ class KnowledgeAsset(Configured):
     def data(self) -> tp.List[tp.Any]:
         """Data."""
         return self._data
+
+    # ############# Apply methods ############# #
 
     def apply(
         self,
@@ -1708,7 +1715,16 @@ class KnowledgeAsset(Configured):
         )
 
         def _get_task_generator():
-            for d in self.data:
+            for i, d in enumerate(self.data):
+                if "template_context" in kwargs:
+                    template_context = kwargs.pop("template_context")
+                    if template_context is None:
+                        template_context = {}
+                    else:
+                        template_context = dict(template_context)
+                    if "i" not in template_context:
+                        template_context["i"] = i
+                    kwargs["template_context"] = template_context
                 yield Task(func, d, *args, **kwargs)
 
         tasks = _get_task_generator()
@@ -1744,8 +1760,8 @@ class KnowledgeAsset(Configured):
 
         Use argument `source` instead of `path` or in addition to `path` to also preprocess the source.
         It can be a string or function (will become a template), or any custom template. In this template,
-        the data item is represented by "d" and the data item under the path is represented by "x" while its
-        fields (if any) are represented by their names.
+        the index of the data item is represented by "i", the data item itself is represented by "d",
+        the data item under the path is represented by "x" while its fields are represented by their names.
 
         Usage:
             ```pycon
@@ -1793,7 +1809,7 @@ class KnowledgeAsset(Configured):
         )
 
     def select(self, *args, **kwargs) -> KnowledgeAssetT:
-        """Run `KnowledgeAsset.get` and return a new `KnowledgeAsset` instance."""
+        """Call `KnowledgeAsset.get` and return a new `KnowledgeAsset` instance."""
         return self.replace(data=self.get(*args, **kwargs))
 
     def set(
@@ -1811,8 +1827,8 @@ class KnowledgeAsset(Configured):
         Uses `KnowledgeAsset.apply` on `SetAssetFunc`.
 
         Argument `value` can be any value, function (will become a template), or a template. In this template,
-        the data item is represented by "d" and the data item under the parent path is represented by "x"
-        while its fields (if any) are represented by their names.
+        the index of the data item is represented by "i", the data item itself is represented by "d",
+        the data item under the path is represented by "x" while its fields are represented by their names.
 
         Use argument `path` to specify what part of the data item should be set. For example, "x.y[0].z"
         to navigate nested dictionaries/lists. Multiple paths can be provided. If `skip_missing` is True and
@@ -1866,6 +1882,8 @@ class KnowledgeAsset(Configured):
         **kwargs,
     ) -> tp.Any:
         """Set data items or parts of them.
+
+        If `path` is an integer, removes the entire data item at that index.
 
         Uses `KnowledgeAsset.apply` on `RemoveAssetFunc`.
 
@@ -2015,8 +2033,8 @@ class KnowledgeAsset(Configured):
         and the token "z" at the end while other tokens are left in the original order. If `new_order` is
         a string, it can be "asc"/"ascending" or "desc"/"descending". Other than that, it can be a string or
         function (will become a template), or any custom template. In this template, the data item is
-        represented by "d" and the data item under the path is represented by "x" while its fields (if any)
-        are represented by their names.
+        the index of the data item is represented by "i", the data item itself is represented by "d",
+        the data item under the path is represented by "x" while its fields are represented by their names.
 
         Use argument `path` to specify what part of the data item should be set. For example, "x.y[0].z"
         to navigate nested dictionaries/lists. Multiple paths can be provided. If `skip_missing` is True and
@@ -2072,8 +2090,9 @@ class KnowledgeAsset(Configured):
         * "jmespath": Evaluation with `jmespath` package
         * "jsonpath", "jsonpath-ng" or "jsonpath_ng": Evaluation with `jsonpath-ng` package
         * "jsonpath.ext", "jsonpath-ng.ext" or "jsonpath_ng.ext": Evaluation with extended `jsonpath-ng` package
-        * None or "template": Evaluation of each data item as a template. The data item is represented
-            by "d" or "x" while its fields (if any) are represented by their names.
+        * None or "template": Evaluation of each data item as a template. The index of the data item is
+            represented by "i", the data item itself is represented by "d", the data item under the path
+            is represented by "x" while its fields are represented by their names.
             Uses `KnowledgeAsset.apply` on `QueryAssetFunc`.
         * "pandas": Same as above but variables being columns
 
@@ -2194,7 +2213,7 @@ class KnowledgeAsset(Configured):
         return new_obj
 
     def filter(self, *args, **kwargs) -> KnowledgeAssetT:
-        """Run `KnowledgeAsset.query` and return a new `KnowledgeAsset` instance."""
+        """Call `KnowledgeAsset.query` and return a new `KnowledgeAsset` instance."""
         return self.replace(data=self.query(*args, **kwargs))
 
     def find(
@@ -2230,8 +2249,8 @@ class KnowledgeAsset(Configured):
 
         Use argument `source` instead of `path` or in addition to `path` to also preprocess the source.
         It can be a string or function (will become a template), or any custom template. In this template,
-        the data item is represented by "d" and the data item under the path is represented by "x" while its
-        fields (if any) are represented by their names.
+        the index of the data item is represented by "i", the data item itself is represented by "d",
+        the data item under the path is represented by "x" while its fields are represented by their names.
 
         Set `in_json_dumps` to True to convert the entire data item to string and search in that string.
 
@@ -2476,6 +2495,171 @@ class KnowledgeAsset(Configured):
             changed_only=changed_only,
             **kwargs,
         )
+
+    # ############# Item methods ############# #
+
+    def get_item(self, index: tp.Union[int, slice, tp.Iterable[tp.Union[bool, int]]]) -> tp.Any:
+        """Get a data item or a selection of data items."""
+        if checks.is_complex_iterable(index):
+            if all(isinstance(i, bool) for i in index):
+                index = list(index)
+                if len(index) != len(self.data):
+                    raise IndexError("Boolean index must have the same length as data")
+                return [item for item, flag in zip(self.data, index) if flag]
+            if all(isinstance(i, int) for i in index):
+                return [self.data[i] for i in index]
+            raise TypeError("Index must contain all integers or all booleans")
+        return self.data[index]
+
+    def set_item(
+        self: KnowledgeAssetT,
+        index: tp.Union[int, slice, tp.Iterable[tp.Union[bool, int]]],
+        value: tp.Any,
+        inplace: bool = False,
+    ) -> tp.Optional[KnowledgeAssetT]:
+        """Set a data item or a selection of data items.
+
+        Returns a new `KnowledgeAsset` instance if `inplace` is False."""
+        new_data = list(self.data)
+        if checks.is_complex_iterable(index):
+            index = list(index)
+            if all(isinstance(i, bool) for i in index):
+                if len(index) != len(new_data):
+                    raise IndexError("Boolean index must have the same length as data")
+                if checks.is_complex_iterable(value):
+                    value = list(value)
+                    if len(value) == len(index):
+                        for i, (b, v) in enumerate(zip(index, value)):
+                            if b:
+                                new_data[i] = v
+                    else:
+                        num_true = sum(index)
+                        if len(value) != num_true:
+                            raise ValueError(f"Attempting to assign {len(value)} values to {num_true} targets")
+                        it = iter(value)
+                        for i, b in enumerate(index):
+                            if b:
+                                new_data[i] = next(it)
+                else:
+                    for i, b in enumerate(index):
+                        if b:
+                            new_data[i] = value
+            elif all(isinstance(i, int) for i in index):
+                if checks.is_complex_iterable(value):
+                    value = list(value)
+                    if len(value) != len(index):
+                        raise ValueError(f"Attempting to assign {len(value)} values to {len(index)} targets")
+                    for i, v in zip(index, value):
+                        new_data[i] = v
+                else:
+                    for i in index:
+                        new_data[i] = value
+            else:
+                raise TypeError("Index must contain all integers or all booleans")
+        elif isinstance(index, slice):
+            if not checks.is_complex_iterable(value):
+                raise TypeError("Can only assign an iterable to a slice")
+            new_data[index] = list(value)
+        else:
+            new_data[index] = value
+        if inplace:
+            self._data = new_data
+            self.update_config(data=new_data)
+            return None
+        return self.replace(data=new_data)
+
+    def remove_item(
+        self: KnowledgeAssetT,
+        index: tp.Union[int, slice, tp.Iterable[tp.Union[bool, int]]],
+        inplace: bool = False,
+    ) -> tp.Optional[KnowledgeAssetT]:
+        """Remove a data item or a selection of data items.
+
+        Returns a new `KnowledgeAsset` instance if `inplace` is False."""
+        new_data = list(self.data)
+        if checks.is_complex_iterable(index):
+            if all(isinstance(i, bool) for i in index):
+                index = list(index)
+                if len(index) != len(new_data):
+                    raise IndexError("Boolean index must have the same length as data")
+                new_data = [item for item, flag in zip(new_data, index) if not flag]
+            elif all(isinstance(i, int) for i in index):
+                indices_to_remove = set(index)
+                max_index = len(new_data) - 1
+                for i in indices_to_remove:
+                    if not -len(new_data) <= i <= max_index:
+                        raise IndexError(f"Index {i} out of range")
+                new_data = [item for i, item in enumerate(new_data) if i not in indices_to_remove]
+            else:
+                raise TypeError("Index must contain all integers or all booleans")
+        else:
+            del new_data[index]
+        if inplace:
+            self._data = new_data
+            self.update_config(data=new_data)
+            return None
+        return self.replace(data=new_data)
+
+    def sort(
+        self: KnowledgeAssetT,
+        *args,
+        reverse: bool = False,
+        inplace: bool = False,
+        **kwargs,
+    ) -> tp.Optional[KnowledgeAssetT]:
+        """Call `KnowledgeAsset.get` on `*args` and `**kwargs` and sort by the results.
+
+        Returns a new `KnowledgeAsset` instance if `inplace` is False.
+
+        Usage:
+            ```pycon
+            >>> asset.sort("d2.c").get()
+            [{'s': 'EFG', 'b': False, 'd2': {'c': 'black', 'l': [9, 10]}, 'xyz': 123},
+             {'s': 'BCD', 'b': True, 'd2': {'c': 'blue', 'l': [3, 4]}},
+             {'s': 'CDE', 'b': False, 'd2': {'c': 'green', 'l': [5, 6]}},
+             {'s': 'ABC', 'b': True, 'd2': {'c': 'red', 'l': [1, 2]}},
+             {'s': 'DEF', 'b': False, 'd2': {'c': 'yellow', 'l': [7, 8]}}]
+            ```
+        """
+        keys = self.get(*args, **kwargs)
+        new_data = [x for _, x in sorted(zip(keys, self.data), key=lambda x: x[0], reverse=reverse)]
+        if inplace:
+            self._data = new_data
+            self.update_config(data=new_data)
+            return None
+        return self.replace(data=new_data)
+
+    # ############# Sequence methods ############# #
+
+    def __len__(self) -> int:
+        return len(self.data)
+
+    def __getitem__(self, index: tp.Union[int, slice, tp.Iterable[tp.Union[bool, int]]]) -> tp.Any:
+        return self.get_item(index)
+
+    def __add__(self: KnowledgeAssetT, other: tp.Any) -> KnowledgeAssetT:
+        if not isinstance(other, KnowledgeAsset):
+            other = KnowledgeAsset(other)
+        return type(self).stack(self, other)
+
+    def __iadd__(self: KnowledgeAssetT, other: tp.Any) -> KnowledgeAssetT:
+        if not isinstance(other, KnowledgeAsset):
+            other = KnowledgeAsset(other)
+        return type(self).stack(self, other)
+
+    # ############# MutableSequence methods ############# #
+
+    def insert(self, index: int, value: tp.Any) -> None:
+        new_data = list(self.data)
+        new_data.insert(index, value)
+        self._data = new_data
+        self.update_config(data=new_data)
+
+    def __setitem__(self, index: tp.Union[int, slice, tp.Iterable[tp.Union[bool, int]]], value: tp.Any) -> None:
+        self.set_item(index, value, inplace=True)
+
+    def __delitem__(self, index: tp.Union[int, slice, tp.Iterable[tp.Union[bool, int]]]) -> None:
+        self.remove_item(index, inplace=True)
 
 
 ReleaseAssetT = tp.TypeVar("ReleaseAssetT", bound="ReleaseAsset")

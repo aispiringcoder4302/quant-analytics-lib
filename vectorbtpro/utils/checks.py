@@ -5,7 +5,7 @@
 import datetime
 import traceback
 import warnings
-from collections.abc import Hashable, Mapping
+from collections.abc import Sequence, Iterable, Hashable, Mapping
 from inspect import signature, getmro
 from keyword import iskeyword
 from types import FunctionType, BuiltinFunctionType, MethodType
@@ -198,11 +198,13 @@ def _to_any_array(arg: tp.ArrayLike) -> tp.AnyArray:
 
 def is_sequence(arg: tp.Any) -> bool:
     """Check whether the argument is a sequence."""
+    if isinstance(arg, Sequence):
+        return True
     try:
         len(arg)
         arg[0:0]
         return True
-    except (TypeError, KeyError):
+    except (TypeError, IndexError, KeyError):
         return False
 
 
@@ -215,6 +217,8 @@ def is_complex_sequence(arg: tp.Any) -> bool:
 
 def is_iterable(arg: tp.Any) -> bool:
     """Check whether the argument is iterable."""
+    if isinstance(arg, Iterable):
+        return True
     try:
         _ = iter(arg)
         return True
