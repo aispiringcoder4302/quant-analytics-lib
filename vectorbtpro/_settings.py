@@ -1964,6 +1964,21 @@ knowledge = frozen_cfg(
     as_filter=True,
     in_json_dumps=False,
     changed_only=False,
+    dump_all=False,
+    dump_engine="yaml",
+    dump_engine_kwargs=flex_cfg(
+        nestedtext=flex_cfg(
+            indent=2,
+        ),
+        yaml=flex_cfg(
+            sort_keys=False,
+        ),
+        json=flex_cfg(
+            ensure_ascii=False,
+            indent=4,
+        ),
+    ),
+    prepend_index=False,
     template_context=flex_cfg(),
     execute_kwargs=flex_cfg(
         filter_results=True,

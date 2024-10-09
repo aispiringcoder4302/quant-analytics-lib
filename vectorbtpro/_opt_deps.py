@@ -183,6 +183,12 @@ opt_dep_config = HybridConfig(
         rapidfuzz=dict(
             link="https://pypi.org/project/rapidfuzz/",
         ),
+        nestedtext=dict(
+            link="https://pypi.org/project/nestedtext/",
+        ),
+        toml=dict(
+            link="https://pypi.org/project/toml/",
+        ),
     )
 )
 """_"""

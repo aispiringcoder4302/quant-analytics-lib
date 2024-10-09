@@ -33,12 +33,16 @@ class Prettified:
     """Abstract class that can be prettified."""
 
     def prettify(self, **kwargs) -> str:
-        """Prettify this object.
+        """Prettify the object.
 
         !!! warning
             Calling `prettify` can lead to an infinite recursion.
             Make sure to pre-process this object."""
         raise NotImplementedError
+
+    def pprint(self, **kwargs) -> None:
+        """Pretty-print the object."""
+        print(self.prettify(**kwargs))
 
     def __str__(self) -> str:
         try:

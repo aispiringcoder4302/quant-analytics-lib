@@ -1112,7 +1112,7 @@ class HasSettings:
             try:
                 sub_path_settings = cls.get_path_settings(sub_path)
                 try:
-                    return sub_path_settings[key]
+                    return get_dict_item(sub_path_settings, key)
                 except KeyError as e:
                     if sub_path_only:
                         raise SettingNotFoundError(f"Found no key '{key}' in the settings under the path '{sub_path}'")
@@ -1124,7 +1124,7 @@ class HasSettings:
         except KeyError as e:
             raise SettingsNotFoundError(f"Found no settings under the path '{path}'")
         try:
-            return path_settings[key]
+            return get_dict_item(path_settings, key)
         except KeyError as e:
             if default is MISSING:
                 if sub_path is not None:

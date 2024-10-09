@@ -67,14 +67,20 @@ class AssetFunc:
     """Whether the results are meant to be wrapped with `KnowledgeAsset`."""
 
     @classmethod
-    def prepare_args(cls, *args, **kwargs) -> tp.ArgsKwargs:
+    def prepare(cls, *args, **kwargs) -> tp.ArgsKwargs:
         """Prepare positional and keyword arguments."""
         raise NotImplementedError
 
     @classmethod
-    def func(cls, d: tp.Any, *args, **kwargs) -> tp.Any:
-        """Function to be applied to a data item."""
+    def apply(cls, d: tp.Any, *args, **kwargs) -> tp.Any:
+        """Apply the function to a data item."""
         raise NotImplementedError
+
+    @classmethod
+    def prepare_and_apply(cls, d: tp.Any, *args, **kwargs):
+        """Prepare arguments and apply the function."""
+        args, kwargs = cls.prepare(*args, **kwargs)
+        return cls.apply(d, *args, **kwargs)
 
 
 class GetAssetFunc(AssetFunc):
@@ -85,7 +91,7 @@ class GetAssetFunc(AssetFunc):
     _wrap: tp.ClassVar[tp.Optional[str]] = False
 
     @classmethod
-    def prepare_args(
+    def prepare(
         cls,
         path: tp.Optional[tp.MaybeList[tp.PathLikeKey]] = None,
         keep_path: tp.Optional[bool] = None,
@@ -128,7 +134,7 @@ class GetAssetFunc(AssetFunc):
         }
 
     @classmethod
-    def func(
+    def apply(
         cls,
         d: tp.Any,
         path: tp.Optional[tp.MaybeList[tp.PathLikeKey]] = None,
@@ -183,7 +189,7 @@ class SetAssetFunc(AssetFunc):
     _wrap: tp.ClassVar[tp.Optional[str]] = True
 
     @classmethod
-    def prepare_args(
+    def prepare(
         cls,
         value: tp.Any,
         path: tp.Optional[tp.MaybeList[tp.PathLikeKey]] = None,
@@ -226,7 +232,7 @@ class SetAssetFunc(AssetFunc):
         }
 
     @classmethod
-    def func(
+    def apply(
         cls,
         d: tp.Any,
         value: tp.Any,
@@ -272,7 +278,7 @@ class RemoveAssetFunc(AssetFunc):
     _wrap: tp.ClassVar[tp.Optional[str]] = True
 
     @classmethod
-    def prepare_args(
+    def prepare(
         cls,
         path: tp.Optional[tp.MaybeList[tp.PathLikeKey]] = None,
         skip_missing: tp.Optional[bool] = None,
@@ -302,7 +308,7 @@ class RemoveAssetFunc(AssetFunc):
         }
 
     @classmethod
-    def func(
+    def apply(
         cls,
         d: tp.Any,
         paths: tp.List[tp.PathLikeKey],
@@ -331,7 +337,7 @@ class MoveAssetFunc(AssetFunc):
     _wrap: tp.ClassVar[tp.Optional[str]] = True
 
     @classmethod
-    def prepare_args(
+    def prepare(
         cls,
         path: tp.Union[tp.PathMoveDict, tp.MaybeList[tp.PathLikeKey]],
         new_path: tp.Optional[tp.MaybeList[tp.PathLikeKey]] = None,
@@ -373,7 +379,7 @@ class MoveAssetFunc(AssetFunc):
         }
 
     @classmethod
-    def func(
+    def apply(
         cls,
         d: tp.Any,
         paths: tp.List[tp.PathLikeKey],
@@ -405,7 +411,7 @@ class RenameAssetFunc(MoveAssetFunc):
     _wrap: tp.ClassVar[tp.Optional[str]] = True
 
     @classmethod
-    def prepare_args(
+    def prepare(
         cls,
         path: tp.Union[tp.PathRenameDict, tp.MaybeList[tp.PathLikeKey]],
         new_token: tp.Optional[tp.MaybeList[tp.PathKeyToken]] = None,
@@ -460,7 +466,7 @@ class ReorderAssetFunc(AssetFunc):
     _wrap: tp.ClassVar[tp.Optional[str]] = True
 
     @classmethod
-    def prepare_args(
+    def prepare(
         cls,
         new_order: tp.Union[str, tp.PathKeyTokens],
         path: tp.Optional[tp.MaybeList[tp.PathLikeKey]] = None,
@@ -525,7 +531,7 @@ class ReorderAssetFunc(AssetFunc):
         }
 
     @classmethod
-    def func(
+    def apply(
         cls,
         d: tp.Any,
         new_order: tp.Union[tp.PathKeyTokens, tp.CustomTemplate],
@@ -581,7 +587,7 @@ class QueryAssetFunc(AssetFunc):
     _wrap: tp.ClassVar[tp.Optional[str]] = False
 
     @classmethod
-    def prepare_args(
+    def prepare(
         cls,
         expression: tp.Union[str, tp.Callable, tp.CustomTemplate],
         as_filter: tp.Optional[bool] = None,
@@ -613,7 +619,7 @@ class QueryAssetFunc(AssetFunc):
         }
 
     @classmethod
-    def func(
+    def apply(
         cls,
         d: tp.Any,
         expression: tp.CustomTemplate,
@@ -648,7 +654,7 @@ class FindAssetFunc(AssetFunc):
     _wrap: tp.ClassVar[tp.Optional[str]] = True
 
     @classmethod
-    def prepare_args(
+    def prepare(
         cls,
         target: tp.MaybeList[tp.Any],
         path: tp.Optional[tp.MaybeList[tp.PathLikeKey]] = None,
@@ -722,7 +728,7 @@ class FindAssetFunc(AssetFunc):
         find_any: bool = False,
         **kwargs,
     ) -> bool:
-        """Match function for `FindAssetFunc.func`.
+        """Match function for `FindAssetFunc.apply`.
 
         Uses `vectorbtpro.utils.search.contains` for text and equality checks for other types."""
         if not isinstance(target, list):
@@ -765,7 +771,7 @@ class FindAssetFunc(AssetFunc):
         return False
 
     @classmethod
-    def func(
+    def apply(
         cls,
         d: tp.Any,
         target: tp.MaybeList[tp.Any],
@@ -774,7 +780,7 @@ class FindAssetFunc(AssetFunc):
         find_any: bool = False,
         keep_path: bool = False,
         skip_missing: bool = False,
-        source: tp.Union[None, str, tp.Callable, tp.CustomTemplate] = None,
+        source: tp.Optional[tp.CustomTemplate] = None,
         in_json_dumps: bool = False,
         as_filter: bool = True,
         template_context: tp.KwargsLike = None,
@@ -877,7 +883,7 @@ class ReplaceAssetFunc(FindAssetFunc):
     _wrap: tp.ClassVar[tp.Optional[str]] = True
 
     @classmethod
-    def prepare_args(
+    def prepare(
         cls,
         target: tp.MaybeList[tp.Any],
         replacement: tp.MaybeList[tp.Any],
@@ -943,7 +949,7 @@ class ReplaceAssetFunc(FindAssetFunc):
         replacement: tp.MaybeList[tp.Any],
         **kwargs,
     ) -> tp.Any:
-        """Replace function for `ReplaceAssetFunc.func`.
+        """Replace function for `ReplaceAssetFunc.apply`.
 
         Uses `vectorbtpro.utils.search.replace` for text and returns replacement for other types."""
         if not isinstance(target, list):
@@ -978,7 +984,7 @@ class ReplaceAssetFunc(FindAssetFunc):
         return new_d
 
     @classmethod
-    def func(
+    def apply(
         cls,
         d: tp.Any,
         target: tp.MaybeList[tp.Any],
@@ -1045,7 +1051,7 @@ class FlattenAssetFunc(AssetFunc):
     _wrap: tp.ClassVar[tp.Optional[str]] = True
 
     @classmethod
-    def prepare_args(
+    def prepare(
         cls,
         path: tp.Optional[tp.MaybeList[tp.PathLikeKey]] = None,
         skip_missing: tp.Optional[bool] = None,
@@ -1080,7 +1086,7 @@ class FlattenAssetFunc(AssetFunc):
         }
 
     @classmethod
-    def func(
+    def apply(
         cls,
         d: tp.Any,
         paths: tp.List[tp.PathLikeKey],
@@ -1114,7 +1120,7 @@ class UnflattenAssetFunc(AssetFunc):
     _wrap: tp.ClassVar[tp.Optional[str]] = True
 
     @classmethod
-    def prepare_args(
+    def prepare(
         cls,
         path: tp.Optional[tp.MaybeList[tp.PathLikeKey]] = None,
         skip_missing: tp.Optional[bool] = None,
@@ -1147,7 +1153,7 @@ class UnflattenAssetFunc(AssetFunc):
         }
 
     @classmethod
-    def func(
+    def apply(
         cls,
         d: tp.Any,
         paths: tp.List[tp.PathLikeKey],
@@ -1173,6 +1179,101 @@ class UnflattenAssetFunc(AssetFunc):
         return NoResult
 
 
+class DumpAssetFunc(AssetFunc):
+    """Asset function class for `KnowledgeAsset.dump`."""
+
+    _short_name: tp.ClassVar[tp.Optional[str]] = "dump"
+
+    _wrap: tp.ClassVar[tp.Optional[str]] = True
+
+    @classmethod
+    def prepare(
+        cls,
+        source: tp.Union[None, str, tp.Callable, tp.CustomTemplate] = None,
+        dump_engine: tp.Optional[str] = None,
+        template_context: tp.KwargsLike = None,
+        asset: tp.Optional[tp.MaybeType["KnowledgeAsset"]] = None,
+        **kwargs,
+    ) -> tp.ArgsKwargs:
+        if asset is None:
+            asset = KnowledgeAsset
+        dump_engine = asset.resolve_setting(dump_engine, "dump_engine")
+        template_context = asset.resolve_setting(template_context, "template_context", merge=True)
+        kwargs = asset.resolve_setting(kwargs, f"dump_engine_kwargs.{dump_engine}", default={}, merge=True)
+
+        if source is not None:
+            if isinstance(source, str):
+                source = RepEval(source)
+            elif checks.is_function(source):
+                if checks.is_builtin_func(source):
+                    source = RepFunc(lambda _source=source: _source)
+                else:
+                    source = RepFunc(source)
+            elif not isinstance(source, CustomTemplate):
+                raise TypeError(f"Source must be a template")
+        return (), {
+            **dict(
+                source=source,
+                dump_engine=dump_engine,
+                template_context=template_context,
+            ),
+            **kwargs,
+        }
+
+    @classmethod
+    def apply(
+        cls,
+        d: tp.Any,
+        source: tp.Optional[CustomTemplate] = None,
+        dump_engine: str = "nestedtext",
+        template_context: tp.KwargsLike = None,
+        **kwargs,
+    ) -> tp.Any:
+        if source is not None:
+            _template_context = flat_merge_dicts(
+                {
+                    "d": d,
+                    "x": d,
+                    **(d if isinstance(d, dict) else {}),
+                },
+                template_context,
+            )
+            new_d = source.substitute(_template_context, eval_id="source")
+            if checks.is_function(new_d):
+                new_d = new_d(d)
+        else:
+            new_d = d
+        if dump_engine.lower() == "repr":
+            return repr(new_d)
+        if dump_engine.lower() == "prettify":
+            from vectorbtpro.utils.formatting import prettify
+
+            return prettify(new_d, **kwargs)
+        if dump_engine.lower() == "nestedtext":
+            from vectorbtpro.utils.module_ import assert_can_import
+
+            assert_can_import("nestedtext")
+            import nestedtext as nt
+
+            return nt.dumps(new_d, **kwargs)
+        if dump_engine.lower() == "yaml":
+            import yaml
+
+            return yaml.dump(new_d, **kwargs)
+        if dump_engine.lower() == "toml":
+            from vectorbtpro.utils.module_ import assert_can_import
+
+            assert_can_import("toml")
+            import toml
+
+            return toml.dumps(new_d, **kwargs)
+        if dump_engine.lower() == "json":
+            import json
+
+            return json.dumps(new_d, **kwargs)
+        raise ValueError(f"Invalid dump engine: '{dump_engine}'")
+
+
 class AssetPipeline:
     """Abstract class representing an asset pipeline."""
 
@@ -1181,7 +1282,7 @@ class AssetPipeline:
         cls,
         func: tp.AssetFuncLike,
         *args,
-        prepare_args: bool = True,
+        prepare: bool = True,
         prepare_once: bool = True,
         cond_kwargs: tp.KwargsLike = None,
         asset_func_meta: tp.Union[None, dict, list] = None,
@@ -1221,26 +1322,21 @@ class AssetPipeline:
                     asset_func_meta.update(_asset_func_meta)
                 else:
                     asset_func_meta.append(_asset_func_meta)
-            if prepare_args:
+            if prepare:
                 if prepare_once:
                     if cond_kwargs is None:
                         cond_kwargs = {}
                     if len(cond_kwargs) > 0:
-                        prepare_args_arg_names = get_func_arg_names(func.prepare_args)
+                        prepare_arg_names = get_func_arg_names(func.prepare)
                         for k, v in cond_kwargs.items():
-                            if k in prepare_args_arg_names:
+                            if k in prepare_arg_names:
                                 kwargs[k] = v
-                    args, kwargs = func.prepare_args(*args, **kwargs)
-                    func = func.func
+                    args, kwargs = func.prepare(*args, **kwargs)
+                    func = func.apply
                 else:
-
-                    def func(d, *args, _func=func, **kwargs):
-                        new_args, new_kwargs = _func.prepare_args(*args, **kwargs)
-                        return _func.func(d, *new_args, **new_kwargs)
-
-                    args, kwargs = (), {}
+                    func = func.prepare_and_apply
             else:
-                func = func.func
+                func = func.apply
         if not callable(func):
             raise TypeError("Function must be callable")
         return Task(func, *args, **kwargs)
@@ -1330,7 +1426,7 @@ class ComplexAssetPipeline(AssetPipeline):
         cls,
         expression: str,
         context: tp.KwargsLike = None,
-        prepare_args: bool = True,
+        prepare: bool = True,
         prepare_once: bool = True,
         **resolve_task_kwargs,
     ) -> tp.Tuple[str, tp.Kwargs]:
@@ -1442,11 +1538,11 @@ class ComplexAssetPipeline(AssetPipeline):
                     func_name,
                     *pos_args,
                     **kw_args,
-                    prepare_args=prepare_args,
+                    prepare=prepare,
                     prepare_once=prepare_once,
                     **resolve_task_kwargs,
                 )
-                if prepare_args and prepare_once:
+                if prepare and prepare_once:
 
                     def func(d, _task=task):
                         return _task.func(d, *_task.args, **_task.kwargs)
@@ -1459,7 +1555,7 @@ class ComplexAssetPipeline(AssetPipeline):
         visitor = _FunctionCallVisitor()
         visitor.visit(tree)
 
-        if prepare_args and prepare_once:
+        if prepare and prepare_once:
 
             class _ArgumentPruner(ast.NodeTransformer, _NodeMixin):
 
@@ -1716,16 +1812,17 @@ class KnowledgeAsset(Configured, MutableSequence):
 
         def _get_task_generator():
             for i, d in enumerate(self.data):
-                if "template_context" in kwargs:
-                    template_context = kwargs.pop("template_context")
+                _kwargs = dict(kwargs)
+                if "template_context" in _kwargs:
+                    template_context = _kwargs.pop("template_context")
                     if template_context is None:
                         template_context = {}
                     else:
                         template_context = dict(template_context)
                     if "i" not in template_context:
                         template_context["i"] = i
-                    kwargs["template_context"] = template_context
-                yield Task(func, d, *args, **kwargs)
+                    _kwargs["template_context"] = template_context
+                yield Task(func, d, *args, **_kwargs)
 
         tasks = _get_task_generator()
         new_data = execute(tasks, size=len(self.data), **execute_kwargs)
@@ -2078,7 +2175,7 @@ class KnowledgeAsset(Configured, MutableSequence):
     def query(
         self,
         expression: tp.Union[str, tp.Callable, tp.CustomTemplate],
-        engine: tp.Optional[str] = None,
+        query_engine: tp.Optional[str] = None,
         as_filter: tp.Optional[bool] = None,
         template_context: tp.KwargsLike = None,
         **kwargs,
@@ -2117,36 +2214,36 @@ class KnowledgeAsset(Configured, MutableSequence):
             [{'s': 'ABC', 'b': True, 'd2': {'c': 'red', 'l': [1, 2]}},
              {'s': 'BCD', 'b': True, 'd2': {'c': 'blue', 'l': [3, 4]}}]
 
-            >>> asset.query("[?b == `true`].s", engine="jmespath")
+            >>> asset.query("[?b == `true`].s", query_engine="jmespath")
             ['ABC', 'BCD']
 
-            >>> asset.query("[?contains(s, 'BC')].s", engine="jmespath")
+            >>> asset.query("[?contains(s, 'BC')].s", query_engine="jmespath")
             ['ABC', 'BCD']
 
-            >>> asset.query("[].d2.c", engine="jmespath")
+            >>> asset.query("[].d2.c", query_engine="jmespath")
             ['red', 'blue', 'green', 'yellow', 'black']
 
-            >>> asset.query("[?d2.c != `blue`].d2.l", engine="jmespath")
+            >>> asset.query("[?d2.c != `blue`].d2.l", query_engine="jmespath")
             [[1, 2], [5, 6], [7, 8], [9, 10]]
 
-            >>> asset.query("$[?(@.b == true)].s", engine="jsonpath.ext")
+            >>> asset.query("$[?(@.b == true)].s", query_engine="jsonpath.ext")
             ['ABC', 'BCD']
 
-            >>> asset.query("$[*].d2.c", engine="jsonpath.ext")
+            >>> asset.query("$[*].d2.c", query_engine="jsonpath.ext")
             ['red', 'blue', 'green', 'yellow', 'black']
 
-            >>> asset.query("$[?(@.b == false)].['s', 'd2.c']", engine="jsonpath.ext")
+            >>> asset.query("$[?(@.b == false)].['s', 'd2.c']", query_engine="jsonpath.ext")
             ['CDE', 'DEF', 'EFG']
 
-            >>> asset.query("s[b]", engine="pandas")
+            >>> asset.query("s[b]", query_engine="pandas")
             ['ABC', 'BCD']
             ```
         """
-        engine = self.resolve_setting(engine, "engine")
+        query_engine = self.resolve_setting(query_engine, "query_engine")
         as_filter = self.resolve_setting(as_filter, "as_filter")
         template_context = self.resolve_setting(template_context, "template_context", merge=True)
 
-        if engine is None or engine.lower() == "template":
+        if query_engine is None or query_engine.lower() == "template":
             new_obj = self.apply(
                 QueryAssetFunc,
                 expression=expression,
@@ -2154,14 +2251,14 @@ class KnowledgeAsset(Configured, MutableSequence):
                 template_context=template_context,
                 **kwargs,
             )
-        elif engine.lower() == "jmespath":
+        elif query_engine.lower() == "jmespath":
             from vectorbtpro.utils.module_ import assert_can_import
 
             assert_can_import("jmespath")
             import jmespath
 
             new_obj = jmespath.search(expression, self.data, **kwargs)
-        elif engine.lower() in ("jsonpath", "jsonpath-ng", "jsonpath_ng"):
+        elif query_engine.lower() in ("jsonpath", "jsonpath-ng", "jsonpath_ng"):
             from vectorbtpro.utils.module_ import assert_can_import
 
             assert_can_import("jsonpath_ng")
@@ -2169,7 +2266,7 @@ class KnowledgeAsset(Configured, MutableSequence):
 
             jsonpath_expr = jsonpath_ng.parse(expression)
             new_obj = [match.value for match in jsonpath_expr.find(self.data, **kwargs)]
-        elif engine.lower() in ("jsonpath.ext", "jsonpath-ng.ext", "jsonpath_ng.ext"):
+        elif query_engine.lower() in ("jsonpath.ext", "jsonpath-ng.ext", "jsonpath_ng.ext"):
             from vectorbtpro.utils.module_ import assert_can_import
 
             assert_can_import("jsonpath_ng")
@@ -2177,7 +2274,7 @@ class KnowledgeAsset(Configured, MutableSequence):
 
             jsonpath_expr = jsonpath_ng.ext.parse(expression)
             new_obj = [match.value for match in jsonpath_expr.find(self.data, **kwargs)]
-        elif engine.lower() == "pandas":
+        elif query_engine.lower() == "pandas":
             if isinstance(expression, str):
                 expression = RepEval(expression)
             elif checks.is_function(expression):
@@ -2209,7 +2306,7 @@ class KnowledgeAsset(Configured, MutableSequence):
             else:
                 new_obj = result
         else:
-            raise ValueError(f"Invalid engine: '{engine}'")
+            raise ValueError(f"Invalid query engine: '{query_engine}'")
         return new_obj
 
     def filter(self, *args, **kwargs) -> KnowledgeAssetT:
@@ -2495,6 +2592,75 @@ class KnowledgeAsset(Configured, MutableSequence):
             changed_only=changed_only,
             **kwargs,
         )
+
+    def dump(
+        self,
+        source: tp.Union[None, str, tp.Callable, tp.CustomTemplate] = None,
+        dump_all: tp.Optional[bool] = None,
+        dump_engine: tp.Optional[str] = None,
+        template_context: tp.KwargsLike = None,
+        **kwargs,
+    ) -> tp.Any:
+        """Dump data items.
+
+        Following engines are supported:
+
+        * "repr": Dumping with `repr`
+        * "prettify": Dumping with `vectorbtpro.utils.formatting.prettify`
+        * "nestedtext": Dumping with NestedText (https://pypi.org/project/nestedtext/)
+        * "yaml": Dumping with YAML
+        * "toml": Dumping with TOML (https://pypi.org/project/toml/)
+        * "json": Dumping with JSON
+
+        Use argument `source` to also preprocess the source. It can be a string or function
+        (will become a template), or any custom template. In this template, the index of the data item
+        is represented by "i", the data item itself is represented by "d" while its fields are
+        represented by their names.
+
+        Keyword arguments are passed to the respective engine.
+
+        Usage:
+            ```pycon
+            >>> print(asset.dump(source="{i: d}", default_flow_style=True).join())
+            {0: {s: ABC, b: true, d2: {c: red, l: [1, 2]}}}
+            {1: {s: BCD, b: true, d2: {c: blue, l: [3, 4]}}}
+            {2: {s: CDE, b: false, d2: {c: green, l: [5, 6]}}}
+            {3: {s: DEF, b: false, d2: {c: yellow, l: [7, 8]}}}
+            {4: {s: EFG, b: false, d2: {c: black, l: [9, 10]}, xyz: 123}}
+            ```
+        """
+        dump_all = self.resolve_setting(dump_all, "dump_all")
+        if dump_all:
+            return DumpAssetFunc.prepare_and_apply(
+                self.data,
+                source=source,
+                dump_engine=dump_engine,
+                template_context=template_context,
+                **kwargs,
+            )
+        return self.apply(
+            DumpAssetFunc,
+            source=source,
+            dump_engine=dump_engine,
+            template_context=template_context,
+            **kwargs,
+        )
+
+    def join(self, separator: tp.Optional[str] = None) -> str:
+        """Join the list of string data items."""
+        if separator is None:
+            if not all(isinstance(d, str) for d in self.data):
+                raise TypeError("All data items must be strings")
+            if self.data[0].endswith(("\n", "\t", " ")):
+                separator = ""
+            elif self.data[0].endswith(("}", "]")):
+                separator = ", "
+            else:
+                separator = "\n"
+        joined = separator.join(self.data)
+        if joined.startswith("{") and joined.endswith("}"):
+            return "[" + joined + "]"
+        return joined
 
     # ############# Item methods ############# #
 
