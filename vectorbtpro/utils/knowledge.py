@@ -6,11 +6,11 @@ Run for the examples:
 
 ```pycon
 >>> dataset = [
-...     {"s": "ABC", "b": True, "d": {"c": "red", "l": [1, 2]}},
-...     {"s": "BCD", "b": True, "d": {"c": "blue", "l": [3, 4]}},
-...     {"s": "CDE", "b": False, "d": {"c": "green", "l": [5, 6]}},
-...     {"s": "DEF", "b": False, "d": {"c": "yellow", "l": [7, 8]}},
-...     {"s": "EFG", "b": False, "d": {"c": "black", "l": [9, 10]}, "xyz": 123}
+...     {"s": "ABC", "b": True, "d2": {"c": "red", "l": [1, 2]}},
+...     {"s": "BCD", "b": True, "d2": {"c": "blue", "l": [3, 4]}},
+...     {"s": "CDE", "b": False, "d2": {"c": "green", "l": [5, 6]}},
+...     {"s": "DEF", "b": False, "d2": {"c": "yellow", "l": [7, 8]}},
+...     {"s": "EFG", "b": False, "d2": {"c": "black", "l": [9, 10]}, "xyz": 123}
 ... ]
 >>> asset = vbt.KnowledgeAsset(dataset)
 ```
@@ -57,7 +57,7 @@ KnowledgeAssetT = tp.TypeVar("KnowledgeAssetT", bound="KnowledgeAsset")
 
 
 class AssetFunc:
-    """Abstract class representing a function to be applied to a knowledge asset."""
+    """Abstract class representing a function to be applied to a data item."""
 
     _short_name: tp.ClassVar[tp.Optional[str]] = None
     """Short name of the function to be used in expressions."""
@@ -71,8 +71,8 @@ class AssetFunc:
         raise NotImplementedError
 
     @classmethod
-    def func(cls, o: tp.Any, *args, **kwargs) -> tp.Any:
-        """Function to be applied."""
+    def func(cls, d: tp.Any, *args, **kwargs) -> tp.Any:
+        """Function to be applied to a data item."""
         raise NotImplementedError
 
 
@@ -129,14 +129,14 @@ class GetAssetFunc(AssetFunc):
     @classmethod
     def func(
         cls,
-        o: tp.Any,
+        d: tp.Any,
         path: tp.Optional[tp.MaybeList[tp.PathLikeKey]] = None,
         keep_path: bool = False,
         skip_missing: bool = False,
         source: tp.Optional[tp.CustomTemplate] = None,
         template_context: tp.KwargsLike = None,
     ) -> tp.Any:
-        x = o
+        x = d
         if path is not None:
             if isinstance(path, list):
                 xs = []
@@ -160,18 +160,18 @@ class GetAssetFunc(AssetFunc):
         if source is not None:
             _template_context = flat_merge_dicts(
                 {
-                    "o": o,
+                    "d": d,
                     "x": x,
                     **(x if isinstance(x, dict) else {}),
                 },
                 template_context,
             )
-            new_o = source.substitute(_template_context, eval_id="source")
-            if checks.is_function(new_o):
-                new_o = new_o(x)
+            new_d = source.substitute(_template_context, eval_id="source")
+            if checks.is_function(new_d):
+                new_d = new_d(x)
         else:
-            new_o = x
-        return new_o
+            new_d = x
+        return new_d
 
 
 class SetAssetFunc(AssetFunc):
@@ -227,7 +227,7 @@ class SetAssetFunc(AssetFunc):
     @classmethod
     def func(
         cls,
-        o: tp.Any,
+        d: tp.Any,
         value: tp.Any,
         paths: tp.List[tp.PathLikeKey],
         skip_missing: bool = False,
@@ -238,7 +238,7 @@ class SetAssetFunc(AssetFunc):
     ) -> tp.Any:
         prev_keys = []
         for p in paths:
-            x = o
+            x = d
             if p is not None:
                 try:
                     x = search.get_pathlike_key(x, p[:-1])
@@ -248,7 +248,7 @@ class SetAssetFunc(AssetFunc):
                     continue
             _template_context = flat_merge_dicts(
                 {
-                    "o": o,
+                    "d": d,
                     "x": x,
                     **(x if isinstance(x, dict) else {}),
                 },
@@ -257,9 +257,9 @@ class SetAssetFunc(AssetFunc):
             v = value.substitute(_template_context, eval_id="value", **kwargs)
             if checks.is_function(v):
                 v = v(x)
-            o = search.set_pathlike_key(o, p, v, make_copy=make_copy, prev_keys=prev_keys)
+            d = search.set_pathlike_key(d, p, v, make_copy=make_copy, prev_keys=prev_keys)
         if not changed_only or len(prev_keys) > 0:
-            return o
+            return d
         return NoResult
 
 
@@ -303,7 +303,7 @@ class RemoveAssetFunc(AssetFunc):
     @classmethod
     def func(
         cls,
-        o: tp.Any,
+        d: tp.Any,
         paths: tp.List[tp.PathLikeKey],
         skip_missing: bool = False,
         make_copy: bool = True,
@@ -312,13 +312,13 @@ class RemoveAssetFunc(AssetFunc):
         prev_keys = []
         for p in paths:
             try:
-                o = search.remove_pathlike_key(o, p, make_copy=make_copy, prev_keys=prev_keys)
+                d = search.remove_pathlike_key(d, p, make_copy=make_copy, prev_keys=prev_keys)
             except (KeyError, IndexError, AttributeError) as e:
                 if not skip_missing:
                     raise e
                 continue
         if not changed_only or len(prev_keys) > 0:
-            return o
+            return d
         return NoResult
 
 
@@ -374,7 +374,7 @@ class MoveAssetFunc(AssetFunc):
     @classmethod
     def func(
         cls,
-        o: tp.Any,
+        d: tp.Any,
         paths: tp.List[tp.PathLikeKey],
         new_paths: tp.List[tp.PathLikeKey],
         skip_missing: bool = False,
@@ -384,15 +384,15 @@ class MoveAssetFunc(AssetFunc):
         prev_keys = []
         for i, p in enumerate(paths):
             try:
-                x = search.get_pathlike_key(o, p)
-                o = search.remove_pathlike_key(o, p, make_copy=make_copy, prev_keys=prev_keys)
-                o = search.set_pathlike_key(o, new_paths[i], x, make_copy=make_copy, prev_keys=prev_keys)
+                x = search.get_pathlike_key(d, p)
+                d = search.remove_pathlike_key(d, p, make_copy=make_copy, prev_keys=prev_keys)
+                d = search.set_pathlike_key(d, new_paths[i], x, make_copy=make_copy, prev_keys=prev_keys)
             except (KeyError, IndexError, AttributeError) as e:
                 if not skip_missing:
                     raise e
                 continue
         if not changed_only or len(prev_keys) > 0:
-            return o
+            return d
         return NoResult
 
 
@@ -411,8 +411,15 @@ class RenameAssetFunc(MoveAssetFunc):
         skip_missing: tp.Optional[bool] = None,
         make_copy: tp.Optional[bool] = None,
         changed_only: tp.Optional[bool] = None,
+        asset: tp.Optional[tp.MaybeType["KnowledgeAsset"]] = None,
         **kwargs,
     ) -> tp.ArgsKwargs:
+        if asset is None:
+            asset = KnowledgeAsset
+        skip_missing = asset.resolve_setting(skip_missing, "skip_missing")
+        make_copy = asset.resolve_setting(make_copy, "make_copy")
+        changed_only = asset.resolve_setting(changed_only, "changed_only")
+
         if new_token is None:
             checks.assert_instance_of(path, dict, arg_name="path")
             new_token = list(path.values())
@@ -519,7 +526,7 @@ class ReorderAssetFunc(AssetFunc):
     @classmethod
     def func(
         cls,
-        o: tp.Any,
+        d: tp.Any,
         new_order: tp.Union[tp.PathKeyTokens, tp.CustomTemplate],
         paths: tp.List[tp.PathLikeKey],
         skip_missing: bool = False,
@@ -530,7 +537,7 @@ class ReorderAssetFunc(AssetFunc):
     ) -> tp.Any:
         prev_keys = []
         for p in paths:
-            x = o
+            x = d
             if p is not None:
                 try:
                     x = search.get_pathlike_key(x, p)
@@ -541,7 +548,7 @@ class ReorderAssetFunc(AssetFunc):
             if isinstance(new_order, CustomTemplate):
                 _template_context = flat_merge_dicts(
                     {
-                        "o": o,
+                        "d": d,
                         "x": x,
                         **(x if isinstance(x, dict) else {}),
                     },
@@ -559,9 +566,9 @@ class ReorderAssetFunc(AssetFunc):
                     x = type(x)(*reorder_list(x, _new_order, skip_missing=skip_missing))
                 else:
                     x = type(x)(reorder_list(x, _new_order, skip_missing=skip_missing))
-            o = search.set_pathlike_key(o, p, x, make_copy=make_copy, prev_keys=prev_keys)
+            d = search.set_pathlike_key(d, p, x, make_copy=make_copy, prev_keys=prev_keys)
         if not changed_only or len(prev_keys) > 0:
-            return o
+            return d
         return NoResult
 
 
@@ -607,7 +614,7 @@ class QueryAssetFunc(AssetFunc):
     @classmethod
     def func(
         cls,
-        o: tp.Any,
+        d: tp.Any,
         expression: tp.CustomTemplate,
         as_filter: bool = True,
         template_context: tp.KwargsLike = None,
@@ -615,21 +622,21 @@ class QueryAssetFunc(AssetFunc):
     ) -> tp.Any:
         _template_context = flat_merge_dicts(
             {
-                "o": o,
-                "x": o,
+                "d": d,
+                "x": d,
                 **search.search_config,
-                **(o if isinstance(o, dict) else {}),
+                **(d if isinstance(d, dict) else {}),
             },
             template_context,
         )
-        new_o = expression.substitute(_template_context, eval_id="expression", **kwargs)
-        if checks.is_function(new_o):
-            new_o = new_o(o)
-        if as_filter and isinstance(new_o, bool):
-            if new_o:
-                return o
+        new_d = expression.substitute(_template_context, eval_id="expression", **kwargs)
+        if checks.is_function(new_d):
+            new_d = new_d(d)
+        if as_filter and isinstance(new_d, bool):
+            if new_d:
+                return d
             return NoResult
-        return new_o
+        return new_d
 
 
 class FindAssetFunc(AssetFunc):
@@ -709,7 +716,7 @@ class FindAssetFunc(AssetFunc):
     def match_func(
         cls,
         k: tp.Optional[tp.Hashable],
-        o: tp.Any,
+        d: tp.Any,
         target: tp.MaybeList[tp.Any],
         find_any: bool = False,
         **kwargs,
@@ -722,31 +729,31 @@ class FindAssetFunc(AssetFunc):
         else:
             targets = target
         for target in targets:
-            if o is target:
+            if d is target:
                 if find_any:
                     return True
                 continue
-            if o is None and target is None:
+            if d is None and target is None:
                 if find_any:
                     return True
                 continue
-            elif checks.is_bool(o) and checks.is_bool(target):
-                if o == target:
+            elif checks.is_bool(d) and checks.is_bool(target):
+                if d == target:
                     if find_any:
                         return True
                     continue
-            elif checks.is_number(o) and checks.is_number(target):
-                if o == target:
+            elif checks.is_number(d) and checks.is_number(target):
+                if d == target:
                     if find_any:
                         return True
                     continue
-            elif isinstance(o, str) and isinstance(target, str):
-                if search.contains(o, target, **kwargs):
+            elif isinstance(d, str) and isinstance(target, str):
+                if search.contains(d, target, **kwargs):
                     if find_any:
                         return True
                     continue
-            elif type(o) is type(target):
-                if o == target:
+            elif type(d) is type(target):
+                if d == target:
                     if find_any:
                         return True
                     continue
@@ -759,7 +766,7 @@ class FindAssetFunc(AssetFunc):
     @classmethod
     def func(
         cls,
-        o: tp.Any,
+        d: tp.Any,
         target: tp.MaybeList[tp.Any],
         path: tp.Optional[tp.MaybeList[tp.PathLikeKey]] = None,
         per_path: bool = False,
@@ -774,7 +781,7 @@ class FindAssetFunc(AssetFunc):
     ) -> tp.Any:
         if per_path:
             for i, p in enumerate(path):
-                x = o
+                x = d
                 try:
                     x = search.get_pathlike_key(x, p, keep_path=keep_path)
                 except (KeyError, IndexError, AttributeError) as e:
@@ -784,7 +791,7 @@ class FindAssetFunc(AssetFunc):
                 if source is not None:
                     _template_context = flat_merge_dicts(
                         {
-                            "o": o,
+                            "d": d,
                             "x": x,
                             **(x if isinstance(x, dict) else {}),
                         },
@@ -805,15 +812,15 @@ class FindAssetFunc(AssetFunc):
                     **kwargs,
                 ):
                     if find_any:
-                        return o if as_filter else True
+                        return d if as_filter else True
                     continue
                 if not find_any:
                     return NoResult if as_filter else False
             if not find_any:
-                return o if as_filter else True
+                return d if as_filter else True
             return NoResult if as_filter else False
         else:
-            x = o
+            x = d
             if path is not None:
                 if isinstance(path, list):
                     xs = []
@@ -837,7 +844,7 @@ class FindAssetFunc(AssetFunc):
             if source is not None:
                 _template_context = flat_merge_dicts(
                     {
-                        "o": o,
+                        "d": d,
                         "x": x,
                         **(x if isinstance(x, dict) else {}),
                     },
@@ -857,7 +864,7 @@ class FindAssetFunc(AssetFunc):
                 find_any=find_any,
                 **kwargs,
             ):
-                return o if as_filter else True
+                return d if as_filter else True
             return NoResult if as_filter else False
 
 
@@ -930,7 +937,7 @@ class ReplaceAssetFunc(FindAssetFunc):
     def replace_func(
         cls,
         k: tp.Optional[tp.Hashable],
-        o: tp.Any,
+        d: tp.Any,
         target: tp.MaybeList[tp.Any],
         replacement: tp.MaybeList[tp.Any],
         **kwargs,
@@ -950,29 +957,29 @@ class ReplaceAssetFunc(FindAssetFunc):
             replacements *= len(targets)
         if len(targets) != len(replacements):
             raise ValueError("Number of targets must match number of replacements")
-        new_o = o
+        new_d = d
         for i, target in enumerate(targets):
-            if o is target:
+            if d is target:
                 return replacements[i]
-            if o is None and target is None:
+            if d is None and target is None:
                 return replacements[i]
-            elif checks.is_bool(o) and checks.is_bool(target):
-                if o == target:
+            elif checks.is_bool(d) and checks.is_bool(target):
+                if d == target:
                     return replacements[i]
-            elif checks.is_number(o) and checks.is_number(target):
-                if o == target:
+            elif checks.is_number(d) and checks.is_number(target):
+                if d == target:
                     return replacements[i]
-            elif isinstance(o, str) and isinstance(target, str):
-                new_o = search.replace(new_o, target, replacements[i], **kwargs)
-            elif type(o) is type(target):
-                if o == target:
+            elif isinstance(d, str) and isinstance(target, str):
+                new_d = search.replace(new_d, target, replacements[i], **kwargs)
+            elif type(d) is type(target):
+                if d == target:
                     return replacements[i]
-        return new_o
+        return new_d
 
     @classmethod
     def func(
         cls,
-        o: tp.Any,
+        d: tp.Any,
         target: tp.MaybeList[tp.Any],
         replacement: tp.MaybeList[tp.Any],
         paths: tp.List[tp.PathLikeKey],
@@ -990,7 +997,7 @@ class ReplaceAssetFunc(FindAssetFunc):
         prev_keys = []
         new_p_v_map = {}
         for i, p in enumerate(paths):
-            x = o
+            x = d
             if p is not None:
                 try:
                     x = search.get_pathlike_key(x, p, keep_path=keep_path)
@@ -1023,9 +1030,9 @@ class ReplaceAssetFunc(FindAssetFunc):
                 )
                 new_p_v_map[new_p] = v
         for new_p, v in new_p_v_map.items():
-            o = search.set_pathlike_key(o, new_p, v, make_copy=make_copy, prev_keys=prev_keys)
+            d = search.set_pathlike_key(d, new_p, v, make_copy=make_copy, prev_keys=prev_keys)
         if not changed_only or len(prev_keys) > 0:
-            return o
+            return d
         return NoResult
 
 
@@ -1074,7 +1081,7 @@ class FlattenAssetFunc(AssetFunc):
     @classmethod
     def func(
         cls,
-        o: tp.Any,
+        d: tp.Any,
         paths: tp.List[tp.PathLikeKey],
         skip_missing: bool = False,
         make_copy: bool = True,
@@ -1083,7 +1090,7 @@ class FlattenAssetFunc(AssetFunc):
     ) -> tp.Any:
         prev_keys = []
         for p in paths:
-            x = o
+            x = d
             if p is not None:
                 try:
                     x = search.get_pathlike_key(x, p)
@@ -1092,9 +1099,9 @@ class FlattenAssetFunc(AssetFunc):
                         raise e
                     continue
             x = search.flatten_obj(x, **kwargs)
-            o = search.set_pathlike_key(o, p, x, make_copy=make_copy, prev_keys=prev_keys)
+            d = search.set_pathlike_key(d, p, x, make_copy=make_copy, prev_keys=prev_keys)
         if not changed_only or len(prev_keys) > 0:
-            return o
+            return d
         return NoResult
 
 
@@ -1141,7 +1148,7 @@ class UnflattenAssetFunc(AssetFunc):
     @classmethod
     def func(
         cls,
-        o: tp.Any,
+        d: tp.Any,
         paths: tp.List[tp.PathLikeKey],
         skip_missing: bool = False,
         make_copy: bool = True,
@@ -1150,7 +1157,7 @@ class UnflattenAssetFunc(AssetFunc):
     ) -> tp.Any:
         prev_keys = []
         for p in paths:
-            x = o
+            x = d
             if p is not None:
                 try:
                     x = search.get_pathlike_key(x, p)
@@ -1159,9 +1166,9 @@ class UnflattenAssetFunc(AssetFunc):
                         raise e
                     continue
             x = search.unflatten_obj(x, **kwargs)
-            o = search.set_pathlike_key(o, p, x, make_copy=make_copy, prev_keys=prev_keys)
+            d = search.set_pathlike_key(d, p, x, make_copy=make_copy, prev_keys=prev_keys)
         if not changed_only or len(prev_keys) > 0:
-            return o
+            return d
         return NoResult
 
 
@@ -1226,9 +1233,9 @@ class AssetPipeline:
                     func = func.func
                 else:
 
-                    def func(o, *args, _func=func, **kwargs):
+                    def func(d, *args, _func=func, **kwargs):
                         new_args, new_kwargs = _func.prepare_args(*args, **kwargs)
-                        return _func.func(o, *new_args, **new_kwargs)
+                        return _func.func(d, *new_args, **new_kwargs)
 
                     args, kwargs = (), {}
             else:
@@ -1237,12 +1244,12 @@ class AssetPipeline:
             raise TypeError("Function must be callable")
         return Task(func, *args, **kwargs)
 
-    def run(self, o: tp.Any) -> tp.Any:
-        """Run the pipeline on an object."""
+    def run(self, d: tp.Any) -> tp.Any:
+        """Run the pipeline on a data item."""
         raise NotImplementedError
 
-    def __call__(self, o: tp.Any) -> tp.Any:
-        return self.run(o)
+    def __call__(self, d: tp.Any) -> tp.Any:
+        return self.run(d)
 
 
 class BasicAssetPipeline(AssetPipeline):
@@ -1285,16 +1292,16 @@ class BasicAssetPipeline(AssetPipeline):
     def compose_tasks(cls, tasks: tp.List[tp.Task]) -> tp.Callable:
         """Compose multiple tasks into one."""
 
-        def composed(o):
-            result = o
+        def composed(d):
+            result = d
             for func, args, kwargs in tasks:
                 result = func(result, *args, **kwargs)
             return result
 
         return composed
 
-    def run(self, o: tp.Any) -> tp.Any:
-        return self.compose_tasks(list(self.tasks))(o)
+    def run(self, d: tp.Any) -> tp.Any:
+        return self.compose_tasks(list(self.tasks))(d)
 
 
 class ComplexAssetPipeline(AssetPipeline):
@@ -1305,7 +1312,7 @@ class ComplexAssetPipeline(AssetPipeline):
 
     Usage:
         ```pycon
-        >>> asset_pipeline = vbt.ComplexAssetPipeline("query(flatten(o), len)")
+        >>> asset_pipeline = vbt.ComplexAssetPipeline("query(flatten(d), len)")
 
         >>> asset_pipeline(dataset[0])
         5
@@ -1440,8 +1447,8 @@ class ComplexAssetPipeline(AssetPipeline):
                 )
                 if prepare_args and prepare_once:
 
-                    def func(o, _task=task):
-                        return _task.func(o, *_task.args, **_task.kwargs)
+                    def func(d, _task=task):
+                        return _task.func(d, *_task.args, **_task.kwargs)
 
                 else:
                     func = task.func
@@ -1505,9 +1512,9 @@ class ComplexAssetPipeline(AssetPipeline):
         """Context."""
         return self._context
 
-    def run(self, o: tp.Any) -> tp.Any:
-        """Run the pipeline on an object."""
-        context = merge_dicts({"o": o, "x": o}, self.context)
+    def run(self, d: tp.Any) -> tp.Any:
+        """Run the pipeline on a data item."""
+        context = merge_dicts({"d": d, "x": d}, self.context)
         return evaluate(self.expression, context=context)
 
 
@@ -1518,7 +1525,7 @@ class KnowledgeAsset(Configured):
 
     _settings_path: tp.SettingsPath = "knowledge"
 
-    _expected_keys: tp.ExpectedKeys = (Configured._expected_keys or set()) | {"obj"}
+    _expected_keys: tp.ExpectedKeys = (Configured._expected_keys or set()) | {"data"}
 
     @classmethod
     def stack(
@@ -1533,14 +1540,10 @@ class KnowledgeAsset(Configured):
         for obj in objs:
             if not checks.is_instance_of(obj, KnowledgeAsset):
                 raise TypeError("Each object to be stacked must be an instance of KnowledgeAsset")
-        new_obj = []
+        new_data = []
         for obj in objs:
-            obj = obj.obj
-            if isinstance(obj, list):
-                new_obj.extend(obj)
-            else:
-                new_obj.append(obj)
-        return cls(obj=new_obj, **kwargs)
+            new_data.extend(obj.data)
+        return cls(data=new_data, **kwargs)
 
     @classmethod
     def merge(
@@ -1563,28 +1566,23 @@ class KnowledgeAsset(Configured):
             flatten_kwargs["annotate_all"] = True
         if "excl_types" not in flatten_kwargs:
             flatten_kwargs["excl_types"] = (tuple, set, frozenset)
-        must_become_list = True
         max_items = 1
         for obj in objs:
-            if isinstance(obj.obj, list):
-                if len(obj.obj) > max_items:
-                    max_items = len(obj.obj)
-        flat_objs = []
+            obj_data = obj.data
+            if len(obj_data) > max_items:
+                max_items = len(obj_data)
+        flat_data = []
         for obj in objs:
-            obj = obj.obj
-            if not isinstance(obj, list) and must_become_list:
-                obj = [obj] * max_items
-            flat_obj = list(map(lambda x: search.flatten_obj(x, **flatten_kwargs), obj))
-            flat_objs.append(flat_obj)
-        if must_become_list:
-            new_obj = []
-            for flat_dcts in zip(*flat_objs):
-                merged_flat_dct = flat_merge_dicts(*flat_dcts)
-                new_obj.append(search.unflatten_obj(merged_flat_dct))
-        else:
-            merged_flat_dct = flat_merge_dicts(*flat_objs)
-            new_obj = search.unflatten_obj(merged_flat_dct)
-        return cls(obj=new_obj, **kwargs)
+            obj_data = obj.data
+            if len(obj_data) == 1:
+                obj_data = [obj_data] * max_items
+            flat_obj_data = list(map(lambda x: search.flatten_obj(x, **flatten_kwargs), obj_data))
+            flat_data.append(flat_obj_data)
+        new_data = []
+        for flat_dcts in zip(*flat_data):
+            merged_flat_dct = flat_merge_dicts(*flat_dcts)
+            new_data.append(search.unflatten_obj(merged_flat_dct))
+        return cls(data=new_data, **kwargs)
 
     @classmethod
     def from_json_file(
@@ -1597,7 +1595,7 @@ class KnowledgeAsset(Configured):
         """Build `KnowledgeAsset` from a JSON file."""
         bytes_ = load_bytes(path, compression=compression, decompress_kwargs=decompress_kwargs)
         json_str = bytes_.decode("utf-8")
-        return cls(json.loads(json_str), **kwargs)
+        return cls(data=json.loads(json_str), **kwargs)
 
     @classmethod
     def from_json_bytes(
@@ -1612,21 +1610,23 @@ class KnowledgeAsset(Configured):
             decompress_kwargs = {}
         bytes_ = decompress(bytes_, compression=compression, **decompress_kwargs)
         json_str = bytes_.decode("utf-8")
-        return cls(json.loads(json_str), **kwargs)
+        return cls(data=json.loads(json_str), **kwargs)
 
-    def __init__(self, obj: tp.Any, **kwargs) -> None:
+    def __init__(self, data: tp.List[tp.Any], **kwargs) -> None:
+        if not isinstance(data, list):
+            data = [data]
         Configured.__init__(
             self,
-            obj=obj,
+            data=data,
             **kwargs,
         )
 
-        self._obj = obj
+        self._data = data
 
     @property
-    def obj(self) -> tp.Any:
-        """Object."""
-        return self._obj
+    def data(self) -> tp.List[tp.Any]:
+        """Data."""
+        return self._data
 
     def apply(
         self,
@@ -1636,7 +1636,7 @@ class KnowledgeAsset(Configured):
         execute_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> tp.Union[KnowledgeAssetT, tp.Any]:
-        """Apply a function to each object.
+        """Apply a function to each data item.
 
         Function can be either a callable, a tuple of function and its arguments,
         a `vectorbtpro.utils.execution.Task` instance, a subclass of `AssetFunc` or its prefix or full name.
@@ -1652,7 +1652,7 @@ class KnowledgeAsset(Configured):
             >>> asset.apply(["flatten", ("query", len)])
             [5, 5, 5, 5, 6]
 
-            >>> asset.apply("query(flatten(o), len)")
+            >>> asset.apply("query(flatten(d), len)")
             [5, 5, 5, 5, 6]
             ```
         """
@@ -1706,38 +1706,22 @@ class KnowledgeAsset(Configured):
             ),
             execute_kwargs,
         )
-        obj = self.obj
-        if not isinstance(obj, list):
-            objs = [obj]
-            single_obj = True
-        else:
-            objs = obj
-            single_obj = False
 
         def _get_task_generator():
-            for obj in objs:
-                yield Task(func, obj, *args, **kwargs)
+            for d in self.data:
+                yield Task(func, d, *args, **kwargs)
 
         tasks = _get_task_generator()
-        execute_kwargs = flat_merge_dicts(dict(show_progress=False if single_obj else None), execute_kwargs)
-        new_obj = execute(tasks, size=len(objs), **execute_kwargs)
-        if new_obj is NoResult:
-            if single_obj:
-                new_obj = None
-            else:
-                new_obj = []
-        elif single_obj:
-            if len(new_obj) > 0:
-                new_obj = new_obj[0]
-            else:
-                new_obj = None
+        new_data = execute(tasks, size=len(self.data), **execute_kwargs)
+        if new_data is NoResult:
+            new_data = []
         if wrap is None and asset_func_meta.get("_wrap", None) is not None:
             wrap = asset_func_meta.get("_wrap", None)
         if wrap is None:
             wrap = True
         if wrap:
-            return self.replace(obj=new_obj)
-        return new_obj
+            return self.replace(data=new_data)
+        return new_data
 
     def get(
         self,
@@ -1748,56 +1732,56 @@ class KnowledgeAsset(Configured):
         template_context: tp.KwargsLike = None,
         **kwargs,
     ) -> tp.Any:
-        """Get objects or parts of them.
+        """Get data items or parts of them.
 
         Uses `KnowledgeAsset.apply` on `GetAssetFunc`.
 
-        Use argument `path` to specify what part of the object should be got. For example, "x.y[0].z"
-        to navigate nested dictionaries/lists. If `keep_path` is True, object will be represented
+        Use argument `path` to specify what part of the data item should be got. For example, "x.y[0].z"
+        to navigate nested dictionaries/lists. If `keep_path` is True, the data item will be represented
         as a nested dictionary with path as keys. If multiple paths are provided, `keep_path` automatically
         becomes True, and they will be merged into one nested dictionary. If `skip_missing` is True
-        and path is missing in the object, will skip the object.
+        and path is missing in the data item, will skip the data item.
 
         Use argument `source` instead of `path` or in addition to `path` to also preprocess the source.
         It can be a string or function (will become a template), or any custom template. In this template,
-        the object is represented by "o" and the object under the path is represented by "x" while its
+        the data item is represented by "d" and the data item under the path is represented by "x" while its
         fields (if any) are represented by their names.
 
         Usage:
             ```pycon
             >>> asset.get()
-            [{'s': 'ABC', 'b': True, 'd': {'c': 'red', 'l': [1, 2]}},
-             {'s': 'BCD', 'b': True, 'd': {'c': 'blue', 'l': [3, 4]}},
-             {'s': 'CDE', 'b': False, 'd': {'c': 'green', 'l': [5, 6]}},
-             {'s': 'DEF', 'b': False, 'd': {'c': 'yellow', 'l': [7, 8]}},
-             {'s': 'EFG', 'b': False, 'd': {'c': 'black', 'l': [9, 10]}, 'xyz': 123}]
+            [{'s': 'ABC', 'b': True, 'd2': {'c': 'red', 'l': [1, 2]}},
+             {'s': 'BCD', 'b': True, 'd2': {'c': 'blue', 'l': [3, 4]}},
+             {'s': 'CDE', 'b': False, 'd2': {'c': 'green', 'l': [5, 6]}},
+             {'s': 'DEF', 'b': False, 'd2': {'c': 'yellow', 'l': [7, 8]}},
+             {'s': 'EFG', 'b': False, 'd2': {'c': 'black', 'l': [9, 10]}, 'xyz': 123}]
 
-            >>> asset.get("d.l[0]")
+            >>> asset.get("d2.l[0]")
             [1, 3, 5, 7, 9]
 
-            >>> asset.get("d.l", source=lambda x: sum(x))
+            >>> asset.get("d2.l", source=lambda x: sum(x))
             [3, 7, 11, 15, 19]
 
-            >>> asset.get("d.l[0]", keep_path=True)
-            [{'d': {'l': {0: 1}}},
-             {'d': {'l': {0: 3}}},
-             {'d': {'l': {0: 5}}},
-             {'d': {'l': {0: 7}}},
-             {'d': {'l': {0: 9}}}]
+            >>> asset.get("d2.l[0]", keep_path=True)
+            [{'d2': {'l': {0: 1}}},
+             {'d2': {'l': {0: 3}}},
+             {'d2': {'l': {0: 5}}},
+             {'d2': {'l': {0: 7}}},
+             {'d2': {'l': {0: 9}}}]
 
-            >>> asset.get(["d.l[0]", "d.l[1]"])
-            [{'d': {'l': {0: 1, 1: 2}}},
-             {'d': {'l': {0: 3, 1: 4}}},
-             {'d': {'l': {0: 5, 1: 6}}},
-             {'d': {'l': {0: 7, 1: 8}}},
-             {'d': {'l': {0: 9, 1: 10}}}]
+            >>> asset.get(["d2.l[0]", "d2.l[1]"])
+            [{'d2': {'l': {0: 1, 1: 2}}},
+             {'d2': {'l': {0: 3, 1: 4}}},
+             {'d2': {'l': {0: 5, 1: 6}}},
+             {'d2': {'l': {0: 7, 1: 8}}},
+             {'d2': {'l': {0: 9, 1: 10}}}]
 
             >>> asset.get("xyz", skip_missing=True)
             [123]
             ```
         """
         if path is None and source is None:
-            return self.obj
+            return self.data
         return self.apply(
             GetAssetFunc,
             path=path,
@@ -1810,7 +1794,7 @@ class KnowledgeAsset(Configured):
 
     def select(self, *args, **kwargs) -> KnowledgeAssetT:
         """Run `KnowledgeAsset.get` and return a new `KnowledgeAsset` instance."""
-        return self.replace(obj=self.get(*args, **kwargs))
+        return self.replace(data=self.get(*args, **kwargs))
 
     def set(
         self,
@@ -1822,44 +1806,44 @@ class KnowledgeAsset(Configured):
         template_context: tp.KwargsLike = None,
         **kwargs,
     ) -> tp.Any:
-        """Set objects or parts of them.
+        """Set data items or parts of them.
 
         Uses `KnowledgeAsset.apply` on `SetAssetFunc`.
 
         Argument `value` can be any value, function (will become a template), or a template. In this template,
-        the object is represented by "o" and the object under the parent path is represented by "x" while its
-        fields (if any) are represented by their names.
+        the data item is represented by "d" and the data item under the parent path is represented by "x"
+        while its fields (if any) are represented by their names.
 
-        Use argument `path` to specify what part of the object should be set. For example, "x.y[0].z"
+        Use argument `path` to specify what part of the data item should be set. For example, "x.y[0].z"
         to navigate nested dictionaries/lists. Multiple paths can be provided. If `skip_missing` is True and
-        path is missing in the object, will skip the object.
+        path is missing in the data item, will skip the data item.
 
         Set `make_copy` to True to not modify original data.
 
-        Set `changed_only` to True to keep only objects that have been changed.
+        Set `changed_only` to True to keep only the data items that have been changed.
 
         Keyword arguments are passed to template substitution in `value`.
 
         Usage:
             ```pycon
-            >>> asset.set(lambda o: sum(o["d"]["l"])).get()
+            >>> asset.set(lambda d: sum(d["d2"]["l"])).get()
             [3, 7, 11, 15, 19]
 
-            >>> asset.set(lambda o: sum(o["d"]["l"]), path="d.sum").get()
-            >>> asset.set(lambda x: sum(x["l"]), path="d.sum").get()
-            >>> asset.set(lambda l: sum(l), path="d.sum").get()
-            [{'s': 'ABC', 'b': True, 'd': {'c': 'red', 'l': [1, 2], 'sum': 3}},
-             {'s': 'BCD', 'b': True, 'd': {'c': 'blue', 'l': [3, 4], 'sum': 7}},
-             {'s': 'CDE', 'b': False, 'd': {'c': 'green', 'l': [5, 6], 'sum': 11}},
-             {'s': 'DEF', 'b': False, 'd': {'c': 'yellow', 'l': [7, 8], 'sum': 15}},
-             {'s': 'EFG', 'b': False, 'd': {'c': 'black', 'l': [9, 10], 'sum': 19}, 'xyz': 123}]
+            >>> asset.set(lambda d: sum(d["d2"]["l"]), path="d2.sum").get()
+            >>> asset.set(lambda x: sum(x["l"]), path="d2.sum").get()
+            >>> asset.set(lambda l: sum(l), path="d2.sum").get()
+            [{'s': 'ABC', 'b': True, 'd2': {'c': 'red', 'l': [1, 2], 'sum': 3}},
+             {'s': 'BCD', 'b': True, 'd2': {'c': 'blue', 'l': [3, 4], 'sum': 7}},
+             {'s': 'CDE', 'b': False, 'd2': {'c': 'green', 'l': [5, 6], 'sum': 11}},
+             {'s': 'DEF', 'b': False, 'd2': {'c': 'yellow', 'l': [7, 8], 'sum': 15}},
+             {'s': 'EFG', 'b': False, 'd2': {'c': 'black', 'l': [9, 10], 'sum': 19}, 'xyz': 123}]
 
-            >>> asset.set(lambda l: sum(l), path="d.l").get()
-            [{'s': 'ABC', 'b': True, 'd': {'c': 'red', 'l': 3}},
-             {'s': 'BCD', 'b': True, 'd': {'c': 'blue', 'l': 7}},
-             {'s': 'CDE', 'b': False, 'd': {'c': 'green', 'l': 11}},
-             {'s': 'DEF', 'b': False, 'd': {'c': 'yellow', 'l': 15}},
-             {'s': 'EFG', 'b': False, 'd': {'c': 'black', 'l': 19}, 'xyz': 123}]
+            >>> asset.set(lambda l: sum(l), path="d2.l").get()
+            [{'s': 'ABC', 'b': True, 'd2': {'c': 'red', 'l': 3}},
+             {'s': 'BCD', 'b': True, 'd2': {'c': 'blue', 'l': 7}},
+             {'s': 'CDE', 'b': False, 'd2': {'c': 'green', 'l': 11}},
+             {'s': 'DEF', 'b': False, 'd2': {'c': 'yellow', 'l': 15}},
+             {'s': 'EFG', 'b': False, 'd2': {'c': 'black', 'l': 19}, 'xyz': 123}]
             ```
         """
         return self.apply(
@@ -1881,33 +1865,33 @@ class KnowledgeAsset(Configured):
         changed_only: tp.Optional[bool] = None,
         **kwargs,
     ) -> tp.Any:
-        """Set objects or parts of them.
+        """Set data items or parts of them.
 
         Uses `KnowledgeAsset.apply` on `RemoveAssetFunc`.
 
-        Use argument `path` to specify what part of the object should be set. For example, "x.y[0].z"
+        Use argument `path` to specify what part of the data item should be set. For example, "x.y[0].z"
         to navigate nested dictionaries/lists. Multiple paths can be provided. If `skip_missing` is True and
-        path is missing in the object, will skip the object.
+        path is missing in the data item, will skip the data item.
 
         Set `make_copy` to True to not modify original data.
 
-        Set `changed_only` to True to keep only objects that have been changed.
+        Set `changed_only` to True to keep only the data items that have been changed.
 
         Usage:
             ```pycon
-            >>> asset.remove("d.l[0]").get()
-            [{'s': 'ABC', 'b': True, 'd': {'c': 'red', 'l': [2]}},
-             {'s': 'BCD', 'b': True, 'd': {'c': 'blue', 'l': [4]}},
-             {'s': 'CDE', 'b': False, 'd': {'c': 'green', 'l': [6]}},
-             {'s': 'DEF', 'b': False, 'd': {'c': 'yellow', 'l': [8]}},
-             {'s': 'EFG', 'b': False, 'd': {'c': 'black', 'l': [10]}, 'xyz': 123}]
+            >>> asset.remove("d2.l[0]").get()
+            [{'s': 'ABC', 'b': True, 'd2': {'c': 'red', 'l': [2]}},
+             {'s': 'BCD', 'b': True, 'd2': {'c': 'blue', 'l': [4]}},
+             {'s': 'CDE', 'b': False, 'd2': {'c': 'green', 'l': [6]}},
+             {'s': 'DEF', 'b': False, 'd2': {'c': 'yellow', 'l': [8]}},
+             {'s': 'EFG', 'b': False, 'd2': {'c': 'black', 'l': [10]}, 'xyz': 123}]
 
             >>> asset.remove("xyz", skip_missing=True).get()
-            [{'s': 'ABC', 'b': True, 'd': {'c': 'red', 'l': [1, 2]}},
-             {'s': 'BCD', 'b': True, 'd': {'c': 'blue', 'l': [3, 4]}},
-             {'s': 'CDE', 'b': False, 'd': {'c': 'green', 'l': [5, 6]}},
-             {'s': 'DEF', 'b': False, 'd': {'c': 'yellow', 'l': [7, 8]}},
-             {'s': 'EFG', 'b': False, 'd': {'c': 'black', 'l': [9, 10]}}]
+            [{'s': 'ABC', 'b': True, 'd2': {'c': 'red', 'l': [1, 2]}},
+             {'s': 'BCD', 'b': True, 'd2': {'c': 'blue', 'l': [3, 4]}},
+             {'s': 'CDE', 'b': False, 'd2': {'c': 'green', 'l': [5, 6]}},
+             {'s': 'DEF', 'b': False, 'd2': {'c': 'yellow', 'l': [7, 8]}},
+             {'s': 'EFG', 'b': False, 'd2': {'c': 'black', 'l': [9, 10]}}]
             ```
         """
         return self.apply(
@@ -1928,37 +1912,37 @@ class KnowledgeAsset(Configured):
         changed_only: tp.Optional[bool] = None,
         **kwargs,
     ) -> tp.Any:
-        """Move objects or parts of them.
+        """Move data items or parts of them.
 
         Uses `KnowledgeAsset.apply` on `MoveAssetFunc`.
 
-        Use argument `path` to specify what part of the object should be renamed. For example, "x.y[0].z"
+        Use argument `path` to specify what part of the data item should be renamed. For example, "x.y[0].z"
         to navigate nested dictionaries/lists. Multiple paths can be provided. If `skip_missing` is True and
-        path is missing in the object, will skip the object.
+        path is missing in the data item, will skip the data item.
 
-        Use argument `new_path` to specify the last part of the object (i.e., token) that should be renamed to.
+        Use argument `new_path` to specify the last part of the data item (i.e., token) that should be renamed to.
         Multiple tokens can be provided. If None, `path` must be a dictionary.
 
         Set `make_copy` to True to not modify original data.
 
-        Set `changed_only` to True to keep only objects that have been changed.
+        Set `changed_only` to True to keep only the data items that have been changed.
 
         Usage:
             ```pycon
-            >>> asset.move("d.l", "l").get()
-            [{'s': 'ABC', 'b': True, 'd': {'c': 'red'}, 'l': [1, 2]},
-             {'s': 'BCD', 'b': True, 'd': {'c': 'blue'}, 'l': [3, 4]},
-             {'s': 'CDE', 'b': False, 'd': {'c': 'green'}, 'l': [5, 6]},
-             {'s': 'DEF', 'b': False, 'd': {'c': 'yellow'}, 'l': [7, 8]},
-             {'s': 'EFG', 'b': False, 'd': {'c': 'black'}, 'xyz': 123, 'l': [9, 10]}]
+            >>> asset.move("d2.l", "l").get()
+            [{'s': 'ABC', 'b': True, 'd2': {'c': 'red'}, 'l': [1, 2]},
+             {'s': 'BCD', 'b': True, 'd2': {'c': 'blue'}, 'l': [3, 4]},
+             {'s': 'CDE', 'b': False, 'd2': {'c': 'green'}, 'l': [5, 6]},
+             {'s': 'DEF', 'b': False, 'd2': {'c': 'yellow'}, 'l': [7, 8]},
+             {'s': 'EFG', 'b': False, 'd2': {'c': 'black'}, 'xyz': 123, 'l': [9, 10]}]
 
-            >>> asset.move({"d.c": "c", "b": "d.b"}).get()
-            >>> asset.move(["d.c", "b"], ["c", "d.b"]).get()
-            [{'s': 'ABC', 'd': {'l': [1, 2], 'b': True}, 'c': 'red'},
-             {'s': 'BCD', 'd': {'l': [3, 4], 'b': True}, 'c': 'blue'},
-             {'s': 'CDE', 'd': {'l': [5, 6], 'b': False}, 'c': 'green'},
-             {'s': 'DEF', 'd': {'l': [7, 8], 'b': False}, 'c': 'yellow'},
-             {'s': 'EFG', 'd': {'l': [9, 10], 'b': False}, 'xyz': 123, 'c': 'black'}]
+            >>> asset.move({"d2.c": "c", "b": "d2.b"}).get()
+            >>> asset.move(["d2.c", "b"], ["c", "d2.b"]).get()
+            [{'s': 'ABC', 'd2': {'l': [1, 2], 'b': True}, 'c': 'red'},
+             {'s': 'BCD', 'd2': {'l': [3, 4], 'b': True}, 'c': 'blue'},
+             {'s': 'CDE', 'd2': {'l': [5, 6], 'b': False}, 'c': 'green'},
+             {'s': 'DEF', 'd2': {'l': [7, 8], 'b': False}, 'c': 'yellow'},
+             {'s': 'EFG', 'd2': {'l': [9, 10], 'b': False}, 'xyz': 123, 'c': 'black'}]
             ```
         """
         return self.apply(
@@ -1980,7 +1964,7 @@ class KnowledgeAsset(Configured):
         changed_only: tp.Optional[bool] = None,
         **kwargs,
     ) -> tp.Any:
-        """Rename objects or parts of them.
+        """Rename data items or parts of them.
 
         Uses `KnowledgeAsset.apply` on `RenameAssetFunc`.
 
@@ -1988,15 +1972,15 @@ class KnowledgeAsset(Configured):
 
         Usage:
             ```pycon
-            >>> asset.rename("d.l", "x").get()
-            [{'s': 'ABC', 'b': True, 'd': {'c': 'red', 'x': [1, 2]}},
-             {'s': 'BCD', 'b': True, 'd': {'c': 'blue', 'x': [3, 4]}},
-             {'s': 'CDE', 'b': False, 'd': {'c': 'green', 'x': [5, 6]}},
-             {'s': 'DEF', 'b': False, 'd': {'c': 'yellow', 'x': [7, 8]}},
-             {'s': 'EFG', 'b': False, 'd': {'c': 'black', 'x': [9, 10]}, 'xyz': 123}]
+            >>> asset.rename("d2.l", "x").get()
+            [{'s': 'ABC', 'b': True, 'd2': {'c': 'red', 'x': [1, 2]}},
+             {'s': 'BCD', 'b': True, 'd2': {'c': 'blue', 'x': [3, 4]}},
+             {'s': 'CDE', 'b': False, 'd2': {'c': 'green', 'x': [5, 6]}},
+             {'s': 'DEF', 'b': False, 'd2': {'c': 'yellow', 'x': [7, 8]}},
+             {'s': 'EFG', 'b': False, 'd2': {'c': 'black', 'x': [9, 10]}, 'xyz': 123}]
 
             >>> asset.rename("xyz", "zyx", skip_missing=True, changed_only=True).get()
-            [{'s': 'EFG', 'b': False, 'd': {'c': 'black', 'l': [9, 10]}, 'zyx': 123}]
+            [{'s': 'EFG', 'b': False, 'd2': {'c': 'black', 'l': [9, 10]}, 'zyx': 123}]
             ```
         """
         return self.apply(
@@ -2019,7 +2003,7 @@ class KnowledgeAsset(Configured):
         template_context: tp.KwargsLike = None,
         **kwargs,
     ) -> tp.Any:
-        """Reorder objects or parts of them.
+        """Reorder data items or parts of them.
 
         Uses `KnowledgeAsset.apply` on `ReorderAssetFunc`.
 
@@ -2030,17 +2014,17 @@ class KnowledgeAsset(Configured):
         be replaced by an ellipsis (`...`). For example, `["a", ..., "z"]` puts the token "a" at the start
         and the token "z" at the end while other tokens are left in the original order. If `new_order` is
         a string, it can be "asc"/"ascending" or "desc"/"descending". Other than that, it can be a string or
-        function (will become a template), or any custom template. In this template, the object is
-        represented by "o" and the object under the path is represented by "x" while its fields (if any)
+        function (will become a template), or any custom template. In this template, the data item is
+        represented by "d" and the data item under the path is represented by "x" while its fields (if any)
         are represented by their names.
 
-        Use argument `path` to specify what part of the object should be set. For example, "x.y[0].z"
+        Use argument `path` to specify what part of the data item should be set. For example, "x.y[0].z"
         to navigate nested dictionaries/lists. Multiple paths can be provided. If `skip_missing` is True and
-        path is missing in the object, will skip the object.
+        path is missing in the data item, will skip the data item.
 
         Set `make_copy` to True to not modify original data.
 
-        Set `changed_only` to True to keep only objects that have been changed.
+        Set `changed_only` to True to keep only the data items that have been changed.
 
         Keyword arguments are passed to template substitution in `new_order`.
 
@@ -2048,18 +2032,18 @@ class KnowledgeAsset(Configured):
             ```pycon
             >>> asset.reorder(["xyz", ...], skip_missing=True).get()
             >>> asset.reorder(lambda x: ["xyz", ...] if "xyz" in x else [...]).get()
-            [{'s': 'ABC', 'b': True, 'd': {'c': 'red', 'l': [1, 2]}},
-             {'s': 'BCD', 'b': True, 'd': {'c': 'blue', 'l': [3, 4]}},
-             {'s': 'CDE', 'b': False, 'd': {'c': 'green', 'l': [5, 6]}},
-             {'s': 'DEF', 'b': False, 'd': {'c': 'yellow', 'l': [7, 8]}},
-             {'xyz': 123, 's': 'EFG', 'b': False, 'd': {'c': 'black', 'l': [9, 10]}}]
+            [{'s': 'ABC', 'b': True, 'd2': {'c': 'red', 'l': [1, 2]}},
+             {'s': 'BCD', 'b': True, 'd2': {'c': 'blue', 'l': [3, 4]}},
+             {'s': 'CDE', 'b': False, 'd2': {'c': 'green', 'l': [5, 6]}},
+             {'s': 'DEF', 'b': False, 'd2': {'c': 'yellow', 'l': [7, 8]}},
+             {'xyz': 123, 's': 'EFG', 'b': False, 'd2': {'c': 'black', 'l': [9, 10]}}]
 
-            >>> asset.reorder("descending", path="d.l").get()
-            [{'s': 'ABC', 'b': True, 'd': {'c': 'red', 'l': [2, 1]}},
-             {'s': 'BCD', 'b': True, 'd': {'c': 'blue', 'l': [4, 3]}},
-             {'s': 'CDE', 'b': False, 'd': {'c': 'green', 'l': [6, 5]}},
-             {'s': 'DEF', 'b': False, 'd': {'c': 'yellow', 'l': [8, 7]}},
-             {'s': 'EFG', 'b': False, 'd': {'c': 'black', 'l': [10, 9]}, 'xyz': 123}]
+            >>> asset.reorder("descending", path="d2.l").get()
+            [{'s': 'ABC', 'b': True, 'd2': {'c': 'red', 'l': [2, 1]}},
+             {'s': 'BCD', 'b': True, 'd2': {'c': 'blue', 'l': [4, 3]}},
+             {'s': 'CDE', 'b': False, 'd2': {'c': 'green', 'l': [6, 5]}},
+             {'s': 'DEF', 'b': False, 'd2': {'c': 'yellow', 'l': [8, 7]}},
+             {'s': 'EFG', 'b': False, 'd2': {'c': 'black', 'l': [10, 9]}, 'xyz': 123}]
             ```
         """
         return self.apply(
@@ -2081,15 +2065,15 @@ class KnowledgeAsset(Configured):
         template_context: tp.KwargsLike = None,
         **kwargs,
     ) -> tp.Any:
-        """Query using an engine and return the queried object(s).
+        """Query using an engine and return the queried data item(s).
 
         Following engines are supported:
 
         * "jmespath": Evaluation with `jmespath` package
         * "jsonpath", "jsonpath-ng" or "jsonpath_ng": Evaluation with `jsonpath-ng` package
         * "jsonpath.ext", "jsonpath-ng.ext" or "jsonpath_ng.ext": Evaluation with extended `jsonpath-ng` package
-        * None or "template": Evaluation of each object as a template. The object is represented
-            by "o" or "x" while its fields (if any) are represented by their names.
+        * None or "template": Evaluation of each data item as a template. The data item is represented
+            by "d" or "x" while its fields (if any) are represented by their names.
             Uses `KnowledgeAsset.apply` on `QueryAssetFunc`.
         * "pandas": Same as above but variables being columns
 
@@ -2101,18 +2085,18 @@ class KnowledgeAsset(Configured):
 
         Usage:
             ```pycon
-            >>> asset.query("o['s'] == 'ABC'")
+            >>> asset.query("d['s'] == 'ABC'")
             >>> asset.query("x['s'] == 'ABC'")
             >>> asset.query("s == 'ABC'")
-            [{'s': 'ABC', 'b': True, 'd': {'c': 'red', 'l': [1, 2]}}]
+            [{'s': 'ABC', 'b': True, 'd2': {'c': 'red', 'l': [1, 2]}}]
 
             >>> asset.query("x['s'] == 'ABC'", as_filter=False)
             [True, False, False, False, False]
 
             >>> asset.query("contains(s, 'BC')")
             >>> asset.query(lambda s: "BC" in s)
-            [{'s': 'ABC', 'b': True, 'd': {'c': 'red', 'l': [1, 2]}},
-             {'s': 'BCD', 'b': True, 'd': {'c': 'blue', 'l': [3, 4]}}]
+            [{'s': 'ABC', 'b': True, 'd2': {'c': 'red', 'l': [1, 2]}},
+             {'s': 'BCD', 'b': True, 'd2': {'c': 'blue', 'l': [3, 4]}}]
 
             >>> asset.query("[?b == `true`].s", engine="jmespath")
             ['ABC', 'BCD']
@@ -2120,19 +2104,19 @@ class KnowledgeAsset(Configured):
             >>> asset.query("[?contains(s, 'BC')].s", engine="jmespath")
             ['ABC', 'BCD']
 
-            >>> asset.query("[].d.c", engine="jmespath")
+            >>> asset.query("[].d2.c", engine="jmespath")
             ['red', 'blue', 'green', 'yellow', 'black']
 
-            >>> asset.query("[?d.c != `blue`].d.l", engine="jmespath")
+            >>> asset.query("[?d2.c != `blue`].d2.l", engine="jmespath")
             [[1, 2], [5, 6], [7, 8], [9, 10]]
 
             >>> asset.query("$[?(@.b == true)].s", engine="jsonpath.ext")
             ['ABC', 'BCD']
 
-            >>> asset.query("$[*].d.c", engine="jsonpath.ext")
+            >>> asset.query("$[*].d2.c", engine="jsonpath.ext")
             ['red', 'blue', 'green', 'yellow', 'black']
 
-            >>> asset.query("$[?(@.b == false)].['s', 'd.c']", engine="jsonpath.ext")
+            >>> asset.query("$[?(@.b == false)].['s', 'd2.c']", engine="jsonpath.ext")
             ['CDE', 'DEF', 'EFG']
 
             >>> asset.query("s[b]", engine="pandas")
@@ -2157,7 +2141,7 @@ class KnowledgeAsset(Configured):
             assert_can_import("jmespath")
             import jmespath
 
-            new_obj = jmespath.search(expression, self.obj, **kwargs)
+            new_obj = jmespath.search(expression, self.data, **kwargs)
         elif engine.lower() in ("jsonpath", "jsonpath-ng", "jsonpath_ng"):
             from vectorbtpro.utils.module_ import assert_can_import
 
@@ -2165,7 +2149,7 @@ class KnowledgeAsset(Configured):
             import jsonpath_ng
 
             jsonpath_expr = jsonpath_ng.parse(expression)
-            new_obj = [match.value for match in jsonpath_expr.find(self.obj, **kwargs)]
+            new_obj = [match.value for match in jsonpath_expr.find(self.data, **kwargs)]
         elif engine.lower() in ("jsonpath.ext", "jsonpath-ng.ext", "jsonpath_ng.ext"):
             from vectorbtpro.utils.module_ import assert_can_import
 
@@ -2173,7 +2157,7 @@ class KnowledgeAsset(Configured):
             import jsonpath_ng.ext
 
             jsonpath_expr = jsonpath_ng.ext.parse(expression)
-            new_obj = [match.value for match in jsonpath_expr.find(self.obj, **kwargs)]
+            new_obj = [match.value for match in jsonpath_expr.find(self.data, **kwargs)]
         elif engine.lower() == "pandas":
             if isinstance(expression, str):
                 expression = RepEval(expression)
@@ -2184,10 +2168,10 @@ class KnowledgeAsset(Configured):
                     expression = RepFunc(expression)
             elif not isinstance(expression, CustomTemplate):
                 raise TypeError(f"Expression must be a template")
-            df = pd.DataFrame.from_records(self.obj)
+            df = pd.DataFrame.from_records(self.data)
             _template_context = flat_merge_dicts(
                 {
-                    "o": df,
+                    "d": df,
                     "x": df,
                     **search.search_config,
                     **df.to_dict(orient="series"),
@@ -2211,7 +2195,7 @@ class KnowledgeAsset(Configured):
 
     def filter(self, *args, **kwargs) -> KnowledgeAssetT:
         """Run `KnowledgeAsset.query` and return a new `KnowledgeAsset` instance."""
-        return self.replace(obj=self.query(*args, **kwargs))
+        return self.replace(data=self.query(*args, **kwargs))
 
     def find(
         self,
@@ -2232,71 +2216,71 @@ class KnowledgeAsset(Configured):
         Uses `KnowledgeAsset.apply` on `FindAssetFunc`.
 
         Uses `vectorbtpro.utils.search.contains_in_obj` (keyword arguments are passed here)
-        to find any occurrences in each object.
+        to find any occurrences in each data item.
 
-        Target can be one or multiple objects. If there are multiple targets and `find_any` is True,
+        Target can be one or multiple data items. If there are multiple targets and `find_any` is True,
         the match function will return True if any of the targets have been found.
 
-        Use argument `path` to specify what part of the object should be searched. For example, "x.y[0].z"
-        to navigate nested dictionaries/lists. If `keep_path` is True, object will be represented
+        Use argument `path` to specify what part of the data item should be searched. For example, "x.y[0].z"
+        to navigate nested dictionaries/lists. If `keep_path` is True, the data item will be represented
         as a nested dictionary with path as keys. If multiple paths are provided, `keep_path` automatically
         becomes True, and they will be merged into one nested dictionary. If `skip_missing` is True
-        and path is missing in the object, will skip the object. If `per_path` is True, will consider
+        and path is missing in the data item, will skip the data item. If `per_path` is True, will consider
         targets to be provided per path.
 
         Use argument `source` instead of `path` or in addition to `path` to also preprocess the source.
         It can be a string or function (will become a template), or any custom template. In this template,
-        the object is represented by "o" and the object under the path is represented by "x" while its
+        the data item is represented by "d" and the data item under the path is represented by "x" while its
         fields (if any) are represented by their names.
 
-        Set `in_json_dumps` to True to convert the entire object to string and search in that string.
+        Set `in_json_dumps` to True to convert the entire data item to string and search in that string.
 
         Usage:
             ```pycon
             >>> asset.find("BC").get()
-            [{'s': 'ABC', 'b': True, 'd': {'c': 'red', 'l': [1, 2]}},
-             {'s': 'BCD', 'b': True, 'd': {'c': 'blue', 'l': [3, 4]}}]
+            [{'s': 'ABC', 'b': True, 'd2': {'c': 'red', 'l': [1, 2]}},
+             {'s': 'BCD', 'b': True, 'd2': {'c': 'blue', 'l': [3, 4]}}]
 
             >>> asset.find("BC", as_filter=False).get()
             [True, True, False, False, False]
 
             >>> asset.find("bc", ignore_case=True).get()
-            [{'s': 'ABC', 'b': True, 'd': {'c': 'red', 'l': [1, 2]}},
-             {'s': 'BCD', 'b': True, 'd': {'c': 'blue', 'l': [3, 4]}}]
+            [{'s': 'ABC', 'b': True, 'd2': {'c': 'red', 'l': [1, 2]}},
+             {'s': 'BCD', 'b': True, 'd2': {'c': 'blue', 'l': [3, 4]}}]
 
-            >>> asset.find("bl", path="d.c").get()
-            [{'s': 'BCD', 'b': True, 'd': {'c': 'blue', 'l': [3, 4]}},
-             {'s': 'EFG', 'b': False, 'd': {'c': 'black', 'l': [9, 10]}, 'xyz': 123}]
+            >>> asset.find("bl", path="d2.c").get()
+            [{'s': 'BCD', 'b': True, 'd2': {'c': 'blue', 'l': [3, 4]}},
+             {'s': 'EFG', 'b': False, 'd2': {'c': 'black', 'l': [9, 10]}, 'xyz': 123}]
 
-            >>> asset.find(5, path="d.l[0]").get()
-            [{'s': 'CDE', 'b': False, 'd': {'c': 'green', 'l': [5, 6]}}]
+            >>> asset.find(5, path="d2.l[0]").get()
+            [{'s': 'CDE', 'b': False, 'd2': {'c': 'green', 'l': [5, 6]}}]
 
-            >>> asset.find(True, path="d.l", source=lambda x: sum(x) >= 10).get()
-            [{'s': 'CDE', 'b': False, 'd': {'c': 'green', 'l': [5, 6]}},
-             {'s': 'DEF', 'b': False, 'd': {'c': 'yellow', 'l': [7, 8]}},
-             {'s': 'EFG', 'b': False, 'd': {'c': 'black', 'l': [9, 10]}, 'xyz': 123}]
+            >>> asset.find(True, path="d2.l", source=lambda x: sum(x) >= 10).get()
+            [{'s': 'CDE', 'b': False, 'd2': {'c': 'green', 'l': [5, 6]}},
+             {'s': 'DEF', 'b': False, 'd2': {'c': 'yellow', 'l': [7, 8]}},
+             {'s': 'EFG', 'b': False, 'd2': {'c': 'black', 'l': [9, 10]}, 'xyz': 123}]
 
             >>> asset.find(["A", "B", "C"]).get()
-            [{'s': 'ABC', 'b': True, 'd': {'c': 'red', 'l': [1, 2]}}]
+            [{'s': 'ABC', 'b': True, 'd2': {'c': 'red', 'l': [1, 2]}}]
 
             >>> asset.find(["A", "B", "C"], find_any=True).get()
-            [{'s': 'ABC', 'b': True, 'd': {'c': 'red', 'l': [1, 2]}},
-             {'s': 'BCD', 'b': True, 'd': {'c': 'blue', 'l': [3, 4]}},
-             {'s': 'CDE', 'b': False, 'd': {'c': 'green', 'l': [5, 6]}}]
+            [{'s': 'ABC', 'b': True, 'd2': {'c': 'red', 'l': [1, 2]}},
+             {'s': 'BCD', 'b': True, 'd2': {'c': 'blue', 'l': [3, 4]}},
+             {'s': 'CDE', 'b': False, 'd2': {'c': 'green', 'l': [5, 6]}}]
 
             >>> asset.find(["A", True], ["s", "b"], per_path=True).get()
-            [{'s': 'ABC', 'b': True, 'd': {'c': 'red', 'l': [1, 2]}}]
+            [{'s': 'ABC', 'b': True, 'd2': {'c': 'red', 'l': [1, 2]}}]
 
             >>> asset.find(r"[ABC]+", mode="regex").get()
-            [{'s': 'ABC', 'b': True, 'd': {'c': 'red', 'l': [1, 2]}},
-             {'s': 'BCD', 'b': True, 'd': {'c': 'blue', 'l': [3, 4]}},
-             {'s': 'CDE', 'b': False, 'd': {'c': 'green', 'l': [5, 6]}}]
+            [{'s': 'ABC', 'b': True, 'd2': {'c': 'red', 'l': [1, 2]}},
+             {'s': 'BCD', 'b': True, 'd2': {'c': 'blue', 'l': [3, 4]}},
+             {'s': 'CDE', 'b': False, 'd2': {'c': 'green', 'l': [5, 6]}}]
 
             >>> asset.find("yenlow", mode="fuzzy").get()
-            [{'s': 'DEF', 'b': False, 'd': {'c': 'yellow', 'l': [7, 8]}}]
+            [{'s': 'DEF', 'b': False, 'd2': {'c': 'yellow', 'l': [7, 8]}}]
 
             >>> asset.find("xyz", in_json_dumps=True).get()
-            [{'s': 'EFG', 'b': False, 'd': {'c': 'black', 'l': [9, 10]}, 'xyz': 123}]
+            [{'s': 'EFG', 'b': False, 'd2': {'c': 'black', 'l': [9, 10]}, 'xyz': 123}]
             ```
         """
         return self.apply(
@@ -2332,62 +2316,62 @@ class KnowledgeAsset(Configured):
         Uses `KnowledgeAsset.apply` on `ReplaceAssetFunc`.
 
         Uses `vectorbtpro.utils.search.find_in_obj` (keyword arguments are passed here) to find
-        occurrences in each object. Then, uses `vectorbtpro.utils.search.replace_in_obj` to replace them.
+        occurrences in each data item. Then, uses `vectorbtpro.utils.search.replace_in_obj` to replace them.
 
-        Target can be one or multiple of objects. If there are multiple targets and `replace_any` is True,
+        Target can be one or multiple of data items. If there are multiple targets and `replace_any` is True,
         the match function will return True if any of the targets have been found.
 
-        Use argument `path` to specify what part of the object should be searched. For example, "x.y[0].z"
-        to navigate nested dictionaries/lists. If `keep_path` is True, object will be represented
+        Use argument `path` to specify what part of the data item should be searched. For example, "x.y[0].z"
+        to navigate nested dictionaries/lists. If `keep_path` is True, the data item will be represented
         as a nested dictionary with path as keys. If multiple paths are provided, `keep_path` automatically
         becomes True, and they will be merged into one nested dictionary. If `skip_missing` is True
-        and path is missing in the object, will skip the object. If `per_path` is True, will consider
+        and path is missing in the data item, will skip the data item. If `per_path` is True, will consider
         targets and replacements to be provided per path.
 
         Set `make_copy` to True to not modify original data.
 
-        Set `changed_only` to True to keep only objects that have been changed.
+        Set `changed_only` to True to keep only the data items that have been changed.
 
         Usage:
             ```pycon
             >>> asset.replace_("BC", "XY").get()
-            [{'s': 'AXY', 'b': True, 'd': {'c': 'red', 'l': [1, 2]}},
-             {'s': 'XYD', 'b': True, 'd': {'c': 'blue', 'l': [3, 4]}},
-             {'s': 'CDE', 'b': False, 'd': {'c': 'green', 'l': [5, 6]}},
-             {'s': 'DEF', 'b': False, 'd': {'c': 'yellow', 'l': [7, 8]}},
-             {'s': 'EFG', 'b': False, 'd': {'c': 'black', 'l': [9, 10]}, 'xyz': 123}]
+            [{'s': 'AXY', 'b': True, 'd2': {'c': 'red', 'l': [1, 2]}},
+             {'s': 'XYD', 'b': True, 'd2': {'c': 'blue', 'l': [3, 4]}},
+             {'s': 'CDE', 'b': False, 'd2': {'c': 'green', 'l': [5, 6]}},
+             {'s': 'DEF', 'b': False, 'd2': {'c': 'yellow', 'l': [7, 8]}},
+             {'s': 'EFG', 'b': False, 'd2': {'c': 'black', 'l': [9, 10]}, 'xyz': 123}]
 
             >>> asset.replace_("BC", "XY", changed_only=True).get()
-            [{'s': 'AXY', 'b': True, 'd': {'c': 'red', 'l': [1, 2]}},
-             {'s': 'XYD', 'b': True, 'd': {'c': 'blue', 'l': [3, 4]}}]
+            [{'s': 'AXY', 'b': True, 'd2': {'c': 'red', 'l': [1, 2]}},
+             {'s': 'XYD', 'b': True, 'd2': {'c': 'blue', 'l': [3, 4]}}]
 
             >>> asset.replace_(r"(D)E(F)", r"\1X\2", mode="regex", changed_only=True).get()
-            [{'s': 'DXF', 'b': False, 'd': {'c': 'yellow', 'l': [7, 8]}}]
+            [{'s': 'DXF', 'b': False, 'd2': {'c': 'yellow', 'l': [7, 8]}}]
 
             >>> asset.replace_(True, False, changed_only=True).get()
-            [{'s': 'ABC', 'b': False, 'd': {'c': 'red', 'l': [1, 2]}},
-             {'s': 'BCD', 'b': False, 'd': {'c': 'blue', 'l': [3, 4]}}]
+            [{'s': 'ABC', 'b': False, 'd2': {'c': 'red', 'l': [1, 2]}},
+             {'s': 'BCD', 'b': False, 'd2': {'c': 'blue', 'l': [3, 4]}}]
 
-            >>> asset.replace_(3, 30, path="d.l", changed_only=True).get()
-            [{'s': 'BCD', 'b': True, 'd': {'c': 'blue', 'l': [30, 4]}}]
+            >>> asset.replace_(3, 30, path="d2.l", changed_only=True).get()
+            [{'s': 'BCD', 'b': True, 'd2': {'c': 'blue', 'l': [30, 4]}}]
 
-            >>> asset.replace_([1, 4], [10, 40], path="d.l", changed_only=True).get()
-            >>> asset.replace_([1, 4], [10, 40], path=["d.l[0]", "d.l[1]"], per_path=True, changed_only=True).get()
-            [{'s': 'ABC', 'b': True, 'd': {'c': 'red', 'l': [10, 2]}},
-             {'s': 'BCD', 'b': True, 'd': {'c': 'blue', 'l': [3, 40]}}]
+            >>> asset.replace_([1, 4], [10, 40], path="d2.l", changed_only=True).get()
+            >>> asset.replace_([1, 4], [10, 40], path=["d2.l[0]", "d2.l[1]"], per_path=True, changed_only=True).get()
+            [{'s': 'ABC', 'b': True, 'd2': {'c': 'red', 'l': [10, 2]}},
+             {'s': 'BCD', 'b': True, 'd2': {'c': 'blue', 'l': [3, 40]}}]
 
-            >>> asset.replace_([1, 4], [10, 40], path="d.l", replace_any=False, changed_only=True).get()
+            >>> asset.replace_([1, 4], [10, 40], path="d2.l", replace_any=False, changed_only=True).get()
             []
 
-            >>> asset.replace_([1, 2], [10, 20], path="d.l", replace_any=False, changed_only=True).get()
-            [{'s': 'ABC', 'b': True, 'd': {'c': 'red', 'l': [10, 20]}}]
+            >>> asset.replace_([1, 2], [10, 20], path="d2.l", replace_any=False, changed_only=True).get()
+            [{'s': 'ABC', 'b': True, 'd2': {'c': 'red', 'l': [10, 20]}}]
 
-            >>> asset.replace_("a", "X", path=["s", "d.c"], ignore_case=True, changed_only=True).get()
-            [{'s': 'XBC', 'b': True, 'd': {'c': 'red', 'l': [1, 2]}},
-             {'s': 'EFG', 'b': False, 'd': {'c': 'blXck', 'l': [9, 10]}, 'xyz': 123}]
+            >>> asset.replace_("a", "X", path=["s", "d2.c"], ignore_case=True, changed_only=True).get()
+            [{'s': 'XBC', 'b': True, 'd2': {'c': 'red', 'l': [1, 2]}},
+             {'s': 'EFG', 'b': False, 'd2': {'c': 'blXck', 'l': [9, 10]}, 'xyz': 123}]
 
             >>> asset.replace_(123, 456, path="xyz", skip_missing=True, changed_only=True).get()
-            [{'s': 'EFG', 'b': False, 'd': {'c': 'black', 'l': [9, 10]}, 'xyz': 456}]
+            [{'s': 'EFG', 'b': False, 'd2': {'c': 'black', 'l': [9, 10]}, 'xyz': 456}]
             ```
         """
         return self.apply(
@@ -2412,17 +2396,17 @@ class KnowledgeAsset(Configured):
         changed_only: tp.Optional[bool] = None,
         **kwargs,
     ) -> tp.Any:
-        """Flatten objects or parts of them.
+        """Flatten data items or parts of them.
 
         Uses `KnowledgeAsset.apply` on `FlattenAssetFunc`.
 
-        Use argument `path` to specify what part of the object should be set. For example, "x.y[0].z"
+        Use argument `path` to specify what part of the data item should be set. For example, "x.y[0].z"
         to navigate nested dictionaries/lists. Multiple paths can be provided. If `skip_missing` is True and
-        path is missing in the object, will skip the object.
+        path is missing in the data item, will skip the data item.
 
         Set `make_copy` to True to not modify original data.
 
-        Set `changed_only` to True to keep only objects that have been changed.
+        Set `changed_only` to True to keep only the data items that have been changed.
 
         Keyword arguments are passed to `vectorbtpro.utils.search.flatten_obj`.
 
@@ -2431,15 +2415,15 @@ class KnowledgeAsset(Configured):
             >>> asset.flatten().get()
             [{'s': 'ABC',
               'b': True,
-              ('d', 'c'): 'red',
-              ('d', 'l', 0): 1,
-              ('d', 'l', 1): 2},
+              ('d2', 'c'): 'red',
+              ('d2', 'l', 0): 1,
+              ('d2', 'l', 1): 2},
               ...
              {'s': 'EFG',
               'b': False,
-              ('d', 'c'): 'black',
-              ('d', 'l', 0): 9,
-              ('d', 'l', 1): 10,
+              ('d2', 'c'): 'black',
+              ('d2', 'l', 0): 9,
+              ('d2', 'l', 1): 10,
               'xyz': 123}]
             ```
         """
@@ -2460,28 +2444,28 @@ class KnowledgeAsset(Configured):
         changed_only: tp.Optional[bool] = None,
         **kwargs,
     ) -> tp.Any:
-        """Unflatten objects or parts of them.
+        """Unflatten data items or parts of them.
 
         Uses `KnowledgeAsset.apply` on `UnflattenAssetFunc`.
 
-        Use argument `path` to specify what part of the object should be set. For example, "x.y[0].z"
+        Use argument `path` to specify what part of the data item should be set. For example, "x.y[0].z"
         to navigate nested dictionaries/lists. Multiple paths can be provided. If `skip_missing` is True and
-        path is missing in the object, will skip the object.
+        path is missing in the data item, will skip the data item.
 
         Set `make_copy` to True to not modify original data.
 
-        Set `changed_only` to True to keep only objects that have been changed.
+        Set `changed_only` to True to keep only the data items that have been changed.
 
         Keyword arguments are passed to `vectorbtpro.utils.search.unflatten_obj`.
 
         Usage:
             ```pycon
             >>> asset.flatten().unflatten().get()
-            [{'s': 'ABC', 'b': True, 'd': {'c': 'red', 'l': [1, 2]}},
-             {'s': 'BCD', 'b': True, 'd': {'c': 'blue', 'l': [3, 4]}},
-             {'s': 'CDE', 'b': False, 'd': {'c': 'green', 'l': [5, 6]}},
-             {'s': 'DEF', 'b': False, 'd': {'c': 'yellow', 'l': [7, 8]}},
-             {'s': 'EFG', 'b': False, 'd': {'c': 'black', 'l': [9, 10]}, 'xyz': 123}]
+            [{'s': 'ABC', 'b': True, 'd2': {'c': 'red', 'l': [1, 2]}},
+             {'s': 'BCD', 'b': True, 'd2': {'c': 'blue', 'l': [3, 4]}},
+             {'s': 'CDE', 'b': False, 'd2': {'c': 'green', 'l': [5, 6]}},
+             {'s': 'DEF', 'b': False, 'd2': {'c': 'yellow', 'l': [7, 8]}},
+             {'s': 'EFG', 'b': False, 'd2': {'c': 'black', 'l': [9, 10]}, 'xyz': 123}]
             ```
         """
         return self.apply(
