@@ -5,7 +5,7 @@
 import datetime
 import traceback
 import warnings
-from collections.abc import Sequence, Iterable, Hashable, Mapping
+from collections.abc import Collection, Iterable, Sequence, Hashable, Mapping
 from inspect import signature, getmro
 from keyword import iskeyword
 from types import FunctionType, BuiltinFunctionType, MethodType
@@ -196,23 +196,22 @@ def _to_any_array(arg: tp.ArrayLike) -> tp.AnyArray:
     return np.asarray(arg)
 
 
-def is_sequence(arg: tp.Any) -> bool:
-    """Check whether the argument is a sequence."""
-    if isinstance(arg, Sequence):
+def is_collection(arg: tp.Any) -> bool:
+    """Check whether the argument is a collection."""
+    if isinstance(arg, Collection):
         return True
     try:
         len(arg)
-        arg[0:0]
         return True
-    except (TypeError, IndexError, KeyError):
+    except TypeError:
         return False
 
 
-def is_complex_sequence(arg: tp.Any) -> bool:
-    """Check whether the argument is a sequence but not a string or bytes object."""
+def is_complex_collection(arg: tp.Any) -> bool:
+    """Check whether the argument is a collection but not a string or bytes object."""
     if isinstance(arg, (str, bytes, bytearray)):
         return False
-    return is_sequence(arg)
+    return is_collection(arg)
 
 
 def is_iterable(arg: tp.Any) -> bool:
@@ -231,6 +230,25 @@ def is_complex_iterable(arg: tp.Any) -> bool:
     if isinstance(arg, (str, bytes, bytearray)):
         return False
     return is_iterable(arg)
+
+
+def is_sequence(arg: tp.Any) -> bool:
+    """Check whether the argument is a sequence."""
+    if isinstance(arg, Sequence):
+        return True
+    try:
+        len(arg)
+        arg[0:0]
+        return True
+    except (TypeError, IndexError, KeyError):
+        return False
+
+
+def is_complex_sequence(arg: tp.Any) -> bool:
+    """Check whether the argument is a sequence but not a string or bytes object."""
+    if isinstance(arg, (str, bytes, bytearray)):
+        return False
+    return is_sequence(arg)
 
 
 def is_hashable(arg: tp.Any) -> bool:

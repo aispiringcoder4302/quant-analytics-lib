@@ -762,7 +762,7 @@ def flatten_obj(
     return path_dct
 
 
-def unflatten_obj(path_dct):
+def unflatten_obj(path_dct: tp.PathDict) -> tp.Any:
     """Unflatten object in a recursive manner using a path dictionary.
 
     Keys in the path dictionary can be path-like keys."""

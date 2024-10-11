@@ -25,7 +25,7 @@ from pathlib import Path
 import requests
 import builtins
 import importlib
-from collections.abc import MutableSequence
+from collections.abc import Collection, MutableSequence
 
 import pandas as pd
 
@@ -33,9 +33,9 @@ from vectorbtpro import _typing as tp
 from vectorbtpro.utils import checks, search
 from vectorbtpro.utils.config import Configured, reorder_dict, reorder_list
 from vectorbtpro.utils.pickling import suggest_compression, decompress, load_bytes
-from vectorbtpro.utils.path_ import check_mkdir
+from vectorbtpro.utils.path_ import check_mkdir, dir_tree_from_paths
 from vectorbtpro.utils.pbar import ProgressBar
-from vectorbtpro.utils.template import CustomTemplate, RepEval, RepFunc, substitute_templates
+from vectorbtpro.utils.template import CustomTemplate, Sub, RepEval, RepFunc, substitute_templates
 from vectorbtpro.utils.config import merge_dicts, flat_merge_dicts, deep_merge_dicts
 from vectorbtpro.utils.parsing import get_func_arg_names
 from vectorbtpro.utils.execution import Task, execute, NoResult
@@ -57,6 +57,9 @@ __all__ = [
 KnowledgeAssetT = tp.TypeVar("KnowledgeAssetT", bound="KnowledgeAsset")
 
 
+# ############# Apply classes ############# #
+
+
 class AssetFunc:
     """Abstract class representing a function to be applied to a data item."""
 
@@ -69,7 +72,7 @@ class AssetFunc:
     @classmethod
     def prepare(cls, *args, **kwargs) -> tp.ArgsKwargs:
         """Prepare positional and keyword arguments."""
-        raise NotImplementedError
+        return args, kwargs
 
     @classmethod
     def apply(cls, d: tp.Any, *args, **kwargs) -> tp.Any:
@@ -121,7 +124,7 @@ class GetAssetFunc(AssetFunc):
                 else:
                     source = RepFunc(source)
             elif not isinstance(source, CustomTemplate):
-                raise TypeError(f"Source must be a template")
+                raise TypeError(f"Source must be a string, function, or template")
         return (), {
             **dict(
                 path=path,
@@ -608,7 +611,7 @@ class QueryAssetFunc(AssetFunc):
             else:
                 expression = RepFunc(expression)
         elif not isinstance(expression, CustomTemplate):
-            raise TypeError(f"Expression must be a template")
+            raise TypeError(f"Expression must be a string, function, or template")
         return (), {
             **dict(
                 expression=expression,
@@ -700,7 +703,7 @@ class FindAssetFunc(AssetFunc):
                 else:
                     source = RepFunc(source)
             elif not isinstance(source, CustomTemplate):
-                raise TypeError(f"Source must be a template")
+                raise TypeError(f"Source must be a string, function, or template")
         if "excl_types" not in kwargs:
             kwargs["excl_types"] = (tuple, set, frozenset)
         return (), {
@@ -1210,7 +1213,7 @@ class DumpAssetFunc(AssetFunc):
                 else:
                     source = RepFunc(source)
             elif not isinstance(source, CustomTemplate):
-                raise TypeError(f"Source must be a template")
+                raise TypeError(f"Source must be a string, function, or template")
         return (), {
             **dict(
                 source=source,
@@ -1272,6 +1275,89 @@ class DumpAssetFunc(AssetFunc):
 
             return json.dumps(new_d, **kwargs)
         raise ValueError(f"Invalid dump engine: '{dump_engine}'")
+
+
+# ############# Reduce classes ############# #
+
+
+class ReduceAssetFunc(AssetFunc):
+    """Abstract class representing a function to reduce data items."""
+
+    _wrap: tp.ClassVar[tp.Optional[str]] = False
+
+    @classmethod
+    def apply(cls, d1: tp.Any, d2: tp.Any, *args, **kwargs) -> tp.Any:
+        """Apply the function to reduce data items."""
+        raise NotImplementedError
+
+    @classmethod
+    def prepare_and_apply(cls, d1: tp.Any, d2: tp.Any, *args, **kwargs):
+        """Prepare arguments and apply the function."""
+        args, kwargs = cls.prepare(*args, **kwargs)
+        return cls.apply(d1, d2, *args, **kwargs)
+
+
+class CollectAssetFunc(ReduceAssetFunc):
+    """Asset function class for `KnowledgeAsset.collect`."""
+
+    _short_name: tp.ClassVar[tp.Optional[str]] = "collect"
+
+    @classmethod
+    def prepare(
+        cls,
+        sort_keys: tp.Optional[bool] = None,
+        template_context: tp.KwargsLike = None,
+        asset: tp.Optional[tp.MaybeType["KnowledgeAsset"]] = None,
+        **kwargs,
+    ) -> tp.ArgsKwargs:
+        if asset is None:
+            asset = KnowledgeAsset
+        sort_keys = asset.resolve_setting(sort_keys, "sort_keys")
+        template_context = asset.resolve_setting(template_context, "template_context", merge=True)
+
+        return (), {
+            **dict(
+                sort_keys=sort_keys,
+                template_context=template_context,
+            ),
+            **kwargs,
+        }
+
+    @classmethod
+    def sort_key(cls, k: tp.Any) -> tuple:
+        """Function for sorting keys."""
+        return (0, k) if isinstance(k, str) else (1, k)
+
+    @classmethod
+    def apply(
+        cls,
+        d1: tp.Any,
+        d2: tp.Any,
+        sort_keys: bool = True,
+        template_context: tp.KwargsLike = None,
+    ) -> tp.Any:
+        if template_context is None:
+            template_context = {}
+        if not isinstance(d1, dict) or not isinstance(d2, dict):
+            raise TypeError("Data item must be a dict")
+        if template_context["i"] == 0:
+            new_d1 = {}
+        else:
+            new_d1 = dict(d1)
+        for k1 in d1:
+            if k1 not in new_d1:
+                new_d1[k1] = [d1[k1]]
+            if k1 in d2:
+                new_d1[k1].append(d2[k1])
+        for k2 in d2:
+            if k2 not in new_d1:
+                new_d1[k2] = [d2[k2]]
+        if sort_keys:
+            return dict(sorted(new_d1.items(), key=lambda x: cls.sort_key(x[0])))
+        return new_d1
+
+
+# ############# Pipeline classes ############# #
 
 
 class AssetPipeline:
@@ -1415,11 +1501,6 @@ class ComplexAssetPipeline(AssetPipeline):
         5
         ```
     """
-
-    @classmethod
-    def is_expression(cls, expression: str) -> bool:
-        """Determine whether the input string is an expression."""
-        return not isinstance(ast.parse(expression).body, ast.Name)
 
     @classmethod
     def resolve_expression_and_context(
@@ -1615,6 +1696,9 @@ class ComplexAssetPipeline(AssetPipeline):
         return evaluate(self.expression, context=context)
 
 
+# ############# Asset classes ############# #
+
+
 class KnowledgeAsset(Configured, MutableSequence):
     """Class for working with a knowledge asset.
 
@@ -1735,8 +1819,8 @@ class KnowledgeAsset(Configured, MutableSequence):
         self,
         func: tp.MaybeList[tp.Union[tp.AssetFuncLike, AssetPipeline]],
         *args,
-        wrap: tp.Optional[bool] = None,
         execute_kwargs: tp.KwargsLike = None,
+        wrap: tp.Optional[bool] = None,
         **kwargs,
     ) -> tp.Union[KnowledgeAssetT, tp.Any]:
         """Apply a function to each data item.
@@ -1774,7 +1858,7 @@ class KnowledgeAsset(Configured, MutableSequence):
                 (),
                 {},
             )
-        elif isinstance(func, str) and ComplexAssetPipeline.is_expression(func):
+        elif isinstance(func, str) and not func.isidentifier():
             if len(args) > 0:
                 raise ValueError("No more positional arguments can be applied to ComplexAssetPipeline")
             func, args, kwargs = (
@@ -1814,14 +1898,10 @@ class KnowledgeAsset(Configured, MutableSequence):
             for i, d in enumerate(self.data):
                 _kwargs = dict(kwargs)
                 if "template_context" in _kwargs:
-                    template_context = _kwargs.pop("template_context")
-                    if template_context is None:
-                        template_context = {}
-                    else:
-                        template_context = dict(template_context)
-                    if "i" not in template_context:
-                        template_context["i"] = i
-                    _kwargs["template_context"] = template_context
+                    _kwargs["template_context"] = flat_merge_dicts(
+                        {"i": i},
+                        _kwargs["template_context"],
+                    )
                 yield Task(func, d, *args, **_kwargs)
 
         tasks = _get_task_generator()
@@ -2646,6 +2726,233 @@ class KnowledgeAsset(Configured, MutableSequence):
             **kwargs,
         )
 
+    # ############# Reduce methods ############# #
+
+    def reduce(
+        self,
+        func: tp.Union[str, tp.Callable, tp.CustomTemplate],
+        *args,
+        initializer: tp.Optional[tp.Any] = None,
+        template_context: tp.KwargsLike = None,
+        show_progress: tp.Optional[bool] = None,
+        pbar_kwargs: tp.KwargsLike = None,
+        wrap: tp.Optional[bool] = None,
+        **kwargs,
+    ) -> tp.Any:
+        """Reduce data items.
+
+        Function can be a callable, a tuple of function and its arguments,
+        a `vectorbtpro.utils.execution.Task` instance, a subclass of `AssetFunc` or its prefix or full name.
+        It can also be an expression or a template. In this template, the index of the data item is
+        represented by "i", the data items themselves are represented by "d1" and "d2" or "x1" and "x2".
+
+        If an initializer is provided, the first set of values will be `d1=initializer` and
+        `d2=self.data[0]`. If not, it will be `d1=self.data[0]` and `d2=self.data[1]`.
+
+        If `wrap` is True, returns a new `KnowledgeAsset` instance, otherwise raw output.
+
+        Positional arguments are passed to the function in case the template returns another function,
+        and keyword arguments are passed as a context to template substitution.
+
+        Usage:
+            ```pycon
+            >>> asset.reduce(lambda d1, d2: vbt.merge_dicts(d1, d2))
+            >>> asset.reduce(vbt.merge_dicts)
+            >>> asset.reduce("{**d1, **d2}")
+            {'s': 'EFG', 'b': False, 'd2': {'c': 'black', 'l': [9, 10]}, 'xyz': 123}
+            ```
+        """
+        show_progress = self.resolve_setting(show_progress, "show_progress")
+        pbar_kwargs = self.resolve_setting(pbar_kwargs, "pbar_kwargs", merge=True)
+        asset_func_meta = {}
+
+        if isinstance(func, str) and not func.isidentifier():
+            func = RepEval(func)
+        elif not isinstance(func, CustomTemplate):
+            func, args, kwargs = AssetPipeline.resolve_task(
+                func,
+                *args,
+                cond_kwargs=dict(asset=self),
+                asset_func_meta=asset_func_meta,
+                **kwargs,
+            )
+
+        it = iter(self.data)
+        if initializer is None:
+            d1 = next(it)
+            total = len(self.data) - 1
+        else:
+            d1 = initializer
+            total = len(self.data)
+        pbar_kwargs = flat_merge_dicts(
+            dict(bar_id=get_caller_qualname()),
+            pbar_kwargs,
+        )
+        with ProgressBar(total=total, show_progress=show_progress, **pbar_kwargs) as pbar:
+            for i, d2 in enumerate(it):
+                if isinstance(func, CustomTemplate):
+                    _template_context = flat_merge_dicts(
+                        {
+                            "i": i,
+                            "d1": d1,
+                            "d2": d2,
+                            "x1": d1,
+                            "x2": d2,
+                        },
+                        template_context,
+                    )
+                    _d1 = func.substitute(_template_context, eval_id="func", **kwargs)
+                    if checks.is_function(_d1):
+                        d1 = _d1(d1, d2, *args)
+                    else:
+                        d1 = _d1
+                else:
+                    _kwargs = dict(kwargs)
+                    if "template_context" in _kwargs:
+                        _kwargs["template_context"] = flat_merge_dicts(
+                            {"i": i},
+                            _kwargs["template_context"],
+                        )
+                    d1 = func(d1, d2, *args, **_kwargs)
+                pbar.update()
+        if wrap is None and asset_func_meta.get("_wrap", None) is not None:
+            wrap = asset_func_meta.get("_wrap", None)
+        if wrap is None:
+            wrap = False
+        if wrap:
+            return self.replace(data=d1)
+        return d1
+
+    def collect(
+        self,
+        sort_keys: tp.Optional[bool] = None,
+        template_context: tp.KwargsLike = None,
+        **kwargs,
+    ) -> tp.Any:
+        """Collect values of each key in each data item."""
+        return self.reduce(
+            CollectAssetFunc,
+            sort_keys=sort_keys,
+            template_context=template_context,
+            **kwargs,
+        )
+
+    @classmethod
+    def describe_lengths(self, lengths: list, **describe_kwargs) -> dict:
+        """Describe values representing lengths."""
+        len_describe_dict = pd.Series(lengths).describe(**describe_kwargs).to_dict()
+        del len_describe_dict["count"]
+        del len_describe_dict["std"]
+        return {"len_" + k: int(v) if k != "mean" else v for k, v in len_describe_dict.items()}
+
+    def describe(
+        self,
+        ignore_empty: tp.Optional[bool] = None,
+        describe_kwargs: tp.KwargsLike = None,
+        wrap: bool = False,
+        **kwargs,
+    ) -> tp.Union[dict, KnowledgeAssetT]:
+        """Collect and describe each key in each data item."""
+        ignore_empty = self.resolve_setting(ignore_empty, "ignore_empty")
+        describe_kwargs = self.resolve_setting(describe_kwargs, "describe_kwargs", merge=True)
+
+        collected = self.collect(**kwargs)
+        description = {}
+        for k, v in list(collected.items()):
+            all_types = []
+            valid_types = []
+            valid_x = None
+            new_v = []
+            for x in v:
+                if not ignore_empty or x:
+                    new_v.append(x)
+                if x is not None:
+                    valid_x = x
+                    if type(x) not in valid_types:
+                        valid_types.append(type(x))
+                if type(x) not in all_types:
+                    all_types.append(type(x))
+            v = new_v
+            description[k] = {}
+            description[k]["types"] = list(map(lambda x: x.__name__, all_types))
+            describe_sr = pd.Series(v)
+            if describe_sr.dtype == object and len(valid_types) == 1 and checks.is_complex_collection(valid_x):
+                describe_dict = {"count": len(v)}
+            else:
+                describe_dict = describe_sr.describe(**describe_kwargs).to_dict()
+            if pd.api.types.is_integer_dtype(describe_sr.dtype):
+                new_describe_dict = {}
+                for _k, _v in describe_dict.items():
+                    if _k not in {"mean", "std"}:
+                        new_describe_dict[_k] = int(_v)
+                    else:
+                        new_describe_dict[_k] = _v
+                describe_dict = new_describe_dict
+            if "unique" in describe_dict and describe_dict["unique"] == describe_dict["count"]:
+                del describe_dict["top"]
+                del describe_dict["freq"]
+            if "unique" in describe_dict and describe_dict["count"] == 1:
+                del describe_dict["unique"]
+            description[k].update(describe_dict)
+            if len(valid_types) == 1 and checks.is_collection(valid_x):
+                lengths = [len(_v) for _v in v if _v is not None]
+                description[k].update(self.describe_lengths(lengths, **describe_kwargs))
+        if wrap:
+            return self.replace(data=[description])
+        return description
+
+    def print_tree(self, **kwargs) -> None:
+        """Print schema as a directory tree.
+
+        Keyword arguments are split between `KnowledgeAsset.describe` and
+        `vectorbtpro.utils.path_.dir_tree_from_paths`.
+
+        Usage:
+            ```pycon
+            >>> asset.print_tree()
+            root
+            ├── s [5/5, str]
+            ├── b [2/5, bool]
+            ├── d2 [5/5, dict]
+            │   ├── c [5/5, str]
+            │   └── l
+            │       ├── 0 [5/5, int]
+            │       └── 1 [5/5, int]
+            └── xyz [1/5, int]
+
+            2 directories, 6 files
+            ```
+        """
+        dir_tree_arg_names = set(get_func_arg_names(dir_tree_from_paths))
+        dir_tree_kwargs = {k: kwargs.pop(k) for k in list(kwargs.keys()) if k in dir_tree_arg_names}
+        orig_describe_dict = self.describe(wrap=False, **kwargs)
+        flat_describe_dict = self.flatten(
+            skip_missing=True,
+            make_copy=True,
+            changed_only=False,
+        ).describe(wrap=False, **kwargs)
+        describe_dict = flat_merge_dicts(orig_describe_dict, flat_describe_dict)
+        paths = []
+        path_names = []
+        for k, v in describe_dict.items():
+            if k is None:
+                k = "."
+            if not isinstance(k, tuple):
+                k = (k,)
+            path = Path(*map(str, k))
+            path_name = path.name
+            path_name += " [" + str(v["count"]) + "/" + str(len(self.data))
+            path_name += ", " + ", ".join(v["types"]) + "]"
+            path_names.append(path_name)
+            paths.append(path)
+        if "root_name" not in dir_tree_kwargs:
+            dir_tree_kwargs["root_name"] = "root"
+        if "sort" not in dir_tree_kwargs:
+            dir_tree_kwargs["sort"] = False
+        if "path_names" not in dir_tree_kwargs:
+            dir_tree_kwargs["path_names"] = path_names
+        print(dir_tree_from_paths(paths, **dir_tree_kwargs))
+
     def join(self, separator: tp.Optional[str] = None) -> str:
         """Join the list of string data items."""
         if separator is None:
@@ -2795,23 +3102,15 @@ class KnowledgeAsset(Configured, MutableSequence):
             return None
         return self.replace(data=new_data)
 
-    # ############# Sequence methods ############# #
+    # ############# Collection methods ############# #
 
     def __len__(self) -> int:
         return len(self.data)
 
+    # ############# Sequence methods ############# #
+
     def __getitem__(self, index: tp.Union[int, slice, tp.Iterable[tp.Union[bool, int]]]) -> tp.Any:
         return self.get_item(index)
-
-    def __add__(self: KnowledgeAssetT, other: tp.Any) -> KnowledgeAssetT:
-        if not isinstance(other, KnowledgeAsset):
-            other = KnowledgeAsset(other)
-        return type(self).stack(self, other)
-
-    def __iadd__(self: KnowledgeAssetT, other: tp.Any) -> KnowledgeAssetT:
-        if not isinstance(other, KnowledgeAsset):
-            other = KnowledgeAsset(other)
-        return type(self).stack(self, other)
 
     # ############# MutableSequence methods ############# #
 
@@ -2826,6 +3125,16 @@ class KnowledgeAsset(Configured, MutableSequence):
 
     def __delitem__(self, index: tp.Union[int, slice, tp.Iterable[tp.Union[bool, int]]]) -> None:
         self.remove_item(index, inplace=True)
+
+    def __add__(self: KnowledgeAssetT, other: tp.Any) -> KnowledgeAssetT:
+        if not isinstance(other, KnowledgeAsset):
+            other = KnowledgeAsset(other)
+        return type(self).stack(self, other)
+
+    def __iadd__(self: KnowledgeAssetT, other: tp.Any) -> KnowledgeAssetT:
+        if not isinstance(other, KnowledgeAsset):
+            other = KnowledgeAsset(other)
+        return type(self).stack(self, other)
 
 
 ReleaseAssetT = tp.TypeVar("ReleaseAssetT", bound="ReleaseAsset")
@@ -2986,7 +3295,12 @@ class ReleaseAsset(KnowledgeAsset):
         if file_size == 0:
             file_size = asset.get("size", 0)
         pbar_kwargs = flat_merge_dicts(
-            dict(bar_id=get_caller_qualname()),
+            dict(
+                bar_id=get_caller_qualname(),
+                unit="iB",
+                unit_scale=True,
+                desc=Sub("Downloading $asset_name"),
+            ),
             pbar_kwargs,
         )
         pbar_kwargs = substitute_templates(pbar_kwargs, template_context, eval_id="pbar_kwargs")

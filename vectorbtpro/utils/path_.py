@@ -2,8 +2,7 @@
 
 """Utilities for working with paths."""
 
-import ast
-import re
+import os
 import shutil
 from glob import glob
 from itertools import islice
@@ -30,7 +29,7 @@ __all__ = [
 
 
 def list_any_files(path: tp.Optional[tp.PathLike] = None, recursive: bool = False) -> tp.List[Path]:
-    """List files and directories matching a path.
+    """List files and dirs matching a path.
 
     If the directory path is not provided, the current working directory is used."""
     if path is None:
@@ -51,7 +50,7 @@ def list_files(path: tp.Optional[tp.PathLike] = None, recursive: bool = False) -
 
 
 def list_dirs(path: tp.Optional[tp.PathLike] = None, recursive: bool = False) -> tp.List[Path]:
-    """List directories matching a path using `list_any_files`."""
+    """List dirs matching a path using `list_any_files`."""
     return [p for p in list_any_files(path, recursive=recursive) if p.is_dir()]
 
 
@@ -158,57 +157,112 @@ def remove_dir(dir_path: tp.PathLike, missing_ok: bool = False, with_contents: b
         raise FileNotFoundError(f"Directory '{dir_path}' not found")
 
 
-def dir_tree(
-    dir_path: Path,
+def dir_tree_from_paths(
+    paths: tp.Iterable[tp.PathLike],
+    root: tp.Optional[tp.PathLike] = None,
+    path_names: tp.Optional[tp.Iterable[str]] = None,
+    root_name: tp.Optional[str] = None,
     level: int = -1,
-    limit_to_directories: bool = False,
+    limit_to_dirs: bool = False,
     length_limit: int = 1000,
     sort: bool = True,
-    space="    ",
-    branch="│   ",
-    tee="├── ",
-    last="└── ",
+    space: str = "    ",
+    branch: str = "│   ",
+    tee: str = "├── ",
+    last: str = "└── ",
 ) -> str:
-    """Given a directory Path object print a visual tree structure.
+    """Given paths, generate a visual tree structure."""
+    resolved_paths = [Path(p).resolve() for p in paths]
+    if path_names is None:
+        path_names = [p.name for p in resolved_paths]
+    path_display_map = {path: name for path, name in zip(resolved_paths, path_names)}
+    if root is None:
+        try:
+            common_path_str = os.path.commonpath([str(p) for p in resolved_paths])
+            root = Path(common_path_str).resolve()
+        except ValueError:
+            root = Path(".").resolve()
+    else:
+        root = Path(root).resolve()
 
-    Inspired by this answer: https://stackoverflow.com/a/59109706"""
+    dirs = set()
+    path_set = set(resolved_paths)
+    for path in resolved_paths:
+        for parent in path.parents:
+            if parent in path_set:
+                dirs.add(parent)
+
+    tree = {}
+    for path in resolved_paths:
+        try:
+            relative_path = path.relative_to(root)
+        except ValueError:
+            continue
+        if relative_path == Path("."):
+            continue
+        parts = relative_path.parts
+        if not parts:
+            continue
+        current_level = tree
+        for part in parts[:-1]:
+            current_level = current_level.setdefault(part, {})
+        last_part = parts[-1]
+        if path in dirs:
+            current_level.setdefault(last_part, {})
+        else:
+            current_level[last_part] = None
+
+    files = 0
+    dir_count = 0
+
+    def _inner(current_tree, prefix="", current_lvl=-1, current_path=root):
+        nonlocal files, dir_count
+        if current_lvl == 0:
+            return
+        entries = list(current_tree.items())
+        if sort:
+            entries.sort(key=lambda x: (not isinstance(x[1], dict), x[0].lower()))
+        if limit_to_dirs:
+            entries = [e for e in entries if isinstance(e[1], dict)]
+        pointers = [tee] * (len(entries) - 1) + [last] if entries else []
+        for pointer, (name, subtree) in zip(pointers, entries):
+            child_path = current_path / name
+            display_name = path_display_map.get(child_path, name)
+            yield prefix + pointer + display_name
+            if isinstance(subtree, dict):
+                dir_count += 1
+                extension = branch if pointer == tee else space
+                yield from _inner(
+                    subtree,
+                    prefix=prefix + extension,
+                    current_lvl=(current_lvl - 1 if current_lvl > 0 else -1),
+                    current_path=child_path,
+                )
+            elif not limit_to_dirs:
+                files += 1
+
+    tree_str = root_name if root_name is not None else root.name
+    iterator = _inner(tree, current_lvl=level, current_path=root)
+    for line in islice(iterator, length_limit):
+        tree_str += "\n" + line
+    if next(iterator, None):
+        tree_str += "\n" + f"... length_limit {length_limit} reached, counts:"
+    tree_str += "\n" + f"\n{dir_count} directories" + (f", {files} files" if files else "")
+
+    return tree_str
+
+
+def dir_tree(dir_path: Path, **kwargs) -> str:
+    """Generate a visual tree structure.
+
+    Uses `dir_tree_from_paths`."""
     dir_path = Path(dir_path)
     if not dir_path.exists():
         raise FileNotFoundError(f"Directory '{dir_path}' not found")
     if not dir_path.is_dir():
         raise TypeError(f"Path '{dir_path}' is not a directory")
-    files = 0
-    directories = 0
-
-    def _inner(dir_path: Path, prefix: str = "", level: int = -1) -> tp.Generator[str, None, None]:
-        nonlocal files, directories
-        if not level:
-            return  # 0, stop iterating
-        if limit_to_directories:
-            contents = [d for d in dir_path.iterdir() if d.is_dir()]
-        else:
-            contents = list(dir_path.iterdir())
-        if sort:
-            contents = sorted(contents)
-        pointers = [tee] * (len(contents) - 1) + [last]
-        for pointer, path in zip(pointers, contents):
-            if path.is_dir():
-                yield prefix + pointer + path.name
-                directories += 1
-                extension = branch if pointer == tee else space
-                yield from _inner(path, prefix=prefix + extension, level=level - 1)
-            elif not limit_to_directories:
-                yield prefix + pointer + path.name
-                files += 1
-
-    tree_str = dir_path.name
-    iterator = _inner(dir_path, level=level)
-    for line in islice(iterator, length_limit):
-        tree_str += "\n" + line
-    if next(iterator, None):
-        tree_str += "\n" + f"... length_limit, {length_limit}, reached, counted:"
-    tree_str += "\n" + f"\n{directories} directories" + (f", {files} files" if files else "")
-    return tree_str
+    paths = list(dir_path.rglob("*"))
+    return dir_tree_from_paths(paths=paths, root=dir_path, **kwargs)
 
 
 def print_dir_tree(*args, **kwargs) -> None:
