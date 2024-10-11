@@ -21,6 +21,7 @@ import ast
 import os
 import io
 import json
+import random
 from pathlib import Path
 import requests
 import builtins
@@ -2294,9 +2295,6 @@ class KnowledgeAsset(Configured, MutableSequence):
             [{'s': 'ABC', 'b': True, 'd2': {'c': 'red', 'l': [1, 2]}},
              {'s': 'BCD', 'b': True, 'd2': {'c': 'blue', 'l': [3, 4]}}]
 
-            >>> asset.query("[?b == `true`].s", query_engine="jmespath")
-            ['ABC', 'BCD']
-
             >>> asset.query("[?contains(s, 'BC')].s", query_engine="jmespath")
             ['ABC', 'BCD']
 
@@ -2306,14 +2304,11 @@ class KnowledgeAsset(Configured, MutableSequence):
             >>> asset.query("[?d2.c != `blue`].d2.l", query_engine="jmespath")
             [[1, 2], [5, 6], [7, 8], [9, 10]]
 
-            >>> asset.query("$[?(@.b == true)].s", query_engine="jsonpath.ext")
-            ['ABC', 'BCD']
-
             >>> asset.query("$[*].d2.c", query_engine="jsonpath.ext")
             ['red', 'blue', 'green', 'yellow', 'black']
 
-            >>> asset.query("$[?(@.b == false)].['s', 'd2.c']", query_engine="jsonpath.ext")
-            ['CDE', 'DEF', 'EFG']
+            >>> asset.query("$[?(@.b == true)].s", query_engine="jsonpath.ext")
+            ['ABC', 'BCD']
 
             >>> asset.query("s[b]", query_engine="pandas")
             ['ABC', 'BCD']
@@ -2676,7 +2671,6 @@ class KnowledgeAsset(Configured, MutableSequence):
     def dump(
         self,
         source: tp.Union[None, str, tp.Callable, tp.CustomTemplate] = None,
-        dump_all: tp.Optional[bool] = None,
         dump_engine: tp.Optional[str] = None,
         template_context: tp.KwargsLike = None,
         **kwargs,
@@ -2709,17 +2703,26 @@ class KnowledgeAsset(Configured, MutableSequence):
             {4: {s: EFG, b: false, d2: {c: black, l: [9, 10]}, xyz: 123}}
             ```
         """
-        dump_all = self.resolve_setting(dump_all, "dump_all")
-        if dump_all:
-            return DumpAssetFunc.prepare_and_apply(
-                self.data,
-                source=source,
-                dump_engine=dump_engine,
-                template_context=template_context,
-                **kwargs,
-            )
         return self.apply(
             DumpAssetFunc,
+            source=source,
+            dump_engine=dump_engine,
+            template_context=template_context,
+            **kwargs,
+        )
+
+    def dump_all(
+        self,
+        source: tp.Union[None, str, tp.Callable, tp.CustomTemplate] = None,
+        dump_engine: tp.Optional[str] = None,
+        template_context: tp.KwargsLike = None,
+        **kwargs,
+    ) -> tp.Any:
+        """Dump data list as a single data item.
+
+        See `KnowledgeAsset.dump` for arguments."""
+        return DumpAssetFunc.prepare_and_apply(
+            self.data,
             source=source,
             dump_engine=dump_engine,
             template_context=template_context,
@@ -3101,6 +3104,63 @@ class KnowledgeAsset(Configured, MutableSequence):
             self.update_config(data=new_data)
             return None
         return self.replace(data=new_data)
+
+    def sample(
+        self,
+        k: tp.Optional[int] = None,
+        seed: tp.Optional[int] = None,
+        dump: bool = False,
+        dump_all: bool = False,
+        wrap: tp.Optional[bool] = None,
+        **kwargs,
+    ) -> tp.Any:
+        """Pick a random sample of data items.
+
+        Keyword arguments are passed to `KnowledgeAsset.dump`."""
+        if wrap is None:
+            if k is None:
+                wrap = False
+            else:
+                wrap = True
+        if k is None:
+            k = 1
+            single_item = True
+        else:
+            single_item = False
+        if seed is not None:
+            random.seed(seed)
+        new_data = random.sample(self.data, k)
+        if dump:
+            if dump_all:
+                return self.replace(data=new_data).dump_all(**kwargs)
+            result = self.replace(data=new_data).dump(wrap=wrap, **kwargs)
+            if single_item and isinstance(result, list):
+                return result[0]
+            return result
+        if wrap:
+            return self.replace(data=new_data)
+        if single_item:
+            return new_data[0]
+        return new_data
+
+    def print_sample(
+        self,
+        k: tp.Optional[int] = None,
+        dump: bool = True,
+        dump_all: tp.Optional[bool] = None,
+        separator: tp.Optional[str] = None,
+        **kwargs,
+    ) -> None:
+        """Print a random sample.
+
+        Keyword arguments are passed to `KnowledgeAsset.sample`."""
+        if dump_all is None:
+            dump_all = k is not None
+        result = self.sample(k=k, dump=dump, dump_all=dump_all, **kwargs)
+        if isinstance(result, KnowledgeAsset):
+            print(result.join(separator=separator))
+        else:
+            print(result)
 
     # ############# Collection methods ############# #
 
