@@ -1344,13 +1344,16 @@ class IndicatorBase(Analyzable):
 
         input_mapper = getattr(self, "_input_mapper", None)
         if input_mapper is not None:
-            input_mapper = input_mapper[col_idxs]
+            if columns_changed:
+                input_mapper = input_mapper[col_idxs]
         input_list = []
         for input_name in self.input_names:
             new_input = ArrayWrapper.select_from_flex_array(
                 getattr(self, f"_{input_name}"),
                 row_idxs=row_idxs,
+                col_idxs=col_idxs if input_mapper is None else None,
                 rows_changed=rows_changed,
+                columns_changed=columns_changed if input_mapper is None else False,
             )
             input_list.append(new_input)
         in_output_list = []

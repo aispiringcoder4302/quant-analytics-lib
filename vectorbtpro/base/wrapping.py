@@ -809,7 +809,7 @@ class ArrayWrapper(Configured, IndexApplier, ExtPandasIndexer, Itemable, Paramab
                     row_idxs = reshaping.to_1d_array(row_idxs)
                     max_idx = np.max(row_idxs)
                 if arr_2d.shape[0] <= max_idx:
-                    if rotate_rows:
+                    if rotate_rows and not isinstance(row_idxs, slice):
                         new_arr = new_arr[row_idxs % arr_2d.shape[0], :]
                     else:
                         new_arr = new_arr[row_idxs, :]
@@ -823,7 +823,7 @@ class ArrayWrapper(Configured, IndexApplier, ExtPandasIndexer, Itemable, Paramab
                     col_idxs = reshaping.to_1d_array(col_idxs)
                     max_idx = np.max(col_idxs)
                 if arr_2d.shape[1] <= max_idx:
-                    if rotate_cols:
+                    if rotate_cols and not isinstance(col_idxs, slice):
                         new_arr = new_arr[:, col_idxs % arr_2d.shape[1]]
                     else:
                         new_arr = new_arr[:, col_idxs]
