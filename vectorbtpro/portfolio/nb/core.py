@@ -225,7 +225,7 @@ def approx_long_sell_value_nb(position: float, debt: float, val_price: float, si
     Positive value means spending (for sorting reasons)."""
     if size == 0 or position == 0:
         return 0.0
-    size_limit = min(position, abs(size))
+    size_limit = min(abs(size), position)
     order_value = size_limit * val_price
     size_fraction = size_limit / position
     released_debt = size_fraction * debt
@@ -258,7 +258,7 @@ def long_sell_nb(
         return order_not_filled_nb(OrderStatus.Rejected, OrderStatusInfo.NoOpenPosition), _account_state
 
     # Get size limit
-    size_limit = min(_account_state.position, size)
+    size_limit = min(size, _account_state.position)
     if not np.isnan(percent):
         size_limit = size_limit * percent
 
@@ -463,7 +463,7 @@ def approx_short_buy_value_nb(position: float, debt: float, locked_cash: float, 
     Positive value means spending (for sorting reasons)."""
     if size == 0 or position == 0:
         return 0.0
-    size_limit = min(abs(position), abs(size))
+    size_limit = min(abs(size), abs(position))
     order_value = size_limit * val_price
     size_fraction = size_limit / abs(position)
     released_debt = size_fraction * debt
@@ -502,7 +502,7 @@ def short_buy_nb(
         return order_not_filled_nb(OrderStatus.Rejected, OrderStatusInfo.NoCash), _account_state
 
     # Get size limit
-    size_limit = min(abs(_account_state.position), size)
+    size_limit = min(size, abs(_account_state.position))
     if not np.isnan(percent):
         size_limit = size_limit * percent
 
@@ -681,6 +681,7 @@ def buy_nb(
             price_area=price_area,
             is_closing_price=is_closing_price,
         )
+    short_size = min(size, abs(_account_state.position))
     if not np.isnan(min_size):
         min_size1 = min(min_size, abs(_account_state.position))
     else:
@@ -691,7 +692,7 @@ def buy_nb(
         max_size1 = np.nan
     new_order_result1, new_account_state1 = short_buy_nb(
         account_state=_account_state,
-        size=size,
+        size=short_size,
         price=price,
         fees=fees,
         fixed_fees=fixed_fees,
@@ -836,6 +837,7 @@ def sell_nb(
             price_area=price_area,
             is_closing_price=is_closing_price,
         )
+    long_size = min(size, _account_state.position)
     if not np.isnan(min_size):
         min_size1 = min(min_size, _account_state.position)
     else:
@@ -846,7 +848,7 @@ def sell_nb(
         max_size1 = np.nan
     new_order_result1, new_account_state1 = long_sell_nb(
         account_state=_account_state,
-        size=size,
+        size=long_size,
         price=price,
         fees=fees,
         fixed_fees=fixed_fees,
