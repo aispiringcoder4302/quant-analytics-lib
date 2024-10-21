@@ -12,27 +12,42 @@ import pandas as pd
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.utils import checks
+from vectorbtpro.utils.attr_ import DefineMixin, define
 from vectorbtpro.utils.config import set_dict_item, ReadonlyConfig
 
+__all__ = [
+    "Not",
+]
+
 __pdoc__ = {}
+
+
+@define
+class Not(DefineMixin):
+    """Class representing a negation when searching."""
+
+    value: tp.Any = define.field()
+    """Value."""
 
 
 PATH_TOKEN_REGEX = re.compile(
     r"""
     \.([a-zA-Z_][a-zA-Z0-9_]*)
     |\[['"]([^'"\]]+)['"]\]
+    |\.([0-9]+)
     |\[(\d+)\]
     """,
     re.VERBOSE,
 )
 """Path token regex for `parse_path_str`.
 
-Matches `.key`, `['key']`, `["key"]`, `[0]`, etc."""
+Matches `.key`, `['key']`, `["key"]`, `[0]`, `.0`, etc."""
 
 FIRST_TOKEN_REGEX = re.compile(
     r"""
     ^([a-zA-Z_][a-zA-Z0-9_]*)
     |\[['"]([^'"\]]+)['"]\]
+    |([0-9]+)
     |\[(\d+)\]
     """,
     re.VERBOSE,
@@ -44,8 +59,10 @@ Matches the same as `PATH_TOKEN_REGEX` but at the start."""
 
 def parse_path_str(path_str: str) -> tp.PathKey:
     """Parse the path string into a list of tokens."""
+    if path_str == "":
+        return ()
     if "'" not in path_str and '"' not in path_str and "[" not in path_str:
-        return tuple(path_str.split(".")) if path_str != "" else ()
+        return tuple([int(p) if p.isdigit() else p for p in path_str.split(".")])
     tokens = []
     first_match = FIRST_TOKEN_REGEX.match(path_str)
     if not first_match:
@@ -56,15 +73,19 @@ def parse_path_str(path_str: str) -> tp.PathKey:
         tokens.append(first_match.group(2))
     elif first_match.group(3):
         tokens.append(int(first_match.group(3)))
+    elif first_match.group(4):
+        tokens.append(int(first_match.group(4)))
     pos = first_match.end()
     for match in PATH_TOKEN_REGEX.finditer(path_str, pos):
-        key_dot, key_bracket, index = match.groups()
+        key_dot, key_bracket, index_dot, index_bracket = match.groups()
         if key_dot:
             tokens.append(key_dot)
         elif key_bracket:
             tokens.append(key_bracket)
-        elif index:
-            tokens.append(int(index))
+        elif index_dot:
+            tokens.append(int(index_dot))
+        elif index_bracket:
+            tokens.append(int(index_bracket))
         pos = match.end()
     if pos != len(path_str):
         raise ValueError(f"Invalid path syntax at position {pos}: '{path_str}'")
@@ -863,7 +884,7 @@ def contains_exact(
     if ignore_case:
         string = string.casefold()
         substring = substring.casefold()
-    return substring in string
+    return substring == string
 
 
 def replace_exact(
@@ -887,6 +908,73 @@ def replace_exact(
             map(
                 partial(
                     replace_exact,
+                    substring=substring,
+                    replacement=replacement,
+                    ignore_case=ignore_case,
+                ),
+                string,
+            )
+        )
+    if ignore_case:
+        string = string.casefold()
+        substring = substring.casefold()
+    if substring == string:
+        return replacement
+    return string
+
+
+def contains_substring(
+    string: tp.MaybeIterable[str],
+    substring: str,
+    ignore_case: bool = False,
+) -> tp.Union[bool, tp.List[bool], tp.Series]:
+    """Check if string contains a substring."""
+    if not isinstance(string, str):
+        if isinstance(string, pd.Series):
+            return string.apply(
+                partial(
+                    contains_substring,
+                    substring=substring,
+                    ignore_case=ignore_case,
+                )
+            )
+        return list(
+            map(
+                partial(
+                    contains_substring,
+                    substring=substring,
+                    ignore_case=ignore_case,
+                ),
+                string,
+            )
+        )
+    if ignore_case:
+        string = string.casefold()
+        substring = substring.casefold()
+    return substring in string
+
+
+def replace_substring(
+    string: tp.MaybeIterable[str],
+    substring: str,
+    replacement: str,
+    ignore_case: bool = False,
+) -> tp.Union[str, tp.List[str], tp.Series]:
+    """Replace a substring with replacement in string."""
+    if not isinstance(string, str):
+        if isinstance(string, pd.Series):
+            return string.apply(
+                partial(
+                    replace_substring,
+                    substring=substring,
+                    replacement=replacement,
+                    ignore_case=ignore_case,
+                )
+            )
+        return list(
+            map(
+                partial(
+                    replace_substring,
                     substring=substring,
                     replacement=replacement,
                     ignore_case=ignore_case,
@@ -1161,52 +1249,56 @@ def contains_rapidfuzz(
 def contains(
     string: tp.MaybeIterable[str],
     substring: str,
-    mode: str = "exact",
+    mode: str = "substring",
     ignore_case: bool = False,
     **kwargs,
 ) -> tp.Union[bool, tp.List[bool], tp.Series]:
     """Search for a target string within a source string using the specified mode."""
     if mode.lower() == "exact":
         return contains_exact(string, substring, ignore_case=ignore_case, **kwargs)
-    elif mode.lower() == "regex":
+    if mode.lower() == "substring":
+        return contains_substring(string, substring, ignore_case=ignore_case, **kwargs)
+    if mode.lower() == "regex":
         return contains_regex(string, substring, ignore_case=ignore_case, **kwargs)
-    elif mode.lower() == "fuzzy":
+    if mode.lower() == "fuzzy":
         return contains_fuzzy(string, substring, ignore_case=ignore_case, **kwargs)
-    elif mode.lower() == "rapidfuzz":
+    if mode.lower() == "rapidfuzz":
         return contains_rapidfuzz(string, substring, ignore_case=ignore_case, **kwargs)
-    else:
-        raise ValueError(f"Invalid mode: '{mode}'")
+    raise ValueError(f"Invalid mode: '{mode}'")
 
 
 def replace(
     string: tp.MaybeIterable[str],
     substring: str,
     replacement: str,
-    mode: str = "exact",
+    mode: str = "substring",
     ignore_case: bool = False,
     **kwargs,
 ) -> tp.Union[bool, tp.List[bool], tp.Series]:
     """Search for a target string within a source string using the specified mode."""
     if mode.lower() == "exact":
         return replace_exact(string, substring, replacement, ignore_case=ignore_case, **kwargs)
-    elif mode.lower() == "regex":
+    if mode.lower() == "substring":
+        return replace_substring(string, substring, replacement, ignore_case=ignore_case, **kwargs)
+    if mode.lower() == "regex":
         return replace_regex(string, substring, replacement, ignore_case=ignore_case, **kwargs)
-    elif mode.lower() == "fuzzy":
+    if mode.lower() == "fuzzy":
         return replace_fuzzy(string, substring, replacement, ignore_case=ignore_case, **kwargs)
-    elif mode.lower() == "rapidfuzz":
+    if mode.lower() == "rapidfuzz":
         raise ValueError("RapidFuzz doesn't support replacement")
-    else:
-        raise ValueError(f"Invalid mode: '{mode}'")
+    raise ValueError(f"Invalid mode: '{mode}'")
 
 
 search_config = ReadonlyConfig(
     {
         "contains_exact": contains_exact,
+        "contains_substring": contains_substring,
         "contains_regex": contains_regex,
         "contains_fuzzy": contains_fuzzy,
         "contains_rapidfuzz": contains_rapidfuzz,
         "contains": contains,
         "replace_exact": replace_exact,
+        "replace_substring": replace_substring,
         "replace_regex": replace_regex,
         "replace_fuzzy": replace_fuzzy,
         "replace": replace,

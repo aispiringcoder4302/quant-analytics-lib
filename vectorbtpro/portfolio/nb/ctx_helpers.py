@@ -921,7 +921,7 @@ def get_order_size_nb(
     size: float,
     size_type: int = SizeType.Amount,
     price: tp.Optional[int] = None,
-):
+) -> float:
     """Get order size."""
     if price is not None:
         val_price, value = update_value_nb(
@@ -942,7 +942,7 @@ def get_order_size_nb(
         position=get_position_nb(c),
         val_price=val_price,
         value=value,
-    )
+    )[0]
 
 
 @register_jitted
@@ -957,7 +957,7 @@ def get_order_value_nb(
     size_type: int = SizeType.Amount,
     direction: int = Direction.Both,
     price: tp.Optional[int] = None,
-):
+) -> float:
     """Get (approximate) order value."""
     if price is not None:
         val_price, value = update_value_nb(

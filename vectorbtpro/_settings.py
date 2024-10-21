@@ -1935,28 +1935,12 @@ ${config_doc}
 _settings["search"] = search
 
 knowledge = frozen_cfg(
-    asset_name=None,
-    release_name=None,
-    repo_owner="polakowo",
-    repo_name="vectorbt.pro",
-    token=None,
-    token_required=False,
-    use_pygithub=None,
-    chunk_size=8192,
-    cache=True,
-    cache_dir=Sub("./knowledge/$current_release"),
-    cache_mkdir_kwargs=dict(
-        mkdir=True,
-    ),
-    show_progress=True,
-    pbar_kwargs=flex_cfg(),
-    per_path=False,
-    find_any=False,
-    replace_any=True,
+    per_path=True,
+    find_all=False,
     keep_path=False,
     skip_missing=False,
     make_copy=True,
-    engine=None,
+    query_engine=None,
     as_filter=True,
     in_json_dumps=False,
     changed_only=False,
@@ -1966,8 +1950,17 @@ knowledge = frozen_cfg(
         nestedtext=flex_cfg(
             indent=2,
         ),
-        yaml=flex_cfg(
+        pyyaml=flex_cfg(
             sort_keys=False,
+            default_flow_style=False,
+            allow_unicode=True,
+        ),
+        ruamel=flex_cfg(
+            default_flow_style=False,
+            allow_unicode=True,
+            width=4096,
+            preserve_quotes=True,
+            indent=dict(mapping=2, sequence=4, offset=2),
         ),
         json=flex_cfg(
             ensure_ascii=False,
@@ -1979,20 +1972,54 @@ knowledge = frozen_cfg(
     describe_kwargs=flex_cfg(
         percentiles=[],
     ),
+    uniform_groups=False,
     prepend_index=False,
     template_context=flex_cfg(),
+    show_progress=True,
+    pbar_kwargs=flex_cfg(),
     execute_kwargs=flex_cfg(
         filter_results=True,
         raise_no_results=False,
     ),
+    # Custom
+    asset_name=None,
+    release_name=None,
+    repo_owner="polakowo",
+    repo_name="vectorbt.pro",
+    token=None,
+    token_required=False,
+    use_pygithub=None,
+    chunk_size=8192,
+    cache=True,
+    cache_dir="./knowledge",
+    cache_mkdir_kwargs=dict(
+        mkdir=True,
+    ),
+    minimize_links=False,
+    aggregate_fields=False,
+    block_links_only=True,
+    thread_links_only=True,
+    clear_metadata=True,
+    metadata_clear_kwargs=flex_cfg(),
+    metadata_dump_kwargs=flex_cfg(),
+    markdown_kwargs=flex_cfg(
+        extensions=["extra", "admonition", "codehilite"],
+    ),
+    use_pygments=None,
+    formatter_kwargs=flex_cfg(),
+    css_style="",
     assets=flex_cfg(
         messages=flex_cfg(
             asset_name="messages.json.zip",
+            cache_dir="./knowledge/messages/",
             token_required=True,
         ),
         pages=flex_cfg(
             asset_name="pages.json.zip",
+            cache_dir="./knowledge/pages/",
             token_required=True,
+            append_obj_type=True,
+            append_github_link=True,
         ),
     ),
 )

@@ -76,7 +76,9 @@ data = [
     "databento",
     "findatapy",
 ]
-ind-base = ["TA-Lib"]
+ind-base = [
+    "TA-Lib"
+]
 ind = [
     "vectorbtpro[ind-base]",
     "ta",
@@ -84,7 +86,9 @@ ind = [
     "technical",
     "smartmoneyconcepts"
 ]
-perf-base = ["numexpr"]
+perf-base = [
+    "numexpr"
+]
 perf = [
     "vectorbtpro[perf-base]",
     "Bottleneck"
@@ -93,7 +97,9 @@ opt-base = [
     "hyperopt",
     "optuna"
 ]
-opt = ["vectorbtpro[opt-base]"]
+opt = [
+    "vectorbtpro[opt-base]"
+]
 exec-base = [
     "dask",
     "pathos"
@@ -121,15 +127,29 @@ pfopt = [
     "vectorbtpro[pfopt-base]",
     "universal-portfolios"
 ]
-stats-base = ["quantstats>=0.0.37"]
-stats = ["vectorbtpro[stats-base]"]
-msg = ["python-telegram-bot"]
-io-base = ["dill", "blosc2"]
+stats-base = [
+    "quantstats>=0.0.37"
+]
+stats = [
+    "vectorbtpro[stats-base]"
+]
+msg = [
+    "python-telegram-bot"
+]
+io-base = [
+    "dill",
+    "blosc2"
+]
 io = [
     "vectorbtpro[io-base]",
     "lz4"
 ]
-other-base = ["tabulate"]
+other-base = [
+    "tabulate",
+    "ruamel.yaml",
+    "markdown",
+    "Pygments",
+]
 other = [
     "vectorbtpro[other-base]",
     "PyGithub>=1.59.0",
@@ -139,6 +159,7 @@ other = [
     "rapidfuzz",
     "nestedtext",
     "toml",
+    "PyYAML"
 ]
 base = [
     "vectorbtpro[data-base,ind-base,perf-base,opt-base,exec-base,plot-base,pfopt-base,stats-base,io-base]"
@@ -146,7 +167,9 @@ base = [
 base-no-talib = [
     "vectorbtpro[data-base,perf-base,opt-base,exec-base,plot-base,pfopt-base,stats-base,io-base]"
 ]
-all = ["vectorbtpro[data,ind,perf,opt,exec,plot,pfopt,stats,msg,io]"]
+all = [
+    "vectorbtpro[data,ind,perf,opt,exec,plot,pfopt,stats,msg,io]"
+]
 
 [tool.setuptools]
 include-package-data = true

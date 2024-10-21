@@ -9335,7 +9335,7 @@ class Portfolio(Analyzable, PortfolioWithInOutputs, SimRangeMixin, metaclass=Met
         return fig
 
     @hybrid_method
-    def plot_cum_returns(
+    def plot_cumulative_returns(
         cls_or_self,
         column: tp.Optional[tp.Label] = None,
         returns_acc: tp.Optional[ReturnsAccessor] = None,
@@ -9522,8 +9522,8 @@ class Portfolio(Analyzable, PortfolioWithInOutputs, SimRangeMixin, metaclass=Met
         drawdown = returns_acc.drawdown()
         drawdown = wrapper.select_col_from_obj(drawdown, column=column, group_by=group_by)
         if not pct_scale:
-            cum_returns = returns_acc.cumulative()
-            cumret = wrapper.select_col_from_obj(cum_returns, column=column, group_by=group_by)
+            cumulative_returns = returns_acc.cumulative()
+            cumret = wrapper.select_col_from_obj(cumulative_returns, column=column, group_by=group_by)
             init_value = wrapper.select_col_from_obj(init_value, column=column, group_by=group_by)
             drawdown = cumret * init_value * drawdown / (1 + drawdown)
         default_kwargs = dict(
@@ -9922,10 +9922,10 @@ class Portfolio(Analyzable, PortfolioWithInOutputs, SimRangeMixin, metaclass=Met
                 pass_add_trace_kwargs=True,
                 tags=["portfolio", "value"],
             ),
-            cum_returns=dict(
+            cumulative_returns=dict(
                 title="Cumulative Returns",
                 yaxis_kwargs=dict(title="Cumulative return"),
-                plot_func="plot_cum_returns",
+                plot_func="plot_cumulative_returns",
                 pass_hline_shape_kwargs=True,
                 pass_add_trace_kwargs=True,
                 pass_xref=True,

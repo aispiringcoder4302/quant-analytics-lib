@@ -1,0 +1,1864 @@
+# Copyright (c) 2021-2024 Oleg Polakow. All rights reserved.
+
+"""Base asset classes."""
+
+import os
+import io
+import json
+from collections.abc import MutableSequence
+from pathlib import Path
+
+import pandas as pd
+
+from vectorbtpro import _typing as tp
+from vectorbtpro.utils import checks, search
+from vectorbtpro.utils.config import Configured
+from vectorbtpro.utils.pickling import suggest_compression, decompress, load_bytes
+from vectorbtpro.utils.path_ import check_mkdir, dir_tree_from_paths, remove_dir
+from vectorbtpro.utils.pbar import ProgressBar
+from vectorbtpro.utils.template import CustomTemplate, RepEval, RepFunc
+from vectorbtpro.utils.config import merge_dicts, flat_merge_dicts
+from vectorbtpro.utils.parsing import get_func_arg_names
+from vectorbtpro.utils.execution import Task, execute, NoResult
+from vectorbtpro.utils.module_ import parse_refname, get_caller_qualname
+
+__all__ = [
+    "KnowledgeAsset",
+    "ReleaseAsset",
+]
+
+
+# ############# Asset classes ############# #
+
+
+KnowledgeAssetT = tp.TypeVar("KnowledgeAssetT", bound="KnowledgeAsset")
+
+
+class KnowledgeAsset(Configured, MutableSequence):
+    """Class for working with a knowledge asset.
+
+    This class behaves like a mutable sequence.
+
+    For defaults, see `vectorbtpro._settings.knowledge`."""
+
+    _settings_path: tp.SettingsPath = "knowledge"
+
+    _expected_keys: tp.ExpectedKeys = (Configured._expected_keys or set()) | {
+        "data",
+        "single_item",
+    }
+
+    @classmethod
+    def stack(
+        cls: tp.Type[KnowledgeAssetT],
+        *objs: tp.MaybeTuple[KnowledgeAssetT],
+        **kwargs,
+    ) -> KnowledgeAssetT:
+        """Stack multiple `KnowledgeAsset` instances."""
+        if len(objs) == 1:
+            objs = objs[0]
+        objs = list(objs)
+        for obj in objs:
+            if not checks.is_instance_of(obj, KnowledgeAsset):
+                raise TypeError("Each object to be stacked must be an instance of KnowledgeAsset")
+        new_data = []
+        new_single_item = True
+        for obj in objs:
+            new_data.extend(obj.data)
+            if not obj.single_item:
+                new_single_item = False
+        return cls(data=new_data, single_item=new_single_item, **kwargs)
+
+    @classmethod
+    def merge(
+        cls: tp.Type[KnowledgeAssetT],
+        *objs: tp.MaybeTuple[KnowledgeAssetT],
+        flatten_kwargs: tp.KwargsLike = None,
+        **kwargs,
+    ) -> KnowledgeAssetT:
+        """Merge multiple `KnowledgeAsset` instances."""
+        if len(objs) == 1:
+            objs = objs[0]
+        objs = list(objs)
+        for obj in objs:
+            if not checks.is_instance_of(obj, KnowledgeAsset):
+                raise TypeError("Each object to be merged must be an instance of KnowledgeAsset")
+
+        if flatten_kwargs is None:
+            flatten_kwargs = {}
+        if "annotate_all" not in flatten_kwargs:
+            flatten_kwargs["annotate_all"] = True
+        if "excl_types" not in flatten_kwargs:
+            flatten_kwargs["excl_types"] = (tuple, set, frozenset)
+        max_items = 1
+        new_single_item = True
+        for obj in objs:
+            obj_data = obj.data
+            if len(obj_data) > max_items:
+                max_items = len(obj_data)
+            if not obj.single_item:
+                new_single_item = False
+        flat_data = []
+        for obj in objs:
+            obj_data = obj.data
+            if len(obj_data) == 1:
+                obj_data = [obj_data] * max_items
+            flat_obj_data = list(map(lambda x: search.flatten_obj(x, **flatten_kwargs), obj_data))
+            flat_data.append(flat_obj_data)
+        new_data = []
+        for flat_dcts in zip(*flat_data):
+            merged_flat_dct = flat_merge_dicts(*flat_dcts)
+            new_data.append(search.unflatten_obj(merged_flat_dct))
+        return cls(data=new_data, single_item=new_single_item, **kwargs)
+
+    @classmethod
+    def from_json_file(
+        cls,
+        path: tp.PathLike,
+        compression: tp.Union[None, bool, str] = None,
+        decompress_kwargs: tp.KwargsLike = None,
+        **kwargs,
+    ) -> KnowledgeAssetT:
+        """Build `KnowledgeAsset` from a JSON file."""
+        bytes_ = load_bytes(path, compression=compression, decompress_kwargs=decompress_kwargs)
+        json_str = bytes_.decode("utf-8")
+        return cls(data=json.loads(json_str), **kwargs)
+
+    @classmethod
+    def from_json_bytes(
+        cls,
+        bytes_: bytes,
+        compression: tp.Union[None, bool, str] = None,
+        decompress_kwargs: tp.KwargsLike = None,
+        **kwargs,
+    ) -> KnowledgeAssetT:
+        """Build `KnowledgeAsset` from JSON bytes."""
+        if decompress_kwargs is None:
+            decompress_kwargs = {}
+        bytes_ = decompress(bytes_, compression=compression, **decompress_kwargs)
+        json_str = bytes_.decode("utf-8")
+        return cls(data=json.loads(json_str), **kwargs)
+
+    def __init__(self, data: tp.List[tp.Any], single_item: bool = True, **kwargs) -> None:
+        Configured.__init__(
+            self,
+            data=data,
+            single_item=single_item,
+            **kwargs,
+        )
+
+        if not isinstance(data, list):
+            data = [data]
+        else:
+            data = list(data)
+        if len(data) > 1:
+            single_item = False
+
+        self._data = data
+        self._single_item = single_item
+
+    @property
+    def data(self) -> tp.List[tp.Any]:
+        """Data."""
+        return self._data
+
+    @property
+    def single_item(self) -> bool:
+        """Whether this instance holds a single item."""
+        return self._single_item
+
+    # ############# Apply methods ############# #
+
+    def apply(
+        self,
+        func: tp.MaybeList[tp.Union[tp.AssetFuncLike, tp.AssetPipeline]],
+        *args,
+        execute_kwargs: tp.KwargsLike = None,
+        wrap: tp.Optional[bool] = None,
+        single_item: tp.Optional[bool] = None,
+        **kwargs,
+    ) -> tp.Union[KnowledgeAssetT, tp.Any]:
+        """Apply a function to each data item.
+
+        Function can be either a callable, a tuple of function and its arguments,
+        a `vectorbtpro.utils.execution.Task` instance, a subclass of
+        `vectorbtpro.utils.knowledge.base_asset_funcs.AssetFunc` or its prefix or full name.
+        Moreover, function can be a list of the above. In such a case, `BasicAssetPipeline` will be used.
+        If function is a valid expression, `ComplexAssetPipeline` will be used.
+
+        Uses `vectorbtpro.utils.execution.execute` for execution.
+
+        If `wrap` is True, returns a new `KnowledgeAsset` instance, otherwise raw output.
+
+        Usage:
+            ```pycon
+            >>> asset.apply(["flatten", ("query", len)])
+            [5, 5, 5, 5, 6]
+
+            >>> asset.apply("query(flatten(d), len)")
+            [5, 5, 5, 5, 6]
+            ```
+        """
+        from vectorbtpro.utils.knowledge.asset_pipelines import AssetPipeline, BasicAssetPipeline, ComplexAssetPipeline
+
+        execute_kwargs = self.resolve_setting(execute_kwargs, "execute_kwargs", merge=True)
+        asset_func_meta = {}
+
+        if isinstance(func, list):
+            func, args, kwargs = (
+                BasicAssetPipeline(
+                    func,
+                    *args,
+                    cond_kwargs=dict(asset=self),
+                    asset_func_meta=asset_func_meta,
+                    **kwargs,
+                ),
+                (),
+                {},
+            )
+        elif isinstance(func, str) and not func.isidentifier():
+            if len(args) > 0:
+                raise ValueError("No more positional arguments can be applied to ComplexAssetPipeline")
+            func, args, kwargs = (
+                ComplexAssetPipeline(
+                    func,
+                    context=kwargs.get("template_context", None),
+                    cond_kwargs=dict(asset=self),
+                    asset_func_meta=asset_func_meta,
+                    **kwargs,
+                ),
+                (),
+                {},
+            )
+        elif not isinstance(func, AssetPipeline):
+            func, args, kwargs = AssetPipeline.resolve_task(
+                func,
+                *args,
+                cond_kwargs=dict(asset=self),
+                asset_func_meta=asset_func_meta,
+                **kwargs,
+            )
+        else:
+            if len(args) > 0:
+                raise ValueError("No more positional arguments can be applied to AssetPipeline")
+            if len(kwargs) > 0:
+                raise ValueError("No more keyword arguments can be applied to AssetPipeline")
+        execute_kwargs = merge_dicts(
+            dict(
+                pbar_kwargs=dict(
+                    bar_id=parse_refname(func),
+                ),
+            ),
+            execute_kwargs,
+        )
+
+        def _get_task_generator():
+            for i, d in enumerate(self.data):
+                _kwargs = dict(kwargs)
+                if "template_context" in _kwargs:
+                    _kwargs["template_context"] = flat_merge_dicts(
+                        {"i": i},
+                        _kwargs["template_context"],
+                    )
+                yield Task(func, d, *args, **_kwargs)
+
+        tasks = _get_task_generator()
+        new_data = execute(tasks, size=len(self.data), **execute_kwargs)
+        if new_data is NoResult:
+            new_data = []
+        if wrap is None and asset_func_meta.get("_wrap", None) is not None:
+            wrap = asset_func_meta["_wrap"]
+        if wrap is None:
+            wrap = True
+        if single_item is None:
+            single_item = self.single_item
+        if wrap:
+            return self.replace(data=new_data, single_item=single_item)
+        if single_item:
+            if len(new_data) == 1:
+                return new_data[0]
+            if len(new_data) == 0:
+                return None
+        return new_data
+
+    def get(
+        self: KnowledgeAssetT,
+        path: tp.Optional[tp.MaybeList[tp.PathLikeKey]] = None,
+        keep_path: tp.Optional[bool] = None,
+        skip_missing: tp.Optional[bool] = None,
+        source: tp.Union[None, str, tp.Callable, tp.CustomTemplate] = None,
+        template_context: tp.KwargsLike = None,
+        **kwargs,
+    ) -> tp.Union[KnowledgeAssetT, tp.Any]:
+        """Get data items or parts of them.
+
+        Uses `KnowledgeAsset.apply` on `vectorbtpro.utils.knowledge.base_asset_funcs.GetAssetFunc`.
+
+        Use argument `path` to specify what part of the data item should be got. For example, "x.y[0].z"
+        to navigate nested dictionaries/lists. If `keep_path` is True, the data item will be represented
+        as a nested dictionary with path as keys. If multiple paths are provided, `keep_path` automatically
+        becomes True, and they will be merged into one nested dictionary. If `skip_missing` is True
+        and path is missing in the data item, will skip the data item.
+
+        Use argument `source` instead of `path` or in addition to `path` to also preprocess the source.
+        It can be a string or function (will become a template), or any custom template. In this template,
+        the index of the data item is represented by "i", the data item itself is represented by "d",
+        the data item under the path is represented by "x" while its fields are represented by their names.
+
+        Usage:
+            ```pycon
+            >>> asset.get()
+            [{'s': 'ABC', 'b': True, 'd2': {'c': 'red', 'l': [1, 2]}},
+             {'s': 'BCD', 'b': True, 'd2': {'c': 'blue', 'l': [3, 4]}},
+             {'s': 'CDE', 'b': False, 'd2': {'c': 'green', 'l': [5, 6]}},
+             {'s': 'DEF', 'b': False, 'd2': {'c': 'yellow', 'l': [7, 8]}},
+             {'s': 'EFG', 'b': False, 'd2': {'c': 'black', 'l': [9, 10]}, 'xyz': 123}]
+
+            >>> asset.get("d2.l[0]")
+            [1, 3, 5, 7, 9]
+
+            >>> asset.get("d2.l", source=lambda x: sum(x))
+            [3, 7, 11, 15, 19]
+
+            >>> asset.get("d2.l[0]", keep_path=True)
+            [{'d2': {'l': {0: 1}}},
+             {'d2': {'l': {0: 3}}},
+             {'d2': {'l': {0: 5}}},
+             {'d2': {'l': {0: 7}}},
+             {'d2': {'l': {0: 9}}}]
+
+            >>> asset.get(["d2.l[0]", "d2.l[1]"])
+            [{'d2': {'l': {0: 1, 1: 2}}},
+             {'d2': {'l': {0: 3, 1: 4}}},
+             {'d2': {'l': {0: 5, 1: 6}}},
+             {'d2': {'l': {0: 7, 1: 8}}},
+             {'d2': {'l': {0: 9, 1: 10}}}]
+
+            >>> asset.get("xyz", skip_missing=True)
+            [123]
+            ```
+        """
+        if path is None and source is None:
+            if self.single_item:
+                return self.data[0]
+            return self.data
+        return self.apply(
+            "get",
+            path=path,
+            keep_path=keep_path,
+            skip_missing=skip_missing,
+            source=source,
+            template_context=template_context,
+            **kwargs,
+        )
+
+    def select(self: KnowledgeAssetT, *args, **kwargs) -> KnowledgeAssetT:
+        """Call `KnowledgeAsset.get` and return a new `KnowledgeAsset` instance."""
+        return self.get(*args, wrap=True, **kwargs)
+
+    def set(
+        self: KnowledgeAssetT,
+        value: tp.Any,
+        path: tp.Optional[tp.MaybeList[tp.PathLikeKey]] = None,
+        skip_missing: tp.Optional[bool] = None,
+        make_copy: tp.Optional[bool] = None,
+        changed_only: tp.Optional[bool] = None,
+        template_context: tp.KwargsLike = None,
+        **kwargs,
+    ) -> tp.Union[KnowledgeAssetT, tp.Any]:
+        """Set data items or parts of them.
+
+        Uses `KnowledgeAsset.apply` on `vectorbtpro.utils.knowledge.base_asset_funcs.SetAssetFunc`.
+
+        Argument `value` can be any value, function (will become a template), or a template. In this template,
+        the index of the data item is represented by "i", the data item itself is represented by "d",
+        the data item under the path is represented by "x" while its fields are represented by their names.
+
+        Use argument `path` to specify what part of the data item should be set. For example, "x.y[0].z"
+        to navigate nested dictionaries/lists. Multiple paths can be provided. If `skip_missing` is True and
+        path is missing in the data item, will skip the data item.
+
+        Set `make_copy` to True to not modify original data.
+
+        Set `changed_only` to True to keep only the data items that have been changed.
+
+        Keyword arguments are passed to template substitution in `value`.
+
+        Usage:
+            ```pycon
+            >>> asset.set(lambda d: sum(d["d2"]["l"])).get()
+            [3, 7, 11, 15, 19]
+
+            >>> asset.set(lambda d: sum(d["d2"]["l"]), path="d2.sum").get()
+            >>> asset.set(lambda x: sum(x["l"]), path="d2.sum").get()
+            >>> asset.set(lambda l: sum(l), path="d2.sum").get()
+            [{'s': 'ABC', 'b': True, 'd2': {'c': 'red', 'l': [1, 2], 'sum': 3}},
+             {'s': 'BCD', 'b': True, 'd2': {'c': 'blue', 'l': [3, 4], 'sum': 7}},
+             {'s': 'CDE', 'b': False, 'd2': {'c': 'green', 'l': [5, 6], 'sum': 11}},
+             {'s': 'DEF', 'b': False, 'd2': {'c': 'yellow', 'l': [7, 8], 'sum': 15}},
+             {'s': 'EFG', 'b': False, 'd2': {'c': 'black', 'l': [9, 10], 'sum': 19}, 'xyz': 123}]
+
+            >>> asset.set(lambda l: sum(l), path="d2.l").get()
+            [{'s': 'ABC', 'b': True, 'd2': {'c': 'red', 'l': 3}},
+             {'s': 'BCD', 'b': True, 'd2': {'c': 'blue', 'l': 7}},
+             {'s': 'CDE', 'b': False, 'd2': {'c': 'green', 'l': 11}},
+             {'s': 'DEF', 'b': False, 'd2': {'c': 'yellow', 'l': 15}},
+             {'s': 'EFG', 'b': False, 'd2': {'c': 'black', 'l': 19}, 'xyz': 123}]
+            ```
+        """
+        return self.apply(
+            "set",
+            value=value,
+            path=path,
+            skip_missing=skip_missing,
+            make_copy=make_copy,
+            changed_only=changed_only,
+            template_context=template_context,
+            **kwargs,
+        )
+
+    def remove(
+        self: KnowledgeAssetT,
+        path: tp.MaybeList[tp.PathLikeKey],
+        skip_missing: tp.Optional[bool] = None,
+        make_copy: tp.Optional[bool] = None,
+        changed_only: tp.Optional[bool] = None,
+        **kwargs,
+    ) -> tp.Union[KnowledgeAssetT, tp.Any]:
+        """Remove data items or parts of them.
+
+        If `path` is an integer, removes the entire data item at that index.
+
+        Uses `KnowledgeAsset.apply` on `vectorbtpro.utils.knowledge.base_asset_funcs.RemoveAssetFunc`.
+
+        Use argument `path` to specify what part of the data item should be set. For example, "x.y[0].z"
+        to navigate nested dictionaries/lists. Multiple paths can be provided. If `skip_missing` is True and
+        path is missing in the data item, will skip the data item.
+
+        Set `make_copy` to True to not modify original data.
+
+        Set `changed_only` to True to keep only the data items that have been changed.
+
+        Usage:
+            ```pycon
+            >>> asset.remove("d2.l[0]").get()
+            [{'s': 'ABC', 'b': True, 'd2': {'c': 'red', 'l': [2]}},
+             {'s': 'BCD', 'b': True, 'd2': {'c': 'blue', 'l': [4]}},
+             {'s': 'CDE', 'b': False, 'd2': {'c': 'green', 'l': [6]}},
+             {'s': 'DEF', 'b': False, 'd2': {'c': 'yellow', 'l': [8]}},
+             {'s': 'EFG', 'b': False, 'd2': {'c': 'black', 'l': [10]}, 'xyz': 123}]
+
+            >>> asset.remove("xyz", skip_missing=True).get()
+            [{'s': 'ABC', 'b': True, 'd2': {'c': 'red', 'l': [1, 2]}},
+             {'s': 'BCD', 'b': True, 'd2': {'c': 'blue', 'l': [3, 4]}},
+             {'s': 'CDE', 'b': False, 'd2': {'c': 'green', 'l': [5, 6]}},
+             {'s': 'DEF', 'b': False, 'd2': {'c': 'yellow', 'l': [7, 8]}},
+             {'s': 'EFG', 'b': False, 'd2': {'c': 'black', 'l': [9, 10]}}]
+            ```
+        """
+        return self.apply(
+            "remove",
+            path=path,
+            skip_missing=skip_missing,
+            make_copy=make_copy,
+            changed_only=changed_only,
+            **kwargs,
+        )
+
+    def move(
+        self: KnowledgeAssetT,
+        path: tp.Union[tp.PathMoveDict, tp.MaybeList[tp.PathLikeKey]],
+        new_path: tp.Optional[tp.MaybeList[tp.PathLikeKey]] = None,
+        skip_missing: tp.Optional[bool] = None,
+        make_copy: tp.Optional[bool] = None,
+        changed_only: tp.Optional[bool] = None,
+        **kwargs,
+    ) -> tp.Union[KnowledgeAssetT, tp.Any]:
+        """Move data items or parts of them.
+
+        Uses `KnowledgeAsset.apply` on `vectorbtpro.utils.knowledge.base_asset_funcs.MoveAssetFunc`.
+
+        Use argument `path` to specify what part of the data item should be renamed. For example, "x.y[0].z"
+        to navigate nested dictionaries/lists. Multiple paths can be provided. If `skip_missing` is True and
+        path is missing in the data item, will skip the data item.
+
+        Use argument `new_path` to specify the last part of the data item (i.e., token) that should be renamed to.
+        Multiple tokens can be provided. If None, `path` must be a dictionary.
+
+        Set `make_copy` to True to not modify original data.
+
+        Set `changed_only` to True to keep only the data items that have been changed.
+
+        Usage:
+            ```pycon
+            >>> asset.move("d2.l", "l").get()
+            [{'s': 'ABC', 'b': True, 'd2': {'c': 'red'}, 'l': [1, 2]},
+             {'s': 'BCD', 'b': True, 'd2': {'c': 'blue'}, 'l': [3, 4]},
+             {'s': 'CDE', 'b': False, 'd2': {'c': 'green'}, 'l': [5, 6]},
+             {'s': 'DEF', 'b': False, 'd2': {'c': 'yellow'}, 'l': [7, 8]},
+             {'s': 'EFG', 'b': False, 'd2': {'c': 'black'}, 'xyz': 123, 'l': [9, 10]}]
+
+            >>> asset.move({"d2.c": "c", "b": "d2.b"}).get()
+            >>> asset.move(["d2.c", "b"], ["c", "d2.b"]).get()
+            [{'s': 'ABC', 'd2': {'l': [1, 2], 'b': True}, 'c': 'red'},
+             {'s': 'BCD', 'd2': {'l': [3, 4], 'b': True}, 'c': 'blue'},
+             {'s': 'CDE', 'd2': {'l': [5, 6], 'b': False}, 'c': 'green'},
+             {'s': 'DEF', 'd2': {'l': [7, 8], 'b': False}, 'c': 'yellow'},
+             {'s': 'EFG', 'd2': {'l': [9, 10], 'b': False}, 'xyz': 123, 'c': 'black'}]
+            ```
+        """
+        return self.apply(
+            "move",
+            path=path,
+            new_path=new_path,
+            skip_missing=skip_missing,
+            make_copy=make_copy,
+            changed_only=changed_only,
+            **kwargs,
+        )
+
+    def rename(
+        self: KnowledgeAssetT,
+        path: tp.Union[tp.PathRenameDict, tp.MaybeList[tp.PathLikeKey]],
+        new_token: tp.Optional[tp.MaybeList[tp.PathKeyToken]] = None,
+        skip_missing: tp.Optional[bool] = None,
+        make_copy: tp.Optional[bool] = None,
+        changed_only: tp.Optional[bool] = None,
+        **kwargs,
+    ) -> tp.Union[KnowledgeAssetT, tp.Any]:
+        """Rename data items or parts of them.
+
+        Uses `KnowledgeAsset.apply` on `vectorbtpro.utils.knowledge.base_asset_funcs.RenameAssetFunc`.
+
+        Same as `KnowledgeAsset.move` but must specify new token instead of new path.
+
+        Usage:
+            ```pycon
+            >>> asset.rename("d2.l", "x").get()
+            [{'s': 'ABC', 'b': True, 'd2': {'c': 'red', 'x': [1, 2]}},
+             {'s': 'BCD', 'b': True, 'd2': {'c': 'blue', 'x': [3, 4]}},
+             {'s': 'CDE', 'b': False, 'd2': {'c': 'green', 'x': [5, 6]}},
+             {'s': 'DEF', 'b': False, 'd2': {'c': 'yellow', 'x': [7, 8]}},
+             {'s': 'EFG', 'b': False, 'd2': {'c': 'black', 'x': [9, 10]}, 'xyz': 123}]
+
+            >>> asset.rename("xyz", "zyx", skip_missing=True, changed_only=True).get()
+            [{'s': 'EFG', 'b': False, 'd2': {'c': 'black', 'l': [9, 10]}, 'zyx': 123}]
+            ```
+        """
+        return self.apply(
+            "rename",
+            path=path,
+            new_token=new_token,
+            skip_missing=skip_missing,
+            make_copy=make_copy,
+            changed_only=changed_only,
+            **kwargs,
+        )
+
+    def reorder(
+        self: KnowledgeAssetT,
+        new_order: tp.Union[str, tp.PathKeyTokens],
+        path: tp.Optional[tp.MaybeList[tp.PathLikeKey]] = None,
+        skip_missing: tp.Optional[bool] = None,
+        make_copy: tp.Optional[bool] = None,
+        changed_only: tp.Optional[bool] = None,
+        template_context: tp.KwargsLike = None,
+        **kwargs,
+    ) -> tp.Union[KnowledgeAssetT, tp.Any]:
+        """Reorder data items or parts of them.
+
+        Uses `KnowledgeAsset.apply` on `vectorbtpro.utils.knowledge.base_asset_funcs.ReorderAssetFunc`.
+
+        Can change order in dicts based on `vectorbtpro.utils.config.reorder_dict` and
+        sequences based on `vectorbtpro.utils.config.reorder_list`.
+
+        Argument `new_order` can be a sequence of tokens. To not reorder a subset of keys, they can
+        be replaced by an ellipsis (`...`). For example, `["a", ..., "z"]` puts the token "a" at the start
+        and the token "z" at the end while other tokens are left in the original order. If `new_order` is
+        a string, it can be "asc"/"ascending" or "desc"/"descending". Other than that, it can be a string or
+        function (will become a template), or any custom template. In this template, the data item is
+        the index of the data item is represented by "i", the data item itself is represented by "d",
+        the data item under the path is represented by "x" while its fields are represented by their names.
+
+        Use argument `path` to specify what part of the data item should be set. For example, "x.y[0].z"
+        to navigate nested dictionaries/lists. Multiple paths can be provided. If `skip_missing` is True and
+        path is missing in the data item, will skip the data item.
+
+        Set `make_copy` to True to not modify original data.
+
+        Set `changed_only` to True to keep only the data items that have been changed.
+
+        Keyword arguments are passed to template substitution in `new_order`.
+
+        Usage:
+            ```pycon
+            >>> asset.reorder(["xyz", ...], skip_missing=True).get()
+            >>> asset.reorder(lambda x: ["xyz", ...] if "xyz" in x else [...]).get()
+            [{'s': 'ABC', 'b': True, 'd2': {'c': 'red', 'l': [1, 2]}},
+             {'s': 'BCD', 'b': True, 'd2': {'c': 'blue', 'l': [3, 4]}},
+             {'s': 'CDE', 'b': False, 'd2': {'c': 'green', 'l': [5, 6]}},
+             {'s': 'DEF', 'b': False, 'd2': {'c': 'yellow', 'l': [7, 8]}},
+             {'xyz': 123, 's': 'EFG', 'b': False, 'd2': {'c': 'black', 'l': [9, 10]}}]
+
+            >>> asset.reorder("descending", path="d2.l").get()
+            [{'s': 'ABC', 'b': True, 'd2': {'c': 'red', 'l': [2, 1]}},
+             {'s': 'BCD', 'b': True, 'd2': {'c': 'blue', 'l': [4, 3]}},
+             {'s': 'CDE', 'b': False, 'd2': {'c': 'green', 'l': [6, 5]}},
+             {'s': 'DEF', 'b': False, 'd2': {'c': 'yellow', 'l': [8, 7]}},
+             {'s': 'EFG', 'b': False, 'd2': {'c': 'black', 'l': [10, 9]}, 'xyz': 123}]
+            ```
+        """
+        return self.apply(
+            "reorder",
+            new_order=new_order,
+            path=path,
+            skip_missing=skip_missing,
+            make_copy=make_copy,
+            changed_only=changed_only,
+            template_context=template_context,
+            **kwargs,
+        )
+
+    def query(
+        self: KnowledgeAssetT,
+        expression: tp.Union[str, tp.Callable, tp.CustomTemplate],
+        query_engine: tp.Optional[str] = None,
+        as_filter: tp.Optional[bool] = None,
+        template_context: tp.KwargsLike = None,
+        **kwargs,
+    ) -> tp.Union[KnowledgeAssetT, tp.Any]:
+        """Query using an engine and return the queried data item(s).
+
+        Following engines are supported:
+
+        * "jmespath": Evaluation with `jmespath` package
+        * "jsonpath", "jsonpath-ng" or "jsonpath_ng": Evaluation with `jsonpath-ng` package
+        * "jsonpath.ext", "jsonpath-ng.ext" or "jsonpath_ng.ext": Evaluation with extended `jsonpath-ng` package
+        * None or "template": Evaluation of each data item as a template. The index of the data item is
+            represented by "i", the data item itself is represented by "d", the data item under the path
+            is represented by "x" while its fields are represented by their names.
+            Uses `KnowledgeAsset.apply` on `vectorbtpro.utils.knowledge.base_asset_funcs.QueryAssetFunc`.
+        * "pandas": Same as above but variables being columns
+
+        Templates can also use the functions defined in `vectorbtpro.utils.search.search_config`.
+
+        They work on single values and sequences alike.
+
+        Keyword arguments are passed to the respective search/parse/evaluation function.
+
+        Usage:
+            ```pycon
+            >>> asset.query("d['s'] == 'ABC'")
+            >>> asset.query("x['s'] == 'ABC'")
+            >>> asset.query("s == 'ABC'")
+            [{'s': 'ABC', 'b': True, 'd2': {'c': 'red', 'l': [1, 2]}}]
+
+            >>> asset.query("x['s'] == 'ABC'", as_filter=False)
+            [True, False, False, False, False]
+
+            >>> asset.query("contains(s, 'BC')")
+            >>> asset.query(lambda s: "BC" in s)
+            [{'s': 'ABC', 'b': True, 'd2': {'c': 'red', 'l': [1, 2]}},
+             {'s': 'BCD', 'b': True, 'd2': {'c': 'blue', 'l': [3, 4]}}]
+
+            >>> asset.query("[?contains(s, 'BC')].s", query_engine="jmespath")
+            ['ABC', 'BCD']
+
+            >>> asset.query("[].d2.c", query_engine="jmespath")
+            ['red', 'blue', 'green', 'yellow', 'black']
+
+            >>> asset.query("[?d2.c != `blue`].d2.l", query_engine="jmespath")
+            [[1, 2], [5, 6], [7, 8], [9, 10]]
+
+            >>> asset.query("$[*].d2.c", query_engine="jsonpath.ext")
+            ['red', 'blue', 'green', 'yellow', 'black']
+
+            >>> asset.query("$[?(@.b == true)].s", query_engine="jsonpath.ext")
+            ['ABC', 'BCD']
+
+            >>> asset.query("s[b]", query_engine="pandas")
+            ['ABC', 'BCD']
+            ```
+        """
+        query_engine = self.resolve_setting(query_engine, "query_engine")
+        as_filter = self.resolve_setting(as_filter, "as_filter")
+        template_context = self.resolve_setting(template_context, "template_context", merge=True)
+
+        if query_engine is None or query_engine.lower() == "template":
+            from vectorbtpro.utils.knowledge.base_asset_funcs import QueryAssetFunc
+
+            new_obj = self.apply(
+                QueryAssetFunc,
+                expression=expression,
+                as_filter=as_filter,
+                template_context=template_context,
+                **kwargs,
+            )
+        elif query_engine.lower() == "jmespath":
+            from vectorbtpro.utils.module_ import assert_can_import
+
+            assert_can_import("jmespath")
+            import jmespath
+
+            new_obj = jmespath.search(expression, self.data, **kwargs)
+        elif query_engine.lower() in ("jsonpath", "jsonpath-ng", "jsonpath_ng"):
+            from vectorbtpro.utils.module_ import assert_can_import
+
+            assert_can_import("jsonpath_ng")
+            import jsonpath_ng
+
+            jsonpath_expr = jsonpath_ng.parse(expression)
+            new_obj = [match.value for match in jsonpath_expr.find(self.data, **kwargs)]
+        elif query_engine.lower() in ("jsonpath.ext", "jsonpath-ng.ext", "jsonpath_ng.ext"):
+            from vectorbtpro.utils.module_ import assert_can_import
+
+            assert_can_import("jsonpath_ng")
+            import jsonpath_ng.ext
+
+            jsonpath_expr = jsonpath_ng.ext.parse(expression)
+            new_obj = [match.value for match in jsonpath_expr.find(self.data, **kwargs)]
+        elif query_engine.lower() == "pandas":
+            if isinstance(expression, str):
+                expression = RepEval(expression)
+            elif checks.is_function(expression):
+                if checks.is_builtin_func(expression):
+                    expression = RepFunc(lambda _expression=expression: _expression)
+                else:
+                    expression = RepFunc(expression)
+            elif not isinstance(expression, CustomTemplate):
+                raise TypeError(f"Expression must be a template")
+            df = pd.DataFrame.from_records(self.data)
+            _template_context = flat_merge_dicts(
+                {
+                    "d": df,
+                    "x": df,
+                    **search.search_config,
+                    **df.to_dict(orient="series"),
+                },
+                template_context,
+            )
+            result = expression.substitute(_template_context, eval_id="expression", **kwargs)
+            if checks.is_function(result):
+                result = result(df)
+            if as_filter and isinstance(result, pd.Series) and result.dtype == "bool":
+                result = df[result]
+            if isinstance(result, pd.Series):
+                new_obj = result.tolist()
+            elif isinstance(result, pd.DataFrame):
+                new_obj = result.to_dict(orient="records")
+            else:
+                new_obj = result
+        else:
+            raise ValueError(f"Invalid query engine: '{query_engine}'")
+        return new_obj
+
+    def filter(self: KnowledgeAssetT, *args, **kwargs) -> KnowledgeAssetT:
+        """Call `KnowledgeAsset.query` and return a new `KnowledgeAsset` instance."""
+        return self.query(*args, wrap=True, **kwargs)
+
+    def find(
+        self: KnowledgeAssetT,
+        target: tp.MaybeList[tp.Any],
+        path: tp.Optional[tp.MaybeList[tp.PathLikeKey]] = None,
+        per_path: tp.Optional[bool] = None,
+        find_all: tp.Optional[bool] = None,
+        keep_path: tp.Optional[bool] = None,
+        skip_missing: tp.Optional[bool] = None,
+        source: tp.Union[None, str, tp.Callable, tp.CustomTemplate] = None,
+        in_json_dumps: tp.Optional[bool] = None,
+        as_filter: tp.Optional[bool] = None,
+        template_context: tp.KwargsLike = None,
+        **kwargs,
+    ) -> tp.Union[KnowledgeAssetT, tp.Any]:
+        """Find occurrences and return a new `KnowledgeAsset` instance.
+
+        Uses `KnowledgeAsset.apply` on `vectorbtpro.utils.knowledge.base_asset_funcs.FindAssetFunc`.
+
+        Uses `vectorbtpro.utils.search.contains_in_obj` (keyword arguments are passed here)
+        to find any occurrences in each data item.
+
+        Target can be one or multiple data items. If there are multiple targets and `find_all` is True,
+        the match function will return True only if all targets have been found.
+
+        Use argument `path` to specify what part of the data item should be searched. For example, "x.y[0].z"
+        to navigate nested dictionaries/lists. If `keep_path` is True, the data item will be represented
+        as a nested dictionary with path as keys. If multiple paths are provided, `keep_path` automatically
+        becomes True, and they will be merged into one nested dictionary. If `skip_missing` is True
+        and path is missing in the data item, will skip the data item. If `per_path` is True, will consider
+        targets to be provided per path.
+
+        Use argument `source` instead of `path` or in addition to `path` to also preprocess the source.
+        It can be a string or function (will become a template), or any custom template. In this template,
+        the index of the data item is represented by "i", the data item itself is represented by "d",
+        the data item under the path is represented by "x" while its fields are represented by their names.
+
+        Set `in_json_dumps` to True to convert the entire data item to string and search in that string.
+
+        Usage:
+            ```pycon
+            >>> asset.find("BC").get()
+            [{'s': 'ABC', 'b': True, 'd2': {'c': 'red', 'l': [1, 2]}},
+             {'s': 'BCD', 'b': True, 'd2': {'c': 'blue', 'l': [3, 4]}}]
+
+            >>> asset.find("BC", as_filter=False).get()
+            [True, True, False, False, False]
+
+            >>> asset.find(vbt.Not("BC")).get()
+            [{'s': 'CDE', 'b': False, 'd2': {'c': 'green', 'l': [5, 6]}},
+             {'s': 'DEF', 'b': False, 'd2': {'c': 'yellow', 'l': [7, 8]}},
+             {'s': 'EFG', 'b': False, 'd2': {'c': 'black', 'l': [9, 10]}, 'xyz': 123}]
+
+            >>> asset.find("bc", ignore_case=True).get()
+            [{'s': 'ABC', 'b': True, 'd2': {'c': 'red', 'l': [1, 2]}},
+             {'s': 'BCD', 'b': True, 'd2': {'c': 'blue', 'l': [3, 4]}}]
+
+            >>> asset.find("bl", path="d2.c").get()
+            [{'s': 'BCD', 'b': True, 'd2': {'c': 'blue', 'l': [3, 4]}},
+             {'s': 'EFG', 'b': False, 'd2': {'c': 'black', 'l': [9, 10]}, 'xyz': 123}]
+
+            >>> asset.find(5, path="d2.l[0]").get()
+            [{'s': 'CDE', 'b': False, 'd2': {'c': 'green', 'l': [5, 6]}}]
+
+            >>> asset.find(True, path="d2.l", source=lambda x: sum(x) >= 10).get()
+            [{'s': 'CDE', 'b': False, 'd2': {'c': 'green', 'l': [5, 6]}},
+             {'s': 'DEF', 'b': False, 'd2': {'c': 'yellow', 'l': [7, 8]}},
+             {'s': 'EFG', 'b': False, 'd2': {'c': 'black', 'l': [9, 10]}, 'xyz': 123}]
+
+            >>> asset.find(["A", "B", "C"]).get()
+            [{'s': 'ABC', 'b': True, 'd2': {'c': 'red', 'l': [1, 2]}},
+             {'s': 'BCD', 'b': True, 'd2': {'c': 'blue', 'l': [3, 4]}},
+             {'s': 'CDE', 'b': False, 'd2': {'c': 'green', 'l': [5, 6]}}]
+
+            >>> asset.find(["A", "B", "C"], find_all=True).get()
+            [{'s': 'ABC', 'b': True, 'd2': {'c': 'red', 'l': [1, 2]}}]
+
+            >>> asset.find(r"[ABC]+", mode="regex").get()
+            [{'s': 'ABC', 'b': True, 'd2': {'c': 'red', 'l': [1, 2]}},
+             {'s': 'BCD', 'b': True, 'd2': {'c': 'blue', 'l': [3, 4]}},
+             {'s': 'CDE', 'b': False, 'd2': {'c': 'green', 'l': [5, 6]}}]
+
+            >>> asset.find("yenlow", mode="fuzzy").get()
+            [{'s': 'DEF', 'b': False, 'd2': {'c': 'yellow', 'l': [7, 8]}}]
+
+            >>> asset.find("xyz", in_json_dumps=True).get()
+            [{'s': 'EFG', 'b': False, 'd2': {'c': 'black', 'l': [9, 10]}, 'xyz': 123}]
+            ```
+        """
+        return self.apply(
+            "find",
+            target=target,
+            path=path,
+            per_path=per_path,
+            find_all=find_all,
+            keep_path=keep_path,
+            skip_missing=skip_missing,
+            source=source,
+            in_json_dumps=in_json_dumps,
+            as_filter=as_filter,
+            template_context=template_context,
+            **kwargs,
+        )
+
+    def find_replace(
+        self: KnowledgeAssetT,
+        target: tp.Union[dict, tp.MaybeList[tp.Any]],
+        replacement: tp.Optional[tp.MaybeList[tp.Any]] = None,
+        path: tp.Optional[tp.MaybeList[tp.PathLikeKey]] = None,
+        per_path: tp.Optional[bool] = None,
+        find_all: tp.Optional[bool] = None,
+        keep_path: tp.Optional[bool] = None,
+        skip_missing: tp.Optional[bool] = None,
+        make_copy: tp.Optional[bool] = None,
+        changed_only: tp.Optional[bool] = None,
+        **kwargs,
+    ) -> tp.Union[KnowledgeAssetT, tp.Any]:
+        """Find and replace occurrences and return a new `KnowledgeAsset` instance.
+
+        Uses `KnowledgeAsset.apply` on `vectorbtpro.utils.knowledge.base_asset_funcs.FindReplaceAssetFunc`.
+
+        Uses `vectorbtpro.utils.search.find_in_obj` (keyword arguments are passed here) to find
+        occurrences in each data item. Then, uses `vectorbtpro.utils.search.replace_in_obj` to replace them.
+
+        Target can be one or multiple of data items, either as a list or a dictionary. If there are multiple
+        targets and `find_all` is True, the match function will return True only if all targets have been found.
+
+        Use argument `path` to specify what part of the data item should be searched. For example, "x.y[0].z"
+        to navigate nested dictionaries/lists. If `keep_path` is True, the data item will be represented
+        as a nested dictionary with path as keys. If multiple paths are provided, `keep_path` automatically
+        becomes True, and they will be merged into one nested dictionary. If `skip_missing` is True
+        and path is missing in the data item, will skip the data item. If `per_path` is True, will consider
+        targets and replacements to be provided per path.
+
+        Set `make_copy` to True to not modify original data.
+
+        Set `changed_only` to True to keep only the data items that have been changed.
+
+        Usage:
+            ```pycon
+            >>> asset.find_replace("BC", "XY").get()
+            [{'s': 'AXY', 'b': True, 'd2': {'c': 'red', 'l': [1, 2]}},
+             {'s': 'XYD', 'b': True, 'd2': {'c': 'blue', 'l': [3, 4]}},
+             {'s': 'CDE', 'b': False, 'd2': {'c': 'green', 'l': [5, 6]}},
+             {'s': 'DEF', 'b': False, 'd2': {'c': 'yellow', 'l': [7, 8]}},
+             {'s': 'EFG', 'b': False, 'd2': {'c': 'black', 'l': [9, 10]}, 'xyz': 123}]
+
+            >>> asset.find_replace("BC", "XY", changed_only=True).get()
+            [{'s': 'AXY', 'b': True, 'd2': {'c': 'red', 'l': [1, 2]}},
+             {'s': 'XYD', 'b': True, 'd2': {'c': 'blue', 'l': [3, 4]}}]
+
+            >>> asset.find_replace(r"(D)E(F)", r"\1X\2", mode="regex", changed_only=True).get()
+            [{'s': 'DXF', 'b': False, 'd2': {'c': 'yellow', 'l': [7, 8]}}]
+
+            >>> asset.find_replace(True, False, changed_only=True).get()
+            [{'s': 'ABC', 'b': False, 'd2': {'c': 'red', 'l': [1, 2]}},
+             {'s': 'BCD', 'b': False, 'd2': {'c': 'blue', 'l': [3, 4]}}]
+
+            >>> asset.find_replace(3, 30, path="d2.l", changed_only=True).get()
+            [{'s': 'BCD', 'b': True, 'd2': {'c': 'blue', 'l': [30, 4]}}]
+
+            >>> asset.find_replace({1: 10, 4: 40}, path="d2.l", changed_only=True).get()
+            >>> asset.find_replace({1: 10, 4: 40}, path=["d2.l[0]", "d2.l[1]"], changed_only=True).get()
+            [{'s': 'ABC', 'b': True, 'd2': {'c': 'red', 'l': [10, 2]}},
+             {'s': 'BCD', 'b': True, 'd2': {'c': 'blue', 'l': [3, 40]}}]
+
+            >>> asset.find_replace({1: 10, 4: 40}, find_all=True, changed_only=True).get()
+            []
+
+            >>> asset.find_replace({1: 10, 2: 20}, find_all=True, changed_only=True).get()
+            [{'s': 'ABC', 'b': True, 'd2': {'c': 'red', 'l': [10, 20]}}]
+
+            >>> asset.find_replace("a", "X", path=["s", "d2.c"], ignore_case=True, changed_only=True).get()
+            [{'s': 'XBC', 'b': True, 'd2': {'c': 'red', 'l': [1, 2]}},
+             {'s': 'EFG', 'b': False, 'd2': {'c': 'blXck', 'l': [9, 10]}, 'xyz': 123}]
+
+            >>> asset.find_replace(123, 456, path="xyz", skip_missing=True, changed_only=True).get()
+            [{'s': 'EFG', 'b': False, 'd2': {'c': 'black', 'l': [9, 10]}, 'xyz': 456}]
+            ```
+        """
+        return self.apply(
+            "find_replace",
+            target=target,
+            replacement=replacement,
+            path=path,
+            per_path=per_path,
+            find_all=find_all,
+            keep_path=keep_path,
+            skip_missing=skip_missing,
+            make_copy=make_copy,
+            changed_only=changed_only,
+            **kwargs,
+        )
+
+    def find_remove(
+        self: KnowledgeAssetT,
+        target: tp.Union[dict, tp.MaybeList[tp.Any]],
+        path: tp.Optional[tp.MaybeList[tp.PathLikeKey]] = None,
+        per_path: tp.Optional[bool] = None,
+        find_all: tp.Optional[bool] = None,
+        keep_path: tp.Optional[bool] = None,
+        skip_missing: tp.Optional[bool] = None,
+        make_copy: tp.Optional[bool] = None,
+        changed_only: tp.Optional[bool] = None,
+        **kwargs,
+    ) -> tp.Union[KnowledgeAssetT, tp.Any]:
+        """Find and remove occurrences and return a new `KnowledgeAsset` instance.
+
+        Uses `KnowledgeAsset.apply` on `vectorbtpro.utils.knowledge.base_asset_funcs.FindRemoveAssetFunc`.
+
+        Similar to `KnowledgeAsset.find_replace`."""
+        return self.apply(
+            "find_remove",
+            target=target,
+            path=path,
+            per_path=per_path,
+            find_all=find_all,
+            keep_path=keep_path,
+            skip_missing=skip_missing,
+            make_copy=make_copy,
+            changed_only=changed_only,
+            **kwargs,
+        )
+
+    def find_remove_empty(self: KnowledgeAssetT, **kwargs) -> tp.Union[KnowledgeAssetT, tp.Any]:
+        """Find and remove empty objects."""
+        from vectorbtpro.utils.knowledge.base_asset_funcs import FindRemoveAssetFunc
+
+        return self.find_remove(FindRemoveAssetFunc.is_empty_func, **kwargs)
+
+    def flatten(
+        self: KnowledgeAssetT,
+        path: tp.Optional[tp.MaybeList[tp.PathLikeKey]] = None,
+        skip_missing: tp.Optional[bool] = None,
+        make_copy: tp.Optional[bool] = None,
+        changed_only: tp.Optional[bool] = None,
+        **kwargs,
+    ) -> tp.Union[KnowledgeAssetT, tp.Any]:
+        """Flatten data items or parts of them.
+
+        Uses `KnowledgeAsset.apply` on `vectorbtpro.utils.knowledge.base_asset_funcs.FlattenAssetFunc`.
+
+        Use argument `path` to specify what part of the data item should be set. For example, "x.y[0].z"
+        to navigate nested dictionaries/lists. Multiple paths can be provided. If `skip_missing` is True and
+        path is missing in the data item, will skip the data item.
+
+        Set `make_copy` to True to not modify original data.
+
+        Set `changed_only` to True to keep only the data items that have been changed.
+
+        Keyword arguments are passed to `vectorbtpro.utils.search.flatten_obj`.
+
+        Usage:
+            ```pycon
+            >>> asset.flatten().get()
+            [{'s': 'ABC',
+              'b': True,
+              ('d2', 'c'): 'red',
+              ('d2', 'l', 0): 1,
+              ('d2', 'l', 1): 2},
+              ...
+             {'s': 'EFG',
+              'b': False,
+              ('d2', 'c'): 'black',
+              ('d2', 'l', 0): 9,
+              ('d2', 'l', 1): 10,
+              'xyz': 123}]
+            ```
+        """
+        return self.apply(
+            "flatten",
+            path=path,
+            skip_missing=skip_missing,
+            make_copy=make_copy,
+            changed_only=changed_only,
+            **kwargs,
+        )
+
+    def unflatten(
+        self: KnowledgeAssetT,
+        path: tp.Optional[tp.MaybeList[tp.PathLikeKey]] = None,
+        skip_missing: tp.Optional[bool] = None,
+        make_copy: tp.Optional[bool] = None,
+        changed_only: tp.Optional[bool] = None,
+        **kwargs,
+    ) -> tp.Union[KnowledgeAssetT, tp.Any]:
+        """Unflatten data items or parts of them.
+
+        Uses `KnowledgeAsset.apply` on `vectorbtpro.utils.knowledge.base_asset_funcs.UnflattenAssetFunc`.
+
+        Use argument `path` to specify what part of the data item should be set. For example, "x.y[0].z"
+        to navigate nested dictionaries/lists. Multiple paths can be provided. If `skip_missing` is True and
+        path is missing in the data item, will skip the data item.
+
+        Set `make_copy` to True to not modify original data.
+
+        Set `changed_only` to True to keep only the data items that have been changed.
+
+        Keyword arguments are passed to `vectorbtpro.utils.search.unflatten_obj`.
+
+        Usage:
+            ```pycon
+            >>> asset.flatten().unflatten().get()
+            [{'s': 'ABC', 'b': True, 'd2': {'c': 'red', 'l': [1, 2]}},
+             {'s': 'BCD', 'b': True, 'd2': {'c': 'blue', 'l': [3, 4]}},
+             {'s': 'CDE', 'b': False, 'd2': {'c': 'green', 'l': [5, 6]}},
+             {'s': 'DEF', 'b': False, 'd2': {'c': 'yellow', 'l': [7, 8]}},
+             {'s': 'EFG', 'b': False, 'd2': {'c': 'black', 'l': [9, 10]}, 'xyz': 123}]
+            ```
+        """
+        return self.apply(
+            "unflatten",
+            path=path,
+            skip_missing=skip_missing,
+            make_copy=make_copy,
+            changed_only=changed_only,
+            **kwargs,
+        )
+
+    def dump(
+        self: KnowledgeAssetT,
+        source: tp.Union[None, str, tp.Callable, tp.CustomTemplate] = None,
+        dump_engine: tp.Optional[str] = None,
+        template_context: tp.KwargsLike = None,
+        **kwargs,
+    ) -> tp.Union[KnowledgeAssetT, tp.Any]:
+        """Dump data items.
+
+        Uses `KnowledgeAsset.apply` on `vectorbtpro.utils.knowledge.base_asset_funcs.DumpAssetFunc`.
+
+        Following engines are supported:
+
+        * "repr": Dumping with `repr`
+        * "prettify": Dumping with `vectorbtpro.utils.formatting.prettify`
+        * "nestedtext": Dumping with NestedText (https://pypi.org/project/nestedtext/)
+        * "yaml": Dumping with YAML
+        * "toml": Dumping with TOML (https://pypi.org/project/toml/)
+        * "json": Dumping with JSON
+
+        Use argument `source` to also preprocess the source. It can be a string or function
+        (will become a template), or any custom template. In this template, the index of the data item
+        is represented by "i", the data item itself is represented by "d" while its fields are
+        represented by their names.
+
+        Keyword arguments are passed to the respective engine.
+
+        Usage:
+            ```pycon
+            >>> print(asset.dump(source="{i: d}", default_flow_style=True).join())
+            {0: {s: ABC, b: true, d2: {c: red, l: [1, 2]}}}
+            {1: {s: BCD, b: true, d2: {c: blue, l: [3, 4]}}}
+            {2: {s: CDE, b: false, d2: {c: green, l: [5, 6]}}}
+            {3: {s: DEF, b: false, d2: {c: yellow, l: [7, 8]}}}
+            {4: {s: EFG, b: false, d2: {c: black, l: [9, 10]}, xyz: 123}}
+            ```
+        """
+        return self.apply(
+            "dump",
+            source=source,
+            dump_engine=dump_engine,
+            template_context=template_context,
+            **kwargs,
+        )
+
+    def dump_all(
+        self,
+        source: tp.Union[None, str, tp.Callable, tp.CustomTemplate] = None,
+        dump_engine: tp.Optional[str] = None,
+        template_context: tp.KwargsLike = None,
+        **kwargs,
+    ) -> str:
+        """Dump data list as a single data item.
+
+        See `KnowledgeAsset.dump` for arguments."""
+        from vectorbtpro.utils.knowledge.base_asset_funcs import DumpAssetFunc
+
+        return DumpAssetFunc.prepare_and_call(
+            self.data,
+            source=source,
+            dump_engine=dump_engine,
+            template_context=template_context,
+            **kwargs,
+        )
+
+    def print(
+        self,
+        *args,
+        dump_all: tp.Optional[bool] = None,
+        separator: tp.Optional[str] = None,
+        **kwargs,
+    ) -> None:
+        """Dump and print."""
+        if dump_all is None:
+            dump_all = len(self.data) > 1 and separator is None
+        if dump_all:
+            print(self.dump_all(*args, **kwargs))
+        else:
+            dumped = self.dump(*args, **kwargs)
+            if isinstance(dumped, KnowledgeAsset):
+                print(dumped.join(separator=separator))
+            else:
+                print(dumped)
+
+    # ############# Reduce methods ############# #
+
+    def reduce(
+        self: KnowledgeAssetT,
+        func: tp.Union[str, tp.Callable, tp.CustomTemplate],
+        *args,
+        initializer: tp.Optional[tp.Any] = None,
+        by_path: tp.Optional[tp.PathLikeKey] = None,
+        uniform_groups: tp.Optional[bool] = None,
+        get_kwargs: tp.KwargsLike = None,
+        template_context: tp.KwargsLike = None,
+        show_progress: tp.Optional[bool] = None,
+        pbar_kwargs: tp.KwargsLike = None,
+        wrap: tp.Optional[bool] = None,
+        return_group_keys: bool = False,
+        **kwargs,
+    ) -> tp.Union[KnowledgeAssetT, tp.Any]:
+        """Reduce data items.
+
+        Function can be a callable, a tuple of function and its arguments,
+        a `vectorbtpro.utils.execution.Task` instance, a subclass of
+        `vectorbtpro.utils.knowledge.base_asset_funcs.AssetFunc` or its prefix or full name.
+        It can also be an expression or a template. In this template, the index of the data item is
+        represented by "i", the data items themselves are represented by "d1" and "d2" or "x1" and "x2".
+
+        If an initializer is provided, the first set of values will be `d1=initializer` and
+        `d2=self.data[0]`. If not, it will be `d1=self.data[0]` and `d2=self.data[1]`.
+
+        If `by_path` is provided, uses it as `path` in `KnowledgeAsset.get`, groups by unique values,
+        and runs the procedure on each group. In such a case, the progress bar is displayed per group.
+        Set `uniform_groups` to True to only group unique values that are located adjacent to each other.
+
+        If `wrap` is True, returns a new `KnowledgeAsset` instance, otherwise raw output.
+
+        Positional arguments are passed to the function in case the template returns another function,
+        and keyword arguments are passed as a context to template substitution.
+
+        Usage:
+            ```pycon
+            >>> asset.reduce(lambda d1, d2: vbt.merge_dicts(d1, d2))
+            >>> asset.reduce(vbt.merge_dicts)
+            >>> asset.reduce("{**d1, **d2}")
+            {'s': 'EFG', 'b': False, 'd2': {'c': 'black', 'l': [9, 10]}, 'xyz': 123}
+
+            >>> asset.reduce("{**d1, **d2}", by_path="b")
+            [{'s': 'BCD', 'b': True, 'd2': {'c': 'blue', 'l': [3, 4]}},
+             {'s': 'EFG', 'b': False, 'd2': {'c': 'black', 'l': [9, 10]}, 'xyz': 123}]
+            ```
+        """
+        show_progress = self.resolve_setting(show_progress, "show_progress")
+        pbar_kwargs = self.resolve_setting(pbar_kwargs, "pbar_kwargs", merge=True)
+        pbar_kwargs = flat_merge_dicts(
+            dict(bar_id=get_caller_qualname()),
+            pbar_kwargs,
+        )
+
+        if by_path is not None:
+            uniform_groups = self.resolve_setting(uniform_groups, "uniform_groups")
+
+            if get_kwargs is None:
+                get_kwargs = {}
+            by = self.get(path=by_path, **get_kwargs)
+            keys = []
+            groups = []
+            if uniform_groups:
+                for i, item in enumerate(by):
+                    if len(keys) > 0 and (keys[-1] is item or keys[-1] == item):
+                        groups[-1].append(i)
+                    else:
+                        keys.append(item)
+                        groups.append([i])
+            else:
+                groups = []
+                representatives = []
+                for idx, item in enumerate(by):
+                    found = False
+                    for rep_idx, rep_obj in enumerate(representatives):
+                        if item is rep_obj or item == rep_obj:
+                            groups[rep_idx].append(idx)
+                            found = True
+                            break
+                    if not found:
+                        representatives.append(item)
+                        keys.append(by[idx])
+                        groups.append([idx])
+
+            results = []
+            with ProgressBar(total=len(groups), show_progress=show_progress, **pbar_kwargs) as pbar:
+                for i, group in enumerate(groups):
+                    group_instance = self.get_item(group)
+                    result = group_instance.reduce(
+                        func,
+                        *args,
+                        initializer=initializer,
+                        template_context=template_context,
+                        show_progress=False,
+                        wrap=wrap,
+                        **kwargs,
+                    )
+                    results.append(result)
+                    pbar.update()
+            if return_group_keys:
+                return dict(zip(keys, results))
+            if len(results) > 0 and isinstance(results[0], type(self)):
+                return type(self).stack(results)
+            return results
+
+        asset_func_meta = {}
+
+        if isinstance(func, str) and not func.isidentifier():
+            func = RepEval(func)
+        elif not isinstance(func, CustomTemplate):
+            from vectorbtpro.utils.knowledge.asset_pipelines import AssetPipeline
+
+            func, args, kwargs = AssetPipeline.resolve_task(
+                func,
+                *args,
+                cond_kwargs=dict(asset=self),
+                asset_func_meta=asset_func_meta,
+                **kwargs,
+            )
+
+        it = iter(self.data)
+        if initializer is None and asset_func_meta.get("_initializer", None) is not None:
+            initializer = asset_func_meta["_initializer"]
+        if initializer is None:
+            d1 = next(it)
+            total = len(self.data) - 1
+        else:
+            d1 = initializer
+            total = len(self.data)
+        with ProgressBar(total=total, show_progress=show_progress, **pbar_kwargs) as pbar:
+            for i, d2 in enumerate(it):
+                if isinstance(func, CustomTemplate):
+                    _template_context = flat_merge_dicts(
+                        {
+                            "i": i,
+                            "d1": d1,
+                            "d2": d2,
+                            "x1": d1,
+                            "x2": d2,
+                        },
+                        template_context,
+                    )
+                    _d1 = func.substitute(_template_context, eval_id="func", **kwargs)
+                    if checks.is_function(_d1):
+                        d1 = _d1(d1, d2, *args)
+                    else:
+                        d1 = _d1
+                else:
+                    _kwargs = dict(kwargs)
+                    if "template_context" in _kwargs:
+                        _kwargs["template_context"] = flat_merge_dicts(
+                            {"i": i},
+                            _kwargs["template_context"],
+                        )
+                    d1 = func(d1, d2, *args, **_kwargs)
+                pbar.update()
+        if wrap is None and asset_func_meta.get("_wrap", None) is not None:
+            wrap = asset_func_meta["_wrap"]
+        if wrap is None:
+            wrap = False
+        if wrap:
+            return self.replace(data=[d1], single_item=True)
+        return d1
+
+    def collect(
+        self: KnowledgeAssetT,
+        sort_keys: tp.Optional[bool] = None,
+        **kwargs,
+    ) -> tp.Union[KnowledgeAssetT, tp.Any]:
+        """Collect values of each key in each data item."""
+        from vectorbtpro.utils.knowledge.base_asset_funcs import CollectAssetFunc
+
+        return self.reduce(
+            CollectAssetFunc,
+            sort_keys=sort_keys,
+            **kwargs,
+        )
+
+    @classmethod
+    def describe_lengths(self, lengths: list, **describe_kwargs) -> dict:
+        """Describe values representing lengths."""
+        len_describe_dict = pd.Series(lengths).describe(**describe_kwargs).to_dict()
+        del len_describe_dict["count"]
+        del len_describe_dict["std"]
+        return {"len_" + k: int(v) if k != "mean" else v for k, v in len_describe_dict.items()}
+
+    def describe(
+        self: KnowledgeAssetT,
+        ignore_empty: tp.Optional[bool] = None,
+        describe_kwargs: tp.KwargsLike = None,
+        wrap: bool = False,
+        **kwargs,
+    ) -> tp.Union[KnowledgeAssetT, dict]:
+        """Collect and describe each key in each data item."""
+        ignore_empty = self.resolve_setting(ignore_empty, "ignore_empty")
+        describe_kwargs = self.resolve_setting(describe_kwargs, "describe_kwargs", merge=True)
+
+        collected = self.collect(**kwargs)
+        description = {}
+        for k, v in list(collected.items()):
+            all_types = []
+            valid_types = []
+            valid_x = None
+            new_v = []
+            for x in v:
+                if not ignore_empty or x:
+                    new_v.append(x)
+                if x is not None:
+                    valid_x = x
+                    if type(x) not in valid_types:
+                        valid_types.append(type(x))
+                if type(x) not in all_types:
+                    all_types.append(type(x))
+            v = new_v
+            description[k] = {}
+            description[k]["types"] = list(map(lambda x: x.__name__, all_types))
+            describe_sr = pd.Series(v)
+            if describe_sr.dtype == object and len(valid_types) == 1 and checks.is_complex_collection(valid_x):
+                describe_dict = {"count": len(v)}
+            else:
+                describe_dict = describe_sr.describe(**describe_kwargs).to_dict()
+            if pd.api.types.is_integer_dtype(describe_sr.dtype):
+                new_describe_dict = {}
+                for _k, _v in describe_dict.items():
+                    if _k not in {"mean", "std"}:
+                        new_describe_dict[_k] = int(_v)
+                    else:
+                        new_describe_dict[_k] = _v
+                describe_dict = new_describe_dict
+            if "unique" in describe_dict and describe_dict["unique"] == describe_dict["count"]:
+                del describe_dict["top"]
+                del describe_dict["freq"]
+            if "unique" in describe_dict and describe_dict["count"] == 1:
+                del describe_dict["unique"]
+            description[k].update(describe_dict)
+            if len(valid_types) == 1 and checks.is_collection(valid_x):
+                lengths = [len(_v) for _v in v if _v is not None]
+                description[k].update(self.describe_lengths(lengths, **describe_kwargs))
+        if wrap:
+            return self.replace(data=[description], single_item=True)
+        return description
+
+    def print_tree(self, **kwargs) -> None:
+        """Print schema as a directory tree.
+
+        Keyword arguments are split between `KnowledgeAsset.describe` and
+        `vectorbtpro.utils.path_.dir_tree_from_paths`.
+
+        Usage:
+            ```pycon
+            >>> asset.print_tree()
+            root
+            ├── s [5/5, str]
+            ├── b [2/5, bool]
+            ├── d2 [5/5, dict]
+            │   ├── c [5/5, str]
+            │   └── l
+            │       ├── 0 [5/5, int]
+            │       └── 1 [5/5, int]
+            └── xyz [1/5, int]
+
+            2 directories, 6 files
+            ```
+        """
+        dir_tree_arg_names = set(get_func_arg_names(dir_tree_from_paths))
+        dir_tree_kwargs = {k: kwargs.pop(k) for k in list(kwargs.keys()) if k in dir_tree_arg_names}
+        orig_describe_dict = self.describe(wrap=False, **kwargs)
+        flat_describe_dict = self.flatten(
+            skip_missing=True,
+            make_copy=True,
+            changed_only=False,
+        ).describe(wrap=False, **kwargs)
+        describe_dict = flat_merge_dicts(orig_describe_dict, flat_describe_dict)
+        paths = []
+        path_names = []
+        for k, v in describe_dict.items():
+            if k is None:
+                k = "."
+            if not isinstance(k, tuple):
+                k = (k,)
+            path = Path(*map(str, k))
+            path_name = path.name
+            path_name += " [" + str(v["count"]) + "/" + str(len(self.data))
+            path_name += ", " + ", ".join(v["types"]) + "]"
+            path_names.append(path_name)
+            paths.append(path)
+        if "root_name" not in dir_tree_kwargs:
+            dir_tree_kwargs["root_name"] = "root"
+        if "sort" not in dir_tree_kwargs:
+            dir_tree_kwargs["sort"] = False
+        if "path_names" not in dir_tree_kwargs:
+            dir_tree_kwargs["path_names"] = path_names
+        print(dir_tree_from_paths(paths, **dir_tree_kwargs))
+
+    def join(self, separator: tp.Optional[str] = None) -> str:
+        """Join the list of string data items."""
+        if separator is None:
+            if not all(isinstance(d, str) for d in self.data):
+                raise TypeError("All data items must be strings")
+            if self.data[0].endswith(("\n", "\t", " ")):
+                separator = ""
+            elif self.data[0].endswith(("}", "]")):
+                separator = ", "
+            else:
+                separator = "\n"
+        joined = separator.join(self.data)
+        if joined.startswith("{") and joined.endswith("}"):
+            return "[" + joined + "]"
+        return joined
+
+    # ############# Item methods ############# #
+
+    def get_item(self, index: tp.Union[int, slice, tp.Iterable[tp.Union[bool, int]]]) -> tp.Any:
+        """Get a data item or a selection of data items."""
+        if checks.is_complex_iterable(index):
+            if all(isinstance(i, bool) for i in index):
+                index = list(index)
+                if len(index) != len(self.data):
+                    raise IndexError("Boolean index must have the same length as data")
+                return self.replace(data=[item for item, flag in zip(self.data, index) if flag])
+            if all(isinstance(i, int) for i in index):
+                return self.replace(data=[self.data[i] for i in index])
+            raise TypeError("Index must contain all integers or all booleans")
+        if isinstance(index, slice):
+            return self.replace(data=self.data[index])
+        return self.data[index]
+
+    def set_item(
+        self: KnowledgeAssetT,
+        index: tp.Union[int, slice, tp.Iterable[tp.Union[bool, int]]],
+        value: tp.Any,
+        inplace: bool = False,
+    ) -> tp.Optional[KnowledgeAssetT]:
+        """Set a data item or a selection of data items.
+
+        Returns a new `KnowledgeAsset` instance if `inplace` is False."""
+        new_data = list(self.data)
+        if checks.is_complex_iterable(index):
+            index = list(index)
+            if all(isinstance(i, bool) for i in index):
+                if len(index) != len(new_data):
+                    raise IndexError("Boolean index must have the same length as data")
+                if checks.is_complex_iterable(value):
+                    value = list(value)
+                    if len(value) == len(index):
+                        for i, (b, v) in enumerate(zip(index, value)):
+                            if b:
+                                new_data[i] = v
+                    else:
+                        num_true = sum(index)
+                        if len(value) != num_true:
+                            raise ValueError(f"Attempting to assign {len(value)} values to {num_true} targets")
+                        it = iter(value)
+                        for i, b in enumerate(index):
+                            if b:
+                                new_data[i] = next(it)
+                else:
+                    for i, b in enumerate(index):
+                        if b:
+                            new_data[i] = value
+            elif all(isinstance(i, int) for i in index):
+                if checks.is_complex_iterable(value):
+                    value = list(value)
+                    if len(value) != len(index):
+                        raise ValueError(f"Attempting to assign {len(value)} values to {len(index)} targets")
+                    for i, v in zip(index, value):
+                        new_data[i] = v
+                else:
+                    for i in index:
+                        new_data[i] = value
+            else:
+                raise TypeError("Index must contain all integers or all booleans")
+        elif isinstance(index, slice):
+            if not checks.is_complex_iterable(value):
+                raise TypeError("Can only assign an iterable to a slice")
+            new_data[index] = list(value)
+        else:
+            new_data[index] = value
+        if inplace:
+            self._data = new_data
+            self.update_config(data=new_data)
+            return None
+        return self.replace(data=new_data)
+
+    def remove_item(
+        self: KnowledgeAssetT,
+        index: tp.Union[int, slice, tp.Iterable[tp.Union[bool, int]]],
+        inplace: bool = False,
+    ) -> tp.Optional[KnowledgeAssetT]:
+        """Remove a data item or a selection of data items.
+
+        Returns a new `KnowledgeAsset` instance if `inplace` is False."""
+        new_data = list(self.data)
+        if checks.is_complex_iterable(index):
+            if all(isinstance(i, bool) for i in index):
+                index = list(index)
+                if len(index) != len(new_data):
+                    raise IndexError("Boolean index must have the same length as data")
+                new_data = [item for item, flag in zip(new_data, index) if not flag]
+            elif all(isinstance(i, int) for i in index):
+                indices_to_remove = set(index)
+                max_index = len(new_data) - 1
+                for i in indices_to_remove:
+                    if not -len(new_data) <= i <= max_index:
+                        raise IndexError(f"Index {i} out of range")
+                new_data = [item for i, item in enumerate(new_data) if i not in indices_to_remove]
+            else:
+                raise TypeError("Index must contain all integers or all booleans")
+        else:
+            del new_data[index]
+        if inplace:
+            self._data = new_data
+            self.update_config(data=new_data)
+            return None
+        return self.replace(data=new_data)
+
+    def sort(
+        self: KnowledgeAssetT,
+        *args,
+        reverse: bool = False,
+        inplace: bool = False,
+        **kwargs,
+    ) -> tp.Optional[KnowledgeAssetT]:
+        """Call `KnowledgeAsset.get` on `*args` and `**kwargs` and sort by the results.
+
+        Returns a new `KnowledgeAsset` instance if `inplace` is False.
+
+        Usage:
+            ```pycon
+            >>> asset.sort("d2.c").get()
+            [{'s': 'EFG', 'b': False, 'd2': {'c': 'black', 'l': [9, 10]}, 'xyz': 123},
+             {'s': 'BCD', 'b': True, 'd2': {'c': 'blue', 'l': [3, 4]}},
+             {'s': 'CDE', 'b': False, 'd2': {'c': 'green', 'l': [5, 6]}},
+             {'s': 'ABC', 'b': True, 'd2': {'c': 'red', 'l': [1, 2]}},
+             {'s': 'DEF', 'b': False, 'd2': {'c': 'yellow', 'l': [7, 8]}}]
+            ```
+        """
+        keys = self.get(*args, **kwargs)
+        new_data = [x for _, x in sorted(zip(keys, self.data), key=lambda x: x[0], reverse=reverse)]
+        if inplace:
+            self._data = new_data
+            self.update_config(data=new_data)
+            return None
+        return self.replace(data=new_data)
+
+    def sample(
+        self,
+        k: tp.Optional[int] = None,
+        seed: tp.Optional[int] = None,
+        wrap: bool = True,
+    ) -> tp.Any:
+        """Pick a random sample of data items."""
+        import random
+
+        if k is None:
+            k = 1
+            single_item = True
+        else:
+            single_item = False
+        if seed is not None:
+            random.seed(seed)
+        new_data = random.sample(self.data, min(len(self.data), k))
+        if wrap:
+            return self.replace(data=new_data, single_item=single_item)
+        if single_item:
+            return new_data[0]
+        return new_data
+
+    def print_sample(self, k: tp.Optional[int] = None, seed: tp.Optional[int] = None, **kwargs) -> None:
+        """Print a random sample.
+
+        Keyword arguments are passed to `KnowledgeAsset.print`."""
+        self.sample(k=k, seed=seed).print(**kwargs)
+
+    # ############# Collection methods ############# #
+
+    def __len__(self) -> int:
+        return len(self.data)
+
+    # ############# Sequence methods ############# #
+
+    def __getitem__(self, index: tp.Union[int, slice, tp.Iterable[tp.Union[bool, int]]]) -> tp.Any:
+        return self.get_item(index)
+
+    # ############# MutableSequence methods ############# #
+
+    def insert(self, index: int, value: tp.Any) -> None:
+        new_data = list(self.data)
+        new_data.insert(index, value)
+        self._data = new_data
+        self.update_config(data=new_data)
+
+    def __setitem__(self, index: tp.Union[int, slice, tp.Iterable[tp.Union[bool, int]]], value: tp.Any) -> None:
+        self.set_item(index, value, inplace=True)
+
+    def __delitem__(self, index: tp.Union[int, slice, tp.Iterable[tp.Union[bool, int]]]) -> None:
+        self.remove_item(index, inplace=True)
+
+    def __add__(self: KnowledgeAssetT, other: tp.Any) -> KnowledgeAssetT:
+        if not isinstance(other, KnowledgeAsset):
+            other = KnowledgeAsset(other)
+        if isinstance(self, type(other)):
+            new_type = type(other)
+        elif isinstance(other, type(self)):
+            new_type = type(self)
+        else:
+            new_type = KnowledgeAsset
+        return new_type.stack(self, other)
+
+    def __iadd__(self: KnowledgeAssetT, other: tp.Any) -> KnowledgeAssetT:
+        if not isinstance(other, KnowledgeAsset):
+            other = KnowledgeAsset(other)
+        if isinstance(self, type(other)):
+            new_type = type(other)
+        elif isinstance(other, type(self)):
+            new_type = type(self)
+        else:
+            new_type = KnowledgeAsset
+        return new_type.stack(self, other)
+
+
+ReleaseAssetT = tp.TypeVar("ReleaseAssetT", bound="ReleaseAsset")
+
+
+class ReleaseAsset(KnowledgeAsset):
+    """Class for working with release assets."""
+
+    @classmethod
+    def pull(
+        cls,
+        asset_name: tp.Optional[str] = None,
+        release_name: tp.Optional[str] = None,
+        repo_owner: tp.Optional[str] = None,
+        repo_name: tp.Optional[str] = None,
+        token: tp.Optional[str] = None,
+        token_required: tp.Optional[bool] = None,
+        use_pygithub: tp.Optional[bool] = None,
+        chunk_size: tp.Optional[int] = None,
+        cache: tp.Optional[bool] = None,
+        cache_dir: tp.Optional[tp.PathLike] = None,
+        cache_mkdir_kwargs: tp.KwargsLike = None,
+        clear_cache: bool = False,
+        show_progress: tp.Optional[bool] = None,
+        pbar_kwargs: tp.KwargsLike = None,
+        **kwargs,
+    ) -> ReleaseAssetT:
+        """Build `ReleaseAsset` from a JSON asset of a release."""
+        from vectorbtpro._version import __version__
+        import requests
+
+        asset_name = cls.resolve_setting(asset_name, "asset_name")
+        release_name = cls.resolve_setting(release_name, "release_name")
+        repo_owner = cls.resolve_setting(repo_owner, "repo_owner")
+        repo_name = cls.resolve_setting(repo_name, "repo_name")
+        token = cls.resolve_setting(token, "token")
+        token_required = cls.resolve_setting(token_required, "token_required")
+        use_pygithub = cls.resolve_setting(use_pygithub, "use_pygithub")
+        chunk_size = cls.resolve_setting(chunk_size, "chunk_size")
+        cache = cls.resolve_setting(cache, "cache")
+        cache_dir = cls.resolve_setting(cache_dir, "cache_dir")
+        cache_mkdir_kwargs = cls.resolve_setting(cache_mkdir_kwargs, "cache_mkdir_kwargs", merge=True)
+        show_progress = cls.resolve_setting(show_progress, "show_progress")
+        pbar_kwargs = cls.resolve_setting(pbar_kwargs, "pbar_kwargs", merge=True)
+
+        current_release = "v" + __version__
+        if release_name is None:
+            release_name = current_release
+        release_dir = Path(cache_dir) / "releases" / release_name
+        if cache:
+            if release_dir.exists():
+                if clear_cache:
+                    remove_dir(release_dir, missing_ok=True, with_contents=True)
+                else:
+                    cache_file = None
+                    for file in release_dir.iterdir():
+                        if file.is_file() and file.name == asset_name:
+                            cache_file = file
+                            break
+                    if cache_file is not None:
+                        return cls.from_json_file(cache_file, **kwargs)
+
+        if token is None:
+            token = os.environ.get("GITHUB_TOKEN", None)
+        if token is None and token_required:
+            raise ValueError("GitHub token is required")
+        if use_pygithub is None:
+            from vectorbtpro.utils.module_ import check_installed
+
+            use_pygithub = check_installed("github")
+        if use_pygithub:
+            from vectorbtpro.utils.module_ import assert_can_import
+
+            assert_can_import("github")
+            from github import Github, Auth
+            from github.GithubException import UnknownObjectException
+
+            if token is not None:
+                g = Github(auth=Auth.Token(token))
+            else:
+                g = Github()
+            try:
+                repo = g.get_repo(f"{repo_owner}/{repo_name}")
+            except UnknownObjectException:
+                raise Exception(f"Repository '{repo_owner}/{repo_name}' not found or access denied")
+            if release_name == "latest":
+                try:
+                    release = repo.get_latest_release()
+                except UnknownObjectException:
+                    raise Exception("Latest release not found")
+            else:
+                releases = repo.get_releases()
+                found_release = None
+                for release in releases:
+                    if release.title == release_name:
+                        found_release = release
+                if found_release is None:
+                    raise Exception(f"Release '{release_name}' not found")
+                release = found_release
+            assets = release.get_assets()
+            if asset_name is not None:
+                asset = next((a for a in assets if a.name == asset_name), None)
+                if asset is None:
+                    raise Exception(f"Asset '{asset_name}' not found in release {release}")
+            else:
+                assets_list = list(assets)
+                if len(assets_list) == 1:
+                    asset = assets_list[0]
+                else:
+                    raise Exception("Please specify asset_name")
+            asset_url = asset.url
+        else:
+            headers = {"Accept": "application/vnd.github+json"}
+            if token is not None:
+                headers["Authorization"] = f"token {token}"
+            if release_name == "latest":
+                release_url = f"https://api.github.com/repos/{repo_owner}/{repo_name}/releases/latest"
+                response = requests.get(release_url, headers=headers)
+                response.raise_for_status()
+                release_info = response.json()
+            else:
+                releases_url = f"https://api.github.com/repos/{repo_owner}/{repo_name}/releases"
+                response = requests.get(releases_url, headers=headers)
+                response.raise_for_status()
+                releases = response.json()
+                release_info = None
+                for release in releases:
+                    if release.get("name") == release_name:
+                        release_info = release
+                if release_info is None:
+                    raise ValueError(f"Release '{release_name}' not found")
+            assets = release_info.get("assets", [])
+            if asset_name is not None:
+                asset = next((a for a in assets if a["name"] == asset_name), None)
+                if asset is None:
+                    raise Exception(f"Asset '{asset_name}' not found in release {release}")
+            else:
+                if len(assets) == 1:
+                    asset = assets[0]
+                else:
+                    raise Exception("Please specify asset_name")
+            asset_url = asset["url"]
+
+        asset_headers = {"Accept": "application/octet-stream"}
+        if token is not None:
+            asset_headers["Authorization"] = f"token {token}"
+        asset_response = requests.get(asset_url, headers=asset_headers, stream=True)
+        asset_response.raise_for_status()
+        file_size = int(asset_response.headers.get("Content-Length", 0))
+        if file_size == 0:
+            file_size = asset.get("size", 0)
+        pbar_kwargs = flat_merge_dicts(
+            dict(
+                bar_id=get_caller_qualname(),
+                unit="iB",
+                unit_scale=True,
+                desc=f"Downloading {asset_name}",
+            ),
+            pbar_kwargs,
+        )
+
+        if cache:
+            check_mkdir(release_dir, **cache_mkdir_kwargs)
+            cache_file = release_dir / asset_name
+            with open(cache_file, "wb") as f:
+                with ProgressBar(total=file_size, show_progress=show_progress, **pbar_kwargs) as pbar:
+                    for chunk in asset_response.iter_content(chunk_size=chunk_size):
+                        if chunk:
+                            f.write(chunk)
+                            pbar.update(len(chunk))
+            return cls.from_json_file(cache_file, **kwargs)
+        else:
+            with io.BytesIO() as bytes_io:
+                with ProgressBar(total=file_size, show_progress=show_progress, **pbar_kwargs) as pbar:
+                    for chunk in asset_response.iter_content(chunk_size=chunk_size):
+                        if chunk:
+                            bytes_io.write(chunk)
+                            pbar.update(len(chunk))
+                bytes_ = bytes_io.getvalue()
+            compression = suggest_compression(asset_name)
+            if compression is not None and "compression" not in kwargs:
+                kwargs["compression"] = compression
+            return cls.from_json_bytes(bytes_, **kwargs)

@@ -437,6 +437,38 @@ def get_refname(
     return refname
 
 
+def prepare_refname(
+    obj: tp.Any,
+    module: tp.Union[None, str, ModuleType] = None,
+    resolve: bool = True,
+    vbt_only: bool = False,
+    return_parts: bool = False,
+) -> tp.Union[str, tp.Tuple[str, ModuleType, str]]:
+    """Prepare (optionally) the module and the qualified name."""
+
+    def _raise():
+        raise ValueError(
+            "Couldn't find the reference name, or the object is external. "
+            "If the object is internal, please decompose the object or provide a string instead."
+        )
+
+    refname = get_refname(obj, module=module, resolve=resolve)
+    if refname is None:
+        _raise()
+    if isinstance(refname, list):
+        raise ValueError("Multiple reference names found: {}".format(refname))
+    module, qualname = get_refname_module_and_qualname(refname)
+    if module.__name__.split(".")[0] != "vectorbtpro" and vbt_only:
+        _raise()
+    if return_parts:
+        return refname, module, qualname
+    if resolve:
+        if qualname is None:
+            return module.__name__
+        return module.__name__ + "." + qualname
+    return refname
+
+
 def get_imlucky_url(query: str) -> str:
     """Get the "I'm lucky" URL on DuckDuckGo for a query."""
     return "https://duckduckgo.com/?q=!ducky+" + urllib.request.pathname2url(query)
@@ -451,21 +483,16 @@ def get_api_ref(
     obj: tp.Any,
     module: tp.Union[None, str, ModuleType] = None,
     resolve: bool = True,
+    vbt_only: bool = False,
 ) -> str:
     """Get the API reference to an object."""
-
-    def _raise():
-        raise ValueError(
-            "Couldn't find the reference name, or the object is external. "
-            "If the object is internal, please decompose the object or provide a string instead."
-        )
-
-    refname = get_refname(obj, module=module, resolve=resolve)
-    if refname is None:
-        _raise()
-    if isinstance(refname, list):
-        raise ValueError("Multiple reference names found: {}".format(refname))
-    module, qualname = get_refname_module_and_qualname(refname)
+    refname, module, qualname = prepare_refname(
+        obj,
+        module=module,
+        resolve=resolve,
+        vbt_only=vbt_only,
+        return_parts=True,
+    )
     if module.__name__.split(".")[0] == "vectorbtpro":
         api_url = "https://github.com/polakowo/vectorbt.pro/blob/pvt-links/api/"
         md_url = api_url + module.__name__ + ".md/"

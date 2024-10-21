@@ -186,8 +186,22 @@ opt_dep_config = HybridConfig(
         nestedtext=dict(
             link="https://pypi.org/project/nestedtext/",
         ),
+        yaml=dict(
+            dist_name="PyYAML",
+            link="https://pypi.org/project/PyYAML/",
+        ),
+        ruamel=dict(
+            dist_name="ruamel.yaml",
+            link="https://pypi.org/project/ruamel.yaml/",
+        ),
         toml=dict(
             link="https://pypi.org/project/toml/",
+        ),
+        markdown=dict(
+            link="https://pypi.org/project/markdown/",
+        ),
+        pygments=dict(
+            link="https://pypi.org/project/Pygments/",
         ),
     )
 )

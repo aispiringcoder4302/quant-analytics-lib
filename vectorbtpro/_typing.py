@@ -41,7 +41,9 @@ if TYPE_CHECKING:
     from vectorbtpro.utils.datetime_ import DTC, DTCNT
     from vectorbtpro.utils.selection import PosSel, LabelSel
     from vectorbtpro.utils.merging import MergeFunc
-    from vectorbtpro.utils.knowledge import AssetFunc
+    from vectorbtpro.utils.knowledge.base_asset_funcs import AssetFunc
+    from vectorbtpro.utils.knowledge.asset_pipelines import AssetPipeline
+    from vectorbtpro.utils.knowledge.base_assets import KnowledgeAsset
     from vectorbtpro.base.indexing import hslice
     from vectorbtpro.base.grouping.base import Grouper
     from vectorbtpro.base.resampling.base import Resampler
@@ -64,6 +66,8 @@ else:
     LabelSel = "LabelSel"
     MergeFunc = "MergeFunc"
     AssetFunc = "AssetFunc"
+    AssetPipeline = "AssetPipeline"
+    KnowledgeAsset = "KnowledgeAsset"
     hslice = "hslice"
     Grouper = "Grouper"
     Resampler = "Resampler"
@@ -88,6 +92,7 @@ IntStr = Union[Int, str]
 # Basic sequences
 MaybeTuple = Union[T, Tuple[T, ...]]
 MaybeList = Union[T, List[T]]
+MaybeSet = Union[T, Set[T]]
 TupleList = Union[List[T], Tuple[T, ...]]
 MaybeTupleList = Union[T, List[T], Tuple[T, ...]]
 MaybeIterable = Union[T, Iterable[T]]
