@@ -17,10 +17,10 @@ from vectorbtpro.utils.pickling import suggest_compression, decompress, load_byt
 from vectorbtpro.utils.path_ import check_mkdir, dir_tree_from_paths, remove_dir
 from vectorbtpro.utils.pbar import ProgressBar
 from vectorbtpro.utils.template import CustomTemplate, RepEval, RepFunc
-from vectorbtpro.utils.config import merge_dicts, flat_merge_dicts
+from vectorbtpro.utils.config import flat_merge_dicts, deep_merge_dicts
 from vectorbtpro.utils.parsing import get_func_arg_names
 from vectorbtpro.utils.execution import Task, execute, NoResult
-from vectorbtpro.utils.module_ import parse_refname, get_caller_qualname
+from vectorbtpro.utils.module_ import get_caller_qualname
 
 __all__ = [
     "KnowledgeAsset",
@@ -243,11 +243,18 @@ class KnowledgeAsset(Configured, MutableSequence):
                 raise ValueError("No more positional arguments can be applied to AssetPipeline")
             if len(kwargs) > 0:
                 raise ValueError("No more keyword arguments can be applied to AssetPipeline")
-        execute_kwargs = merge_dicts(
+        prefix = get_caller_qualname().split(".")[-1]
+        if "_short_name" in asset_func_meta:
+            prefix += f"[{asset_func_meta['_short_name']}]"
+        else:
+            prefix += f"[{func.__name__}]"
+        execute_kwargs = deep_merge_dicts(
             dict(
+                show_progress=False if self.single_item else None,
                 pbar_kwargs=dict(
-                    bar_id=parse_refname(func),
-                ),
+                    bar_id=get_caller_qualname(),
+                    prefix=prefix,
+                )
             ),
             execute_kwargs,
         )
@@ -1209,10 +1216,7 @@ class KnowledgeAsset(Configured, MutableSequence):
         """
         show_progress = self.resolve_setting(show_progress, "show_progress")
         pbar_kwargs = self.resolve_setting(pbar_kwargs, "pbar_kwargs", merge=True)
-        pbar_kwargs = flat_merge_dicts(
-            dict(bar_id=get_caller_qualname()),
-            pbar_kwargs,
-        )
+        prefix = get_caller_qualname().split(".")[-1]
 
         if by_path is not None:
             uniform_groups = self.resolve_setting(uniform_groups, "uniform_groups")
@@ -1245,6 +1249,16 @@ class KnowledgeAsset(Configured, MutableSequence):
                         groups.append([idx])
 
             results = []
+            if show_progress is None:
+                show_progress = len(groups) > 1
+            prefix = f"groupby[{prefix}]"
+            pbar_kwargs = flat_merge_dicts(
+                dict(
+                    bar_id=get_caller_qualname(),
+                    prefix=prefix,
+                ),
+                pbar_kwargs,
+            )
             with ProgressBar(total=len(groups), show_progress=show_progress, **pbar_kwargs) as pbar:
                 for i, group in enumerate(groups):
                     group_instance = self.get_item(group)
@@ -1289,6 +1303,19 @@ class KnowledgeAsset(Configured, MutableSequence):
         else:
             d1 = initializer
             total = len(self.data)
+        if show_progress is None:
+            show_progress = total > 1
+        if "_short_name" in asset_func_meta:
+            prefix += f"[{asset_func_meta['_short_name']}]"
+        else:
+            prefix += f"[{func.__name__}]"
+        pbar_kwargs = flat_merge_dicts(
+            dict(
+                bar_id=get_caller_qualname(),
+                prefix=prefix,
+            ),
+            pbar_kwargs,
+        )
         with ProgressBar(total=total, show_progress=show_progress, **pbar_kwargs) as pbar:
             for i, d2 in enumerate(it):
                 if isinstance(func, CustomTemplate):
@@ -1830,12 +1857,14 @@ class ReleaseAsset(KnowledgeAsset):
         file_size = int(asset_response.headers.get("Content-Length", 0))
         if file_size == 0:
             file_size = asset.get("size", 0)
+        if show_progress is None:
+            show_progress = True
         pbar_kwargs = flat_merge_dicts(
             dict(
                 bar_id=get_caller_qualname(),
                 unit="iB",
                 unit_scale=True,
-                desc=f"Downloading {asset_name}",
+                prefix=f"Downloading {asset_name}",
             ),
             pbar_kwargs,
         )

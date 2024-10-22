@@ -377,8 +377,6 @@ class RenameAssetFunc(MoveAssetFunc):
 
     _short_name: tp.ClassVar[tp.Optional[str]] = "rename"
 
-    _wrap: tp.ClassVar[tp.Optional[str]] = True
-
     @classmethod
     def prepare(
         cls,
@@ -892,8 +890,6 @@ class FindReplaceAssetFunc(FindAssetFunc):
 
     _short_name: tp.ClassVar[tp.Optional[str]] = "find_replace"
 
-    _wrap: tp.ClassVar[tp.Optional[str]] = True
-
     @classmethod
     def prepare(
         cls,
@@ -1103,8 +1099,6 @@ class FindRemoveAssetFunc(FindAssetFunc):
     """Asset function class for `vectorbtpro.utils.knowledge.base_assets.KnowledgeAsset.find_remove`."""
 
     _short_name: tp.ClassVar[tp.Optional[str]] = "find_remove"
-
-    _wrap: tp.ClassVar[tp.Optional[str]] = True
 
     @classmethod
     def prepare(

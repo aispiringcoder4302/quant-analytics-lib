@@ -47,6 +47,8 @@ class ProgressBar:
         disable: tp.Optional[bool] = None,
         show_progress: tp.Optional[bool] = None,
         show_progress_desc: tp.Optional[bool] = None,
+        prefix: tp.Union[None, str, dict] = None,
+        postfix: tp.Union[None, str, dict] = None,
         desc_kwargs: tp.KwargsLike = None,
         registry: tp.Optional[PBarRegistry] = pbar_reg,
         silence_warnings: tp.Optional[bool] = None,
@@ -92,6 +94,10 @@ class ProgressBar:
             show_progress_desc = False
         if show_progress_desc is None:
             show_progress_desc = True
+        if prefix is not None:
+            kwargs["desc"] = self.prepare_desc(prefix)
+        if postfix is not None:
+            kwargs["postfix"] = self.prepare_desc(postfix)
         desc_kwargs = merge_dicts(pbar_cfg["desc_kwargs"], desc_kwargs)
         if pbar_cfg["disable_registry"] or pbar_cfg["disable_machinery"]:
             registry = None
@@ -363,7 +369,14 @@ class ProgressBar:
         if self.disabled:
             return
 
-    def prepare_desc(self, desc: tp.Union[None, str, dict]) -> str:
+    @classmethod
+    def format_num(cls, n: float) -> str:
+        f = '{0:.3g}'.format(n).replace('+0', '+').replace('-0', '-')
+        n = str(n)
+        return f if len(f) < len(n) else n
+
+    @classmethod
+    def prepare_desc(cls, desc: tp.Union[None, str, dict]) -> str:
         """Prepare description."""
         if desc is None or desc is MISSING:
             return ""
@@ -378,7 +391,7 @@ class ProgressBar:
                         new_desc.append(k)
                 else:
                     if isinstance(v, Number):
-                        v = self.bar.format_num(v)
+                        v = cls.format_num(v)
                     if not isinstance(v, str):
                         v = str(v)
                     v = v.strip()
