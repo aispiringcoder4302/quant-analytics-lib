@@ -520,20 +520,20 @@ def is_valid_variable_name(arg: str) -> bool:
     return arg.isidentifier() and not iskeyword(arg)
 
 
-def is_notebook() -> bool:
-    """Check whether the code runs in a notebook.
-
-    Credit: https://stackoverflow.com/a/39662359"""
+def in_notebook() -> bool:
+    """Check whether the code runs in a notebook."""
     try:
-        shell = get_ipython().__class__.__name__
-        if shell == "ZMQInteractiveShell":
-            return True
-        elif shell == "TerminalInteractiveShell":
+        from IPython import get_ipython
+
+        if get_ipython() is None:
             return False
-        else:
+        if "IPKernelApp" not in get_ipython().config:
             return False
-    except NameError:
+    except ImportError:
         return False
+    except AttributeError:
+        return False
+    return True
 
 
 # ############# Asserts ############# #

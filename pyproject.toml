@@ -144,14 +144,15 @@ io = [
     "vectorbtpro[io-base]",
     "lz4"
 ]
-other-base = [
+knwl-base = [
     "tabulate",
     "ruamel.yaml",
     "markdown",
     "Pygments",
+    "llama_index"
 ]
-other = [
-    "vectorbtpro[other-base]",
+knwl = [
+    "vectorbtpro[knwl-base]",
     "PyGithub>=1.59.0",
     "jmespath",
     "jsonpath-ng",
@@ -162,13 +163,13 @@ other = [
     "PyYAML"
 ]
 base = [
-    "vectorbtpro[data-base,ind-base,perf-base,opt-base,exec-base,plot-base,pfopt-base,stats-base,io-base]"
+    "vectorbtpro[data-base,ind-base,perf-base,opt-base,exec-base,plot-base,pfopt-base,stats-base,io-base,knwl-base]"
 ]
 base-no-talib = [
-    "vectorbtpro[data-base,perf-base,opt-base,exec-base,plot-base,pfopt-base,stats-base,io-base]"
+    "vectorbtpro[data-base,perf-base,opt-base,exec-base,plot-base,pfopt-base,stats-base,io-base,knwl-base]"
 ]
 all = [
-    "vectorbtpro[data,ind,perf,opt,exec,plot,pfopt,stats,msg,io]"
+    "vectorbtpro[data,ind,perf,opt,exec,plot,pfopt,stats,msg,io,knwl]"
 ]
 
 [tool.setuptools]

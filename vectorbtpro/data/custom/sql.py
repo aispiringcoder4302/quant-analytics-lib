@@ -187,7 +187,7 @@ class SQLData(DBData):
             should_dispose = True
         else:
             if has_engine_config:
-                raise ValueError("Cannot apply engine_config on already created engine")
+                raise ValueError("Cannot apply engine_config to initialized created engine")
             should_dispose = False
         if return_meta:
             return dict(

@@ -203,6 +203,17 @@ opt_dep_config = HybridConfig(
         pygments=dict(
             link="https://pypi.org/project/Pygments/",
         ),
+        IPython=dict(
+            dist_name="ipython",
+            link="https://pypi.org/project/ipython/",
+        ),
+        llama_index=dict(
+            link="https://pypi.org/project/llama_index/",
+        ),
+        pymdownx=dict(
+            dist_name="pymdown-extensions",
+            link="https://pypi.org/project/pymdown-extensions/",
+        ),
     )
 )
 """_"""

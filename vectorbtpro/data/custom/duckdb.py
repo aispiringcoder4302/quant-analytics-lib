@@ -129,7 +129,7 @@ class DuckDBData(DBData):
                 connection = connect(str(connection), read_only=read_only, config=connection_config)
             should_close = True
         elif has_connection_config:
-            raise ValueError("Cannot apply connection_config on already created connection")
+            raise ValueError("Cannot apply connection_config to already initialized connection")
 
         if return_meta:
             connection_meta["connection"] = connection

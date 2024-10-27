@@ -26,7 +26,7 @@ class ToMarkdownAssetFunc(AssetFunc):
         clear_metadata_kwargs: tp.KwargsLike = None,
         dump_metadata_kwargs: tp.KwargsLike = None,
         asset: tp.Optional[tp.MaybeType[tp.KnowledgeAsset]] = None,
-        **kwargs,
+        **to_markdown_kwargs,
     ) -> tp.ArgsKwargs:
         from vectorbtpro.utils.knowledge.base_asset_funcs import FindRemoveAssetFunc, DumpAssetFunc
 
@@ -38,6 +38,7 @@ class ToMarkdownAssetFunc(AssetFunc):
         clear_metadata = asset.resolve_setting(clear_metadata, "clear_metadata")
         clear_metadata_kwargs = asset.resolve_setting(clear_metadata_kwargs, "clear_metadata_kwargs", merge=True)
         dump_metadata_kwargs = asset.resolve_setting(dump_metadata_kwargs, "dump_metadata_kwargs", merge=True)
+        to_markdown_kwargs = asset.resolve_setting(to_markdown_kwargs, "to_markdown_kwargs", merge=True)
 
         clear_metadata_kwargs = flat_merge_dicts(dict(target=FindRemoveAssetFunc.is_empty_func), clear_metadata_kwargs)
         _, clear_metadata_kwargs = FindRemoveAssetFunc.prepare(**clear_metadata_kwargs)
@@ -49,27 +50,45 @@ class ToMarkdownAssetFunc(AssetFunc):
                 clear_metadata_kwargs=clear_metadata_kwargs,
                 dump_metadata_kwargs=dump_metadata_kwargs,
             ),
-            **kwargs,
+            **to_markdown_kwargs,
         }
 
     @classmethod
-    def preprocess_markdown(cls, markdown: str) -> str:
-        """Preprocess Markdown."""
+    def to_markdown(cls, text: str, remove_code_title: bool = True, even_indentation: bool = True) -> str:
+        """Convert text to Markdown.
 
-        def _replace_code_block(match):
-            language = match.group(1)
-            title = match.group(2)
-            code = match.group(3)
-            if title:
-                title_md = f"**{title}**\n\n"
-            else:
-                title_md = ""
-            code_md = f"```{language}\n{code}\n```"
-            return title_md + code_md
+        If `remove_code_title` is True, removes `title` attribute from a code block and puts it above it.
 
-        code_block_pattern = re.compile(r'```(\w+)\s+title="([^"]*)"\s*\n(.*?)\n```', re.DOTALL)
-        markdown = code_block_pattern.sub(_replace_code_block, markdown)
-        return markdown.strip()
+        If `even_indentation` is True, makes leading spaces even. For example, 3 leading spaces become 4."""
+
+        markdown = text
+        if remove_code_title:
+
+            def _replace_code_block(match):
+                language = match.group(1)
+                title = match.group(2)
+                code = match.group(3)
+                if title:
+                    title_md = f"**{title}**\n\n"
+                else:
+                    title_md = ""
+                code_md = f"```{language}\n{code}\n```"
+                return title_md + code_md
+
+            code_block_pattern = re.compile(r'```(\w+)\s+title="([^"]*)"\s*\n(.*?)\n```', re.DOTALL)
+            markdown = code_block_pattern.sub(_replace_code_block, markdown)
+
+        if even_indentation:
+            leading_spaces_pattern = re.compile(r"^( +)(?=\S|$|\n)")
+            fixed_lines = []
+            for line in markdown.splitlines(keepends=True):
+                match = leading_spaces_pattern.match(line)
+                if match and len(match.group(0)) % 2 != 0:
+                    line = " " + line
+                fixed_lines.append(line)
+            markdown = "".join(fixed_lines)
+
+        return markdown
 
     @classmethod
     def get_markdown_metadata(
@@ -80,6 +99,7 @@ class ToMarkdownAssetFunc(AssetFunc):
         clear_metadata: bool = True,
         clear_metadata_kwargs: tp.KwargsLike = None,
         dump_metadata_kwargs: tp.KwargsLike = None,
+        **kwargs,
     ) -> str:
         """Get metadata in Markdown format."""
         from vectorbtpro.utils.knowledge.base_asset_funcs import FindRemoveAssetFunc, DumpAssetFunc
@@ -99,18 +119,15 @@ class ToMarkdownAssetFunc(AssetFunc):
             if not metadata:
                 metadata = None
             metadata = {root_metadata_key: metadata}
-        markdown = DumpAssetFunc.call(metadata, **dump_metadata_kwargs)
-        markdown = cls.preprocess_markdown(markdown)
-        return markdown
+        text = DumpAssetFunc.call(metadata, **dump_metadata_kwargs)
+        return cls.to_markdown(text, **kwargs)
 
     @classmethod
-    def get_markdown_content(cls, d: dict) -> str:
+    def get_markdown_content(cls, d: dict, **kwargs) -> str:
         """Get content in Markdown format."""
         if d["content"] is None:
             return ""
-        markdown = d["content"]
-        markdown = cls.preprocess_markdown(markdown)
-        return markdown
+        return cls.to_markdown(d["content"], **kwargs)
 
     @classmethod
     def call(
@@ -120,6 +137,7 @@ class ToMarkdownAssetFunc(AssetFunc):
         clear_metadata: bool = True,
         clear_metadata_kwargs: tp.KwargsLike = None,
         dump_metadata_kwargs: tp.KwargsLike = None,
+        **to_markdown_kwargs,
     ) -> tp.Any:
         if not isinstance(d, dict):
             raise TypeError("Data item must be a dict")
@@ -129,10 +147,11 @@ class ToMarkdownAssetFunc(AssetFunc):
             clear_metadata=clear_metadata,
             clear_metadata_kwargs=clear_metadata_kwargs,
             dump_metadata_kwargs=dump_metadata_kwargs,
+            **to_markdown_kwargs,
         )
         if markdown_metadata:
             markdown_metadata = "---\n" + markdown_metadata + "\n---"
-        markdown_content = cls.get_markdown_content(d)
+        markdown_content = cls.get_markdown_content(d, **to_markdown_kwargs)
         if markdown_metadata and markdown_content:
             markdown_content = markdown_metadata + "\n\n" + markdown_content
         elif markdown_metadata:
@@ -152,12 +171,10 @@ class ToHTMLAssetFunc(ToMarkdownAssetFunc):
         clear_metadata: tp.Optional[bool] = None,
         clear_metadata_kwargs: tp.KwargsLike = None,
         dump_metadata_kwargs: tp.KwargsLike = None,
-        html_kwargs: tp.KwargsLike = None,
-        use_pygments: tp.Optional[bool] = None,
-        formatter_kwargs: tp.KwargsLike = None,
-        css_style: tp.Optional[str] = None,
+        to_markdown_kwargs: tp.KwargsLike = None,
+        format_html_kwargs: tp.KwargsLike = None,
         asset: tp.Optional[tp.MaybeType[tp.KnowledgeAsset]] = None,
-        **kwargs,
+        **to_html_kwargs,
     ) -> tp.ArgsKwargs:
         from vectorbtpro.utils.knowledge.base_asset_funcs import FindRemoveAssetFunc, DumpAssetFunc
 
@@ -169,10 +186,9 @@ class ToHTMLAssetFunc(ToMarkdownAssetFunc):
         clear_metadata = asset.resolve_setting(clear_metadata, "clear_metadata")
         clear_metadata_kwargs = asset.resolve_setting(clear_metadata_kwargs, "clear_metadata_kwargs", merge=True)
         dump_metadata_kwargs = asset.resolve_setting(dump_metadata_kwargs, "dump_metadata_kwargs", merge=True)
-        html_kwargs = asset.resolve_setting(html_kwargs, "html_kwargs", merge=True)
-        use_pygments = asset.resolve_setting(use_pygments, "use_pygments")
-        formatter_kwargs = asset.resolve_setting(formatter_kwargs, "formatter_kwargs", merge=True)
-        css_style = asset.resolve_setting(css_style, "css_style")
+        to_markdown_kwargs = asset.resolve_setting(to_markdown_kwargs, "to_markdown_kwargs", merge=True)
+        format_html_kwargs = asset.resolve_setting(format_html_kwargs, "format_html_kwargs", merge=True)
+        to_html_kwargs = asset.resolve_setting(to_html_kwargs, "to_html_kwargs", merge=True)
 
         clear_metadata_kwargs = flat_merge_dicts(dict(target=FindRemoveAssetFunc.is_empty_func), clear_metadata_kwargs)
         _, clear_metadata_kwargs = FindRemoveAssetFunc.prepare(**clear_metadata_kwargs)
@@ -183,40 +199,77 @@ class ToHTMLAssetFunc(ToMarkdownAssetFunc):
                 clear_metadata=clear_metadata,
                 clear_metadata_kwargs=clear_metadata_kwargs,
                 dump_metadata_kwargs=dump_metadata_kwargs,
-                html_kwargs=html_kwargs,
-                use_pygments=use_pygments,
-                formatter_kwargs=formatter_kwargs,
-                css_style=css_style,
+                to_markdown_kwargs=to_markdown_kwargs,
+                format_html_kwargs=format_html_kwargs,
             ),
-            **kwargs,
+            **to_html_kwargs,
         }
 
     @classmethod
-    def preprocess_html(cls, html: str, clickable_links: bool = True) -> str:
-        """Preprocess HTML."""
-        if clickable_links:
-            tag_pattern = re.compile(
-                r'<(p|span)(\s[^>]*)?>(.*?)</\1>',
-                re.DOTALL | re.IGNORECASE
-            )
-            url_pattern = re.compile(
-                r'(https?://[^\s<>"\'`]+?)(?=[.,;:!?)\]]*(?:\s|$))',
-                re.IGNORECASE
-            )
+    def resolve_extensions(cls, extensions: tp.List[str]) -> tp.List[str]:
+        """Resolve markdown extensions.
 
-            def _replace_urls(match):
-                tag = match.group(1)
-                attributes = match.group(2) if match.group(2) else ""
-                content = match.group(3)
-                parts = re.split(r'(<a\b[^>]*>.*?</a>)', content, flags=re.DOTALL | re.IGNORECASE)
-                for i, part in enumerate(parts):
-                    if not re.match(r'<a\b[^>]*>.*?</a>', part, re.DOTALL | re.IGNORECASE):
-                        part = url_pattern.sub(r'<a href="\1">\1</a>', part)
-                        parts[i] = part
-                new_content = ''.join(parts)
-                return f'<{tag}{attributes}>{new_content}</{tag}>'
+        Uses `pymdownx` extensions over native extensions if installed."""
+        from vectorbtpro.utils.module_ import check_installed
 
-            html = tag_pattern.sub(_replace_urls, html)
+        filtered_extensions = [ext for ext in extensions if "." not in ext or check_installed(ext.partition(".")[0])]
+        ext_set = set(filtered_extensions)
+        remove_fenced_code = "fenced_code" in ext_set and "pymdownx.superfences" in ext_set
+        remove_codehilite = "codehilite" in ext_set and "pymdownx.highlight" in ext_set
+        if remove_fenced_code or remove_codehilite:
+            filtered_extensions = [
+                ext
+                for ext in filtered_extensions
+                if not ((ext == "fenced_code" and remove_fenced_code) or (ext == "codehilite" and remove_codehilite))
+            ]
+        return filtered_extensions
+
+    @classmethod
+    def make_links(cls, html: str) -> str:
+        """Detect raw URLs in HTML text (p and span elements only) and convert them to links."""
+        tag_pattern = re.compile(r"<(p|span)(\s[^>]*)?>(.*?)</\1>", re.DOTALL | re.IGNORECASE)
+        url_pattern = re.compile(r'(https?://[^\s<>"\'`]+?)(?=[.,;:!?)\]]*(?:\s|$))', re.IGNORECASE)
+
+        def _replace_urls(match, _url_pattern=url_pattern):
+            tag = match.group(1)
+            attributes = match.group(2) if match.group(2) else ""
+            content = match.group(3)
+            parts = re.split(r"(<a\b[^>]*>.*?</a>)", content, flags=re.DOTALL | re.IGNORECASE)
+            for i, part in enumerate(parts):
+                if not re.match(r"<a\b[^>]*>.*?</a>", part, re.DOTALL | re.IGNORECASE):
+                    part = _url_pattern.sub(r'<a href="\1">\1</a>', part)
+                    parts[i] = part
+            new_content = "".join(parts)
+            return f"<{tag}{attributes}>{new_content}</{tag}>"
+
+        return tag_pattern.sub(_replace_urls, html)
+
+    @classmethod
+    def to_html(
+        cls,
+        markdown: str,
+        resolve_extensions: bool = True,
+        make_links: bool = True,
+        **kwargs,
+    ) -> str:
+        """Convert Markdown to HTML.
+
+        If `resolve_extensions` is True, uses `ToHTMLAssetFunc.resolve_extensions`.
+
+        If `make_links` is True, uses `ToHTMLAssetFunc.make_make_links`.
+
+        Keyword arguments are passed to `markdown.markdown`."""
+        from vectorbtpro.utils.module_ import assert_can_import
+
+        assert_can_import("markdown")
+        import markdown as md
+
+        extensions = kwargs.pop("extensions", [])
+        if resolve_extensions:
+            extensions = cls.resolve_extensions(extensions)
+        html = md.markdown(markdown, extensions=extensions, **kwargs)
+        if make_links:
+            html = cls.make_links(html)
         return html.strip()
 
     @classmethod
@@ -228,15 +281,12 @@ class ToHTMLAssetFunc(ToMarkdownAssetFunc):
         clear_metadata: bool = True,
         clear_metadata_kwargs: tp.KwargsLike = None,
         dump_metadata_kwargs: tp.KwargsLike = None,
-        clickable_links: bool = True,
-        **markdown_kwargs,
+        to_markdown_kwargs: tp.KwargsLike = None,
+        **kwargs,
     ) -> str:
         """Get metadata in HTML format."""
-        from vectorbtpro.utils.module_ import assert_can_import
-
-        assert_can_import("markdown")
-        import markdown
-
+        if to_markdown_kwargs is None:
+            to_markdown_kwargs = {}
         metadata = cls.get_markdown_metadata(
             d,
             root_metadata_key=root_metadata_key,
@@ -244,34 +294,40 @@ class ToHTMLAssetFunc(ToMarkdownAssetFunc):
             clear_metadata=clear_metadata,
             clear_metadata_kwargs=clear_metadata_kwargs,
             dump_metadata_kwargs=dump_metadata_kwargs,
+            **to_markdown_kwargs,
         )
         metadata = "```yaml\n" + metadata + "\n```"
-        html = markdown.markdown(metadata, **markdown_kwargs)
-        return cls.preprocess_html(html, clickable_links=clickable_links)
+        return cls.to_html(metadata, **kwargs)
 
     @classmethod
-    def get_html_content(cls, d: dict, clickable_links: bool = True, **markdown_kwargs) -> str:
+    def get_html_content(cls, d: dict, to_markdown_kwargs: tp.KwargsLike = None, **kwargs) -> str:
         """Get content in HTML format."""
-        from vectorbtpro.utils.module_ import assert_can_import
-
-        assert_can_import("markdown")
-        import markdown
-
-        content = cls.get_markdown_content(d)
-        html = markdown.markdown(content, **markdown_kwargs)
-        return cls.preprocess_html(html, clickable_links=clickable_links)
+        if to_markdown_kwargs is None:
+            to_markdown_kwargs = {}
+        content = cls.get_markdown_content(d, **to_markdown_kwargs)
+        return cls.to_html(content, **kwargs)
 
     @classmethod
-    def format_html_template(
+    def format_html(
         cls,
         title: tp.Optional[str] = None,
         html_metadata: tp.Optional[str] = None,
         html_content: tp.Optional[str] = None,
         use_pygments: tp.Optional[bool] = None,
         formatter_kwargs: tp.KwargsLike = None,
-        css_style: tp.Optional[str] = None,
+        extra_css: tp.Optional[tp.MaybeList[str]] = None,
+        head_extras: tp.Optional[tp.MaybeList[str]] = None,
+        scripts: tp.Optional[tp.MaybeList[str]] = None,
     ) -> str:
-        """Format HTML template."""
+        """Format HTML template.
+
+        If `use_pygments` is True, uses Pygments package for code highlighting. Arguments in
+        `formatter_kwargs` are then passed to `pygments.formatters.HtmlFormatter.
+
+        Use `extra_css` to inject additional CSS rules outside the predefined ones.
+        Use `head_extras` to inject additional HTML elements into the <head> section, such as meta tags,
+        links to external stylesheets, or scripts. Use `scripts` to inject JavaScript files or inline
+        scripts at the end of the <body>. All of these arguments can be lists."""
         from vectorbtpro.utils.module_ import check_installed, assert_can_import
 
         if title is None:
@@ -280,8 +336,27 @@ class ToHTMLAssetFunc(ToMarkdownAssetFunc):
             html_metadata = ""
         if html_content is None:
             html_content = ""
-        if css_style is None:
-            css_style = ""
+        if extra_css is None:
+            extra_css = []
+        if isinstance(extra_css, str):
+            extra_css = [extra_css]
+        if not isinstance(extra_css, list):
+            extra_css = list(extra_css)
+        extra_css = "\n".join(extra_css)
+        if head_extras is None:
+            head_extras = []
+        if isinstance(head_extras, str):
+            head_extras = [head_extras]
+        if not isinstance(head_extras, list):
+            head_extras = list(head_extras)
+        head_extras = "\n".join(head_extras)
+        if scripts is None:
+            scripts = []
+        if isinstance(scripts, str):
+            scripts = [scripts]
+        if not isinstance(scripts, list):
+            scripts = list(scripts)
+        scripts = "\n".join(scripts)
         if use_pygments is None:
             use_pygments = check_installed("pygments")
         if use_pygments:
@@ -289,15 +364,16 @@ class ToHTMLAssetFunc(ToMarkdownAssetFunc):
             from pygments.formatters import HtmlFormatter
 
             formatter = HtmlFormatter(**formatter_kwargs)
-            more_css_style = formatter.get_style_defs(".codehilite")
-            if css_style == "":
-                css_style = more_css_style
+            highlight_css = formatter.get_style_defs(".highlight")
+            if extra_css == "":
+                extra_css = highlight_css
             else:
-                css_style = more_css_style + "\n" + css_style
+                extra_css = highlight_css + "\n" + extra_css
         return f"""<!DOCTYPE html>
 <html>
 <head>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{title}</title>
     <style>
         body {{
@@ -326,12 +402,46 @@ class ToHTMLAssetFunc(ToMarkdownAssetFunc):
             font-weight: bold;
             margin-bottom: 5px;
         }}
-        {css_style}
+        .admonition.example {{
+            background-color: #e7f5ff;
+            border-left-color: #339af0;
+        }}
+        .admonition.hint {{
+            background-color: #fff4e6;
+            border-left-color: #ffa940;
+        }}
+        .admonition.important {{
+            background-color: #ffe3e3;
+            border-left-color: #ff6b6b;
+        }}
+        .admonition.info {{
+            background-color: #e3f2fd;
+            border-left-color: #42a5f5;
+        }}
+        .admonition.note {{
+            background-color: #e8f5e9;
+            border-left-color: #66bb6a;
+        }}
+        .admonition.question {{
+            background-color: #f3e5f5;
+            border-left-color: #ab47bc;
+        }}
+        .admonition.tip {{
+            background-color: #fffde7;
+            border-left-color: #ffee58;
+        }}
+        .admonition.warning {{
+            background-color: #fff3cd;
+            border-left-color: #ffc107;
+        }}
+        {extra_css}
     </style>
+    {head_extras}
 </head>
 <body>
     {html_metadata}
     {html_content}
+    {scripts}
 </body>
 </html>"""
 
@@ -343,34 +453,32 @@ class ToHTMLAssetFunc(ToMarkdownAssetFunc):
         clear_metadata: bool = True,
         clear_metadata_kwargs: tp.KwargsLike = None,
         dump_metadata_kwargs: tp.KwargsLike = None,
-        html_kwargs: tp.KwargsLike = None,
-        use_pygments: tp.Optional[bool] = None,
-        formatter_kwargs: tp.KwargsLike = None,
-        css_style: tp.Optional[str] = None,
+        to_markdown_kwargs: tp.KwargsLike = None,
+        format_html_kwargs: tp.KwargsLike = None,
+        **to_html_kwargs,
     ) -> tp.Any:
         if not isinstance(d, (dict, list)):
             raise TypeError("Data item must be a dict or a list of dicts")
-        if html_kwargs is None:
-            html_kwargs = {}
         if isinstance(d, list):
             html_metadata = []
             for _d in d:
                 if not isinstance(_d, dict):
                     raise TypeError("Data item must be a dict or a list of dicts")
-                html_metadata.append(cls.get_html_metadata(
-                    _d,
-                    root_metadata_key=root_metadata_key,
-                    clear_metadata=clear_metadata,
-                    clear_metadata_kwargs=clear_metadata_kwargs,
-                    dump_metadata_kwargs=dump_metadata_kwargs,
-                    **html_kwargs,
-                ))
-            html = cls.format_html_template(
+                html_metadata.append(
+                    cls.get_html_metadata(
+                        _d,
+                        root_metadata_key=root_metadata_key,
+                        clear_metadata=clear_metadata,
+                        clear_metadata_kwargs=clear_metadata_kwargs,
+                        dump_metadata_kwargs=dump_metadata_kwargs,
+                        to_markdown_kwargs=to_markdown_kwargs,
+                        **to_html_kwargs,
+                    )
+                )
+            html = cls.format_html(
                 title="/",
                 html_metadata="\n".join(html_metadata),
-                use_pygments=use_pygments,
-                formatter_kwargs=formatter_kwargs,
-                css_style=css_style,
+                **format_html_kwargs,
             )
         else:
             html_metadata = cls.get_html_metadata(
@@ -379,16 +487,19 @@ class ToHTMLAssetFunc(ToMarkdownAssetFunc):
                 clear_metadata=clear_metadata,
                 clear_metadata_kwargs=clear_metadata_kwargs,
                 dump_metadata_kwargs=dump_metadata_kwargs,
-                **html_kwargs,
+                to_markdown_kwargs=to_markdown_kwargs,
+                **to_html_kwargs,
             )
-            html_content = cls.get_html_content(d, **html_kwargs)
-            html = cls.format_html_template(
+            html_content = cls.get_html_content(
+                d,
+                to_markdown_kwargs=to_markdown_kwargs,
+                **to_html_kwargs,
+            )
+            html = cls.format_html(
                 title=d["link"],
                 html_metadata=html_metadata,
                 html_content=html_content,
-                use_pygments=use_pygments,
-                formatter_kwargs=formatter_kwargs,
-                css_style=css_style,
+                **format_html_kwargs,
             )
         return html
 
@@ -407,7 +518,8 @@ class AggMessageAssetFunc(AssetFunc):
         clear_metadata: tp.Optional[bool] = None,
         clear_metadata_kwargs: tp.KwargsLike = None,
         dump_metadata_kwargs: tp.KwargsLike = None,
-        html_kwargs: tp.KwargsLike = None,
+        to_markdown_kwargs: tp.KwargsLike = None,
+        to_html_kwargs: tp.KwargsLike = None,
         asset: tp.Optional[tp.MaybeType[tp.KnowledgeAsset]] = None,
         **kwargs,
     ) -> tp.ArgsKwargs:
@@ -421,7 +533,7 @@ class AggMessageAssetFunc(AssetFunc):
         clear_metadata = asset.resolve_setting(clear_metadata, "clear_metadata")
         clear_metadata_kwargs = asset.resolve_setting(clear_metadata_kwargs, "clear_metadata_kwargs", merge=True)
         dump_metadata_kwargs = asset.resolve_setting(dump_metadata_kwargs, "dump_metadata_kwargs", merge=True)
-        html_kwargs = asset.resolve_setting(html_kwargs, "html_kwargs", merge=True)
+        to_html_kwargs = asset.resolve_setting(to_html_kwargs, "to_html_kwargs", merge=True)
 
         clear_metadata_kwargs = flat_merge_dicts(dict(target=FindRemoveAssetFunc.is_empty_func), clear_metadata_kwargs)
         _, clear_metadata_kwargs = FindRemoveAssetFunc.prepare(**clear_metadata_kwargs)
@@ -432,7 +544,7 @@ class AggMessageAssetFunc(AssetFunc):
                 clear_metadata=clear_metadata,
                 clear_metadata_kwargs=clear_metadata_kwargs,
                 dump_metadata_kwargs=dump_metadata_kwargs,
-                html_kwargs=html_kwargs,
+                to_html_kwargs=to_html_kwargs,
             ),
             **kwargs,
         }
@@ -445,7 +557,8 @@ class AggMessageAssetFunc(AssetFunc):
         clear_metadata: bool = True,
         clear_metadata_kwargs: tp.KwargsLike = None,
         dump_metadata_kwargs: tp.KwargsLike = None,
-        html_kwargs: tp.KwargsLike = None,
+        to_markdown_kwargs: tp.KwargsLike = None,
+        to_html_kwargs: tp.KwargsLike = None,
         link_map: tp.Optional[tp.Dict[str, dict]] = None,
     ) -> tp.Any:
         if not isinstance(d, dict):
@@ -454,8 +567,8 @@ class AggMessageAssetFunc(AssetFunc):
             clear_metadata_kwargs = {}
         if dump_metadata_kwargs is None:
             dump_metadata_kwargs = {}
-        if html_kwargs is None:
-            html_kwargs = {}
+        if to_html_kwargs is None:
+            to_html_kwargs = {}
 
         new_d = dict(d)
         new_d["content"] = new_d["content"].strip()
@@ -472,6 +585,7 @@ class AggMessageAssetFunc(AssetFunc):
                     clear_metadata=clear_metadata,
                     clear_metadata_kwargs=clear_metadata_kwargs,
                     dump_metadata_kwargs=dump_metadata_kwargs,
+                    **to_markdown_kwargs,
                 )
                 new_d["content"] += "---\n" + metadata + "\n---"
             elif metadata_format.lower() == "html":
@@ -482,7 +596,8 @@ class AggMessageAssetFunc(AssetFunc):
                     clear_metadata=clear_metadata,
                     clear_metadata_kwargs=clear_metadata_kwargs,
                     dump_metadata_kwargs=dump_metadata_kwargs,
-                    **html_kwargs,
+                    to_markdown_kwargs=to_markdown_kwargs,
+                    **to_html_kwargs,
                 )
                 new_d["content"] += metadata
             else:
@@ -508,7 +623,8 @@ class AggBlockAssetFunc(AssetFunc):
         clear_metadata: tp.Optional[bool] = None,
         clear_metadata_kwargs: tp.KwargsLike = None,
         dump_metadata_kwargs: tp.KwargsLike = None,
-        html_kwargs: tp.KwargsLike = None,
+        to_markdown_kwargs: tp.KwargsLike = None,
+        to_html_kwargs: tp.KwargsLike = None,
         link_map: tp.Optional[tp.Dict[str, dict]] = None,
         asset: tp.Optional[tp.MaybeType[tp.KnowledgeAsset]] = None,
         **kwargs,
@@ -525,7 +641,7 @@ class AggBlockAssetFunc(AssetFunc):
         clear_metadata = asset.resolve_setting(clear_metadata, "clear_metadata")
         clear_metadata_kwargs = asset.resolve_setting(clear_metadata_kwargs, "clear_metadata_kwargs", merge=True)
         dump_metadata_kwargs = asset.resolve_setting(dump_metadata_kwargs, "dump_metadata_kwargs", merge=True)
-        html_kwargs = asset.resolve_setting(html_kwargs, "html_kwargs", merge=True)
+        to_html_kwargs = asset.resolve_setting(to_html_kwargs, "to_html_kwargs", merge=True)
 
         clear_metadata_kwargs = flat_merge_dicts(dict(target=FindRemoveAssetFunc.is_empty_func), clear_metadata_kwargs)
         _, clear_metadata_kwargs = FindRemoveAssetFunc.prepare(**clear_metadata_kwargs)
@@ -538,7 +654,7 @@ class AggBlockAssetFunc(AssetFunc):
                 clear_metadata=clear_metadata,
                 clear_metadata_kwargs=clear_metadata_kwargs,
                 dump_metadata_kwargs=dump_metadata_kwargs,
-                html_kwargs=html_kwargs,
+                to_html_kwargs=to_html_kwargs,
                 link_map=link_map,
             ),
             **kwargs,
@@ -554,7 +670,8 @@ class AggBlockAssetFunc(AssetFunc):
         clear_metadata: bool = True,
         clear_metadata_kwargs: tp.KwargsLike = None,
         dump_metadata_kwargs: tp.KwargsLike = None,
-        html_kwargs: tp.KwargsLike = None,
+        to_markdown_kwargs: tp.KwargsLike = None,
+        to_html_kwargs: tp.KwargsLike = None,
         link_map: tp.Optional[tp.Dict[str, dict]] = None,
     ) -> tp.Any:
         if not isinstance(d, dict):
@@ -572,8 +689,8 @@ class AggBlockAssetFunc(AssetFunc):
             clear_metadata_kwargs = {}
         if dump_metadata_kwargs is None:
             dump_metadata_kwargs = {}
-        if html_kwargs is None:
-            html_kwargs = {}
+        if to_html_kwargs is None:
+            to_html_kwargs = {}
 
         new_d = {}
         metadata_keys = []
@@ -646,6 +763,7 @@ class AggBlockAssetFunc(AssetFunc):
                         clear_metadata=clear_metadata,
                         clear_metadata_kwargs=clear_metadata_kwargs,
                         dump_metadata_kwargs=dump_metadata_kwargs,
+                        **to_markdown_kwargs,
                     )
                     new_d["content"].append("---\n" + metadata + "\n---")
                 elif metadata_format.lower() == "html":
@@ -656,7 +774,8 @@ class AggBlockAssetFunc(AssetFunc):
                         clear_metadata=clear_metadata,
                         clear_metadata_kwargs=clear_metadata_kwargs,
                         dump_metadata_kwargs=dump_metadata_kwargs,
-                        **html_kwargs,
+                        to_markdown_kwargs=to_markdown_kwargs,
+                        **to_html_kwargs,
                     )
                     new_d["content"].append(metadata)
                 else:
@@ -682,7 +801,8 @@ class AggThreadAssetFunc(AggBlockAssetFunc):
         clear_metadata: bool = True,
         clear_metadata_kwargs: tp.KwargsLike = None,
         dump_metadata_kwargs: tp.KwargsLike = None,
-        html_kwargs: tp.KwargsLike = None,
+        to_markdown_kwargs: tp.KwargsLike = None,
+        to_html_kwargs: tp.KwargsLike = None,
         link_map: tp.Optional[tp.Dict[str, dict]] = None,
     ) -> tp.Any:
         if not isinstance(d, dict):
@@ -700,8 +820,8 @@ class AggThreadAssetFunc(AggBlockAssetFunc):
             clear_metadata_kwargs = {}
         if dump_metadata_kwargs is None:
             dump_metadata_kwargs = {}
-        if html_kwargs is None:
-            html_kwargs = {}
+        if to_html_kwargs is None:
+            to_html_kwargs = {}
 
         new_d = {}
         metadata_keys = []
@@ -747,6 +867,7 @@ class AggThreadAssetFunc(AggBlockAssetFunc):
                         clear_metadata=clear_metadata,
                         clear_metadata_kwargs=clear_metadata_kwargs,
                         dump_metadata_kwargs=dump_metadata_kwargs,
+                        **to_markdown_kwargs,
                     )
                     new_d["content"].append("---\n" + metadata + "\n---")
                 elif metadata_format.lower() == "html":
@@ -757,7 +878,8 @@ class AggThreadAssetFunc(AggBlockAssetFunc):
                         clear_metadata=clear_metadata,
                         clear_metadata_kwargs=clear_metadata_kwargs,
                         dump_metadata_kwargs=dump_metadata_kwargs,
-                        **html_kwargs,
+                        to_markdown_kwargs=to_markdown_kwargs,
+                        **to_html_kwargs,
                     )
                     new_d["content"].append(metadata)
                 else:
@@ -777,12 +899,12 @@ class AggChannelAssetFunc(AggThreadAssetFunc):
     def get_channel_link(cls, link: str) -> str:
         """Get channel link from a message link."""
         if link.startswith("$discord/"):
-            link = link[len("$discord/"):]
+            link = link[len("$discord/") :]
             link_parts = link.split("/")
             channel_id = link_parts[0]
             return "$discord/" + channel_id
         if link.startswith("https://discord.com/channels/"):
-            link = link[len("https://discord.com/channels/"):]
+            link = link[len("https://discord.com/channels/") :]
             link_parts = link.split("/")
             guild_id = link_parts[0]
             channel_id = link_parts[1]
@@ -799,7 +921,8 @@ class AggChannelAssetFunc(AggThreadAssetFunc):
         clear_metadata: bool = True,
         clear_metadata_kwargs: tp.KwargsLike = None,
         dump_metadata_kwargs: tp.KwargsLike = None,
-        html_kwargs: tp.KwargsLike = None,
+        to_markdown_kwargs: tp.KwargsLike = None,
+        to_html_kwargs: tp.KwargsLike = None,
         link_map: tp.Optional[tp.Dict[str, dict]] = None,
     ) -> tp.Any:
         if not isinstance(d, dict):
@@ -817,8 +940,8 @@ class AggChannelAssetFunc(AggThreadAssetFunc):
             clear_metadata_kwargs = {}
         if dump_metadata_kwargs is None:
             dump_metadata_kwargs = {}
-        if html_kwargs is None:
-            html_kwargs = {}
+        if to_html_kwargs is None:
+            to_html_kwargs = {}
 
         new_d = {}
         metadata_keys = []
@@ -862,6 +985,7 @@ class AggChannelAssetFunc(AggThreadAssetFunc):
                         clear_metadata=clear_metadata,
                         clear_metadata_kwargs=clear_metadata_kwargs,
                         dump_metadata_kwargs=dump_metadata_kwargs,
+                        **to_markdown_kwargs,
                     )
                     new_d["content"].append("---\n" + metadata + "\n---")
                 elif metadata_format.lower() == "html":
@@ -872,115 +996,8 @@ class AggChannelAssetFunc(AggThreadAssetFunc):
                         clear_metadata=clear_metadata,
                         clear_metadata_kwargs=clear_metadata_kwargs,
                         dump_metadata_kwargs=dump_metadata_kwargs,
-                        **html_kwargs,
-                    )
-                    new_d["content"].append(metadata)
-                else:
-                    raise ValueError(f"Invalid metadata format: '{metadata_format}'")
-                if content:
-                    new_d["content"].append("\n\n" + content)
-        new_d["content"] = "".join(new_d["content"])
-        return new_d
-
-
-class AggServerAssetFunc(AggChannelAssetFunc):
-    """Asset function class for `vectorbtpro.utils.knowledge.custom_assets.MessagesAsset.aggregate_servers`."""
-
-    _short_name: tp.ClassVar[tp.Optional[str]] = "agg_server"
-
-    @classmethod
-    def get_server_link(cls, link: str) -> str:
-        """Get server link from a message or channel link."""
-        if link.startswith("$discord"):
-            return "$discord"
-        if link.startswith("https://discord.com/channels/"):
-            link = link[len("https://discord.com/channels/"):]
-            link_parts = link.split("/")
-            guild_id = link_parts[0]
-            return f"https://discord.com/channels/{guild_id}"
-        raise ValueError(f"Invalid link: '{link}'")
-
-    @classmethod
-    def call(
-        cls,
-        d: tp.Any,
-        aggregate_fields: tp.Union[bool, tp.MaybeSet[str]] = False,
-        parent_links_only: bool = True,
-        metadata_format: str = "markdown",
-        clear_metadata: bool = True,
-        clear_metadata_kwargs: tp.KwargsLike = None,
-        dump_metadata_kwargs: tp.KwargsLike = None,
-        html_kwargs: tp.KwargsLike = None,
-        link_map: tp.Optional[tp.Dict[str, dict]] = None,
-    ) -> tp.Any:
-        if not isinstance(d, dict):
-            raise TypeError("Data item must be a dict")
-        if isinstance(aggregate_fields, bool):
-            if aggregate_fields:
-                aggregate_fields = {"mentions", "attachments", "reactions"}
-            else:
-                aggregate_fields = set()
-        elif isinstance(aggregate_fields, str):
-            aggregate_fields = {aggregate_fields}
-        elif not isinstance(aggregate_fields, set):
-            aggregate_fields = set(aggregate_fields)
-        if clear_metadata_kwargs is None:
-            clear_metadata_kwargs = {}
-        if dump_metadata_kwargs is None:
-            dump_metadata_kwargs = {}
-        if html_kwargs is None:
-            html_kwargs = {}
-
-        new_d = {}
-        metadata_keys = []
-        for k, v in d.items():
-            if k == "link":
-                new_d[k] = cls.get_server_link(v[0])
-            if k == "content":
-                new_d[k] = []
-                continue
-            if k in aggregate_fields and isinstance(v[0], list):
-                new_v = []
-                for _v in new_v:
-                    for __v in _v:
-                        if __v not in new_v:
-                            new_v.append(__v)
-                new_d[k] = new_v
-                continue
-            if k == "reactions" and k in aggregate_fields:
-                new_d[k] = sum(v)
-                continue
-            if parent_links_only:
-                if k in ("link", "block", "thread", "reference", "replies"):
-                    continue
-            metadata_keys.append(k)
-        if len(metadata_keys) > 0:
-            for i in range(len(d[metadata_keys[0]])):
-                content = d["content"][i].strip()
-                metadata = {}
-                for k in metadata_keys:
-                    metadata[k] = d[k][i]
-                if len(new_d["content"]) > 0:
-                    new_d["content"].append("\n\n")
-                if metadata_format.lower() == "markdown":
-                    metadata = ToMarkdownAssetFunc.get_markdown_metadata(
-                        metadata,
-                        root_metadata_key="message",
-                        allow_empty=not content,
-                        clear_metadata=clear_metadata,
-                        clear_metadata_kwargs=clear_metadata_kwargs,
-                        dump_metadata_kwargs=dump_metadata_kwargs,
-                    )
-                    new_d["content"].append("---\n" + metadata + "\n---")
-                elif metadata_format.lower() == "html":
-                    metadata = ToHTMLAssetFunc.get_html_metadata(
-                        metadata,
-                        root_metadata_key="message",
-                        allow_empty=not content,
-                        clear_metadata=clear_metadata,
-                        clear_metadata_kwargs=clear_metadata_kwargs,
-                        dump_metadata_kwargs=dump_metadata_kwargs,
-                        **html_kwargs,
+                        to_markdown_kwargs=to_markdown_kwargs,
+                        **to_html_kwargs,
                     )
                     new_d["content"].append(metadata)
                 else:

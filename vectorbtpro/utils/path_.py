@@ -7,6 +7,7 @@ import shutil
 from glob import glob
 from itertools import islice
 from pathlib import Path
+from urllib.parse import urlparse, urlunparse
 
 import humanize
 
@@ -157,6 +158,50 @@ def remove_dir(dir_path: tp.PathLike, missing_ok: bool = False, with_contents: b
         raise FileNotFoundError(f"Directory '{dir_path}' not found")
 
 
+def get_common_prefix(paths: tp.Iterable[tp.PathLike]) -> str:
+    """Returns the common prefix of a list of URLs or file paths."""
+    if not paths:
+        raise ValueError("The path list is empty")
+    paths = [str(path) for path in paths]
+    first = paths[0]
+    parsed_first = urlparse(first)
+    is_url = parsed_first.scheme != ""
+
+    for path in paths:
+        parsed = urlparse(path)
+        if (parsed.scheme != parsed_first.scheme) or \
+                (parsed.scheme != "" and parsed.netloc != parsed_first.netloc):
+            return ""
+
+    if is_url:
+        parsed_urls = [urlparse(p) for p in paths]
+        scheme = parsed_urls[0].scheme
+        netloc = parsed_urls[0].netloc
+        paths_split = [pu.path.strip("/").split("/") for pu in parsed_urls]
+        min_length = min(len(p) for p in paths_split)
+        common_components = []
+        for i in range(min_length):
+            current_component = paths_split[0][i]
+            if all(p[i] == current_component for p in paths_split):
+                common_components.append(current_component)
+            else:
+                break
+        if common_components:
+            common_path = "/" + "/".join(common_components) + "/"
+        else:
+            common_path = "/"
+        common_url = urlunparse((scheme, netloc, common_path, "", "", ""))
+        return common_url
+    else:
+        try:
+            common_path = os.path.commonpath(paths)
+            if not common_path.endswith(os.path.sep):
+                common_path += os.path.sep
+            return common_path
+        except ValueError:
+            return ""
+
+
 def dir_tree_from_paths(
     paths: tp.Iterable[tp.PathLike],
     root: tp.Optional[tp.PathLike] = None,
@@ -164,7 +209,7 @@ def dir_tree_from_paths(
     root_name: tp.Optional[str] = None,
     level: int = -1,
     limit_to_dirs: bool = False,
-    length_limit: int = 1000,
+    length_limit: tp.Optional[int] = 1000,
     sort: bool = True,
     space: str = "    ",
     branch: str = "│   ",
@@ -172,18 +217,26 @@ def dir_tree_from_paths(
     last: str = "└── ",
 ) -> str:
     """Given paths, generate a visual tree structure."""
-    resolved_paths = [Path(p).resolve() for p in paths]
+    resolved_paths = []
+    for p in paths:
+        if not isinstance(p, Path):
+            parsed_url = urlparse(str(p))
+            p = Path(parsed_url.path)
+        resolved_paths.append(p.resolve())
     if path_names is None:
         path_names = [p.name for p in resolved_paths]
     path_display_map = {path: name for path, name in zip(resolved_paths, path_names)}
     if root is None:
         try:
-            common_path_str = os.path.commonpath([str(p) for p in resolved_paths])
+            common_path_str = get_common_prefix(resolved_paths)
             root = Path(common_path_str).resolve()
         except ValueError:
             root = Path(".").resolve()
     else:
-        root = Path(root).resolve()
+        if not isinstance(root, Path):
+            parsed_url = urlparse(str(root))
+            root = Path(parsed_url.path)
+        root = root.resolve()
 
     dirs = set()
     path_set = set(resolved_paths)
@@ -243,7 +296,9 @@ def dir_tree_from_paths(
 
     tree_str = root_name if root_name is not None else root.name
     iterator = _inner(tree, current_lvl=level, current_path=root)
-    for line in islice(iterator, length_limit):
+    if length_limit is not None:
+        iterator = islice(iterator, length_limit)
+    for line in iterator:
         tree_str += "\n" + line
     if next(iterator, None):
         tree_str += "\n" + f"... length_limit {length_limit} reached, counts:"

@@ -11,7 +11,7 @@ import urllib.request
 import warnings
 import webbrowser
 from pathlib import Path
-from types import ModuleType, FunctionType
+from types import ModuleType
 
 from vectorbtpro import _typing as tp
 from vectorbtpro._opt_deps import opt_dep_config
@@ -87,11 +87,14 @@ def list_module_keys(
     ]
 
 
-def search_package_for_funcs(
+def search_package(
     package: tp.Union[str, ModuleType],
+    match_func: tp.Callable,
     blacklist: tp.Optional[tp.Sequence[str]] = None,
-) -> tp.Dict[str, FunctionType]:
-    """Search a package for all functions."""
+) -> tp.Dict[str, tp.Any]:
+    """Search a package.
+
+    Match function should accept the name of the object and the object itself, and return a boolean."""
     if blacklist is None:
         blacklist = []
     if isinstance(package, str):
@@ -105,11 +108,11 @@ def search_package_for_funcs(
                 continue
             module = importlib.import_module(name)
             for attr in dir(module):
-                if not attr.startswith("_") and isinstance(getattr(module, attr), FunctionType):
+                if not attr.startswith("_") and match_func(attr, getattr(module, attr)):
                     results[attr] = getattr(module, attr)
             if is_pkg:
-                results.update(search_package_for_funcs(name, blacklist=blacklist))
-        except ModuleNotFoundError as e:
+                results.update(search_package(name, match_func, blacklist=blacklist))
+        except (ModuleNotFoundError, ImportError):
             pass
     return results
 

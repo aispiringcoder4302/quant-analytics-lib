@@ -856,334 +856,277 @@ def unflatten_obj(path_dct: tp.PathDict) -> tp.Any:
     return _construct(tree)
 
 
-def contains_exact(
-    string: tp.MaybeIterable[str],
-    substring: str,
+def find_exact(
+    target: str,
+    string: str,
     ignore_case: bool = False,
-) -> tp.Union[bool, tp.List[bool], tp.Series]:
-    """Check if string contains a substring."""
-    if not isinstance(string, str):
-        if isinstance(string, pd.Series):
-            return string.apply(
-                partial(
-                    contains_exact,
-                    substring=substring,
-                    ignore_case=ignore_case,
-                )
-            )
-        return list(
-            map(
-                partial(
-                    contains_exact,
-                    substring=substring,
-                    ignore_case=ignore_case,
-                ),
-                string,
-            )
-        )
+    return_type: str = "bool",
+) -> tp.Union[bool, tp.List[tp.Union[int, str]], tp.List[tp.Tuple[int, int]]]:
+    """Find exact matches of substring in string."""
     if ignore_case:
-        string = string.casefold()
-        substring = substring.casefold()
-    return substring == string
-
-
-def replace_exact(
-    string: tp.MaybeIterable[str],
-    substring: str,
-    replacement: str,
-    ignore_case: bool = False,
-) -> tp.Union[str, tp.List[str], tp.Series]:
-    """Replace a substring with replacement in string."""
-    if not isinstance(string, str):
-        if isinstance(string, pd.Series):
-            return string.apply(
-                partial(
-                    replace_exact,
-                    substring=substring,
-                    replacement=replacement,
-                    ignore_case=ignore_case,
-                )
-            )
-        return list(
-            map(
-                partial(
-                    replace_exact,
-                    substring=substring,
-                    replacement=replacement,
-                    ignore_case=ignore_case,
-                ),
-                string,
-            )
-        )
-    if ignore_case:
-        string = string.casefold()
-        substring = substring.casefold()
-    if substring == string:
-        return replacement
-    return string
-
-
-def contains_substring(
-    string: tp.MaybeIterable[str],
-    substring: str,
-    ignore_case: bool = False,
-) -> tp.Union[bool, tp.List[bool], tp.Series]:
-    """Check if string contains a substring."""
-    if not isinstance(string, str):
-        if isinstance(string, pd.Series):
-            return string.apply(
-                partial(
-                    contains_substring,
-                    substring=substring,
-                    ignore_case=ignore_case,
-                )
-            )
-        return list(
-            map(
-                partial(
-                    contains_substring,
-                    substring=substring,
-                    ignore_case=ignore_case,
-                ),
-                string,
-            )
-        )
-    if ignore_case:
-        string = string.casefold()
-        substring = substring.casefold()
-    return substring in string
-
-
-def replace_substring(
-    string: tp.MaybeIterable[str],
-    substring: str,
-    replacement: str,
-    ignore_case: bool = False,
-) -> tp.Union[str, tp.List[str], tp.Series]:
-    """Replace a substring with replacement in string."""
-    if not isinstance(string, str):
-        if isinstance(string, pd.Series):
-            return string.apply(
-                partial(
-                    replace_substring,
-                    substring=substring,
-                    replacement=replacement,
-                    ignore_case=ignore_case,
-                )
-            )
-        return list(
-            map(
-                partial(
-                    replace_substring,
-                    substring=substring,
-                    replacement=replacement,
-                    ignore_case=ignore_case,
-                ),
-                string,
-            )
-        )
-    if ignore_case:
-        pattern = re.compile(re.escape(substring), re.IGNORECASE)
-        return pattern.sub(replacement, string)
+        string_cmp = string.casefold()
+        target_cmp = target.casefold()
     else:
-        return string.replace(substring, replacement)
+        string_cmp = string
+        target_cmp = target
+    if return_type == "bool":
+        return target_cmp == string_cmp
+    if string_cmp == target_cmp:
+        if return_type == "start":
+            return [0]
+        if return_type == "range":
+            return [(0, len(string))]
+        if return_type == "match":
+            return [string]
+        raise ValueError(f"Invalid return type: '{return_type}'")
+    return []
 
 
-def contains_regex(
-    string: tp.MaybeIterable[str],
-    substring: str,
+def find_substring(
+    target: str,
+    string: str,
     ignore_case: bool = False,
-    flags: int = 0,
-) -> tp.Union[bool, tp.List[bool], tp.Series]:
-    """Check if the string matches the given regex substring."""
+    return_type: str = "bool",
+) -> tp.Union[bool, tp.List[tp.Union[int, str]], tp.List[tp.Tuple[int, int]]]:
+    """Find all occurrences of substring in string."""
     if ignore_case:
-        flags = flags | re.IGNORECASE
-    regex = re.compile(substring, flags=flags)
+        string_cmp = string.casefold()
+        target_cmp = target.casefold()
+    else:
+        string_cmp = string
+        target_cmp = target
+    if return_type == "bool":
+        return target_cmp in string_cmp
+    start = 0
+    occurrences = []
+    substr_len = len(target)
+    while True:
+        idx = string_cmp.find(target_cmp, start)
+        if idx == -1:
+            break
+        if return_type == "start":
+            occurrences.append(idx)
+        elif return_type == "range":
+            occurrences.append((idx, idx + substr_len))
+        elif return_type == "match":
+            occurrences.append(string[idx : idx + substr_len])
+        else:
+            raise ValueError(f"Invalid return type: '{return_type}'")
+        start = idx + 1
+    return occurrences
 
-    if not isinstance(string, str):
-        if isinstance(string, pd.Series):
-            return string.apply(
-                partial(
-                    contains_regex,
-                    substring=substring,
-                    ignore_case=ignore_case,
-                    flags=flags,
-                )
-            )
-        return list(
-            map(
-                partial(
-                    contains_regex,
-                    substring=substring,
-                    ignore_case=ignore_case,
-                    flags=flags,
-                ),
-                string,
-            )
-        )
-    return bool(regex.search(string))
 
-
-def replace_regex(
-    string: tp.MaybeIterable[str],
+def find_regex(
     pattern: str,
-    replacement: str,
+    string: str,
     ignore_case: bool = False,
     flags: int = 0,
-) -> tp.Union[str, tp.List[str], tp.Series]:
-    """Replace regex substring with replacement in string."""
+    group: tp.Optional[tp.Union[int, str]] = None,
+    return_type: str = "bool",
+) -> tp.Union[bool, tp.List[tp.Union[int, str]], tp.List[tp.Tuple[int, int]]]:
+    """Find all regex matches in string."""
     if ignore_case:
-        flags = flags | re.IGNORECASE
+        flags |= re.IGNORECASE
     regex = re.compile(pattern, flags=flags)
+    if return_type == "bool":
+        return bool(regex.search(string))
+    if group is None:
+        if regex.groups == 1:
+            if regex.groupindex:
+                group = next(iter(regex.groupindex))
+            else:
+                group = 1
+        else:
+            group = None
+    matches = list(regex.finditer(string))
+    if return_type == "start":
+        if group is not None:
+            return [match.start(group) if match.group(group) is not None else None for match in matches]
+        return [match.start() for match in matches]
+    if return_type == "range":
+        if group is not None:
+            return [
+                (match.start(group), match.end(group)) if match.group(group) is not None else None for match in matches
+            ]
+        return [(match.start(), match.end()) for match in matches]
+    if return_type == "match":
+        if group is not None:
+            return [match.group(group) for match in matches if match.group(group) is not None]
+        return [match.group() for match in matches]
+    raise ValueError(f"Invalid return type: '{return_type}'")
 
-    if not isinstance(string, str):
-        if isinstance(string, pd.Series):
-            return string.apply(
-                partial(
-                    replace_regex,
-                    pattern=pattern,
-                    replacement=replacement,
-                    ignore_case=ignore_case,
-                    flags=flags,
-                )
-            )
-        return list(
-            map(
-                partial(
-                    replace_regex,
-                    pattern=pattern,
-                    replacement=replacement,
-                    ignore_case=ignore_case,
-                    flags=flags,
-                ),
-                string,
-            )
-        )
-    return regex.sub(replacement, string)
 
-
-def contains_fuzzy(
-    string: tp.MaybeIterable[str],
-    substring: str,
+def find_fuzzy(
+    target: str,
+    string: str,
     ignore_case: bool = False,
     threshold: tp.Optional[float] = 70,
     max_insertions: tp.Optional[int] = None,
     max_substitutions: tp.Optional[int] = None,
     max_deletions: tp.Optional[int] = None,
     max_l_dist: tp.Optional[int] = None,
-) -> tp.Union[bool, tp.List[bool], tp.Series]:
-    """Perform fuzzy matching between string and substring using fuzzysearch."""
+    return_type: str = "bool",
+) -> tp.Union[bool, tp.List[tp.Union[int, str]], tp.List[tp.Tuple[int, int]]]:
+    """Find all fuzzy matches of substring in string using fuzzysearch."""
     from vectorbtpro.utils.module_ import assert_can_import
 
     assert_can_import("fuzzysearch")
     from fuzzysearch import find_near_matches
 
-    if not isinstance(string, str):
-        if isinstance(string, pd.Series):
-            return string.apply(
-                partial(
-                    contains_fuzzy,
-                    substring=substring,
-                    ignore_case=ignore_case,
-                    threshold=threshold,
-                    max_insertions=max_insertions,
-                    max_substitutions=max_substitutions,
-                    max_deletions=max_deletions,
-                    max_l_dist=max_l_dist,
-                )
-            )
-        return list(
-            map(
-                partial(
-                    contains_fuzzy,
-                    substring=substring,
-                    ignore_case=ignore_case,
-                    threshold=threshold,
-                    max_insertions=max_insertions,
-                    max_substitutions=max_substitutions,
-                    max_deletions=max_deletions,
-                    max_l_dist=max_l_dist,
-                ),
-                string,
-            )
-        )
-
     if ignore_case:
-        string = string.casefold()
-        substring = substring.casefold()
+        string_cmp = string.casefold()
+        target_cmp = target.casefold()
+    else:
+        string_cmp = string
+        target_cmp = target
     if threshold is not None and max_l_dist is None:
-        max_l_dist = max(1, len(substring) - int(len(substring) * (threshold / 100)))
+        max_l_dist = max(1, len(target) - int(len(target) * (threshold / 100)))
     matches = find_near_matches(
-        substring,
-        string,
+        target_cmp,
+        string_cmp,
         max_insertions=max_insertions,
         max_substitutions=max_substitutions,
         max_deletions=max_deletions,
         max_l_dist=max_l_dist,
     )
-    return len(matches) > 0
+    if return_type == "bool":
+        return len(matches) > 0
+    if return_type == "start":
+        return [match.start for match in matches]
+    if return_type == "range":
+        return [(match.start, match.end) for match in matches]
+    if return_type == "match":
+        return [string[match.start : match.end] for match in matches]
+    raise ValueError(f"Invalid return type: '{return_type}'")
+
+
+def find_rapidfuzz(
+    target: str,
+    string: str,
+    ignore_case: bool = False,
+    processor: tp.Optional[tp.Callable] = None,
+    threshold: float = 70,
+    return_type: str = "bool",
+) -> tp.Union[bool, tp.List[tp.Union[int, str]], tp.List[tp.Tuple[int, int]]]:
+    """Perform fuzzy matching between string and substring using RapidFuzz."""
+    from vectorbtpro.utils.module_ import assert_can_import
+
+    assert_can_import("rapidfuzz")
+    from rapidfuzz import fuzz
+
+    if return_type == "bool":
+        if ignore_case:
+            string_cmp = string.casefold()
+            target_cmp = target.casefold()
+        else:
+            string_cmp = string
+            target_cmp = target
+        score = fuzz.partial_ratio(string_cmp, target_cmp, processor=processor)
+        return score >= threshold
+    raise NotImplementedError("RapidFuzz not supported")
+
+
+def find(
+    target: str,
+    string: str,
+    mode: str = "substring",
+    ignore_case: bool = False,
+    return_type: str = "bool",
+    **kwargs,
+) -> tp.Union[bool, tp.List[tp.Union[int, str]], tp.List[tp.Tuple[int, int]]]:
+    """Find a target within a string using the specified mode and return type.
+
+    The following return types are supported:
+
+    * "bool": True for match, False for no match
+    * "start": List of start indices of matches
+    * "range": List of (start, end) tuples of matches
+    * "match": List of matched strings
+    """
+    if mode.lower() == "exact":
+        return find_exact(target, string, ignore_case=ignore_case, return_type=return_type, **kwargs)
+    if mode.lower() == "substring":
+        return find_substring(target, string, ignore_case=ignore_case, return_type=return_type, **kwargs)
+    if mode.lower() == "regex":
+        return find_regex(target, string, ignore_case=ignore_case, return_type=return_type, **kwargs)
+    if mode.lower() == "fuzzy":
+        return find_fuzzy(target, string, ignore_case=ignore_case, return_type=return_type, **kwargs)
+    if mode.lower() == "rapidfuzz":
+        return find_rapidfuzz(target, string, ignore_case=ignore_case, return_type=return_type, **kwargs)
+    raise ValueError(f"Invalid mode: '{mode}'")
+
+
+def replace_exact(
+    target: str,
+    replacement: str,
+    string: str,
+    ignore_case: bool = False,
+) -> str:
+    """Replace a string."""
+    if ignore_case:
+        string = string.casefold()
+        target = target.casefold()
+    if target == string:
+        return replacement
+    return string
+
+
+def replace_substring(
+    target: str,
+    replacement: str,
+    string: str,
+    ignore_case: bool = False,
+) -> str:
+    """Replace a substring in a string."""
+    if ignore_case:
+        pattern = re.compile(re.escape(target), re.IGNORECASE)
+        return pattern.sub(replacement, string)
+    else:
+        return string.replace(target, replacement)
+
+
+def replace_regex(
+    target: str,
+    replacement: str,
+    string: str,
+    ignore_case: bool = False,
+    flags: int = 0,
+) -> str:
+    """Replace a target in a string using RegEx."""
+    if ignore_case:
+        flags = flags | re.IGNORECASE
+    regex = re.compile(target, flags=flags)
+    return regex.sub(replacement, string)
 
 
 def replace_fuzzy(
-    string: tp.MaybeIterable[str],
-    substring: str,
+    target: str,
     replacement: str,
+    string: str,
     ignore_case: bool = False,
     threshold: tp.Optional[float] = 70,
     max_insertions: tp.Optional[int] = None,
     max_substitutions: tp.Optional[int] = None,
     max_deletions: tp.Optional[int] = None,
     max_l_dist: tp.Optional[int] = None,
-) -> tp.Union[str, tp.List[str], tp.Series]:
-    """Perform fuzzy matching and replacement between string and substring using fuzzysearch."""
+) -> str:
+    """Replace a target in a string using fuzzysearch."""
     from vectorbtpro.utils.module_ import assert_can_import
 
     assert_can_import("fuzzysearch")
     from fuzzysearch import find_near_matches
 
-    if not isinstance(string, str):
-        if isinstance(string, pd.Series):
-            return string.apply(
-                partial(
-                    replace_fuzzy,
-                    substring=substring,
-                    replacement=replacement,
-                    ignore_case=ignore_case,
-                    threshold=threshold,
-                    max_insertions=max_insertions,
-                    max_substitutions=max_substitutions,
-                    max_deletions=max_deletions,
-                    max_l_dist=max_l_dist,
-                )
-            )
-        return list(
-            map(
-                partial(
-                    replace_fuzzy,
-                    substring=substring,
-                    replacement=replacement,
-                    ignore_case=ignore_case,
-                    threshold=threshold,
-                    max_insertions=max_insertions,
-                    max_substitutions=max_substitutions,
-                    max_deletions=max_deletions,
-                    max_l_dist=max_l_dist,
-                ),
-                string,
-            )
-        )
-
     original_string = string
     if ignore_case:
         string = string.casefold()
-        substring = substring.casefold()
+        target = target.casefold()
     else:
         string = string
-        substring = substring
+        target = target
     if threshold is not None and max_l_dist is None:
-        max_l_dist = max(1, len(substring) - int(len(substring) * (threshold / 100)))
+        max_l_dist = max(1, len(target) - int(len(target) * (threshold / 100)))
     matches = find_near_matches(
-        substring,
+        target,
         string,
         max_insertions=max_insertions,
         max_substitutions=max_substitutions,
@@ -1203,100 +1146,36 @@ def replace_fuzzy(
     return replaced_string
 
 
-def contains_rapidfuzz(
-    string: tp.MaybeIterable[str],
-    substring: str,
-    ignore_case: bool = False,
-    processor: tp.Optional[tp.Callable] = None,
-    threshold: float = 70,
-) -> tp.Union[bool, tp.List[bool], tp.Series]:
-    """Perform fuzzy matching between string and substring using RapidFuzz."""
-    from vectorbtpro.utils.module_ import assert_can_import
-
-    assert_can_import("rapidfuzz")
-    from rapidfuzz import fuzz
-
-    if not isinstance(string, str):
-        if isinstance(string, pd.Series):
-            return string.apply(
-                partial(
-                    contains_rapidfuzz,
-                    substring=substring,
-                    ignore_case=ignore_case,
-                    processor=processor,
-                    threshold=threshold,
-                )
-            )
-        return list(
-            map(
-                partial(
-                    contains_rapidfuzz,
-                    substring=substring,
-                    ignore_case=ignore_case,
-                    processor=processor,
-                    threshold=threshold,
-                ),
-                string,
-            )
-        )
-    if ignore_case:
-        string = string.casefold()
-        substring = substring.casefold()
-    score = fuzz.partial_ratio(string, substring, processor=processor)
-    return score >= threshold
-
-
-def contains(
-    string: tp.MaybeIterable[str],
-    substring: str,
-    mode: str = "substring",
-    ignore_case: bool = False,
-    **kwargs,
-) -> tp.Union[bool, tp.List[bool], tp.Series]:
-    """Search for a target string within a source string using the specified mode."""
-    if mode.lower() == "exact":
-        return contains_exact(string, substring, ignore_case=ignore_case, **kwargs)
-    if mode.lower() == "substring":
-        return contains_substring(string, substring, ignore_case=ignore_case, **kwargs)
-    if mode.lower() == "regex":
-        return contains_regex(string, substring, ignore_case=ignore_case, **kwargs)
-    if mode.lower() == "fuzzy":
-        return contains_fuzzy(string, substring, ignore_case=ignore_case, **kwargs)
-    if mode.lower() == "rapidfuzz":
-        return contains_rapidfuzz(string, substring, ignore_case=ignore_case, **kwargs)
-    raise ValueError(f"Invalid mode: '{mode}'")
-
-
 def replace(
-    string: tp.MaybeIterable[str],
-    substring: str,
+    target: str,
     replacement: str,
+    string: str,
     mode: str = "substring",
     ignore_case: bool = False,
     **kwargs,
-) -> tp.Union[bool, tp.List[bool], tp.Series]:
-    """Search for a target string within a source string using the specified mode."""
+) -> str:
+    """Replace a target string within a source string using the specified mode."""
     if mode.lower() == "exact":
-        return replace_exact(string, substring, replacement, ignore_case=ignore_case, **kwargs)
+        return replace_exact(target, replacement, string, ignore_case=ignore_case, **kwargs)
     if mode.lower() == "substring":
-        return replace_substring(string, substring, replacement, ignore_case=ignore_case, **kwargs)
+        return replace_substring(target, replacement, string, ignore_case=ignore_case, **kwargs)
     if mode.lower() == "regex":
-        return replace_regex(string, substring, replacement, ignore_case=ignore_case, **kwargs)
+        return replace_regex(target, replacement, string, ignore_case=ignore_case, **kwargs)
     if mode.lower() == "fuzzy":
-        return replace_fuzzy(string, substring, replacement, ignore_case=ignore_case, **kwargs)
+        return replace_fuzzy(target, replacement, string, ignore_case=ignore_case, **kwargs)
     if mode.lower() == "rapidfuzz":
-        raise ValueError("RapidFuzz doesn't support replacement")
+        raise NotImplementedError("RapidFuzz not supported")
     raise ValueError(f"Invalid mode: '{mode}'")
 
 
 search_config = ReadonlyConfig(
     {
-        "contains_exact": contains_exact,
-        "contains_substring": contains_substring,
-        "contains_regex": contains_regex,
-        "contains_fuzzy": contains_fuzzy,
-        "contains_rapidfuzz": contains_rapidfuzz,
-        "contains": contains,
+        "find_exact": find_exact,
+        "find_substring": find_substring,
+        "find_regex": find_regex,
+        "find_fuzzy": find_fuzzy,
+        "find_rapidfuzz": find_rapidfuzz,
+        "find": find,
         "replace_exact": replace_exact,
         "replace_substring": replace_substring,
         "replace_regex": replace_regex,

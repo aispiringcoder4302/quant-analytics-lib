@@ -561,8 +561,8 @@ class QueryAssetFunc(AssetFunc):
     def prepare(
         cls,
         expression: tp.Union[str, tp.Callable, tp.CustomTemplate],
-        as_filter: tp.Optional[bool] = None,
         template_context: tp.KwargsLike = None,
+        return_type: tp.Optional[str] = None,
         asset: tp.Optional[tp.MaybeType[tp.KnowledgeAsset]] = None,
         **kwargs,
     ) -> tp.ArgsKwargs:
@@ -570,8 +570,8 @@ class QueryAssetFunc(AssetFunc):
             from vectorbtpro.utils.knowledge.base_assets import KnowledgeAsset
 
             asset = KnowledgeAsset
-        as_filter = asset.resolve_setting(as_filter, "as_filter")
         template_context = asset.resolve_setting(template_context, "template_context", merge=True)
+        return_type = asset.resolve_setting(return_type, "return_type")
 
         if isinstance(expression, str):
             expression = RepEval(expression)
@@ -585,8 +585,8 @@ class QueryAssetFunc(AssetFunc):
         return (), {
             **dict(
                 expression=expression,
-                as_filter=as_filter,
                 template_context=template_context,
+                return_type=return_type,
             ),
             **kwargs,
         }
@@ -596,8 +596,8 @@ class QueryAssetFunc(AssetFunc):
         cls,
         d: tp.Any,
         expression: tp.CustomTemplate,
-        as_filter: bool = True,
         template_context: tp.KwargsLike = None,
+        return_type: tp.Optional[str] = None,
         **kwargs,
     ) -> tp.Any:
         _template_context = flat_merge_dicts(
@@ -612,6 +612,12 @@ class QueryAssetFunc(AssetFunc):
         new_d = expression.substitute(_template_context, eval_id="expression", **kwargs)
         if checks.is_function(new_d):
             new_d = new_d(d)
+        if return_type is None:
+            as_filter = True
+        elif return_type.lower() == "bool":
+            as_filter = False
+        else:
+            raise ValueError(f"Invalid return type: '{return_type}'")
         if as_filter and isinstance(new_d, bool):
             if new_d:
                 return d
@@ -636,9 +642,11 @@ class FindAssetFunc(AssetFunc):
         keep_path: tp.Optional[bool] = None,
         skip_missing: tp.Optional[bool] = None,
         source: tp.Union[None, str, tp.Callable, tp.CustomTemplate] = None,
-        in_json_dumps: tp.Optional[bool] = None,
-        as_filter: tp.Optional[bool] = None,
+        in_dumps: tp.Optional[bool] = None,
+        dump_kwargs: tp.KwargsLike = None,
         template_context: tp.KwargsLike = None,
+        return_type: tp.Optional[str] = None,
+        return_path: tp.Optional[bool] = None,
         asset: tp.Optional[tp.MaybeType[tp.KnowledgeAsset]] = None,
         **kwargs,
     ) -> tp.ArgsKwargs:
@@ -650,9 +658,11 @@ class FindAssetFunc(AssetFunc):
         find_all = asset.resolve_setting(find_all, "find_all")
         keep_path = asset.resolve_setting(keep_path, "keep_path")
         skip_missing = asset.resolve_setting(skip_missing, "skip_missing")
-        in_json_dumps = asset.resolve_setting(in_json_dumps, "in_json_dumps")
-        as_filter = asset.resolve_setting(as_filter, "as_filter")
+        in_dumps = asset.resolve_setting(in_dumps, "in_dumps")
+        dump_kwargs = asset.resolve_setting(dump_kwargs, "dump_kwargs", merge=True)
         template_context = asset.resolve_setting(template_context, "template_context", merge=True)
+        return_type = asset.resolve_setting(return_type, "return_type")
+        return_path = asset.resolve_setting(return_path, "return_path")
 
         if path is not None:
             if isinstance(path, list):
@@ -680,8 +690,11 @@ class FindAssetFunc(AssetFunc):
                     source = RepFunc(source)
             elif not isinstance(source, CustomTemplate):
                 raise TypeError(f"Source must be a string, function, or template")
-        if "excl_types" not in kwargs:
-            kwargs["excl_types"] = (tuple, set, frozenset)
+        dump_kwargs = DumpAssetFunc.resolve_dump_kwargs(**dump_kwargs)
+        contains_arg_names = set(get_func_arg_names(search.contains_in_obj))
+        search_kwargs = {k: kwargs.pop(k) for k in list(kwargs.keys()) if k in contains_arg_names}
+        if "excl_types" not in search_kwargs:
+            search_kwargs["excl_types"] = (tuple, set, frozenset)
         return (), {
             **dict(
                 target=target,
@@ -691,9 +704,12 @@ class FindAssetFunc(AssetFunc):
                 keep_path=keep_path,
                 skip_missing=skip_missing,
                 source=source,
-                in_json_dumps=in_json_dumps,
-                as_filter=as_filter,
+                in_dumps=in_dumps,
+                dump_kwargs=dump_kwargs,
+                search_kwargs=search_kwargs,
                 template_context=template_context,
+                return_type=return_type,
+                return_path=return_path,
             ),
             **kwargs,
         }
@@ -709,7 +725,8 @@ class FindAssetFunc(AssetFunc):
     ) -> bool:
         """Match function for `FindAssetFunc.call`.
 
-        Uses `vectorbtpro.utils.search.contains` for text and equality checks for other types.
+        Uses `vectorbtpro.utils.search.find` with `return_type="bool"` for text,
+        and equality checks for other types.
 
         Target can be a function taking the value and returning a boolean. Target can also be an
         instance of `vectorbtpro.utils.search.Not` for negation."""
@@ -747,7 +764,7 @@ class FindAssetFunc(AssetFunc):
                         return not negation
                     continue
             elif isinstance(d, str) and isinstance(target, str):
-                if search.contains(d, target, **kwargs):
+                if search.find(target, d, return_type="bool", **kwargs):
                     if (negation and find_all) or (not negation and not find_all):
                         return not negation
                     continue
@@ -776,12 +793,21 @@ class FindAssetFunc(AssetFunc):
         keep_path: bool = False,
         skip_missing: bool = False,
         source: tp.Optional[tp.CustomTemplate] = None,
-        in_json_dumps: bool = False,
-        as_filter: bool = True,
+        in_dumps: bool = False,
+        dump_kwargs: tp.KwargsLike = None,
+        search_kwargs: tp.KwargsLike = None,
         template_context: tp.KwargsLike = None,
+        return_type: tp.Optional[str] = None,
+        return_path: bool = False,
         **kwargs,
     ) -> tp.Any:
+        if dump_kwargs is None:
+            dump_kwargs = {}
+        if search_kwargs is None:
+            search_kwargs = {}
         if per_path:
+            new_path_dct = {}
+            new_list = []
             for i, p in enumerate(path):
                 x = d
                 try:
@@ -804,38 +830,75 @@ class FindAssetFunc(AssetFunc):
                         x = _x(x)
                     else:
                         x = _x
-                if not isinstance(x, str) and in_json_dumps:
-                    x = json.dumps(x, ensure_ascii=False)
+                if not isinstance(x, str) and in_dumps:
+                    x = DumpAssetFunc.dump(x, **dump_kwargs)
                 t = target[i]
-                if isinstance(t, search.Not):
-                    t = t.value
-                    negation = True
-                else:
-                    negation = False
-                if search.contains_in_obj(
-                    x,
-                    cls.match_func,
-                    target=t,
-                    find_all=find_all,
-                    **kwargs,
-                ):
-                    if negation:
-                        if find_all:
-                            return NoResult if as_filter else False
-                        continue
+                if return_type is None or return_type.lower() == "bool":
+                    if isinstance(t, search.Not):
+                        t = t.value
+                        negation = True
                     else:
-                        if not find_all:
-                            return d if as_filter else True
-                        continue
-                if negation:
-                    if not find_all:
-                        return d if as_filter else True
+                        negation = False
+                    if search.contains_in_obj(
+                        x,
+                        cls.match_func,
+                        target=t,
+                        find_all=find_all,
+                        **search_kwargs,
+                        **kwargs,
+                    ):
+                        if negation:
+                            if find_all:
+                                return NoResult if return_type is None else False
+                            continue
+                        else:
+                            if not find_all:
+                                return d if return_type is None else True
+                            continue
+                    else:
+                        if negation:
+                            if not find_all:
+                                return d if return_type is None else True
+                            continue
+                        else:
+                            if find_all:
+                                return NoResult if return_type is None else False
+                            continue
                 else:
-                    if find_all:
-                        return NoResult if as_filter else False
-            if find_all:
-                return d if as_filter else True
-            return NoResult if as_filter else False
+                    path_dct = search.find_in_obj(
+                        x,
+                        cls.match_func,
+                        target=t,
+                        find_all=find_all,
+                        **search_kwargs,
+                        **kwargs,
+                    )
+                    if len(path_dct) == 0:
+                        if find_all:
+                            return {} if return_path else []
+                        continue
+                    if isinstance(t, search.Not):
+                        raise TypeError("Target cannot be negated here")
+                    if not isinstance(t, str):
+                        raise ValueError("Target must be string")
+                    for k, v in path_dct.items():
+                        if not isinstance(v, str):
+                            raise ValueError("Matched value must be string")
+                        matches = search.find(t, v, return_type=return_type, **kwargs)
+                        if return_path:
+                            if k not in new_path_dct:
+                                new_path_dct[k] = []
+                            new_path_dct[k].extend(matches)
+                        else:
+                            new_list.extend(matches)
+            if return_type is None or return_type.lower() == "bool":
+                if find_all:
+                    return d if return_type is None else True
+                return NoResult if return_type is None else False
+            else:
+                if return_path:
+                    return new_path_dct
+                return new_list
         else:
             x = d
             if path is not None:
@@ -849,7 +912,11 @@ class FindAssetFunc(AssetFunc):
                                 raise e
                             continue
                     if len(xs) == 0:
-                        return NoResult if as_filter else False
+                        if return_type is None:
+                            return NoResult
+                        if return_type.lower() == "bool":
+                            return False
+                        return {} if return_path else []
                     x = deep_merge_dicts(*xs)
                 else:
                     try:
@@ -857,7 +924,11 @@ class FindAssetFunc(AssetFunc):
                     except (KeyError, IndexError, AttributeError) as e:
                         if not skip_missing:
                             raise e
-                        return NoResult if as_filter else False
+                        if return_type is None:
+                            return NoResult
+                        if return_type.lower() == "bool":
+                            return False
+                        return {} if return_path else []
             if source is not None:
                 _template_context = flat_merge_dicts(
                     {
@@ -872,17 +943,63 @@ class FindAssetFunc(AssetFunc):
                     x = _x(x)
                 else:
                     x = _x
-            if not isinstance(x, str) and in_json_dumps:
-                x = json.dumps(x, ensure_ascii=False)
-            if search.contains_in_obj(
-                x,
-                cls.match_func,
-                target=target,
-                find_all=find_all,
-                **kwargs,
-            ):
-                return d if as_filter else True
-            return NoResult if as_filter else False
+            if not isinstance(x, str) and in_dumps:
+                x = DumpAssetFunc.dump(x, **dump_kwargs)
+            if return_type is None:
+                if search.contains_in_obj(
+                    x,
+                    cls.match_func,
+                    target=target,
+                    find_all=find_all,
+                    **search_kwargs,
+                    **kwargs,
+                ):
+                    return d
+                return NoResult
+            elif return_type.lower() == "bool":
+                return search.contains_in_obj(
+                    x,
+                    cls.match_func,
+                    target=target,
+                    find_all=find_all,
+                    **search_kwargs,
+                    **kwargs,
+                )
+            else:
+                path_dct = search.find_in_obj(
+                    x,
+                    cls.match_func,
+                    target=target,
+                    find_all=find_all,
+                    **search_kwargs,
+                    **kwargs,
+                )
+                if len(path_dct) == 0:
+                    return {} if return_path else []
+                if not isinstance(target, list):
+                    targets = [target]
+                else:
+                    targets = target
+                new_path_dct = {}
+                new_list = []
+                for target in targets:
+                    if isinstance(target, search.Not):
+                        raise TypeError("Target cannot be negated here")
+                    if not isinstance(target, str):
+                        raise ValueError("Target must be string")
+                    for k, v in path_dct.items():
+                        if not isinstance(v, str):
+                            raise ValueError("Matched value must be string")
+                        matches = search.find(target, v, return_type=return_type, **kwargs)
+                        if return_path:
+                            if k not in new_path_dct:
+                                new_path_dct[k] = []
+                            new_path_dct[k].extend(matches)
+                        else:
+                            new_list.extend(matches)
+                if return_path:
+                    return new_path_dct
+                return new_list
 
 
 class FindReplaceAssetFunc(FindAssetFunc):
@@ -1369,6 +1486,21 @@ class DumpAssetFunc(AssetFunc):
     _wrap: tp.ClassVar[tp.Optional[str]] = True
 
     @classmethod
+    def resolve_dump_kwargs(
+        cls,
+        dump_engine: tp.Optional[str] = None,
+        asset: tp.Optional[tp.MaybeType[tp.KnowledgeAsset]] = None,
+        **kwargs,
+    ) -> tp.Kwargs:
+        if asset is None:
+            from vectorbtpro.utils.knowledge.base_assets import KnowledgeAsset
+
+            asset = KnowledgeAsset
+        dump_engine = asset.resolve_setting(dump_engine, "dump_engine")
+        kwargs = asset.resolve_setting(kwargs, f"dump_engine_kwargs.{dump_engine}", default={}, merge=True)
+        return {"dump_engine": dump_engine, **kwargs}
+
+    @classmethod
     def prepare(
         cls,
         source: tp.Union[None, str, tp.Callable, tp.CustomTemplate] = None,
@@ -1381,9 +1513,8 @@ class DumpAssetFunc(AssetFunc):
             from vectorbtpro.utils.knowledge.base_assets import KnowledgeAsset
 
             asset = KnowledgeAsset
-        dump_engine = asset.resolve_setting(dump_engine, "dump_engine")
         template_context = asset.resolve_setting(template_context, "template_context", merge=True)
-        kwargs = asset.resolve_setting(kwargs, f"dump_engine_kwargs.{dump_engine}", default={}, merge=True)
+        dump_kwargs = cls.resolve_dump_kwargs(dump_engine=dump_engine, **kwargs)
 
         if source is not None:
             if isinstance(source, str):
@@ -1398,48 +1529,28 @@ class DumpAssetFunc(AssetFunc):
         return (), {
             **dict(
                 source=source,
-                dump_engine=dump_engine,
                 template_context=template_context,
             ),
+            **dump_kwargs,
             **kwargs,
         }
 
     @classmethod
-    def call(
-        cls,
-        d: tp.Any,
-        source: tp.Optional[CustomTemplate] = None,
-        dump_engine: str = "nestedtext",
-        template_context: tp.KwargsLike = None,
-        **kwargs,
-    ) -> tp.Any:
-        if source is not None:
-            _template_context = flat_merge_dicts(
-                {
-                    "d": d,
-                    "x": d,
-                    **(d if isinstance(d, dict) else {}),
-                },
-                template_context,
-            )
-            new_d = source.substitute(_template_context, eval_id="source")
-            if checks.is_function(new_d):
-                new_d = new_d(d)
-        else:
-            new_d = d
+    def dump(cls, d: tp.Any, dump_engine: str = "nestedtext", **kwargs) -> str:
+        """Dump an object to a string."""
         if dump_engine.lower() == "repr":
-            return repr(new_d)
+            return repr(d)
         if dump_engine.lower() == "prettify":
             from vectorbtpro.utils.formatting import prettify
 
-            return prettify(new_d, **kwargs)
+            return prettify(d, **kwargs)
         if dump_engine.lower() == "nestedtext":
             from vectorbtpro.utils.module_ import assert_can_import
 
             assert_can_import("nestedtext")
             import nestedtext as nt
 
-            return nt.dumps(new_d, **kwargs)
+            return nt.dumps(d, **kwargs)
         if dump_engine.lower() == "yaml":
             from vectorbtpro.utils.module_ import check_installed
 
@@ -1465,7 +1576,7 @@ class DumpAssetFunc(AssetFunc):
 
             if "Dumper" not in kwargs:
                 kwargs["Dumper"] = CustomDumper
-            return yaml.dump(new_d, **kwargs)
+            return yaml.dump(d, **kwargs)
         if dump_engine.lower() in ("ruamel", "ruamel.yaml"):
             from vectorbtpro.utils.module_ import assert_can_import
 
@@ -1501,7 +1612,7 @@ class DumpAssetFunc(AssetFunc):
                     setattr(yaml, k, v)
             transform = kwargs.pop("transform", None)
             output = io.StringIO()
-            yaml.dump(new_d, output, transform=transform)
+            yaml.dump(d, output, transform=transform)
             return output.getvalue()
         if dump_engine.lower() == "toml":
             from vectorbtpro.utils.module_ import assert_can_import
@@ -1509,12 +1620,37 @@ class DumpAssetFunc(AssetFunc):
             assert_can_import("toml")
             import toml
 
-            return toml.dumps(new_d, **kwargs)
+            return toml.dumps(d, **kwargs)
         if dump_engine.lower() == "json":
             import json
 
-            return json.dumps(new_d, **kwargs)
+            return json.dumps(d, **kwargs)
         raise ValueError(f"Invalid dump engine: '{dump_engine}'")
+
+    @classmethod
+    def call(
+        cls,
+        d: tp.Any,
+        source: tp.Optional[CustomTemplate] = None,
+        dump_engine: str = "nestedtext",
+        template_context: tp.KwargsLike = None,
+        **kwargs,
+    ) -> tp.Any:
+        if source is not None:
+            _template_context = flat_merge_dicts(
+                {
+                    "d": d,
+                    "x": d,
+                    **(d if isinstance(d, dict) else {}),
+                },
+                template_context,
+            )
+            new_d = source.substitute(_template_context, eval_id="source")
+            if checks.is_function(new_d):
+                new_d = new_d(d)
+        else:
+            new_d = d
+        return cls.dump(new_d, dump_engine=dump_engine, **kwargs)
 
 
 # ############# Reduce classes ############# #

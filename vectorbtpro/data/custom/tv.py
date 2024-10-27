@@ -814,7 +814,7 @@ class TVData(RemoteData):
         if client is None:
             client = TVClient(**client_config)
         elif has_client_config:
-            raise ValueError("Cannot apply client_config on already created client")
+            raise ValueError("Cannot apply client_config to already initialized client")
         return client
 
     @classmethod

@@ -133,7 +133,7 @@ from vectorbtpro import _typing as tp
 from vectorbtpro.utils.checks import is_instance_of
 from vectorbtpro.utils.config import Config
 from vectorbtpro.utils.module_ import check_installed
-from vectorbtpro.utils.template import Sub, Rep, RepEval, substitute_templates
+from vectorbtpro.utils.template import Sub, RepEval, substitute_templates
 
 __all__ = [
     "settings",
@@ -141,8 +141,20 @@ __all__ = [
 
 __pdoc__ = {}
 
+try:
+    from pymdownx.emoji import twemoji, to_svg
+    from pymdownx.superfences import fence_code_format
 
-# ############# Settings sub-configs ############# #
+    twemoji_index = twemoji
+    twemoji_generator = to_svg
+    mermaid_format = fence_code_format
+except ImportError:
+    twemoji_index = "pymdownx.emoji.twemoji"
+    twemoji_generator = "pymdownx.emoji.to_svg"
+    mermaid_format = "fence_code_format"
+
+
+# ############# Config subclasses ############# #
 
 
 class frozen_cfg(Config):
@@ -186,6 +198,8 @@ class flex_cfg(Config):
         options_["as_attrs"] = False
         Config.__init__(self, *args, options_=options_, **kwargs)
 
+
+# ############# Settings sub-configs ############# #
 
 _settings = {}
 
@@ -1935,14 +1949,19 @@ ${config_doc}
 _settings["search"] = search
 
 knowledge = frozen_cfg(
+    cache=True,
+    cache_dir="./knowledge",
+    cache_mkdir_kwargs=dict(
+        mkdir=True,
+    ),
     per_path=True,
     find_all=False,
     keep_path=False,
     skip_missing=False,
     make_copy=True,
     query_engine=None,
-    as_filter=True,
-    in_json_dumps=False,
+    return_type=None,
+    return_path=False,
     changed_only=False,
     dump_all=False,
     dump_engine="yaml",
@@ -1967,6 +1986,8 @@ knowledge = frozen_cfg(
             indent=4,
         ),
     ),
+    in_dumps=False,
+    dump_kwargs=flex_cfg(),
     sort_keys=False,
     ignore_empty=True,
     describe_kwargs=flex_cfg(
@@ -1981,34 +2002,146 @@ knowledge = frozen_cfg(
         filter_results=True,
         raise_no_results=False,
     ),
-    # Custom
-    asset_name=None,
-    release_name=None,
-    repo_owner="polakowo",
-    repo_name="vectorbt.pro",
-    token=None,
-    token_required=False,
-    use_pygithub=None,
-    chunk_size=8192,
-    cache=True,
-    cache_dir="./knowledge",
-    cache_mkdir_kwargs=dict(
-        mkdir=True,
+    to_markdown_kwargs=flex_cfg(
+        remove_code_title=True,
+        even_indentation=True,
     ),
-    minimize_links=False,
-    root_metadata_key=None,
-    aggregate_fields=False,
-    parent_links_only=True,
-    clear_metadata=True,
-    clear_metadata_kwargs=flex_cfg(),
-    dump_metadata_kwargs=flex_cfg(),
-    html_kwargs=flex_cfg(
-        extensions=["extra", "admonition", "codehilite"],
+    to_html_kwargs=flex_cfg(
+        resolve_extensions=True,
+        make_links=True,
+        extensions=[
+            "fenced_code",
+            "codehilite",
+            "meta",
+            "admonition",
+            "def_list",
+            "attr_list",
+            "tables",
+            "footnotes",
+            "md_in_html",
+            "toc",
+            "abbr",
+            "pymdownx.tilde",
+            "pymdownx.keys",
+            "pymdownx.details",
+            "pymdownx.inlinehilite",
+            "pymdownx.snippets",
+            "pymdownx.superfences",
+            "pymdownx.tabbed",
+            "pymdownx.progressbar",
+            "pymdownx.magiclink",
+            "pymdownx.emoji",
+            "pymdownx.highlight",
+            "pymdownx.tasklist",
+        ],
+        extension_configs=flex_cfg(
+            {
+                "codehilite": flex_cfg(
+                    {
+                        "css_class": "highlight",
+                    }
+                ),
+                "pymdownx.superfences": flex_cfg(
+                    {
+                        "preserve_tabs": True,
+                        "custom_fences": [
+                            {
+                                "name": "mermaid",
+                                "class": "mermaid",
+                                "format": mermaid_format,
+                            }
+                        ],
+                    }
+                ),
+                "pymdownx.tabbed": flex_cfg(
+                    {
+                        "alternate_style": True,
+                    }
+                ),
+                "pymdownx.magiclink": flex_cfg(
+                    {
+                        "repo_url_shorthand": True,
+                        "user": "polakowo",
+                        "repo": "vectorbt.pro",
+                    }
+                ),
+                "pymdownx.emoji": flex_cfg(
+                    {
+                        "emoji_index": twemoji_index,
+                        "emoji_generator": twemoji_generator,
+                        "alt": "short",
+                        "options": {
+                            "attributes": {"align": "absmiddle", "height": "20px", "width": "20px"},
+                        },
+                    }
+                ),
+                "pymdownx.highlight": flex_cfg(
+                    {
+                        "css_class": "highlight",
+                        "guess_lang": True,
+                        "anchor_linenums": True,
+                        "line_spans": "__span",
+                        "pygments_lang_class": True,
+                        "extend_pygments_lang": [
+                            {
+                                "name": "pycon3",
+                                "lang": "pycon",
+                                "options": {"python3": True},
+                            }
+                        ],
+                    }
+                ),
+            }
+        ),
     ),
-    use_pygments=None,
-    formatter_kwargs=flex_cfg(),
-    css_style=None,
+    format_html_kwargs=flex_cfg(
+        use_pygments=None,
+        formatter_kwargs=flex_cfg(),
+        extra_css=None,
+        head_extras=None,
+        scripts=[
+            """<script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>""",
+            """<script>window.mermaidConfig={startOnLoad:!1,theme:"default",flowchart:{htmlLabels:!1},er:{useMaxWidth:!1},sequence:{useMaxWidth:!1,noteFontWeight:"14px",actorFontSize:"14px",messageFontSize:"16px"}};</script>""",
+            """<script>const uml=async e=>{class t extends HTMLElement{constructor(){super();let e=this.attachShadow({mode:"open"}),t=document.createElement("style");t.textContent=`:host{display:block;line-height:initial;font-size:16px}div.diagram{margin:0;overflow:visible}`,e.appendChild(t)}}void 0===customElements.get("diagram-div")&&customElements.define("diagram-div",t);let i=e=>{let t="";for(let i=0;i<e.childNodes.length;i++){let a=e.childNodes[i];if("code"===a.tagName.toLowerCase())for(let d=0;d<a.childNodes.length;d++){let l=a.childNodes[d],o=/^\s*$/;if("#text"===l.nodeName&&!o.test(l.nodeValue)){t=l.nodeValue;break}}}return t},a={startOnLoad:!1,theme:"default",flowchart:{htmlLabels:!1},er:{useMaxWidth:!1},sequence:{useMaxWidth:!1,noteFontWeight:"14px",actorFontSize:"14px",messageFontSize:"16px"}};mermaid.mermaidAPI.globalReset();let d="undefined"==typeof mermaidConfig?a:mermaidConfig;mermaid.initialize(d);let l=document.querySelectorAll(`pre.${e}, diagram-div`),o=document.querySelector("html body");for(let n=0;n<l.length;n++){let r=l[n],s="diagram-div"===r.tagName.toLowerCase()?r.shadowRoot.querySelector(`pre.${e}`):r,h=document.createElement("div");h.style.visibility="hidden",h.style.display="display",h.style.padding="0",h.style.margin="0",h.style.lineHeight="initial",h.style.fontSize="16px",o.appendChild(h);try{let m=await mermaid.render(`_diagram_${n}`,i(s),h),c=m.svg,p=m.bindFunctions,g=document.createElement("div");g.className=e,g.innerHTML=c,p&&p(g);let y=document.createElement("diagram-div");y.shadowRoot.appendChild(g),r.parentNode.insertBefore(y,r),s.style.display="none",y.shadowRoot.appendChild(s),s!==r&&r.parentNode.removeChild(r)}catch(u){}o.contains(h)&&o.removeChild(h)}};document.addEventListener("DOMContentLoaded",()=>{uml("mermaid")});</script>""",
+        ],
+    ),
+    open_browser=True,
+    chat=flex_cfg(
+        stream=True,
+        context_prompt=f"""You are a helpful assistant.
+ 
+Context information is below.
+---------------------
+$context
+---------------------
+Given the context information and not prior knowledge, answer the query.""",
+        output_to=None,
+        flush_output=True,
+        display_format="auto_notebook",
+        refresh_rate=None,
+        file_prefix_len=20,
+        file_suffix_len=6,
+        llm="openai",
+        llm_configs=flex_cfg(),
+    ),
     assets=flex_cfg(
+        vbt=flex_cfg(
+            asset_name=None,
+            release_name=None,
+            repo_owner="polakowo",
+            repo_name="vectorbt.pro",
+            token=None,
+            token_required=False,
+            use_pygithub=None,
+            chunk_size=8192,
+            minimize_links=False,
+            root_metadata_key=None,
+            aggregate_fields=False,
+            parent_links_only=True,
+            clear_metadata=True,
+            clear_metadata_kwargs=flex_cfg(),
+            dump_metadata_kwargs=flex_cfg(),
+        ),
         messages=flex_cfg(
             asset_name="messages.json.zip",
             cache_dir="./knowledge/messages/",

@@ -110,7 +110,7 @@ class AlpacaData(RemoteData):
             client_config = {k: v for k, v in client_config.items() if k in arg_names}
             trading_client = TradingClient(**client_config)
         elif has_client_config:
-            raise ValueError("Cannot apply client_config on already created client")
+            raise ValueError("Cannot apply client_config to already initialized client")
 
         if status is not None:
             if isinstance(status, str):
@@ -170,7 +170,7 @@ class AlpacaData(RemoteData):
             else:
                 raise ValueError(f"Invalid client type: '{client_type}'")
         elif has_client_config:
-            raise ValueError("Cannot apply client_config on already created client")
+            raise ValueError("Cannot apply client_config to already initialized client")
         return client
 
     @classmethod

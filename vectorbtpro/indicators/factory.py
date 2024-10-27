@@ -27,7 +27,7 @@ import itertools
 import re
 import warnings
 from collections import Counter, OrderedDict
-from types import ModuleType
+from types import ModuleType, FunctionType
 
 import numpy as np
 import pandas as pd
@@ -55,7 +55,7 @@ from vectorbtpro.utils.execution import Task
 from vectorbtpro.utils.formatting import camel_to_snake_case, prettify
 from vectorbtpro.utils.magic_decorators import attach_binary_magic_methods, attach_unary_magic_methods
 from vectorbtpro.utils.mapping import to_value_mapping, apply_mapping
-from vectorbtpro.utils.module_ import search_package_for_funcs
+from vectorbtpro.utils.module_ import search_package
 from vectorbtpro.utils.params import (
     to_typed_list,
     broadcast_params,
@@ -4316,7 +4316,8 @@ Other keyword arguments are passed to `{0}.run`.
         assert_can_import("technical")
         import technical
 
-        funcs = search_package_for_funcs(technical, blacklist=["technical.util"])
+        match_func = lambda k, v: isinstance(v, FunctionType)
+        funcs = search_package(technical, match_func, blacklist=["technical.util"])
         indicators = set()
         for func_name, func in funcs.items():
             try:
@@ -4335,7 +4336,8 @@ Other keyword arguments are passed to `{0}.run`.
         assert_can_import("technical")
         import technical
 
-        funcs = search_package_for_funcs(technical, blacklist=["technical.util"])
+        match_func = lambda k, v: isinstance(v, FunctionType)
+        funcs = search_package(technical, match_func, blacklist=["technical.util"])
         for k, v in funcs.items():
             if func_name.upper() == k.upper():
                 return v
