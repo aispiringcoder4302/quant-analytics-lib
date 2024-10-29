@@ -207,12 +207,19 @@ opt_dep_config = HybridConfig(
             dist_name="ipython",
             link="https://pypi.org/project/ipython/",
         ),
-        llama_index=dict(
-            link="https://pypi.org/project/llama_index/",
-        ),
         pymdownx=dict(
             dist_name="pymdown-extensions",
             link="https://pypi.org/project/pymdown-extensions/",
+        ),
+        openai=dict(
+            link="https://pypi.org/project/openai/",
+        ),
+        litellm=dict(
+            link="https://pypi.org/project/litellm/",
+        ),
+        llama_index=dict(
+            dist_name="llama-index",
+            link="https://pypi.org/project/llama-index/",
         ),
     )
 )

@@ -1041,7 +1041,7 @@ class MappedArray(Analyzable):
 
     @hybrid_method
     def apply(
-        cls_or_self: tp.Union[tp.Type[MappedArrayT], MappedArrayT],
+        cls_or_self: tp.MaybeType[MappedArrayT],
         apply_func_nb: tp.Union[tp.ApplyFunc, tp.ApplyMetaFunc],
         *args,
         group_by: tp.GroupByLike = None,

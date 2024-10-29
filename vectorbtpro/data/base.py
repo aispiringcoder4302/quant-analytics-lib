@@ -2561,7 +2561,7 @@ class Data(Analyzable, DataWithFeatures, OHLCDataMixin, metaclass=MetaData):
 
     @hybrid_method
     def merge(
-        cls_or_self: tp.Union[tp.Type[DataT], DataT],
+        cls_or_self: tp.MaybeType[DataT],
         *datas: DataT,
         rename: tp.Optional[tp.Dict[tp.Key, tp.Key]] = None,
         **kwargs,

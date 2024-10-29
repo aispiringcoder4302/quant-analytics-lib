@@ -19,7 +19,7 @@ class Chainable:
 
     @hybrid_method
     def pipe(
-        cls_or_self: tp.Union[tp.Type[ChainableT], ChainableT],
+        cls_or_self: tp.MaybeType[ChainableT],
         func: tp.Union[str, tp.Callable, tp.Tuple[tp.Union[str, tp.Callable], str]],
         *args,
         **kwargs,

@@ -623,6 +623,20 @@ class MessagesAsset(VBTAsset):
 
     _settings_path: tp.SettingsPath = "knowledge.assets.messages"
 
+    def minimize(self: MessagesAssetT, minimize_links: tp.Optional[bool] = None) -> MessagesAssetT:
+        new_instance = VBTAsset.minimize(self, minimize_links=minimize_links)
+        new_instance = new_instance.remove(
+            [
+                "block",
+                "thread",
+                "replies",
+                "mentions",
+                "reactions",
+            ],
+            skip_missing=True,
+        )
+        return new_instance
+
     def aggregate_messages(
         self: MessagesAssetT,
         metadata_format: tp.Optional[str] = None,
@@ -813,6 +827,20 @@ class PagesAsset(VBTAsset):
     For defaults, see `assets.pages` in `vectorbtpro._settings.knowledge`."""
 
     _settings_path: tp.SettingsPath = "knowledge.assets.pages"
+
+    def minimize(self: PagesAssetT, minimize_links: tp.Optional[bool] = None) -> PagesAssetT:
+        new_instance = VBTAsset.minimize(self, minimize_links=minimize_links)
+        new_instance = new_instance.remove(
+            [
+                "parent",
+                "children",
+                "type",
+                "icon",
+                "tags",
+            ],
+            skip_missing=True,
+        )
+        return new_instance
 
     def aggregate(
         self: PagesAssetT,
@@ -1024,7 +1052,7 @@ class PagesAsset(VBTAsset):
                         link_fragment1 = link_fragments[i - 1]
                         link_fragment2 = link_fragments[i]
                         if link_fragment2.startswith(link_fragment1 + "."):
-                            new_link_fragments.append("." + link_fragment2[len(link_fragment1 + "."):])
+                            new_link_fragments.append("." + link_fragment2[len(link_fragment1 + ".") :])
                         else:
                             new_link_fragments.append(link_fragment2)
                     link_fragments = new_link_fragments

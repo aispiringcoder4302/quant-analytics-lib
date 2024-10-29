@@ -9,7 +9,7 @@ from vectorbtpro import _typing as tp
 from vectorbtpro.utils import checks, search
 from vectorbtpro.utils.config import reorder_dict, reorder_list
 from vectorbtpro.utils.template import CustomTemplate, RepEval, RepFunc
-from vectorbtpro.utils.config import flat_merge_dicts, deep_merge_dicts
+from vectorbtpro.utils.config import merge_dicts, flat_merge_dicts, deep_merge_dicts
 from vectorbtpro.utils.parsing import get_func_arg_names
 from vectorbtpro.utils.execution import NoResult
 
@@ -884,13 +884,22 @@ class FindAssetFunc(AssetFunc):
                     for k, v in path_dct.items():
                         if not isinstance(v, str):
                             raise ValueError("Matched value must be string")
-                        matches = search.find(t, v, return_type=return_type, **kwargs)
+                        _return_type = "bool" if return_type.lower() == "field" else return_type
+                        matches = search.find(t, v, return_type=_return_type, **kwargs)
                         if return_path:
                             if k not in new_path_dct:
                                 new_path_dct[k] = []
-                            new_path_dct[k].extend(matches)
+                            if return_type.lower() == "field":
+                                if matches:
+                                    new_path_dct[k].append(v)
+                            else:
+                                new_path_dct[k].extend(matches)
                         else:
-                            new_list.extend(matches)
+                            if return_type.lower() == "field":
+                                if matches:
+                                    new_list.append(v)
+                            else:
+                                new_list.extend(matches)
             if return_type is None or return_type.lower() == "bool":
                 if find_all:
                     return d if return_type is None else True
@@ -990,13 +999,22 @@ class FindAssetFunc(AssetFunc):
                     for k, v in path_dct.items():
                         if not isinstance(v, str):
                             raise ValueError("Matched value must be string")
-                        matches = search.find(target, v, return_type=return_type, **kwargs)
+                        _return_type = "bool" if return_type.lower() == "field" else return_type
+                        matches = search.find(target, v, return_type=_return_type, **kwargs)
                         if return_path:
                             if k not in new_path_dct:
                                 new_path_dct[k] = []
-                            new_path_dct[k].extend(matches)
+                            if return_type.lower() == "field":
+                                if matches:
+                                    new_path_dct[k].append(v)
+                            else:
+                                new_path_dct[k].extend(matches)
                         else:
-                            new_list.extend(matches)
+                            if return_type.lower() == "field":
+                                if matches:
+                                    new_list.append(v)
+                            else:
+                                new_list.extend(matches)
                 if return_path:
                     return new_path_dct
                 return new_list
@@ -1703,7 +1721,7 @@ class CollectAssetFunc(ReduceAssetFunc):
     @classmethod
     def call(cls, d1: tp.Any, d2: tp.Any, sort_keys: bool = False) -> tp.Any:
         if not isinstance(d1, dict) or not isinstance(d2, dict):
-            raise TypeError("Data item must be a dict")
+            raise TypeError("Data items must be dicts")
         new_d1 = dict(d1)
         for k1 in d1:
             if k1 not in new_d1:
@@ -1716,3 +1734,35 @@ class CollectAssetFunc(ReduceAssetFunc):
         if sort_keys:
             return dict(sorted(new_d1.items(), key=lambda x: cls.sort_key(x[0])))
         return new_d1
+
+
+class MergeDictsAssetFunc(ReduceAssetFunc):
+    """Asset function class for `vectorbtpro.utils.knowledge.base_assets.KnowledgeAsset.merge_dicts`."""
+
+    _short_name: tp.ClassVar[tp.Optional[str]] = "merge_dicts"
+
+    _wrap: tp.ClassVar[tp.Optional[str]] = True
+
+    _initializer: tp.ClassVar[tp.Optional[tp.Any]] = {}
+
+    @classmethod
+    def call(cls, d1: tp.Any, d2: tp.Any, **kwargs) -> tp.Any:
+        if not isinstance(d1, dict) or not isinstance(d2, dict):
+            raise TypeError("Data items must be dicts")
+        return merge_dicts(d1, d2, **kwargs)
+
+
+class MergeListsAssetFunc(ReduceAssetFunc):
+    """Asset function class for `vectorbtpro.utils.knowledge.base_assets.KnowledgeAsset.merge_lists`."""
+
+    _short_name: tp.ClassVar[tp.Optional[str]] = "merge_lists"
+
+    _wrap: tp.ClassVar[tp.Optional[str]] = True
+
+    _initializer: tp.ClassVar[tp.Optional[tp.Any]] = []
+
+    @classmethod
+    def call(cls, d1: tp.Any, d2: tp.Any) -> tp.Any:
+        if not isinstance(d1, list) or not isinstance(d2, list):
+            raise TypeError("Data items must be lists")
+        return d1 + d2

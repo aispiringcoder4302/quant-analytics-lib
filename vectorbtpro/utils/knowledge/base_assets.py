@@ -2,6 +2,7 @@
 
 """Base asset classes."""
 
+import re
 import json
 from collections.abc import MutableSequence
 from pathlib import Path
@@ -19,13 +20,7 @@ from vectorbtpro.utils.config import flat_merge_dicts, deep_merge_dicts
 from vectorbtpro.utils.parsing import get_func_arg_names
 from vectorbtpro.utils.execution import Task, execute, NoResult
 from vectorbtpro.utils.module_ import get_caller_qualname
-
-try:
-    if not tp.TYPE_CHECKING:
-        raise ImportError
-    from llama_index.core.llms import LLM as LLMT
-except ImportError:
-    LLMT = tp.Any
+from vectorbtpro.utils.decorators import hybrid_method
 
 __all__ = [
     "KnowledgeAsset",
@@ -73,47 +68,55 @@ class KnowledgeAsset(Configured, MutableSequence):
                 new_single_item = False
         return cls(data=new_data, single_item=new_single_item, **kwargs)
 
-    @classmethod
+    @hybrid_method
     def merge(
-        cls: tp.Type[KnowledgeAssetT],
+        cls_or_self: tp.MaybeType[KnowledgeAssetT],
         *objs: tp.MaybeTuple[KnowledgeAssetT],
         flatten_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> KnowledgeAssetT:
-        """Merge multiple `KnowledgeAsset` instances."""
-        if len(objs) == 1:
-            objs = objs[0]
-        objs = list(objs)
-        for obj in objs:
-            if not checks.is_instance_of(obj, KnowledgeAsset):
-                raise TypeError("Each object to be merged must be an instance of KnowledgeAsset")
+        """Either merge multiple `KnowledgeAsset` instances if called as a class method,
+        or merge data items of a single instance if called as an instance method."""
+        if not isinstance(cls_or_self, type):
+            if isinstance(cls_or_self[0], list):
+                return cls_or_self.merge_lists(**kwargs)
+            if isinstance(cls_or_self[0], dict):
+                return cls_or_self.merge_dicts(**kwargs)
+            raise ValueError("Cannot determine type of data items. Use merge_lists or merge_dicts.")
+        else:
+            if len(objs) == 1:
+                objs = objs[0]
+            objs = list(objs)
+            for obj in objs:
+                if not checks.is_instance_of(obj, KnowledgeAsset):
+                    raise TypeError("Each object to be merged must be an instance of KnowledgeAsset")
 
-        if flatten_kwargs is None:
-            flatten_kwargs = {}
-        if "annotate_all" not in flatten_kwargs:
-            flatten_kwargs["annotate_all"] = True
-        if "excl_types" not in flatten_kwargs:
-            flatten_kwargs["excl_types"] = (tuple, set, frozenset)
-        max_items = 1
-        new_single_item = True
-        for obj in objs:
-            obj_data = obj.data
-            if len(obj_data) > max_items:
-                max_items = len(obj_data)
-            if not obj.single_item:
-                new_single_item = False
-        flat_data = []
-        for obj in objs:
-            obj_data = obj.data
-            if len(obj_data) == 1:
-                obj_data = [obj_data] * max_items
-            flat_obj_data = list(map(lambda x: search.flatten_obj(x, **flatten_kwargs), obj_data))
-            flat_data.append(flat_obj_data)
-        new_data = []
-        for flat_dcts in zip(*flat_data):
-            merged_flat_dct = flat_merge_dicts(*flat_dcts)
-            new_data.append(search.unflatten_obj(merged_flat_dct))
-        return cls(data=new_data, single_item=new_single_item, **kwargs)
+            if flatten_kwargs is None:
+                flatten_kwargs = {}
+            if "annotate_all" not in flatten_kwargs:
+                flatten_kwargs["annotate_all"] = True
+            if "excl_types" not in flatten_kwargs:
+                flatten_kwargs["excl_types"] = (tuple, set, frozenset)
+            max_items = 1
+            new_single_item = True
+            for obj in objs:
+                obj_data = obj.data
+                if len(obj_data) > max_items:
+                    max_items = len(obj_data)
+                if not obj.single_item:
+                    new_single_item = False
+            flat_data = []
+            for obj in objs:
+                obj_data = obj.data
+                if len(obj_data) == 1:
+                    obj_data = [obj_data] * max_items
+                flat_obj_data = list(map(lambda x: search.flatten_obj(x, **flatten_kwargs), obj_data))
+                flat_data.append(flat_obj_data)
+            new_data = []
+            for flat_dcts in zip(*flat_data):
+                merged_flat_dct = flat_merge_dicts(*flat_dcts)
+                new_data.append(search.unflatten_obj(merged_flat_dct))
+            return cls_or_self(data=new_data, single_item=new_single_item, **kwargs)
 
     @classmethod
     def from_json_file(
@@ -940,10 +943,8 @@ class KnowledgeAsset(Configured, MutableSequence):
         return_type = self.resolve_setting(return_type, "return_type")
 
         if query_engine is None or query_engine.lower() == "template":
-            from vectorbtpro.utils.knowledge.base_asset_funcs import QueryAssetFunc
-
             new_obj = self.apply(
-                QueryAssetFunc,
+                "query",
                 expression=expression,
                 template_context=template_context,
                 return_type=return_type,
@@ -1037,9 +1038,9 @@ class KnowledgeAsset(Configured, MutableSequence):
         Uses `KnowledgeAsset.apply` on `vectorbtpro.utils.knowledge.base_asset_funcs.FindAssetFunc`.
 
         Uses `vectorbtpro.utils.search.contains_in_obj` (keyword arguments are passed here)
-        to find any occurrences in each data item if `return_type` is None (returns an entire data when match)
-        or `return_type` is "bool" (returns True when match). For all other return types,
-        uses `vectorbtpro.utils.search.find_in_obj` and `vectorbtpro.utils.search.find`.
+        to find any occurrences in each data item if `return_type` is None (returns an entire data when match),
+        `return_type` is "field" (returns the field), or `return_type` is "bool" (returns True when match).
+        For all other return types, uses `vectorbtpro.utils.search.find_in_obj` and `vectorbtpro.utils.search.find`.
 
         Target can be one or multiple data items. If there are multiple targets and `find_all` is True,
         the match function will return True only if all targets have been found.
@@ -1131,6 +1132,41 @@ class KnowledgeAsset(Configured, MutableSequence):
             return_path=return_path,
             **kwargs,
         )
+
+    def find_code(
+        self,
+        target: tp.MaybeList[tp.Any],
+        language: tp.Optional[str] = None,
+        return_type: tp.Optional[str] = "match",
+        flags: int = 0,
+        **kwargs,
+    ) -> tp.Union[KnowledgeAssetT, tp.Any]:
+        """Find code using `KnowledgeAsset.find`."""
+        if not isinstance(target, list):
+            targets = [target]
+        else:
+            targets = target
+        new_targets = []
+        for target in targets:
+            if language is not None:
+                new_target = rf"""
+                ```{re.escape(language)}\n
+                (?:(?!```)[\s\S])*?
+                {re.escape(target)}
+                (?:(?!```)[\s\S])*?
+                ```
+                """
+            else:
+                new_target = rf"""
+                ```(?:\n)
+                (?:(?!```)[\s\S])*?
+                {re.escape(target)}
+                (?:(?!```)[\s\S])*?
+                ```
+                """
+            new_targets.append(new_target)
+        flags |= re.DOTALL | re.MULTILINE | re.VERBOSE
+        return self.find(new_targets, mode="regex", return_type=return_type, flags=flags, **kwargs)
 
     def find_replace(
         self: KnowledgeAssetT,
@@ -1412,29 +1448,6 @@ class KnowledgeAsset(Configured, MutableSequence):
             **kwargs,
         )
 
-    def dump_and_join(
-        self,
-        *args,
-        dump_all: tp.Optional[bool] = None,
-        separator: tp.Optional[str] = None,
-        **kwargs,
-    ) -> str:
-        """Dump and join into one string."""
-        if dump_all is None:
-            dump_all = len(self.data) > 1 and separator is None
-        if dump_all:
-            return self.dump_all(*args, **kwargs)
-        dumped = self.dump(*args, **kwargs)
-        if isinstance(dumped, KnowledgeAsset):
-            return dumped.join(separator=separator)
-        return dumped
-
-    def print(self, *args, **kwargs) -> None:
-        """Dump and print.
-
-        Uses `KnowledgeAsset.dump_and_join`."""
-        print(self.dump_and_join(*args, **kwargs))
-
     # ############# Reduce methods ############# #
 
     def reduce(
@@ -1621,19 +1634,23 @@ class KnowledgeAsset(Configured, MutableSequence):
             return self.replace(data=[d1], single_item=True)
         return d1
 
+    def merge_dicts(self: KnowledgeAssetT, **kwargs) -> tp.Union[KnowledgeAssetT, tp.Any]:
+        """Merge (dict) date items into a single dict.
+
+        Final keyword arguments are passed to `vectorbtpro.utils.config.merge_dicts`."""
+        return self.reduce("merge_dicts", **kwargs)
+
+    def merge_lists(self: KnowledgeAssetT, **kwargs) -> tp.Union[KnowledgeAssetT, tp.Any]:
+        """Merge (list) date items into a single list."""
+        return self.reduce("merge_lists", **kwargs)
+
     def collect(
         self: KnowledgeAssetT,
         sort_keys: tp.Optional[bool] = None,
         **kwargs,
     ) -> tp.Union[KnowledgeAssetT, tp.Any]:
         """Collect values of each key in each data item."""
-        from vectorbtpro.utils.knowledge.base_asset_funcs import CollectAssetFunc
-
-        return self.reduce(
-            CollectAssetFunc,
-            sort_keys=sort_keys,
-            **kwargs,
-        )
+        return self.reduce("collect", sort_keys=sort_keys, **kwargs)
 
     @classmethod
     def describe_lengths(self, lengths: list, **describe_kwargs) -> dict:
@@ -1771,6 +1788,29 @@ class KnowledgeAsset(Configured, MutableSequence):
             return "[" + joined + "]"
         return joined
 
+    def to_context(
+        self,
+        *args,
+        dump_all: tp.Optional[bool] = None,
+        separator: tp.Optional[str] = None,
+        **kwargs,
+    ) -> str:
+        """Dump and join to context."""
+        if dump_all is None:
+            dump_all = len(self.data) > 1 and separator is None
+        if dump_all:
+            return self.dump_all(*args, **kwargs)
+        dumped = self.dump(*args, **kwargs)
+        if isinstance(dumped, KnowledgeAsset):
+            return dumped.join(separator=separator)
+        return dumped
+
+    def print(self, *args, **kwargs) -> None:
+        """Convert to context and print.
+
+        Uses `KnowledgeAsset.to_context`."""
+        print(self.to_context(*args, **kwargs))
+
     # ############# LLM methods ############# #
 
     def chat(
@@ -1778,8 +1818,10 @@ class KnowledgeAsset(Configured, MutableSequence):
         question: str,
         chat_history: tp.Optional[tp.MutableSequence[str]] = None,
         stream: tp.Optional[bool] = None,
+        to_context_kwargs: tp.KwargsLike = None,
+        max_context_len: tp.Optional[int] = None,
+        system_prompt: tp.Optional[str] = None,
         context_prompt: tp.Optional[str] = None,
-        dump_kwargs: tp.KwargsLike = None,
         display_format: tp.Optional[str] = None,
         refresh_rate: tp.Optional[float] = None,
         to_markdown_kwargs: tp.KwargsLike = None,
@@ -1795,19 +1837,26 @@ class KnowledgeAsset(Configured, MutableSequence):
         output_to: tp.Optional[tp.Union[str, tp.TextIO]] = None,
         flush_output: tp.Optional[bool] = None,
         template_context: tp.KwargsLike = None,
-        llm: tp.Optional[tp.Union[str, LLMT]] = None,
-        **llm_config,
+        package: tp.Optional[str] = None,
+        **kwargs,
     ) -> tp.Optional[Path]:
         """Chat with an LLM using LlamaIndex and the dumped asset as a context.
 
-        LLM can be provided via `llm`, which can be either the name of the class, the path to the class
-        (accepted are both "llama_index.xxx.yyy" and "xxx.yyy"), or a subclass or an instance of
-        `llama_index.core.llms.LLM`. Case of strings doesn't matter.
+        The following packages are supported:
+
+        * "openai"
+        * "litellm"
+        * "llama_index"
+
+        For LlamaIndex, LLM can be provided via `llm`, which can be either the name of the class,
+        the path to the class (accepted are both "llama_index.xxx.yyy" and "xxx.yyy"), or a subclass
+        or an instance of `llama_index.core.llms.LLM`. Case of strings doesn't matter.
 
         Uses `context_prompt` as a prompt template requiring the variable "context".
         The prompt can be either a custom template, or string or function that will become one.
-        The context itself is generated by dumping and joining data items with `KnowledgeAsset.dump_and_join`
-        with `dump_kwargs` as keyword arguments. Once the prompt is evaluated, it becomes a system message.
+        The context itself is generated by dumping and joining data items with `KnowledgeAsset.to_context`
+        with `to_context_kwargs` as keyword arguments. Once the prompt is evaluated, it becomes a system message.
+        Uses `system_prompt` as a system prompt following the context prompt.
 
         Pass `chat_history` as a mutable sequence (for example, list) to keep track of chat history.
         After generating a response, the output will be appended to this sequence as an assistant message.
@@ -1819,10 +1868,11 @@ class KnowledgeAsset(Configured, MutableSequence):
 
         The following display formats are supported:
 
-        * "plain": Uses `print` to print out the output in its raw format
-        * "markdown": Uses `IPython` to render the output as a Markdown in a notebook environment
-        * "auto_notebook": Decides between "plain" and "markdown" based on the environment
-        * "html": Renders the output as a static HTML page
+        * "plain": Uses `print` to print the output in its raw format
+        * "ipython_markdown": Uses `IPython` to render the output as a Markdown in a notebook environment
+        * "ipython_html": Uses `IPython` to render the output as an HTML in a notebook environment
+        * "html": Renders the output as a static HTML page and displays it in the browser
+        * "auto_ipython": Decides between using "ipython_html" or "plain" depending on the environment
 
         If `refresh_rate` is None, will refresh as soon as the next chunk arrives (apart from refreshing
         HTML pages, here the minimum refresh rate is 1 second). Otherwise, will collect chunks and
@@ -1840,7 +1890,6 @@ class KnowledgeAsset(Configured, MutableSequence):
         under "chat" and with truncated title as prefix and random hash as suffix, or as a
         temporary file (`cache=False`). If `clear_cache` is True, deletes any existing directory
         before creating a new one. Returns the path of the directory where HTML file is stored.
-        If `open_browser` is True, opens the generated HTML page in the default web browser.
 
         The raw output can be also redirected to a file (or any IO) specified in `output_to`
         and flushed with each chunk if `flush_output` is True.
@@ -1860,14 +1909,11 @@ class KnowledgeAsset(Configured, MutableSequence):
             Yes, I am sure. The value under 'xyz' is 123 for the entry where `s` is "EFG".
             ```
         """
-        from vectorbtpro.utils.module_ import assert_can_import
-
-        assert_can_import("llama_index")
-        from llama_index.core.llms import ChatMessage, LLM
-
         stream = self.resolve_setting(stream, "stream", sub_path="chat")
+        to_context_kwargs = self.resolve_setting(to_context_kwargs, "to_context_kwargs", merge=True, sub_path="chat")
+        max_context_len = self.resolve_setting(max_context_len, "max_context_len", sub_path="chat")
+        system_prompt = self.resolve_setting(system_prompt, "system_prompt", sub_path="chat")
         context_prompt = self.resolve_setting(context_prompt, "context_prompt", sub_path="chat")
-        dump_kwargs = self.resolve_setting(dump_kwargs, "dump_kwargs", merge=True, sub_path="chat")
         display_format = self.resolve_setting(display_format, "display_format", sub_path="chat")
         refresh_rate = self.resolve_setting(refresh_rate, "refresh_rate", sub_path="chat")
         to_markdown_kwargs = self.resolve_setting(to_markdown_kwargs, "to_markdown_kwargs", merge=True, sub_path="chat")
@@ -1882,42 +1928,6 @@ class KnowledgeAsset(Configured, MutableSequence):
         output_to = self.resolve_setting(output_to, "output_to", sub_path="chat")
         flush_output = self.resolve_setting(flush_output, "flush_output", sub_path="chat")
         template_context = self.resolve_setting(template_context, "template_context", merge=True, sub_path="chat")
-        llm = self.resolve_setting(llm, "llm", sub_path="chat")
-        if isinstance(llm, str):
-            from importlib import import_module
-            from vectorbtpro.utils.module_ import search_package
-
-            if "." in llm:
-                path_parts = llm.split(".")
-                llm = path_parts[-1]
-                if len(path_parts) == 2:
-                    module_name = "llama_index.llms." + path_parts[0]
-                else:
-                    module_name = ".".join(path_parts[:-1])
-                module = import_module(module_name)
-            else:
-                import llama_index.llms
-
-                module = llama_index.llms
-            match_func = lambda k, v: isinstance(v, type) and issubclass(v, LLM)
-            candidates = search_package(module, match_func)
-            class_found = False
-            for k, v in candidates.items():
-                if llm.lower().replace("_", "") == k.lower():
-                    llm = v
-                    class_found = True
-                    break
-            if not class_found:
-                raise ValueError(f"LLM '{llm}' not found")
-        if isinstance(llm, type):
-            llm_name = llm.__name__.lower()
-        else:
-            checks.assert_instance_of(llm, LLM, arg_name="llm")
-            llm_name = type(llm).__name__.lower()
-        has_llm_config = len(llm_config) > 0
-        llm_config = self.resolve_setting(
-            llm_config, f"llm_configs.{llm_name}", default={}, merge=True, sub_path="chat"
-        )
 
         if chat_history is None:
             chat_history = []
@@ -1927,12 +1937,12 @@ class KnowledgeAsset(Configured, MutableSequence):
         else:
             close_handle = False
         if isinstance(display_format, str):
-            if display_format.lower() == "auto_notebook":
+            if display_format.lower() == "auto_ipython":
                 if checks.in_notebook():
-                    display_format = "markdown"
+                    display_format = "ipython_html"
                 else:
                     display_format = "plain"
-            elif display_format.lower() not in {"plain", "markdown", "html"}:
+            elif display_format.lower() not in {"plain", "ipython_markdown", "ipython_html", "html"}:
                 raise ValueError(f"Invalid output format: '{display_format}'")
         if isinstance(context_prompt, str):
             context_prompt = Sub(context_prompt)
@@ -1940,14 +1950,146 @@ class KnowledgeAsset(Configured, MutableSequence):
             context_prompt = RepFunc(context_prompt)
         elif not isinstance(context_prompt, CustomTemplate):
             raise TypeError(f"Context prompt must be a string, function, or template")
-        context = self.dump_and_join(**dump_kwargs)
+        context = self.to_context(**to_context_kwargs)
+        if max_context_len is not None:
+            context = context[:max_context_len]
         template_context = flat_merge_dicts(dict(context=context), template_context)
         context_prompt = context_prompt.substitute(template_context, eval_id="context_prompt")
+        messages = [
+            dict(role="system", content=system_prompt),
+            dict(role="user", content=context_prompt),
+            *chat_history,
+            dict(role="user", content=question),
+        ]
+
+        if package is None:
+            from vectorbtpro.utils.module_ import check_installed
+
+            if check_installed("openai"):
+                package = "openai"
+            elif check_installed("litellm"):
+                package = "litellm"
+            elif check_installed("llama_index"):
+                package = "llama_index"
+            else:
+                raise ValueError("No LLM packages installed")
+        if package.lower() == "openai":
+            from vectorbtpro.utils.module_ import assert_can_import
+
+            assert_can_import("openai")
+            from openai import OpenAI
+
+            openai_config = self.resolve_setting(kwargs, "openai_config", merge=True, sub_path="chat")
+            model = openai_config.pop("model", None)
+            if model is None:
+                raise ValueError("Must provide a model")
+            client_arg_names = set(get_func_arg_names(OpenAI.__init__))
+            client_kwargs = {}
+            chat_kwargs = {}
+            for k, v in openai_config.items():
+                if k in client_arg_names:
+                    client_kwargs[k] = v
+                else:
+                    chat_kwargs[k] = v
+            client = OpenAI(**client_kwargs)
+            response = client.chat.completions.create(messages=messages, model=model, stream=stream, **chat_kwargs)
+
+            def _get_chunk_content(response_chunk):
+                return response_chunk.choices[0].delta.content
+
+            def _get_full_content(response):
+                return response.choices[0].message.content
+
+        elif package.lower() == "litellm":
+            from vectorbtpro.utils.module_ import assert_can_import
+
+            assert_can_import("litellm")
+            from litellm import completion
+
+            litellm_config = self.resolve_setting(kwargs, "litellm_config", merge=True, sub_path="chat")
+            model = litellm_config.pop("model", None)
+            if model is None:
+                raise ValueError("Must provide a model")
+            response = completion(messages=messages, model=model, stream=stream, **litellm_config)
+
+            def _get_chunk_content(response_chunk):
+                return response_chunk.choices[0].delta.content
+
+            def _get_full_content(response):
+                return response.choices[0].message.content
+
+        elif package.lower() == "llama_index":
+            from vectorbtpro.utils.module_ import assert_can_import
+
+            assert_can_import("llama_index")
+            from llama_index.core.llms import LLM, ChatMessage
+
+            llama_index_config = self.resolve_setting(kwargs, "llama_index_config", merge=True, sub_path="chat")
+            llm = llama_index_config.pop("llm", None)
+            if llm is None:
+                raise ValueError("Must provide an LLM name or path")
+            if isinstance(llm, str):
+                from importlib import import_module
+                from vectorbtpro.utils.module_ import search_package
+
+                if "." in llm:
+                    path_parts = llm.split(".")
+                    llm = path_parts[-1]
+                    if len(path_parts) == 2:
+                        module_name = "llama_index.llms." + path_parts[0]
+                    else:
+                        module_name = ".".join(path_parts[:-1])
+                    module = import_module(module_name)
+                else:
+                    import llama_index.llms
+
+                    module = llama_index.llms
+                match_func = lambda k, v: isinstance(v, type) and issubclass(v, LLM)
+                candidates = search_package(module, match_func)
+                class_found = False
+                for k, v in candidates.items():
+                    if llm.lower().replace("_", "") == k.lower():
+                        llm = v
+                        class_found = True
+                        break
+                if not class_found:
+                    raise ValueError(f"LLM '{llm}' not found")
+            if isinstance(llm, type):
+                llm_name = llm.__name__.lower()
+                module_name = llm.__module__
+            else:
+                checks.assert_instance_of(llm, LLM, arg_name="llm")
+                llm_name = type(llm).__name__.lower()
+                module_name = type(llm).__module__
+            llm_configs = llama_index_config.pop("llm_configs", {})
+            if llm_name in llm_configs:
+                llama_index_config = deep_merge_dicts(llama_index_config, llm_configs[llm_name])
+            elif module_name in llm_configs:
+                llama_index_config = deep_merge_dicts(llama_index_config, llm_configs[module_name])
+            if isinstance(llm, type):
+                llm = llm(**llama_index_config)
+            elif len(kwargs) > 0:
+                raise ValueError("Cannot apply config to already initialized LLM")
+            messages = list(map(lambda x: ChatMessage(**dict(x)), messages))
+            if stream:
+                response = llm.stream_chat(messages)
+            else:
+                response = llm.chat(messages)
+
+            def _get_chunk_content(response_chunk):
+                return response_chunk.delta
+
+            def _get_full_content(response):
+                return response.message.content
+
+        else:
+            raise ValueError(f"Invalid package: '{package}'")
 
         markdown_output = None
+        html_output = None
         file_path = None
 
-        def _display_markdown(output_content):
+        def _display_ipython_markdown(output_content):
             nonlocal markdown_output
 
             from vectorbtpro.utils.knowledge.custom_asset_funcs import ToMarkdownAssetFunc
@@ -1959,6 +2101,21 @@ class KnowledgeAsset(Configured, MutableSequence):
                 markdown_output = display("", display_id=True)
             markdown_content = ToMarkdownAssetFunc.to_markdown(output_content, **to_markdown_kwargs)
             markdown_output.update(Markdown(markdown_content))
+
+        def _display_ipython_html(output_content):
+            nonlocal html_output
+
+            from vectorbtpro.utils.knowledge.custom_asset_funcs import ToMarkdownAssetFunc, ToHTMLAssetFunc
+
+            assert_can_import("IPython")
+            from IPython.display import display, HTML
+
+            if html_output is None:
+                html_output = display("", display_id=True)
+
+            markdown_content = ToMarkdownAssetFunc.to_markdown(output_content, **to_markdown_kwargs)
+            html_content = ToHTMLAssetFunc.to_html(markdown_content, **to_html_kwargs)
+            html_output.update(HTML(html_content))
 
         def _generate_html_filename(title):
             import secrets
@@ -2038,24 +2195,14 @@ class KnowledgeAsset(Configured, MutableSequence):
                 with open(str(file_path.resolve()), "w", encoding="utf-8") as f:
                     f.write(html)
 
-        if isinstance(llm, type):
-            llm = llm(**llm_config)
-        else:
-            if has_llm_config:
-                raise ValueError("Cannot apply llm_config to already initialized LLM")
-        messages = [
-            ChatMessage(role="system", content=context_prompt),
-            *chat_history,
-            ChatMessage(role="user", content=question),
-        ]
         if stream:
-            completions = llm.stream_chat(messages)
+            buffer_contents = []
             chunk_contents = []
-            for i, completion in enumerate(completions):
-                chunk_content = completion.delta
+            in_code_block = False
+            for i, response_chunk in enumerate(response):
+                chunk_content = _get_chunk_content(response_chunk)
                 if chunk_content is not None:
-                    chunk_contents.append(chunk_content)
-                    output_content = "".join(chunk_contents)
+                    buffer_contents.append(chunk_content)
                     if refresh_rate is not None:
                         import time
 
@@ -2068,25 +2215,47 @@ class KnowledgeAsset(Configured, MutableSequence):
 
                     if display_format.lower() == "plain" or output_to is not None:
                         print(chunk_content, end="", file=output_to, flush=flush_output)
-                    if display_format.lower() == "markdown":
-                        _display_markdown(output_content)
+                    else:
+                        buffer_content = "".join(buffer_contents)
+                        semi_full_content = "".join(chunk_contents[-2:] + buffer_contents)
+                        buffer_content = semi_full_content[-len(buffer_content) - 2:]
+                        lines = buffer_content.split("\n")
+                        for line in lines:
+                            if line.strip().startswith("```"):
+                                in_code_block = not in_code_block
+                    if in_code_block:
+                        full_content = "".join(chunk_contents + buffer_contents + ["\n```\n"])
+                    else:
+                        full_content = "".join(chunk_contents + buffer_contents)
+                    if display_format.lower() == "ipython_markdown":
+                        _display_ipython_markdown(full_content)
+                    if display_format.lower() == "ipython_html":
+                        _display_ipython_html(full_content)
                     if display_format.lower() == "html":
-                        _display_html(output_content, True)
-            output_content = "".join(chunk_contents)
-            if display_format.lower() == "html":
-                _display_html(output_content, False)
-        else:
-            response = llm.chat(messages)
-            output_content = response.message.content
-            if display_format.lower() == "plain" or output_to is not None:
-                print(output_content, file=output_to, flush=flush_output)
-            if display_format.lower() == "markdown":
-                _display_markdown(output_content)
-            if display_format.lower() == "html":
-                _display_html(output_content, False)
+                        _display_html(full_content, True)
+                    chunk_contents.extend(buffer_contents)
+                    buffer_contents = []
 
-        chat_history.append(ChatMessage(role="user", content=question))
-        chat_history.append(ChatMessage(role="assistant", content=output_content))
+            full_content = "".join(chunk_contents)
+            if display_format.lower() == "ipython_markdown":
+                _display_ipython_markdown(full_content)
+            if display_format.lower() == "ipython_html":
+                _display_ipython_html(full_content)
+            if display_format.lower() == "html":
+                _display_html(full_content, False)
+        else:
+            full_content = _get_full_content(response)
+            if display_format.lower() == "plain" or output_to is not None:
+                print(full_content, file=output_to, flush=flush_output)
+            if display_format.lower() == "ipython_markdown":
+                _display_ipython_markdown(full_content)
+            if display_format.lower() == "ipython_html":
+                _display_ipython_html(full_content)
+            if display_format.lower() == "html":
+                _display_html(full_content, False)
+
+        chat_history.append(dict(role="user", content=question))
+        chat_history.append(dict(role="assistant", content=full_content))
         if close_handle:
             output_to.close()
         return file_path

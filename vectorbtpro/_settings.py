@@ -2108,21 +2108,33 @@ knowledge = frozen_cfg(
     open_browser=True,
     chat=flex_cfg(
         stream=True,
-        context_prompt=f"""You are a helpful assistant.
- 
-Context information is below.
+        to_context_kwargs=flex_cfg(),
+        max_context_len=None,
+        system_prompt="You are a helpful assistant. Given the context information and not prior knowledge, answer the query.",
+        context_prompt=f"""Context information is below.
 ---------------------
 $context
----------------------
-Given the context information and not prior knowledge, answer the query.""",
+---------------------""",
         output_to=None,
         flush_output=True,
-        display_format="auto_notebook",
+        display_format="auto_ipython",
         refresh_rate=None,
         file_prefix_len=20,
         file_suffix_len=6,
-        llm="openai",
-        llm_configs=flex_cfg(),
+        openai_config=flex_cfg(
+            model="gpt-4o",
+        ),
+        litellm_config=flex_cfg(
+            model="gpt-4o",
+        ),
+        llama_index_config=flex_cfg(
+            llm="openai",
+            llm_configs=flex_cfg(
+                openai=flex_cfg(
+                    model="gpt-4o",
+                )
+            ),
+        ),
     ),
     assets=flex_cfg(
         vbt=flex_cfg(
@@ -2141,6 +2153,9 @@ Given the context information and not prior knowledge, answer the query.""",
             clear_metadata=True,
             clear_metadata_kwargs=flex_cfg(),
             dump_metadata_kwargs=flex_cfg(),
+            chat=flex_cfg(
+                system_prompt="You are an assistant with access to the VectorBT PRO (VBT) Python library documentation and Discord history. VBT is a proprietary successor to the open-source vectorbt for financial backtesting. As an expert, provide clear and accurate answers using only these sources. If metadata with links is present, reference these links to support your answers. If information isn't found, inform the user accordingly. Note that VBT exclusively refers to VectorBT PRO, which significantly differs from the open-source version. Given the context information and not prior knowledge, answer the query.",
+            ),
         ),
         messages=flex_cfg(
             asset_name="messages.json.zip",

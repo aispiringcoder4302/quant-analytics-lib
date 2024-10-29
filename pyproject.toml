@@ -149,7 +149,7 @@ knwl-base = [
     "ruamel.yaml",
     "markdown",
     "Pygments",
-    "llama_index"
+    "openai"
 ]
 knwl = [
     "vectorbtpro[knwl-base]",
@@ -160,7 +160,9 @@ knwl = [
     "rapidfuzz",
     "nestedtext",
     "toml",
-    "PyYAML"
+    "PyYAML",
+    "litellm",
+    "llama_index"
 ]
 base = [
     "vectorbtpro[data-base,ind-base,perf-base,opt-base,exec-base,plot-base,pfopt-base,stats-base,io-base,knwl-base]"
