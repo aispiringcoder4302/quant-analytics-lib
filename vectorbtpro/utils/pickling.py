@@ -24,6 +24,8 @@ PickleableT = tp.TypeVar("PickleableT", bound="Pickleable")
 __all__ = [
     "dumps",
     "loads",
+    "save_bytes",
+    "load_bytes",
     "save",
     "load",
     "RecState",

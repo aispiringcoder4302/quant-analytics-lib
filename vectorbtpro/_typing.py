@@ -321,3 +321,8 @@ PathDict = Dict[PathLikeKey, Any]
 
 # Knowledge
 AssetFuncLike = Union[str, Type[AssetFunc], FuncArgs, Task, Callable]
+
+# Chaining
+PipeFunc = Union[str, Callable, Tuple[Union[str, Callable], str]]
+PipeTask = Union[PipeFunc, Tuple[PipeFunc, Args, Kwargs], Task]
+PipeTasks = Iterable[PipeTask]
