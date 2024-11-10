@@ -2,9 +2,6 @@
 
 """Base asset function classes."""
 
-import io
-import json
-
 from vectorbtpro import _typing as tp
 from vectorbtpro.utils import checks, search
 from vectorbtpro.utils.config import reorder_dict, reorder_list
@@ -12,6 +9,7 @@ from vectorbtpro.utils.template import CustomTemplate, RepEval, RepFunc
 from vectorbtpro.utils.config import merge_dicts, flat_merge_dicts, deep_merge_dicts
 from vectorbtpro.utils.parsing import get_func_arg_names
 from vectorbtpro.utils.execution import NoResult
+from vectorbtpro.utils.formatting import dump
 
 __all__ = [
     "AssetFunc",
@@ -831,7 +829,7 @@ class FindAssetFunc(AssetFunc):
                     else:
                         x = _x
                 if not isinstance(x, str) and in_dumps:
-                    x = DumpAssetFunc.dump(x, **dump_kwargs)
+                    x = dump(x, **dump_kwargs)
                 t = target[i]
                 if return_type is None or return_type.lower() == "bool":
                     if isinstance(t, search.Not):
@@ -953,7 +951,7 @@ class FindAssetFunc(AssetFunc):
                 else:
                     x = _x
             if not isinstance(x, str) and in_dumps:
-                x = DumpAssetFunc.dump(x, **dump_kwargs)
+                x = dump(x, **dump_kwargs)
             if return_type is None:
                 if search.contains_in_obj(
                     x,
@@ -1554,98 +1552,6 @@ class DumpAssetFunc(AssetFunc):
         }
 
     @classmethod
-    def dump(cls, d: tp.Any, dump_engine: str = "nestedtext", **kwargs) -> str:
-        """Dump an object to a string."""
-        if dump_engine.lower() == "repr":
-            return repr(d)
-        if dump_engine.lower() == "prettify":
-            from vectorbtpro.utils.formatting import prettify
-
-            return prettify(d, **kwargs)
-        if dump_engine.lower() == "nestedtext":
-            from vectorbtpro.utils.module_ import assert_can_import
-
-            assert_can_import("nestedtext")
-            import nestedtext as nt
-
-            return nt.dumps(d, **kwargs)
-        if dump_engine.lower() == "yaml":
-            from vectorbtpro.utils.module_ import check_installed
-
-            if check_installed("ruamel"):
-                dump_engine = "ruamel"
-            else:
-                dump_engine = "pyyaml"
-        if dump_engine.lower() == "pyyaml":
-            from vectorbtpro.utils.module_ import assert_can_import
-
-            assert_can_import("yaml")
-            import yaml
-
-            def multiline_str_representer(dumper, data):
-                if isinstance(data, str) and "\n" in data:
-                    return dumper.represent_scalar("tag:yaml.org,2002:str", data, style="|")
-                return dumper.represent_str(data)
-
-            class CustomDumper(yaml.SafeDumper):
-                pass
-
-            CustomDumper.add_representer(str, multiline_str_representer)
-
-            if "Dumper" not in kwargs:
-                kwargs["Dumper"] = CustomDumper
-            return yaml.dump(d, **kwargs)
-        if dump_engine.lower() in ("ruamel", "ruamel.yaml"):
-            from vectorbtpro.utils.module_ import assert_can_import
-
-            assert_can_import("ruamel")
-            from ruamel.yaml import YAML
-            from ruamel.yaml.representer import RoundTripRepresenter
-
-            def multiline_str_representer(dumper, data):
-                if isinstance(data, str) and "\n" in data:
-                    return dumper.represent_scalar("tag:yaml.org,2002:str", data, style="|")
-                return dumper.represent_str(data)
-
-            class CustomRepresenter(RoundTripRepresenter):
-                pass
-
-            CustomRepresenter.add_representer(str, multiline_str_representer)
-
-            yaml = YAML(
-                typ=kwargs.pop("typ", None),
-                pure=kwargs.pop("pure", False),
-                plug_ins=kwargs.pop("plug_ins", None),
-            )
-            if "Representer" not in kwargs:
-                yaml.Representer = CustomRepresenter
-            for k, v in kwargs.items():
-                if not hasattr(yaml, k):
-                    raise AttributeError(f"Invalid YAML attribute: '{k}'")
-                if isinstance(v, tuple):
-                    getattr(yaml, k)(*v)
-                elif isinstance(v, dict):
-                    getattr(yaml, k)(**v)
-                else:
-                    setattr(yaml, k, v)
-            transform = kwargs.pop("transform", None)
-            output = io.StringIO()
-            yaml.dump(d, output, transform=transform)
-            return output.getvalue()
-        if dump_engine.lower() == "toml":
-            from vectorbtpro.utils.module_ import assert_can_import
-
-            assert_can_import("toml")
-            import toml
-
-            return toml.dumps(d, **kwargs)
-        if dump_engine.lower() == "json":
-            import json
-
-            return json.dumps(d, **kwargs)
-        raise ValueError(f"Invalid dump engine: '{dump_engine}'")
-
-    @classmethod
     def call(
         cls,
         d: tp.Any,
@@ -1668,7 +1574,7 @@ class DumpAssetFunc(AssetFunc):
                 new_d = new_d(d)
         else:
             new_d = d
-        return cls.dump(new_d, dump_engine=dump_engine, **kwargs)
+        return dump(new_d, dump_engine=dump_engine, **kwargs)
 
 
 # ############# Reduce classes ############# #

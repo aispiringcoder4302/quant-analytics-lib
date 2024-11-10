@@ -862,7 +862,7 @@ def find_exact(
     ignore_case: bool = False,
     return_type: str = "bool",
 ) -> tp.Union[bool, tp.List[tp.Union[int, str]], tp.List[tp.Tuple[int, int]]]:
-    """Find exact matches of substring in string."""
+    """Find a string."""
     if ignore_case:
         string_cmp = string.casefold()
         target_cmp = target.casefold()
@@ -875,9 +875,61 @@ def find_exact(
         if return_type == "start":
             return [0]
         if return_type == "range":
-            return [(0, len(string))]
+            return [(0, len(target))]
         if return_type == "match":
-            return [string]
+            return [target]
+        raise ValueError(f"Invalid return type: '{return_type}'")
+    return []
+
+
+def find_start(
+    target: str,
+    string: str,
+    ignore_case: bool = False,
+    return_type: str = "bool",
+) -> tp.Union[bool, tp.List[tp.Union[int, str]], tp.List[tp.Tuple[int, int]]]:
+    """Find at the start of a string."""
+    if ignore_case:
+        string_cmp = string.casefold()
+        target_cmp = target.casefold()
+    else:
+        string_cmp = string
+        target_cmp = target
+    if return_type == "bool":
+        return string_cmp.startswith(target_cmp)
+    if string_cmp == target_cmp:
+        if return_type == "start":
+            return [0]
+        if return_type == "range":
+            return [(0, len(target))]
+        if return_type == "match":
+            return [target]
+        raise ValueError(f"Invalid return type: '{return_type}'")
+    return []
+
+
+def find_end(
+    target: str,
+    string: str,
+    ignore_case: bool = False,
+    return_type: str = "bool",
+) -> tp.Union[bool, tp.List[tp.Union[int, str]], tp.List[tp.Tuple[int, int]]]:
+    """Find at the end of a string."""
+    if ignore_case:
+        string_cmp = string.casefold()
+        target_cmp = target.casefold()
+    else:
+        string_cmp = string
+        target_cmp = target
+    if return_type == "bool":
+        return string_cmp.endswith(target_cmp)
+    if string_cmp == target_cmp:
+        if return_type == "start":
+            return [0]
+        if return_type == "range":
+            return [(0, len(target))]
+        if return_type == "match":
+            return [target]
         raise ValueError(f"Invalid return type: '{return_type}'")
     return []
 
@@ -888,7 +940,7 @@ def find_substring(
     ignore_case: bool = False,
     return_type: str = "bool",
 ) -> tp.Union[bool, tp.List[tp.Union[int, str]], tp.List[tp.Tuple[int, int]]]:
-    """Find all occurrences of substring in string."""
+    """Find a substring in a string."""
     if ignore_case:
         string_cmp = string.casefold()
         target_cmp = target.casefold()
@@ -924,7 +976,7 @@ def find_regex(
     group: tp.Optional[tp.Union[int, str]] = None,
     return_type: str = "bool",
 ) -> tp.Union[bool, tp.List[tp.Union[int, str]], tp.List[tp.Tuple[int, int]]]:
-    """Find all regex matches in string."""
+    """Find a RegEx pattern in a string."""
     if ignore_case:
         flags |= re.IGNORECASE
     regex = re.compile(pattern, flags=flags)
@@ -967,7 +1019,7 @@ def find_fuzzy(
     max_l_dist: tp.Optional[int] = None,
     return_type: str = "bool",
 ) -> tp.Union[bool, tp.List[tp.Union[int, str]], tp.List[tp.Tuple[int, int]]]:
-    """Find all fuzzy matches of substring in string using fuzzysearch."""
+    """Find a substring in a string using fuzzysearch."""
     from vectorbtpro.utils.module_ import assert_can_import
 
     assert_can_import("fuzzysearch")
@@ -1008,7 +1060,7 @@ def find_rapidfuzz(
     threshold: float = 70,
     return_type: str = "bool",
 ) -> tp.Union[bool, tp.List[tp.Union[int, str]], tp.List[tp.Tuple[int, int]]]:
-    """Perform fuzzy matching between string and substring using RapidFuzz."""
+    """Find a substring in a string using RapidFuzz."""
     from vectorbtpro.utils.module_ import assert_can_import
 
     assert_can_import("rapidfuzz")
@@ -1045,6 +1097,10 @@ def find(
     """
     if mode.lower() == "exact":
         return find_exact(target, string, ignore_case=ignore_case, return_type=return_type, **kwargs)
+    if mode.lower() == "start":
+        return find_start(target, string, ignore_case=ignore_case, return_type=return_type, **kwargs)
+    if mode.lower() == "end":
+        return find_end(target, string, ignore_case=ignore_case, return_type=return_type, **kwargs)
     if mode.lower() == "substring":
         return find_substring(target, string, ignore_case=ignore_case, return_type=return_type, **kwargs)
     if mode.lower() == "regex":
@@ -1068,6 +1124,42 @@ def replace_exact(
         target = target.casefold()
     if target == string:
         return replacement
+    return string
+
+
+def replace_start(
+    target: str,
+    replacement: str,
+    string: str,
+    ignore_case: bool = False,
+) -> str:
+    """Replace at the start of a string."""
+    if ignore_case:
+        string_cmp = string.casefold()
+        target_cmp = target.casefold()
+    else:
+        string_cmp = string
+        target_cmp = target
+    if string_cmp.startswith(target_cmp):
+        return replacement + string[len(replacement):]
+    return string
+
+
+def replace_end(
+    target: str,
+    replacement: str,
+    string: str,
+    ignore_case: bool = False,
+) -> str:
+    """Replace at the end of a string."""
+    if ignore_case:
+        string_cmp = string.casefold()
+        target_cmp = target.casefold()
+    else:
+        string_cmp = string
+        target_cmp = target
+    if string_cmp.endswith(target_cmp):
+        return string[:-len(replacement)] + replacement
     return string
 
 
@@ -1110,7 +1202,7 @@ def replace_fuzzy(
     max_deletions: tp.Optional[int] = None,
     max_l_dist: tp.Optional[int] = None,
 ) -> str:
-    """Replace a target in a string using fuzzysearch."""
+    """Replace a substring in a string using fuzzysearch."""
     from vectorbtpro.utils.module_ import assert_can_import
 
     assert_can_import("fuzzysearch")
@@ -1157,6 +1249,10 @@ def replace(
     """Replace a target string within a source string using the specified mode."""
     if mode.lower() == "exact":
         return replace_exact(target, replacement, string, ignore_case=ignore_case, **kwargs)
+    if mode.lower() == "start":
+        return replace_start(target, replacement, string, ignore_case=ignore_case, **kwargs)
+    if mode.lower() == "end":
+        return replace_end(target, replacement, string, ignore_case=ignore_case, **kwargs)
     if mode.lower() == "substring":
         return replace_substring(target, replacement, string, ignore_case=ignore_case, **kwargs)
     if mode.lower() == "regex":
@@ -1171,12 +1267,16 @@ def replace(
 search_config = ReadonlyConfig(
     {
         "find_exact": find_exact,
+        "find_start": find_start,
+        "find_end": find_end,
         "find_substring": find_substring,
         "find_regex": find_regex,
         "find_fuzzy": find_fuzzy,
         "find_rapidfuzz": find_rapidfuzz,
         "find": find,
         "replace_exact": replace_exact,
+        "replace_start": replace_start,
+        "replace_end": replace_end,
         "replace_substring": replace_substring,
         "replace_regex": replace_regex,
         "replace_fuzzy": replace_fuzzy,

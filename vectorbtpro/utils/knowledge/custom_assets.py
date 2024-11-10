@@ -18,8 +18,8 @@ from vectorbtpro.utils.knowledge.base_assets import KnowledgeAsset
 
 __all__ = [
     "VBTAsset",
-    "MessagesAsset",
     "PagesAsset",
+    "MessagesAsset",
 ]
 
 
@@ -65,6 +65,7 @@ class VBTAsset(KnowledgeAsset):
         use_pygithub = cls.resolve_setting(use_pygithub, "use_pygithub")
         chunk_size = cls.resolve_setting(chunk_size, "chunk_size")
         cache = cls.resolve_setting(cache, "cache")
+        cache_dir_none = cache_dir is None
         cache_dir = cls.resolve_setting(cache_dir, "cache_dir")
         cache_mkdir_kwargs = cls.resolve_setting(cache_mkdir_kwargs, "cache_mkdir_kwargs", merge=True)
         show_progress = cls.resolve_setting(show_progress, "show_progress")
@@ -73,7 +74,10 @@ class VBTAsset(KnowledgeAsset):
         current_release = "v" + __version__
         if release_name is None:
             release_name = current_release
-        release_dir = Path(cache_dir) / "releases" / release_name
+        release_dir = Path(cache_dir)
+        if cache_dir_none:
+            release_dir /= "releases"
+            release_dir /= release_name
         if cache:
             if release_dir.exists():
                 if clear_cache:
@@ -214,16 +218,45 @@ class VBTAsset(KnowledgeAsset):
     def find_link(
         self: VBTAssetT,
         link: tp.MaybeList[str],
-        mode: str = "exact",
-        single_item: bool = False,
+        mode: str = "end",
+        single_item: bool = True,
+        consolidate: bool = True,
         **kwargs,
     ) -> tp.Union[VBTAssetT, tp.Any]:
-        """Find the item(s) corresponding to link(s)."""
-        found = self.find(link, path="link", mode=mode, single_item=single_item, **kwargs)
+        """Find item(s) corresponding to link(s)."""
+
+        def _extend_link(link):
+            from urllib.parse import urlparse
+
+            if not urlparse(link).fragment:
+                if link.endswith("/"):
+                    return [link, link[:-1]]
+                return [link, link + "/"]
+            return [link]
+
+        links = link
+        if mode.lower() in ("exact", "end"):
+            if isinstance(link, str):
+                links = _extend_link(link)
+            elif isinstance(link, list):
+                from itertools import chain
+
+                links = list(chain(*map(_extend_link, link)))
+            else:
+                raise TypeError("Link must be either string or list")
+        found = self.find(links, path="link", mode=mode, single_item=single_item, **kwargs)
         if isinstance(found, (type(self), list)):
             if len(found) == 0:
                 raise ValueError(f"No item matching '{link}'")
             if single_item and len(found) > 1:
+                if consolidate:
+                    top_parents = self.get_top_parent_links(list(found))
+                    if len(top_parents) == 1:
+                        for i, d in enumerate(found):
+                            if d["link"] == top_parents[0]:
+                                if isinstance(found, type(self)):
+                                    return found.replace(data=[d], single_item=True)
+                                return d
                 links_block = "\n".join([d["link"] for d in found])
                 raise ValueError(f"Multiple items matching '{link}':\n\n{links_block}")
         return found
@@ -251,6 +284,24 @@ class VBTAsset(KnowledgeAsset):
         if minimize_links:
             return new_instance.minimize_links()
         return new_instance
+
+    def select_previous(self: VBTAssetT, link: str, **kwargs) -> VBTAssetT:
+        """Select the previous data item."""
+        d = self.find_link(link, wrap=False, **kwargs)
+        d_index = self.index(d)
+        new_data = []
+        if d_index > 0:
+            new_data.append(self.data[d_index - 1])
+        return self.replace(data=new_data, single_item=True)
+
+    def select_next(self: VBTAssetT, link: str, **kwargs) -> VBTAssetT:
+        """Select the next data item."""
+        d = self.find_link(link, wrap=False, **kwargs)
+        d_index = self.index(d)
+        new_data = []
+        if d_index < len(self.data) - 1:
+            new_data.append(self.data[d_index + 1])
+        return self.replace(data=new_data, single_item=True)
 
     def to_markdown(
         self: VBTAssetT,
@@ -350,13 +401,16 @@ class VBTAsset(KnowledgeAsset):
         from vectorbtpro.utils.knowledge.custom_asset_funcs import ToMarkdownAssetFunc
 
         cache = self.resolve_setting(cache, "cache")
+        cache_dir_none = cache_dir is None
         cache_dir = self.resolve_setting(cache_dir, "cache_dir")
         cache_mkdir_kwargs = self.resolve_setting(cache_mkdir_kwargs, "cache_mkdir_kwargs", merge=True)
         show_progress = self.resolve_setting(show_progress, "show_progress")
         pbar_kwargs = self.resolve_setting(pbar_kwargs, "pbar_kwargs", merge=True)
 
         if cache:
-            markdown_dir = Path(cache_dir) / "markdown"
+            markdown_dir = Path(cache_dir)
+            if cache_dir_none:
+                markdown_dir /= "markdown"
             if markdown_dir.exists():
                 if clear_cache:
                     remove_dir(markdown_dir, missing_ok=True, with_contents=True)
@@ -395,6 +449,7 @@ class VBTAsset(KnowledgeAsset):
         clear_metadata: tp.Optional[bool] = None,
         clear_metadata_kwargs: tp.KwargsLike = None,
         dump_metadata_kwargs: tp.KwargsLike = None,
+        to_markdown_kwargs: tp.KwargsLike = None,
         format_html_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> tp.Union[VBTAssetT, tp.Any]:
@@ -415,18 +470,25 @@ class VBTAsset(KnowledgeAsset):
             clear_metadata=clear_metadata,
             clear_metadata_kwargs=clear_metadata_kwargs,
             dump_metadata_kwargs=dump_metadata_kwargs,
+            to_markdown_kwargs=to_markdown_kwargs,
             format_html_kwargs=format_html_kwargs,
             **kwargs,
         )
 
-    def get_top_parent_links(self) -> tp.List[str]:
-        """Get links of top parents."""
-        link_map = {d["link"]: dict(d) for d in self.data}
+    @classmethod
+    def get_top_parent_links(cls, data: tp.List[tp.Any]) -> tp.List[str]:
+        """Get links of top parents in data."""
+        link_map = {d["link"]: dict(d) for d in data}
         top_parents = []
-        for d in self.data:
+        for d in data:
             if d.get("parent", None) is None or d["parent"] not in link_map:
                 top_parents.append(d["link"])
         return top_parents
+
+    @property
+    def top_parent_links(self) -> tp.List[str]:
+        """Get links of top parents."""
+        return self.get_top_parent_links(self.data)
 
     @classmethod
     def replace_urls_in_html(cls, html: str, url_map: dict) -> str:
@@ -484,13 +546,16 @@ class VBTAsset(KnowledgeAsset):
         from vectorbtpro.utils.knowledge.custom_asset_funcs import ToHTMLAssetFunc
 
         cache = self.resolve_setting(cache, "cache")
+        cache_dir_none = cache_dir is None
         cache_dir = self.resolve_setting(cache_dir, "cache_dir")
         cache_mkdir_kwargs = self.resolve_setting(cache_mkdir_kwargs, "cache_mkdir_kwargs", merge=True)
         show_progress = self.resolve_setting(show_progress, "show_progress")
         pbar_kwargs = self.resolve_setting(pbar_kwargs, "pbar_kwargs", merge=True)
 
         if cache:
-            html_dir = Path(cache_dir) / "html"
+            html_dir = Path(cache_dir)
+            if cache_dir_none:
+                html_dir /= "html"
             if html_dir.exists():
                 if clear_cache:
                     remove_dir(html_dir, missing_ok=True, with_contents=True)
@@ -498,7 +563,7 @@ class VBTAsset(KnowledgeAsset):
         else:
             html_dir = Path(tempfile.mkdtemp(prefix=get_caller_qualname() + "_"))
         link_map = {d["link"]: dict(d) for d in self.data}
-        top_parents = self.get_top_parent_links()
+        top_parents = self.top_parent_links
         if len(top_parents) > 1:
             link_map["/"] = {}
         url_paths = self.links_to_paths(link_map.keys(), extension="html")
@@ -541,8 +606,8 @@ class VBTAsset(KnowledgeAsset):
 
     def browse(
         self,
-        entry_link: tp.Optional[tp.MaybeList[str]] = None,
-        entry_link_only: bool = False,
+        entry_link: tp.Optional[str] = None,
+        find_kwargs: tp.KwargsLike = None,
         open_browser: tp.Optional[bool] = None,
         **kwargs,
     ) -> Path:
@@ -552,37 +617,39 @@ class VBTAsset(KnowledgeAsset):
 
         Use `entry_link` to specify the link of the page that should be displayed first.
         If `entry_link` is None and there are multiple top-level parents, displays them as an index.
-
-        If `entry_link_only` is True, saves to HTML and displays only those links that are in `entry_link`.
-        Otherwise, stores **all** links and then displays only those in `entry_link`.
+        If it's not None, it will be matched using `VBTAsset.find_link` and `find_kwargs`.
 
         Keyword arguments are passed to `PagesAsset.save_to_html`."""
         open_browser = self.resolve_setting(open_browser, "open_browser")
 
-        top_parents = self.get_top_parent_links()
         if entry_link is None:
             if len(self.data) == 1:
                 entry_link = self.data[0]["link"]
             else:
+                top_parents = self.top_parent_links
                 if len(top_parents) == 1:
                     entry_link = top_parents[0]
                 else:
                     entry_link = "/"
-        if entry_link_only:
-            if entry_link == "/":
-                new_instance = self.find_link(top_parents)
-            else:
-                new_instance = self.find_link(entry_link, single_item=True)
         else:
-            new_instance = self
-        html_dir, url_map = new_instance.save_to_html(return_url_map=True, **kwargs)
+            if find_kwargs is None:
+                find_kwargs = {}
+            d = self.find_link(entry_link, wrap=False, **find_kwargs)
+            entry_link = d["link"]
+        html_dir, url_map = self.save_to_html(return_url_map=True, **kwargs)
         if open_browser:
             import webbrowser
 
             webbrowser.open(url_map[entry_link])
         return html_dir
 
-    def display(self, link: tp.Optional[str] = None, open_browser: tp.Optional[bool] = None, **kwargs) -> Path:
+    def display(
+        self,
+        link: tp.Optional[str] = None,
+        find_kwargs: tp.KwargsLike = None,
+        open_browser: tp.Optional[bool] = None,
+        **kwargs,
+    ) -> Path:
         """Display as an HTML page.
 
         Opens the web browser. Also, returns the path of the temporary HTML file."""
@@ -591,7 +658,9 @@ class VBTAsset(KnowledgeAsset):
         open_browser = self.resolve_setting(open_browser, "open_browser")
 
         if link is not None:
-            single_instance = self.find_link(link, single_item=True)
+            if find_kwargs is None:
+                find_kwargs = {}
+            single_instance = self.find_link(link, **find_kwargs)
         else:
             if len(self.data) != 1:
                 raise ValueError("Must provide link")
@@ -611,6 +680,362 @@ class VBTAsset(KnowledgeAsset):
 
             webbrowser.open("file://" + str(file_path.resolve()))
         return file_path
+
+
+PagesAssetT = tp.TypeVar("PagesAssetT", bound="PagesAsset")
+
+
+class PagesAsset(VBTAsset):
+    """Class for working with website pages.
+
+    For defaults, see `assets.pages` in `vectorbtpro._settings.knowledge`."""
+
+    _settings_path: tp.SettingsPath = "knowledge.assets.pages"
+
+    def minimize(self: PagesAssetT, minimize_links: tp.Optional[bool] = None) -> PagesAssetT:
+        new_instance = VBTAsset.minimize(self, minimize_links=minimize_links)
+        new_instance = new_instance.remove(
+            [
+                "parent",
+                "children",
+                "type",
+                "icon",
+                "tags",
+            ],
+            skip_missing=True,
+        )
+        return new_instance
+
+    def find_page(
+        self: PagesAssetT,
+        link: tp.MaybeList[str],
+        aggregate: bool = False,
+        aggregate_kwargs: tp.KwargsLike = None,
+        **kwargs,
+    ) -> tp.Union[PagesAssetT, tp.Any]:
+        """Find the page(s) corresponding to link(s).
+
+        Keyword arguments are passed to `VBTAsset.find_link`."""
+        found = self.find_link(link, **kwargs)
+        if not isinstance(found, (type(self), list)):
+            return found
+        if aggregate:
+            if aggregate_kwargs is None:
+                aggregate_kwargs = {}
+            for i, d in enumerate(found):
+                descendant_headings = self.select_descendant_headings(d["link"], include_link=True)
+                descendant_headings = descendant_headings.aggregate(**aggregate_kwargs)
+                found[i] = descendant_headings.find_link(d["link"], wrap=False)
+        return found
+
+    def find_obj(
+        self,
+        obj: tp.Any,
+        module: tp.Union[None, str, ModuleType] = None,
+        resolve: bool = True,
+        **kwargs,
+    ) -> PagesAssetT:
+        """Find the page corresponding an (internal) object or reference name."""
+        refname = prepare_refname(obj, module=module, resolve=resolve)
+        return self.find_page(f"#({re.escape(refname)})$", mode="regex", **kwargs)
+
+    def browse(
+        self,
+        entry_link: tp.Optional[str] = None,
+        descendants_only: bool = False,
+        aggregate: bool = False,
+        aggregate_kwargs: tp.KwargsLike = None,
+        **kwargs,
+    ) -> Path:
+        new_instance = self
+        if entry_link is not None and entry_link != "/" and descendants_only:
+            new_instance = new_instance.select_descendants(entry_link, include_link=True)
+        if aggregate:
+            if aggregate_kwargs is None:
+                aggregate_kwargs = {}
+            new_instance = new_instance.aggregate(**aggregate_kwargs)
+        return VBTAsset.browse(new_instance, entry_link=entry_link, **kwargs)
+
+    def display(
+        self,
+        link: tp.Optional[str] = None,
+        aggregate: bool = False,
+        aggregate_kwargs: tp.KwargsLike = None,
+        **kwargs,
+    ) -> Path:
+        new_instance = self
+        if link is not None:
+            new_instance = new_instance.find_page(
+                link,
+                aggregate=aggregate,
+                aggregate_kwargs=aggregate_kwargs,
+            )
+        elif aggregate:
+            if aggregate_kwargs is None:
+                aggregate_kwargs = {}
+            new_instance = new_instance.aggregate(**aggregate_kwargs)
+        return VBTAsset.display(new_instance, **kwargs)
+
+    def aggregate(
+        self: PagesAssetT,
+        append_obj_type: tp.Optional[bool] = None,
+        append_github_link: tp.Optional[bool] = None,
+    ) -> PagesAssetT:
+        """Aggregate pages.
+
+        Content of each heading will be converted into markdown and concatenated into the content
+        of the parent heading or page. Only regular pages and headings without parents will be left.
+
+        If `append_obj_type` is True, will also append object type to the heading name.
+        If `append_github_link` is True, will also append GitHub link to the heading name."""
+        append_obj_type = self.resolve_setting(append_obj_type, "append_obj_type")
+        append_github_link = self.resolve_setting(append_github_link, "append_github_link")
+
+        link_map = {d["link"]: dict(d) for d in self.data}
+        top_parents = self.top_parent_links
+        aggregated_links = set()
+
+        def _aggregate_content(link):
+            node = link_map[link]
+            content = node["content"]
+            if content is None:
+                content = ""
+            if node["type"].startswith("heading"):
+                level = int(node["type"].split(" ")[1])
+                heading_markdown = "#" * level + " " + node["name"]
+                if append_obj_type and node.get("obj_type", None) is not None:
+                    heading_markdown += f" | {node['obj_type']}"
+                if append_github_link and node.get("github_link", None) is not None:
+                    heading_markdown += f" | [source]({node['github_link']})"
+                if content == "":
+                    content = heading_markdown
+                else:
+                    content = f"{heading_markdown}\n\n{content}"
+
+            children = list(node["children"])
+            for child in list(children):
+                if child in link_map:
+                    child_node = link_map[child]
+                    child_content = _aggregate_content(child)
+                    if child_node["type"].startswith("heading"):
+                        if child_content.startswith("# "):
+                            content = child_content
+                        else:
+                            content += f"\n\n{child_content}"
+                        children.remove(child)
+                        aggregated_links.add(child)
+
+            if content != "":
+                node["content"] = content
+            node["children"] = children
+            return content
+
+        for top_parent in top_parents:
+            _aggregate_content(top_parent)
+
+        new_data = [link_map[link] for link in link_map if link not in aggregated_links]
+        return self.replace(data=new_data)
+
+    def select_parent(self: PagesAssetT, link: str, include_link: bool = False, **kwargs) -> PagesAssetT:
+        """Select the parent page of a link."""
+        d = self.find_page(link, wrap=False, **kwargs)
+        link_map = {d["link"]: dict(d) for d in self.data}
+        new_data = []
+        if include_link:
+            new_data.append(d)
+        if d.get("parent", None):
+            if d["parent"] in link_map:
+                new_data.append(link_map[d["parent"]])
+        return self.replace(data=new_data, single_item=True)
+
+    def select_children(self, link: str, include_link: bool = False, **kwargs) -> PagesAssetT:
+        """Select the child pages of a link."""
+        d = self.find_page(link, wrap=False, **kwargs)
+        link_map = {d["link"]: dict(d) for d in self.data}
+        new_data = []
+        if include_link:
+            new_data.append(d)
+        if d.get("children", []):
+            for child in d["children"]:
+                if child in link_map:
+                    new_data.append(link_map[child])
+        return self.replace(data=new_data, single_item=False)
+
+    def select_siblings(self, link: str, include_link: bool = False, **kwargs) -> PagesAssetT:
+        """Select the sibling pages of a link."""
+        d = self.find_page(link, wrap=False, **kwargs)
+        link_map = {d["link"]: dict(d) for d in self.data}
+        new_data = []
+        if include_link:
+            new_data.append(d)
+        if d.get("parent", None):
+            if d["parent"] in link_map:
+                parent_d = link_map[d["parent"]]
+                if parent_d.get("children", []):
+                    for child in parent_d["children"]:
+                        if include_link or child != d["link"]:
+                            if child in link_map:
+                                new_data.append(link_map[child])
+        return self.replace(data=new_data, single_item=False)
+
+    def select_descendants(self, link: str, include_link: bool = False, **kwargs) -> PagesAssetT:
+        """Select all descendant pages of a link."""
+        d = self.find_page(link, wrap=False, **kwargs)
+        link_map = {d["link"]: dict(d) for d in self.data}
+        new_data = []
+        if include_link:
+            new_data.append(d)
+        descendants = set()
+        stack = [d]
+        while stack:
+            d = stack.pop()
+            children = d.get("children", [])
+            for child in children:
+                if child in link_map and child not in descendants:
+                    descendants.add(child)
+                    new_data.append(link_map[child])
+                    stack.append(link_map[child])
+        return self.replace(data=new_data, single_item=False)
+
+    def select_branch(self, link: str, **kwargs) -> PagesAssetT:
+        """Select all descendant pages of a link including the link."""
+        return self.select_descendants(link, include_link=True, **kwargs)
+
+    def select_ancestors(self, link: str, include_link: bool = False, **kwargs) -> PagesAssetT:
+        """Select all ancestor pages of a link."""
+        d = self.find_page(link, wrap=False, **kwargs)
+        link_map = {d["link"]: dict(d) for d in self.data}
+        new_data = []
+        if include_link:
+            new_data.append(d)
+        ancestors = set()
+        parent = d.get("parent", None)
+        while parent and parent in link_map:
+            if parent in ancestors:
+                break
+            ancestors.add(parent)
+            new_data.append(link_map[parent])
+            parent = link_map[parent].get("parent", None)
+        return self.replace(data=new_data, single_item=False)
+
+    def select_parent_page(self, link: str, include_link: bool = False, **kwargs) -> PagesAssetT:
+        """Select parent page."""
+        d = self.find_page(link, wrap=False, **kwargs)
+        link_map = {d["link"]: dict(d) for d in self.data}
+        new_data = []
+        if include_link:
+            new_data.append(d)
+        ancestors = set()
+        parent = d.get("parent", None)
+        while parent and parent in link_map:
+            if parent in ancestors:
+                break
+            ancestors.add(parent)
+            new_data.append(link_map[parent])
+            if link_map[parent]["type"] == "page":
+                break
+            parent = link_map[parent].get("parent", None)
+        return self.replace(data=new_data, single_item=False)
+
+    def select_descendant_headings(self, link: str, include_link: bool = False, **kwargs) -> PagesAssetT:
+        """Select descendant headings."""
+        d = self.find_page(link, wrap=False, **kwargs)
+        link_map = {d["link"]: dict(d) for d in self.data}
+        new_data = []
+        if include_link:
+            new_data.append(d)
+        descendants = set()
+        stack = [d]
+        while stack:
+            d = stack.pop()
+            children = d.get("children", [])
+            for child in children:
+                if child in link_map and child not in descendants:
+                    if link_map[child]["type"].startswith("heading"):
+                        descendants.add(child)
+                        new_data.append(link_map[child])
+                        stack.append(link_map[child])
+        return self.replace(data=new_data, single_item=False)
+
+    def print_site_schema(
+        self,
+        append_type: bool = False,
+        append_obj_type: bool = False,
+        structure_fragments: bool = True,
+        split_fragments: bool = True,
+        **dir_tree_kwargs,
+    ) -> None:
+        """Print site schema.
+
+        If `structure_fragments` is True, builds a hierarchy of fragments. Otherwise,
+        displays them on the same level.
+
+        If `split_fragments` is True, displays fragments as continuation of their parents.
+        Otherwise, displays them in full length.
+
+        Keyword arguments are split between `KnowledgeAsset.describe` and
+        `vectorbtpro.utils.path_.dir_tree_from_paths`."""
+        link_map = {d["link"]: dict(d) for d in self.data}
+        links = []
+        for link, d in link_map.items():
+            if not structure_fragments:
+                links.append(link)
+                continue
+            x = d
+            link_base = None
+            link_fragments = []
+            while x["type"].startswith("heading") and "#" in x["link"]:
+                link_parts = x["link"].split("#")
+                if link_base is None:
+                    link_base = link_parts[0]
+                link_fragments.append("#" + link_parts[1])
+                if not x.get("parent", None) or x["parent"] not in link_map:
+                    if x["type"].startswith("heading"):
+                        level = int(x["type"].split()[1])
+                        for i in range(level - 1):
+                            link_fragments.append("?")
+                    break
+                x = link_map[x["parent"]]
+            if link_base is None:
+                links.append(link)
+            else:
+                if split_fragments and len(link_fragments) > 1:
+                    link_fragments = link_fragments[::-1]
+                    new_link_fragments = [link_fragments[0]]
+                    for i in range(1, len(link_fragments)):
+                        link_fragment1 = link_fragments[i - 1]
+                        link_fragment2 = link_fragments[i]
+                        if link_fragment2.startswith(link_fragment1 + "."):
+                            new_link_fragments.append("." + link_fragment2[len(link_fragment1 + ".") :])
+                        else:
+                            new_link_fragments.append(link_fragment2)
+                    link_fragments = new_link_fragments
+                links.append(link_base + "/".join(link_fragments))
+        paths = self.links_to_paths(links, allow_fragments=not structure_fragments)
+
+        path_names = []
+        for i, d in enumerate(link_map.values()):
+            path_name = paths[i].name
+            brackets = []
+            if append_type:
+                brackets.append(d["type"])
+            if append_obj_type and d["obj_type"]:
+                brackets.append(d["obj_type"])
+            if brackets:
+                path_name += f" [{', '.join(brackets)}]"
+            path_names.append(path_name)
+        if "root_name" not in dir_tree_kwargs:
+            root_name = get_common_prefix(link_map.keys())
+            if not root_name:
+                root_name = "/"
+            dir_tree_kwargs["root_name"] = root_name
+        if "sort" not in dir_tree_kwargs:
+            dir_tree_kwargs["sort"] = False
+        if "path_names" not in dir_tree_kwargs:
+            dir_tree_kwargs["path_names"] = path_names
+        if "length_limit" not in dir_tree_kwargs:
+            dir_tree_kwargs["length_limit"] = None
+        print(dir_tree_from_paths(paths, **dir_tree_kwargs))
 
 
 MessagesAssetT = tp.TypeVar("MessagesAssetT", bound="MessagesAsset")
@@ -695,7 +1120,7 @@ class MessagesAsset(VBTAsset):
             collect_kwargs = {}
         if "uniform_groups" not in collect_kwargs:
             collect_kwargs["uniform_groups"] = True
-        instance = self.collect(by_path="block", wrap=True, **collect_kwargs)
+        instance = self.collect(by="block", wrap=True, **collect_kwargs)
         return instance.apply(
             "agg_block",
             aggregate_fields=aggregate_fields,
@@ -732,7 +1157,7 @@ class MessagesAsset(VBTAsset):
             collect_kwargs = {}
         if "uniform_groups" not in collect_kwargs:
             collect_kwargs["uniform_groups"] = True
-        instance = self.collect(by_path="thread", wrap=True, **collect_kwargs)
+        instance = self.collect(by="thread", wrap=True, **collect_kwargs)
         return instance.apply(
             "agg_thread",
             aggregate_fields=aggregate_fields,
@@ -769,7 +1194,7 @@ class MessagesAsset(VBTAsset):
             collect_kwargs = {}
         if "uniform_groups" not in collect_kwargs:
             collect_kwargs["uniform_groups"] = True
-        instance = self.collect(by_path="channel", wrap=True, **collect_kwargs)
+        instance = self.collect(by="channel", wrap=True, **collect_kwargs)
         return instance.apply(
             "agg_channel",
             aggregate_fields=aggregate_fields,
@@ -784,301 +1209,90 @@ class MessagesAsset(VBTAsset):
             **kwargs,
         )
 
-    def aggregate(self, by: str, *args, **kwargs) -> tp.Union[MessagesAssetT, tp.Any]:
-        """Aggregate by "message" (attachments), "block", "channel", "thread", or "server"."""
+    @property
+    def lowest_aggregate_by(self) -> str:
+        """Get the lowest level that aggregates all messages."""
+        if len(self) == 1 and self[0].get("attachments", []):
+            return "message"
+        try:
+            if len(set(self.get("block"))) == 1:
+                return "block"
+        except KeyError:
+            pass
+        try:
+            if len(set(self.get("thread"))) == 1:
+                return "thread"
+        except KeyError:
+            pass
+        try:
+            if len(set(self.get("channel"))) == 1:
+                return "channel"
+        except KeyError:
+            pass
+        raise ValueError("Must provide by")
+
+    def aggregate(self, by: tp.Optional[str] = None, *args, **kwargs) -> tp.Union[MessagesAssetT, tp.Any]:
+        """Aggregate by "message" (attachments), "block", "thread", or "channel".
+
+        If `by` is None, uses `MessagesAsset.lowest_aggregate_by`."""
+        if by is None:
+            by = self.lowest_aggregate_by
         if not by.lower().endswith("s"):
             by += "s"
         return getattr(self, "aggregate_" + by.lower())(*args, **kwargs)
 
-    def select_block(self: MessagesAssetT, link: str, include_self: bool = True, **kwargs) -> MessagesAssetT:
-        """Select the messages that belong to the block of a link."""
-        d = self.find_link(link, single_item=True, wrap=False, **kwargs)
+    def select_reference(self: MessagesAssetT, link: str, **kwargs) -> MessagesAssetT:
+        """Select the reference message."""
+        d = self.find_link(link, wrap=False, **kwargs)
+        reference = d.get("reference", None)
         new_data = []
-        for d2 in self.data:
-            if d2["block"] == d["block"] and (include_self or d2["link"] != d["link"]):
-                new_data.append(d2)
-        return self.replace(data=new_data)
-
-    def select_thread(self: MessagesAssetT, link: str, include_self: bool = True, **kwargs) -> MessagesAssetT:
-        """Select the messages that belong to the thread of a link."""
-        d = self.find_link(link, single_item=True, wrap=False, **kwargs)
-        new_data = []
-        for d2 in self.data:
-            if d2["thread"] == d["thread"] and (include_self or d2["link"] != d["link"]):
-                new_data.append(d2)
-        return self.replace(data=new_data)
-
-    def select_channel(self: MessagesAssetT, link: str, include_self: bool = True, **kwargs) -> MessagesAssetT:
-        """Select the messages that belong to the channel of a link."""
-        d = self.find_link(link, single_item=True, wrap=False, **kwargs)
-        new_data = []
-        for d2 in self.data:
-            if d2["channel"] == d["channel"] and (include_self or d2["link"] != d["link"]):
-                new_data.append(d2)
-        return self.replace(data=new_data)
-
-
-PagesAssetT = tp.TypeVar("PagesAssetT", bound="PagesAsset")
-
-
-class PagesAsset(VBTAsset):
-    """Class for working with website pages.
-
-    For defaults, see `assets.pages` in `vectorbtpro._settings.knowledge`."""
-
-    _settings_path: tp.SettingsPath = "knowledge.assets.pages"
-
-    def minimize(self: PagesAssetT, minimize_links: tp.Optional[bool] = None) -> PagesAssetT:
-        new_instance = VBTAsset.minimize(self, minimize_links=minimize_links)
-        new_instance = new_instance.remove(
-            [
-                "parent",
-                "children",
-                "type",
-                "icon",
-                "tags",
-            ],
-            skip_missing=True,
-        )
-        return new_instance
-
-    def aggregate(
-        self: PagesAssetT,
-        append_obj_type: tp.Optional[bool] = None,
-        append_github_link: tp.Optional[bool] = None,
-    ) -> PagesAssetT:
-        """Aggregate pages.
-
-        Content of each heading will be converted into markdown and concatenated into the content
-        of the parent heading or page. Only regular pages and headings without parents will be left.
-
-        If `append_obj_type` is True, will also append object type to the heading name.
-        If `append_github_link` is True, will also append GitHub link to the heading name."""
-        append_obj_type = self.resolve_setting(append_obj_type, "append_obj_type")
-        append_github_link = self.resolve_setting(append_github_link, "append_github_link")
-
-        link_map = {d["link"]: dict(d) for d in self.data}
-        top_parents = self.get_top_parent_links()
-        aggregated_links = set()
-
-        def _aggregate_content(link):
-            node = link_map[link]
-            content = node["content"]
-            if content is None:
-                content = ""
-            if node["type"].startswith("heading"):
-                level = int(node["type"].split(" ")[1])
-                heading_markdown = "#" * level + " " + node["name"]
-                if append_obj_type and node.get("obj_type", None) is not None:
-                    heading_markdown += f" | {node['obj_type']}"
-                if append_github_link and node.get("github_link", None) is not None:
-                    heading_markdown += f" | [source]({node['github_link']})"
-                if content == "":
-                    content = heading_markdown
-                else:
-                    content = f"{heading_markdown}\n\n{content}"
-
-            children = list(node["children"])
-            for child in list(children):
-                child_node = link_map[child]
-                child_content = _aggregate_content(child)
-                if child_node["type"].startswith("heading"):
-                    if child_content.startswith("# "):
-                        content = child_content
-                    else:
-                        content += f"\n\n{child_content}"
-                    children.remove(child)
-                    aggregated_links.add(child)
-
-            if content != "":
-                node["content"] = content
-            node["children"] = children
-            return content
-
-        for top_parent in top_parents:
-            _aggregate_content(top_parent)
-
-        new_data = [link_map[link] for link in link_map if link not in aggregated_links]
-        return self.replace(data=new_data)
-
-    def find_page(
-        self: PagesAssetT,
-        link: tp.MaybeList[str],
-        aggregate: bool = False,
-        append_obj_type: tp.Optional[bool] = None,
-        append_github_link: tp.Optional[bool] = None,
-        **kwargs,
-    ) -> tp.Union[PagesAssetT, tp.Any]:
-        """Find the page(s) corresponding to link(s).
-
-        Keyword arguments are passed to `VBTAsset.find_link`."""
-        found = self.find_link(link, **kwargs)
-        if aggregate:
-            found += self.select_descendants(found[0]["link"])
-            return found.aggregate(append_obj_type=append_obj_type, append_github_link=append_github_link)
-        return found
-
-    def find_obj(
-        self,
-        obj: tp.Any,
-        module: tp.Union[None, str, ModuleType] = None,
-        resolve: bool = True,
-        **kwargs,
-    ) -> PagesAssetT:
-        """Find the page corresponding an (internal) object or reference name."""
-        refname = prepare_refname(obj, module=module, resolve=resolve)
-        return self.find_page(f"#({re.escape(refname)})$", mode="regex", single_item=True, **kwargs)
-
-    def select_parent(self: PagesAssetT, link: str, include_self: bool = False, **kwargs) -> PagesAssetT:
-        """Select the parent page of a link."""
-        d = self.find_page(link, single_item=True, wrap=False, **kwargs)
-        link_map = {d["link"]: dict(d) for d in self.data}
-        new_data = []
-        if include_self:
-            new_data.append(d)
-        if d.get("parent", None):
-            new_data.append(link_map[d["parent"]])
+        if reference:
+            for d2 in self.data:
+                if d2["reference"] == reference:
+                    new_data.append(d2)
+                    break
         return self.replace(data=new_data, single_item=True)
 
-    def select_children(self, link: str, include_self: bool = False, **kwargs) -> PagesAssetT:
-        """Select the child pages of a link."""
-        d = self.find_page(link, single_item=True, wrap=False, **kwargs)
-        link_map = {d["link"]: dict(d) for d in self.data}
+    def select_replies(self: MessagesAssetT, link: str, **kwargs) -> MessagesAssetT:
+        """Select the reply messages."""
+        d = self.find_link(link, wrap=False, **kwargs)
+        replies = d.get("replies", [])
         new_data = []
-        if include_self:
-            new_data.append(d)
-        if d.get("children", []):
-            for child in d["children"]:
-                new_data.append(link_map[child])
+        if replies:
+            reply_data = {reply: None for reply in replies}
+            replies_found = 0
+            for d2 in self.data:
+                if d2["link"] in reply_data:
+                    reply_data[d2["link"]] = d2
+                    replies_found += 1
+                    if replies_found == len(replies):
+                        break
+            new_data = list(reply_data.values())
+        return self.replace(data=new_data, single_item=True)
+
+    def select_block(self: MessagesAssetT, link: str, include_link: bool = True, **kwargs) -> MessagesAssetT:
+        """Select the messages that belong to the block of a link."""
+        d = self.find_link(link, wrap=False, **kwargs)
+        new_data = []
+        for d2 in self.data:
+            if d2["block"] == d["block"] and (include_link or d2["link"] != d["link"]):
+                new_data.append(d2)
         return self.replace(data=new_data, single_item=False)
 
-    def select_siblings(self, link: str, include_self: bool = False, **kwargs) -> PagesAssetT:
-        """Select the sibling pages of a link."""
-        d = self.find_page(link, single_item=True, wrap=False, **kwargs)
-        link_map = {d["link"]: dict(d) for d in self.data}
+    def select_thread(self: MessagesAssetT, link: str, include_link: bool = True, **kwargs) -> MessagesAssetT:
+        """Select the messages that belong to the thread of a link."""
+        d = self.find_link(link, wrap=False, **kwargs)
         new_data = []
-        if include_self:
-            new_data.append(d)
-        if d.get("parent", None):
-            parent_d = link_map[d["parent"]]
-            if parent_d.get("children", []):
-                for child in parent_d["children"]:
-                    if include_self or child != d["link"]:
-                        new_data.append(link_map[child])
+        for d2 in self.data:
+            if d2["thread"] == d["thread"] and (include_link or d2["link"] != d["link"]):
+                new_data.append(d2)
         return self.replace(data=new_data, single_item=False)
 
-    def select_descendants(self, link: str, include_self: bool = False, **kwargs) -> PagesAssetT:
-        """Select all descendant pages of a link."""
-        d = self.find_page(link, single_item=True, wrap=False, **kwargs)
-        link_map = {d["link"]: dict(d) for d in self.data}
+    def select_channel(self: MessagesAssetT, link: str, include_link: bool = True, **kwargs) -> MessagesAssetT:
+        """Select the messages that belong to the channel of a link."""
+        d = self.find_link(link, wrap=False, **kwargs)
         new_data = []
-        if include_self:
-            new_data.append(d)
-        descendants = set()
-        stack = [d]
-        while stack:
-            d = stack.pop()
-            children = d.get("children", [])
-            for child in children:
-                if child not in descendants:
-                    descendants.add(child)
-                    new_data.append(link_map[child])
-                    stack.append(link_map[child])
+        for d2 in self.data:
+            if d2["channel"] == d["channel"] and (include_link or d2["link"] != d["link"]):
+                new_data.append(d2)
         return self.replace(data=new_data, single_item=False)
-
-    def select_ancestors(self, link: str, include_self: bool = False, **kwargs) -> PagesAssetT:
-        """Select all ancestor pages of a link."""
-        d = self.find_page(link, single_item=True, wrap=False, **kwargs)
-        link_map = {d["link"]: dict(d) for d in self.data}
-        new_data = []
-        if include_self:
-            new_data.append(d)
-        ancestors = set()
-        parent = d.get("parent", None)
-        while parent:
-            if parent in ancestors:
-                break
-            ancestors.add(parent)
-            new_data.append(link_map[parent])
-            parent = link_map[parent].get("parent", None)
-        return self.replace(data=new_data, single_item=False)
-
-    def print_site_schema(
-        self,
-        append_type: bool = False,
-        append_obj_type: bool = False,
-        structure_fragments: bool = True,
-        split_fragments: bool = True,
-        **dir_tree_kwargs,
-    ) -> None:
-        """Print site schema.
-
-        If `structure_fragments` is True, builds a hierarchy of fragments. Otherwise,
-        displays them on the same level.
-
-        If `split_fragments` is True, displays fragments as continuation of their parents.
-        Otherwise, displays them in full length.
-
-        Keyword arguments are split between `KnowledgeAsset.describe` and
-        `vectorbtpro.utils.path_.dir_tree_from_paths`."""
-        link_map = {d["link"]: dict(d) for d in self.data}
-        links = []
-        for link, d in link_map.items():
-            if not structure_fragments:
-                links.append(link)
-                continue
-            x = d
-            link_base = None
-            link_fragments = []
-            while x["type"].startswith("heading") and "#" in x["link"]:
-                link_parts = x["link"].split("#")
-                if link_base is None:
-                    link_base = link_parts[0]
-                link_fragments.append("#" + link_parts[1])
-                if not x.get("parent", None) or x["parent"] not in link_map:
-                    if x["type"].startswith("heading"):
-                        level = int(x["type"].split()[1])
-                        for i in range(level - 1):
-                            link_fragments.append("?")
-                    break
-                x = link_map[x["parent"]]
-            if link_base is None:
-                links.append(link)
-            else:
-                if split_fragments and len(link_fragments) > 1:
-                    link_fragments = link_fragments[::-1]
-                    new_link_fragments = [link_fragments[0]]
-                    for i in range(1, len(link_fragments)):
-                        link_fragment1 = link_fragments[i - 1]
-                        link_fragment2 = link_fragments[i]
-                        if link_fragment2.startswith(link_fragment1 + "."):
-                            new_link_fragments.append("." + link_fragment2[len(link_fragment1 + ".") :])
-                        else:
-                            new_link_fragments.append(link_fragment2)
-                    link_fragments = new_link_fragments
-                links.append(link_base + "/".join(link_fragments))
-        paths = self.links_to_paths(links, allow_fragments=not structure_fragments)
-
-        path_names = []
-        for i, d in enumerate(link_map.values()):
-            path_name = paths[i].name
-            brackets = []
-            if append_type:
-                brackets.append(d["type"])
-            if append_obj_type and d["obj_type"]:
-                brackets.append(d["obj_type"])
-            if brackets:
-                path_name += f" [{', '.join(brackets)}]"
-            path_names.append(path_name)
-        if "root_name" not in dir_tree_kwargs:
-            root_name = get_common_prefix(link_map.keys())
-            if not root_name:
-                root_name = "/"
-            dir_tree_kwargs["root_name"] = root_name
-        if "sort" not in dir_tree_kwargs:
-            dir_tree_kwargs["sort"] = False
-        if "path_names" not in dir_tree_kwargs:
-            dir_tree_kwargs["path_names"] = path_names
-        if "length_limit" not in dir_tree_kwargs:
-            dir_tree_kwargs["length_limit"] = None
-        print(dir_tree_from_paths(paths, **dir_tree_kwargs))

@@ -314,19 +314,19 @@ class ToHTMLAssetFunc(ToMarkdownAssetFunc):
         html_metadata: tp.Optional[str] = None,
         html_content: tp.Optional[str] = None,
         use_pygments: tp.Optional[bool] = None,
-        formatter_kwargs: tp.KwargsLike = None,
-        extra_css: tp.Optional[tp.MaybeList[str]] = None,
+        pygments_kwargs: tp.KwargsLike = None,
+        style_extras: tp.Optional[tp.MaybeList[str]] = None,
         head_extras: tp.Optional[tp.MaybeList[str]] = None,
-        scripts: tp.Optional[tp.MaybeList[str]] = None,
+        body_extras: tp.Optional[tp.MaybeList[str]] = None,
     ) -> str:
         """Format HTML template.
 
         If `use_pygments` is True, uses Pygments package for code highlighting. Arguments in
-        `formatter_kwargs` are then passed to `pygments.formatters.HtmlFormatter.
+        `pygments_kwargs` are then passed to `pygments.formatters.HtmlFormatter`.
 
-        Use `extra_css` to inject additional CSS rules outside the predefined ones.
+        Use `style_extras` to inject additional CSS rules outside the predefined ones.
         Use `head_extras` to inject additional HTML elements into the <head> section, such as meta tags,
-        links to external stylesheets, or scripts. Use `scripts` to inject JavaScript files or inline
+        links to external stylesheets, or scripts. Use `body_extras` to inject JavaScript files or inline
         scripts at the end of the <body>. All of these arguments can be lists."""
         from vectorbtpro.utils.module_ import check_installed, assert_can_import
 
@@ -336,13 +336,13 @@ class ToHTMLAssetFunc(ToMarkdownAssetFunc):
             html_metadata = ""
         if html_content is None:
             html_content = ""
-        if extra_css is None:
-            extra_css = []
-        if isinstance(extra_css, str):
-            extra_css = [extra_css]
-        if not isinstance(extra_css, list):
-            extra_css = list(extra_css)
-        extra_css = "\n".join(extra_css)
+        if style_extras is None:
+            style_extras = []
+        if isinstance(style_extras, str):
+            style_extras = [style_extras]
+        if not isinstance(style_extras, list):
+            style_extras = list(style_extras)
+        style_extras = "\n".join(style_extras)
         if head_extras is None:
             head_extras = []
         if isinstance(head_extras, str):
@@ -350,25 +350,25 @@ class ToHTMLAssetFunc(ToMarkdownAssetFunc):
         if not isinstance(head_extras, list):
             head_extras = list(head_extras)
         head_extras = "\n".join(head_extras)
-        if scripts is None:
-            scripts = []
-        if isinstance(scripts, str):
-            scripts = [scripts]
-        if not isinstance(scripts, list):
-            scripts = list(scripts)
-        scripts = "\n".join(scripts)
+        if body_extras is None:
+            body_extras = []
+        if isinstance(body_extras, str):
+            body_extras = [body_extras]
+        if not isinstance(body_extras, list):
+            body_extras = list(body_extras)
+        body_extras = "\n".join(body_extras)
         if use_pygments is None:
             use_pygments = check_installed("pygments")
         if use_pygments:
             assert_can_import("pygments")
             from pygments.formatters import HtmlFormatter
 
-            formatter = HtmlFormatter(**formatter_kwargs)
+            formatter = HtmlFormatter(**pygments_kwargs)
             highlight_css = formatter.get_style_defs(".highlight")
-            if extra_css == "":
-                extra_css = highlight_css
+            if style_extras == "":
+                style_extras = highlight_css
             else:
-                extra_css = highlight_css + "\n" + extra_css
+                style_extras = highlight_css + "\n" + style_extras
         return f"""<!DOCTYPE html>
 <html>
 <head>
@@ -434,14 +434,14 @@ class ToHTMLAssetFunc(ToMarkdownAssetFunc):
             background-color: #fff3cd;
             border-left-color: #ffc107;
         }}
-        {extra_css}
+        {style_extras}
     </style>
     {head_extras}
 </head>
 <body>
     {html_metadata}
     {html_content}
-    {scripts}
+    {body_extras}
 </body>
 </html>"""
 
@@ -567,6 +567,8 @@ class AggMessageAssetFunc(AssetFunc):
             clear_metadata_kwargs = {}
         if dump_metadata_kwargs is None:
             dump_metadata_kwargs = {}
+        if to_markdown_kwargs is None:
+            to_markdown_kwargs = {}
         if to_html_kwargs is None:
             to_html_kwargs = {}
 
@@ -689,6 +691,8 @@ class AggBlockAssetFunc(AssetFunc):
             clear_metadata_kwargs = {}
         if dump_metadata_kwargs is None:
             dump_metadata_kwargs = {}
+        if to_markdown_kwargs is None:
+            to_markdown_kwargs = {}
         if to_html_kwargs is None:
             to_html_kwargs = {}
 
@@ -820,6 +824,8 @@ class AggThreadAssetFunc(AggBlockAssetFunc):
             clear_metadata_kwargs = {}
         if dump_metadata_kwargs is None:
             dump_metadata_kwargs = {}
+        if to_markdown_kwargs is None:
+            to_markdown_kwargs = {}
         if to_html_kwargs is None:
             to_html_kwargs = {}
 
@@ -940,6 +946,8 @@ class AggChannelAssetFunc(AggThreadAssetFunc):
             clear_metadata_kwargs = {}
         if dump_metadata_kwargs is None:
             dump_metadata_kwargs = {}
+        if to_markdown_kwargs is None:
+            to_markdown_kwargs = {}
         if to_html_kwargs is None:
             to_html_kwargs = {}
 

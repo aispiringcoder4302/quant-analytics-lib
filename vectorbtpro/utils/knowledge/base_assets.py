@@ -21,6 +21,14 @@ from vectorbtpro.utils.parsing import get_func_arg_names
 from vectorbtpro.utils.execution import Task, execute, NoResult
 from vectorbtpro.utils.module_ import get_caller_qualname
 from vectorbtpro.utils.decorators import hybrid_method
+from vectorbtpro.utils.chaining import Chainable
+
+try:
+    if not tp.TYPE_CHECKING:
+        raise ImportError
+    from tiktoken import Encoding as EncodingT
+except ImportError:
+    EncodingT = tp.Any
 
 __all__ = [
     "KnowledgeAsset",
@@ -33,7 +41,7 @@ __all__ = [
 KnowledgeAssetT = tp.TypeVar("KnowledgeAssetT", bound="KnowledgeAsset")
 
 
-class KnowledgeAsset(Configured, MutableSequence):
+class KnowledgeAsset(Configured, Chainable, MutableSequence):
     """Class for working with a knowledge asset.
 
     This class behaves like a mutable sequence.
@@ -75,48 +83,67 @@ class KnowledgeAsset(Configured, MutableSequence):
         flatten_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> KnowledgeAssetT:
-        """Either merge multiple `KnowledgeAsset` instances if called as a class method,
-        or merge data items of a single instance if called as an instance method."""
-        if not isinstance(cls_or_self, type):
+        """Either merge multiple `KnowledgeAsset` instances if called as a class method or instance
+        method with at least one additional object, or merge data items of a single instance if called
+        as an instance method with no additional objects.
+
+        Usage:
+            ```pycon
+            >>> asset1 = asset.select(["s"])
+            >>> asset2 = asset.select(["b", "d2"])
+            >>> asset1.merge(asset2).get()
+            [{'s': 'ABC', 'b': True, 'd2': {'c': 'red', 'l': [1, 2]}},
+             {'s': 'BCD', 'b': True, 'd2': {'c': 'blue', 'l': [3, 4]}},
+             {'s': 'CDE', 'b': False, 'd2': {'c': 'green', 'l': [5, 6]}},
+             {'s': 'DEF', 'b': False, 'd2': {'c': 'yellow', 'l': [7, 8]}},
+             {'s': 'EFG', 'b': False, 'd2': {'c': 'black', 'l': [9, 10]}}]
+            ```
+        """
+        if not isinstance(cls_or_self, type) and len(objs) == 0:
             if isinstance(cls_or_self[0], list):
                 return cls_or_self.merge_lists(**kwargs)
             if isinstance(cls_or_self[0], dict):
                 return cls_or_self.merge_dicts(**kwargs)
             raise ValueError("Cannot determine type of data items. Use merge_lists or merge_dicts.")
+        elif not isinstance(cls_or_self, type) and len(objs) > 0:
+            objs = (cls_or_self, *objs)
+            cls = type(cls_or_self)
         else:
-            if len(objs) == 1:
-                objs = objs[0]
-            objs = list(objs)
-            for obj in objs:
-                if not checks.is_instance_of(obj, KnowledgeAsset):
-                    raise TypeError("Each object to be merged must be an instance of KnowledgeAsset")
+            cls = cls_or_self
 
-            if flatten_kwargs is None:
-                flatten_kwargs = {}
-            if "annotate_all" not in flatten_kwargs:
-                flatten_kwargs["annotate_all"] = True
-            if "excl_types" not in flatten_kwargs:
-                flatten_kwargs["excl_types"] = (tuple, set, frozenset)
-            max_items = 1
-            new_single_item = True
-            for obj in objs:
-                obj_data = obj.data
-                if len(obj_data) > max_items:
-                    max_items = len(obj_data)
-                if not obj.single_item:
-                    new_single_item = False
-            flat_data = []
-            for obj in objs:
-                obj_data = obj.data
-                if len(obj_data) == 1:
-                    obj_data = [obj_data] * max_items
-                flat_obj_data = list(map(lambda x: search.flatten_obj(x, **flatten_kwargs), obj_data))
-                flat_data.append(flat_obj_data)
-            new_data = []
-            for flat_dcts in zip(*flat_data):
-                merged_flat_dct = flat_merge_dicts(*flat_dcts)
-                new_data.append(search.unflatten_obj(merged_flat_dct))
-            return cls_or_self(data=new_data, single_item=new_single_item, **kwargs)
+        if len(objs) == 1:
+            objs = objs[0]
+        objs = list(objs)
+        for obj in objs:
+            if not checks.is_instance_of(obj, KnowledgeAsset):
+                raise TypeError("Each object to be merged must be an instance of KnowledgeAsset")
+
+        if flatten_kwargs is None:
+            flatten_kwargs = {}
+        if "annotate_all" not in flatten_kwargs:
+            flatten_kwargs["annotate_all"] = True
+        if "excl_types" not in flatten_kwargs:
+            flatten_kwargs["excl_types"] = (tuple, set, frozenset)
+        max_items = 1
+        new_single_item = True
+        for obj in objs:
+            obj_data = obj.data
+            if len(obj_data) > max_items:
+                max_items = len(obj_data)
+            if not obj.single_item:
+                new_single_item = False
+        flat_data = []
+        for obj in objs:
+            obj_data = obj.data
+            if len(obj_data) == 1:
+                obj_data = [obj_data] * max_items
+            flat_obj_data = list(map(lambda x: search.flatten_obj(x, **flatten_kwargs), obj_data))
+            flat_data.append(flat_obj_data)
+        new_data = []
+        for flat_dcts in zip(*flat_data):
+            merged_flat_dct = flat_merge_dicts(*flat_dcts)
+            new_data.append(search.unflatten_obj(merged_flat_dct))
+        return cls(data=new_data, single_item=new_single_item, **kwargs)
 
     @classmethod
     def from_json_file(
@@ -318,14 +345,66 @@ class KnowledgeAsset(Configured, MutableSequence):
             return None
         return self.replace(data=new_data)
 
+    def remove_empty(self, inplace: bool = False) -> tp.Optional[KnowledgeAssetT]:
+        """Remove empty data items."""
+        from vectorbtpro.utils.knowledge.base_asset_funcs import FindRemoveAssetFunc
+
+        new_data = [d for d in self.data if not FindRemoveAssetFunc.is_empty_func(d)]
+        if inplace:
+            self.modify_data(new_data)
+            return None
+        return self.replace(data=new_data)
+
+    def unique(
+        self: KnowledgeAssetT,
+        *args,
+        keep: str = "first",
+        inplace: bool = False,
+        **kwargs,
+    ) -> tp.Optional[KnowledgeAssetT]:
+        """De-duplicate based on `KnowledgeAsset.get` called on `*args` and `**kwargs`.
+
+        Returns a new `KnowledgeAsset` instance if `inplace` is False.
+
+        Usage:
+            ```pycon
+            >>> asset.unique("b").get()
+            [{'s': 'EFG', 'b': False, 'd2': {'c': 'black', 'l': [9, 10]}, 'xyz': 123},
+             {'s': 'BCD', 'b': True, 'd2': {'c': 'blue', 'l': [3, 4]}}]
+            ```
+        """
+        keys = self.get(*args, **kwargs)
+        if keep.lower() == "first":
+            seen = set()
+            new_data = []
+            for key, item in zip(keys, self.data):
+                if key not in seen:
+                    seen.add(key)
+                    new_data.append(item)
+        elif keep.lower() == "last":
+            seen = set()
+            new_data_reversed = []
+            for key, item in zip(reversed(keys), reversed(self.data)):
+                if key not in seen:
+                    seen.add(key)
+                    new_data_reversed.append(item)
+            new_data = list(reversed(new_data_reversed))
+        else:
+            raise ValueError(f"Invalid keep option: '{keep}'")
+        if inplace:
+            self.modify_data(new_data)
+            return None
+        return self.replace(data=new_data)
+
     def sort(
         self: KnowledgeAssetT,
         *args,
+        keys: tp.Optional[tp.Iterable[tp.Key]] = None,
         reverse: bool = False,
         inplace: bool = False,
         **kwargs,
     ) -> tp.Optional[KnowledgeAssetT]:
-        """Call `KnowledgeAsset.get` on `*args` and `**kwargs` and sort by the results.
+        """Sort based on `KnowledgeAsset.get` called on `*args` and `**kwargs`.
 
         Returns a new `KnowledgeAsset` instance if `inplace` is False.
 
@@ -339,11 +418,22 @@ class KnowledgeAsset(Configured, MutableSequence):
              {'s': 'DEF', 'b': False, 'd2': {'c': 'yellow', 'l': [7, 8]}}]
             ```
         """
-        keys = self.get(*args, **kwargs)
+        if keys is None:
+            keys = self.get(*args, **kwargs)
         new_data = [x for _, x in sorted(zip(keys, self.data), key=lambda x: x[0], reverse=reverse)]
         if inplace:
             self.modify_data(new_data)
             return None
+        return self.replace(data=new_data)
+
+    def shuffle(self: KnowledgeAssetT, seed: tp.Optional[int] = None) -> KnowledgeAssetT:
+        """Shuffle data items."""
+        import random
+
+        if seed is not None:
+            random.seed(seed)
+        new_data = list(self.data)
+        random.shuffle(new_data)
         return self.replace(data=new_data)
 
     def sample(
@@ -497,8 +587,10 @@ class KnowledgeAsset(Configured, MutableSequence):
         prefix = get_caller_qualname().split(".")[-1]
         if "_short_name" in asset_func_meta:
             prefix += f"[{asset_func_meta['_short_name']}]"
-        else:
+        elif isinstance(func, type):
             prefix += f"[{func.__name__}]"
+        else:
+            prefix += f"[{type(func).__name__}]"
         execute_kwargs = deep_merge_dicts(
             dict(
                 show_progress=False if self.single_item else None,
@@ -1058,7 +1150,7 @@ class KnowledgeAsset(Configured, MutableSequence):
         the data item under the path is represented by "x" while its fields are represented by their names.
 
         Set `in_dumps` to True to convert the entire data item to string and search in that string.
-        Will use `vectorbtpro.utils.knowledge.base_asset_funcs.DumpAssetFunc.dump` with `dump_kwargs`.
+        Will use `vectorbtpro.utils.formatting.dump` with `dump_kwargs`.
 
         Usage:
             ```pycon
@@ -1135,38 +1227,58 @@ class KnowledgeAsset(Configured, MutableSequence):
 
     def find_code(
         self,
-        target: tp.MaybeList[tp.Any],
+        target: tp.Optional[tp.MaybeList[tp.Any]] = None,
         language: tp.Optional[str] = None,
+        in_blocks: bool = True,
         return_type: tp.Optional[str] = "match",
         flags: int = 0,
         **kwargs,
     ) -> tp.Union[KnowledgeAssetT, tp.Any]:
         """Find code using `KnowledgeAsset.find`."""
-        if not isinstance(target, list):
-            targets = [target]
-        else:
-            targets = target
-        new_targets = []
-        for target in targets:
-            if language is not None:
-                new_target = rf"""
-                ```{re.escape(language)}\n
-                (?:(?!```)[\s\S])*?
-                {re.escape(target)}
-                (?:(?!```)[\s\S])*?
-                ```
-                """
+        if in_blocks and language is not None:
+            raise ValueError("Language requires in_blocks=True")
+        if target is not None:
+            if not isinstance(target, list):
+                targets = [target]
+                single_target = True
             else:
-                new_target = rf"""
-                ```(?:\n)
-                (?:(?!```)[\s\S])*?
-                {re.escape(target)}
-                (?:(?!```)[\s\S])*?
-                ```
-                """
-            new_targets.append(new_target)
-        flags |= re.DOTALL | re.MULTILINE | re.VERBOSE
-        return self.find(new_targets, mode="regex", return_type=return_type, flags=flags, **kwargs)
+                targets = target
+                single_target = False
+            new_target = []
+            for t in targets:
+                if language is not None:
+                    new_t = rf"""
+                    ```{re.escape(language)}\n
+                    (?:(?!```)[\s\S])*?
+                    {re.escape(t)}
+                    (?:(?!```)[\s\S])*?
+                    ```
+                    """
+                else:
+                    if in_blocks:
+                        new_t = rf"""
+                        ```(?:\n)
+                        (?:(?!```)[\s\S])*?
+                        {re.escape(t)}
+                        (?:(?!```)[\s\S])*?
+                        ```
+                        """
+                    else:
+                        new_t = rf"(?<!`)`([^`]*{re.escape(t)}[^`]*)`(?!`)"
+                new_target.append(new_t)
+            if single_target:
+                new_target = new_target[0]
+        else:
+            if language is not None:
+                new_target = rf"```{re.escape(language)}\n([\s\S]*?)```"
+            else:
+                if in_blocks:
+                    new_target = r"```(?:\w+)?\n([\s\S]*?)```"
+                else:
+                    new_target = r"(?<!`)`([^`]*)`(?!`)"
+        if in_blocks:
+            flags |= re.DOTALL | re.MULTILINE | re.VERBOSE
+        return self.find(new_target, mode="regex", return_type=return_type, flags=flags, **kwargs)
 
     def find_replace(
         self: KnowledgeAssetT,
@@ -1450,19 +1562,48 @@ class KnowledgeAsset(Configured, MutableSequence):
 
     # ############# Reduce methods ############# #
 
+    @classmethod
+    def get_keys_and_groups(
+        cls,
+        by: tp.List[tp.Any],
+        uniform_groups: bool = False,
+    ) -> tp.Tuple[tp.List[tp.Any], tp.List[tp.List[int]]]:
+        """get keys and groups."""
+        keys = []
+        groups = []
+        if uniform_groups:
+            for i, item in enumerate(by):
+                if len(keys) > 0 and (keys[-1] is item or keys[-1] == item):
+                    groups[-1].append(i)
+                else:
+                    keys.append(item)
+                    groups.append([i])
+        else:
+            groups = []
+            representatives = []
+            for idx, item in enumerate(by):
+                found = False
+                for rep_idx, rep_obj in enumerate(representatives):
+                    if item is rep_obj or item == rep_obj:
+                        groups[rep_idx].append(idx)
+                        found = True
+                        break
+                if not found:
+                    representatives.append(item)
+                    keys.append(by[idx])
+                    groups.append([idx])
+        return keys, groups
+
     def reduce(
         self: KnowledgeAssetT,
         func: tp.Union[str, tp.Callable, tp.CustomTemplate],
         *args,
         initializer: tp.Optional[tp.Any] = None,
-        by_path: tp.Optional[tp.PathLikeKey] = None,
-        uniform_groups: tp.Optional[bool] = None,
-        get_kwargs: tp.KwargsLike = None,
+        by: tp.Optional[tp.PathLikeKey] = None,
         template_context: tp.KwargsLike = None,
         show_progress: tp.Optional[bool] = None,
         pbar_kwargs: tp.KwargsLike = None,
         wrap: tp.Optional[bool] = None,
-        return_group_keys: bool = False,
         **kwargs,
     ) -> tp.Union[KnowledgeAssetT, tp.Any]:
         """Reduce data items.
@@ -1476,9 +1617,7 @@ class KnowledgeAsset(Configured, MutableSequence):
         If an initializer is provided, the first set of values will be `d1=initializer` and
         `d2=self.data[0]`. If not, it will be `d1=self.data[0]` and `d2=self.data[1]`.
 
-        If `by_path` is provided, uses it as `path` in `KnowledgeAsset.get`, groups by unique values,
-        and runs the procedure on each group. In such a case, the progress bar is displayed per group.
-        Set `uniform_groups` to True to only group unique values that are located adjacent to each other.
+        If `by` is provided, see `KnowledgeAsset.groupby_reduce`.
 
         If `wrap` is True, returns a new `KnowledgeAsset` instance, otherwise raw output.
 
@@ -1492,75 +1631,26 @@ class KnowledgeAsset(Configured, MutableSequence):
             >>> asset.reduce("{**d1, **d2}")
             {'s': 'EFG', 'b': False, 'd2': {'c': 'black', 'l': [9, 10]}, 'xyz': 123}
 
-            >>> asset.reduce("{**d1, **d2}", by_path="b")
+            >>> asset.reduce("{**d1, **d2}", by="b")
             [{'s': 'BCD', 'b': True, 'd2': {'c': 'blue', 'l': [3, 4]}},
              {'s': 'EFG', 'b': False, 'd2': {'c': 'black', 'l': [9, 10]}, 'xyz': 123}]
             ```
         """
+        if by is not None:
+            return self.groupby_reduce(
+                func,
+                *args,
+                by=by,
+                initializer=initializer,
+                template_context=template_context,
+                show_progress=show_progress,
+                pbar_kwargs=pbar_kwargs,
+                wrap=wrap,
+                **kwargs,
+            )
+
         show_progress = self.resolve_setting(show_progress, "show_progress")
         pbar_kwargs = self.resolve_setting(pbar_kwargs, "pbar_kwargs", merge=True)
-        prefix = get_caller_qualname().split(".")[-1]
-
-        if by_path is not None:
-            uniform_groups = self.resolve_setting(uniform_groups, "uniform_groups")
-
-            if get_kwargs is None:
-                get_kwargs = {}
-            by = self.get(path=by_path, **get_kwargs)
-            keys = []
-            groups = []
-            if uniform_groups:
-                for i, item in enumerate(by):
-                    if len(keys) > 0 and (keys[-1] is item or keys[-1] == item):
-                        groups[-1].append(i)
-                    else:
-                        keys.append(item)
-                        groups.append([i])
-            else:
-                groups = []
-                representatives = []
-                for idx, item in enumerate(by):
-                    found = False
-                    for rep_idx, rep_obj in enumerate(representatives):
-                        if item is rep_obj or item == rep_obj:
-                            groups[rep_idx].append(idx)
-                            found = True
-                            break
-                    if not found:
-                        representatives.append(item)
-                        keys.append(by[idx])
-                        groups.append([idx])
-
-            results = []
-            if show_progress is None:
-                show_progress = len(groups) > 1
-            prefix = f"groupby[{prefix}]"
-            pbar_kwargs = flat_merge_dicts(
-                dict(
-                    bar_id=get_caller_qualname(),
-                    prefix=prefix,
-                ),
-                pbar_kwargs,
-            )
-            with ProgressBar(total=len(groups), show_progress=show_progress, **pbar_kwargs) as pbar:
-                for i, group in enumerate(groups):
-                    group_instance = self.get_item(group)
-                    result = group_instance.reduce(
-                        func,
-                        *args,
-                        initializer=initializer,
-                        template_context=template_context,
-                        show_progress=False,
-                        wrap=wrap,
-                        **kwargs,
-                    )
-                    results.append(result)
-                    pbar.update()
-            if return_group_keys:
-                return dict(zip(keys, results))
-            if len(results) > 0 and isinstance(results[0], type(self)):
-                return type(self).stack(results)
-            return results
 
         asset_func_meta = {}
 
@@ -1583,15 +1673,20 @@ class KnowledgeAsset(Configured, MutableSequence):
         if initializer is None:
             d1 = next(it)
             total = len(self.data) - 1
+            if total == 0:
+                raise ValueError("Must provide initializer")
         else:
             d1 = initializer
             total = len(self.data)
         if show_progress is None:
             show_progress = total > 1
+        prefix = get_caller_qualname().split(".")[-1]
         if "_short_name" in asset_func_meta:
             prefix += f"[{asset_func_meta['_short_name']}]"
-        else:
+        elif isinstance(func, type):
             prefix += f"[{func.__name__}]"
+        else:
+            prefix += f"[{type(func).__name__}]"
         pbar_kwargs = flat_merge_dicts(
             dict(
                 bar_id=get_caller_qualname(),
@@ -1631,8 +1726,60 @@ class KnowledgeAsset(Configured, MutableSequence):
         if wrap is None:
             wrap = False
         if wrap:
-            return self.replace(data=[d1], single_item=True)
+            if not isinstance(d1, list):
+                d1 = [d1]
+            return self.replace(data=d1, single_item=True)
         return d1
+
+    def groupby_reduce(
+        self: KnowledgeAssetT,
+        func: tp.Union[str, tp.Callable, tp.CustomTemplate],
+        *args,
+        by: tp.Optional[tp.PathLikeKey] = None,
+        uniform_groups: tp.Optional[bool] = None,
+        get_kwargs: tp.KwargsLike = None,
+        execute_kwargs: tp.KwargsLike = None,
+        return_group_keys: bool = False,
+        **kwargs,
+    ) -> tp.Union[KnowledgeAssetT, dict, list]:
+        """Group data items by keys and reduce.
+
+        If `by` is provided, uses it as `path` in `KnowledgeAsset.get`, groups by unique values,
+        and runs `KnowledgeAsset.reduce` on each group.
+
+        Set `uniform_groups` to True to only group unique values that are located adjacent to each other.
+
+        Variable arguments are passed to each call of `KnowledgeAsset.reduce`."""
+        uniform_groups = self.resolve_setting(uniform_groups, "uniform_groups")
+        execute_kwargs = self.resolve_setting(execute_kwargs, "execute_kwargs", merge=True)
+
+        if get_kwargs is None:
+            get_kwargs = {}
+        by = self.get(path=by, **get_kwargs)
+        keys, groups = self.get_keys_and_groups(by, uniform_groups=uniform_groups)
+        if len(groups) == 0:
+            raise ValueError("Groups are empty")
+        tasks = []
+        for i, group in enumerate(groups):
+            group_instance = self.get_item(group)
+            tasks.append(Task(group_instance.reduce, func, *args, **kwargs))
+        prefix = get_caller_qualname().split(".")[-1]
+        execute_kwargs = deep_merge_dicts(
+            dict(
+                show_progress=len(groups) > 1,
+                pbar_kwargs=dict(
+                    bar_id=get_caller_qualname(),
+                    prefix=prefix,
+                ),
+            ),
+            execute_kwargs,
+        )
+        results = execute(tasks, size=len(groups), **execute_kwargs)
+        if return_group_keys:
+            return dict(zip(keys, results))
+        if len(results) > 0 and isinstance(results[0], type(self)):
+            return type(self).stack(results)
+        return results
 
     def merge_dicts(self: KnowledgeAssetT, **kwargs) -> tp.Union[KnowledgeAssetT, tp.Any]:
         """Merge (dict) date items into a single dict.
@@ -1819,7 +1966,9 @@ class KnowledgeAsset(Configured, MutableSequence):
         chat_history: tp.Optional[tp.MutableSequence[str]] = None,
         stream: tp.Optional[bool] = None,
         to_context_kwargs: tp.KwargsLike = None,
-        max_context_len: tp.Optional[int] = None,
+        max_context_chars: tp.Optional[int] = None,
+        max_context_tokens: tp.Optional[int] = None,
+        tokenizer: tp.Union[None, str, EncodingT] = None,
         system_prompt: tp.Optional[str] = None,
         context_prompt: tp.Optional[str] = None,
         display_format: tp.Optional[str] = None,
@@ -1858,6 +2007,10 @@ class KnowledgeAsset(Configured, MutableSequence):
         with `to_context_kwargs` as keyword arguments. Once the prompt is evaluated, it becomes a system message.
         Uses `system_prompt` as a system prompt following the context prompt.
 
+        Use `max_context_chars` to limit the number of characters in the context. Use `max_context_tokens`
+        to limit the number of tokens in the context (requires tiktoken). Use `tokenizer` to provide
+        a model name, an encoding name, or an encoding object for tokenization.
+
         Pass `chat_history` as a mutable sequence (for example, list) to keep track of chat history.
         After generating a response, the output will be appended to this sequence as an assistant message.
 
@@ -1894,6 +2047,8 @@ class KnowledgeAsset(Configured, MutableSequence):
         The raw output can be also redirected to a file (or any IO) specified in `output_to`
         and flushed with each chunk if `flush_output` is True.
 
+        Keyword arguments are distributed between the package client (if exists) and completion API.
+
         For defaults, see `chat` in `vectorbtpro._settings.knowledge`.
 
         Usage:
@@ -1911,7 +2066,9 @@ class KnowledgeAsset(Configured, MutableSequence):
         """
         stream = self.resolve_setting(stream, "stream", sub_path="chat")
         to_context_kwargs = self.resolve_setting(to_context_kwargs, "to_context_kwargs", merge=True, sub_path="chat")
-        max_context_len = self.resolve_setting(max_context_len, "max_context_len", sub_path="chat")
+        max_context_chars = self.resolve_setting(max_context_chars, "max_context_chars", sub_path="chat")
+        max_context_tokens = self.resolve_setting(max_context_tokens, "max_context_tokens", sub_path="chat")
+        tokenizer = self.resolve_setting(tokenizer, "tokenizer", sub_path="chat")
         system_prompt = self.resolve_setting(system_prompt, "system_prompt", sub_path="chat")
         context_prompt = self.resolve_setting(context_prompt, "context_prompt", sub_path="chat")
         display_format = self.resolve_setting(display_format, "display_format", sub_path="chat")
@@ -1928,6 +2085,7 @@ class KnowledgeAsset(Configured, MutableSequence):
         output_to = self.resolve_setting(output_to, "output_to", sub_path="chat")
         flush_output = self.resolve_setting(flush_output, "flush_output", sub_path="chat")
         template_context = self.resolve_setting(template_context, "template_context", merge=True, sub_path="chat")
+        package = self.resolve_setting(package, "package", sub_path="chat")
 
         if chat_history is None:
             chat_history = []
@@ -1951,8 +2109,24 @@ class KnowledgeAsset(Configured, MutableSequence):
         elif not isinstance(context_prompt, CustomTemplate):
             raise TypeError(f"Context prompt must be a string, function, or template")
         context = self.to_context(**to_context_kwargs)
-        if max_context_len is not None:
-            context = context[:max_context_len]
+        if max_context_chars is not None:
+            context = context[:max_context_chars]
+        if max_context_tokens is not None:
+            from vectorbtpro.utils.module_ import assert_can_import
+
+            assert_can_import("tiktoken")
+            if isinstance(tokenizer, str):
+                from tiktoken.model import MODEL_TO_ENCODING
+
+                if tokenizer in MODEL_TO_ENCODING.keys():
+                    from tiktoken import encoding_for_model
+
+                    tokenizer = encoding_for_model(tokenizer)
+                else:
+                    from tiktoken import get_encoding
+
+                    tokenizer = get_encoding(tokenizer)
+            context = tokenizer.decode(tokenizer.encode(context)[:max_context_tokens])
         template_context = flat_merge_dicts(dict(context=context), template_context)
         context_prompt = context_prompt.substitute(template_context, eval_id="context_prompt")
         messages = [

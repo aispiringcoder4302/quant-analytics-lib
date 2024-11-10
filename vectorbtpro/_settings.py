@@ -2096,10 +2096,10 @@ knowledge = frozen_cfg(
     ),
     format_html_kwargs=flex_cfg(
         use_pygments=None,
-        formatter_kwargs=flex_cfg(),
-        extra_css=None,
-        head_extras=None,
-        scripts=[
+        pygments_kwargs=flex_cfg(),
+        style_extras=[],
+        head_extras=[],
+        body_extras=[
             """<script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>""",
             """<script>window.mermaidConfig={startOnLoad:!1,theme:"default",flowchart:{htmlLabels:!1},er:{useMaxWidth:!1},sequence:{useMaxWidth:!1,noteFontWeight:"14px",actorFontSize:"14px",messageFontSize:"16px"}};</script>""",
             """<script>const uml=async e=>{class t extends HTMLElement{constructor(){super();let e=this.attachShadow({mode:"open"}),t=document.createElement("style");t.textContent=`:host{display:block;line-height:initial;font-size:16px}div.diagram{margin:0;overflow:visible}`,e.appendChild(t)}}void 0===customElements.get("diagram-div")&&customElements.define("diagram-div",t);let i=e=>{let t="";for(let i=0;i<e.childNodes.length;i++){let a=e.childNodes[i];if("code"===a.tagName.toLowerCase())for(let d=0;d<a.childNodes.length;d++){let l=a.childNodes[d],o=/^\s*$/;if("#text"===l.nodeName&&!o.test(l.nodeValue)){t=l.nodeValue;break}}}return t},a={startOnLoad:!1,theme:"default",flowchart:{htmlLabels:!1},er:{useMaxWidth:!1},sequence:{useMaxWidth:!1,noteFontWeight:"14px",actorFontSize:"14px",messageFontSize:"16px"}};mermaid.mermaidAPI.globalReset();let d="undefined"==typeof mermaidConfig?a:mermaidConfig;mermaid.initialize(d);let l=document.querySelectorAll(`pre.${e}, diagram-div`),o=document.querySelector("html body");for(let n=0;n<l.length;n++){let r=l[n],s="diagram-div"===r.tagName.toLowerCase()?r.shadowRoot.querySelector(`pre.${e}`):r,h=document.createElement("div");h.style.visibility="hidden",h.style.display="display",h.style.padding="0",h.style.margin="0",h.style.lineHeight="initial",h.style.fontSize="16px",o.appendChild(h);try{let m=await mermaid.render(`_diagram_${n}`,i(s),h),c=m.svg,p=m.bindFunctions,g=document.createElement("div");g.className=e,g.innerHTML=c,p&&p(g);let y=document.createElement("diagram-div");y.shadowRoot.appendChild(g),r.parentNode.insertBefore(y,r),s.style.display="none",y.shadowRoot.appendChild(s),s!==r&&r.parentNode.removeChild(r)}catch(u){}o.contains(h)&&o.removeChild(h)}};document.addEventListener("DOMContentLoaded",()=>{uml("mermaid")});</script>""",
@@ -2109,7 +2109,9 @@ knowledge = frozen_cfg(
     chat=flex_cfg(
         stream=True,
         to_context_kwargs=flex_cfg(),
-        max_context_len=None,
+        max_context_chars=None,
+        max_context_tokens=None,
+        tokenizer="gpt-4o",
         system_prompt="You are a helpful assistant. Given the context information and not prior knowledge, answer the query.",
         context_prompt=f"""Context information is below.
 ---------------------
@@ -2121,6 +2123,7 @@ $context
         refresh_rate=None,
         file_prefix_len=20,
         file_suffix_len=6,
+        package=None,
         openai_config=flex_cfg(
             model="gpt-4o",
         ),
@@ -2150,6 +2153,7 @@ $context
             root_metadata_key=None,
             aggregate_fields=False,
             parent_links_only=True,
+            metadata_format="markdown",
             clear_metadata=True,
             clear_metadata_kwargs=flex_cfg(),
             dump_metadata_kwargs=flex_cfg(),

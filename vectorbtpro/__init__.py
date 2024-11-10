@@ -107,6 +107,7 @@ def _import_more_stuff():
     from collections import namedtuple
     from time import sleep, time as utc_time
     from pathlib import Path
+    from os import environ as env
 
     import numpy as np
     import pandas as pd

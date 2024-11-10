@@ -149,7 +149,8 @@ knwl-base = [
     "ruamel.yaml",
     "markdown",
     "Pygments",
-    "openai"
+    "openai",
+    "tiktoken"
 ]
 knwl = [
     "vectorbtpro[knwl-base]",

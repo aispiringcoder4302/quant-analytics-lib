@@ -47,7 +47,11 @@ class AssetPipeline:
             custom_values = [getattr(custom_asset_funcs, k) for k in custom_keys]
             module_items = dict(zip(base_keys + custom_keys, base_values + custom_values))
 
-            if func in module_items:
+            if (
+                func in module_items
+                and isinstance(module_items[func], type)
+                and issubclass(module_items[func], AssetFunc)
+            ):
                 func = module_items[func]
             elif func.title() + "AssetFunc" in module_items:
                 func = module_items[func.title() + "AssetFunc"]
@@ -271,8 +275,6 @@ class ComplexAssetPipeline(AssetPipeline):
                 raise ValueError(f"Unsupported or dynamic argument: {ast.dump(arg)}")
 
             def visit_Call(self, node):
-                if self.is_function_assigned(node.func):
-                    return
                 self.generic_visit(node)
                 func_name = self.get_func_name(node.func)
                 pos_args = []
@@ -286,23 +288,24 @@ class ComplexAssetPipeline(AssetPipeline):
                     kw_name = kw.arg
                     kw_value = self.process_argument(kw.value)
                     kw_args[kw_name] = kw_value
-                task = cls.resolve_task(
-                    func_name,
-                    *pos_args,
-                    **kw_args,
-                    prepare=prepare,
-                    prepare_once=prepare_once,
-                    **resolve_task_kwargs,
-                )
-                if prepare and prepare_once:
+                if not self.is_function_assigned(node.func):
+                    task = cls.resolve_task(
+                        func_name,
+                        *pos_args,
+                        **kw_args,
+                        prepare=prepare,
+                        prepare_once=prepare_once,
+                        **resolve_task_kwargs,
+                    )
+                    if prepare and prepare_once:
 
-                    def func(d, _task=task):
-                        return _task.func(d, *_task.args, **_task.kwargs)
+                        def func(d, _task=task):
+                            return _task.func(d, *_task.args, **_task.kwargs)
 
-                else:
-                    func = task.func
+                    else:
+                        func = task.func
 
-                func_context[func_name] = func
+                    func_context[func_name] = func
 
         visitor = _FunctionCallVisitor()
         visitor.visit(tree)
@@ -312,13 +315,12 @@ class ComplexAssetPipeline(AssetPipeline):
             class _ArgumentPruner(ast.NodeTransformer, _NodeMixin):
 
                 def visit_Call(self, node: ast.Call):
-                    if self.is_function_assigned(node.func):
-                        return node
-                    if node.args:
-                        node.args = [node.args[0]]
-                    else:
-                        node.args = []
-                    node.keywords = []
+                    if not self.is_function_assigned(node.func):
+                        if node.args:
+                            node.args = [node.args[0]]
+                        else:
+                            node.args = []
+                        node.keywords = []
                     self.generic_visit(node)
                     return node
 

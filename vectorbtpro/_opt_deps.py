@@ -221,6 +221,9 @@ opt_dep_config = HybridConfig(
             dist_name="llama-index",
             link="https://pypi.org/project/llama-index/",
         ),
+        tiktoken=dict(
+            link="https://pypi.org/project/tiktoken/",
+        )
     )
 )
 """_"""
