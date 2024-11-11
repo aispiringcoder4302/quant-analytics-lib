@@ -9,6 +9,7 @@ import pandas as pd
 from pandas.core.groupby import GroupBy as PandasGroupBy
 
 from vectorbtpro import _typing as tp
+from vectorbtpro._dtypes import *
 from vectorbtpro.base import indexes, reshaping
 from vectorbtpro.base.grouping.base import Grouper
 from vectorbtpro.base.indexes import stack_indexes, concat_indexes, IndexApplier
@@ -1217,7 +1218,7 @@ class ArrayWrapper(Configured, IndexApplier, ExtPandasIndexer, Itemable, Paramab
 
         if to_index:
             if dtype is None:
-                dtype = np.int_
+                dtype = int_
             if fillna is None:
                 fillna = -1
 

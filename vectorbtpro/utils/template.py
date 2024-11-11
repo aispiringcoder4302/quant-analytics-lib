@@ -2,7 +2,6 @@
 
 """Utilities for working with templates."""
 
-import importlib
 from string import Template
 
 import vectorbtpro as vbt
@@ -10,7 +9,6 @@ from vectorbtpro import _typing as tp
 from vectorbtpro.utils.attr_ import DefineMixin, define
 from vectorbtpro.utils.config import merge_dicts
 from vectorbtpro.utils.eval_ import evaluate, get_free_vars, Evaluable
-from vectorbtpro.utils.module_ import package_shortcut_config
 from vectorbtpro.utils.parsing import get_func_arg_names
 from vectorbtpro.utils.search import contains_in_obj, find_and_replace_in_obj
 
@@ -53,7 +51,7 @@ class CustomTemplate(Evaluable, DefineMixin):
         """Resolve `CustomTemplate.context`.
 
         Merges `context` in `vectorbtpro._settings.template`, `CustomTemplate.context`, and `context`.
-        Automatically appends `eval_id`, `np` (NumPy), `pd` (Pandas), and `vbt` (vectorbtpro)."""
+        Automatically appends `eval_id` and `from vectorbtpro import *`."""
         from vectorbtpro._settings import settings
 
         template_cfg = settings["template"]
@@ -71,12 +69,12 @@ class CustomTemplate(Evaluable, DefineMixin):
             new_context["context"] = dict(new_context)
         if "eval_id" not in new_context:
             new_context["eval_id"] = eval_id
-        for k, v in package_shortcut_config.items():
-            if k not in new_context:
-                try:
-                    new_context[k] = importlib.import_module(v)
-                except ImportError:
-                    pass
+        try:
+            for k, v in vbt.imported_stuff.items():
+                if k not in new_context:
+                    new_context[k] = v
+        except AttributeError:
+            pass
         return new_context
 
     def resolve_strict(self, strict: tp.Optional[bool] = None) -> bool:

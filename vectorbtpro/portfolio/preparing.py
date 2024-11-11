@@ -10,6 +10,7 @@ import numpy as np
 import pandas as pd
 
 from vectorbtpro import _typing as tp
+from vectorbtpro._dtypes import *
 from vectorbtpro.base import chunking as base_ch
 from vectorbtpro.base.decorators import override_arg_config, attach_arg_properties
 from vectorbtpro.base.preparing import BasePreparer
@@ -44,7 +45,7 @@ __pdoc__ = {}
 @register_jitted(cache=True)
 def valid_price_from_ago_1d_nb(price: tp.Array1d) -> tp.Array1d:
     """Parse from_ago from a valid price."""
-    from_ago = np.empty(price.shape, dtype=np.int_)
+    from_ago = np.empty(price.shape, dtype=int_)
     for i in range(price.shape[0] - 1, -1, -1):
         if i > 0 and not np.isnan(price[i]):
             for j in range(i - 1, -1, -1):
@@ -347,13 +348,13 @@ class BasePFPreparer(BasePreparer):
             arr = np.require(arr, dtype=cast_to_dtype)
         if arr.size > 1 and group_lens is not None and reduce_func is not None:
             if len(self.group_lens) == len(arr) != len(group_lens) == len(self.wrapper.columns):
-                new_arr = np.empty(len(self.wrapper.columns), dtype=np.int_)
+                new_arr = np.empty(len(self.wrapper.columns), dtype=int_)
                 col_generator = self.wrapper.grouper.iter_group_idxs()
                 for i, cols in enumerate(col_generator):
                     new_arr[cols] = arr[i]
                 arr = new_arr
             if len(self.wrapper.columns) == len(arr) != len(group_lens):
-                new_arr = np.empty(len(group_lens), dtype=np.int_)
+                new_arr = np.empty(len(group_lens), dtype=int_)
                 col_generator = self.wrapper.grouper.iter_group_lens(group_lens)
                 for i, cols in enumerate(col_generator):
                     if isinstance(reduce_func, str):
@@ -372,7 +373,7 @@ class BasePFPreparer(BasePreparer):
             self._pre_init_cash,
             group_lens=self.cs_group_lens,
             check_dtype=np.number,
-            cast_to_dtype=np.float_,
+            cast_to_dtype=float_,
             reduce_func="sum",
             arg_name="init_cash",
         )
@@ -383,7 +384,7 @@ class BasePFPreparer(BasePreparer):
         init_position = self.align_pc_arr(
             self._pre_init_position,
             check_dtype=np.number,
-            cast_to_dtype=np.float_,
+            cast_to_dtype=float_,
             arg_name="init_position",
         )
         if (((init_position > 0) | (init_position < 0)) & np.isnan(self.init_price)).any():
@@ -396,7 +397,7 @@ class BasePFPreparer(BasePreparer):
         return self.align_pc_arr(
             self._pre_init_price,
             check_dtype=np.number,
-            cast_to_dtype=np.float_,
+            cast_to_dtype=float_,
             arg_name="init_price",
         )
 
@@ -442,14 +443,14 @@ class BasePFPreparer(BasePreparer):
         else:
             if sim_start_arr.ndim == 0:
                 return SimRangeMixin.resolve_sim_start_value(sim_start, wrapper=self.wrapper)
-            new_sim_start = np.empty(len(sim_start), dtype=np.int_)
+            new_sim_start = np.empty(len(sim_start), dtype=int_)
             for i in range(len(sim_start)):
                 new_sim_start[i] = SimRangeMixin.resolve_sim_start_value(sim_start[i], wrapper=self.wrapper)
         return self.align_pc_arr(
             new_sim_start,
             group_lens=self.sim_group_lens,
             check_dtype=np.integer,
-            cast_to_dtype=np.int_,
+            cast_to_dtype=int_,
             reduce_func="min",
             arg_name="sim_start",
         )
@@ -472,14 +473,14 @@ class BasePFPreparer(BasePreparer):
         else:
             if sim_end_arr.ndim == 0:
                 return SimRangeMixin.resolve_sim_end_value(sim_end, wrapper=self.wrapper)
-            new_sim_end = np.empty(len(sim_end), dtype=np.int_)
+            new_sim_end = np.empty(len(sim_end), dtype=int_)
             for i in range(len(sim_end)):
                 new_sim_end[i] = SimRangeMixin.resolve_sim_end_value(sim_end[i], wrapper=self.wrapper)
         return self.align_pc_arr(
             new_sim_end,
             group_lens=self.sim_group_lens,
             check_dtype=np.integer,
-            cast_to_dtype=np.int_,
+            cast_to_dtype=int_,
             reduce_func="max",
             arg_name="sim_end",
         )
@@ -779,8 +780,8 @@ class FOPreparer(BasePFPreparer):
                 next_valid_close_mask = price == enums.PriceType.NextValidClose
 
                 if next_valid_open_mask.any() or next_valid_close_mask.any():
-                    new_price = np.empty(self.wrapper.shape_2d, np.float_)
-                    new_from_ago = np.empty(self.wrapper.shape_2d, np.int_)
+                    new_price = np.empty(self.wrapper.shape_2d, float_)
+                    new_from_ago = np.empty(self.wrapper.shape_2d, int_)
                     if next_valid_open_mask.any():
                         open = broadcast_array_to(self.open, self.wrapper.shape_2d)
                     if next_valid_close_mask.any():
@@ -804,10 +805,10 @@ class FOPreparer(BasePFPreparer):
                     from_ago = new_from_ago
 
                 elif next_open_mask.any() or next_close_mask.any():
-                    price = price.astype(np.float_)
+                    price = price.astype(float_)
                     price[next_open_mask] = enums.PriceType.Open
                     price[next_close_mask] = enums.PriceType.Close
-                    from_ago = np.full(price.shape, 0, dtype=np.int_)
+                    from_ago = np.full(price.shape, 0, dtype=int_)
                     from_ago[next_open_mask] = 1
                     from_ago[next_close_mask] = 1
         return price, from_ago
@@ -1554,10 +1555,10 @@ class FSPreparer(BasePFPreparer):
                 next_open_mask = price == enums.PriceType.NextOpen
                 next_close_mask = price == enums.PriceType.NextClose
                 if next_open_mask.any() or next_close_mask.any():
-                    price = price.astype(np.float_)
+                    price = price.astype(float_)
                     price[next_open_mask] = enums.PriceType.Open
                     price[next_close_mask] = enums.PriceType.Close
-                    from_ago = np.full(price.shape, 0, dtype=np.int_)
+                    from_ago = np.full(price.shape, 0, dtype=int_)
                     from_ago[next_open_mask] = 1
                     from_ago[next_close_mask] = 1
         return price, from_ago

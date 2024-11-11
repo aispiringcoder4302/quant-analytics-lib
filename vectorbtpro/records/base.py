@@ -51,10 +51,10 @@ Consider the following example:
 >>> from vectorbtpro import *
 
 >>> example_dt = np.dtype([
-...     ('id', np.int_),
-...     ('col', np.int_),
-...     ('idx', np.int_),
-...     ('some_field', np.float_)
+...     ('id', int_),
+...     ('col', int_),
+...     ('idx', int_),
+...     ('some_field', float_)
 ... ])
 >>> records_arr = np.array([
 ...     (0, 0, 0, 10.),
@@ -348,9 +348,9 @@ any base class property that is not explicitly listed in our config.
 >>> from vectorbtpro.records.decorators import override_field_config
 
 >>> my_dt = np.dtype([
-...     ('my_id', np.int_),
-...     ('my_col', np.int_),
-...     ('my_idx', np.int_)
+...     ('my_id', int_),
+...     ('my_col', int_),
+...     ('my_idx', int_)
 ... ])
 
 >>> my_fields_config = dict(
@@ -414,6 +414,7 @@ import numpy as np
 import pandas as pd
 
 from vectorbtpro import _typing as tp
+from vectorbtpro._dtypes import *
 from vectorbtpro.base.resampling.base import Resampler
 from vectorbtpro.base.reshaping import to_1d_array, index_to_series, index_to_frame
 from vectorbtpro.base.wrapping import ArrayWrapper
@@ -587,7 +588,7 @@ class Records(Analyzable, RecordsWithFields, metaclass=MetaRecords):
                         record_indices.append(_record_indices)
 
         if len(record_indices) == 0:
-            return np.array([], dtype=np.int_)
+            return np.array([], dtype=int_)
         return np.concatenate(record_indices)
 
     @classmethod
@@ -699,7 +700,7 @@ class Records(Analyzable, RecordsWithFields, metaclass=MetaRecords):
                         record_indices.append(_record_indices)
 
         if len(record_indices) == 0:
-            return np.array([], dtype=np.int_)
+            return np.array([], dtype=int_)
         return np.concatenate(record_indices)
 
     @classmethod

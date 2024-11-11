@@ -11,6 +11,7 @@ import numpy as np
 import pandas as pd
 
 from vectorbtpro import _typing as tp
+from vectorbtpro._dtypes import *
 from vectorbtpro.base.indexes import ExceptLevel
 from vectorbtpro.base.merging import row_stack_arrays
 from vectorbtpro.base.resampling.base import Resampler
@@ -4425,7 +4426,7 @@ class Portfolio(Analyzable, PortfolioWithInOutputs, SimRangeMixin, metaclass=Met
             ```pycon
             >>> @njit
             ... def pre_group_func_nb(c):
-            ...     order_value_out = np.empty(c.group_len, dtype=np.float_)
+            ...     order_value_out = np.empty(c.group_len, dtype=float_)
             ...     return (order_value_out,)
 
             >>> @njit
@@ -4524,7 +4525,7 @@ class Portfolio(Analyzable, PortfolioWithInOutputs, SimRangeMixin, metaclass=Met
             >>> @njit
             ... def pre_sim_func_nb(c):
             ...     # We need to define stop price per column once
-            ...     stop_price = np.full(c.target_shape[1], np.nan, dtype=np.float_)
+            ...     stop_price = np.full(c.target_shape[1], np.nan, dtype=float_)
             ...     return (stop_price,)
 
             >>> @njit
@@ -5165,7 +5166,7 @@ class Portfolio(Analyzable, PortfolioWithInOutputs, SimRangeMixin, metaclass=Met
             weights = to_1d_array(self.get_weights(weights=weights))
             if rescale:
                 if self.wrapper.grouper.is_grouped(group_by=group_by):
-                    new_weights = np.empty(len(weights), dtype=np.float_)
+                    new_weights = np.empty(len(weights), dtype=float_)
                     for group_idxs in self.wrapper.grouper.iter_group_idxs(group_by=group_by):
                         group_weights = weights[group_idxs]
                         new_weights[group_idxs] = group_weights * len(group_weights) / group_weights.sum()

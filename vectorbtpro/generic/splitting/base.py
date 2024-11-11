@@ -10,6 +10,7 @@ import numpy as np
 import pandas as pd
 
 from vectorbtpro import _typing as tp
+from vectorbtpro._dtypes import *
 from vectorbtpro.base.accessors import BaseIDXAccessor
 from vectorbtpro.base.grouping.base import Grouper
 from vectorbtpro.base.indexes import combine_indexes, stack_indexes
@@ -4593,7 +4594,7 @@ class Splitter(Analyzable):
         if index_bounds:
             dtype = self.index.dtype
         else:
-            dtype = np.int_
+            dtype = int_
         split_group_by = self.get_split_grouper(split_group_by=split_group_by)
         n_splits = self.get_n_splits(split_group_by=split_group_by)
         set_group_by = self.get_set_grouper(set_group_by=set_group_by)

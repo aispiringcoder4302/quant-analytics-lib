@@ -412,6 +412,7 @@ import numpy as np
 import pandas as pd
 
 from vectorbtpro import _typing as tp
+from vectorbtpro._dtypes import *
 from vectorbtpro.base.merging import concat_arrays, column_stack_arrays
 from vectorbtpro.base.resampling.base import Resampler
 from vectorbtpro.base.reshaping import to_1d_array, to_dict, index_to_series, index_to_frame
@@ -1251,7 +1252,7 @@ class MappedArray(Analyzable):
                 name_or_index="reduce" if not returns_array else None,
                 to_index=returns_idx and to_index,
                 fillna=-1 if returns_idx else None,
-                dtype=np.int_ if returns_idx else None,
+                dtype=int_ if returns_idx else None,
             ),
             wrap_kwargs,
         )

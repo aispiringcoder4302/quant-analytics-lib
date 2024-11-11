@@ -5,6 +5,7 @@
 import numpy as np
 
 from vectorbtpro import _typing as tp
+from vectorbtpro._dtypes import *
 from vectorbtpro.base.flex_indexing import flex_select_1d_pc_nb, flex_select_nb
 from vectorbtpro.generic import nb as generic_nb
 from vectorbtpro.portfolio.enums import *
@@ -1619,11 +1620,11 @@ def prepare_last_cash_nb(
 ) -> tp.Array1d:
     """Prepare `last_cash`."""
     if cash_sharing:
-        last_cash = np.empty(len(group_lens), dtype=np.float_)
+        last_cash = np.empty(len(group_lens), dtype=float_)
         for group in range(len(group_lens)):
             last_cash[group] = float(flex_select_1d_pc_nb(init_cash, group))
     else:
-        last_cash = np.empty(target_shape[1], dtype=np.float_)
+        last_cash = np.empty(target_shape[1], dtype=float_)
         for col in range(target_shape[1]):
             last_cash[col] = float(flex_select_1d_pc_nb(init_cash, col))
     return last_cash
@@ -1632,7 +1633,7 @@ def prepare_last_cash_nb(
 @register_jitted(cache=True)
 def prepare_last_position_nb(target_shape: tp.Shape, init_position: tp.FlexArray1d) -> tp.Array1d:
     """Prepare `last_position`."""
-    last_position = np.empty(target_shape[1], dtype=np.float_)
+    last_position = np.empty(target_shape[1], dtype=float_)
     for col in range(target_shape[1]):
         last_position[col] = float(flex_select_1d_pc_nb(init_position, col))
     return last_position
@@ -1649,7 +1650,7 @@ def prepare_last_value_nb(
 ) -> tp.Array1d:
     """Prepare `last_value`."""
     if cash_sharing:
-        last_value = np.empty(len(group_lens), dtype=np.float_)
+        last_value = np.empty(len(group_lens), dtype=float_)
         from_col = 0
         for group in range(len(group_lens)):
             to_col = from_col + group_lens[group]
@@ -1662,7 +1663,7 @@ def prepare_last_value_nb(
                     last_value[group] += _init_position * _init_price
             from_col = to_col
     else:
-        last_value = np.empty(target_shape[1], dtype=np.float_)
+        last_value = np.empty(target_shape[1], dtype=float_)
         for col in range(target_shape[1]):
             _init_cash = float(flex_select_1d_pc_nb(init_cash, col))
             _init_position = float(flex_select_1d_pc_nb(init_position, col))

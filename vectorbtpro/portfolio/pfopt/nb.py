@@ -6,6 +6,7 @@ import numpy as np
 from numba import prange
 
 from vectorbtpro import _typing as tp
+from vectorbtpro._dtypes import *
 from vectorbtpro.portfolio.enums import Direction, alloc_point_dt, alloc_range_dt
 from vectorbtpro.registries.ch_registry import register_chunkable
 from vectorbtpro.registries.jit_registry import register_jitted
@@ -27,7 +28,7 @@ def get_alloc_points_nb(
     If `valid_only` is True, does not register a new allocation when all points are NaN.v
     If `nonzero_only` is True, does not register a new allocation when all points are zero.
     If `unique_only` is True, does not register a new allocation when it's the same as the last one."""
-    out = np.empty(len(filled_allocations), dtype=np.int_)
+    out = np.empty(len(filled_allocations), dtype=int_)
     k = 0
     for i in range(filled_allocations.shape[0]):
         all_nan = True
@@ -74,7 +75,7 @@ def optimize_meta_nb(
 
     `reduce_func_nb` must take the range index, the range start, the range end, and `*args`.
     Must return a 1-dim array with the same size as `n_cols`."""
-    out = np.empty((range_starts.shape[0], n_cols), dtype=np.float_)
+    out = np.empty((range_starts.shape[0], n_cols), dtype=float_)
     for i in prange(len(range_starts)):
         out[i] = optimize_func_nb(i, range_starts[i], range_ends[i], *args)
     return out
@@ -101,7 +102,7 @@ def allocate_meta_nb(
 
     `map_func_nb` must take the point index, the index point, and `*args`.
     Must return a 1-dim array with the same size as `n_cols`."""
-    out = np.empty((index_points.shape[0], n_cols), dtype=np.float_)
+    out = np.empty((index_points.shape[0], n_cols), dtype=float_)
     for i in prange(len(index_points)):
         out[i] = allocate_func_nb(i, index_points[i], *args)
     return out
@@ -128,7 +129,7 @@ def random_allocate_func_nb(
     n: tp.Optional[int] = None,
 ) -> tp.Array1d:
     """Generate a random allocation."""
-    weights = np.full(n_cols, np.nan, dtype=np.float_)
+    weights = np.full(n_cols, np.nan, dtype=float_)
     pos_sum = 0
     neg_sum = 0
     if n is None:
@@ -247,7 +248,7 @@ def rescale_allocations_nb(allocations: tp.Array2d, to_range: tp.Tuple[float, fl
         raise ValueError("Maximum of the new scale must be finite")
     if new_min >= new_max:
         raise ValueError("Minimum cannot be equal to or higher than maximum")
-    out = np.empty_like(allocations, dtype=np.float_)
+    out = np.empty_like(allocations, dtype=float_)
 
     for i in range(allocations.shape[0]):
         all_nan = True

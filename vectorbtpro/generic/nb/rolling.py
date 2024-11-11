@@ -6,6 +6,7 @@ import numpy as np
 from numba import prange
 
 from vectorbtpro import _typing as tp
+from vectorbtpro._dtypes import *
 from vectorbtpro.base.reshaping import to_1d_array_nb
 from vectorbtpro.generic.enums import *
 from vectorbtpro.generic.nb.base import rank_1d_nb
@@ -65,7 +66,7 @@ def rolling_sum_1d_nb(arr: tp.Array1d, window: int, minp: tp.Optional[int] = Non
         minp = window
     if minp > window:
         raise ValueError("minp must be <= window")
-    out = np.empty_like(arr, dtype=np.float_)
+    out = np.empty_like(arr, dtype=float_)
     cumsum = 0.0
     nancnt = 0
 
@@ -95,7 +96,7 @@ def rolling_sum_1d_nb(arr: tp.Array1d, window: int, minp: tp.Optional[int] = Non
 @register_jitted(cache=True, tags={"can_parallel"})
 def rolling_sum_nb(arr: tp.Array2d, window: int, minp: tp.Optional[int] = None) -> tp.Array2d:
     """2-dim version of `rolling_sum_1d_nb`."""
-    out = np.empty_like(arr, dtype=np.float_)
+    out = np.empty_like(arr, dtype=float_)
     for col in prange(arr.shape[1]):
         out[:, col] = rolling_sum_1d_nb(arr[:, col], window, minp=minp)
     return out
@@ -148,7 +149,7 @@ def rolling_prod_1d_nb(arr: tp.Array1d, window: int, minp: tp.Optional[int] = No
         minp = window
     if minp > window:
         raise ValueError("minp must be <= window")
-    out = np.empty_like(arr, dtype=np.float_)
+    out = np.empty_like(arr, dtype=float_)
     cumprod = 1.0
     nancnt = 0
 
@@ -178,7 +179,7 @@ def rolling_prod_1d_nb(arr: tp.Array1d, window: int, minp: tp.Optional[int] = No
 @register_jitted(cache=True, tags={"can_parallel"})
 def rolling_prod_nb(arr: tp.Array2d, window: int, minp: tp.Optional[int] = None) -> tp.Array2d:
     """2-dim version of `rolling_prod_1d_nb`."""
-    out = np.empty_like(arr, dtype=np.float_)
+    out = np.empty_like(arr, dtype=float_)
     for col in prange(arr.shape[1]):
         out[:, col] = rolling_prod_1d_nb(arr[:, col], window, minp=minp)
     return out
@@ -231,7 +232,7 @@ def rolling_mean_1d_nb(arr: tp.Array1d, window: int, minp: tp.Optional[int] = No
         minp = window
     if minp > window:
         raise ValueError("minp must be <= window")
-    out = np.empty_like(arr, dtype=np.float_)
+    out = np.empty_like(arr, dtype=float_)
     cumsum = 0.0
     nancnt = 0
 
@@ -261,7 +262,7 @@ def rolling_mean_1d_nb(arr: tp.Array1d, window: int, minp: tp.Optional[int] = No
 @register_jitted(cache=True, tags={"can_parallel"})
 def rolling_mean_nb(arr: tp.Array2d, window: int, minp: tp.Optional[int] = None) -> tp.Array2d:
     """2-dim version of `rolling_mean_1d_nb`."""
-    out = np.empty_like(arr, dtype=np.float_)
+    out = np.empty_like(arr, dtype=float_)
     for col in prange(arr.shape[1]):
         out[:, col] = rolling_mean_1d_nb(arr[:, col], window, minp=minp)
     return out
@@ -317,7 +318,7 @@ def rolling_std_1d_nb(arr: tp.Array1d, window: int, minp: tp.Optional[int] = Non
         minp = window
     if minp > window:
         raise ValueError("minp must be <= window")
-    out = np.empty_like(arr, dtype=np.float_)
+    out = np.empty_like(arr, dtype=float_)
     cumsum = 0.0
     cumsum_sq = 0.0
     nancnt = 0
@@ -351,7 +352,7 @@ def rolling_std_1d_nb(arr: tp.Array1d, window: int, minp: tp.Optional[int] = Non
 @register_jitted(cache=True, tags={"can_parallel"})
 def rolling_std_nb(arr: tp.Array2d, window: int, minp: tp.Optional[int] = None, ddof: int = 0) -> tp.Array2d:
     """2-dim version of `rolling_std_1d_nb`."""
-    out = np.empty_like(arr, dtype=np.float_)
+    out = np.empty_like(arr, dtype=float_)
     for col in prange(arr.shape[1]):
         out[:, col] = rolling_std_1d_nb(arr[:, col], window, minp=minp, ddof=ddof)
     return out
@@ -408,7 +409,7 @@ def rolling_zscore_1d_nb(arr: tp.Array1d, window: int, minp: tp.Optional[int] = 
         minp = window
     if minp > window:
         raise ValueError("minp must be <= window")
-    out = np.empty_like(arr, dtype=np.float_)
+    out = np.empty_like(arr, dtype=float_)
     cumsum = 0.0
     cumsum_sq = 0.0
     nancnt = 0
@@ -442,7 +443,7 @@ def rolling_zscore_1d_nb(arr: tp.Array1d, window: int, minp: tp.Optional[int] = 
 @register_jitted(cache=True, tags={"can_parallel"})
 def rolling_zscore_nb(arr: tp.Array2d, window: int, minp: tp.Optional[int] = None, ddof: int = 0) -> tp.Array2d:
     """2-dim version of `rolling_zscore_1d_nb`."""
-    out = np.empty_like(arr, dtype=np.float_)
+    out = np.empty_like(arr, dtype=float_)
     for col in prange(arr.shape[1]):
         out[:, col] = rolling_zscore_1d_nb(arr[:, col], window, minp=minp, ddof=ddof)
     return out
@@ -496,7 +497,7 @@ def wm_mean_1d_nb(arr: tp.Array1d, window: int, minp: tp.Optional[int] = None) -
         minp = window
     if minp > window:
         raise ValueError("minp must be <= window")
-    out = np.empty_like(arr, dtype=np.float_)
+    out = np.empty_like(arr, dtype=float_)
     cumsum = 0.0
     wcumsum = 0.0
     nancnt = 0
@@ -529,7 +530,7 @@ def wm_mean_1d_nb(arr: tp.Array1d, window: int, minp: tp.Optional[int] = None) -
 @register_jitted(cache=True, tags={"can_parallel"})
 def wm_mean_nb(arr: tp.Array2d, window: int, minp: tp.Optional[int] = None) -> tp.Array2d:
     """2-dim version of `wm_mean_1d_nb`."""
-    out = np.empty_like(arr, dtype=np.float_)
+    out = np.empty_like(arr, dtype=float_)
     for col in prange(arr.shape[1]):
         out[:, col] = wm_mean_1d_nb(arr[:, col], window, minp=minp)
     return out
@@ -617,12 +618,12 @@ def ewm_mean_1d_nb(arr: tp.Array1d, span: int, minp: tp.Optional[int] = None, ad
         minp = span
     if minp > span:
         raise ValueError("minp must be <= span")
-    out = np.empty(len(arr), dtype=np.float_)
+    out = np.empty(len(arr), dtype=float_)
     if len(arr) == 0:
         return out
     com = (span - 1) / 2.0
     alpha = 1.0 / (1.0 + com)
-    weighted_avg = float(arr[0]) + 0.0  # cast to np.float_
+    weighted_avg = float(arr[0]) + 0.0  # cast to float_
     nobs = 0
     n_obs_lagged = 0
     old_wt = 1.0
@@ -658,7 +659,7 @@ def ewm_mean_1d_nb(arr: tp.Array1d, span: int, minp: tp.Optional[int] = None, ad
 @register_jitted(cache=True, tags={"can_parallel"})
 def ewm_mean_nb(arr: tp.Array2d, span: int, minp: tp.Optional[int] = None, adjust: bool = False) -> tp.Array2d:
     """2-dim version of `ewm_mean_1d_nb`."""
-    out = np.empty_like(arr, dtype=np.float_)
+    out = np.empty_like(arr, dtype=float_)
     for col in prange(arr.shape[1]):
         out[:, col] = ewm_mean_1d_nb(arr[:, col], span, minp=minp, adjust=adjust)
     return out
@@ -763,13 +764,13 @@ def ewm_std_1d_nb(arr: tp.Array1d, span: int, minp: tp.Optional[int] = None, adj
         minp = span
     if minp > span:
         raise ValueError("minp must be <= span")
-    out = np.empty(len(arr), dtype=np.float_)
+    out = np.empty(len(arr), dtype=float_)
     if len(arr) == 0:
         return out
     com = (span - 1) / 2.0
     alpha = 1.0 / (1.0 + com)
-    mean_x = float(arr[0]) + 0.0  # cast to np.float_
-    mean_y = float(arr[0]) + 0.0  # cast to np.float_
+    mean_x = float(arr[0]) + 0.0  # cast to float_
+    mean_y = float(arr[0]) + 0.0  # cast to float_
     nobs = 0
     n_obs_lagged = 0
     cov = 0.0
@@ -816,7 +817,7 @@ def ewm_std_1d_nb(arr: tp.Array1d, span: int, minp: tp.Optional[int] = None, adj
 @register_jitted(cache=True, tags={"can_parallel"})
 def ewm_std_nb(arr: tp.Array2d, span: int, minp: tp.Optional[int] = None, adjust: bool = False) -> tp.Array2d:
     """2-dim version of `ewm_std_1d_nb`."""
-    out = np.empty_like(arr, dtype=np.float_)
+    out = np.empty_like(arr, dtype=float_)
     for col in prange(arr.shape[1]):
         out[:, col] = ewm_std_1d_nb(arr[:, col], span, minp=minp, adjust=adjust)
     return out
@@ -838,7 +839,7 @@ def wwm_mean_1d_nb(arr: tp.Array1d, period: int, minp: tp.Optional[int] = None, 
 @register_jitted(cache=True, tags={"can_parallel"})
 def wwm_mean_nb(arr: tp.Array2d, period: int, minp: tp.Optional[int] = None, adjust: bool = False) -> tp.Array2d:
     """2-dim version of `wwm_mean_1d_nb`."""
-    out = np.empty_like(arr, dtype=np.float_)
+    out = np.empty_like(arr, dtype=float_)
     for col in prange(arr.shape[1]):
         out[:, col] = wwm_mean_1d_nb(arr[:, col], period, minp=minp, adjust=adjust)
     return out
@@ -860,7 +861,7 @@ def wwm_std_1d_nb(arr: tp.Array1d, period: int, minp: tp.Optional[int] = None, a
 @register_jitted(cache=True, tags={"can_parallel"})
 def wwm_std_nb(arr: tp.Array2d, period: int, minp: tp.Optional[int] = None, adjust: bool = False) -> tp.Array2d:
     """2-dim version of `wwm_std_1d_nb`."""
-    out = np.empty_like(arr, dtype=np.float_)
+    out = np.empty_like(arr, dtype=float_)
     for col in prange(arr.shape[1]):
         out[:, col] = wwm_std_1d_nb(arr[:, col], period, minp=minp, adjust=adjust)
     return out
@@ -948,7 +949,7 @@ def vidya_1d_nb(arr: tp.Array1d, window: int, minp: tp.Optional[int] = None) -> 
         minp = window
     if minp > window:
         raise ValueError("minp must be <= window")
-    out = np.empty_like(arr, dtype=np.float_)
+    out = np.empty_like(arr, dtype=float_)
     pos_cumsum = 0.0
     neg_cumsum = 0.0
     nancnt = 0
@@ -984,7 +985,7 @@ def vidya_1d_nb(arr: tp.Array1d, window: int, minp: tp.Optional[int] = None) -> 
 @register_jitted(cache=True, tags={"can_parallel"})
 def vidya_nb(arr: tp.Array2d, window: int, minp: tp.Optional[int] = None) -> tp.Array2d:
     """2-dim version of `vidya_1d_nb`."""
-    out = np.empty_like(arr, dtype=np.float_)
+    out = np.empty_like(arr, dtype=float_)
     for col in prange(arr.shape[1]):
         out[:, col] = vidya_1d_nb(arr[:, col], window, minp=minp)
     return out
@@ -1026,7 +1027,7 @@ def ma_nb(
     adjust: bool = False,
 ) -> tp.Array2d:
     """2-dim version of `ma_1d_nb`."""
-    out = np.empty_like(arr, dtype=np.float_)
+    out = np.empty_like(arr, dtype=float_)
     for col in prange(arr.shape[1]):
         out[:, col] = ma_1d_nb(arr[:, col], window, wtype=wtype, minp=minp, adjust=adjust)
     return out
@@ -1068,7 +1069,7 @@ def msd_nb(
     ddof: int = 0,
 ) -> tp.Array2d:
     """2-dim version of `msd_1d_nb`."""
-    out = np.empty_like(arr, dtype=np.float_)
+    out = np.empty_like(arr, dtype=float_)
     for col in prange(arr.shape[1]):
         out[:, col] = msd_1d_nb(arr[:, col], window, wtype=wtype, minp=minp, adjust=adjust, ddof=ddof)
     return out
@@ -1143,7 +1144,7 @@ def rolling_cov_1d_nb(
         minp = window
     if minp > window:
         raise ValueError("minp must be <= window")
-    out = np.empty_like(arr1, dtype=np.float_)
+    out = np.empty_like(arr1, dtype=float_)
     cumsum1 = 0.0
     cumsum2 = 0.0
     cumsum_prod = 0.0
@@ -1188,7 +1189,7 @@ def rolling_cov_nb(
     ddof: int = 0,
 ) -> tp.Array2d:
     """2-dim version of `rolling_cov_1d_nb`."""
-    out = np.empty_like(arr1, dtype=np.float_)
+    out = np.empty_like(arr1, dtype=float_)
     for col in prange(arr1.shape[1]):
         out[:, col] = rolling_cov_1d_nb(arr1[:, col], arr2[:, col], window, minp=minp, ddof=ddof)
     return out
@@ -1267,7 +1268,7 @@ def rolling_corr_1d_nb(arr1: tp.Array1d, arr2: tp.Array1d, window: int, minp: tp
         minp = window
     if minp > window:
         raise ValueError("minp must be <= window")
-    out = np.empty_like(arr1, dtype=np.float_)
+    out = np.empty_like(arr1, dtype=float_)
     cumsum1 = 0.0
     cumsum2 = 0.0
     cumsum_sq1 = 0.0
@@ -1311,7 +1312,7 @@ def rolling_corr_1d_nb(arr1: tp.Array1d, arr2: tp.Array1d, window: int, minp: tp
 @register_jitted(cache=True, tags={"can_parallel"})
 def rolling_corr_nb(arr1: tp.Array2d, arr2: tp.Array2d, window: int, minp: tp.Optional[int] = None) -> tp.Array2d:
     """2-dim version of `rolling_corr_1d_nb`."""
-    out = np.empty_like(arr1, dtype=np.float_)
+    out = np.empty_like(arr1, dtype=float_)
     for col in prange(arr1.shape[1]):
         out[:, col] = rolling_corr_1d_nb(arr1[:, col], arr2[:, col], window, minp=minp)
     return out
@@ -1399,8 +1400,8 @@ def rolling_ols_1d_nb(
         minp = window
     if minp > window:
         raise ValueError("minp must be <= window")
-    slope_out = np.empty_like(arr1, dtype=np.float_)
-    intercept_out = np.empty_like(arr1, dtype=np.float_)
+    slope_out = np.empty_like(arr1, dtype=float_)
+    intercept_out = np.empty_like(arr1, dtype=float_)
     validcnt = 0
     cumsum1 = 0.0
     cumsum2 = 0.0
@@ -1450,8 +1451,8 @@ def rolling_ols_nb(
     minp: tp.Optional[int] = None,
 ) -> tp.Tuple[tp.Array1d, tp.Array1d]:
     """2-dim version of `rolling_ols_1d_nb`."""
-    slope_out = np.empty_like(arr1, dtype=np.float_)
-    intercept_out = np.empty_like(arr1, dtype=np.float_)
+    slope_out = np.empty_like(arr1, dtype=float_)
+    intercept_out = np.empty_like(arr1, dtype=float_)
     for col in prange(arr1.shape[1]):
         slope_out[:, col], intercept_out[:, col] = rolling_ols_1d_nb(arr1[:, col], arr2[:, col], window, minp=minp)
     return slope_out, intercept_out
@@ -1464,7 +1465,7 @@ def rolling_rank_1d_nb(arr: tp.Array1d, window: int, minp: tp.Optional[int] = No
         minp = window
     if minp > window:
         raise ValueError("minp must be <= window")
-    out = np.empty_like(arr, dtype=np.float_)
+    out = np.empty_like(arr, dtype=float_)
     nancnt = 0
     for i in range(arr.shape[0]):
         if np.isnan(arr[i]):
@@ -1493,7 +1494,7 @@ def rolling_rank_1d_nb(arr: tp.Array1d, window: int, minp: tp.Optional[int] = No
 @register_jitted(cache=True, tags={"can_parallel"})
 def rolling_rank_nb(arr: tp.Array2d, window: int, minp: tp.Optional[int] = None, pct: bool = False) -> tp.Array2d:
     """2-dim version of `rolling_rank_1d_nb`."""
-    out = np.empty_like(arr, dtype=np.float_)
+    out = np.empty_like(arr, dtype=float_)
     for col in prange(arr.shape[1]):
         out[:, col] = rolling_rank_1d_nb(arr[:, col], window, minp=minp, pct=pct)
     return out
@@ -1508,7 +1509,7 @@ def rolling_min_1d_nb(arr: tp.Array1d, window: int, minp: tp.Optional[int] = Non
         minp = window
     if minp > window:
         raise ValueError("minp must be <= window")
-    out = np.empty_like(arr, dtype=np.float_)
+    out = np.empty_like(arr, dtype=float_)
     for i in range(arr.shape[0]):
         from_i = max(i - window + 1, 0)
         to_i = i + 1
@@ -1535,7 +1536,7 @@ def rolling_min_1d_nb(arr: tp.Array1d, window: int, minp: tp.Optional[int] = Non
 @register_jitted(cache=True, tags={"can_parallel"})
 def rolling_min_nb(arr: tp.Array2d, window: int, minp: tp.Optional[int] = None) -> tp.Array2d:
     """2-dim version of `rolling_min_1d_nb`."""
-    out = np.empty_like(arr, dtype=np.float_)
+    out = np.empty_like(arr, dtype=float_)
     for col in prange(arr.shape[1]):
         out[:, col] = rolling_min_1d_nb(arr[:, col], window, minp=minp)
     return out
@@ -1550,7 +1551,7 @@ def rolling_max_1d_nb(arr: tp.Array1d, window: int, minp: tp.Optional[int] = Non
         minp = window
     if minp > window:
         raise ValueError("minp must be <= window")
-    out = np.empty_like(arr, dtype=np.float_)
+    out = np.empty_like(arr, dtype=float_)
     for i in range(arr.shape[0]):
         from_i = max(i - window + 1, 0)
         to_i = i + 1
@@ -1577,7 +1578,7 @@ def rolling_max_1d_nb(arr: tp.Array1d, window: int, minp: tp.Optional[int] = Non
 @register_jitted(cache=True, tags={"can_parallel"})
 def rolling_max_nb(arr: tp.Array2d, window: int, minp: tp.Optional[int] = None) -> tp.Array2d:
     """2-dim version of `rolling_max_1d_nb`."""
-    out = np.empty_like(arr, dtype=np.float_)
+    out = np.empty_like(arr, dtype=float_)
     for col in prange(arr.shape[1]):
         out[:, col] = rolling_max_1d_nb(arr[:, col], window, minp=minp)
     return out
@@ -1595,7 +1596,7 @@ def rolling_argmin_1d_nb(
         minp = window
     if minp > window:
         raise ValueError("minp must be <= window")
-    out = np.empty_like(arr, dtype=np.int_)
+    out = np.empty_like(arr, dtype=int_)
     for i in range(arr.shape[0]):
         from_i = max(i - window + 1, 0)
         to_i = i + 1
@@ -1630,7 +1631,7 @@ def rolling_argmin_1d_nb(
 @register_jitted(cache=True, tags={"can_parallel"})
 def rolling_argmin_nb(arr: tp.Array2d, window: int, minp: tp.Optional[int] = None, local: bool = False) -> tp.Array2d:
     """2-dim version of `rolling_argmin_1d_nb`."""
-    out = np.empty_like(arr, dtype=np.int_)
+    out = np.empty_like(arr, dtype=int_)
     for col in prange(arr.shape[1]):
         out[:, col] = rolling_argmin_1d_nb(arr[:, col], window, minp=minp, local=local)
     return out
@@ -1648,7 +1649,7 @@ def rolling_argmax_1d_nb(
         minp = window
     if minp > window:
         raise ValueError("minp must be <= window")
-    out = np.empty_like(arr, dtype=np.int_)
+    out = np.empty_like(arr, dtype=int_)
     for i in range(arr.shape[0]):
         from_i = max(i - window + 1, 0)
         to_i = i + 1
@@ -1683,7 +1684,7 @@ def rolling_argmax_1d_nb(
 @register_jitted(cache=True, tags={"can_parallel"})
 def rolling_argmax_nb(arr: tp.Array2d, window: int, minp: tp.Optional[int] = None, local: bool = False) -> tp.Array2d:
     """2-dim version of `rolling_argmax_1d_nb`."""
-    out = np.empty_like(arr, dtype=np.int_)
+    out = np.empty_like(arr, dtype=int_)
     for col in prange(arr.shape[1]):
         out[:, col] = rolling_argmax_1d_nb(arr[:, col], window, minp=minp, local=local)
     return out
@@ -1784,7 +1785,7 @@ def rolling_pattern_similarity_1d_nb(
         window = pattern.shape[0]
     if max_window is None:
         max_window = window
-    out = np.full(arr.shape, np.nan, dtype=np.float_)
+    out = np.full(arr.shape, np.nan, dtype=float_)
     min_max_required = False
     if rescale_mode == RescaleMode.MinMax:
         min_max_required = True
@@ -1924,7 +1925,7 @@ def rolling_pattern_similarity_nb(
         window = pattern.shape[0]
     if max_window is None:
         max_window = window
-    out = np.full(arr.shape, np.nan, dtype=np.float_)
+    out = np.full(arr.shape, np.nan, dtype=float_)
     for col in prange(arr.shape[1]):
         out[:, col] = rolling_pattern_similarity_1d_nb(
             arr[:, col],
@@ -1962,7 +1963,7 @@ def expanding_min_1d_nb(arr: tp.Array1d, minp: int = 1) -> tp.Array1d:
     """Compute expanding min.
 
     Numba equivalent to `pd.Series(arr).expanding(min_periods=minp).min()`."""
-    out = np.empty_like(arr, dtype=np.float_)
+    out = np.empty_like(arr, dtype=float_)
     minv = arr[0]
     cnt = 0
     for i in range(arr.shape[0]):
@@ -1985,7 +1986,7 @@ def expanding_min_1d_nb(arr: tp.Array1d, minp: int = 1) -> tp.Array1d:
 @register_jitted(cache=True, tags={"can_parallel"})
 def expanding_min_nb(arr: tp.Array2d, minp: int = 1) -> tp.Array2d:
     """2-dim version of `expanding_min_1d_nb`."""
-    out = np.empty_like(arr, dtype=np.float_)
+    out = np.empty_like(arr, dtype=float_)
     for col in prange(arr.shape[1]):
         out[:, col] = expanding_min_1d_nb(arr[:, col], minp=minp)
     return out
@@ -1996,7 +1997,7 @@ def expanding_max_1d_nb(arr: tp.Array1d, minp: int = 1) -> tp.Array1d:
     """Compute expanding max.
 
     Numba equivalent to `pd.Series(arr).expanding(min_periods=minp).max()`."""
-    out = np.empty_like(arr, dtype=np.float_)
+    out = np.empty_like(arr, dtype=float_)
     maxv = arr[0]
     cnt = 0
     for i in range(arr.shape[0]):
@@ -2019,7 +2020,7 @@ def expanding_max_1d_nb(arr: tp.Array1d, minp: int = 1) -> tp.Array1d:
 @register_jitted(cache=True, tags={"can_parallel"})
 def expanding_max_nb(arr: tp.Array2d, minp: int = 1) -> tp.Array2d:
     """2-dim version of `expanding_max_1d_nb`."""
-    out = np.empty_like(arr, dtype=np.float_)
+    out = np.empty_like(arr, dtype=float_)
     for col in prange(arr.shape[1]):
         out[:, col] = expanding_max_1d_nb(arr[:, col], minp=minp)
     return out

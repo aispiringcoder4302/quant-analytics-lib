@@ -5,6 +5,7 @@
 import numpy as np
 
 from vectorbtpro import _typing as tp
+from vectorbtpro._dtypes import *
 from vectorbtpro.registries.jit_registry import register_jitted
 
 __all__ = []
@@ -18,7 +19,7 @@ def get_group_lens_nb(groups: tp.Array1d) -> tp.GroupLens:
 
     !!! note
         Columns must form monolithic, sorted groups. For unsorted groups, use `get_group_map_nb`."""
-    result = np.empty(groups.shape[0], dtype=np.int_)
+    result = np.empty(groups.shape[0], dtype=int_)
     j = 0
     last_group = -1
     group_len = 0
@@ -49,14 +50,14 @@ def get_group_map_nb(groups: tp.Array1d, n_groups: int) -> tp.GroupMap:
     Returns an array with indices segmented by group and an array with group lengths.
 
     Works well for unsorted group arrays."""
-    group_lens_out = np.full(n_groups, 0, dtype=np.int_)
+    group_lens_out = np.full(n_groups, 0, dtype=int_)
     for g in range(groups.shape[0]):
         group = groups[g]
         group_lens_out[group] += 1
 
     group_start_idxs = np.cumsum(group_lens_out) - group_lens_out
-    group_idxs_out = np.empty((groups.shape[0],), dtype=np.int_)
-    group_i = np.full(n_groups, 0, dtype=np.int_)
+    group_idxs_out = np.empty((groups.shape[0],), dtype=int_)
+    group_i = np.full(n_groups, 0, dtype=int_)
     for g in range(groups.shape[0]):
         group = groups[g]
         group_idxs_out[group_start_idxs[group] + group_i[group]] = g
@@ -73,8 +74,8 @@ def group_lens_select_nb(group_lens: tp.GroupLens, new_groups: tp.Array1d) -> tp
     group_end_idxs = np.cumsum(group_lens)
     group_start_idxs = group_end_idxs - group_lens
     n_values = np.sum(group_lens[new_groups])
-    indices_out = np.empty(n_values, dtype=np.int_)
-    group_arr_out = np.empty(n_values, dtype=np.int_)
+    indices_out = np.empty(n_values, dtype=int_)
+    group_arr_out = np.empty(n_values, dtype=int_)
     j = 0
 
     for c in range(new_groups.shape[0]):
@@ -95,8 +96,8 @@ def group_map_select_nb(group_map: tp.GroupMap, new_groups: tp.Array1d) -> tp.Tu
     group_idxs, group_lens = group_map
     group_start_idxs = np.cumsum(group_lens) - group_lens
     total_count = np.sum(group_lens[new_groups])
-    indices_out = np.empty(total_count, dtype=np.int_)
-    group_arr_out = np.empty(total_count, dtype=np.int_)
+    indices_out = np.empty(total_count, dtype=int_)
+    group_arr_out = np.empty(total_count, dtype=int_)
     j = 0
 
     for new_group_i in range(len(new_groups)):
@@ -115,7 +116,7 @@ def group_map_select_nb(group_map: tp.GroupMap, new_groups: tp.Array1d) -> tp.Tu
 @register_jitted(cache=True)
 def group_by_evenly_nb(n: int, n_splits: int) -> tp.Array1d:
     """Get `group_by` from evenly splitting a space of values."""
-    out = np.empty(n, dtype=np.int_)
+    out = np.empty(n, dtype=int_)
     for i in range(n):
         out[i] = i * n_splits // n + n_splits // (2 * n)
     return out

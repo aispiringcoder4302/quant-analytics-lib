@@ -4,6 +4,7 @@
 
 from numba import prange
 
+from vectorbtpro._dtypes import *
 from vectorbtpro.base import chunking as base_ch
 from vectorbtpro.base.reshaping import to_1d_array_nb, to_2d_array_nb
 from vectorbtpro.portfolio import chunking as portfolio_ch
@@ -701,7 +702,7 @@ def from_order_func_nb(  # %? line.replace("from_order_func_nb", new_func_name)
         ... def pre_sim_func_nb(c):
         ...     print('before simulation')
         ...     # Create a temporary array and pass it down the stack
-        ...     order_value_out = np.empty(c.target_shape[1], dtype=np.float_)
+        ...     order_value_out = np.empty(c.target_shape[1], dtype=float_)
         ...     return (order_value_out,)
 
         >>> @njit
@@ -899,10 +900,10 @@ def from_order_func_nb(  # %? line.replace("from_order_func_nb", new_func_name)
     last_free_cash = last_cash.copy()
     prev_close_value = last_value.copy()
     last_return = np.full_like(last_cash, np.nan)
-    order_counts = np.full(target_shape[1], 0, dtype=np.int_)
-    log_counts = np.full(target_shape[1], 0, dtype=np.int_)
+    order_counts = np.full(target_shape[1], 0, dtype=int_)
+    log_counts = np.full(target_shape[1], 0, dtype=int_)
 
-    temp_call_seq = np.empty(target_shape[1], dtype=np.int_)
+    temp_call_seq = np.empty(target_shape[1], dtype=int_)
 
     group_end_idxs = np.cumsum(group_lens)
     group_start_idxs = group_end_idxs - group_lens
@@ -1939,10 +1940,10 @@ def from_order_func_rw_nb(  # %? line.replace("from_order_func_rw_nb", new_func_
     last_free_cash = last_cash.copy()
     prev_close_value = last_value.copy()
     last_return = np.full_like(last_cash, np.nan)
-    order_counts = np.full(target_shape[1], 0, dtype=np.int_)
-    log_counts = np.full(target_shape[1], 0, dtype=np.int_)
+    order_counts = np.full(target_shape[1], 0, dtype=int_)
+    log_counts = np.full(target_shape[1], 0, dtype=int_)
 
-    temp_call_seq = np.empty(target_shape[1], dtype=np.int_)
+    temp_call_seq = np.empty(target_shape[1], dtype=int_)
 
     group_end_idxs = np.cumsum(group_lens)
     group_start_idxs = group_end_idxs - group_lens
@@ -2858,8 +2859,8 @@ def from_flex_order_func_nb(  # %? line.replace("from_flex_order_func_nb", new_f
         ... def pre_sim_func_nb(c):
         ...     # Create temporary arrays and pass them down the stack
         ...     print('before simulation')
-        ...     order_value_out = np.empty(c.target_shape[1], dtype=np.float_)
-        ...     call_seq_out = np.empty(c.target_shape[1], dtype=np.int_)
+        ...     order_value_out = np.empty(c.target_shape[1], dtype=float_)
+        ...     call_seq_out = np.empty(c.target_shape[1], dtype=int_)
         ...     return (order_value_out, call_seq_out)
 
         >>> @njit
@@ -3041,8 +3042,8 @@ def from_flex_order_func_nb(  # %? line.replace("from_flex_order_func_nb", new_f
     last_free_cash = last_cash.copy()
     prev_close_value = last_value.copy()
     last_return = np.full_like(last_cash, np.nan)
-    order_counts = np.full(target_shape[1], 0, dtype=np.int_)
-    log_counts = np.full(target_shape[1], 0, dtype=np.int_)
+    order_counts = np.full(target_shape[1], 0, dtype=int_)
+    log_counts = np.full(target_shape[1], 0, dtype=int_)
 
     group_end_idxs = np.cumsum(group_lens)
     group_start_idxs = group_end_idxs - group_lens
@@ -3978,8 +3979,8 @@ def from_flex_order_func_rw_nb(  # %? line.replace("from_flex_order_func_rw_nb",
     last_free_cash = last_cash.copy()
     prev_close_value = last_value.copy()
     last_return = np.full_like(last_cash, np.nan)
-    order_counts = np.full(target_shape[1], 0, dtype=np.int_)
-    log_counts = np.full(target_shape[1], 0, dtype=np.int_)
+    order_counts = np.full(target_shape[1], 0, dtype=int_)
+    log_counts = np.full(target_shape[1], 0, dtype=int_)
 
     group_end_idxs = np.cumsum(group_lens)
     group_start_idxs = group_end_idxs - group_lens
@@ -4727,7 +4728,7 @@ def def_pre_segment_func_nb(  # % line.replace("def_pre_segment_func_nb", "pre_s
     """Pre-segment function that overrides the valuation price and optionally sorts the call sequence."""
     set_val_price_nb(c, val_price, price)
     if auto_call_seq:
-        order_value_out = np.empty(c.group_len, dtype=np.float_)
+        order_value_out = np.empty(c.group_len, dtype=float_)
         sort_call_seq_nb(c, size, size_type, direction, order_value_out)
     return ()
 
@@ -4797,7 +4798,7 @@ def def_flex_pre_segment_func_nb(  # % line.replace("def_flex_pre_segment_func_n
     set_val_price_nb(c, val_price, price)
     call_seq_out = np.arange(c.group_len)
     if auto_call_seq:
-        order_value_out = np.empty(c.group_len, dtype=np.float_)
+        order_value_out = np.empty(c.group_len, dtype=float_)
         sort_call_seq_out_nb(c, size, size_type, direction, order_value_out, call_seq_out)
     return (call_seq_out,)
 

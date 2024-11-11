@@ -5,6 +5,7 @@ import pytest
 from numba import njit
 
 import vectorbtpro as vbt
+from vectorbtpro._dtypes import *
 from tests.utils import *
 from vectorbtpro.generic import nb
 
@@ -996,15 +997,15 @@ class TestAccessors:
             test_minp = test_window
         assert_series_equal(
             df["a"].vbt.rolling_idxmin(test_window, minp=test_minp, local=True),
-            df["a"].rolling(test_window, min_periods=test_minp).apply(np.argmin).fillna(-1).astype(np.int_),
+            df["a"].rolling(test_window, min_periods=test_minp).apply(np.argmin).fillna(-1).astype(int_),
         )
         assert_frame_equal(
             df.vbt.rolling_idxmin(test_window, minp=test_minp, local=True),
-            df.rolling(test_window, min_periods=test_minp).apply(np.argmin).fillna(-1).astype(np.int_),
+            df.rolling(test_window, min_periods=test_minp).apply(np.argmin).fillna(-1).astype(int_),
         )
         assert_frame_equal(
             df.vbt.rolling_idxmin(test_window, local=True),
-            df.rolling(test_window).apply(np.argmin).fillna(-1).astype(np.int_),
+            df.rolling(test_window).apply(np.argmin).fillna(-1).astype(int_),
         )
         assert_frame_equal(
             df.vbt.rolling_idxmin(test_window, minp=test_minp, jitted=dict(parallel=True)),
@@ -1019,15 +1020,15 @@ class TestAccessors:
     def test_expanding_idxmin(self, test_minp):
         assert_series_equal(
             df["a"].vbt.expanding_idxmin(minp=test_minp, local=True),
-            df["a"].expanding(min_periods=test_minp).apply(np.argmin).fillna(-1).astype(np.int_),
+            df["a"].expanding(min_periods=test_minp).apply(np.argmin).fillna(-1).astype(int_),
         )
         assert_frame_equal(
             df.vbt.expanding_idxmin(minp=test_minp, local=True),
-            df.expanding(min_periods=test_minp).apply(np.argmin).fillna(-1).astype(np.int_),
+            df.expanding(min_periods=test_minp).apply(np.argmin).fillna(-1).astype(int_),
         )
         assert_frame_equal(
             df.vbt.expanding_idxmin(local=True),
-            df.expanding().apply(np.argmin).fillna(-1).astype(np.int_),
+            df.expanding().apply(np.argmin).fillna(-1).astype(int_),
         )
         assert_frame_equal(
             df.vbt.expanding_idxmin(minp=test_minp, jitted=dict(parallel=True)),
@@ -1045,15 +1046,15 @@ class TestAccessors:
             test_minp = test_window
         assert_series_equal(
             df["a"].vbt.rolling_idxmax(test_window, minp=test_minp, local=True),
-            df["a"].rolling(test_window, min_periods=test_minp).apply(np.argmax).fillna(-1).astype(np.int_),
+            df["a"].rolling(test_window, min_periods=test_minp).apply(np.argmax).fillna(-1).astype(int_),
         )
         assert_frame_equal(
             df.vbt.rolling_idxmax(test_window, minp=test_minp, local=True),
-            df.rolling(test_window, min_periods=test_minp).apply(np.argmax).fillna(-1).astype(np.int_),
+            df.rolling(test_window, min_periods=test_minp).apply(np.argmax).fillna(-1).astype(int_),
         )
         assert_frame_equal(
             df.vbt.rolling_idxmax(test_window, local=True),
-            df.rolling(test_window).apply(np.argmax).fillna(-1).astype(np.int_),
+            df.rolling(test_window).apply(np.argmax).fillna(-1).astype(int_),
         )
         assert_frame_equal(
             df.vbt.rolling_idxmax(test_window, minp=test_minp, jitted=dict(parallel=True)),
@@ -1068,15 +1069,15 @@ class TestAccessors:
     def test_expanding_idxmax(self, test_minp):
         assert_series_equal(
             df["a"].vbt.expanding_idxmax(minp=test_minp, local=True),
-            df["a"].expanding(min_periods=test_minp).apply(np.argmax).fillna(-1).astype(np.int_),
+            df["a"].expanding(min_periods=test_minp).apply(np.argmax).fillna(-1).astype(int_),
         )
         assert_frame_equal(
             df.vbt.expanding_idxmax(minp=test_minp, local=True),
-            df.expanding(min_periods=test_minp).apply(np.argmax).fillna(-1).astype(np.int_),
+            df.expanding(min_periods=test_minp).apply(np.argmax).fillna(-1).astype(int_),
         )
         assert_frame_equal(
             df.vbt.expanding_idxmax(local=True),
-            df.expanding().apply(np.argmax).fillna(-1).astype(np.int_),
+            df.expanding().apply(np.argmax).fillna(-1).astype(int_),
         )
         assert_frame_equal(
             df.vbt.expanding_idxmax(minp=test_minp, jitted=dict(parallel=True)),

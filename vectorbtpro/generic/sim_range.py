@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 
 from vectorbtpro import _typing as tp
+from vectorbtpro._dtypes import *
 from vectorbtpro.base.indexing import AutoIdxr
 from vectorbtpro.base.reshaping import broadcast_array_to
 from vectorbtpro.base.wrapping import ArrayWrapper
@@ -82,7 +83,7 @@ class SimRangeMixin:
         if stack_sim_start_objs:
             obj_sim_starts = []
             for obj in objs:
-                obj_sim_start = np.empty(len(obj._sim_start), dtype=np.int_)
+                obj_sim_start = np.empty(len(obj._sim_start), dtype=int_)
                 for i in range(len(obj._sim_start)):
                     if obj._sim_start[i] == 0:
                         obj_sim_start[i] = 0
@@ -118,7 +119,7 @@ class SimRangeMixin:
         if stack_sim_end_objs:
             obj_sim_ends = []
             for obj in objs:
-                obj_sim_end = np.empty(len(obj._sim_end), dtype=np.int_)
+                obj_sim_end = np.empty(len(obj._sim_end), dtype=int_)
                 for i in range(len(obj._sim_end)):
                     if obj._sim_end[i] == 0:
                         obj_sim_end[i] = 0
@@ -181,7 +182,7 @@ class SimRangeMixin:
     def resample_sim_start(self, new_wrapper: ArrayWrapper) -> tp.Optional[tp.ArrayLike]:
         """Resample simulation start."""
         if self._sim_start is not None:
-            new_sim_start = np.empty(len(self._sim_start), dtype=np.int_)
+            new_sim_start = np.empty(len(self._sim_start), dtype=int_)
             for i in range(len(self._sim_start)):
                 if self._sim_start[i] == 0:
                     new_sim_start[i] = 0
@@ -202,7 +203,7 @@ class SimRangeMixin:
     def resample_sim_end(self, new_wrapper: ArrayWrapper) -> tp.Optional[tp.ArrayLike]:
         """Resample simulation end."""
         if self._sim_end is not None:
-            new_sim_end = np.empty(len(self._sim_end), dtype=np.int_)
+            new_sim_end = np.empty(len(self._sim_end), dtype=int_)
             for i in range(len(self._sim_end)):
                 if self._sim_end[i] == 0:
                     new_sim_end[i] = 0
@@ -281,7 +282,7 @@ class SimRangeMixin:
                 if sim_start_arr.ndim == 0:
                     sim_start = cls_or_self.resolve_sim_start_value(sim_start, wrapper=wrapper)
                 else:
-                    new_sim_start = np.empty(len(sim_start), dtype=np.int_)
+                    new_sim_start = np.empty(len(sim_start), dtype=int_)
                     for i in range(len(sim_start)):
                         new_sim_start[i] = cls_or_self.resolve_sim_start_value(sim_start[i], wrapper=wrapper)
                     sim_start = new_sim_start
@@ -341,7 +342,7 @@ class SimRangeMixin:
                 if sim_end_arr.ndim == 0:
                     sim_end = cls_or_self.resolve_sim_end_value(sim_end, wrapper=wrapper)
                 else:
-                    new_sim_end = np.empty(len(sim_end), dtype=np.int_)
+                    new_sim_end = np.empty(len(sim_end), dtype=int_)
                     for i in range(len(sim_end)):
                         new_sim_end[i] = cls_or_self.resolve_sim_end_value(sim_end[i], wrapper=wrapper)
                     sim_end = new_sim_end

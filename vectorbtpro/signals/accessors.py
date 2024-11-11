@@ -171,6 +171,7 @@ import numpy as np
 import pandas as pd
 
 from vectorbtpro import _typing as tp
+from vectorbtpro._dtypes import *
 from vectorbtpro.accessors import register_vbt_accessor, register_df_vbt_accessor, register_sr_vbt_accessor
 from vectorbtpro.base import chunking as base_ch, reshaping, indexes
 from vectorbtpro.base.wrapping import ArrayWrapper
@@ -1088,7 +1089,7 @@ class SignalsAccessor(GenericAccessor):
         entries = broadcasted_args["entries"]
         stop_ts = broadcasted_args["stop_ts"]
         if stop_ts is None:
-            stop_ts = np.empty_like(entries, dtype=np.float_)
+            stop_ts = np.empty_like(entries, dtype=float_)
         stop_ts = reshaping.to_2d_array(stop_ts)
 
         entries_arr = reshaping.to_2d_array(entries)
@@ -1422,11 +1423,11 @@ class SignalsAccessor(GenericAccessor):
         entries = broadcasted_args["entries"]
         stop_price = broadcasted_args["stop_price"]
         if stop_price is None:
-            stop_price = np.empty_like(entries, dtype=np.float_)
+            stop_price = np.empty_like(entries, dtype=float_)
         stop_price = reshaping.to_2d_array(stop_price)
         stop_type = broadcasted_args["stop_type"]
         if stop_type is None:
-            stop_type = np.empty_like(entries, dtype=np.int_)
+            stop_type = np.empty_like(entries, dtype=int_)
         stop_type = reshaping.to_2d_array(stop_type)
 
         entries_arr = reshaping.to_2d_array(entries)
@@ -1623,7 +1624,7 @@ class SignalsAccessor(GenericAccessor):
         rank_wrapped = wrapper.wrap(rank, group_by=False, **wrap_kwargs)
         if as_mapped:
             rank_wrapped = rank_wrapped.replace(-1, np.nan)
-            return rank_wrapped.vbt.to_mapped(dropna=True, dtype=np.int_, **kwargs)
+            return rank_wrapped.vbt.to_mapped(dropna=True, dtype=int_, **kwargs)
         return rank_wrapped
 
     def pos_rank(
@@ -2430,11 +2431,11 @@ class SignalsAccessor(GenericAccessor):
         See `vectorbtpro.generic.accessors.GenericAccessor.to_mapped`.
 
         Only True values will be considered."""
-        indices = np.arange(len(self.wrapper.index), dtype=np.float_)[:, None]
+        indices = np.arange(len(self.wrapper.index), dtype=float_)[:, None]
         indices = np.tile(indices, (1, len(self.wrapper.columns)))
         indices = reshaping.soft_to_ndim(indices, self.wrapper.ndim)
         indices[~self.obj.values] = np.nan
-        return self.wrapper.wrap(indices).vbt.to_mapped(dropna=True, dtype=np.int_, group_by=group_by, **kwargs)
+        return self.wrapper.wrap(indices).vbt.to_mapped(dropna=True, dtype=int_, group_by=group_by, **kwargs)
 
     def total(self, wrap_kwargs: tp.KwargsLike = None, group_by: tp.GroupByLike = None) -> tp.MaybeSeries:
         """Total number of True values in each column/group."""

@@ -4,6 +4,7 @@ import pytest
 from numba import njit
 
 import vectorbtpro as vbt
+from vectorbtpro._dtypes import *
 from tests.utils import *
 from vectorbtpro.generic import nb as generic_nb
 from vectorbtpro.generic.enums import range_dt
@@ -988,7 +989,7 @@ class TestAccessors:
         a = np.full(n * 2, 0.0)
         for i in range(10000):
             en, ex = pd.Series.vbt.signals.generate_random_both(1000, n, entry_wait=2, exit_wait=2)
-            _a = np.empty((n * 2,), dtype=np.int_)
+            _a = np.empty((n * 2,), dtype=int_)
             _a[0::2] = np.flatnonzero(en)
             _a[1::2] = np.flatnonzero(ex)
             a += _a
@@ -3355,7 +3356,7 @@ class TestFactory:
                 pass_kwargs=["temp_idx_arr2", ("kw2", 1000)],
                 pass_cache=True,
             ),
-            in_output_settings=dict(in_out2=dict(dtype=np.float_)),
+            in_output_settings=dict(in_out2=dict(dtype=float_)),
             in_out2=np.nan,
             var_args=True,
         )
@@ -3404,7 +3405,7 @@ class TestFactory:
                 pass_kwargs=["temp_idx_arr2", ("kw2", 1000)],
                 pass_cache=True,
             ),
-            in_output_settings=dict(in_out2=dict(dtype=np.float_)),
+            in_output_settings=dict(in_out2=dict(dtype=float_)),
             in_out2=np.nan,
             var_args=True,
         )
@@ -3493,7 +3494,7 @@ class TestFactory:
                 pass_kwargs=["temp_idx_arr2", ("kw2", 1000)],
                 pass_cache=True,
             ),
-            in_output_settings=dict(in_out2=dict(dtype=np.float_)),
+            in_output_settings=dict(in_out2=dict(dtype=float_)),
             in_out2=np.nan,
             var_args=True,
         )
@@ -3614,7 +3615,7 @@ class TestFactory:
                 pass_kwargs=["temp_idx_arr2", ("kw2", 1000)],
                 pass_cache=True,
             ),
-            in_output_settings=dict(in_out1=dict(dtype=np.float_), in_out2=dict(dtype=np.float_)),
+            in_output_settings=dict(in_out1=dict(dtype=float_), in_out2=dict(dtype=float_)),
             in_out1=np.nan,
             in_out2=np.nan,
             var_args=True,

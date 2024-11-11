@@ -13,6 +13,7 @@ import numpy as np
 from numba import prange
 
 from vectorbtpro import _typing as tp
+from vectorbtpro._dtypes import *
 from vectorbtpro.base import chunking as base_ch
 from vectorbtpro.base.flex_indexing import flex_select_1d_nb, flex_select_col_nb
 from vectorbtpro.base.reshaping import to_1d_array_nb, to_2d_array_nb
@@ -71,7 +72,7 @@ def future_mean_nb(
     wtype_ = to_1d_array_nb(np.asarray(wtype))
     wait_ = to_1d_array_nb(np.asarray(wait))
 
-    future_mean = np.empty(close.shape, dtype=np.float_)
+    future_mean = np.empty(close.shape, dtype=float_)
     for col in prange(close.shape[1]):
         future_mean[:, col] = future_mean_1d_nb(
             close=close[:, col],
@@ -132,7 +133,7 @@ def future_std_nb(
     wtype_ = to_1d_array_nb(np.asarray(wtype))
     wait_ = to_1d_array_nb(np.asarray(wait))
 
-    future_std = np.empty(close.shape, dtype=np.float_)
+    future_std = np.empty(close.shape, dtype=float_)
     for col in prange(close.shape[1]):
         future_std[:, col] = future_std_1d_nb(
             close=close[:, col],
@@ -184,7 +185,7 @@ def future_min_nb(
     window_ = to_1d_array_nb(np.asarray(window))
     wait_ = to_1d_array_nb(np.asarray(wait))
 
-    future_min = np.empty(close.shape, dtype=np.float_)
+    future_min = np.empty(close.shape, dtype=float_)
     for col in prange(close.shape[1]):
         future_min[:, col] = future_min_1d_nb(
             close=close[:, col],
@@ -233,7 +234,7 @@ def future_max_nb(
     window_ = to_1d_array_nb(np.asarray(window))
     wait_ = to_1d_array_nb(np.asarray(wait))
 
-    future_max = np.empty(close.shape, dtype=np.float_)
+    future_max = np.empty(close.shape, dtype=float_)
     for col in prange(close.shape[1]):
         future_max[:, col] = future_max_1d_nb(
             close=close[:, col],
@@ -272,7 +273,7 @@ def fixed_labels_nb(
     """2-dim version of `fixed_labels_1d_nb`."""
     n_ = to_1d_array_nb(np.asarray(n))
 
-    fixed_labels = np.empty(close.shape, dtype=np.float_)
+    fixed_labels = np.empty(close.shape, dtype=float_)
     for col in prange(close.shape[1]):
         fixed_labels[:, col] = fixed_labels_1d_nb(
             close=close[:, col],
@@ -324,7 +325,7 @@ def mean_labels_nb(
     wtype_ = to_1d_array_nb(np.asarray(wtype))
     wait_ = to_1d_array_nb(np.asarray(wait))
 
-    mean_labels = np.empty(close.shape, dtype=np.float_)
+    mean_labels = np.empty(close.shape, dtype=float_)
     for col in prange(close.shape[1]):
         mean_labels[:, col] = mean_labels_1d_nb(
             close=close[:, col],
@@ -369,7 +370,7 @@ def pivots_1d_nb(
     up_th_ = to_1d_array_nb(np.asarray(up_th))
     down_th_ = to_1d_array_nb(np.asarray(down_th))
 
-    pivots = np.full(high.shape, 0, dtype=np.int_)
+    pivots = np.full(high.shape, 0, dtype=int_)
 
     last_pivot = 0
     last_i = -1
@@ -447,7 +448,7 @@ def pivots_nb(
     up_th_ = to_2d_array_nb(np.asarray(up_th))
     down_th_ = to_2d_array_nb(np.asarray(down_th))
 
-    pivots = np.empty(high.shape, dtype=np.int_)
+    pivots = np.empty(high.shape, dtype=int_)
     for col in prange(high.shape[1]):
         pivots[:, col] = pivots_1d_nb(
             high[:, col],
@@ -464,7 +465,7 @@ def pivots_nb(
 @register_jitted(cache=True)
 def bin_trend_labels_1d_nb(pivots: tp.Array1d) -> tp.Array1d:
     """Values classified into 0 (downtrend) and 1 (uptrend)."""
-    bin_trend_labels = np.full(pivots.shape, np.nan, dtype=np.float_)
+    bin_trend_labels = np.full(pivots.shape, np.nan, dtype=float_)
     idxs = np.flatnonzero(pivots)
     if idxs.shape[0] == 0:
         return bin_trend_labels
@@ -492,7 +493,7 @@ def bin_trend_labels_1d_nb(pivots: tp.Array1d) -> tp.Array1d:
 @register_jitted(cache=True, tags={"can_parallel"})
 def bin_trend_labels_nb(pivots: tp.Array2d) -> tp.Array2d:
     """2-dim version of `bin_trend_labels_1d_nb`."""
-    bin_trend_labels = np.empty(pivots.shape, dtype=np.float_)
+    bin_trend_labels = np.empty(pivots.shape, dtype=float_)
     for col in prange(pivots.shape[1]):
         bin_trend_labels[:, col] = bin_trend_labels_1d_nb(pivots[:, col])
     return bin_trend_labels
@@ -501,7 +502,7 @@ def bin_trend_labels_nb(pivots: tp.Array2d) -> tp.Array2d:
 @register_jitted(cache=True)
 def binc_trend_labels_1d_nb(high: tp.Array1d, low: tp.Array1d, pivots: tp.Array1d) -> tp.Array1d:
     """Median values normalized between 0 (downtrend) and 1 (uptrend)."""
-    binc_trend_labels = np.full(pivots.shape, np.nan, dtype=np.float_)
+    binc_trend_labels = np.full(pivots.shape, np.nan, dtype=float_)
     idxs = np.flatnonzero(pivots[:])
     if idxs.shape[0] == 0:
         return binc_trend_labels
@@ -531,7 +532,7 @@ def binc_trend_labels_1d_nb(high: tp.Array1d, low: tp.Array1d, pivots: tp.Array1
 @register_jitted(cache=True, tags={"can_parallel"})
 def binc_trend_labels_nb(high: tp.Array2d, low: tp.Array2d, pivots: tp.Array2d) -> tp.Array2d:
     """2-dim version of `binc_trend_labels_1d_nb`."""
-    binc_trend_labels = np.empty(pivots.shape, dtype=np.float_)
+    binc_trend_labels = np.empty(pivots.shape, dtype=float_)
     for col in prange(pivots.shape[1]):
         binc_trend_labels[:, col] = binc_trend_labels_1d_nb(high[:, col], low[:, col], pivots[:, col])
     return binc_trend_labels
@@ -550,7 +551,7 @@ def bincs_trend_labels_1d_nb(
     up_th_ = to_1d_array_nb(np.asarray(up_th))
     down_th_ = to_1d_array_nb(np.asarray(down_th))
 
-    bincs_trend_labels = np.full(pivots.shape, np.nan, dtype=np.float_)
+    bincs_trend_labels = np.full(pivots.shape, np.nan, dtype=float_)
     idxs = np.flatnonzero(pivots)
     if idxs.shape[0] == 0:
         return bincs_trend_labels
@@ -609,7 +610,7 @@ def bincs_trend_labels_nb(
     up_th_ = to_2d_array_nb(np.asarray(up_th))
     down_th_ = to_2d_array_nb(np.asarray(down_th))
 
-    bincs_trend_labels = np.empty(pivots.shape, dtype=np.float_)
+    bincs_trend_labels = np.empty(pivots.shape, dtype=float_)
     for col in prange(pivots.shape[1]):
         bincs_trend_labels[:, col] = bincs_trend_labels_1d_nb(
             high[:, col],
@@ -629,7 +630,7 @@ def pct_trend_labels_1d_nb(
     normalize: bool = False,
 ) -> tp.Array1d:
     """Percentage change of median values relative to the next pivot."""
-    pct_trend_labels = np.full(pivots.shape, np.nan, dtype=np.float_)
+    pct_trend_labels = np.full(pivots.shape, np.nan, dtype=float_)
     idxs = np.flatnonzero(pivots)
     if idxs.shape[0] == 0:
         return pct_trend_labels
@@ -672,7 +673,7 @@ def pct_trend_labels_nb(
     normalize: bool = False,
 ) -> tp.Array2d:
     """2-dim version of `pct_trend_labels_1d_nb`."""
-    pct_trend_labels = np.empty(pivots.shape, dtype=np.float_)
+    pct_trend_labels = np.empty(pivots.shape, dtype=float_)
     for col in prange(pivots.shape[1]):
         pct_trend_labels[:, col] = pct_trend_labels_1d_nb(
             high[:, col],
@@ -730,7 +731,7 @@ def trend_labels_nb(
     down_th_ = to_2d_array_nb(np.asarray(down_th))
     mode_ = to_1d_array_nb(np.asarray(mode))
 
-    trend_labels = np.empty(high.shape, dtype=np.float_)
+    trend_labels = np.empty(high.shape, dtype=float_)
     for col in prange(high.shape[1]):
         trend_labels[:, col] = trend_labels_1d_nb(
             high[:, col],
@@ -761,7 +762,7 @@ def breakout_labels_1d_nb(
     up_th_ = to_1d_array_nb(np.asarray(up_th))
     down_th_ = to_1d_array_nb(np.asarray(down_th))
 
-    breakout_labels = np.full(high.shape, 0, dtype=np.float_)
+    breakout_labels = np.full(high.shape, 0, dtype=float_)
     for i in range(high.shape[0]):
         if not np.isnan(high[i]) and not np.isnan(low[i]):
             _up_th = 1 + abs(flex_select_1d_nb(up_th_, i))
@@ -809,7 +810,7 @@ def breakout_labels_nb(
     down_th_ = to_2d_array_nb(np.asarray(down_th))
     wait_ = to_1d_array_nb(np.asarray(wait))
 
-    breakout_labels = np.empty(high.shape, dtype=np.float_)
+    breakout_labels = np.empty(high.shape, dtype=float_)
     for col in prange(high.shape[1]):
         breakout_labels[:, col] = breakout_labels_1d_nb(
             high[:, col],

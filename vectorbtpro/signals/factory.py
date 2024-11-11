@@ -14,6 +14,7 @@ import numpy as np
 from numba import njit
 
 from vectorbtpro import _typing as tp
+from vectorbtpro._dtypes import *
 from vectorbtpro.base import combining
 from vectorbtpro.indicators.factory import IndicatorFactory, IndicatorBase, CacheOutputT
 from vectorbtpro.registries.jit_registry import jit_reg
@@ -838,7 +839,7 @@ class SignalFactory(IndicatorFactory):
                         key, value = key
                     else:
                         if key.startswith("temp_idx_arr"):
-                            value = np.empty((input_shape[0],), dtype=np.int_)
+                            value = np.empty((input_shape[0],), dtype=int_)
                     value = func_kwargs.get(key, value)
                     more_args += (value,)
                 return more_args

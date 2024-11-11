@@ -3,6 +3,7 @@ import os
 import pytest
 
 import vectorbtpro as vbt
+from vectorbtpro._dtypes import *
 from tests.utils import *
 from vectorbtpro.base import indexes, indexing, flex_indexing, reshaping
 from vectorbtpro.utils import checks
@@ -1115,11 +1116,11 @@ class TestIndexing:
         assert len(np.column_stack(indexing.get_index_ranges(index, start_time="15:00", end_time="15:00"))) == 0
         np.testing.assert_array_equal(
             np.column_stack(indexing.get_index_ranges(index, start_time="15:00", end_time="15:01")),
-            np.array([[5, 6], [13, 14]], dtype=np.int_),
+            np.array([[5, 6], [13, 14]], dtype=int_),
         )
         np.testing.assert_array_equal(
             np.column_stack(indexing.get_index_ranges(index, start_time="15:00", end_time="14:59")),
-            np.array([[5, 13], [13, 17]], dtype=np.int_),
+            np.array([[5, 13], [13, 17]], dtype=int_),
         )
 
         np.testing.assert_array_equal(

@@ -7,6 +7,7 @@ Defines enums and other schemas for `vectorbtpro.generic`."""
 import numpy as np
 
 from vectorbtpro import _typing as tp
+from vectorbtpro._dtypes import *
 from vectorbtpro.utils.formatting import prettify
 
 __pdoc__all__ = __all__ = [
@@ -275,7 +276,13 @@ __pdoc__[
 # ############# Records ############# #
 
 range_dt = np.dtype(
-    [("id", np.int_), ("col", np.int_), ("start_idx", np.int_), ("end_idx", np.int_), ("status", np.int_)],
+    [
+        ("id", int_),
+        ("col", int_),
+        ("start_idx", int_),
+        ("end_idx", int_),
+        ("status", int_),
+    ],
     align=True,
 )
 """_"""
@@ -291,12 +298,12 @@ __pdoc__[
 
 pattern_range_dt = np.dtype(
     [
-        ("id", np.int_),
-        ("col", np.int_),
-        ("start_idx", np.int_),
-        ("end_idx", np.int_),
-        ("status", np.int_),
-        ("similarity", np.float_),
+        ("id", int_),
+        ("col", int_),
+        ("start_idx", int_),
+        ("end_idx", int_),
+        ("status", int_),
+        ("similarity", float_),
     ],
     align=True,
 )
@@ -313,15 +320,15 @@ __pdoc__[
 
 drawdown_dt = np.dtype(
     [
-        ("id", np.int_),
-        ("col", np.int_),
-        ("start_idx", np.int_),
-        ("valley_idx", np.int_),
-        ("end_idx", np.int_),
-        ("start_val", np.float_),
-        ("valley_val", np.float_),
-        ("end_val", np.float_),
-        ("status", np.int_),
+        ("id", int_),
+        ("col", int_),
+        ("start_idx", int_),
+        ("valley_idx", int_),
+        ("end_idx", int_),
+        ("start_val", float_),
+        ("valley_val", float_),
+        ("end_val", float_),
+        ("status", int_),
     ],
     align=True,
 )

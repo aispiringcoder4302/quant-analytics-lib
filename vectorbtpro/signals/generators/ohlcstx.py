@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 
 from vectorbtpro import _typing as tp
+from vectorbtpro._dtypes import *
 from vectorbtpro.indicators.configs import flex_elem_param_config
 from vectorbtpro.signals.enums import StopType
 from vectorbtpro.signals.factory import SignalFactory
@@ -44,8 +45,8 @@ ohlcstx_func_config = ReadonlyConfig(
             pass_kwargs=["is_entry_open"],
         ),
         in_output_settings=dict(
-            stop_price=dict(dtype=np.float_),
-            stop_type=dict(dtype=np.int_),
+            stop_price=dict(dtype=float_),
+            stop_type=dict(dtype=int_),
         ),
         param_settings=dict(
             sl_stop=flex_elem_param_config,

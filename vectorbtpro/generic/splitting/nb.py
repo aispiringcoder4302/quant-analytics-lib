@@ -6,6 +6,7 @@ import numpy as np
 from numba import prange
 
 from vectorbtpro import _typing as tp
+from vectorbtpro._dtypes import *
 from vectorbtpro.registries.jit_registry import register_jitted
 
 __all__ = []
@@ -14,7 +15,7 @@ __all__ = []
 @register_jitted(cache=True, tags={"can_parallel"})
 def split_overlap_matrix_nb(mask_arr: tp.Array3d) -> tp.Array2d:
     """Compute the overlap matrix for splits."""
-    out = np.empty((mask_arr.shape[0], mask_arr.shape[0]), dtype=np.int_)
+    out = np.empty((mask_arr.shape[0], mask_arr.shape[0]), dtype=int_)
     temp_mask = np.empty((mask_arr.shape[0], mask_arr.shape[2]), dtype=np.bool_)
     for i in range(mask_arr.shape[0]):
         for m in range(mask_arr.shape[2]):
@@ -32,7 +33,7 @@ def split_overlap_matrix_nb(mask_arr: tp.Array3d) -> tp.Array2d:
 @register_jitted(cache=True, tags={"can_parallel"})
 def norm_split_overlap_matrix_nb(mask_arr: tp.Array3d) -> tp.Array2d:
     """Compute the normalized overlap matrix for splits."""
-    out = np.empty((mask_arr.shape[0], mask_arr.shape[0]), dtype=np.float_)
+    out = np.empty((mask_arr.shape[0], mask_arr.shape[0]), dtype=float_)
     temp_mask = np.empty((mask_arr.shape[0], mask_arr.shape[2]), dtype=np.bool_)
     for i in range(mask_arr.shape[0]):
         for m in range(mask_arr.shape[2]):
@@ -51,7 +52,7 @@ def norm_split_overlap_matrix_nb(mask_arr: tp.Array3d) -> tp.Array2d:
 @register_jitted(cache=True, tags={"can_parallel"})
 def set_overlap_matrix_nb(mask_arr: tp.Array3d) -> tp.Array2d:
     """Compute the overlap matrix for sets."""
-    out = np.empty((mask_arr.shape[1], mask_arr.shape[1]), dtype=np.int_)
+    out = np.empty((mask_arr.shape[1], mask_arr.shape[1]), dtype=int_)
     temp_mask = np.empty((mask_arr.shape[1], mask_arr.shape[2]), dtype=np.bool_)
     for j in range(mask_arr.shape[1]):
         for m in range(mask_arr.shape[2]):
@@ -69,7 +70,7 @@ def set_overlap_matrix_nb(mask_arr: tp.Array3d) -> tp.Array2d:
 @register_jitted(cache=True, tags={"can_parallel"})
 def norm_set_overlap_matrix_nb(mask_arr: tp.Array3d) -> tp.Array2d:
     """Compute the normalized overlap matrix for sets."""
-    out = np.empty((mask_arr.shape[1], mask_arr.shape[1]), dtype=np.float_)
+    out = np.empty((mask_arr.shape[1], mask_arr.shape[1]), dtype=float_)
     temp_mask = np.empty((mask_arr.shape[1], mask_arr.shape[2]), dtype=np.bool_)
     for j in range(mask_arr.shape[1]):
         for m in range(mask_arr.shape[2]):
@@ -88,7 +89,7 @@ def norm_set_overlap_matrix_nb(mask_arr: tp.Array3d) -> tp.Array2d:
 @register_jitted(cache=True, tags={"can_parallel"})
 def range_overlap_matrix_nb(mask_arr: tp.Array3d) -> tp.Array2d:
     """Compute the overlap matrix for ranges."""
-    out = np.empty((mask_arr.shape[0] * mask_arr.shape[1], mask_arr.shape[0] * mask_arr.shape[1]), dtype=np.int_)
+    out = np.empty((mask_arr.shape[0] * mask_arr.shape[1], mask_arr.shape[0] * mask_arr.shape[1]), dtype=int_)
     for k in prange(mask_arr.shape[0] * mask_arr.shape[1]):
         i1 = k // mask_arr.shape[1]
         j1 = k % mask_arr.shape[1]
@@ -103,7 +104,7 @@ def range_overlap_matrix_nb(mask_arr: tp.Array3d) -> tp.Array2d:
 @register_jitted(cache=True, tags={"can_parallel"})
 def norm_range_overlap_matrix_nb(mask_arr: tp.Array3d) -> tp.Array2d:
     """Compute the normalized overlap matrix for ranges."""
-    out = np.empty((mask_arr.shape[0] * mask_arr.shape[1], mask_arr.shape[0] * mask_arr.shape[1]), dtype=np.float_)
+    out = np.empty((mask_arr.shape[0] * mask_arr.shape[1], mask_arr.shape[0] * mask_arr.shape[1]), dtype=float_)
     for k in prange(mask_arr.shape[0] * mask_arr.shape[1]):
         i1 = k // mask_arr.shape[1]
         j1 = k % mask_arr.shape[1]
@@ -121,8 +122,8 @@ def split_range_by_gap_nb(range_: tp.Array1d) -> tp.Tuple[tp.Array1d, tp.Array1d
     """Split a range with gaps into start and end indices."""
     if len(range_) == 0:
         raise ValueError("Range is empty")
-    start_idxs_out = np.empty(len(range_), dtype=np.int_)
-    stop_idxs_out = np.empty(len(range_), dtype=np.int_)
+    start_idxs_out = np.empty(len(range_), dtype=int_)
+    stop_idxs_out = np.empty(len(range_), dtype=int_)
     start_idxs_out[0] = 0
     k = 0
     for i in range(1, len(range_)):

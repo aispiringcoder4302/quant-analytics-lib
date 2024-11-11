@@ -17,6 +17,7 @@ import numpy as np
 from numba import prange
 
 from vectorbtpro import _typing as tp
+from vectorbtpro._dtypes import *
 from vectorbtpro.base import chunking as base_ch
 from vectorbtpro.base.flex_indexing import flex_select_1d_pc_nb, flex_select_nb
 from vectorbtpro.generic import nb as generic_nb
@@ -445,7 +446,7 @@ def generate_rand_enex_nb(
                 chosen_ranges = rescale_float_to_int_nb(rand_floats, (min_range, max_range), total_range)
 
                 # Translate them into entries
-                entry_idxs = np.empty(_n, dtype=np.int_)
+                entry_idxs = np.empty(_n, dtype=int_)
                 entry_idxs[0] = first_idx
                 entry_idxs[1:] = chosen_ranges
                 entry_idxs = np.cumsum(entry_idxs)
@@ -838,7 +839,7 @@ def rank_nb(
     the first partition of True values coming before the first reset signal. Setting `reset_wait`
     to 0 will treat the signal at the same position as the reset signal as the first signal in
     the next partition. Setting it to 1 will treat it as the last signal in the previous partition."""
-    out = np.full(mask.shape, -1, dtype=np.int_)
+    out = np.full(mask.shape, -1, dtype=int_)
 
     for col in prange(mask.shape[1]):
         in_partition = False
@@ -941,8 +942,8 @@ def distance_from_last_1d_nb(mask: tp.Array1d, nth: int = 1) -> tp.Array1d:
     Unless `nth` is zero, the current True value isn't counted as one of the last True values."""
     if nth < 0:
         raise ValueError("nth must be at least 0")
-    out = np.empty(mask.shape, dtype=np.int_)
-    last_indices = np.empty(mask.shape, dtype=np.int_)
+    out = np.empty(mask.shape, dtype=int_)
+    last_indices = np.empty(mask.shape, dtype=int_)
     k = 0
     for i in range(mask.shape[0]):
         if nth == 0:
@@ -980,7 +981,7 @@ def distance_from_last_1d_nb(mask: tp.Array1d, nth: int = 1) -> tp.Array1d:
 @register_jitted(cache=True, tags={"can_parallel"})
 def distance_from_last_nb(mask: tp.Array2d, nth: int = 1) -> tp.Array2d:
     """2-dim version of `distance_from_last_1d_nb`."""
-    out = np.empty(mask.shape, dtype=np.int_)
+    out = np.empty(mask.shape, dtype=int_)
     for col in prange(mask.shape[1]):
         out[:, col] = distance_from_last_1d_nb(mask[:, col], nth=nth)
     return out
@@ -1088,10 +1089,10 @@ def relation_idxs_1d_nb(
         max_signals = source_mask.shape[0] * 2
     else:
         max_signals = source_mask.shape[0]
-    source_range_out = np.full(max_signals, -1, dtype=np.int_)
-    target_range_out = np.full(max_signals, -1, dtype=np.int_)
-    source_idxs_out = np.full(max_signals, -1, dtype=np.int_)
-    target_idxs_out = np.full(max_signals, -1, dtype=np.int_)
+    source_range_out = np.full(max_signals, -1, dtype=int_)
+    target_range_out = np.full(max_signals, -1, dtype=int_)
+    source_idxs_out = np.full(max_signals, -1, dtype=int_)
+    target_idxs_out = np.full(max_signals, -1, dtype=int_)
     source_j = -1
     target_j = -1
     k = 0
@@ -1300,7 +1301,7 @@ def relation_idxs_1d_nb(
 def between_ranges_nb(mask: tp.Array2d, incl_open: bool = False) -> tp.RecordArray:
     """Create a record of type `vectorbtpro.generic.enums.range_dt` for each range between two signals in `mask`."""
     new_records = np.empty(mask.shape, dtype=range_dt)
-    counts = np.full(mask.shape[1], 0, dtype=np.int_)
+    counts = np.full(mask.shape[1], 0, dtype=int_)
 
     for col in prange(mask.shape[1]):
         from_i = -1
@@ -1350,7 +1351,7 @@ def between_two_ranges_nb(
 
     Index pairs are resolved with `relation_idxs_1d_nb`."""
     new_records = np.empty(source_mask.shape, dtype=range_dt)
-    counts = np.full(source_mask.shape[1], 0, dtype=np.int_)
+    counts = np.full(source_mask.shape[1], 0, dtype=int_)
 
     for col in prange(source_mask.shape[1]):
         _, _, source_idxs, target_idsx = relation_idxs_1d_nb(
@@ -1388,7 +1389,7 @@ def between_two_ranges_nb(
 def partition_ranges_nb(mask: tp.Array2d) -> tp.RecordArray:
     """Create a record of type `vectorbtpro.generic.enums.range_dt` for each partition of signals in `mask`."""
     new_records = np.empty(mask.shape, dtype=range_dt)
-    counts = np.full(mask.shape[1], 0, dtype=np.int_)
+    counts = np.full(mask.shape[1], 0, dtype=int_)
 
     for col in prange(mask.shape[1]):
         is_partition = False
@@ -1432,7 +1433,7 @@ def partition_ranges_nb(mask: tp.Array2d) -> tp.RecordArray:
 def between_partition_ranges_nb(mask: tp.Array2d) -> tp.RecordArray:
     """Create a record of type `vectorbtpro.generic.enums.range_dt` for each range between two partitions in `mask`."""
     new_records = np.empty(mask.shape, dtype=range_dt)
-    counts = np.full(mask.shape[1], 0, dtype=np.int_)
+    counts = np.full(mask.shape[1], 0, dtype=int_)
 
     for col in prange(mask.shape[1]):
         is_partition = False
@@ -1475,8 +1476,8 @@ def unravel_nb(
     True value in its column, and the column index of each True value in the original mask."""
     true_idxs = np.flatnonzero(mask.transpose())
 
-    start_idxs = np.full(mask.shape[1], -1, dtype=np.int_)
-    end_idxs = np.full(mask.shape[1], 0, dtype=np.int_)
+    start_idxs = np.full(mask.shape[1], -1, dtype=int_)
+    end_idxs = np.full(mask.shape[1], 0, dtype=int_)
     for i in range(len(true_idxs)):
         col = true_idxs[i] // mask.shape[0]
         if i == 0:
@@ -1489,9 +1490,9 @@ def unravel_nb(
 
     n_cols = (end_idxs - start_idxs).sum()
     new_mask = np.full((mask.shape[0], n_cols), False, dtype=np.bool_)
-    range_ = np.full(n_cols, -1, dtype=np.int_)
-    row_idxs = np.full(n_cols, -1, dtype=np.int_)
-    col_idxs = np.empty(n_cols, dtype=np.int_)
+    range_ = np.full(n_cols, -1, dtype=int_)
+    row_idxs = np.full(n_cols, -1, dtype=int_)
+    col_idxs = np.empty(n_cols, dtype=int_)
     k = 0
     for i in range(len(start_idxs)):
         start_idx = start_idxs[i]
@@ -1535,8 +1536,8 @@ def unravel_between_nb(
     each True value in the original mask."""
     true_idxs = np.flatnonzero(mask.transpose())
 
-    start_idxs = np.full(mask.shape[1], -1, dtype=np.int_)
-    end_idxs = np.full(mask.shape[1], 0, dtype=np.int_)
+    start_idxs = np.full(mask.shape[1], -1, dtype=int_)
+    end_idxs = np.full(mask.shape[1], 0, dtype=int_)
     for i in range(len(true_idxs)):
         col = true_idxs[i] // mask.shape[0]
         if i == 0:
@@ -1549,11 +1550,11 @@ def unravel_between_nb(
 
     n_cols = (end_idxs - start_idxs).sum()
     new_mask = np.full((mask.shape[0], n_cols), False, dtype=np.bool_)
-    source_range = np.full(n_cols, -1, dtype=np.int_)
-    target_range = np.full(n_cols, -1, dtype=np.int_)
-    source_idxs = np.full(n_cols, -1, dtype=np.int_)
-    target_idxs = np.full(n_cols, -1, dtype=np.int_)
-    col_idxs = np.empty(n_cols, dtype=np.int_)
+    source_range = np.full(n_cols, -1, dtype=int_)
+    target_range = np.full(n_cols, -1, dtype=int_)
+    source_idxs = np.full(n_cols, -1, dtype=int_)
+    target_idxs = np.full(n_cols, -1, dtype=int_)
+    col_idxs = np.empty(n_cols, dtype=int_)
     k = 0
     for i in range(len(start_idxs)):
         start_idx = start_idxs[i]
@@ -1617,11 +1618,11 @@ def unravel_between_two_nb(
         max_signals = source_mask.shape[0] * 2
     else:
         max_signals = source_mask.shape[0]
-    source_range_2d = np.empty((max_signals, source_mask.shape[1]), dtype=np.int_)
-    target_range_2d = np.empty((max_signals, source_mask.shape[1]), dtype=np.int_)
-    source_idxs_2d = np.empty((max_signals, source_mask.shape[1]), dtype=np.int_)
-    target_idxs_2d = np.empty((max_signals, source_mask.shape[1]), dtype=np.int_)
-    counts = np.empty(source_mask.shape[1], dtype=np.int_)
+    source_range_2d = np.empty((max_signals, source_mask.shape[1]), dtype=int_)
+    target_range_2d = np.empty((max_signals, source_mask.shape[1]), dtype=int_)
+    source_idxs_2d = np.empty((max_signals, source_mask.shape[1]), dtype=int_)
+    target_idxs_2d = np.empty((max_signals, source_mask.shape[1]), dtype=int_)
+    counts = np.empty(source_mask.shape[1], dtype=int_)
     n_cols = 0
 
     for col in range(source_mask.shape[1]):
@@ -1643,11 +1644,11 @@ def unravel_between_two_nb(
 
     new_source_mask = np.full((source_mask.shape[0], n_cols), False, dtype=np.bool_)
     new_target_mask = np.full((source_mask.shape[0], n_cols), False, dtype=np.bool_)
-    source_range = np.full(n_cols, -1, dtype=np.int_)
-    target_range = np.full(n_cols, -1, dtype=np.int_)
-    source_idxs = np.full(n_cols, -1, dtype=np.int_)
-    target_idxs = np.full(n_cols, -1, dtype=np.int_)
-    col_idxs = np.empty(n_cols, dtype=np.int_)
+    source_range = np.full(n_cols, -1, dtype=int_)
+    target_range = np.full(n_cols, -1, dtype=int_)
+    source_idxs = np.full(n_cols, -1, dtype=int_)
+    target_idxs = np.full(n_cols, -1, dtype=int_)
+    col_idxs = np.empty(n_cols, dtype=int_)
     k = 0
     for c in range(len(counts)):
         col_filled = False
@@ -1745,7 +1746,7 @@ def nth_index_1d_nb(mask: tp.Array1d, n: int) -> int:
 @register_jitted(cache=True, tags={"can_parallel"})
 def nth_index_nb(mask: tp.Array2d, n: int) -> tp.Array1d:
     """2-dim version of `nth_index_1d_nb`."""
-    out = np.empty(mask.shape[1], dtype=np.int_)
+    out = np.empty(mask.shape[1], dtype=int_)
     for col in prange(mask.shape[1]):
         out[col] = nth_index_1d_nb(mask[:, col], n)
     return out
@@ -1766,7 +1767,7 @@ def norm_avg_index_1d_nb(mask: tp.Array1d) -> float:
 @register_jitted(cache=True, tags={"can_parallel"})
 def norm_avg_index_nb(mask: tp.Array2d) -> tp.Array1d:
     """2-dim version of `norm_avg_index_1d_nb`."""
-    out = np.empty(mask.shape[1], dtype=np.float_)
+    out = np.empty(mask.shape[1], dtype=float_)
     for col in prange(mask.shape[1]):
         out[col] = norm_avg_index_1d_nb(mask[:, col])
     return out
@@ -1783,7 +1784,7 @@ def norm_avg_index_nb(mask: tp.Array2d) -> tp.Array1d:
 @register_jitted(cache=True, tags={"can_parallel"})
 def norm_avg_index_grouped_nb(mask, group_lens):
     """Grouped version of `norm_avg_index_nb`."""
-    out = np.empty(len(group_lens), dtype=np.float_)
+    out = np.empty(len(group_lens), dtype=float_)
     group_end_idxs = np.cumsum(group_lens)
     group_start_idxs = group_end_idxs - group_lens
 

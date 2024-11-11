@@ -11,6 +11,7 @@ import pandas as pd
 from pandas.tseries.offsets import BaseOffset
 
 from vectorbtpro import _typing as tp
+from vectorbtpro._dtypes import *
 from vectorbtpro.registries.jit_registry import jit_reg
 from vectorbtpro.utils import checks, datetime_ as dt, datetime_nb as dt_nb
 from vectorbtpro.utils.attr_ import DefineMixin, define, MISSING
@@ -295,6 +296,13 @@ class ParamLoc(LocBase):
 
     Uses `mapper` to establish link between columns and parameter values."""
 
+    @classmethod
+    def encode_key(cls, key: tp.Any):
+        if isinstance(key, tuple):
+            return str(tuple(map(lambda k: k.item() if isinstance(k, np.generic) else k, key)))
+        key_str = str(key)
+        return str(key.item()) if isinstance(key, np.generic) else key_str
+
     def __init__(
         self,
         mapper: tp.Series,
@@ -306,9 +314,10 @@ class ParamLoc(LocBase):
         checks.assert_instance_of(mapper, pd.Series)
 
         if mapper.dtype == "O":
-            # If params are objects, we must cast them to string first
-            # The original mapper isn't touched
-            mapper = mapper.astype(str)
+            if isinstance(mapper.iloc[0], tuple):
+                mapper = mapper.apply(self.encode_key)
+            else:
+                mapper = mapper.astype(str)
         self._mapper = mapper
         self._level_name = level_name
 
@@ -327,17 +336,14 @@ class ParamLoc(LocBase):
     def get_idxs(self, key: tp.Any) -> tp.Array1d:
         """Get array of indices affected by this key."""
         if self.mapper.dtype == "O":
-            # We must also cast the key to string
             if isinstance(key, (slice, hslice)):
-                start = str(key.start) if key.start is not None else None
-                stop = str(key.stop) if key.stop is not None else None
+                start = self.encode_key(key.start) if key.start is not None else None
+                stop = self.encode_key(key.stop) if key.stop is not None else None
                 key = slice(start, stop, key.step)
             elif isinstance(key, (list, np.ndarray)):
-                key = list(map(str, key))
+                key = list(map(self.encode_key, key))
             else:
-                # Tuples, objects, etc.
-                key = str(key)
-        # Use pandas to perform indexing
+                key = self.encode_key(key)
         mapper = pd.Series(np.arange(len(self.mapper.index)), index=self.mapper.values)
         idxs = mapper.loc.__getitem__(key)
         if isinstance(idxs, pd.Series):
@@ -353,7 +359,6 @@ class ParamLoc(LocBase):
 
             new_obj = obj.iloc[:, idxs]
             if not is_multiple:
-                # If we selected only one param, then remove its columns levels to keep it clean
                 if self.level_name is not None:
                     if checks.is_frame(new_obj):
                         if isinstance(new_obj.columns, pd.MultiIndex):
@@ -1843,8 +1848,8 @@ def get_index_ranges(
         )
     else:
         if kind.lower() == "labels":
-            range_starts = np.empty(len(start), dtype=np.int_)
-            range_ends = np.empty(len(end), dtype=np.int_)
+            range_starts = np.empty(len(start), dtype=int_)
+            range_ends = np.empty(len(end), dtype=int_)
             range_index = pd.Series(np.arange(len(naive_index)), index=naive_index)
             for i in range(len(range_starts)):
                 selected_range = range_index[start[i] : end[i]]

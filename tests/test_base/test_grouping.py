@@ -3,6 +3,7 @@ import os
 import pytest
 
 import vectorbtpro as vbt
+from vectorbtpro._dtypes import *
 from tests.utils import *
 from vectorbtpro.base import grouping
 
@@ -117,8 +118,8 @@ class TestGrouper:
         np.testing.assert_array_equal(grouping.nb.get_group_map_nb(np.array([0, 0]), 1)[1], np.array([2]))
         np.testing.assert_array_equal(grouping.nb.get_group_map_nb(np.array([0]), 1)[0], np.array([0]))
         np.testing.assert_array_equal(grouping.nb.get_group_map_nb(np.array([0]), 1)[1], np.array([1]))
-        np.testing.assert_array_equal(grouping.nb.get_group_map_nb(np.array([], dtype=np.int_), 0)[0], np.array([]))
-        np.testing.assert_array_equal(grouping.nb.get_group_map_nb(np.array([], dtype=np.int_), 0)[1], np.array([]))
+        np.testing.assert_array_equal(grouping.nb.get_group_map_nb(np.array([], dtype=int_), 0)[0], np.array([]))
+        np.testing.assert_array_equal(grouping.nb.get_group_map_nb(np.array([], dtype=int_), 0)[1], np.array([]))
 
     def test_is_grouped(self):
         assert vbt.Grouper(grouped_index, group_by=0).is_grouped()

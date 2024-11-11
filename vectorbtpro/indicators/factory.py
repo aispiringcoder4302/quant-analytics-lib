@@ -35,6 +35,7 @@ from numba import njit
 from numba.typed import List
 
 from vectorbtpro import _typing as tp
+from vectorbtpro._dtypes import *
 from vectorbtpro.base import indexes, reshaping, combining
 from vectorbtpro.base.indexing import build_param_indexer
 from vectorbtpro.base.merging import row_stack_arrays, column_stack_arrays
@@ -1656,7 +1657,7 @@ class IndicatorFactory(Configured):
                 Following keys are accepted:
 
                 * `dtype`: Data type used to determine which methods to generate around this attribute.
-                    Set to None to disable. Default is `np.float_`. Can be set to instance of
+                    Set to None to disable. Default is `float_`. Can be set to instance of
                     `collections.namedtuple` acting as enumerated type, or any other mapping;
                     It will then create a property with suffix `readable` that contains data in a string format.
                 * `enum_unkval`: Value to be considered as unknown. Applies to enumerated data types only.
@@ -1895,7 +1896,7 @@ class IndicatorFactory(Configured):
 
         for attr_name in all_attr_names:
             _attr_settings = attr_settings.get(attr_name, {})
-            dtype = _attr_settings.get("dtype", np.float_)
+            dtype = _attr_settings.get("dtype", float_)
             enum_unkval = _attr_settings.get("enum_unkval", -1)
 
             if checks.is_mapping_like(dtype):
@@ -2271,8 +2272,8 @@ class IndicatorFactory(Configured):
             ... def custom_func(ts1, ts2, p1, p2, arg1, arg2):
             ...     input_shape = ts1.shape
             ...     n_params = len(p1)
-            ...     out1 = np.empty((input_shape[0], input_shape[1] * n_params), dtype=np.float_)
-            ...     out2 = np.empty((input_shape[0], input_shape[1] * n_params), dtype=np.float_)
+            ...     out1 = np.empty((input_shape[0], input_shape[1] * n_params), dtype=float_)
+            ...     out2 = np.empty((input_shape[0], input_shape[1] * n_params), dtype=float_)
             ...     for k in range(n_params):
             ...         for col in range(input_shape[1]):
             ...             for i in range(input_shape[0]):

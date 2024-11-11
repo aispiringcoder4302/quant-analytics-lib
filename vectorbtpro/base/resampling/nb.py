@@ -5,6 +5,7 @@
 import numpy as np
 
 from vectorbtpro import _typing as tp
+from vectorbtpro._dtypes import *
 from vectorbtpro.registries.jit_registry import register_jitted
 from vectorbtpro.utils.datetime_nb import d_td
 
@@ -53,7 +54,7 @@ def map_to_target_index_nb(
 
     If `raise_missing` is True, will throw an error if an index cannot be mapped.
     Otherwise, the element for that index becomes -1."""
-    out = np.empty(len(source_index), dtype=np.int_)
+    out = np.empty(len(source_index), dtype=int_)
     from_j = 0
     for i in range(len(source_index)):
         if i > 0 and source_index[i] < source_index[i - 1]:
@@ -99,7 +100,7 @@ def index_difference_nb(
     target_index: tp.Array1d,
 ) -> tp.Array1d:
     """Get the elements in `source_index` not present in `target_index`."""
-    out = np.empty(len(source_index), dtype=np.int_)
+    out = np.empty(len(source_index), dtype=int_)
     from_j = 0
     k = 0
     for i in range(len(source_index)):
@@ -141,8 +142,8 @@ def map_index_to_source_ranges_nb(
 
     !!! note
         Both index arrays must be increasing. Repeating values are allowed."""
-    range_starts_out = np.empty(len(target_index), dtype=np.int_)
-    range_ends_out = np.empty(len(target_index), dtype=np.int_)
+    range_starts_out = np.empty(len(target_index), dtype=int_)
+    range_ends_out = np.empty(len(target_index), dtype=int_)
 
     to_j = 0
     for i in range(len(target_index)):
@@ -213,8 +214,8 @@ def map_bounds_to_source_ranges_nb(
 
     !!! note
         Both index arrays must be increasing. Repeating values are allowed."""
-    range_starts_out = np.empty(len(target_lbound_index), dtype=np.int_)
-    range_ends_out = np.empty(len(target_lbound_index), dtype=np.int_)
+    range_starts_out = np.empty(len(target_lbound_index), dtype=int_)
+    range_ends_out = np.empty(len(target_lbound_index), dtype=int_)
     k = 0
 
     to_j = 0
@@ -338,7 +339,7 @@ def last_before_target_index_nb(
 ) -> tp.Array1d:
     """For each source index, find the position of the last source index between the original
     source index and the corresponding target index."""
-    out = np.empty(len(source_index), dtype=np.int_)
+    out = np.empty(len(source_index), dtype=int_)
 
     last_j = -1
     for i in range(len(source_index)):

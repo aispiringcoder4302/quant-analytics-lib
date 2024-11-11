@@ -196,6 +196,7 @@ import pandas as pd
 from pandas.core.resample import Resampler as PandasResampler
 
 from vectorbtpro import _typing as tp
+from vectorbtpro._dtypes import *
 from vectorbtpro._settings import settings
 from vectorbtpro.base import indexes, reshaping
 from vectorbtpro.base.accessors import BaseAccessor, BaseDFAccessor, BaseSRAccessor
@@ -2001,7 +2002,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 name_or_index="reduce" if not returns_array else None,
                 to_index=returns_idx and to_index,
                 fillna=-1 if returns_idx else None,
-                dtype=np.int_ if returns_idx else None,
+                dtype=int_ if returns_idx else None,
             ),
             wrap_kwargs,
         )
@@ -3077,7 +3078,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.MaybeSeries:
         """Return count of non-NaN elements."""
-        wrap_kwargs = merge_dicts(dict(name_or_index="count", dtype=np.int_), wrap_kwargs)
+        wrap_kwargs = merge_dicts(dict(name_or_index="count", dtype=int_), wrap_kwargs)
         if self.wrapper.grouper.is_grouped(group_by=group_by):
             return self.reduce(
                 jit_reg.resolve_option(nb.count_reduce_nb, jitted),

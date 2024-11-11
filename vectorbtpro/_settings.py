@@ -304,6 +304,22 @@ ${config_doc}
 
 _settings["jitting"] = jitting
 
+numpy = frozen_cfg(
+    float_=np.float64,
+    int_=np.int64,
+)
+"""_"""
+
+__pdoc__["numpy"] = Sub(
+    """Sub-config with NumPy-related settings.
+
+```python
+${config_doc}
+```"""
+)
+
+_settings["numpy"] = numpy
+
 numba = frozen_cfg(
     disable=False,
     parallel=None,
@@ -2113,10 +2129,10 @@ knowledge = frozen_cfg(
         max_context_tokens=None,
         tokenizer="gpt-4o",
         system_prompt="You are a helpful assistant. Given the context information and not prior knowledge, answer the query.",
-        context_prompt=f"""Context information is below.
+        context_prompt=Sub(f"""Context information is below.
 ---------------------
 $context
----------------------""",
+---------------------"""),
         output_to=None,
         flush_output=True,
         display_format="auto_ipython",

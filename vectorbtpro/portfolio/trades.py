@@ -488,6 +488,7 @@ import numpy as np
 import pandas as pd
 
 from vectorbtpro import _typing as tp
+from vectorbtpro._dtypes import *
 from vectorbtpro.base.indexes import stack_indexes
 from vectorbtpro.base.reshaping import to_1d_array, to_2d_array, to_pd_array, broadcast_to
 from vectorbtpro.base.wrapping import ArrayWrapper
@@ -703,13 +704,13 @@ class Trades(Ranges):
         """Get winning streak at each trade in the current column.
 
         See `vectorbtpro.portfolio.nb.records.trade_winning_streak_nb`."""
-        return self.apply(nb.trade_winning_streak_nb, dtype=np.int_, **kwargs)
+        return self.apply(nb.trade_winning_streak_nb, dtype=int_, **kwargs)
 
     def get_losing_streak(self, **kwargs) -> MappedArray:
         """Get losing streak at each trade in the current column.
 
         See `vectorbtpro.portfolio.nb.records.trade_losing_streak_nb`."""
-        return self.apply(nb.trade_losing_streak_nb, dtype=np.int_, **kwargs)
+        return self.apply(nb.trade_losing_streak_nb, dtype=int_, **kwargs)
 
     def get_win_rate(
         self,
@@ -869,7 +870,7 @@ class Trades(Ranges):
             exit_price_close,
             max_duration,
             relative,
-            dtype=np.int_,
+            dtype=int_,
             **kwargs,
         )
 
@@ -894,7 +895,7 @@ class Trades(Ranges):
             exit_price_close,
             max_duration,
             relative,
-            dtype=np.int_,
+            dtype=int_,
             **kwargs,
         )
 

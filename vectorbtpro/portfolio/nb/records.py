@@ -4,6 +4,7 @@
 
 from numba import prange
 
+from vectorbtpro._dtypes import *
 from vectorbtpro.base import chunking as base_ch
 from vectorbtpro.base.reshaping import to_1d_array_nb, to_2d_array_nb
 from vectorbtpro.portfolio.nb.core import *
@@ -336,7 +337,7 @@ def get_entry_trades_nb(
     col_start_idxs = np.cumsum(col_lens) - col_lens
     max_records = np.max(col_lens) + 1
     new_records = np.empty((max_records, len(col_lens)), dtype=trade_dt)
-    counts = np.full(len(col_lens), 0, dtype=np.int_)
+    counts = np.full(len(col_lens), 0, dtype=int_)
 
     sim_start_, sim_end_ = generic_nb.prepare_sim_range_nb(
         sim_shape=(close_.shape[0], col_lens.shape[0]),
@@ -623,7 +624,7 @@ def get_exit_trades_nb(
     col_start_idxs = np.cumsum(col_lens) - col_lens
     max_records = np.max(col_lens) + 1
     new_records = np.empty((max_records, len(col_lens)), dtype=trade_dt)
-    counts = np.full(len(col_lens), 0, dtype=np.int_)
+    counts = np.full(len(col_lens), 0, dtype=int_)
 
     sim_start_, sim_end_ = generic_nb.prepare_sim_range_nb(
         sim_shape=(close_.shape[0], col_lens.shape[0]),
@@ -954,7 +955,7 @@ def get_positions_nb(trade_records: tp.RecordArray, col_map: tp.GroupMap) -> tp.
     col_idxs, col_lens = col_map
     col_start_idxs = np.cumsum(col_lens) - col_lens
     new_records = np.empty((np.max(col_lens), len(col_lens)), dtype=trade_dt)
-    counts = np.full(len(col_lens), 0, dtype=np.int_)
+    counts = np.full(len(col_lens), 0, dtype=int_)
 
     for col in prange(col_lens.shape[0]):
         col_len = col_lens[col]
@@ -1340,7 +1341,7 @@ def get_position_feature_nb(
     init_position_ = to_1d_array_nb(np.asarray(init_position))
     init_price_ = to_1d_array_nb(np.asarray(init_price))
 
-    out = np.full(close.shape, np.nan, dtype=np.float_)
+    out = np.full(close.shape, np.nan, dtype=float_)
 
     col_idxs, col_lens = col_map
     col_start_idxs = np.cumsum(col_lens) - col_lens
@@ -1513,7 +1514,7 @@ def price_status_nb(
     """Return the status of the order's price related to high and low.
 
     See `vectorbtpro.portfolio.enums.OrderPriceStatus`."""
-    out = np.full(len(records), 0, dtype=np.int_)
+    out = np.full(len(records), 0, dtype=int_)
     for i in range(len(records)):
         order = records[i]
         if high is not None:
@@ -1539,7 +1540,7 @@ def price_status_nb(
 @register_jitted(cache=True)
 def trade_winning_streak_nb(records: tp.RecordArray) -> tp.Array1d:
     """Return the current winning streak of each trade."""
-    out = np.full(len(records), 0, dtype=np.int_)
+    out = np.full(len(records), 0, dtype=int_)
     curr_rank = 0
     for i in range(len(records)):
         if records[i]["pnl"] > 0:
@@ -1553,7 +1554,7 @@ def trade_winning_streak_nb(records: tp.RecordArray) -> tp.Array1d:
 @register_jitted(cache=True)
 def trade_losing_streak_nb(records: tp.RecordArray) -> tp.Array1d:
     """Return the current losing streak of each trade."""
-    out = np.full(len(records), 0, dtype=np.int_)
+    out = np.full(len(records), 0, dtype=int_)
     curr_rank = 0
     for i in range(len(records)):
         if records[i]["pnl"] < 0:
@@ -1764,7 +1765,7 @@ def best_price_nb(
     max_duration: tp.Optional[int] = None,
 ) -> tp.Array1d:
     """Get best price by applying `trade_best_worst_price_nb` on each trade."""
-    out = np.empty(len(records), dtype=np.float_)
+    out = np.empty(len(records), dtype=float_)
     for r in prange(len(records)):
         trade = records[r]
         out[r] = trade_best_worst_price_nb(
@@ -1806,7 +1807,7 @@ def worst_price_nb(
     max_duration: tp.Optional[int] = None,
 ) -> tp.Array1d:
     """Get worst price by applying `trade_best_worst_price_nb` on each trade."""
-    out = np.empty(len(records), dtype=np.float_)
+    out = np.empty(len(records), dtype=float_)
     for r in prange(len(records)):
         trade = records[r]
         out[r] = trade_best_worst_price_nb(
@@ -1850,7 +1851,7 @@ def best_price_idx_nb(
     relative: bool = True,
 ) -> tp.Array1d:
     """Get index of best price by applying `trade_best_worst_price_nb` on each trade."""
-    out = np.empty(len(records), dtype=np.float_)
+    out = np.empty(len(records), dtype=float_)
     for r in prange(len(records)):
         trade = records[r]
         out[r] = trade_best_worst_price_nb(
@@ -1895,7 +1896,7 @@ def worst_price_idx_nb(
     relative: bool = True,
 ) -> tp.Array1d:
     """Get worst price by applying `trade_best_worst_price_nb` on each trade."""
-    out = np.empty(len(records), dtype=np.float_)
+    out = np.empty(len(records), dtype=float_)
     for r in prange(len(records)):
         trade = records[r]
         out[r] = trade_best_worst_price_nb(
@@ -1933,7 +1934,7 @@ def expanding_best_price_nb(
                 _max_duration = trade_duration
     else:
         _max_duration = max_duration
-    out = np.full((_max_duration + 1, len(records)), np.nan, dtype=np.float_)
+    out = np.full((_max_duration + 1, len(records)), np.nan, dtype=float_)
 
     for r in prange(len(records)):
         trade = records[r]
@@ -1988,7 +1989,7 @@ def expanding_worst_price_nb(
                 _max_duration = trade_duration
     else:
         _max_duration = max_duration
-    out = np.full((_max_duration + 1, len(records)), np.nan, dtype=np.float_)
+    out = np.full((_max_duration + 1, len(records)), np.nan, dtype=float_)
 
     for r in prange(len(records)):
         trade = records[r]
@@ -2059,7 +2060,7 @@ def mfe_nb(
     use_returns: bool = False,
 ) -> tp.Array1d:
     """Apply `trade_mfe_nb` on each trade."""
-    out = np.empty(size.shape[0], dtype=np.float_)
+    out = np.empty(size.shape[0], dtype=float_)
     for r in prange(size.shape[0]):
         out[r] = trade_mfe_nb(
             size=size[r],
@@ -2108,7 +2109,7 @@ def mae_nb(
     use_returns: bool = False,
 ) -> tp.Array1d:
     """Apply `trade_mae_nb` on each trade."""
-    out = np.empty(size.shape[0], dtype=np.float_)
+    out = np.empty(size.shape[0], dtype=float_)
     for r in prange(size.shape[0]):
         out[r] = trade_mae_nb(
             size=size[r],
@@ -2136,7 +2137,7 @@ def expanding_mfe_nb(
     use_returns: bool = False,
 ) -> tp.Array2d:
     """Get expanding MFE of each trade."""
-    out = np.empty_like(expanding_best_price, dtype=np.float_)
+    out = np.empty_like(expanding_best_price, dtype=float_)
     for r in prange(expanding_best_price.shape[1]):
         for i in range(expanding_best_price.shape[0]):
             out[i, r] = trade_mfe_nb(
@@ -2165,7 +2166,7 @@ def expanding_mae_nb(
     use_returns: bool = False,
 ) -> tp.Array2d:
     """Get expanding MAE of each trade."""
-    out = np.empty_like(expanding_worst_price, dtype=np.float_)
+    out = np.empty_like(expanding_worst_price, dtype=float_)
     for r in prange(expanding_worst_price.shape[1]):
         for i in range(expanding_worst_price.shape[0]):
             out[i, r] = trade_mae_nb(
@@ -2210,7 +2211,7 @@ def edge_ratio_nb(
     """Get edge ratio of each column."""
     col_idxs, col_lens = col_map
     col_start_idxs = np.cumsum(col_lens) - col_lens
-    out = np.full(len(col_lens), np.nan, dtype=np.float_)
+    out = np.full(len(col_lens), np.nan, dtype=float_)
 
     for col in prange(col_lens.shape[0]):
         col_len = col_lens[col]
@@ -2308,7 +2309,7 @@ def running_edge_ratio_nb(
                 _max_duration = trade_duration
     else:
         _max_duration = max_duration
-    out = np.full((_max_duration, len(col_lens)), np.nan, dtype=np.float_)
+    out = np.full((_max_duration, len(col_lens)), np.nan, dtype=float_)
 
     for col in prange(col_lens.shape[0]):
         col_len = col_lens[col]

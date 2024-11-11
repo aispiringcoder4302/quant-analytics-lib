@@ -13,6 +13,7 @@ from numba.core.registry import CPUDispatcher
 from pandas.tseries.frequencies import to_offset
 
 import vectorbtpro as vbt
+from vectorbtpro._dtypes import *
 from tests.utils import *
 from vectorbtpro.utils import (
     checks,
@@ -1412,11 +1413,11 @@ class TestChecks:
             checks.assert_instance_of(0, np.zeros(1))
 
     def test_assert_dtype(self):
-        checks.assert_dtype(np.zeros(1), np.float_)
-        checks.assert_dtype(pd.Series([1, 2, 3]), np.int_)
-        checks.assert_dtype(pd.DataFrame({"a": [1, 2], "b": [3, 4]}), np.int_)
+        checks.assert_dtype(np.zeros(1), float_)
+        checks.assert_dtype(pd.Series([1, 2, 3]), int_)
+        checks.assert_dtype(pd.DataFrame({"a": [1, 2], "b": [3, 4]}), int_)
         with pytest.raises(Exception):
-            checks.assert_dtype(pd.DataFrame({"a": [1, 2], "b": [3.0, 4.0]}), np.int_)
+            checks.assert_dtype(pd.DataFrame({"a": [1, 2], "b": [3.0, 4.0]}), int_)
 
     def test_assert_subdtype(self):
         checks.assert_subdtype([0], np.number)
