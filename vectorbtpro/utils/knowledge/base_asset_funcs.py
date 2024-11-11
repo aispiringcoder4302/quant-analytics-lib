@@ -1142,7 +1142,7 @@ class FindReplaceAssetFunc(FindAssetFunc):
                 if d == target:
                     return replacement
             elif isinstance(d, str) and isinstance(target, str):
-                d = search.replace(d, target, replacement, **kwargs)
+                d = search.replace(target, replacement, d, **kwargs)
             elif type(d) is type(target):
                 try:
                     if d == target:

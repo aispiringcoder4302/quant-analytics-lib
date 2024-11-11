@@ -70,7 +70,7 @@ def is_numba_func(arg: tp.Any) -> bool:
         return True
     if not is_numba_enabled():
         if numba_cfg["check_func_suffix"]:
-            if arg.__name__.endswith("_nb"):
+            if hasattr(arg, "__name__") and arg.__name__.endswith("_nb"):
                 return True
             return False
         return False

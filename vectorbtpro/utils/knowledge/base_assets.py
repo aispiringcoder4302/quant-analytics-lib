@@ -21,7 +21,6 @@ from vectorbtpro.utils.parsing import get_func_arg_names
 from vectorbtpro.utils.execution import Task, execute, NoResult
 from vectorbtpro.utils.module_ import get_caller_qualname
 from vectorbtpro.utils.decorators import hybrid_method
-from vectorbtpro.utils.chaining import Chainable
 
 try:
     if not tp.TYPE_CHECKING:
@@ -41,7 +40,7 @@ __all__ = [
 KnowledgeAssetT = tp.TypeVar("KnowledgeAssetT", bound="KnowledgeAsset")
 
 
-class KnowledgeAsset(Configured, Chainable, MutableSequence):
+class KnowledgeAsset(Configured, MutableSequence):
     """Class for working with a knowledge asset.
 
     This class behaves like a mutable sequence.
@@ -174,19 +173,19 @@ class KnowledgeAsset(Configured, Chainable, MutableSequence):
         return cls(data=json.loads(json_str), **kwargs)
 
     def __init__(self, data: tp.List[tp.Any], single_item: bool = True, **kwargs) -> None:
-        Configured.__init__(
-            self,
-            data=data,
-            single_item=single_item,
-            **kwargs,
-        )
-
         if not isinstance(data, list):
             data = [data]
         else:
             data = list(data)
         if len(data) > 1:
             single_item = False
+
+        Configured.__init__(
+            self,
+            data=data,
+            single_item=single_item,
+            **kwargs,
+        )
 
         self._data = data
         self._single_item = single_item
@@ -216,12 +215,12 @@ class KnowledgeAsset(Configured, Chainable, MutableSequence):
     def get_item(self, index: tp.Union[int, slice, tp.Iterable[tp.Union[bool, int]]]) -> tp.Any:
         """Get a data item or a selection of data items."""
         if checks.is_complex_iterable(index):
-            if all(isinstance(i, bool) for i in index):
+            if all(checks.is_bool(i) for i in index):
                 index = list(index)
                 if len(index) != len(self.data):
                     raise IndexError("Boolean index must have the same length as data")
                 return self.replace(data=[item for item, flag in zip(self.data, index) if flag])
-            if all(isinstance(i, int) for i in index):
+            if all(checks.is_int(i) for i in index):
                 return self.replace(data=[self.data[i] for i in index])
             raise TypeError("Index must contain all integers or all booleans")
         if isinstance(index, slice):
@@ -240,7 +239,7 @@ class KnowledgeAsset(Configured, Chainable, MutableSequence):
         new_data = list(self.data)
         if checks.is_complex_iterable(index):
             index = list(index)
-            if all(isinstance(i, bool) for i in index):
+            if all(checks.is_bool(i) for i in index):
                 if len(index) != len(new_data):
                     raise IndexError("Boolean index must have the same length as data")
                 if checks.is_complex_iterable(value):
@@ -261,7 +260,7 @@ class KnowledgeAsset(Configured, Chainable, MutableSequence):
                     for i, b in enumerate(index):
                         if b:
                             new_data[i] = value
-            elif all(isinstance(i, int) for i in index):
+            elif all(checks.is_int(i) for i in index):
                 if checks.is_complex_iterable(value):
                     value = list(value)
                     if len(value) != len(index):
@@ -273,10 +272,6 @@ class KnowledgeAsset(Configured, Chainable, MutableSequence):
                         new_data[i] = value
             else:
                 raise TypeError("Index must contain all integers or all booleans")
-        elif isinstance(index, slice):
-            if not checks.is_complex_iterable(value):
-                raise TypeError("Can only assign an iterable to a slice")
-            new_data[index] = list(value)
         else:
             new_data[index] = value
         if inplace:
@@ -294,12 +289,12 @@ class KnowledgeAsset(Configured, Chainable, MutableSequence):
         Returns a new `KnowledgeAsset` instance if `inplace` is False."""
         new_data = list(self.data)
         if checks.is_complex_iterable(index):
-            if all(isinstance(i, bool) for i in index):
+            if all(checks.is_bool(i) for i in index):
                 index = list(index)
                 if len(index) != len(new_data):
                     raise IndexError("Boolean index must have the same length as data")
                 new_data = [item for item, flag in zip(new_data, index) if not flag]
-            elif all(isinstance(i, int) for i in index):
+            elif all(checks.is_int(i) for i in index):
                 indices_to_remove = set(index)
                 max_index = len(new_data) - 1
                 for i in indices_to_remove:
@@ -400,7 +395,7 @@ class KnowledgeAsset(Configured, Chainable, MutableSequence):
         self: KnowledgeAssetT,
         *args,
         keys: tp.Optional[tp.Iterable[tp.Key]] = None,
-        reverse: bool = False,
+        ascending: bool = True,
         inplace: bool = False,
         **kwargs,
     ) -> tp.Optional[KnowledgeAssetT]:
@@ -420,13 +415,17 @@ class KnowledgeAsset(Configured, Chainable, MutableSequence):
         """
         if keys is None:
             keys = self.get(*args, **kwargs)
-        new_data = [x for _, x in sorted(zip(keys, self.data), key=lambda x: x[0], reverse=reverse)]
+        new_data = [x for _, x in sorted(zip(keys, self.data), key=lambda x: x[0], reverse=not ascending)]
         if inplace:
             self.modify_data(new_data)
             return None
         return self.replace(data=new_data)
 
-    def shuffle(self: KnowledgeAssetT, seed: tp.Optional[int] = None) -> KnowledgeAssetT:
+    def shuffle(
+        self: KnowledgeAssetT,
+        seed: tp.Optional[int] = None,
+        inplace: bool = False,
+    ) -> tp.Optional[KnowledgeAssetT]:
         """Shuffle data items."""
         import random
 
@@ -434,6 +433,9 @@ class KnowledgeAsset(Configured, Chainable, MutableSequence):
             random.seed(seed)
         new_data = list(self.data)
         random.shuffle(new_data)
+        if inplace:
+            self.modify_data(new_data)
+            return None
         return self.replace(data=new_data)
 
     def sample(
