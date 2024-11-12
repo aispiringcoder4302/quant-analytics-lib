@@ -1150,9 +1150,7 @@ class TestFactory:
         )
         assert F.with_apply_func(apply_func).run(ts, [0, 1])._in_out.dtype == float_
         assert (
-            F.with_apply_func(apply_func, in_output_settings={"in_out": {"dtype": int_}})
-            .run(ts, [0, 1])
-            ._in_out.dtype
+            F.with_apply_func(apply_func, in_output_settings={"in_out": {"dtype": int_}}).run(ts, [0, 1])._in_out.dtype
             == int_
         )
         assert_frame_equal(F.with_apply_func(apply_func, in_out=-1).run(ts, [0, 1]).in_out, target)
@@ -2454,6 +2452,7 @@ class TestFactory:
             "build_metrics_doc",
             "build_subplots_doc",
             "cache_func",
+            "chain",
             "cls_dir",
             "column_only_select",
             "column_stack",
@@ -2472,6 +2471,8 @@ class TestFactory:
             "encode_config_node",
             "equals",
             "file_exists",
+            "fix_docstrings",
+            "get",
             "get_ca_setup",
             "get_path_setting",
             "get_path_settings",
@@ -2528,6 +2529,7 @@ class TestFactory:
             "plots",
             "plots_defaults",
             "post_resolve_attr",
+            "pprint",
             "pre_resolve_attr",
             "prettify",
             "range_only_select",

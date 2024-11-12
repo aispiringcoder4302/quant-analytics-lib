@@ -342,21 +342,21 @@ def last_day_of_month_nb(y: int, m: int) -> int:
 @register_jitted(cache=True)
 def matches_dtc_nb(dtc: DTCNT, other_dtc: DTCNT) -> bool:
     """Return whether one or more datetime components match other components."""
-    if dtc.year is not None and other_dtc.year is not None and dtc.year != other_dtc.year:
+    if dtc.year != -1 and other_dtc.year != -1 and dtc.year != other_dtc.year:
         return False
-    if dtc.month is not None and other_dtc.month is not None and dtc.month != other_dtc.month:
+    if dtc.month != -1 and other_dtc.month != -1 and dtc.month != other_dtc.month:
         return False
-    if dtc.day is not None and other_dtc.day is not None and dtc.day != other_dtc.day:
+    if dtc.day != -1 and other_dtc.day != -1 and dtc.day != other_dtc.day:
         return False
-    if dtc.weekday is not None and other_dtc.weekday is not None and dtc.weekday != other_dtc.weekday:
+    if dtc.weekday != -1 and other_dtc.weekday != -1 and dtc.weekday != other_dtc.weekday:
         return False
-    if dtc.hour is not None and other_dtc.hour is not None and dtc.hour != other_dtc.hour:
+    if dtc.hour != -1 and other_dtc.hour != -1 and dtc.hour != other_dtc.hour:
         return False
-    if dtc.minute is not None and other_dtc.minute is not None and dtc.minute != other_dtc.minute:
+    if dtc.minute != -1 and other_dtc.minute != -1 and dtc.minute != other_dtc.minute:
         return False
-    if dtc.second is not None and other_dtc.second is not None and dtc.second != other_dtc.second:
+    if dtc.second != -1 and other_dtc.second != -1 and dtc.second != other_dtc.second:
         return False
-    if dtc.nanosecond is not None and other_dtc.nanosecond is not None and dtc.nanosecond != other_dtc.nanosecond:
+    if dtc.nanosecond != -1 and other_dtc.nanosecond != -1 and dtc.nanosecond != other_dtc.nanosecond:
         return False
     return True
 
@@ -412,8 +412,8 @@ Attributes:
 @register_jitted(cache=True)
 def within_fixed_dtc_nb(
     c: int,
-    start_c: tp.Optional[int] = None,
-    end_c: tp.Optional[int] = None,
+    start_c: int = -1,
+    end_c: int = -1,
     prev_status: int = DTCS.U,
     closed_start: bool = True,
     closed_end: bool = False,
@@ -427,26 +427,25 @@ def within_fixed_dtc_nb(
         _end_c = end_c
     elif prev_status == DTCS.SU:
         _start_c = start_c
-        _end_c = None
+        _end_c = -1
     elif prev_status == DTCS.EU:
-        _start_c = None
+        _start_c = -1
         _end_c = end_c
     else:
         raise ValueError("Invalid previous DTC status")
 
-    # Numba cannot unify int and None
-    if _start_c is None:
+    if _start_c == -1:
         a = 0
     else:
         a = _start_c
-    if _end_c is None:
+    if _end_c == -1:
         b = 0
     else:
         b = _end_c
 
-    if _start_c is None and _end_c is None:
+    if _start_c == -1 and _end_c == -1:
         return DTCS.U
-    if _start_c is not None and _end_c is None:
+    if _start_c != -1 and _end_c == -1:
         if c < a:
             return DTCS.O
         if c == a:
@@ -459,7 +458,7 @@ def within_fixed_dtc_nb(
             return DTCS.SU
         if c > a:
             return DTCS.I
-    if _start_c is None and _end_c is not None:
+    if _start_c == -1 and _end_c != -1:
         if c < b:
             return DTCS.I
         if c == b:
@@ -472,7 +471,7 @@ def within_fixed_dtc_nb(
             return DTCS.EU
         if c > b:
             return DTCS.O
-    if _start_c is not None and _end_c is not None:
+    if _start_c != -1 and _end_c != -1:
         if c < a or c > b:
             return DTCS.O
         if c == a and c == b:
@@ -506,8 +505,8 @@ def within_fixed_dtc_nb(
 @register_jitted(cache=True)
 def within_periodic_dtc_nb(
     c: int,
-    start_c: tp.Optional[int] = None,
-    end_c: tp.Optional[int] = None,
+    start_c: int = -1,
+    end_c: int = -1,
     prev_status: int = DTCS.U,
     closed_start: bool = True,
     closed_end: bool = False,
@@ -522,31 +521,30 @@ def within_periodic_dtc_nb(
         _end_c = end_c
     elif prev_status == DTCS.SU:
         _start_c = start_c
-        _end_c = None
+        _end_c = -1
     elif prev_status == DTCS.EU:
-        _start_c = None
+        _start_c = -1
         _end_c = end_c
     else:
         raise ValueError("Invalid previous DTC status")
 
-    # Numba cannot unify int and None
-    if _start_c is None:
+    if _start_c == -1:
         a = 0
     else:
         a = _start_c
-    if _end_c is None:
+    if _end_c == -1:
         b = 0
     else:
         b = _end_c
 
-    if _start_c is not None and _end_c is not None and a == b:
+    if _start_c != -1 and _end_c != -1 and a == b:
         if overflow_later:
             return DTCS.U
-    if _start_c is not None and _end_c is not None and a > b:
+    if _start_c != -1 and _end_c != -1 and a > b:
         status_after_start = within_fixed_dtc_nb(
             c,
             start_c=_start_c,
-            end_c=None,
+            end_c=-1,
             prev_status=prev_status,
             closed_start=closed_start,
             closed_end=closed_end,
@@ -554,7 +552,7 @@ def within_periodic_dtc_nb(
         )
         status_before_end = within_fixed_dtc_nb(
             c,
-            start_c=None,
+            start_c=-1,
             end_c=_end_c,
             prev_status=prev_status,
             closed_start=closed_start,
@@ -584,62 +582,62 @@ def within_periodic_dtc_nb(
 
 @register_jitted(cache=True)
 def must_resolve_dtc_nb(
-    c: tp.Optional[int] = None,
-    start_c: tp.Optional[int] = None,
-    end_c: tp.Optional[int] = None,
+    c: int = -1,
+    start_c: int = -1,
+    end_c: int = -1,
 ) -> bool:
     """Return whether the component must be resolved."""
-    if c is None:
+    if c == -1:
         return False
-    if start_c is None and end_c is None:
+    if start_c == -1 and end_c == -1:
         return False
     return True
 
 
 @register_jitted(cache=True)
 def start_dtc_lt_nb(
-    c: tp.Optional[int] = None,
-    start_c: tp.Optional[int] = None,
-    end_c: tp.Optional[int] = None,
+    c: int = -1,
+    start_c: int = -1,
+    end_c: int = -1,
 ) -> bool:
     """Return whether the start component is less than the end component."""
-    if c is None:
+    if c == -1:
         return False
-    if start_c is None:
+    if start_c == -1:
         return False
-    if end_c is None:
+    if end_c == -1:
         return False
     return start_c < end_c
 
 
 @register_jitted(cache=True)
 def start_dtc_eq_nb(
-    c: tp.Optional[int] = None,
-    start_c: tp.Optional[int] = None,
-    end_c: tp.Optional[int] = None,
+    c: int = -1,
+    start_c: int = -1,
+    end_c: int = -1,
 ) -> bool:
     """Return whether the start component equals to the end component."""
-    if c is None:
+    if c == -1:
         return False
-    if start_c is None:
+    if start_c == -1:
         return False
-    if end_c is None:
+    if end_c == -1:
         return False
     return start_c == end_c
 
 
 @register_jitted(cache=True)
 def start_dtc_gt_nb(
-    c: tp.Optional[int] = None,
-    start_c: tp.Optional[int] = None,
-    end_c: tp.Optional[int] = None,
+    c: int = -1,
+    start_c: int = -1,
+    end_c: int = -1,
 ) -> bool:
     """Return whether the start component is greater than the end component."""
-    if c is None:
+    if c == -1:
         return False
-    if start_c is None:
+    if start_c == -1:
         return False
-    if end_c is None:
+    if end_c == -1:
         return False
     return start_c > end_c
 
@@ -719,7 +717,7 @@ def within_dtc_range_nb(
         return True
 
     prev_status = DTCS.U
-    if dtc.year is not None:
+    if dtc.year != -1:
         prev_status = within_fixed_dtc_nb(
             dtc.year,
             start_c=start_dtc.year,
@@ -733,7 +731,7 @@ def within_dtc_range_nb(
             return False
         if prev_status == DTCS.I:
             return True
-    if dtc.month is not None:
+    if dtc.month != -1:
         prev_status = within_periodic_dtc_nb(
             dtc.month,
             start_c=start_dtc.month,
@@ -748,7 +746,7 @@ def within_dtc_range_nb(
             return False
         if prev_status == DTCS.I:
             return True
-    if dtc.day is not None:
+    if dtc.day != -1:
         prev_status = within_periodic_dtc_nb(
             dtc.day,
             start_c=start_dtc.day,
@@ -763,7 +761,7 @@ def within_dtc_range_nb(
             return False
         if prev_status == DTCS.I:
             return True
-    if dtc.weekday is not None:
+    if dtc.weekday != -1:
         prev_status = within_periodic_dtc_nb(
             dtc.weekday,
             start_c=start_dtc.weekday,
@@ -778,7 +776,7 @@ def within_dtc_range_nb(
             return False
         if prev_status == DTCS.I:
             return True
-    if dtc.hour is not None:
+    if dtc.hour != -1:
         prev_status = within_periodic_dtc_nb(
             dtc.hour,
             start_c=start_dtc.hour,
@@ -793,7 +791,7 @@ def within_dtc_range_nb(
             return False
         if prev_status == DTCS.I:
             return True
-    if dtc.minute is not None:
+    if dtc.minute != -1:
         prev_status = within_periodic_dtc_nb(
             dtc.minute,
             start_c=start_dtc.minute,
@@ -808,7 +806,7 @@ def within_dtc_range_nb(
             return False
         if prev_status == DTCS.I:
             return True
-    if dtc.second is not None:
+    if dtc.second != -1:
         prev_status = within_periodic_dtc_nb(
             dtc.second,
             start_c=start_dtc.second,
@@ -823,7 +821,7 @@ def within_dtc_range_nb(
             return False
         if prev_status == DTCS.I:
             return True
-    if dtc.nanosecond is not None:
+    if dtc.nanosecond != -1:
         prev_status = within_periodic_dtc_nb(
             dtc.nanosecond,
             start_c=start_dtc.nanosecond,
