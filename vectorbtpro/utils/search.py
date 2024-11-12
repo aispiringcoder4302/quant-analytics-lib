@@ -3,12 +3,9 @@
 """Utilities for searching."""
 
 import re
-from functools import partial
 from collections import deque
 from pathlib import Path
 from copy import copy
-
-import pandas as pd
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.utils import checks

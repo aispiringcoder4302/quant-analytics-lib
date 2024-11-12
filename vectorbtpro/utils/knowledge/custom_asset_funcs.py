@@ -256,7 +256,7 @@ class ToHTMLAssetFunc(ToMarkdownAssetFunc):
 
         If `resolve_extensions` is True, uses `ToHTMLAssetFunc.resolve_extensions`.
 
-        If `make_links` is True, uses `ToHTMLAssetFunc.make_make_links`.
+        If `make_links` is True, uses `ToHTMLAssetFunc.make_links`.
 
         Keyword arguments are passed to `markdown.markdown`."""
         from vectorbtpro.utils.module_ import assert_can_import
@@ -325,9 +325,9 @@ class ToHTMLAssetFunc(ToMarkdownAssetFunc):
         `pygments_kwargs` are then passed to `pygments.formatters.HtmlFormatter`.
 
         Use `style_extras` to inject additional CSS rules outside the predefined ones.
-        Use `head_extras` to inject additional HTML elements into the <head> section, such as meta tags,
+        Use `head_extras` to inject additional HTML elements into the `<head>` section, such as meta tags,
         links to external stylesheets, or scripts. Use `body_extras` to inject JavaScript files or inline
-        scripts at the end of the <body>. All of these arguments can be lists."""
+        scripts at the end of the `<body>`. All of these arguments can be lists."""
         from vectorbtpro.utils.module_ import check_installed, assert_can_import
 
         if title is None:
