@@ -231,7 +231,7 @@ def talib_func(func_name: str) -> tp.Callable:
                 if unpack_to.lower() == "dict":
                     return dct
                 return pd.concat(list(dct.values()), axis=1, keys=pd.Index(list(dct.keys()), name="output"))
-            raise ValueError(f"Invalid option unpack_to='{unpack_to}'")
+            raise ValueError(f"Invalid unpack_to: '{unpack_to}'")
         if one_output:
             return outputs[0]
         return outputs

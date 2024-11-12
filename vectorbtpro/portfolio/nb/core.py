@@ -5,6 +5,7 @@
 import numpy as np
 
 from vectorbtpro import _typing as tp
+from vectorbtpro._dtypes import *
 from vectorbtpro.base.flex_indexing import flex_select_1d_pc_nb, flex_select_nb
 from vectorbtpro.generic import nb as generic_nb
 from vectorbtpro.portfolio.enums import *
@@ -109,6 +110,10 @@ def long_buy_nb(
         return order_not_filled_nb(OrderStatus.Rejected, OrderStatusInfo.NoCash), _account_state
     cash_limit = cash_limit * leverage
 
+    # Adjust for granularity
+    if not np.isnan(size_granularity) and adj_size_granularity_nb(size, size_granularity):
+        size = size // size_granularity * size_granularity
+
     # Adjust for max size
     if not np.isnan(max_size) and size > max_size:
         if not allow_partial:
@@ -117,10 +122,6 @@ def long_buy_nb(
         size = max_size
     if np.isinf(size) and np.isinf(cash_limit):
         raise ValueError("Attempt to go in long direction infinitely")
-
-    # Adjust for granularity
-    if not np.isnan(size_granularity) and adj_size_granularity_nb(size, size_granularity):
-        size = size // size_granularity * size_granularity
 
     # Get price adjusted with slippage
     adj_price = price * (1 + slippage)
@@ -225,7 +226,7 @@ def approx_long_sell_value_nb(position: float, debt: float, val_price: float, si
     Positive value means spending (for sorting reasons)."""
     if size == 0 or position == 0:
         return 0.0
-    size_limit = min(position, abs(size))
+    size_limit = min(abs(size), position)
     order_value = size_limit * val_price
     size_fraction = size_limit / position
     released_debt = size_fraction * debt
@@ -258,9 +259,14 @@ def long_sell_nb(
         return order_not_filled_nb(OrderStatus.Rejected, OrderStatusInfo.NoOpenPosition), _account_state
 
     # Get size limit
-    size_limit = min(_account_state.position, size)
+    size_limit = min(size, _account_state.position)
     if not np.isnan(percent):
         size_limit = size_limit * percent
+
+    # Adjust for granularity
+    if not np.isnan(size_granularity) and adj_size_granularity_nb(size_limit, size_granularity):
+        size = size // size_granularity * size_granularity
+        size_limit = size_limit // size_granularity * size_granularity
 
     # Adjust for max size
     if not np.isnan(max_size) and size_limit > max_size:
@@ -268,10 +274,6 @@ def long_sell_nb(
             return order_not_filled_nb(OrderStatus.Rejected, OrderStatusInfo.MaxSizeExceeded), _account_state
 
         size_limit = max_size
-
-    # Adjust for granularity
-    if not np.isnan(size_granularity) and adj_size_granularity_nb(size_limit, size_granularity):
-        size_limit = size_limit // size_granularity * size_granularity
 
     # Check against size of zero
     if is_close_nb(size_limit, 0):
@@ -384,6 +386,11 @@ def short_sell_nb(
     if size_limit <= 0:
         return order_not_filled_nb(OrderStatus.Rejected, OrderStatusInfo.CantCoverFees), _account_state
 
+    # Adjust for granularity
+    if not np.isnan(size_granularity) and adj_size_granularity_nb(size_limit, size_granularity):
+        size = size // size_granularity * size_granularity
+        size_limit = size_limit // size_granularity * size_granularity
+
     # Adjust for max size
     if not np.isnan(max_size) and size_limit > max_size:
         if not allow_partial:
@@ -392,10 +399,6 @@ def short_sell_nb(
         size_limit = max_size
     if np.isinf(size_limit):
         raise ValueError("Attempt to go in short direction infinitely")
-
-    # Adjust for granularity
-    if not np.isnan(size_granularity) and adj_size_granularity_nb(size_limit, size_granularity):
-        size_limit = size_limit // size_granularity * size_granularity
 
     # Check against size of zero
     if is_close_nb(size_limit, 0):
@@ -461,7 +464,7 @@ def approx_short_buy_value_nb(position: float, debt: float, locked_cash: float, 
     Positive value means spending (for sorting reasons)."""
     if size == 0 or position == 0:
         return 0.0
-    size_limit = min(abs(position), abs(size))
+    size_limit = min(abs(size), abs(position))
     order_value = size_limit * val_price
     size_fraction = size_limit / abs(position)
     released_debt = size_fraction * debt
@@ -500,9 +503,13 @@ def short_buy_nb(
         return order_not_filled_nb(OrderStatus.Rejected, OrderStatusInfo.NoCash), _account_state
 
     # Get size limit
-    size_limit = min(abs(_account_state.position), size)
+    size_limit = min(size, abs(_account_state.position))
     if not np.isnan(percent):
         size_limit = size_limit * percent
+
+    # Adjust for granularity
+    if not np.isnan(size_granularity) and adj_size_granularity_nb(size_limit, size_granularity):
+        size_limit = size_limit // size_granularity * size_granularity
 
     # Adjust for max size
     if not np.isnan(max_size) and size_limit > max_size:
@@ -510,10 +517,6 @@ def short_buy_nb(
             return order_not_filled_nb(OrderStatus.Rejected, OrderStatusInfo.MaxSizeExceeded), _account_state
 
         size_limit = max_size
-
-    # Adjust for granularity
-    if not np.isnan(size_granularity) and adj_size_granularity_nb(size_limit, size_granularity):
-        size_limit = size_limit // size_granularity * size_granularity
 
     # Get price adjusted with slippage
     adj_price = price * (1 + slippage)
@@ -679,6 +682,7 @@ def buy_nb(
             price_area=price_area,
             is_closing_price=is_closing_price,
         )
+    short_size = min(size, abs(_account_state.position))
     if not np.isnan(min_size):
         min_size1 = min(min_size, abs(_account_state.position))
     else:
@@ -689,7 +693,7 @@ def buy_nb(
         max_size1 = np.nan
     new_order_result1, new_account_state1 = short_buy_nb(
         account_state=_account_state,
-        size=size,
+        size=short_size,
         price=price,
         fees=fees,
         fixed_fees=fixed_fees,
@@ -834,6 +838,7 @@ def sell_nb(
             price_area=price_area,
             is_closing_price=is_closing_price,
         )
+    long_size = min(size, _account_state.position)
     if not np.isnan(min_size):
         min_size1 = min(min_size, _account_state.position)
     else:
@@ -844,7 +849,7 @@ def sell_nb(
         max_size1 = np.nan
     new_order_result1, new_account_state1 = long_sell_nb(
         account_state=_account_state,
-        size=size,
+        size=long_size,
         price=price,
         fees=fees,
         fixed_fees=fixed_fees,
@@ -1615,11 +1620,11 @@ def prepare_last_cash_nb(
 ) -> tp.Array1d:
     """Prepare `last_cash`."""
     if cash_sharing:
-        last_cash = np.empty(len(group_lens), dtype=np.float_)
+        last_cash = np.empty(len(group_lens), dtype=float_)
         for group in range(len(group_lens)):
             last_cash[group] = float(flex_select_1d_pc_nb(init_cash, group))
     else:
-        last_cash = np.empty(target_shape[1], dtype=np.float_)
+        last_cash = np.empty(target_shape[1], dtype=float_)
         for col in range(target_shape[1]):
             last_cash[col] = float(flex_select_1d_pc_nb(init_cash, col))
     return last_cash
@@ -1628,7 +1633,7 @@ def prepare_last_cash_nb(
 @register_jitted(cache=True)
 def prepare_last_position_nb(target_shape: tp.Shape, init_position: tp.FlexArray1d) -> tp.Array1d:
     """Prepare `last_position`."""
-    last_position = np.empty(target_shape[1], dtype=np.float_)
+    last_position = np.empty(target_shape[1], dtype=float_)
     for col in range(target_shape[1]):
         last_position[col] = float(flex_select_1d_pc_nb(init_position, col))
     return last_position
@@ -1645,7 +1650,7 @@ def prepare_last_value_nb(
 ) -> tp.Array1d:
     """Prepare `last_value`."""
     if cash_sharing:
-        last_value = np.empty(len(group_lens), dtype=np.float_)
+        last_value = np.empty(len(group_lens), dtype=float_)
         from_col = 0
         for group in range(len(group_lens)):
             to_col = from_col + group_lens[group]
@@ -1658,7 +1663,7 @@ def prepare_last_value_nb(
                     last_value[group] += _init_position * _init_price
             from_col = to_col
     else:
-        last_value = np.empty(target_shape[1], dtype=np.float_)
+        last_value = np.empty(target_shape[1], dtype=float_)
         for col in range(target_shape[1]):
             _init_cash = float(flex_select_1d_pc_nb(init_cash, col))
             _init_position = float(flex_select_1d_pc_nb(init_position, col))

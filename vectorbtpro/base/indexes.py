@@ -13,6 +13,7 @@ import numpy as np
 import pandas as pd
 
 from vectorbtpro import _typing as tp
+from vectorbtpro._dtypes import *
 from vectorbtpro.registries.jit_registry import jit_reg, register_jitted
 from vectorbtpro.utils import checks
 from vectorbtpro.utils.attr_ import DefineMixin, define
@@ -382,11 +383,11 @@ def concat_indexes(
         return pd.RangeIndex(stop=sum(map(len, indexes)))
     else:
         if axis == 0:
-            raise ValueError(f"Invalid index concatenation method '{index_concat_method}'")
+            raise ValueError(f"Invalid index concatenation method: '{index_concat_method}'")
         elif axis == 1:
-            raise ValueError(f"Invalid column concatenation method '{index_concat_method}'")
+            raise ValueError(f"Invalid column concatenation method: '{index_concat_method}'")
         else:
-            raise ValueError(f"Invalid group concatenation method '{index_concat_method}'")
+            raise ValueError(f"Invalid group concatenation method: '{index_concat_method}'")
     if keys is not None:
         if isinstance(keys[0], pd.Index):
             keys = concat_indexes(
@@ -635,7 +636,7 @@ def drop_duplicate_levels(index: tp.Index, keep: tp.Optional[str] = None) -> tp.
 @register_jitted(cache=True)
 def align_arr_indices_nb(a: tp.Array1d, b: tp.Array1d) -> tp.Array1d:
     """Return indices required to align `a` to `b`."""
-    idxs = np.empty(b.shape[0], dtype=np.int_)
+    idxs = np.empty(b.shape[0], dtype=int_)
     g = 0
     for i in range(b.shape[0]):
         for j in range(a.shape[0]):
@@ -752,8 +753,8 @@ def block_index_product_nb(
 
     matched1 = np.empty(len(factorized1), dtype=np.bool_)
     matched2 = np.empty(len(factorized2), dtype=np.bool_)
-    indices1 = np.empty(len(factorized1) * len(factorized2), dtype=np.int_)
-    indices2 = np.empty(len(factorized1) * len(factorized2), dtype=np.int_)
+    indices1 = np.empty(len(factorized1) * len(factorized2), dtype=int_)
+    indices2 = np.empty(len(factorized1) * len(factorized2), dtype=int_)
     k1 = 0
     k2 = 0
 

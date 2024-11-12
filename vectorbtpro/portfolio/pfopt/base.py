@@ -3395,7 +3395,7 @@ class PortfolioOptimizer(Analyzable):
             elif dropna.lower() == "head":
                 out = out.iloc[idx_arr.min() :]
             else:
-                raise ValueError(f"Invalid option dropna='{dropna}'")
+                raise ValueError(f"Invalid dropna: '{dropna}'")
         if squeeze_groups and self.wrapper.grouped_ndim == 1:
             n_group_levels = self.wrapper.grouper.get_index().nlevels
             out = out.droplevel(tuple(range(n_group_levels)), axis=1)

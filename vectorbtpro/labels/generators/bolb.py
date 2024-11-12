@@ -11,6 +11,8 @@ __all__ = [
     "BOLB",
 ]
 
+__pdoc__ = {}
+
 BOLB = IndicatorFactory(
     class_name="BOLB",
     module_name=__name__,
@@ -53,3 +55,4 @@ class _BOLB(BOLB):
 
 setattr(BOLB, "__doc__", _BOLB.__doc__)
 setattr(BOLB, "plot", _BOLB.plot)
+BOLB.fix_docstrings(__pdoc__)

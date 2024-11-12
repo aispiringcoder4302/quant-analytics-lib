@@ -5,6 +5,7 @@
 import numpy as np
 
 from vectorbtpro import _typing as tp
+from vectorbtpro._dtypes import *
 from vectorbtpro.portfolio.enums import CallSeqType
 from vectorbtpro.registries.jit_registry import register_jitted
 
@@ -30,15 +31,15 @@ def build_call_seq_nb(
 ) -> tp.Array2d:
     """Build a new call sequence array."""
     if call_seq_type == CallSeqType.Reversed:
-        out = np.full(target_shape[1], 1, dtype=np.int_)
+        out = np.full(target_shape[1], 1, dtype=int_)
         out[np.cumsum(group_lens)[1:] - group_lens[1:] - 1] -= group_lens[1:]
         out = np.cumsum(out[::-1])[::-1] - 1
-        out = out * np.ones((target_shape[0], 1), dtype=np.int_)
+        out = out * np.ones((target_shape[0], 1), dtype=int_)
         return out
-    out = np.full(target_shape[1], 1, dtype=np.int_)
+    out = np.full(target_shape[1], 1, dtype=int_)
     out[np.cumsum(group_lens)[:-1]] -= group_lens[:-1]
     out = np.cumsum(out) - 1
-    out = out * np.ones((target_shape[0], 1), dtype=np.int_)
+    out = out * np.ones((target_shape[0], 1), dtype=int_)
     if call_seq_type == CallSeqType.Random:
         shuffle_call_seq_nb(out, group_lens)
     return out
@@ -46,7 +47,7 @@ def build_call_seq_nb(
 
 def require_call_seq(call_seq: tp.Array2d) -> tp.Array2d:
     """Force the call sequence array to pass our requirements."""
-    return np.require(call_seq, dtype=np.int_, requirements=["A", "O", "W", "F"])
+    return np.require(call_seq, dtype=int_, requirements=["A", "O", "W", "F"])
 
 
 def build_call_seq(
@@ -55,7 +56,7 @@ def build_call_seq(
     call_seq_type: int = CallSeqType.Default,
 ) -> tp.Array2d:
     """Not compiled but faster version of `build_call_seq_nb`."""
-    call_seq = np.full(target_shape[1], 1, dtype=np.int_)
+    call_seq = np.full(target_shape[1], 1, dtype=int_)
     if call_seq_type == CallSeqType.Reversed:
         call_seq[np.cumsum(group_lens)[1:] - group_lens[1:] - 1] -= group_lens[1:]
         call_seq = np.cumsum(call_seq[::-1])[::-1] - 1

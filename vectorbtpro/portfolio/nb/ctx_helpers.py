@@ -388,7 +388,7 @@ def get_col_position_value_nb(c: tp.NamedTuple, col: int) -> float:
     """Get position value of a column."""
     position = get_col_position_nb(c, col)
     val_price = get_col_val_price_nb(c, col)
-    if position:
+    if position == 0:
         return 0.0
     return position * val_price
 
@@ -905,3 +905,85 @@ def stop_sim_nb(
 ) -> None:
     """Stop the simulation of the current group."""
     stop_group_sim_nb(c, c.group)
+
+
+# ############# Ordering ############# #
+
+
+@register_jitted
+def get_order_size_nb(
+    c: tp.Union[
+        OrderContext,
+        PostOrderContext,
+        SignalContext,
+        PostSignalContext,
+    ],
+    size: float,
+    size_type: int = SizeType.Amount,
+    price: tp.Optional[int] = None,
+) -> float:
+    """Get order size."""
+    if price is not None:
+        val_price, value = update_value_nb(
+            cash_before=get_cash_nb(c),
+            cash_now=get_cash_nb(c),
+            position_before=get_position_nb(c),
+            position_now=get_position_nb(c),
+            val_price_before=get_val_price_nb(c),
+            price=price,
+            value_before=get_value_nb(c),
+        )
+    else:
+        val_price = get_val_price_nb(c)
+        value = get_value_nb(c)
+    return resolve_size_nb(
+        size=size,
+        size_type=size_type,
+        position=get_position_nb(c),
+        val_price=val_price,
+        value=value,
+    )[0]
+
+
+@register_jitted
+def get_order_value_nb(
+    c: tp.Union[
+        OrderContext,
+        PostOrderContext,
+        SignalContext,
+        PostSignalContext,
+    ],
+    size: float,
+    size_type: int = SizeType.Amount,
+    direction: int = Direction.Both,
+    price: tp.Optional[int] = None,
+) -> float:
+    """Get (approximate) order value."""
+    if price is not None:
+        val_price, value = update_value_nb(
+            cash_before=get_cash_nb(c),
+            cash_now=get_cash_nb(c),
+            position_before=get_position_nb(c),
+            position_now=get_position_nb(c),
+            val_price_before=get_val_price_nb(c),
+            price=price,
+            value_before=get_value_nb(c),
+        )
+    else:
+        val_price = get_val_price_nb(c)
+        value = get_value_nb(c)
+    exec_state = ExecState(
+        cash=get_cash_nb(c),
+        position=get_position_nb(c),
+        debt=get_debt_nb(c),
+        locked_cash=get_locked_cash_nb(c),
+        free_cash=get_free_cash_nb(c),
+        val_price=val_price,
+        value=value,
+    )
+    return approx_order_value_nb(
+        exec_state,
+        size=size,
+        size_type=size_type,
+        direction=direction,
+    )

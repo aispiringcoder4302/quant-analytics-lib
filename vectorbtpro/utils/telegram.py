@@ -89,7 +89,7 @@ if __version_info__ < (20, 0, 0, "alpha", 1):
         See [Extensions – Your first Bot](https://github.com/python-telegram-bot/python-telegram-bot/wiki/Extensions-%E2%80%93-Your-first-Bot).
 
         `**kwargs` are passed to `telegram.ext.updater.Updater` and override
-        settings under `telegram` in `vectorbtpro._settings.messaging`.
+        settings under `bot` in `vectorbtpro._settings.telegram`.
 
         Usage:
             Let's extend `TelegramBot` to track cryptocurrency prices:
@@ -147,7 +147,7 @@ if __version_info__ < (20, 0, 0, "alpha", 1):
 
 
             if __name__ == "__main__":
-                bot = MyTelegramBot(token='1628351231:AAEgvZyRRfOV4_6ZArMS_lXzZd6XkG932zg')
+                bot = MyTelegramBot(token='YOUR_TOKEN')
                 bot.start()
             ```
         """
@@ -155,8 +155,8 @@ if __version_info__ < (20, 0, 0, "alpha", 1):
         def __init__(self, giphy_kwargs: tp.KwargsLike = None, **kwargs) -> None:
             from vectorbtpro._settings import settings
 
-            telegram_cfg = settings["messaging"]["telegram"]
-            giphy_cfg = settings["messaging"]["giphy"]
+            bot_cfg = settings["telegram"]["bot"]
+            giphy_cfg = settings["telegram"]["giphy"]
 
             Configured.__init__(self, giphy_kwargs=giphy_kwargs, **kwargs)
 
@@ -166,8 +166,8 @@ if __version_info__ < (20, 0, 0, "alpha", 1):
             default_kwargs = dict()
             passed_kwargs = dict()
             for k in get_func_kwargs(Updater.__init__):
-                if k in telegram_cfg:
-                    default_kwargs[k] = telegram_cfg[k]
+                if k in bot_cfg:
+                    default_kwargs[k] = bot_cfg[k]
                 if k in kwargs:
                     passed_kwargs[k] = kwargs.pop(k)
             updater_kwargs = merge_dicts(default_kwargs, passed_kwargs)
@@ -239,17 +239,17 @@ if __version_info__ < (20, 0, 0, "alpha", 1):
         def start(self, in_background: bool = False, **kwargs) -> None:
             """Start the bot.
             `**kwargs` are passed to `telegram.ext.updater.Updater.start_polling`
-            and override settings under `telegram` in `vectorbtpro._settings.messaging`."""
+            and override settings under `bot` in `vectorbtpro._settings.telegram`."""
             from vectorbtpro._settings import settings
 
-            telegram_cfg = settings["messaging"]["telegram"]
+            bot_cfg = settings["telegram"]["bot"]
 
             # Resolve kwargs
             default_kwargs = dict()
             passed_kwargs = dict()
             for k in get_func_kwargs(self.updater.start_polling):
-                if k in telegram_cfg:
-                    default_kwargs[k] = telegram_cfg[k]
+                if k in bot_cfg:
+                    default_kwargs[k] = bot_cfg[k]
                 if k in kwargs:
                     passed_kwargs[k] = kwargs.pop(k)
             polling_kwargs = merge_dicts(default_kwargs, passed_kwargs)
@@ -498,7 +498,7 @@ else:
         def __init__(self, giphy_kwargs: tp.KwargsLike = None, **kwargs) -> None:
             from vectorbtpro._settings import settings
 
-            giphy_cfg = settings["messaging"]["giphy"]
+            giphy_cfg = settings["telegram"]["giphy"]
 
             Configured.__init__(self, giphy_kwargs=giphy_kwargs, **kwargs)
 
@@ -511,18 +511,18 @@ else:
         def build_application(self, **kwargs) -> Application:
             """Build application.
 
-            `**kwargs` override settings under `telegram` in `vectorbtpro._settings.messaging`
+            `**kwargs` override settings under `bot` in `vectorbtpro._settings.telegram`
             and those keys that can be found as attributes of `telegram.ext._applicationbuilder.ApplicationBuilder`
             will be called on the builder. If any value is a dict, it will be unpacked to be able to
             provide multiple keyword arguments to any method (apart from `defaults`, which is just one argument)."""
             from vectorbtpro._settings import settings
 
-            telegram_cfg = dict(settings["messaging"]["telegram"])
-            telegram_cfg = merge_dicts(telegram_cfg, kwargs)
+            bot_cfg = dict(settings["telegram"]["bot"])
+            bot_cfg = merge_dicts(bot_cfg, kwargs)
 
             builder = ApplicationBuilder()
 
-            persistence = telegram_cfg.pop("persistence", None)
+            persistence = bot_cfg.pop("persistence", None)
             if persistence is not None:
                 if isinstance(persistence, bool):
                     if persistence:
@@ -533,12 +533,12 @@ else:
                     if isinstance(persistence, str):
                         persistence = PicklePersistence(persistence)
                     builder.persistence(persistence)
-            defaults = telegram_cfg.pop("defaults", None)
+            defaults = bot_cfg.pop("defaults", None)
             if defaults is not None:
                 if isinstance(defaults, dict):
                     defaults = Defaults(**defaults)
                 builder.defaults(defaults)
-            for k, v in telegram_cfg.items():
+            for k, v in bot_cfg.items():
                 if hasattr(builder, k):
                     if isinstance(v, dict):
                         getattr(builder, k)(**v)
@@ -715,11 +715,11 @@ else:
         ) -> None:
             """Start the bot.
 
-            `**kwargs` override settings under `telegram` in `vectorbtpro._settings.messaging` and only those
+            `**kwargs` override settings under `bot` in `vectorbtpro._settings.telegram` and only those
             keys that can be found in `telegram.ext._updater.Updater.start_polling` are passed."""
             from vectorbtpro._settings import settings
 
-            telegram_cfg = settings["messaging"]["telegram"]
+            bot_cfg = settings["telegram"]["bot"]
 
             if not self.application.updater:
                 raise RuntimeError("Application.run_polling is only available if the application has an Updater.")
@@ -731,8 +731,8 @@ else:
             default_kwargs = dict()
             passed_kwargs = dict()
             for k in get_func_kwargs(self.application.updater.start_polling):
-                if k in telegram_cfg:
-                    default_kwargs[k] = telegram_cfg[k]
+                if k in bot_cfg:
+                    default_kwargs[k] = bot_cfg[k]
                 if k in kwargs:
                     passed_kwargs[k] = kwargs.pop(k)
             polling_kwargs = merge_dicts(default_kwargs, passed_kwargs)

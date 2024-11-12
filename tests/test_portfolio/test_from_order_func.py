@@ -9,6 +9,7 @@ from numba import njit, typeof
 from numba.typed import List
 
 import vectorbtpro as vbt
+from vectorbtpro._dtypes import *
 from tests.utils import *
 from vectorbtpro.portfolio import nb
 from vectorbtpro.portfolio.enums import *
@@ -530,7 +531,7 @@ class TestFromOrderFunc:
             order_size = np.copy(target_hold_value[c.i, c.from_col : c.to_col])
             order_size_type = np.full(c.group_len, SizeType.TargetValue)
             direction = np.full(c.group_len, Direction.Both)
-            order_value_out = np.empty(c.group_len, dtype=np.float_)
+            order_value_out = np.empty(c.group_len, dtype=float_)
             c.last_val_price[c.from_col : c.to_col] = c.close[c.i, c.from_col : c.to_col]
             nb.sort_call_seq_1d_nb(c, order_size, order_size_type, direction, order_value_out)
             return order_size, order_size_type, direction
@@ -777,12 +778,12 @@ class TestFromOrderFunc:
         close = np.array([[1, 1, 1], [np.nan, 2, 2], [3, np.nan, 3], [4, 4, np.nan], [5, 5, 5]])
         open = close - 0.1
         size = np.array([[1, 1, 1], [-1, -1, -1], [1, 1, 1], [-1, -1, -1], [1, 1, 1]])
-        value_arr1 = np.empty((size.shape[0], 2), dtype=np.float_)
-        value_arr2 = np.empty(size.shape, dtype=np.float_)
-        value_arr3 = np.empty(size.shape, dtype=np.float_)
-        return_arr1 = np.empty((size.shape[0], 2), dtype=np.float_)
-        return_arr2 = np.empty(size.shape, dtype=np.float_)
-        return_arr3 = np.empty(size.shape, dtype=np.float_)
+        value_arr1 = np.empty((size.shape[0], 2), dtype=float_)
+        value_arr2 = np.empty(size.shape, dtype=float_)
+        value_arr3 = np.empty(size.shape, dtype=float_)
+        return_arr1 = np.empty((size.shape[0], 2), dtype=float_)
+        return_arr2 = np.empty(size.shape, dtype=float_)
+        return_arr3 = np.empty(size.shape, dtype=float_)
         pos_info_arr1 = np.empty(size.shape, dtype=trade_dt)
         pos_info_arr2 = np.empty(size.shape, dtype=trade_dt)
         pos_info_arr3 = np.empty(size.shape, dtype=trade_dt)
@@ -998,11 +999,11 @@ class TestFromOrderFunc:
             ),
         )
 
-        cash_arr = np.empty((size.shape[0], 2), dtype=np.float_)
-        position_arr = np.empty(size.shape, dtype=np.float_)
-        val_price_arr = np.empty(size.shape, dtype=np.float_)
-        value_arr = np.empty((size.shape[0], 2), dtype=np.float_)
-        return_arr = np.empty((size.shape[0], 2), dtype=np.float_)
+        cash_arr = np.empty((size.shape[0], 2), dtype=float_)
+        position_arr = np.empty(size.shape, dtype=float_)
+        val_price_arr = np.empty(size.shape, dtype=float_)
+        value_arr = np.empty((size.shape[0], 2), dtype=float_)
+        return_arr = np.empty((size.shape[0], 2), dtype=float_)
         pos_info_arr = np.empty(size.shape[1], dtype=trade_dt)
 
         def post_segment_func_nb(c):
@@ -1896,8 +1897,8 @@ class TestFromOrderFunc:
                 free_cash[c.i, c.col] = c.free_cash_now
 
         size = np.array([[5, -5, 5], [5, -5, -10], [-5, 5, 10], [-5, 5, -10], [-5, 5, 10]])
-        debt = np.empty(price_wide.shape, dtype=np.float_)
-        free_cash = np.empty(price_wide.shape, dtype=np.float_)
+        debt = np.empty(price_wide.shape, dtype=float_)
+        free_cash = np.empty(price_wide.shape, dtype=float_)
         pf = from_order_func(
             price_wide,
             order_func,
@@ -1937,8 +1938,8 @@ class TestFromOrderFunc:
         )
         np.testing.assert_almost_equal(free_cash, pf.get_cash(free=True).values)
 
-        debt = np.empty(price_wide.shape, dtype=np.float_)
-        free_cash = np.empty(price_wide.shape, dtype=np.float_)
+        debt = np.empty(price_wide.shape, dtype=float_)
+        free_cash = np.empty(price_wide.shape, dtype=float_)
         pf = from_order_func(
             price_wide.vbt.wrapper.wrap(price_wide.values[::-1]),
             order_func,
@@ -1970,8 +1971,8 @@ class TestFromOrderFunc:
         )
         np.testing.assert_almost_equal(free_cash, pf.get_cash(free=True).values)
 
-        debt = np.empty(price_wide.shape, dtype=np.float_)
-        free_cash = np.empty((price_wide.shape[0], 2), dtype=np.float_)
+        debt = np.empty(price_wide.shape, dtype=float_)
+        free_cash = np.empty((price_wide.shape[0], 2), dtype=float_)
         pf = from_order_func(
             price_wide,
             order_func,
@@ -3266,7 +3267,7 @@ class TestFromOrderFunc:
                 )
                 return new_chunk_meta
 
-        custom_dtype = np.dtype([("col", np.int_)])
+        custom_dtype = np.dtype([("col", int_)])
         chunked = dict(
             arg_take_spec=dict(
                 order_args=vbt.ArgsTaker(vbt.flex_array_gl_slicer),
@@ -3279,8 +3280,8 @@ class TestFromOrderFunc:
             )
         )
         in_outputs = dict(
-            custom_1d_arr=vbt.RepEval("np.full(target_shape[1], 0., dtype=np.float_)"),
-            custom_2d_arr=vbt.RepEval("np.empty((target_shape[0], len(group_lens)), dtype=np.int_)"),
+            custom_1d_arr=vbt.RepEval("np.full(target_shape[1], 0., dtype=float_)"),
+            custom_2d_arr=vbt.RepEval("np.empty((target_shape[0], len(group_lens)), dtype=int_)"),
             custom_rec_arr=vbt.RepEval("np.empty(target_shape[0] * target_shape[1], dtype=custom_dtype)"),
         )
         in_outputs = InOutputs(**in_outputs)

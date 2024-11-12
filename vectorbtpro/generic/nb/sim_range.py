@@ -10,6 +10,7 @@ import numpy as np
 from numba import prange
 
 from vectorbtpro import _typing as tp
+from vectorbtpro._dtypes import *
 from vectorbtpro.base.flex_indexing import flex_select_1d_pc_nb
 from vectorbtpro.base.reshaping import to_1d_array_nb
 from vectorbtpro.registries.jit_registry import register_jitted
@@ -26,13 +27,13 @@ def resolve_sim_start_nb(
     if sim_start is None:
         if allow_none:
             return None
-        return np.full(sim_shape[1], 0, dtype=np.int_)
+        return np.full(sim_shape[1], 0, dtype=int_)
 
-    sim_start_ = to_1d_array_nb(np.asarray(sim_start).astype(np.int_))
+    sim_start_ = to_1d_array_nb(np.asarray(sim_start).astype(int_))
     if not check_bounds and len(sim_start_) == sim_shape[1]:
         return sim_start_
 
-    sim_start_out = np.empty(sim_shape[1], dtype=np.int_)
+    sim_start_out = np.empty(sim_shape[1], dtype=int_)
     can_be_none = True
 
     for i in range(sim_shape[1]):
@@ -61,13 +62,13 @@ def resolve_sim_end_nb(
     if sim_end is None:
         if allow_none:
             return None
-        return np.full(sim_shape[1], sim_shape[0], dtype=np.int_)
+        return np.full(sim_shape[1], sim_shape[0], dtype=int_)
 
-    sim_end_ = to_1d_array_nb(np.asarray(sim_end).astype(np.int_))
+    sim_end_ = to_1d_array_nb(np.asarray(sim_end).astype(int_))
     if not check_bounds and len(sim_end_) == sim_shape[1]:
         return sim_end_
 
-    new_sim_end = np.empty(sim_shape[1], dtype=np.int_)
+    new_sim_end = np.empty(sim_shape[1], dtype=int_)
     can_be_none = True
 
     for i in range(sim_shape[1]):
@@ -121,9 +122,9 @@ def resolve_grouped_sim_start_nb(
     if sim_start is None:
         if allow_none:
             return None
-        return np.full(len(group_lens), 0, dtype=np.int_)
+        return np.full(len(group_lens), 0, dtype=int_)
 
-    sim_start_ = to_1d_array_nb(np.asarray(sim_start).astype(np.int_))
+    sim_start_ = to_1d_array_nb(np.asarray(sim_start).astype(int_))
     if len(sim_start_) == len(group_lens):
         if not check_bounds:
             return sim_start_
@@ -134,7 +135,7 @@ def resolve_grouped_sim_start_nb(
             check_bounds=check_bounds,
         )
 
-    new_sim_start = np.empty(len(group_lens), dtype=np.int_)
+    new_sim_start = np.empty(len(group_lens), dtype=int_)
     can_be_none = True
 
     group_end_idxs = np.cumsum(group_lens)
@@ -172,9 +173,9 @@ def resolve_grouped_sim_end_nb(
     if sim_end is None:
         if allow_none:
             return None
-        return np.full(len(group_lens), target_shape[0], dtype=np.int_)
+        return np.full(len(group_lens), target_shape[0], dtype=int_)
 
-    sim_end_ = to_1d_array_nb(np.asarray(sim_end).astype(np.int_))
+    sim_end_ = to_1d_array_nb(np.asarray(sim_end).astype(int_))
     if len(sim_end_) == len(group_lens):
         if not check_bounds:
             return sim_end_
@@ -185,7 +186,7 @@ def resolve_grouped_sim_end_nb(
             check_bounds=check_bounds,
         )
 
-    new_sim_end = np.empty(len(group_lens), dtype=np.int_)
+    new_sim_end = np.empty(len(group_lens), dtype=int_)
     can_be_none = True
 
     group_end_idxs = np.cumsum(group_lens)
@@ -250,9 +251,9 @@ def resolve_ungrouped_sim_start_nb(
     if sim_start is None:
         if allow_none:
             return None
-        return np.full(target_shape[1], 0, dtype=np.int_)
+        return np.full(target_shape[1], 0, dtype=int_)
 
-    sim_start_ = to_1d_array_nb(np.asarray(sim_start).astype(np.int_))
+    sim_start_ = to_1d_array_nb(np.asarray(sim_start).astype(int_))
     if len(sim_start_) == target_shape[1]:
         if not check_bounds:
             return sim_start_
@@ -263,7 +264,7 @@ def resolve_ungrouped_sim_start_nb(
             check_bounds=check_bounds,
         )
 
-    new_sim_start = np.empty(target_shape[1], dtype=np.int_)
+    new_sim_start = np.empty(target_shape[1], dtype=int_)
     can_be_none = True
 
     group_end_idxs = np.cumsum(group_lens)
@@ -298,9 +299,9 @@ def resolve_ungrouped_sim_end_nb(
     if sim_end is None:
         if allow_none:
             return None
-        return np.full(target_shape[1], target_shape[0], dtype=np.int_)
+        return np.full(target_shape[1], target_shape[0], dtype=int_)
 
-    sim_end_ = to_1d_array_nb(np.asarray(sim_end).astype(np.int_))
+    sim_end_ = to_1d_array_nb(np.asarray(sim_end).astype(int_))
     if len(sim_end_) == target_shape[1]:
         if not check_bounds:
             return sim_end_
@@ -311,7 +312,7 @@ def resolve_ungrouped_sim_end_nb(
             check_bounds=check_bounds,
         )
 
-    new_sim_end = np.empty(target_shape[1], dtype=np.int_)
+    new_sim_end = np.empty(target_shape[1], dtype=int_)
     can_be_none = True
 
     group_end_idxs = np.cumsum(group_lens)
@@ -369,13 +370,13 @@ def prepare_sim_start_nb(
 ) -> tp.Array1d:
     """Prepare simulation start."""
     if sim_start is None:
-        return np.full(sim_shape[1], 0, dtype=np.int_)
+        return np.full(sim_shape[1], 0, dtype=int_)
 
-    sim_start_ = to_1d_array_nb(np.asarray(sim_start).astype(np.int_))
+    sim_start_ = to_1d_array_nb(np.asarray(sim_start).astype(int_))
     if not check_bounds and len(sim_start_) == sim_shape[1]:
         return sim_start_
 
-    sim_start_out = np.empty(sim_shape[1], dtype=np.int_)
+    sim_start_out = np.empty(sim_shape[1], dtype=int_)
 
     for i in range(sim_shape[1]):
         _sim_start = flex_select_1d_pc_nb(sim_start_, i)
@@ -396,13 +397,13 @@ def prepare_sim_end_nb(
 ) -> tp.Array1d:
     """Prepare simulation end."""
     if sim_end is None:
-        return np.full(sim_shape[1], sim_shape[0], dtype=np.int_)
+        return np.full(sim_shape[1], sim_shape[0], dtype=int_)
 
-    sim_end_ = to_1d_array_nb(np.asarray(sim_end).astype(np.int_))
+    sim_end_ = to_1d_array_nb(np.asarray(sim_end).astype(int_))
     if not check_bounds and len(sim_end_) == sim_shape[1]:
         return sim_end_
 
-    new_sim_end = np.empty(sim_shape[1], dtype=np.int_)
+    new_sim_end = np.empty(sim_shape[1], dtype=int_)
 
     for i in range(sim_shape[1]):
         _sim_end = flex_select_1d_pc_nb(sim_end_, i)
@@ -445,9 +446,9 @@ def prepare_grouped_sim_start_nb(
 ) -> tp.Array1d:
     """Prepare grouped simulation start."""
     if sim_start is None:
-        return np.full(len(group_lens), 0, dtype=np.int_)
+        return np.full(len(group_lens), 0, dtype=int_)
 
-    sim_start_ = to_1d_array_nb(np.asarray(sim_start).astype(np.int_))
+    sim_start_ = to_1d_array_nb(np.asarray(sim_start).astype(int_))
     if len(sim_start_) == len(group_lens):
         if not check_bounds:
             return sim_start_
@@ -457,7 +458,7 @@ def prepare_grouped_sim_start_nb(
             check_bounds=check_bounds,
         )
 
-    new_sim_start = np.empty(len(group_lens), dtype=np.int_)
+    new_sim_start = np.empty(len(group_lens), dtype=int_)
 
     group_end_idxs = np.cumsum(group_lens)
     group_start_idxs = group_end_idxs - group_lens
@@ -487,9 +488,9 @@ def prepare_grouped_sim_end_nb(
 ) -> tp.Array1d:
     """Prepare grouped simulation end."""
     if sim_end is None:
-        return np.full(len(group_lens), target_shape[0], dtype=np.int_)
+        return np.full(len(group_lens), target_shape[0], dtype=int_)
 
-    sim_end_ = to_1d_array_nb(np.asarray(sim_end).astype(np.int_))
+    sim_end_ = to_1d_array_nb(np.asarray(sim_end).astype(int_))
     if len(sim_end_) == len(group_lens):
         if not check_bounds:
             return sim_end_
@@ -499,7 +500,7 @@ def prepare_grouped_sim_end_nb(
             check_bounds=check_bounds,
         )
 
-    new_sim_end = np.empty(len(group_lens), dtype=np.int_)
+    new_sim_end = np.empty(len(group_lens), dtype=int_)
 
     group_end_idxs = np.cumsum(group_lens)
     group_start_idxs = group_end_idxs - group_lens
@@ -553,9 +554,9 @@ def prepare_ungrouped_sim_start_nb(
 ) -> tp.Array1d:
     """Prepare ungrouped simulation start."""
     if sim_start is None:
-        return np.full(target_shape[1], 0, dtype=np.int_)
+        return np.full(target_shape[1], 0, dtype=int_)
 
-    sim_start_ = to_1d_array_nb(np.asarray(sim_start).astype(np.int_))
+    sim_start_ = to_1d_array_nb(np.asarray(sim_start).astype(int_))
     if len(sim_start_) == target_shape[1]:
         if not check_bounds:
             return sim_start_
@@ -565,7 +566,7 @@ def prepare_ungrouped_sim_start_nb(
             check_bounds=check_bounds,
         )
 
-    new_sim_start = np.empty(target_shape[1], dtype=np.int_)
+    new_sim_start = np.empty(target_shape[1], dtype=int_)
 
     group_end_idxs = np.cumsum(group_lens)
     group_start_idxs = group_end_idxs - group_lens
@@ -592,9 +593,9 @@ def prepare_ungrouped_sim_end_nb(
 ) -> tp.Array1d:
     """Prepare ungrouped simulation end."""
     if sim_end is None:
-        return np.full(target_shape[1], target_shape[0], dtype=np.int_)
+        return np.full(target_shape[1], target_shape[0], dtype=int_)
 
-    sim_end_ = to_1d_array_nb(np.asarray(sim_end).astype(np.int_))
+    sim_end_ = to_1d_array_nb(np.asarray(sim_end).astype(int_))
     if len(sim_end_) == target_shape[1]:
         if not check_bounds:
             return sim_end_
@@ -604,7 +605,7 @@ def prepare_ungrouped_sim_end_nb(
             check_bounds=check_bounds,
         )
 
-    new_sim_end = np.empty(target_shape[1], dtype=np.int_)
+    new_sim_end = np.empty(target_shape[1], dtype=int_)
 
     group_end_idxs = np.cumsum(group_lens)
     group_start_idxs = group_end_idxs - group_lens

@@ -9,6 +9,7 @@ import numpy as np
 from numba import prange
 
 from vectorbtpro import _typing as tp
+from vectorbtpro._dtypes import *
 from vectorbtpro.base import chunking as base_ch
 from vectorbtpro.base.flex_indexing import flex_select_1d_nb, flex_select_col_nb
 from vectorbtpro.base.reshaping import to_1d_array_nb, to_2d_array_nb
@@ -59,7 +60,7 @@ def ma_nb(
     window_ = to_1d_array_nb(np.asarray(window))
     wtype_ = to_1d_array_nb(np.asarray(wtype))
 
-    ma = np.empty(close.shape, dtype=np.float_)
+    ma = np.empty(close.shape, dtype=float_)
     for col in prange(close.shape[1]):
         ma[:, col] = ma_1d_nb(
             close=close[:, col],
@@ -112,7 +113,7 @@ def msd_nb(
     window_ = to_1d_array_nb(np.asarray(window))
     wtype_ = to_1d_array_nb(np.asarray(wtype))
 
-    msd = np.empty(close.shape, dtype=np.float_)
+    msd = np.empty(close.shape, dtype=float_)
     for col in prange(close.shape[1]):
         msd[:, col] = msd_1d_nb(
             close=close[:, col],
@@ -177,9 +178,9 @@ def bbands_nb(
     wtype_ = to_1d_array_nb(np.asarray(wtype))
     alpha_ = to_1d_array_nb(np.asarray(alpha))
 
-    upper = np.empty(close.shape, dtype=np.float_)
-    middle = np.empty(close.shape, dtype=np.float_)
-    lower = np.empty(close.shape, dtype=np.float_)
+    upper = np.empty(close.shape, dtype=float_)
+    middle = np.empty(close.shape, dtype=float_)
+    lower = np.empty(close.shape, dtype=float_)
     for col in prange(close.shape[1]):
         upper[:, col], middle[:, col], lower[:, col] = bbands_1d_nb(
             close=close[:, col],
@@ -211,7 +212,7 @@ def bbands_percent_b_1d_nb(close: tp.Array1d, upper: tp.Array1d, lower: tp.Array
 @register_jitted(cache=True, tags={"can_parallel"})
 def bbands_percent_b_nb(close: tp.Array2d, upper: tp.Array2d, lower: tp.Array2d) -> tp.Array2d:
     """2-dim version of `bbands_percent_b_1d_nb`."""
-    percent_b = np.empty(close.shape, dtype=np.float_)
+    percent_b = np.empty(close.shape, dtype=float_)
     for col in prange(close.shape[1]):
         percent_b[:, col] = bbands_percent_b_1d_nb(close[:, col], upper[:, col], lower[:, col])
     return percent_b
@@ -235,7 +236,7 @@ def bbands_bandwidth_1d_nb(upper: tp.Array1d, middle: tp.Array1d, lower: tp.Arra
 @register_jitted(cache=True, tags={"can_parallel"})
 def bbands_bandwidth_nb(upper: tp.Array2d, middle: tp.Array2d, lower: tp.Array2d) -> tp.Array2d:
     """2-dim version of `bbands_bandwidth_1d_nb`."""
-    bandwidth = np.empty(upper.shape, dtype=np.float_)
+    bandwidth = np.empty(upper.shape, dtype=float_)
     for col in prange(upper.shape[1]):
         bandwidth[:, col] = bbands_bandwidth_1d_nb(upper[:, col], middle[:, col], lower[:, col])
     return bandwidth
@@ -253,7 +254,7 @@ def avg_gain_1d_nb(
     adjust: bool = False,
 ) -> tp.Array1d:
     """Average gain."""
-    up_change = np.empty(close.shape, dtype=np.float_)
+    up_change = np.empty(close.shape, dtype=float_)
     for i in range(close.shape[0]):
         if i == 0:
             up_change[i] = np.nan
@@ -290,7 +291,7 @@ def avg_gain_nb(
     window_ = to_1d_array_nb(np.asarray(window))
     wtype_ = to_1d_array_nb(np.asarray(wtype))
 
-    avg_gain = np.empty(close.shape, dtype=np.float_)
+    avg_gain = np.empty(close.shape, dtype=float_)
     for col in prange(close.shape[1]):
         avg_gain[:, col] = avg_gain_1d_nb(
             close=close[:, col],
@@ -311,7 +312,7 @@ def avg_loss_1d_nb(
     adjust: bool = False,
 ) -> tp.Array1d:
     """Average loss."""
-    down_change = np.empty(close.shape, dtype=np.float_)
+    down_change = np.empty(close.shape, dtype=float_)
     for i in range(close.shape[0]):
         if i == 0:
             down_change[i] = np.nan
@@ -348,7 +349,7 @@ def avg_loss_nb(
     window_ = to_1d_array_nb(np.asarray(window))
     wtype_ = to_1d_array_nb(np.asarray(wtype))
 
-    avg_loss = np.empty(close.shape, dtype=np.float_)
+    avg_loss = np.empty(close.shape, dtype=float_)
     for col in prange(close.shape[1]):
         avg_loss[:, col] = avg_loss_1d_nb(
             close=close[:, col],
@@ -397,7 +398,7 @@ def rsi_nb(
     window_ = to_1d_array_nb(np.asarray(window))
     wtype_ = to_1d_array_nb(np.asarray(wtype))
 
-    rsi = np.empty(close.shape, dtype=np.float_)
+    rsi = np.empty(close.shape, dtype=float_)
     for col in prange(close.shape[1]):
         rsi[:, col] = rsi_1d_nb(
             close=close[:, col],
@@ -449,7 +450,7 @@ def stoch_k_nb(
     """2-dim version of `stoch_k_1d_nb`."""
     window_ = to_1d_array_nb(np.asarray(window))
 
-    stoch_k = np.empty(close.shape, dtype=np.float_)
+    stoch_k = np.empty(close.shape, dtype=float_)
     for col in prange(close.shape[1]):
         stoch_k[:, col] = stoch_k_1d_nb(
             high=high[:, col],
@@ -572,9 +573,9 @@ def stoch_nb(
     else:
         slow_d_wtype_ = wtype_
 
-    fast_k = np.empty(close.shape, dtype=np.float_)
-    slow_k = np.empty(close.shape, dtype=np.float_)
-    slow_d = np.empty(close.shape, dtype=np.float_)
+    fast_k = np.empty(close.shape, dtype=float_)
+    slow_k = np.empty(close.shape, dtype=float_)
+    slow_d = np.empty(close.shape, dtype=float_)
     for col in prange(close.shape[1]):
         fast_k[:, col], slow_k[:, col], slow_d[:, col] = stoch_1d_nb(
             high=high[:, col],
@@ -700,8 +701,8 @@ def macd_nb(
     else:
         signal_wtype_ = wtype_
 
-    macd = np.empty(close.shape, dtype=np.float_)
-    signal = np.empty(close.shape, dtype=np.float_)
+    macd = np.empty(close.shape, dtype=float_)
+    signal = np.empty(close.shape, dtype=float_)
     for col in prange(close.shape[1]):
         macd[:, col], signal[:, col] = macd_1d_nb(
             close=close[:, col],
@@ -738,7 +739,7 @@ def macd_hist_1d_nb(macd: tp.Array1d, signal: tp.Array1d) -> tp.Array1d:
 @register_jitted(cache=True, tags={"can_parallel"})
 def macd_hist_nb(macd: tp.Array2d, signal: tp.Array2d) -> tp.Array2d:
     """2-dim version of `macd_hist_1d_nb`."""
-    macd_hist = np.empty(macd.shape, dtype=np.float_)
+    macd_hist = np.empty(macd.shape, dtype=float_)
     for col in prange(macd.shape[1]):
         macd_hist[:, col] = macd_hist_1d_nb(macd[:, col], signal[:, col])
     return macd_hist
@@ -763,7 +764,7 @@ def iter_tr_nb(high: float, low: float, prev_close: float) -> float:
 @register_jitted(cache=True)
 def tr_1d_nb(high: tp.Array1d, low: tp.Array1d, close: tp.Array1d) -> tp.Array1d:
     """True Range (TR)."""
-    tr = np.empty(close.shape, dtype=np.float_)
+    tr = np.empty(close.shape, dtype=float_)
     for i in range(close.shape[0]):
         tr[i] = iter_tr_nb(high[i], low[i], close[i - 1] if i > 0 else np.nan)
     return tr
@@ -781,7 +782,7 @@ def tr_1d_nb(high: tp.Array1d, low: tp.Array1d, close: tp.Array1d) -> tp.Array1d
 @register_jitted(cache=True, tags={"can_parallel"})
 def tr_nb(high: tp.Array2d, low: tp.Array2d, close: tp.Array2d) -> tp.Array2d:
     """2-dim version of `tr_1d_nb`."""
-    tr = np.empty(close.shape, dtype=np.float_)
+    tr = np.empty(close.shape, dtype=float_)
     for col in prange(close.shape[1]):
         tr[:, col] = tr_1d_nb(high[:, col], low[:, col], close[:, col])
     return tr
@@ -832,8 +833,8 @@ def atr_nb(
     window_ = to_1d_array_nb(np.asarray(window))
     wtype_ = to_1d_array_nb(np.asarray(wtype))
 
-    tr = np.empty(close.shape, dtype=np.float_)
-    atr = np.empty(close.shape, dtype=np.float_)
+    tr = np.empty(close.shape, dtype=float_)
+    atr = np.empty(close.shape, dtype=float_)
     for col in prange(close.shape[1]):
         tr[:, col], atr[:, col] = atr_1d_nb(
             high[:, col],
@@ -872,8 +873,8 @@ def adx_1d_nb(
         minp=minp,
         adjust=adjust,
     )
-    dm_plus = np.empty(close.shape, dtype=np.float_)
-    dm_minus = np.empty(close.shape, dtype=np.float_)
+    dm_plus = np.empty(close.shape, dtype=float_)
+    dm_minus = np.empty(close.shape, dtype=float_)
     for i in range(close.shape[0]):
         up_change = np.nan if i == 0 else high[i] - high[i - 1]
         down_change = np.nan if i == 0 else low[i - 1] - low[i]
@@ -921,10 +922,10 @@ def adx_nb(
     window_ = to_1d_array_nb(np.asarray(window))
     wtype_ = to_1d_array_nb(np.asarray(wtype))
 
-    plus_di = np.empty(close.shape, dtype=np.float_)
-    minus_di = np.empty(close.shape, dtype=np.float_)
-    dx = np.empty(close.shape, dtype=np.float_)
-    adx = np.empty(close.shape, dtype=np.float_)
+    plus_di = np.empty(close.shape, dtype=float_)
+    minus_di = np.empty(close.shape, dtype=float_)
+    dx = np.empty(close.shape, dtype=float_)
+    adx = np.empty(close.shape, dtype=float_)
     for col in prange(close.shape[1]):
         plus_di[:, col], minus_di[:, col], dx[:, col], adx[:, col] = adx_1d_nb(
             high[:, col],
@@ -944,7 +945,7 @@ def adx_nb(
 @register_jitted(cache=True)
 def obv_1d_nb(close: tp.Array1d, volume: tp.Array1d) -> tp.Array1d:
     """On-Balance Volume (OBV)."""
-    obv = np.empty(close.shape, dtype=np.float_)
+    obv = np.empty(close.shape, dtype=float_)
     cumsum = 0.0
     for i in range(close.shape[0]):
         prev_close = close[i - 1] if i > 0 else np.nan
@@ -969,7 +970,7 @@ def obv_1d_nb(close: tp.Array1d, volume: tp.Array1d) -> tp.Array1d:
 @register_jitted(cache=True, tags={"can_parallel"})
 def obv_nb(close: tp.Array2d, volume: tp.Array2d) -> tp.Array2d:
     """2-dim version of `obv_1d_nb`."""
-    obv = np.empty(close.shape, dtype=np.float_)
+    obv = np.empty(close.shape, dtype=float_)
     for col in prange(close.shape[1]):
         obv[:, col] = obv_1d_nb(close[:, col], volume[:, col])
     return obv
@@ -996,7 +997,7 @@ def ols_1d_nb(
         error_std = generic_nb.rolling_std_1d_nb(error, window, minp=minp, ddof=ddof)
         zscore = (error - error_mean) / error_std
     else:
-        zscore = np.full(x.shape, np.nan, dtype=np.float_)
+        zscore = np.full(x.shape, np.nan, dtype=float_)
     return slope, intercept, zscore
 
 
@@ -1024,9 +1025,9 @@ def ols_nb(
     """2-dim version of `ols_1d_nb`."""
     window_ = to_1d_array_nb(np.asarray(window))
 
-    slope = np.empty(x.shape, dtype=np.float_)
-    intercept = np.empty(x.shape, dtype=np.float_)
-    zscore = np.empty(x.shape, dtype=np.float_)
+    slope = np.empty(x.shape, dtype=float_)
+    intercept = np.empty(x.shape, dtype=float_)
+    zscore = np.empty(x.shape, dtype=float_)
     for col in prange(x.shape[1]):
         slope[:, col], intercept[:, col], zscore[:, col] = ols_1d_nb(
             x[:, col],
@@ -1057,7 +1058,7 @@ def ols_pred_1d_nb(x: tp.Array1d, slope: tp.Array1d, intercept: tp.Array1d) -> t
 @register_jitted(cache=True, tags={"can_parallel"})
 def ols_pred_nb(x: tp.Array2d, slope: tp.Array2d, intercept: tp.Array2d) -> tp.Array2d:
     """2-dim version of `ols_pred_1d_nb`."""
-    pred = np.empty(x.shape, dtype=np.float_)
+    pred = np.empty(x.shape, dtype=float_)
     for col in prange(x.shape[1]):
         pred[:, col] = ols_pred_1d_nb(x[:, col], slope[:, col], intercept[:, col])
     return pred
@@ -1080,7 +1081,7 @@ def ols_error_1d_nb(y: tp.Array1d, pred: tp.Array1d) -> tp.Array1d:
 @register_jitted(cache=True, tags={"can_parallel"})
 def ols_error_nb(y: tp.Array2d, pred: tp.Array2d) -> tp.Array2d:
     """2-dim version of `ols_error_1d_nb`."""
-    error = np.empty(y.shape, dtype=np.float_)
+    error = np.empty(y.shape, dtype=float_)
     for col in prange(y.shape[1]):
         error[:, col] = ols_error_1d_nb(y[:, col], pred[:, col])
     return error
@@ -1102,7 +1103,7 @@ def ols_angle_1d_nb(slope: tp.Array1d) -> tp.Array1d:
 @register_jitted(cache=True, tags={"can_parallel"})
 def ols_angle_nb(slope: tp.Array2d) -> tp.Array2d:
     """2-dim version of `ols_angle_1d_nb`."""
-    angle = np.empty(slope.shape, dtype=np.float_)
+    angle = np.empty(slope.shape, dtype=float_)
     for col in prange(slope.shape[1]):
         angle[:, col] = ols_angle_1d_nb(slope[:, col])
     return angle
@@ -1129,7 +1130,7 @@ def typical_price_1d_nb(high: tp.Array1d, low: tp.Array1d, close: tp.Array1d) ->
 @register_jitted(cache=True, tags={"can_parallel"})
 def typical_price_nb(high: tp.Array2d, low: tp.Array2d, close: tp.Array2d) -> tp.Array2d:
     """2-dim version of `typical_price_1d_nb`."""
-    typical_price = np.empty(close.shape, dtype=np.float_)
+    typical_price = np.empty(close.shape, dtype=float_)
     for col in prange(close.shape[1]):
         typical_price[:, col] = typical_price_1d_nb(high[:, col], low[:, col], close[:, col])
     return typical_price
@@ -1146,7 +1147,7 @@ def vwap_1d_nb(
     """Volume-Weighted Average Price (VWAP)."""
     group_end_idxs = np.cumsum(group_lens)
     group_start_idxs = group_end_idxs - group_lens
-    out = np.full(volume.shape, np.nan, dtype=np.float_)
+    out = np.full(volume.shape, np.nan, dtype=float_)
 
     typical_price = typical_price_1d_nb(high, low, close)
     for group in range(len(group_lens)):
@@ -1184,7 +1185,7 @@ def vwap_nb(
     group_lens: tp.GroupLens,
 ) -> tp.Array2d:
     """2-dim version of `vwap_1d_nb`."""
-    vwap = np.empty(close.shape, dtype=np.float_)
+    vwap = np.empty(close.shape, dtype=float_)
     for col in prange(close.shape[1]):
         vwap[:, col] = vwap_1d_nb(
             high[:, col],
@@ -1210,10 +1211,10 @@ def pivot_info_1d_nb(
     up_th_ = to_1d_array_nb(np.asarray(up_th))
     down_th_ = to_1d_array_nb(np.asarray(down_th))
 
-    conf_pivot = np.empty(high.shape, dtype=np.int_)
-    conf_idx = np.empty(high.shape, dtype=np.int_)
-    last_pivot = np.empty(high.shape, dtype=np.int_)
-    last_idx = np.empty(high.shape, dtype=np.int_)
+    conf_pivot = np.empty(high.shape, dtype=int_)
+    conf_idx = np.empty(high.shape, dtype=int_)
+    last_pivot = np.empty(high.shape, dtype=int_)
+    last_idx = np.empty(high.shape, dtype=int_)
 
     _conf_pivot = 0
     _conf_idx = -1
@@ -1313,10 +1314,10 @@ def pivot_info_nb(
     up_th_ = to_2d_array_nb(np.asarray(up_th))
     down_th_ = to_2d_array_nb(np.asarray(down_th))
 
-    conf_pivot = np.empty(high.shape, dtype=np.int_)
-    conf_idx = np.empty(high.shape, dtype=np.int_)
-    last_pivot = np.empty(high.shape, dtype=np.int_)
-    last_idx = np.empty(high.shape, dtype=np.int_)
+    conf_pivot = np.empty(high.shape, dtype=int_)
+    conf_idx = np.empty(high.shape, dtype=int_)
+    last_pivot = np.empty(high.shape, dtype=int_)
+    last_idx = np.empty(high.shape, dtype=int_)
     for col in prange(high.shape[1]):
         conf_pivot[:, col], conf_idx[:, col], last_pivot[:, col], last_idx[:, col] = pivot_info_1d_nb(
             high[:, col],
@@ -1330,7 +1331,7 @@ def pivot_info_nb(
 @register_jitted(cache=True)
 def pivot_value_1d_nb(high: tp.Array1d, low: tp.Array1d, last_pivot: tp.Array1d, last_idx: tp.Array1d) -> tp.Array1d:
     """Pivot value."""
-    pivot_value = np.empty(high.shape, dtype=np.float_)
+    pivot_value = np.empty(high.shape, dtype=float_)
     for i in range(high.shape[0]):
         if last_pivot[i] == Pivot.Peak:
             pivot_value[i] = high[last_idx[i]]
@@ -1354,7 +1355,7 @@ def pivot_value_1d_nb(high: tp.Array1d, low: tp.Array1d, last_pivot: tp.Array1d,
 @register_jitted(cache=True, tags={"can_parallel"})
 def pivot_value_nb(high: tp.Array2d, low: tp.Array2d, last_pivot: tp.Array2d, last_idx: tp.Array2d) -> tp.Array2d:
     """2-dim version of `pivot_value_1d_nb`."""
-    pivot_value = np.empty(high.shape, dtype=np.float_)
+    pivot_value = np.empty(high.shape, dtype=float_)
     for col in prange(high.shape[1]):
         pivot_value[:, col] = pivot_value_1d_nb(high[:, col], low[:, col], last_pivot[:, col], last_idx[:, col])
     return pivot_value
@@ -1366,7 +1367,7 @@ def pivots_1d_nb(conf_pivot: tp.Array1d, conf_idx: tp.Array1d, last_pivot: tp.Ar
 
     !!! warning
         To be used in plotting. Do not use it as an indicator!"""
-    pivots = np.zeros(conf_pivot.shape, dtype=np.int_)
+    pivots = np.zeros(conf_pivot.shape, dtype=int_)
     for i in range(conf_pivot.shape[0] - 1):
         pivots[conf_idx[i]] = conf_pivot[i]
     pivots[-1] = last_pivot[-1]
@@ -1385,7 +1386,7 @@ def pivots_1d_nb(conf_pivot: tp.Array1d, conf_idx: tp.Array1d, last_pivot: tp.Ar
 @register_jitted(cache=True, tags={"can_parallel"})
 def pivots_nb(conf_pivot: tp.Array2d, conf_idx: tp.Array2d, last_pivot: tp.Array2d) -> tp.Array2d:
     """2-dim version of `pivots_1d_nb`."""
-    pivots = np.empty(conf_pivot.shape, dtype=np.int_)
+    pivots = np.empty(conf_pivot.shape, dtype=int_)
     for col in prange(conf_pivot.shape[1]):
         pivots[:, col] = pivots_1d_nb(conf_pivot[:, col], conf_idx[:, col], last_pivot[:, col])
     return pivots
@@ -1397,7 +1398,7 @@ def modes_1d_nb(pivots: tp.Array1d) -> tp.Array1d:
 
     !!! warning
         To be used in plotting. Do not use it as an indicator!"""
-    modes = np.empty(pivots.shape, dtype=np.int_)
+    modes = np.empty(pivots.shape, dtype=int_)
     mode = 0
     for i in range(pivots.shape[0]):
         if pivots[i] != 0:
@@ -1416,7 +1417,7 @@ def modes_1d_nb(pivots: tp.Array1d) -> tp.Array1d:
 @register_jitted(cache=True, tags={"can_parallel"})
 def modes_nb(pivots: tp.Array2d) -> tp.Array2d:
     """2-dim version of `modes_1d_nb`."""
-    modes = np.empty(pivots.shape, dtype=np.int_)
+    modes = np.empty(pivots.shape, dtype=int_)
     for col in prange(pivots.shape[1]):
         modes[:, col] = modes_1d_nb(pivots[:, col])
     return modes
@@ -1539,10 +1540,10 @@ def supertrend_1d_nb(
     multiplier: float = 3.0,
 ) -> tp.Tuple[tp.Array1d, tp.Array1d, tp.Array1d, tp.Array1d]:
     """Supertrend."""
-    trend = np.empty(close.shape, dtype=np.float_)
-    direction = np.empty(close.shape, dtype=np.int_)
-    long = np.empty(close.shape, dtype=np.float_)
-    short = np.empty(close.shape, dtype=np.float_)
+    trend = np.empty(close.shape, dtype=float_)
+    direction = np.empty(close.shape, dtype=int_)
+    long = np.empty(close.shape, dtype=float_)
+    short = np.empty(close.shape, dtype=float_)
 
     if close.shape[0] == 0:
         return trend, direction, long, short
@@ -1608,10 +1609,10 @@ def supertrend_nb(
     period_ = to_1d_array_nb(np.asarray(period))
     multiplier_ = to_1d_array_nb(np.asarray(multiplier))
 
-    trend = np.empty(close.shape, dtype=np.float_)
-    direction = np.empty(close.shape, dtype=np.int_)
-    long = np.empty(close.shape, dtype=np.float_)
-    short = np.empty(close.shape, dtype=np.float_)
+    trend = np.empty(close.shape, dtype=float_)
+    direction = np.empty(close.shape, dtype=int_)
+    long = np.empty(close.shape, dtype=float_)
+    short = np.empty(close.shape, dtype=float_)
     for col in prange(close.shape[1]):
         trend[:, col], direction[:, col], long[:, col], short[:, col] = supertrend_1d_nb(
             high[:, col],
@@ -1657,13 +1658,13 @@ def signal_detection_1d_nb(
     else:
         std_influence_ = influence_
 
-    signal = np.full(close.shape, 0, dtype=np.int_)
-    close_mean_filter = close.astype(np.float_)
-    close_std_filter = close.astype(np.float_)
-    mean_filter = np.full(close.shape, np.nan, dtype=np.float_)
-    std_filter = np.full(close.shape, np.nan, dtype=np.float_)
-    upper_band = np.full(close.shape, np.nan, dtype=np.float_)
-    lower_band = np.full(close.shape, np.nan, dtype=np.float_)
+    signal = np.full(close.shape, 0, dtype=int_)
+    close_mean_filter = close.astype(float_)
+    close_std_filter = close.astype(float_)
+    mean_filter = np.full(close.shape, np.nan, dtype=float_)
+    std_filter = np.full(close.shape, np.nan, dtype=float_)
+    upper_band = np.full(close.shape, np.nan, dtype=float_)
+    lower_band = np.full(close.shape, np.nan, dtype=float_)
     if lag == 0:
         raise ValueError("Lag cannot be zero")
     if lag - 1 >= close.shape[0]:
@@ -1747,9 +1748,9 @@ def signal_detection_nb(
     else:
         std_influence_ = influence_
 
-    signal = np.empty(close.shape, dtype=np.int_)
-    upper_band = np.empty(close.shape, dtype=np.float_)
-    lower_band = np.empty(close.shape, dtype=np.float_)
+    signal = np.empty(close.shape, dtype=int_)
+    upper_band = np.empty(close.shape, dtype=float_)
+    lower_band = np.empty(close.shape, dtype=float_)
     for col in prange(close.shape[1]):
         signal[:, col], upper_band[:, col], lower_band[:, col] = signal_detection_1d_nb(
             close[:, col],
@@ -1778,7 +1779,7 @@ def get_standard_hurst_nb(
         lags = np.arange(2, len(close) - 1)
     else:
         lags = np.arange(2, min(max_lag, len(close) - 1))
-    tau = np.empty(len(lags), dtype=np.float_)
+    tau = np.empty(len(lags), dtype=float_)
     for i, lag in enumerate(lags):
         tau[i] = np.var(np.subtract(close[lag:], close[:-lag]))
     coef = generic_nb.polyfit_1d_nb(np.log(lags), np.log(tau), 1, stabilize=stabilize)
@@ -1811,11 +1812,11 @@ def get_log_rs_hurst_nb(
     Windows are log-distributed."""
     max_log = min(max_log, np.log10(len(close) - 1))
     log_range = np.arange(min_log, max_log, log_step)
-    windows = np.empty(len(log_range) + 1, dtype=np.int_)
+    windows = np.empty(len(log_range) + 1, dtype=int_)
     windows[: len(log_range)] = 10**log_range
     windows[-1] = len(close)
-    RS = np.empty(len(windows), dtype=np.float_)
-    W = np.empty(len(windows), dtype=np.int_)
+    RS = np.empty(len(windows), dtype=float_)
+    W = np.empty(len(windows), dtype=int_)
     k = 0
 
     for i, w in enumerate(windows):
@@ -1854,10 +1855,10 @@ def get_rs_hurst_nb(
     N = len(diff)
     max_chunk += 1
     max_chunk = min(max_chunk, len(diff) - 1)
-    rs_tmp = np.empty(N, dtype=np.float_)
-    chunk_size_range = np.linspace(min_chunk, max_chunk, num_chunks).astype(np.int_)
-    chunk_size_list = np.empty(len(chunk_size_range), dtype=np.int_)
-    rs_values_list = np.empty(len(chunk_size_range), dtype=np.float_)
+    rs_tmp = np.empty(N, dtype=float_)
+    chunk_size_range = np.linspace(min_chunk, max_chunk, num_chunks).astype(int_)
+    chunk_size_list = np.empty(len(chunk_size_range), dtype=int_)
+    rs_values_list = np.empty(len(chunk_size_range), dtype=float_)
     k = 0
 
     for chunk_size in chunk_size_range:
@@ -1897,14 +1898,14 @@ def get_dma_hurst_nb(
     max_chunk += 1
     max_chunk = min(max_chunk, len(close) - 1)
     N = len(close)
-    n_range = np.linspace(min_chunk, max_chunk, num_chunks).astype(np.int_)
-    n_list = np.empty(len(n_range), dtype=np.int_)
-    dma_list = np.empty(len(n_range), dtype=np.float_)
+    n_range = np.linspace(min_chunk, max_chunk, num_chunks).astype(int_)
+    n_list = np.empty(len(n_range), dtype=int_)
+    dma_list = np.empty(len(n_range), dtype=float_)
     k = 0
     factor = 1 / (N - max_chunk)
 
     for i, n in enumerate(n_range):
-        x1 = np.full(n, -1, np.int_)
+        x1 = np.full(n, -1, int_)
         x1[0] = n - 1
         b = np.divide(x1, n)  # do the same as:  y - y_ma_n
         noise = np.power(generic_nb.fir_filter_1d_nb(b, close)[max_chunk:], 2)
@@ -1961,11 +1962,11 @@ def get_hurst_nb(
 
     Uses the following methods:
 
-    * `HurstMethod.Standard`: `vectorbtpro.generic.nb.base.get_standard_hurst_nb`
-    * `HurstMethod.LogRS`: `vectorbtpro.generic.nb.base.get_log_rs_hurst_nb`
-    * `HurstMethod.RS`: `vectorbtpro.generic.nb.base.get_rs_hurst_nb`
-    * `HurstMethod.DMA`: `vectorbtpro.generic.nb.base.get_dma_hurst_nb`
-    * `HurstMethod.DSOD`: `vectorbtpro.generic.nb.base.get_dsod_hurst_nb`
+    * `HurstMethod.Standard`: `vectorbtpro.indicators.nb.get_standard_hurst_nb`
+    * `HurstMethod.LogRS`: `vectorbtpro.indicators.nb.get_log_rs_hurst_nb`
+    * `HurstMethod.RS`: `vectorbtpro.indicators.nb.get_rs_hurst_nb`
+    * `HurstMethod.DMA`: `vectorbtpro.indicators.nb.get_dma_hurst_nb`
+    * `HurstMethod.DSOD`: `vectorbtpro.indicators.nb.get_dsod_hurst_nb`
     """
     if method == HurstMethod.Standard:
         return get_standard_hurst_nb(close, max_lag=max_lag, stabilize=stabilize)
@@ -2000,7 +2001,7 @@ def rolling_hurst_1d_nb(
         minp = window
     if minp > window:
         raise ValueError("minp must be <= window")
-    out = np.empty_like(close, dtype=np.float_)
+    out = np.empty_like(close, dtype=float_)
     nancnt = 0
     for i in range(close.shape[0]):
         if np.isnan(close[i]):
@@ -2066,7 +2067,7 @@ def rolling_hurst_nb(
     stabilize: bool = False,
 ) -> tp.Array2d:
     """2-dim version of `rolling_hurst_1d_nb`."""
-    out = np.empty_like(close, dtype=np.float_)
+    out = np.empty_like(close, dtype=float_)
     for col in prange(close.shape[1]):
         out[:, col] = rolling_hurst_1d_nb(
             close[:, col],

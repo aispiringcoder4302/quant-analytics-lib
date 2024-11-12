@@ -12,6 +12,8 @@ __all__ = [
     "HURST",
 ]
 
+__pdoc__ = {}
+
 HURST = IndicatorFactory(
     class_name="HURST",
     module_name=__name__,
@@ -110,3 +112,4 @@ class _HURST(HURST):
 
 setattr(HURST, "__doc__", _HURST.__doc__)
 setattr(HURST, "plot", _HURST.plot)
+HURST.fix_docstrings(__pdoc__)

@@ -6,6 +6,7 @@ import numpy as np
 from numba import prange
 
 from vectorbtpro import _typing as tp
+from vectorbtpro._dtypes import *
 from vectorbtpro.base import chunking as base_ch
 from vectorbtpro.generic.nb.base import nancov_1d_nb, nanstd_1d_nb, nancorr_1d_nb
 from vectorbtpro.registries.ch_registry import register_chunkable
@@ -179,8 +180,8 @@ def rolling_reduce_1d_nb(
     `reduce_func_nb` must accept the array and `*args`. Must return a single value."""
     if minp is None:
         minp = window
-    out = np.empty_like(arr, dtype=np.float_)
-    nancnt_arr = np.empty(arr.shape[0], dtype=np.int_)
+    out = np.empty_like(arr, dtype=float_)
+    nancnt_arr = np.empty(arr.shape[0], dtype=int_)
     nancnt = 0
     for i in range(arr.shape[0]):
         if np.isnan(arr[i]):
@@ -220,7 +221,7 @@ def rolling_reduce_nb(
     *args,
 ) -> tp.Array2d:
     """2-dim version of `rolling_reduce_1d_nb`."""
-    out = np.empty_like(arr, dtype=np.float_)
+    out = np.empty_like(arr, dtype=float_)
     for col in prange(arr.shape[1]):
         out[:, col] = rolling_reduce_1d_nb(arr[:, col], window, minp, reduce_func_nb, *args)
     return out
@@ -240,8 +241,8 @@ def rolling_reduce_two_1d_nb(
     `reduce_func_nb` must accept two arrays and `*args`. Must return a single value."""
     if minp is None:
         minp = window
-    out = np.empty_like(arr1, dtype=np.float_)
-    nancnt_arr = np.empty(arr1.shape[0], dtype=np.int_)
+    out = np.empty_like(arr1, dtype=float_)
+    nancnt_arr = np.empty(arr1.shape[0], dtype=int_)
     nancnt = 0
     for i in range(arr1.shape[0]):
         if np.isnan(arr1[i]) or np.isnan(arr2[i]):
@@ -283,7 +284,7 @@ def rolling_reduce_two_nb(
     *args,
 ) -> tp.Array2d:
     """2-dim version of `rolling_reduce_two_1d_nb`."""
-    out = np.empty_like(arr1, dtype=np.float_)
+    out = np.empty_like(arr1, dtype=float_)
     for col in prange(arr1.shape[1]):
         out[:, col] = rolling_reduce_two_1d_nb(arr1[:, col], arr2[:, col], window, minp, reduce_func_nb, *args)
     return out
@@ -304,7 +305,7 @@ def rolling_reduce_1d_meta_nb(
     Must return a single value."""
     if minp is None:
         minp = window
-    out = np.empty(n, dtype=np.float_)
+    out = np.empty(n, dtype=float_)
     for i in range(n):
         valid_cnt = min(i + 1, window)
         if valid_cnt < minp:
@@ -336,7 +337,7 @@ def rolling_reduce_meta_nb(
     *args,
 ) -> tp.Array2d:
     """2-dim version of `rolling_reduce_1d_meta_nb`."""
-    out = np.empty(target_shape, dtype=np.float_)
+    out = np.empty(target_shape, dtype=float_)
     for col in prange(target_shape[1]):
         out[:, col] = rolling_reduce_1d_meta_nb(target_shape[0], col, window, minp, reduce_func_nb, *args)
     return out
@@ -353,7 +354,7 @@ def rolling_freq_reduce_1d_nb(
     """Provide rolling, frequency-based window calculations.
 
     `reduce_func_nb` must accept the array and `*args`. Must return a single value."""
-    out = np.empty_like(arr, dtype=np.float_)
+    out = np.empty_like(arr, dtype=float_)
     from_i = 0
     for i in range(arr.shape[0]):
         if index[from_i] <= index[i] - freq:
@@ -387,7 +388,7 @@ def rolling_freq_reduce_nb(
     *args,
 ) -> tp.Array2d:
     """2-dim version of `rolling_reduce_1d_nb`."""
-    out = np.empty_like(arr, dtype=np.float_)
+    out = np.empty_like(arr, dtype=float_)
     for col in prange(arr.shape[1]):
         out[:, col] = rolling_freq_reduce_1d_nb(index, arr[:, col], freq, reduce_func_nb, *args)
     return out
@@ -405,7 +406,7 @@ def rolling_freq_reduce_1d_meta_nb(
 
     `reduce_func_nb` must accept the start row index, the end row index, the column, and `*args`.
     Must return a single value."""
-    out = np.empty(index.shape[0], dtype=np.float_)
+    out = np.empty(index.shape[0], dtype=float_)
     from_i = 0
     for i in range(index.shape[0]):
         if index[from_i] <= index[i] - freq:
@@ -438,7 +439,7 @@ def rolling_freq_reduce_meta_nb(
     *args,
 ) -> tp.Array2d:
     """2-dim version of `rolling_freq_reduce_1d_meta_nb`."""
-    out = np.empty((index.shape[0], n_cols), dtype=np.float_)
+    out = np.empty((index.shape[0], n_cols), dtype=float_)
     for col in prange(n_cols):
         out[:, col] = rolling_freq_reduce_1d_meta_nb(col, index, freq, reduce_func_nb, *args)
     return out
@@ -600,7 +601,7 @@ def reduce_index_ranges_1d_nb(
     """Reduce each index range.
 
     `reduce_func_nb` must accept the array and `*args`. Must return a single value."""
-    out = np.empty(range_starts.shape[0], dtype=np.float_)
+    out = np.empty(range_starts.shape[0], dtype=float_)
 
     for k in range(len(range_starts)):
         from_i = range_starts[k]
@@ -632,7 +633,7 @@ def reduce_index_ranges_nb(
     *args,
 ) -> tp.Array2d:
     """2-dim version of `reduce_index_ranges_1d_nb`."""
-    out = np.empty((range_starts.shape[0], arr.shape[1]), dtype=np.float_)
+    out = np.empty((range_starts.shape[0], arr.shape[1]), dtype=float_)
     for col in prange(arr.shape[1]):
         out[:, col] = reduce_index_ranges_1d_nb(arr[:, col], range_starts, range_ends, reduce_func_nb, *args)
     return out
@@ -650,7 +651,7 @@ def reduce_index_ranges_1d_meta_nb(
 
     `reduce_func_nb` must accept the start row index, the end row index, the column,
     and `*args`. Must return a single value."""
-    out = np.empty(range_starts.shape[0], dtype=np.float_)
+    out = np.empty(range_starts.shape[0], dtype=float_)
 
     for k in range(len(range_starts)):
         from_i = range_starts[k]
@@ -682,7 +683,7 @@ def reduce_index_ranges_meta_nb(
     *args,
 ) -> tp.Array2d:
     """2-dim version of `reduce_index_ranges_1d_meta_nb`."""
-    out = np.empty((range_starts.shape[0], n_cols), dtype=np.float_)
+    out = np.empty((range_starts.shape[0], n_cols), dtype=float_)
     for col in prange(n_cols):
         out[:, col] = reduce_index_ranges_1d_meta_nb(col, range_starts, range_ends, reduce_func_nb, *args)
     return out
@@ -1173,7 +1174,7 @@ def flatten_grouped_nb(arr: tp.Array2d, group_map: tp.GroupMap, in_c_order: bool
     """Flatten each group of columns."""
     group_idxs, group_lens = group_map
     group_start_idxs = np.cumsum(group_lens) - group_lens
-    out = np.full((arr.shape[0] * np.max(group_lens), len(group_lens)), np.nan, dtype=np.float_)
+    out = np.full((arr.shape[0] * np.max(group_lens), len(group_lens)), np.nan, dtype=float_)
     max_len = np.max(group_lens)
 
     for group in range(len(group_lens)):
@@ -1223,7 +1224,7 @@ def proximity_reduce_nb(
     """Flatten `window` surrounding rows and columns and reduce them into a single value using `reduce_func_nb`.
 
     `reduce_func_nb` must accept the array and `*args`. Must return a single value."""
-    out = np.empty_like(arr, dtype=np.float_)
+    out = np.empty_like(arr, dtype=float_)
     for i in prange(arr.shape[0]):
         for col in range(arr.shape[1]):
             from_i = max(0, i - window)
@@ -1246,7 +1247,7 @@ def proximity_reduce_meta_nb(
 
     `reduce_func_nb` must accept the start row index, the end row index, the start column index,
     the end column index, and `*args`. Must return a single value."""
-    out = np.empty(target_shape, dtype=np.float_)
+    out = np.empty(target_shape, dtype=float_)
     for i in prange(target_shape[0]):
         for col in range(target_shape[1]):
             from_i = max(0, i - window)
@@ -1422,7 +1423,7 @@ def describe_reduce_nb(arr: tp.Array1d, perc: tp.Array1d, ddof: int) -> tp.Array
 
     Numba equivalent to `pd.Series(arr).describe(perc)`."""
     arr = arr[~np.isnan(arr)]
-    out = np.empty(5 + len(perc), dtype=np.float_)
+    out = np.empty(5 + len(perc), dtype=float_)
     out[0] = len(arr)
     if len(arr) > 0:
         out[1] = np.mean(arr)

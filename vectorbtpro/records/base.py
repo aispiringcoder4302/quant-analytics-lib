@@ -51,10 +51,10 @@ Consider the following example:
 >>> from vectorbtpro import *
 
 >>> example_dt = np.dtype([
-...     ('id', np.int_),
-...     ('col', np.int_),
-...     ('idx', np.int_),
-...     ('some_field', np.float_)
+...     ('id', int_),
+...     ('col', int_),
+...     ('idx', int_),
+...     ('some_field', float_)
 ... ])
 >>> records_arr = np.array([
 ...     (0, 0, 0, 10.),
@@ -348,9 +348,9 @@ any base class property that is not explicitly listed in our config.
 >>> from vectorbtpro.records.decorators import override_field_config
 
 >>> my_dt = np.dtype([
-...     ('my_id', np.int_),
-...     ('my_col', np.int_),
-...     ('my_idx', np.int_)
+...     ('my_id', int_),
+...     ('my_col', int_),
+...     ('my_idx', int_)
 ... ])
 
 >>> my_fields_config = dict(
@@ -414,6 +414,7 @@ import numpy as np
 import pandas as pd
 
 from vectorbtpro import _typing as tp
+from vectorbtpro._dtypes import *
 from vectorbtpro.base.resampling.base import Resampler
 from vectorbtpro.base.reshaping import to_1d_array, index_to_series, index_to_frame
 from vectorbtpro.base.wrapping import ArrayWrapper
@@ -426,7 +427,7 @@ from vectorbtpro.registries.jit_registry import jit_reg
 from vectorbtpro.utils import checks
 from vectorbtpro.utils.attr_ import get_dict_attr
 from vectorbtpro.utils.config import resolve_dict, merge_dicts, Config, HybridConfig
-from vectorbtpro.utils.decorators import cached_method, class_or_instancemethod
+from vectorbtpro.utils.decorators import cached_method, hybrid_method
 from vectorbtpro.utils.random_ import set_seed_nb
 from vectorbtpro.utils.template import Sub
 
@@ -587,7 +588,7 @@ class Records(Analyzable, RecordsWithFields, metaclass=MetaRecords):
                         record_indices.append(_record_indices)
 
         if len(record_indices) == 0:
-            return np.array([], dtype=np.int_)
+            return np.array([], dtype=int_)
         return np.concatenate(record_indices)
 
     @classmethod
@@ -699,7 +700,7 @@ class Records(Analyzable, RecordsWithFields, metaclass=MetaRecords):
                         record_indices.append(_record_indices)
 
         if len(record_indices) == 0:
-            return np.array([], dtype=np.int_)
+            return np.array([], dtype=int_)
         return np.concatenate(record_indices)
 
     @classmethod
@@ -927,6 +928,7 @@ class Records(Analyzable, RecordsWithFields, metaclass=MetaRecords):
 
     @property
     def recarray(self) -> tp.RecArray:
+        """Records with field access using attributes."""
         return self.values.view(np.recarray)
 
     @property
@@ -1170,7 +1172,7 @@ class Records(Analyzable, RecordsWithFields, metaclass=MetaRecords):
         mapped_arr = self.values[field]
         return self.map_array(mapped_arr, **kwargs)
 
-    @class_or_instancemethod
+    @hybrid_method
     def map(
         cls_or_self,
         map_func_nb: tp.Union[tp.RecordsMapFunc, tp.RecordsMapMetaFunc],
@@ -1202,7 +1204,7 @@ class Records(Analyzable, RecordsWithFields, metaclass=MetaRecords):
             mapped_arr = np.asarray(mapped_arr, dtype=dtype)
             return cls_or_self.map_array(mapped_arr, **kwargs)
 
-    @class_or_instancemethod
+    @hybrid_method
     def apply(
         cls_or_self,
         apply_func_nb: tp.Union[tp.ApplyFunc, tp.ApplyMetaFunc],

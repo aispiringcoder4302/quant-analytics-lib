@@ -171,6 +171,7 @@ import numpy as np
 import pandas as pd
 
 from vectorbtpro import _typing as tp
+from vectorbtpro._dtypes import *
 from vectorbtpro.accessors import register_vbt_accessor, register_df_vbt_accessor, register_sr_vbt_accessor
 from vectorbtpro.base import chunking as base_ch, reshaping, indexes
 from vectorbtpro.base.wrapping import ArrayWrapper
@@ -185,7 +186,7 @@ from vectorbtpro.utils import checks
 from vectorbtpro.utils import chunking as ch
 from vectorbtpro.utils.colors import adjust_lightness
 from vectorbtpro.utils.config import resolve_dict, merge_dicts, Config, HybridConfig
-from vectorbtpro.utils.decorators import class_or_instancemethod, class_or_instanceproperty
+from vectorbtpro.utils.decorators import hybrid_method, hybrid_property
 from vectorbtpro.utils.enum_ import map_enum_fields
 from vectorbtpro.utils.random_ import set_seed_nb
 from vectorbtpro.utils.template import RepEval, substitute_templates
@@ -215,12 +216,12 @@ class SignalsAccessor(GenericAccessor):
 
         checks.assert_dtype(self._obj, np.bool_)
 
-    @class_or_instanceproperty
+    @hybrid_property
     def sr_accessor_cls(cls_or_self) -> tp.Type["SignalsSRAccessor"]:
         """Accessor class for `pd.Series`."""
         return SignalsSRAccessor
 
-    @class_or_instanceproperty
+    @hybrid_property
     def df_accessor_cls(cls_or_self) -> tp.Type["SignalsDFAccessor"]:
         """Accessor class for `pd.DataFrame`."""
         return SignalsDFAccessor
@@ -567,7 +568,7 @@ class SignalsAccessor(GenericAccessor):
 
     # ############# Cleaning ############# #
 
-    @class_or_instancemethod
+    @hybrid_method
     def clean(
         cls_or_self,
         *objs,
@@ -1088,7 +1089,7 @@ class SignalsAccessor(GenericAccessor):
         entries = broadcasted_args["entries"]
         stop_ts = broadcasted_args["stop_ts"]
         if stop_ts is None:
-            stop_ts = np.empty_like(entries, dtype=np.float_)
+            stop_ts = np.empty_like(entries, dtype=float_)
         stop_ts = reshaping.to_2d_array(stop_ts)
 
         entries_arr = reshaping.to_2d_array(entries)
@@ -1422,11 +1423,11 @@ class SignalsAccessor(GenericAccessor):
         entries = broadcasted_args["entries"]
         stop_price = broadcasted_args["stop_price"]
         if stop_price is None:
-            stop_price = np.empty_like(entries, dtype=np.float_)
+            stop_price = np.empty_like(entries, dtype=float_)
         stop_price = reshaping.to_2d_array(stop_price)
         stop_type = broadcasted_args["stop_type"]
         if stop_type is None:
-            stop_type = np.empty_like(entries, dtype=np.int_)
+            stop_type = np.empty_like(entries, dtype=int_)
         stop_type = reshaping.to_2d_array(stop_type)
 
         entries_arr = reshaping.to_2d_array(entries)
@@ -1623,7 +1624,7 @@ class SignalsAccessor(GenericAccessor):
         rank_wrapped = wrapper.wrap(rank, group_by=False, **wrap_kwargs)
         if as_mapped:
             rank_wrapped = rank_wrapped.replace(-1, np.nan)
-            return rank_wrapped.vbt.to_mapped(dropna=True, dtype=np.int_, **kwargs)
+            return rank_wrapped.vbt.to_mapped(dropna=True, dtype=int_, **kwargs)
         return rank_wrapped
 
     def pos_rank(
@@ -1940,7 +1941,7 @@ class SignalsAccessor(GenericAccessor):
             return "<-"
         if relation == enums.SignalRelation.ManyMany:
             return "<->"
-        raise ValueError(f"Invalid relation {relation}")
+        raise ValueError(f"Invalid relation: {relation}")
 
     # ############# Ranges ############# #
 
@@ -2129,7 +2130,7 @@ class SignalsAccessor(GenericAccessor):
             if -1 in row_idxs:
                 raise ValueError("Some columns have no signals. Use other signal index types.")
             return pd.Index(index[row_idxs], name=signal_index_name)
-        raise ValueError(f"Invalid option signal_index_type='{signal_index_type}'")
+        raise ValueError(f"Invalid signal_index_type: '{signal_index_type}'")
 
     def unravel(
         self,
@@ -2184,7 +2185,7 @@ class SignalsAccessor(GenericAccessor):
         new_columns = indexes.stack_indexes((signal_index, self.wrapper.columns[col_idxs]), **clean_index_kwargs)
         return self.wrapper.wrap(new_mask, columns=new_columns, group_by=False, **wrap_kwargs)
 
-    @class_or_instancemethod
+    @hybrid_method
     def unravel_between(
         cls_or_self,
         *objs,
@@ -2533,11 +2534,11 @@ class SignalsAccessor(GenericAccessor):
         See `vectorbtpro.generic.accessors.GenericAccessor.to_mapped`.
 
         Only True values will be considered."""
-        indices = np.arange(len(self.wrapper.index), dtype=np.float_)[:, None]
+        indices = np.arange(len(self.wrapper.index), dtype=float_)[:, None]
         indices = np.tile(indices, (1, len(self.wrapper.columns)))
         indices = reshaping.soft_to_ndim(indices, self.wrapper.ndim)
         indices[~self.obj.values] = np.nan
-        return self.wrapper.wrap(indices).vbt.to_mapped(dropna=True, dtype=np.int_, group_by=group_by, **kwargs)
+        return self.wrapper.wrap(indices).vbt.to_mapped(dropna=True, dtype=int_, group_by=group_by, **kwargs)
 
     def total(self, wrap_kwargs: tp.KwargsLike = None, group_by: tp.GroupByLike = None) -> tp.MaybeSeries:
         """Total number of True values in each column/group."""

@@ -11,7 +11,7 @@ import urllib.request
 import warnings
 import webbrowser
 from pathlib import Path
-from types import ModuleType, FunctionType
+from types import ModuleType
 
 from vectorbtpro import _typing as tp
 from vectorbtpro._opt_deps import opt_dep_config
@@ -27,7 +27,14 @@ __all__ = [
 
 __pdoc__ = {}
 
-package_shortcut_config = HybridConfig(dict(vbt="vectorbtpro", pd="pandas", np="numpy", nb="numba"))
+package_shortcut_config = HybridConfig(
+    dict(
+        vbt="vectorbtpro",
+        pd="pandas",
+        np="numpy",
+        nb="numba",
+    )
+)
 """_"""
 
 __pdoc__[
@@ -80,11 +87,14 @@ def list_module_keys(
     ]
 
 
-def search_package_for_funcs(
+def search_package(
     package: tp.Union[str, ModuleType],
+    match_func: tp.Callable,
     blacklist: tp.Optional[tp.Sequence[str]] = None,
-) -> tp.Dict[str, FunctionType]:
-    """Search a package for all functions."""
+) -> tp.Dict[str, tp.Any]:
+    """Search a package.
+
+    Match function should accept the name of the object and the object itself, and return a boolean."""
     if blacklist is None:
         blacklist = []
     if isinstance(package, str):
@@ -98,11 +108,11 @@ def search_package_for_funcs(
                 continue
             module = importlib.import_module(name)
             for attr in dir(module):
-                if not attr.startswith("_") and isinstance(getattr(module, attr), FunctionType):
+                if not attr.startswith("_") and match_func(attr, getattr(module, attr)):
                     results[attr] = getattr(module, attr)
             if is_pkg:
-                results.update(search_package_for_funcs(name, blacklist=blacklist))
-        except ModuleNotFoundError as e:
+                results.update(search_package(name, match_func, blacklist=blacklist))
+        except (ModuleNotFoundError, ImportError):
             pass
     return results
 
@@ -217,7 +227,32 @@ def import_module_from_path(module_path: tp.PathLike, reload: bool = False) -> M
     return module
 
 
-def get_method_class(meth: tp.Callable) -> tp.Type:
+def get_caller_qualname() -> str:
+    """Returns the qualified name of the method or function that called this function."""
+    frame = inspect.currentframe()
+    try:
+        caller_frame = frame.f_back
+        code = caller_frame.f_code
+        func_name = code.co_name
+        locals_ = caller_frame.f_locals
+        if "self" in locals_:
+            cls = locals_["self"].__class__
+            return f"{cls.__qualname__}.{func_name}"
+        elif "cls" in locals_:
+            cls = locals_["cls"]
+            return f"{cls.__qualname__}.{func_name}"
+        else:
+            module = inspect.getmodule(caller_frame)
+            if module:
+                func = module.__dict__.get(func_name)
+                if func and hasattr(func, "__qualname__"):
+                    return func.__qualname__
+            return func_name
+    finally:
+        del frame
+
+
+def get_method_class(meth: tp.Callable) -> tp.Optional[tp.Type]:
     """Get the class of a method."""
     if inspect.ismethod(meth) or (
         inspect.isbuiltin(meth)
@@ -237,7 +272,7 @@ def get_method_class(meth: tp.Callable) -> tp.Type:
 
 def parse_refname(obj: tp.Any) -> str:
     """Get the reference name of an object."""
-    from vectorbtpro.utils.decorators import classproperty, class_or_instanceproperty, custom_property
+    from vectorbtpro.utils.decorators import class_property, hybrid_property, custom_property
 
     if inspect.ismodule(obj):
         return obj.__name__
@@ -249,7 +284,7 @@ def parse_refname(obj: tp.Any) -> str:
             return parse_refname(cls) + "." + obj.__name__
         if hasattr(obj, "func"):
             return parse_refname(obj.func)
-    if isinstance(obj, (classproperty, class_or_instanceproperty, custom_property)):
+    if isinstance(obj, (class_property, hybrid_property, custom_property)):
         return parse_refname(obj.func)
     if isinstance(obj, property):
         return parse_refname(obj.fget)
@@ -405,6 +440,38 @@ def get_refname(
     return refname
 
 
+def prepare_refname(
+    obj: tp.Any,
+    module: tp.Union[None, str, ModuleType] = None,
+    resolve: bool = True,
+    vbt_only: bool = False,
+    return_parts: bool = False,
+) -> tp.Union[str, tp.Tuple[str, ModuleType, str]]:
+    """Prepare (optionally) the module and the qualified name."""
+
+    def _raise():
+        raise ValueError(
+            "Couldn't find the reference name, or the object is external. "
+            "If the object is internal, please decompose the object or provide a string instead."
+        )
+
+    refname = get_refname(obj, module=module, resolve=resolve)
+    if refname is None:
+        _raise()
+    if isinstance(refname, list):
+        raise ValueError("Multiple reference names found: {}".format(refname))
+    module, qualname = get_refname_module_and_qualname(refname)
+    if module.__name__.split(".")[0] != "vectorbtpro" and vbt_only:
+        _raise()
+    if return_parts:
+        return refname, module, qualname
+    if resolve:
+        if qualname is None:
+            return module.__name__
+        return module.__name__ + "." + qualname
+    return refname
+
+
 def get_imlucky_url(query: str) -> str:
     """Get the "I'm lucky" URL on DuckDuckGo for a query."""
     return "https://duckduckgo.com/?q=!ducky+" + urllib.request.pathname2url(query)
@@ -419,21 +486,16 @@ def get_api_ref(
     obj: tp.Any,
     module: tp.Union[None, str, ModuleType] = None,
     resolve: bool = True,
+    vbt_only: bool = False,
 ) -> str:
     """Get the API reference to an object."""
-
-    def _raise():
-        raise ValueError(
-            "Couldn't find the reference name, or the object is external. "
-            "If the object is internal, please decompose the object or provide a string instead."
-        )
-
-    refname = get_refname(obj, module=module, resolve=resolve)
-    if refname is None:
-        _raise()
-    if isinstance(refname, list):
-        raise ValueError("Multiple reference names found: {}".format(refname))
-    module, qualname = get_refname_module_and_qualname(refname)
+    refname, module, qualname = prepare_refname(
+        obj,
+        module=module,
+        resolve=resolve,
+        vbt_only=vbt_only,
+        return_parts=True,
+    )
     if module.__name__.split(".")[0] == "vectorbtpro":
         api_url = "https://github.com/polakowo/vectorbt.pro/blob/pvt-links/api/"
         md_url = api_url + module.__name__ + ".md/"

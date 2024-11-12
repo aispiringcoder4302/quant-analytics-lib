@@ -4,6 +4,7 @@ from datetime import datetime, timedelta, timezone
 import pytest
 
 import vectorbtpro as vbt
+from vectorbtpro._dtypes import *
 from tests.utils import *
 from vectorbtpro.utils.config import merge_dicts
 from vectorbtpro.utils.datetime_ import to_timezone
@@ -61,7 +62,7 @@ class MyData(vbt.Data):
                 return pd.DataFrame(a, columns=columns)
             return pd.Series(a, name=columns)
         np.random.seed(seed)
-        a = np.empty(shape, dtype=np.float_ if return_numeric else object)
+        a = np.empty(shape, dtype=float_ if return_numeric else object)
         if a.ndim == 1:
             if return_numeric:
                 a[:] = np.arange(len(a))

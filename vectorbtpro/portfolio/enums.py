@@ -7,6 +7,7 @@ Defines enums and other schemas for `vectorbtpro.portfolio`."""
 import numpy as np
 
 from vectorbtpro import _typing as tp
+from vectorbtpro._dtypes import *
 from vectorbtpro.utils.formatting import prettify
 
 __pdoc__all__ = __all__ = [
@@ -1109,14 +1110,14 @@ __pdoc__[
     "SimulationOutput.sim_start"
 ] = """Start of the simulation per column.
 
-Use `vectorbtpro.generic.nb.base.prepare_ungrouped_sim_range_nb` to ungroup the array.
+Use `vectorbtpro.generic.nb.sim_range.prepare_ungrouped_sim_range_nb` to ungroup the array.
 
 If not tracked, becomes None."""
 __pdoc__[
     "SimulationOutput.sim_end"
 ] = """End of the simulation per column.
 
-Use `vectorbtpro.generic.nb.base.prepare_ungrouped_sim_range_nb` to ungroup the array.
+Use `vectorbtpro.generic.nb.sim_range.prepare_ungrouped_sim_range_nb` to ungroup the array.
 
 If not tracked, becomes None."""
 
@@ -2705,13 +2706,13 @@ __pdoc__["FSInOutputs.returns"] = "See `FOInOutputs.returns`."
 # ############# Records ############# #
 
 order_fields = [
-    ("id", np.int_),
-    ("col", np.int_),
-    ("idx", np.int_),
-    ("size", np.float_),
-    ("price", np.float_),
-    ("fees", np.float_),
-    ("side", np.int_),
+    ("id", int_),
+    ("col", int_),
+    ("idx", int_),
+    ("size", float_),
+    ("price", float_),
+    ("fees", float_),
+    ("side", int_),
 ]
 """Fields for `order_dt`."""
 
@@ -2728,17 +2729,17 @@ __pdoc__[
 """
 
 fs_order_fields = [
-    ("id", np.int_),
-    ("col", np.int_),
-    ("signal_idx", np.int_),
-    ("creation_idx", np.int_),
-    ("idx", np.int_),
-    ("size", np.float_),
-    ("price", np.float_),
-    ("fees", np.float_),
-    ("side", np.int_),
-    ("type", np.int_),
-    ("stop_type", np.int_),
+    ("id", int_),
+    ("col", int_),
+    ("signal_idx", int_),
+    ("creation_idx", int_),
+    ("idx", int_),
+    ("size", float_),
+    ("price", float_),
+    ("fees", float_),
+    ("side", int_),
+    ("type", int_),
+    ("stop_type", int_),
 ]
 """Fields for `fs_order_dt`."""
 
@@ -2755,22 +2756,22 @@ __pdoc__[
 """
 
 trade_fields = [
-    ("id", np.int_),
-    ("col", np.int_),
-    ("size", np.float_),
-    ("entry_order_id", np.int_),
-    ("entry_idx", np.int_),
-    ("entry_price", np.float_),
-    ("entry_fees", np.float_),
-    ("exit_order_id", np.int_),
-    ("exit_idx", np.int_),
-    ("exit_price", np.float_),
-    ("exit_fees", np.float_),
-    ("pnl", np.float_),
-    ("return", np.float_),
-    ("direction", np.int_),
-    ("status", np.int_),
-    ("parent_id", np.int_),
+    ("id", int_),
+    ("col", int_),
+    ("size", float_),
+    ("entry_order_id", int_),
+    ("entry_idx", int_),
+    ("entry_price", float_),
+    ("entry_fees", float_),
+    ("exit_order_id", int_),
+    ("exit_idx", int_),
+    ("exit_price", float_),
+    ("exit_fees", float_),
+    ("pnl", float_),
+    ("return", float_),
+    ("direction", int_),
+    ("status", int_),
+    ("parent_id", int_),
 ]
 """Fields for `trade_dt`."""
 
@@ -2787,52 +2788,52 @@ __pdoc__[
 """
 
 log_fields = [
-    ("id", np.int_),
-    ("group", np.int_),
-    ("col", np.int_),
-    ("idx", np.int_),
-    ("price_area_open", np.float_),
-    ("price_area_high", np.float_),
-    ("price_area_low", np.float_),
-    ("price_area_close", np.float_),
-    ("st0_cash", np.float_),
-    ("st0_position", np.float_),
-    ("st0_debt", np.float_),
-    ("st0_locked_cash", np.float_),
-    ("st0_free_cash", np.float_),
-    ("st0_val_price", np.float_),
-    ("st0_value", np.float_),
-    ("req_size", np.float_),
-    ("req_price", np.float_),
-    ("req_size_type", np.int_),
-    ("req_direction", np.int_),
-    ("req_fees", np.float_),
-    ("req_fixed_fees", np.float_),
-    ("req_slippage", np.float_),
-    ("req_min_size", np.float_),
-    ("req_max_size", np.float_),
-    ("req_size_granularity", np.float_),
-    ("req_leverage", np.float_),
-    ("req_leverage_mode", np.int_),
-    ("req_reject_prob", np.float_),
-    ("req_price_area_vio_mode", np.int_),
+    ("id", int_),
+    ("group", int_),
+    ("col", int_),
+    ("idx", int_),
+    ("price_area_open", float_),
+    ("price_area_high", float_),
+    ("price_area_low", float_),
+    ("price_area_close", float_),
+    ("st0_cash", float_),
+    ("st0_position", float_),
+    ("st0_debt", float_),
+    ("st0_locked_cash", float_),
+    ("st0_free_cash", float_),
+    ("st0_val_price", float_),
+    ("st0_value", float_),
+    ("req_size", float_),
+    ("req_price", float_),
+    ("req_size_type", int_),
+    ("req_direction", int_),
+    ("req_fees", float_),
+    ("req_fixed_fees", float_),
+    ("req_slippage", float_),
+    ("req_min_size", float_),
+    ("req_max_size", float_),
+    ("req_size_granularity", float_),
+    ("req_leverage", float_),
+    ("req_leverage_mode", int_),
+    ("req_reject_prob", float_),
+    ("req_price_area_vio_mode", int_),
     ("req_allow_partial", np.bool_),
     ("req_raise_reject", np.bool_),
     ("req_log", np.bool_),
-    ("res_size", np.float_),
-    ("res_price", np.float_),
-    ("res_fees", np.float_),
-    ("res_side", np.int_),
-    ("res_status", np.int_),
-    ("res_status_info", np.int_),
-    ("st1_cash", np.float_),
-    ("st1_position", np.float_),
-    ("st1_debt", np.float_),
-    ("st1_locked_cash", np.float_),
-    ("st1_free_cash", np.float_),
-    ("st1_val_price", np.float_),
-    ("st1_value", np.float_),
-    ("order_id", np.int_),
+    ("res_size", float_),
+    ("res_price", float_),
+    ("res_fees", float_),
+    ("res_side", int_),
+    ("res_status", int_),
+    ("res_status_info", int_),
+    ("st1_cash", float_),
+    ("st1_position", float_),
+    ("st1_debt", float_),
+    ("st1_locked_cash", float_),
+    ("st1_free_cash", float_),
+    ("st1_val_price", float_),
+    ("st1_value", float_),
+    ("order_id", int_),
 ]
 """Fields for `log_fields`."""
 
@@ -2849,12 +2850,12 @@ __pdoc__[
 """
 
 alloc_range_fields = [
-    ("id", np.int_),
-    ("col", np.int_),
-    ("start_idx", np.int_),
-    ("end_idx", np.int_),
-    ("alloc_idx", np.int_),
-    ("status", np.int_),
+    ("id", int_),
+    ("col", int_),
+    ("start_idx", int_),
+    ("end_idx", int_),
+    ("alloc_idx", int_),
+    ("status", int_),
 ]
 """Fields for `alloc_range_dt`."""
 
@@ -2871,9 +2872,9 @@ __pdoc__[
 """
 
 alloc_point_fields = [
-    ("id", np.int_),
-    ("col", np.int_),
-    ("alloc_idx", np.int_),
+    ("id", int_),
+    ("col", int_),
+    ("alloc_idx", int_),
 ]
 """Fields for `alloc_point_dt`."""
 
@@ -2892,17 +2893,17 @@ __pdoc__[
 # ############# Info records ############# #
 
 main_info_fields = [
-    ("bar_zone", np.int_),
-    ("signal_idx", np.int_),
-    ("creation_idx", np.int_),
-    ("idx", np.int_),
-    ("val_price", np.float_),
-    ("price", np.float_),
-    ("size", np.float_),
-    ("size_type", np.int_),
-    ("direction", np.int_),
-    ("type", np.int_),
-    ("stop_type", np.int_),
+    ("bar_zone", int_),
+    ("signal_idx", int_),
+    ("creation_idx", int_),
+    ("idx", int_),
+    ("val_price", float_),
+    ("price", float_),
+    ("size", float_),
+    ("size_type", int_),
+    ("direction", int_),
+    ("type", int_),
+    ("stop_type", int_),
 ]
 """Fields for `main_info_dt`."""
 
@@ -2932,21 +2933,21 @@ Attributes:
 """
 
 limit_info_fields = [
-    ("signal_idx", np.int_),
-    ("creation_idx", np.int_),
-    ("init_idx", np.int_),
-    ("init_price", np.float_),
-    ("init_size", np.float_),
-    ("init_size_type", np.int_),
-    ("init_direction", np.int_),
-    ("init_stop_type", np.int_),
-    ("delta", np.float_),
-    ("delta_format", np.int_),
+    ("signal_idx", int_),
+    ("creation_idx", int_),
+    ("init_idx", int_),
+    ("init_price", float_),
+    ("init_size", float_),
+    ("init_size_type", int_),
+    ("init_direction", int_),
+    ("init_stop_type", int_),
+    ("delta", float_),
+    ("delta_format", int_),
     ("tif", np.int64),
     ("expiry", np.int64),
-    ("time_delta_format", np.int_),
-    ("reverse", np.float_),
-    ("order_price", np.float_),
+    ("time_delta_format", int_),
+    ("reverse", float_),
+    ("order_price", float_),
 ]
 """Fields for `limit_info_dt`."""
 
@@ -2980,20 +2981,20 @@ Attributes:
 """
 
 sl_info_fields = [
-    ("init_idx", np.int_),
-    ("init_price", np.float_),
-    ("init_position", np.float_),
-    ("stop", np.float_),
-    ("exit_price", np.float_),
-    ("exit_size", np.float_),
-    ("exit_size_type", np.int_),
-    ("exit_type", np.int_),
-    ("order_type", np.int_),
-    ("limit_delta", np.float_),
-    ("delta_format", np.int_),
-    ("ladder", np.int_),
-    ("step", np.int_),
-    ("step_idx", np.int_),
+    ("init_idx", int_),
+    ("init_price", float_),
+    ("init_position", float_),
+    ("stop", float_),
+    ("exit_price", float_),
+    ("exit_size", float_),
+    ("exit_size_type", int_),
+    ("exit_type", int_),
+    ("order_type", int_),
+    ("limit_delta", float_),
+    ("delta_format", int_),
+    ("ladder", int_),
+    ("step", int_),
+    ("step_idx", int_),
 ]
 """Fields for `sl_info_dt`."""
 
@@ -3026,23 +3027,23 @@ Attributes:
 """
 
 tsl_info_fields = [
-    ("init_idx", np.int_),
-    ("init_price", np.float_),
-    ("init_position", np.float_),
-    ("peak_idx", np.int_),
-    ("peak_price", np.float_),
-    ("stop", np.float_),
-    ("th", np.float_),
-    ("exit_price", np.float_),
-    ("exit_size", np.float_),
-    ("exit_size_type", np.int_),
-    ("exit_type", np.int_),
-    ("order_type", np.int_),
-    ("limit_delta", np.float_),
-    ("delta_format", np.int_),
-    ("ladder", np.int_),
-    ("step", np.int_),
-    ("step_idx", np.int_),
+    ("init_idx", int_),
+    ("init_price", float_),
+    ("init_position", float_),
+    ("peak_idx", int_),
+    ("peak_price", float_),
+    ("stop", float_),
+    ("th", float_),
+    ("exit_price", float_),
+    ("exit_size", float_),
+    ("exit_size_type", int_),
+    ("exit_type", int_),
+    ("order_type", int_),
+    ("limit_delta", float_),
+    ("delta_format", int_),
+    ("ladder", int_),
+    ("step", int_),
+    ("step_idx", int_),
 ]
 """Fields for `tsl_info_dt`."""
 
@@ -3078,20 +3079,20 @@ Attributes:
 """
 
 tp_info_fields = [
-    ("init_idx", np.int_),
-    ("init_price", np.float_),
-    ("init_position", np.float_),
-    ("stop", np.float_),
-    ("exit_price", np.float_),
-    ("exit_size", np.float_),
-    ("exit_size_type", np.int_),
-    ("exit_type", np.int_),
-    ("order_type", np.int_),
-    ("limit_delta", np.float_),
-    ("delta_format", np.int_),
-    ("ladder", np.int_),
-    ("step", np.int_),
-    ("step_idx", np.int_),
+    ("init_idx", int_),
+    ("init_price", float_),
+    ("init_position", float_),
+    ("stop", float_),
+    ("exit_price", float_),
+    ("exit_size", float_),
+    ("exit_size_type", int_),
+    ("exit_type", int_),
+    ("order_type", int_),
+    ("limit_delta", float_),
+    ("delta_format", int_),
+    ("ladder", int_),
+    ("step", int_),
+    ("step_idx", int_),
 ]
 """Fields for `tp_info_dt`."""
 
@@ -3124,20 +3125,20 @@ Attributes:
 """
 
 time_info_fields = [
-    ("init_idx", np.int_),
-    ("init_position", np.float_),
+    ("init_idx", int_),
+    ("init_position", float_),
     ("stop", np.int64),
-    ("exit_price", np.float_),
-    ("exit_size", np.float_),
-    ("exit_size_type", np.int_),
-    ("exit_type", np.int_),
-    ("order_type", np.int_),
-    ("limit_delta", np.float_),
-    ("delta_format", np.int_),
-    ("time_delta_format", np.int_),
-    ("ladder", np.int_),
-    ("step", np.int_),
-    ("step_idx", np.int_),
+    ("exit_price", float_),
+    ("exit_size", float_),
+    ("exit_size_type", int_),
+    ("exit_type", int_),
+    ("order_type", int_),
+    ("limit_delta", float_),
+    ("delta_format", int_),
+    ("time_delta_format", int_),
+    ("ladder", int_),
+    ("step", int_),
+    ("step_idx", int_),
 ]
 """Fields for `time_info_dt`."""
 

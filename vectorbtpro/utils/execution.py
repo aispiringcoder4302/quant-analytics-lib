@@ -54,6 +54,7 @@ __all__ = [
     "iterated",
 ]
 
+TaskT = tp.TypeVar("TaskT", bound="Task")
 
 @define
 class Task(DefineMixin):
@@ -68,6 +69,19 @@ class Task(DefineMixin):
     kwargs: tp.Kwargs = define.field(factory=dict)
     """Keyword arguments."""
 
+    @classmethod
+    def from_tuple(cls: tp.Type[TaskT], tuple_: tp.Tuple[tp.Any, ...]) -> TaskT:
+        """Build `Task` instance from a tuple."""
+        if len(tuple_) == 2:
+            if isinstance(tuple_[1], tuple):
+                return cls(tuple_[0], *tuple_[1])
+            if isinstance(tuple_[1], dict):
+                return cls(tuple_[0], **tuple_[1])
+        if len(tuple_) == 3:
+            if isinstance(tuple_[1], tuple) and isinstance(tuple_[2], dict):
+                return cls(tuple_[0], *tuple_[1], **tuple_[2])
+        return cls(*tuple_)
+
     def __init__(self, func: tp.Callable, *args, **kwargs) -> None:
         DefineMixin.__init__(self, func=func, args=args, kwargs=kwargs)
 
@@ -80,6 +94,9 @@ class Task(DefineMixin):
     def execute(self) -> tp.Any:
         """Execute the task."""
         return self.func(*self.args, **self.kwargs)
+
+    def __call__(self) -> tp.Any:
+        return self.execute()
 
 
 class _NoResult(enum.Enum):
@@ -484,7 +501,7 @@ class PathosEngine(ExecutionEngine):
 
             tasks = [(pass_kwargs_as_args, x, {}) for x in tasks]
         else:
-            raise ValueError(f"Invalid option pool_type='{self.pool_type}'")
+            raise ValueError(f"Invalid pool_type: '{self.pool_type}'")
         if size is None and hasattr(tasks, "__len__"):
             size = len(tasks)
         elif keys is not None and hasattr(keys, "__len__"):
@@ -1017,7 +1034,7 @@ class Executor(Configured):
             if engine in globals_dict:
                 engine = globals_dict[engine]
             else:
-                raise ValueError(f"Invalid engine name '{engine}'")
+                raise ValueError(f"Invalid engine name: '{engine}'")
         if isinstance(engine, type) and issubclass(engine, ExecutionEngine):
             if engine_name is None:
                 for k, v in engines_cfg.items():
@@ -1067,7 +1084,7 @@ class Executor(Configured):
                     engine_config["pbar_kwargs"] = pbar_kwargs
             engine = partial(engine, **engine_config)
         if not isinstance(engine, ExecutionEngine) and not callable(engine):
-            raise TypeError(f"Invalid engine {engine}")
+            raise TypeError(f"Invalid engine: {engine}")
         return engine, engine_name
 
     def __init__(
@@ -2394,7 +2411,7 @@ class Executor(Configured):
                     template_context=template_context,
                 )
         else:
-            raise ValueError(f"Invalid option distribute='{self.distribute}'")
+            raise ValueError(f"Invalid distribute: '{self.distribute}'")
 
 
 def execute(

@@ -27,7 +27,7 @@ import itertools
 import re
 import warnings
 from collections import Counter, OrderedDict
-from types import ModuleType
+from types import ModuleType, FunctionType
 
 import numpy as np
 import pandas as pd
@@ -35,6 +35,7 @@ from numba import njit
 from numba.typed import List
 
 from vectorbtpro import _typing as tp
+from vectorbtpro._dtypes import *
 from vectorbtpro.base import indexes, reshaping, combining
 from vectorbtpro.base.indexing import build_param_indexer
 from vectorbtpro.base.merging import row_stack_arrays, column_stack_arrays
@@ -48,14 +49,14 @@ from vectorbtpro.registries.jit_registry import jit_reg
 from vectorbtpro.utils import checks
 from vectorbtpro.utils.array_ import build_nan_mask, squeeze_nan, unsqueeze_nan
 from vectorbtpro.utils.config import merge_dicts, resolve_dict, Config, Configured, HybridConfig
-from vectorbtpro.utils.decorators import classproperty, cacheable_property, class_or_instancemethod
+from vectorbtpro.utils.decorators import class_property, cacheable_property, hybrid_method
 from vectorbtpro.utils.enum_ import map_enum_fields
-from vectorbtpro.utils.eval_ import multiline_eval
+from vectorbtpro.utils.eval_ import evaluate
 from vectorbtpro.utils.execution import Task
 from vectorbtpro.utils.formatting import camel_to_snake_case, prettify
 from vectorbtpro.utils.magic_decorators import attach_binary_magic_methods, attach_unary_magic_methods
 from vectorbtpro.utils.mapping import to_value_mapping, apply_mapping
-from vectorbtpro.utils.module_ import search_package_for_funcs
+from vectorbtpro.utils.module_ import search_package
 from vectorbtpro.utils.params import (
     to_typed_list,
     broadcast_params,
@@ -943,7 +944,7 @@ class IndicatorBase(Analyzable):
                         )
                     return outputs
                 else:
-                    raise ValueError(f"Invalid option return_raw='{return_raw}'")
+                    raise ValueError(f"Invalid return_raw: '{return_raw}'")
 
             # Return cache
             if kwargs.get("return_cache", False):
@@ -1344,13 +1345,16 @@ class IndicatorBase(Analyzable):
 
         input_mapper = getattr(self, "_input_mapper", None)
         if input_mapper is not None:
-            input_mapper = input_mapper[col_idxs]
+            if columns_changed:
+                input_mapper = input_mapper[col_idxs]
         input_list = []
         for input_name in self.input_names:
             new_input = ArrayWrapper.select_from_flex_array(
                 getattr(self, f"_{input_name}"),
                 row_idxs=row_idxs,
+                col_idxs=col_idxs if input_mapper is None else None,
                 rows_changed=rows_changed,
+                columns_changed=columns_changed if input_mapper is None else False,
             )
             input_list.append(new_input)
         in_output_list = []
@@ -1391,47 +1395,42 @@ class IndicatorBase(Analyzable):
             mapper_list=mapper_list,
         )
 
-    @classproperty
+    @class_property
     def short_name(cls_or_self) -> str:
         """Name of the indicator."""
         return cls_or_self._short_name
 
-    @classproperty
+    @class_property
     def input_names(cls_or_self) -> tp.Tuple[str, ...]:
         """Names of the input arrays."""
         return cls_or_self._input_names
 
-    @classproperty
+    @class_property
     def param_names(cls_or_self) -> tp.Tuple[str, ...]:
         """Names of the parameters."""
         return cls_or_self._param_names
 
-    @classproperty
+    @class_property
     def in_output_names(cls_or_self) -> tp.Tuple[str, ...]:
         """Names of the in-place output arrays."""
         return cls_or_self._in_output_names
 
-    @classproperty
+    @class_property
     def output_names(cls_or_self) -> tp.Tuple[str, ...]:
         """Names of the regular output arrays."""
         return cls_or_self._output_names
 
-    @classproperty
+    @class_property
     def lazy_output_names(cls_or_self) -> tp.Tuple[str, ...]:
         """Names of the lazy output arrays."""
         return cls_or_self._lazy_output_names
 
-    @classproperty
+    @class_property
     def output_flags(cls_or_self) -> tp.Kwargs:
         """Dictionary of output flags."""
         return cls_or_self._output_flags
 
-    @property
-    def level_names(self) -> tp.Tuple[str]:
-        """Column level names corresponding to each parameter."""
-        return self._level_names
-
-    @classproperty
+    @class_property
     def param_defaults(cls_or_self) -> tp.Dict[str, tp.Any]:
         """Parameter defaults extracted from the signature of `IndicatorBase.run`."""
         func_kwargs = get_func_kwargs(cls_or_self.run)
@@ -1443,6 +1442,11 @@ class IndicatorBase(Analyzable):
                 else:
                     out[k] = v
         return out
+
+    @property
+    def level_names(self) -> tp.Tuple[str]:
+        """Column level names corresponding to each parameter."""
+        return self._level_names
 
     def unpack(self) -> tp.MaybeTuple[tp.SeriesFrame]:
         """Return outputs, either one output or a tuple if there are multiple."""
@@ -1463,6 +1467,12 @@ class IndicatorBase(Analyzable):
         """Return outputs as a DataFrame."""
         out = self.to_dict(include_all=include_all)
         return pd.concat(list(out.values()), axis=1, keys=pd.Index(list(out.keys()), name="output"))
+
+    def get(self, key: tp.Optional[tp.Hashable] = None) -> tp.Optional[tp.SeriesFrame]:
+        """Get a time series."""
+        if key is None:
+            return self.main_output
+        return getattr(self, key)
 
     def dropna(self: IndicatorBaseT, include_all: bool = True, **kwargs) -> IndicatorBaseT:
         """Drop missing values.
@@ -1550,6 +1560,27 @@ class IndicatorBase(Analyzable):
         ):
             yield k, v
 
+    # ############# Documentation ############# #
+
+    @classmethod
+    def fix_docstrings(cls, __pdoc__: dict) -> None:
+        """Fix docstrings."""
+        if hasattr(cls, "custom_func"):
+            if cls.__name__ + ".custom_func" not in __pdoc__:
+                __pdoc__[cls.__name__ + ".custom_func"] = "Custom function."
+        if hasattr(cls, "apply_func"):
+            if cls.__name__ + ".apply_func" not in __pdoc__:
+                __pdoc__[cls.__name__ + ".apply_func"] = "Apply function."
+        if hasattr(cls, "cache_func"):
+            if cls.__name__ + ".cache_func" not in __pdoc__:
+                __pdoc__[cls.__name__ + ".cache_func"] = "Cache function."
+        if hasattr(cls, "entry_place_func_nb"):
+            if cls.__name__ + ".entry_place_func_nb" not in __pdoc__:
+                __pdoc__[cls.__name__ + ".entry_place_func_nb"] = "Entry placement function."
+        if hasattr(cls, "exit_place_func_nb"):
+            if cls.__name__ + ".exit_place_func_nb" not in __pdoc__:
+                __pdoc__[cls.__name__ + ".exit_place_func_nb"] = "Exit placement function."
+
 
 class IndicatorFactory(Configured):
     _expected_keys: tp.ExpectedKeys = (Configured._expected_keys or set()) | {
@@ -1626,7 +1657,7 @@ class IndicatorFactory(Configured):
                 Following keys are accepted:
 
                 * `dtype`: Data type used to determine which methods to generate around this attribute.
-                    Set to None to disable. Default is `np.float_`. Can be set to instance of
+                    Set to None to disable. Default is `float_`. Can be set to instance of
                     `collections.namedtuple` acting as enumerated type, or any other mapping;
                     It will then create a property with suffix `readable` that contains data in a string format.
                 * `enum_unkval`: Value to be considered as unknown. Applies to enumerated data types only.
@@ -1865,7 +1896,7 @@ class IndicatorFactory(Configured):
 
         for attr_name in all_attr_names:
             _attr_settings = attr_settings.get(attr_name, {})
-            dtype = _attr_settings.get("dtype", np.float_)
+            dtype = _attr_settings.get("dtype", float_)
             enum_unkval = _attr_settings.get("enum_unkval", -1)
 
             if checks.is_mapping_like(dtype):
@@ -2241,8 +2272,8 @@ class IndicatorFactory(Configured):
             ... def custom_func(ts1, ts2, p1, p2, arg1, arg2):
             ...     input_shape = ts1.shape
             ...     n_params = len(p1)
-            ...     out1 = np.empty((input_shape[0], input_shape[1] * n_params), dtype=np.float_)
-            ...     out2 = np.empty((input_shape[0], input_shape[1] * n_params), dtype=np.float_)
+            ...     out1 = np.empty((input_shape[0], input_shape[1] * n_params), dtype=float_)
+            ...     out2 = np.empty((input_shape[0], input_shape[1] * n_params), dtype=float_)
             ...     for k in range(n_params):
             ...         for col in range(input_shape[1]):
             ...             for i in range(input_shape[0]):
@@ -2833,6 +2864,7 @@ Other keyword arguments are passed to `{0}.run`.
             code = compile(func_str, filename, "single")
             exec(code, scope)
             param_select_func_nb = scope["param_select_func_nb"]
+            param_select_func_nb.__doc__ = "Parameter selection function."
             if module_name is not None:
                 param_select_func_nb.__module__ = module_name
             jit_kwargs = merge_dicts(dict(nogil=True), jit_kwargs)
@@ -3173,7 +3205,7 @@ Other keyword arguments are passed to `{0}.run`.
 
     _custom_indicators: tp.ClassVar[Config] = HybridConfig()
 
-    @classproperty
+    @class_property
     def custom_indicators(cls) -> Config:
         """Custom indicators keyed by custom locations."""
         return cls._custom_indicators
@@ -3281,7 +3313,7 @@ Other keyword arguments are passed to `{0}.run`.
                     return None
                 if if_exists.lower() == "override":
                     break
-                raise ValueError(f"Invalid option if_exists='{if_exists}'")
+                raise ValueError(f"Invalid if_exists: '{if_exists}'")
         cls.custom_indicators[location][name] = indicator
 
     @classmethod
@@ -4285,7 +4317,8 @@ Other keyword arguments are passed to `{0}.run`.
         assert_can_import("technical")
         import technical
 
-        funcs = search_package_for_funcs(technical, blacklist=["technical.util"])
+        match_func = lambda k, v: isinstance(v, FunctionType)
+        funcs = search_package(technical, match_func, blacklist=["technical.util"])
         indicators = set()
         for func_name, func in funcs.items():
             try:
@@ -4304,7 +4337,8 @@ Other keyword arguments are passed to `{0}.run`.
         assert_can_import("technical")
         import technical
 
-        funcs = search_package_for_funcs(technical, blacklist=["technical.util"])
+        match_func = lambda k, v: isinstance(v, FunctionType)
+        funcs = search_package(technical, match_func, blacklist=["technical.util"])
         for k, v in funcs.items():
             if func_name.upper() == k.upper():
                 return v
@@ -4773,7 +4807,7 @@ Other keyword arguments are passed to `{0}.run`.
 
     # ############# Expressions ############# #
 
-    @class_or_instancemethod
+    @hybrid_method
     def from_expr(
         cls_or_self,
         expr: str,
@@ -4821,7 +4855,7 @@ Other keyword arguments are passed to `{0}.run`.
 
                 Defaults to False.
 
-                Otherwise, uses `vectorbtpro.utils.eval_.multiline_eval`.
+                Otherwise, uses `vectorbtpro.utils.eval_.evaluate`.
 
                 !!! hint
                     By default, operates on NumPy objects using NumExpr.
@@ -5321,7 +5355,7 @@ Other keyword arguments are passed to `{0}.run`.
             # Evaluate the expression using resolved variables as a context
             if use_pd_eval:
                 return pd.eval(expr, local_dict=context, **resolve_dict(pd_eval_kwargs))
-            return multiline_eval(expr, context=context)
+            return evaluate(expr, context=context)
 
         return factory.with_apply_func(apply_func, pass_packed=True, pass_wrapper=True, **kwargs)
 

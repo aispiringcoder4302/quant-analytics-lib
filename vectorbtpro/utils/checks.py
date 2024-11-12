@@ -5,9 +5,10 @@
 import datetime
 import traceback
 import warnings
-from collections.abc import Hashable, Mapping
+from collections.abc import Collection, Iterable, Sequence, Hashable, Mapping
 from inspect import signature, getmro
 from keyword import iskeyword
+from types import FunctionType, BuiltinFunctionType, MethodType
 
 import attr
 import numba
@@ -39,6 +40,48 @@ class Comparable:
 # ############# Checks ############# #
 
 
+def is_classic_func(arg: tp.Any) -> bool:
+    """Check whether the argument is a classic function."""
+    return isinstance(arg, FunctionType)
+
+
+def is_builtin_func(arg: tp.Any) -> bool:
+    """Check whether the argument is a built-in function."""
+    return isinstance(arg, BuiltinFunctionType)
+
+
+def is_method(arg: tp.Any) -> bool:
+    """Check whether the argument is a method."""
+    return isinstance(arg, MethodType)
+
+
+def is_numba_enabled() -> bool:
+    """Check whether Numba is enabled globally."""
+    return numba.config.DISABLE_JIT != 1
+
+
+def is_numba_func(arg: tp.Any) -> bool:
+    """Check whether the argument is a Numba-compiled function."""
+    from vectorbtpro._settings import settings
+
+    numba_cfg = settings["numba"]
+
+    if not numba_cfg["check_func_type"]:
+        return True
+    if not is_numba_enabled():
+        if numba_cfg["check_func_suffix"]:
+            if hasattr(arg, "__name__") and arg.__name__.endswith("_nb"):
+                return True
+            return False
+        return False
+    return isinstance(arg, CPUDispatcher)
+
+
+def is_function(arg: tp.Any) -> bool:
+    """Check whether the argument is a lamdba, (built-in or Numba) function, or method."""
+    return is_classic_func(arg) or is_builtin_func(arg) or is_method(arg) or is_numba_func(arg)
+
+
 def is_bool(arg: tp.Any) -> bool:
     """Check whether the argument is a bool."""
     return isinstance(arg, (bool, np.bool_))
@@ -46,7 +89,7 @@ def is_bool(arg: tp.Any) -> bool:
 
 def is_int(arg: tp.Any) -> bool:
     """Check whether the argument is an integer (and not a timedelta, for example)."""
-    return isinstance(arg, (int, np.integer)) and not isinstance(arg, np.timedelta64)
+    return isinstance(arg, (int, np.integer)) and not isinstance(arg, np.timedelta64) and not is_bool(arg)
 
 
 def is_float(arg: tp.Any) -> bool:
@@ -153,25 +196,28 @@ def _to_any_array(arg: tp.ArrayLike) -> tp.AnyArray:
     return np.asarray(arg)
 
 
-def is_sequence(arg: tp.Any) -> bool:
-    """Check whether the argument is a sequence."""
+def is_collection(arg: tp.Any) -> bool:
+    """Check whether the argument is a collection."""
+    if isinstance(arg, Collection):
+        return True
     try:
         len(arg)
-        arg[0:0]
         return True
-    except (TypeError, KeyError):
+    except TypeError:
         return False
 
 
-def is_complex_sequence(arg: tp.Any) -> bool:
-    """Check whether the argument is a sequence but not a string or bytes object."""
+def is_complex_collection(arg: tp.Any) -> bool:
+    """Check whether the argument is a collection but not a string or bytes object."""
     if isinstance(arg, (str, bytes, bytearray)):
         return False
-    return is_sequence(arg)
+    return is_collection(arg)
 
 
 def is_iterable(arg: tp.Any) -> bool:
     """Check whether the argument is iterable."""
+    if isinstance(arg, Iterable):
+        return True
     try:
         _ = iter(arg)
         return True
@@ -186,26 +232,23 @@ def is_complex_iterable(arg: tp.Any) -> bool:
     return is_iterable(arg)
 
 
-def is_numba_enabled() -> bool:
-    """Check whether Numba is enabled globally."""
-    return numba.config.DISABLE_JIT != 1
-
-
-def is_numba_func(arg: tp.Any) -> bool:
-    """Check whether the argument is a Numba-compiled function."""
-    from vectorbtpro._settings import settings
-
-    numba_cfg = settings["numba"]
-
-    if not numba_cfg["check_func_type"]:
+def is_sequence(arg: tp.Any) -> bool:
+    """Check whether the argument is a sequence."""
+    if isinstance(arg, Sequence):
         return True
-    if not is_numba_enabled():
-        if numba_cfg["check_func_suffix"]:
-            if arg.__name__.endswith("_nb"):
-                return True
-            return False
+    try:
+        len(arg)
+        arg[0:0]
+        return True
+    except (TypeError, IndexError, KeyError):
         return False
-    return isinstance(arg, CPUDispatcher)
+
+
+def is_complex_sequence(arg: tp.Any) -> bool:
+    """Check whether the argument is a sequence but not a string or bytes object."""
+    if isinstance(arg, (str, bytes, bytearray)):
+        return False
+    return is_sequence(arg)
 
 
 def is_hashable(arg: tp.Any) -> bool:
@@ -434,14 +477,16 @@ def is_subclass_of(arg: tp.Any, types: tp.TypeLike) -> bool:
     """Check whether the argument is a subclass of `types`.
 
     `types` can be one or multiple types, strings, or patterns of type `vectorbtpro.utils.parsing.Regex`."""
-    from vectorbtpro.utils.parsing import Regex
-
-    if isinstance(types, type):
+    try:
         return issubclass(arg, types)
+    except TypeError:
+        pass
     if isinstance(types, str):
         for base_t in getmro(arg):
             if str(base_t) == types or base_t.__name__ == types:
                 return True
+    from vectorbtpro.utils.parsing import Regex
+
     if isinstance(types, Regex):
         for base_t in getmro(arg):
             if types.matches(str(base_t)) or types.matches(base_t.__name__):
@@ -475,26 +520,27 @@ def is_valid_variable_name(arg: str) -> bool:
     return arg.isidentifier() and not iskeyword(arg)
 
 
-def is_notebook() -> bool:
-    """Check whether the code runs in a notebook.
-
-    Credit: https://stackoverflow.com/a/39662359"""
+def in_notebook() -> bool:
+    """Check whether the code runs in a notebook."""
     try:
-        shell = get_ipython().__class__.__name__
-        if shell == "ZMQInteractiveShell":
-            return True
-        elif shell == "TerminalInteractiveShell":
+        from IPython import get_ipython
+
+        if get_ipython() is None:
             return False
-        else:
+        if "IPKernelApp" not in get_ipython().config:
             return False
-    except NameError:
+    except ImportError:
         return False
+    except AttributeError:
+        return False
+    return True
 
 
 # ############# Asserts ############# #
 
 
 def safe_assert(arg: bool, msg: tp.Optional[str] = None) -> None:
+    """Assert a condition in a safe way."""
     if not arg:
         raise AssertionError(msg)
 

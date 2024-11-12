@@ -6,6 +6,7 @@ import numpy as np
 from numba import prange
 
 from vectorbtpro import _typing as tp
+from vectorbtpro._dtypes import *
 from vectorbtpro.base import chunking as base_ch
 from vectorbtpro.base.flex_indexing import flex_select_1d_pc_nb, flex_select_nb
 from vectorbtpro.base.reshaping import to_1d_array_nb
@@ -60,7 +61,7 @@ def get_ranges_nb(arr: tp.Array2d, gap_value: tp.Scalar) -> tp.RecordArray:
         ```
     """
     new_records = np.empty(arr.shape, dtype=range_dt)
-    counts = np.full(arr.shape[1], 0, dtype=np.int_)
+    counts = np.full(arr.shape[1], 0, dtype=int_)
 
     for col in prange(arr.shape[1]):
         range_started = False
@@ -214,7 +215,7 @@ def range_duration_nb(
     freq: int = 1,
 ) -> tp.Array1d:
     """Get duration of each range record."""
-    out = np.empty(start_idx_arr.shape[0], dtype=np.int_)
+    out = np.empty(start_idx_arr.shape[0], dtype=int_)
     for r in prange(start_idx_arr.shape[0]):
         if status_arr[r] == RangeStatus.Open:
             out[r] = end_idx_arr[r] - start_idx_arr[r] + freq
@@ -254,7 +255,7 @@ def range_coverage_nb(
     """
     col_idxs, col_lens = col_map
     col_start_idxs = np.cumsum(col_lens) - col_lens
-    out = np.full(col_lens.shape[0], np.nan, dtype=np.float_)
+    out = np.full(col_lens.shape[0], np.nan, dtype=float_)
 
     for col in prange(col_lens.shape[0]):
         col_len = col_lens[col]
@@ -262,7 +263,7 @@ def range_coverage_nb(
             continue
         col_start_idx = col_start_idxs[col]
         ridxs = col_idxs[col_start_idx : col_start_idx + col_len]
-        temp = np.full(index_lens[col], 0, dtype=np.int_)
+        temp = np.full(index_lens[col], 0, dtype=int_)
         for r in ridxs:
             if status_arr[r] == RangeStatus.Open:
                 temp[start_idx_arr[r] : end_idx_arr[r] + 1] += 1
@@ -354,7 +355,7 @@ def map_ranges_to_projections_nb(
     2. Two-dimensional array where rows are projections"""
     start_value_ = to_1d_array_nb(np.asarray(start_value))
 
-    index_ranges_temp = np.empty((start_idx_arr.shape[0], 2), dtype=np.int_)
+    index_ranges_temp = np.empty((start_idx_arr.shape[0], 2), dtype=int_)
 
     max_duration = 0
     for r in range(start_idx_arr.shape[0]):
@@ -407,8 +408,8 @@ def map_ranges_to_projections_nb(
         index_ranges_temp[r, 0] = r_start_idx
         index_ranges_temp[r, 1] = r_end_idx
 
-    ridx_out = np.empty((start_idx_arr.shape[0],), dtype=np.int_)
-    proj_out = np.empty((start_idx_arr.shape[0], max_duration), dtype=np.float_)
+    ridx_out = np.empty((start_idx_arr.shape[0],), dtype=int_)
+    proj_out = np.empty((start_idx_arr.shape[0], max_duration), dtype=float_)
 
     k = 0
     for r in range(start_idx_arr.shape[0]):
@@ -707,7 +708,7 @@ def find_pattern_nb(
         records_out = np.empty((arr.shape[0], arr.shape[1]), dtype=pattern_range_dt)
     else:
         records_out = np.empty((max_records, arr.shape[1]), dtype=pattern_range_dt)
-    record_counts = np.full(arr.shape[1], 0, dtype=np.int_)
+    record_counts = np.full(arr.shape[1], 0, dtype=int_)
     for col in prange(arr.shape[1]):
         records = find_pattern_1d_nb(
             arr[:, col],
@@ -749,7 +750,7 @@ def find_pattern_nb(
 @register_jitted(cache=True)
 def drawdown_1d_nb(arr: tp.Array1d) -> tp.Array1d:
     """Compute drawdown."""
-    out = np.empty_like(arr, dtype=np.float_)
+    out = np.empty_like(arr, dtype=float_)
     max_val = np.nan
     for i in range(arr.shape[0]):
         if np.isnan(max_val) or arr[i] > max_val:
@@ -769,7 +770,7 @@ def drawdown_1d_nb(arr: tp.Array1d) -> tp.Array1d:
 @register_jitted(cache=True, tags={"can_parallel"})
 def drawdown_nb(arr: tp.Array2d) -> tp.Array2d:
     """2-dim version of `drawdown_1d_nb`."""
-    out = np.empty_like(arr, dtype=np.float_)
+    out = np.empty_like(arr, dtype=float_)
     for col in prange(arr.shape[1]):
         out[:, col] = drawdown_1d_nb(arr[:, col])
     return out
@@ -854,7 +855,7 @@ def get_drawdowns_nb(
         ```
     """
     new_records = np.empty(close.shape, dtype=drawdown_dt)
-    counts = np.full(close.shape[1], 0, dtype=np.int_)
+    counts = np.full(close.shape[1], 0, dtype=int_)
 
     sim_start_, sim_end_ = prepare_sim_range_nb(
         sim_shape=close.shape,
@@ -989,7 +990,7 @@ def get_drawdowns_nb(
 @register_jitted(cache=True, tags={"can_parallel"})
 def dd_drawdown_nb(start_val_arr: tp.Array1d, valley_val_arr: tp.Array1d) -> tp.Array1d:
     """Compute the drawdown of each drawdown record."""
-    out = np.empty(valley_val_arr.shape[0], dtype=np.float_)
+    out = np.empty(valley_val_arr.shape[0], dtype=float_)
     for r in prange(valley_val_arr.shape[0]):
         if start_val_arr[r] == 0:
             out[r] = np.nan
@@ -1006,7 +1007,7 @@ def dd_drawdown_nb(start_val_arr: tp.Array1d, valley_val_arr: tp.Array1d) -> tp.
 @register_jitted(cache=True, tags={"can_parallel"})
 def dd_decline_duration_nb(start_idx_arr: tp.Array1d, valley_idx_arr: tp.Array1d) -> tp.Array1d:
     """Compute the duration of the peak-to-valley phase of each drawdown record."""
-    out = np.empty(valley_idx_arr.shape[0], dtype=np.float_)
+    out = np.empty(valley_idx_arr.shape[0], dtype=float_)
     for r in prange(valley_idx_arr.shape[0]):
         out[r] = valley_idx_arr[r] - start_idx_arr[r]
     return out
@@ -1020,7 +1021,7 @@ def dd_decline_duration_nb(start_idx_arr: tp.Array1d, valley_idx_arr: tp.Array1d
 @register_jitted(cache=True, tags={"can_parallel"})
 def dd_recovery_duration_nb(valley_idx_arr: tp.Array1d, end_idx_arr: tp.Array1d) -> tp.Array1d:
     """Compute the duration of the valley-to-recovery phase of each drawdown record."""
-    out = np.empty(end_idx_arr.shape[0], dtype=np.float_)
+    out = np.empty(end_idx_arr.shape[0], dtype=float_)
     for r in prange(end_idx_arr.shape[0]):
         out[r] = end_idx_arr[r] - valley_idx_arr[r]
     return out
@@ -1042,7 +1043,7 @@ def dd_recovery_duration_ratio_nb(
     end_idx_arr: tp.Array1d,
 ) -> tp.Array1d:
     """Compute the ratio of the recovery duration to the decline duration of each drawdown record."""
-    out = np.empty(start_idx_arr.shape[0], dtype=np.float_)
+    out = np.empty(start_idx_arr.shape[0], dtype=float_)
     for r in prange(start_idx_arr.shape[0]):
         if valley_idx_arr[r] - start_idx_arr[r] == 0:
             out[r] = np.nan
@@ -1059,7 +1060,7 @@ def dd_recovery_duration_ratio_nb(
 @register_jitted(cache=True, tags={"can_parallel"})
 def dd_recovery_return_nb(valley_val_arr: tp.Array1d, end_val_arr: tp.Array1d) -> tp.Array1d:
     """Compute the recovery return of each drawdown record."""
-    out = np.empty(end_val_arr.shape[0], dtype=np.float_)
+    out = np.empty(end_val_arr.shape[0], dtype=float_)
     for r in prange(end_val_arr.shape[0]):
         if valley_val_arr[r] == 0:
             out[r] = np.nan
@@ -1071,7 +1072,7 @@ def dd_recovery_return_nb(valley_val_arr: tp.Array1d, end_val_arr: tp.Array1d) -
 @register_jitted(cache=True)
 def bar_price_nb(records: tp.RecordArray, price: tp.Optional[tp.FlexArray2d]) -> tp.Array1d:
     """Return the bar price."""
-    out = np.empty(len(records), dtype=np.float_)
+    out = np.empty(len(records), dtype=float_)
     for i in range(len(records)):
         record = records[i]
         if price is not None:

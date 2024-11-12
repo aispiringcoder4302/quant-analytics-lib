@@ -4,6 +4,7 @@
 
 from numba import prange
 
+from vectorbtpro._dtypes import *
 from vectorbtpro.base import chunking as base_ch
 from vectorbtpro.base.reshaping import to_1d_array_nb, to_2d_array_nb
 from vectorbtpro.generic.enums import BarZone
@@ -243,7 +244,6 @@ def signal_to_size_nb(
     accumulate: int,
 ) -> tp.Tuple[float, int, int]:
     """Translate direction-aware signals into size, size type, and direction."""
-
     if (
         accumulate != AccumulationMode.Disabled
         and accumulate != AccumulationMode.Both
@@ -540,8 +540,8 @@ def from_basic_signals_nb(
         max_order_records=max_order_records,
         max_log_records=max_log_records,
     )
-    order_counts = np.full(target_shape[1], 0, dtype=np.int_)
-    log_counts = np.full(target_shape[1], 0, dtype=np.int_)
+    order_counts = np.full(target_shape[1], 0, dtype=int_)
+    log_counts = np.full(target_shape[1], 0, dtype=int_)
     last_cash = prepare_last_cash_nb(
         target_shape=target_shape,
         group_lens=group_lens,
@@ -562,43 +562,43 @@ def from_basic_signals_nb(
     )
     last_cash_deposits = np.full_like(last_cash, 0.0)
     last_val_price = np.full_like(last_position, np.nan)
-    last_debt = np.full(target_shape[1], 0.0, dtype=np.float_)
-    last_locked_cash = np.full(target_shape[1], 0.0, dtype=np.float_)
+    last_debt = np.full(target_shape[1], 0.0, dtype=float_)
+    last_locked_cash = np.full(target_shape[1], 0.0, dtype=float_)
     last_free_cash = last_cash.copy()
     prev_close_value = last_value.copy()
     last_return = np.full_like(last_cash, np.nan)
     track_cash_deposits = (cash_deposits_.size == 1 and cash_deposits_[0, 0] != 0) or cash_deposits_.size > 1
     if track_cash_deposits:
-        cash_deposits_out = np.full((target_shape[0], len(group_lens)), 0.0, dtype=np.float_)
+        cash_deposits_out = np.full((target_shape[0], len(group_lens)), 0.0, dtype=float_)
     else:
-        cash_deposits_out = np.full((1, 1), 0.0, dtype=np.float_)
+        cash_deposits_out = np.full((1, 1), 0.0, dtype=float_)
     track_cash_earnings = (cash_earnings_.size == 1 and cash_earnings_[0, 0] != 0) or cash_earnings_.size > 1
     track_cash_dividends = (cash_dividends_.size == 1 and cash_dividends_[0, 0] != 0) or cash_dividends_.size > 1
     track_cash_earnings = track_cash_earnings or track_cash_dividends
     if track_cash_earnings:
-        cash_earnings_out = np.full(target_shape, 0.0, dtype=np.float_)
+        cash_earnings_out = np.full(target_shape, 0.0, dtype=float_)
     else:
-        cash_earnings_out = np.full((1, 1), 0.0, dtype=np.float_)
+        cash_earnings_out = np.full((1, 1), 0.0, dtype=float_)
     if save_state:
-        cash = np.full((target_shape[0], len(group_lens)), np.nan, dtype=np.float_)
-        position = np.full(target_shape, np.nan, dtype=np.float_)
-        debt = np.full(target_shape, np.nan, dtype=np.float_)
-        locked_cash = np.full(target_shape, np.nan, dtype=np.float_)
-        free_cash = np.full((target_shape[0], len(group_lens)), np.nan, dtype=np.float_)
+        cash = np.full((target_shape[0], len(group_lens)), np.nan, dtype=float_)
+        position = np.full(target_shape, np.nan, dtype=float_)
+        debt = np.full(target_shape, np.nan, dtype=float_)
+        locked_cash = np.full(target_shape, np.nan, dtype=float_)
+        free_cash = np.full((target_shape[0], len(group_lens)), np.nan, dtype=float_)
     else:
-        cash = np.full((0, 0), np.nan, dtype=np.float_)
-        position = np.full((0, 0), np.nan, dtype=np.float_)
-        debt = np.full((0, 0), np.nan, dtype=np.float_)
-        locked_cash = np.full((0, 0), np.nan, dtype=np.float_)
-        free_cash = np.full((0, 0), np.nan, dtype=np.float_)
+        cash = np.full((0, 0), np.nan, dtype=float_)
+        position = np.full((0, 0), np.nan, dtype=float_)
+        debt = np.full((0, 0), np.nan, dtype=float_)
+        locked_cash = np.full((0, 0), np.nan, dtype=float_)
+        free_cash = np.full((0, 0), np.nan, dtype=float_)
     if save_value:
-        value = np.full((target_shape[0], len(group_lens)), np.nan, dtype=np.float_)
+        value = np.full((target_shape[0], len(group_lens)), np.nan, dtype=float_)
     else:
-        value = np.full((0, 0), np.nan, dtype=np.float_)
+        value = np.full((0, 0), np.nan, dtype=float_)
     if save_returns:
-        returns = np.full((target_shape[0], len(group_lens)), np.nan, dtype=np.float_)
+        returns = np.full((target_shape[0], len(group_lens)), np.nan, dtype=float_)
     else:
-        returns = np.full((0, 0), np.nan, dtype=np.float_)
+        returns = np.full((0, 0), np.nan, dtype=float_)
     in_outputs = FSInOutputs(
         cash=cash,
         position=position,
@@ -609,11 +609,11 @@ def from_basic_signals_nb(
         returns=returns,
     )
 
-    last_signal = np.empty(target_shape[1], dtype=np.int_)
+    last_signal = np.empty(target_shape[1], dtype=int_)
     main_info = np.empty(target_shape[1], dtype=main_info_dt)
 
-    temp_call_seq = np.empty(target_shape[1], dtype=np.int_)
-    temp_sort_by = np.empty(target_shape[1], dtype=np.float_)
+    temp_call_seq = np.empty(target_shape[1], dtype=int_)
+    temp_sort_by = np.empty(target_shape[1], dtype=float_)
 
     group_end_idxs = np.cumsum(group_lens)
     group_start_idxs = group_end_idxs - group_lens
@@ -1339,8 +1339,8 @@ def from_signals_nb(
         max_order_records=max_order_records,
         max_log_records=max_log_records,
     )
-    order_counts = np.full(target_shape[1], 0, dtype=np.int_)
-    log_counts = np.full(target_shape[1], 0, dtype=np.int_)
+    order_counts = np.full(target_shape[1], 0, dtype=int_)
+    log_counts = np.full(target_shape[1], 0, dtype=int_)
     last_cash = prepare_last_cash_nb(
         target_shape=target_shape,
         group_lens=group_lens,
@@ -1361,43 +1361,43 @@ def from_signals_nb(
     )
     last_cash_deposits = np.full_like(last_cash, 0.0)
     last_val_price = np.full_like(last_position, np.nan)
-    last_debt = np.full(target_shape[1], 0.0, dtype=np.float_)
-    last_locked_cash = np.full(target_shape[1], 0.0, dtype=np.float_)
+    last_debt = np.full(target_shape[1], 0.0, dtype=float_)
+    last_locked_cash = np.full(target_shape[1], 0.0, dtype=float_)
     last_free_cash = last_cash.copy()
     prev_close_value = last_value.copy()
     last_return = np.full_like(last_cash, np.nan)
     track_cash_deposits = (cash_deposits_.size == 1 and cash_deposits_[0, 0] != 0) or cash_deposits_.size > 1
     if track_cash_deposits:
-        cash_deposits_out = np.full((target_shape[0], len(group_lens)), 0.0, dtype=np.float_)
+        cash_deposits_out = np.full((target_shape[0], len(group_lens)), 0.0, dtype=float_)
     else:
-        cash_deposits_out = np.full((1, 1), 0.0, dtype=np.float_)
+        cash_deposits_out = np.full((1, 1), 0.0, dtype=float_)
     track_cash_earnings = (cash_earnings_.size == 1 and cash_earnings_[0, 0] != 0) or cash_earnings_.size > 1
     track_cash_dividends = (cash_dividends_.size == 1 and cash_dividends_[0, 0] != 0) or cash_dividends_.size > 1
     track_cash_earnings = track_cash_earnings or track_cash_dividends
     if track_cash_earnings:
-        cash_earnings_out = np.full(target_shape, 0.0, dtype=np.float_)
+        cash_earnings_out = np.full(target_shape, 0.0, dtype=float_)
     else:
-        cash_earnings_out = np.full((1, 1), 0.0, dtype=np.float_)
+        cash_earnings_out = np.full((1, 1), 0.0, dtype=float_)
     if save_state:
-        cash = np.full((target_shape[0], len(group_lens)), np.nan, dtype=np.float_)
-        position = np.full(target_shape, np.nan, dtype=np.float_)
-        debt = np.full(target_shape, np.nan, dtype=np.float_)
-        locked_cash = np.full(target_shape, np.nan, dtype=np.float_)
-        free_cash = np.full((target_shape[0], len(group_lens)), np.nan, dtype=np.float_)
+        cash = np.full((target_shape[0], len(group_lens)), np.nan, dtype=float_)
+        position = np.full(target_shape, np.nan, dtype=float_)
+        debt = np.full(target_shape, np.nan, dtype=float_)
+        locked_cash = np.full(target_shape, np.nan, dtype=float_)
+        free_cash = np.full((target_shape[0], len(group_lens)), np.nan, dtype=float_)
     else:
-        cash = np.full((0, 0), np.nan, dtype=np.float_)
-        position = np.full((0, 0), np.nan, dtype=np.float_)
-        debt = np.full((0, 0), np.nan, dtype=np.float_)
-        locked_cash = np.full((0, 0), np.nan, dtype=np.float_)
-        free_cash = np.full((0, 0), np.nan, dtype=np.float_)
+        cash = np.full((0, 0), np.nan, dtype=float_)
+        position = np.full((0, 0), np.nan, dtype=float_)
+        debt = np.full((0, 0), np.nan, dtype=float_)
+        locked_cash = np.full((0, 0), np.nan, dtype=float_)
+        free_cash = np.full((0, 0), np.nan, dtype=float_)
     if save_value:
-        value = np.full((target_shape[0], len(group_lens)), np.nan, dtype=np.float_)
+        value = np.full((target_shape[0], len(group_lens)), np.nan, dtype=float_)
     else:
-        value = np.full((0, 0), np.nan, dtype=np.float_)
+        value = np.full((0, 0), np.nan, dtype=float_)
     if save_returns:
-        returns = np.full((target_shape[0], len(group_lens)), np.nan, dtype=np.float_)
+        returns = np.full((target_shape[0], len(group_lens)), np.nan, dtype=float_)
     else:
-        returns = np.full((0, 0), np.nan, dtype=np.float_)
+        returns = np.full((0, 0), np.nan, dtype=float_)
     in_outputs = FSInOutputs(
         cash=cash,
         position=position,
@@ -1515,11 +1515,11 @@ def from_signals_nb(
         last_td_info = np.empty(0, dtype=time_info_dt)
         last_dt_info = np.empty(0, dtype=time_info_dt)
 
-    last_signal = np.empty(target_shape[1], dtype=np.int_)
+    last_signal = np.empty(target_shape[1], dtype=int_)
     main_info = np.empty(target_shape[1], dtype=main_info_dt)
 
-    temp_call_seq = np.empty(target_shape[1], dtype=np.int_)
-    temp_sort_by = np.empty(target_shape[1], dtype=np.float_)
+    temp_call_seq = np.empty(target_shape[1], dtype=int_)
+    temp_sort_by = np.empty(target_shape[1], dtype=float_)
 
     group_end_idxs = np.cumsum(group_lens)
     group_start_idxs = group_end_idxs - group_lens
@@ -3467,7 +3467,7 @@ def init_FSInOutputs_nb(
 
 @register_jitted
 def no_signal_func_nb(c: SignalContext, *args) -> tp.Tuple[bool, bool, bool, bool]:
-    """Placeholder signal function that returns no signal."""
+    """Placeholder `signal_func_nb` that returns no signal."""
     return False, False, False, False
 
 
@@ -3796,8 +3796,8 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
         max_order_records=max_order_records,
         max_log_records=max_log_records,
     )
-    order_counts = np.full(target_shape[1], 0, dtype=np.int_)
-    log_counts = np.full(target_shape[1], 0, dtype=np.int_)
+    order_counts = np.full(target_shape[1], 0, dtype=int_)
+    log_counts = np.full(target_shape[1], 0, dtype=int_)
     last_cash = prepare_last_cash_nb(
         target_shape=target_shape,
         group_lens=group_lens,
@@ -3824,23 +3824,23 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
     )
     last_cash_deposits = np.full_like(last_cash, 0.0)
     last_val_price = np.full_like(last_position, np.nan)
-    last_debt = np.full(target_shape[1], 0.0, dtype=np.float_)
-    last_locked_cash = np.full(target_shape[1], 0.0, dtype=np.float_)
+    last_debt = np.full(target_shape[1], 0.0, dtype=float_)
+    last_locked_cash = np.full(target_shape[1], 0.0, dtype=float_)
     last_free_cash = last_cash.copy()
     prev_close_value = last_value.copy()
     last_return = np.full_like(last_cash, np.nan)
     track_cash_deposits = (cash_deposits_.size == 1 and cash_deposits_[0, 0] != 0) or cash_deposits_.size > 1
     if track_cash_deposits:
-        cash_deposits_out = np.full((target_shape[0], len(group_lens)), 0.0, dtype=np.float_)
+        cash_deposits_out = np.full((target_shape[0], len(group_lens)), 0.0, dtype=float_)
     else:
-        cash_deposits_out = np.full((1, 1), 0.0, dtype=np.float_)
+        cash_deposits_out = np.full((1, 1), 0.0, dtype=float_)
     track_cash_earnings = (cash_earnings_.size == 1 and cash_earnings_[0, 0] != 0) or cash_earnings_.size > 1
     track_cash_dividends = (cash_dividends_.size == 1 and cash_dividends_[0, 0] != 0) or cash_dividends_.size > 1
     track_cash_earnings = track_cash_earnings or track_cash_dividends
     if track_cash_earnings:
-        cash_earnings_out = np.full(target_shape, 0.0, dtype=np.float_)
+        cash_earnings_out = np.full(target_shape, 0.0, dtype=float_)
     else:
-        cash_earnings_out = np.full((1, 1), 0.0, dtype=np.float_)
+        cash_earnings_out = np.full((1, 1), 0.0, dtype=float_)
 
     last_limit_info = np.empty(target_shape[1], dtype=limit_info_dt)
     last_limit_info["signal_idx"][:] = -1
@@ -3949,11 +3949,11 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
         last_td_info = np.empty(0, dtype=time_info_dt)
         last_dt_info = np.empty(0, dtype=time_info_dt)
 
-    last_signal = np.empty(target_shape[1], dtype=np.int_)
+    last_signal = np.empty(target_shape[1], dtype=int_)
     main_info = np.empty(target_shape[1], dtype=main_info_dt)
 
-    temp_call_seq = np.empty(target_shape[1], dtype=np.int_)
-    temp_sort_by = np.empty(target_shape[1], dtype=np.float_)
+    temp_call_seq = np.empty(target_shape[1], dtype=int_)
+    temp_sort_by = np.empty(target_shape[1], dtype=float_)
 
     group_end_idxs = np.cumsum(group_lens)
     group_start_idxs = group_end_idxs - group_lens
@@ -6157,7 +6157,7 @@ AdjustFuncT = tp.Callable[[SignalContext, tp.VarArg()], None]
 
 @register_jitted
 def no_adjust_func_nb(c: SignalContext, *args) -> None:
-    """Placeholder adjustment function."""
+    """Placeholder `adjust_func_nb` that does nothing."""
     return None
 
 
@@ -6187,7 +6187,7 @@ def holding_enex_signal_func_nb(  # % line.replace("holding_enex_signal_func_nb"
     adjust_func_nb: AdjustFuncT = no_adjust_func_nb,  # % None
     adjust_args: tp.Args = (),
 ) -> tp.Tuple[bool, bool, bool, bool]:
-    """Resolve direction-aware signals for holding."""
+    """`signal_func_nb` that returns direction-aware signals from holding."""
     adjust_func_nb(c, *adjust_args)
 
     if c.last_position[c.col] == 0:
@@ -6217,7 +6217,7 @@ def dir_signal_func_nb(  # % line.replace("dir_signal_func_nb", "signal_func_nb"
     adjust_func_nb: AdjustFuncT = no_adjust_func_nb,  # % None
     adjust_args: tp.Args = (),
 ) -> tp.Tuple[bool, bool, bool, bool]:
-    """Resolve direction-aware signals out of entries, exits, and direction.
+    """`signal_func_nb` that converts entries, exits, and direction into direction-aware signals.
 
     The direction of each pair of signals is taken from `direction` argument:
 
@@ -6261,7 +6261,7 @@ def ls_signal_func_nb(  # % line.replace("ls_signal_func_nb", "signal_func_nb")
     adjust_func_nb: AdjustFuncT = no_adjust_func_nb,  # % None
     adjust_args: tp.Args = (),
 ) -> tp.Tuple[bool, bool, bool, bool]:
-    """Get an element of direction-aware signals.
+    """`signal_func_nb` that gets an element of direction-aware signals.
 
     The direction is already built into the arrays. Best to use when the direction changes frequently
     (for example, if you have one indicator providing long signals and one providing short signals).
@@ -6300,7 +6300,7 @@ def order_signal_func_nb(  # % line.replace("order_signal_func_nb", "signal_func
     adjust_func_nb: AdjustFuncT = no_adjust_func_nb,  # % None
     adjust_args: tp.Args = (),
 ) -> tp.Tuple[bool, bool, bool, bool]:
-    """Resolve direction-aware signals out of orders.
+    """`signal_func_nb` that converts orders into direction-aware signals.
 
     You must ensure that `size`, `size_type`, `min_size`, and `max_size` are writeable non-flexible arrays
     and accumulation is enabled."""
@@ -6392,6 +6392,7 @@ def save_post_segment_func_nb(  # % line.replace("save_post_segment_func_nb", "p
     save_value: bool = True,
     save_returns: bool = True,
 ) -> None:
+    """`post_segment_func_nb` that saves state, value, and returns."""
     if save_state:
         for col in range(c.from_col, c.to_col):
             c.in_outputs.position[c.i, col] = c.last_position[col]

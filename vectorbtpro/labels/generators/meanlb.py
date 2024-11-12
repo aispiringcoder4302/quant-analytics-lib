@@ -9,6 +9,8 @@ __all__ = [
     "MEANLB",
 ]
 
+__pdoc__ = {}
+
 MEANLB = IndicatorFactory(
     class_name="MEANLB",
     module_name=__name__,
@@ -54,3 +56,4 @@ class _MEANLB(MEANLB):
 
 setattr(MEANLB, "__doc__", _MEANLB.__doc__)
 setattr(MEANLB, "plot", _MEANLB.plot)
+MEANLB.fix_docstrings(__pdoc__)

@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 
 from vectorbtpro import _typing as tp
+from vectorbtpro._dtypes import *
 from vectorbtpro.indicators.configs import flex_elem_param_config
 from vectorbtpro.signals.enums import StopType
 from vectorbtpro.signals.factory import SignalFactory
@@ -15,6 +16,8 @@ from vectorbtpro.utils.config import ReadonlyConfig, merge_dicts
 __all__ = [
     "OHLCSTX",
 ]
+
+__pdoc__ = {}
 
 ohlcstx_config = ReadonlyConfig(
     dict(
@@ -42,8 +45,8 @@ ohlcstx_func_config = ReadonlyConfig(
             pass_kwargs=["is_entry_open"],
         ),
         in_output_settings=dict(
-            stop_price=dict(dtype=np.float_),
-            stop_type=dict(dtype=np.int_),
+            stop_price=dict(dtype=float_),
+            stop_type=dict(dtype=int_),
         ),
         param_settings=dict(
             sl_stop=flex_elem_param_config,
@@ -71,7 +74,7 @@ ohlcstx_func_config = ReadonlyConfig(
 OHLCSTX = SignalFactory(**ohlcstx_config).with_place_func(**ohlcstx_func_config)
 
 
-def bind_ohlcstx_plot(base_cls: type, entries_attr: str) -> tp.Callable:
+def _bind_ohlcstx_plot(base_cls: type, entries_attr: str) -> tp.Callable:
     base_cls_plot = base_cls.plot
 
     def plot(
@@ -239,8 +242,9 @@ class _OHLCSTX(OHLCSTX):
         ```
     """
 
-    plot = bind_ohlcstx_plot(OHLCSTX, "entries")
+    plot = _bind_ohlcstx_plot(OHLCSTX, "entries")
 
 
 setattr(OHLCSTX, "__doc__", _OHLCSTX.__doc__)
 setattr(OHLCSTX, "plot", _OHLCSTX.plot)
+OHLCSTX.fix_docstrings(__pdoc__)

@@ -10,6 +10,7 @@
 import numpy as np
 
 from vectorbtpro import _typing as tp
+from vectorbtpro._dtypes import *
 from vectorbtpro.base.flex_indexing import flex_select_1d_pr_nb
 from vectorbtpro.base.reshaping import to_1d_array_nb
 from vectorbtpro.registries.jit_registry import register_jitted
@@ -21,7 +22,7 @@ __all__ = []
 def ohlc_every_1d_nb(price: tp.Array1d, n: tp.FlexArray1dLike) -> tp.Array2d:
     """Aggregate every `n` price points into an OHLC point."""
     n_ = to_1d_array_nb(np.asarray(n))
-    out = np.empty((price.shape[0], 4), dtype=np.float_)
+    out = np.empty((price.shape[0], 4), dtype=float_)
     vmin = np.inf
     vmax = -np.inf
     k = 0

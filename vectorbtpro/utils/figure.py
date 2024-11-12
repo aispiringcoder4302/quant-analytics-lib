@@ -128,8 +128,10 @@ class FigureMixin:
                     if k != "x":
                         v = getattr(d, k)
                         if isinstance(v, np.ndarray):
-                            if len(v) == len(d.x):
+                            if v.shape[0] == len(d.x):
                                 setattr(d, k, v[range_mask])
+                            elif v.ndim == 2 and v.shape[1] == len(d.x):
+                                setattr(d, k, v[:, range_mask])
                 d.x = d.x[range_mask]
                 if first_index is None:
                     first_index = d.x[0]

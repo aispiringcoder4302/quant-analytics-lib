@@ -6,6 +6,7 @@ import pandas as pd
 import pytest
 
 import vectorbtpro as vbt
+from vectorbtpro._dtypes import *
 from tests.utils import *
 from vectorbtpro.generic.enums import drawdown_dt
 from vectorbtpro.portfolio.enums import *
@@ -2023,9 +2024,9 @@ class TestPortfolio:
             arr_2d=np.arange(15).reshape((5, 3)),
             arr_records=np.concatenate(
                 (
-                    np.full(5, 0, dtype=np.dtype([("col", np.int_)])),
-                    np.full(5, 1, dtype=np.dtype([("col", np.int_)])),
-                    np.full(5, 2, dtype=np.dtype([("col", np.int_)])),
+                    np.full(5, 0, dtype=np.dtype([("col", int_)])),
+                    np.full(5, 1, dtype=np.dtype([("col", int_)])),
+                    np.full(5, 2, dtype=np.dtype([("col", int_)])),
                 )
             ),
         )
@@ -2087,9 +2088,9 @@ class TestPortfolio:
             arr_2d=np.arange(10).reshape((5, 2)),
             arr_records=np.concatenate(
                 (
-                    np.full(5, 0, dtype=np.dtype([("col", np.int_)])),
-                    np.full(5, 1, dtype=np.dtype([("col", np.int_)])),
-                    np.full(5, 2, dtype=np.dtype([("col", np.int_)])),
+                    np.full(5, 0, dtype=np.dtype([("col", int_)])),
+                    np.full(5, 1, dtype=np.dtype([("col", int_)])),
+                    np.full(5, 2, dtype=np.dtype([("col", int_)])),
                 )
             ),
         )
@@ -2163,9 +2164,9 @@ class TestPortfolio:
             arr_2d=np.arange(10).reshape((5, 2)),
             arr_records=np.concatenate(
                 (
-                    np.full(5, 0, dtype=np.dtype([("col", np.int_)])),
-                    np.full(5, 1, dtype=np.dtype([("col", np.int_)])),
-                    np.full(5, 2, dtype=np.dtype([("col", np.int_)])),
+                    np.full(5, 0, dtype=np.dtype([("col", int_)])),
+                    np.full(5, 1, dtype=np.dtype([("col", int_)])),
+                    np.full(5, 2, dtype=np.dtype([("col", int_)])),
                 )
             ),
         )

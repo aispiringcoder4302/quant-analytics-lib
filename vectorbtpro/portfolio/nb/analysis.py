@@ -4,6 +4,7 @@
 
 from numba import prange
 
+from vectorbtpro._dtypes import *
 from vectorbtpro.base import chunking as base_ch
 from vectorbtpro.base.reshaping import to_1d_array_nb, to_2d_array_nb
 from vectorbtpro.portfolio import chunking as portfolio_ch
@@ -71,7 +72,7 @@ def asset_flow_nb(
     Returns the total transacted amount of assets at each time step."""
     init_position_ = to_1d_array_nb(np.asarray(init_position))
 
-    out = np.full(target_shape, np.nan, dtype=np.float_)
+    out = np.full(target_shape, np.nan, dtype=float_)
 
     col_idxs, col_lens = col_map
     col_start_idxs = np.cumsum(col_lens) - col_lens
@@ -143,7 +144,7 @@ def assets_nb(
     Returns the current position at each time step."""
     init_position_ = to_1d_array_nb(np.asarray(init_position))
 
-    out = np.full(asset_flow.shape, np.nan, dtype=np.float_)
+    out = np.full(asset_flow.shape, np.nan, dtype=float_)
 
     sim_start_, sim_end_ = generic_nb.prepare_sim_range_nb(
         sim_shape=asset_flow.shape,
@@ -265,7 +266,7 @@ def position_coverage_nb(
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array1d:
     """Get position mask per column."""
-    out = np.full(assets.shape[1], 0.0, dtype=np.float_)
+    out = np.full(assets.shape[1], 0.0, dtype=float_)
 
     sim_start_, sim_end_ = generic_nb.prepare_sim_range_nb(
         sim_shape=assets.shape,
@@ -307,7 +308,7 @@ def position_coverage_grouped_nb(
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array1d:
     """Get position coverage per group."""
-    out = np.full(len(group_lens), 0.0, dtype=np.float_)
+    out = np.full(len(group_lens), 0.0, dtype=float_)
 
     group_end_idxs = np.cumsum(group_lens)
     group_start_idxs = group_end_idxs - group_lens
@@ -397,11 +398,11 @@ def cash_deposits_nb(
     """Get cash deposit series per column."""
     cash_deposits_raw_ = to_2d_array_nb(np.asarray(cash_deposits_raw))
     if weights is None:
-        weights_ = np.full(target_shape[1], np.nan, dtype=np.float_)
+        weights_ = np.full(target_shape[1], np.nan, dtype=float_)
     else:
-        weights_ = to_1d_array_nb(np.asarray(weights).astype(np.float_))
+        weights_ = to_1d_array_nb(np.asarray(weights).astype(float_))
 
-    out = np.full(target_shape, np.nan, dtype=np.float_)
+    out = np.full(target_shape, np.nan, dtype=float_)
 
     if not cash_sharing:
         sim_start_, sim_end_ = generic_nb.prepare_sim_range_nb(
@@ -482,11 +483,11 @@ def cash_deposits_grouped_nb(
     """Get cash deposit series per group."""
     cash_deposits_raw_ = to_2d_array_nb(np.asarray(cash_deposits_raw))
     if weights is None:
-        weights_ = np.full(target_shape[1], np.nan, dtype=np.float_)
+        weights_ = np.full(target_shape[1], np.nan, dtype=float_)
     else:
-        weights_ = to_1d_array_nb(np.asarray(weights).astype(np.float_))
+        weights_ = to_1d_array_nb(np.asarray(weights).astype(float_))
 
-    out = np.full((target_shape[0], len(group_lens)), np.nan, dtype=np.float_)
+    out = np.full((target_shape[0], len(group_lens)), np.nan, dtype=float_)
 
     if cash_sharing:
         group_end_idxs = np.cumsum(group_lens)
@@ -576,11 +577,11 @@ def cash_earnings_nb(
     """Get cash earning series per column."""
     cash_earnings_raw_ = to_2d_array_nb(np.asarray(cash_earnings_raw))
     if weights is None:
-        weights_ = np.full(target_shape[1], np.nan, dtype=np.float_)
+        weights_ = np.full(target_shape[1], np.nan, dtype=float_)
     else:
-        weights_ = to_1d_array_nb(np.asarray(weights).astype(np.float_))
+        weights_ = to_1d_array_nb(np.asarray(weights).astype(float_))
 
-    out = np.full(target_shape, np.nan, dtype=np.float_)
+    out = np.full(target_shape, np.nan, dtype=float_)
 
     sim_start_, sim_end_ = generic_nb.prepare_sim_range_nb(
         sim_shape=target_shape,
@@ -627,11 +628,11 @@ def cash_earnings_grouped_nb(
     """Get cash earning series per group."""
     cash_earnings_raw_ = to_2d_array_nb(np.asarray(cash_earnings_raw))
     if weights is None:
-        weights_ = np.full(target_shape[1], np.nan, dtype=np.float_)
+        weights_ = np.full(target_shape[1], np.nan, dtype=float_)
     else:
-        weights_ = to_1d_array_nb(np.asarray(weights).astype(np.float_))
+        weights_ = to_1d_array_nb(np.asarray(weights).astype(float_))
 
-    out = np.full((target_shape[0], len(group_lens)), np.nan, dtype=np.float_)
+    out = np.full((target_shape[0], len(group_lens)), np.nan, dtype=float_)
 
     group_end_idxs = np.cumsum(group_lens)
     group_start_idxs = group_end_idxs - group_lens
@@ -730,7 +731,7 @@ def cash_flow_nb(
     """Get (free) cash flow series per column."""
     cash_earnings_ = to_2d_array_nb(np.asarray(cash_earnings))
 
-    out = np.full(target_shape, np.nan, dtype=np.float_)
+    out = np.full(target_shape, np.nan, dtype=float_)
     sim_start_, sim_end_ = generic_nb.prepare_sim_range_nb(
         sim_shape=target_shape,
         sim_start=sim_start,
@@ -810,7 +811,7 @@ def cash_flow_grouped_nb(
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array2d:
     """Get (free) cash flow series per group."""
-    out = np.full((cash_flow.shape[0], len(group_lens)), np.nan, dtype=np.float_)
+    out = np.full((cash_flow.shape[0], len(group_lens)), np.nan, dtype=float_)
 
     group_end_idxs = np.cumsum(group_lens)
     group_start_idxs = group_end_idxs - group_lens
@@ -859,7 +860,7 @@ def align_init_cash_nb(
     """Align initial cash to the maximum negative free cash flow per column or group."""
     cash_deposits_ = to_2d_array_nb(np.asarray(cash_deposits))
 
-    out = np.full(free_cash_flow.shape[1], np.nan, dtype=np.float_)
+    out = np.full(free_cash_flow.shape[1], np.nan, dtype=float_)
 
     sim_start_, sim_end_ = generic_nb.prepare_sim_range_nb(
         sim_shape=free_cash_flow.shape,
@@ -899,11 +900,11 @@ def init_cash_nb(
     weights: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array1d:
     """Get initial cash per column."""
-    out = np.empty(np.sum(group_lens), dtype=np.float_)
+    out = np.empty(np.sum(group_lens), dtype=float_)
     if weights is None:
-        weights_ = np.full(group_lens.sum(), np.nan, dtype=np.float_)
+        weights_ = np.full(group_lens.sum(), np.nan, dtype=float_)
     else:
-        weights_ = to_1d_array_nb(np.asarray(weights).astype(np.float_))
+        weights_ = to_1d_array_nb(np.asarray(weights).astype(float_))
 
     if not cash_sharing:
         for col in range(out.shape[0]):
@@ -943,11 +944,11 @@ def init_cash_grouped_nb(
     weights: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array1d:
     """Get initial cash per group."""
-    out = np.empty(group_lens.shape, dtype=np.float_)
+    out = np.empty(group_lens.shape, dtype=float_)
     if weights is None:
-        weights_ = np.full(group_lens.sum(), np.nan, dtype=np.float_)
+        weights_ = np.full(group_lens.sum(), np.nan, dtype=float_)
     else:
-        weights_ = to_1d_array_nb(np.asarray(weights).astype(np.float_))
+        weights_ = to_1d_array_nb(np.asarray(weights).astype(float_))
 
     if cash_sharing:
         from_col = 0
@@ -1008,7 +1009,7 @@ def cash_nb(
     """Get cash series per column or group."""
     cash_deposits_ = to_2d_array_nb(np.asarray(cash_deposits))
 
-    out = np.full(cash_flow.shape, np.nan, dtype=np.float_)
+    out = np.full(cash_flow.shape, np.nan, dtype=float_)
 
     sim_start_, sim_end_ = generic_nb.prepare_sim_range_nb(
         sim_shape=cash_flow.shape,
@@ -1042,7 +1043,7 @@ def init_position_value_nb(
     init_position_ = to_1d_array_nb(np.asarray(init_position))
     init_price_ = to_1d_array_nb(np.asarray(init_price))
 
-    out = np.empty(n_cols, dtype=np.float_)
+    out = np.empty(n_cols, dtype=float_)
 
     for col in range(n_cols):
         _init_position = float(flex_select_1d_pc_nb(init_position_, col))
@@ -1064,7 +1065,7 @@ def init_position_value_grouped_nb(
     init_position_ = to_1d_array_nb(np.asarray(init_position))
     init_price_ = to_1d_array_nb(np.asarray(init_price))
 
-    out = np.full(len(group_lens), 0.0, dtype=np.float_)
+    out = np.full(len(group_lens), 0.0, dtype=float_)
 
     group_end_idxs = np.cumsum(group_lens)
     group_start_idxs = group_end_idxs - group_lens
@@ -1083,7 +1084,7 @@ def init_position_value_grouped_nb(
 @register_jitted(cache=True)
 def init_value_nb(init_position_value: tp.Array1d, init_cash: tp.FlexArray1d) -> tp.Array1d:
     """Get initial value per column or group."""
-    out = np.empty(len(init_position_value), dtype=np.float_)
+    out = np.empty(len(init_position_value), dtype=float_)
 
     for col in range(len(init_position_value)):
         _init_cash = flex_select_1d_pc_nb(init_cash, col)
@@ -1109,7 +1110,7 @@ def asset_value_nb(
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array2d:
     """Get asset value series per column."""
-    out = np.full(close.shape, np.nan, dtype=np.float_)
+    out = np.full(close.shape, np.nan, dtype=float_)
 
     sim_start_, sim_end_ = generic_nb.prepare_sim_range_nb(
         sim_shape=close.shape,
@@ -1148,7 +1149,7 @@ def asset_value_grouped_nb(
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array2d:
     """Get asset value series per group."""
-    out = np.full((asset_value.shape[0], len(group_lens)), np.nan, dtype=np.float_)
+    out = np.full((asset_value.shape[0], len(group_lens)), np.nan, dtype=float_)
 
     group_end_idxs = np.cumsum(group_lens)
     group_start_idxs = group_end_idxs - group_lens
@@ -1193,7 +1194,7 @@ def value_nb(
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array2d:
     """Get value series per column or group."""
-    out = np.full(cash.shape, np.nan, dtype=np.float_)
+    out = np.full(cash.shape, np.nan, dtype=float_)
 
     sim_start_, sim_end_ = generic_nb.prepare_sim_range_nb(
         sim_shape=cash.shape,
@@ -1229,7 +1230,7 @@ def gross_exposure_nb(
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array2d:
     """Get gross exposure series per column."""
-    out = np.full(asset_value.shape, np.nan, dtype=np.float_)
+    out = np.full(asset_value.shape, np.nan, dtype=float_)
 
     sim_start_, sim_end_ = generic_nb.prepare_sim_range_nb(
         sim_shape=asset_value.shape,
@@ -1268,7 +1269,7 @@ def net_exposure_nb(
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array2d:
     """Get net exposure series per column."""
-    out = np.full(long_exposure.shape, np.nan, dtype=np.float_)
+    out = np.full(long_exposure.shape, np.nan, dtype=float_)
 
     sim_start_, sim_end_ = generic_nb.prepare_sim_range_nb(
         sim_shape=long_exposure.shape,
@@ -1306,7 +1307,7 @@ def allocations_nb(
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array2d:
     """Get allocations per column."""
-    out = np.full(asset_value.shape, np.nan, dtype=np.float_)
+    out = np.full(asset_value.shape, np.nan, dtype=float_)
 
     group_end_idxs = np.cumsum(group_lens)
     group_start_idxs = group_end_idxs - group_lens
@@ -1367,9 +1368,9 @@ def total_profit_nb(
     init_price_ = to_1d_array_nb(np.asarray(init_price))
     cash_earnings_ = to_2d_array_nb(np.asarray(cash_earnings))
 
-    assets = np.full(target_shape[1], 0.0, dtype=np.float_)
-    cash = np.full(target_shape[1], 0.0, dtype=np.float_)
-    total_profit = np.full(target_shape[1], np.nan, dtype=np.float_)
+    assets = np.full(target_shape[1], 0.0, dtype=float_)
+    cash = np.full(target_shape[1], 0.0, dtype=float_)
+    total_profit = np.full(target_shape[1], np.nan, dtype=float_)
 
     col_idxs, col_lens = col_map
     col_start_idxs = np.cumsum(col_lens) - col_lens
@@ -1435,7 +1436,7 @@ def total_profit_nb(
 @register_jitted(cache=True)
 def total_profit_grouped_nb(total_profit: tp.Array1d, group_lens: tp.GroupLens) -> tp.Array1d:
     """Get total profit per group."""
-    out = np.empty(len(group_lens), dtype=np.float_)
+    out = np.empty(len(group_lens), dtype=float_)
 
     from_col = 0
     for group in range(len(group_lens)):
@@ -1471,7 +1472,7 @@ def returns_nb(
     """Get return series per column or group."""
     cash_deposits_ = to_2d_array_nb(np.asarray(cash_deposits))
 
-    out = np.full(value.shape, np.nan, dtype=np.float_)
+    out = np.full(value.shape, np.nan, dtype=float_)
 
     sim_start_, sim_end_ = generic_nb.prepare_sim_range_nb(
         sim_shape=value.shape,
@@ -1530,7 +1531,7 @@ def asset_pnl_nb(
     """Get asset (realized and unrealized) PnL series per column or group."""
     init_position_value_ = to_1d_array_nb(np.asarray(init_position_value))
 
-    out = np.full(asset_value.shape, np.nan, dtype=np.float_)
+    out = np.full(asset_value.shape, np.nan, dtype=float_)
 
     sim_start_, sim_end_ = generic_nb.prepare_sim_range_nb(
         sim_shape=asset_value.shape,
@@ -1604,7 +1605,7 @@ def asset_returns_nb(
     """Get asset return series per column or group."""
     init_position_value_ = to_1d_array_nb(np.asarray(init_position_value))
 
-    out = np.full(asset_value.shape, np.nan, dtype=np.float_)
+    out = np.full(asset_value.shape, np.nan, dtype=float_)
 
     sim_start_, sim_end_ = generic_nb.prepare_sim_range_nb(
         sim_shape=asset_value.shape,
@@ -1654,7 +1655,7 @@ def market_value_nb(
     """Get market value per column."""
     cash_deposits_ = to_2d_array_nb(np.asarray(cash_deposits))
 
-    out = np.full(close.shape, np.nan, dtype=np.float_)
+    out = np.full(close.shape, np.nan, dtype=float_)
 
     sim_start_, sim_end_ = generic_nb.prepare_sim_range_nb(
         sim_shape=close.shape,
@@ -1700,7 +1701,7 @@ def market_value_grouped_nb(
     """Get market value per group."""
     cash_deposits_ = to_2d_array_nb(np.asarray(cash_deposits))
 
-    out = np.full((close.shape[0], len(group_lens)), np.nan, dtype=np.float_)
+    out = np.full((close.shape[0], len(group_lens)), np.nan, dtype=float_)
 
     group_end_idxs = np.cumsum(group_lens)
     group_start_idxs = group_end_idxs - group_lens
@@ -1748,7 +1749,7 @@ def total_market_return_nb(
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array1d:
     """Get total market return per column or group."""
-    out = np.full(market_value.shape[1], np.nan, dtype=np.float_)
+    out = np.full(market_value.shape[1], np.nan, dtype=float_)
 
     sim_start_, sim_end_ = generic_nb.prepare_sim_range_nb(
         sim_shape=market_value.shape,

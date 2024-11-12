@@ -41,6 +41,9 @@ if TYPE_CHECKING:
     from vectorbtpro.utils.datetime_ import DTC, DTCNT
     from vectorbtpro.utils.selection import PosSel, LabelSel
     from vectorbtpro.utils.merging import MergeFunc
+    from vectorbtpro.utils.knowledge.base_asset_funcs import AssetFunc
+    from vectorbtpro.utils.knowledge.asset_pipelines import AssetPipeline
+    from vectorbtpro.utils.knowledge.base_assets import KnowledgeAsset
     from vectorbtpro.base.indexing import hslice
     from vectorbtpro.base.grouping.base import Grouper
     from vectorbtpro.base.resampling.base import Resampler
@@ -62,6 +65,9 @@ else:
     PosSel = "PosSel"
     LabelSel = "LabelSel"
     MergeFunc = "MergeFunc"
+    AssetFunc = "AssetFunc"
+    AssetPipeline = "AssetPipeline"
+    KnowledgeAsset = "KnowledgeAsset"
     hslice = "hslice"
     Grouper = "Grouper"
     Resampler = "Resampler"
@@ -73,6 +79,7 @@ __all__ = []
 # Generic types
 T = TypeVar("T")
 F = TypeVar("F", bound=Callable[..., Any])
+MaybeType = Union[T, Type[T]]
 
 # Scalars
 Scalar = Union[str, float, int, complex, bool, object, np.generic]
@@ -85,6 +92,7 @@ IntStr = Union[Int, str]
 # Basic sequences
 MaybeTuple = Union[T, Tuple[T, ...]]
 MaybeList = Union[T, List[T]]
+MaybeSet = Union[T, Set[T]]
 TupleList = Union[List[T], Tuple[T, ...]]
 MaybeTupleList = Union[T, List[T], Tuple[T, ...]]
 MaybeIterable = Union[T, Iterable[T]]
@@ -174,8 +182,8 @@ ArgsLike = Union[None, Args]
 Kwargs = Dict[str, Any]
 KwargsLike = Union[None, Kwargs]
 KwargsLikeSequence = MaybeSequence[KwargsLike]
+ArgsKwargs = Tuple[Args, Kwargs]
 PathLike = Union[str, Path]
-PathLikeKey = Union[Hashable, Path]
 SettingsPath = ClassVar[Union[None, Hashable, Dict[Hashable, Hashable]]]
 WriteableAttrs = ClassVar[Optional[Set[str]]]
 ExpectedKeys = ClassVar[Optional[Set[str]]]
@@ -299,3 +307,22 @@ StaticizedOption = Union[None, bool, Kwargs, TaskId]
 
 # Selection
 Selection = Union[PosSel, LabelSel, MaybeIterable[Union[PosSel, LabelSel, Hashable]]]
+
+# Search
+PathKeyToken = Hashable
+PathKeyTokens = Sequence[Hashable]
+PathKey = Tuple[PathKeyToken, ...]
+MaybePathKey = Union[None, PathKeyToken, PathKey]
+PathLikeKey = Union[MaybePathKey, Path]
+PathLikeKeys = Sequence[PathLikeKey]
+PathMoveDict = Dict[PathLikeKey, PathLikeKey]
+PathRenameDict = Dict[PathLikeKey, PathKeyToken]
+PathDict = Dict[PathLikeKey, Any]
+
+# Knowledge
+AssetFuncLike = Union[str, Type[AssetFunc], FuncArgs, Task, Callable]
+
+# Chaining
+PipeFunc = Union[str, Callable, Tuple[Union[str, Callable], str]]
+PipeTask = Union[PipeFunc, Tuple[PipeFunc, Args, Kwargs], Task]
+PipeTasks = Iterable[PipeTask]

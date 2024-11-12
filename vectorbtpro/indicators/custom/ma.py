@@ -12,6 +12,8 @@ __all__ = [
     "MA",
 ]
 
+__pdoc__ = {}
+
 MA = IndicatorFactory(
     class_name="MA",
     module_name=__name__,
@@ -113,3 +115,4 @@ class _MA(MA):
 
 setattr(MA, "__doc__", _MA.__doc__)
 setattr(MA, "plot", _MA.plot)
+MA.fix_docstrings(__pdoc__)

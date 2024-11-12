@@ -5,6 +5,7 @@
 import numpy as np
 
 from vectorbtpro import _typing as tp
+from vectorbtpro._dtypes import *
 from vectorbtpro.registries.jit_registry import register_jitted
 
 __all__ = []
@@ -79,7 +80,7 @@ def uniform_summing_to_one_nb(n: int) -> tp.Array1d:
     """Generate random floats summing to one.
 
     See # https://stackoverflow.com/a/2640067/8141780"""
-    rand_floats = np.empty(n + 1, dtype=np.float_)
+    rand_floats = np.empty(n + 1, dtype=float_)
     rand_floats[0] = 0.0
     rand_floats[1] = 1.0
     rand_floats[2:] = np.random.uniform(0, 1, n - 1)
@@ -177,7 +178,7 @@ def hash_int_rows_nb(arr: tp.Array2d) -> tp.Array1d:
 
     First digits of each hash correspond to the left-most column, the last digits to the right-most column.
     Thus, the resulting hashes are not suitable for sorting by value."""
-    out = np.full(arr.shape[0], 0, dtype=np.int_)
+    out = np.full(arr.shape[0], 0, dtype=int_)
     prefix = 1
     for col in range(arr.shape[1]):
         vmax = np.nan
@@ -192,7 +193,7 @@ def hash_int_rows_nb(arr: tp.Array2d) -> tp.Array1d:
 @register_jitted(cache=True)
 def index_repeating_rows_nb(arr: tp.Array2d) -> tp.Array1d:
     """Index repeating rows using monotonically increasing numbers."""
-    out = np.empty(arr.shape[0], dtype=np.int_)
+    out = np.empty(arr.shape[0], dtype=int_)
     temp = np.copy(arr[0])
 
     k = 0
@@ -240,9 +241,9 @@ def unsqueeze_nan(*arrs: tp.Array, nan_mask: tp.Optional[tp.Array1d] = None) -> 
     new_arrs = ()
     for arr in arrs:
         if arr.ndim == 2:
-            new_arr = np.full((len(nan_mask), arr.shape[1]), np.nan, dtype=np.float_)
+            new_arr = np.full((len(nan_mask), arr.shape[1]), np.nan, dtype=float_)
         else:
-            new_arr = np.full(len(nan_mask), np.nan, dtype=np.float_)
+            new_arr = np.full(len(nan_mask), np.nan, dtype=float_)
         new_arr[~nan_mask] = arr
         new_arrs += (new_arr,)
     return new_arrs

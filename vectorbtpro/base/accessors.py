@@ -26,8 +26,8 @@ from vectorbtpro.base.resampling.base import Resampler
 from vectorbtpro.base.wrapping import ArrayWrapper, Wrapping
 from vectorbtpro.utils import checks, datetime_ as dt
 from vectorbtpro.utils.config import merge_dicts, resolve_dict, Configured
-from vectorbtpro.utils.decorators import class_or_instanceproperty, class_or_instancemethod
-from vectorbtpro.utils.eval_ import multiline_eval
+from vectorbtpro.utils.decorators import hybrid_property, hybrid_method
+from vectorbtpro.utils.eval_ import evaluate
 from vectorbtpro.utils.magic_decorators import attach_binary_magic_methods, attach_unary_magic_methods
 from vectorbtpro.utils.parsing import get_context_vars
 from vectorbtpro.utils.template import substitute_templates
@@ -118,7 +118,7 @@ class BaseIDXAccessor(Configured, IndexApplier):
         """See `vectorbtpro.base.indexes.tile_index`."""
         return indexes.tile_index(self.obj, *args, **kwargs)
 
-    @class_or_instancemethod
+    @hybrid_method
     def stack(
         cls_or_self,
         *others: tp.Union[tp.IndexLike, "BaseIDXAccessor"],
@@ -138,7 +138,7 @@ class BaseIDXAccessor(Configured, IndexApplier):
                 objs = (cls_or_self.obj, *others)
         return indexes.stack_indexes(*objs, **kwargs)
 
-    @class_or_instancemethod
+    @hybrid_method
     def combine(
         cls_or_self,
         *others: tp.Union[tp.IndexLike, "BaseIDXAccessor"],
@@ -158,7 +158,7 @@ class BaseIDXAccessor(Configured, IndexApplier):
                 objs = (cls_or_self.obj, *others)
         return indexes.combine_indexes(*objs, **kwargs)
 
-    @class_or_instancemethod
+    @hybrid_method
     def concat(cls_or_self, *others: tp.Union[tp.IndexLike, "BaseIDXAccessor"], **kwargs) -> tp.Index:
         """See `vectorbtpro.base.indexes.concat_indexes`."""
         others = tuple(map(lambda x: x.obj if isinstance(x, BaseIDXAccessor) else x, others))
@@ -180,7 +180,7 @@ class BaseIDXAccessor(Configured, IndexApplier):
         """See `vectorbtpro.base.indexes.align_index_to`."""
         return indexes.align_index_to(self.obj, *args, **kwargs)
 
-    @class_or_instancemethod
+    @hybrid_method
     def align(
         cls_or_self,
         *others: tp.Union[tp.IndexLike, "BaseIDXAccessor"],
@@ -198,7 +198,7 @@ class BaseIDXAccessor(Configured, IndexApplier):
         """See `vectorbtpro.base.indexes.cross_index_with`."""
         return indexes.cross_index_with(self.obj, *args, **kwargs)
 
-    @class_or_instancemethod
+    @hybrid_method
     def cross(
         cls_or_self,
         *others: tp.Union[tp.IndexLike, "BaseIDXAccessor"],
@@ -220,7 +220,7 @@ class BaseIDXAccessor(Configured, IndexApplier):
 
     # ############# Frequency ############# #
 
-    @class_or_instancemethod
+    @hybrid_method
     def get_freq(
         cls_or_self,
         index: tp.Optional[tp.Index] = None,
@@ -267,7 +267,7 @@ class BaseIDXAccessor(Configured, IndexApplier):
         """Index frequency of any type."""
         return self.get_freq()
 
-    @class_or_instancemethod
+    @hybrid_method
     def get_period(cls_or_self, index: tp.Optional[tp.Index] = None) -> int:
         """Get the period of the index, without taking into account its datetime-like properties."""
         if not isinstance(cls_or_self, type):
@@ -282,7 +282,7 @@ class BaseIDXAccessor(Configured, IndexApplier):
         """`BaseIDXAccessor.get_period` with default arguments."""
         return len(self.obj)
 
-    @class_or_instancemethod
+    @hybrid_method
     def get_dt_period(
         cls_or_self,
         index: tp.Optional[tp.Index] = None,
@@ -737,12 +737,12 @@ class BaseAccessor(Wrapping):
 
         return self.replace(**kwargs)
 
-    @class_or_instanceproperty
+    @hybrid_property
     def sr_accessor_cls(cls_or_self) -> tp.Type["BaseSRAccessor"]:
         """Accessor class for `pd.Series`."""
         return BaseSRAccessor
 
-    @class_or_instanceproperty
+    @hybrid_property
     def df_accessor_cls(cls_or_self) -> tp.Type["BaseDFAccessor"]:
         """Accessor class for `pd.DataFrame`."""
         return BaseDFAccessor
@@ -784,20 +784,25 @@ class BaseAccessor(Wrapping):
             return self.obj
         return self.obj.get(key, default=default)
 
-    @class_or_instanceproperty
+    @hybrid_property
     def ndim(cls_or_self) -> tp.Optional[int]:
+        """Number of dimensions in the object.
+
+        1 -> Series, 2 -> DataFrame."""
         if isinstance(cls_or_self, type):
             return None
         return cls_or_self.obj.ndim
 
-    @class_or_instancemethod
+    @hybrid_method
     def is_series(cls_or_self) -> bool:
+        """Whether the object is a Series."""
         if isinstance(cls_or_self, type):
             raise NotImplementedError
         return isinstance(cls_or_self.obj, pd.Series)
 
-    @class_or_instancemethod
+    @hybrid_method
     def is_frame(cls_or_self) -> bool:
+        """Whether the object is a DataFrame."""
         if isinstance(cls_or_self, type):
             raise NotImplementedError
         return isinstance(cls_or_self.obj, pd.DataFrame)
@@ -1075,7 +1080,7 @@ class BaseAccessor(Wrapping):
             **merge_dicts(dict(index=other.index, columns=other.columns), wrap_kwargs),
         )
 
-    @class_or_instancemethod
+    @hybrid_method
     def align(
         cls_or_self,
         *others: tp.Union[tp.SeriesFrame, "BaseAccessor"],
@@ -1164,7 +1169,7 @@ class BaseAccessor(Wrapping):
             **merge_dicts(dict(index=new_index, columns=new_columns), wrap_kwargs),
         )
 
-    @class_or_instancemethod
+    @hybrid_method
     def cross(cls_or_self, *others: tp.Union[tp.SeriesFrame, "BaseAccessor"]) -> tp.Tuple[tp.SeriesFrame, ...]:
         """Align objects using `vectorbtpro.base.indexes.cross_indexes`."""
         others = tuple(map(lambda x: x.obj if isinstance(x, BaseAccessor) else x, others))
@@ -1193,7 +1198,7 @@ class BaseAccessor(Wrapping):
 
     x = cross
 
-    @class_or_instancemethod
+    @hybrid_method
     def broadcast(cls_or_self, *others: tp.Union[tp.ArrayLike, "BaseAccessor"], **kwargs) -> tp.Any:
         """See `vectorbtpro.base.reshaping.broadcast`."""
         others = tuple(map(lambda x: x.obj if isinstance(x, BaseAccessor) else x, others))
@@ -1209,7 +1214,7 @@ class BaseAccessor(Wrapping):
             other = other.obj
         return reshaping.broadcast_to(self.obj, other, **kwargs)
 
-    @class_or_instancemethod
+    @hybrid_method
     def broadcast_combs(cls_or_self, *others: tp.Union[tp.ArrayLike, "BaseAccessor"], **kwargs) -> tp.Any:
         """See `vectorbtpro.base.reshaping.broadcast_combs`."""
         others = tuple(map(lambda x: x.obj if isinstance(x, BaseAccessor) else x, others))
@@ -1328,7 +1333,7 @@ class BaseAccessor(Wrapping):
         out = apply_func(broadcast_named_args["obj"], *args, **kwargs)
         return wrapper.wrap(out, group_by=False, **resolve_dict(wrap_kwargs))
 
-    @class_or_instancemethod
+    @hybrid_method
     def concat(
         cls_or_self,
         *others: tp.ArrayLike,
@@ -1477,7 +1482,7 @@ class BaseAccessor(Wrapping):
             return tuple(map(lambda x: wrapper.wrap(x, group_by=False, **wrap_kwargs), out))
         return wrapper.wrap(out, group_by=False, **wrap_kwargs)
 
-    @class_or_instancemethod
+    @hybrid_method
     def combine(
         cls_or_self,
         obj: tp.MaybeTupleList[tp.Union[tp.ArrayLike, "BaseAccessor"]],
@@ -1689,7 +1694,7 @@ class BaseAccessor(Wrapping):
         """Evaluate a simple array expression element-wise using NumExpr or NumPy.
 
         If NumExpr is enables, only one-line statements are supported. Otherwise, uses
-        `vectorbtpro.utils.eval_.multiline_eval`.
+        `vectorbtpro.utils.eval_.evaluate`.
 
         !!! note
             All required variables will broadcast against each other prior to the evaluation.
@@ -1740,7 +1745,7 @@ class BaseAccessor(Wrapping):
 
             out = numexpr.evaluate(expr, local_dict=objs, **numexpr_kwargs)
         else:
-            out = multiline_eval(expr, context=objs)
+            out = evaluate(expr, context=objs)
         return wrapper.wrap(out, **wrap_kwargs)
 
     def split(self, *args, splitter_cls: tp.Optional[tp.Type[SplitterT]] = None, **kwargs) -> tp.Any:
@@ -1813,15 +1818,15 @@ class BaseSRAccessor(BaseAccessor):
 
             BaseAccessor.__init__(self, wrapper, obj=obj, **kwargs)
 
-    @class_or_instanceproperty
+    @hybrid_property
     def ndim(cls_or_self) -> int:
         return 1
 
-    @class_or_instancemethod
+    @hybrid_method
     def is_series(cls_or_self) -> bool:
         return True
 
-    @class_or_instancemethod
+    @hybrid_method
     def is_frame(cls_or_self) -> bool:
         return False
 
@@ -1845,14 +1850,14 @@ class BaseDFAccessor(BaseAccessor):
 
             BaseAccessor.__init__(self, wrapper, obj=obj, **kwargs)
 
-    @class_or_instanceproperty
+    @hybrid_property
     def ndim(cls_or_self) -> int:
         return 2
 
-    @class_or_instancemethod
+    @hybrid_method
     def is_series(cls_or_self) -> bool:
         return False
 
-    @class_or_instancemethod
+    @hybrid_method
     def is_frame(cls_or_self) -> bool:
         return True

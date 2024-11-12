@@ -5,6 +5,7 @@
 import numpy as np
 
 from vectorbtpro import _typing as tp
+from vectorbtpro._dtypes import *
 from vectorbtpro.base.flex_indexing import flex_select_1d_nb
 from vectorbtpro.base.reshaping import to_1d_array_nb
 from vectorbtpro.generic.enums import RescaleMode, InterpMode, ErrorType, DistanceMeasure
@@ -102,7 +103,7 @@ def interp_nb(arr: tp.FlexArray1d, i: int, source_size: int, target_size: int, i
 @register_jitted(cache=True)
 def interp_resize_1d_nb(arr: tp.FlexArray1d, target_size: int, interp_mode: int) -> tp.Array1d:
     """Resize an array using `interp_nb`."""
-    out = np.empty(target_size, dtype=np.float_)
+    out = np.empty(target_size, dtype=float_)
     for i in range(target_size):
         out[i] = interp_nb(arr, i, arr.size, target_size, interp_mode)
     return out

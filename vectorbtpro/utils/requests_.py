@@ -40,7 +40,7 @@ def text_to_giphy_url(text: str, api_key: tp.Optional[str] = None, weirdness: tp
     See https://engineering.giphy.com/contextually-aware-search-giphy-gets-work-specific/"""
     from vectorbtpro._settings import settings
 
-    giphy_cfg = settings["messaging"]["giphy"]
+    giphy_cfg = settings["telegram"]["giphy"]
 
     if api_key is None:
         api_key = giphy_cfg["api_key"]

@@ -484,12 +484,11 @@ Name: group, dtype: object
 ![](/assets/images/api/trades_plots.dark.svg#only-dark){: .iimg loading=lazy }
 """
 
-from functools import partialmethod
-
 import numpy as np
 import pandas as pd
 
 from vectorbtpro import _typing as tp
+from vectorbtpro._dtypes import *
 from vectorbtpro.base.indexes import stack_indexes
 from vectorbtpro.base.reshaping import to_1d_array, to_2d_array, to_pd_array, broadcast_to
 from vectorbtpro.base.wrapping import ArrayWrapper
@@ -680,10 +679,12 @@ class Trades(Ranges):
     # ############# Views ############# #
 
     def get_long_view(self: TradesT, **kwargs) -> TradesT:
+        """Get long view."""
         filter_mask = self.get_field_arr("direction") == TradeDirection.Long
         return self.apply_mask(filter_mask, **kwargs)
 
     def get_short_view(self: TradesT, **kwargs) -> TradesT:
+        """Get short view."""
         filter_mask = self.get_field_arr("direction") == TradeDirection.Short
         return self.apply_mask(filter_mask, **kwargs)
 
@@ -703,13 +704,13 @@ class Trades(Ranges):
         """Get winning streak at each trade in the current column.
 
         See `vectorbtpro.portfolio.nb.records.trade_winning_streak_nb`."""
-        return self.apply(nb.trade_winning_streak_nb, dtype=np.int_, **kwargs)
+        return self.apply(nb.trade_winning_streak_nb, dtype=int_, **kwargs)
 
     def get_losing_streak(self, **kwargs) -> MappedArray:
         """Get losing streak at each trade in the current column.
 
         See `vectorbtpro.portfolio.nb.records.trade_losing_streak_nb`."""
-        return self.apply(nb.trade_losing_streak_nb, dtype=np.int_, **kwargs)
+        return self.apply(nb.trade_losing_streak_nb, dtype=int_, **kwargs)
 
     def get_win_rate(
         self,
@@ -869,7 +870,7 @@ class Trades(Ranges):
             exit_price_close,
             max_duration,
             relative,
-            dtype=np.int_,
+            dtype=int_,
             **kwargs,
         )
 
@@ -894,7 +895,7 @@ class Trades(Ranges):
             exit_price_close,
             max_duration,
             relative,
-            dtype=np.int_,
+            dtype=int_,
             **kwargs,
         )
 
@@ -1569,8 +1570,13 @@ class Trades(Ranges):
         )
         return fig
 
-    plot_returns = partialmethod(plot_pnl, pct_scale=True)
-    """`Trades.plot_pnl` for `Trades.returns`."""
+    def plot_returns(self, *args, **kwargs) -> tp.BaseFigure:
+        """`Trades.plot_pnl` for `Trades.returns`."""
+        return self.plot_pnl(
+            *args,
+            pct_scale=True,
+            **kwargs,
+        )
 
     def plot_against_pnl(
         self,
@@ -1786,37 +1792,45 @@ class Trades(Ranges):
         )
         return fig
 
-    plot_mfe = partialmethod(
-        plot_against_pnl,
-        field="mfe",
-        field_label="MFE",
-    )
-    """`Trades.plot_against_pnl` for `Trades.mfe`."""
+    def plot_mfe(self, *args, **kwargs) -> tp.BaseFigure:
+        """`Trades.plot_against_pnl` for `Trades.mfe`."""
+        return self.plot_against_pnl(
+            *args,
+            field="mfe",
+            field_label="MFE",
+            **kwargs,
+        )
 
-    plot_mfe_returns = partialmethod(
-        plot_against_pnl,
-        field="mfe_returns",
-        field_label="MFE Return",
-        pct_scale=True,
-        field_pct_scale=True,
-    )
-    """`Trades.plot_against_pnl` for `Trades.mfe_returns`."""
+    def plot_mfe_returns(self, *args, **kwargs) -> tp.BaseFigure:
+        """`Trades.plot_against_pnl` for `Trades.mfe_returns`."""
+        return self.plot_against_pnl(
+            *args,
+            field="mfe_returns",
+            field_label="MFE Return",
+            pct_scale=True,
+            field_pct_scale=True,
+            **kwargs,
+        )
 
-    plot_mae = partialmethod(
-        plot_against_pnl,
-        field="mae",
-        field_label="MAE",
-    )
-    """`Trades.plot_against_pnl` for `Trades.mae`."""
+    def plot_mae(self, *args, **kwargs) -> tp.BaseFigure:
+        """`Trades.plot_against_pnl` for `Trades.mae`."""
+        return self.plot_against_pnl(
+            *args,
+            field="mae",
+            field_label="MAE",
+            **kwargs,
+        )
 
-    plot_mae_returns = partialmethod(
-        plot_against_pnl,
-        field="mae_returns",
-        field_label="MAE Return",
-        pct_scale=True,
-        field_pct_scale=True,
-    )
-    """`Trades.plot_against_pnl` for `Trades.mae_returns`."""
+    def plot_mae_returns(self, *args, **kwargs) -> tp.BaseFigure:
+        """`Trades.plot_against_pnl` for `Trades.mae_returns`."""
+        return self.plot_against_pnl(
+            *args,
+            field="mae_returns",
+            field_label="MAE Return",
+            pct_scale=True,
+            field_pct_scale=True,
+            **kwargs,
+        )
 
     def plot_expanding(
         self,
@@ -1892,35 +1906,43 @@ class Trades(Ranges):
             fig.update_layout(**{yaxis: dict(tickformat=".2%")})
         return fig
 
-    plot_expanding_mfe = partialmethod(
-        plot_expanding,
-        field="expanding_mfe",
-        field_label="MFE",
-    )
-    """`Trades.plot_expanding` for `Trades.expanding_mfe`."""
+    def plot_expanding_mfe(self, *args, **kwargs) -> tp.BaseFigure:
+        """`Trades.plot_expanding` for `Trades.expanding_mfe`."""
+        return self.plot_expanding(
+            *args,
+            field="expanding_mfe",
+            field_label="MFE",
+            **kwargs,
+        )
 
-    plot_expanding_mfe_returns = partialmethod(
-        plot_expanding,
-        field="expanding_mfe_returns",
-        field_label="MFE Return",
-        field_pct_scale=True,
-    )
-    """`Trades.plot_expanding` for `Trades.expanding_mfe_returns`."""
+    def plot_expanding_mfe_returns(self, *args, **kwargs) -> tp.BaseFigure:
+        """`Trades.plot_expanding` for `Trades.expanding_mfe_returns`."""
+        return self.plot_expanding(
+            *args,
+            field="expanding_mfe_returns",
+            field_label="MFE Return",
+            field_pct_scale=True,
+            **kwargs,
+        )
 
-    plot_expanding_mae = partialmethod(
-        plot_expanding,
-        field="expanding_mae",
-        field_label="MAE",
-    )
-    """`Trades.plot_expanding` for `Trades.expanding_mae`."""
+    def plot_expanding_mae(self, *args, **kwargs) -> tp.BaseFigure:
+        """`Trades.plot_expanding` for `Trades.expanding_mae`."""
+        return self.plot_expanding(
+            *args,
+            field="expanding_mae",
+            field_label="MAE",
+            **kwargs,
+        )
 
-    plot_expanding_mae_returns = partialmethod(
-        plot_expanding,
-        field="expanding_mae_returns",
-        field_label="MAE Return",
-        field_pct_scale=True,
-    )
-    """`Trades.plot_expanding` for `Trades.expanding_mae_returns`."""
+    def plot_expanding_mae_returns(self, *args, **kwargs) -> tp.BaseFigure:
+        """`Trades.plot_expanding` for `Trades.expanding_mae_returns`."""
+        return self.plot_expanding(
+            *args,
+            field="expanding_mae_returns",
+            field_label="MAE Return",
+            field_pct_scale=True,
+            **kwargs,
+        )
 
     def plot_running_edge_ratio(
         self,

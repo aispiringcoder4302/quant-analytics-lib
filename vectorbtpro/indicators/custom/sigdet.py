@@ -13,6 +13,8 @@ __all__ = [
     "SIGDET",
 ]
 
+__pdoc__ = {}
+
 SIGDET = IndicatorFactory(
     class_name="SIGDET",
     module_name=__name__,
@@ -181,3 +183,4 @@ class _SIGDET(SIGDET):
 setattr(SIGDET, "__doc__", _SIGDET.__doc__)
 setattr(SIGDET, "plot", _SIGDET.plot)
 setattr(SIGDET, "plot_bands", _SIGDET.plot_bands)
+SIGDET.fix_docstrings(__pdoc__)

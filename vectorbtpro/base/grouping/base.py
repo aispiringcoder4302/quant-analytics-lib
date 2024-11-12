@@ -13,6 +13,7 @@ from pandas.core.groupby import GroupBy as PandasGroupBy
 from pandas.core.resample import Resampler as PandasResampler
 
 from vectorbtpro import _typing as tp
+from vectorbtpro._dtypes import *
 from vectorbtpro.base import indexes
 from vectorbtpro.base.grouping import nb
 from vectorbtpro.base.indexes import ExceptLevel
@@ -160,7 +161,7 @@ class Grouper(Configured):
             raise TypeError("pd_group_by must be an instance of GroupBy or Resampler")
         indices = list(pd_group_by.indices.values())
         group_lens = np.asarray(list(map(len, indices)))
-        groups = np.full(int(np.sum(group_lens)), 0, dtype=np.int_)
+        groups = np.full(int(np.sum(group_lens)), 0, dtype=int_)
         group_start_idxs = np.cumsum(group_lens)[1:] - group_lens[1:]
         groups[group_start_idxs] = 1
         groups = np.cumsum(groups)

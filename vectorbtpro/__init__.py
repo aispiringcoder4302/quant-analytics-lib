@@ -1,5 +1,7 @@
 # Copyright (c) 2021-2024 Oleg Polakow. All rights reserved.
 
+"""Welcome to the Matrix."""
+
 import importlib
 import pkgutil
 import typing
@@ -10,7 +12,6 @@ if typing.TYPE_CHECKING:
     from vectorbtpro.generic import *
     from vectorbtpro.indicators import *
     from vectorbtpro.labels import *
-    from vectorbtpro.messaging import *
     from vectorbtpro.ohlcv import *
     from vectorbtpro.portfolio import *
     from vectorbtpro.px import *
@@ -106,10 +107,12 @@ def _import_more_stuff():
     from collections import namedtuple
     from time import sleep, time as utc_time
     from pathlib import Path
+    from os import environ as env
 
     import numpy as np
     import pandas as pd
     from numba import njit, prange
+    from vectorbtpro._dtypes import int_, float_
 
     X = T = true = True
     O = F = false = False
@@ -137,7 +140,7 @@ elif star_import.lower() == "none":
     imported_stuff = dict()
     __all__ = []
 else:
-    raise ValueError(f"Invalid option '{star_import}'")
+    raise ValueError(f"Invalid star import: '{star_import}'")
 
 
 def whats_imported():

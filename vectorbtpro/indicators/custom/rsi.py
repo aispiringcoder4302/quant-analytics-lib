@@ -12,6 +12,8 @@ __all__ = [
     "RSI",
 ]
 
+__pdoc__ = {}
+
 RSI = IndicatorFactory(
     class_name="RSI",
     module_name=__name__,
@@ -128,3 +130,4 @@ class _RSI(RSI):
 
 setattr(RSI, "__doc__", _RSI.__doc__)
 setattr(RSI, "plot", _RSI.plot)
+RSI.fix_docstrings(__pdoc__)

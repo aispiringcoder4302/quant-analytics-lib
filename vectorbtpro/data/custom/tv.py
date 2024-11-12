@@ -339,7 +339,7 @@ class TVClient(Configured):
         elif isinstance(fut_contract, int):
             symbol = f"{exchange}:{symbol}{fut_contract}!"
         else:
-            raise ValueError(f"Invalid option fut_contract='{fut_contract}'")
+            raise ValueError(f"Invalid fut_contract: '{fut_contract}'")
         return symbol
 
     def get_hist(
@@ -814,7 +814,7 @@ class TVData(RemoteData):
         if client is None:
             client = TVClient(**client_config)
         elif has_client_config:
-            raise ValueError("Cannot apply client_config on already created client")
+            raise ValueError("Cannot apply client_config to already initialized client")
         return client
 
     @classmethod
@@ -885,10 +885,10 @@ class TVData(RemoteData):
 
         freq = timeframe
         if not isinstance(timeframe, str):
-            raise ValueError(f"Invalid timeframe '{timeframe}'")
+            raise ValueError(f"Invalid timeframe: '{timeframe}'")
         split = dt.split_freq_str(timeframe)
         if split is None:
-            raise ValueError(f"Invalid timeframe '{timeframe}'")
+            raise ValueError(f"Invalid timeframe: '{timeframe}'")
         multiplier, unit = split
         if unit == "s":
             interval = f"{str(multiplier)}S"
@@ -903,7 +903,7 @@ class TVData(RemoteData):
         elif unit == "M":
             interval = f"{str(multiplier)}M"
         else:
-            raise ValueError(f"Invalid timeframe '{timeframe}'")
+            raise ValueError(f"Invalid timeframe: '{timeframe}'")
 
         for i in range(retries):
             try:

@@ -359,6 +359,7 @@ Value Counts: test_16.0                  0
 Value Counts: test_17.0                  0
 Value Counts: test_18.0                  0
 Name: a, dtype: object
+```
 
 `MappedArray.stats` also supports (re-)grouping:
 
@@ -411,6 +412,7 @@ import numpy as np
 import pandas as pd
 
 from vectorbtpro import _typing as tp
+from vectorbtpro._dtypes import *
 from vectorbtpro.base.merging import concat_arrays, column_stack_arrays
 from vectorbtpro.base.resampling.base import Resampler
 from vectorbtpro.base.reshaping import to_1d_array, to_dict, index_to_series, index_to_frame
@@ -425,7 +427,7 @@ from vectorbtpro.utils import checks
 from vectorbtpro.utils import chunking as ch
 from vectorbtpro.utils.array_ import index_repeating_rows_nb
 from vectorbtpro.utils.config import resolve_dict, merge_dicts, Config, HybridConfig
-from vectorbtpro.utils.decorators import class_or_instancemethod, cached_method
+from vectorbtpro.utils.decorators import hybrid_method, cached_method
 from vectorbtpro.utils.magic_decorators import attach_binary_magic_methods, attach_unary_magic_methods
 from vectorbtpro.utils.mapping import to_value_mapping, apply_mapping
 
@@ -1038,9 +1040,9 @@ class MappedArray(Analyzable):
             raise ValueError("Cannot get index at position -1")
         return self.wrapper.columns[self.values]
 
-    @class_or_instancemethod
+    @hybrid_method
     def apply(
-        cls_or_self: tp.Union[tp.Type[MappedArrayT], MappedArrayT],
+        cls_or_self: tp.MaybeType[MappedArrayT],
         apply_func_nb: tp.Union[tp.ApplyFunc, tp.ApplyMetaFunc],
         *args,
         group_by: tp.GroupByLike = None,
@@ -1123,7 +1125,7 @@ class MappedArray(Analyzable):
             if segment_arr.lower() == "idx":
                 segment_arr = idx_arr
             else:
-                raise ValueError(f"Invalid option segment_arr='{segment_arr}'")
+                raise ValueError(f"Invalid segment_arr: '{segment_arr}'")
         if isinstance(segment_arr, tuple):
             stacked_segment_arr = column_stack_arrays(segment_arr)
             segment_arr = index_repeating_rows_nb(stacked_segment_arr)
@@ -1150,7 +1152,7 @@ class MappedArray(Analyzable):
             **kwargs,
         ).regroup(group_by)
 
-    @class_or_instancemethod
+    @hybrid_method
     def reduce(
         cls_or_self,
         reduce_func_nb: tp.Union[
@@ -1250,7 +1252,7 @@ class MappedArray(Analyzable):
                 name_or_index="reduce" if not returns_array else None,
                 to_index=returns_idx and to_index,
                 fillna=-1 if returns_idx else None,
-                dtype=np.int_ if returns_idx else None,
+                dtype=int_ if returns_idx else None,
             ),
             wrap_kwargs,
         )

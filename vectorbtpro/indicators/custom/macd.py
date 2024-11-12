@@ -16,6 +16,8 @@ __all__ = [
     "MACD",
 ]
 
+__pdoc__ = {}
+
 MACD = IndicatorFactory(
     class_name="MACD",
     module_name=__name__,
@@ -171,3 +173,4 @@ class _MACD(MACD):
 
 setattr(MACD, "__doc__", _MACD.__doc__)
 setattr(MACD, "plot", _MACD.plot)
+MACD.fix_docstrings(__pdoc__)

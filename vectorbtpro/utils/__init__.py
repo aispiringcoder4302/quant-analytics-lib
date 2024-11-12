@@ -26,6 +26,7 @@ if TYPE_CHECKING:
     from vectorbtpro.utils.hashing import *
     from vectorbtpro.utils.image_ import *
     from vectorbtpro.utils.jitting import *
+    from vectorbtpro.utils.knowledge import *
     from vectorbtpro.utils.magic_decorators import *
     from vectorbtpro.utils.mapping import *
     from vectorbtpro.utils.math_ import *
@@ -43,7 +44,9 @@ if TYPE_CHECKING:
     from vectorbtpro.utils.search import *
     from vectorbtpro.utils.selection import *
     from vectorbtpro.utils.tagging import *
+    from vectorbtpro.utils.telegram import *
     from vectorbtpro.utils.template import *
 
 __import_if_installed__ = dict()
 __import_if_installed__["figure"] = "plotly"
+__import_if_installed__["telegram"] = "telegram"

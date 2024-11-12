@@ -7,6 +7,7 @@ import pytest
 from numba import njit
 
 import vectorbtpro as vbt
+from vectorbtpro._dtypes import *
 from tests.utils import *
 
 ta_available = True
@@ -1147,12 +1148,10 @@ class TestFactory:
                 names=["custom_p", None],
             ),
         )
-        assert F.with_apply_func(apply_func).run(ts, [0, 1])._in_out.dtype == np.float_
+        assert F.with_apply_func(apply_func).run(ts, [0, 1])._in_out.dtype == float_
         assert (
-            F.with_apply_func(apply_func, in_output_settings={"in_out": {"dtype": np.int_}})
-            .run(ts, [0, 1])
-            ._in_out.dtype
-            == np.int_
+            F.with_apply_func(apply_func, in_output_settings={"in_out": {"dtype": int_}}).run(ts, [0, 1])._in_out.dtype
+            == int_
         )
         assert_frame_equal(F.with_apply_func(apply_func, in_out=-1).run(ts, [0, 1]).in_out, target)
         assert_frame_equal(
@@ -1221,13 +1220,13 @@ class TestFactory:
             ),
         )
         assert_frame_equal(
-            F.with_apply_func(apply_func, in_output_settings=dict(in_out=dict(dtype=np.int_)))
+            F.with_apply_func(apply_func, in_output_settings=dict(in_out=dict(dtype=int_)))
             .run([0, 1], input_shape=ts.shape, input_index=ts.index, input_columns=ts.columns)
             .in_out,
             target,
         )
         assert_frame_equal(
-            F.with_apply_func(apply_func_nb, jitted_loop=True, in_output_settings=dict(in_out=dict(dtype=np.int_)))
+            F.with_apply_func(apply_func_nb, jitted_loop=True, in_output_settings=dict(in_out=dict(dtype=int_)))
             .run([0, 1], input_shape=ts.shape, input_index=ts.index, input_columns=ts.columns)
             .in_out,
             target,
@@ -1808,10 +1807,10 @@ class TestFactory:
             return in1 * p, in2 * p
 
         Ind = F.with_apply_func(apply_func)
-        in1 = np.arange(0, 20).reshape((10, 2)).astype(np.float_)
+        in1 = np.arange(0, 20).reshape((10, 2)).astype(float_)
         in1[1:3, 0] = np.nan
         in1[2:4, 1] = np.nan
-        in2 = np.arange(20, 40).reshape((10, 2)).astype(np.float_)
+        in2 = np.arange(20, 40).reshape((10, 2)).astype(float_)
         in2[5:7, 0] = np.nan
         in2[6:8, 1] = np.nan
         ind_1d = Ind.run(in1[:, 0], in2[:, 0], [1, 2, 3], skipna=True)
@@ -2401,7 +2400,7 @@ class TestFactory:
             param_names=["p1", "p2"],
             attr_settings={
                 "ts": {"dtype": None},
-                "o1": {"dtype": np.float_},
+                "o1": {"dtype": float_},
                 "o2": {"dtype": np.bool_},
                 "in_out": {"dtype": TestEnum},
             },
@@ -2453,6 +2452,7 @@ class TestFactory:
             "build_metrics_doc",
             "build_subplots_doc",
             "cache_func",
+            "chain",
             "cls_dir",
             "column_only_select",
             "column_stack",
@@ -2471,6 +2471,8 @@ class TestFactory:
             "encode_config_node",
             "equals",
             "file_exists",
+            "fix_docstrings",
+            "get",
             "get_ca_setup",
             "get_path_setting",
             "get_path_settings",
@@ -2527,6 +2529,7 @@ class TestFactory:
             "plots",
             "plots_defaults",
             "post_resolve_attr",
+            "pprint",
             "pre_resolve_attr",
             "prettify",
             "range_only_select",

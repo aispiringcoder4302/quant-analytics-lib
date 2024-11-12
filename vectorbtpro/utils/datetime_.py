@@ -565,8 +565,30 @@ def to_freq(freq: tp.FrequencyLike, allow_offset: bool = True, keep_offset: bool
 # ############# Datetime ############# #
 
 
-DTCNT = namedtuple("DTCNT", ["year", "month", "day", "weekday", "hour", "minute", "second", "nanosecond"])
-"""Named tuple version of `DTC`."""
+DTCNT = namedtuple(
+    "DTCNT",
+    [
+        "year",
+        "month",
+        "day",
+        "weekday",
+        "hour",
+        "minute",
+        "second",
+        "nanosecond",
+    ],
+    defaults=dict(
+        year=-1,
+        month=-1,
+        day=-1,
+        weekday=-1,
+        hour=-1,
+        minute=-1,
+        second=-1,
+        nanosecond=-1,
+    ),
+)
+__pdoc__["DTCNT"] = """A named tuple version of `DTC`."""
 
 DTCT = tp.TypeVar("DTCT", bound="DTC")
 
@@ -655,14 +677,14 @@ class DTC(DefineMixin):
     def from_namedtuple(cls: tp.Type[DTCT], dtc: DTCNT) -> DTCT:
         """Get `DTC` instance from a named tuple of the type `DTCNT`."""
         return cls(
-            year=dtc.year,
-            month=dtc.month,
-            day=dtc.day,
-            weekday=dtc.weekday,
-            hour=dtc.hour,
-            minute=dtc.minute,
-            second=dtc.second,
-            nanosecond=dtc.nanosecond,
+            year=dtc.year if dtc.year != -1 else None,
+            month=dtc.month if dtc.month != -1 else None,
+            day=dtc.day if dtc.day != -1 else None,
+            weekday=dtc.weekday if dtc.weekday != -1 else None,
+            hour=dtc.hour if dtc.hour != -1 else None,
+            minute=dtc.minute if dtc.minute != -1 else None,
+            second=dtc.second if dtc.second != -1 else None,
+            nanosecond=dtc.nanosecond if dtc.nanosecond != -1 else None,
         )
 
     @classmethod
@@ -686,7 +708,7 @@ class DTC(DefineMixin):
             return cls.from_time(dtc)
         if isinstance(dtc, (int, str)):
             return cls.parse_time_str(str(dtc), **parse_kwargs)
-        raise TypeError(f"Invalid type {type(dtc)}")
+        raise TypeError(f"Invalid type: {type(dtc)}")
 
     @classmethod
     def is_parsable(
@@ -755,7 +777,16 @@ class DTC(DefineMixin):
 
     def to_namedtuple(self) -> namedtuple:
         """Convert to a named tuple."""
-        return DTCNT(*self.asdict().values())
+        return DTCNT(
+            year=self.year if self.year is not None else -1,
+            month=self.month if self.month is not None else -1,
+            day=self.day if self.day is not None else -1,
+            weekday=self.weekday if self.weekday is not None else -1,
+            hour=self.hour if self.hour is not None else -1,
+            minute=self.minute if self.minute is not None else -1,
+            second=self.second if self.second is not None else -1,
+            nanosecond=self.nanosecond if self.nanosecond is not None else -1,
+        )
 
 
 def time_to_timedelta(t: tp.Union[tp.TimeLike, DTC], **kwargs) -> pd.Timedelta:

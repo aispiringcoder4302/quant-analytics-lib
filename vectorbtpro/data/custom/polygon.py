@@ -124,7 +124,7 @@ class PolygonData(RemoteData):
         if client is None:
             client = RESTClient(**client_config)
         elif has_client_config:
-            raise ValueError("Cannot apply client_config on already created client")
+            raise ValueError("Cannot apply client_config to already initialized client")
         return client
 
     @classmethod
@@ -215,10 +215,10 @@ class PolygonData(RemoteData):
 
         # Resolve the timeframe
         if not isinstance(timeframe, str):
-            raise ValueError(f"Invalid timeframe '{timeframe}'")
+            raise ValueError(f"Invalid timeframe: '{timeframe}'")
         split = dt.split_freq_str(timeframe)
         if split is None:
-            raise ValueError(f"Invalid timeframe '{timeframe}'")
+            raise ValueError(f"Invalid timeframe: '{timeframe}'")
         multiplier, unit = split
         if unit == "m":
             unit = "minute"

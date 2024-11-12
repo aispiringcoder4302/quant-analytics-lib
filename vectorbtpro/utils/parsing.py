@@ -68,6 +68,24 @@ def get_func_arg_names(
     return arg_names
 
 
+def has_variable_args(func: tp.Callable) -> bool:
+    """Return whether function accepts variable positions arguments."""
+    signature = inspect.signature(func)
+    for p in signature.parameters.values():
+        if p.kind == p.VAR_POSITIONAL:
+            return True
+    return False
+
+
+def has_variable_kwargs(func: tp.Callable) -> bool:
+    """Return whether function accepts variable keyword arguments."""
+    signature = inspect.signature(func)
+    for p in signature.parameters.values():
+        if p.kind == p.VAR_KEYWORD:
+            return True
+    return False
+
+
 def extend_args(func: tp.Callable, args: tp.Args, kwargs: tp.Kwargs, **with_kwargs) -> tp.Tuple[tp.Args, tp.Kwargs]:
     """Extend arguments and keyword arguments with other arguments."""
     kwargs = dict(kwargs)

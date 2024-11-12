@@ -9,6 +9,8 @@ __all__ = [
     "RPROBCX",
 ]
 
+__pdoc__ = {}
+
 RPROBCX = SignalFactory(
     **rprobx_config.merge_with(
         dict(
@@ -32,3 +34,4 @@ class _RPROBCX(RPROBCX):
 
 
 setattr(RPROBCX, "__doc__", _RPROBCX.__doc__)
+RPROBCX.fix_docstrings(__pdoc__)

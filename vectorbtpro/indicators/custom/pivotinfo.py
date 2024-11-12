@@ -16,6 +16,8 @@ __all__ = [
     "PIVOTINFO",
 ]
 
+__pdoc__ = {}
+
 PIVOTINFO = IndicatorFactory(
     class_name="PIVOTINFO",
     module_name=__name__,
@@ -209,3 +211,4 @@ class _PIVOTINFO(PIVOTINFO):
 setattr(PIVOTINFO, "__doc__", _PIVOTINFO.__doc__)
 setattr(PIVOTINFO, "plot", _PIVOTINFO.plot)
 setattr(PIVOTINFO, "plot_zigzag", _PIVOTINFO.plot_zigzag)
+PIVOTINFO.fix_docstrings(__pdoc__)

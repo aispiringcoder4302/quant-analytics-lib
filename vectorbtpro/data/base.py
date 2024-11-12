@@ -24,7 +24,7 @@ from vectorbtpro.returns.accessors import ReturnsAccessor
 from vectorbtpro.utils import checks, datetime_ as dt
 from vectorbtpro.utils.attr_ import get_dict_attr
 from vectorbtpro.utils.config import merge_dicts, Config, HybridConfig, copy_dict
-from vectorbtpro.utils.decorators import cached_property, class_or_instancemethod
+from vectorbtpro.utils.decorators import cached_property, hybrid_method
 from vectorbtpro.utils.execution import Task, NoResult, NoResultsException, filter_out_no_results, execute
 from vectorbtpro.utils.merging import MergeFunc
 from vectorbtpro.utils.parsing import get_func_arg_names, extend_args
@@ -941,7 +941,7 @@ class Data(Analyzable, DataWithFeatures, OHLCDataMixin, metaclass=MetaData):
             return self.classes
         return None
 
-    @class_or_instancemethod
+    @hybrid_method
     def get_level_name(
         cls_or_self,
         keys: tp.Optional[tp.Keys] = None,
@@ -989,7 +989,7 @@ class Data(Analyzable, DataWithFeatures, OHLCDataMixin, metaclass=MetaData):
         If False, no level names will be used."""
         return self.get_level_name()
 
-    @class_or_instancemethod
+    @hybrid_method
     def get_key_index(
         cls_or_self,
         keys: tp.Optional[tp.Keys] = None,
@@ -1150,7 +1150,7 @@ class Data(Analyzable, DataWithFeatures, OHLCDataMixin, metaclass=MetaData):
                         else:
                             yield key, self.select_keys(key)
         else:
-            raise ValueError(f"Invalid option='{over}'")
+            raise ValueError(f"Invalid over: '{over}'")
 
     # ############# Getting ############# #
 
@@ -1475,7 +1475,7 @@ class Data(Analyzable, DataWithFeatures, OHLCDataMixin, metaclass=MetaData):
                     if self.single_symbol:
                         return tuple([list(self.data.values())[i] for i in feature_idxs]), features
                     return tuple([list(self.data.values())[i].iloc[:, symbol_idxs] for i in feature_idxs]), features
-                raise ValueError(f"Invalid option per='{per}'")
+                raise ValueError(f"Invalid per: '{per}'")
             else:
                 if single_symbol:
                     if self.single_feature:
@@ -1495,7 +1495,7 @@ class Data(Analyzable, DataWithFeatures, OHLCDataMixin, metaclass=MetaData):
                     if self.single_feature:
                         return tuple([list(self.data.values())[i] for i in symbol_idxs]), symbols
                     return tuple([list(self.data.values())[i].iloc[:, feature_idxs] for i in symbol_idxs]), symbols
-                raise ValueError(f"Invalid option per='{per}'")
+                raise ValueError(f"Invalid per: '{per}'")
 
         objs, keys = _get_objs()
         if as_dict:
@@ -1726,7 +1726,7 @@ class Data(Analyzable, DataWithFeatures, OHLCDataMixin, metaclass=MetaData):
                     elif missing == "raise":
                         raise ValueError("Symbols have mismatching index")
                     else:
-                        raise ValueError(f"Invalid option missing='{missing}'")
+                        raise ValueError(f"Invalid missing: '{missing}'")
 
         if not index_changed:
             return data
@@ -1784,7 +1784,7 @@ class Data(Analyzable, DataWithFeatures, OHLCDataMixin, metaclass=MetaData):
                     elif missing == "raise":
                         raise ValueError("Symbols have mismatching columns")
                     else:
-                        raise ValueError(f"Invalid option missing='{missing}'")
+                        raise ValueError(f"Invalid missing: '{missing}'")
 
         if not columns_changed:
             return data
@@ -1852,7 +1852,7 @@ class Data(Analyzable, DataWithFeatures, OHLCDataMixin, metaclass=MetaData):
             return symbol_dict(new_dct2)
         return new_dct2
 
-    @class_or_instancemethod
+    @hybrid_method
     def align_data(
         cls_or_self,
         data: dict,
@@ -2101,7 +2101,7 @@ class Data(Analyzable, DataWithFeatures, OHLCDataMixin, metaclass=MetaData):
                     return True
         return False
 
-    @class_or_instancemethod
+    @hybrid_method
     def check_dict_type(
         cls_or_self,
         arg: tp.Any,
@@ -2118,7 +2118,7 @@ class Data(Analyzable, DataWithFeatures, OHLCDataMixin, metaclass=MetaData):
         if issubclass(dict_type, symbol_dict):
             checks.assert_not_instance_of(arg, feature_dict, arg_name=arg_name)
 
-    @class_or_instancemethod
+    @hybrid_method
     def select_key_kwargs(
         cls_or_self,
         key: tp.Key,
@@ -2161,7 +2161,7 @@ class Data(Analyzable, DataWithFeatures, OHLCDataMixin, metaclass=MetaData):
         """Select the keyword arguments belonging to a symbol."""
         return cls.select_key_kwargs(symbol, kwargs, dict_type=symbol_dict, **kwargs_)
 
-    @class_or_instancemethod
+    @hybrid_method
     def select_key_from_dict(
         cls_or_self,
         key: tp.Key,
@@ -2559,9 +2559,9 @@ class Data(Analyzable, DataWithFeatures, OHLCDataMixin, metaclass=MetaData):
             return self.remove_symbols(keys, **kwargs)
         raise ValueError("Cannot determine orientation. Use remove_features or remove_symbols.")
 
-    @class_or_instancemethod
+    @hybrid_method
     def merge(
-        cls_or_self: tp.Union[tp.Type[DataT], DataT],
+        cls_or_self: tp.MaybeType[DataT],
         *datas: DataT,
         rename: tp.Optional[tp.Dict[tp.Key, tp.Key]] = None,
         **kwargs,
@@ -4050,7 +4050,7 @@ class Data(Analyzable, DataWithFeatures, OHLCDataMixin, metaclass=MetaData):
                 out = feature_dict({feature_name: out})
             out = Data.from_data(out, **data_kwargs)
         else:
-            raise ValueError(f"Invalid option unpack='{unpack}'")
+            raise ValueError(f"Invalid unpack: '{unpack}'")
         return out
 
     # ############# Persisting ############# #
@@ -4426,7 +4426,7 @@ class Data(Analyzable, DataWithFeatures, OHLCDataMixin, metaclass=MetaData):
             elif _engine == "auto":
                 assert_can_import_any("pyarrow", "fastparquet")
             else:
-                raise ValueError(f"Invalid option engine='{_engine}'")
+                raise ValueError(f"Invalid engine: '{_engine}'")
             if isinstance(v, pd.Series):
                 v = v.to_frame()
             if _partition_by is not None:
@@ -4863,7 +4863,7 @@ class Data(Analyzable, DataWithFeatures, OHLCDataMixin, metaclass=MetaData):
                 elif _write_format.upper() == "JSON":
                     _write_path /= f"{k}.json"
                 else:
-                    raise ValueError(f"Invalid write format '{_write_format}'")
+                    raise ValueError(f"Invalid write format: '{_write_format}'")
             if _write_path.suffix != "":
                 _mkdir_kwargs = self.resolve_key_arg(
                     mkdir_kwargs,

@@ -9,6 +9,8 @@ __all__ = [
     "STCX",
 ]
 
+__pdoc__ = {}
+
 STCX = SignalFactory(
     **stx_config.merge_with(
         dict(
@@ -32,3 +34,4 @@ class _STCX(STCX):
 
 
 setattr(STCX, "__doc__", _STCX.__doc__)
+STCX.fix_docstrings(__pdoc__)

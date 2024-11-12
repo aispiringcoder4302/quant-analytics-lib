@@ -1557,14 +1557,14 @@ class Parameterizer(Configured):
                     k_merge_func = k_merge_func.replace(
                         merge_kwargs=k_merge_kwargs,
                         context=template_context,
-                        sub_id_prefix="mono_",
+                        eval_id_prefix="mono_",
                     )
                 else:
                     k_merge_func = MergeFunc(
                         k_merge_func,
                         merge_kwargs=k_merge_kwargs,
                         context=template_context,
-                        sub_id_prefix="mono_",
+                        eval_id_prefix="mono_",
                     )
                 new_param_config[k] = k_merge_func(v)
 

@@ -9,8 +9,9 @@ from numba.extending import overload
 from numba.np.numpy_support import as_dtype
 
 from vectorbtpro import _typing as tp
+from vectorbtpro._dtypes import *
 from vectorbtpro.base import chunking as base_ch
-from vectorbtpro.base.flex_indexing import flex_select_1d_nb, flex_select_1d_pc_nb, flex_select_col_nb
+from vectorbtpro.base.flex_indexing import flex_select_1d_nb, flex_select_col_nb
 from vectorbtpro.base.reshaping import to_1d_array_nb, to_2d_array_nb
 from vectorbtpro.registries.ch_registry import register_chunkable
 from vectorbtpro.registries.jit_registry import register_jitted
@@ -42,7 +43,7 @@ def _select_indices_1d_nb(arr, indices, fill_value):
     return impl
 
 
-ol_select_indices_1d_nb = overload(_select_indices_1d_nb)(_select_indices_1d_nb)
+overload(_select_indices_1d_nb)(_select_indices_1d_nb)
 
 
 @register_jitted(cache=True)
@@ -77,7 +78,7 @@ def _select_indices_nb(arr, indices, fill_value):
     return impl
 
 
-ol_select_indices_nb = overload(_select_indices_nb)(_select_indices_nb)
+overload(_select_indices_nb)(_select_indices_nb)
 
 
 @register_jitted(cache=True)
@@ -134,7 +135,7 @@ def _set_by_mask_1d_nb(arr, mask, value):
     return impl
 
 
-ol_set_by_mask_1d_nb = overload(_set_by_mask_1d_nb)(_set_by_mask_1d_nb)
+overload(_set_by_mask_1d_nb)(_set_by_mask_1d_nb)
 
 
 @register_jitted(cache=True)
@@ -165,7 +166,7 @@ def _set_by_mask_nb(arr, mask, value):
     return impl
 
 
-ol_set_by_mask_nb = overload(_set_by_mask_nb)(_set_by_mask_nb)
+overload(_set_by_mask_nb)(_set_by_mask_nb)
 
 
 @register_jitted(cache=True)
@@ -195,7 +196,7 @@ def _set_by_mask_mult_1d_nb(arr, mask, values):
     return impl
 
 
-ol_set_by_mask_mult_1d_nb = overload(_set_by_mask_mult_1d_nb)(_set_by_mask_mult_1d_nb)
+overload(_set_by_mask_mult_1d_nb)(_set_by_mask_mult_1d_nb)
 
 
 @register_jitted(cache=True)
@@ -228,7 +229,7 @@ def _set_by_mask_mult_nb(arr, mask, values):
     return impl
 
 
-ol_set_by_mask_mult_nb = overload(_set_by_mask_mult_nb)(_set_by_mask_mult_nb)
+overload(_set_by_mask_mult_nb)(_set_by_mask_mult_nb)
 
 
 @register_jitted(cache=True)
@@ -249,7 +250,7 @@ def first_valid_index_1d_nb(arr: tp.Array1d, check_inf: bool = True) -> int:
 @register_jitted(cache=True)
 def first_valid_index_nb(arr, check_inf: bool = True):
     """2-dim version of `first_valid_index_1d_nb`."""
-    out = np.empty(arr.shape[1], dtype=np.int_)
+    out = np.empty(arr.shape[1], dtype=int_)
     for col in range(arr.shape[1]):
         out[col] = first_valid_index_1d_nb(arr[:, col], check_inf=check_inf)
     return out
@@ -267,7 +268,7 @@ def last_valid_index_1d_nb(arr: tp.Array1d, check_inf: bool = True) -> int:
 @register_jitted(cache=True)
 def last_valid_index_nb(arr, check_inf: bool = True):
     """2-dim version of `last_valid_index_1d_nb`."""
-    out = np.empty(arr.shape[1], dtype=np.int_)
+    out = np.empty(arr.shape[1], dtype=int_)
     for col in range(arr.shape[1]):
         out[col] = last_valid_index_1d_nb(arr[:, col], check_inf=check_inf)
     return out
@@ -361,7 +362,7 @@ def _bshift_1d_nb(arr, n, fill_value):
     return impl
 
 
-ol_bshift_1d_nb = overload(_bshift_1d_nb)(_bshift_1d_nb)
+overload(_bshift_1d_nb)(_bshift_1d_nb)
 
 
 @register_jitted(cache=True)
@@ -400,7 +401,7 @@ def _bshift_nb(arr, n, fill_value):
     return impl
 
 
-ol_bshift_nb = overload(_bshift_nb)(_bshift_nb)
+overload(_bshift_nb)(_bshift_nb)
 
 
 @register_chunkable(
@@ -442,7 +443,7 @@ def _fshift_1d_nb(arr, n, fill_value):
     return impl
 
 
-ol_fshift_1d_nb = overload(_fshift_1d_nb)(_fshift_1d_nb)
+overload(_fshift_1d_nb)(_fshift_1d_nb)
 
 
 @register_jitted(cache=True)
@@ -478,7 +479,7 @@ def _fshift_nb(arr, n, fill_value):
     return impl
 
 
-ol_fshift_nb = overload(_fshift_nb)(_fshift_nb)
+overload(_fshift_nb)(_fshift_nb)
 
 
 @register_chunkable(
@@ -497,7 +498,7 @@ def diff_1d_nb(arr: tp.Array1d, n: int = 1) -> tp.Array1d:
     """Compute the 1-th discrete difference.
 
     Numba equivalent to `pd.Series(arr).diff()`."""
-    out = np.empty(arr.shape[0], dtype=np.float_)
+    out = np.empty(arr.shape[0], dtype=float_)
     for i in range(out.shape[0]):
         if i - n >= 0:
             out[i] = arr[i] - arr[i - n]
@@ -514,7 +515,7 @@ def diff_1d_nb(arr: tp.Array1d, n: int = 1) -> tp.Array1d:
 @register_jitted(cache=True, tags={"can_parallel"})
 def diff_nb(arr: tp.Array2d, n: int = 1) -> tp.Array2d:
     """2-dim version of `diff_1d_nb`."""
-    out = np.empty_like(arr, dtype=np.float_)
+    out = np.empty_like(arr, dtype=float_)
     for col in prange(arr.shape[1]):
         out[:, col] = diff_1d_nb(arr[:, col], n=n)
     return out
@@ -525,7 +526,7 @@ def pct_change_1d_nb(arr: tp.Array1d, n: int = 1) -> tp.Array1d:
     """Compute the percentage change.
 
     Numba equivalent to `pd.Series(arr).pct_change()`."""
-    out = np.empty(arr.shape[0], dtype=np.float_)
+    out = np.empty(arr.shape[0], dtype=float_)
     for i in range(out.shape[0]):
         if i - n >= 0:
             out[i] = (arr[i] - arr[i - n]) / arr[i - n]
@@ -542,7 +543,7 @@ def pct_change_1d_nb(arr: tp.Array1d, n: int = 1) -> tp.Array1d:
 @register_jitted(cache=True, tags={"can_parallel"})
 def pct_change_nb(arr: tp.Array2d, n: int = 1) -> tp.Array2d:
     """2-dim version of `pct_change_1d_nb`."""
-    out = np.empty_like(arr, dtype=np.float_)
+    out = np.empty_like(arr, dtype=float_)
     for col in prange(arr.shape[1]):
         out[:, col] = pct_change_1d_nb(arr[:, col], n=n)
     return out
@@ -629,7 +630,7 @@ def _nanprod_nb(arr):
     return impl
 
 
-ol_nanprod_nb = overload(_nanprod_nb)(_nanprod_nb)
+overload(_nanprod_nb)(_nanprod_nb)
 
 
 @register_chunkable(
@@ -663,7 +664,7 @@ def _nancumsum_nb(arr):
     return impl
 
 
-ol_nancumsum_nb = overload(_nancumsum_nb)(_nancumsum_nb)
+overload(_nancumsum_nb)(_nancumsum_nb)
 
 
 @register_chunkable(
@@ -697,7 +698,7 @@ def _nancumprod_nb(arr):
     return impl
 
 
-ol_nancumprod_nb = overload(_nancumprod_nb)(_nancumprod_nb)
+overload(_nancumprod_nb)(_nancumprod_nb)
 
 
 @register_chunkable(
@@ -731,7 +732,7 @@ def _nansum_nb(arr):
     return impl
 
 
-ol_nansum_nb = overload(_nansum_nb)(_nansum_nb)
+overload(_nansum_nb)(_nansum_nb)
 
 
 @register_chunkable(
@@ -763,7 +764,7 @@ def nancnt_1d_nb(arr: tp.Array1d) -> int:
 @register_jitted(cache=True, tags={"can_parallel"})
 def nancnt_nb(arr: tp.Array2d) -> tp.Array1d:
     """2-dim version of `nancnt_1d_nb`."""
-    out = np.empty(arr.shape[1], dtype=np.int_)
+    out = np.empty(arr.shape[1], dtype=int_)
     for col in prange(arr.shape[1]):
         out[col] = nancnt_1d_nb(arr[:, col])
     return out
@@ -805,7 +806,7 @@ def nanmax_nb(arr: tp.Array2d) -> tp.Array1d:
 @register_jitted(cache=True, tags={"can_parallel"})
 def nanmean_nb(arr: tp.Array2d) -> tp.Array1d:
     """Numba equivalent of `np.nanmean` along axis 0."""
-    out = np.empty(arr.shape[1], dtype=np.float_)
+    out = np.empty(arr.shape[1], dtype=float_)
     for col in prange(arr.shape[1]):
         out[col] = np.nanmean(arr[:, col])
     return out
@@ -819,7 +820,7 @@ def nanmean_nb(arr: tp.Array2d) -> tp.Array1d:
 @register_jitted(cache=True, tags={"can_parallel"})
 def nanmedian_nb(arr: tp.Array2d) -> tp.Array1d:
     """Numba equivalent of `np.nanmedian` along axis 0."""
-    out = np.empty(arr.shape[1], dtype=np.float_)
+    out = np.empty(arr.shape[1], dtype=float_)
     for col in prange(arr.shape[1]):
         out[col] = np.nanmedian(arr[:, col])
     return out
@@ -970,7 +971,7 @@ def nanstd_1d_nb(arr: tp.Array1d, ddof: int = 0) -> float:
 @register_jitted(cache=True, tags={"can_parallel"})
 def nanstd_nb(arr: tp.Array2d, ddof: int = 0) -> tp.Array1d:
     """2-dim version of `nanstd_1d_nb`."""
-    out = np.empty(arr.shape[1], dtype=np.float_)
+    out = np.empty(arr.shape[1], dtype=float_)
     for col in prange(arr.shape[1]):
         out[col] = nanstd_1d_nb(arr[:, col], ddof=ddof)
     return out
@@ -1006,7 +1007,7 @@ def nancov_1d_nb(arr1: tp.Array1d, arr2: tp.Array1d, ddof: int = 0) -> float:
 @register_jitted(cache=True, tags={"can_parallel"})
 def nancov_nb(arr1: tp.Array2d, arr2: tp.Array2d, ddof: int = 0) -> tp.Array1d:
     """2-dim version of `nancov_1d_nb`."""
-    out = np.empty(arr1.shape[1], dtype=np.float_)
+    out = np.empty(arr1.shape[1], dtype=float_)
     for col in prange(arr1.shape[1]):
         out[col] = nancov_1d_nb(arr1[:, col], arr2[:, col], ddof=ddof)
     return out
@@ -1055,7 +1056,7 @@ def nancorr_1d_nb(arr1: tp.Array1d, arr2: tp.Array1d) -> float:
 @register_jitted(cache=True, tags={"can_parallel"})
 def nancorr_nb(arr1: tp.Array2d, arr2: tp.Array2d) -> tp.Array1d:
     """2-dim version of `nancorr_1d_nb`."""
-    out = np.empty(arr1.shape[1], dtype=np.float_)
+    out = np.empty(arr1.shape[1], dtype=float_)
     for col in prange(arr1.shape[1]):
         out[col] = nancorr_1d_nb(arr1[:, col], arr2[:, col])
     return out
@@ -1068,7 +1069,7 @@ def rank_1d_nb(arr: tp.Array1d, argsorted: tp.Optional[tp.Array1d] = None, pct: 
     Numba equivalent to `pd.Series(arr).rank(pct=pct)`."""
     if argsorted is None:
         argsorted = np.argsort(arr)
-    out = np.empty_like(arr, dtype=np.float_)
+    out = np.empty_like(arr, dtype=float_)
     rank_sum = 0
     rank_cnt = 0
     nan_cnt = 0
@@ -1118,7 +1119,7 @@ def rank_1d_nb(arr: tp.Array1d, argsorted: tp.Optional[tp.Array1d] = None, pct: 
 @register_jitted(cache=True, tags={"can_parallel"})
 def rank_nb(arr: tp.Array2d, argsorted: tp.Optional[tp.Array2d] = None, pct: bool = False) -> tp.Array2d:
     """2-dim version of `rank_1d_nb`."""
-    out = np.empty_like(arr, dtype=np.float_)
+    out = np.empty_like(arr, dtype=float_)
     for col in prange(arr.shape[1]):
         if argsorted is None:
             out[:, col] = rank_1d_nb(arr[:, col], argsorted=None, pct=pct)
@@ -1136,7 +1137,7 @@ def polyfit_1d_nb(x: tp.Array1d, y: tp.Array1d, deg: int, stabilize: bool = Fals
         if deg > 1:
             for n in range(2, deg + 1):
                 mat_[:, n] = mat_[:, n - 1] * x
-        scale_vect = np.empty((deg + 1,), dtype=np.float_)
+        scale_vect = np.empty((deg + 1,), dtype=float_)
         for n in range(0, deg + 1):
             col_norm = np.linalg.norm(mat_[:, n])
             scale_vect[n] = col_norm
@@ -1184,7 +1185,7 @@ def value_counts_nb(codes: tp.Array2d, n_uniques: int, group_map: tp.GroupMap) -
     """Compute value counts per column/group."""
     group_idxs, group_lens = group_map
     group_start_idxs = np.cumsum(group_lens) - group_lens
-    out = np.full((n_uniques, group_lens.shape[0]), 0, dtype=np.int_)
+    out = np.full((n_uniques, group_lens.shape[0]), 0, dtype=int_)
 
     for group in prange(len(group_lens)):
         group_len = group_lens[group]
@@ -1200,7 +1201,7 @@ def value_counts_nb(codes: tp.Array2d, n_uniques: int, group_map: tp.GroupMap) -
 @register_jitted(cache=True)
 def value_counts_1d_nb(codes: tp.Array1d, n_uniques: int) -> tp.Array1d:
     """Compute value counts."""
-    out = np.full(n_uniques, 0, dtype=np.int_)
+    out = np.full(n_uniques, 0, dtype=int_)
 
     for i in range(codes.shape[0]):
         out[codes[i]] += 1
@@ -1215,7 +1216,7 @@ def value_counts_1d_nb(codes: tp.Array1d, n_uniques: int) -> tp.Array1d:
 @register_jitted(cache=True, tags={"can_parallel"})
 def value_counts_per_row_nb(codes: tp.Array2d, n_uniques: int) -> tp.Array2d:
     """Compute value counts per row."""
-    out = np.empty((n_uniques, codes.shape[0]), dtype=np.int_)
+    out = np.empty((n_uniques, codes.shape[0]), dtype=int_)
 
     for i in prange(codes.shape[0]):
         out[:, i] = value_counts_1d_nb(codes[i, :], n_uniques)
@@ -1371,7 +1372,7 @@ def demean_nb(arr: tp.Array2d, group_map: tp.GroupMap) -> tp.Array2d:
     """Demean each value within its group."""
     group_idxs, group_lens = group_map
     group_start_idxs = np.cumsum(group_lens) - group_lens
-    out = np.empty_like(arr, dtype=np.float_)
+    out = np.empty_like(arr, dtype=float_)
 
     for group in prange(len(group_lens)):
         group_len = group_lens[group]
@@ -1410,8 +1411,8 @@ def to_renko_1d_nb(
         out_n = arr.shape[0]
     else:
         out_n = max_out_len
-    arr_out = np.empty(out_n, dtype=np.float_)
-    idx_out = np.empty(out_n, dtype=np.int_)
+    arr_out = np.empty(out_n, dtype=float_)
+    idx_out = np.empty(out_n, dtype=int_)
     uptrend_out = np.empty(out_n, dtype=np.bool_)
     prev_value = np.nan
     k = 0
@@ -1482,8 +1483,8 @@ def to_renko_ohlc_1d_nb(
         out_n = arr.shape[0]
     else:
         out_n = max_out_len
-    arr_out = np.empty((out_n, 4), dtype=np.float_)
-    idx_out = np.empty(out_n, dtype=np.int_)
+    arr_out = np.empty((out_n, 4), dtype=float_)
+    idx_out = np.empty(out_n, dtype=int_)
     prev_value = np.nan
     k = 0
     trend = 0
@@ -1676,7 +1677,7 @@ def _realign_1d_nb(
     return impl
 
 
-ol_realign_1d_nb = overload(_realign_1d_nb)(_realign_1d_nb)
+overload(_realign_1d_nb)(_realign_1d_nb)
 
 
 @register_jitted(cache=True)
@@ -1776,7 +1777,7 @@ def _realign_nb(
     return impl
 
 
-ol_realign_nb = overload(_realign_nb)(_realign_nb)
+overload(_realign_nb)(_realign_nb)
 
 
 @register_chunkable(

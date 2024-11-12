@@ -2,10 +2,11 @@
 
 """Utilities for formatting."""
 
+import attr
 import inspect
 import re
+import io
 
-import attr
 import numpy as np
 import pandas as pd
 
@@ -18,6 +19,7 @@ __all__ = [
     "ptable",
     "phelp",
     "pdir",
+    "dump",
 ]
 
 
@@ -33,12 +35,16 @@ class Prettified:
     """Abstract class that can be prettified."""
 
     def prettify(self, **kwargs) -> str:
-        """Prettify this object.
+        """Prettify the object.
 
         !!! warning
             Calling `prettify` can lead to an infinite recursion.
             Make sure to pre-process this object."""
         raise NotImplementedError
+
+    def pprint(self, **kwargs) -> None:
+        """Pretty-print the object."""
+        print(self.prettify(**kwargs))
 
     def __str__(self) -> str:
         try:
@@ -236,10 +242,10 @@ def ptable(*args, display_html: tp.Optional[bool] = None, **kwargs) -> None:
 
     If `display_html` is None, checks whether the code runs in a IPython notebook, and if so, becomes True.
     If `display_html` is True, displays the table in HTML format."""
-    from vectorbtpro.utils.checks import is_notebook
+    from vectorbtpro.utils.checks import in_notebook
 
     if display_html is None:
-        display_html = is_notebook()
+        display_html = in_notebook()
     if display_html:
         from IPython.display import display, HTML
 
@@ -350,3 +356,93 @@ def pdir(*args, **kwargs) -> None:
     from vectorbtpro.utils.attr_ import parse_attrs
 
     ptable(parse_attrs(*args, **kwargs))
+
+
+def dump(obj: tp.Any, dump_engine: str = "prettify", **kwargs) -> str:
+    """Dump an object to a string."""
+    if dump_engine.lower() == "repr":
+        return repr(obj)
+    if dump_engine.lower() == "prettify":
+        return prettify(obj, **kwargs)
+    if dump_engine.lower() == "nestedtext":
+        from vectorbtpro.utils.module_ import assert_can_import
+
+        assert_can_import("nestedtext")
+        import nestedtext as nt
+
+        return nt.dumps(obj, **kwargs)
+    if dump_engine.lower() == "yaml":
+        from vectorbtpro.utils.module_ import check_installed
+
+        if check_installed("ruamel"):
+            dump_engine = "ruamel"
+        else:
+            dump_engine = "pyyaml"
+    if dump_engine.lower() == "pyyaml":
+        from vectorbtpro.utils.module_ import assert_can_import
+
+        assert_can_import("yaml")
+        import yaml
+
+        def multiline_str_representer(dumper, data):
+            if isinstance(data, str) and "\n" in data:
+                return dumper.represent_scalar("tag:yaml.org,2002:str", data, style="|")
+            return dumper.represent_str(data)
+
+        class CustomDumper(yaml.SafeDumper):
+            pass
+
+        CustomDumper.add_representer(str, multiline_str_representer)
+
+        if "Dumper" not in kwargs:
+            kwargs["Dumper"] = CustomDumper
+        return yaml.dump(obj, **kwargs)
+    if dump_engine.lower() in ("ruamel", "ruamel.yaml"):
+        from vectorbtpro.utils.module_ import assert_can_import
+
+        assert_can_import("ruamel")
+        from ruamel.yaml import YAML
+        from ruamel.yaml.representer import RoundTripRepresenter
+
+        def multiline_str_representer(dumper, data):
+            if isinstance(data, str) and "\n" in data:
+                return dumper.represent_scalar("tag:yaml.org,2002:str", data, style="|")
+            return dumper.represent_str(data)
+
+        class CustomRepresenter(RoundTripRepresenter):
+            pass
+
+        CustomRepresenter.add_representer(str, multiline_str_representer)
+
+        yaml = YAML(
+            typ=kwargs.pop("typ", None),
+            pure=kwargs.pop("pure", False),
+            plug_ins=kwargs.pop("plug_ins", None),
+        )
+        if "Representer" not in kwargs:
+            yaml.Representer = CustomRepresenter
+        for k, v in kwargs.items():
+            if not hasattr(yaml, k):
+                raise AttributeError(f"Invalid YAML attribute: '{k}'")
+            if isinstance(v, tuple):
+                getattr(yaml, k)(*v)
+            elif isinstance(v, dict):
+                getattr(yaml, k)(**v)
+            else:
+                setattr(yaml, k, v)
+        transform = kwargs.pop("transform", None)
+        output = io.StringIO()
+        yaml.dump(obj, output, transform=transform)
+        return output.getvalue()
+    if dump_engine.lower() == "toml":
+        from vectorbtpro.utils.module_ import assert_can_import
+
+        assert_can_import("toml")
+        import toml
+
+        return toml.dumps(obj, **kwargs)
+    if dump_engine.lower() == "json":
+        import json
+
+        return json.dumps(obj, **kwargs)
+    raise ValueError(f"Invalid dump engine: '{dump_engine}'")

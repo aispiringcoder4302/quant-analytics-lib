@@ -482,7 +482,7 @@ def cv_split(
                             )
                             return grid_results, result
                         else:
-                            raise ValueError(f"Invalid option return_grid='{return_grid}'")
+                            raise ValueError(f"Invalid return_grid: '{return_grid}'")
                     return result
                 except Exception as e:
                     if skip_errored or isinstance(e, NoResultsException):

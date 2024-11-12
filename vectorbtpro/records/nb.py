@@ -16,6 +16,7 @@ from numba.extending import overload
 from numba.np.numpy_support import as_dtype
 
 from vectorbtpro import _typing as tp
+from vectorbtpro._dtypes import *
 from vectorbtpro.base import chunking as base_ch
 from vectorbtpro.generic import nb as generic_nb
 from vectorbtpro.records import chunking as records_ch
@@ -32,7 +33,7 @@ __all__ = []
 @register_jitted(cache=True)
 def generate_ids_nb(col_arr: tp.Array1d, n_cols: int) -> tp.Array1d:
     """Generate the monotonically increasing id array based on the column index array."""
-    col_idxs = np.full(n_cols, 0, dtype=np.int_)
+    col_idxs = np.full(n_cols, 0, dtype=int_)
     out = np.empty_like(col_arr)
     for c in range(len(col_arr)):
         out[c] = col_idxs[col_arr[c]]
@@ -49,7 +50,7 @@ def col_lens_nb(col_arr: tp.Array1d, n_cols: int) -> tp.GroupLens:
 
     !!! note
         Requires `col_arr` to be in ascending order. This can be done by sorting."""
-    col_lens = np.full(n_cols, 0, dtype=np.int_)
+    col_lens = np.full(n_cols, 0, dtype=int_)
     last_col = -1
 
     for c in range(col_arr.shape[0]):
@@ -73,7 +74,7 @@ def record_col_lens_select_nb(
     col_end_idxs = np.cumsum(col_lens)
     col_start_idxs = col_end_idxs - col_lens
     n_values = np.sum(col_lens[new_cols])
-    indices_out = np.empty(n_values, dtype=np.int_)
+    indices_out = np.empty(n_values, dtype=int_)
     records_arr_out = np.empty(n_values, dtype=records.dtype)
     j = 0
 
@@ -98,14 +99,14 @@ def col_map_nb(col_arr: tp.Array1d, n_cols: int) -> tp.GroupMap:
     Returns an array with indices segmented by column and an array with column lengths.
 
     Works well for unsorted column arrays."""
-    col_lens_out = np.full(n_cols, 0, dtype=np.int_)
+    col_lens_out = np.full(n_cols, 0, dtype=int_)
     for c in range(col_arr.shape[0]):
         col = col_arr[c]
         col_lens_out[col] += 1
 
     col_start_idxs = np.cumsum(col_lens_out) - col_lens_out
-    col_idxs_out = np.empty((col_arr.shape[0],), dtype=np.int_)
-    col_i = np.full(n_cols, 0, dtype=np.int_)
+    col_idxs_out = np.empty((col_arr.shape[0],), dtype=int_)
+    col_i = np.full(n_cols, 0, dtype=int_)
     for c in range(col_arr.shape[0]):
         col = col_arr[c]
         col_idxs_out[col_start_idxs[col] + col_i[col]] = c
@@ -124,7 +125,7 @@ def record_col_map_select_nb(
     col_idxs, col_lens = col_map
     col_start_idxs = np.cumsum(col_lens) - col_lens
     total_count = np.sum(col_lens[new_cols])
-    indices_out = np.empty(total_count, dtype=np.int_)
+    indices_out = np.empty(total_count, dtype=int_)
     records_arr_out = np.empty(total_count, dtype=records.dtype)
     j = 0
 
@@ -309,7 +310,7 @@ def map_records_nb(records: tp.RecordArray, map_func_nb: tp.RecordsMapFunc, *arg
     """Map each record to a single value.
 
     `map_func_nb` must accept a single record and `*args`. Must return a single value."""
-    out = np.empty(records.shape[0], dtype=np.float_)
+    out = np.empty(records.shape[0], dtype=float_)
 
     for ridx in prange(records.shape[0]):
         out[ridx] = map_func_nb(records[ridx], *args)
@@ -326,7 +327,7 @@ def map_records_meta_nb(n_values: int, map_func_nb: tp.MappedReduceMetaFunc, *ar
     """Meta version of `map_records_nb`.
 
     `map_func_nb` must accept the record index and `*args`. Must return a single value."""
-    out = np.empty(n_values, dtype=np.float_)
+    out = np.empty(n_values, dtype=float_)
 
     for ridx in prange(n_values):
         out[ridx] = map_func_nb(ridx, *args)
@@ -352,7 +353,7 @@ def apply_nb(arr: tp.Array1d, col_map: tp.GroupMap, apply_func_nb: tp.ApplyFunc,
     `apply_func_nb` must accept the values of the column and `*args`. Must return an array."""
     col_idxs, col_lens = col_map
     col_start_idxs = np.cumsum(col_lens) - col_lens
-    out = np.empty(arr.shape[0], dtype=np.float_)
+    out = np.empty(arr.shape[0], dtype=float_)
 
     for col in prange(col_lens.shape[0]):
         col_len = col_lens[col]
@@ -381,7 +382,7 @@ def apply_meta_nb(n_values: int, col_map: tp.GroupMap, apply_func_nb: tp.ApplyMe
     `apply_func_nb` must accept the indices, the column index, and `*args`. Must return an array."""
     col_idxs, col_lens = col_map
     col_start_idxs = np.cumsum(col_lens) - col_lens
-    out = np.empty(n_values, dtype=np.float_)
+    out = np.empty(n_values, dtype=float_)
 
     for col in prange(col_lens.shape[0]):
         col_len = col_lens[col]
@@ -431,9 +432,9 @@ def reduce_mapped_segments_nb(
     col_idxs, col_lens = col_map
     col_start_idxs = np.cumsum(col_lens) - col_lens
     out = np.empty(len(mapped_arr), dtype=mapped_arr.dtype)
-    col_arr_out = np.empty(len(mapped_arr), dtype=np.int_)
-    idx_arr_out = np.empty(len(mapped_arr), dtype=np.int_)
-    id_arr_out = np.empty(len(mapped_arr), dtype=np.int_)
+    col_arr_out = np.empty(len(mapped_arr), dtype=int_)
+    idx_arr_out = np.empty(len(mapped_arr), dtype=int_)
+    id_arr_out = np.empty(len(mapped_arr), dtype=int_)
 
     k = 0
     for col in range(col_lens.shape[0]):
@@ -507,7 +508,7 @@ def reduce_mapped_nb(
     Must return a single value."""
     col_idxs, col_lens = col_map
     col_start_idxs = np.cumsum(col_lens) - col_lens
-    out = np.full(col_lens.shape[0], fill_value, dtype=np.float_)
+    out = np.full(col_lens.shape[0], fill_value, dtype=float_)
 
     for col in prange(col_lens.shape[0]):
         col_len = col_lens[col]
@@ -537,7 +538,7 @@ def reduce_mapped_meta_nb(
     Must return a single value."""
     col_idxs, col_lens = col_map
     col_start_idxs = np.cumsum(col_lens) - col_lens
-    out = np.full(col_lens.shape[0], fill_value, dtype=np.float_)
+    out = np.full(col_lens.shape[0], fill_value, dtype=float_)
 
     for col in prange(col_lens.shape[0]):
         col_len = col_lens[col]
@@ -578,7 +579,7 @@ def reduce_mapped_to_idx_nb(
         Must return integers or raise an exception."""
     col_idxs, col_lens = col_map
     col_start_idxs = np.cumsum(col_lens) - col_lens
-    out = np.full(col_lens.shape[0], fill_value, dtype=np.float_)
+    out = np.full(col_lens.shape[0], fill_value, dtype=float_)
 
     for col in prange(col_lens.shape[0]):
         col_len = col_lens[col]
@@ -615,7 +616,7 @@ def reduce_mapped_to_idx_meta_nb(
     `reduce_func_nb` is the same as in `reduce_mapped_meta_nb`."""
     col_idxs, col_lens = col_map
     col_start_idxs = np.cumsum(col_lens) - col_lens
-    out = np.full(col_lens.shape[0], fill_value, dtype=np.float_)
+    out = np.full(col_lens.shape[0], fill_value, dtype=float_)
 
     for col in prange(col_lens.shape[0]):
         col_len = col_lens[col]
@@ -660,7 +661,7 @@ def reduce_mapped_to_array_nb(
             break
 
     col_0_out = reduce_func_nb(mapped_arr[midxs0], *args)
-    out = np.full((col_0_out.shape[0], col_lens.shape[0]), fill_value, dtype=np.float_)
+    out = np.full((col_0_out.shape[0], col_lens.shape[0]), fill_value, dtype=float_)
     for i in range(col_0_out.shape[0]):
         out[i, col0] = col_0_out[i]
 
@@ -701,7 +702,7 @@ def reduce_mapped_to_array_meta_nb(
             break
 
     col_0_out = reduce_func_nb(midxs0, col0, *args)
-    out = np.full((col_0_out.shape[0], col_lens.shape[0]), fill_value, dtype=np.float_)
+    out = np.full((col_0_out.shape[0], col_lens.shape[0]), fill_value, dtype=float_)
     for i in range(col_0_out.shape[0]):
         out[i, col0] = col_0_out[i]
 
@@ -754,7 +755,7 @@ def reduce_mapped_to_idx_array_nb(
             break
 
     col_0_out = reduce_func_nb(mapped_arr[midxs0], *args)
-    out = np.full((col_0_out.shape[0], col_lens.shape[0]), fill_value, dtype=np.float_)
+    out = np.full((col_0_out.shape[0], col_lens.shape[0]), fill_value, dtype=float_)
     for i in range(col_0_out.shape[0]):
         out[i, col0] = idx_arr[midxs0[col_0_out[i]]]
 
@@ -802,7 +803,7 @@ def reduce_mapped_to_idx_array_meta_nb(
             break
 
     col_0_out = reduce_func_nb(midxs0, col0, *args)
-    out = np.full((col_0_out.shape[0], col_lens.shape[0]), fill_value, dtype=np.float_)
+    out = np.full((col_0_out.shape[0], col_lens.shape[0]), fill_value, dtype=float_)
     for i in range(col_0_out.shape[0]):
         out[i, col0] = idx_arr[midxs0[col_0_out[i]]]
 
@@ -835,7 +836,7 @@ def mapped_value_counts_per_col_nb(codes: tp.Array1d, n_uniques: int, col_map: t
     """Get value counts per column/group of an already factorized mapped array."""
     col_idxs, col_lens = col_map
     col_start_idxs = np.cumsum(col_lens) - col_lens
-    out = np.full((n_uniques, col_lens.shape[0]), 0, dtype=np.int_)
+    out = np.full((n_uniques, col_lens.shape[0]), 0, dtype=int_)
 
     for col in prange(col_lens.shape[0]):
         col_len = col_lens[col]
@@ -855,7 +856,7 @@ def mapped_value_counts_per_row_nb(
     n_rows: int,
 ) -> tp.Array2d:
     """Get value counts per row of an already factorized mapped array."""
-    out = np.full((n_uniques, n_rows), 0, dtype=np.int_)
+    out = np.full((n_uniques, n_rows), 0, dtype=int_)
 
     for c in range(mapped_arr.shape[0]):
         out[mapped_arr[c], idx_arr[c]] += 1
@@ -865,7 +866,7 @@ def mapped_value_counts_per_row_nb(
 @register_jitted(cache=True)
 def mapped_value_counts_nb(mapped_arr: tp.Array1d, n_uniques: int) -> tp.Array2d:
     """Get value counts globally of an already factorized mapped array."""
-    out = np.full(n_uniques, 0, dtype=np.int_)
+    out = np.full(n_uniques, 0, dtype=int_)
 
     for c in range(mapped_arr.shape[0]):
         out[mapped_arr[c]] += 1
@@ -893,7 +894,7 @@ def mapped_coverage_map_nb(col_arr: tp.Array1d, idx_arr: tp.Array1d, target_shap
 
     Each element corresponds to the number of times it was referenced (= duplicates of `col_arr` and `idx_arr`).
     More than one depicts a positional conflict."""
-    out = np.zeros(target_shape, dtype=np.int_)
+    out = np.zeros(target_shape, dtype=int_)
 
     for i in range(len(col_arr)):
         out[idx_arr[i], col_arr[i]] += 1
@@ -932,7 +933,7 @@ def _unstack_mapped_nb(
     return impl
 
 
-ol_unstack_mapped_nb = overload(_unstack_mapped_nb)(_unstack_mapped_nb)
+overload(_unstack_mapped_nb)(_unstack_mapped_nb)
 
 
 @register_jitted(cache=True)
@@ -978,7 +979,7 @@ def _ignore_unstack_mapped_nb(mapped_arr, col_map, fill_value):
     return impl
 
 
-ol_ignore_unstack_mapped_nb = overload(_ignore_unstack_mapped_nb)(_ignore_unstack_mapped_nb)
+overload(_ignore_unstack_mapped_nb)(_ignore_unstack_mapped_nb)
 
 
 @register_jitted(cache=True)
@@ -992,7 +993,7 @@ def unstack_index_nb(repeat_cnt_arr: tp.Array1d) -> tp.Array1d:
     """Unstack index using the number of times each element must repeat.
 
     `repeat_cnt_arr` can be created from the coverage map."""
-    out = np.empty(np.sum(repeat_cnt_arr), dtype=np.int_)
+    out = np.empty(np.sum(repeat_cnt_arr), dtype=int_)
 
     k = 0
     for i in range(len(repeat_cnt_arr)):
@@ -1021,7 +1022,7 @@ def _repeat_unstack_mapped_nb(
     def impl(mapped_arr, col_arr, idx_arr, repeat_cnt_arr, n_cols, fill_value):
         index_start_arr = np.cumsum(repeat_cnt_arr) - repeat_cnt_arr
         out = np.full((np.sum(repeat_cnt_arr), n_cols), fill_value, dtype=dtype)
-        temp = np.zeros((len(repeat_cnt_arr), n_cols), dtype=np.int_)
+        temp = np.zeros((len(repeat_cnt_arr), n_cols), dtype=int_)
 
         for i in range(len(col_arr)):
             out[index_start_arr[idx_arr[i]] + temp[idx_arr[i], col_arr[i]], col_arr[i]] = mapped_arr[i]
@@ -1034,7 +1035,7 @@ def _repeat_unstack_mapped_nb(
     return impl
 
 
-ol_repeat_unstack_mapped_nb = overload(_repeat_unstack_mapped_nb)(_repeat_unstack_mapped_nb)
+overload(_repeat_unstack_mapped_nb)(_repeat_unstack_mapped_nb)
 
 
 @register_jitted(cache=True)

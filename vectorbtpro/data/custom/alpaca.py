@@ -110,7 +110,7 @@ class AlpacaData(RemoteData):
             client_config = {k: v for k, v in client_config.items() if k in arg_names}
             trading_client = TradingClient(**client_config)
         elif has_client_config:
-            raise ValueError("Cannot apply client_config on already created client")
+            raise ValueError("Cannot apply client_config to already initialized client")
 
         if status is not None:
             if isinstance(status, str):
@@ -168,9 +168,9 @@ class AlpacaData(RemoteData):
                 client_config = {k: v for k, v in client_config.items() if k in arg_names}
                 client = StockHistoricalDataClient(**client_config)
             else:
-                raise ValueError(f"Invalid client type '{client_type}'")
+                raise ValueError(f"Invalid client type: '{client_type}'")
         elif has_client_config:
-            raise ValueError("Cannot apply client_config on already created client")
+            raise ValueError("Cannot apply client_config to already initialized client")
         return client
 
     @classmethod
@@ -247,7 +247,7 @@ class AlpacaData(RemoteData):
         freq = timeframe
         split = dt.split_freq_str(timeframe)
         if split is None:
-            raise ValueError(f"Invalid timeframe '{timeframe}'")
+            raise ValueError(f"Invalid timeframe: '{timeframe}'")
         multiplier, unit = split
         if unit == "m":
             unit = TimeFrameUnit.Minute
@@ -260,7 +260,7 @@ class AlpacaData(RemoteData):
         elif unit == "M":
             unit = TimeFrameUnit.Month
         else:
-            raise ValueError(f"Invalid timeframe '{timeframe}'")
+            raise ValueError(f"Invalid timeframe: '{timeframe}'")
         timeframe = TimeFrame(multiplier, unit)
 
         if start is not None:

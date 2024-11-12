@@ -5,14 +5,13 @@
 import inspect
 import warnings
 from copy import copy, deepcopy
-from pathlib import Path
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.utils.attr_ import MISSING
 from vectorbtpro.utils.caching import Cacheable
 from vectorbtpro.utils.chaining import Chainable
 from vectorbtpro.utils.checks import Comparable, is_deep_equal, assert_in, assert_instance_of
-from vectorbtpro.utils.decorators import class_or_instancemethod
+from vectorbtpro.utils.decorators import hybrid_method
 from vectorbtpro.utils.formatting import Prettified, prettify_dict, prettify_inited
 from vectorbtpro.utils.pickling import RecState, Pickleable, pdict
 
@@ -21,6 +20,7 @@ __all__ = [
     "atomic_dict",
     "unsetkey",
     "merge_dicts",
+    "flat_merge_dicts",
     "child_dict",
     "Config",
     "FrozenConfig",
@@ -87,34 +87,14 @@ def convert_to_dict(dct: InConfigLikeT, nested: bool = True) -> dict:
     return dct
 
 
-def resolve_pathlike_key(k: tp.PathLikeKey) -> tp.Tuple[tp.Hashable, ...]:
-    """Convert a path-like key into a tuple."""
-    if isinstance(k, Path):
-        k = k.parts
-    if isinstance(k, str) and "." in k:
-        k = tuple(k.split("."))
-    if isinstance(k, tuple):
-        return k
-    return (k,)
-
-
-def combine_pathlike_keys(k1: tp.PathLikeKey, k2: tp.PathLikeKey) -> tp.PathLikeKey:
-    """Combine two path-like keys."""
-    if isinstance(k1, Path) and isinstance(k2, Path):
-        return k1 / k2
-    if isinstance(k1, str) and isinstance(k2, str):
-        return k1 + "." + k2
-    k1 = resolve_pathlike_key(k1)
-    k2 = resolve_pathlike_key(k2)
-    return k1 + k2
-
-
 def get_dict_item(dct: dict, k: tp.PathLikeKey, populate: bool = False) -> tp.Any:
     """Get dict item under the key `k`.
 
     The key can be nested using the dot notation, `pathlib.Path`, or a tuple, and must be hashable."""
     if k in dct:
         return dct[k]
+    from vectorbtpro.utils.search import resolve_pathlike_key
+
     k = resolve_pathlike_key(k)
     if len(k) == 1:
         k = k[0]
@@ -224,6 +204,96 @@ def update_dict(
             if same_keys and k not in x:
                 continue
             set_dict_item(x, k, v, force=force)
+
+
+def reorder_dict(dct: dict, keys: tp.Iterable[tp.Union[tp.Hashable, type(...)]], skip_missing: bool = False) -> dict:
+    """Reorder a dict based on a list of keys.
+
+    The keys list can include all keys, or a subset of keys with a single Ellipsis (...)
+    representing all other keys."""
+    if not isinstance(dct, dict):
+        dct = dict(dct)
+    if not isinstance(keys, list):
+        keys = list(keys)
+    ellipsis_count = keys.count(...)
+    if ellipsis_count > 1:
+        raise ValueError("Keys list can contain at most one Ellipsis")
+    if skip_missing:
+        specified_keys = [k for k in keys if k is not Ellipsis and k in dct]
+    else:
+        specified_keys = [k for k in keys if k is not Ellipsis]
+        missing_keys = [k for k in specified_keys if k not in dct]
+        if missing_keys:
+            raise KeyError(f"Keys not found in dictionary: {missing_keys}")
+    remaining_keys = [k for k in dct if k not in specified_keys]
+    final_order = []
+    for key in keys:
+        if key is Ellipsis:
+            final_order.extend(remaining_keys)
+        elif key in dct:
+            final_order.append(key)
+    if ellipsis_count == 0 and not skip_missing:
+        final_order.extend(k for k in dct if k not in final_order)
+    elif ellipsis_count == 0 and skip_missing:
+        final_order.extend(k for k in dct if k not in final_order)
+    return {k: dct[k] for k in final_order}
+
+
+def reorder_list(lst: list, keys: tp.Iterable[tp.Union[int, type(...)]], skip_missing: bool = False) -> list:
+    """Reorder a list based on a list of integer indices.
+
+    The keys list can include all indices, or a subset of indices with a single Ellipsis (...)
+    representing all other indices."""
+    if not isinstance(lst, list):
+        lst = list(lst)
+    if not isinstance(keys, list):
+        keys = list(keys)
+    ellipsis_count = keys.count(...)
+    if ellipsis_count > 1:
+        raise ValueError("Keys list can contain at most one Ellipsis")
+    specified_keys = [k for k in keys if k is not Ellipsis]
+    if not all(isinstance(k, int) for k in specified_keys):
+        raise TypeError("All keys must be integers or Ellipsis")
+    if skip_missing:
+        seen = set()
+        valid_specified = []
+        for k in specified_keys:
+            if 0 <= k < len(lst) and k not in seen:
+                valid_specified.append(k)
+                seen.add(k)
+        specified_keys = valid_specified
+    else:
+        invalid_keys = [k for k in specified_keys if not (0 <= k < len(lst))]
+        if invalid_keys:
+            raise IndexError(f"Indices out of range: {invalid_keys}")
+        if len(specified_keys) != len(set(specified_keys)):
+            duplicates = set(k for k in specified_keys if specified_keys.count(k) > 1)
+            raise ValueError(f"Duplicate indices in keys list: {duplicates}")
+    remaining_indices = [i for i in range(len(lst)) if i not in specified_keys]
+    final_order = []
+    for key in keys:
+        if key is Ellipsis:
+            final_order.extend(remaining_indices)
+        else:
+            if skip_missing:
+                if 0 <= key < len(lst) and key not in final_order:
+                    final_order.append(key)
+            else:
+                final_order.append(key)
+    if ellipsis_count == 0:
+        if len(final_order) != len(lst):
+            raise ValueError("Reordered list does not include all elements from the original list")
+    else:
+        if len(final_order) != len(lst):
+            raise ValueError("Reordered list does not include all elements from the original list")
+    if set(final_order) != set(range(len(lst))):
+        missing = set(range(len(lst))) - set(final_order)
+        extra = set(final_order) - set(range(len(lst)))
+        if missing:
+            raise ValueError(f"Missing indices in reordered list: {missing}")
+        if extra:
+            raise ValueError(f"Invalid indices in reordered list: {extra}")
+    return [lst[i] for i in final_order]
 
 
 class _unsetkey:
@@ -342,6 +412,16 @@ def merge_dicts(
             same_keys=same_keys,
         )
     return x
+
+
+def flat_merge_dicts(*dicts: InConfigLikeT, **kwargs) -> OutConfigLikeT:
+    """Merge dicts with default arguments and `nested=False`."""
+    return merge_dicts(*dicts, nested=False, **kwargs)
+
+
+def deep_merge_dicts(*dicts: InConfigLikeT, **kwargs) -> OutConfigLikeT:
+    """Merge dicts with default arguments and `nested=True`."""
+    return merge_dicts(*dicts, nested=True, **kwargs)
 
 
 class child_dict(pdict):
@@ -913,6 +993,8 @@ class HasSettings:
 
         sub_path_settings = None
         if sub_path is not None:
+            from vectorbtpro.utils.search import combine_pathlike_keys
+
             sub_path = combine_pathlike_keys(path, sub_path)
             try:
                 sub_path_settings = cls.get_path_settings(sub_path)
@@ -1024,11 +1106,13 @@ class HasSettings:
         from vectorbtpro._settings import settings
 
         if sub_path is not None:
+            from vectorbtpro.utils.search import combine_pathlike_keys
+
             sub_path = combine_pathlike_keys(path, sub_path)
             try:
                 sub_path_settings = cls.get_path_settings(sub_path)
                 try:
-                    return sub_path_settings[key]
+                    return get_dict_item(sub_path_settings, key)
                 except KeyError as e:
                     if sub_path_only:
                         raise SettingNotFoundError(f"Found no key '{key}' in the settings under the path '{sub_path}'")
@@ -1040,7 +1124,7 @@ class HasSettings:
         except KeyError as e:
             raise SettingsNotFoundError(f"Found no settings under the path '{path}'")
         try:
-            return path_settings[key]
+            return get_dict_item(path_settings, key)
         except KeyError as e:
             if default is MISSING:
                 if sub_path is not None:
@@ -1197,6 +1281,8 @@ class HasSettings:
         if path is None:
             raise SettingsNotFoundError(f"Found no settings associated with the class {cls.__name__}")
         if sub_path is not None:
+            from vectorbtpro.utils.search import combine_pathlike_keys
+
             path = combine_pathlike_keys(path, sub_path)
         cls_cfg = get_dict_item(settings, path, populate=populate_)
         for k, v in kwargs.items():
@@ -1286,7 +1372,7 @@ class Configured(HasSettings, Cacheable, Comparable, Pickleable, Prettified, Cha
         """Initialization config."""
         return self._config
 
-    @class_or_instancemethod
+    @hybrid_method
     def get_writeable_attrs(cls_or_self) -> tp.Optional[tp.Set[str]]:
         """Get set of attributes that are writeable by this class or by any of its base classes."""
         if isinstance(cls_or_self, type):
@@ -1353,7 +1439,7 @@ class Configured(HasSettings, Cacheable, Comparable, Pickleable, Prettified, Cha
                         if k in config:
                             v = config[k]
                     else:
-                        raise ValueError(f"Invalid option on_merge_conflict='{_on_merge_conflict}'")
+                        raise ValueError(f"Invalid on_merge_conflict: '{_on_merge_conflict}'")
                 kwargs[k] = v
         return kwargs
 

@@ -4,6 +4,7 @@ import pytest
 from numba import njit
 
 import vectorbtpro as vbt
+from vectorbtpro._dtypes import *
 from tests.utils import *
 from vectorbtpro.generic.enums import range_dt, pattern_range_dt, drawdown_dt
 from vectorbtpro.portfolio.enums import order_dt, trade_dt, log_dt
@@ -129,7 +130,7 @@ class TestMappedArray:
             index=pd.date_range("2020-01-05", "2020-01-10"),
         )
         mapped_array1 = vbt.MappedArray(
-            df1.vbt.wrapper, np.array([], dtype=np.int_), np.array([], dtype=np.int_), np.array([], dtype=np.int_)
+            df1.vbt.wrapper, np.array([], dtype=int_), np.array([], dtype=int_), np.array([], dtype=int_)
         )
         mapped_array2 = vbt.MappedArray(
             df2.vbt.wrapper,
@@ -228,9 +229,9 @@ class TestMappedArray:
         )
         mapped_array1 = vbt.MappedArray(
             df1.vbt.wrapper,
-            np.array([], dtype=np.int_),
-            np.array([], dtype=np.int_),
-            np.array([], dtype=np.int_),
+            np.array([], dtype=int_),
+            np.array([], dtype=int_),
+            np.array([], dtype=int_),
         )
         mapped_array2 = vbt.MappedArray(
             df2.vbt.wrapper,
@@ -641,7 +642,7 @@ class TestMappedArray:
             pd.Series(np.array([11.0, 13.333333333333334, 11.0, 0.0]), index=wrapper.columns).rename("reduce"),
         )
         assert_series_equal(
-            mapped_array.reduce(mean_reduce_nb, fill_value=0.0, wrap_kwargs=dict(dtype=np.int_)),
+            mapped_array.reduce(mean_reduce_nb, fill_value=0.0, wrap_kwargs=dict(dtype=int_)),
             pd.Series(np.array([11, 13, 11, 0]), index=wrapper.columns).rename("reduce"),
         )
         assert_series_equal(
@@ -3191,39 +3192,39 @@ class TestRanges:
         )
         assert_frame_equal(
             ranges.resample("1h").close,
-            ranges.close.resample("1h").last().astype(np.float_),
+            ranges.close.resample("1h").last().astype(float_),
         )
         assert_frame_equal(
             ranges.resample("10h").close,
-            ranges.close.resample("10h").last().astype(np.float_),
+            ranges.close.resample("10h").last().astype(float_),
         )
         assert_frame_equal(
             ranges.resample("3d").close,
-            ranges.close.resample("3d").last().astype(np.float_),
+            ranges.close.resample("3d").last().astype(float_),
         )
         assert_frame_equal(
             ranges.resample("1h", ffill_close=True).close,
-            ranges.close.resample("1h").last().ffill().astype(np.float_),
+            ranges.close.resample("1h").last().ffill().astype(float_),
         )
         assert_frame_equal(
             ranges.resample("10h", ffill_close=True).close,
-            ranges.close.resample("10h").last().ffill().astype(np.float_),
+            ranges.close.resample("10h").last().ffill().astype(float_),
         )
         assert_frame_equal(
             ranges.resample("3d", ffill_close=True).close,
-            ranges.close.resample("3d").last().ffill().astype(np.float_),
+            ranges.close.resample("3d").last().ffill().astype(float_),
         )
         assert_frame_equal(
             ranges.resample("1h", fbfill_close=True).close,
-            ranges.close.resample("1h").last().ffill().bfill().astype(np.float_),
+            ranges.close.resample("1h").last().ffill().bfill().astype(float_),
         )
         assert_frame_equal(
             ranges.resample("10h", fbfill_close=True).close,
-            ranges.close.resample("10h").last().ffill().bfill().astype(np.float_),
+            ranges.close.resample("10h").last().ffill().bfill().astype(float_),
         )
         assert_frame_equal(
             ranges.resample("3d", fbfill_close=True).close,
-            ranges.close.resample("3d").last().ffill().bfill().astype(np.float_),
+            ranges.close.resample("3d").last().ffill().bfill().astype(float_),
         )
 
 
@@ -5181,39 +5182,39 @@ class TestDrawdowns:
         )
         assert_frame_equal(
             drawdowns.resample("1h").close,
-            drawdowns.close.resample("1h").last().astype(np.float_),
+            drawdowns.close.resample("1h").last().astype(float_),
         )
         assert_frame_equal(
             drawdowns.resample("10h").close,
-            drawdowns.close.resample("10h").last().astype(np.float_),
+            drawdowns.close.resample("10h").last().astype(float_),
         )
         assert_frame_equal(
             drawdowns.resample("3d").close,
-            drawdowns.close.resample("3d").last().astype(np.float_),
+            drawdowns.close.resample("3d").last().astype(float_),
         )
         assert_frame_equal(
             drawdowns.resample("1h", ffill_close=True).close,
-            drawdowns.close.resample("1h").last().ffill().astype(np.float_),
+            drawdowns.close.resample("1h").last().ffill().astype(float_),
         )
         assert_frame_equal(
             drawdowns.resample("10h", ffill_close=True).close,
-            drawdowns.close.resample("10h").last().ffill().astype(np.float_),
+            drawdowns.close.resample("10h").last().ffill().astype(float_),
         )
         assert_frame_equal(
             drawdowns.resample("3d", ffill_close=True).close,
-            drawdowns.close.resample("3d").last().ffill().astype(np.float_),
+            drawdowns.close.resample("3d").last().ffill().astype(float_),
         )
         assert_frame_equal(
             drawdowns.resample("1h", fbfill_close=True).close,
-            drawdowns.close.resample("1h").last().ffill().bfill().astype(np.float_),
+            drawdowns.close.resample("1h").last().ffill().bfill().astype(float_),
         )
         assert_frame_equal(
             drawdowns.resample("10h", fbfill_close=True).close,
-            drawdowns.close.resample("10h").last().ffill().bfill().astype(np.float_),
+            drawdowns.close.resample("10h").last().ffill().bfill().astype(float_),
         )
         assert_frame_equal(
             drawdowns.resample("3d", fbfill_close=True).close,
-            drawdowns.close.resample("3d").last().ffill().bfill().astype(np.float_),
+            drawdowns.close.resample("3d").last().ffill().bfill().astype(float_),
         )
 
 
@@ -5236,7 +5237,7 @@ close = pd.Series(
     index=pd.date_range("2020", periods=8),
 ).vbt.tile(4, keys=["a", "b", "c", "d"])
 
-size = np.full(close.shape, np.nan, dtype=np.float_)
+size = np.full(close.shape, np.nan, dtype=float_)
 size[:, 0] = [1, 0.1, -1, -0.1, np.nan, 1, -1, 2]
 size[:, 1] = [-1, -0.1, 1, 0.1, np.nan, -1, 1, -2]
 size[:, 2] = [1, 0.1, -1, -0.1, np.nan, 1, -2, 2]
@@ -5682,39 +5683,39 @@ class TestOrders:
         )
         assert_frame_equal(
             orders.resample("1h").close,
-            orders.close.resample("1h").last().astype(np.float_),
+            orders.close.resample("1h").last().astype(float_),
         )
         assert_frame_equal(
             orders.resample("10h").close,
-            orders.close.resample("10h").last().astype(np.float_),
+            orders.close.resample("10h").last().astype(float_),
         )
         assert_frame_equal(
             orders.resample("3d").close,
-            orders.close.resample("3d").last().astype(np.float_),
+            orders.close.resample("3d").last().astype(float_),
         )
         assert_frame_equal(
             orders.resample("1h", ffill_close=True).close,
-            orders.close.resample("1h").last().ffill().astype(np.float_),
+            orders.close.resample("1h").last().ffill().astype(float_),
         )
         assert_frame_equal(
             orders.resample("10h", ffill_close=True).close,
-            orders.close.resample("10h").last().ffill().astype(np.float_),
+            orders.close.resample("10h").last().ffill().astype(float_),
         )
         assert_frame_equal(
             orders.resample("3d", ffill_close=True).close,
-            orders.close.resample("3d").last().ffill().astype(np.float_),
+            orders.close.resample("3d").last().ffill().astype(float_),
         )
         assert_frame_equal(
             orders.resample("1h", fbfill_close=True).close,
-            orders.close.resample("1h").last().ffill().bfill().astype(np.float_),
+            orders.close.resample("1h").last().ffill().bfill().astype(float_),
         )
         assert_frame_equal(
             orders.resample("10h", fbfill_close=True).close,
-            orders.close.resample("10h").last().ffill().bfill().astype(np.float_),
+            orders.close.resample("10h").last().ffill().bfill().astype(float_),
         )
         assert_frame_equal(
             orders.resample("3d", fbfill_close=True).close,
-            orders.close.resample("3d").last().ffill().bfill().astype(np.float_),
+            orders.close.resample("3d").last().ffill().bfill().astype(float_),
         )
 
 
@@ -8039,39 +8040,39 @@ class TestExitTrades:
         )
         assert_frame_equal(
             exit_trades.resample("1h").close,
-            exit_trades.close.resample("1h").last().astype(np.float_),
+            exit_trades.close.resample("1h").last().astype(float_),
         )
         assert_frame_equal(
             exit_trades.resample("10h").close,
-            exit_trades.close.resample("10h").last().astype(np.float_),
+            exit_trades.close.resample("10h").last().astype(float_),
         )
         assert_frame_equal(
             exit_trades.resample("3d").close,
-            exit_trades.close.resample("3d").last().astype(np.float_),
+            exit_trades.close.resample("3d").last().astype(float_),
         )
         assert_frame_equal(
             exit_trades.resample("1h", ffill_close=True).close,
-            exit_trades.close.resample("1h").last().ffill().astype(np.float_),
+            exit_trades.close.resample("1h").last().ffill().astype(float_),
         )
         assert_frame_equal(
             exit_trades.resample("10h", ffill_close=True).close,
-            exit_trades.close.resample("10h").last().ffill().astype(np.float_),
+            exit_trades.close.resample("10h").last().ffill().astype(float_),
         )
         assert_frame_equal(
             exit_trades.resample("3d", ffill_close=True).close,
-            exit_trades.close.resample("3d").last().ffill().astype(np.float_),
+            exit_trades.close.resample("3d").last().ffill().astype(float_),
         )
         assert_frame_equal(
             exit_trades.resample("1h", fbfill_close=True).close,
-            exit_trades.close.resample("1h").last().ffill().bfill().astype(np.float_),
+            exit_trades.close.resample("1h").last().ffill().bfill().astype(float_),
         )
         assert_frame_equal(
             exit_trades.resample("10h", fbfill_close=True).close,
-            exit_trades.close.resample("10h").last().ffill().bfill().astype(np.float_),
+            exit_trades.close.resample("10h").last().ffill().bfill().astype(float_),
         )
         assert_frame_equal(
             exit_trades.resample("3d", fbfill_close=True).close,
-            exit_trades.close.resample("3d").last().ffill().bfill().astype(np.float_),
+            exit_trades.close.resample("3d").last().ffill().bfill().astype(float_),
         )
 
 

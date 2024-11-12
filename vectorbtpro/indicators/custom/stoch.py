@@ -12,6 +12,8 @@ __all__ = [
     "STOCH",
 ]
 
+__pdoc__ = {}
+
 STOCH = IndicatorFactory(
     class_name="STOCH",
     module_name=__name__,
@@ -172,3 +174,4 @@ class _STOCH(STOCH):
 
 setattr(STOCH, "__doc__", _STOCH.__doc__)
 setattr(STOCH, "plot", _STOCH.plot)
+STOCH.fix_docstrings(__pdoc__)

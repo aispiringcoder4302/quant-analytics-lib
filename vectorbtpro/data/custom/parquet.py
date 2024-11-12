@@ -166,7 +166,7 @@ class ParquetData(FileData):
         elif engine == "auto":
             assert_can_import_any("pyarrow", "fastparquet")
         else:
-            raise ValueError(f"Invalid option engine='{engine}'")
+            raise ValueError(f"Invalid engine: '{engine}'")
 
         if path is None:
             path = key

@@ -9,6 +9,8 @@ __all__ = [
     "FMAX",
 ]
 
+__pdoc__ = {}
+
 FMAX = IndicatorFactory(
     class_name="FMAX",
     module_name=__name__,
@@ -95,3 +97,4 @@ class _FMAX(FMAX):
 
 setattr(FMAX, "__doc__", _FMAX.__doc__)
 setattr(FMAX, "plot", _FMAX.plot)
+FMAX.fix_docstrings(__pdoc__)

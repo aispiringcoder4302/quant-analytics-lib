@@ -10,6 +10,7 @@ import numpy as np
 import pandas as pd
 
 from vectorbtpro import _typing as tp
+from vectorbtpro._dtypes import *
 from vectorbtpro.base.accessors import BaseIDXAccessor
 from vectorbtpro.base.grouping.base import Grouper
 from vectorbtpro.base.indexes import combine_indexes, stack_indexes
@@ -28,7 +29,7 @@ from vectorbtpro.utils.array_ import is_range
 from vectorbtpro.utils.attr_ import DefineMixin, define, MISSING
 from vectorbtpro.utils.colors import adjust_opacity
 from vectorbtpro.utils.config import resolve_dict, merge_dicts, Config, HybridConfig
-from vectorbtpro.utils.decorators import class_or_instancemethod
+from vectorbtpro.utils.decorators import hybrid_method
 from vectorbtpro.utils.eval_ import Evaluable
 from vectorbtpro.utils.execution import Task, NoResult, NoResultsException, filter_out_no_results, execute
 from vectorbtpro.utils.merging import parse_merge_func, MergeFunc
@@ -136,16 +137,16 @@ class RelRange(DefineMixin):
     def __attrs_post_init__(self):
         object.__setattr__(self, "offset_anchor", self.offset_anchor.lower())
         if self.offset_anchor not in ("start", "end", "prev_start", "prev_end", "next_start", "next_end"):
-            raise ValueError(f"Invalid option offset_anchor='{self.offset_anchor}'")
+            raise ValueError(f"Invalid offset_anchor: '{self.offset_anchor}'")
         object.__setattr__(self, "offset_space", self.offset_space.lower())
         if self.offset_space not in ("all", "free", "prev"):
-            raise ValueError(f"Invalid option offset_space='{self.offset_space}'")
+            raise ValueError(f"Invalid offset_space: '{self.offset_space}'")
         object.__setattr__(self, "length_space", self.length_space.lower())
         if self.length_space not in ("all", "free", "free_or_prev"):
-            raise ValueError(f"Invalid option length_space='{self.length_space}'")
+            raise ValueError(f"Invalid length_space: '{self.length_space}'")
         object.__setattr__(self, "out_of_bounds", self.out_of_bounds.lower())
         if self.out_of_bounds not in ("keep", "ignore", "warn", "raise"):
-            raise ValueError(f"Invalid option out_of_bounds='{self.out_of_bounds}'")
+            raise ValueError(f"Invalid out_of_bounds: '{self.out_of_bounds}'")
 
     def to_slice(
         self,
@@ -584,7 +585,7 @@ class Splitter(Analyzable):
             if backwards.lower() == "sorted":
                 sort_backwards = True
             else:
-                raise ValueError(f"Invalid option backwards='{backwards}'")
+                raise ValueError(f"Invalid backwards: '{backwards}'")
             backwards = True
         else:
             sort_backwards = False
@@ -2214,7 +2215,7 @@ class Splitter(Analyzable):
         """Return whether a range is relative."""
         return checks.is_number(range_) or checks.is_td_like(range_) or isinstance(range_, RelRange)
 
-    @class_or_instancemethod
+    @hybrid_method
     def get_ready_range(
         cls_or_self,
         range_: tp.FixRangeLike,
@@ -2256,7 +2257,7 @@ class Splitter(Analyzable):
             "slice_or_mask",
             "slice_or_any",
         ):
-            raise ValueError(f"Invalid option range_format='{range_format}'")
+            raise ValueError(f"Invalid range_format: '{range_format}'")
 
         meta = dict()
         meta["was_fixed"] = False
@@ -2444,7 +2445,7 @@ class Splitter(Analyzable):
             return meta
         return range_
 
-    @class_or_instancemethod
+    @hybrid_method
     def split_range(
         cls_or_self,
         range_: tp.FixRangeLike,
@@ -2620,7 +2621,7 @@ class Splitter(Analyzable):
             return tuple(new_ranges)[::-1]
         return tuple(new_ranges)
 
-    @class_or_instancemethod
+    @hybrid_method
     def merge_split(
         cls_or_self,
         split: tp.FixSplit,
@@ -2855,7 +2856,7 @@ class Splitter(Analyzable):
             merge_split_kwargs = {}
         return self.merge_split(ranges, **merge_split_kwargs)
 
-    @class_or_instancemethod
+    @hybrid_method
     def remap_range(
         cls_or_self,
         range_: tp.FixRangeLike,
@@ -2905,7 +2906,7 @@ class Splitter(Analyzable):
             return obj.wrapper.index
         raise ValueError("Must provide object index")
 
-    @class_or_instancemethod
+    @hybrid_method
     def get_ready_obj_range(
         cls_or_self,
         obj: tp.Any,
@@ -2976,7 +2977,7 @@ class Splitter(Analyzable):
             return tuple(obj[i] for i in np.arange(len(obj))[ready_range])
         return obj[ready_range]
 
-    @class_or_instancemethod
+    @hybrid_method
     def take_range_from_takeable(
         cls_or_self,
         takeable: Takeable,
@@ -3162,7 +3163,7 @@ class Splitter(Analyzable):
                 attach_bounds = attach_bounds.split("_")[0]
                 index_bounds = True
             if attach_bounds.lower() not in ("source", "target"):
-                raise ValueError(f"Invalid option attach_bounds='{attach_bounds}'")
+                raise ValueError(f"Invalid attach_bounds: '{attach_bounds}'")
         if index_combine_kwargs is None:
             index_combine_kwargs = {}
         if stack_axis not in (0, 1):
@@ -3423,7 +3424,7 @@ class Splitter(Analyzable):
                 if attach_bounds is not None:
                     return pd.Series(new_set_objs, index=_attach_bounds(set_labels, one_split_bounds), dtype=object)
             return pd.Series(new_set_objs, index=set_labels, dtype=object)
-        raise ValueError(f"Invalid option into='{into}'")
+        raise ValueError(f"Invalid into: '{into}'")
 
     # ############# Applying ############# #
 
@@ -3608,7 +3609,7 @@ class Splitter(Analyzable):
                 attach_bounds = attach_bounds.split("_")[0]
                 index_bounds = True
             if attach_bounds.lower() not in ("source", "target"):
-                raise ValueError(f"Invalid option attach_bounds='{attach_bounds}'")
+                raise ValueError(f"Invalid attach_bounds: '{attach_bounds}'")
         if index_combine_kwargs is None:
             index_combine_kwargs = {}
         if execute_kwargs is None:
@@ -3942,7 +3943,7 @@ class Splitter(Analyzable):
             execute_kwargs = merge_dicts(dict(show_progress=False if one_set else None), execute_kwargs)
             results = execute(tasks, size=n_sets, keys=keys, **execute_kwargs)
         else:
-            raise ValueError(f"Invalid option iteration='{iteration}'")
+            raise ValueError(f"Invalid iteration: '{iteration}'")
 
         if merge_all:
             if iteration.lower() in ("split_wise", "set_wise"):
@@ -4507,7 +4508,7 @@ class Splitter(Analyzable):
 
     # ############# Bounds ############# #
 
-    @class_or_instancemethod
+    @hybrid_method
     def map_bounds_to_index(
         cls_or_self,
         start: int,
@@ -4532,7 +4533,7 @@ class Splitter(Analyzable):
             return index[start], index[stop - 1] + freq
         return index[start], index[stop]
 
-    @class_or_instancemethod
+    @hybrid_method
     def get_range_bounds(
         cls_or_self,
         range_: tp.FixRangeLike,
@@ -4593,7 +4594,7 @@ class Splitter(Analyzable):
         if index_bounds:
             dtype = self.index.dtype
         else:
-            dtype = np.int_
+            dtype = int_
         split_group_by = self.get_split_grouper(split_group_by=split_group_by)
         n_splits = self.get_n_splits(split_group_by=split_group_by)
         set_group_by = self.get_set_grouper(set_group_by=set_group_by)
@@ -4693,7 +4694,7 @@ class Splitter(Analyzable):
 
     # ############# Masks ############# #
 
-    @class_or_instancemethod
+    @hybrid_method
     def get_range_mask(
         cls_or_self,
         range_: tp.FixRangeLike,
@@ -5132,7 +5133,7 @@ class Splitter(Analyzable):
                     index_combine_kwargs = {}
                 index = combine_indexes((split_labels, set_labels), **index_combine_kwargs)
         else:
-            raise ValueError(f"Invalid option by='{by}'")
+            raise ValueError(f"Invalid by: '{by}'")
         return pd.DataFrame(overlap_matrix, index=index, columns=index)
 
     @property

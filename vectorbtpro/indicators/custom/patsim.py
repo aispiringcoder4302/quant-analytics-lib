@@ -13,6 +13,8 @@ __all__ = [
     "PATSIM",
 ]
 
+__pdoc__ = {}
+
 PATSIM = IndicatorFactory(
     class_name="PATSIM",
     module_name=__name__,
@@ -215,3 +217,4 @@ class _PATSIM(PATSIM):
 setattr(PATSIM, "__doc__", _PATSIM.__doc__)
 setattr(PATSIM, "plot", _PATSIM.plot)
 setattr(PATSIM, "overlay_with_heatmap", _PATSIM.overlay_with_heatmap)
+PATSIM.fix_docstrings(__pdoc__)

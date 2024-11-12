@@ -9,6 +9,7 @@ import pandas as pd
 from pandas.core.groupby import GroupBy as PandasGroupBy
 
 from vectorbtpro import _typing as tp
+from vectorbtpro._dtypes import *
 from vectorbtpro.base import indexes, reshaping
 from vectorbtpro.base.grouping.base import Grouper
 from vectorbtpro.base.indexes import stack_indexes, concat_indexes, IndexApplier
@@ -18,7 +19,7 @@ from vectorbtpro.utils import checks, datetime_ as dt
 from vectorbtpro.utils.array_ import is_range, cast_to_min_precision, cast_to_max_precision
 from vectorbtpro.utils.attr_ import AttrResolverMixin, AttrResolverMixinT
 from vectorbtpro.utils.config import Configured, merge_dicts, resolve_dict
-from vectorbtpro.utils.decorators import class_or_instancemethod, cached_method, cached_property
+from vectorbtpro.utils.decorators import hybrid_method, cached_method, cached_property
 from vectorbtpro.utils.params import Param, Itemable, Paramable
 from vectorbtpro.utils.parsing import get_func_arg_names
 
@@ -809,7 +810,7 @@ class ArrayWrapper(Configured, IndexApplier, ExtPandasIndexer, Itemable, Paramab
                     row_idxs = reshaping.to_1d_array(row_idxs)
                     max_idx = np.max(row_idxs)
                 if arr_2d.shape[0] <= max_idx:
-                    if rotate_rows:
+                    if rotate_rows and not isinstance(row_idxs, slice):
                         new_arr = new_arr[row_idxs % arr_2d.shape[0], :]
                     else:
                         new_arr = new_arr[row_idxs, :]
@@ -823,7 +824,7 @@ class ArrayWrapper(Configured, IndexApplier, ExtPandasIndexer, Itemable, Paramab
                     col_idxs = reshaping.to_1d_array(col_idxs)
                     max_idx = np.max(col_idxs)
                 if arr_2d.shape[1] <= max_idx:
-                    if rotate_cols:
+                    if rotate_cols and not isinstance(col_idxs, slice):
                         new_arr = new_arr[:, col_idxs % arr_2d.shape[1]]
                     else:
                         new_arr = new_arr[:, col_idxs]
@@ -1217,7 +1218,7 @@ class ArrayWrapper(Configured, IndexApplier, ExtPandasIndexer, Itemable, Paramab
 
         if to_index:
             if dtype is None:
-                dtype = np.int_
+                dtype = int_
             if fillna is None:
                 fillna = -1
 
@@ -1526,7 +1527,6 @@ class ArrayWrapper(Configured, IndexApplier, ExtPandasIndexer, Itemable, Paramab
             2020-01-04  NaN  NaN  NaN
             2020-01-05  NaN  NaN  NaN
 
-            ```pycon
             >>> wrapper.fill_and_set(vbt.index_dict({
             ...     vbt.hslice("2020-01-02", "2020-01-04"): 2
             ... }))
@@ -2203,7 +2203,7 @@ class Wrapping(Configured, IndexApplier, ExtPandasIndexer, AttrResolverMixin, It
             return _self
         raise TypeError("Only one column is allowed. Use indexing or column argument.")
 
-    @class_or_instancemethod
+    @hybrid_method
     def select_col_from_obj(
         cls_or_self,
         obj: tp.Optional[tp.SeriesFrame],

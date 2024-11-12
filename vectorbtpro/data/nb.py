@@ -9,6 +9,7 @@ import numpy as np
 from numba import prange
 
 from vectorbtpro import _typing as tp
+from vectorbtpro._dtypes import *
 from vectorbtpro.base.flex_indexing import flex_select_1d_pc_nb
 from vectorbtpro.base.reshaping import to_1d_array_nb
 from vectorbtpro.registries.jit_registry import register_jitted
@@ -28,7 +29,7 @@ def generate_random_data_1d_nb(
 
     Turn on `symmetric` to diminish negative returns and make them symmetric to positive ones.
     Otherwise, the majority of generated paths will go downward."""
-    out = np.empty(n_rows, dtype=np.float_)
+    out = np.empty(n_rows, dtype=float_)
 
     for i in range(n_rows):
         if i == 0:
@@ -59,7 +60,7 @@ def generate_random_data_nb(
     std_ = to_1d_array_nb(np.asarray(std))
     symmetric_ = to_1d_array_nb(np.asarray(symmetric))
 
-    out = np.empty(shape, dtype=np.float_)
+    out = np.empty(shape, dtype=float_)
 
     for col in prange(shape[1]):
         out[:, col] = generate_random_data_1d_nb(
@@ -82,7 +83,7 @@ def generate_gbm_data_1d_nb(
     dt: float = 1.0,
 ) -> tp.Array2d:
     """Generate data using Geometric Brownian Motion (GBM)."""
-    out = np.empty(n_rows, dtype=np.float_)
+    out = np.empty(n_rows, dtype=float_)
 
     for i in range(n_rows):
         if i == 0:
@@ -111,7 +112,7 @@ def generate_gbm_data_nb(
     std_ = to_1d_array_nb(np.asarray(std))
     dt_ = to_1d_array_nb(np.asarray(dt))
 
-    out = np.empty(shape, dtype=np.float_)
+    out = np.empty(shape, dtype=float_)
 
     for col in prange(shape[1]):
         out[:, col] = generate_gbm_data_1d_nb(

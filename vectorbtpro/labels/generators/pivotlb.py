@@ -9,6 +9,8 @@ __all__ = [
     "PIVOTLB",
 ]
 
+__pdoc__ = {}
+
 PIVOTLB = IndicatorFactory(
     class_name="PIVOTLB",
     module_name=__name__,
@@ -47,3 +49,4 @@ class _PIVOTLB(PIVOTLB):
 
 setattr(PIVOTLB, "__doc__", _PIVOTLB.__doc__)
 setattr(PIVOTLB, "plot", _PIVOTLB.plot)
+PIVOTLB.fix_docstrings(__pdoc__)

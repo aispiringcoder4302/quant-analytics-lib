@@ -16,6 +16,7 @@ import numpy as np
 from numba import prange
 
 from vectorbtpro import _typing as tp
+from vectorbtpro._dtypes import *
 from vectorbtpro._settings import settings
 from vectorbtpro.base import chunking as base_ch
 from vectorbtpro.base.flex_indexing import flex_select_1d_pc_nb
@@ -70,7 +71,7 @@ def returns_1d_nb(
     log_returns: bool = False,
 ) -> tp.Array1d:
     """Calculate returns."""
-    out = np.empty(arr.shape, dtype=np.float_)
+    out = np.empty(arr.shape, dtype=float_)
     if np.isnan(init_value) and arr.shape[0] > 0:
         input_value = arr[0]
     else:
@@ -104,7 +105,7 @@ def returns_nb(
     """2-dim version of `returns_1d_nb`."""
     init_value_ = to_1d_array_nb(np.asarray(init_value))
 
-    out = np.full(arr.shape, np.nan, dtype=np.float_)
+    out = np.full(arr.shape, np.nan, dtype=float_)
 
     sim_start_, sim_end_ = generic_nb.prepare_sim_range_nb(
         sim_shape=arr.shape,
@@ -133,7 +134,7 @@ def cumulative_returns_1d_nb(
     log_returns: bool = False,
 ) -> tp.Array1d:
     """Cumulative returns."""
-    out = np.empty_like(returns, dtype=np.float_)
+    out = np.empty_like(returns, dtype=float_)
     if log_returns:
         cumsum = 0
         for i in range(returns.shape[0]):
@@ -175,7 +176,7 @@ def cumulative_returns_nb(
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array2d:
     """2-dim version of `cumulative_returns_1d_nb`."""
-    out = np.full(returns.shape, np.nan, dtype=np.float_)
+    out = np.full(returns.shape, np.nan, dtype=float_)
 
     sim_start_, sim_end_ = generic_nb.prepare_sim_range_nb(
         sim_shape=returns.shape,
@@ -241,7 +242,7 @@ def final_value_nb(
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array1d:
     """2-dim version of `final_value_1d_nb`."""
-    out = np.full(returns.shape[1], np.nan, dtype=np.float_)
+    out = np.full(returns.shape[1], np.nan, dtype=float_)
 
     sim_start_, sim_end_ = generic_nb.prepare_sim_range_nb(
         sim_shape=returns.shape,
@@ -286,7 +287,7 @@ def rolling_final_value_nb(
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array2d:
     """Rolling version of `final_value_1d_nb`."""
-    out = np.full(returns.shape, np.nan, dtype=np.float_)
+    out = np.full(returns.shape, np.nan, dtype=float_)
 
     sim_start_, sim_end_ = generic_nb.prepare_sim_range_nb(
         sim_shape=returns.shape,
@@ -334,7 +335,7 @@ def total_return_nb(
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array1d:
     """2-dim version of `total_return_1d_nb`."""
-    out = np.full(returns.shape[1], np.nan, dtype=np.float_)
+    out = np.full(returns.shape[1], np.nan, dtype=float_)
 
     sim_start_, sim_end_ = generic_nb.prepare_sim_range_nb(
         sim_shape=returns.shape,
@@ -373,7 +374,7 @@ def rolling_total_return_nb(
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array2d:
     """Rolling version of `total_return_1d_nb`."""
-    out = np.full(returns.shape, np.nan, dtype=np.float_)
+    out = np.full(returns.shape, np.nan, dtype=float_)
 
     sim_start_, sim_end_ = generic_nb.prepare_sim_range_nb(
         sim_shape=returns.shape,
@@ -436,7 +437,7 @@ def annualized_return_nb(
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array1d:
     """2-dim version of `annualized_return_1d_nb`."""
-    out = np.full(returns.shape[1], np.nan, dtype=np.float_)
+    out = np.full(returns.shape[1], np.nan, dtype=float_)
 
     sim_start_, sim_end_ = generic_nb.prepare_sim_range_nb(
         sim_shape=returns.shape,
@@ -446,7 +447,7 @@ def annualized_return_nb(
     if period is None:
         period_ = sim_end_ - sim_start_
     else:
-        period_ = to_1d_array_nb(np.asarray(period).astype(np.int_))
+        period_ = to_1d_array_nb(np.asarray(period).astype(int_))
     for col in prange(returns.shape[1]):
         _sim_start = sim_start_[col]
         _sim_end = sim_end_[col]
@@ -487,7 +488,7 @@ def rolling_annualized_return_nb(
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array2d:
     """Rolling version of `annualized_return_1d_nb`."""
-    out = np.full(returns.shape, np.nan, dtype=np.float_)
+    out = np.full(returns.shape, np.nan, dtype=float_)
 
     sim_start_, sim_end_ = generic_nb.prepare_sim_range_nb(
         sim_shape=returns.shape,
@@ -544,7 +545,7 @@ def annualized_volatility_nb(
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array1d:
     """2-dim version of `annualized_volatility_1d_nb`."""
-    out = np.full(returns.shape[1], np.nan, dtype=np.float_)
+    out = np.full(returns.shape[1], np.nan, dtype=float_)
 
     sim_start_, sim_end_ = generic_nb.prepare_sim_range_nb(
         sim_shape=returns.shape,
@@ -592,7 +593,7 @@ def rolling_annualized_volatility_nb(
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array2d:
     """Rolling version of `annualized_volatility_1d_nb`."""
-    out = np.full(returns.shape, np.nan, dtype=np.float_)
+    out = np.full(returns.shape, np.nan, dtype=float_)
 
     sim_start_, sim_end_ = generic_nb.prepare_sim_range_nb(
         sim_shape=returns.shape,
@@ -661,7 +662,7 @@ def max_drawdown_nb(
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array1d:
     """2-dim version of `max_drawdown_1d_nb`."""
-    out = np.full(returns.shape[1], np.nan, dtype=np.float_)
+    out = np.full(returns.shape[1], np.nan, dtype=float_)
 
     sim_start_, sim_end_ = generic_nb.prepare_sim_range_nb(
         sim_shape=returns.shape,
@@ -700,7 +701,7 @@ def rolling_max_drawdown_nb(
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array2d:
     """Rolling version of `max_drawdown_1d_nb`."""
-    out = np.full(returns.shape, np.nan, dtype=np.float_)
+    out = np.full(returns.shape, np.nan, dtype=float_)
 
     sim_start_, sim_end_ = generic_nb.prepare_sim_range_nb(
         sim_shape=returns.shape,
@@ -769,7 +770,7 @@ def calmar_ratio_nb(
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array1d:
     """2-dim version of `calmar_ratio_1d_nb`."""
-    out = np.full(returns.shape[1], np.nan, dtype=np.float_)
+    out = np.full(returns.shape[1], np.nan, dtype=float_)
 
     sim_start_, sim_end_ = generic_nb.prepare_sim_range_nb(
         sim_shape=returns.shape,
@@ -779,7 +780,7 @@ def calmar_ratio_nb(
     if period is None:
         period_ = sim_end_ - sim_start_
     else:
-        period_ = to_1d_array_nb(np.asarray(period).astype(np.int_))
+        period_ = to_1d_array_nb(np.asarray(period).astype(int_))
     for col in prange(returns.shape[1]):
         _sim_start = sim_start_[col]
         _sim_end = sim_end_[col]
@@ -820,7 +821,7 @@ def rolling_calmar_ratio_nb(
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array2d:
     """Rolling version of `calmar_ratio_1d_nb`."""
-    out = np.full(returns.shape, np.nan, dtype=np.float_)
+    out = np.full(returns.shape, np.nan, dtype=float_)
 
     sim_start_, sim_end_ = generic_nb.prepare_sim_range_nb(
         sim_shape=returns.shape,
@@ -888,7 +889,7 @@ def omega_ratio_nb(
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array1d:
     """2-dim version of `omega_ratio_1d_nb`."""
-    out = np.full(returns.shape[1], np.nan, dtype=np.float_)
+    out = np.full(returns.shape[1], np.nan, dtype=float_)
 
     sim_start_, sim_end_ = generic_nb.prepare_sim_range_nb(
         sim_shape=returns.shape,
@@ -925,7 +926,7 @@ def rolling_omega_ratio_nb(
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array2d:
     """Rolling version of `omega_ratio_1d_nb`."""
-    out = np.full(returns.shape, np.nan, dtype=np.float_)
+    out = np.full(returns.shape, np.nan, dtype=float_)
 
     sim_start_, sim_end_ = generic_nb.prepare_sim_range_nb(
         sim_shape=returns.shape,
@@ -983,7 +984,7 @@ def sharpe_ratio_nb(
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array1d:
     """2-dim version of `sharpe_ratio_1d_nb`."""
-    out = np.full(returns.shape[1], np.nan, dtype=np.float_)
+    out = np.full(returns.shape[1], np.nan, dtype=float_)
 
     sim_start_, sim_end_ = generic_nb.prepare_sim_range_nb(
         sim_shape=returns.shape,
@@ -1078,7 +1079,7 @@ def rolling_sharpe_ratio_stream_nb(
     if minp is None:
         minp = window
 
-    out = np.full(returns.shape, np.nan, dtype=np.float_)
+    out = np.full(returns.shape, np.nan, dtype=float_)
     if returns.shape[0] == 0:
         return out
 
@@ -1155,7 +1156,7 @@ def rolling_sharpe_ratio_nb(
             sim_end=sim_end,
         )
 
-    out = np.full(returns.shape, np.nan, dtype=np.float_)
+    out = np.full(returns.shape, np.nan, dtype=float_)
 
     sim_start_, sim_end_ = generic_nb.prepare_sim_range_nb(
         sim_shape=returns.shape,
@@ -1215,7 +1216,7 @@ def downside_risk_nb(
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array1d:
     """2-dim version of `downside_risk_1d_nb`."""
-    out = np.full(returns.shape[1], np.nan, dtype=np.float_)
+    out = np.full(returns.shape[1], np.nan, dtype=float_)
 
     sim_start_, sim_end_ = generic_nb.prepare_sim_range_nb(
         sim_shape=returns.shape,
@@ -1254,7 +1255,7 @@ def rolling_downside_risk_nb(
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array2d:
     """Rolling version of `downside_risk_1d_nb`."""
-    out = np.full(returns.shape, np.nan, dtype=np.float_)
+    out = np.full(returns.shape, np.nan, dtype=float_)
 
     sim_start_, sim_end_ = generic_nb.prepare_sim_range_nb(
         sim_shape=returns.shape,
@@ -1307,7 +1308,7 @@ def sortino_ratio_nb(
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array1d:
     """2-dim version of `sortino_ratio_1d_nb`."""
-    out = np.full(returns.shape[1], np.nan, dtype=np.float_)
+    out = np.full(returns.shape[1], np.nan, dtype=float_)
 
     sim_start_, sim_end_ = generic_nb.prepare_sim_range_nb(
         sim_shape=returns.shape,
@@ -1346,7 +1347,7 @@ def rolling_sortino_ratio_nb(
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array2d:
     """Rolling version of `sortino_ratio_1d_nb`."""
-    out = np.full(returns.shape, np.nan, dtype=np.float_)
+    out = np.full(returns.shape, np.nan, dtype=float_)
 
     sim_start_, sim_end_ = generic_nb.prepare_sim_range_nb(
         sim_shape=returns.shape,
@@ -1399,7 +1400,7 @@ def information_ratio_nb(
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array1d:
     """2-dim version of `information_ratio_1d_nb`."""
-    out = np.full(returns.shape[1], np.nan, dtype=np.float_)
+    out = np.full(returns.shape[1], np.nan, dtype=float_)
 
     sim_start_, sim_end_ = generic_nb.prepare_sim_range_nb(
         sim_shape=returns.shape,
@@ -1438,7 +1439,7 @@ def rolling_information_ratio_nb(
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array2d:
     """Rolling version of `information_ratio_1d_nb`."""
-    out = np.full(returns.shape, np.nan, dtype=np.float_)
+    out = np.full(returns.shape, np.nan, dtype=float_)
 
     sim_start_, sim_end_ = generic_nb.prepare_sim_range_nb(
         sim_shape=returns.shape,
@@ -1497,7 +1498,7 @@ def beta_nb(
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array1d:
     """2-dim version of `beta_1d_nb`."""
-    out = np.full(returns.shape[1], np.nan, dtype=np.float_)
+    out = np.full(returns.shape[1], np.nan, dtype=float_)
 
     sim_start_, sim_end_ = generic_nb.prepare_sim_range_nb(
         sim_shape=returns.shape,
@@ -1542,7 +1543,7 @@ def rolling_beta_nb(
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array2d:
     """Rolling version of `beta_1d_nb`."""
-    out = np.full(returns.shape, np.nan, dtype=np.float_)
+    out = np.full(returns.shape, np.nan, dtype=float_)
 
     sim_start_, sim_end_ = generic_nb.prepare_sim_range_nb(
         sim_shape=returns.shape,
@@ -1597,7 +1598,7 @@ def alpha_nb(
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array1d:
     """2-dim version of `alpha_1d_nb`."""
-    out = np.full(returns.shape[1], np.nan, dtype=np.float_)
+    out = np.full(returns.shape[1], np.nan, dtype=float_)
 
     sim_start_, sim_end_ = generic_nb.prepare_sim_range_nb(
         sim_shape=returns.shape,
@@ -1642,7 +1643,7 @@ def rolling_alpha_nb(
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array2d:
     """Rolling version of `alpha_1d_nb`."""
-    out = np.full(returns.shape, np.nan, dtype=np.float_)
+    out = np.full(returns.shape, np.nan, dtype=float_)
 
     sim_start_, sim_end_ = generic_nb.prepare_sim_range_nb(
         sim_shape=returns.shape,
@@ -1708,7 +1709,7 @@ def tail_ratio_nb(
     noarr_mode: bool = True,
 ) -> tp.Array1d:
     """2-dim version of `tail_ratio_1d_nb` and `tail_ratio_noarr_1d_nb`."""
-    out = np.full(returns.shape[1], np.nan, dtype=np.float_)
+    out = np.full(returns.shape[1], np.nan, dtype=float_)
 
     sim_start_, sim_end_ = generic_nb.prepare_sim_range_nb(
         sim_shape=returns.shape,
@@ -1750,7 +1751,7 @@ def rolling_tail_ratio_nb(
     noarr_mode: bool = True,
 ) -> tp.Array2d:
     """Rolling version of `tail_ratio_1d_nb` and `tail_ratio_noarr_1d_nb`."""
-    out = np.full(returns.shape, np.nan, dtype=np.float_)
+    out = np.full(returns.shape, np.nan, dtype=float_)
 
     sim_start_, sim_end_ = generic_nb.prepare_sim_range_nb(
         sim_shape=returns.shape,
@@ -1814,7 +1815,7 @@ def profit_factor_nb(
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array1d:
     """2-dim version of `profit_factor_1d_nb`."""
-    out = np.full(returns.shape[1], np.nan, dtype=np.float_)
+    out = np.full(returns.shape[1], np.nan, dtype=float_)
 
     sim_start_, sim_end_ = generic_nb.prepare_sim_range_nb(
         sim_shape=returns.shape,
@@ -1851,7 +1852,7 @@ def rolling_profit_factor_nb(
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array2d:
     """Rolling version of `profit_factor_1d_nb`."""
-    out = np.full(returns.shape, np.nan, dtype=np.float_)
+    out = np.full(returns.shape, np.nan, dtype=float_)
 
     sim_start_, sim_end_ = generic_nb.prepare_sim_range_nb(
         sim_shape=returns.shape,
@@ -1897,7 +1898,7 @@ def common_sense_ratio_nb(
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array1d:
     """2-dim version of `common_sense_ratio_1d_nb`."""
-    out = np.full(returns.shape[1], np.nan, dtype=np.float_)
+    out = np.full(returns.shape[1], np.nan, dtype=float_)
 
     sim_start_, sim_end_ = generic_nb.prepare_sim_range_nb(
         sim_shape=returns.shape,
@@ -1934,7 +1935,7 @@ def rolling_common_sense_ratio_nb(
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array2d:
     """Rolling version of `common_sense_ratio_1d_nb`."""
-    out = np.full(returns.shape, np.nan, dtype=np.float_)
+    out = np.full(returns.shape, np.nan, dtype=float_)
 
     sim_start_, sim_end_ = generic_nb.prepare_sim_range_nb(
         sim_shape=returns.shape,
@@ -1988,7 +1989,7 @@ def value_at_risk_nb(
     noarr_mode: bool = True,
 ) -> tp.Array1d:
     """2-dim version of `value_at_risk_1d_nb` and `value_at_risk_noarr_1d_nb`."""
-    out = np.full(returns.shape[1], np.nan, dtype=np.float_)
+    out = np.full(returns.shape[1], np.nan, dtype=float_)
 
     sim_start_, sim_end_ = generic_nb.prepare_sim_range_nb(
         sim_shape=returns.shape,
@@ -2032,7 +2033,7 @@ def rolling_value_at_risk_nb(
     noarr_mode: bool = True,
 ) -> tp.Array2d:
     """Rolling version of `value_at_risk_1d_nb` and `value_at_risk_noarr_1d_nb`."""
-    out = np.full(returns.shape, np.nan, dtype=np.float_)
+    out = np.full(returns.shape, np.nan, dtype=float_)
 
     sim_start_, sim_end_ = generic_nb.prepare_sim_range_nb(
         sim_shape=returns.shape,
@@ -2097,7 +2098,7 @@ def cond_value_at_risk_nb(
     noarr_mode: bool = True,
 ) -> tp.Array1d:
     """2-dim version of `cond_value_at_risk_1d_nb` and `cond_value_at_risk_noarr_1d_nb`."""
-    out = np.full(returns.shape[1], np.nan, dtype=np.float_)
+    out = np.full(returns.shape[1], np.nan, dtype=float_)
 
     sim_start_, sim_end_ = generic_nb.prepare_sim_range_nb(
         sim_shape=returns.shape,
@@ -2141,7 +2142,7 @@ def rolling_cond_value_at_risk_nb(
     noarr_mode: bool = True,
 ) -> tp.Array2d:
     """Rolling version of `cond_value_at_risk_1d_nb` and `cond_value_at_risk_noarr_1d_nb`."""
-    out = np.full(returns.shape, np.nan, dtype=np.float_)
+    out = np.full(returns.shape, np.nan, dtype=float_)
 
     sim_start_, sim_end_ = generic_nb.prepare_sim_range_nb(
         sim_shape=returns.shape,
@@ -2225,7 +2226,7 @@ def capture_ratio_nb(
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array1d:
     """2-dim version of `capture_ratio_1d_nb`."""
-    out = np.full(returns.shape[1], np.nan, dtype=np.float_)
+    out = np.full(returns.shape[1], np.nan, dtype=float_)
 
     sim_start_, sim_end_ = generic_nb.prepare_sim_range_nb(
         sim_shape=returns.shape,
@@ -2235,7 +2236,7 @@ def capture_ratio_nb(
     if period is None:
         period_ = sim_end_ - sim_start_
     else:
-        period_ = to_1d_array_nb(np.asarray(period).astype(np.int_))
+        period_ = to_1d_array_nb(np.asarray(period).astype(int_))
     for col in prange(returns.shape[1]):
         _sim_start = sim_start_[col]
         _sim_end = sim_end_[col]
@@ -2279,7 +2280,7 @@ def rolling_capture_ratio_nb(
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array2d:
     """Rolling version of `capture_ratio_1d_nb`."""
-    out = np.full(returns.shape, np.nan, dtype=np.float_)
+    out = np.full(returns.shape, np.nan, dtype=float_)
 
     sim_start_, sim_end_ = generic_nb.prepare_sim_range_nb(
         sim_shape=returns.shape,
@@ -2369,7 +2370,7 @@ def up_capture_ratio_nb(
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array1d:
     """2-dim version of `up_capture_ratio_1d_nb`."""
-    out = np.full(returns.shape[1], np.nan, dtype=np.float_)
+    out = np.full(returns.shape[1], np.nan, dtype=float_)
 
     sim_start_, sim_end_ = generic_nb.prepare_sim_range_nb(
         sim_shape=returns.shape,
@@ -2379,7 +2380,7 @@ def up_capture_ratio_nb(
     if period is None:
         period_ = sim_end_ - sim_start_
     else:
-        period_ = to_1d_array_nb(np.asarray(period).astype(np.int_))
+        period_ = to_1d_array_nb(np.asarray(period).astype(int_))
     for col in prange(returns.shape[1]):
         _sim_start = sim_start_[col]
         _sim_end = sim_end_[col]
@@ -2423,7 +2424,7 @@ def rolling_up_capture_ratio_nb(
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array2d:
     """Rolling version of `up_capture_ratio_1d_nb`."""
-    out = np.full(returns.shape, np.nan, dtype=np.float_)
+    out = np.full(returns.shape, np.nan, dtype=float_)
 
     sim_start_, sim_end_ = generic_nb.prepare_sim_range_nb(
         sim_shape=returns.shape,
@@ -2513,7 +2514,7 @@ def down_capture_ratio_nb(
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array1d:
     """2-dim version of `down_capture_ratio_1d_nb`."""
-    out = np.full(returns.shape[1], np.nan, dtype=np.float_)
+    out = np.full(returns.shape[1], np.nan, dtype=float_)
 
     sim_start_, sim_end_ = generic_nb.prepare_sim_range_nb(
         sim_shape=returns.shape,
@@ -2523,7 +2524,7 @@ def down_capture_ratio_nb(
     if period is None:
         period_ = sim_end_ - sim_start_
     else:
-        period_ = to_1d_array_nb(np.asarray(period).astype(np.int_))
+        period_ = to_1d_array_nb(np.asarray(period).astype(int_))
     for col in prange(returns.shape[1]):
         _sim_start = sim_start_[col]
         _sim_end = sim_end_[col]
@@ -2567,7 +2568,7 @@ def rolling_down_capture_ratio_nb(
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array2d:
     """Rolling version of `down_capture_ratio_1d_nb`."""
-    out = np.full(returns.shape, np.nan, dtype=np.float_)
+    out = np.full(returns.shape, np.nan, dtype=float_)
 
     sim_start_, sim_end_ = generic_nb.prepare_sim_range_nb(
         sim_shape=returns.shape,

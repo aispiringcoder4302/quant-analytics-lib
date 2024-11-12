@@ -289,10 +289,10 @@ class AVData(RemoteData):
         interval_type = None
         if timeframe is not None:
             if not isinstance(timeframe, str):
-                raise ValueError(f"Invalid timeframe '{timeframe}'")
+                raise ValueError(f"Invalid timeframe: '{timeframe}'")
             split = dt.split_freq_str(timeframe)
             if split is None:
-                raise ValueError(f"Invalid timeframe '{timeframe}'")
+                raise ValueError(f"Invalid timeframe: '{timeframe}'")
             multiplier, unit = split
             if unit == "m":
                 interval = str(multiplier) + "min"
@@ -373,7 +373,7 @@ class AVData(RemoteData):
 
                         category = TechIndicators
                 else:
-                    raise ValueError(f"Invalid option category='{category}'")
+                    raise ValueError(f"Invalid category: '{category}'")
             else:
                 if use_parser:
                     raise TypeError("Category must be a string")

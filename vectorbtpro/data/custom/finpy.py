@@ -86,7 +86,7 @@ class FinPyData(RemoteData):
         if market is None:
             market = Market(**market_config)
         elif has_market_config:
-            raise ValueError("Cannot apply market_config on already created market")
+            raise ValueError("Cannot apply market_config to already initialized market")
         return market
 
     @classmethod
@@ -111,7 +111,7 @@ class FinPyData(RemoteData):
         if config_manager is None:
             config_manager = ConfigManager().get_instance(**config_manager_config)
         elif has_config_manager_config:
-            raise ValueError("Cannot apply config_manager_config on already created config_manager")
+            raise ValueError("Cannot apply config_manager_config to already initialized config_manager")
         return config_manager
 
     @classmethod
@@ -252,7 +252,7 @@ class FinPyData(RemoteData):
 
         split = dt.split_freq_str(timeframe)
         if split is None:
-            raise ValueError(f"Invalid timeframe '{timeframe}'")
+            raise ValueError(f"Invalid timeframe: '{timeframe}'")
         multiplier, unit = split
 
         if unit == "s":

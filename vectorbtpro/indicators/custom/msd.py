@@ -12,6 +12,8 @@ __all__ = [
     "MSD",
 ]
 
+__pdoc__ = {}
+
 MSD = IndicatorFactory(
     class_name="MSD",
     module_name=__name__,
@@ -92,3 +94,4 @@ class _MSD(MSD):
 
 setattr(MSD, "__doc__", _MSD.__doc__)
 setattr(MSD, "plot", _MSD.plot)
+MSD.fix_docstrings(__pdoc__)

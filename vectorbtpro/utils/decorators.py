@@ -7,6 +7,9 @@ from functools import wraps
 from vectorbtpro import _typing as tp
 
 __all__ = [
+    "class_property",
+    "hybrid_property",
+    "hybrid_method",
     "cacheable_property",
     "cached_property",
     "cacheable",
@@ -15,11 +18,13 @@ __all__ = [
     "cached_method",
 ]
 
+__pdoc__ = {}
+
 
 # ############# Generic ############# #
 
 
-class classproperty(object):
+class class_property(object):
     """Property that can be called on a class."""
 
     def __init__(self, func: tp.Callable) -> None:
@@ -38,7 +43,7 @@ class classproperty(object):
         raise AttributeError("can't set attribute")
 
 
-class class_or_instanceproperty(object):
+class hybrid_property(object):
     """Property that binds `self` to a class if the function is called as class method,
     otherwise to an instance."""
 
@@ -60,7 +65,7 @@ class class_or_instanceproperty(object):
         raise AttributeError("can't set attribute")
 
 
-class class_or_instancemethod(classmethod):
+class hybrid_method(classmethod):
     """Function decorator that binds `self` to a class if the function is called as class method,
     otherwise to an instance."""
 
@@ -187,16 +192,25 @@ class cached_property(cacheable_property):
 
 
 class custom_functionT(tp.Protocol):
+    decorator_name: str
     func: tp.Callable
     name: str
     options: tp.Kwargs
     is_method: bool
+    is_custom: bool
 
     def __call__(*args, **kwargs) -> tp.Any:
         pass
 
 
-def custom_function(*args, **options) -> tp.Union[tp.Callable, custom_functionT]:
+__pdoc__["custom_functionT"] = False
+
+
+def custom_function(
+    *args,
+    _decorator_name: tp.Optional[str] = None,
+    **options,
+) -> tp.Union[tp.Callable, custom_functionT]:
     """Custom function decorator."""
 
     def decorator(func: tp.Callable) -> custom_functionT:
@@ -204,10 +218,12 @@ def custom_function(*args, **options) -> tp.Union[tp.Callable, custom_functionT]
         def wrapper(*args, **kwargs) -> tp.Any:
             return func(*args, **kwargs)
 
+        wrapper.decorator_name = "custom_function" if _decorator_name is None else _decorator_name
         wrapper.func = func
         wrapper.name = func.__name__
         wrapper.options = options
         wrapper.is_method = False
+        wrapper.is_custom = True
 
         return wrapper
 
@@ -223,12 +239,16 @@ class cacheable_functionT(custom_functionT):
     get_ca_setup: tp.Callable[[], tp.Optional["CARunSetup"]]
 
 
+__pdoc__["cacheable_functionT"] = False
+
+
 def cacheable(
     *args,
     use_cache: bool = False,
     whitelist: bool = False,
     max_size: tp.Optional[int] = None,
     ignore_args: tp.Optional[tp.Iterable[tp.AnnArgQuery]] = None,
+    _decorator_name: tp.Optional[str] = None,
     **options,
 ) -> tp.Union[tp.Callable, cacheable_functionT]:
     """Cacheable function decorator.
@@ -263,10 +283,12 @@ def cacheable(
                 ignore_args=ignore_args,
             )
 
+        wrapper.decorator_name = "cacheable" if _decorator_name is None else _decorator_name
         wrapper.func = func
         wrapper.name = func.__name__
         wrapper.options = options
         wrapper.is_method = False
+        wrapper.is_custom = True
         wrapper.is_cacheable = True
         wrapper.get_ca_setup = get_ca_setup
         if not caching_cfg["register_lazily"]:
@@ -286,7 +308,7 @@ def cached(*args, **options) -> tp.Union[tp.Callable, cacheable_functionT]:
 
     !!! note
         To decorate an instance method, use `cached_method`."""
-    return cacheable(*args, use_cache=True, **options)
+    return cacheable(*args, use_cache=True, _decorator_name="cached", **options)
 
 
 # ############# Custom methods ############# #
@@ -297,7 +319,14 @@ class custom_methodT(custom_functionT):
         pass
 
 
-def custom_method(*args, **options) -> tp.Union[tp.Callable, custom_methodT]:
+__pdoc__["custom_methodT"] = False
+
+
+def custom_method(
+    *args,
+    _decorator_name: tp.Optional[str] = None,
+    **options,
+) -> tp.Union[tp.Callable, custom_methodT]:
     """Custom method decorator."""
 
     def decorator(func: tp.Callable) -> custom_methodT:
@@ -305,10 +334,12 @@ def custom_method(*args, **options) -> tp.Union[tp.Callable, custom_methodT]:
         def wrapper(instance: object, *args, **kwargs) -> tp.Any:
             return func(instance, *args, **kwargs)
 
+        wrapper.decorator_name = "custom_method" if _decorator_name is None else _decorator_name
         wrapper.func = func
         wrapper.name = func.__name__
         wrapper.options = options
         wrapper.is_method = True
+        wrapper.is_custom = True
 
         return wrapper
 
@@ -323,12 +354,16 @@ class cacheable_methodT(custom_methodT):
     get_ca_setup: tp.Callable[[tp.Optional[object]], tp.Optional["CARunSetup"]]
 
 
+__pdoc__["cacheable_methodT"] = False
+
+
 def cacheable_method(
     *args,
     use_cache: bool = False,
     whitelist: bool = False,
     max_size: tp.Optional[int] = None,
     ignore_args: tp.Optional[tp.Iterable[tp.AnnArgQuery]] = None,
+    _decorator_name: tp.Optional[str] = None,
     **options,
 ) -> tp.Union[tp.Callable, cacheable_methodT]:
     """Cacheable method decorator.
@@ -358,10 +393,12 @@ def cacheable_method(
                 return unbound_setup
             return CARunSetup.get(wrapper, instance=instance, max_size=max_size, ignore_args=ignore_args)
 
+        wrapper.decorator_name = "cacheable_method" if _decorator_name is None else _decorator_name
         wrapper.func = func
         wrapper.name = func.__name__
         wrapper.options = options
         wrapper.is_method = True
+        wrapper.is_custom = True
         wrapper.is_cacheable = True
         wrapper.get_ca_setup = get_ca_setup
         if not caching_cfg["register_lazily"]:
@@ -378,7 +415,7 @@ def cacheable_method(
 
 def cached_method(*args, **options) -> tp.Union[tp.Callable, cacheable_methodT]:
     """`cacheable_method` with `use_cache` set to True."""
-    return cacheable_method(*args, use_cache=True, **options)
+    return cacheable_method(*args, use_cache=True, _decorator_name="cached_method", **options)
 
 
 cacheableT = tp.Union[cacheable_property, cacheable_functionT, cacheable_methodT]

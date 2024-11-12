@@ -5,25 +5,18 @@
 import inspect
 
 from vectorbtpro import _typing as tp
-from vectorbtpro.utils.decorators import class_or_instancemethod
+from vectorbtpro.utils.decorators import hybrid_method
 
 __all__ = [
     "Chainable",
 ]
 
-ChainableT = tp.TypeVar("ChainableT", bound="Chainable")
-
 
 class Chainable:
     """Class representing an object that can be chained."""
 
-    @class_or_instancemethod
-    def pipe(
-        cls_or_self: tp.Union[tp.Type[ChainableT], ChainableT],
-        func: tp.Union[str, tp.Callable, tp.Tuple[tp.Union[str, tp.Callable], str]],
-        *args,
-        **kwargs,
-    ) -> ChainableT:
+    @hybrid_method
+    def pipe(cls_or_self, func: tp.PipeFunc, *args, **kwargs) -> tp.Any:
         """Apply a chainable function that expects a `Chainable` instance.
 
         Can be called as a class method, but then will pass only `*args` and `**kwargs`.
@@ -57,3 +50,19 @@ class Chainable:
         if prepend_to_args:
             args = (cls_or_self, *args)
         return func(*args, **kwargs)
+
+    @hybrid_method
+    def chain(cls_or_self, tasks: tp.PipeTasks) -> tp.Any:
+        """Chain multiple tasks with `Chainable.pipe`."""
+        from vectorbtpro.utils.execution import Task
+
+        result = cls_or_self
+        for task in tasks:
+            if not isinstance(task, Task):
+                if isinstance(task, tuple):
+                    task = Task.from_tuple(task)
+                else:
+                    task = Task(task)
+            func, args, kwargs = task
+            result = result.pipe(func, *args, **kwargs)
+        return result

@@ -10,6 +10,8 @@ __all__ = [
     "FSTD",
 ]
 
+__pdoc__ = {}
+
 FSTD = IndicatorFactory(
     class_name="FSTD",
     module_name=__name__,
@@ -88,3 +90,4 @@ class _FSTD(FSTD):
 
 setattr(FSTD, "__doc__", _FSTD.__doc__)
 setattr(FSTD, "plot", _FSTD.plot)
+FSTD.fix_docstrings(__pdoc__)

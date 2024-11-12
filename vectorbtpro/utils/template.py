@@ -2,17 +2,15 @@
 
 """Utilities for working with templates."""
 
-import importlib
 from string import Template
 
 import vectorbtpro as vbt
 from vectorbtpro import _typing as tp
 from vectorbtpro.utils.attr_ import DefineMixin, define
 from vectorbtpro.utils.config import merge_dicts
-from vectorbtpro.utils.eval_ import multiline_eval, Evaluable
-from vectorbtpro.utils.module_ import package_shortcut_config
+from vectorbtpro.utils.eval_ import evaluate, get_free_vars, Evaluable
 from vectorbtpro.utils.parsing import get_func_arg_names
-from vectorbtpro.utils.search import any_in_obj, find_and_replace_in_obj
+from vectorbtpro.utils.search import contains_in_obj, find_and_replace_in_obj
 
 __all__ = [
     "CustomTemplate",
@@ -53,7 +51,7 @@ class CustomTemplate(Evaluable, DefineMixin):
         """Resolve `CustomTemplate.context`.
 
         Merges `context` in `vectorbtpro._settings.template`, `CustomTemplate.context`, and `context`.
-        Automatically appends `eval_id`, `np` (NumPy), `pd` (Pandas), and `vbt` (vectorbtpro)."""
+        Automatically appends `eval_id` and `from vectorbtpro import *`."""
         from vectorbtpro._settings import settings
 
         template_cfg = settings["template"]
@@ -71,12 +69,12 @@ class CustomTemplate(Evaluable, DefineMixin):
             new_context["context"] = dict(new_context)
         if "eval_id" not in new_context:
             new_context["eval_id"] = eval_id
-        for k, v in package_shortcut_config.items():
-            if k not in new_context:
-                try:
-                    new_context[k] = importlib.import_module(v)
-                except ImportError:
-                    pass
+        try:
+            for k, v in vbt.imported_stuff.items():
+                if k not in new_context:
+                    new_context[k] = v
+        except AttributeError:
+            pass
         return new_context
 
     def resolve_strict(self, strict: tp.Optional[bool] = None) -> bool:
@@ -93,6 +91,10 @@ class CustomTemplate(Evaluable, DefineMixin):
             strict = template_cfg["strict"]
         return strict
 
+    def get_context_vars(self) -> tp.List[str]:
+        """Get context variables."""
+        raise NotImplementedError
+
     def substitute(
         self,
         context: tp.KwargsLike = None,
@@ -108,6 +110,18 @@ class Sub(CustomTemplate):
     """Template string to substitute parts with the respective values from `context`.
 
     Always returns a string."""
+
+    def get_context_vars(self) -> tp.List[str]:
+        tmpl = Template(self.template)
+        variables = []
+        for match in tmpl.pattern.finditer(tmpl.template):
+            named = match.group("named")
+            braced = match.group("braced")
+            if named is not None and named not in variables:
+                variables.append(named)
+            elif braced is not None and braced not in variables:
+                variables.append(braced)
+        return variables
 
     def substitute(
         self,
@@ -132,6 +146,9 @@ class Sub(CustomTemplate):
 class Rep(CustomTemplate):
     """Template string to be replaced with the respective value from `context`."""
 
+    def get_context_vars(self) -> tp.List[str]:
+        return [self.template]
+
     def substitute(
         self,
         context: tp.KwargsLike = None,
@@ -153,8 +170,11 @@ class Rep(CustomTemplate):
 
 
 class RepEval(CustomTemplate):
-    """Template expression to be evaluated using `vectorbtpro.utils.eval_.multiline_eval`
+    """Template expression to be evaluated using `vectorbtpro.utils.eval_.evaluate`
     with `context` used as locals."""
+
+    def get_context_vars(self) -> tp.List[str]:
+        return get_free_vars(self.template)
 
     def substitute(
         self,
@@ -169,7 +189,7 @@ class RepEval(CustomTemplate):
         strict = self.resolve_strict(strict=strict)
 
         try:
-            return multiline_eval(self.template, context)
+            return evaluate(self.template, context)
         except NameError as e:
             if strict:
                 raise e
@@ -179,11 +199,14 @@ class RepEval(CustomTemplate):
 class RepFunc(CustomTemplate):
     """Template function to be called with argument names from `context`."""
 
+    def get_context_vars(self) -> tp.List[str]:
+        return get_func_arg_names(self.template)
+
     def substitute(
         self,
         context: tp.KwargsLike = None,
         strict: tp.Optional[bool] = None,
-        eval_id: int = 0,
+        eval_id: tp.Optional[tp.Hashable] = None,
     ) -> tp.Any:
         """Call `RepFunc.template` as a function."""
         if not self.meets_eval_id(eval_id):
@@ -208,7 +231,7 @@ class RepFunc(CustomTemplate):
 def has_templates(obj: tp.Any, **kwargs) -> tp.Any:
     """Check if the object has any templates.
 
-    Uses `vectorbtpro.utils.search.any_in_obj`.
+    Uses `vectorbtpro.utils.search.contains_in_obj`.
 
     Default can be overridden with `search_kwargs` under `vectorbtpro._settings.template`."""
     from vectorbtpro._settings import settings
@@ -220,7 +243,7 @@ def has_templates(obj: tp.Any, **kwargs) -> tp.Any:
     def _match_func(k, v):
         return isinstance(v, (CustomTemplate, Template))
 
-    return any_in_obj(obj, _match_func, **search_kwargs)
+    return contains_in_obj(obj, _match_func, **search_kwargs)
 
 
 def substitute_templates(

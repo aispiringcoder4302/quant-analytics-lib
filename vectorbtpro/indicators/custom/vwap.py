@@ -15,6 +15,8 @@ __all__ = [
     "VWAP",
 ]
 
+__pdoc__ = {}
+
 
 def substitute_anchor(wrapper: ArrayWrapper, anchor: tp.Optional[tp.FrequencyLike]) -> tp.Array1d:
     """Substitute reset frequency by group lens."""
@@ -123,3 +125,4 @@ class _VWAP(VWAP):
 
 setattr(VWAP, "__doc__", _VWAP.__doc__)
 setattr(VWAP, "plot", _VWAP.plot)
+VWAP.fix_docstrings(__pdoc__)

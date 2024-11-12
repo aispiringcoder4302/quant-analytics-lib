@@ -165,6 +165,65 @@ opt_dep_config = HybridConfig(
         findatapy=dict(
             link="https://pypi.org/project/findatapy/",
         ),
+        github=dict(
+            dist_name="PyGithub",
+            link="https://pypi.org/project/PyGithub/",
+            version=">=1.59.0",
+        ),
+        jmespath=dict(
+            link="https://pypi.org/project/jmespath/",
+        ),
+        jsonpath_ng=dict(
+            dist_name="jsonpath-ng",
+            link="https://pypi.org/project/jsonpath-ng/",
+        ),
+        fuzzysearch=dict(
+            link="https://pypi.org/project/fuzzysearch/",
+        ),
+        rapidfuzz=dict(
+            link="https://pypi.org/project/rapidfuzz/",
+        ),
+        nestedtext=dict(
+            link="https://pypi.org/project/nestedtext/",
+        ),
+        yaml=dict(
+            dist_name="PyYAML",
+            link="https://pypi.org/project/PyYAML/",
+        ),
+        ruamel=dict(
+            dist_name="ruamel.yaml",
+            link="https://pypi.org/project/ruamel.yaml/",
+        ),
+        toml=dict(
+            link="https://pypi.org/project/toml/",
+        ),
+        markdown=dict(
+            link="https://pypi.org/project/markdown/",
+        ),
+        pygments=dict(
+            link="https://pypi.org/project/Pygments/",
+        ),
+        IPython=dict(
+            dist_name="ipython",
+            link="https://pypi.org/project/ipython/",
+        ),
+        pymdownx=dict(
+            dist_name="pymdown-extensions",
+            link="https://pypi.org/project/pymdown-extensions/",
+        ),
+        openai=dict(
+            link="https://pypi.org/project/openai/",
+        ),
+        litellm=dict(
+            link="https://pypi.org/project/litellm/",
+        ),
+        llama_index=dict(
+            dist_name="llama-index",
+            link="https://pypi.org/project/llama-index/",
+        ),
+        tiktoken=dict(
+            link="https://pypi.org/project/tiktoken/",
+        )
     )
 )
 """_"""

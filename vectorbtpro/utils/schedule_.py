@@ -41,16 +41,19 @@ class CustomJob(Job):
 
     @property
     def zero_offset(self: CustomJobT) -> CustomJobT:
+        """Set offset to zero."""
         self._zero_offset = True
         return self
 
     @property
     def force_missed_run(self: CustomJobT) -> CustomJobT:
+        """Set whether to force a missed run."""
         self._force_missed_run = True
         return self
 
     @property
     def modulo(self) -> int:
+        """Module based on the next run's unit and interval."""
         if self.unit == "seconds":
             return self.next_run.second % self.interval
         if self.unit == "minutes":
@@ -142,6 +145,7 @@ class ScheduleManager:
         "week",
         "weeks",
     )
+    """Units."""
 
     weekdays: tp.ClassVar[tp.Tuple[str, ...]] = (
         "monday",
@@ -152,6 +156,7 @@ class ScheduleManager:
         "saturday",
         "sunday",
     )
+    """Weekdays."""
 
     def __init__(self, scheduler: tp.Optional[AsyncScheduler] = None) -> None:
         if scheduler is None:
