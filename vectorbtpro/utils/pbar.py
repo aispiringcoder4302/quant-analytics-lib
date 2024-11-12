@@ -371,6 +371,7 @@ class ProgressBar:
 
     @classmethod
     def format_num(cls, n: float) -> str:
+        """Format a number."""
         f = '{0:.3g}'.format(n).replace('+0', '+').replace('-0', '-')
         n = str(n)
         return f if len(f) < len(n) else n

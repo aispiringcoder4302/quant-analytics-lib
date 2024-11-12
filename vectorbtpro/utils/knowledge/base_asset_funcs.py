@@ -1508,6 +1508,7 @@ class DumpAssetFunc(AssetFunc):
         asset: tp.Optional[tp.MaybeType[tp.KnowledgeAsset]] = None,
         **kwargs,
     ) -> tp.Kwargs:
+        """Resolve keyword arguments related to dumping."""
         if asset is None:
             from vectorbtpro.utils.knowledge.base_assets import KnowledgeAsset
 
