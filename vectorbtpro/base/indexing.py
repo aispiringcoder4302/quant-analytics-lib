@@ -298,6 +298,7 @@ class ParamLoc(LocBase):
 
     @classmethod
     def encode_key(cls, key: tp.Any):
+        """Encode key."""
         if isinstance(key, tuple):
             return str(tuple(map(lambda k: k.item() if isinstance(k, np.generic) else k, key)))
         key_str = str(key)
