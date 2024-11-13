@@ -954,14 +954,14 @@ class ArrayWrapper(Configured, IndexApplier, ExtPandasIndexer, Itemable, Paramab
         return self.index_acc.any_freq
 
     @property
-    def period(self) -> int:
-        """See `vectorbtpro.base.accessors.BaseIDXAccessor.period`."""
-        return self.index_acc.period
+    def periods(self) -> int:
+        """See `vectorbtpro.base.accessors.BaseIDXAccessor.periods`."""
+        return self.index_acc.periods
 
     @property
-    def dt_period(self) -> float:
-        """See `vectorbtpro.base.accessors.BaseIDXAccessor.dt_period`."""
-        return self.index_acc.dt_period
+    def dt_periods(self) -> float:
+        """See `vectorbtpro.base.accessors.BaseIDXAccessor.dt_periods`."""
+        return self.index_acc.dt_periods
 
     def arr_to_timedelta(self, *args, **kwargs) -> tp.Union[pd.Index, tp.MaybeArray]:
         """See `vectorbtpro.base.accessors.BaseIDXAccessor.arr_to_timedelta`."""

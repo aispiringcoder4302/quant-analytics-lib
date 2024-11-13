@@ -1440,7 +1440,7 @@ returns = frozen_cfg(
         levy_alpha=2.0,
         required_return=0.0,
         cutoff=0.05,
-        period=None,
+        periods=None,
     ),
     stats=flex_cfg(
         filters=flex_cfg(

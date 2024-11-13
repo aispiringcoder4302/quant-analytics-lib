@@ -402,17 +402,17 @@ def annualized_return_1d_nb(
     returns: tp.Array1d,
     ann_factor: float,
     log_returns: bool = False,
-    period: tp.Optional[float] = None,
+    periods: tp.Optional[float] = None,
 ) -> float:
     """Annualized total return.
 
     This is equivalent to the compound annual growth rate (CAGR)."""
-    if period is None:
-        period = returns.shape[0]
+    if periods is None:
+        periods = returns.shape[0]
     final_value = final_value_1d_nb(returns, log_returns=log_returns)
-    if period == 0:
+    if periods == 0:
         return np.nan
-    return final_value ** (ann_factor / period) - 1
+    return final_value ** (ann_factor / periods) - 1
 
 
 @register_chunkable(
@@ -421,7 +421,7 @@ def annualized_return_1d_nb(
         returns=ch.ArraySlicer(axis=1),
         ann_factor=None,
         log_returns=None,
-        period=None,
+        periods=None,
         sim_start=base_ch.FlexArraySlicer(),
         sim_end=base_ch.FlexArraySlicer(),
     ),
@@ -432,7 +432,7 @@ def annualized_return_nb(
     returns: tp.Array2d,
     ann_factor: float,
     log_returns: bool = False,
-    period: tp.Optional[tp.FlexArray1dLike] = None,
+    periods: tp.Optional[tp.FlexArray1dLike] = None,
     sim_start: tp.Optional[tp.FlexArray1dLike] = None,
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array1d:
@@ -444,10 +444,10 @@ def annualized_return_nb(
         sim_start=sim_start,
         sim_end=sim_end,
     )
-    if period is None:
+    if periods is None:
         period_ = sim_end_ - sim_start_
     else:
-        period_ = to_1d_array_nb(np.asarray(period).astype(int_))
+        period_ = to_1d_array_nb(np.asarray(periods).astype(int_))
     for col in prange(returns.shape[1]):
         _sim_start = sim_start_[col]
         _sim_end = sim_end_[col]
@@ -459,7 +459,7 @@ def annualized_return_nb(
             returns[_sim_start:_sim_end, col],
             ann_factor,
             log_returns=log_returns,
-            period=_period,
+            periods=_period,
         )
     return out
 
@@ -729,7 +729,7 @@ def calmar_ratio_1d_nb(
     returns: tp.Array1d,
     ann_factor: float,
     log_returns: bool = False,
-    period: tp.Optional[float] = None,
+    periods: tp.Optional[float] = None,
 ) -> float:
     """Calmar ratio, or drawdown ratio, of a strategy."""
     max_drawdown = max_drawdown_1d_nb(returns, log_returns=log_returns)
@@ -739,7 +739,7 @@ def calmar_ratio_1d_nb(
         returns,
         ann_factor,
         log_returns=log_returns,
-        period=period,
+        periods=periods,
     )
     if max_drawdown == 0:
         if annualized_return == 0:
@@ -754,7 +754,7 @@ def calmar_ratio_1d_nb(
         returns=ch.ArraySlicer(axis=1),
         ann_factor=None,
         log_returns=None,
-        period=None,
+        periods=None,
         sim_start=base_ch.FlexArraySlicer(),
         sim_end=base_ch.FlexArraySlicer(),
     ),
@@ -765,7 +765,7 @@ def calmar_ratio_nb(
     returns: tp.Array2d,
     ann_factor: float,
     log_returns: bool = False,
-    period: tp.Optional[tp.FlexArray1dLike] = None,
+    periods: tp.Optional[tp.FlexArray1dLike] = None,
     sim_start: tp.Optional[tp.FlexArray1dLike] = None,
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array1d:
@@ -777,10 +777,10 @@ def calmar_ratio_nb(
         sim_start=sim_start,
         sim_end=sim_end,
     )
-    if period is None:
+    if periods is None:
         period_ = sim_end_ - sim_start_
     else:
-        period_ = to_1d_array_nb(np.asarray(period).astype(int_))
+        period_ = to_1d_array_nb(np.asarray(periods).astype(int_))
     for col in prange(returns.shape[1]):
         _sim_start = sim_start_[col]
         _sim_end = sim_end_[col]
@@ -792,7 +792,7 @@ def calmar_ratio_nb(
             returns[_sim_start:_sim_end, col],
             ann_factor,
             log_returns=log_returns,
-            period=_period,
+            periods=_period,
         )
     return out
 
@@ -2180,20 +2180,20 @@ def capture_ratio_1d_nb(
     bm_returns: tp.Array1d,
     ann_factor: float,
     log_returns: bool = False,
-    period: tp.Optional[float] = None,
+    periods: tp.Optional[float] = None,
 ) -> float:
     """Capture ratio."""
     annualized_return1 = annualized_return_1d_nb(
         returns,
         ann_factor,
         log_returns=log_returns,
-        period=period,
+        periods=periods,
     )
     annualized_return2 = annualized_return_1d_nb(
         bm_returns,
         ann_factor,
         log_returns=log_returns,
-        period=period,
+        periods=periods,
     )
     if annualized_return2 == 0:
         if annualized_return1 == 0:
@@ -2209,7 +2209,7 @@ def capture_ratio_1d_nb(
         bm_returns=ch.ArraySlicer(axis=1),
         ann_factor=None,
         log_returns=None,
-        period=None,
+        periods=None,
         sim_start=base_ch.FlexArraySlicer(),
         sim_end=base_ch.FlexArraySlicer(),
     ),
@@ -2221,7 +2221,7 @@ def capture_ratio_nb(
     bm_returns: tp.Array2d,
     ann_factor: float,
     log_returns: bool = False,
-    period: tp.Optional[tp.FlexArray1dLike] = None,
+    periods: tp.Optional[tp.FlexArray1dLike] = None,
     sim_start: tp.Optional[tp.FlexArray1dLike] = None,
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array1d:
@@ -2233,10 +2233,10 @@ def capture_ratio_nb(
         sim_start=sim_start,
         sim_end=sim_end,
     )
-    if period is None:
+    if periods is None:
         period_ = sim_end_ - sim_start_
     else:
-        period_ = to_1d_array_nb(np.asarray(period).astype(int_))
+        period_ = to_1d_array_nb(np.asarray(periods).astype(int_))
     for col in prange(returns.shape[1]):
         _sim_start = sim_start_[col]
         _sim_end = sim_end_[col]
@@ -2249,7 +2249,7 @@ def capture_ratio_nb(
             bm_returns[_sim_start:_sim_end, col],
             ann_factor,
             log_returns=log_returns,
-            period=_period,
+            periods=_period,
         )
     return out
 
@@ -2311,11 +2311,11 @@ def up_capture_ratio_1d_nb(
     bm_returns: tp.Array1d,
     ann_factor: float,
     log_returns: bool = False,
-    period: tp.Optional[float] = None,
+    periods: tp.Optional[float] = None,
 ) -> float:
     """Capture ratio for periods when the benchmark return is positive."""
-    if period is None:
-        period = returns.shape[0]
+    if periods is None:
+        periods = returns.shape[0]
 
     def _annualized_pos_return(a):
         ann_ret = np.nan
@@ -2333,9 +2333,9 @@ def up_capture_ratio_1d_nb(
                     ret_cnt += 1
         if ret_cnt == 0:
             return np.nan
-        if period == 0:
+        if periods == 0:
             return np.nan
-        return ann_ret ** (ann_factor / period) - 1
+        return ann_ret ** (ann_factor / periods) - 1
 
     annualized_return = _annualized_pos_return(returns)
     annualized_bm_return = _annualized_pos_return(bm_returns)
@@ -2353,7 +2353,7 @@ def up_capture_ratio_1d_nb(
         bm_returns=ch.ArraySlicer(axis=1),
         ann_factor=None,
         log_returns=None,
-        period=None,
+        periods=None,
         sim_start=base_ch.FlexArraySlicer(),
         sim_end=base_ch.FlexArraySlicer(),
     ),
@@ -2365,7 +2365,7 @@ def up_capture_ratio_nb(
     bm_returns: tp.Array2d,
     ann_factor: float,
     log_returns: bool = False,
-    period: tp.Optional[tp.FlexArray1dLike] = None,
+    periods: tp.Optional[tp.FlexArray1dLike] = None,
     sim_start: tp.Optional[tp.FlexArray1dLike] = None,
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array1d:
@@ -2377,10 +2377,10 @@ def up_capture_ratio_nb(
         sim_start=sim_start,
         sim_end=sim_end,
     )
-    if period is None:
+    if periods is None:
         period_ = sim_end_ - sim_start_
     else:
-        period_ = to_1d_array_nb(np.asarray(period).astype(int_))
+        period_ = to_1d_array_nb(np.asarray(periods).astype(int_))
     for col in prange(returns.shape[1]):
         _sim_start = sim_start_[col]
         _sim_end = sim_end_[col]
@@ -2393,7 +2393,7 @@ def up_capture_ratio_nb(
             bm_returns[_sim_start:_sim_end, col],
             ann_factor,
             log_returns=log_returns,
-            period=_period,
+            periods=_period,
         )
     return out
 
@@ -2455,11 +2455,11 @@ def down_capture_ratio_1d_nb(
     bm_returns: tp.Array1d,
     ann_factor: float,
     log_returns: bool = False,
-    period: tp.Optional[float] = None,
+    periods: tp.Optional[float] = None,
 ) -> float:
     """Capture ratio for periods when the benchmark return is negative."""
-    if period is None:
-        period = returns.shape[0]
+    if periods is None:
+        periods = returns.shape[0]
 
     def _annualized_neg_return(a):
         ann_ret = np.nan
@@ -2477,9 +2477,9 @@ def down_capture_ratio_1d_nb(
                     ret_cnt += 1
         if ret_cnt == 0:
             return np.nan
-        if period == 0:
+        if periods == 0:
             return np.nan
-        return ann_ret ** (ann_factor / period) - 1
+        return ann_ret ** (ann_factor / periods) - 1
 
     annualized_return = _annualized_neg_return(returns)
     annualized_bm_return = _annualized_neg_return(bm_returns)
@@ -2497,7 +2497,7 @@ def down_capture_ratio_1d_nb(
         bm_returns=ch.ArraySlicer(axis=1),
         ann_factor=None,
         log_returns=None,
-        period=None,
+        periods=None,
         sim_start=base_ch.FlexArraySlicer(),
         sim_end=base_ch.FlexArraySlicer(),
     ),
@@ -2509,7 +2509,7 @@ def down_capture_ratio_nb(
     bm_returns: tp.Array2d,
     ann_factor: float,
     log_returns: bool = False,
-    period: tp.Optional[tp.FlexArray1dLike] = None,
+    periods: tp.Optional[tp.FlexArray1dLike] = None,
     sim_start: tp.Optional[tp.FlexArray1dLike] = None,
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array1d:
@@ -2521,10 +2521,10 @@ def down_capture_ratio_nb(
         sim_start=sim_start,
         sim_end=sim_end,
     )
-    if period is None:
+    if periods is None:
         period_ = sim_end_ - sim_start_
     else:
-        period_ = to_1d_array_nb(np.asarray(period).astype(int_))
+        period_ = to_1d_array_nb(np.asarray(periods).astype(int_))
     for col in prange(returns.shape[1]):
         _sim_start = sim_start_[col]
         _sim_end = sim_end_[col]
@@ -2537,7 +2537,7 @@ def down_capture_ratio_nb(
             bm_returns[_sim_start:_sim_end, col],
             ann_factor,
             log_returns=log_returns,
-            period=_period,
+            periods=_period,
         )
     return out
 

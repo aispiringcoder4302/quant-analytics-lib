@@ -268,8 +268,8 @@ class BaseIDXAccessor(Configured, IndexApplier):
         return self.get_freq()
 
     @hybrid_method
-    def get_period(cls_or_self, index: tp.Optional[tp.Index] = None) -> int:
-        """Get the period of the index, without taking into account its datetime-like properties."""
+    def get_periods(cls_or_self, index: tp.Optional[tp.Index] = None) -> int:
+        """Get the number of periods in the index, without taking into account its datetime-like properties."""
         if not isinstance(cls_or_self, type):
             if index is None:
                 index = cls_or_self.obj
@@ -278,17 +278,17 @@ class BaseIDXAccessor(Configured, IndexApplier):
         return len(index)
 
     @property
-    def period(self) -> int:
-        """`BaseIDXAccessor.get_period` with default arguments."""
+    def periods(self) -> int:
+        """`BaseIDXAccessor.get_periods` with default arguments."""
         return len(self.obj)
 
     @hybrid_method
-    def get_dt_period(
+    def get_dt_periods(
         cls_or_self,
         index: tp.Optional[tp.Index] = None,
         freq: tp.Optional[tp.PandasFrequency] = None,
     ) -> float:
-        """Get the period of the index, taking into account its datetime-like properties."""
+        """Get the number of periods in the index, taking into account its datetime-like properties."""
         from vectorbtpro._settings import settings
 
         wrapping_cfg = settings["wrapping"]
@@ -320,12 +320,12 @@ class BaseIDXAccessor(Configured, IndexApplier):
             return index[-1] - index[0] + 1
         if not wrapping_cfg["silence_warnings"]:
             warnings.warn("Index is neither datetime-like nor integer", stacklevel=2)
-        return cls_or_self.get_period(index=index)
+        return cls_or_self.get_periods(index=index)
 
     @property
-    def dt_period(self) -> float:
-        """`BaseIDXAccessor.get_dt_period` with default arguments."""
-        return self.get_dt_period()
+    def dt_periods(self) -> float:
+        """`BaseIDXAccessor.get_dt_periods` with default arguments."""
+        return self.get_dt_periods()
 
     def arr_to_timedelta(
         self,

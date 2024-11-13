@@ -1017,16 +1017,16 @@ class TestArrayWrapper:
             == day_dt
         )
 
-    def test_period(self):
+    def test_periods(self):
         test_sr = pd.Series([1, 2], index=pd.date_range("2020", periods=2))
-        assert test_sr.vbt.wrapper.period == 2
+        assert test_sr.vbt.wrapper.periods == 2
 
-    def test_dt_period(self):
-        assert sr2_wrapper.dt_period == 3
-        assert sr2_wrapper.replace(freq="1D").dt_period == 3
+    def test_dt_periods(self):
+        assert sr2_wrapper.dt_periods == 3
+        assert sr2_wrapper.replace(freq="1D").dt_periods == 3
         test_sr = pd.Series([1, 2], index=["2020-01-01", "2021-01-01"])
-        assert test_sr.vbt.wrapper.dt_period == 2
-        assert test_sr.vbt(freq="1D").wrapper.dt_period == 367
+        assert test_sr.vbt.wrapper.dt_periods == 2
+        assert test_sr.vbt(freq="1D").wrapper.dt_periods == 367
 
     def test_to_timedelta(self):
         sr = pd.Series([1, 2, np.nan], index=["x", "y", "z"], name="name")

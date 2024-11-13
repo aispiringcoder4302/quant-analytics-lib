@@ -59,7 +59,7 @@ defaults for arguments used throughout the accessor, such as
 * `levy_alpha`: Scaling relation (Levy stability exponent).
 * `required_return`: Minimum acceptance return of the investor.
 * `cutoff`: Decimal representing the percentage cutoff for the bottom percentile of returns.
-* `period`: Number of observations for annualization. Can be an integer or "dt_period".
+* `periods`: Number of observations for annualization. Can be an integer or "dt_periods".
 
 Defaults as well as `bm_returns` and `year_freq` can be set globally using settings:
 
@@ -590,18 +590,18 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         return self.get_ann_factor(raise_error=True)
 
     @hybrid_method
-    def get_period(
+    def get_periods(
         cls_or_self,
-        period: tp.Union[None, str, tp.ArrayLike] = None,
+        periods: tp.Union[None, str, tp.ArrayLike] = None,
         sim_start: tp.Optional[tp.ArrayLike] = None,
         sim_end: tp.Optional[tp.ArrayLike] = None,
         wrapper: tp.Optional[ArrayWrapper] = None,
         group_by: tp.GroupByLike = None,
     ) -> tp.Optional[tp.ArrayLike]:
-        """Prepare period."""
-        if not isinstance(cls_or_self, type) and period is None:
-            period = cls_or_self.defaults["period"]
-        if isinstance(period, str) and period.lower() == "dt_period":
+        """Prepare periods."""
+        if not isinstance(cls_or_self, type) and periods is None:
+            periods = cls_or_self.defaults["periods"]
+        if isinstance(periods, str) and periods.lower() == "dt_periods":
             if not isinstance(cls_or_self, type):
                 if wrapper is None:
                     wrapper = cls_or_self.wrapper
@@ -635,22 +635,22 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
                         wrapper=wrapper,
                         group_by=group_by,
                     )
-                period = []
+                periods = []
                 for i in range(len(sim_start)):
                     sim_index = wrapper.index[sim_start[i] : sim_end[i]]
                     if len(sim_index) == 0:
-                        period.append(0)
+                        periods.append(0)
                     else:
-                        period.append(wrapper.index_acc.get_dt_period(index=sim_index))
-                period = np.asarray(period)
+                        periods.append(wrapper.index_acc.get_dt_periods(index=sim_index))
+                periods = np.asarray(periods)
             else:
-                period = wrapper.dt_period
-        return period
+                periods = wrapper.dt_periods
+        return periods
 
     @property
-    def period(self) -> tp.Optional[tp.ArrayLike]:
-        """Period."""
-        return self.get_period()
+    def periods(self) -> tp.Optional[tp.ArrayLike]:
+        """Periods."""
+        return self.get_periods()
 
     def deannualize(self, value: float) -> float:
         """Deannualize a value."""
@@ -912,7 +912,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
     def annualized(
         self,
-        period: tp.Union[None, str, tp.ArrayLike] = None,
+        periods: tp.Union[None, str, tp.ArrayLike] = None,
         sim_start: tp.Optional[tp.ArrayLike] = None,
         sim_end: tp.Optional[tp.ArrayLike] = None,
         jitted: tp.JittedOption = None,
@@ -922,7 +922,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         """Annualized return.
 
         See `vectorbtpro.returns.nb.annualized_return_nb`."""
-        period = self.get_period(period=period, sim_start=sim_start, sim_end=sim_end)
+        periods = self.get_periods(periods=periods, sim_start=sim_start, sim_end=sim_end)
         sim_start = self.resolve_sim_start(sim_start=sim_start, group_by=False)
         sim_end = self.resolve_sim_end(sim_end=sim_end, group_by=False)
 
@@ -931,7 +931,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         out = func(
             self.to_2d_array(),
             self.ann_factor,
-            period=period,
+            periods=periods,
             log_returns=self.log_returns,
             sim_start=sim_start,
             sim_end=sim_end,
@@ -1049,7 +1049,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
     def calmar_ratio(
         self,
-        period: tp.Union[None, str, tp.ArrayLike] = None,
+        periods: tp.Union[None, str, tp.ArrayLike] = None,
         sim_start: tp.Optional[tp.ArrayLike] = None,
         sim_end: tp.Optional[tp.ArrayLike] = None,
         jitted: tp.JittedOption = None,
@@ -1059,7 +1059,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         """Calmar ratio.
 
         See `vectorbtpro.returns.nb.calmar_ratio_nb`."""
-        period = self.get_period(period=period, sim_start=sim_start, sim_end=sim_end)
+        periods = self.get_periods(periods=periods, sim_start=sim_start, sim_end=sim_end)
         sim_start = self.resolve_sim_start(sim_start=sim_start, group_by=False)
         sim_end = self.resolve_sim_end(sim_end=sim_end, group_by=False)
 
@@ -1068,7 +1068,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         out = func(
             self.to_2d_array(),
             self.ann_factor,
-            period=period,
+            periods=periods,
             log_returns=self.log_returns,
             sim_start=sim_start,
             sim_end=sim_end,
@@ -2019,7 +2019,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
     def capture_ratio(
         self,
         bm_returns: tp.Optional[tp.ArrayLike] = None,
-        period: tp.Union[None, str, tp.ArrayLike] = None,
+        periods: tp.Union[None, str, tp.ArrayLike] = None,
         sim_start: tp.Optional[tp.ArrayLike] = None,
         sim_end: tp.Optional[tp.ArrayLike] = None,
         jitted: tp.JittedOption = None,
@@ -2033,7 +2033,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             bm_returns = self.bm_returns
         checks.assert_not_none(bm_returns, arg_name="bm_returns")
         bm_returns = broadcast_to(bm_returns, self.obj)
-        period = self.get_period(period=period, sim_start=sim_start, sim_end=sim_end)
+        periods = self.get_periods(periods=periods, sim_start=sim_start, sim_end=sim_end)
         sim_start = self.resolve_sim_start(sim_start=sim_start, group_by=False)
         sim_end = self.resolve_sim_end(sim_end=sim_end, group_by=False)
 
@@ -2043,7 +2043,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             self.to_2d_array(),
             to_2d_array(bm_returns),
             self.ann_factor,
-            period=period,
+            periods=periods,
             log_returns=self.log_returns,
             sim_start=sim_start,
             sim_end=sim_end,
@@ -2094,7 +2094,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
     def up_capture_ratio(
         self,
         bm_returns: tp.Optional[tp.ArrayLike] = None,
-        period: tp.Union[None, str, tp.ArrayLike] = None,
+        periods: tp.Union[None, str, tp.ArrayLike] = None,
         sim_start: tp.Optional[tp.ArrayLike] = None,
         sim_end: tp.Optional[tp.ArrayLike] = None,
         jitted: tp.JittedOption = None,
@@ -2108,7 +2108,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             bm_returns = self.bm_returns
         checks.assert_not_none(bm_returns, arg_name="bm_returns")
         bm_returns = broadcast_to(bm_returns, self.obj)
-        period = self.get_period(period=period, sim_start=sim_start, sim_end=sim_end)
+        periods = self.get_periods(periods=periods, sim_start=sim_start, sim_end=sim_end)
         sim_start = self.resolve_sim_start(sim_start=sim_start, group_by=False)
         sim_end = self.resolve_sim_end(sim_end=sim_end, group_by=False)
 
@@ -2118,7 +2118,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             self.to_2d_array(),
             to_2d_array(bm_returns),
             self.ann_factor,
-            period=period,
+            periods=periods,
             log_returns=self.log_returns,
             sim_start=sim_start,
             sim_end=sim_end,
@@ -2169,7 +2169,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
     def down_capture_ratio(
         self,
         bm_returns: tp.Optional[tp.ArrayLike] = None,
-        period: tp.Union[None, str, tp.ArrayLike] = None,
+        periods: tp.Union[None, str, tp.ArrayLike] = None,
         sim_start: tp.Optional[tp.ArrayLike] = None,
         sim_end: tp.Optional[tp.ArrayLike] = None,
         jitted: tp.JittedOption = None,
@@ -2183,7 +2183,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             bm_returns = self.bm_returns
         checks.assert_not_none(bm_returns, arg_name="bm_returns")
         bm_returns = broadcast_to(bm_returns, self.obj)
-        period = self.get_period(period=period, sim_start=sim_start, sim_end=sim_end)
+        periods = self.get_periods(periods=periods, sim_start=sim_start, sim_end=sim_end)
         sim_start = self.resolve_sim_start(sim_start=sim_start, group_by=False)
         sim_end = self.resolve_sim_end(sim_end=sim_end, group_by=False)
 
@@ -2193,7 +2193,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             self.to_2d_array(),
             to_2d_array(bm_returns),
             self.ann_factor,
-            period=period,
+            periods=periods,
             log_returns=self.log_returns,
             sim_start=sim_start,
             sim_end=sim_end,

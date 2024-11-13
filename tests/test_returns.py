@@ -69,7 +69,7 @@ def setup_module():
         levy_alpha=2.0,
         required_return=0.01,
         cutoff=0.05,
-        period="dt_period",
+        periods="dt_periods",
     )
 
 
