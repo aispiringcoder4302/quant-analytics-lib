@@ -920,11 +920,10 @@ def update_value_nb(
     position_before: float,
     position_now: float,
     val_price_before: float,
-    price: float,
+    val_price_now: float,
     value_before: float,
-) -> tp.Tuple[float, float]:
+) -> float:
     """Update valuation price and value."""
-    val_price_now = price
     cash_flow = cash_now - cash_before
     if position_before != 0:
         asset_value_before = position_before * val_price_before
@@ -936,7 +935,7 @@ def update_value_nb(
         asset_value_now = 0.0
     asset_value_diff = asset_value_now - asset_value_before
     value_now = value_before + cash_flow + asset_value_diff
-    return val_price_now, value_now
+    return value_now
 
 
 @register_jitted(cache=True)
@@ -1298,7 +1297,7 @@ def execute_order_nb(
 
     is_filled = order_result.status == OrderStatus.Filled
     if is_filled and update_value:
-        new_val_price, new_value = update_value_nb(
+        new_value = update_value_nb(
             cash,
             new_account_state.cash,
             position,
@@ -1308,7 +1307,6 @@ def execute_order_nb(
             value,
         )
     else:
-        new_val_price = val_price
         new_value = value
 
     new_exec_state = ExecState(
@@ -1317,7 +1315,7 @@ def execute_order_nb(
         debt=new_account_state.debt,
         locked_cash=new_account_state.locked_cash,
         free_cash=new_account_state.free_cash,
-        val_price=new_val_price,
+        val_price=val_price,
         value=new_value,
     )
 
