@@ -1766,7 +1766,7 @@ portfolio = frozen_cfg(
         template_context=flex_cfg(incl_open_tags=RepEval("['open', 'closed'] if incl_open else ['closed']")),
     ),
     plots=flex_cfg(
-        subplots=["orders", "trade_pnl", "cum_returns"],
+        subplots=["orders", "trade_pnl", "cumulative_returns"],
         settings=flex_cfg(
             use_asset_returns=False,
         ),
