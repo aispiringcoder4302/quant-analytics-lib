@@ -46,20 +46,20 @@ def to_any_index(index_like: tp.IndexLike) -> tp.Index:
     return index_like
 
 
-def get_index(arg: tp.SeriesFrame, axis: int) -> tp.Index:
-    """Get index of `arg` by `axis`."""
-    checks.assert_instance_of(arg, (pd.Series, pd.DataFrame))
+def get_index(obj: tp.SeriesFrame, axis: int) -> tp.Index:
+    """Get index of `obj` by `axis`."""
+    checks.assert_instance_of(obj, (pd.Series, pd.DataFrame))
     checks.assert_in(axis, (0, 1))
 
     if axis == 0:
-        return arg.index
+        return obj.index
     else:
-        if checks.is_series(arg):
-            if arg.name is not None:
-                return pd.Index([arg.name])
+        if checks.is_series(obj):
+            if obj.name is not None:
+                return pd.Index([obj.name])
             return pd.Index([0])  # same as how pandas does it
         else:
-            return arg.columns
+            return obj.columns
 
 
 def index_from_values(

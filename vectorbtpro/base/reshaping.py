@@ -96,117 +96,125 @@ def tile_shape(shape: tp.ShapeLike, n: int, axis: int = 1) -> tp.Shape:
     return repeat_shape(shape, n, axis=axis)
 
 
-def index_to_series(arg: tp.Index, reset_index: bool = False) -> tp.Series:
+def index_to_series(obj: tp.Index, reset_index: bool = False) -> tp.Series:
     """Convert Index to Series."""
     if reset_index:
-        return arg.to_series(index=pd.RangeIndex(stop=len(arg)))
-    return arg.to_series()
+        return obj.to_series(index=pd.RangeIndex(stop=len(obj)))
+    return obj.to_series()
 
 
-def index_to_frame(arg: tp.Index, reset_index: bool = False) -> tp.Frame:
+def index_to_frame(obj: tp.Index, reset_index: bool = False) -> tp.Frame:
     """Convert Index to DataFrame."""
-    if not isinstance(arg, pd.MultiIndex):
-        return index_to_series(arg, reset_index=reset_index).to_frame()
-    return arg.to_frame(index=not reset_index)
+    if not isinstance(obj, pd.MultiIndex):
+        return index_to_series(obj, reset_index=reset_index).to_frame()
+    return obj.to_frame(index=not reset_index)
 
 
-def mapping_to_series(arg: tp.MappingLike) -> tp.Series:
+def mapping_to_series(obj: tp.MappingLike) -> tp.Series:
     """Convert a mapping-like object to Series."""
-    if checks.is_namedtuple(arg):
-        arg = arg._asdict()
-    return pd.Series(arg)
+    if checks.is_namedtuple(obj):
+        obj = obj._asdict()
+    return pd.Series(obj)
 
 
-def to_any_array(arg: tp.ArrayLike, raw: bool = False, convert_index: bool = True) -> tp.AnyArray:
+def to_any_array(obj: tp.ArrayLike, raw: bool = False, convert_index: bool = True) -> tp.AnyArray:
     """Convert any array-like object to an array.
 
     Pandas objects are kept as-is unless `raw` is True."""
+    from vectorbtpro.indicators.factory import IndicatorBase
+
+    if isinstance(obj, IndicatorBase):
+        obj = obj.main_output
     if not raw:
-        if checks.is_any_array(arg):
-            if convert_index and checks.is_index(arg):
-                return index_to_series(arg)
-            return arg
-        if checks.is_mapping_like(arg):
-            return mapping_to_series(arg)
-    return np.asarray(arg)
+        if checks.is_any_array(obj):
+            if convert_index and checks.is_index(obj):
+                return index_to_series(obj)
+            return obj
+        if checks.is_mapping_like(obj):
+            return mapping_to_series(obj)
+    return np.asarray(obj)
 
 
-def to_pd_array(arg: tp.ArrayLike, convert_index: bool = True) -> tp.PandasArray:
+def to_pd_array(obj: tp.ArrayLike, convert_index: bool = True) -> tp.PandasArray:
     """Convert any array-like object to a Pandas object."""
-    if checks.is_pandas(arg):
-        if convert_index and checks.is_index(arg):
-            return index_to_series(arg)
-        return arg
-    if checks.is_mapping_like(arg):
-        return mapping_to_series(arg)
+    from vectorbtpro.indicators.factory import IndicatorBase
 
-    arg = np.asarray(arg)
-    if arg.ndim == 0:
-        arg = arg[None]
-    if arg.ndim == 1:
-        return pd.Series(arg)
-    if arg.ndim == 2:
-        return pd.DataFrame(arg)
+    if isinstance(obj, IndicatorBase):
+        obj = obj.main_output
+    if checks.is_pandas(obj):
+        if convert_index and checks.is_index(obj):
+            return index_to_series(obj)
+        return obj
+    if checks.is_mapping_like(obj):
+        return mapping_to_series(obj)
+
+    obj = np.asarray(obj)
+    if obj.ndim == 0:
+        obj = obj[None]
+    if obj.ndim == 1:
+        return pd.Series(obj)
+    if obj.ndim == 2:
+        return pd.DataFrame(obj)
     raise ValueError("Wrong number of dimensions: cannot convert to Series or DataFrame")
 
 
-def soft_to_ndim(arg: tp.ArrayLike, ndim: int, raw: bool = False) -> tp.AnyArray:
-    """Try to softly bring `arg` to the specified number of dimensions `ndim` (max 2)."""
-    arg = to_any_array(arg, raw=raw)
+def soft_to_ndim(obj: tp.ArrayLike, ndim: int, raw: bool = False) -> tp.AnyArray:
+    """Try to softly bring `obj` to the specified number of dimensions `ndim` (max 2)."""
+    obj = to_any_array(obj, raw=raw)
     if ndim == 1:
-        if arg.ndim == 2:
-            if arg.shape[1] == 1:
-                if checks.is_frame(arg):
-                    return arg.iloc[:, 0]
-                return arg[:, 0]  # downgrade
+        if obj.ndim == 2:
+            if obj.shape[1] == 1:
+                if checks.is_frame(obj):
+                    return obj.iloc[:, 0]
+                return obj[:, 0]  # downgrade
     if ndim == 2:
-        if arg.ndim == 1:
-            if checks.is_series(arg):
-                return arg.to_frame()
-            return arg[:, None]  # upgrade
-    return arg  # do nothing
+        if obj.ndim == 1:
+            if checks.is_series(obj):
+                return obj.to_frame()
+            return obj[:, None]  # upgrade
+    return obj  # do nothing
 
 
-def to_1d(arg: tp.ArrayLike, raw: bool = False) -> tp.AnyArray1d:
+def to_1d(obj: tp.ArrayLike, raw: bool = False) -> tp.AnyArray1d:
     """Reshape argument to one dimension.
 
     If `raw` is True, returns NumPy array.
     If 2-dim, will collapse along axis 1 (i.e., DataFrame with one column to Series)."""
-    arg = to_any_array(arg, raw=raw)
-    if arg.ndim == 2:
-        if arg.shape[1] == 1:
-            if checks.is_frame(arg):
-                return arg.iloc[:, 0]
-            return arg[:, 0]
-    if arg.ndim == 1:
-        return arg
-    elif arg.ndim == 0:
-        return arg.reshape((1,))
-    raise ValueError(f"Cannot reshape a {arg.ndim}-dimensional array to 1 dimension")
+    obj = to_any_array(obj, raw=raw)
+    if obj.ndim == 2:
+        if obj.shape[1] == 1:
+            if checks.is_frame(obj):
+                return obj.iloc[:, 0]
+            return obj[:, 0]
+    if obj.ndim == 1:
+        return obj
+    elif obj.ndim == 0:
+        return obj.reshape((1,))
+    raise ValueError(f"Cannot reshape a {obj.ndim}-dimensional array to 1 dimension")
 
 
 to_1d_array = functools.partial(to_1d, raw=True)
 """`to_1d` with `raw` enabled."""
 
 
-def to_2d(arg: tp.ArrayLike, raw: bool = False, expand_axis: int = 1) -> tp.AnyArray2d:
+def to_2d(obj: tp.ArrayLike, raw: bool = False, expand_axis: int = 1) -> tp.AnyArray2d:
     """Reshape argument to two dimensions.
 
     If `raw` is True, returns NumPy array.
     If 1-dim, will expand along axis 1 (i.e., Series to DataFrame with one column)."""
-    arg = to_any_array(arg, raw=raw)
-    if arg.ndim == 2:
-        return arg
-    elif arg.ndim == 1:
-        if checks.is_series(arg):
+    obj = to_any_array(obj, raw=raw)
+    if obj.ndim == 2:
+        return obj
+    elif obj.ndim == 1:
+        if checks.is_series(obj):
             if expand_axis == 0:
-                return pd.DataFrame(arg.values[None, :], columns=arg.index)
+                return pd.DataFrame(obj.values[None, :], columns=obj.index)
             elif expand_axis == 1:
-                return arg.to_frame()
-        return np.expand_dims(arg, expand_axis)
-    elif arg.ndim == 0:
-        return arg.reshape((1, 1))
-    raise ValueError(f"Cannot reshape a {arg.ndim}-dimensional array to 2 dimensions")
+                return obj.to_frame()
+        return np.expand_dims(obj, expand_axis)
+    elif obj.ndim == 0:
+        return obj.reshape((1, 1))
+    raise ValueError(f"Cannot reshape a {obj.ndim}-dimensional array to 2 dimensions")
 
 
 to_2d_array = functools.partial(to_2d, raw=True)
@@ -220,98 +228,98 @@ to_2d_pc_array = functools.partial(to_2d_array, expand_axis=0)
 
 
 @register_jitted(cache=True)
-def to_1d_array_nb(arg: tp.Array) -> tp.Array1d:
+def to_1d_array_nb(obj: tp.Array) -> tp.Array1d:
     """Resize array to one dimension."""
-    if arg.ndim == 0:
-        return np.expand_dims(arg, axis=0)
-    if arg.ndim == 1:
-        return arg
-    if arg.ndim == 2 and arg.shape[1] == 1:
-        return arg[:, 0]
+    if obj.ndim == 0:
+        return np.expand_dims(obj, axis=0)
+    if obj.ndim == 1:
+        return obj
+    if obj.ndim == 2 and obj.shape[1] == 1:
+        return obj[:, 0]
     raise ValueError("Array cannot be resized to one dimension")
 
 
 @register_jitted(cache=True)
-def to_2d_array_nb(arg: tp.Array, expand_axis: int = 1) -> tp.Array2d:
+def to_2d_array_nb(obj: tp.Array, expand_axis: int = 1) -> tp.Array2d:
     """Resize array to two dimensions."""
-    if arg.ndim == 0:
-        return np.expand_dims(np.expand_dims(arg, axis=0), axis=0)
-    if arg.ndim == 1:
-        return np.expand_dims(arg, axis=expand_axis)
-    if arg.ndim == 2:
-        return arg
+    if obj.ndim == 0:
+        return np.expand_dims(np.expand_dims(obj, axis=0), axis=0)
+    if obj.ndim == 1:
+        return np.expand_dims(obj, axis=expand_axis)
+    if obj.ndim == 2:
+        return obj
     raise ValueError("Array cannot be resized to two dimensions")
 
 
 @register_jitted(cache=True)
-def to_2d_pr_array_nb(arg: tp.Array) -> tp.Array2d:
+def to_2d_pr_array_nb(obj: tp.Array) -> tp.Array2d:
     """`to_2d_array_nb` with `expand_axis=1`."""
-    return to_2d_array_nb(arg, expand_axis=1)
+    return to_2d_array_nb(obj, expand_axis=1)
 
 
 @register_jitted(cache=True)
-def to_2d_pc_array_nb(arg: tp.Array) -> tp.Array2d:
+def to_2d_pc_array_nb(obj: tp.Array) -> tp.Array2d:
     """`to_2d_array_nb` with `expand_axis=0`."""
-    return to_2d_array_nb(arg, expand_axis=0)
+    return to_2d_array_nb(obj, expand_axis=0)
 
 
-def to_dict(arg: tp.ArrayLike, orient: str = "dict") -> dict:
+def to_dict(obj: tp.ArrayLike, orient: str = "dict") -> dict:
     """Convert object to dict."""
-    arg = to_pd_array(arg)
+    obj = to_pd_array(obj)
     if orient == "index_series":
-        return {arg.index[i]: arg.iloc[i] for i in range(len(arg.index))}
-    return arg.to_dict(orient)
+        return {obj.index[i]: obj.iloc[i] for i in range(len(obj.index))}
+    return obj.to_dict(orient)
 
 
 def repeat(
-    arg: tp.ArrayLike,
+    obj: tp.ArrayLike,
     n: int,
     axis: int = 1,
     raw: bool = False,
     ignore_ranges: tp.Optional[bool] = None,
 ) -> tp.AnyArray:
-    """Repeat `arg` `n` times along the specified axis."""
-    arg = to_any_array(arg, raw=raw)
+    """Repeat `obj` `n` times along the specified axis."""
+    obj = to_any_array(obj, raw=raw)
     if axis == 0:
-        if checks.is_pandas(arg):
-            new_index = indexes.repeat_index(arg.index, n, ignore_ranges=ignore_ranges)
-            return wrapping.ArrayWrapper.from_obj(arg).wrap(np.repeat(arg.values, n, axis=0), index=new_index)
-        return np.repeat(arg, n, axis=0)
+        if checks.is_pandas(obj):
+            new_index = indexes.repeat_index(obj.index, n, ignore_ranges=ignore_ranges)
+            return wrapping.ArrayWrapper.from_obj(obj).wrap(np.repeat(obj.values, n, axis=0), index=new_index)
+        return np.repeat(obj, n, axis=0)
     elif axis == 1:
-        arg = to_2d(arg)
-        if checks.is_pandas(arg):
-            new_columns = indexes.repeat_index(arg.columns, n, ignore_ranges=ignore_ranges)
-            return wrapping.ArrayWrapper.from_obj(arg).wrap(np.repeat(arg.values, n, axis=1), columns=new_columns)
-        return np.repeat(arg, n, axis=1)
+        obj = to_2d(obj)
+        if checks.is_pandas(obj):
+            new_columns = indexes.repeat_index(obj.columns, n, ignore_ranges=ignore_ranges)
+            return wrapping.ArrayWrapper.from_obj(obj).wrap(np.repeat(obj.values, n, axis=1), columns=new_columns)
+        return np.repeat(obj, n, axis=1)
     else:
         raise ValueError(f"Only axes 0 and 1 are supported, not {axis}")
 
 
 def tile(
-    arg: tp.ArrayLike,
+    obj: tp.ArrayLike,
     n: int,
     axis: int = 1,
     raw: bool = False,
     ignore_ranges: tp.Optional[bool] = None,
 ) -> tp.AnyArray:
-    """Tile `arg` `n` times along the specified axis."""
-    arg = to_any_array(arg, raw=raw)
+    """Tile `obj` `n` times along the specified axis."""
+    obj = to_any_array(obj, raw=raw)
     if axis == 0:
-        if arg.ndim == 2:
-            if checks.is_pandas(arg):
-                new_index = indexes.tile_index(arg.index, n, ignore_ranges=ignore_ranges)
-                return wrapping.ArrayWrapper.from_obj(arg).wrap(np.tile(arg.values, (n, 1)), index=new_index)
-            return np.tile(arg, (n, 1))
-        if checks.is_pandas(arg):
-            new_index = indexes.tile_index(arg.index, n, ignore_ranges=ignore_ranges)
-            return wrapping.ArrayWrapper.from_obj(arg).wrap(np.tile(arg.values, n), index=new_index)
-        return np.tile(arg, n)
+        if obj.ndim == 2:
+            if checks.is_pandas(obj):
+                new_index = indexes.tile_index(obj.index, n, ignore_ranges=ignore_ranges)
+                return wrapping.ArrayWrapper.from_obj(obj).wrap(np.tile(obj.values, (n, 1)), index=new_index)
+            return np.tile(obj, (n, 1))
+        if checks.is_pandas(obj):
+            new_index = indexes.tile_index(obj.index, n, ignore_ranges=ignore_ranges)
+            return wrapping.ArrayWrapper.from_obj(obj).wrap(np.tile(obj.values, n), index=new_index)
+        return np.tile(obj, n)
     elif axis == 1:
-        arg = to_2d(arg)
-        if checks.is_pandas(arg):
-            new_columns = indexes.tile_index(arg.columns, n, ignore_ranges=ignore_ranges)
-            return wrapping.ArrayWrapper.from_obj(arg).wrap(np.tile(arg.values, (1, n)), columns=new_columns)
-        return np.tile(arg, (1, n))
+        obj = to_2d(obj)
+        if checks.is_pandas(obj):
+            new_columns = indexes.tile_index(obj.columns, n, ignore_ranges=ignore_ranges)
+            return wrapping.ArrayWrapper.from_obj(obj).wrap(np.tile(obj.values, (1, n)), columns=new_columns)
+        return np.tile(obj, (1, n))
     else:
         raise ValueError(f"Only axes 0 and 1 are supported, not {axis}")
 
@@ -444,7 +452,7 @@ IndexFromLike = tp.Union[None, str, int, tp.Any]
 
 
 def broadcast_index(
-    args: tp.Sequence[tp.AnyArray],
+    objs: tp.Sequence[tp.AnyArray],
     to_shape: tp.Shape,
     index_from: IndexFromLike = None,
     axis: int = 0,
@@ -456,17 +464,17 @@ def broadcast_index(
     """Produce a broadcast index/columns.
 
     Args:
-        args (iterable of array_like): Array-like objects.
+        objs (iterable of array_like): Array-like objects.
         to_shape (tuple of int): Target shape.
         index_from (any): Broadcasting rule for this index/these columns.
 
             Accepts the following values:
 
-            * 'keep' or None - keep the original index/columns of the objects in `args`
+            * 'keep' or None - keep the original index/columns of the objects in `objs`
             * 'stack' - stack different indexes/columns using `vectorbtpro.base.indexes.stack_indexes`
             * 'strict' - ensure that all Pandas objects have the same index/columns
             * 'reset' - reset any index/columns (they become a simple range)
-            * integer - use the index/columns of the i-th object in `args`
+            * integer - use the index/columns of the i-th object in `objs`
             * everything else will be converted to `pd.Index`
         axis (int): Set to 0 for index and 1 for columns.
         ignore_sr_names (bool): Whether to ignore Series names if they are in conflict.
@@ -497,23 +505,23 @@ def broadcast_index(
     to_shape_2d = (to_shape[0], 1) if len(to_shape) == 1 else to_shape
     maxlen = to_shape_2d[1] if axis == 1 else to_shape_2d[0]
     new_index = None
-    args = list(args)
+    objs = list(objs)
 
     if index_from is None or (isinstance(index_from, str) and index_from.lower() == "keep"):
         return None
     if isinstance(index_from, int):
-        if not checks.is_pandas(args[index_from]):
+        if not checks.is_pandas(objs[index_from]):
             raise TypeError(f"Argument under index {index_from} must be a pandas object")
-        new_index = indexes.get_index(args[index_from], axis)
+        new_index = indexes.get_index(objs[index_from], axis)
     elif isinstance(index_from, str):
         if index_from.lower() == "reset":
             new_index = pd.RangeIndex(start=0, stop=maxlen, step=1)
         elif index_from.lower() in ("stack", "strict"):
             last_index = None
             index_conflict = False
-            for arg in args:
-                if checks.is_pandas(arg):
-                    index = indexes.get_index(arg, axis)
+            for obj in objs:
+                if checks.is_pandas(obj):
+                    index = indexes.get_index(obj, axis)
                     if last_index is not None:
                         if not checks.is_index_equal(index, last_index, check_names=check_index_names):
                             index_conflict = True
@@ -522,10 +530,10 @@ def broadcast_index(
             if not index_conflict:
                 new_index = last_index
             else:
-                for arg in args:
-                    if checks.is_pandas(arg):
-                        index = indexes.get_index(arg, axis)
-                        if axis == 1 and checks.is_series(arg) and ignore_sr_names:
+                for obj in objs:
+                    if checks.is_pandas(obj):
+                        index = indexes.get_index(obj, axis)
+                        if axis == 1 and checks.is_series(obj) and ignore_sr_names:
                             continue
                         if checks.is_default_index(index):
                             continue
@@ -608,7 +616,7 @@ def wrap_broadcasted(
 
 
 def align_pd_arrays(
-    *args: tp.AnyArray,
+    *objs: tp.AnyArray,
     align_index: bool = True,
     align_columns: bool = True,
     to_index: tp.Optional[tp.Index] = None,
@@ -618,10 +626,10 @@ def align_pd_arrays(
 ) -> tp.MaybeTuple[tp.ArrayLike]:
     """Align Pandas arrays against common index and/or column levels using reindexing
     and `vectorbtpro.base.indexes.align_indexes` respectively."""
-    args = list(args)
+    objs = list(objs)
     if align_index:
         indexes_to_align = []
-        for i in range(len(args)):
+        for i in range(len(objs)):
             if axis is not None:
                 if checks.is_sequence(axis):
                     _axis = axis[i]
@@ -630,15 +638,15 @@ def align_pd_arrays(
             else:
                 _axis = None
             if _axis in (None, 0):
-                if checks.is_pandas(args[i]):
-                    if not checks.is_default_index(args[i].index):
+                if checks.is_pandas(objs[i]):
+                    if not checks.is_default_index(objs[i].index):
                         indexes_to_align.append(i)
         if (len(indexes_to_align) > 0 and to_index is not None) or len(indexes_to_align) > 1:
             if to_index is None:
                 new_index = None
                 index_changed = False
                 for i in indexes_to_align:
-                    arg_index = args[i].index
+                    arg_index = objs[i].index
                     if new_index is None:
                         new_index = arg_index
                     else:
@@ -652,24 +660,24 @@ def align_pd_arrays(
                 index_changed = True
             if index_changed:
                 for i in indexes_to_align:
-                    if to_index is None or not checks.is_index_equal(args[i].index, to_index):
-                        if args[i].index.has_duplicates:
+                    if to_index is None or not checks.is_index_equal(objs[i].index, to_index):
+                        if objs[i].index.has_duplicates:
                             raise ValueError(f"Index at position {i} contains duplicates")
-                        if not args[i].index.is_monotonic_increasing:
+                        if not objs[i].index.is_monotonic_increasing:
                             raise ValueError(f"Index at position {i} is not monotonically increasing")
                         _reindex_kwargs = resolve_dict(reindex_kwargs, i=i)
-                        was_bool = (isinstance(args[i], pd.Series) and args[i].dtype == "bool") or (
-                            isinstance(args[i], pd.DataFrame) and (args[i].dtypes == "bool").all()
+                        was_bool = (isinstance(objs[i], pd.Series) and objs[i].dtype == "bool") or (
+                            isinstance(objs[i], pd.DataFrame) and (objs[i].dtypes == "bool").all()
                         )
-                        args[i] = args[i].reindex(new_index, **_reindex_kwargs)
-                        is_object = (isinstance(args[i], pd.Series) and args[i].dtype == "object") or (
-                            isinstance(args[i], pd.DataFrame) and (args[i].dtypes == "object").all()
+                        objs[i] = objs[i].reindex(new_index, **_reindex_kwargs)
+                        is_object = (isinstance(objs[i], pd.Series) and objs[i].dtype == "object") or (
+                            isinstance(objs[i], pd.DataFrame) and (objs[i].dtypes == "object").all()
                         )
                         if was_bool and is_object:
-                            args[i] = args[i].astype(None)
+                            objs[i] = objs[i].astype(None)
     if align_columns:
         columns_to_align = []
-        for i in range(len(args)):
+        for i in range(len(objs)):
             if axis is not None:
                 if checks.is_sequence(axis):
                     _axis = axis[i]
@@ -678,20 +686,20 @@ def align_pd_arrays(
             else:
                 _axis = None
             if _axis in (None, 1):
-                if checks.is_frame(args[i]) and len(args[i].columns) > 1:
-                    if not checks.is_default_index(args[i].columns):
+                if checks.is_frame(objs[i]) and len(objs[i].columns) > 1:
+                    if not checks.is_default_index(objs[i].columns):
                         columns_to_align.append(i)
         if (len(columns_to_align) > 0 and to_columns is not None) or len(columns_to_align) > 1:
-            indexes_ = [args[i].columns for i in columns_to_align]
+            indexes_ = [objs[i].columns for i in columns_to_align]
             if to_columns is not None:
                 indexes_.append(to_columns)
             if len(set(map(len, indexes_))) > 1:
                 col_indices = indexes.align_indexes(*indexes_)
                 for i in columns_to_align:
-                    args[i] = args[i].iloc[:, col_indices[columns_to_align.index(i)]]
-    if len(args) == 1:
-        return args[0]
-    return tuple(args)
+                    objs[i] = objs[i].iloc[:, col_indices[columns_to_align.index(i)]]
+    if len(objs) == 1:
+        return objs[0]
+    return tuple(objs)
 
 
 @define
@@ -783,7 +791,7 @@ def resolve_ref(dct: dict, k: tp.Hashable, inside_bco: bool = False, keep_wrap_d
 
 
 def broadcast(
-    *args,
+    *objs,
     to_shape: tp.Optional[tp.ShapeLike] = None,
     align_index: tp.Optional[bool] = None,
     align_columns: tp.Optional[bool] = None,
@@ -811,7 +819,7 @@ def broadcast(
     clean_index_kwargs: tp.KwargsLike = None,
     template_context: tp.KwargsLike = None,
 ) -> tp.Any:
-    """Bring any array-like object in `args` to the same shape by using NumPy-like broadcasting.
+    """Bring any array-like object in `objs` to the same shape by using NumPy-like broadcasting.
 
     See [Broadcasting](https://docs.scipy.org/doc/numpy/user/basics.broadcasting.html).
 
@@ -821,7 +829,7 @@ def broadcast(
     Can broadcast Pandas objects by broadcasting their index/columns with `broadcast_index`.
 
     Args:
-        *args: Objects to broadcast.
+        *objs: Objects to broadcast.
 
             If the first and only argument is a mapping, will return a dict.
 
@@ -829,7 +837,7 @@ def broadcast(
             `vectorbtpro.base.indexing.index_dict`, `vectorbtpro.base.indexing.IdxSetter`,
             `vectorbtpro.base.indexing.IdxSetterFactory`, and templates.
             If an index dictionary, fills using `vectorbtpro.base.wrapping.ArrayWrapper.fill_and_set`.
-        to_shape (tuple of int): Target shape. If set, will broadcast every object in `args` to `to_shape`.
+        to_shape (tuple of int): Target shape. If set, will broadcast every object in `objs` to `to_shape`.
         align_index (bool): Whether to align index of Pandas objects using union.
 
             Pass None to use the default.
@@ -1187,15 +1195,15 @@ def broadcast(
             merge_kwargs_per_obj = False
     if clean_index_kwargs is None:
         clean_index_kwargs = {}
-    if checks.is_mapping(args[0]) and not isinstance(args[0], indexing.index_dict):
-        if len(args) > 1:
+    if checks.is_mapping(objs[0]) and not isinstance(objs[0], indexing.index_dict):
+        if len(objs) > 1:
             raise ValueError("Only one argument is allowed when passing a mapping")
-        all_keys = list(dict(args[0]).keys())
-        objs = list(args[0].values())
+        all_keys = list(dict(objs[0]).keys())
+        objs = list(objs[0].values())
         return_dict = True
     else:
-        objs = list(args)
-        all_keys = list(range(len(args)))
+        objs = list(objs)
+        all_keys = list(range(len(objs)))
         return_dict = False
 
     def _resolve_arg(obj: tp.Any, arg_name: str, global_value: tp.Any, default_value: tp.Any) -> tp.Any:
@@ -1832,7 +1840,7 @@ def broadcast_to_axis_of(
 
 
 def broadcast_combs(
-    *args: tp.ArrayLike,
+    *objs: tp.ArrayLike,
     axis: int = 1,
     comb_func: tp.Callable = itertools.product,
     **broadcast_kwargs,
@@ -1872,30 +1880,30 @@ def broadcast_combs(
     if broadcast_kwargs is None:
         broadcast_kwargs = {}
 
-    args = list(args)
-    if len(args) < 2:
+    objs = list(objs)
+    if len(objs) < 2:
         raise ValueError("At least two arguments are required")
-    for i in range(len(args)):
-        arg = to_any_array(args[i])
+    for i in range(len(objs)):
+        obj = to_any_array(objs[i])
         if axis == 1:
-            arg = to_2d(arg)
-        args[i] = arg
+            obj = to_2d(obj)
+        objs[i] = obj
     indices = []
-    for arg in args:
-        indices.append(np.arange(len(indexes.get_index(to_pd_array(arg), axis))))
+    for obj in objs:
+        indices.append(np.arange(len(indexes.get_index(to_pd_array(obj), axis))))
     new_indices = list(map(list, zip(*list(comb_func(*indices)))))
     results = []
-    for i, arg in enumerate(args):
+    for i, obj in enumerate(objs):
         if axis == 1:
-            if checks.is_pandas(arg):
-                results.append(arg.iloc[:, new_indices[i]])
+            if checks.is_pandas(obj):
+                results.append(obj.iloc[:, new_indices[i]])
             else:
-                results.append(arg[:, new_indices[i]])
+                results.append(obj[:, new_indices[i]])
         else:
-            if checks.is_pandas(arg):
-                results.append(arg.iloc[new_indices[i]])
+            if checks.is_pandas(obj):
+                results.append(obj.iloc[new_indices[i]])
             else:
-                results.append(arg[new_indices[i]])
+                results.append(obj[new_indices[i]])
     if axis == 1:
         broadcast_kwargs = merge_dicts(dict(columns_from="stack"), broadcast_kwargs)
     else:
@@ -1903,29 +1911,29 @@ def broadcast_combs(
     return broadcast(*results, **broadcast_kwargs)
 
 
-def get_multiindex_series(arg: tp.SeriesFrame) -> tp.Series:
+def get_multiindex_series(obj: tp.SeriesFrame) -> tp.Series:
     """Get Series with a multi-index.
 
     If DataFrame has been passed, must at maximum have one row or column."""
-    checks.assert_instance_of(arg, (pd.Series, pd.DataFrame))
-    if checks.is_frame(arg):
-        if arg.shape[0] == 1:
-            arg = arg.iloc[0, :]
-        elif arg.shape[1] == 1:
-            arg = arg.iloc[:, 0]
+    checks.assert_instance_of(obj, (pd.Series, pd.DataFrame))
+    if checks.is_frame(obj):
+        if obj.shape[0] == 1:
+            obj = obj.iloc[0, :]
+        elif obj.shape[1] == 1:
+            obj = obj.iloc[:, 0]
         else:
             raise ValueError("Supported are either Series or DataFrame with one column/row")
-    checks.assert_instance_of(arg.index, pd.MultiIndex)
-    return arg
+    checks.assert_instance_of(obj.index, pd.MultiIndex)
+    return obj
 
 
 def unstack_to_array(
-    arg: tp.SeriesFrame,
+    obj: tp.SeriesFrame,
     levels: tp.Optional[tp.MaybeLevelSequence] = None,
     sort: bool = True,
     return_indexes: bool = False,
 ) -> tp.Union[tp.Array, tp.Tuple[tp.Array, tp.List[tp.Index]]]:
-    """Reshape `arg` based on its multi-index into a multi-dimensional array.
+    """Reshape `obj` based on its multi-index into a multi-dimensional array.
 
     Use `levels` to specify what index levels to unstack and in which order.
 
@@ -1955,7 +1963,7 @@ def unstack_to_array(
          [nan  4.]]
         ```
     """
-    sr = get_multiindex_series(arg)
+    sr = get_multiindex_series(obj)
     if sr.index.duplicated().any():
         raise ValueError("Index contains duplicate entries, cannot reshape")
 
@@ -1982,8 +1990,8 @@ def unstack_to_array(
     return a
 
 
-def make_symmetric(arg: tp.SeriesFrame, sort: bool = True) -> tp.Frame:
-    """Make `arg` symmetric.
+def make_symmetric(obj: tp.SeriesFrame, sort: bool = True) -> tp.Frame:
+    """Make `obj` symmetric.
 
     The index and columns of the resulting DataFrame will be identical.
 
@@ -2009,8 +2017,8 @@ def make_symmetric(arg: tp.SeriesFrame, sort: bool = True) -> tp.Frame:
     """
     from vectorbtpro.base.merging import concat_arrays
 
-    checks.assert_instance_of(arg, (pd.Series, pd.DataFrame))
-    df = to_2d(arg)
+    checks.assert_instance_of(obj, (pd.Series, pd.DataFrame))
+    df = to_2d(obj)
     if isinstance(df.index, pd.MultiIndex) or isinstance(df.columns, pd.MultiIndex):
         checks.assert_instance_of(df.index, pd.MultiIndex)
         checks.assert_instance_of(df.columns, pd.MultiIndex)
@@ -2051,13 +2059,13 @@ def make_symmetric(arg: tp.SeriesFrame, sort: bool = True) -> tp.Frame:
 
 
 def unstack_to_df(
-    arg: tp.SeriesFrame,
+    obj: tp.SeriesFrame,
     index_levels: tp.Optional[tp.MaybeLevelSequence] = None,
     column_levels: tp.Optional[tp.MaybeLevelSequence] = None,
     symmetric: bool = False,
     sort: bool = True,
 ) -> tp.Frame:
-    """Reshape `arg` based on its multi-index into a DataFrame.
+    """Reshape `obj` based on its multi-index into a DataFrame.
 
     Use `index_levels` to specify what index levels will form new index, and `column_levels`
     for new columns. Set `symmetric` to True to make DataFrame symmetric.
@@ -2081,7 +2089,7 @@ def unstack_to_df(
         2 4  NaN  NaN  NaN  4.0
         ```
     """
-    sr = get_multiindex_series(arg)
+    sr = get_multiindex_series(obj)
     if sr.index.nlevels > 2:
         if index_levels is None:
             raise ValueError("index_levels must be specified")

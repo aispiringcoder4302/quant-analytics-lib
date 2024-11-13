@@ -424,7 +424,7 @@ class IndicatorBase(Analyzable):
         return object.__getattribute__(self, k)
 
     @property
-    def main_output(self) -> tp.Optional[tp.SeriesFrame]:
+    def main_output(self) -> tp.SeriesFrame:
         """Get main output.
 
         It's either the only output or an output that matches the short name of the indicator."""
@@ -435,6 +435,10 @@ class IndicatorBase(Analyzable):
         if self.short_name.lower() in self.output_names:
             return getattr(self, self.short_name.lower())
         raise ValueError(f"Indicator {self} has no main output")
+
+    def __array__(self, dtype: tp.Optional[tp.DTypeLike] = None) -> tp.Array:
+        """Convert main output to NumPy array."""
+        return np.asarray(self.main_output, dtype=dtype)
 
     @classmethod
     def run_pipeline(
