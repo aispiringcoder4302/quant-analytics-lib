@@ -133,8 +133,13 @@ class BaseDataMixin:
 
     def get_feature_idx(self, feature: tp.Feature, raise_error: bool = False) -> int:
         """Return the index of a feature."""
-        feature = self.prepare_key(feature)
+        # shortcut
+        columns = self.feature_wrapper.columns
+        if not columns.has_duplicates:
+            if feature in columns:
+                return columns.get_loc(feature)
 
+        feature = self.prepare_key(feature)
         found_indices = []
         for i, c in enumerate(self.features):
             c = self.prepare_key(c)
@@ -150,8 +155,13 @@ class BaseDataMixin:
 
     def get_symbol_idx(self, symbol: tp.Symbol, raise_error: bool = False) -> int:
         """Return the index of a symbol."""
-        symbol = self.prepare_key(symbol)
+        # shortcut
+        columns = self.symbol_wrapper.columns
+        if not columns.has_duplicates:
+            if symbol in columns:
+                return columns.get_loc(symbol)
 
+        symbol = self.prepare_key(symbol)
         found_indices = []
         for i, c in enumerate(self.symbols):
             c = self.prepare_key(c)
