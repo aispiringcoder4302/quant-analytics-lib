@@ -2655,23 +2655,23 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
                 ),
                 bm_kwargs,
             )
-            bm_cum_returns = bm_returns.vbt.returns.cumulative(
+            bm_cumulative_returns = bm_returns.vbt.returns.cumulative(
                 start_value=start_value,
                 sim_start=sim_start,
                 sim_end=sim_end,
             )
-            bm_cum_returns.vbt.lineplot(**bm_kwargs, add_trace_kwargs=add_trace_kwargs, fig=fig)
+            bm_cumulative_returns.vbt.lineplot(**bm_kwargs, add_trace_kwargs=add_trace_kwargs, fig=fig)
         else:
-            bm_cum_returns = None
+            bm_cumulative_returns = None
 
         if main_kwargs is None:
             main_kwargs = {}
-        cum_returns = self.cumulative(
+        cumulative_returns = self.cumulative(
             start_value=start_value,
             sim_start=sim_start,
             sim_end=sim_end,
         )
-        cum_returns = self.select_col_from_obj(cum_returns, column=column, group_by=False)
+        cumulative_returns = self.select_col_from_obj(cumulative_returns, column=column, group_by=False)
         main_kwargs = merge_dicts(
             dict(
                 trace_kwargs=dict(
@@ -2684,9 +2684,9 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             main_kwargs,
         )
         if fill_to_benchmark:
-            cum_returns.vbt.plot_against(bm_cum_returns, add_trace_kwargs=add_trace_kwargs, fig=fig, **main_kwargs)
+            cumulative_returns.vbt.plot_against(bm_cumulative_returns, add_trace_kwargs=add_trace_kwargs, fig=fig, **main_kwargs)
         else:
-            cum_returns.vbt.plot_against(start_value, add_trace_kwargs=add_trace_kwargs, fig=fig, **main_kwargs)
+            cumulative_returns.vbt.plot_against(start_value, add_trace_kwargs=add_trace_kwargs, fig=fig, **main_kwargs)
 
         if hline_shape_kwargs is None:
             hline_shape_kwargs = {}
