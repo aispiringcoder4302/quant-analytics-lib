@@ -2014,6 +2014,11 @@ class PortfolioOptimizer(Analyzable):
         `vectorbtpro.base.wrapping.ArrayWrapper.get_index_points` and makes each point available
         as `index_point` in the context.
 
+        Templates can use the following variables:
+
+        * `i`: Allocation step
+        * `index_point`: Allocation index
+
         If `jitted_loop` is True, see `vectorbtpro.portfolio.pfopt.nb.allocate_meta_nb`.
 
         Also, in contrast to `PortfolioOptimizer.from_optimize_func`, creates records of type
@@ -2905,6 +2910,13 @@ class PortfolioOptimizer(Analyzable):
         If `jitted_loop` is True, see `vectorbtpro.portfolio.pfopt.nb.optimize_meta_nb`.
         Otherwise, must take template-substituted `*args` and `**kwargs`, and return an array or
         dictionary with asset allocations (also empty).
+
+        Templates can use the following variables:
+
+        * `i`: Optimization step
+        * `index_start`: Optimization start index (including)
+        * `index_end`: Optimization end index (excluding)
+        * `index_slice`: `slice(index_start, index_end)`
 
         !!! note
             When `jitted_loop` is True and in case of multiple groups, use templates

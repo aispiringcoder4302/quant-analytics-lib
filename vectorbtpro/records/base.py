@@ -1141,7 +1141,7 @@ class Records(Analyzable, RecordsWithFields, metaclass=MetaRecords):
     def map_array(
         self,
         a: tp.ArrayLike,
-        idx_arr: tp.Optional[tp.ArrayLike] = None,
+        idx_arr: tp.Union[None, str, tp.Array1d] = None,
         mapping: tp.Optional[tp.MappingLike] = None,
         group_by: tp.GroupByLike = None,
         **kwargs,
@@ -1154,6 +1154,8 @@ class Records(Analyzable, RecordsWithFields, metaclass=MetaRecords):
         checks.assert_shape_equal(a, self.values)
         if idx_arr is None:
             idx_arr = self.idx_arr
+        elif isinstance(idx_arr, str):
+            idx_arr = self.get_field_arr(idx_arr)
         return MappedArray(
             self.wrapper,
             a,
