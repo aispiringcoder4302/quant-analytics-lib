@@ -1297,6 +1297,7 @@ def execute_order_nb(
 
     is_filled = order_result.status == OrderStatus.Filled
     if is_filled and update_value:
+        new_val_price = order_result.price
         new_value = update_value_nb(
             cash,
             new_account_state.cash,
@@ -1307,6 +1308,7 @@ def execute_order_nb(
             value,
         )
     else:
+        new_val_price = val_price
         new_value = value
 
     new_exec_state = ExecState(
@@ -1315,7 +1317,7 @@ def execute_order_nb(
         debt=new_account_state.debt,
         locked_cash=new_account_state.locked_cash,
         free_cash=new_account_state.free_cash,
-        val_price=val_price,
+        val_price=new_val_price,
         value=new_value,
     )
 
