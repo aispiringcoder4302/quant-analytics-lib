@@ -1902,6 +1902,13 @@ class ArrayWrapper(Configured, IndexApplier, ExtPandasIndexer, Itemable, Paramab
 
     # ############# Iteration ############# #
 
+    def get_item_keys(self, group_by: tp.GroupByLike = None) -> tp.Index:
+        """Get keys for `ArrayWrapper.items`."""
+        _self = self.regroup(group_by=group_by)
+        if _self.group_select and _self.grouper.is_grouped():
+            return _self.get_columns()
+        return _self.columns
+
     def items(
         self,
         group_by: tp.GroupByLike = None,
@@ -2239,7 +2246,13 @@ class Wrapping(Configured, IndexApplier, ExtPandasIndexer, AttrResolverMixin, It
 
     # ############# Splitting ############# #
 
-    def split(self, *args, splitter_cls: tp.Optional[tp.Type[SplitterT]] = None, **kwargs) -> tp.Any:
+    def split(
+        self,
+        *args,
+        splitter_cls: tp.Optional[tp.Type[SplitterT]] = None,
+        wrap: bool = True,  # used in subclasses
+        **kwargs,
+    ) -> tp.Any:
         """Split using `vectorbtpro.generic.splitting.base.Splitter.split_and_take`."""
         from vectorbtpro.generic.splitting.base import Splitter
 
@@ -2252,6 +2265,7 @@ class Wrapping(Configured, IndexApplier, ExtPandasIndexer, AttrResolverMixin, It
         apply_func: tp.Callable,
         *args,
         splitter_cls: tp.Optional[tp.Type[SplitterT]] = None,
+        wrap: bool = True,  # used in subclasses
         **kwargs,
     ) -> tp.Any:
         """Split using `vectorbtpro.generic.splitting.base.Splitter.split_and_apply`."""
@@ -2263,12 +2277,20 @@ class Wrapping(Configured, IndexApplier, ExtPandasIndexer, AttrResolverMixin, It
 
     # ############# Iteration ############# #
 
+    def get_item_keys(self, group_by: tp.GroupByLike = None) -> tp.Index:
+        """Get keys for `Wrapping.items`."""
+        _self = self.regroup(group_by=group_by)
+        if _self.group_select and _self.wrapper.grouper.is_grouped():
+            return _self.wrapper.get_columns()
+        return _self.wrapper.columns
+
     def items(
         self,
         group_by: tp.GroupByLike = None,
         apply_group_by: bool = False,
         keep_2d: bool = False,
         key_as_index: bool = False,
+        wrap: bool = True,  # used in subclasses
     ) -> tp.ItemGenerator:
         """Iterate over columns or groups (if grouped and `Wrapping.group_select` is True).
 

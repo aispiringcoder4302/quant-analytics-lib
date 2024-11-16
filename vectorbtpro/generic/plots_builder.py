@@ -9,10 +9,11 @@ from collections import Counter
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.base.wrapping import Wrapping
+from vectorbtpro.base.indexing import ParamLoc
 from vectorbtpro.utils import checks
 from vectorbtpro.utils.attr_ import get_dict_attr, AttrResolverMixin
 from vectorbtpro.utils.config import Config, HybridConfig, merge_dicts
-from vectorbtpro.utils.parsing import get_func_arg_names
+from vectorbtpro.utils.parsing import get_func_arg_names, get_forward_args
 from vectorbtpro.utils.tagging import match_tags
 from vectorbtpro.utils.template import substitute_templates, CustomTemplate
 
@@ -43,14 +44,29 @@ class PlotsBuilderMixin(metaclass=MetaPlotsBuilderMixin):
 
     @property
     def plots_defaults(self) -> tp.Kwargs:
-        """Defaults for `PlotsBuilderMixin.plots`.
+        """Defaults for `PlotsBuilderMixin.plots`."""
+        return dict(settings=dict(freq=self.wrapper.freq))
 
-        See `vectorbtpro._settings.plots_builder`."""
-        from vectorbtpro._settings import settings
+    def resolve_plots_setting(
+        self,
+        value: tp.Optional[tp.Any],
+        key: str,
+        merge: bool = False,
+    ) -> tp.Any:
+        """Resolve a setting for `PlotsBuilderMixin.plots`."""
+        from vectorbtpro._settings import settings as _settings
 
-        plots_builder_cfg = settings["plots_builder"]
+        plots_builder_cfg = _settings["plots_builder"]
 
-        return merge_dicts(plots_builder_cfg, dict(settings=dict(freq=self.wrapper.freq)))
+        if merge:
+            return merge_dicts(
+                plots_builder_cfg[key],
+                self.plots_defaults.get(key, {}),
+                value,
+            )
+        if value is not None:
+            return value
+        return self.plots_defaults.get(key, plots_builder_cfg[key])
 
     _subplots: tp.ClassVar[Config] = HybridConfig(dict())
 
@@ -75,15 +91,20 @@ class PlotsBuilderMixin(metaclass=MetaPlotsBuilderMixin):
         tags: tp.Optional[tp.MaybeIterable[str]] = None,
         column: tp.Optional[tp.Label] = None,
         group_by: tp.GroupByLike = None,
+        per_column: tp.Optional[bool] = None,
+        split_columns: tp.Optional[bool] = None,
         silence_warnings: tp.Optional[bool] = None,
         template_context: tp.KwargsLike = None,
         settings: tp.KwargsLike = None,
         filters: tp.KwargsLike = None,
         subplot_settings: tp.KwargsLike = None,
         show_titles: bool = None,
+        show_legend: tp.Optional[bool] = None,
+        show_column_label: tp.Optional[bool] = None,
         hide_id_labels: bool = None,
         group_id_labels: bool = None,
         make_subplots_kwargs: tp.KwargsLike = None,
+        fig: tp.Optional[tp.BaseFigure] = None,
         **layout_kwargs,
     ) -> tp.Optional[tp.BaseFigure]:
         """Plot various parts of this object.
@@ -141,6 +162,8 @@ class PlotsBuilderMixin(metaclass=MetaPlotsBuilderMixin):
             tags (str or iterable): See `tags` in `vectorbtpro.generic.stats_builder.StatsBuilderMixin`.
             column (str): See `column` in `vectorbtpro.generic.stats_builder.StatsBuilderMixin`.
             group_by (any): See `group_by` in `vectorbtpro.generic.stats_builder.StatsBuilderMixin`.
+            per_column (bool): See `per_column` in `vectorbtpro.generic.stats_builder.StatsBuilderMixin`.
+            split_columns (bool): See `split_columns` in `vectorbtpro.generic.stats_builder.StatsBuilderMixin`.
             silence_warnings (bool): See `silence_warnings` in `vectorbtpro.generic.stats_builder.StatsBuilderMixin`.
             template_context (mapping): See `template_context` in `vectorbtpro.generic.stats_builder.StatsBuilderMixin`.
 
@@ -149,11 +172,18 @@ class PlotsBuilderMixin(metaclass=MetaPlotsBuilderMixin):
             settings (dict): See `settings` in `vectorbtpro.generic.stats_builder.StatsBuilderMixin`.
             subplot_settings (dict): See `metric_settings` in `vectorbtpro.generic.stats_builder.StatsBuilderMixin`.
             show_titles (bool): Whether to show the title of each subplot.
+            show_legend (bool): Whether to show legend.
+
+                If None and plotting per column, becomes False, otherwise True.
+            show_column_label (bool): Whether to show the column label next to each legend label.
+
+                If None and plotting per column, becomes True, otherwise False.
             hide_id_labels (bool): Whether to hide identical legend labels.
 
                 Two labels are identical if their name, marker style and line style match.
             group_id_labels (bool): Whether to group identical legend labels.
             make_subplots_kwargs (dict): Keyword arguments passed to `plotly.subplots.make_subplots`.
+            fig (Figure or FigureWidget): Figure to add traces to.
             **layout_kwargs: Keyword arguments used to update the layout of the figure.
 
         !!! note
@@ -169,29 +199,56 @@ class PlotsBuilderMixin(metaclass=MetaPlotsBuilderMixin):
         Usage:
             See `vectorbtpro.portfolio.base`.
         """
+        # Plot per column
+        if column is None:
+            if per_column is None:
+                per_column = self.resolve_plots_setting(per_column, "per_column")
+            if per_column:
+                columns = self.get_item_keys(group_by=group_by)
+                if len(columns) > 1:
+                    if split_columns is None:
+                        split_columns = self.resolve_plots_setting(split_columns, "split_columns")
+                    if show_legend is None:
+                        show_legend = self.resolve_plots_setting(show_legend, "show_legend")
+                    if show_legend is None:
+                        show_legend = False
+                    if show_column_label is None:
+                        show_column_label = self.resolve_plots_setting(show_column_label, "show_column_label")
+                    if show_column_label is None:
+                        show_column_label = True
+                    fig = None
+                    if split_columns:
+                        for _, column_self in self.items(group_by=group_by, wrap=True):
+                            _args, _kwargs = get_forward_args(column_self.plots, locals())
+                            fig = column_self.plots(*_args, **_kwargs)
+                    else:
+                        for column in columns:
+                            _args, _kwargs = get_forward_args(self.plots, locals())
+                            fig = self.plots(*_args, **_kwargs)
+                    return fig
+
         from vectorbtpro.utils.figure import make_subplots, get_domain
         from vectorbtpro._settings import settings as _settings
 
         plotting_cfg = _settings["plotting"]
 
         # Resolve defaults
-        if silence_warnings is None:
-            silence_warnings = self.plots_defaults["silence_warnings"]
-        if show_titles is None:
-            show_titles = self.plots_defaults["show_titles"]
-        if hide_id_labels is None:
-            hide_id_labels = self.plots_defaults["hide_id_labels"]
-        if group_id_labels is None:
-            group_id_labels = self.plots_defaults["group_id_labels"]
-        template_context = merge_dicts(self.plots_defaults["template_context"], template_context)
-        filters = merge_dicts(self.plots_defaults["filters"], filters)
-        settings = merge_dicts(self.plots_defaults["settings"], settings)
-        subplot_settings = merge_dicts(self.plots_defaults["subplot_settings"], subplot_settings)
-        make_subplots_kwargs = merge_dicts(
-            self.plots_defaults["make_subplots_kwargs"],
-            make_subplots_kwargs,
-        )
-        layout_kwargs = merge_dicts(self.plots_defaults["layout_kwargs"], layout_kwargs)
+        silence_warnings = self.resolve_plots_setting(silence_warnings, "silence_warnings")
+        show_titles = self.resolve_plots_setting(show_titles, "show_titles")
+        show_legend = self.resolve_plots_setting(show_legend, "show_legend")
+        if show_legend is None:
+            show_legend = True
+        show_column_label = self.resolve_plots_setting(show_column_label, "show_column_label")
+        if show_column_label is None:
+            show_column_label = False
+        hide_id_labels = self.resolve_plots_setting(hide_id_labels, "hide_id_labels")
+        group_id_labels = self.resolve_plots_setting(group_id_labels, "group_id_labels")
+        template_context = self.resolve_plots_setting(template_context, "template_context", merge=True)
+        filters = self.resolve_plots_setting(filters, "filters", merge=True)
+        settings = self.resolve_plots_setting(settings, "settings", merge=True)
+        subplot_settings = self.resolve_plots_setting(subplot_settings, "subplot_settings", merge=True)
+        make_subplots_kwargs = self.resolve_plots_setting(make_subplots_kwargs, "make_subplots_kwargs", merge=True)
+        layout_kwargs = self.resolve_plots_setting(layout_kwargs, "layout_kwargs", merge=True)
 
         # Replace templates globally (not used at subplot level)
         if len(template_context) > 0:
@@ -225,7 +282,7 @@ class PlotsBuilderMixin(metaclass=MetaPlotsBuilderMixin):
 
         # Prepare subplots
         if subplots is None:
-            subplots = reself.plots_defaults["subplots"]
+            subplots = reself.resolve_plots_setting(subplots, "subplots")
         if subplots == "all":
             subplots = reself.subplots
         if isinstance(subplots, dict):
@@ -235,7 +292,7 @@ class PlotsBuilderMixin(metaclass=MetaPlotsBuilderMixin):
 
         # Prepare tags
         if tags is None:
-            tags = reself.plots_defaults["tags"]
+            tags = reself.resolve_plots_setting(tags, "tags")
         if isinstance(tags, str) and tags == "all":
             tags = None
         if isinstance(tags, (str, tuple)):
@@ -486,34 +543,38 @@ class PlotsBuilderMixin(metaclass=MetaPlotsBuilderMixin):
                 _subplot_titles.append("$title_" + str(i))
         else:
             _subplot_titles = None
-        fig = make_subplots(
-            rows=rows,
-            cols=cols,
-            specs=specs,
-            shared_xaxes=shared_xaxes,
-            shared_yaxes=shared_yaxes,
-            subplot_titles=_subplot_titles,
-            vertical_spacing=vertical_spacing,
-            horizontal_spacing=horizontal_spacing,
-            **sub_make_subplots_kwargs,
-        )
-        sub_layout_kwargs = merge_dicts(
-            dict(
-                showlegend=True,
-                width=width,
-                height=height,
-                legend=dict(
-                    orientation="h",
-                    yanchor="bottom",
-                    y=legend_y,
-                    xanchor="right",
-                    x=1,
-                    traceorder="normal",
+        if fig is None:
+            fig = make_subplots(
+                rows=rows,
+                cols=cols,
+                specs=specs,
+                shared_xaxes=shared_xaxes,
+                shared_yaxes=shared_yaxes,
+                subplot_titles=_subplot_titles,
+                vertical_spacing=vertical_spacing,
+                horizontal_spacing=horizontal_spacing,
+                **sub_make_subplots_kwargs,
+            )
+            sub_layout_kwargs = merge_dicts(
+                dict(
+                    showlegend=True,
+                    width=width,
+                    height=height,
+                    legend=dict(
+                        orientation="h",
+                        yanchor="bottom",
+                        y=legend_y,
+                        xanchor="right",
+                        x=1,
+                        traceorder="normal",
+                    ),
                 ),
-            ),
-            sub_layout_kwargs,
-        )
-        fig.update_layout(**sub_layout_kwargs)  # final destination for sub_layout_kwargs
+                sub_layout_kwargs,
+            )
+            trace_start_idx = 0
+        else:
+            trace_start_idx = len(fig.data)
+        fig.update_layout(**sub_layout_kwargs)
 
         # Plot subplots
         arg_cache_dct = {}
@@ -707,7 +768,7 @@ class PlotsBuilderMixin(metaclass=MetaPlotsBuilderMixin):
                 # Update global layout
                 for annotation in fig.layout.annotations:
                     if "text" in annotation and annotation["text"] == "$title_" + str(i):
-                        annotation["text"] = title
+                        annotation.update(text=title)
                 subplot_layout = dict()
                 subplot_layout[xaxis] = merge_dicts(dict(title="Index"), xaxis_kwargs)
                 subplot_layout[yaxis] = merge_dicts(dict(), yaxis_kwargs)
@@ -716,10 +777,27 @@ class PlotsBuilderMixin(metaclass=MetaPlotsBuilderMixin):
                 warnings.warn(f"Subplot '{subplot_name}' raised an exception", stacklevel=2)
                 raise e
 
+        # Hide legend labels
+        if not show_legend:
+            for i in range(trace_start_idx, len(fig.data)):
+                fig.data[i].update(showlegend=False)
+
+        # Show column label
+        if show_column_label:
+            if column is not None:
+                _column = column
+            else:
+                _column = reself.wrapper.get_columns(group_by=group_by)[0]
+            for i in range(trace_start_idx, len(fig.data)):
+                trace = fig.data[i]
+                if trace["name"] is not None:
+                    trace.update(name=trace["name"] + f" [{ParamLoc.encode_key(_column)}]")
+
         # Remove duplicate legend labels
         found_ids = dict()
-        unique_idx = 0
-        for trace in fig.data:
+        unique_idx = trace_start_idx
+        for i in range(trace_start_idx, len(fig.data)):
+            trace = fig.data[i]
             if trace["showlegend"] is not False and trace["legendgroup"] is None:
                 if "name" in trace:
                     name = trace["name"]
@@ -753,21 +831,24 @@ class PlotsBuilderMixin(metaclass=MetaPlotsBuilderMixin):
                 id = (name, marker_symbol, marker_color, line_dash, line_color)
                 if id in found_ids:
                     if hide_id_labels:
-                        trace["showlegend"] = False
+                        trace.update(showlegend=False)
                     if group_id_labels:
-                        trace["legendgroup"] = found_ids[id]
+                        trace.update(legendgroup=found_ids[id])
                 else:
                     if group_id_labels:
-                        trace["legendgroup"] = unique_idx
+                        trace.update(legendgroup=unique_idx)
                     found_ids[id] = unique_idx
                     unique_idx += 1
+
+        # Hide identical legend labels
         if hide_id_labels:
             legendgroups = set()
-            for trace in fig.data:
+            for i in range(trace_start_idx, len(fig.data)):
+                trace = fig.data[i]
                 if trace["legendgroup"] is not None:
                     if trace["showlegend"]:
                         if trace["legendgroup"] in legendgroups:
-                            trace["showlegend"] = False
+                            trace.update(showlegend=False)
                         else:
                             legendgroups.add(trace["legendgroup"])
 
@@ -779,7 +860,7 @@ class PlotsBuilderMixin(metaclass=MetaPlotsBuilderMixin):
                     if specs[row][col] is not None:
                         xaxis = "xaxis" if i == 0 else "xaxis" + str(i + 1)
                         if row < rows - 1:
-                            fig.layout[xaxis]["title"] = None
+                            fig.layout[xaxis].update(title=None)
                         i += 1
         if shared_yaxes:
             i = 0
@@ -788,7 +869,7 @@ class PlotsBuilderMixin(metaclass=MetaPlotsBuilderMixin):
                     if specs[row][col] is not None:
                         yaxis = "yaxis" if i == 0 else "yaxis" + str(i + 1)
                         if col > 0:
-                            fig.layout[yaxis]["title"] = None
+                            fig.layout[yaxis].update(title=None)
                         i += 1
 
         # Return the figure

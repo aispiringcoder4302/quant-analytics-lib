@@ -2275,6 +2275,9 @@ class TestPortfolioOptimizer:
         pfo["g1"].plot()
         pfo[["g1"]].plot()
         pfo.plot(column="g1")
+        pfo.plots(column="g1")
+        with pytest.raises(Exception):
+            pfo.plots()
 
         pfo = vbt.PortfolioOptimizer.from_optimize_func(
             prices.vbt.wrapper,
@@ -2285,6 +2288,9 @@ class TestPortfolioOptimizer:
         pfo["g1"].plot()
         pfo[["g1"]].plot()
         pfo.plot(column="g1")
+        pfo.plots(column="g1")
+        with pytest.raises(Exception):
+            pfo.plots()
 
 
 # ############# Portfolio ############# #

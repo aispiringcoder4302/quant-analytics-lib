@@ -1160,7 +1160,14 @@ class Drawdowns(Ranges):
         return merge_dicts(Ranges.plots_defaults.__get__(self), drawdowns_plots_cfg)
 
     _subplots: tp.ClassVar[Config] = HybridConfig(
-        dict(plot=dict(title="Drawdowns", check_is_not_grouped=True, plot_func="plot", tags="drawdowns")),
+        dict(
+            plot=dict(
+                title="Drawdowns",
+                check_is_not_grouped=True,
+                plot_func="plot",
+                tags="drawdowns",
+            )
+        ),
     )
 
     @property

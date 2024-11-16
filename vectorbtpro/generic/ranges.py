@@ -1512,7 +1512,14 @@ class Ranges(PriceRecords):
         return merge_dicts(Records.plots_defaults.__get__(self), ranges_plots_cfg)
 
     _subplots: tp.ClassVar[Config] = HybridConfig(
-        dict(plot=dict(title="Ranges", check_is_not_grouped=True, plot_func="plot", tags="ranges")),
+        dict(
+            plot=dict(
+                title="Ranges",
+                check_is_not_grouped=True,
+                plot_func="plot",
+                tags="ranges",
+            )
+        ),
     )
 
     @property

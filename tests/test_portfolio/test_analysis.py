@@ -9420,8 +9420,10 @@ class TestPortfolio:
         pf_shared.plot(column="a", subplots="all", group_by=False)
         with pytest.raises(Exception):
             pf.plot(subplots="all")
+        pf.plot(subplots="all", per_column=True)
         with pytest.raises(Exception):
             pf_grouped.plot(subplots="all")
+        pf_grouped.plot(subplots="all", per_column=True)
         pf.plot(column="a", subplots="all", settings=dict(sim_start=1, sim_end=4))
         pf.replace(bm_close=None).plot(column="a", subplots="all", settings=dict(sim_start=1, sim_end=4))
         pf.replace(bm_close=False).plot(column="a", subplots="all", settings=dict(sim_start=1, sim_end=4))

@@ -15,7 +15,7 @@ from vectorbtpro.base.wrapping import Wrapping
 from vectorbtpro.utils import checks
 from vectorbtpro.utils.attr_ import get_dict_attr, AttrResolverMixin
 from vectorbtpro.utils.config import merge_dicts, Config, HybridConfig
-from vectorbtpro.utils.parsing import get_func_arg_names
+from vectorbtpro.utils.parsing import get_func_arg_names, get_forward_args
 from vectorbtpro.utils.tagging import match_tags
 from vectorbtpro.utils.template import substitute_templates, CustomTemplate
 
@@ -46,14 +46,29 @@ class StatsBuilderMixin(metaclass=MetaStatsBuilderMixin):
 
     @property
     def stats_defaults(self) -> tp.Kwargs:
-        """Defaults for `StatsBuilderMixin.stats`.
+        """Defaults for `StatsBuilderMixin.stats`."""
+        return dict(settings=dict(freq=self.wrapper.freq))
 
-        See `vectorbtpro._settings.stats_builder`."""
-        from vectorbtpro._settings import settings
+    def resolve_stats_setting(
+        self,
+        value: tp.Optional[tp.Any],
+        key: str,
+        merge: bool = False,
+    ) -> tp.Any:
+        """Resolve a setting for `StatsBuilderMixin.stats`."""
+        from vectorbtpro._settings import settings as _settings
 
-        stats_builder_cfg = settings["stats_builder"]
+        stats_builder_cfg = _settings["stats_builder"]
 
-        return merge_dicts(stats_builder_cfg, dict(settings=dict(freq=self.wrapper.freq)))
+        if merge:
+            return merge_dicts(
+                stats_builder_cfg[key],
+                self.stats_defaults.get(key, {}),
+                value,
+            )
+        if value is not None:
+            return value
+        return self.stats_defaults.get(key, stats_builder_cfg[key])
 
     _metrics: tp.ClassVar[Config] = HybridConfig(
         dict(
@@ -100,6 +115,8 @@ class StatsBuilderMixin(metaclass=MetaStatsBuilderMixin):
         tags: tp.Optional[tp.MaybeIterable[str]] = None,
         column: tp.Optional[tp.Label] = None,
         group_by: tp.GroupByLike = None,
+        per_column: tp.Optional[bool] = None,
+        split_columns: tp.Optional[bool] = None,
         agg_func: tp.Optional[tp.Callable] = np.mean,
         dropna: tp.Optional[bool] = None,
         silence_warnings: tp.Optional[bool] = None,
@@ -193,6 +210,10 @@ class StatsBuilderMixin(metaclass=MetaStatsBuilderMixin):
                     when you have a lot of data or caching is disabled. The second method is preferred when
                     most attributes have already been cached.
             group_by (any): Group or ungroup columns. See `vectorbtpro.base.grouping.base.Grouper`.
+            per_column (bool): Whether to compute per column and then stack along columns.
+            split_columns (bool): Whether to split this instance into multiple columns when `per_column` is True.
+
+                Otherwise, iterates over columns and passes `column` to the whole instance.
             agg_func (callable): Aggregation function to aggregate statistics across all columns.
                 By default, takes the mean of all columns. If None, returns all columns as a DataFrame.
 
@@ -208,7 +229,8 @@ class StatsBuilderMixin(metaclass=MetaStatsBuilderMixin):
             silence_warnings (bool): Whether to silence all warnings.
             template_context (mapping): Context used to substitute templates.
 
-                Gets merged over `template_context` from `StatsBuilderMixin.stats_defaults`.
+                Gets merged over `template_context` from `vectorbtpro._settings.stats_builder` and
+                `StatsBuilderMixin.stats_defaults`.
 
                 Applied on `settings` and then on each metric settings.
             filters (dict): Filters to apply.
@@ -224,10 +246,12 @@ class StatsBuilderMixin(metaclass=MetaStatsBuilderMixin):
                     Defaults to None.
                 * `inv_warning_message`: Same as `warning_message` but for inverse checks.
 
-                Gets merged over `filters` from `StatsBuilderMixin.stats_defaults`.
+                Gets merged over `filters` from `vectorbtpro._settings.stats_builder` and
+                `StatsBuilderMixin.stats_defaults`.
             settings (dict): Global settings and resolution arguments.
 
-                Extends/overrides `settings` from `StatsBuilderMixin.stats_defaults`.
+                Extends/overrides `settings` from `vectorbtpro._settings.stats_builder` and
+                `StatsBuilderMixin.stats_defaults`.
                 Gets extended/overridden by metric settings.
             metric_settings (dict): Keyword arguments for each metric.
 
@@ -235,7 +259,7 @@ class StatsBuilderMixin(metaclass=MetaStatsBuilderMixin):
 
         For template logic, see `vectorbtpro.utils.template`.
 
-        For defaults, see `StatsBuilderMixin.stats_defaults`.
+        For defaults, see `vectorbtpro._settings.stats_builder` and `StatsBuilderMixin.stats_defaults`.
 
         !!! hint
             There are two types of arguments: optional (or resolution) and mandatory arguments.
@@ -248,25 +272,32 @@ class StatsBuilderMixin(metaclass=MetaStatsBuilderMixin):
         !!! hint
             Make sure to resolve and then to re-use as many object attributes as possible to
             utilize built-in caching (even if global caching is disabled).
-
-        Usage:
-            See `vectorbtpro.portfolio.base`.
         """
+        # Compute per column
+        if column is None:
+            if per_column is None:
+                per_column = self.resolve_stats_setting(per_column, "per_column")
+            if per_column:
+                columns = self.get_item_keys(group_by=group_by)
+                if len(columns) > 1:
+                    results = []
+                    if split_columns:
+                        for _, column_self in self.items(group_by=group_by, wrap=True):
+                            _args, _kwargs = get_forward_args(column_self.stats, locals())
+                            results.append(column_self.stats(*_args, **_kwargs))
+                    else:
+                        for column in columns:
+                            _args, _kwargs = get_forward_args(self.stats, locals())
+                            results.append(self.stats(*_args, **_kwargs))
+                    return pd.concat(results, keys=columns, axis=1)
+
         # Resolve defaults
-        if dropna is None:
-            dropna = self.stats_defaults.get("dropna", False)
-        if silence_warnings is None:
-            silence_warnings = self.stats_defaults.get("silence_warnings", False)
-        template_context = merge_dicts(
-            self.stats_defaults.get("template_context", {}),
-            template_context,
-        )
-        filters = merge_dicts(self.stats_defaults.get("filters", {}), filters)
-        settings = merge_dicts(self.stats_defaults.get("settings", {}), settings)
-        metric_settings = merge_dicts(
-            self.stats_defaults.get("metric_settings", {}),
-            metric_settings,
-        )
+        dropna = self.resolve_stats_setting(dropna, "dropna")
+        silence_warnings = self.resolve_stats_setting(silence_warnings, "silence_warnings")
+        template_context = self.resolve_stats_setting(template_context, "template_context", merge=True)
+        filters = self.resolve_stats_setting(filters, "filters", merge=True)
+        settings = self.resolve_stats_setting(settings, "settings", merge=True)
+        metric_settings = self.resolve_stats_setting(metric_settings, "metric_settings", merge=True)
 
         # Replace templates globally (not used at metric level)
         if len(template_context) > 0:
@@ -287,8 +318,7 @@ class StatsBuilderMixin(metaclass=MetaStatsBuilderMixin):
         )
 
         # Prepare metrics
-        if metrics is None:
-            metrics = reself.stats_defaults.get("metrics", "all")
+        metrics = reself.resolve_stats_setting(metrics, "metrics")
         if metrics == "all":
             metrics = reself.metrics
         if isinstance(metrics, dict):
@@ -297,8 +327,7 @@ class StatsBuilderMixin(metaclass=MetaStatsBuilderMixin):
             metrics = [metrics]
 
         # Prepare tags
-        if tags is None:
-            tags = reself.stats_defaults.get("tags", "all")
+        tags = reself.resolve_stats_setting(tags, "tags")
         if isinstance(tags, str) and tags == "all":
             tags = None
         if isinstance(tags, (str, tuple)):
@@ -723,7 +752,8 @@ class StatsBuilderMixin(metaclass=MetaStatsBuilderMixin):
             if used_agg_func and not silence_warnings:
                 warnings.warn(
                     f"Object has multiple columns. Aggregated some metrics using {agg_func}. "
-                    "Pass column to select a single column/group.",
+                    "Pass either agg_func=None or per_column=True to return statistics per column. "
+                    "Pass column to select a single column or group.",
                     stacklevel=2,
                 )
             sr = pd.Series(stats_dct, name="agg_stats", dtype=object)

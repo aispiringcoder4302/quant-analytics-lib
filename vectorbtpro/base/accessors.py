@@ -846,8 +846,20 @@ class BaseAccessor(Wrapping):
 
     # ############# Indexes ############# #
 
-    def apply_to_index(self: BaseAccessorT, *args, **kwargs) -> tp.SeriesFrame:
-        return Wrapping.apply_to_index(self, *args, **kwargs).obj
+    def apply_to_index(
+        self: BaseAccessorT,
+        *args,
+        wrap: bool = False,
+        **kwargs,
+    ) -> tp.Union[BaseAccessorT, tp.SeriesFrame]:
+        """See `vectorbtpro.base.wrapping.Wrapping.apply_to_index`.
+
+        !!! note
+            If `wrap` is False, returns Pandas object, not accessor!"""
+        result = Wrapping.apply_to_index(self, *args, **kwargs)
+        if wrap:
+            return result
+        return result.obj
 
     # ############# Setting ############# #
 
@@ -1758,7 +1770,13 @@ class BaseAccessor(Wrapping):
             out = evaluate(expr, context=objs)
         return wrapper.wrap(out, **wrap_kwargs)
 
-    def split(self, *args, splitter_cls: tp.Optional[tp.Type[SplitterT]] = None, **kwargs) -> tp.Any:
+    def split(
+        self,
+        *args,
+        splitter_cls: tp.Optional[tp.Type[SplitterT]] = None,
+        wrap: bool = False,
+        **kwargs,
+    ) -> tp.Any:
         """Split using `vectorbtpro.generic.splitting.base.Splitter.split_and_take`.
 
         Uses the option `into="reset_stacked"` by default.
@@ -1772,7 +1790,7 @@ class BaseAccessor(Wrapping):
             splitter_cls = Splitter
         return splitter_cls.split_and_take(
             self.wrapper.index,
-            self.obj,
+            self if wrap else self.obj,
             *args,
             _take_kwargs=dict(into="reset_stacked"),
             **kwargs,
@@ -1783,6 +1801,7 @@ class BaseAccessor(Wrapping):
         apply_func: tp.Callable,
         *args,
         splitter_cls: tp.Optional[tp.Type[SplitterT]] = None,
+        wrap: bool = False,
         **kwargs,
     ) -> tp.Any:
         """Split using `vectorbtpro.generic.splitting.base.Splitter.split_and_apply`.
@@ -1793,17 +1812,26 @@ class BaseAccessor(Wrapping):
 
         if splitter_cls is None:
             splitter_cls = Splitter
-        return splitter_cls.split_and_apply(self.wrapper.index, apply_func, Takeable(self.obj), *args, **kwargs)
+        return splitter_cls.split_and_apply(
+            self.wrapper.index,
+            apply_func,
+            Takeable(self) if wrap else Takeable(self.obj),
+            *args,
+            **kwargs,
+        )
 
     # ############# Iteration ############# #
 
-    def items(self, *args, **kwargs) -> tp.ItemGenerator:
+    def items(self, *args, wrap: bool = False, **kwargs) -> tp.ItemGenerator:
         """See `vectorbtpro.base.wrapping.Wrapping.items`.
 
         !!! note
-            Splits Pandas object, not accessor!"""
+            If `wrap` is False, splits Pandas object, not accessor!"""
         for k, v in Wrapping.items(self, *args, **kwargs):
-            yield k, v.obj
+            if wrap:
+                yield k, v
+            else:
+                yield k, v.obj
 
 
 class BaseSRAccessor(BaseAccessor):
