@@ -11,7 +11,7 @@ from vectorbtpro.base.wrapping import ArrayWrapper, Wrapping
 from vectorbtpro.records import nb
 from vectorbtpro.registries.jit_registry import jit_reg
 from vectorbtpro.utils import checks
-from vectorbtpro.utils.decorators import cached_property, cached_method
+from vectorbtpro.utils.decorators import hybrid_method, cached_property, cached_method
 
 __all__ = [
     "ColumnMapper",
@@ -24,9 +24,9 @@ class ColumnMapper(Wrapping):
     """Used by `vectorbtpro.records.base.Records` and `vectorbtpro.records.mapped_array.MappedArray`
     classes to make use of column and group metadata."""
 
-    @classmethod
+    @hybrid_method
     def row_stack(
-        cls: tp.Type[ColumnMapperT],
+        cls_or_self: tp.MaybeType[ColumnMapperT],
         *objs: tp.MaybeTuple[ColumnMapperT],
         wrapper_kwargs: tp.KwargsLike = None,
         **kwargs,
@@ -37,6 +37,11 @@ class ColumnMapper(Wrapping):
 
         !!! note
             Will produce a column-sorted array."""
+        if not isinstance(cls_or_self, type):
+            objs = (cls_or_self, *objs)
+            cls = type(cls_or_self)
+        else:
+            cls = cls_or_self
         if len(objs) == 1:
             objs = objs[0]
         objs = list(objs)
@@ -63,9 +68,9 @@ class ColumnMapper(Wrapping):
         kwargs = cls.resolve_stack_kwargs(*objs, **kwargs)
         return cls(**kwargs)
 
-    @classmethod
+    @hybrid_method
     def column_stack(
-        cls: tp.Type[ColumnMapperT],
+        cls_or_self: tp.MaybeType[ColumnMapperT],
         *objs: tp.MaybeTuple[ColumnMapperT],
         wrapper_kwargs: tp.KwargsLike = None,
         **kwargs,
@@ -76,6 +81,11 @@ class ColumnMapper(Wrapping):
 
         !!! note
             Will produce a column-sorted array."""
+        if not isinstance(cls_or_self, type):
+            objs = (cls_or_self, *objs)
+            cls = type(cls_or_self)
+        else:
+            cls = cls_or_self
         if len(objs) == 1:
             objs = objs[0]
         objs = list(objs)

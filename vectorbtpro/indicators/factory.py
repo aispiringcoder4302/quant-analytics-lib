@@ -1104,9 +1104,9 @@ class IndicatorBase(Analyzable):
         """Public run combinations method."""
         return cls._run_combs(*args, **kwargs)
 
-    @classmethod
+    @hybrid_method
     def row_stack(
-        cls: tp.Type[IndicatorBaseT],
+        cls_or_self: tp.MaybeType[IndicatorBaseT],
         *objs: tp.MaybeTuple[IndicatorBaseT],
         wrapper_kwargs: tp.KwargsLike = None,
         **kwargs,
@@ -1116,6 +1116,11 @@ class IndicatorBase(Analyzable):
         Uses `vectorbtpro.base.wrapping.ArrayWrapper.row_stack` to stack the wrappers.
 
         All objects to be merged must have the same columns x parameters."""
+        if not isinstance(cls_or_self, type):
+            objs = (cls_or_self, *objs)
+            cls = type(cls_or_self)
+        else:
+            cls = cls_or_self
         if len(objs) == 1:
             objs = objs[0]
         objs = list(objs)
@@ -1149,9 +1154,9 @@ class IndicatorBase(Analyzable):
         kwargs = cls.resolve_stack_kwargs(*objs, **kwargs)
         return cls(**kwargs)
 
-    @classmethod
+    @hybrid_method
     def column_stack(
-        cls: tp.Type[IndicatorBaseT],
+        cls_or_self: tp.MaybeType[IndicatorBaseT],
         *objs: tp.MaybeTuple[IndicatorBaseT],
         wrapper_kwargs: tp.KwargsLike = None,
         reindex_kwargs: tp.KwargsLike = None,
@@ -1162,6 +1167,11 @@ class IndicatorBase(Analyzable):
         Uses `vectorbtpro.base.wrapping.ArrayWrapper.column_stack` to stack the wrappers.
 
         All objects to be merged must have the same index."""
+        if not isinstance(cls_or_self, type):
+            objs = (cls_or_self, *objs)
+            cls = type(cls_or_self)
+        else:
+            cls = cls_or_self
         if len(objs) == 1:
             objs = objs[0]
         objs = list(objs)

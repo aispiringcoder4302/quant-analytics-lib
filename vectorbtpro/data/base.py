@@ -598,9 +598,9 @@ class Data(Analyzable, DataWithFeatures, OHLCDataMixin, metaclass=MetaData):
                 kwargs[attr] = attr_value
         return kwargs
 
-    @classmethod
+    @hybrid_method
     def row_stack(
-        cls: tp.Type[DataT],
+        cls_or_self: tp.MaybeType[DataT],
         *objs: tp.MaybeTuple[DataT],
         wrapper_kwargs: tp.KwargsLike = None,
         **kwargs,
@@ -608,6 +608,11 @@ class Data(Analyzable, DataWithFeatures, OHLCDataMixin, metaclass=MetaData):
         """Stack multiple `Data` instances along rows.
 
         Uses `vectorbtpro.base.wrapping.ArrayWrapper.row_stack` to stack the wrappers."""
+        if not isinstance(cls_or_self, type):
+            objs = (cls_or_self, *objs)
+            cls = type(cls_or_self)
+        else:
+            cls = cls_or_self
         if len(objs) == 1:
             objs = objs[0]
         objs = list(objs)
@@ -655,9 +660,9 @@ class Data(Analyzable, DataWithFeatures, OHLCDataMixin, metaclass=MetaData):
         kwargs = cls.fix_dict_types_in_kwargs(type(kwargs["data"]), **kwargs)
         return cls(**kwargs)
 
-    @classmethod
+    @hybrid_method
     def column_stack(
-        cls: tp.Type[DataT],
+        cls_or_self: tp.MaybeType[DataT],
         *objs: tp.MaybeTuple[DataT],
         wrapper_kwargs: tp.KwargsLike = None,
         **kwargs,
@@ -665,6 +670,11 @@ class Data(Analyzable, DataWithFeatures, OHLCDataMixin, metaclass=MetaData):
         """Stack multiple `Data` instances along columns.
 
         Uses `vectorbtpro.base.wrapping.ArrayWrapper.column_stack` to stack the wrappers."""
+        if not isinstance(cls_or_self, type):
+            objs = (cls_or_self, *objs)
+            cls = type(cls_or_self)
+        else:
+            cls = cls_or_self
         if len(objs) == 1:
             objs = objs[0]
         objs = list(objs)

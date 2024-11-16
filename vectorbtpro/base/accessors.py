@@ -641,9 +641,9 @@ class BaseAccessor(Wrapping):
             )
         return kwargs
 
-    @classmethod
+    @hybrid_method
     def row_stack(
-        cls: tp.Type[BaseAccessorT],
+        cls_or_self: tp.MaybeType[BaseAccessorT],
         *objs: tp.MaybeTuple[BaseAccessorT],
         wrapper_kwargs: tp.KwargsLike = None,
         **kwargs,
@@ -651,6 +651,11 @@ class BaseAccessor(Wrapping):
         """Stack multiple `BaseAccessor` instances along rows.
 
         Uses `vectorbtpro.base.wrapping.ArrayWrapper.row_stack` to stack the wrappers."""
+        if not isinstance(cls_or_self, type):
+            objs = (cls_or_self, *objs)
+            cls = type(cls_or_self)
+        else:
+            cls = cls_or_self
         if len(objs) == 1:
             objs = objs[0]
         objs = list(objs)
@@ -673,9 +678,9 @@ class BaseAccessor(Wrapping):
             return cls.sr_accessor_cls(**kwargs)
         return cls.df_accessor_cls(**kwargs)
 
-    @classmethod
+    @hybrid_method
     def column_stack(
-        cls: tp.Type[BaseAccessorT],
+        cls_or_self: tp.MaybeType[BaseAccessorT],
         *objs: tp.MaybeTuple[BaseAccessorT],
         wrapper_kwargs: tp.KwargsLike = None,
         reindex_kwargs: tp.KwargsLike = None,
@@ -684,6 +689,11 @@ class BaseAccessor(Wrapping):
         """Stack multiple `BaseAccessor` instances along columns.
 
         Uses `vectorbtpro.base.wrapping.ArrayWrapper.column_stack` to stack the wrappers."""
+        if not isinstance(cls_or_self, type):
+            objs = (cls_or_self, *objs)
+            cls = type(cls_or_self)
+        else:
+            cls = cls_or_self
         if len(objs) == 1:
             objs = objs[0]
         objs = list(objs)

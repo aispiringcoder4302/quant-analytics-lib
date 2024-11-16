@@ -659,9 +659,9 @@ class Portfolio(Analyzable, PortfolioWithInOutputs, SimRangeMixin, metaclass=Met
 
         return type(objs[0].in_outputs)(**new_in_outputs)
 
-    @classmethod
+    @hybrid_method
     def row_stack(
-        cls: tp.Type[PortfolioT],
+        cls_or_self: tp.MaybeType[PortfolioT],
         *objs: tp.MaybeTuple[PortfolioT],
         wrapper_kwargs: tp.KwargsLike = None,
         group_by: tp.GroupByLike = None,
@@ -698,6 +698,11 @@ class Portfolio(Analyzable, PortfolioWithInOutputs, SimRangeMixin, metaclass=Met
             there is currently no way of injecting them in the correct order, while simply taking
             the sum or weighted average may distort the reality since they weren't available
             prior to the actual simulation."""
+        if not isinstance(cls_or_self, type):
+            objs = (cls_or_self, *objs)
+            cls = type(cls_or_self)
+        else:
+            cls = cls_or_self
         if len(objs) == 1:
             objs = objs[0]
         objs = list(objs)
@@ -1060,9 +1065,9 @@ class Portfolio(Analyzable, PortfolioWithInOutputs, SimRangeMixin, metaclass=Met
 
         return type(objs[0].in_outputs)(**new_in_outputs)
 
-    @classmethod
+    @hybrid_method
     def column_stack(
-        cls: tp.Type[PortfolioT],
+        cls_or_self: tp.MaybeType[PortfolioT],
         *objs: tp.MaybeTuple[PortfolioT],
         wrapper_kwargs: tp.KwargsLike = None,
         group_by: tp.GroupByLike = None,
@@ -1082,6 +1087,11 @@ class Portfolio(Analyzable, PortfolioWithInOutputs, SimRangeMixin, metaclass=Met
         `vectorbtpro.base.wrapping.ArrayWrapper.concat_arrs`.
         In-outputs are stacked using `Portfolio.column_stack_in_outputs`. Records are stacked using
         `vectorbtpro.records.base.Records.column_stack_records_arrs`."""
+        if not isinstance(cls_or_self, type):
+            objs = (cls_or_self, *objs)
+            cls = type(cls_or_self)
+        else:
+            cls = cls_or_self
         if len(objs) == 1:
             objs = objs[0]
         objs = list(objs)

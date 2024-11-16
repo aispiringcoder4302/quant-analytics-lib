@@ -591,9 +591,9 @@ class Records(Analyzable, RecordsWithFields, metaclass=MetaRecords):
             return np.array([], dtype=int_)
         return np.concatenate(record_indices)
 
-    @classmethod
+    @hybrid_method
     def row_stack(
-        cls: tp.Type[RecordsT],
+        cls_or_self: tp.MaybeType[RecordsT],
         *objs: tp.MaybeTuple[RecordsT],
         wrapper_kwargs: tp.KwargsLike = None,
         **kwargs,
@@ -605,6 +605,11 @@ class Records(Analyzable, RecordsWithFields, metaclass=MetaRecords):
 
         !!! note
             Will produce a column-sorted array."""
+        if not isinstance(cls_or_self, type):
+            objs = (cls_or_self, *objs)
+            cls = type(cls_or_self)
+        else:
+            cls = cls_or_self
         if len(objs) == 1:
             objs = objs[0]
         objs = list(objs)
@@ -703,9 +708,9 @@ class Records(Analyzable, RecordsWithFields, metaclass=MetaRecords):
             return np.array([], dtype=int_)
         return np.concatenate(record_indices)
 
-    @classmethod
+    @hybrid_method
     def column_stack(
-        cls: tp.Type[RecordsT],
+        cls_or_self: tp.MaybeType[RecordsT],
         *objs: tp.MaybeTuple[RecordsT],
         wrapper_kwargs: tp.KwargsLike = None,
         get_indexer_kwargs: tp.KwargsLike = None,
@@ -722,6 +727,11 @@ class Records(Analyzable, RecordsWithFields, metaclass=MetaRecords):
 
         !!! note
             Will produce a column-sorted array."""
+        if not isinstance(cls_or_self, type):
+            objs = (cls_or_self, *objs)
+            cls = type(cls_or_self)
+        else:
+            cls = cls_or_self
         if len(objs) == 1:
             objs = objs[0]
         objs = list(objs)

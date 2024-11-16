@@ -1936,9 +1936,9 @@ class Splitter(Analyzable):
             )
         return kwargs
 
-    @classmethod
+    @hybrid_method
     def row_stack(
-        cls: tp.Type[SplitterT],
+        cls_or_self: tp.MaybeType[SplitterT],
         *objs: tp.MaybeTuple[SplitterT],
         wrapper_kwargs: tp.KwargsLike = None,
         **kwargs,
@@ -1946,6 +1946,11 @@ class Splitter(Analyzable):
         """Stack multiple `Splitter` instances along rows.
 
         Uses `vectorbtpro.base.wrapping.ArrayWrapper.row_stack` to stack the wrappers."""
+        if not isinstance(cls_or_self, type):
+            objs = (cls_or_self, *objs)
+            cls = type(cls_or_self)
+        else:
+            cls = cls_or_self
         if len(objs) == 1:
             objs = objs[0]
         objs = list(objs)
@@ -1965,9 +1970,9 @@ class Splitter(Analyzable):
         kwargs = cls.resolve_stack_kwargs(*objs, **kwargs)
         return cls(**kwargs)
 
-    @classmethod
+    @hybrid_method
     def column_stack(
-        cls: tp.Type[SplitterT],
+        cls_or_self: tp.MaybeType[SplitterT],
         *objs: tp.MaybeTuple[SplitterT],
         wrapper_kwargs: tp.KwargsLike = None,
         **kwargs,
@@ -1975,6 +1980,11 @@ class Splitter(Analyzable):
         """Stack multiple `Splitter` instances along columns.
 
         Uses `vectorbtpro.base.wrapping.ArrayWrapper.column_stack` to stack the wrappers."""
+        if not isinstance(cls_or_self, type):
+            objs = (cls_or_self, *objs)
+            cls = type(cls_or_self)
+        else:
+            cls = cls_or_self
         if len(objs) == 1:
             objs = objs[0]
         objs = list(objs)

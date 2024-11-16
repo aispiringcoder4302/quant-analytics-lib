@@ -27,6 +27,7 @@ from vectorbtpro.returns.accessors import ReturnsAccessor
 from vectorbtpro.utils import checks, datetime_ as dt
 from vectorbtpro.utils.annotations import has_annotatables
 from vectorbtpro.utils.config import merge_dicts, Config, HybridConfig
+from vectorbtpro.utils.decorators import hybrid_method
 from vectorbtpro.utils.enum_ import map_enum_fields
 from vectorbtpro.utils.execution import Task, execute
 from vectorbtpro.utils.params import Param, combine_params, Parameterizer
@@ -1661,9 +1662,9 @@ PortfolioOptimizerT = tp.TypeVar("PortfolioOptimizerT", bound="PortfolioOptimize
 class PortfolioOptimizer(Analyzable):
     """Class that exposes methods for generating allocations."""
 
-    @classmethod
+    @hybrid_method
     def row_stack(
-        cls: tp.Type[PortfolioOptimizerT],
+        cls_or_self: tp.MaybeType[PortfolioOptimizerT],
         *objs: tp.MaybeTuple[PortfolioOptimizerT],
         wrapper_kwargs: tp.KwargsLike = None,
         **kwargs,
@@ -1671,6 +1672,11 @@ class PortfolioOptimizer(Analyzable):
         """Stack multiple `PortfolioOptimizer` instances along rows.
 
         Uses `vectorbtpro.base.wrapping.ArrayWrapper.row_stack` to stack the wrappers."""
+        if not isinstance(cls_or_self, type):
+            objs = (cls_or_self, *objs)
+            cls = type(cls_or_self)
+        else:
+            cls = cls_or_self
         if len(objs) == 1:
             objs = objs[0]
         objs = list(objs)
@@ -1707,9 +1713,9 @@ class PortfolioOptimizer(Analyzable):
         kwargs = cls.resolve_stack_kwargs(*objs, **kwargs)
         return cls(**kwargs)
 
-    @classmethod
+    @hybrid_method
     def column_stack(
-        cls: tp.Type[PortfolioOptimizerT],
+        cls_or_self: tp.MaybeType[PortfolioOptimizerT],
         *objs: tp.MaybeTuple[PortfolioOptimizerT],
         wrapper_kwargs: tp.KwargsLike = None,
         **kwargs,
@@ -1717,6 +1723,11 @@ class PortfolioOptimizer(Analyzable):
         """Stack multiple `PortfolioOptimizer` instances along columns.
 
         Uses `vectorbtpro.base.wrapping.ArrayWrapper.column_stack` to stack the wrappers."""
+        if not isinstance(cls_or_self, type):
+            objs = (cls_or_self, *objs)
+            cls = type(cls_or_self)
+        else:
+            cls = cls_or_self
         if len(objs) == 1:
             objs = objs[0]
         objs = list(objs)

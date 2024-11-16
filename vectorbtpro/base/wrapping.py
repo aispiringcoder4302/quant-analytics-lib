@@ -146,9 +146,9 @@ class ArrayWrapper(Configured, IndexApplier, ExtPandasIndexer, Itemable, Paramab
                     raise ValueError(f"Objects to be merged must have compatible '{k}'. Pass to override.")
         return kwargs
 
-    @classmethod
+    @hybrid_method
     def row_stack(
-        cls: tp.Type[ArrayWrapperT],
+        cls_or_self: tp.MaybeType[ArrayWrapperT],
         *wrappers: tp.MaybeTuple[ArrayWrapperT],
         index: tp.Optional[tp.IndexLike] = None,
         columns: tp.Optional[tp.IndexLike] = None,
@@ -175,6 +175,11 @@ class ArrayWrapper(Configured, IndexApplier, ExtPandasIndexer, Itemable, Paramab
 
         All instances must contain the same keys and values in their configs and configs of their
         grouper instances, apart from those arguments provided explicitly via `kwargs`."""
+        if not isinstance(cls_or_self, type):
+            wrappers = (cls_or_self, *wrappers)
+            cls = type(cls_or_self)
+        else:
+            cls = cls_or_self
         if len(wrappers) == 1:
             wrappers = wrappers[0]
         wrappers = list(wrappers)
@@ -263,9 +268,9 @@ class ArrayWrapper(Configured, IndexApplier, ExtPandasIndexer, Itemable, Paramab
 
         return cls(**ArrayWrapper.resolve_stack_kwargs(*wrappers, **kwargs))
 
-    @classmethod
+    @hybrid_method
     def column_stack(
-        cls: tp.Type[ArrayWrapperT],
+        cls_or_self: tp.MaybeType[ArrayWrapperT],
         *wrappers: tp.MaybeTuple[ArrayWrapperT],
         index: tp.Optional[tp.IndexLike] = None,
         columns: tp.Optional[tp.IndexLike] = None,
@@ -296,6 +301,11 @@ class ArrayWrapper(Configured, IndexApplier, ExtPandasIndexer, Itemable, Paramab
 
         All instances must contain the same keys and values in their configs and configs of their
         grouper instances, apart from those arguments provided explicitly via `kwargs`."""
+        if not isinstance(cls_or_self, type):
+            wrappers = (cls_or_self, *wrappers)
+            cls = type(cls_or_self)
+        else:
+            cls = cls_or_self
         if len(wrappers) == 1:
             wrappers = wrappers[0]
         wrappers = list(wrappers)
@@ -1996,10 +2006,10 @@ class Wrapping(Configured, IndexApplier, ExtPandasIndexer, AttrResolverMixin, It
         Should be called after `Wrapping.resolve_row_stack_kwargs` or `Wrapping.resolve_column_stack_kwargs`."""
         return cls.resolve_merge_kwargs(*[wrapping.config for wrapping in wrappings], **kwargs)
 
-    @classmethod
+    @hybrid_method
     def row_stack(
-        cls: tp.Type[WrappingT],
-        *args: tp.MaybeTuple[WrappingT],
+        cls_or_self: tp.MaybeType[WrappingT],
+        *objs: tp.MaybeTuple[WrappingT],
         wrapper_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> WrappingT:
@@ -2008,10 +2018,10 @@ class Wrapping(Configured, IndexApplier, ExtPandasIndexer, AttrResolverMixin, It
         Should use `ArrayWrapper.row_stack`."""
         raise NotImplementedError
 
-    @classmethod
+    @hybrid_method
     def column_stack(
-        cls: tp.Type[WrappingT],
-        *args: tp.MaybeTuple[WrappingT],
+        cls_or_self: tp.MaybeType[WrappingT],
+        *objs: tp.MaybeTuple[WrappingT],
         wrapper_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> WrappingT:

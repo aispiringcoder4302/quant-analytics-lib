@@ -78,6 +78,14 @@ class TestArrayWrapper:
             vbt.ArrayWrapper(pd.Index([0, 1, 2]), pd.Index(["a", "b"], name="c"), 2),
             vbt.ArrayWrapper(pd.Index([4, 5, 6]), pd.Index(["a", "b"], name="c"), 2),
         )
+        assert vbt.ArrayWrapper.row_stack(
+            (
+                vbt.ArrayWrapper(pd.Index([0, 1, 2]), pd.Index(["a", "b"], name="c"), 2),
+                vbt.ArrayWrapper(pd.Index([4, 5, 6]), pd.Index(["a", "b"], name="c"), 2),
+            )
+        ) == vbt.ArrayWrapper(pd.Index([0, 1, 2]), pd.Index(["a", "b"], name="c"), 2).row_stack(
+            vbt.ArrayWrapper(pd.Index([4, 5, 6]), pd.Index(["a", "b"], name="c"), 2)
+        )
         wrapper = vbt.ArrayWrapper.row_stack(
             vbt.ArrayWrapper(pd.RangeIndex(start=0, stop=3), pd.Index(["a", "b"], name="c"), 2),
             vbt.ArrayWrapper(pd.RangeIndex(start=3, stop=6), pd.Index(["a", "b"], name="c"), 2),
@@ -325,6 +333,10 @@ class TestArrayWrapper:
         wrapper = vbt.ArrayWrapper.column_stack(
             vbt.ArrayWrapper(pd.Index([0, 1, 2], name="i"), pd.Index(["a", "b"], name="c"), 2),
             vbt.ArrayWrapper(pd.Index([0, 1, 2], name="i"), pd.Index(["c", "d"], name="c"), 2),
+        )
+        assert_index_equal(wrapper.index, pd.Index([0, 1, 2], name="i"))
+        wrapper = vbt.ArrayWrapper(pd.Index([0, 1, 2], name="i"), pd.Index(["a", "b"], name="c"), 2).column_stack(
+            vbt.ArrayWrapper(pd.Index([0, 1, 2], name="i"), pd.Index(["c", "d"], name="c"), 2)
         )
         assert_index_equal(wrapper.index, pd.Index([0, 1, 2], name="i"))
         wrapper = vbt.ArrayWrapper.column_stack(
