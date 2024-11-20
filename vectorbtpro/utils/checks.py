@@ -482,6 +482,10 @@ def is_subclass_of(arg: tp.Any, types: tp.TypeLike) -> bool:
     except TypeError:
         pass
     if isinstance(types, str):
+        if types.lower() == "args":
+            if is_namedtuple(arg):
+                return False
+            return issubclass(arg, tuple)
         for base_t in getmro(arg):
             if str(base_t) == types or base_t.__name__ == types:
                 return True
