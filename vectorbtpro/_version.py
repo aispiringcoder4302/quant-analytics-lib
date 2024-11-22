@@ -7,7 +7,7 @@ try:
         import tomli as tomllib
     from pathlib import Path
 
-    with open(Path(__file__).parent.parent / "pyproject.toml", "rb") as f:
+    with open(Path(__file__).resolve().parent.parent / "pyproject.toml", "rb") as f:
         pyproject = tomllib.load(f)
 
     __version__ = pyproject["project"]["version"]
