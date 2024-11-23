@@ -8,6 +8,7 @@ if TYPE_CHECKING:
     from vectorbtpro.utils.annotations import *
     from vectorbtpro.utils.array_ import *
     from vectorbtpro.utils.attr_ import *
+    from vectorbtpro.utils.base import *
     from vectorbtpro.utils.caching import *
     from vectorbtpro.utils.chaining import *
     from vectorbtpro.utils.checks import *

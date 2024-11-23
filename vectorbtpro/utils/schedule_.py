@@ -13,6 +13,7 @@ from schedule import Scheduler, Job, CancelJob, ScheduleError
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.utils import checks, datetime_ as dt
+from vectorbtpro.utils.base import Base
 
 __all__ = [
     "AsyncJob",
@@ -24,7 +25,7 @@ __all__ = [
 logger = logging.getLogger(__name__)
 
 
-class CustomScheduler(Scheduler):
+class CustomScheduler(Scheduler, Base):
     def __init__(self) -> None:
         super(CustomScheduler, self).__init__()
 
@@ -32,7 +33,7 @@ class CustomScheduler(Scheduler):
 CustomJobT = tp.TypeVar("CustomJobT", bound="CustomJob")
 
 
-class CustomJob(Job):
+class CustomJob(Job, Base):
     def __init__(self, interval: int, scheduler: tp.Optional[Scheduler] = None) -> None:
         super(CustomJob, self).__init__(interval, scheduler)
         self._zero_offset = False
@@ -130,7 +131,7 @@ class AsyncScheduler(CustomScheduler):
         return job
 
 
-class ScheduleManager:
+class ScheduleManager(Base):
     """Class that manages `CustomScheduler`."""
 
     units: tp.ClassVar[tp.Tuple[str, ...]] = (

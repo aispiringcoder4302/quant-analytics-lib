@@ -23,6 +23,7 @@ from vectorbtpro.generic.drawdowns import Drawdowns
 from vectorbtpro.returns.accessors import ReturnsAccessor
 from vectorbtpro.utils import checks, datetime_ as dt
 from vectorbtpro.utils.attr_ import get_dict_attr
+from vectorbtpro.utils.base import Base
 from vectorbtpro.utils.config import merge_dicts, Config, HybridConfig, copy_dict
 from vectorbtpro.utils.decorators import cached_property, hybrid_method
 from vectorbtpro.utils.execution import Task, NoResult, NoResultsException, filter_out_no_results, execute
@@ -90,7 +91,7 @@ class run_arg_dict(pdict):
 BaseDataMixinT = tp.TypeVar("BaseDataMixinT", bound="BaseDataMixin")
 
 
-class BaseDataMixin:
+class BaseDataMixin(Base):
     """Base mixin class for working with data."""
 
     @property
@@ -468,16 +469,16 @@ class MetaFeatures(type):
 
     @property
     def feature_config(cls) -> Config:
-        """Column config."""
+        """Feature config."""
         return cls._feature_config
 
 
-class DataWithFeatures(metaclass=MetaFeatures):
+class DataWithFeatures(Base, metaclass=MetaFeatures):
     """Class exposes a read-only class property `DataWithFeatures.field_config`."""
 
     @property
     def feature_config(self) -> Config:
-        """Column config of `${cls_name}`.
+        """Feature config of `${cls_name}`.
 
         ```python
         ${feature_config}

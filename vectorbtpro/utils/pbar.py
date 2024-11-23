@@ -10,9 +10,10 @@ from time import time as utc_time
 from tqdm.std import tqdm
 
 from vectorbtpro import _typing as tp
-from vectorbtpro.registries.pbar_registry import PBarRegistry, pbar_reg
+from vectorbtpro.utils.base import Base
 from vectorbtpro.utils.attr_ import MISSING
 from vectorbtpro.utils.config import merge_dicts
+from vectorbtpro.registries.pbar_registry import PBarRegistry, pbar_reg
 
 __all__ = [
     "ProgressBar",
@@ -25,7 +26,7 @@ __all__ = [
 ProgressBarT = tp.TypeVar("ProgressBarT", bound="ProgressBar")
 
 
-class ProgressBar:
+class ProgressBar(Base):
     """Context manager to manage a progress bar.
 
     Supported types:
@@ -544,7 +545,7 @@ class ProgressBar:
 ProgressHiddenT = tp.TypeVar("ProgressHiddenT", bound="ProgressHidden")
 
 
-class ProgressHidden:
+class ProgressHidden(Base):
     """Context manager to hide progress."""
 
     def __init__(self, disable_registry: bool = True, disable_machinery: bool = True) -> None:
@@ -615,7 +616,7 @@ def with_progress_hidden(*args) -> tp.Callable:
 ProgressShownT = tp.TypeVar("ProgressShownT", bound="ProgressShown")
 
 
-class ProgressShown:
+class ProgressShown(Base):
     """Context manager to show progress."""
 
     def __init__(self, enable_registry: bool = True, enable_machinery: bool = True) -> None:

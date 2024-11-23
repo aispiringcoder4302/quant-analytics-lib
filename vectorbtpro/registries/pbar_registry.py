@@ -5,6 +5,7 @@
 import uuid
 
 from vectorbtpro import _typing as tp
+from vectorbtpro.utils.base import Base
 
 if tp.TYPE_CHECKING:
     from vectorbtpro.utils.pbar import ProgressBar as ProgressBarT
@@ -17,7 +18,7 @@ __all__ = [
 ]
 
 
-class PBarRegistry:
+class PBarRegistry(Base):
     """Class for registering `vectorbtpro.utils.pbar.ProgressBar` instances."""
 
     @classmethod

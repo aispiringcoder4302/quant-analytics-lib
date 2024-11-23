@@ -104,7 +104,7 @@ ItemGenerator = Generator[Tuple[Hashable, Any], None, None]
 
 
 # Arrays
-class SupportsArray(Protocol):
+class SupportsArrayT(Protocol):
     def __array__(self) -> np.ndarray: ...
 
 
@@ -130,8 +130,8 @@ PandasArray = Union[Index, Series, Frame]
 AnyArray = Union[Array, PandasArray]
 AnyArray1d = Union[Array1d, Index, Series]
 AnyArray2d = Union[Array2d, Frame]
-ArrayLike = Union[Scalar, Sequence[Scalar], Sequence[Sequence[Any]], SupportsArray, Array]
-IndexLike = Union[range, Sequence[Scalar], SupportsArray]
+ArrayLike = Union[Scalar, Sequence[Scalar], Sequence[Sequence[Any]], SupportsArrayT, Array]
+IndexLike = Union[range, Sequence[Scalar], SupportsArrayT]
 FlexArray1d = Array1d
 FlexArray2d = Array2d
 FlexArray1dLike = Union[Scalar, Array1d, Array2d]

@@ -12,6 +12,7 @@ from vectorbtpro.base.wrapping import Wrapping
 from vectorbtpro.base.indexing import ParamLoc
 from vectorbtpro.utils import checks
 from vectorbtpro.utils.attr_ import get_dict_attr, AttrResolverMixin
+from vectorbtpro.utils.base import Base
 from vectorbtpro.utils.config import Config, HybridConfig, merge_dicts
 from vectorbtpro.utils.parsing import get_func_arg_names, get_forward_args
 from vectorbtpro.utils.tagging import match_tags
@@ -29,7 +30,7 @@ class MetaPlotsBuilderMixin(type):
         return cls._subplots
 
 
-class PlotsBuilderMixin(metaclass=MetaPlotsBuilderMixin):
+class PlotsBuilderMixin(Base, metaclass=MetaPlotsBuilderMixin):
     """Mixin that implements `PlotsBuilderMixin.plots`.
 
     Required to be a subclass of `vectorbtpro.base.wrapping.Wrapping`."""
@@ -195,9 +196,6 @@ class PlotsBuilderMixin(metaclass=MetaPlotsBuilderMixin):
             * `subplot_settings` vs `metric_settings`
 
             See further notes under `vectorbtpro.generic.stats_builder.StatsBuilderMixin`.
-
-        Usage:
-            See `vectorbtpro.portfolio.base`.
         """
         # Plot per column
         if column is None:

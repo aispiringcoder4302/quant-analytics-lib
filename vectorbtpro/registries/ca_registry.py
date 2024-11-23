@@ -415,6 +415,7 @@ import pandas as pd
 from vectorbtpro import _typing as tp
 from vectorbtpro.utils import checks, datetime_ as dt
 from vectorbtpro.utils.attr_ import DefineMixin, define
+from vectorbtpro.utils.base import Base
 from vectorbtpro.utils.caching import Cacheable
 from vectorbtpro.utils.decorators import cacheableT, cacheable_property
 from vectorbtpro.utils.formatting import ptable
@@ -812,7 +813,7 @@ class CARule(DefineMixin):
         )
 
 
-class CacheableRegistry:
+class CacheableRegistry(Base):
     """Class for registering setups of cacheables."""
 
     def __init__(self) -> None:
@@ -1074,7 +1075,7 @@ ca_reg = CacheableRegistry()
 """Default registry of type `CacheableRegistry`."""
 
 
-class CAMetrics:
+class CAMetrics(Base):
     """Abstract class that exposes various metrics related to caching."""
 
     @property
@@ -2574,7 +2575,7 @@ def enable_caching() -> None:
 CachingDisabledT = tp.TypeVar("CachingDisabledT", bound="CachingDisabled")
 
 
-class CachingDisabled:
+class CachingDisabled(Base):
     """Context manager to disable caching."""
 
     def __init__(
@@ -2764,7 +2765,7 @@ def with_caching_disabled(*args, **caching_disabled_kwargs) -> tp.Callable:
 CachingEnabledT = tp.TypeVar("CachingEnabledT", bound="CachingEnabled")
 
 
-class CachingEnabled:
+class CachingEnabled(Base):
     """Context manager to enable caching."""
 
     def __init__(

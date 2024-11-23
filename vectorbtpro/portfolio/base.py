@@ -48,6 +48,7 @@ from vectorbtpro.registries.jit_registry import jit_reg
 from vectorbtpro.returns.accessors import ReturnsAccessor
 from vectorbtpro.utils import checks
 from vectorbtpro.utils.attr_ import get_dict_attr
+from vectorbtpro.utils.base import Base
 from vectorbtpro.utils.colors import adjust_opacity
 from vectorbtpro.utils.config import resolve_dict, merge_dicts, Config, ReadonlyConfig, HybridConfig, atomic_dict
 from vectorbtpro.utils.decorators import custom_property, cached_property, hybrid_method
@@ -433,7 +434,7 @@ class MetaInOutputs(type):
         return cls._in_output_config
 
 
-class PortfolioWithInOutputs(metaclass=MetaInOutputs):
+class PortfolioWithInOutputs(Base, metaclass=MetaInOutputs):
     """Class exposes a read-only class property `RecordsWithFields.field_config`."""
 
     @property

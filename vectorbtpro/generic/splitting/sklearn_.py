@@ -8,6 +8,7 @@ from sklearn.model_selection import BaseCrossValidator
 from sklearn.utils.validation import indexable
 
 from vectorbtpro import _typing as tp
+from vectorbtpro.utils.base import Base
 from vectorbtpro.generic.splitting.base import Splitter
 
 __all__ = [
@@ -15,7 +16,7 @@ __all__ = [
 ]
 
 
-class SplitterCV(BaseCrossValidator):
+class SplitterCV(BaseCrossValidator, Base):
     """Scikit-learn compatible cross-validator based on `vectorbtpro.generic.splitting.base.Splitter`.
 
     Usage:

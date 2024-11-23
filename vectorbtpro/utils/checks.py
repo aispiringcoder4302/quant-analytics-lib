@@ -17,6 +17,7 @@ import pandas as pd
 from numba.core.registry import CPUDispatcher
 
 from vectorbtpro import _typing as tp
+from vectorbtpro.utils.base import Base
 
 __all__ = [
     "is_numba_enabled",
@@ -24,7 +25,7 @@ __all__ = [
 ]
 
 
-class Comparable:
+class Comparable(Base):
     """Class representing an object that can be compared to another object."""
 
     def equals(self, other: tp.Any, *args, **kwargs) -> bool:

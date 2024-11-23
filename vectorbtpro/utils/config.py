@@ -8,6 +8,7 @@ from copy import copy, deepcopy
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.utils.attr_ import MISSING
+from vectorbtpro.utils.base import Base
 from vectorbtpro.utils.caching import Cacheable
 from vectorbtpro.utils.chaining import Chainable
 from vectorbtpro.utils.checks import Comparable, is_deep_equal, assert_in, assert_instance_of
@@ -31,7 +32,7 @@ __all__ = [
 ]
 
 
-class hdict(dict):
+class hdict(dict, Base):
     """Hashable dict."""
 
     def __hash__(self):
@@ -971,7 +972,7 @@ class SettingNotFoundError(KeyError):
 HasSettingsT = tp.TypeVar("HasSettingsT", bound="HasSettings")
 
 
-class HasSettings:
+class HasSettings(Base):
     """Class that has settings in `vectorbtpro._settings`."""
 
     _settings_path: tp.SettingsPath = None
@@ -1316,6 +1317,8 @@ class HasSettings:
         if path is None:
             raise SettingsNotFoundError(f"Found no settings associated with the class {cls.__name__}")
         if sub_path is not None:
+            from vectorbtpro.utils.search import combine_pathlike_keys
+
             path = combine_pathlike_keys(path, sub_path)
         if not cls.has_path_settings(path):
             raise SettingsNotFoundError(f"Found no settings under the path '{path}'")

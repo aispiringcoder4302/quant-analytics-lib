@@ -347,6 +347,7 @@ non-precise type pyobject
 from vectorbtpro import _typing as tp
 from vectorbtpro.utils import checks
 from vectorbtpro.utils.attr_ import DefineMixin, define
+from vectorbtpro.utils.base import Base
 from vectorbtpro.utils.config import merge_dicts, atomic_dict
 from vectorbtpro.utils.jitting import (
     Jitter,
@@ -424,7 +425,7 @@ class JittedSetup(DefineMixin):
         return tuple(sorted(self.jitter.config.items()))
 
 
-class JITRegistry:
+class JITRegistry(Base):
     """Class for registering jitted functions."""
 
     def __init__(self) -> None:

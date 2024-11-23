@@ -7,6 +7,9 @@ import os
 import re
 from types import ModuleType
 from pathlib import Path
+import inspect
+import pkgutil
+from collections import defaultdict, deque
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.utils.config import flat_merge_dicts
@@ -21,6 +24,14 @@ __all__ = [
     "PagesAsset",
     "MessagesAsset",
 ]
+
+
+class NoItemFoundError(Exception):
+    """Exception raised when no data item was found."""
+
+
+class MultipleItemsFoundError(Exception):
+    """Exception raised when multiple data items were found."""
 
 
 VBTAssetT = tp.TypeVar("VBTAssetT", bound="VBTAsset")
@@ -219,8 +230,10 @@ class VBTAsset(KnowledgeAsset):
         self: VBTAssetT,
         link: tp.MaybeList[str],
         mode: str = "end",
+        per_path: bool = False,
         single_item: bool = True,
         consolidate: bool = True,
+        allow_empty: bool = False,
         **kwargs,
     ) -> tp.Union[VBTAssetT, tp.Any]:
         """Find item(s) corresponding to link(s)."""
@@ -244,10 +257,12 @@ class VBTAsset(KnowledgeAsset):
                 links = list(chain(*map(_extend_link, link)))
             else:
                 raise TypeError("Link must be either string or list")
-        found = self.find(links, path="link", mode=mode, single_item=single_item, **kwargs)
+        found = self.find(links, path="link", mode=mode, per_path=per_path, single_item=single_item, **kwargs)
         if isinstance(found, (type(self), list)):
             if len(found) == 0:
-                raise ValueError(f"No item matching '{link}'")
+                if allow_empty:
+                    return found
+                raise NoItemFoundError(f"No item matching '{link}'")
             if single_item and len(found) > 1:
                 if consolidate:
                     top_parents = self.get_top_parent_links(list(found))
@@ -258,7 +273,7 @@ class VBTAsset(KnowledgeAsset):
                                     return found.replace(data=[d], single_item=True)
                                 return d
                 links_block = "\n".join([d["link"] for d in found])
-                raise ValueError(f"Multiple items matching '{link}':\n\n{links_block}")
+                raise MultipleItemsFoundError(f"Multiple items matching '{link}':\n\n{links_block}")
         return found
 
     def minimize_links(self: VBTAssetT) -> VBTAssetT:
@@ -723,10 +738,31 @@ class PagesAsset(VBTAsset):
             if aggregate_kwargs is None:
                 aggregate_kwargs = {}
             for i, d in enumerate(found):
-                descendant_headings = self.select_descendant_headings(d["link"], include_link=True)
+                descendant_headings = self.select_descendant_headings(d["link"], incl_link=True)
                 descendant_headings = descendant_headings.aggregate(**aggregate_kwargs)
                 found[i] = descendant_headings.find_link(d["link"], wrap=False)
         return found
+
+    def find_refname(
+        self,
+        refname: tp.MaybeList[str],
+        incl_descendants: bool = False,
+        aggregate: bool = False,
+        **kwargs,
+    ) -> tp.Union[PagesAssetT, tp.Any]:
+        """Find the page corresponding to a reference."""
+        if incl_descendants and not aggregate:
+            if isinstance(refname, list):
+                link = list(map(lambda x: "#" + x, refname))
+            else:
+                link = "#" + refname
+            return self.find_page(link, mode="substring", aggregate=aggregate, **kwargs)
+        else:
+            if isinstance(refname, list):
+                link = list(map(lambda x: f"#({re.escape(x)})$", refname))
+            else:
+                link = f"#({re.escape(refname)})$"
+            return self.find_page(link, mode="regex", aggregate=aggregate, **kwargs)
 
     def find_obj(
         self,
@@ -734,10 +770,10 @@ class PagesAsset(VBTAsset):
         module: tp.Union[None, str, ModuleType] = None,
         resolve: bool = True,
         **kwargs,
-    ) -> PagesAssetT:
+    ) -> tp.Union[PagesAssetT, tp.Any]:
         """Find the page corresponding an (internal) object or reference name."""
         refname = prepare_refname(obj, module=module, resolve=resolve)
-        return self.find_page(f"#({re.escape(refname)})$", mode="regex", **kwargs)
+        return self.find_refname(refname, **kwargs)
 
     def browse(
         self,
@@ -749,7 +785,7 @@ class PagesAsset(VBTAsset):
     ) -> Path:
         new_instance = self
         if entry_link is not None and entry_link != "/" and descendants_only:
-            new_instance = new_instance.select_descendants(entry_link, include_link=True)
+            new_instance = new_instance.select_descendants(entry_link, incl_link=True)
         if aggregate:
             if aggregate_kwargs is None:
                 aggregate_kwargs = {}
@@ -836,24 +872,24 @@ class PagesAsset(VBTAsset):
         new_data = [link_map[link] for link in link_map if link not in aggregated_links]
         return self.replace(data=new_data)
 
-    def select_parent(self: PagesAssetT, link: str, include_link: bool = False, **kwargs) -> PagesAssetT:
+    def select_parent(self: PagesAssetT, link: str, incl_link: bool = False, **kwargs) -> PagesAssetT:
         """Select the parent page of a link."""
         d = self.find_page(link, wrap=False, **kwargs)
         link_map = {d["link"]: dict(d) for d in self.data}
         new_data = []
-        if include_link:
+        if incl_link:
             new_data.append(d)
         if d.get("parent", None):
             if d["parent"] in link_map:
                 new_data.append(link_map[d["parent"]])
         return self.replace(data=new_data, single_item=True)
 
-    def select_children(self, link: str, include_link: bool = False, **kwargs) -> PagesAssetT:
+    def select_children(self, link: str, incl_link: bool = False, **kwargs) -> PagesAssetT:
         """Select the child pages of a link."""
         d = self.find_page(link, wrap=False, **kwargs)
         link_map = {d["link"]: dict(d) for d in self.data}
         new_data = []
-        if include_link:
+        if incl_link:
             new_data.append(d)
         if d.get("children", []):
             for child in d["children"]:
@@ -861,29 +897,29 @@ class PagesAsset(VBTAsset):
                     new_data.append(link_map[child])
         return self.replace(data=new_data, single_item=False)
 
-    def select_siblings(self, link: str, include_link: bool = False, **kwargs) -> PagesAssetT:
+    def select_siblings(self, link: str, incl_link: bool = False, **kwargs) -> PagesAssetT:
         """Select the sibling pages of a link."""
         d = self.find_page(link, wrap=False, **kwargs)
         link_map = {d["link"]: dict(d) for d in self.data}
         new_data = []
-        if include_link:
+        if incl_link:
             new_data.append(d)
         if d.get("parent", None):
             if d["parent"] in link_map:
                 parent_d = link_map[d["parent"]]
                 if parent_d.get("children", []):
                     for child in parent_d["children"]:
-                        if include_link or child != d["link"]:
+                        if incl_link or child != d["link"]:
                             if child in link_map:
                                 new_data.append(link_map[child])
         return self.replace(data=new_data, single_item=False)
 
-    def select_descendants(self, link: str, include_link: bool = False, **kwargs) -> PagesAssetT:
+    def select_descendants(self, link: str, incl_link: bool = False, **kwargs) -> PagesAssetT:
         """Select all descendant pages of a link."""
         d = self.find_page(link, wrap=False, **kwargs)
         link_map = {d["link"]: dict(d) for d in self.data}
         new_data = []
-        if include_link:
+        if incl_link:
             new_data.append(d)
         descendants = set()
         stack = [d]
@@ -899,14 +935,14 @@ class PagesAsset(VBTAsset):
 
     def select_branch(self, link: str, **kwargs) -> PagesAssetT:
         """Select all descendant pages of a link including the link."""
-        return self.select_descendants(link, include_link=True, **kwargs)
+        return self.select_descendants(link, incl_link=True, **kwargs)
 
-    def select_ancestors(self, link: str, include_link: bool = False, **kwargs) -> PagesAssetT:
+    def select_ancestors(self, link: str, incl_link: bool = False, **kwargs) -> PagesAssetT:
         """Select all ancestor pages of a link."""
         d = self.find_page(link, wrap=False, **kwargs)
         link_map = {d["link"]: dict(d) for d in self.data}
         new_data = []
-        if include_link:
+        if incl_link:
             new_data.append(d)
         ancestors = set()
         parent = d.get("parent", None)
@@ -918,12 +954,12 @@ class PagesAsset(VBTAsset):
             parent = link_map[parent].get("parent", None)
         return self.replace(data=new_data, single_item=False)
 
-    def select_parent_page(self, link: str, include_link: bool = False, **kwargs) -> PagesAssetT:
+    def select_parent_page(self, link: str, incl_link: bool = False, **kwargs) -> PagesAssetT:
         """Select parent page."""
         d = self.find_page(link, wrap=False, **kwargs)
         link_map = {d["link"]: dict(d) for d in self.data}
         new_data = []
-        if include_link:
+        if incl_link:
             new_data.append(d)
         ancestors = set()
         parent = d.get("parent", None)
@@ -937,12 +973,12 @@ class PagesAsset(VBTAsset):
             parent = link_map[parent].get("parent", None)
         return self.replace(data=new_data, single_item=False)
 
-    def select_descendant_headings(self, link: str, include_link: bool = False, **kwargs) -> PagesAssetT:
+    def select_descendant_headings(self, link: str, incl_link: bool = False, **kwargs) -> PagesAssetT:
         """Select descendant headings."""
         d = self.find_page(link, wrap=False, **kwargs)
         link_map = {d["link"]: dict(d) for d in self.data}
         new_data = []
-        if include_link:
+        if incl_link:
             new_data.append(d)
         descendants = set()
         stack = [d]
@@ -1036,6 +1072,348 @@ class PagesAsset(VBTAsset):
         if "length_limit" not in dir_tree_kwargs:
             dir_tree_kwargs["length_limit"] = None
         print(dir_tree_from_paths(paths, **dir_tree_kwargs))
+
+    @classmethod
+    def parse_content_links(cls, content: str) -> tp.List[str]:
+        """Parse all links from a content."""
+        link_pattern = r'(?<!\!)\[[^\]]+\]\((\S+?)(?:\s+(?:"[^"]*"|\'[^\']*\'))?\)'
+        return re.findall(link_pattern, content)
+
+    @classmethod
+    def parse_link_refname(cls, link: str) -> tp.Optional[str]:
+        """Parse the reference name from a link."""
+        if "/api/" not in link:
+            return None
+        if "#" in link:
+            refname = link.split("#")[1]
+            if refname.startswith("vectorbtpro"):
+                return refname
+            return None
+        return "vectorbtpro." + ".".join(link.split("/api/")[1].strip("/").split("/"))
+
+    def find_relevant_api(
+        self,
+        obj: tp.Any,
+        module: tp.Union[None, str, ModuleType] = None,
+        resolve: bool = True,
+        incl_bases: tp.Union[bool, int] = True,
+        incl_ancestors: tp.Union[bool, int] = True,
+        incl_base_ancestors: tp.Union[bool, int] = False,
+        incl_refs: tp.Union[None, bool, int] = None,
+        incl_descendants: bool = True,
+        incl_ancestor_descendants: bool = False,
+        incl_ref_descendants: bool = False,
+        aggregate: bool = True,
+        aggregate_ancestors: bool = False,
+        aggregate_refs: bool = False,
+        aggregate_kwargs: tp.KwargsLike = None,
+        topo_sort: bool = True,
+        return_refname_graph: bool = False,
+    ) -> tp.Union[PagesAssetT, tp.Tuple[PagesAssetT, dict]]:
+        """Find relevant API for an object.
+
+        If `incl_bases` is True, extends the asset with the base classes/attributes if the object is
+        a class/attribute. For instance, `vectorbtpro.portfolio.base.Portfolio` has
+        `vectorbtpro.generic.analyzable.Analyzable` as one of its base classes. It can also be an
+        integer indicating the maximum inheritance level. If `obj` is a module, then bases are sub-modules.
+
+        If `incl_ancestors` is True, extends the asset with the ancestors of the object.
+        For instance, `vectorbtpro.portfolio.base.Portfolio` has `vectorbtpro.portfolio.base` as its ancestor.
+        It can also be an integer indicating the maximum inheritance level. Provide `incl_base_ancestors`
+        to override `incl_ancestors` for base classes/attributes.
+
+        If `incl_refs` is True, extends the asset with the references found in the content of the object.
+        It can also be an integer indicating the maximum reference level. Defaults to False for modules
+        and classes, and True otherwise.
+
+        If `incl_descendants` is True, extends the asset page or heading with any descendant headings.
+        Provide `incl_ancestor_descendants` and `incl_ref_descendants` to override `incl_descendants`
+        for ancestors and references respectively.
+
+        If `aggregate` is True, aggregates any descendant headings into pages for this object
+        and all base classes/attributes. Provide `aggregate_ancestors` and `aggregate_refs` to
+        override `aggregate` for ancestors and references respectively.
+
+        If `topo_sort` is True, creates a topological graph from all reference names and sorts pages
+        and headings based on this graph. Use `return_refname_graph` to True to also return the graph."""
+        from vectorbtpro.utils.module_ import prepare_refname, annotate_refname_parts
+
+        obj_refname = prepare_refname(obj, module=module, resolve=resolve)
+        base_refnames = []
+        base_refnames_set = set()
+        refname_graph = defaultdict(list)
+        if resolve:
+            annotated_parts = annotate_refname_parts(obj_refname)
+            if isinstance(annotated_parts[-1]["obj"], ModuleType):
+                module = annotated_parts[-1]["obj"]
+                cls = None
+                attr = None
+                obj_type_name = "module"
+            elif isinstance(annotated_parts[-1]["obj"], type):
+                module = None
+                cls = annotated_parts[-1]["obj"]
+                attr = None
+                obj_type_name = "class"
+            elif len(annotated_parts) >= 2 and isinstance(annotated_parts[-2]["obj"], type):
+                module = None
+                cls = annotated_parts[-2]["obj"]
+                attr = annotated_parts[-1]["name"]
+                obj_type_name = "attribute"
+            else:
+                module = None
+                cls = None
+                attr = None
+                obj_type_name = type(annotated_parts[-1]["obj"]).__name__
+            if incl_refs is None:
+                incl_refs = obj_type_name not in ("module", "class")
+            if cls is not None and incl_bases:
+                level_classes = defaultdict(set)
+                visited = set()
+                queue = deque([(cls, 0)])
+                while queue:
+                    current_cls, current_level = queue.popleft()
+                    if current_cls in visited:
+                        continue
+                    visited.add(current_cls)
+                    level_classes[current_level].add(current_cls)
+                    for base in current_cls.__bases__:
+                        queue.append((base, current_level + 1))
+                mro = inspect.getmro(cls)
+                classes = []
+                levels = list(level_classes.keys())
+                if not isinstance(incl_bases, bool):
+                    if isinstance(incl_bases, int):
+                        levels = levels[:incl_bases + 1]
+                    else:
+                        raise TypeError(f"Invalid incl_bases: {incl_bases}")
+                for level in levels:
+                    classes.extend([cls for cls in mro if cls in level_classes[level]])
+                for c in classes:
+                    if c.__module__.split(".")[0] != "vectorbtpro":
+                        continue
+                    if attr is not None:
+                        if not hasattr(c, attr):
+                            continue
+                        refname = prepare_refname((c, attr))
+                    else:
+                        refname = prepare_refname(c)
+                    if refname not in base_refnames_set:
+                        base_refnames.append(refname)
+                        base_refnames_set.add(refname)
+                        for b in c.__bases__:
+                            if b.__module__.split(".")[0] == "vectorbtpro":
+                                b_refname = prepare_refname(b)
+                                refname_graph[refname].append(b_refname)
+            elif module is not None and hasattr(module, "__path__") and incl_bases:
+                base_refnames.append(module.__name__)
+                base_refnames_set.add(module.__name__)
+                refname_level = {}
+                refname_level[module.__name__] = 0
+                for _, refname, _ in pkgutil.walk_packages(module.__path__, prefix=f"{module.__name__}."):
+                    if refname not in base_refnames_set:
+                        parent_refname = ".".join(refname.split(".")[:-1])
+                        if not isinstance(incl_bases, bool):
+                            if isinstance(incl_bases, int):
+                                if refname_level[parent_refname] + 1 > incl_bases:
+                                    continue
+                            else:
+                                raise TypeError(f"Invalid incl_bases: {incl_bases}")
+                        base_refnames.append(refname)
+                        base_refnames_set.add(refname)
+                        refname_level[refname] = refname_level[parent_refname] + 1
+                        refname_graph[parent_refname].append(refname)
+            else:
+                base_refnames.append(obj_refname)
+                base_refnames_set.add(obj_refname)
+        else:
+            base_refnames.append(obj_refname)
+            base_refnames_set.add(obj_refname)
+        api_asset = self.find_refname(
+            base_refnames,
+            single_item=False,
+            incl_descendants=incl_descendants,
+            aggregate=aggregate,
+            aggregate_kwargs=aggregate_kwargs,
+            allow_empty=True,
+            wrap=True,
+        )
+        if len(api_asset) == 0:
+            return api_asset
+        if not topo_sort:
+            refname_indices = {refname: [] for refname in base_refnames}
+            remaining_indices = []
+            for i, d in enumerate(api_asset):
+                refname = self.parse_link_refname(d["link"])
+                if refname is not None:
+                    while refname not in base_refnames_set:
+                        if not refname:
+                            break
+                        refname = ".".join(refname.split(".")[:-1])
+                if refname:
+                    refname_indices[refname].append(i)
+                else:
+                    remaining_indices.append(i)
+            get_indices = [i for v in refname_indices.values() for i in v] + remaining_indices
+            api_asset = api_asset.get_items(get_indices)
+
+        if incl_ancestors or incl_refs:
+            refnames_aggregated = {}
+            for d in api_asset:
+                refname = self.parse_link_refname(d["link"])
+                if refname is not None:
+                    refnames_aggregated[refname] = aggregate
+            to_ref_api_asset = api_asset
+            if incl_ancestors:
+                anc_refnames = []
+                anc_refnames_set = set(refnames_aggregated.keys())
+                for d in api_asset:
+                    child_refname = refname = self.parse_link_refname(d["link"])
+                    if refname is not None:
+                        if incl_base_ancestors or refname == obj_refname:
+                            refname = ".".join(refname.split(".")[:-1])
+                            anc_level = 1
+                            while refname:
+                                if isinstance(incl_base_ancestors, bool) or refname == obj_refname:
+                                    if not isinstance(incl_ancestors, bool):
+                                        if isinstance(incl_ancestors, int):
+                                            if anc_level > incl_ancestors:
+                                                break
+                                        else:
+                                            raise TypeError(f"Invalid incl_ancestors: {incl_ancestors}")
+                                else:
+                                    if not isinstance(incl_base_ancestors, bool):
+                                        if isinstance(incl_base_ancestors, int):
+                                            if anc_level > incl_base_ancestors:
+                                                break
+                                        else:
+                                            raise TypeError(f"Invalid incl_base_ancestors: {incl_base_ancestors}")
+                                if refname not in anc_refnames_set:
+                                    anc_refnames.append(refname)
+                                    anc_refnames_set.add(refname)
+                                    refname_graph[refname].append(child_refname)
+                                child_refname = refname
+                                refname = ".".join(refname.split(".")[:-1])
+                                anc_level += 1
+                anc_api_asset = self.find_refname(
+                    anc_refnames,
+                    single_item=False,
+                    incl_descendants=incl_ancestor_descendants,
+                    aggregate=aggregate_ancestors,
+                    aggregate_kwargs=aggregate_kwargs,
+                    allow_empty=True,
+                    wrap=True,
+                )
+                for d in anc_api_asset:
+                    refname = self.parse_link_refname(d["link"])
+                    if refname is not None:
+                        refnames_aggregated[refname] = aggregate_ancestors
+                api_asset = anc_api_asset + api_asset
+
+            if incl_refs:
+                main_ref_api_asset = None
+                ref_api_asset = to_ref_api_asset
+                while incl_refs:
+                    content_refnames = []
+                    content_refnames_set = set()
+                    for d in ref_api_asset:
+                        d_refname = self.parse_link_refname(d["link"])
+                        if d_refname is not None:
+                            for link in self.parse_content_links(d["content"]):
+                                if "/api/" in link:
+                                    refname = self.parse_link_refname(link)
+                                    if refname is not None:
+                                        if refname not in content_refnames_set:
+                                            content_refnames.append(refname)
+                                            content_refnames_set.add(refname)
+                                            if refname not in refname_graph:
+                                                refname_graph[d_refname].append(refname)
+                    ref_refnames = []
+                    ref_refnames_set = set(refnames_aggregated.keys()) | content_refnames_set
+                    for refname in content_refnames:
+                        if refname in refnames_aggregated and (refnames_aggregated[refname] or not aggregate_refs):
+                            continue
+                        _refname = refname
+                        while _refname:
+                            _refname = ".".join(_refname.split(".")[:-1])
+                            if _refname in ref_refnames_set and refnames_aggregated.get(_refname, aggregate_refs):
+                                break
+                        if not _refname:
+                            ref_refnames.append(refname)
+                    if len(ref_refnames) == 0:
+                        break
+                    ref_api_asset = self.find_refname(
+                        ref_refnames,
+                        single_item=False,
+                        incl_descendants=incl_ref_descendants,
+                        aggregate=aggregate_refs,
+                        aggregate_kwargs=aggregate_kwargs,
+                        allow_empty=True,
+                        wrap=True,
+                    )
+                    for d in ref_api_asset:
+                        refname = self.parse_link_refname(d["link"])
+                        if refname is not None:
+                            refnames_aggregated[refname] = aggregate_refs
+                    if main_ref_api_asset is None:
+                        main_ref_api_asset = ref_api_asset
+                    else:
+                        main_ref_api_asset += ref_api_asset
+                    incl_refs -= 1
+                if main_ref_api_asset is not None:
+                    api_asset += main_ref_api_asset
+                    aggregated_refnames_set = set()
+                    for refname, aggregated in refnames_aggregated.items():
+                        if aggregated:
+                            aggregated_refnames_set.add(refname)
+                    delete_indices = []
+                    for i, d in enumerate(api_asset):
+                        refname = self.parse_link_refname(d["link"])
+                        if refname is not None:
+                            if not refnames_aggregated[refname] and refname in aggregated_refnames_set:
+                                delete_indices.append(i)
+                                continue
+                            while refname:
+                                refname = ".".join(refname.split(".")[:-1])
+                                if refname in aggregated_refnames_set:
+                                    break
+                        if refname:
+                            delete_indices.append(i)
+                    if len(delete_indices) > 0:
+                        api_asset.delete_items(delete_indices, inplace=True)
+
+        if topo_sort:
+            from graphlib import TopologicalSorter
+
+            refname_topo_graph = defaultdict(set)
+            refname_topo_sorter = TopologicalSorter(refname_topo_graph)
+            for parent_node, child_nodes in refname_graph.items():
+                for child_node in child_nodes:
+                    refname_topo_sorter.add(child_node, parent_node)
+            refname_topo_order = refname_topo_sorter.static_order()
+            refname_indices = {refname: [] for refname in refname_topo_order}
+            remaining_indices = []
+            final_refnames = []
+            final_refnames_set = set()
+            for d in api_asset:
+                refname = self.parse_link_refname(d["link"])
+                if refname is not None:
+                    final_refnames.append(refname)
+                    final_refnames_set.add(refname)
+            for i, refname in enumerate(final_refnames):
+                while refname not in final_refnames_set:
+                    if not refname:
+                        break
+                    refname = ".".join(refname.split(".")[:-1])
+                if refname:
+                    refname_indices[refname].append(i)
+                else:
+                    remaining_indices.append(i)
+            get_indices = [i for v in refname_indices.values() for i in v] + remaining_indices
+            api_asset = api_asset.get_items(get_indices)
+
+        if return_refname_graph:
+            return api_asset, refname_graph
+        return api_asset
 
 
 MessagesAssetT = tp.TypeVar("MessagesAssetT", bound="MessagesAsset")
@@ -1270,29 +1648,29 @@ class MessagesAsset(VBTAsset):
             new_data = list(reply_data.values())
         return self.replace(data=new_data, single_item=True)
 
-    def select_block(self: MessagesAssetT, link: str, include_link: bool = True, **kwargs) -> MessagesAssetT:
+    def select_block(self: MessagesAssetT, link: str, incl_link: bool = True, **kwargs) -> MessagesAssetT:
         """Select the messages that belong to the block of a link."""
         d = self.find_link(link, wrap=False, **kwargs)
         new_data = []
         for d2 in self.data:
-            if d2["block"] == d["block"] and (include_link or d2["link"] != d["link"]):
+            if d2["block"] == d["block"] and (incl_link or d2["link"] != d["link"]):
                 new_data.append(d2)
         return self.replace(data=new_data, single_item=False)
 
-    def select_thread(self: MessagesAssetT, link: str, include_link: bool = True, **kwargs) -> MessagesAssetT:
+    def select_thread(self: MessagesAssetT, link: str, incl_link: bool = True, **kwargs) -> MessagesAssetT:
         """Select the messages that belong to the thread of a link."""
         d = self.find_link(link, wrap=False, **kwargs)
         new_data = []
         for d2 in self.data:
-            if d2["thread"] == d["thread"] and (include_link or d2["link"] != d["link"]):
+            if d2["thread"] == d["thread"] and (incl_link or d2["link"] != d["link"]):
                 new_data.append(d2)
         return self.replace(data=new_data, single_item=False)
 
-    def select_channel(self: MessagesAssetT, link: str, include_link: bool = True, **kwargs) -> MessagesAssetT:
+    def select_channel(self: MessagesAssetT, link: str, incl_link: bool = True, **kwargs) -> MessagesAssetT:
         """Select the messages that belong to the channel of a link."""
         d = self.find_link(link, wrap=False, **kwargs)
         new_data = []
         for d2 in self.data:
-            if d2["channel"] == d["channel"] and (include_link or d2["link"] != d["link"]):
+            if d2["channel"] == d["channel"] and (incl_link or d2["link"] != d["link"]):
                 new_data.append(d2)
         return self.replace(data=new_data, single_item=False)

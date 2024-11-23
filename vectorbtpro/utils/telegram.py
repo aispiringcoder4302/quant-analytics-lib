@@ -10,6 +10,7 @@ import logging
 from functools import wraps
 
 from vectorbtpro import _typing as tp
+from vectorbtpro.utils.base import Base
 from vectorbtpro.utils.config import merge_dicts, Configured
 from vectorbtpro.utils.parsing import get_func_kwargs
 from vectorbtpro.utils.requests_ import text_to_giphy_url
@@ -68,7 +69,7 @@ if __version_info__ < (20, 0, 0, "alpha", 1):
     )
     from telegram.utils.helpers import effective_message_type
 
-    class LogHandler(Handler):
+    class LogHandler(Handler, Base):
         """Handler to log user updates."""
 
         def check_update(self, update: object) -> tp.Optional[tp.Union[bool, object]]:
@@ -401,7 +402,7 @@ else:
     from telegram.helpers import effective_message_type
     from telegram.request import BaseRequest
 
-    class LogHandler(BaseHandler):
+    class LogHandler(BaseHandler, Base):
         """Handler to log user updates."""
 
         def check_update(self, update: object) -> tp.Optional[tp.Union[bool, object]]:

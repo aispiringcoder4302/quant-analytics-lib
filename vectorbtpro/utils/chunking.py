@@ -13,6 +13,7 @@ import pandas as pd
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.utils import checks
+from vectorbtpro.utils.base import Base
 from vectorbtpro.utils.annotations import get_annotations, flatten_annotations, Annotatable, Union
 from vectorbtpro.utils.attr_ import DefineMixin, define, MISSING
 from vectorbtpro.utils.config import merge_dicts, FrozenConfig, Configured
@@ -238,7 +239,7 @@ class ChunkMeta(DefineMixin):
     Has priority over `ChunkMeta.start` and `ChunkMeta.end`."""
 
 
-class ChunkMetaGenerator:
+class ChunkMetaGenerator(Base):
     """Abstract class for generating chunk metadata from annotated arguments."""
 
     def get_chunk_meta(self, ann_args: tp.AnnArgs, **kwargs) -> tp.Iterable[ChunkMeta]:

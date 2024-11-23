@@ -426,6 +426,7 @@ from vectorbtpro.registries.ch_registry import ch_reg
 from vectorbtpro.registries.jit_registry import jit_reg
 from vectorbtpro.utils import checks
 from vectorbtpro.utils.attr_ import get_dict_attr
+from vectorbtpro.utils.base import Base
 from vectorbtpro.utils.config import resolve_dict, merge_dicts, Config, HybridConfig
 from vectorbtpro.utils.decorators import cached_method, hybrid_method
 from vectorbtpro.utils.random_ import set_seed_nb
@@ -449,7 +450,7 @@ class MetaFields(type):
         return cls._field_config
 
 
-class RecordsWithFields(metaclass=MetaFields):
+class RecordsWithFields(Base, metaclass=MetaFields):
     """Class exposes a read-only class property `RecordsWithFields.field_config`."""
 
     @property

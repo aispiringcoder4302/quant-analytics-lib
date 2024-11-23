@@ -14,6 +14,7 @@ from vectorbtpro import _typing as tp
 from vectorbtpro.base.wrapping import Wrapping
 from vectorbtpro.utils import checks
 from vectorbtpro.utils.attr_ import get_dict_attr, AttrResolverMixin
+from vectorbtpro.utils.base import Base
 from vectorbtpro.utils.config import merge_dicts, Config, HybridConfig
 from vectorbtpro.utils.parsing import get_func_arg_names, get_forward_args
 from vectorbtpro.utils.tagging import match_tags
@@ -31,7 +32,7 @@ class MetaStatsBuilderMixin(type):
         return cls._metrics
 
 
-class StatsBuilderMixin(metaclass=MetaStatsBuilderMixin):
+class StatsBuilderMixin(Base, metaclass=MetaStatsBuilderMixin):
     """Mixin that implements `StatsBuilderMixin.stats`.
 
     Required to be a subclass of `vectorbtpro.base.wrapping.Wrapping`."""

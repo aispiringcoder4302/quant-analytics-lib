@@ -14,6 +14,7 @@ from attr.exceptions import NotAnAttrsClassError
 
 import vectorbtpro as vbt
 from vectorbtpro import _typing as tp
+from vectorbtpro.utils.base import Base
 from vectorbtpro.utils import checks
 from vectorbtpro.utils.decorators import hybrid_property, hybrid_method
 from vectorbtpro.utils.hashing import Hashable
@@ -182,7 +183,7 @@ class DefineMixin(Hashable):
         return tuple(self.asdict().items())
 
 
-class define:
+class define(Base):
     """Prepare a class decorated with `define`.
 
     Attaches `DefineMixin` as a base class (if not present) and applies `attr.define`."""
@@ -331,7 +332,7 @@ def deep_getattr(
 AttrResolverMixinT = tp.TypeVar("AttrResolverMixinT", bound="AttrResolverMixin")
 
 
-class AttrResolverMixin:
+class AttrResolverMixin(Base):
     """Class that implements resolution of self and its attributes.
 
     Resolution is `getattr` that works for self, properties, and methods. It also utilizes built-in caching."""

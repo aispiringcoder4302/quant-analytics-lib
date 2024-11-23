@@ -3,6 +3,7 @@
 """Asset pipeline classes."""
 
 from vectorbtpro import _typing as tp
+from vectorbtpro.utils.base import Base
 from vectorbtpro.utils.config import merge_dicts
 from vectorbtpro.utils.parsing import get_func_arg_names
 from vectorbtpro.utils.execution import Task
@@ -17,7 +18,7 @@ __all__ = [
 ]
 
 
-class AssetPipeline:
+class AssetPipeline(Base):
     """Abstract class representing an asset pipeline."""
 
     @classmethod

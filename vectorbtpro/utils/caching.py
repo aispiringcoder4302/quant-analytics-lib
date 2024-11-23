@@ -3,6 +3,7 @@
 """Utilities for caching."""
 
 from vectorbtpro import _typing as tp
+from vectorbtpro.utils.base import Base
 from vectorbtpro.utils.decorators import hybrid_method
 from vectorbtpro.utils.path_ import remove_dir
 
@@ -22,7 +23,7 @@ def clear_pycache():
         p.unlink()
 
 
-class Cacheable:
+class Cacheable(Base):
     """Class that contains cacheable properties and methods.
 
     Required to register `vectorbtpro.utils.decorators.cacheable_property` and

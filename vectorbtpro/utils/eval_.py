@@ -9,6 +9,7 @@ import builtins
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.utils import checks
+from vectorbtpro.utils.base import Base
 
 __all__ = [
     "evaluate",
@@ -64,7 +65,7 @@ def get_free_vars(expr: str) -> tp.List[str]:
     return free_vars
 
 
-class Evaluable:
+class Evaluable(Base):
     """Abstract class for instances that can be evaluated."""
 
     def meets_eval_id(self, eval_id: tp.Optional[tp.Hashable]) -> bool:

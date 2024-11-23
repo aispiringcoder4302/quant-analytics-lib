@@ -15,6 +15,7 @@ from vectorbtpro import _typing as tp
 from vectorbtpro.utils import checks
 from vectorbtpro.utils.annotations import Annotatable, has_annotatables
 from vectorbtpro.utils.attr_ import DefineMixin, define, MISSING
+from vectorbtpro.utils.base import Base
 from vectorbtpro.utils.config import FrozenConfig, Configured, merge_dicts
 from vectorbtpro.utils.eval_ import Evaluable
 from vectorbtpro.utils.execution import NoResult, NoResultsException, filter_out_no_results, execute
@@ -330,7 +331,7 @@ class Param(Evaluable, Annotatable, DefineMixin):
         return type(self)(**attr_dct)
 
 
-class Itemable:
+class Itemable(Base):
     """Class representing an object that can be returned as items."""
 
     def items(self, **kwargs) -> tp.ItemGenerator:
@@ -338,7 +339,7 @@ class Itemable:
         raise NotImplementedError
 
 
-class Paramable:
+class Paramable(Base):
     """Class representing an object that can be returned as a parameter."""
 
     def as_param(self, **kwargs) -> Param:

@@ -11,6 +11,7 @@ import numpy as np
 import pandas as pd
 
 from vectorbtpro import _typing as tp
+from vectorbtpro.utils.base import Base
 
 __all__ = [
     "prettify",
@@ -31,7 +32,7 @@ def camel_to_snake_case(camel_str: str) -> str:
     return snake_str
 
 
-class Prettified:
+class Prettified(Base):
     """Abstract class that can be prettified."""
 
     def prettify(self, **kwargs) -> str:

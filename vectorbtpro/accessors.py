@@ -50,6 +50,7 @@ import pandas as pd
 from pandas.core.accessor import DirNamesMixin
 
 from vectorbtpro import _typing as tp
+from vectorbtpro.utils.base import Base
 from vectorbtpro.base.accessors import BaseIDXAccessor
 from vectorbtpro.base.wrapping import ArrayWrapper
 from vectorbtpro.generic.accessors import GenericAccessor, GenericSRAccessor, GenericDFAccessor
@@ -70,7 +71,7 @@ ParentAccessorT = tp.TypeVar("ParentAccessorT", bound=object)
 AccessorT = tp.TypeVar("AccessorT", bound=object)
 
 
-class Accessor:
+class Accessor(Base):
     """Accessor."""
 
     def __init__(self, name: str, accessor: tp.Type[AccessorT]) -> None:
@@ -89,7 +90,7 @@ class Accessor:
         return accessor_obj
 
 
-class CachedAccessor:
+class CachedAccessor(Base):
     """Cached accessor."""
 
     def __init__(self, name: str, accessor: tp.Type[AccessorT]) -> None:

@@ -13,6 +13,7 @@ import warnings
 from vectorbtpro import _typing as tp
 from vectorbtpro.utils.annotations import get_annotations, VarArgs, VarKwargs
 from vectorbtpro.utils.attr_ import DefineMixin, define
+from vectorbtpro.utils.base import Base
 
 __all__ = [
     "Regex",
@@ -524,7 +525,7 @@ def warn_stdout(func: tp.Callable) -> tp.Callable:
 PrintsSuppressedT = tp.TypeVar("PrintsSuppressedT", bound="PrintsSuppressed")
 
 
-class PrintsSuppressed(contextlib.redirect_stdout):
+class PrintsSuppressed(contextlib.redirect_stdout, Base):
     """Context manager to ignore print statements."""
 
     def __new__(cls, *args, **kwargs) -> PrintsSuppressedT:
@@ -534,7 +535,7 @@ class PrintsSuppressed(contextlib.redirect_stdout):
 WarningsFilteredT = tp.TypeVar("WarningsFilteredT", bound="WarningsFiltered")
 
 
-class WarningsFiltered(warnings.catch_warnings):
+class WarningsFiltered(warnings.catch_warnings, Base):
     """Context manager to ignore warnings."""
 
     def __init__(self, entries: tp.Optional[tp.MaybeSequence[tp.Union[str, tp.Kwargs]]] = "ignore", **kwargs) -> None:

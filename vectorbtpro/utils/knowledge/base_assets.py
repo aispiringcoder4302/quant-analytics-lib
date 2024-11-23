@@ -212,8 +212,8 @@ class KnowledgeAsset(Configured, MutableSequence):
 
     # ############# Item methods ############# #
 
-    def get_item(self, index: tp.Union[int, slice, tp.Iterable[tp.Union[bool, int]]]) -> tp.Any:
-        """Get a data item or a selection of data items."""
+    def get_items(self, index: tp.Union[int, slice, tp.Iterable[tp.Union[bool, int]]]) -> tp.Any:
+        """Get one or more data items."""
         if checks.is_complex_iterable(index):
             if all(checks.is_bool(i) for i in index):
                 index = list(index)
@@ -227,13 +227,13 @@ class KnowledgeAsset(Configured, MutableSequence):
             return self.replace(data=self.data[index])
         return self.data[index]
 
-    def set_item(
+    def set_items(
         self: KnowledgeAssetT,
         index: tp.Union[int, slice, tp.Iterable[tp.Union[bool, int]]],
         value: tp.Any,
         inplace: bool = False,
     ) -> tp.Optional[KnowledgeAssetT]:
-        """Set a data item or a selection of data items.
+        """Set one or more data items.
 
         Returns a new `KnowledgeAsset` instance if `inplace` is False."""
         new_data = list(self.data)
@@ -279,12 +279,12 @@ class KnowledgeAsset(Configured, MutableSequence):
             return None
         return self.replace(data=new_data)
 
-    def remove_item(
+    def delete_items(
         self: KnowledgeAssetT,
         index: tp.Union[int, slice, tp.Iterable[tp.Union[bool, int]]],
         inplace: bool = False,
     ) -> tp.Optional[KnowledgeAssetT]:
-        """Remove a data item or a selection of data items.
+        """Delete one or more data items.
 
         Returns a new `KnowledgeAsset` instance if `inplace` is False."""
         new_data = list(self.data)
@@ -315,7 +315,7 @@ class KnowledgeAsset(Configured, MutableSequence):
         d: tp.Any,
         inplace: bool = False,
     ) -> tp.Optional[KnowledgeAssetT]:
-        """Append a data item.
+        """Append a new data item.
 
         Returns a new `KnowledgeAsset` instance if `inplace` is False."""
         new_data = list(self.data)
@@ -330,7 +330,7 @@ class KnowledgeAsset(Configured, MutableSequence):
         data: tp.Iterable[tp.Any],
         inplace: bool = False,
     ) -> tp.Optional[KnowledgeAssetT]:
-        """Append a data item.
+        """Extend by new data items.
 
         Returns a new `KnowledgeAsset` instance if `inplace` is False."""
         new_data = list(self.data)
@@ -475,7 +475,7 @@ class KnowledgeAsset(Configured, MutableSequence):
     # ############# Sequence methods ############# #
 
     def __getitem__(self, index: tp.Union[int, slice, tp.Iterable[tp.Union[bool, int]]]) -> tp.Any:
-        return self.get_item(index)
+        return self.get_items(index)
 
     # ############# MutableSequence methods ############# #
 
@@ -485,10 +485,10 @@ class KnowledgeAsset(Configured, MutableSequence):
         self.modify_data(new_data)
 
     def __setitem__(self, index: tp.Union[int, slice, tp.Iterable[tp.Union[bool, int]]], value: tp.Any) -> None:
-        self.set_item(index, value, inplace=True)
+        self.set_items(index, value, inplace=True)
 
     def __delitem__(self, index: tp.Union[int, slice, tp.Iterable[tp.Union[bool, int]]]) -> None:
-        self.remove_item(index, inplace=True)
+        self.delete_items(index, inplace=True)
 
     def __add__(self: KnowledgeAssetT, other: tp.Any) -> KnowledgeAssetT:
         if not isinstance(other, KnowledgeAsset):
@@ -1763,7 +1763,7 @@ class KnowledgeAsset(Configured, MutableSequence):
             raise ValueError("Groups are empty")
         tasks = []
         for i, group in enumerate(groups):
-            group_instance = self.get_item(group)
+            group_instance = self.get_items(group)
             tasks.append(Task(group_instance.reduce, func, *args, **kwargs))
         prefix = get_caller_qualname().split(".")[-1]
         execute_kwargs = deep_merge_dicts(
@@ -1962,9 +1962,35 @@ class KnowledgeAsset(Configured, MutableSequence):
 
     # ############# LLM methods ############# #
 
+    def count_context_tokens(
+        self,
+        to_context_kwargs: tp.KwargsLike = None,
+        tokenizer: tp.Union[None, str, EncodingT] = None,
+    ) -> int:
+        """Count the number of tokens in the context."""
+        to_context_kwargs = self.resolve_setting(to_context_kwargs, "to_context_kwargs", merge=True, sub_path="chat")
+        tokenizer = self.resolve_setting(tokenizer, "tokenizer", sub_path="chat")
+
+        context = self.to_context(**to_context_kwargs)
+        from vectorbtpro.utils.module_ import assert_can_import
+
+        assert_can_import("tiktoken")
+        if isinstance(tokenizer, str):
+            from tiktoken.model import MODEL_TO_ENCODING
+
+            if tokenizer in MODEL_TO_ENCODING.keys():
+                from tiktoken import encoding_for_model
+
+                tokenizer = encoding_for_model(tokenizer)
+            else:
+                from tiktoken import get_encoding
+
+                tokenizer = get_encoding(tokenizer)
+        return len(tokenizer.encode(context))
+
     def chat(
         self,
-        question: str,
+        message: str,
         chat_history: tp.Optional[tp.MutableSequence[str]] = None,
         stream: tp.Optional[bool] = None,
         to_context_kwargs: tp.KwargsLike = None,
@@ -2016,7 +2042,7 @@ class KnowledgeAsset(Configured, MutableSequence):
         Pass `chat_history` as a mutable sequence (for example, list) to keep track of chat history.
         After generating a response, the output will be appended to this sequence as an assistant message.
 
-        Argument `question` becomes a user message.
+        Argument `message` becomes a user message.
 
         If the output is a stream (`stream=True`), appends chunks one by one and displays the
         intermediate result. Otherwise, displays the entire message.
@@ -2135,7 +2161,7 @@ class KnowledgeAsset(Configured, MutableSequence):
             dict(role="system", content=system_prompt),
             dict(role="user", content=context_prompt),
             *chat_history,
-            dict(role="user", content=question),
+            dict(role="user", content=message),
         ]
 
         if package is None:
@@ -2338,7 +2364,7 @@ class KnowledgeAsset(Configured, MutableSequence):
             else:
                 _format_html_kwargs = format_html_kwargs
             html = ToHTMLAssetFunc.format_html(
-                title=question,
+                title=message,
                 html_content=html_content,
                 **_format_html_kwargs,
             )
@@ -2349,7 +2375,7 @@ class KnowledgeAsset(Configured, MutableSequence):
                         if clear_cache:
                             remove_dir(html_dir, missing_ok=True, with_contents=True)
                     check_mkdir(html_dir, **cache_mkdir_kwargs)
-                    file_name = _generate_html_filename(question)
+                    file_name = _generate_html_filename(message)
                     file_path = html_dir / file_name
                     with open(str(file_path.resolve()), "w", encoding="utf-8") as f:
                         f.write(html)
@@ -2430,7 +2456,7 @@ class KnowledgeAsset(Configured, MutableSequence):
             if display_format.lower() == "html":
                 _display_html(full_content, False)
 
-        chat_history.append(dict(role="user", content=question))
+        chat_history.append(dict(role="user", content=message))
         chat_history.append(dict(role="assistant", content=full_content))
         if close_handle:
             output_to.close()

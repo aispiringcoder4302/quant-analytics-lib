@@ -16,6 +16,7 @@ from plotly.subplots import make_subplots as _make_subplots
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.utils import checks, datetime_ as dt
+from vectorbtpro.utils.base import Base
 from vectorbtpro.utils.config import merge_dicts
 from vectorbtpro.utils.path_ import check_mkdir
 
@@ -63,7 +64,7 @@ def get_domain(ref: str, fig: tp.BaseFigure) -> tp.Tuple[int, int]:
 FigureMixinT = tp.TypeVar("FigureMixinT", bound="FigureMixin")
 
 
-class FigureMixin:
+class FigureMixin(Base):
     """Mixin class for figures."""
 
     def copy(self: FigureMixinT, *args, **kwargs) -> FigureMixinT:

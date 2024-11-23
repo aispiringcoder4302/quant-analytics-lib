@@ -472,6 +472,20 @@ def prepare_refname(
     return refname
 
 
+def annotate_refname_parts(refname: str) -> tp.Tuple[dict, ...]:
+    """Return the type of each reference name part."""
+    refname_parts = refname.split(".")
+    obj = None
+    annotated_parts = []
+    for refname_part in refname_parts:
+        if obj is None:
+            obj = importlib.import_module(refname_part)
+        else:
+            obj = obj.__getattribute__(refname_part)
+        annotated_parts.append(dict(name=refname_part, obj=obj))
+    return tuple(annotated_parts)
+
+
 def get_imlucky_url(query: str) -> str:
     """Get the "I'm lucky" URL on DuckDuckGo for a query."""
     return "https://duckduckgo.com/?q=!ducky+" + urllib.request.pathname2url(query)
