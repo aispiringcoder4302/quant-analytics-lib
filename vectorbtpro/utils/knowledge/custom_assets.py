@@ -12,7 +12,8 @@ import pkgutil
 from collections import defaultdict, deque
 
 from vectorbtpro import _typing as tp
-from vectorbtpro.utils.config import flat_merge_dicts
+from vectorbtpro.utils.config import flat_merge_dicts, HybridConfig
+from vectorbtpro.utils.decorators import hybrid_method
 from vectorbtpro.utils.module_ import prepare_refname, get_caller_qualname
 from vectorbtpro.utils.path_ import check_mkdir, remove_dir, get_common_prefix, dir_tree_from_paths
 from vectorbtpro.utils.pbar import ProgressBar
@@ -24,6 +25,45 @@ __all__ = [
     "PagesAsset",
     "MessagesAsset",
 ]
+
+
+__pdoc__ = {}
+
+class_abbr_config = HybridConfig(
+    dict(
+        Accessor={"acc"},
+        Array={"arr"},
+        ArrayWrapper={"wrapper"},
+        Benchmark={"bm"},
+        Cacheable={"ca"},
+        Chunkable={"ch"},
+        Drawdowns={"dd"},
+        Jitable={"jit"},
+        Figure={"fig"},
+        MappedArray={"ma"},
+        NumPy={"np"},
+        Numba={"nb"},
+        Optimizer={"opt"},
+        Pandas={"pd"},
+        Portfolio={"pf"},
+        ProgressBar={"pbar"},
+        Registry={"reg"},
+        Returns_={"ret"},
+        Returns={"rets"},
+        QuantStats={"qs"},
+        Signals_={"sig"},
+    )
+)
+"""_"""
+
+__pdoc__[
+    "class_abbr_config"
+] = f"""Config for class name (part) abbreviations.
+
+```python
+{class_abbr_config.prettify()}
+```
+"""
 
 
 class NoItemFoundError(Exception):
@@ -696,6 +736,116 @@ class VBTAsset(KnowledgeAsset):
             webbrowser.open("file://" + str(file_path.resolve()))
         return file_path
 
+    @classmethod
+    def split_class_name(cls, name: str) -> tp.List[str]:
+        """Split a class name constituent parts."""
+        return re.findall(r"[A-Z]+(?=[A-Z][a-z]|$)|[A-Z][a-z]+", name)
+
+    @classmethod
+    def get_class_abbrs(cls, name: str) -> tp.List[str]:
+        """Convert a class name to snake case and its abbreviated versions."""
+        from itertools import product
+
+        parts = cls.split_class_name(name)
+
+        replacement_lists = []
+        for i, part in enumerate(parts):
+            replacements = [part.lower()]
+            if i == 0 and f"{part}_" in class_abbr_config:
+                replacements.extend(class_abbr_config[f"{part}_"])
+            if part in class_abbr_config:
+                replacements.extend(class_abbr_config[part])
+            replacement_lists.append(replacements)
+        all_combinations = list(product(*replacement_lists))
+        snake_case_names = ["_".join(combo) for combo in all_combinations]
+
+        return snake_case_names
+
+    def find_obj_mentions(
+        self,
+        obj: tp.Any,
+        module: tp.Union[None, str, ModuleType] = None,
+        resolve: bool = True,
+        incl_shortcuts: bool = True,
+        incl_shortcut_access: bool = True,
+        incl_shortcut_call: bool = True,
+        incl_class_abbrs: bool = True,
+        in_code_only: bool = False,
+        return_type: tp.Optional[str] = "item",
+        **kwargs,
+    ) -> tp.Union[VBTAssetT, tp.Any]:
+        """Find mentions of a VBT object.
+
+        Prepares the object reference with `vectorbtpro.utils.module_.prepare_refname`.
+        If `obj` is None, uses itself. If it's a string that can be found among attributes of the class,
+        uses the attribute of itself.
+
+        If `incl_shortcuts` is True, includes shortcuts found in `import vectorbtpro as vbt`.
+        In addition, if `incl_shortcut_access` is True and the object is a class or module, includes a version
+        with attribute access, and if `incl_shortcut_call` is True and the object is callable, includes a version
+        that is being called.
+
+        If `incl_class_abbrs` is True, includes typical short names of classes, which
+        include the snake-cased class name and mapped name parts found in `class_abbr_config`.
+
+        If `in_code_only` is True, uses `VBTAsset.find_code`, otherwise, uses `VBTAsset.find`."""
+        from vectorbtpro.utils.module_ import prepare_refname, annotate_refname_parts
+        import vectorbtpro as vbt
+
+        obj_refname = prepare_refname(obj, module=module, resolve=resolve)
+        targets = set()
+        obj_refname_parts = obj_refname.split(".")
+        if resolve:
+            annotated_parts = annotate_refname_parts(obj_refname)
+            if len(annotated_parts) >= 2 and isinstance(annotated_parts[-2]["obj"], type):
+                cls_refname = ".".join(obj_refname_parts[:-1])
+                cls_aliases = {annotated_parts[-2]["name"]}
+                for k, v in vbt.__dict__.items():
+                    v_refname = prepare_refname(v, raise_error=False)
+                    if v_refname is not None:
+                        if v_refname == cls_refname:
+                            cls_aliases.add(k)
+                        if incl_shortcuts:
+                            if v_refname == cls_refname:
+                                targets.add(k + "." + annotated_parts[-1]["name"])
+                            elif v_refname == obj_refname:
+                                targets.add("vbt." + k)
+                                if incl_shortcut_call and callable(annotated_parts[-1]["obj"]):
+                                    targets.add(k + "(")
+                if incl_class_abbrs:
+                    for cls_alias in cls_aliases:
+                        for typical_name in self.get_class_abbrs(cls_alias):
+                            targets.add(typical_name + "." + annotated_parts[-1]["name"])
+                if len(targets) == 0:
+                    targets.add(obj_refname)
+            else:
+                targets.add(obj_refname)
+                if len(obj_refname_parts) >= 2:
+                    module_name = ".".join(obj_refname_parts[:-1])
+                    attr_name = obj_refname_parts[-1]
+                    targets.add("from {} import {}".format(module_name, attr_name))
+                aliases = {annotated_parts[-1]["name"]}
+                for k, v in vbt.__dict__.items():
+                    v_refname = prepare_refname(v, raise_error=False)
+                    if v_refname is not None:
+                        if v_refname == obj_refname:
+                            aliases.add(k)
+                            if incl_shortcuts:
+                                targets.add("vbt." + k)
+                                if incl_shortcut_access and isinstance(annotated_parts[-1]["obj"], (type, ModuleType)):
+                                    targets.add(k + ".")
+                                if incl_shortcut_call and callable(annotated_parts[-1]["obj"]):
+                                    targets.add(k + "(")
+                if incl_class_abbrs and isinstance(annotated_parts[-1]["obj"], type):
+                    for alias in aliases:
+                        for typical_name in self.get_class_abbrs(alias):
+                            targets.add(typical_name + " =")
+                            targets.add(typical_name + ".")
+
+        if in_code_only:
+            return self.find_code(list(targets), return_type=return_type, per_path=False, **kwargs)
+        return self.find(list(targets), return_type=return_type, per_path=False, **kwargs)
+
 
 PagesAssetT = tp.TypeVar("PagesAssetT", bound="PagesAsset")
 
@@ -771,7 +921,9 @@ class PagesAsset(VBTAsset):
         resolve: bool = True,
         **kwargs,
     ) -> tp.Union[PagesAssetT, tp.Any]:
-        """Find the page corresponding an (internal) object or reference name."""
+        """Find the page corresponding an (internal) object or reference name.
+
+        Prepares the reference with `vectorbtpro.utils.module_.prepare_refname`."""
         refname = prepare_refname(obj, module=module, resolve=resolve)
         return self.find_refname(refname, **kwargs)
 
@@ -1091,9 +1243,10 @@ class PagesAsset(VBTAsset):
             return None
         return "vectorbtpro." + ".".join(link.split("/api/")[1].strip("/").split("/"))
 
+    @hybrid_method
     def find_relevant_api(
-        self,
-        obj: tp.Any,
+        cls_or_self,
+        obj: tp.Optional[tp.Any] = None,
         module: tp.Union[None, str, ModuleType] = None,
         resolve: bool = True,
         incl_bases: tp.Union[bool, int] = True,
@@ -1110,7 +1263,14 @@ class PagesAsset(VBTAsset):
         topo_sort: bool = True,
         return_refname_graph: bool = False,
     ) -> tp.Union[PagesAssetT, tp.Tuple[PagesAssetT, dict]]:
-        """Find relevant API for an object.
+        """Find API pages and headings relevant to an object.
+
+        !!! note
+            When called as a class method, behaves like `vectorbtpro.utils.base.Base.find_relevant_api`.
+
+        Prepares the object reference with `vectorbtpro.utils.module_.prepare_refname`.
+        If `obj` is None, uses itself. If it's a string that can be found among attributes of the class,
+        uses the attribute of itself.
 
         If `incl_bases` is True, extends the asset with the base classes/attributes if the object is
         a class/attribute. For instance, `vectorbtpro.portfolio.base.Portfolio` has
@@ -1136,7 +1296,18 @@ class PagesAsset(VBTAsset):
 
         If `topo_sort` is True, creates a topological graph from all reference names and sorts pages
         and headings based on this graph. Use `return_refname_graph` to True to also return the graph."""
+        if isinstance(cls_or_self, type):
+            local_dict = locals()
+            del local_dict["cls_or_self"]
+            del local_dict["obj"]
+            return VBTAsset.find_relevant_api.__func__(cls_or_self, attr=obj, **local_dict)
+
         from vectorbtpro.utils.module_ import prepare_refname, annotate_refname_parts
+
+        if obj is None:
+            obj = type(cls_or_self)
+        elif isinstance(obj, str) and hasattr(type(cls_or_self), obj):
+            obj = (type(cls_or_self), obj)
 
         obj_refname = prepare_refname(obj, module=module, resolve=resolve)
         base_refnames = []
@@ -1148,24 +1319,20 @@ class PagesAsset(VBTAsset):
                 module = annotated_parts[-1]["obj"]
                 cls = None
                 attr = None
-                obj_type_name = "module"
             elif isinstance(annotated_parts[-1]["obj"], type):
                 module = None
                 cls = annotated_parts[-1]["obj"]
                 attr = None
-                obj_type_name = "class"
             elif len(annotated_parts) >= 2 and isinstance(annotated_parts[-2]["obj"], type):
                 module = None
                 cls = annotated_parts[-2]["obj"]
                 attr = annotated_parts[-1]["name"]
-                obj_type_name = "attribute"
             else:
                 module = None
                 cls = None
                 attr = None
-                obj_type_name = type(annotated_parts[-1]["obj"]).__name__
             if incl_refs is None:
-                incl_refs = obj_type_name not in ("module", "class")
+                incl_refs = module is None and cls is None
             if cls is not None and incl_bases:
                 level_classes = defaultdict(set)
                 visited = set()
@@ -1183,7 +1350,7 @@ class PagesAsset(VBTAsset):
                 levels = list(level_classes.keys())
                 if not isinstance(incl_bases, bool):
                     if isinstance(incl_bases, int):
-                        levels = levels[:incl_bases + 1]
+                        levels = levels[: incl_bases + 1]
                     else:
                         raise TypeError(f"Invalid incl_bases: {incl_bases}")
                 for level in levels:
@@ -1228,7 +1395,7 @@ class PagesAsset(VBTAsset):
         else:
             base_refnames.append(obj_refname)
             base_refnames_set.add(obj_refname)
-        api_asset = self.find_refname(
+        api_asset = cls_or_self.find_refname(
             base_refnames,
             single_item=False,
             incl_descendants=incl_descendants,
@@ -1243,7 +1410,7 @@ class PagesAsset(VBTAsset):
             refname_indices = {refname: [] for refname in base_refnames}
             remaining_indices = []
             for i, d in enumerate(api_asset):
-                refname = self.parse_link_refname(d["link"])
+                refname = cls_or_self.parse_link_refname(d["link"])
                 if refname is not None:
                     while refname not in base_refnames_set:
                         if not refname:
@@ -1259,7 +1426,7 @@ class PagesAsset(VBTAsset):
         if incl_ancestors or incl_refs:
             refnames_aggregated = {}
             for d in api_asset:
-                refname = self.parse_link_refname(d["link"])
+                refname = cls_or_self.parse_link_refname(d["link"])
                 if refname is not None:
                     refnames_aggregated[refname] = aggregate
             to_ref_api_asset = api_asset
@@ -1267,7 +1434,7 @@ class PagesAsset(VBTAsset):
                 anc_refnames = []
                 anc_refnames_set = set(refnames_aggregated.keys())
                 for d in api_asset:
-                    child_refname = refname = self.parse_link_refname(d["link"])
+                    child_refname = refname = cls_or_self.parse_link_refname(d["link"])
                     if refname is not None:
                         if incl_base_ancestors or refname == obj_refname:
                             refname = ".".join(refname.split(".")[:-1])
@@ -1294,7 +1461,7 @@ class PagesAsset(VBTAsset):
                                 child_refname = refname
                                 refname = ".".join(refname.split(".")[:-1])
                                 anc_level += 1
-                anc_api_asset = self.find_refname(
+                anc_api_asset = cls_or_self.find_refname(
                     anc_refnames,
                     single_item=False,
                     incl_descendants=incl_ancestor_descendants,
@@ -1304,7 +1471,7 @@ class PagesAsset(VBTAsset):
                     wrap=True,
                 )
                 for d in anc_api_asset:
-                    refname = self.parse_link_refname(d["link"])
+                    refname = cls_or_self.parse_link_refname(d["link"])
                     if refname is not None:
                         refnames_aggregated[refname] = aggregate_ancestors
                 api_asset = anc_api_asset + api_asset
@@ -1316,11 +1483,11 @@ class PagesAsset(VBTAsset):
                     content_refnames = []
                     content_refnames_set = set()
                     for d in ref_api_asset:
-                        d_refname = self.parse_link_refname(d["link"])
+                        d_refname = cls_or_self.parse_link_refname(d["link"])
                         if d_refname is not None:
-                            for link in self.parse_content_links(d["content"]):
+                            for link in cls_or_self.parse_content_links(d["content"]):
                                 if "/api/" in link:
-                                    refname = self.parse_link_refname(link)
+                                    refname = cls_or_self.parse_link_refname(link)
                                     if refname is not None:
                                         if refname not in content_refnames_set:
                                             content_refnames.append(refname)
@@ -1341,7 +1508,7 @@ class PagesAsset(VBTAsset):
                             ref_refnames.append(refname)
                     if len(ref_refnames) == 0:
                         break
-                    ref_api_asset = self.find_refname(
+                    ref_api_asset = cls_or_self.find_refname(
                         ref_refnames,
                         single_item=False,
                         incl_descendants=incl_ref_descendants,
@@ -1351,7 +1518,7 @@ class PagesAsset(VBTAsset):
                         wrap=True,
                     )
                     for d in ref_api_asset:
-                        refname = self.parse_link_refname(d["link"])
+                        refname = cls_or_self.parse_link_refname(d["link"])
                         if refname is not None:
                             refnames_aggregated[refname] = aggregate_refs
                     if main_ref_api_asset is None:
@@ -1367,7 +1534,7 @@ class PagesAsset(VBTAsset):
                             aggregated_refnames_set.add(refname)
                     delete_indices = []
                     for i, d in enumerate(api_asset):
-                        refname = self.parse_link_refname(d["link"])
+                        refname = cls_or_self.parse_link_refname(d["link"])
                         if refname is not None:
                             if not refnames_aggregated[refname] and refname in aggregated_refnames_set:
                                 delete_indices.append(i)
@@ -1395,7 +1562,7 @@ class PagesAsset(VBTAsset):
             final_refnames = []
             final_refnames_set = set()
             for d in api_asset:
-                refname = self.parse_link_refname(d["link"])
+                refname = cls_or_self.parse_link_refname(d["link"])
                 if refname is not None:
                     final_refnames.append(refname)
                     final_refnames_set.add(refname)
@@ -1674,3 +1841,31 @@ class MessagesAsset(VBTAsset):
             if d2["channel"] == d["channel"] and (incl_link or d2["link"] != d["link"]):
                 new_data.append(d2)
         return self.replace(data=new_data, single_item=False)
+
+    @hybrid_method
+    def find_relevant_messages(
+        cls_or_self,
+        obj: tp.Any,
+        module: tp.Union[None, str, ModuleType] = None,
+        resolve: bool = True,
+        **kwargs,
+    ) -> tp.Union[MessagesAssetT, tp.Any]:
+        """Find messages relevant to an object.
+
+        !!! note
+            When called as a class method, behaves like `vectorbtpro.utils.base.Base.find_relevant_messages`.
+
+        Uses `MessagesAsset.find_obj_mentions`."""
+        if isinstance(cls_or_self, type):
+            local_dict = locals()
+            del local_dict["cls_or_self"]
+            del local_dict["obj"]
+            del local_dict["kwargs"]
+            return VBTAsset.find_relevant_messages.__func__(cls_or_self, attr=obj, **local_dict, **kwargs)
+
+        if obj is None:
+            obj = type(cls_or_self)
+        elif isinstance(obj, str) and hasattr(type(cls_or_self), obj):
+            obj = (type(cls_or_self), obj)
+
+        return cls_or_self.find_obj_mentions(obj, module=module, resolve=resolve, **kwargs)

@@ -60,12 +60,20 @@ def approx_long_buy_value_nb(val_price: float, size: float) -> float:
 
 
 @register_jitted(cache=True)
-def adj_size_granularity_nb(size: float, size_granularity: float) -> bool:
-    """Whether to adjust the size with the size granularity."""
+def should_apply_size_granularity_nb(size: float, size_granularity: float) -> bool:
+    """Whether to apply a size granularity to a size."""
+    if np.isnan(size_granularity):
+        return False
     if size_granularity % 1 == 0:
         return True
     adj_size = size // size_granularity * size_granularity
     return not is_close_nb(size, adj_size) and not is_close_nb(size, adj_size + size_granularity)
+
+
+@register_jitted(cache=True)
+def apply_size_granularity_nb(size: float, size_granularity: float) -> float:
+    """Apply a size granularity to a size."""
+    return size // size_granularity * size_granularity
 
 
 @register_jitted(cache=True)
@@ -111,8 +119,8 @@ def long_buy_nb(
     cash_limit = cash_limit * leverage
 
     # Adjust for granularity
-    if not np.isnan(size_granularity) and adj_size_granularity_nb(size, size_granularity):
-        size = size // size_granularity * size_granularity
+    if should_apply_size_granularity_nb(size, size_granularity):
+        size = apply_size_granularity_nb(size, size_granularity)
 
     # Adjust for max size
     if not np.isnan(max_size) and size > max_size:
@@ -152,8 +160,8 @@ def long_buy_nb(
         max_acq_size = max_req_cash / adj_price
 
         # Adjust for granularity
-        if not np.isnan(size_granularity) and adj_size_granularity_nb(max_acq_size, size_granularity):
-            final_size = max_acq_size // size_granularity * size_granularity
+        if should_apply_size_granularity_nb(max_acq_size, size_granularity):
+            final_size = apply_size_granularity_nb(max_acq_size, size_granularity)
             new_order_value = final_size * adj_price
             fees_paid = new_order_value * fees + fixed_fees
             req_cash = new_order_value + fees_paid
@@ -264,9 +272,9 @@ def long_sell_nb(
         size_limit = size_limit * percent
 
     # Adjust for granularity
-    if not np.isnan(size_granularity) and adj_size_granularity_nb(size_limit, size_granularity):
-        size = size // size_granularity * size_granularity
-        size_limit = size_limit // size_granularity * size_granularity
+    if should_apply_size_granularity_nb(size_limit, size_granularity):
+        size = apply_size_granularity_nb(size, size_granularity)
+        size_limit = apply_size_granularity_nb(size_limit, size_granularity)
 
     # Adjust for max size
     if not np.isnan(max_size) and size_limit > max_size:
@@ -387,9 +395,9 @@ def short_sell_nb(
         return order_not_filled_nb(OrderStatus.Rejected, OrderStatusInfo.CantCoverFees), _account_state
 
     # Adjust for granularity
-    if not np.isnan(size_granularity) and adj_size_granularity_nb(size_limit, size_granularity):
-        size = size // size_granularity * size_granularity
-        size_limit = size_limit // size_granularity * size_granularity
+    if should_apply_size_granularity_nb(size_limit, size_granularity):
+        size = apply_size_granularity_nb(size, size_granularity)
+        size_limit = apply_size_granularity_nb(size_limit, size_granularity)
 
     # Adjust for max size
     if not np.isnan(max_size) and size_limit > max_size:
@@ -508,8 +516,8 @@ def short_buy_nb(
         size_limit = size_limit * percent
 
     # Adjust for granularity
-    if not np.isnan(size_granularity) and adj_size_granularity_nb(size_limit, size_granularity):
-        size_limit = size_limit // size_granularity * size_granularity
+    if should_apply_size_granularity_nb(size_limit, size_granularity):
+        size_limit = apply_size_granularity_nb(size_limit, size_granularity)
 
     # Adjust for max size
     if not np.isnan(max_size) and size_limit > max_size:
@@ -547,8 +555,8 @@ def short_buy_nb(
         max_acq_size = max_req_cash / adj_price
 
         # Adjust for granularity
-        if not np.isnan(size_granularity) and adj_size_granularity_nb(max_acq_size, size_granularity):
-            final_size = max_acq_size // size_granularity * size_granularity
+        if should_apply_size_granularity_nb(max_acq_size, size_granularity):
+            final_size = apply_size_granularity_nb(max_acq_size, size_granularity)
             new_order_value = final_size * adj_price
             fees_paid = new_order_value * fees + fixed_fees
             req_cash = new_order_value + fees_paid

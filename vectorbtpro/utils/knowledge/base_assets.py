@@ -992,6 +992,9 @@ class KnowledgeAsset(Configured, MutableSequence):
             Uses `KnowledgeAsset.apply` on `vectorbtpro.utils.knowledge.base_asset_funcs.QueryAssetFunc`.
         * "pandas": Same as above but variables being columns
 
+        If `return_type` is "item", returns the data item when matched. If `return_type` is "bool",
+        returns True when matched.
+
         Templates can also use the functions defined in `vectorbtpro.utils.search.search_config`.
 
         They work on single values and sequences alike.
@@ -1089,7 +1092,7 @@ class KnowledgeAsset(Configured, MutableSequence):
             result = expression.substitute(_template_context, eval_id="expression", **kwargs)
             if checks.is_function(result):
                 result = result(df)
-            if return_type is None:
+            if return_type.lower() == "item":
                 as_filter = True
             elif return_type.lower() == "bool":
                 as_filter = False
@@ -1132,8 +1135,8 @@ class KnowledgeAsset(Configured, MutableSequence):
         Uses `KnowledgeAsset.apply` on `vectorbtpro.utils.knowledge.base_asset_funcs.FindAssetFunc`.
 
         Uses `vectorbtpro.utils.search.contains_in_obj` (keyword arguments are passed here)
-        to find any occurrences in each data item if `return_type` is None (returns an entire data when match),
-        `return_type` is "field" (returns the field), or `return_type` is "bool" (returns True when match).
+        to find any occurrences in each data item if `return_type` is "item" (returns the data item when matched),
+        `return_type` is "field" (returns the field), or `return_type` is "bool" (returns True when matched).
         For all other return types, uses `vectorbtpro.utils.search.find_in_obj` and `vectorbtpro.utils.search.find`.
 
         Target can be one or multiple data items. If there are multiple targets and `find_all` is True,

@@ -22,16 +22,17 @@ class Base:
     """Base class for all VBT classes."""
 
     @classmethod
-    def get_api_asset(
+    def find_relevant_api(
         cls,
-        *args,
+        attr: tp.Optional[str] = None,
+        *,
         pages_asset: tp.Optional[tp.MaybeType[PagesAssetT]] = None,
         pull_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> tp.Union[PagesAssetT, tp.Tuple[PagesAssetT, dict]]:
-        """Find relevant API for this class or attribute.
+        """Find API pages and headings relevant to an object.
 
-        Uses `vectorbtpro.utils.knowledge.custom_assets.PagesAsset.find_relevant_api`.
+        Based on `vectorbtpro.utils.knowledge.custom_assets.PagesAsset.find_relevant_api`.
 
         Use `pages_asset` to provide a custom subclass or instance of
         `vectorbtpro.utils.knowledge.custom_assets.PagesAsset`."""
@@ -46,14 +47,42 @@ class Base:
                 pull_kwargs = {}
             pages_asset = pages_asset.pull(**pull_kwargs)
         assert_instance_of(pages_asset, PagesAsset, arg_name="pages_asset")
-        return pages_asset.find_relevant_api(cls, *args, **kwargs)
+        if attr is None:
+            obj = cls
+        else:
+            assert_instance_of(attr, str, arg_name="attr")
+            obj = (cls, attr)
+        return pages_asset.find_relevant_api(obj, **kwargs)
 
     @classmethod
-    def get_doc_asset(cls) -> tp.KnowledgeAsset:
-        """Get knowledge asset for documentation mentioning this class or instance."""
-        raise NotImplementedError
+    def find_relevant_messages(
+        cls,
+        attr: tp.Optional[str] = None,
+        *,
+        messages_asset: tp.Optional[tp.MaybeType[MessagesAssetT]] = None,
+        pull_kwargs: tp.KwargsLike = None,
+        **kwargs,
+    ) -> tp.Union[MessagesAssetT, tp.Tuple[MessagesAssetT, dict]]:
+        """Find messages relevant to an object.
 
-    @classmethod
-    def get_message_asset(cls) -> tp.KnowledgeAsset:
-        """Get knowledge asset for messages mentioning this class or instance."""
-        raise NotImplementedError
+        Based on `vectorbtpro.utils.knowledge.custom_assets.MessagesAsset.find_relevant_messages`.
+
+        Use `messages_asset` to provide a custom subclass or instance of
+        `vectorbtpro.utils.knowledge.custom_assets.MessagesAsset`."""
+        from vectorbtpro.utils.checks import assert_subclass_of, assert_instance_of
+        from vectorbtpro.utils.knowledge.custom_assets import MessagesAsset
+
+        if messages_asset is None:
+            messages_asset = MessagesAsset
+        if isinstance(messages_asset, type):
+            assert_subclass_of(messages_asset, MessagesAsset, arg_name="messages_asset")
+            if pull_kwargs is None:
+                pull_kwargs = {}
+            messages_asset = messages_asset.pull(**pull_kwargs)
+        assert_instance_of(messages_asset, MessagesAsset, arg_name="messages_asset")
+        if attr is None:
+            obj = cls
+        else:
+            assert_instance_of(attr, str, arg_name="attr")
+            obj = (cls, attr)
+        return messages_asset.find_relevant_messages(obj, **kwargs)

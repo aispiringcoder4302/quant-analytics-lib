@@ -446,10 +446,11 @@ def prepare_refname(
     resolve: bool = True,
     vbt_only: bool = False,
     return_parts: bool = False,
-) -> tp.Union[str, tp.Tuple[str, ModuleType, str]]:
+    raise_error: bool = True,
+) -> tp.Union[None, str, tp.Tuple[str, ModuleType, str]]:
     """Prepare (optionally) the module and the qualified name."""
 
-    def _raise():
+    def _raise_error():
         raise ValueError(
             "Couldn't find the reference name, or the object is external. "
             "If the object is internal, please decompose the object or provide a string instead."
@@ -457,12 +458,16 @@ def prepare_refname(
 
     refname = get_refname(obj, module=module, resolve=resolve)
     if refname is None:
-        _raise()
+        if raise_error:
+            _raise_error()
+        return None
     if isinstance(refname, list):
         raise ValueError("Multiple reference names found: {}".format(refname))
     module, qualname = get_refname_module_and_qualname(refname)
     if module.__name__.split(".")[0] != "vectorbtpro" and vbt_only:
-        _raise()
+        if raise_error:
+            _raise_error()
+        return None
     if return_parts:
         return refname, module, qualname
     if resolve:
@@ -481,7 +486,7 @@ def annotate_refname_parts(refname: str) -> tp.Tuple[dict, ...]:
         if obj is None:
             obj = importlib.import_module(refname_part)
         else:
-            obj = obj.__getattribute__(refname_part)
+            obj = getattr(obj, refname_part)
         annotated_parts.append(dict(name=refname_part, obj=obj))
     return tuple(annotated_parts)
 
