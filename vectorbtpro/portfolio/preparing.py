@@ -692,6 +692,7 @@ fo_arg_config = ReadonlyConfig(
         save_state=dict(),
         save_value=dict(),
         save_returns=dict(),
+        skip_empty=dict(),
         max_order_records=dict(),
         max_log_records=dict(),
     )
@@ -1130,6 +1131,7 @@ fs_arg_config = ReadonlyConfig(
         save_state=dict(),
         save_value=dict(),
         save_returns=dict(),
+        skip_empty=dict(),
         max_order_records=dict(),
         max_log_records=dict(),
         records=dict(

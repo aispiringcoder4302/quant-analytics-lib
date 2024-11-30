@@ -1615,6 +1615,7 @@ portfolio = frozen_cfg(
     save_state=False,
     save_value=False,
     save_returns=False,
+    skip_empty=True,
     fill_pos_info=True,
     track_value=True,
     row_wise=False,

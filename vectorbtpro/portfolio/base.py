@@ -2444,6 +2444,7 @@ class Portfolio(Analyzable, PortfolioWithInOutputs, SimRangeMixin, metaclass=Met
         save_state: tp.Optional[bool] = None,
         save_value: tp.Optional[bool] = None,
         save_returns: tp.Optional[bool] = None,
+        skip_empty: tp.Optional[bool] = None,
         max_order_records: tp.Optional[int] = None,
         max_log_records: tp.Optional[int] = None,
         seed: tp.Optional[int] = None,
@@ -2649,6 +2650,7 @@ class Portfolio(Analyzable, PortfolioWithInOutputs, SimRangeMixin, metaclass=Met
             save_returns (bool): Whether to save the returns.
 
                 The array will be available as `returns` in in-outputs.
+            skip_empty (bool): Whether to skip rows with no order.
             max_order_records (int): The max number of order records expected to be filled at each column.
                 Defaults to the maximum number of non-NaN values across all columns of the size array.
 
@@ -2988,6 +2990,7 @@ class Portfolio(Analyzable, PortfolioWithInOutputs, SimRangeMixin, metaclass=Met
         save_state: tp.Optional[bool] = None,
         save_value: tp.Optional[bool] = None,
         save_returns: tp.Optional[bool] = None,
+        skip_empty: tp.Optional[bool] = None,
         max_order_records: tp.Optional[int] = None,
         max_log_records: tp.Optional[int] = None,
         in_outputs: tp.Optional[tp.MappingLike] = None,
@@ -3280,6 +3283,7 @@ class Portfolio(Analyzable, PortfolioWithInOutputs, SimRangeMixin, metaclass=Met
             save_state (bool): See `Portfolio.from_orders`.
             save_value (bool): See `Portfolio.from_orders`.
             save_returns (bool): See `Portfolio.from_orders`.
+            skip_empty (bool): See `Portfolio.from_orders`
             max_order_records (int): See `Portfolio.from_orders`.
             max_log_records (int): See `Portfolio.from_orders`.
             in_outputs (mapping_like): Mapping with in-output objects. Only for flexible mode.
