@@ -1232,16 +1232,30 @@ class KnowledgeAsset(Configured, MutableSequence):
 
     def find_code(
         self,
-        target: tp.Optional[tp.MaybeList[tp.Any]] = None,
-        language: tp.Optional[str] = None,
+        target: tp.Optional[tp.MaybeIterable[tp.Any]] = None,
+        language: tp.Optional[tp.MaybeIterable[str]] = None,
+        require_language: bool = False,
         in_blocks: bool = True,
+        escape_target: bool = True,
+        escape_language: bool = True,
         return_type: tp.Optional[str] = "match",
         flags: int = 0,
         **kwargs,
     ) -> tp.Union[KnowledgeAssetT, tp.Any]:
         """Find code using `KnowledgeAsset.find`."""
-        if in_blocks and language is not None:
-            raise ValueError("Language requires in_blocks=True")
+        if target is not None:
+            if not isinstance(target, (str, list)):
+                target = list(target)
+        if language is not None:
+            if not isinstance(language, (str, list)):
+                language = list(language)
+            if escape_language:
+                if isinstance(language, list):
+                    language = list(map(re.escape, language))
+                else:
+                    language = re.escape(language)
+            if isinstance(language, list):
+                language = rf"(?:{'|'.join(language)})"
         if target is not None:
             if not isinstance(target, list):
                 targets = [target]
@@ -1251,36 +1265,48 @@ class KnowledgeAsset(Configured, MutableSequence):
                 single_target = False
             new_target = []
             for t in targets:
-                if language is not None:
-                    new_t = rf"""
-                    ```{re.escape(language)}\n
-                    (?:(?!```)[\s\S])*?
-                    {re.escape(t)}
-                    (?:(?!```)[\s\S])*?
-                    ```
-                    """
-                else:
-                    if in_blocks:
+                if escape_target:
+                    t = re.escape(t)
+                if in_blocks:
+                    if language is not None:
                         new_t = rf"""
-                        ```(?:\n)
+                        ```{language}\n
                         (?:(?!```)[\s\S])*?
-                        {re.escape(t)}
+                        {t}
                         (?:(?!```)[\s\S])*?
-                        ```
+                        ```\s*$
+                        """
+                    elif require_language:
+                        new_t = rf"""
+                        ```[\w+-]+\n
+                        (?:(?!```)[\s\S])*?
+                        {t}
+                        (?:(?!```)[\s\S])*?
+                        ```\s*$
                         """
                     else:
-                        new_t = rf"(?<!`)`([^`]*{re.escape(t)}[^`]*)`(?!`)"
+                        new_t = rf"""
+                        ```(?:[\w+-]+)?\n
+                        (?:(?!```)[\s\S])*?
+                        {t}
+                        (?:(?!```)[\s\S])*?
+                        ```\s*$
+                        """
+                else:
+                    new_t = rf"(?<!`)`([^`]*{t}[^`]*)`(?!`)"
                 new_target.append(new_t)
             if single_target:
                 new_target = new_target[0]
         else:
-            if language is not None:
-                new_target = rf"```{re.escape(language)}\n([\s\S]*?)```"
-            else:
-                if in_blocks:
-                    new_target = r"```(?:\w+)?\n([\s\S]*?)```"
+            if in_blocks:
+                if language is not None:
+                    new_target = rf"```{language}\n([\s\S]*?)```\s*$"
+                elif require_language:
+                    new_target = r"```[\w+-]+\n([\s\S]*?)```\s*$"
                 else:
-                    new_target = r"(?<!`)`([^`]*)`(?!`)"
+                    new_target = r"```(?:[\w+-]+)?\n([\s\S]*?)```\s*$"
+            else:
+                new_target = r"(?<!`)`([^`]*)`(?!`)"
         if in_blocks:
             flags |= re.DOTALL | re.MULTILINE | re.VERBOSE
         return self.find(new_target, mode="regex", return_type=return_type, flags=flags, **kwargs)

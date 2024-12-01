@@ -12,12 +12,14 @@ import pkgutil
 from collections import defaultdict, deque
 
 from vectorbtpro import _typing as tp
+from vectorbtpro.utils import checks
 from vectorbtpro.utils.config import flat_merge_dicts, HybridConfig
 from vectorbtpro.utils.decorators import hybrid_method
 from vectorbtpro.utils.module_ import prepare_refname, get_caller_qualname
 from vectorbtpro.utils.path_ import check_mkdir, remove_dir, get_common_prefix, dir_tree_from_paths
 from vectorbtpro.utils.pbar import ProgressBar
 from vectorbtpro.utils.pickling import suggest_compression
+from vectorbtpro.utils.search import find
 from vectorbtpro.utils.knowledge.base_assets import KnowledgeAsset
 
 __all__ = [
@@ -761,6 +763,27 @@ class VBTAsset(KnowledgeAsset):
 
         return snake_case_names
 
+    @classmethod
+    def prepare_mention_target(
+        cls,
+        target: str,
+        as_code: bool = False,
+        as_regex: bool = True,
+    ) -> str:
+        """Prepare a mention target."""
+        if as_regex:
+            escaped_target = re.escape(target)
+            new_target = ""
+            if re.match(r"\w", target[0]):
+                new_target += r"(?<!\w)(?<!_)(?<!\.)"
+            new_target += escaped_target
+            if re.match(r"\w", target[-1]):
+                new_target += r"(?!\w)(?!_)"
+            elif not as_code and target[-1] == ".":
+                new_target += r"(?=[A-Za-z0-9_])"
+            return new_target
+        return target
+
     def find_obj_mentions(
         self,
         obj: tp.Any,
@@ -770,7 +793,9 @@ class VBTAsset(KnowledgeAsset):
         incl_shortcut_access: bool = True,
         incl_shortcut_call: bool = True,
         incl_class_abbrs: bool = True,
-        in_code_only: bool = False,
+        as_code: bool = False,
+        as_regex: bool = True,
+        path: tp.Optional[tp.MaybeList[tp.PathLikeKey]] = "content",
         return_type: tp.Optional[str] = "item",
         **kwargs,
     ) -> tp.Union[VBTAssetT, tp.Any]:
@@ -788,9 +813,17 @@ class VBTAsset(KnowledgeAsset):
         If `incl_class_abbrs` is True, includes typical short names of classes, which
         include the snake-cased class name and mapped name parts found in `class_abbr_config`.
 
-        If `in_code_only` is True, uses `VBTAsset.find_code`, otherwise, uses `VBTAsset.find`."""
+        If `as_code` is True, uses `VBTAsset.find_code`, otherwise, uses `VBTAsset.find`.
+
+        If `as_regex` is True, search is refined by using regular expressions. For instance,
+        `vbt.PF` may match `vbt.PFO` if RegEx is not used.
+
+        Prepares each mention target with `VBTAsset.prepare_mention_target`."""
         from vectorbtpro.utils.module_ import prepare_refname, annotate_refname_parts
         import vectorbtpro as vbt
+
+        def _prepare(target):
+            return self.prepare_mention_target(target, as_code=as_code, as_regex=as_regex)
 
         obj_refname = prepare_refname(obj, module=module, resolve=resolve)
         targets = set()
@@ -807,23 +840,30 @@ class VBTAsset(KnowledgeAsset):
                             cls_aliases.add(k)
                         if incl_shortcuts:
                             if v_refname == cls_refname:
-                                targets.add(k + "." + annotated_parts[-1]["name"])
+                                new_target = _prepare(k + "." + annotated_parts[-1]["name"])
+                                targets.add(new_target)
                             elif v_refname == obj_refname:
-                                targets.add("vbt." + k)
+                                new_target = _prepare("vbt." + k)
+                                targets.add(new_target)
                                 if incl_shortcut_call and callable(annotated_parts[-1]["obj"]):
-                                    targets.add(k + "(")
+                                    new_target = _prepare(k + "(")
+                                    targets.add(new_target)
                 if incl_class_abbrs:
                     for cls_alias in cls_aliases:
-                        for typical_name in self.get_class_abbrs(cls_alias):
-                            targets.add(typical_name + "." + annotated_parts[-1]["name"])
+                        for class_abbr in self.get_class_abbrs(cls_alias):
+                            new_target = _prepare(class_abbr + "." + annotated_parts[-1]["name"])
+                            targets.add(new_target)
                 if len(targets) == 0:
-                    targets.add(obj_refname)
+                    new_target = _prepare(obj_refname)
+                    targets.add(new_target)
             else:
-                targets.add(obj_refname)
+                new_target = _prepare(obj_refname)
+                targets.add(new_target)
                 if len(obj_refname_parts) >= 2:
                     module_name = ".".join(obj_refname_parts[:-1])
                     attr_name = obj_refname_parts[-1]
-                    targets.add("from {} import {}".format(module_name, attr_name))
+                    new_target = _prepare("from {} import {}".format(module_name, attr_name))
+                    targets.add(new_target)
                 aliases = {annotated_parts[-1]["name"]}
                 for k, v in vbt.__dict__.items():
                     v_refname = prepare_refname(v, raise_error=False)
@@ -831,20 +871,47 @@ class VBTAsset(KnowledgeAsset):
                         if v_refname == obj_refname:
                             aliases.add(k)
                             if incl_shortcuts:
-                                targets.add("vbt." + k)
+                                new_target = _prepare("vbt." + k)
+                                targets.add(new_target)
                                 if incl_shortcut_access and isinstance(annotated_parts[-1]["obj"], (type, ModuleType)):
-                                    targets.add(k + ".")
+                                    new_target = _prepare(k + ".")
+                                    targets.add(new_target)
                                 if incl_shortcut_call and callable(annotated_parts[-1]["obj"]):
-                                    targets.add(k + "(")
+                                    new_target = _prepare(k + "(")
+                                    targets.add(new_target)
                 if incl_class_abbrs and isinstance(annotated_parts[-1]["obj"], type):
                     for alias in aliases:
-                        for typical_name in self.get_class_abbrs(alias):
-                            targets.add(typical_name + " =")
-                            targets.add(typical_name + ".")
+                        for class_abbr in self.get_class_abbrs(alias):
+                            new_target = _prepare(class_abbr + " =")
+                            targets.add(new_target)
+                            new_target = _prepare(class_abbr + ".")
+                            targets.add(new_target)
 
-        if in_code_only:
-            return self.find_code(list(targets), return_type=return_type, per_path=False, **kwargs)
-        return self.find(list(targets), return_type=return_type, per_path=False, **kwargs)
+        if as_code:
+            return self.find_code(
+                list(targets),
+                escape_target=not as_regex,
+                path=path,
+                per_path=False,
+                return_type=return_type,
+                **kwargs,
+            )
+        if as_regex:
+            return self.find(
+                list(targets),
+                mode="regex",
+                path=path,
+                per_path=False,
+                return_type=return_type,
+                **kwargs,
+            )
+        return self.find(
+            list(targets),
+            path=path,
+            per_path=False,
+            return_type=return_type,
+            **kwargs,
+        )
 
 
 PagesAssetT = tp.TypeVar("PagesAssetT", bound="PagesAsset")
@@ -871,6 +938,30 @@ class PagesAsset(VBTAsset):
         )
         return new_instance
 
+    def aggregate_links(
+        self: PagesAssetT,
+        links: tp.List[str],
+        aggregate_kwargs: tp.KwargsLike = None,
+    ) -> PagesAssetT:
+        """Aggregate links by removing redundant ones."""
+        if aggregate_kwargs is None:
+            aggregate_kwargs = {}
+        redundant_links = set()
+        new_data = {}
+        for link in links:
+            if link in redundant_links:
+                continue
+            descendant_headings = self.select_descendant_headings(link, incl_link=True)
+            for d in descendant_headings:
+                if d["link"] != link:
+                    redundant_links.add(d["link"])
+            descendant_headings = descendant_headings.aggregate(**aggregate_kwargs)
+            new_data[link] = descendant_headings.find_link(link, wrap=False)
+        for link in links:
+            if link in redundant_links and link in new_data:
+                del new_data[link]
+        return self.replace(data=list(new_data.values()))
+
     def find_page(
         self: PagesAssetT,
         link: tp.MaybeList[str],
@@ -885,12 +976,10 @@ class PagesAsset(VBTAsset):
         if not isinstance(found, (type(self), list)):
             return found
         if aggregate:
-            if aggregate_kwargs is None:
-                aggregate_kwargs = {}
-            for i, d in enumerate(found):
-                descendant_headings = self.select_descendant_headings(d["link"], incl_link=True)
-                descendant_headings = descendant_headings.aggregate(**aggregate_kwargs)
-                found[i] = descendant_headings.find_link(d["link"], wrap=False)
+            return self.aggregate_links(
+                [d["link"] for d in found],
+                aggregate_kwargs=aggregate_kwargs,
+            )
         return found
 
     def find_refname(
@@ -1581,6 +1670,131 @@ class PagesAsset(VBTAsset):
         if return_refname_graph:
             return api_asset, refname_graph
         return api_asset
+
+    @hybrid_method
+    def find_relevant_docs(
+        cls_or_self,
+        obj: tp.Any,
+        module: tp.Union[None, str, ModuleType] = None,
+        resolve: bool = True,
+        incl_pages: tp.Optional[tp.MaybeIterable[str]] = None,
+        excl_pages: tp.Optional[tp.MaybeIterable[str]] = None,
+        page_find_mode: str = "substring",
+        up_aggregate: bool = True,
+        up_aggregate_th: tp.Union[int, float] = 2/3,
+        up_aggregate_pages: bool = True,
+        aggregate: bool = True,
+        aggregate_kwargs: tp.KwargsLike = None,
+        **kwargs,
+    ) -> tp.Union[PagesAssetT, tp.Any]:
+        """Find documentation relevant to an object.
+
+        !!! note
+            When called as a class method, behaves like `vectorbtpro.utils.base.Base.find_relevant_docs`.
+
+        Uses `PagesAsset.find_obj_mentions`."""
+        if isinstance(cls_or_self, type):
+            local_dict = locals()
+            del local_dict["cls_or_self"]
+            del local_dict["obj"]
+            del local_dict["kwargs"]
+            return VBTAsset.find_relevant_docs.__func__(cls_or_self, attr=obj, **local_dict, **kwargs)
+
+        if obj is None:
+            obj = type(cls_or_self)
+        elif isinstance(obj, str) and hasattr(type(cls_or_self), obj):
+            obj = (type(cls_or_self), obj)
+
+        if incl_pages is None:
+            incl_pages = ()
+        elif isinstance(incl_pages, str):
+            incl_pages = (incl_pages,)
+        if excl_pages is None:
+            excl_pages = ()
+        elif isinstance(excl_pages, str):
+            excl_pages = (excl_pages,)
+
+        def _filter_func(x):
+            if "link" not in x:
+                return False
+            if "/api/" in x["link"]:
+                return False
+            if excl_pages:
+                for page in excl_pages:
+                    if find(page, x["link"], mode=page_find_mode):
+                        return False
+            if incl_pages:
+                for page in incl_pages:
+                    if find(page, x["link"], mode=page_find_mode):
+                        return True
+                return False
+            return True
+
+        docs_asset = cls_or_self.filter(_filter_func)
+        mentions_asset = docs_asset.find_obj_mentions(
+            obj,
+            module=module,
+            resolve=resolve,
+            **kwargs,
+        )
+        if (
+            isinstance(mentions_asset, PagesAsset)
+            and len(mentions_asset) > 0
+            and isinstance(mentions_asset[0], dict)
+            and "link" in mentions_asset[0]
+        ):
+            if up_aggregate:
+                link_map = {d["link"]: dict(d) for d in docs_asset.data}
+                new_links = {d["link"] for d in mentions_asset}
+                while True:
+                    parent_map = defaultdict(list)
+                    without_parent = set()
+                    for link in new_links:
+                        if link_map[link]["parent"] is not None:
+                            parent_map[link_map[link]["parent"]].append(link)
+                        else:
+                            without_parent.add(link)
+                    _new_links = set()
+                    for parent, children in parent_map.items():
+                        headings = set()
+                        non_headings = set()
+                        for child in children:
+                            if link_map[child]["type"].startswith("heading"):
+                                headings.add(child)
+                            else:
+                                non_headings.add(child)
+                        if up_aggregate_pages:
+                            _children = children
+                        else:
+                            _children = headings
+                        if checks.is_float(up_aggregate_th) and 0 <= abs(up_aggregate_th) <= 1:
+                            _up_aggregate_th = int(up_aggregate_th * len(link_map[parent]["children"]))
+                        elif checks.is_number(up_aggregate_th):
+                            if checks.is_float(up_aggregate_th) and not up_aggregate_th.is_integer():
+                                raise TypeError(f"Up-aggregation threshold ({up_aggregate_th}) must be between 0 and 1")
+                            _up_aggregate_th = int(up_aggregate_th)
+                        else:
+                            raise TypeError(f"Up-aggregation threshold must be a number")
+                        if 0 < len(_children) >= _up_aggregate_th:
+                            _new_links.add(parent)
+                        else:
+                            _new_links |= headings
+                        _new_links |= non_headings
+                    if _new_links == new_links:
+                        break
+                    new_links = _new_links | without_parent
+                return docs_asset.find_page(
+                    list(new_links),
+                    single_item=False,
+                    aggregate=aggregate,
+                    aggregate_kwargs=aggregate_kwargs,
+                )
+            if aggregate:
+                return docs_asset.aggregate_links(
+                    [d["link"] for d in mentions_asset],
+                    aggregate_kwargs=aggregate_kwargs,
+                )
+        return mentions_asset
 
 
 MessagesAssetT = tp.TypeVar("MessagesAssetT", bound="MessagesAsset")
