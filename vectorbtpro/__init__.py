@@ -166,5 +166,6 @@ if "__all__" in globals():
     __all__.append("whats_imported")
 
 __pdoc__ = dict()
-__pdoc__["_settings"] = True
+__pdoc__["_dtypes"] = True
 __pdoc__["_opt_deps"] = True
+__pdoc__["_settings"] = True
