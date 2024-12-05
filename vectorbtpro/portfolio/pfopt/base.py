@@ -2001,7 +2001,7 @@ class PortfolioOptimizer(Analyzable):
         skip_not_found: tp.Union[bool, Param] = point_idxr_defaults["skip_not_found"],
         index_points: tp.Union[None, tp.MaybeSequence[int], Param] = None,
         rescale_to: tp.Union[None, tp.Tuple[float, float], Param] = None,
-        parameterizer_cls: tp.Optional[tp.Type[Parameterizer]] = None,
+        parameterizer: tp.Optional[tp.MaybeType[Parameterizer]] = None,
         param_search_kwargs: tp.KwargsLike = None,
         name_tuple_to_str: tp.Union[None, bool, tp.Callable] = None,
         group_configs: tp.Union[None, tp.Dict[tp.Hashable, tp.Kwargs], tp.Sequence[tp.Kwargs]] = None,
@@ -2174,10 +2174,10 @@ class PortfolioOptimizer(Analyzable):
 
         params_cfg = settings["params"]
 
-        if parameterizer_cls is None:
-            parameterizer_cls = params_cfg["parameterizer_cls"]
-        if parameterizer_cls is None:
-            parameterizer_cls = Parameterizer
+        if parameterizer is None:
+            parameterizer = params_cfg["parameterizer"]
+        if parameterizer is None:
+            parameterizer = Parameterizer
         param_search_kwargs = merge_dicts(params_cfg["param_search_kwargs"], param_search_kwargs)
         if group_execute_kwargs is None:
             group_execute_kwargs = {}
@@ -2237,7 +2237,7 @@ class PortfolioOptimizer(Analyzable):
             **{f"args_{i}": args[i] for i in range(len(args))},
             **kwargs,
         }
-        param_dct = parameterizer_cls.find_params_in_obj(paramable_kwargs, **param_search_kwargs)
+        param_dct = parameterizer.find_params_in_obj(paramable_kwargs, **param_search_kwargs)
         param_columns = None
         if len(param_dct) > 0:
             param_product, param_columns = combine_params(
@@ -2249,7 +2249,7 @@ class PortfolioOptimizer(Analyzable):
             if param_columns is None:
                 n_param_configs = len(param_product[list(param_product.keys())[0]])
                 param_columns = pd.RangeIndex(stop=n_param_configs, name="param_config")
-            product_group_configs = parameterizer_cls.param_product_to_objs(paramable_kwargs, param_product)
+            product_group_configs = parameterizer.param_product_to_objs(paramable_kwargs, param_product)
             if len(group_configs) == 0:
                 group_configs = product_group_configs
             else:
@@ -2878,7 +2878,7 @@ class PortfolioOptimizer(Analyzable):
         index_loc: tp.Union[None, tp.MaybeSequence[int], Param] = None,
         rescale_to: tp.Union[None, tp.Tuple[float, float], Param] = None,
         alloc_wait: tp.Union[int, Param] = 1,
-        parameterizer_cls: tp.Optional[tp.Type[Parameterizer]] = None,
+        parameterizer: tp.Optional[tp.MaybeType[Parameterizer]] = None,
         param_search_kwargs: tp.KwargsLike = None,
         name_tuple_to_str: tp.Union[None, bool, tp.Callable] = None,
         group_configs: tp.Union[None, tp.Dict[tp.Hashable, tp.Kwargs], tp.Sequence[tp.Kwargs]] = None,
@@ -3109,10 +3109,10 @@ class PortfolioOptimizer(Analyzable):
 
         params_cfg = settings["params"]
 
-        if parameterizer_cls is None:
-            parameterizer_cls = params_cfg["parameterizer_cls"]
-        if parameterizer_cls is None:
-            parameterizer_cls = Parameterizer
+        if parameterizer is None:
+            parameterizer = params_cfg["parameterizer"]
+        if parameterizer is None:
+            parameterizer = Parameterizer
         param_search_kwargs = merge_dicts(params_cfg["param_search_kwargs"], param_search_kwargs)
         if group_execute_kwargs is None:
             group_execute_kwargs = {}
@@ -3178,7 +3178,7 @@ class PortfolioOptimizer(Analyzable):
             **{f"args_{i}": args[i] for i in range(len(args))},
             **kwargs,
         }
-        param_dct = parameterizer_cls.find_params_in_obj(paramable_kwargs, **param_search_kwargs)
+        param_dct = parameterizer.find_params_in_obj(paramable_kwargs, **param_search_kwargs)
         param_columns = None
         if len(param_dct) > 0:
             param_product, param_columns = combine_params(
@@ -3190,7 +3190,7 @@ class PortfolioOptimizer(Analyzable):
             if param_columns is None:
                 n_param_configs = len(param_product[list(param_product.keys())[0]])
                 param_columns = pd.RangeIndex(stop=n_param_configs, name="param_config")
-            product_group_configs = parameterizer_cls.param_product_to_objs(paramable_kwargs, param_product)
+            product_group_configs = parameterizer.param_product_to_objs(paramable_kwargs, param_product)
             if len(group_configs) == 0:
                 group_configs = product_group_configs
             else:

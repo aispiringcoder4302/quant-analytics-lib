@@ -362,7 +362,7 @@ ${config_doc}
 _settings["math"] = math
 
 execution = frozen_cfg(
-    executor_cls=None,
+    executor=None,
     engine="SerialEngine",
     engine_config=flex_cfg(),
     min_size=None,
@@ -402,6 +402,7 @@ execution = frozen_cfg(
     template_context=flex_cfg(),
     show_progress=True,
     pbar_kwargs=flex_cfg(),
+    replace_executor=False,
     merge_to_engine_config=True,
     engines=flex_cfg(
         serial=flex_cfg(
@@ -470,7 +471,7 @@ chunking = frozen_cfg(
     disable=False,
     disable_wrapping=False,
     option=False,
-    chunker_cls=None,
+    chunker=None,
     size=None,
     min_size=None,
     n_chunks=None,
@@ -486,6 +487,7 @@ chunking = frozen_cfg(
     silence_warnings=False,
     forward_kwargs_as=flex_cfg(),
     execute_kwargs=flex_cfg(),
+    replace_chunker=False,
     merge_to_execute_kwargs=True,
     options=flex_cfg(),
     override_setup_options=flex_cfg(),
@@ -508,7 +510,7 @@ ${config_doc}
 _settings["chunking"] = chunking
 
 params = frozen_cfg(
-    parameterizer_cls=None,
+    parameterizer=None,
     param_search_kwargs=flex_cfg(),
     skip_single_comb=True,
     template_context=flex_cfg(),
@@ -538,6 +540,7 @@ params = frozen_cfg(
     return_meta=False,
     return_param_index=False,
     execute_kwargs=flex_cfg(),
+    replace_parameterizer=False,
     merge_to_execute_kwargs=True,
 )
 """_"""

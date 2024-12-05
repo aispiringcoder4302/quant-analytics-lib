@@ -939,7 +939,6 @@ class Parameterizer(Configured):
     _settings_path: tp.SettingsPath = "params"
 
     _expected_keys: tp.ExpectedKeys = (Configured._expected_keys or set()) | {
-        "func",
         "param_search_kwargs",
         "skip_single_comb",
         "template_context",
@@ -973,7 +972,6 @@ class Parameterizer(Configured):
 
     def __init__(
         self,
-        func: tp.Callable,
         param_search_kwargs: tp.KwargsLike = None,
         skip_single_comb: tp.Optional[bool] = None,
         template_context: tp.KwargsLike = None,
@@ -1007,7 +1005,6 @@ class Parameterizer(Configured):
     ) -> None:
         Configured.__init__(
             self,
-            func=func,
             param_search_kwargs=param_search_kwargs,
             skip_single_comb=skip_single_comb,
             template_context=template_context,
@@ -1040,7 +1037,6 @@ class Parameterizer(Configured):
             **kwargs,
         )
 
-        self._func = func
         self._param_search_kwargs = self.resolve_setting(param_search_kwargs, "param_search_kwargs", merge=True)
         self._skip_single_comb = self.resolve_setting(skip_single_comb, "skip_single_comb")
         self._template_context = self.resolve_setting(template_context, "template_context", merge=True)
@@ -1070,11 +1066,6 @@ class Parameterizer(Configured):
         self._return_meta = self.resolve_setting(return_meta, "return_meta")
         self._return_param_index = self.resolve_setting(return_param_index, "return_param_index")
         self._execute_kwargs = self.resolve_setting(execute_kwargs, "execute_kwargs", merge=True)
-
-    @property
-    def func(self) -> tp.Callable:
-        """Function."""
-        return self._func
 
     @property
     def param_search_kwargs(self) -> tp.Kwargs:
@@ -1573,6 +1564,7 @@ class Parameterizer(Configured):
 
     def run(
         self,
+        func: tp.Callable,
         *args,
         param_configs: tp.Optional[tp.MaybeSequence[tp.Kwargs]] = None,
         eval_id: tp.Optional[tp.Hashable] = None,
@@ -1614,7 +1606,7 @@ class Parameterizer(Configured):
         if param_configs is None:
             param_configs = []
 
-        parsed_merge_func = parse_merge_func(self.func, eval_id=eval_id)
+        parsed_merge_func = parse_merge_func(func, eval_id=eval_id)
         if parsed_merge_func is not None:
             if merge_func is not None:
                 raise ValueError(
@@ -1635,14 +1627,14 @@ class Parameterizer(Configured):
                 kwargs[v] = locals()[k]
 
         template_context["ann_args"] = annotate_args(
-            self.func,
+            func,
             args,
             kwargs,
             allow_partial=True,
             attach_annotations=True,
         )
         template_context["flat_ann_args"] = flatten_ann_args(template_context["ann_args"])
-        if has_annotatables(self.func):
+        if has_annotatables(func):
             template_context["flat_ann_args"] = self.parse_and_inject_params(
                 template_context["flat_ann_args"],
                 eval_id=eval_id,
@@ -1759,7 +1751,7 @@ class Parameterizer(Configured):
         if skip_single_comb and template_context["single_comb"]:
             tasks = list(
                 self.yield_tasks(
-                    self.func,
+                    func,
                     template_context["ann_args"],
                     template_context["param_configs"],
                     template_context=template_context,
@@ -1805,7 +1797,7 @@ class Parameterizer(Configured):
             template_context["mono_chunk_indices"] = None
 
         template_context["tasks"] = self.yield_tasks(
-            self.func,
+            func,
             template_context["ann_args"],
             template_context["param_configs"],
             template_context=template_context,
@@ -1880,36 +1872,9 @@ class Parameterizer(Configured):
 
 def parameterized(
     *args,
-    parameterizer_cls: tp.Optional[tp.Type[Parameterizer]] = None,
-    param_search_kwargs: tp.KwargsLike = None,
-    skip_single_comb: tp.Optional[bool] = None,
-    template_context: tp.KwargsLike = None,
-    build_grid: tp.Optional[bool] = None,
-    grid_indices: tp.Union[None, slice, tp.Sequence[int]] = None,
-    random_subset: tp.Union[None, int, float] = None,
-    random_replace: tp.Optional[bool] = None,
-    random_sort: tp.Optional[bool] = None,
-    max_guesses: tp.Union[None, int, float] = None,
-    max_misses: tp.Union[None, int, float] = None,
-    seed: tp.Optional[int] = None,
-    clean_index_kwargs: tp.KwargsLike = None,
-    name_tuple_to_str: tp.Union[None, bool, tp.Callable] = None,
-    selection: tp.Optional[tp.Selection] = None,
-    forward_kwargs_as: tp.KwargsLike = None,
-    mono_min_size: tp.Optional[int] = None,
-    mono_n_chunks: tp.Optional[tp.Union[str, int]] = None,
-    mono_chunk_len: tp.Optional[tp.Union[str, int]] = None,
-    mono_chunk_meta: tp.Optional[tp.Iterable[tp.ChunkMeta]] = None,
-    mono_reduce: tp.Union[bool, tp.Kwargs] = None,
-    mono_merge_func: tp.Union[tp.MergeFuncLike, tp.Dict[str, tp.MergeFuncLike]] = None,
-    mono_merge_kwargs: tp.KwargsLike = None,
-    merge_func: tp.Optional[tp.MergeFuncLike] = None,
-    merge_kwargs: tp.KwargsLike = None,
-    return_meta: tp.Optional[bool] = None,
-    return_param_index: tp.Optional[bool] = None,
-    execute_kwargs: tp.KwargsLike = None,
+    parameterizer: tp.Optional[tp.Type[Parameterizer]] = None,
+    replace_parameterizer: tp.Optional[bool] = None,
     merge_to_execute_kwargs: tp.Optional[bool] = None,
-    eval_id: tp.Optional[tp.Hashable] = None,
     **kwargs,
 ) -> tp.Callable:
     """Decorator that parameterizes inputs of a function using `Parameterizer`.
@@ -1919,8 +1884,11 @@ def parameterized(
     Each option can be modified in the `options` attribute of the wrapper function or
     directly passed as a keyword argument with a leading underscore.
 
-    Keyword arguments `**kwargs` and `execute_kwargs` are merged into `execute_kwargs`
-    if `merge_to_execute_kwargs` is True, otherwise, `**kwargs` are passed directly to `Parameterizer`.
+    Keyword arguments not listed in `Parameterizer` and `execute_kwargs` are merged into `execute_kwargs`
+    if `merge_to_execute_kwargs` is True, otherwise, they are passed directly to `Parameterizer`.
+
+    If a parameterizer instance is provided and `replace_parameterizer` is True, will create a new
+    `Parameterizer` instance by replacing any arguments that are not None.
 
     Usage:
         * No parameters, no parameter configs:
@@ -2071,97 +2039,65 @@ def parameterized(
 
         params_cfg = settings["params"]
 
-        if merge_to_execute_kwargs is None:
-            _merge_to_execute_kwargs = params_cfg["merge_to_execute_kwargs"]
-        else:
-            _merge_to_execute_kwargs = merge_to_execute_kwargs
-        if _merge_to_execute_kwargs:
-            _execute_kwargs = merge_dicts(kwargs, execute_kwargs)
-            _parameterizer_kwargs = {}
-        else:
-            _execute_kwargs = execute_kwargs
-            _parameterizer_kwargs = kwargs
-
         @wraps(func)
         def wrapper(*args, **kwargs) -> tp.Any:
-            def _resolve_key(key, merge=False):
-                if "_" + key in kwargs:
-                    if merge:
-                        return merge_dicts(wrapper.options[key], kwargs.pop("_" + key))
-                    return kwargs.pop("_" + key)
-                return wrapper.options.get(key)
+            parameterizer = kwargs.get("_parameterizer", None)
+            if parameterizer is None:
+                parameterizer = wrapper.options["parameterizer"]
+            if parameterizer is None:
+                parameterizer = params_cfg["parameterizer"]
+            if parameterizer is None:
+                parameterizer = Parameterizer
 
-            parameterizer_cls = wrapper.options["parameterizer_cls"]
-            if parameterizer_cls is None:
-                parameterizer_cls = params_cfg["parameterizer_cls"]
-            if parameterizer_cls is None:
-                parameterizer_cls = Parameterizer
-            return parameterizer_cls(
-                func,
-                param_search_kwargs=_resolve_key("param_search_kwargs", merge=True),
-                skip_single_comb=_resolve_key("skip_single_comb"),
-                template_context=_resolve_key("template_context", merge=True),
-                build_grid=_resolve_key("build_grid"),
-                grid_indices=_resolve_key("grid_indices"),
-                random_subset=_resolve_key("random_subset"),
-                random_replace=_resolve_key("random_replace"),
-                random_sort=_resolve_key("random_sort"),
-                max_guesses=_resolve_key("max_guesses"),
-                max_misses=_resolve_key("max_misses"),
-                seed=_resolve_key("seed"),
-                clean_index_kwargs=_resolve_key("clean_index_kwargs", merge=True),
-                name_tuple_to_str=_resolve_key("name_tuple_to_str"),
-                selection=_resolve_key("selection"),
-                forward_kwargs_as=_resolve_key("forward_kwargs_as", merge=True),
-                mono_min_size=_resolve_key("mono_min_size"),
-                mono_n_chunks=_resolve_key("mono_n_chunks"),
-                mono_chunk_len=_resolve_key("mono_chunk_len"),
-                mono_chunk_meta=_resolve_key("mono_chunk_meta"),
-                mono_reduce=_resolve_key("mono_reduce"),
-                mono_merge_func=_resolve_key("mono_merge_func"),
-                mono_merge_kwargs=_resolve_key("mono_merge_kwargs", merge=True),
-                merge_func=_resolve_key("merge_func"),
-                merge_kwargs=_resolve_key("merge_kwargs", merge=True),
-                return_meta=_resolve_key("return_meta"),
-                return_param_index=_resolve_key("return_param_index"),
-                execute_kwargs=_resolve_key("execute_kwargs", merge=True),
-                **_resolve_key("parameterizer_kwargs", merge=True),
-            ).run(*args, eval_id=_resolve_key("eval_id"), **kwargs)
+            arg_names_set = set(parameterizer._expected_keys)
+            kwargs_options = {}
+            for k in list(kwargs.keys()):
+                if k.startswith("_"):
+                    if k[1:] in wrapper.options or k[1:] in arg_names_set:
+                        kwargs_options[k[1:]] = kwargs.pop(k)
+            parameterizer_kwargs = merge_dicts(wrapper.options, kwargs_options)
+            _ = parameterizer_kwargs.pop("parameterizer")
+            replace_parameterizer = parameterizer_kwargs.pop("replace_parameterizer")
+            merge_to_execute_kwargs = parameterizer_kwargs.pop("merge_to_execute_kwargs")
+            eval_id = parameterizer_kwargs.pop("eval_id", None)
+            
+            if merge_to_execute_kwargs is None:
+                merge_to_execute_kwargs = params_cfg["merge_to_execute_kwargs"]
+            if merge_to_execute_kwargs and len(parameterizer_kwargs) > 0:
+                arg_names_set = set(parameterizer._expected_keys)
+                execute_kwargs = parameterizer_kwargs.pop("execute_kwargs", None)
+                if execute_kwargs is None:
+                    _execute_kwargs = {}
+                else:
+                    _execute_kwargs = dict(execute_kwargs)
+                execute_kwargs_changed = False
+                for k in list(parameterizer_kwargs.keys()):
+                    if k not in arg_names_set and k not in _execute_kwargs:
+                        _execute_kwargs[k] = parameterizer_kwargs.pop(k)
+                        execute_kwargs_changed = True
+                if execute_kwargs_changed:
+                    parameterizer_kwargs["execute_kwargs"] = _execute_kwargs
+                else:
+                    parameterizer_kwargs["execute_kwargs"] = execute_kwargs
+            if isinstance(parameterizer, type):
+                checks.assert_subclass_of(parameterizer, Parameterizer, arg_name="parameterizer")
+                parameterizer = parameterizer(**parameterizer_kwargs)
+            else:
+                checks.assert_instance_of(parameterizer, Parameterizer, arg_name="parameterizer")
+                if replace_parameterizer is None:
+                    replace_parameterizer = params_cfg["replace_parameterizer"]
+                if replace_parameterizer and len(parameterizer_kwargs) > 0:
+                    parameterizer = parameterizer.replace(**parameterizer_kwargs)
+            return parameterizer.run(func, *args, eval_id=eval_id, **kwargs)
 
         wrapper.func = func
         wrapper.name = func.__name__
         wrapper.is_parameterized = True
         wrapper.options = FrozenConfig(
-            parameterizer_cls=parameterizer_cls,
-            parameterizer_kwargs=_parameterizer_kwargs,
-            param_search_kwargs=param_search_kwargs,
-            skip_single_comb=skip_single_comb,
-            template_context=template_context,
-            build_grid=build_grid,
-            grid_indices=grid_indices,
-            random_subset=random_subset,
-            random_replace=random_replace,
-            random_sort=random_sort,
-            max_guesses=max_guesses,
-            max_misses=max_misses,
-            seed=seed,
-            clean_index_kwargs=clean_index_kwargs,
-            name_tuple_to_str=name_tuple_to_str,
-            selection=selection,
-            forward_kwargs_as=forward_kwargs_as,
-            mono_min_size=mono_min_size,
-            mono_n_chunks=mono_n_chunks,
-            mono_chunk_len=mono_chunk_len,
-            mono_chunk_meta=mono_chunk_meta,
-            mono_reduce=mono_reduce,
-            mono_merge_func=mono_merge_func,
-            mono_merge_kwargs=mono_merge_kwargs,
-            merge_func=merge_func,
-            merge_kwargs=merge_kwargs,
-            return_meta=return_meta,
-            return_param_index=return_param_index,
-            execute_kwargs=_execute_kwargs,
-            eval_id=eval_id,
+            parameterizer=parameterizer,
+            replace_parameterizer=replace_parameterizer,
+            merge_to_execute_kwargs=merge_to_execute_kwargs,
+            **kwargs,
         )
         signature = inspect.signature(wrapper)
         lists_var_kwargs = False

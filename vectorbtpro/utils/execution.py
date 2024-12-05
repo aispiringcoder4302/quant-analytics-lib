@@ -50,6 +50,7 @@ __all__ = [
     "PathosEngine",
     "DaskEngine",
     "RayEngine",
+    "Executor",
     "execute",
     "iterated",
 ]
@@ -1040,19 +1041,20 @@ class Executor(Configured):
                 for k, v in engines_cfg.items():
                     if v["cls"] is engine:
                         engine_name = k
-            func_arg_names = get_func_arg_names(engine.__init__)
-            if show_progress is not None:
-                if (
-                    "show_progress" in func_arg_names
-                    or (engine_name is not None and "show_progress" in engines_cfg[engine_name])
-                ) and "show_progress" not in engine_config:
-                    engine_config["show_progress"] = show_progress
-            if pbar_kwargs is not None:
-                if (
-                    "pbar_kwargs" in func_arg_names
-                    or (engine_name is not None and "pbar_kwargs" in engines_cfg[engine_name])
-                ) and "pbar_kwargs" not in engine_config:
-                    engine_config["pbar_kwargs"] = pbar_kwargs
+            if show_progress is not None or pbar_kwargs is not None:
+                func_arg_names = get_func_arg_names(engine.__init__)
+                if show_progress is not None:
+                    if (
+                        "show_progress" in func_arg_names
+                        or (engine_name is not None and "show_progress" in engines_cfg[engine_name])
+                    ) and "show_progress" not in engine_config:
+                        engine_config["show_progress"] = show_progress
+                if pbar_kwargs is not None:
+                    if (
+                        "pbar_kwargs" in func_arg_names
+                        or (engine_name is not None and "pbar_kwargs" in engines_cfg[engine_name])
+                    ) and "pbar_kwargs" not in engine_config:
+                        engine_config["pbar_kwargs"] = pbar_kwargs
             engine = engine(**engine_config)
         if not isinstance(engine, type) and isinstance(engine, ExecutionEngine):
             if engine_name is None:
@@ -1069,19 +1071,20 @@ class Executor(Configured):
             if engine_name is None:
                 if engine.__name__ in engines_cfg:
                     engine_name = engine.__name__
-            func_arg_names = get_func_arg_names(engine)
-            if show_progress is not None:
-                if (
-                    "show_progress" in func_arg_names
-                    or (engine_name is not None and "show_progress" in engines_cfg[engine_name])
-                ) and "show_progress" not in engine_config:
-                    engine_config["show_progress"] = show_progress
-            if pbar_kwargs is not None:
-                if (
-                    "pbar_kwargs" in func_arg_names
-                    or (engine_name is not None and "pbar_kwargs" in engines_cfg[engine_name])
-                ) and "pbar_kwargs" not in engine_config:
-                    engine_config["pbar_kwargs"] = pbar_kwargs
+            if show_progress is not None or pbar_kwargs is not None:
+                func_arg_names = get_func_arg_names(engine)
+                if show_progress is not None:
+                    if (
+                        "show_progress" in func_arg_names
+                        or (engine_name is not None and "show_progress" in engines_cfg[engine_name])
+                    ) and "show_progress" not in engine_config:
+                        engine_config["show_progress"] = show_progress
+                if pbar_kwargs is not None:
+                    if (
+                        "pbar_kwargs" in func_arg_names
+                        or (engine_name is not None and "pbar_kwargs" in engines_cfg[engine_name])
+                    ) and "pbar_kwargs" not in engine_config:
+                        engine_config["pbar_kwargs"] = pbar_kwargs
             engine = partial(engine, **engine_config)
         if not isinstance(engine, ExecutionEngine) and not callable(engine):
             raise TypeError(f"Invalid engine: {engine}")
@@ -2418,101 +2421,55 @@ def execute(
     tasks: tp.TasksLike,
     size: tp.Optional[int] = None,
     keys: tp.Optional[tp.IndexLike] = None,
-    executor_cls: tp.Optional[tp.Type[Executor]] = None,
-    engine: tp.Optional[tp.ExecutionEngineLike] = None,
-    engine_config: tp.KwargsLike = None,
-    min_size: tp.Optional[int] = None,
-    n_chunks: tp.Union[None, int, str] = None,
-    chunk_len: tp.Union[None, int, str] = None,
-    chunk_meta: tp.Optional[tp.Iterable[tp.ChunkMeta]] = None,
-    distribute: tp.Optional[str] = None,
-    warmup: tp.Optional[bool] = None,
-    in_chunk_order: tp.Optional[bool] = None,
-    cache_chunks: tp.Optional[bool] = None,
-    chunk_cache_dir: tp.Optional[tp.PathLike] = None,
-    chunk_cache_save_kwargs: tp.KwargsLike = None,
-    chunk_cache_load_kwargs: tp.KwargsLike = None,
-    pre_clear_chunk_cache: tp.Optional[bool] = None,
-    post_clear_chunk_cache: tp.Optional[bool] = None,
-    release_chunk_cache: tp.Optional[bool] = None,
-    chunk_clear_cache: tp.Union[None, bool, int] = None,
-    chunk_collect_garbage: tp.Union[None, bool, int] = None,
-    chunk_delay: tp.Optional[float] = None,
-    pre_execute_func: tp.Optional[tp.Callable] = None,
-    pre_execute_kwargs: tp.KwargsLike = None,
-    pre_chunk_func: tp.Optional[tp.Callable] = None,
-    pre_chunk_kwargs: tp.KwargsLike = None,
-    post_chunk_func: tp.Optional[tp.Callable] = None,
-    post_chunk_kwargs: tp.KwargsLike = None,
-    post_execute_func: tp.Optional[tp.Callable] = None,
-    post_execute_kwargs: tp.KwargsLike = None,
-    post_execute_on_sorted: tp.Optional[bool] = None,
-    filter_results: tp.Optional[bool] = None,
-    raise_no_results: tp.Optional[bool] = None,
-    merge_func: tp.Optional[tp.MergeFuncLike] = None,
-    merge_kwargs: tp.KwargsLike = None,
-    template_context: tp.KwargsLike = None,
-    show_progress: tp.Optional[bool] = None,
-    pbar_kwargs: tp.KwargsLike = None,
+    executor: tp.Optional[tp.MaybeType[Executor]] = None,
+    replace_executor: tp.Optional[bool] = None,
     merge_to_engine_config: tp.Optional[bool] = None,
     **kwargs,
 ) -> tp.MergeableResults:
     """Execute functions and their arguments using `Executor`.
 
-    Keyword arguments `**kwargs` and `engine_config` are merged into `engine_config`
-    if `merge_to_engine_config` is True, otherwise, `**kwargs` are passed directly to `Executor`."""
+    Keyword arguments not listed in `Executor` and `engine_config` are merged into `engine_config`
+    if `merge_to_engine_config` is True, otherwise, they are passed directly to `Executor`.
+
+    If an executor instance is provided and `replace_executor` is True, will create a new
+    `Executor` instance by replacing any arguments that are not None."""
     from vectorbtpro._settings import settings
 
     execution_cfg = settings["execution"]
 
-    if executor_cls is None:
-        executor_cls = execution_cfg["executor_cls"]
-    if executor_cls is None:
-        executor_cls = Executor
+    if executor is None:
+        executor = execution_cfg["executor"]
+    if executor is None:
+        executor = Executor
+
     if merge_to_engine_config is None:
         merge_to_engine_config = execution_cfg["merge_to_engine_config"]
-    if merge_to_engine_config:
-        engine_config = merge_dicts(kwargs, engine_config)
-        kwargs = {}
-
-    return executor_cls(
-        engine=engine,
-        engine_config=engine_config,
-        min_size=min_size,
-        n_chunks=n_chunks,
-        chunk_len=chunk_len,
-        chunk_meta=chunk_meta,
-        distribute=distribute,
-        warmup=warmup,
-        in_chunk_order=in_chunk_order,
-        cache_chunks=cache_chunks,
-        chunk_cache_dir=chunk_cache_dir,
-        chunk_cache_save_kwargs=chunk_cache_save_kwargs,
-        chunk_cache_load_kwargs=chunk_cache_load_kwargs,
-        pre_clear_chunk_cache=pre_clear_chunk_cache,
-        post_clear_chunk_cache=post_clear_chunk_cache,
-        release_chunk_cache=release_chunk_cache,
-        chunk_clear_cache=chunk_clear_cache,
-        chunk_collect_garbage=chunk_collect_garbage,
-        chunk_delay=chunk_delay,
-        pre_execute_func=pre_execute_func,
-        pre_execute_kwargs=pre_execute_kwargs,
-        pre_chunk_func=pre_chunk_func,
-        pre_chunk_kwargs=pre_chunk_kwargs,
-        post_chunk_func=post_chunk_func,
-        post_chunk_kwargs=post_chunk_kwargs,
-        post_execute_func=post_execute_func,
-        post_execute_kwargs=post_execute_kwargs,
-        post_execute_on_sorted=post_execute_on_sorted,
-        filter_results=filter_results,
-        raise_no_results=raise_no_results,
-        merge_func=merge_func,
-        merge_kwargs=merge_kwargs,
-        template_context=template_context,
-        show_progress=show_progress,
-        pbar_kwargs=pbar_kwargs,
-        **kwargs,
-    ).run(tasks, size=size, keys=keys)
+    if merge_to_engine_config and len(kwargs) > 0:
+        arg_names_set = set(executor._expected_keys)
+        engine_config = kwargs.pop("engine_config", None)
+        if engine_config is None:
+            _engine_config = {}
+        else:
+            _engine_config = dict(engine_config)
+        engine_config_changed = False
+        for k in list(kwargs.keys()):
+            if k not in arg_names_set and k not in _engine_config:
+                _engine_config[k] = kwargs.pop(k)
+                engine_config_changed = True
+        if engine_config_changed:
+            kwargs["engine_config"] = _engine_config
+        else:
+            kwargs["engine_config"] = engine_config
+    if isinstance(executor, type):
+        checks.assert_subclass_of(executor, Executor, arg_name="executor")
+        executor = executor(**kwargs)
+    else:
+        checks.assert_instance_of(executor, Executor, arg_name="executor")
+        if replace_executor is None:
+            replace_executor = execution_cfg["replace_executor"]
+        if replace_executor and len(kwargs) > 0:
+            executor = executor.replace(**kwargs)
+    return executor.run(tasks, size=size, keys=keys)
 
 
 def parse_iterable_and_keys(
@@ -2560,42 +2517,8 @@ def parse_iterable_and_keys(
 def iterated(
     *args,
     over_arg: tp.Optional[tp.AnnArgQuery] = None,
-    executor_cls: tp.Optional[tp.Type[Executor]] = None,
-    engine: tp.Optional[tp.ExecutionEngineLike] = None,
-    engine_config: tp.KwargsLike = None,
-    min_size: tp.Optional[int] = None,
-    n_chunks: tp.Union[None, int, str] = None,
-    chunk_len: tp.Union[None, int, str] = None,
-    chunk_meta: tp.Optional[tp.Iterable[tp.ChunkMeta]] = None,
-    distribute: tp.Optional[str] = None,
-    warmup: tp.Optional[bool] = None,
-    in_chunk_order: tp.Optional[bool] = None,
-    cache_chunks: tp.Optional[bool] = None,
-    chunk_cache_dir: tp.Optional[tp.PathLike] = None,
-    chunk_cache_save_kwargs: tp.KwargsLike = None,
-    chunk_cache_load_kwargs: tp.KwargsLike = None,
-    pre_clear_chunk_cache: tp.Optional[bool] = None,
-    post_clear_chunk_cache: tp.Optional[bool] = None,
-    release_chunk_cache: tp.Optional[bool] = None,
-    chunk_clear_cache: tp.Union[None, bool, int] = None,
-    chunk_collect_garbage: tp.Union[None, bool, int] = None,
-    chunk_delay: tp.Optional[float] = None,
-    pre_execute_func: tp.Optional[tp.Callable] = None,
-    pre_execute_kwargs: tp.KwargsLike = None,
-    pre_chunk_func: tp.Optional[tp.Callable] = None,
-    pre_chunk_kwargs: tp.KwargsLike = None,
-    post_chunk_func: tp.Optional[tp.Callable] = None,
-    post_chunk_kwargs: tp.KwargsLike = None,
-    post_execute_func: tp.Optional[tp.Callable] = None,
-    post_execute_kwargs: tp.KwargsLike = None,
-    post_execute_on_sorted: tp.Optional[bool] = None,
-    filter_results: tp.Optional[bool] = None,
-    raise_no_results: tp.Optional[bool] = None,
-    merge_func: tp.Optional[tp.MergeFuncLike] = None,
-    merge_kwargs: tp.KwargsLike = None,
-    template_context: tp.KwargsLike = None,
-    show_progress: tp.Optional[bool] = None,
-    pbar_kwargs: tp.KwargsLike = None,
+    executor: tp.Optional[tp.MaybeType[Executor]] = None,
+    replace_executor: tp.Optional[bool] = None,
     merge_to_engine_config: tp.Optional[bool] = None,
     **kwargs,
 ) -> tp.Callable:
@@ -2610,8 +2533,11 @@ def iterated(
     directly passed as a keyword argument with a leading underscore. You can also explicitly specify
     keys and size by passing them as `_keys` and `_size` respectively if the range-like object is an iterator.
 
-    Keyword arguments `**kwargs` and `engine_config` are merged into `engine_config`
-    if `merge_to_engine_config` is True, otherwise, `**kwargs` are passed directly to `Executor`.
+    Keyword arguments not listed in `Executor` and `engine_config` are merged into `engine_config`
+    if `merge_to_engine_config` is True, otherwise, they are passed directly to `Executor`.
+
+    If an executor instance is provided and `replace_executor` is True, will create a new
+    `Executor` instance by replacing any arguments that are not None.
 
     If `NoResult` is returned, will skip the current iteration and remove it from the final index."""
 
@@ -2620,40 +2546,35 @@ def iterated(
 
         execution_cfg = settings["execution"]
 
-        if merge_to_engine_config is None:
-            _merge_to_engine_config = execution_cfg["merge_to_engine_config"]
-        else:
-            _merge_to_engine_config = merge_to_engine_config
-        if _merge_to_engine_config:
-            _engine_config = merge_dicts(kwargs, engine_config)
-            _executor_kwargs = {}
-        else:
-            _engine_config = engine_config
-            _executor_kwargs = kwargs
-
         @wraps(func)
         def wrapper(*args, **kwargs) -> tp.Any:
-            def _resolve_key(key, merge=False):
-                if "_" + key in kwargs:
-                    if merge:
-                        return merge_dicts(wrapper.options[key], kwargs.pop("_" + key))
-                    return kwargs.pop("_" + key)
-                return wrapper.options.get(key)
+            executor = kwargs.get("_executor", None)
+            if executor is None:
+                executor = wrapper.options["executor"]
+            if executor is None:
+                executor = execution_cfg["executor"]
+            if executor is None:
+                executor = Executor
 
-            executor_cls = wrapper.options["executor_cls"]
-            if executor_cls is None:
-                executor_cls = execution_cfg["executor_cls"]
-            if executor_cls is None:
-                executor_cls = Executor
+            arg_names_set = set(executor._expected_keys)
+            kwargs_options = {}
+            for k in list(kwargs.keys()):
+                if k.startswith("_"):
+                    if k[1:] in wrapper.options or k[1:] in arg_names_set:
+                        kwargs_options[k[1:]] = kwargs.pop(k)
+            executor_kwargs = merge_dicts(wrapper.options, kwargs_options)
+            _ = executor_kwargs.pop("executor")
+            over_arg = executor_kwargs.pop("over_arg")
+            replace_executor = executor_kwargs.pop("replace_executor")
+            merge_to_engine_config = executor_kwargs.pop("merge_to_engine_config")
+            size = executor_kwargs.pop("size", None)
+            keys = executor_kwargs.pop("keys", None)
 
-            over_arg = _resolve_key("over_arg")
             if over_arg is None:
                 iterable_like = args[0]
             else:
                 ann_args = annotate_args(func, args, kwargs)
                 iterable_like = match_ann_arg(ann_args, over_arg)
-            size = kwargs.pop("_size", None)
-            keys = kwargs.pop("_keys", None)
             iterable, keys = parse_iterable_and_keys(iterable_like, keys=keys)
             if keys is not None and size is None:
                 size = len(keys)
@@ -2682,87 +2603,44 @@ def iterated(
 
             tasks = _get_task_generator()
 
-            return executor_cls(
-                engine=_resolve_key("engine"),
-                engine_config=_resolve_key("engine_config", merge=True),
-                min_size=_resolve_key("min_size"),
-                n_chunks=_resolve_key("n_chunks"),
-                chunk_len=_resolve_key("chunk_len"),
-                chunk_meta=_resolve_key("chunk_meta"),
-                distribute=_resolve_key("distribute"),
-                warmup=_resolve_key("warmup"),
-                in_chunk_order=_resolve_key("in_chunk_order"),
-                cache_chunks=_resolve_key("cache_chunks"),
-                chunk_cache_dir=_resolve_key("chunk_cache_dir"),
-                chunk_cache_save_kwargs=_resolve_key("chunk_cache_save_kwargs", merge=True),
-                chunk_cache_load_kwargs=_resolve_key("chunk_cache_load_kwargs", merge=True),
-                pre_clear_chunk_cache=_resolve_key("pre_clear_chunk_cache"),
-                post_clear_chunk_cache=_resolve_key("post_clear_chunk_cache"),
-                release_chunk_cache=_resolve_key("release_chunk_cache"),
-                chunk_clear_cache=_resolve_key("chunk_clear_cache"),
-                chunk_collect_garbage=_resolve_key("chunk_collect_garbage"),
-                chunk_delay=_resolve_key("chunk_delay"),
-                pre_execute_func=_resolve_key("pre_execute_func"),
-                pre_execute_kwargs=_resolve_key("pre_execute_kwargs", merge=True),
-                pre_chunk_func=_resolve_key("pre_chunk_func"),
-                pre_chunk_kwargs=_resolve_key("pre_chunk_kwargs", merge=True),
-                post_chunk_func=_resolve_key("post_chunk_func"),
-                post_chunk_kwargs=_resolve_key("post_chunk_kwargs", merge=True),
-                post_execute_func=_resolve_key("post_execute_func"),
-                post_execute_kwargs=_resolve_key("post_execute_kwargs", merge=True),
-                post_execute_on_sorted=_resolve_key("post_execute_on_sorted"),
-                filter_results=_resolve_key("filter_results"),
-                raise_no_results=_resolve_key("raise_no_results"),
-                merge_func=_resolve_key("merge_func"),
-                merge_kwargs=_resolve_key("merge_kwargs", merge=True),
-                template_context=_resolve_key("template_context", merge=True),
-                show_progress=_resolve_key("show_progress"),
-                pbar_kwargs=_resolve_key("pbar_kwargs", merge=True),
-                **_resolve_key("executor_kwargs", merge=True),
-            ).run(tasks, size=size, keys=keys)
+            if merge_to_engine_config is None:
+                merge_to_engine_config = execution_cfg["merge_to_engine_config"]
+            if merge_to_engine_config and len(executor_kwargs) > 0:
+                arg_names_set = set(executor._expected_keys)
+                engine_config = executor_kwargs.pop("engine_config", None)
+                if engine_config is None:
+                    _engine_config = {}
+                else:
+                    _engine_config = dict(engine_config)
+                engine_config_changed = False
+                for k in list(executor_kwargs.keys()):
+                    if k not in arg_names_set and k not in _engine_config:
+                        _engine_config[k] = executor_kwargs.pop(k)
+                        engine_config_changed = True
+                if engine_config_changed:
+                    executor_kwargs["engine_config"] = _engine_config
+                else:
+                    executor_kwargs["engine_config"] = engine_config
+            if isinstance(executor, type):
+                checks.assert_subclass_of(executor, Executor, arg_name="executor")
+                executor = executor(**executor_kwargs)
+            else:
+                checks.assert_instance_of(executor, Executor, arg_name="executor")
+                if replace_executor is None:
+                    replace_executor = execution_cfg["replace_executor"]
+                if replace_executor and len(executor_kwargs) > 0:
+                    executor = executor.replace(**executor_kwargs)
+            return executor.run(tasks, size=size, keys=keys)
 
         wrapper.func = func
         wrapper.name = func.__name__
         wrapper.is_executor = True
         wrapper.options = FrozenConfig(
             over_arg=over_arg,
-            executor_cls=executor_cls,
-            executor_kwargs=_executor_kwargs,
-            engine=engine,
-            engine_config=_engine_config,
-            min_size=min_size,
-            n_chunks=n_chunks,
-            chunk_len=chunk_len,
-            chunk_meta=chunk_meta,
-            distribute=distribute,
-            warmup=warmup,
-            in_chunk_order=in_chunk_order,
-            cache_chunks=cache_chunks,
-            chunk_cache_dir=chunk_cache_dir,
-            chunk_cache_save_kwargs=chunk_cache_save_kwargs,
-            chunk_cache_load_kwargs=chunk_cache_load_kwargs,
-            pre_clear_chunk_cache=pre_clear_chunk_cache,
-            post_clear_chunk_cache=post_clear_chunk_cache,
-            release_chunk_cache=release_chunk_cache,
-            chunk_clear_cache=chunk_clear_cache,
-            chunk_collect_garbage=chunk_collect_garbage,
-            chunk_delay=chunk_delay,
-            pre_execute_func=pre_execute_func,
-            pre_execute_kwargs=pre_execute_kwargs,
-            pre_chunk_func=pre_chunk_func,
-            pre_chunk_kwargs=pre_chunk_kwargs,
-            post_chunk_func=post_chunk_func,
-            post_chunk_kwargs=post_chunk_kwargs,
-            post_execute_func=post_execute_func,
-            post_execute_kwargs=post_execute_kwargs,
-            post_execute_on_sorted=post_execute_on_sorted,
-            filter_results=filter_results,
-            raise_no_results=raise_no_results,
-            merge_func=merge_func,
-            merge_kwargs=merge_kwargs,
-            template_context=template_context,
-            show_progress=show_progress,
-            pbar_kwargs=pbar_kwargs,
+            executor=executor,
+            replace_executor=replace_executor,
+            merge_to_engine_config=merge_to_engine_config,
+            **kwargs,
         )
         signature = inspect.signature(wrapper)
         lists_var_kwargs = False
