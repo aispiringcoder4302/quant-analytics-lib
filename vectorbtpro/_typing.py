@@ -44,6 +44,7 @@ if TYPE_CHECKING:
     from vectorbtpro.utils.knowledge.base_asset_funcs import AssetFunc
     from vectorbtpro.utils.knowledge.asset_pipelines import AssetPipeline
     from vectorbtpro.utils.knowledge.base_assets import KnowledgeAsset
+    from vectorbtpro.utils.knowledge.custom_assets import VBTAsset, PagesAsset, MessagesAsset
     from vectorbtpro.base.indexing import hslice
     from vectorbtpro.base.grouping.base import Grouper
     from vectorbtpro.base.resampling.base import Resampler
@@ -68,6 +69,9 @@ else:
     AssetFunc = "AssetFunc"
     AssetPipeline = "AssetPipeline"
     KnowledgeAsset = "KnowledgeAsset"
+    VBTAsset = "VBTAsset"
+    PagesAsset = "PagesAsset"
+    MessagesAsset = "MessagesAsset"
     hslice = "hslice"
     Grouper = "Grouper"
     Resampler = "Resampler"
@@ -97,6 +101,7 @@ TupleList = Union[List[T], Tuple[T, ...]]
 MaybeTupleList = Union[T, List[T], Tuple[T, ...]]
 MaybeIterable = Union[T, Iterable[T]]
 MaybeSequence = Union[T, Sequence[T]]
+MaybeDict = Union[Dict[Hashable, T], T]
 MappingSequence = Union[Mapping[Hashable, T], Sequence[T]]
 MaybeMappingSequence = Union[T, Mapping[Hashable, T], Sequence[T]]
 SetLike = Union[None, Set[T]]
@@ -321,6 +326,12 @@ PathDict = Dict[PathLikeKey, Any]
 
 # Knowledge
 AssetFuncLike = Union[str, Type[AssetFunc], FuncArgs, Task, Callable]
+MaybeAsset = Union[T, dict, list]
+MaybeKnowledgeAsset = MaybeAsset[KnowledgeAsset]
+MaybeVBTAsset = MaybeAsset[VBTAsset]
+MaybePagesAsset = MaybeAsset[PagesAsset]
+MaybeMessagesAsset = MaybeAsset[MessagesAsset]
+ChatOutput = Union[Optional[Path], Tuple[Any, Optional[Path]]]
 
 # Chaining
 PipeFunc = Union[str, Callable, Tuple[Union[str, Callable], str]]

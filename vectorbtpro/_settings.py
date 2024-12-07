@@ -1975,6 +1975,7 @@ ${config_doc}
 _settings["search"] = search
 
 knowledge = frozen_cfg(
+    options_=dict(override_keys={"chat"}),
     cache=True,
     cache_dir="./knowledge",
     cache_mkdir_kwargs=dict(

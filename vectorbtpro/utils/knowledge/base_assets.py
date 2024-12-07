@@ -2017,8 +2017,9 @@ class KnowledgeAsset(Configured, MutableSequence):
                 tokenizer = get_encoding(tokenizer)
         return len(tokenizer.encode(context))
 
+    @hybrid_method
     def chat(
-        self,
+        cls_or_self,
         message: str,
         chat_history: tp.Optional[tp.MutableSequence[str]] = None,
         stream: tp.Optional[bool] = None,
@@ -2044,8 +2045,9 @@ class KnowledgeAsset(Configured, MutableSequence):
         flush_output: tp.Optional[bool] = None,
         template_context: tp.KwargsLike = None,
         package: tp.Optional[str] = None,
+        return_response: bool = False,
         **kwargs,
-    ) -> tp.Optional[Path]:
+    ) -> tp.ChatOutput:
         """Chat with an LLM using LlamaIndex and the dumped asset as a context.
 
         The following packages are supported:
@@ -2121,28 +2123,44 @@ class KnowledgeAsset(Configured, MutableSequence):
             Yes, I am sure. The value under 'xyz' is 123 for the entry where `s` is "EFG".
             ```
         """
-        stream = self.resolve_setting(stream, "stream", sub_path="chat")
-        to_context_kwargs = self.resolve_setting(to_context_kwargs, "to_context_kwargs", merge=True, sub_path="chat")
-        max_context_chars = self.resolve_setting(max_context_chars, "max_context_chars", sub_path="chat")
-        max_context_tokens = self.resolve_setting(max_context_tokens, "max_context_tokens", sub_path="chat")
-        tokenizer = self.resolve_setting(tokenizer, "tokenizer", sub_path="chat")
-        system_prompt = self.resolve_setting(system_prompt, "system_prompt", sub_path="chat")
-        context_prompt = self.resolve_setting(context_prompt, "context_prompt", sub_path="chat")
-        display_format = self.resolve_setting(display_format, "display_format", sub_path="chat")
-        refresh_rate = self.resolve_setting(refresh_rate, "refresh_rate", sub_path="chat")
-        to_markdown_kwargs = self.resolve_setting(to_markdown_kwargs, "to_markdown_kwargs", merge=True, sub_path="chat")
-        to_html_kwargs = self.resolve_setting(to_html_kwargs, "to_html_kwargs", merge=True, sub_path="chat")
-        format_html_kwargs = self.resolve_setting(format_html_kwargs, "format_html_kwargs", merge=True, sub_path="chat")
-        open_browser = self.resolve_setting(open_browser, "open_browser", sub_path="chat")
-        cache = self.resolve_setting(cache, "cache", sub_path="chat")
-        cache_dir = self.resolve_setting(cache_dir, "cache_dir", sub_path="chat")
-        cache_mkdir_kwargs = self.resolve_setting(cache_mkdir_kwargs, "cache_mkdir_kwargs", merge=True, sub_path="chat")
-        file_prefix_len = self.resolve_setting(file_prefix_len, "file_prefix_len", sub_path="chat")
-        file_suffix_len = self.resolve_setting(file_suffix_len, "file_suffix_len", sub_path="chat")
-        output_to = self.resolve_setting(output_to, "output_to", sub_path="chat")
-        flush_output = self.resolve_setting(flush_output, "flush_output", sub_path="chat")
-        template_context = self.resolve_setting(template_context, "template_context", merge=True, sub_path="chat")
-        package = self.resolve_setting(package, "package", sub_path="chat")
+        if isinstance(cls_or_self, type):
+            from vectorbtpro.utils.parsing import get_forward_args
+
+            args, kwargs = get_forward_args(super().chat, locals())
+            return super().chat(*args, **kwargs)
+
+        stream = cls_or_self.resolve_setting(stream, "stream", sub_path="chat")
+        to_context_kwargs = cls_or_self.resolve_setting(
+            to_context_kwargs, "to_context_kwargs", merge=True, sub_path="chat"
+        )
+        max_context_chars = cls_or_self.resolve_setting(max_context_chars, "max_context_chars", sub_path="chat")
+        max_context_tokens = cls_or_self.resolve_setting(max_context_tokens, "max_context_tokens", sub_path="chat")
+        tokenizer = cls_or_self.resolve_setting(tokenizer, "tokenizer", sub_path="chat")
+        system_prompt = cls_or_self.resolve_setting(system_prompt, "system_prompt", sub_path="chat")
+        context_prompt = cls_or_self.resolve_setting(context_prompt, "context_prompt", sub_path="chat")
+        display_format = cls_or_self.resolve_setting(display_format, "display_format", sub_path="chat")
+        refresh_rate = cls_or_self.resolve_setting(refresh_rate, "refresh_rate", sub_path="chat")
+        to_markdown_kwargs = cls_or_self.resolve_setting(
+            to_markdown_kwargs, "to_markdown_kwargs", merge=True, sub_path="chat"
+        )
+        to_html_kwargs = cls_or_self.resolve_setting(to_html_kwargs, "to_html_kwargs", merge=True, sub_path="chat")
+        format_html_kwargs = cls_or_self.resolve_setting(
+            format_html_kwargs, "format_html_kwargs", merge=True, sub_path="chat"
+        )
+        open_browser = cls_or_self.resolve_setting(open_browser, "open_browser", sub_path="chat")
+        cache = cls_or_self.resolve_setting(cache, "cache", sub_path="chat")
+        cache_dir = cls_or_self.resolve_setting(cache_dir, "cache_dir", sub_path="chat")
+        cache_mkdir_kwargs = cls_or_self.resolve_setting(
+            cache_mkdir_kwargs, "cache_mkdir_kwargs", merge=True, sub_path="chat"
+        )
+        file_prefix_len = cls_or_self.resolve_setting(file_prefix_len, "file_prefix_len", sub_path="chat")
+        file_suffix_len = cls_or_self.resolve_setting(file_suffix_len, "file_suffix_len", sub_path="chat")
+        output_to = cls_or_self.resolve_setting(output_to, "output_to", sub_path="chat")
+        flush_output = cls_or_self.resolve_setting(flush_output, "flush_output", sub_path="chat")
+        template_context = cls_or_self.resolve_setting(
+            template_context, "template_context", merge=True, sub_path="chat"
+        )
+        package = cls_or_self.resolve_setting(package, "package", sub_path="chat")
 
         if chat_history is None:
             chat_history = []
@@ -2165,7 +2183,7 @@ class KnowledgeAsset(Configured, MutableSequence):
             context_prompt = RepFunc(context_prompt)
         elif not isinstance(context_prompt, CustomTemplate):
             raise TypeError(f"Context prompt must be a string, function, or template")
-        context = self.to_context(**to_context_kwargs)
+        context = cls_or_self.to_context(**to_context_kwargs)
         if max_context_chars is not None:
             context = context[:max_context_chars]
         if max_context_tokens is not None:
@@ -2210,7 +2228,7 @@ class KnowledgeAsset(Configured, MutableSequence):
             assert_can_import("openai")
             from openai import OpenAI
 
-            openai_config = self.resolve_setting(kwargs, "openai_config", merge=True, sub_path="chat")
+            openai_config = cls_or_self.resolve_setting(kwargs, "openai_config", merge=True, sub_path="chat")
             model = openai_config.pop("model", None)
             if model is None:
                 raise ValueError("Must provide a model")
@@ -2237,7 +2255,7 @@ class KnowledgeAsset(Configured, MutableSequence):
             assert_can_import("litellm")
             from litellm import completion
 
-            litellm_config = self.resolve_setting(kwargs, "litellm_config", merge=True, sub_path="chat")
+            litellm_config = cls_or_self.resolve_setting(kwargs, "litellm_config", merge=True, sub_path="chat")
             model = litellm_config.pop("model", None)
             if model is None:
                 raise ValueError("Must provide a model")
@@ -2255,7 +2273,7 @@ class KnowledgeAsset(Configured, MutableSequence):
             assert_can_import("llama_index")
             from llama_index.core.llms import LLM, ChatMessage
 
-            llama_index_config = self.resolve_setting(kwargs, "llama_index_config", merge=True, sub_path="chat")
+            llama_index_config = cls_or_self.resolve_setting(kwargs, "llama_index_config", merge=True, sub_path="chat")
             llm = llama_index_config.pop("llm", None)
             if llm is None:
                 raise ValueError("Must provide an LLM name or path")
@@ -2449,7 +2467,7 @@ class KnowledgeAsset(Configured, MutableSequence):
                     else:
                         buffer_content = "".join(buffer_contents)
                         semi_full_content = "".join(chunk_contents[-2:] + buffer_contents)
-                        buffer_content = semi_full_content[-len(buffer_content) - 2:]
+                        buffer_content = semi_full_content[-len(buffer_content) - 2 :]
                         lines = buffer_content.split("\n")
                         for line in lines:
                             if line.strip().startswith("```"):
@@ -2489,4 +2507,6 @@ class KnowledgeAsset(Configured, MutableSequence):
         chat_history.append(dict(role="assistant", content=full_content))
         if close_handle:
             output_to.close()
+        if return_response:
+            return response, file_path
         return file_path

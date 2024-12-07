@@ -13,8 +13,9 @@ from collections import defaultdict, deque
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.utils import checks
-from vectorbtpro.utils.config import flat_merge_dicts, HybridConfig
+from vectorbtpro.utils.config import merge_dicts, flat_merge_dicts, reorder_list, HybridConfig
 from vectorbtpro.utils.module_ import prepare_refname, get_caller_qualname
+from vectorbtpro.utils.parsing import get_func_arg_names
 from vectorbtpro.utils.path_ import check_mkdir, remove_dir, get_common_prefix, dir_tree_from_paths
 from vectorbtpro.utils.pbar import ProgressBar
 from vectorbtpro.utils.pickling import suggest_compression
@@ -25,6 +26,11 @@ __all__ = [
     "VBTAsset",
     "PagesAsset",
     "MessagesAsset",
+    "find_api",
+    "find_docs",
+    "find_messages",
+    "find_examples",
+    "chat_about",
 ]
 
 
@@ -786,6 +792,7 @@ class VBTAsset(KnowledgeAsset):
     def find_obj_mentions(
         self,
         obj: tp.Any,
+        *,
         module: tp.Union[None, str, ModuleType] = None,
         resolve: bool = True,
         incl_shortcuts: tp.Optional[bool] = None,
@@ -1020,6 +1027,7 @@ class PagesAsset(VBTAsset):
     def find_obj(
         self,
         obj: tp.Any,
+        *,
         module: tp.Union[None, str, ModuleType] = None,
         resolve: bool = True,
         **kwargs,
@@ -1431,6 +1439,7 @@ class PagesAsset(VBTAsset):
     def find_obj_docs(
         self,
         obj: tp.Any,
+        *,
         module: tp.Union[None, str, ModuleType] = None,
         resolve: bool = True,
         incl_pages: tp.Optional[tp.MaybeIterable[str]] = None,
@@ -2122,6 +2131,7 @@ class MessagesAsset(VBTAsset):
     def find_obj_messages(
         self,
         obj: tp.Any,
+        *,
         module: tp.Union[None, str, ModuleType] = None,
         resolve: bool = True,
         **kwargs,
@@ -2130,3 +2140,329 @@ class MessagesAsset(VBTAsset):
 
         Uses `MessagesAsset.find_obj_mentions`."""
         return self.find_obj_mentions(obj, module=module, resolve=resolve, **kwargs)
+
+
+def find_api(
+    obj: tp.Any,
+    *,
+    module: tp.Union[None, str, ModuleType] = None,
+    resolve: bool = True,
+    pages_asset: tp.Optional[tp.MaybeType[PagesAssetT]] = None,
+    pull_kwargs: tp.KwargsLike = None,
+    **kwargs,
+) -> tp.MaybePagesAsset:
+    """Find API pages and headings relevant to an object.
+
+    Based on `PagesAsset.find_obj_api`.
+
+    Use `pages_asset` to provide a custom subclass or instance of `PagesAsset`."""
+    if pages_asset is None:
+        pages_asset = PagesAsset
+    if isinstance(pages_asset, type):
+        checks.assert_subclass_of(pages_asset, PagesAsset, arg_name="pages_asset")
+        if pull_kwargs is None:
+            pull_kwargs = {}
+        pages_asset = pages_asset.pull(**pull_kwargs)
+    checks.assert_instance_of(pages_asset, PagesAsset, arg_name="pages_asset")
+    return pages_asset.find_obj_api(obj, module=module, resolve=resolve, **kwargs)
+
+
+def find_docs(
+    obj: tp.Any,
+    *,
+    module: tp.Union[None, str, ModuleType] = None,
+    resolve: bool = True,
+    pages_asset: tp.Optional[tp.MaybeType[PagesAssetT]] = None,
+    pull_kwargs: tp.KwargsLike = None,
+    **kwargs,
+) -> tp.MaybePagesAsset:
+    """Find documentation pages and headings relevant to an object.
+
+    Based on `PagesAsset.find_obj_docs`.
+
+    Use `pages_asset` to provide a custom subclass or instance of `PagesAsset`."""
+    if pages_asset is None:
+        pages_asset = PagesAsset
+    if isinstance(pages_asset, type):
+        checks.assert_subclass_of(pages_asset, PagesAsset, arg_name="pages_asset")
+        if pull_kwargs is None:
+            pull_kwargs = {}
+        pages_asset = pages_asset.pull(**pull_kwargs)
+    checks.assert_instance_of(pages_asset, PagesAsset, arg_name="pages_asset")
+    return pages_asset.find_obj_docs(obj, module=module, resolve=resolve, **kwargs)
+
+
+def find_messages(
+    obj: tp.Any,
+    *,
+    module: tp.Union[None, str, ModuleType] = None,
+    resolve: bool = True,
+    messages_asset: tp.Optional[tp.MaybeType[MessagesAssetT]] = None,
+    pull_kwargs: tp.KwargsLike = None,
+    **kwargs,
+) -> tp.MaybeMessagesAsset:
+    """Find messages relevant to an object.
+
+    Based on `MessagesAsset.find_obj_messages`.
+
+    Use `messages_asset` to provide a custom subclass or instance of `MessagesAsset`."""
+    if messages_asset is None:
+        messages_asset = MessagesAsset
+    if isinstance(messages_asset, type):
+        checks.assert_subclass_of(messages_asset, MessagesAsset, arg_name="messages_asset")
+        if pull_kwargs is None:
+            pull_kwargs = {}
+        messages_asset = messages_asset.pull(**pull_kwargs)
+    checks.assert_instance_of(messages_asset, MessagesAsset, arg_name="messages_asset")
+    return messages_asset.find_obj_messages(obj, module=module, resolve=resolve, **kwargs)
+
+
+def find_examples(
+    obj: tp.Any,
+    *,
+    module: tp.Union[None, str, ModuleType] = None,
+    resolve: bool = True,
+    as_code: bool = True,
+    return_type: tp.Optional[str] = "field",
+    pages_asset: tp.Optional[tp.MaybeType[PagesAssetT]] = None,
+    messages_asset: tp.Optional[tp.MaybeType[MessagesAssetT]] = None,
+    pull_kwargs: tp.KwargsLike = None,
+    **kwargs,
+) -> tp.MaybeVBTAsset:
+    """Find (code) examples relevant to an object.
+
+    Based on `VBTAsset.find_obj_obj_mentions`.
+
+    By default, extracts code with text. Use `return_type="match"` to extract code without text,
+    or, for instance, `return_type="item"` to also get links.
+
+    Use `pages_asset` to provide a custom subclass or instance of `PagesAsset`. Use `messages_asset`
+    to provide a custom subclass or instance of `MessagesAsset`."""
+    if pages_asset is None:
+        pages_asset = PagesAsset
+    if isinstance(pages_asset, type):
+        checks.assert_subclass_of(pages_asset, PagesAsset, arg_name="pages_asset")
+        if pull_kwargs is None:
+            pull_kwargs = {}
+        pages_asset = pages_asset.pull(**pull_kwargs)
+    checks.assert_instance_of(pages_asset, PagesAsset, arg_name="pages_asset")
+    if messages_asset is None:
+        messages_asset = MessagesAsset
+    if isinstance(messages_asset, type):
+        checks.assert_subclass_of(messages_asset, MessagesAsset, arg_name="messages_asset")
+        if pull_kwargs is None:
+            pull_kwargs = {}
+        messages_asset = messages_asset.pull(**pull_kwargs)
+    checks.assert_instance_of(messages_asset, MessagesAsset, arg_name="messages_asset")
+    mentions_in_pages = pages_asset.find_obj_mentions(
+        obj,
+        module=module,
+        resolve=resolve,
+        as_code=as_code,
+        return_type=return_type,
+        **kwargs,
+    )
+    mentions_in_messages = messages_asset.find_obj_mentions(
+        obj,
+        module=module,
+        resolve=resolve,
+        as_code=as_code,
+        return_type=return_type,
+        **kwargs,
+    )
+    mentions_asset = mentions_in_pages + mentions_in_messages
+    if (
+        isinstance(mentions_asset, KnowledgeAsset)
+        and len(mentions_asset) > 0
+        and isinstance(mentions_asset[0], list)
+        and return_type.lower() in ("field", "match")
+    ):
+        mentions_asset = mentions_asset.merge_lists()
+    return mentions_asset
+
+
+def find_assets(
+    obj: tp.Any,
+    *,
+    module: tp.Union[None, str, ModuleType] = None,
+    resolve: bool = True,
+    asset_names: tp.Optional[tp.MaybeIterable[str]] = None,
+    minimize: tp.Optional[bool] = None,
+    minimize_pages: tp.Optional[bool] = None,
+    minimize_messages: tp.Optional[bool] = None,
+    stack: bool = True,
+    pages_asset: tp.Optional[tp.MaybeType[PagesAssetT]] = None,
+    messages_asset: tp.Optional[tp.MaybeType[MessagesAssetT]] = None,
+    pull_kwargs: tp.KwargsLike = None,
+    api_kwargs: tp.KwargsLike = None,
+    docs_kwargs: tp.KwargsLike = None,
+    messages_kwargs: tp.KwargsLike = None,
+    examples_kwargs: tp.KwargsLike = None,
+    minimize_kwargs: tp.KwargsLike = None,
+    minimize_pages_kwargs: tp.KwargsLike = None,
+    minimize_messages_kwargs: tp.KwargsLike = None,
+    stack_kwargs: tp.KwargsLike = None,
+) -> tp.MaybeDict[tp.VBTAsset]:
+    """Find all assets relevant to an object.
+
+    Argument `asset_names` can be a list of asset names in any order. It defaults to "api", "docs",
+    and "messages", It can also include ellipsis (`...`). For example, `["messages", ...]` puts
+    "messages" at the beginning and all other assets in their usual order at the end.
+    The following asset names are supported:
+
+    * "api": `find_api` with `api_kwargs`
+    * "docs": `find_docs` with `docs_kwargs`
+    * "messages": `find_messages` with `messages_kwargs`
+    * "examples": `find_examples` with `examples_kwargs`
+
+    !!! note
+        Examples usually overlap with other assets, thus they are excluded by default.
+
+    Use `pages_asset` to provide a custom subclass or instance of `PagesAsset`. Use `messages_asset`
+    to provide a custom subclass or instance of `MessagesAsset`. Both assets are reused among "find" calls.
+
+    Set `stack` to True to stack all assets into a single asset. Uses
+    `vectorbtpro.utils.knowledge.base.KnowledgeAsset.stack` with `stack_kwargs`.
+
+    Set `minimize` to True (or `minimize_pages` for pages and `minimize_messages` for messages)
+    in order to minimize to remove fields that aren't relevant for chatting.
+    It defaults to True if `stack` is True, otherwise, it defaults to False. Uses `VBTAsset.minimize`
+    with `minimize_kwargs`, `PagesAsset.minimize` with `minimize_pages_kwargs`, and `MessagesAsset.minimize`
+    with `minimize_messages_kwargs`. Arguments `minimize_pages_kwargs` and `minimize_messages_kwargs`
+    are merged over `minimize_kwargs`."""
+    if pages_asset is None:
+        pages_asset = PagesAsset
+    if isinstance(pages_asset, type):
+        checks.assert_subclass_of(pages_asset, PagesAsset, arg_name="pages_asset")
+        if pull_kwargs is None:
+            pull_kwargs = {}
+        pages_asset = pages_asset.pull(**pull_kwargs)
+    checks.assert_instance_of(pages_asset, PagesAsset, arg_name="pages_asset")
+    if messages_asset is None:
+        messages_asset = MessagesAsset
+    if isinstance(messages_asset, type):
+        checks.assert_subclass_of(messages_asset, MessagesAsset, arg_name="messages_asset")
+        if pull_kwargs is None:
+            pull_kwargs = {}
+        messages_asset = messages_asset.pull(**pull_kwargs)
+    checks.assert_instance_of(messages_asset, MessagesAsset, arg_name="messages_asset")
+
+    assets = []
+    if asset_names is not None:
+        if isinstance(asset_names, (str, type(Ellipsis))):
+            asset_names = [asset_names]
+        all_asset_names = ["api", "docs", "messages", "examples"]
+        asset_keys = []
+        for asset_name in asset_names:
+            if asset_name is not Ellipsis:
+                asset_key = all_asset_names.index(asset_name.lower())
+                if asset_key == -1:
+                    raise ValueError(f"Invalid asset name: '{asset_name}'")
+                asset_keys.append(asset_key)
+            else:
+                asset_keys.append(Ellipsis)
+        new_asset_names = reorder_list(all_asset_names, asset_keys, skip_missing=True)
+        if "examples" not in asset_names and "examples" in new_asset_names:
+            new_asset_names.remove("examples")
+        asset_names = new_asset_names
+    else:
+        asset_names = ["api", "docs", "messages"]
+    for asset_name in asset_names:
+        if asset_name == "api":
+            if api_kwargs is None:
+                api_kwargs = {}
+            asset = find_api(
+                obj,
+                module=module,
+                resolve=resolve,
+                pages_asset=pages_asset,
+                **api_kwargs,
+            )
+            if len(asset) > 0:
+                assets.append(asset)
+        elif asset_name == "docs":
+            if docs_kwargs is None:
+                docs_kwargs = {}
+            asset = find_docs(
+                obj,
+                module=module,
+                resolve=resolve,
+                pages_asset=pages_asset,
+                **docs_kwargs,
+            )
+            if len(asset) > 0:
+                assets.append(asset)
+        elif asset_name == "messages":
+            if messages_kwargs is None:
+                messages_kwargs = {}
+            asset = find_messages(
+                obj,
+                module=module,
+                resolve=resolve,
+                messages_asset=messages_asset,
+                **messages_kwargs,
+            )
+            if len(asset) > 0:
+                assets.append(asset)
+        elif asset_name == "examples":
+            if examples_kwargs is None:
+                examples_kwargs = {}
+            asset = find_examples(
+                obj,
+                module=module,
+                resolve=resolve,
+                pages_asset=pages_asset,
+                messages_asset=messages_asset,
+                **examples_kwargs,
+            )
+            if len(asset) > 0:
+                assets.append(asset)
+
+    if minimize is None:
+        minimize = stack
+    if minimize:
+        if minimize_kwargs is None:
+            minimize_kwargs = {}
+        for i in range(len(assets)):
+            if isinstance(assets[i], VBTAsset) and not isinstance(assets[i], (PagesAsset, MessagesAsset)):
+                assets[i] = assets[i].minimize(**minimize_kwargs)
+    if minimize_pages is None:
+        minimize_pages = minimize
+    if minimize_pages:
+        minimize_pages_kwargs = merge_dicts(minimize_kwargs, minimize_pages_kwargs)
+        for i in range(len(assets)):
+            if isinstance(assets[i], PagesAsset):
+                assets[i] = assets[i].minimize(**minimize_pages_kwargs)
+    if minimize_messages is None:
+        minimize_messages = minimize
+    if minimize_messages:
+        minimize_messages_kwargs = merge_dicts(minimize_kwargs, minimize_messages_kwargs)
+        for i in range(len(assets)):
+            if isinstance(assets[i], MessagesAsset):
+                assets[i] = assets[i].minimize(**minimize_messages_kwargs)
+    if stack:
+        if len(assets) >= 2:
+            if stack_kwargs is None:
+                stack_kwargs = {}
+            return VBTAsset.stack(*assets, **stack_kwargs)
+        if len(assets) == 1:
+            return assets[0]
+        return VBTAsset([])
+    return dict(zip(asset_names, assets))
+
+
+def chat_about(
+    obj: tp.Any,
+    message: str,
+    chat_history: tp.Optional[tp.MutableSequence[str]] = None,
+    *,
+    asset_names: tp.Optional[tp.MaybeIterable[str]] = "examples",
+    **kwargs,
+) -> tp.ChatOutput:
+    """Chat about an object.
+
+    Uses `find_assets` with `stack=True` and `vectorbtpro.utils.knowledge.base_assets.KnowledgeAsset.chat`.
+    Arguments are distributed between these two methods automatically."""
+    find_assets_kwargs = {k: kwargs.pop(k) for k in get_func_arg_names(find_assets) if k in kwargs}
+    asset = find_assets(obj, asset_names=asset_names, stack=True, **find_assets_kwargs)
+    return asset.chat(message, chat_history, **kwargs)

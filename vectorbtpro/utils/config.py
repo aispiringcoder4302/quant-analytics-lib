@@ -479,6 +479,7 @@ class Config(pdict):
 
             To make nested dictionaries also accessible via the dot notation, wrap
             them with `child_dict` and set `convert_children` and `nested` to True.
+        override_keys (set of str): Keys to override if `as_attrs` is True.
 
     Defaults can be overridden with settings under `vectorbtpro._settings.config`.
 
@@ -540,6 +541,7 @@ class Config(pdict):
         nested = _resolve_setting("nested", True)
         convert_children = _resolve_setting("convert_children", False)
         as_attrs = _resolve_setting("as_attrs", frozen_keys or readonly)
+        override_keys = _resolve_setting("override_keys", set())
         copy_kwargs = _resolve_setting(
             "copy_kwargs",
             dict(copy_mode="none", nested=nested),
@@ -578,6 +580,7 @@ class Config(pdict):
                             nested=nested,
                             convert_children=convert_children,
                             as_attrs=as_attrs,
+                            override_keys=override_keys,
                         ),
                     )
 
@@ -598,14 +601,18 @@ class Config(pdict):
             nested=nested,
             convert_children=convert_children,
             as_attrs=as_attrs,
+            override_keys=override_keys,
         )
 
         # Set keys as attributes for autocomplete
         if as_attrs:
             self_dir = set(self.__dir__())
             for k, v in self.items():
-                if k in self_dir:
-                    raise ValueError(f"Key '{k}' shadows an attribute of the config. Disable option 'as_attrs'.")
+                if k in self_dir and k not in override_keys:
+                    raise ValueError(
+                        f"Key '{k}' shadows an attribute of the config. "
+                        f"Disable option 'as_attrs' or put the key to 'override_keys'."
+                    )
 
     @property
     def options_(self) -> dict:
