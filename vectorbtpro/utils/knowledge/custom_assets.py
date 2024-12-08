@@ -2457,6 +2457,7 @@ def chat_about(
     chat_history: tp.Optional[tp.MutableSequence[str]] = None,
     *,
     asset_names: tp.Optional[tp.MaybeIterable[str]] = "examples",
+    shuffle: bool = False,
     **kwargs,
 ) -> tp.ChatOutput:
     """Chat about an object.
@@ -2465,4 +2466,6 @@ def chat_about(
     Arguments are distributed between these two methods automatically."""
     find_assets_kwargs = {k: kwargs.pop(k) for k in get_func_arg_names(find_assets) if k in kwargs}
     asset = find_assets(obj, asset_names=asset_names, stack=True, **find_assets_kwargs)
+    if shuffle:
+        asset.shuffle(inplace=True)
     return asset.chat(message, chat_history, **kwargs)

@@ -6,6 +6,7 @@ import re
 import json
 from collections.abc import MutableSequence
 from pathlib import Path
+import warnings
 
 import pandas as pd
 
@@ -17,7 +18,7 @@ from vectorbtpro.utils.path_ import check_mkdir, remove_dir, dir_tree_from_paths
 from vectorbtpro.utils.pbar import ProgressBar
 from vectorbtpro.utils.template import CustomTemplate, RepEval, RepFunc, Sub
 from vectorbtpro.utils.config import flat_merge_dicts, deep_merge_dicts
-from vectorbtpro.utils.parsing import get_func_arg_names
+from vectorbtpro.utils.parsing import get_func_arg_names, get_func_kwargs
 from vectorbtpro.utils.execution import Task, execute, NoResult
 from vectorbtpro.utils.module_ import get_caller_qualname
 from vectorbtpro.utils.decorators import hybrid_method
@@ -1991,31 +1992,296 @@ class KnowledgeAsset(Configured, MutableSequence):
 
     # ############# LLM methods ############# #
 
-    def count_context_tokens(
-        self,
-        to_context_kwargs: tp.KwargsLike = None,
+    @classmethod
+    def resolve_encoding(
+        cls,
         tokenizer: tp.Union[None, str, EncodingT] = None,
-    ) -> int:
-        """Count the number of tokens in the context."""
-        to_context_kwargs = self.resolve_setting(to_context_kwargs, "to_context_kwargs", merge=True, sub_path="chat")
-        tokenizer = self.resolve_setting(tokenizer, "tokenizer", sub_path="chat")
-
-        context = self.to_context(**to_context_kwargs)
+        model: tp.Optional[str] = None,
+    ) -> EncodingT:
+        """Resolve the encoding."""
         from vectorbtpro.utils.module_ import assert_can_import
 
         assert_can_import("tiktoken")
+        from tiktoken import Encoding
+
+        tokenizer = cls.resolve_setting(tokenizer, "tokenizer", sub_path="chat")
         if isinstance(tokenizer, str):
-            from tiktoken.model import MODEL_TO_ENCODING
+            from tiktoken import get_encoding, encoding_for_model
 
-            if tokenizer in MODEL_TO_ENCODING.keys():
-                from tiktoken import encoding_for_model
-
-                tokenizer = encoding_for_model(tokenizer)
+            if tokenizer.startswith("model_or_"):
+                try:
+                    if model is None:
+                        raise KeyError
+                    encoding = encoding_for_model(model)
+                except KeyError:
+                    tokenizer = tokenizer[len("model_or_") :]
+                    encoding = get_encoding(tokenizer) if "k_base" in tokenizer else encoding_for_model(tokenizer)
+            elif isinstance(tokenizer, str):
+                encoding = get_encoding(tokenizer) if "k_base" in tokenizer else encoding_for_model(tokenizer)
             else:
-                from tiktoken import get_encoding
+                encoding = tokenizer
+        else:
+            encoding = tokenizer
+        checks.assert_instance_of(encoding, Encoding, arg_name="tokenizer")
+        return encoding
 
-                tokenizer = get_encoding(tokenizer)
-        return len(tokenizer.encode(context))
+    @classmethod
+    def count_tokens_in_context(
+        cls,
+        context: str,
+        tokenizer: tp.Union[None, str, EncodingT] = None,
+        model: tp.Optional[str] = None,
+    ) -> int:
+        """Count the number of tokens in a context."""
+        encoding = cls.resolve_encoding(tokenizer=tokenizer, model=model)
+        return len(encoding.encode(context))
+
+    def count_tokens(
+        self,
+        to_context_kwargs: tp.KwargsLike = None,
+        tokenizer: tp.Union[None, str, EncodingT] = None,
+        model: tp.Optional[str] = None,
+    ) -> int:
+        """Count the number of tokens in the context."""
+        to_context_kwargs = self.resolve_setting(to_context_kwargs, "to_context_kwargs", merge=True, sub_path="chat")
+        context = self.to_context(**to_context_kwargs)
+        encoding = self.resolve_encoding(tokenizer=tokenizer, model=model)
+        return len(encoding.encode(context))
+
+    @classmethod
+    def count_tokens_in_messages(
+        cls,
+        messages: tp.List[dict],
+        tokenizer: tp.Union[None, str, EncodingT] = None,
+        tokens_per_message: tp.Optional[int] = None,
+        tokens_per_name: tp.Optional[int] = None,
+        model: tp.Optional[str] = None,
+    ) -> int:
+        """Count the number of tokens in messages."""
+        encoding = cls.resolve_encoding(tokenizer=tokenizer, model=model)
+        tokens_per_message = cls.resolve_setting(tokens_per_message, "tokens_per_message", sub_path="chat")
+        tokens_per_name = cls.resolve_setting(tokens_per_name, "tokens_per_name", sub_path="chat")
+        num_tokens = 0
+        for message in messages:
+            num_tokens += tokens_per_message
+            for key, value in message.items():
+                num_tokens += len(encoding.encode(value))
+                if key == "name":
+                    num_tokens += tokens_per_name
+        num_tokens += 3
+        return num_tokens
+
+    def build_messages(
+        self,
+        message: str,
+        chat_history: tp.Optional[tp.MutableSequence[str]] = None,
+        to_context_kwargs: tp.KwargsLike = None,
+        max_tokens: tp.Optional[int] = None,
+        tokenizer: tp.Union[None, str, EncodingT] = None,
+        tokens_per_message: tp.Optional[int] = None,
+        tokens_per_name: tp.Optional[int] = None,
+        model: tp.Optional[str] = None,
+        system_prompt: tp.Optional[str] = None,
+        context_prompt: tp.Optional[str] = None,
+        template_context: tp.KwargsLike = None,
+        silence_warnings: tp.Optional[bool] = None,
+    ) -> tp.List[dict]:
+        """Build messages for chatting."""
+        if chat_history is None:
+            chat_history = []
+        to_context_kwargs = self.resolve_setting(to_context_kwargs, "to_context_kwargs", merge=True, sub_path="chat")
+        max_tokens = self.resolve_setting(max_tokens, "max_tokens", sub_path="chat")
+        system_prompt = self.resolve_setting(system_prompt, "system_prompt", sub_path="chat")
+        context_prompt = self.resolve_setting(context_prompt, "context_prompt", sub_path="chat")
+        template_context = self.resolve_setting(template_context, "template_context", merge=True, sub_path="chat")
+        silence_warnings = self.resolve_setting(silence_warnings, "silence_warnings", sub_path="chat")
+
+        if isinstance(context_prompt, str):
+            context_prompt = Sub(context_prompt)
+        elif checks.is_function(context_prompt):
+            context_prompt = RepFunc(context_prompt)
+        elif not isinstance(context_prompt, CustomTemplate):
+            raise TypeError(f"Context prompt must be a string, function, or template")
+        context = self.to_context(**to_context_kwargs)
+        if max_tokens is not None:
+            empty_context_prompt = context_prompt.substitute(
+                flat_merge_dicts(dict(context=""), template_context),
+                eval_id="context_prompt",
+            )
+            empty_messages = [
+                dict(role="system", content=system_prompt),
+                dict(role="user", content=empty_context_prompt),
+                *chat_history,
+                dict(role="user", content=message),
+            ]
+            num_tokens = self.count_tokens_in_messages(
+                empty_messages,
+                tokenizer=tokenizer,
+                tokens_per_message=tokens_per_message,
+                tokens_per_name=tokens_per_name,
+                model=model,
+            )
+            max_context_tokens = max(0, max_tokens - num_tokens)
+            encoding = self.resolve_encoding(tokenizer=tokenizer, model=model)
+            encoded_context = encoding.encode(context)
+            if len(encoded_context) > max_context_tokens:
+                context = encoding.decode(encoded_context[:max_context_tokens])
+                if not silence_warnings:
+                    warnings.warn(
+                        f"Context is too long ({len(encoded_context)}). "
+                        f"Truncating to {max_context_tokens} tokens. "
+                        f"Pass silence_warnings=True to silence this warning.",
+                        stacklevel=2,
+                    )
+        template_context = flat_merge_dicts(dict(context=context), template_context)
+        context_prompt = context_prompt.substitute(template_context, eval_id="context_prompt")
+        return [
+            dict(role="system", content=system_prompt),
+            dict(role="user", content=context_prompt),
+            *chat_history,
+            dict(role="user", content=message),
+        ]
+
+    def get_openai_chat_meta(self, **openai_config) -> dict:
+        """Get the metadata for chatting with OpenAI.
+
+        Returns the model, lambda for chatting, lambda for streaming, lambda for getting chunk content,
+        and lambda for getting full content."""
+        from vectorbtpro.utils.module_ import assert_can_import
+
+        assert_can_import("openai")
+        from openai import OpenAI
+
+        kwargs = openai_config
+        openai_config = self.resolve_setting(kwargs, "openai_config", merge=True, sub_path="chat")
+        model = openai_config.pop("model", None)
+        if model is None:
+            raise ValueError("Must provide a model")
+        client_arg_names = set(get_func_arg_names(OpenAI.__init__))
+        client_kwargs = {}
+        chat_kwargs = {}
+        for k, v in openai_config.items():
+            if k in client_arg_names:
+                client_kwargs[k] = v
+            else:
+                chat_kwargs[k] = v
+        client = OpenAI(**client_kwargs)
+        chat_lambda = lambda messages: client.chat.completions.create(
+            messages=messages, model=model, stream=False, **chat_kwargs
+        )
+        stream_lambda = lambda messages: client.chat.completions.create(
+            messages=messages, model=model, stream=True, **chat_kwargs
+        )
+        chunk_content_lambda = lambda response_chunk: response_chunk.choices[0].delta.content
+        full_content_lambda = lambda response: response.choices[0].message.content
+        return dict(
+            model=model,
+            chat_lambda=chat_lambda,
+            stream_lambda=stream_lambda,
+            chunk_content_lambda=chunk_content_lambda,
+            full_content_lambda=full_content_lambda,
+        )
+
+    def get_litellm_chat_meta(self, **litellm_config) -> dict:
+        """Get the metadata for chatting with LiteLLM.
+
+        Returns the model, lambda for chatting, lambda for streaming, lambda for getting chunk content,
+        and lambda for getting full content."""
+        from vectorbtpro.utils.module_ import assert_can_import
+
+        assert_can_import("litellm")
+        from litellm import completion
+
+        kwargs = litellm_config
+        litellm_config = self.resolve_setting(kwargs, "litellm_config", merge=True, sub_path="chat")
+        model = litellm_config.pop("model", None)
+        if model is None:
+            raise ValueError("Must provide a model")
+        chat_lambda = lambda messages: completion(messages=messages, model=model, stream=False, **litellm_config)
+        stream_lambda = lambda messages: completion(messages=messages, model=model, stream=True, **litellm_config)
+        chunk_content_lambda = lambda response_chunk: response_chunk.choices[0].delta.content
+        full_content_lambda = lambda response: response.choices[0].message.content
+        return dict(
+            model=model,
+            chat_lambda=chat_lambda,
+            stream_lambda=stream_lambda,
+            chunk_content_lambda=chunk_content_lambda,
+            full_content_lambda=full_content_lambda,
+        )
+
+    def get_llama_index_chat_meta(self, **llama_index_config) -> dict:
+        """Get the metadata for chatting with LlamaIndex.
+
+        Returns the model, lambda for chatting, lambda for streaming, lambda for getting chunk content,
+        and lambda for getting full content."""
+        from vectorbtpro.utils.module_ import assert_can_import
+
+        assert_can_import("llama_index")
+        from llama_index.core.llms import LLM, ChatMessage
+
+        kwargs = llama_index_config
+        llama_index_config = self.resolve_setting(kwargs, "llama_index_config", merge=True, sub_path="chat")
+        llm = llama_index_config.pop("llm", None)
+        if llm is None:
+            raise ValueError("Must provide an LLM name or path")
+        if isinstance(llm, str):
+            from importlib import import_module
+            from vectorbtpro.utils.module_ import search_package
+
+            if "." in llm:
+                path_parts = llm.split(".")
+                llm = path_parts[-1]
+                if len(path_parts) == 2:
+                    module_name = "llama_index.llms." + path_parts[0]
+                else:
+                    module_name = ".".join(path_parts[:-1])
+                module = import_module(module_name)
+            else:
+                import llama_index.llms
+
+                module = llama_index.llms
+            match_func = lambda k, v: isinstance(v, type) and issubclass(v, LLM)
+            candidates = search_package(module, match_func)
+            class_found = False
+            for k, v in candidates.items():
+                if llm.lower().replace("_", "") == k.lower():
+                    llm = v
+                    class_found = True
+                    break
+            if not class_found:
+                raise ValueError(f"LLM '{llm}' not found")
+        if isinstance(llm, type):
+            llm_name = llm.__name__.lower()
+            module_name = llm.__module__
+        else:
+            checks.assert_instance_of(llm, LLM, arg_name="llm")
+            llm_name = type(llm).__name__.lower()
+            module_name = type(llm).__module__
+        llm_configs = llama_index_config.pop("llm_configs", {})
+        if llm_name in llm_configs:
+            llama_index_config = deep_merge_dicts(llama_index_config, llm_configs[llm_name])
+        elif module_name in llm_configs:
+            llama_index_config = deep_merge_dicts(llama_index_config, llm_configs[module_name])
+        if isinstance(llm, type):
+            llm = llm(**llama_index_config)
+        elif len(kwargs) > 0:
+            raise ValueError("Cannot apply config to already initialized LLM")
+        model = llama_index_config.get("model", None)
+        if model is None:
+            func_kwargs = get_func_kwargs(type(llm).__init__)
+            model = func_kwargs.get("model", None)
+        prepare_messages_lambda = lambda messages: list(map(lambda x: ChatMessage(**dict(x)), messages))
+        chat_lambda = lambda messages: llm.chat(prepare_messages_lambda(messages))
+        stream_lambda = lambda messages: llm.stream_chat(prepare_messages_lambda(messages))
+        chunk_content_lambda = lambda response_chunk: response_chunk.delta
+        full_content_lambda = lambda response: response.message.conten
+        return dict(
+            model=model,
+            chat_lambda=chat_lambda,
+            stream_lambda=stream_lambda,
+            chunk_content_lambda=chunk_content_lambda,
+            full_content_lambda=full_content_lambda,
+        )
 
     @hybrid_method
     def chat(
@@ -2024,9 +2290,10 @@ class KnowledgeAsset(Configured, MutableSequence):
         chat_history: tp.Optional[tp.MutableSequence[str]] = None,
         stream: tp.Optional[bool] = None,
         to_context_kwargs: tp.KwargsLike = None,
-        max_context_chars: tp.Optional[int] = None,
-        max_context_tokens: tp.Optional[int] = None,
+        max_tokens: tp.Optional[int] = None,
         tokenizer: tp.Union[None, str, EncodingT] = None,
+        tokens_per_message: tp.Optional[int] = None,
+        tokens_per_name: tp.Optional[int] = None,
         system_prompt: tp.Optional[str] = None,
         context_prompt: tp.Optional[str] = None,
         display_format: tp.Optional[str] = None,
@@ -2044,6 +2311,7 @@ class KnowledgeAsset(Configured, MutableSequence):
         output_to: tp.Optional[tp.Union[str, tp.TextIO]] = None,
         flush_output: tp.Optional[bool] = None,
         template_context: tp.KwargsLike = None,
+        silence_warnings: tp.Optional[bool] = None,
         package: tp.Optional[str] = None,
         return_response: bool = False,
         **kwargs,
@@ -2130,14 +2398,6 @@ class KnowledgeAsset(Configured, MutableSequence):
             return super().chat(*args, **kwargs)
 
         stream = cls_or_self.resolve_setting(stream, "stream", sub_path="chat")
-        to_context_kwargs = cls_or_self.resolve_setting(
-            to_context_kwargs, "to_context_kwargs", merge=True, sub_path="chat"
-        )
-        max_context_chars = cls_or_self.resolve_setting(max_context_chars, "max_context_chars", sub_path="chat")
-        max_context_tokens = cls_or_self.resolve_setting(max_context_tokens, "max_context_tokens", sub_path="chat")
-        tokenizer = cls_or_self.resolve_setting(tokenizer, "tokenizer", sub_path="chat")
-        system_prompt = cls_or_self.resolve_setting(system_prompt, "system_prompt", sub_path="chat")
-        context_prompt = cls_or_self.resolve_setting(context_prompt, "context_prompt", sub_path="chat")
         display_format = cls_or_self.resolve_setting(display_format, "display_format", sub_path="chat")
         refresh_rate = cls_or_self.resolve_setting(refresh_rate, "refresh_rate", sub_path="chat")
         to_markdown_kwargs = cls_or_self.resolve_setting(
@@ -2160,6 +2420,7 @@ class KnowledgeAsset(Configured, MutableSequence):
         template_context = cls_or_self.resolve_setting(
             template_context, "template_context", merge=True, sub_path="chat"
         )
+        silence_warnings = cls_or_self.resolve_setting(silence_warnings, "silence_warnings", sub_path="chat")
         package = cls_or_self.resolve_setting(package, "package", sub_path="chat")
 
         if chat_history is None:
@@ -2177,39 +2438,6 @@ class KnowledgeAsset(Configured, MutableSequence):
                     display_format = "plain"
             elif display_format.lower() not in {"plain", "ipython_markdown", "ipython_html", "html"}:
                 raise ValueError(f"Invalid output format: '{display_format}'")
-        if isinstance(context_prompt, str):
-            context_prompt = Sub(context_prompt)
-        elif checks.is_function(context_prompt):
-            context_prompt = RepFunc(context_prompt)
-        elif not isinstance(context_prompt, CustomTemplate):
-            raise TypeError(f"Context prompt must be a string, function, or template")
-        context = cls_or_self.to_context(**to_context_kwargs)
-        if max_context_chars is not None:
-            context = context[:max_context_chars]
-        if max_context_tokens is not None:
-            from vectorbtpro.utils.module_ import assert_can_import
-
-            assert_can_import("tiktoken")
-            if isinstance(tokenizer, str):
-                from tiktoken.model import MODEL_TO_ENCODING
-
-                if tokenizer in MODEL_TO_ENCODING.keys():
-                    from tiktoken import encoding_for_model
-
-                    tokenizer = encoding_for_model(tokenizer)
-                else:
-                    from tiktoken import get_encoding
-
-                    tokenizer = get_encoding(tokenizer)
-            context = tokenizer.decode(tokenizer.encode(context)[:max_context_tokens])
-        template_context = flat_merge_dicts(dict(context=context), template_context)
-        context_prompt = context_prompt.substitute(template_context, eval_id="context_prompt")
-        messages = [
-            dict(role="system", content=system_prompt),
-            dict(role="user", content=context_prompt),
-            *chat_history,
-            dict(role="user", content=message),
-        ]
 
         if package is None:
             from vectorbtpro.utils.module_ import check_installed
@@ -2223,116 +2451,31 @@ class KnowledgeAsset(Configured, MutableSequence):
             else:
                 raise ValueError("No LLM packages installed")
         if package.lower() == "openai":
-            from vectorbtpro.utils.module_ import assert_can_import
-
-            assert_can_import("openai")
-            from openai import OpenAI
-
-            openai_config = cls_or_self.resolve_setting(kwargs, "openai_config", merge=True, sub_path="chat")
-            model = openai_config.pop("model", None)
-            if model is None:
-                raise ValueError("Must provide a model")
-            client_arg_names = set(get_func_arg_names(OpenAI.__init__))
-            client_kwargs = {}
-            chat_kwargs = {}
-            for k, v in openai_config.items():
-                if k in client_arg_names:
-                    client_kwargs[k] = v
-                else:
-                    chat_kwargs[k] = v
-            client = OpenAI(**client_kwargs)
-            response = client.chat.completions.create(messages=messages, model=model, stream=stream, **chat_kwargs)
-
-            def _get_chunk_content(response_chunk):
-                return response_chunk.choices[0].delta.content
-
-            def _get_full_content(response):
-                return response.choices[0].message.content
-
+            meta = cls_or_self.get_openai_chat_meta(**kwargs)
         elif package.lower() == "litellm":
-            from vectorbtpro.utils.module_ import assert_can_import
-
-            assert_can_import("litellm")
-            from litellm import completion
-
-            litellm_config = cls_or_self.resolve_setting(kwargs, "litellm_config", merge=True, sub_path="chat")
-            model = litellm_config.pop("model", None)
-            if model is None:
-                raise ValueError("Must provide a model")
-            response = completion(messages=messages, model=model, stream=stream, **litellm_config)
-
-            def _get_chunk_content(response_chunk):
-                return response_chunk.choices[0].delta.content
-
-            def _get_full_content(response):
-                return response.choices[0].message.content
-
+            meta = cls_or_self.get_litellm_chat_meta(**kwargs)
         elif package.lower() == "llama_index":
-            from vectorbtpro.utils.module_ import assert_can_import
-
-            assert_can_import("llama_index")
-            from llama_index.core.llms import LLM, ChatMessage
-
-            llama_index_config = cls_or_self.resolve_setting(kwargs, "llama_index_config", merge=True, sub_path="chat")
-            llm = llama_index_config.pop("llm", None)
-            if llm is None:
-                raise ValueError("Must provide an LLM name or path")
-            if isinstance(llm, str):
-                from importlib import import_module
-                from vectorbtpro.utils.module_ import search_package
-
-                if "." in llm:
-                    path_parts = llm.split(".")
-                    llm = path_parts[-1]
-                    if len(path_parts) == 2:
-                        module_name = "llama_index.llms." + path_parts[0]
-                    else:
-                        module_name = ".".join(path_parts[:-1])
-                    module = import_module(module_name)
-                else:
-                    import llama_index.llms
-
-                    module = llama_index.llms
-                match_func = lambda k, v: isinstance(v, type) and issubclass(v, LLM)
-                candidates = search_package(module, match_func)
-                class_found = False
-                for k, v in candidates.items():
-                    if llm.lower().replace("_", "") == k.lower():
-                        llm = v
-                        class_found = True
-                        break
-                if not class_found:
-                    raise ValueError(f"LLM '{llm}' not found")
-            if isinstance(llm, type):
-                llm_name = llm.__name__.lower()
-                module_name = llm.__module__
-            else:
-                checks.assert_instance_of(llm, LLM, arg_name="llm")
-                llm_name = type(llm).__name__.lower()
-                module_name = type(llm).__module__
-            llm_configs = llama_index_config.pop("llm_configs", {})
-            if llm_name in llm_configs:
-                llama_index_config = deep_merge_dicts(llama_index_config, llm_configs[llm_name])
-            elif module_name in llm_configs:
-                llama_index_config = deep_merge_dicts(llama_index_config, llm_configs[module_name])
-            if isinstance(llm, type):
-                llm = llm(**llama_index_config)
-            elif len(kwargs) > 0:
-                raise ValueError("Cannot apply config to already initialized LLM")
-            messages = list(map(lambda x: ChatMessage(**dict(x)), messages))
-            if stream:
-                response = llm.stream_chat(messages)
-            else:
-                response = llm.chat(messages)
-
-            def _get_chunk_content(response_chunk):
-                return response_chunk.delta
-
-            def _get_full_content(response):
-                return response.message.content
-
+            meta = cls_or_self.get_llama_index_chat_meta(**kwargs)
         else:
             raise ValueError(f"Invalid package: '{package}'")
+        messages = cls_or_self.build_messages(
+            message,
+            chat_history=chat_history,
+            to_context_kwargs=to_context_kwargs,
+            max_tokens=max_tokens,
+            tokenizer=tokenizer,
+            tokens_per_message=tokens_per_message,
+            tokens_per_name=tokens_per_name,
+            model=meta["model"],
+            system_prompt=system_prompt,
+            context_prompt=context_prompt,
+            template_context=template_context,
+            silence_warnings=silence_warnings,
+        )
+        if stream:
+            response = meta["stream_lambda"](messages)
+        else:
+            response = meta["chat_lambda"](messages)
 
         markdown_output = None
         html_output = None
@@ -2341,6 +2484,7 @@ class KnowledgeAsset(Configured, MutableSequence):
         def _display_ipython_markdown(output_content):
             nonlocal markdown_output
 
+            from vectorbtpro.utils.module_ import assert_can_import
             from vectorbtpro.utils.knowledge.custom_asset_funcs import ToMarkdownAssetFunc
 
             assert_can_import("IPython")
@@ -2354,6 +2498,7 @@ class KnowledgeAsset(Configured, MutableSequence):
         def _display_ipython_html(output_content):
             nonlocal html_output
 
+            from vectorbtpro.utils.module_ import assert_can_import
             from vectorbtpro.utils.knowledge.custom_asset_funcs import ToMarkdownAssetFunc, ToHTMLAssetFunc
 
             assert_can_import("IPython")
@@ -2449,7 +2594,7 @@ class KnowledgeAsset(Configured, MutableSequence):
             chunk_contents = []
             in_code_block = False
             for i, response_chunk in enumerate(response):
-                chunk_content = _get_chunk_content(response_chunk)
+                chunk_content = meta["chunk_content_lambda"](response_chunk)
                 if chunk_content is not None:
                     buffer_contents.append(chunk_content)
                     if refresh_rate is not None:
@@ -2493,7 +2638,7 @@ class KnowledgeAsset(Configured, MutableSequence):
             if display_format.lower() == "html":
                 _display_html(full_content, False)
         else:
-            full_content = _get_full_content(response)
+            full_content = meta["full_content_lambda"](response)
             if display_format.lower() == "plain" or output_to is not None:
                 print(full_content, file=output_to, flush=flush_output)
             if display_format.lower() == "ipython_markdown":
