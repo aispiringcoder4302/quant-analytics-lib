@@ -331,6 +331,7 @@ MaybeKnowledgeAsset = MaybeAsset[KnowledgeAsset]
 MaybeVBTAsset = MaybeAsset[VBTAsset]
 MaybePagesAsset = MaybeAsset[PagesAsset]
 MaybeMessagesAsset = MaybeAsset[MessagesAsset]
+ChatHistory = Optional[MutableSequence[str]]
 ChatOutput = Union[Optional[Path], Tuple[Any, Optional[Path]]]
 
 # Chaining

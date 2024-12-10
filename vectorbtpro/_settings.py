@@ -1990,6 +1990,10 @@ knowledge = frozen_cfg(
     return_type="item",
     return_path=False,
     changed_only=False,
+    code=flex_cfg(
+        require_language=False,
+        in_blocks=True,
+    ),
     dump_all=False,
     dump_engine="yaml",
     dump_engine_kwargs=flex_cfg(
@@ -2142,6 +2146,7 @@ knowledge = frozen_cfg(
         tokens_per_message=3,
         tokens_per_name=1,
         system_prompt="You are a helpful assistant. Given the context information and not prior knowledge, answer the query.",
+        system_as_user=False,
         context_prompt=Sub(f"""Context information is below.
 ---------------------
 $context
@@ -2186,12 +2191,16 @@ $context
             clear_metadata=True,
             clear_metadata_kwargs=flex_cfg(),
             dump_metadata_kwargs=flex_cfg(),
+            incl_base_attr=True,
             incl_shortcuts=True,
             incl_shortcut_access=True,
             incl_shortcut_call=True,
             incl_instances=True,
+            incl_custom=None,
+            is_custom_regex=False,
             as_code=False,
             as_regex=True,
+            merge_targets=True,
             chat=flex_cfg(
                 system_prompt="You are an assistant with access to the VectorBT PRO (VBT) Python library documentation and Discord history. VBT is a proprietary successor to the open-source vectorbt for financial backtesting. As an expert, provide clear and accurate answers using only these sources. If metadata with links is present, reference these links to support your answers. If information isn't found, inform the user accordingly. Note that VBT exclusively refers to VectorBT PRO, which significantly differs from the open-source version. Given the context information and not prior knowledge, answer the query.",
             ),

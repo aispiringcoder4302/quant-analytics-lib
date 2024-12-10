@@ -619,7 +619,7 @@ class AggBlockAssetFunc(AssetFunc):
     @classmethod
     def prepare(
         cls,
-        aggregate_fields: tp.Union[None, bool, tp.MaybeSet[str]] = None,
+        aggregate_fields: tp.Union[None, bool, tp.MaybeIterable[str]] = None,
         parent_links_only: tp.Optional[bool] = None,
         metadata_format: tp.Optional[str] = None,
         clear_metadata: tp.Optional[bool] = None,
@@ -666,7 +666,7 @@ class AggBlockAssetFunc(AssetFunc):
     def call(
         cls,
         d: tp.Any,
-        aggregate_fields: tp.Union[bool, tp.MaybeSet[str]] = False,
+        aggregate_fields: tp.Union[bool, tp.MaybeIterable[str]] = False,
         parent_links_only: bool = True,
         metadata_format: str = "markdown",
         clear_metadata: bool = True,
@@ -799,7 +799,7 @@ class AggThreadAssetFunc(AggBlockAssetFunc):
     def call(
         cls,
         d: tp.Any,
-        aggregate_fields: tp.Union[bool, tp.MaybeSet[str]] = False,
+        aggregate_fields: tp.Union[bool, tp.MaybeIterable[str]] = False,
         parent_links_only: bool = True,
         metadata_format: str = "markdown",
         clear_metadata: bool = True,
@@ -921,7 +921,7 @@ class AggChannelAssetFunc(AggThreadAssetFunc):
     def call(
         cls,
         d: tp.Any,
-        aggregate_fields: tp.Union[bool, tp.MaybeSet[str]] = False,
+        aggregate_fields: tp.Union[bool, tp.MaybeIterable[str]] = False,
         parent_links_only: bool = True,
         metadata_format: str = "markdown",
         clear_metadata: bool = True,

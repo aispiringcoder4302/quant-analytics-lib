@@ -30,6 +30,7 @@ __all__ = [
     "find_docs",
     "find_messages",
     "find_examples",
+    "find_assets",
     "chat_about",
 ]
 
@@ -282,7 +283,7 @@ class VBTAsset(KnowledgeAsset):
         consolidate: bool = True,
         allow_empty: bool = False,
         **kwargs,
-    ) -> tp.Union[VBTAssetT, list, dict]:
+    ) -> tp.MaybeVBTAsset:
         """Find item(s) corresponding to link(s)."""
 
         def _extend_link(link):
@@ -372,7 +373,7 @@ class VBTAsset(KnowledgeAsset):
         clear_metadata_kwargs: tp.KwargsLike = None,
         dump_metadata_kwargs: tp.KwargsLike = None,
         **kwargs,
-    ) -> tp.Union[VBTAssetT, list, dict]:
+    ) -> tp.MaybeVBTAsset:
         """Convert to Markdown.
 
         Uses `VBTAsset.apply` on `vectorbtpro.utils.knowledge.custom_asset_funcs.ToMarkdownAssetFunc`.
@@ -514,7 +515,7 @@ class VBTAsset(KnowledgeAsset):
         to_markdown_kwargs: tp.KwargsLike = None,
         format_html_kwargs: tp.KwargsLike = None,
         **kwargs,
-    ) -> tp.Union[VBTAssetT, list, dict]:
+    ) -> tp.MaybeVBTAsset:
         """Convert to HTML.
 
         Uses `VBTAsset.apply` on `vectorbtpro.utils.knowledge.custom_asset_funcs.ToHTMLAssetFunc`.
@@ -744,6 +745,27 @@ class VBTAsset(KnowledgeAsset):
         return file_path
 
     @classmethod
+    def prepare_mention_target(
+        cls,
+        target: str,
+        as_code: bool = False,
+        as_regex: bool = True,
+    ) -> str:
+        """Prepare a mention target."""
+        if as_regex:
+            escaped_target = re.escape(target)
+            new_target = ""
+            if re.match(r"\w", target[0]):
+                new_target += r"(?<!\w)(?<!_)(?<!\.)"
+            new_target += escaped_target
+            if re.match(r"\w", target[-1]):
+                new_target += r"(?!\w)(?!_)"
+            elif not as_code and target[-1] == ".":
+                new_target += r"(?=[A-Za-z0-9_])"
+            return new_target
+        return target
+
+    @classmethod
     def split_class_name(cls, name: str) -> tp.List[str]:
         """Split a class name constituent parts."""
         return re.findall(r"[A-Z]+(?=[A-Z][a-z]|$)|[A-Z][a-z]+", name)
@@ -769,31 +791,9 @@ class VBTAsset(KnowledgeAsset):
         return snake_case_names
 
     @classmethod
-    def prepare_mention_target(
+    def generate_refname_targets(
         cls,
-        target: str,
-        as_code: bool = False,
-        as_regex: bool = True,
-    ) -> str:
-        """Prepare a mention target."""
-        if as_regex:
-            escaped_target = re.escape(target)
-            new_target = ""
-            if re.match(r"\w", target[0]):
-                new_target += r"(?<!\w)(?<!_)(?<!\.)"
-            new_target += escaped_target
-            if re.match(r"\w", target[-1]):
-                new_target += r"(?!\w)(?!_)"
-            elif not as_code and target[-1] == ".":
-                new_target += r"(?=[A-Za-z0-9_])"
-            return new_target
-        return target
-
-    def find_obj_mentions(
-        self,
-        obj: tp.Any,
-        *,
-        module: tp.Union[None, str, ModuleType] = None,
+        refname: str,
         resolve: bool = True,
         incl_shortcuts: tp.Optional[bool] = None,
         incl_shortcut_access: tp.Optional[bool] = None,
@@ -801,15 +801,8 @@ class VBTAsset(KnowledgeAsset):
         incl_instances: tp.Optional[bool] = None,
         as_code: tp.Optional[bool] = None,
         as_regex: tp.Optional[bool] = None,
-        path: tp.Optional[tp.MaybeList[tp.PathLikeKey]] = "content",
-        return_type: tp.Optional[str] = "item",
-        **kwargs,
-    ) -> tp.Union[VBTAssetT, list, dict]:
-        """Find mentions of a VBT object.
-
-        Prepares the object reference with `vectorbtpro.utils.module_.prepare_refname`.
-        If `obj` is None, uses itself. If it's a string that can be found among attributes of the class,
-        uses the attribute of itself.
+    ) -> tp.List[str]:
+        """Generate reference name targets.
 
         If `incl_shortcuts` is True, includes shortcuts found in `import vectorbtpro as vbt`.
         In addition, if `incl_shortcut_access` is True and the object is a class or module, includes a version
@@ -819,109 +812,265 @@ class VBTAsset(KnowledgeAsset):
         If `incl_instances` is True, includes typical short names of classes, which
         include the snake-cased class name and mapped name parts found in `class_abbr_config`.
 
-        If `as_code` is True, uses `VBTAsset.find_code`, otherwise, uses `VBTAsset.find`.
-
-        If `as_regex` is True, search is refined by using regular expressions. For instance,
-        `vbt.PF` may match `vbt.PFO` if RegEx is not used.
-
         Prepares each mention target with `VBTAsset.prepare_mention_target`."""
-        from vectorbtpro.utils.module_ import prepare_refname, annotate_refname_parts
+        from vectorbtpro.utils.module_ import annotate_refname_parts
         import vectorbtpro as vbt
 
-        incl_shortcuts = self.resolve_setting(incl_shortcuts, "incl_shortcuts")
-        incl_shortcut_access = self.resolve_setting(incl_shortcut_access, "incl_shortcut_access")
-        incl_shortcut_call = self.resolve_setting(incl_shortcut_call, "incl_shortcut_call")
-        incl_instances = self.resolve_setting(incl_instances, "incl_instances")
-        as_code = self.resolve_setting(as_code, "as_code")
-        as_regex = self.resolve_setting(as_regex, "as_regex")
+        incl_shortcuts = cls.resolve_setting(incl_shortcuts, "incl_shortcuts")
+        incl_shortcut_access = cls.resolve_setting(incl_shortcut_access, "incl_shortcut_access")
+        incl_shortcut_call = cls.resolve_setting(incl_shortcut_call, "incl_shortcut_call")
+        incl_instances = cls.resolve_setting(incl_instances, "incl_instances")
+        as_code = cls.resolve_setting(as_code, "as_code")
+        as_regex = cls.resolve_setting(as_regex, "as_regex")
 
-        def _prepare(target):
-            return self.prepare_mention_target(target, as_code=as_code, as_regex=as_regex)
+        def _prepare_target(target, _as_code=as_code, _as_regex=as_regex):
+            return cls.prepare_mention_target(target, as_code=_as_code, as_regex=_as_regex)
 
-        obj_refname = prepare_refname(obj, module=module, resolve=resolve)
         targets = set()
-        obj_refname_parts = obj_refname.split(".")
+        new_target = _prepare_target(refname)
+        targets.add(new_target)
+        refname_parts = refname.split(".")
         if resolve:
-            annotated_parts = annotate_refname_parts(obj_refname)
+            annotated_parts = annotate_refname_parts(refname)
             if len(annotated_parts) >= 2 and isinstance(annotated_parts[-2]["obj"], type):
-                cls_refname = ".".join(obj_refname_parts[:-1])
+                cls_refname = ".".join(refname_parts[:-1])
                 cls_aliases = {annotated_parts[-2]["name"]}
+                attr_aliases = set()
                 for k, v in vbt.__dict__.items():
                     v_refname = prepare_refname(v, raise_error=False)
                     if v_refname is not None:
                         if v_refname == cls_refname:
                             cls_aliases.add(k)
-                        if incl_shortcuts:
-                            if v_refname == cls_refname:
-                                new_target = _prepare(k + "." + annotated_parts[-1]["name"])
+                        elif v_refname == refname:
+                            attr_aliases.add(k)
+                            if incl_shortcuts:
+                                new_target = _prepare_target("vbt." + k)
                                 targets.add(new_target)
-                            elif v_refname == obj_refname:
-                                new_target = _prepare("vbt." + k)
-                                targets.add(new_target)
-                                if incl_shortcut_call and callable(annotated_parts[-1]["obj"]):
-                                    new_target = _prepare(k + "(")
-                                    targets.add(new_target)
+                if incl_shortcuts:
+                    for cls_alias in cls_aliases:
+                        new_target = _prepare_target(cls_alias + "." + annotated_parts[-1]["name"])
+                        targets.add(new_target)
+                    for attr_alias in attr_aliases:
+                        if incl_shortcut_call and callable(annotated_parts[-1]["obj"]):
+                            new_target = _prepare_target(attr_alias + "(")
+                            targets.add(new_target)
                 if incl_instances:
                     for cls_alias in cls_aliases:
-                        for class_abbr in self.get_class_abbrs(cls_alias):
-                            new_target = _prepare(class_abbr + "." + annotated_parts[-1]["name"])
+                        for class_abbr in cls.get_class_abbrs(cls_alias):
+                            new_target = _prepare_target(class_abbr + "." + annotated_parts[-1]["name"])
                             targets.add(new_target)
-                if len(targets) == 0:
-                    new_target = _prepare(obj_refname)
-                    targets.add(new_target)
             else:
-                new_target = _prepare(obj_refname)
-                targets.add(new_target)
-                if len(obj_refname_parts) >= 2:
-                    module_name = ".".join(obj_refname_parts[:-1])
-                    attr_name = obj_refname_parts[-1]
-                    new_target = _prepare("from {} import {}".format(module_name, attr_name))
+                if len(refname_parts) >= 2:
+                    module_name = ".".join(refname_parts[:-1])
+                    attr_name = refname_parts[-1]
+                    new_target = _prepare_target("from {} import {}".format(module_name, attr_name))
                     targets.add(new_target)
                 aliases = {annotated_parts[-1]["name"]}
                 for k, v in vbt.__dict__.items():
                     v_refname = prepare_refname(v, raise_error=False)
                     if v_refname is not None:
-                        if v_refname == obj_refname:
+                        if v_refname == refname:
                             aliases.add(k)
                             if incl_shortcuts:
-                                new_target = _prepare("vbt." + k)
+                                new_target = _prepare_target("vbt." + k)
                                 targets.add(new_target)
-                                if incl_shortcut_access and isinstance(annotated_parts[-1]["obj"], (type, ModuleType)):
-                                    new_target = _prepare(k + ".")
-                                    targets.add(new_target)
-                                if incl_shortcut_call and callable(annotated_parts[-1]["obj"]):
-                                    new_target = _prepare(k + "(")
-                                    targets.add(new_target)
+                if incl_shortcuts:
+                    for alias in aliases:
+                        if incl_shortcut_access and isinstance(annotated_parts[-1]["obj"], (type, ModuleType)):
+                            new_target = _prepare_target(alias + ".")
+                            targets.add(new_target)
+                        if incl_shortcut_call and callable(annotated_parts[-1]["obj"]):
+                            new_target = _prepare_target(alias + "(")
+                            targets.add(new_target)
                 if incl_instances and isinstance(annotated_parts[-1]["obj"], type):
                     for alias in aliases:
-                        for class_abbr in self.get_class_abbrs(alias):
-                            new_target = _prepare(class_abbr + " =")
+                        for class_abbr in cls.get_class_abbrs(alias):
+                            new_target = _prepare_target(class_abbr + " =")
                             targets.add(new_target)
-                            new_target = _prepare(class_abbr + ".")
+                            new_target = _prepare_target(class_abbr + ".")
                             targets.add(new_target)
+        return list(targets)
 
+    def generate_mention_targets(
+        self,
+        obj: tp.Any,
+        *,
+        attr: tp.Optional[str] = None,
+        module: tp.Union[None, str, ModuleType] = None,
+        resolve: bool = True,
+        incl_base_attr: tp.Optional[bool] = None,
+        incl_shortcuts: tp.Optional[bool] = None,
+        incl_shortcut_access: tp.Optional[bool] = None,
+        incl_shortcut_call: tp.Optional[bool] = None,
+        incl_instances: tp.Optional[bool] = None,
+        as_code: tp.Optional[bool] = None,
+        as_regex: tp.Optional[bool] = None,
+    ) -> tp.List[str]:
+        """Generate mention targets.
+
+        Prepares the object reference with `vectorbtpro.utils.module_.prepare_refname`.
+        If an attribute is provided, checks whether the attribute is defined by the object itself
+        or by one of its base classes. If the latter and `incl_base_attr` is True, generates
+        reference name targets for both the object attribute and the base class attribute.
+
+        Generates reference name targets with `VBTAsset.generate_refname_targets`."""
+        from vectorbtpro.utils.module_ import prepare_refname
+
+        incl_base_attr = self.resolve_setting(incl_base_attr, "incl_base_attr")
+
+        obj_refname = prepare_refname(obj, module=module, resolve=resolve)
+        if attr is not None:
+            checks.assert_instance_of(attr, str, arg_name="attr")
+            if isinstance(obj, tuple):
+                attr_obj = (*obj, attr)
+            else:
+                attr_obj = (obj, attr)
+            base_attr_refname = prepare_refname(attr_obj, module=module, resolve=resolve)
+            obj_refname += "." + attr
+            if base_attr_refname == obj_refname:
+                obj_refname = base_attr_refname
+                base_attr_refname = None
+        else:
+            base_attr_refname = None
+        targets = self.generate_refname_targets(
+            obj_refname,
+            resolve=resolve,
+            incl_shortcuts=incl_shortcuts,
+            incl_shortcut_access=incl_shortcut_access,
+            incl_shortcut_call=incl_shortcut_call,
+            incl_instances=incl_instances,
+            as_code=as_code,
+            as_regex=as_regex,
+        )
+        if incl_base_attr and base_attr_refname is not None:
+            targets.extend(self.generate_refname_targets(
+                base_attr_refname,
+                resolve=resolve,
+                incl_shortcuts=incl_shortcuts,
+                incl_shortcut_access=incl_shortcut_access,
+                incl_shortcut_call=incl_shortcut_call,
+                incl_instances=incl_instances,
+                as_code=as_code,
+                as_regex=as_regex,
+            ))
+        return targets
+
+    @classmethod
+    def merge_mention_targets(cls, targets: tp.List[str], as_regex: bool = True) -> str:
+        """Merge mention targets into a single regular expression."""
+        if as_regex:
+            prefixed_targets = []
+            non_prefixed_targets = []
+            common_prefix = r"(?<!\w)(?<!_)(?<!\.)"
+            for target in targets:
+                if target.startswith(common_prefix):
+                    prefixed_targets.append(target[len(common_prefix):])
+                else:
+                    non_prefixed_targets.append(target)
+            combined_targets = []
+            if prefixed_targets:
+                combined_prefixed = "|".join(f"(?:{p})" for p in prefixed_targets)
+                combined_prefixed = f"{common_prefix}(?:{combined_prefixed})"
+                combined_targets.append(combined_prefixed)
+            if non_prefixed_targets:
+                combined_non_prefixed = "|".join(f"(?:{p})" for p in non_prefixed_targets)
+                combined_targets.append(f"(?:{combined_non_prefixed})")
+            if len(combined_targets) == 1:
+                return combined_targets[0]
+            return "|".join(combined_targets)
+
+        escaped_targets = [re.escape(target) for target in targets]
+        escaped_targets.sort(key=len, reverse=True)
+        combined_target = "|".join(escaped_targets)
+        return f"({combined_target})"
+
+    def find_obj_mentions(
+        self,
+        obj: tp.Any,
+        *,
+        attr: tp.Optional[str] = None,
+        module: tp.Union[None, str, ModuleType] = None,
+        resolve: bool = True,
+        incl_shortcuts: tp.Optional[bool] = None,
+        incl_shortcut_access: tp.Optional[bool] = None,
+        incl_shortcut_call: tp.Optional[bool] = None,
+        incl_instances: tp.Optional[bool] = None,
+        incl_custom: tp.Optional[tp.MaybeList[str]] = None,
+        is_custom_regex: bool = False,
+        as_code: tp.Optional[bool] = None,
+        as_regex: tp.Optional[bool] = None,
+        merge_targets: tp.Optional[bool] = None,
+        per_path: bool = False,
+        path: tp.Optional[tp.MaybeList[tp.PathLikeKey]] = "content",
+        return_type: tp.Optional[str] = "item",
+        **kwargs,
+    ) -> tp.MaybeVBTAsset:
+        """Find mentions of a VBT object.
+
+        Generates mention targets with `VBTAsset.generate_mention_targets`.
+
+        Provide custom mentions in `incl_custom`. If regular expressions are provided,
+        set `is_custom_regex` to True.
+
+        If `as_code` is True, uses `VBTAsset.find_code`, otherwise, uses `VBTAsset.find`.
+
+        If `as_regex` is True, search is refined by using regular expressions. For instance,
+        `vbt.PF` may match `vbt.PFO` if RegEx is not used.
+
+        If `merge_targets`, uses `VBTAsset.merge_targets` to reduce the number of targets.
+        Sets `as_regex` to True if False (but after the targets were generated)."""
+        as_code = self.resolve_setting(as_code, "as_code")
+        as_regex = self.resolve_setting(as_regex, "as_regex")
+        merge_targets = self.resolve_setting(merge_targets, "merge_targets")
+
+        mention_targets = self.generate_mention_targets(
+            obj,
+            attr=attr,
+            module=module,
+            resolve=resolve,
+            incl_shortcuts=incl_shortcuts,
+            incl_shortcut_access=incl_shortcut_access,
+            incl_shortcut_call=incl_shortcut_call,
+            incl_instances=incl_instances,
+            as_code=as_code,
+            as_regex=as_regex,
+        )
+        if incl_custom:
+
+            def _prepare_target(target, _as_code=as_code, _as_regex=as_regex):
+                return self.prepare_mention_target(target, as_code=_as_code, as_regex=_as_regex)
+
+            if isinstance(incl_custom, str):
+                incl_custom = [incl_custom]
+            for custom in incl_custom:
+                new_target = _prepare_target(custom, _as_regex=is_custom_regex)
+                if new_target not in mention_targets:
+                    mention_targets.append(new_target)
+        if merge_targets:
+            mention_targets = self.merge_mention_targets(mention_targets, as_regex=as_regex)
+            as_regex = True
         if as_code:
             return self.find_code(
-                list(targets),
+                mention_targets,
                 escape_target=not as_regex,
                 path=path,
-                per_path=False,
+                per_path=per_path,
                 return_type=return_type,
                 **kwargs,
             )
         if as_regex:
             return self.find(
-                list(targets),
+                mention_targets,
                 mode="regex",
                 path=path,
-                per_path=False,
+                per_path=per_path,
                 return_type=return_type,
                 **kwargs,
             )
         return self.find(
-            list(targets),
+            mention_targets,
             path=path,
-            per_path=False,
+            per_path=per_path,
             return_type=return_type,
             **kwargs,
         )
@@ -932,6 +1081,21 @@ PagesAssetT = tp.TypeVar("PagesAssetT", bound="PagesAsset")
 
 class PagesAsset(VBTAsset):
     """Class for working with website pages.
+
+    Has the following fields:
+
+    * link: URL of the page (without fragment), such as "https://vectorbt.pro/features/data/", or
+        URL of the heading (with fragment), such as "https://vectorbt.pro/features/data/#trading-view"
+    * parent: URL of the parent page or heading. For example, a heading 1 is a parent of a heading 2.
+    * children: List of URLs of the child pages and/or headings. For example, a heading 2 is a child of a heading 1.
+    * name: Name of the page or heading. Within the API, the name of the object that the heading represents,
+        such as "Portfolio.from_signals".
+    * type: Type of the page or heading, such as "page", "heading 1", "heading 2", etc.
+    * icon: Icon, such as "material-brain"
+    * tags: List of tags, such as ["portfolio", "records"]
+    * content: String content of the page or heading. Can be None in pages that solely redirect.
+    * obj_type: Within the API, the type of the object that the heading represents, such as "property"
+    * github_link: Within the API, the URL to the source code of the object that the heading represents
 
     For defaults, see `assets.pages` in `vectorbtpro._settings.knowledge`."""
 
@@ -999,7 +1163,7 @@ class PagesAsset(VBTAsset):
         aggregate_kwargs: tp.KwargsLike = None,
         incl_descendants: bool = False,
         **kwargs,
-    ) -> tp.Union[PagesAssetT, list, dict]:
+    ) -> tp.MaybePagesAsset:
         """Find the page(s) corresponding to link(s).
 
         Keyword arguments are passed to `VBTAsset.find_link`."""
@@ -1016,7 +1180,7 @@ class PagesAsset(VBTAsset):
         self,
         refname: tp.MaybeList[str],
         **kwargs,
-    ) -> tp.Union[PagesAssetT, list, dict]:
+    ) -> tp.MaybePagesAsset:
         """Find the page corresponding to a reference."""
         if isinstance(refname, list):
             link = list(map(lambda x: f"#({re.escape(x)})$", refname))
@@ -1028,13 +1192,20 @@ class PagesAsset(VBTAsset):
         self,
         obj: tp.Any,
         *,
+        attr: tp.Optional[str] = None,
         module: tp.Union[None, str, ModuleType] = None,
         resolve: bool = True,
         **kwargs,
-    ) -> tp.Union[PagesAssetT, list, dict]:
+    ) -> tp.MaybePagesAsset:
         """Find the page corresponding an (internal) object or reference name.
 
         Prepares the reference with `vectorbtpro.utils.module_.prepare_refname`."""
+        if attr is not None:
+            checks.assert_instance_of(attr, str, arg_name="attr")
+            if isinstance(obj, tuple):
+                obj = (*obj, attr)
+            else:
+                obj = (obj, attr)
         refname = prepare_refname(obj, module=module, resolve=resolve)
         return self.find_refname(refname, **kwargs)
 
@@ -1071,6 +1242,7 @@ class PagesAsset(VBTAsset):
     def find_obj_api(
         self,
         obj: tp.Optional[tp.Any] = None,
+        attr: tp.Optional[str] = None,
         module: tp.Union[None, str, ModuleType] = None,
         resolve: bool = True,
         use_parent: tp.Optional[bool] = None,
@@ -1134,6 +1306,12 @@ class PagesAsset(VBTAsset):
         aggregate_refs = self.resolve_setting(aggregate_refs, "aggregate_refs")
         topo_sort = self.resolve_setting(topo_sort, "topo_sort")
 
+        if attr is not None:
+            checks.assert_instance_of(attr, str, arg_name="attr")
+            if isinstance(obj, tuple):
+                obj = (*obj, attr)
+            else:
+                obj = (obj, attr)
         obj_refname = prepare_refname(obj, module=module, resolve=resolve)
         base_refnames = []
         base_refnames_set = set()
@@ -1440,6 +1618,7 @@ class PagesAsset(VBTAsset):
         self,
         obj: tp.Any,
         *,
+        attr: tp.Optional[str] = None,
         module: tp.Union[None, str, ModuleType] = None,
         resolve: bool = True,
         incl_pages: tp.Optional[tp.MaybeIterable[str]] = None,
@@ -1451,7 +1630,7 @@ class PagesAsset(VBTAsset):
         aggregate: tp.Optional[bool] = None,
         aggregate_kwargs: tp.KwargsLike = None,
         **kwargs,
-    ) -> tp.Union[PagesAssetT, list, dict]:
+    ) -> tp.MaybePagesAsset:
         """Find documentation relevant to an object.
 
         If a link matches one of the links or link parts in `incl_pages`, it will be included,
@@ -1507,6 +1686,7 @@ class PagesAsset(VBTAsset):
         docs_asset = self.filter(_filter_func)
         mentions_asset = docs_asset.find_obj_mentions(
             obj,
+            attr=attr,
             module=module,
             resolve=resolve,
             **kwargs,
@@ -1875,6 +2055,24 @@ MessagesAssetT = tp.TypeVar("MessagesAssetT", bound="MessagesAsset")
 class MessagesAsset(VBTAsset):
     """Class for working with Discord messages.
 
+    Each message has the following fields:
+
+    link: URL of the message, such as "https://discord.com/channels/918629562441695344/919715148896301067/923327319882485851"
+    block: URL of the first message in the block. A block is a bunch of messages of the same author
+        that either reference a message of another author, or don't reference any message at all.
+    thread: URL of the first message in the thread. A thread is a bunch of blocks that reference each other
+        in a chain, such as questions, answers, follow-up questions, etc.
+    reference: URL of the message that the message references. Can be None.
+    replies: List of URLs of the messages that reference the message
+    channel: Channel of the message, such as "support"
+    timestamp: Timestamp of the message, such as "2024-01-01 00:00:00"
+    author: Author of the message, such as "@polakowo"
+    content: String content of the message
+    mentions: List of Discord usernames that this message mentions, such as ["@polakowo"]
+    attachments: List of attachments. Each attachment has two fields: "file_name", such as "some_image.png",
+        and "content" containing the string content extracted from the file.
+    reactions: Total number of reactions that this message has received
+
     For defaults, see `assets.messages` in `vectorbtpro._settings.knowledge`."""
 
     _settings_path: tp.SettingsPath = "knowledge.assets.messages"
@@ -1902,7 +2100,7 @@ class MessagesAsset(VBTAsset):
         to_markdown_kwargs: tp.KwargsLike = None,
         to_html_kwargs: tp.KwargsLike = None,
         **kwargs,
-    ) -> tp.Union[MessagesAssetT, list, dict]:
+    ) -> tp.MaybeMessagesAsset:
         """Aggregate attachments by message.
 
         Argument `metadata_format` can be either "markdown" or "html". For keyword arguments, see
@@ -1923,7 +2121,7 @@ class MessagesAsset(VBTAsset):
     def aggregate_blocks(
         self: MessagesAssetT,
         collect_kwargs: tp.KwargsLike = None,
-        aggregate_fields: tp.Union[None, bool, tp.MaybeSet[str]] = None,
+        aggregate_fields: tp.Union[None, bool, tp.MaybeIterable[str]] = None,
         parent_links_only: tp.Optional[bool] = None,
         metadata_format: tp.Optional[str] = None,
         clear_metadata: tp.Optional[bool] = None,
@@ -1932,7 +2130,7 @@ class MessagesAsset(VBTAsset):
         to_markdown_kwargs: tp.KwargsLike = None,
         to_html_kwargs: tp.KwargsLike = None,
         **kwargs,
-    ) -> tp.Union[MessagesAssetT, list, dict]:
+    ) -> tp.MaybeMessagesAsset:
         """Aggregate messages by block.
 
         First, uses `MessagesAsset.reduce` on `vectorbtpro.utils.knowledge.base_asset_funcs.CollectAssetFunc`
@@ -1969,7 +2167,7 @@ class MessagesAsset(VBTAsset):
     def aggregate_threads(
         self: MessagesAssetT,
         collect_kwargs: tp.KwargsLike = None,
-        aggregate_fields: tp.Union[None, bool, tp.MaybeSet[str]] = None,
+        aggregate_fields: tp.Union[None, bool, tp.MaybeIterable[str]] = None,
         parent_links_only: tp.Optional[bool] = None,
         metadata_format: tp.Optional[str] = None,
         clear_metadata: tp.Optional[bool] = None,
@@ -1978,7 +2176,7 @@ class MessagesAsset(VBTAsset):
         to_markdown_kwargs: tp.KwargsLike = None,
         to_html_kwargs: tp.KwargsLike = None,
         **kwargs,
-    ) -> tp.Union[MessagesAssetT, list, dict]:
+    ) -> tp.MaybeMessagesAsset:
         """Aggregate messages by thread.
 
         Same as `MessagesAsset.aggregate_blocks` but for threads.
@@ -2006,7 +2204,7 @@ class MessagesAsset(VBTAsset):
     def aggregate_channels(
         self: MessagesAssetT,
         collect_kwargs: tp.KwargsLike = None,
-        aggregate_fields: tp.Union[None, bool, tp.MaybeSet[str]] = None,
+        aggregate_fields: tp.Union[None, bool, tp.MaybeIterable[str]] = None,
         parent_links_only: tp.Optional[bool] = None,
         metadata_format: tp.Optional[str] = None,
         clear_metadata: tp.Optional[bool] = None,
@@ -2015,7 +2213,7 @@ class MessagesAsset(VBTAsset):
         to_markdown_kwargs: tp.KwargsLike = None,
         to_html_kwargs: tp.KwargsLike = None,
         **kwargs,
-    ) -> tp.Union[MessagesAssetT, list, dict]:
+    ) -> tp.MaybeMessagesAsset:
         """Aggregate messages by channel.
 
         Same as `MessagesAsset.aggregate_threads` but for channels.
@@ -2062,7 +2260,7 @@ class MessagesAsset(VBTAsset):
             pass
         raise ValueError("Must provide by")
 
-    def aggregate(self, by: tp.Optional[str] = None, *args, **kwargs) -> tp.Union[MessagesAssetT, list, dict]:
+    def aggregate(self, by: tp.Optional[str] = None, *args, **kwargs) -> tp.MaybeMessagesAsset:
         """Aggregate by "message" (attachments), "block", "thread", or "channel".
 
         If `by` is None, uses `MessagesAsset.lowest_aggregate_by`."""
@@ -2132,19 +2330,21 @@ class MessagesAsset(VBTAsset):
         self,
         obj: tp.Any,
         *,
+        attr: tp.Optional[str] = None,
         module: tp.Union[None, str, ModuleType] = None,
         resolve: bool = True,
         **kwargs,
-    ) -> tp.Union[MessagesAssetT, list, dict]:
+    ) -> tp.MaybeMessagesAsset:
         """Find messages relevant to an object.
 
         Uses `MessagesAsset.find_obj_mentions`."""
-        return self.find_obj_mentions(obj, module=module, resolve=resolve, **kwargs)
+        return self.find_obj_mentions(obj, attr=attr, module=module, resolve=resolve, **kwargs)
 
 
 def find_api(
     obj: tp.Any,
     *,
+    attr: tp.Optional[str] = None,
     module: tp.Union[None, str, ModuleType] = None,
     resolve: bool = True,
     pages_asset: tp.Optional[tp.MaybeType[PagesAssetT]] = None,
@@ -2164,12 +2364,13 @@ def find_api(
             pull_kwargs = {}
         pages_asset = pages_asset.pull(**pull_kwargs)
     checks.assert_instance_of(pages_asset, PagesAsset, arg_name="pages_asset")
-    return pages_asset.find_obj_api(obj, module=module, resolve=resolve, **kwargs)
+    return pages_asset.find_obj_api(obj, attr=attr, module=module, resolve=resolve, **kwargs)
 
 
 def find_docs(
     obj: tp.Any,
     *,
+    attr: tp.Optional[str] = None,
     module: tp.Union[None, str, ModuleType] = None,
     resolve: bool = True,
     pages_asset: tp.Optional[tp.MaybeType[PagesAssetT]] = None,
@@ -2189,12 +2390,13 @@ def find_docs(
             pull_kwargs = {}
         pages_asset = pages_asset.pull(**pull_kwargs)
     checks.assert_instance_of(pages_asset, PagesAsset, arg_name="pages_asset")
-    return pages_asset.find_obj_docs(obj, module=module, resolve=resolve, **kwargs)
+    return pages_asset.find_obj_docs(obj, attr=attr, module=module, resolve=resolve, **kwargs)
 
 
 def find_messages(
     obj: tp.Any,
     *,
+    attr: tp.Optional[str] = None,
     module: tp.Union[None, str, ModuleType] = None,
     resolve: bool = True,
     messages_asset: tp.Optional[tp.MaybeType[MessagesAssetT]] = None,
@@ -2214,16 +2416,18 @@ def find_messages(
             pull_kwargs = {}
         messages_asset = messages_asset.pull(**pull_kwargs)
     checks.assert_instance_of(messages_asset, MessagesAsset, arg_name="messages_asset")
-    return messages_asset.find_obj_messages(obj, module=module, resolve=resolve, **kwargs)
+    return messages_asset.find_obj_messages(obj, attr=attr, module=module, resolve=resolve, **kwargs)
 
 
 def find_examples(
     obj: tp.Any,
     *,
+    attr: tp.Optional[str] = None,
     module: tp.Union[None, str, ModuleType] = None,
     resolve: bool = True,
     as_code: bool = True,
     return_type: tp.Optional[str] = "field",
+    merge_lists: bool = True,
     pages_asset: tp.Optional[tp.MaybeType[PagesAssetT]] = None,
     messages_asset: tp.Optional[tp.MaybeType[MessagesAssetT]] = None,
     pull_kwargs: tp.KwargsLike = None,
@@ -2256,6 +2460,7 @@ def find_examples(
     checks.assert_instance_of(messages_asset, MessagesAsset, arg_name="messages_asset")
     mentions_in_pages = pages_asset.find_obj_mentions(
         obj,
+        attr=attr,
         module=module,
         resolve=resolve,
         as_code=as_code,
@@ -2264,6 +2469,7 @@ def find_examples(
     )
     mentions_in_messages = messages_asset.find_obj_mentions(
         obj,
+        attr=attr,
         module=module,
         resolve=resolve,
         as_code=as_code,
@@ -2272,7 +2478,8 @@ def find_examples(
     )
     mentions_asset = mentions_in_pages + mentions_in_messages
     if (
-        isinstance(mentions_asset, KnowledgeAsset)
+        merge_lists
+        and isinstance(mentions_asset, KnowledgeAsset)
         and len(mentions_asset) > 0
         and isinstance(mentions_asset[0], list)
         and return_type.lower() in ("field", "match")
@@ -2284,13 +2491,14 @@ def find_examples(
 def find_assets(
     obj: tp.Any,
     *,
+    attr: tp.Optional[str] = None,
     module: tp.Union[None, str, ModuleType] = None,
     resolve: bool = True,
     asset_names: tp.Optional[tp.MaybeIterable[str]] = None,
     minimize: tp.Optional[bool] = None,
     minimize_pages: tp.Optional[bool] = None,
     minimize_messages: tp.Optional[bool] = None,
-    stack: bool = True,
+    combine: bool = True,
     pages_asset: tp.Optional[tp.MaybeType[PagesAssetT]] = None,
     messages_asset: tp.Optional[tp.MaybeType[MessagesAssetT]] = None,
     pull_kwargs: tp.KwargsLike = None,
@@ -2301,7 +2509,7 @@ def find_assets(
     minimize_kwargs: tp.KwargsLike = None,
     minimize_pages_kwargs: tp.KwargsLike = None,
     minimize_messages_kwargs: tp.KwargsLike = None,
-    stack_kwargs: tp.KwargsLike = None,
+    combine_kwargs: tp.KwargsLike = None,
 ) -> tp.MaybeDict[tp.VBTAsset]:
     """Find all assets relevant to an object.
 
@@ -2314,6 +2522,7 @@ def find_assets(
     * "docs": `find_docs` with `docs_kwargs`
     * "messages": `find_messages` with `messages_kwargs`
     * "examples": `find_examples` with `examples_kwargs`
+    * "all": All of the above
 
     !!! note
         Examples usually overlap with other assets, thus they are excluded by default.
@@ -2321,12 +2530,12 @@ def find_assets(
     Use `pages_asset` to provide a custom subclass or instance of `PagesAsset`. Use `messages_asset`
     to provide a custom subclass or instance of `MessagesAsset`. Both assets are reused among "find" calls.
 
-    Set `stack` to True to stack all assets into a single asset. Uses
-    `vectorbtpro.utils.knowledge.base.KnowledgeAsset.stack` with `stack_kwargs`.
+    Set `combine` to True to combine all assets into a single asset. Uses
+    `vectorbtpro.utils.knowledge.base.KnowledgeAsset.combine` with `combine_kwargs`.
 
     Set `minimize` to True (or `minimize_pages` for pages and `minimize_messages` for messages)
     in order to minimize to remove fields that aren't relevant for chatting.
-    It defaults to True if `stack` is True, otherwise, it defaults to False. Uses `VBTAsset.minimize`
+    It defaults to True if `combine` is True, otherwise, it defaults to False. Uses `VBTAsset.minimize`
     with `minimize_kwargs`, `PagesAsset.minimize` with `minimize_pages_kwargs`, and `MessagesAsset.minimize`
     with `minimize_messages_kwargs`. Arguments `minimize_pages_kwargs` and `minimize_messages_kwargs`
     are merged over `minimize_kwargs`."""
@@ -2348,23 +2557,26 @@ def find_assets(
     checks.assert_instance_of(messages_asset, MessagesAsset, arg_name="messages_asset")
 
     assets = []
+    all_asset_names = ["api", "docs", "messages", "examples"]
     if asset_names is not None:
-        if isinstance(asset_names, (str, type(Ellipsis))):
-            asset_names = [asset_names]
-        all_asset_names = ["api", "docs", "messages", "examples"]
-        asset_keys = []
-        for asset_name in asset_names:
-            if asset_name is not Ellipsis:
-                asset_key = all_asset_names.index(asset_name.lower())
-                if asset_key == -1:
-                    raise ValueError(f"Invalid asset name: '{asset_name}'")
-                asset_keys.append(asset_key)
-            else:
-                asset_keys.append(Ellipsis)
-        new_asset_names = reorder_list(all_asset_names, asset_keys, skip_missing=True)
-        if "examples" not in asset_names and "examples" in new_asset_names:
-            new_asset_names.remove("examples")
-        asset_names = new_asset_names
+        if isinstance(asset_names, str) and asset_names.lower() == "all":
+            asset_names = all_asset_names
+        else:
+            if isinstance(asset_names, (str, type(Ellipsis))):
+                asset_names = [asset_names]
+            asset_keys = []
+            for asset_name in asset_names:
+                if asset_name is not Ellipsis:
+                    asset_key = all_asset_names.index(asset_name.lower())
+                    if asset_key == -1:
+                        raise ValueError(f"Invalid asset name: '{asset_name}'")
+                    asset_keys.append(asset_key)
+                else:
+                    asset_keys.append(Ellipsis)
+            new_asset_names = reorder_list(all_asset_names, asset_keys, skip_missing=True)
+            if "examples" not in asset_names and "examples" in new_asset_names:
+                new_asset_names.remove("examples")
+            asset_names = new_asset_names
     else:
         asset_names = ["api", "docs", "messages"]
     for asset_name in asset_names:
@@ -2373,6 +2585,7 @@ def find_assets(
                 api_kwargs = {}
             asset = find_api(
                 obj,
+                attr=attr,
                 module=module,
                 resolve=resolve,
                 pages_asset=pages_asset,
@@ -2385,6 +2598,7 @@ def find_assets(
                 docs_kwargs = {}
             asset = find_docs(
                 obj,
+                attr=attr,
                 module=module,
                 resolve=resolve,
                 pages_asset=pages_asset,
@@ -2397,6 +2611,7 @@ def find_assets(
                 messages_kwargs = {}
             asset = find_messages(
                 obj,
+                attr=attr,
                 module=module,
                 resolve=resolve,
                 messages_asset=messages_asset,
@@ -2409,6 +2624,7 @@ def find_assets(
                 examples_kwargs = {}
             asset = find_examples(
                 obj,
+                attr=attr,
                 module=module,
                 resolve=resolve,
                 pages_asset=pages_asset,
@@ -2419,7 +2635,7 @@ def find_assets(
                 assets.append(asset)
 
     if minimize is None:
-        minimize = stack
+        minimize = combine
     if minimize:
         if minimize_kwargs is None:
             minimize_kwargs = {}
@@ -2440,11 +2656,11 @@ def find_assets(
         for i in range(len(assets)):
             if isinstance(assets[i], MessagesAsset):
                 assets[i] = assets[i].minimize(**minimize_messages_kwargs)
-    if stack:
+    if combine:
         if len(assets) >= 2:
-            if stack_kwargs is None:
-                stack_kwargs = {}
-            return VBTAsset.stack(*assets, **stack_kwargs)
+            if combine_kwargs is None:
+                combine_kwargs = {}
+            return VBTAsset.combine(*assets, **combine_kwargs)
         if len(assets) == 1:
             return assets[0]
         return VBTAsset([])
@@ -2454,7 +2670,7 @@ def find_assets(
 def chat_about(
     obj: tp.Any,
     message: str,
-    chat_history: tp.Optional[tp.MutableSequence[str]] = None,
+    chat_history: tp.ChatHistory = None,
     *,
     asset_names: tp.Optional[tp.MaybeIterable[str]] = "examples",
     shuffle: bool = False,
@@ -2462,10 +2678,10 @@ def chat_about(
 ) -> tp.ChatOutput:
     """Chat about an object.
 
-    Uses `find_assets` with `stack=True` and `vectorbtpro.utils.knowledge.base_assets.KnowledgeAsset.chat`.
+    Uses `find_assets` with `combine=True` and `vectorbtpro.utils.knowledge.base_assets.KnowledgeAsset.chat`.
     Arguments are distributed between these two methods automatically."""
     find_assets_kwargs = {k: kwargs.pop(k) for k in get_func_arg_names(find_assets) if k in kwargs}
-    asset = find_assets(obj, asset_names=asset_names, stack=True, **find_assets_kwargs)
+    asset = find_assets(obj, asset_names=asset_names, combine=True, **find_assets_kwargs)
     if shuffle:
         asset.shuffle(inplace=True)
     return asset.chat(message, chat_history, **kwargs)

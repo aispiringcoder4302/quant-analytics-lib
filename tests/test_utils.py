@@ -3992,8 +3992,9 @@ asset = vbt.KnowledgeAsset(dataset)
 
 
 class TestKnowledge:
-    def test_stack(self):
-        assert vbt.KnowledgeAsset.stack((asset[:3], asset[3:])) == asset
+    def test_combine(self):
+        assert vbt.KnowledgeAsset.combine((asset[:3], asset[3:])) == asset
+        assert asset[:3].combine(asset[3:]) == asset
 
     def test_merge(self):
         assert vbt.KnowledgeAsset.merge((asset[:2], asset[3:])) == asset[3:]

@@ -39,6 +39,7 @@ __all__ = [
 
 
 KnowledgeAssetT = tp.TypeVar("KnowledgeAssetT", bound="KnowledgeAsset")
+MaybeKnowledgeAssetT = tp.Union[KnowledgeAssetT, list, dict]
 
 
 class KnowledgeAsset(Configured, MutableSequence):
@@ -55,19 +56,43 @@ class KnowledgeAsset(Configured, MutableSequence):
         "single_item",
     }
 
-    @classmethod
-    def stack(
-        cls: tp.Type[KnowledgeAssetT],
+    @hybrid_method
+    def combine(
+        cls_or_self: tp.MaybeType[KnowledgeAssetT],
         *objs: tp.MaybeTuple[KnowledgeAssetT],
         **kwargs,
     ) -> KnowledgeAssetT:
-        """Stack multiple `KnowledgeAsset` instances."""
+        """Combine multiple `KnowledgeAsset` instances into one.
+
+        Usage:
+            ```pycon
+            >>> asset1 = asset[[0, 1]]
+            >>> asset2 = asset[[2, 3]]
+            >>> asset1.combine(asset2).get()
+            [{'s': 'ABC', 'b': True, 'd2': {'c': 'red', 'l': [1, 2]}},
+             {'s': 'BCD', 'b': True, 'd2': {'c': 'blue', 'l': [3, 4]}},
+             {'s': 'CDE', 'b': False, 'd2': {'c': 'green', 'l': [5, 6]}},
+             {'s': 'DEF', 'b': False, 'd2': {'c': 'yellow', 'l': [7, 8]}}]
+            ```
+        """
+        if not isinstance(cls_or_self, type) and len(objs) == 0:
+            if isinstance(cls_or_self[0], list):
+                return cls_or_self.merge_lists(**kwargs)
+            if isinstance(cls_or_self[0], dict):
+                return cls_or_self.merge_dicts(**kwargs)
+            raise ValueError("Cannot determine type of data items. Use merge_lists or merge_dicts.")
+        elif not isinstance(cls_or_self, type) and len(objs) > 0:
+            objs = (cls_or_self, *objs)
+            cls = type(cls_or_self)
+        else:
+            cls = cls_or_self
+
         if len(objs) == 1:
             objs = objs[0]
         objs = list(objs)
         for obj in objs:
             if not checks.is_instance_of(obj, KnowledgeAsset):
-                raise TypeError("Each object to be stacked must be an instance of KnowledgeAsset")
+                raise TypeError("Each object to be combined must be an instance of KnowledgeAsset")
         new_data = []
         new_single_item = True
         for obj in objs:
@@ -83,7 +108,7 @@ class KnowledgeAsset(Configured, MutableSequence):
         flatten_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> KnowledgeAssetT:
-        """Either merge multiple `KnowledgeAsset` instances if called as a class method or instance
+        """Either merge multiple `KnowledgeAsset` instances into one if called as a class method or instance
         method with at least one additional object, or merge data items of a single instance if called
         as an instance method with no additional objects.
 
@@ -503,7 +528,7 @@ class KnowledgeAsset(Configured, MutableSequence):
                 break
         else:
             new_type = KnowledgeAsset
-        return new_type.stack(self, other)
+        return new_type.combine(self, other)
 
     def __iadd__(self: KnowledgeAssetT, other: tp.Any) -> KnowledgeAssetT:
         if isinstance(other, KnowledgeAsset):
@@ -521,7 +546,7 @@ class KnowledgeAsset(Configured, MutableSequence):
         wrap: tp.Optional[bool] = None,
         single_item: tp.Optional[bool] = None,
         **kwargs,
-    ) -> tp.Union[KnowledgeAssetT, tp.Any]:
+    ) -> MaybeKnowledgeAssetT:
         """Apply a function to each data item.
 
         Function can be either a callable, a tuple of function and its arguments,
@@ -642,7 +667,7 @@ class KnowledgeAsset(Configured, MutableSequence):
         source: tp.Union[None, str, tp.Callable, tp.CustomTemplate] = None,
         template_context: tp.KwargsLike = None,
         **kwargs,
-    ) -> tp.Union[KnowledgeAssetT, tp.Any]:
+    ) -> MaybeKnowledgeAssetT:
         """Get data items or parts of them.
 
         Uses `KnowledgeAsset.apply` on `vectorbtpro.utils.knowledge.base_asset_funcs.GetAssetFunc`.
@@ -693,7 +718,10 @@ class KnowledgeAsset(Configured, MutableSequence):
         """
         if path is None and source is None:
             if self.single_item:
-                return self.data[0]
+                if len(self.data) == 1:
+                    return self.data[0]
+                if len(self.data) == 0:
+                    return None
             return self.data
         return self.apply(
             "get",
@@ -718,7 +746,7 @@ class KnowledgeAsset(Configured, MutableSequence):
         changed_only: tp.Optional[bool] = None,
         template_context: tp.KwargsLike = None,
         **kwargs,
-    ) -> tp.Union[KnowledgeAssetT, tp.Any]:
+    ) -> MaybeKnowledgeAssetT:
         """Set data items or parts of them.
 
         Uses `KnowledgeAsset.apply` on `vectorbtpro.utils.knowledge.base_asset_funcs.SetAssetFunc`.
@@ -777,7 +805,7 @@ class KnowledgeAsset(Configured, MutableSequence):
         make_copy: tp.Optional[bool] = None,
         changed_only: tp.Optional[bool] = None,
         **kwargs,
-    ) -> tp.Union[KnowledgeAssetT, tp.Any]:
+    ) -> MaybeKnowledgeAssetT:
         """Remove data items or parts of them.
 
         If `path` is an integer, removes the entire data item at that index.
@@ -826,7 +854,7 @@ class KnowledgeAsset(Configured, MutableSequence):
         make_copy: tp.Optional[bool] = None,
         changed_only: tp.Optional[bool] = None,
         **kwargs,
-    ) -> tp.Union[KnowledgeAssetT, tp.Any]:
+    ) -> MaybeKnowledgeAssetT:
         """Move data items or parts of them.
 
         Uses `KnowledgeAsset.apply` on `vectorbtpro.utils.knowledge.base_asset_funcs.MoveAssetFunc`.
@@ -878,7 +906,7 @@ class KnowledgeAsset(Configured, MutableSequence):
         make_copy: tp.Optional[bool] = None,
         changed_only: tp.Optional[bool] = None,
         **kwargs,
-    ) -> tp.Union[KnowledgeAssetT, tp.Any]:
+    ) -> MaybeKnowledgeAssetT:
         """Rename data items or parts of them.
 
         Uses `KnowledgeAsset.apply` on `vectorbtpro.utils.knowledge.base_asset_funcs.RenameAssetFunc`.
@@ -917,7 +945,7 @@ class KnowledgeAsset(Configured, MutableSequence):
         changed_only: tp.Optional[bool] = None,
         template_context: tp.KwargsLike = None,
         **kwargs,
-    ) -> tp.Union[KnowledgeAssetT, tp.Any]:
+    ) -> MaybeKnowledgeAssetT:
         """Reorder data items or parts of them.
 
         Uses `KnowledgeAsset.apply` on `vectorbtpro.utils.knowledge.base_asset_funcs.ReorderAssetFunc`.
@@ -979,7 +1007,7 @@ class KnowledgeAsset(Configured, MutableSequence):
         template_context: tp.KwargsLike = None,
         return_type: tp.Optional[str] = None,
         **kwargs,
-    ) -> tp.Union[KnowledgeAssetT, tp.Any]:
+    ) -> MaybeKnowledgeAssetT:
         """Query using an engine and return the queried data item(s).
 
         Following engines are supported:
@@ -1130,7 +1158,7 @@ class KnowledgeAsset(Configured, MutableSequence):
         return_type: tp.Optional[str] = None,
         return_path: tp.Optional[bool] = None,
         **kwargs,
-    ) -> tp.Union[KnowledgeAssetT, tp.Any]:
+    ) -> MaybeKnowledgeAssetT:
         """Find occurrences and return a new `KnowledgeAsset` instance.
 
         Uses `KnowledgeAsset.apply` on `vectorbtpro.utils.knowledge.base_asset_funcs.FindAssetFunc`.
@@ -1235,15 +1263,20 @@ class KnowledgeAsset(Configured, MutableSequence):
         self,
         target: tp.Optional[tp.MaybeIterable[tp.Any]] = None,
         language: tp.Optional[tp.MaybeIterable[str]] = None,
-        require_language: bool = False,
-        in_blocks: bool = True,
+        require_language: tp.Optional[bool] = None,
+        in_blocks: tp.Optional[bool] = None,
         escape_target: bool = True,
         escape_language: bool = True,
         return_type: tp.Optional[str] = "match",
         flags: int = 0,
         **kwargs,
-    ) -> tp.Union[KnowledgeAssetT, tp.Any]:
-        """Find code using `KnowledgeAsset.find`."""
+    ) -> MaybeKnowledgeAssetT:
+        """Find code using `KnowledgeAsset.find`.
+
+        For defaults, see `code` in `vectorbtpro._settings.knowledge`."""
+        require_language = self.resolve_setting(require_language, "require_language", sub_path="code")
+        in_blocks = self.resolve_setting(in_blocks, "in_blocks", sub_path="code")
+
         if target is not None:
             if not isinstance(target, (str, list)):
                 target = list(target)
@@ -1324,7 +1357,7 @@ class KnowledgeAsset(Configured, MutableSequence):
         make_copy: tp.Optional[bool] = None,
         changed_only: tp.Optional[bool] = None,
         **kwargs,
-    ) -> tp.Union[KnowledgeAssetT, tp.Any]:
+    ) -> MaybeKnowledgeAssetT:
         """Find and replace occurrences and return a new `KnowledgeAsset` instance.
 
         Uses `KnowledgeAsset.apply` on `vectorbtpro.utils.knowledge.base_asset_funcs.FindReplaceAssetFunc`.
@@ -1413,7 +1446,7 @@ class KnowledgeAsset(Configured, MutableSequence):
         make_copy: tp.Optional[bool] = None,
         changed_only: tp.Optional[bool] = None,
         **kwargs,
-    ) -> tp.Union[KnowledgeAssetT, tp.Any]:
+    ) -> MaybeKnowledgeAssetT:
         """Find and remove occurrences and return a new `KnowledgeAsset` instance.
 
         Uses `KnowledgeAsset.apply` on `vectorbtpro.utils.knowledge.base_asset_funcs.FindRemoveAssetFunc`.
@@ -1432,7 +1465,7 @@ class KnowledgeAsset(Configured, MutableSequence):
             **kwargs,
         )
 
-    def find_remove_empty(self: KnowledgeAssetT, **kwargs) -> tp.Union[KnowledgeAssetT, tp.Any]:
+    def find_remove_empty(self: KnowledgeAssetT, **kwargs) -> MaybeKnowledgeAssetT:
         """Find and remove empty objects."""
         from vectorbtpro.utils.knowledge.base_asset_funcs import FindRemoveAssetFunc
 
@@ -1445,7 +1478,7 @@ class KnowledgeAsset(Configured, MutableSequence):
         make_copy: tp.Optional[bool] = None,
         changed_only: tp.Optional[bool] = None,
         **kwargs,
-    ) -> tp.Union[KnowledgeAssetT, tp.Any]:
+    ) -> MaybeKnowledgeAssetT:
         """Flatten data items or parts of them.
 
         Uses `KnowledgeAsset.apply` on `vectorbtpro.utils.knowledge.base_asset_funcs.FlattenAssetFunc`.
@@ -1493,7 +1526,7 @@ class KnowledgeAsset(Configured, MutableSequence):
         make_copy: tp.Optional[bool] = None,
         changed_only: tp.Optional[bool] = None,
         **kwargs,
-    ) -> tp.Union[KnowledgeAssetT, tp.Any]:
+    ) -> MaybeKnowledgeAssetT:
         """Unflatten data items or parts of them.
 
         Uses `KnowledgeAsset.apply` on `vectorbtpro.utils.knowledge.base_asset_funcs.UnflattenAssetFunc`.
@@ -1533,7 +1566,7 @@ class KnowledgeAsset(Configured, MutableSequence):
         dump_engine: tp.Optional[str] = None,
         template_context: tp.KwargsLike = None,
         **kwargs,
-    ) -> tp.Union[KnowledgeAssetT, tp.Any]:
+    ) -> MaybeKnowledgeAssetT:
         """Dump data items.
 
         Uses `KnowledgeAsset.apply` on `vectorbtpro.utils.knowledge.base_asset_funcs.DumpAssetFunc`.
@@ -1637,7 +1670,7 @@ class KnowledgeAsset(Configured, MutableSequence):
         pbar_kwargs: tp.KwargsLike = None,
         wrap: tp.Optional[bool] = None,
         **kwargs,
-    ) -> tp.Union[KnowledgeAssetT, tp.Any]:
+    ) -> MaybeKnowledgeAssetT:
         """Reduce data items.
 
         Function can be a callable, a tuple of function and its arguments,
@@ -1810,16 +1843,16 @@ class KnowledgeAsset(Configured, MutableSequence):
         if return_group_keys:
             return dict(zip(keys, results))
         if len(results) > 0 and isinstance(results[0], type(self)):
-            return type(self).stack(results)
+            return type(self).combine(results)
         return results
 
-    def merge_dicts(self: KnowledgeAssetT, **kwargs) -> tp.Union[KnowledgeAssetT, tp.Any]:
+    def merge_dicts(self: KnowledgeAssetT, **kwargs) -> MaybeKnowledgeAssetT:
         """Merge (dict) date items into a single dict.
 
         Final keyword arguments are passed to `vectorbtpro.utils.config.merge_dicts`."""
         return self.reduce("merge_dicts", **kwargs)
 
-    def merge_lists(self: KnowledgeAssetT, **kwargs) -> tp.Union[KnowledgeAssetT, tp.Any]:
+    def merge_lists(self: KnowledgeAssetT, **kwargs) -> MaybeKnowledgeAssetT:
         """Merge (list) date items into a single list."""
         return self.reduce("merge_lists", **kwargs)
 
@@ -1827,7 +1860,7 @@ class KnowledgeAsset(Configured, MutableSequence):
         self: KnowledgeAssetT,
         sort_keys: tp.Optional[bool] = None,
         **kwargs,
-    ) -> tp.Union[KnowledgeAssetT, tp.Any]:
+    ) -> MaybeKnowledgeAssetT:
         """Collect values of each key in each data item."""
         return self.reduce("collect", sort_keys=sort_keys, **kwargs)
 
@@ -1951,6 +1984,8 @@ class KnowledgeAsset(Configured, MutableSequence):
 
     def join(self, separator: tp.Optional[str] = None) -> str:
         """Join the list of string data items."""
+        if len(self.data) == 0:
+            return ""
         if len(self.data) == 1:
             return self.data[0]
         if separator is None:
@@ -2074,7 +2109,7 @@ class KnowledgeAsset(Configured, MutableSequence):
     def build_messages(
         self,
         message: str,
-        chat_history: tp.Optional[tp.MutableSequence[str]] = None,
+        chat_history: tp.ChatHistory = None,
         to_context_kwargs: tp.KwargsLike = None,
         max_tokens: tp.Optional[int] = None,
         tokenizer: tp.Union[None, str, EncodingT] = None,
@@ -2082,6 +2117,7 @@ class KnowledgeAsset(Configured, MutableSequence):
         tokens_per_name: tp.Optional[int] = None,
         model: tp.Optional[str] = None,
         system_prompt: tp.Optional[str] = None,
+        system_as_user: tp.Optional[bool] = None,
         context_prompt: tp.Optional[str] = None,
         template_context: tp.KwargsLike = None,
         silence_warnings: tp.Optional[bool] = None,
@@ -2092,6 +2128,7 @@ class KnowledgeAsset(Configured, MutableSequence):
         to_context_kwargs = self.resolve_setting(to_context_kwargs, "to_context_kwargs", merge=True, sub_path="chat")
         max_tokens = self.resolve_setting(max_tokens, "max_tokens", sub_path="chat")
         system_prompt = self.resolve_setting(system_prompt, "system_prompt", sub_path="chat")
+        system_as_user = self.resolve_setting(system_as_user, "system_as_user", sub_path="chat")
         context_prompt = self.resolve_setting(context_prompt, "context_prompt", sub_path="chat")
         template_context = self.resolve_setting(template_context, "template_context", merge=True, sub_path="chat")
         silence_warnings = self.resolve_setting(silence_warnings, "silence_warnings", sub_path="chat")
@@ -2109,7 +2146,7 @@ class KnowledgeAsset(Configured, MutableSequence):
                 eval_id="context_prompt",
             )
             empty_messages = [
-                dict(role="system", content=system_prompt),
+                dict(role="user" if system_as_user else "system", content=system_prompt),
                 dict(role="user", content=empty_context_prompt),
                 *chat_history,
                 dict(role="user", content=message),
@@ -2136,7 +2173,7 @@ class KnowledgeAsset(Configured, MutableSequence):
         template_context = flat_merge_dicts(dict(context=context), template_context)
         context_prompt = context_prompt.substitute(template_context, eval_id="context_prompt")
         return [
-            dict(role="system", content=system_prompt),
+            dict(role="user" if system_as_user else "system", content=system_prompt),
             dict(role="user", content=context_prompt),
             *chat_history,
             dict(role="user", content=message),
@@ -2295,6 +2332,7 @@ class KnowledgeAsset(Configured, MutableSequence):
         tokens_per_message: tp.Optional[int] = None,
         tokens_per_name: tp.Optional[int] = None,
         system_prompt: tp.Optional[str] = None,
+        system_as_user: tp.Optional[bool] = None,
         context_prompt: tp.Optional[str] = None,
         display_format: tp.Optional[str] = None,
         refresh_rate: tp.Optional[float] = None,
@@ -2332,7 +2370,8 @@ class KnowledgeAsset(Configured, MutableSequence):
         The prompt can be either a custom template, or string or function that will become one.
         The context itself is generated by dumping and joining data items with `KnowledgeAsset.to_context`
         with `to_context_kwargs` as keyword arguments. Once the prompt is evaluated, it becomes a system message.
-        Uses `system_prompt` as a system prompt following the context prompt.
+        Uses `system_prompt` as a system prompt preceding the context prompt. Enable `system_as_user`
+        to use the user role for the system message (for experimental models where the system role is not available).
 
         Use `max_context_chars` to limit the number of characters in the context. Use `max_context_tokens`
         to limit the number of tokens in the context (requires tiktoken). Use `tokenizer` to provide
@@ -2468,6 +2507,7 @@ class KnowledgeAsset(Configured, MutableSequence):
             tokens_per_name=tokens_per_name,
             model=meta["model"],
             system_prompt=system_prompt,
+            system_as_user=system_as_user,
             context_prompt=context_prompt,
             template_context=template_context,
             silence_warnings=silence_warnings,
