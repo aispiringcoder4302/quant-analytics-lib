@@ -1157,6 +1157,10 @@ class KnowledgeAsset(Configured, MutableSequence):
         template_context: tp.KwargsLike = None,
         return_type: tp.Optional[str] = None,
         return_path: tp.Optional[bool] = None,
+        merge_matches: tp.Optional[bool] = None,
+        merge_fields: tp.Optional[bool] = None,
+        unique_matches: tp.Optional[bool] = None,
+        unique_fields: tp.Optional[bool] = None,
         **kwargs,
     ) -> MaybeKnowledgeAssetT:
         """Find occurrences and return a new `KnowledgeAsset` instance.
@@ -1185,6 +1189,10 @@ class KnowledgeAsset(Configured, MutableSequence):
 
         Set `in_dumps` to True to convert the entire data item to string and search in that string.
         Will use `vectorbtpro.utils.formatting.dump` with `dump_kwargs`.
+
+        Disable `merge_matches` and `merge_fields` to keep empty lists when searching for matches and
+        fields respectively. Disable `unique_matches` and `unique_fields` to keep duplicate matches
+        and fields respectively.
 
         Usage:
             ```pycon
@@ -1233,6 +1241,9 @@ class KnowledgeAsset(Configured, MutableSequence):
             [{'s': 'DEF', 'b': False, 'd2': {'c': 'yellow', 'l': [7, 8]}}]
 
             >>> asset.find("yenlow", mode="fuzzy", return_type="match").get()
+            'yellow'
+
+            >>> asset.find("yenlow", mode="fuzzy", return_type="match", merge_matches=False).get()
             [[], [], [], ['yellow'], []]
 
             >>> asset.find("yenlow", mode="fuzzy", return_type="match", return_path=True).get()
@@ -1242,7 +1253,7 @@ class KnowledgeAsset(Configured, MutableSequence):
             [{'s': 'EFG', 'b': False, 'd2': {'c': 'black', 'l': [9, 10]}, 'xyz': 123}]
             ```
         """
-        return self.apply(
+        found_asset = self.apply(
             "find",
             target=target,
             path=path,
@@ -1258,6 +1269,26 @@ class KnowledgeAsset(Configured, MutableSequence):
             return_path=return_path,
             **kwargs,
         )
+        return_type = self.resolve_setting(return_type, "return_type")
+        merge_matches = self.resolve_setting(merge_matches, "merge_matches")
+        merge_fields = self.resolve_setting(merge_fields, "merge_fields")
+        unique_matches = self.resolve_setting(unique_matches, "unique_matches")
+        unique_fields = self.resolve_setting(unique_fields, "unique_fields")
+        if (
+            ((merge_matches and return_type.lower() == "match") or (merge_fields and return_type.lower() == "field"))
+            and isinstance(found_asset, KnowledgeAsset)
+            and len(found_asset) > 0
+            and isinstance(found_asset[0], list)
+        ):
+            found_asset = found_asset.merge()
+        if (
+            ((unique_matches and return_type.lower() == "match") or (unique_fields and return_type.lower() == "field"))
+            and isinstance(found_asset, KnowledgeAsset)
+            and len(found_asset) > 0
+            and isinstance(found_asset[0], str)
+        ):
+            found_asset = found_asset.unique()
+        return found_asset
 
     def find_code(
         self,

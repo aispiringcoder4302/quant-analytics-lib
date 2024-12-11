@@ -756,12 +756,12 @@ class VBTAsset(KnowledgeAsset):
             escaped_target = re.escape(target)
             new_target = ""
             if re.match(r"\w", target[0]):
-                new_target += r"(?<!\w)(?<!_)(?<!\.)"
+                new_target += r"(?<!\w)"
             new_target += escaped_target
             if re.match(r"\w", target[-1]):
-                new_target += r"(?!\w)(?!_)"
+                new_target += r"(?!\w)"
             elif not as_code and target[-1] == ".":
-                new_target += r"(?=[A-Za-z0-9_])"
+                new_target += r"(?=\w)"
             return new_target
         return target
 
@@ -889,7 +889,7 @@ class VBTAsset(KnowledgeAsset):
                             targets.add(new_target)
                             new_target = _prepare_target(class_abbr + ".")
                             targets.add(new_target)
-        return list(targets)
+        return sorted(targets)
 
     def generate_mention_targets(
         self,
@@ -943,16 +943,18 @@ class VBTAsset(KnowledgeAsset):
             as_regex=as_regex,
         )
         if incl_base_attr and base_attr_refname is not None:
-            targets.extend(self.generate_refname_targets(
-                base_attr_refname,
-                resolve=resolve,
-                incl_shortcuts=incl_shortcuts,
-                incl_shortcut_access=incl_shortcut_access,
-                incl_shortcut_call=incl_shortcut_call,
-                incl_instances=incl_instances,
-                as_code=as_code,
-                as_regex=as_regex,
-            ))
+            targets.extend(
+                self.generate_refname_targets(
+                    base_attr_refname,
+                    resolve=resolve,
+                    incl_shortcuts=incl_shortcuts,
+                    incl_shortcut_access=incl_shortcut_access,
+                    incl_shortcut_call=incl_shortcut_call,
+                    incl_instances=incl_instances,
+                    as_code=as_code,
+                    as_regex=as_regex,
+                )
+            )
         return targets
 
     @classmethod
@@ -961,28 +963,25 @@ class VBTAsset(KnowledgeAsset):
         if as_regex:
             prefixed_targets = []
             non_prefixed_targets = []
-            common_prefix = r"(?<!\w)(?<!_)(?<!\.)"
+            common_prefix = r"(?<!\w)"
             for target in targets:
                 if target.startswith(common_prefix):
-                    prefixed_targets.append(target[len(common_prefix):])
+                    prefixed_targets.append(target[len(common_prefix) :])
                 else:
                     non_prefixed_targets.append(target)
             combined_targets = []
             if prefixed_targets:
                 combined_prefixed = "|".join(f"(?:{p})" for p in prefixed_targets)
-                combined_prefixed = f"{common_prefix}(?:{combined_prefixed})"
-                combined_targets.append(combined_prefixed)
+                combined_targets.append(f"{common_prefix}(?:{combined_prefixed})")
             if non_prefixed_targets:
                 combined_non_prefixed = "|".join(f"(?:{p})" for p in non_prefixed_targets)
                 combined_targets.append(f"(?:{combined_non_prefixed})")
             if len(combined_targets) == 1:
                 return combined_targets[0]
-            return "|".join(combined_targets)
-
-        escaped_targets = [re.escape(target) for target in targets]
-        escaped_targets.sort(key=len, reverse=True)
-        combined_target = "|".join(escaped_targets)
-        return f"({combined_target})"
+        else:
+            combined_targets = [re.escape(target) for target in targets]
+        combined_target = "|".join(combined_targets)
+        return f"(?:{combined_target})"
 
     def find_obj_mentions(
         self,
@@ -1047,10 +1046,12 @@ class VBTAsset(KnowledgeAsset):
                 if new_target not in mention_targets:
                     mention_targets.append(new_target)
         if merge_targets:
+            print(mention_targets)
             mention_targets = self.merge_mention_targets(mention_targets, as_regex=as_regex)
+            print(mention_targets)
             as_regex = True
         if as_code:
-            return self.find_code(
+            mentions_asset = self.find_code(
                 mention_targets,
                 escape_target=not as_regex,
                 path=path,
@@ -1058,8 +1059,8 @@ class VBTAsset(KnowledgeAsset):
                 return_type=return_type,
                 **kwargs,
             )
-        if as_regex:
-            return self.find(
+        elif as_regex:
+            mentions_asset = self.find(
                 mention_targets,
                 mode="regex",
                 path=path,
@@ -1067,13 +1068,15 @@ class VBTAsset(KnowledgeAsset):
                 return_type=return_type,
                 **kwargs,
             )
-        return self.find(
-            mention_targets,
-            path=path,
-            per_path=per_path,
-            return_type=return_type,
-            **kwargs,
-        )
+        else:
+            mentions_asset = self.find(
+                mention_targets,
+                path=path,
+                per_path=per_path,
+                return_type=return_type,
+                **kwargs,
+            )
+        return mentions_asset
 
 
 PagesAssetT = tp.TypeVar("PagesAssetT", bound="PagesAsset")
@@ -2427,7 +2430,6 @@ def find_examples(
     resolve: bool = True,
     as_code: bool = True,
     return_type: tp.Optional[str] = "field",
-    merge_lists: bool = True,
     pages_asset: tp.Optional[tp.MaybeType[PagesAssetT]] = None,
     messages_asset: tp.Optional[tp.MaybeType[MessagesAssetT]] = None,
     pull_kwargs: tp.KwargsLike = None,
@@ -2458,7 +2460,8 @@ def find_examples(
             pull_kwargs = {}
         messages_asset = messages_asset.pull(**pull_kwargs)
     checks.assert_instance_of(messages_asset, MessagesAsset, arg_name="messages_asset")
-    mentions_in_pages = pages_asset.find_obj_mentions(
+    combined_asset = pages_asset + messages_asset
+    return combined_asset.find_obj_mentions(
         obj,
         attr=attr,
         module=module,
@@ -2467,25 +2470,6 @@ def find_examples(
         return_type=return_type,
         **kwargs,
     )
-    mentions_in_messages = messages_asset.find_obj_mentions(
-        obj,
-        attr=attr,
-        module=module,
-        resolve=resolve,
-        as_code=as_code,
-        return_type=return_type,
-        **kwargs,
-    )
-    mentions_asset = mentions_in_pages + mentions_in_messages
-    if (
-        merge_lists
-        and isinstance(mentions_asset, KnowledgeAsset)
-        and len(mentions_asset) > 0
-        and isinstance(mentions_asset[0], list)
-        and return_type.lower() in ("field", "match")
-    ):
-        mentions_asset = mentions_asset.merge_lists()
-    return mentions_asset
 
 
 def find_assets(

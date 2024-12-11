@@ -361,6 +361,8 @@ def pdir(*args, **kwargs) -> None:
 
 def dump(obj: tp.Any, dump_engine: str = "prettify", **kwargs) -> str:
     """Dump an object to a string."""
+    if isinstance(obj, str):
+        return obj
     if dump_engine.lower() == "repr":
         return repr(obj)
     if dump_engine.lower() == "prettify":
