@@ -1046,9 +1046,7 @@ class VBTAsset(KnowledgeAsset):
                 if new_target not in mention_targets:
                     mention_targets.append(new_target)
         if merge_targets:
-            print(mention_targets)
             mention_targets = self.merge_mention_targets(mention_targets, as_regex=as_regex)
-            print(mention_targets)
             as_regex = True
         if as_code:
             mentions_asset = self.find_code(
@@ -2404,6 +2402,8 @@ def find_messages(
     resolve: bool = True,
     messages_asset: tp.Optional[tp.MaybeType[MessagesAssetT]] = None,
     pull_kwargs: tp.KwargsLike = None,
+    aggregate_messages: bool = True,
+    aggregate_kwargs: tp.KwargsLike = None,
     **kwargs,
 ) -> tp.MaybeMessagesAsset:
     """Find messages relevant to an object.
@@ -2419,6 +2419,10 @@ def find_messages(
             pull_kwargs = {}
         messages_asset = messages_asset.pull(**pull_kwargs)
     checks.assert_instance_of(messages_asset, MessagesAsset, arg_name="messages_asset")
+    if aggregate_messages:
+        if aggregate_kwargs is None:
+            aggregate_kwargs = {}
+        messages_asset = messages_asset.aggregate_messages(**aggregate_kwargs)
     return messages_asset.find_obj_messages(obj, attr=attr, module=module, resolve=resolve, **kwargs)
 
 
@@ -2433,6 +2437,8 @@ def find_examples(
     pages_asset: tp.Optional[tp.MaybeType[PagesAssetT]] = None,
     messages_asset: tp.Optional[tp.MaybeType[MessagesAssetT]] = None,
     pull_kwargs: tp.KwargsLike = None,
+    aggregate_messages: bool = True,
+    aggregate_kwargs: tp.KwargsLike = None,
     **kwargs,
 ) -> tp.MaybeVBTAsset:
     """Find (code) examples relevant to an object.
@@ -2460,6 +2466,10 @@ def find_examples(
             pull_kwargs = {}
         messages_asset = messages_asset.pull(**pull_kwargs)
     checks.assert_instance_of(messages_asset, MessagesAsset, arg_name="messages_asset")
+    if aggregate_messages:
+        if aggregate_kwargs is None:
+            aggregate_kwargs = {}
+        messages_asset = messages_asset.aggregate_messages(**aggregate_kwargs)
     combined_asset = pages_asset + messages_asset
     return combined_asset.find_obj_mentions(
         obj,
@@ -2486,6 +2496,8 @@ def find_assets(
     pages_asset: tp.Optional[tp.MaybeType[PagesAssetT]] = None,
     messages_asset: tp.Optional[tp.MaybeType[MessagesAssetT]] = None,
     pull_kwargs: tp.KwargsLike = None,
+    aggregate_messages: bool = True,
+    aggregate_kwargs: tp.KwargsLike = None,
     api_kwargs: tp.KwargsLike = None,
     docs_kwargs: tp.KwargsLike = None,
     messages_kwargs: tp.KwargsLike = None,
@@ -2539,6 +2551,10 @@ def find_assets(
             pull_kwargs = {}
         messages_asset = messages_asset.pull(**pull_kwargs)
     checks.assert_instance_of(messages_asset, MessagesAsset, arg_name="messages_asset")
+    if aggregate_messages:
+        if aggregate_kwargs is None:
+            aggregate_kwargs = {}
+        messages_asset = messages_asset.aggregate_messages(**aggregate_kwargs)
 
     assets = []
     all_asset_names = ["api", "docs", "messages", "examples"]
@@ -2599,6 +2615,8 @@ def find_assets(
                 module=module,
                 resolve=resolve,
                 messages_asset=messages_asset,
+                aggregate_messages=False,
+                aggregate_kwargs=aggregate_kwargs,
                 **messages_kwargs,
             )
             if len(asset) > 0:
@@ -2613,6 +2631,8 @@ def find_assets(
                 resolve=resolve,
                 pages_asset=pages_asset,
                 messages_asset=messages_asset,
+                aggregate_messages=False,
+                aggregate_kwargs=aggregate_kwargs,
                 **examples_kwargs,
             )
             if len(asset) > 0:

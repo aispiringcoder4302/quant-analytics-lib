@@ -563,6 +563,8 @@ class AggMessageAssetFunc(AssetFunc):
     ) -> tp.Any:
         if not isinstance(d, dict):
             raise TypeError("Data item must be a dict")
+        if "attachments" not in d:
+            return dict(d)
         if clear_metadata_kwargs is None:
             clear_metadata_kwargs = {}
         if dump_metadata_kwargs is None:
