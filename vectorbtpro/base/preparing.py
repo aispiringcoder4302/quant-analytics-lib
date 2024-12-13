@@ -29,6 +29,7 @@ from vectorbtpro.utils.enum_ import map_enum_fields
 from vectorbtpro.utils.module_ import import_module_from_path
 from vectorbtpro.utils.params import Param
 from vectorbtpro.utils.parsing import get_func_arg_names
+from vectorbtpro.utils.path_ import remove_dir
 from vectorbtpro.utils.random_ import set_seed
 from vectorbtpro.utils.template import CustomTemplate, RepFunc, substitute_templates
 
@@ -385,15 +386,23 @@ class BasePreparer(Configured, metaclass=MetaArgs):
     def adapt_staticized_to_udf(cls, staticized: tp.Kwargs, func: tp.Union[str, tp.Callable], func_name: str) -> None:
         """Adapt `staticized` dictionary to a UDF."""
         target_func_module = inspect.getmodule(staticized["func"])
+        if isinstance(func, tuple):
+            func, actual_func_name = func
+        else:
+            actual_func_name = None
         if isinstance(func, (str, Path)):
+            if actual_func_name is None:
+                actual_func_name = func_name
             if isinstance(func, str) and not func.endswith(".py") and hasattr(target_func_module, func):
                 staticized[f"{func_name}_block"] = func
                 return None
             func = Path(func)
             module_path = func.resolve()
         else:
+            if actual_func_name is None:
+                actual_func_name = func.__name__
             if inspect.getmodule(func) == target_func_module:
-                staticized[f"{func_name}_block"] = func.__name__
+                staticized[f"{func_name}_block"] = actual_func_name
                 return None
             module = inspect.getmodule(func)
             if not hasattr(module, "__file__"):
@@ -408,6 +417,8 @@ class BasePreparer(Configured, metaclass=MetaArgs):
                 f"globals().update(vbt.import_module_from_path({func_name}_path).__dict__, reload={reload})",
             ]
         )
+        if actual_func_name != func_name:
+            staticized["import_lines"].append(f"{func_name} = {actual_func_name}")
 
     @classmethod
     def find_target_func(cls, target_func_name: str) -> tp.Callable:
@@ -439,6 +450,8 @@ class BasePreparer(Configured, metaclass=MetaArgs):
 
                         staticized["skip_func"] = _skip_func
                     module_path = cut_and_save_func(path=module_path, **staticized)
+                    if staticized.get("clear_cache", True):
+                        remove_dir(module_path.parent / "__pycache__", with_contents=True, missing_ok=True)
                 reload = staticized.pop("reload", False)
                 module = import_module_from_path(module_path, reload=reload)
                 func = getattr(module, staticized["new_func_name"])

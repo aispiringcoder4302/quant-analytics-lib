@@ -2410,7 +2410,9 @@ def find_messages(
 
     Based on `MessagesAsset.find_obj_messages`.
 
-    Use `messages_asset` to provide a custom subclass or instance of `MessagesAsset`."""
+    Use `messages_asset` to provide a custom subclass or instance of `MessagesAsset`.
+
+    Set `aggregate_messages` to True to aggregate attachments into message content."""
     if messages_asset is None:
         messages_asset = MessagesAsset
     if isinstance(messages_asset, type):
@@ -2439,6 +2441,7 @@ def find_examples(
     pull_kwargs: tp.KwargsLike = None,
     aggregate_messages: bool = True,
     aggregate_kwargs: tp.KwargsLike = None,
+    shuffle_messages: bool = False,
     **kwargs,
 ) -> tp.MaybeVBTAsset:
     """Find (code) examples relevant to an object.
@@ -2449,7 +2452,12 @@ def find_examples(
     or, for instance, `return_type="item"` to also get links.
 
     Use `pages_asset` to provide a custom subclass or instance of `PagesAsset`. Use `messages_asset`
-    to provide a custom subclass or instance of `MessagesAsset`."""
+    to provide a custom subclass or instance of `MessagesAsset`.
+
+    Set `aggregate_messages` to True to aggregate attachments into message content.
+
+    Set `shuffle_messages` to True to shuffle messages. Useful in chatting to increase diversity
+    when context is too big."""
     if pages_asset is None:
         pages_asset = PagesAsset
     if isinstance(pages_asset, type):
@@ -2470,6 +2478,8 @@ def find_examples(
         if aggregate_kwargs is None:
             aggregate_kwargs = {}
         messages_asset = messages_asset.aggregate_messages(**aggregate_kwargs)
+    if shuffle_messages:
+        messages_asset = messages_asset.shuffle()
     combined_asset = pages_asset + messages_asset
     return combined_asset.find_obj_mentions(
         obj,
@@ -2489,15 +2499,16 @@ def find_assets(
     module: tp.Union[None, str, ModuleType] = None,
     resolve: bool = True,
     asset_names: tp.Optional[tp.MaybeIterable[str]] = None,
-    minimize: tp.Optional[bool] = None,
-    minimize_pages: tp.Optional[bool] = None,
-    minimize_messages: tp.Optional[bool] = None,
-    combine: bool = True,
     pages_asset: tp.Optional[tp.MaybeType[PagesAssetT]] = None,
     messages_asset: tp.Optional[tp.MaybeType[MessagesAssetT]] = None,
     pull_kwargs: tp.KwargsLike = None,
     aggregate_messages: bool = True,
     aggregate_kwargs: tp.KwargsLike = None,
+    shuffle_messages: bool = False,
+    minimize: tp.Optional[bool] = None,
+    minimize_pages: tp.Optional[bool] = None,
+    minimize_messages: tp.Optional[bool] = None,
+    combine: bool = True,
     api_kwargs: tp.KwargsLike = None,
     docs_kwargs: tp.KwargsLike = None,
     messages_kwargs: tp.KwargsLike = None,
@@ -2525,6 +2536,11 @@ def find_assets(
 
     Use `pages_asset` to provide a custom subclass or instance of `PagesAsset`. Use `messages_asset`
     to provide a custom subclass or instance of `MessagesAsset`. Both assets are reused among "find" calls.
+
+    Set `aggregate_messages` to True to aggregate attachments into message content.
+
+    Set `shuffle_messages` to True to shuffle messages. Useful in chatting to increase diversity
+    when context is too big.
 
     Set `combine` to True to combine all assets into a single asset. Uses
     `vectorbtpro.utils.knowledge.base.KnowledgeAsset.combine` with `combine_kwargs`.
@@ -2555,6 +2571,8 @@ def find_assets(
         if aggregate_kwargs is None:
             aggregate_kwargs = {}
         messages_asset = messages_asset.aggregate_messages(**aggregate_kwargs)
+    if shuffle_messages:
+        messages_asset = messages_asset.shuffle()
 
     assets = []
     all_asset_names = ["api", "docs", "messages", "examples"]
@@ -2633,6 +2651,7 @@ def find_assets(
                 messages_asset=messages_asset,
                 aggregate_messages=False,
                 aggregate_kwargs=aggregate_kwargs,
+                shuffle_messages=False,
                 **examples_kwargs,
             )
             if len(asset) > 0:
@@ -2677,15 +2696,32 @@ def chat_about(
     chat_history: tp.ChatHistory = None,
     *,
     asset_names: tp.Optional[tp.MaybeIterable[str]] = "examples",
-    shuffle: bool = False,
+    shuffle_messages: tp.Optional[bool] = None,
+    shuffle: tp.Optional[bool] = None,
     **kwargs,
 ) -> tp.ChatOutput:
     """Chat about an object.
 
     Uses `find_assets` with `combine=True` and `vectorbtpro.utils.knowledge.base_assets.KnowledgeAsset.chat`.
-    Arguments are distributed between these two methods automatically."""
+    Arguments are distributed between these two methods automatically.
+
+    If `shuffle` is True, shuffles the combined asset. By default, shuffles only messages (`shuffle=False`
+    and `shuffle_messages=True`). If `shuffle` is False, shuffles neither messages nor combined asset."""
+    if shuffle is not None:
+        if shuffle_messages is None:
+            shuffle_messages = False
+    else:
+        shuffle = False
+        if shuffle_messages is None:
+            shuffle_messages = True
     find_assets_kwargs = {k: kwargs.pop(k) for k in get_func_arg_names(find_assets) if k in kwargs}
-    asset = find_assets(obj, asset_names=asset_names, combine=True, **find_assets_kwargs)
+    asset = find_assets(
+        obj,
+        asset_names=asset_names,
+        combine=True,
+        shuffle_messages=shuffle_messages,
+        **find_assets_kwargs,
+    )
     if shuffle:
-        asset.shuffle(inplace=True)
+        asset = asset.shuffle()
     return asset.chat(message, chat_history, **kwargs)

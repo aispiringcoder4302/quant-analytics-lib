@@ -4278,7 +4278,14 @@ class TestKnowledge:
             assert asset.find("yenlow", mode="fuzzy").get() == [
                 {"s": "DEF", "b": False, "d2": {"c": "yellow", "l": [7, 8]}},
             ]
-            assert asset.find("yenlow", mode="fuzzy", return_type="match").get() == [[], [], [], ["yellow"], []]
+            assert asset.find("yenlow", mode="fuzzy", return_type="match").get() == "yellow"
+            assert asset.find("yenlow", mode="fuzzy", return_type="match", merge_matches=False).get() == [
+                [],
+                [],
+                [],
+                ["yellow"],
+                [],
+            ]
             assert asset.find("yenlow", mode="fuzzy", return_type="match", return_path=True).get() == [
                 {},
                 {},
