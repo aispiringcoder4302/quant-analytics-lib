@@ -1543,7 +1543,7 @@ class Executor(Configured):
         """Whether to show progress bar when iterating over chunks.
 
         If `Executor.engine` accepts `show_progress` and there's no key `show_progress`
-        in `Executor.engine_config`, then passes it to the engine as well."""
+        in `engine_config`, then passes it to the engine as well."""
         return self._show_progress
 
     @property

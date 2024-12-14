@@ -1,6 +1,8 @@
 # Copyright (c) 2021-2024 Oleg Polakow. All rights reserved.
 
-"""Asset pipeline classes."""
+"""Asset pipeline classes.
+
+See `vectorbtpro.utils.knowledge` for the toy dataset."""
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.utils.base import Base

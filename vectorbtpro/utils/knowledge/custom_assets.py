@@ -1052,7 +1052,7 @@ class VBTAsset(KnowledgeAsset):
         If `as_regex` is True, search is refined by using regular expressions. For instance,
         `vbt.PF` may match `vbt.PFO` if RegEx is not used.
 
-        If `merge_targets`, uses `VBTAsset.merge_targets` to reduce the number of targets.
+        If `merge_targets`, uses `VBTAsset.merge_mention_targets` to reduce the number of targets.
         Sets `as_regex` to True if False (but after the targets were generated)."""
         as_code = self.resolve_setting(as_code, "as_code")
         as_regex = self.resolve_setting(as_regex, "as_regex")
@@ -2502,7 +2502,7 @@ def find_examples(
 ) -> tp.MaybeVBTAsset:
     """Find (code) examples relevant to object(s).
 
-    Based on `VBTAsset.find_obj_obj_mentions`.
+    Based on `VBTAsset.find_obj_mentions`.
 
     By default, extracts code with text. Use `return_type="match"` to extract code without text,
     or, for instance, `return_type="item"` to also get links.
@@ -2600,7 +2600,7 @@ def find_assets(
     when context is too big.
 
     Set `combine` to True to combine all assets into a single asset. Uses
-    `vectorbtpro.utils.knowledge.base.KnowledgeAsset.combine` with `combine_kwargs`.
+    `vectorbtpro.utils.knowledge.base_assets.KnowledgeAsset.combine` with `combine_kwargs`.
 
     Set `minimize` to True (or `minimize_pages` for pages and `minimize_messages` for messages)
     in order to minimize to remove fields that aren't relevant for chatting.
