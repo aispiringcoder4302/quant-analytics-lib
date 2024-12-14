@@ -497,17 +497,18 @@ def prepare_refname(
         return None
     if isinstance(refname, list):
         raise ValueError("Multiple reference names found:\n\n* {}".format("\n* ".join(refname)))
-    module, qualname = get_refname_module_and_qualname(refname)
-    if module.__name__.split(".")[0] != "vectorbtpro" and vbt_only:
-        if raise_error:
-            _raise_error()
-        return None
-    if return_parts:
-        return refname, module, qualname
-    if resolve:
-        if qualname is None:
-            return module.__name__
-        return module.__name__ + "." + qualname
+    if vbt_only or return_parts or resolve:
+        module, qualname = get_refname_module_and_qualname(refname)
+        if module.__name__.split(".")[0] != "vectorbtpro" and vbt_only:
+            if raise_error:
+                _raise_error()
+            return None
+        if return_parts:
+            return refname, module, qualname
+        if resolve:
+            if qualname is None:
+                return module.__name__
+            return module.__name__ + "." + qualname
     return refname
 
 

@@ -2204,6 +2204,8 @@ $context
             is_custom_regex=False,
             as_code=False,
             as_regex=True,
+            allow_prefix=False,
+            allow_suffix=False,
             merge_targets=True,
             chat=flex_cfg(
                 system_prompt="You are an assistant with access to the VectorBT PRO (VBT) Python library documentation and Discord history. VBT is a proprietary successor to the open-source vectorbt for financial backtesting. As an expert, provide clear and accurate answers using only these sources. If metadata with links is present, reference these links to support your answers. If information isn't found, inform the user accordingly. Note that VBT exclusively refers to VectorBT PRO, which significantly differs from the open-source version. Given the context information and not prior knowledge, answer the query.",

@@ -1321,6 +1321,10 @@ class KnowledgeAsset(Configured, MutableSequence):
                     language = re.escape(language)
             if isinstance(language, list):
                 language = rf"(?:{'|'.join(language)})"
+                
+        opt_language = r"[\w+-]+"
+        opt_title = r"(?:\s+[^\n`]+)?"
+        
         if target is not None:
             if not isinstance(target, list):
                 targets = [target]
@@ -1335,7 +1339,7 @@ class KnowledgeAsset(Configured, MutableSequence):
                 if in_blocks:
                     if language is not None:
                         new_t = rf"""
-                        ```{language}\n
+                        ```{language}{opt_title}\n
                         (?:(?!```)[\s\S])*?
                         {t}
                         (?:(?!```)[\s\S])*?
@@ -1343,7 +1347,7 @@ class KnowledgeAsset(Configured, MutableSequence):
                         """
                     elif require_language:
                         new_t = rf"""
-                        ```[\w+-]+\n
+                        ```{opt_language}{opt_title}\n
                         (?:(?!```)[\s\S])*?
                         {t}
                         (?:(?!```)[\s\S])*?
@@ -1351,7 +1355,7 @@ class KnowledgeAsset(Configured, MutableSequence):
                         """
                     else:
                         new_t = rf"""
-                        ```(?:[\w+-]+)?\n
+                        ```(?:{opt_language}{opt_title})?\n
                         (?:(?!```)[\s\S])*?
                         {t}
                         (?:(?!```)[\s\S])*?
@@ -1365,11 +1369,11 @@ class KnowledgeAsset(Configured, MutableSequence):
         else:
             if in_blocks:
                 if language is not None:
-                    new_target = rf"```{language}\n([\s\S]*?)```\s*$"
+                    new_target = rf"```{language}{opt_title}\n([\s\S]*?)```\s*$"
                 elif require_language:
-                    new_target = r"```[\w+-]+\n([\s\S]*?)```\s*$"
+                    new_target = rf"```{opt_language}{opt_title}\n([\s\S]*?)```\s*$"
                 else:
-                    new_target = r"```(?:[\w+-]+)?\n([\s\S]*?)```\s*$"
+                    new_target = rf"```(?:{opt_language}{opt_title})?\n([\s\S]*?)```\s*$"
             else:
                 new_target = r"(?<!`)`([^`]*)`(?!`)"
         if in_blocks:
