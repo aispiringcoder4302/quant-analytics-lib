@@ -619,19 +619,24 @@ def drop_duplicate_levels(index: tp.Index, keep: tp.Optional[str] = None) -> tp.
         return index
     checks.assert_in(keep.lower(), ["first", "last"])
 
-    levels = []
-    levels_to_drop = []
-    if keep == "first":
-        r = range(0, index.nlevels)
-    else:
-        r = range(index.nlevels - 1, -1, -1)  # loop backwards
-    for i in r:
-        level = (index.levels[i].name, tuple(index.get_level_values(i).to_numpy().tolist()))
-        if level not in levels:
-            levels.append(level)
-        else:
-            levels_to_drop.append(i)
-    return index.droplevel(levels_to_drop)
+    levels_to_drop = set()
+    level_values = [index.get_level_values(i) for i in range(index.nlevels)]
+    for i in range(index.nlevels):
+        level1 = level_values[i]
+        for j in range(i + 1, index.nlevels):
+            level2 = level_values[j]
+            if level1.name is None or level2.name is None or level1.name == level2.name:
+                if checks.is_index_equal(level1, level2, check_names=False):
+                    if level1.name is None and level2.name is not None:
+                        levels_to_drop.add(i)
+                    elif level1.name is not None and level2.name is None:
+                        levels_to_drop.add(j)
+                    else:
+                        if keep.lower() == "first":
+                            levels_to_drop.add(j)
+                        else:
+                            levels_to_drop.add(i)
+    return index.droplevel(list(levels_to_drop))
 
 
 @register_jitted(cache=True)
@@ -663,16 +668,16 @@ def align_index_to(index1: tp.Index, index2: tp.Index, jitted: tp.JittedOption =
 
     mapper = {}
     for i in range(index1.nlevels):
+        name1 = index1.names[i]
         for j in range(index2.nlevels):
-            name1 = index1.names[i]
             name2 = index2.names[j]
-            if name1 == name2:
+            if name1 is None or name2 is None or name1 == name2:
                 if set(index2.levels[j]).issubset(set(index1.levels[i])):
                     if i in mapper:
                         raise ValueError(f"There are multiple candidate levels with name {name1} in second index")
                     mapper[i] = j
                     continue
-                if name1 is not None:
+                if name1 == name2 and name1 is not None:
                     raise ValueError(f"Level {name1} in second index contains values not in first index")
     if len(mapper) == 0:
         if len(index1) == len(index2):
