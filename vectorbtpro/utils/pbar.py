@@ -10,10 +10,10 @@ from time import time as utc_time
 from tqdm.std import tqdm
 
 from vectorbtpro import _typing as tp
-from vectorbtpro.utils.base import Base
-from vectorbtpro.utils.attr_ import MISSING
-from vectorbtpro.utils.config import merge_dicts
 from vectorbtpro.registries.pbar_registry import PBarRegistry, pbar_reg
+from vectorbtpro.utils.attr_ import MISSING
+from vectorbtpro.utils.base import Base
+from vectorbtpro.utils.config import merge_dicts
 
 __all__ = [
     "ProgressBar",
@@ -373,7 +373,7 @@ class ProgressBar(Base):
     @classmethod
     def format_num(cls, n: float) -> str:
         """Format a number."""
-        f = '{0:.3g}'.format(n).replace('+0', '+').replace('-0', '-')
+        f = "{0:.3g}".format(n).replace("+0", "+").replace("-0", "-")
         n = str(n)
         return f if len(f) < len(n) else n
 

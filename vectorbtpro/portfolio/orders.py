@@ -110,9 +110,9 @@ from vectorbtpro.portfolio import nb
 from vectorbtpro.portfolio.enums import order_dt, OrderSide, fs_order_dt, OrderType, OrderPriceStatus
 from vectorbtpro.records.decorators import attach_fields, override_field_config, attach_shortcut_properties
 from vectorbtpro.records.mapped_array import MappedArray
-from vectorbtpro.signals.enums import StopType
 from vectorbtpro.registries.ch_registry import ch_reg
 from vectorbtpro.registries.jit_registry import jit_reg
+from vectorbtpro.signals.enums import StopType
 from vectorbtpro.utils.colors import adjust_lightness
 from vectorbtpro.utils.config import merge_dicts, Config, ReadonlyConfig, HybridConfig
 

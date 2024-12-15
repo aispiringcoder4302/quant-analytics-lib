@@ -2,11 +2,11 @@
 
 """Utilities for formatting."""
 
-import attr
 import inspect
-import re
 import io
+import re
 
+import attr
 import numpy as np
 import pandas as pd
 
@@ -27,7 +27,7 @@ __all__ = [
 def camel_to_snake_case(camel_str: str) -> str:
     """Convert a camel case string to a snake case string."""
     snake_str = re.sub(r"(?<!^)(?<![A-Z_])([A-Z])", r"_\1", camel_str).lower()
-    if snake_str.startswith('_'):
+    if snake_str.startswith("_"):
         snake_str = snake_str[1:]
     return snake_str
 

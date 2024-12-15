@@ -3,9 +3,9 @@
 """Utilities for evaluation and compilation."""
 
 import ast
+import builtins
 import inspect
 import symtable
-import builtins
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.utils import checks

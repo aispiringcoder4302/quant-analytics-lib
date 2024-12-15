@@ -8,8 +8,8 @@ import warnings
 from collections import Counter
 
 from vectorbtpro import _typing as tp
-from vectorbtpro.base.wrapping import Wrapping
 from vectorbtpro.base.indexing import ParamLoc
+from vectorbtpro.base.wrapping import Wrapping
 from vectorbtpro.utils import checks
 from vectorbtpro.utils.attr_ import get_dict_attr, AttrResolverMixin
 from vectorbtpro.utils.base import Base

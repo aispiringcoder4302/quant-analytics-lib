@@ -14,8 +14,8 @@ from attr.exceptions import NotAnAttrsClassError
 
 import vectorbtpro as vbt
 from vectorbtpro import _typing as tp
-from vectorbtpro.utils.base import Base
 from vectorbtpro.utils import checks
+from vectorbtpro.utils.base import Base
 from vectorbtpro.utils.decorators import hybrid_property, hybrid_method
 from vectorbtpro.utils.hashing import Hashable
 

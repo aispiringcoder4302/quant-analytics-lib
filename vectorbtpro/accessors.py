@@ -50,10 +50,10 @@ import pandas as pd
 from pandas.core.accessor import DirNamesMixin
 
 from vectorbtpro import _typing as tp
-from vectorbtpro.utils.base import Base
 from vectorbtpro.base.accessors import BaseIDXAccessor
 from vectorbtpro.base.wrapping import ArrayWrapper
 from vectorbtpro.generic.accessors import GenericAccessor, GenericSRAccessor, GenericDFAccessor
+from vectorbtpro.utils.base import Base
 
 __all__ = [
     "Vbt_Accessor",

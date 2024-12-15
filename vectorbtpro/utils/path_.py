@@ -169,8 +169,7 @@ def get_common_prefix(paths: tp.Iterable[tp.PathLike]) -> str:
 
     for path in paths:
         parsed = urlparse(path)
-        if (parsed.scheme != parsed_first.scheme) or \
-                (parsed.scheme != "" and parsed.netloc != parsed_first.netloc):
+        if (parsed.scheme != parsed_first.scheme) or (parsed.scheme != "" and parsed.netloc != parsed_first.netloc):
             return ""
 
     if is_url:

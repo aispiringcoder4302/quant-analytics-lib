@@ -2684,7 +2684,9 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             main_kwargs,
         )
         if fill_to_benchmark:
-            cumulative_returns.vbt.plot_against(bm_cumulative_returns, add_trace_kwargs=add_trace_kwargs, fig=fig, **main_kwargs)
+            cumulative_returns.vbt.plot_against(
+                bm_cumulative_returns, add_trace_kwargs=add_trace_kwargs, fig=fig, **main_kwargs
+            )
         else:
             cumulative_returns.vbt.plot_against(start_value, add_trace_kwargs=add_trace_kwargs, fig=fig, **main_kwargs)
 

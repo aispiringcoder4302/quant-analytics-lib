@@ -3188,18 +3188,20 @@ Other keyword arguments are passed to `{0}.run`.
                     _inputs = _input_tuple
                     _in_outputs = _in_output_tuple
                     _params = _param_tuple
-                tasks.append(Task(
-                    apply_func,
-                    *((i,) if not select_params else ()),
-                    *args_before,
-                    *((_inputs,) if pass_packed else _inputs),
-                    *((_in_outputs,) if pass_packed else _in_outputs),
-                    *((_params,) if pass_packed else _params),
-                    *_args,
-                    *more_args,
-                    *cache,
-                    **_kwargs,
-                ))
+                tasks.append(
+                    Task(
+                        apply_func,
+                        *((i,) if not select_params else ()),
+                        *args_before,
+                        *((_inputs,) if pass_packed else _inputs),
+                        *((_in_outputs,) if pass_packed else _in_outputs),
+                        *((_params,) if pass_packed else _params),
+                        *_args,
+                        *more_args,
+                        *cache,
+                        **_kwargs,
+                    )
+                )
             return combining.apply_and_concat_each(
                 tasks,
                 n_outputs=num_ret_outputs,
@@ -4787,13 +4789,16 @@ Other keyword arguments are passed to `{0}.run`.
                 named_args[input_name] = input_tuple[i]
             for i, param_name in enumerate(config["param_names"]):
                 named_args[param_name] = param_tuple[i]
-            named_args["ohlc"] = pd.concat([
-                named_args["open"].rename("open"),
-                named_args["high"].rename("high"),
-                named_args["low"].rename("low"),
-                named_args["close"].rename("close"),
-                named_args["volume"].rename("volume"),
-            ], axis=1)
+            named_args["ohlc"] = pd.concat(
+                [
+                    named_args["open"].rename("open"),
+                    named_args["high"].rename("high"),
+                    named_args["low"].rename("low"),
+                    named_args["close"].rename("close"),
+                    named_args["volume"].rename("volume"),
+                ],
+                axis=1,
+            )
             if collapse and len(dep_input_names) > 0:
                 for dep_func_name in dep_input_names:
                     dep_func = cls.find_smc_indicator(dep_func_name)
@@ -4808,7 +4813,7 @@ Other keyword arguments are passed to `{0}.run`.
                     named_args[dep_func_name] = pd.concat(
                         [named_args[input_name] for input_name in dep_input_names[dep_func_name]],
                         axis=1,
-                        keys=dep_config["output_names"]
+                        keys=dep_config["output_names"],
                     )
             output = func(*[named_args[camel_to_snake_case(k)] for k in func_arg_names])
             return tuple([output[c] for c in output.columns])

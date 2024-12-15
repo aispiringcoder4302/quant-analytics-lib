@@ -4,8 +4,8 @@
 
 import re
 from collections import deque
-from pathlib import Path
 from copy import copy
+from pathlib import Path
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.utils import checks
@@ -1138,7 +1138,7 @@ def replace_start(
         string_cmp = string
         target_cmp = target
     if string_cmp.startswith(target_cmp):
-        return replacement + string[len(replacement):]
+        return replacement + string[len(replacement) :]
     return string
 
 
@@ -1156,7 +1156,7 @@ def replace_end(
         string_cmp = string
         target_cmp = target
     if string_cmp.endswith(target_cmp):
-        return string[:-len(replacement)] + replacement
+        return string[: -len(replacement)] + replacement
     return string
 
 

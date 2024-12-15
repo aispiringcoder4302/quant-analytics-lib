@@ -2151,10 +2151,12 @@ knowledge = frozen_cfg(
         tokens_per_name=1,
         system_prompt="You are a helpful assistant. Given the context information and not prior knowledge, answer the query.",
         system_as_user=False,
-        context_prompt=Sub(f"""Context information is below.
+        context_prompt=Sub(
+            f"""Context information is below.
 ---------------------
 $context
----------------------"""),
+---------------------"""
+        ),
         output_to=None,
         flush_output=True,
         display_format="auto_ipython",
@@ -2235,7 +2237,7 @@ $context
             excl_pages=None,
             page_find_mode="substring",
             up_aggregate=True,
-            up_aggregate_th=2/3,
+            up_aggregate_th=2 / 3,
             up_aggregate_pages=True,
         ),
         messages=flex_cfg(

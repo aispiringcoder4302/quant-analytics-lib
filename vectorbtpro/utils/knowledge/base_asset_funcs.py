@@ -5,12 +5,12 @@
 from vectorbtpro import _typing as tp
 from vectorbtpro.utils import checks, search
 from vectorbtpro.utils.base import Base
-from vectorbtpro.utils.config import reorder_dict, reorder_list
-from vectorbtpro.utils.template import CustomTemplate, RepEval, RepFunc
 from vectorbtpro.utils.config import merge_dicts, flat_merge_dicts, deep_merge_dicts
-from vectorbtpro.utils.parsing import get_func_arg_names
+from vectorbtpro.utils.config import reorder_dict, reorder_list
 from vectorbtpro.utils.execution import NoResult
 from vectorbtpro.utils.formatting import dump
+from vectorbtpro.utils.parsing import get_func_arg_names
+from vectorbtpro.utils.template import CustomTemplate, RepEval, RepFunc
 
 __all__ = [
     "AssetFunc",

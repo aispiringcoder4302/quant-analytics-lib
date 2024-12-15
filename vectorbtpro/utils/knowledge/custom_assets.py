@@ -2,25 +2,25 @@
 
 """Custom asset classes."""
 
+import inspect
 import io
 import os
-import re
-from types import ModuleType
-from pathlib import Path
-import inspect
 import pkgutil
+import re
 from collections import defaultdict, deque
+from pathlib import Path
+from types import ModuleType
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.utils import checks
 from vectorbtpro.utils.config import merge_dicts, flat_merge_dicts, reorder_list, HybridConfig
+from vectorbtpro.utils.knowledge.base_assets import KnowledgeAsset
 from vectorbtpro.utils.module_ import prepare_refname, get_caller_qualname
 from vectorbtpro.utils.parsing import get_func_arg_names
 from vectorbtpro.utils.path_ import check_mkdir, remove_dir, get_common_prefix, dir_tree_from_paths
 from vectorbtpro.utils.pbar import ProgressBar
 from vectorbtpro.utils.pickling import suggest_compression
 from vectorbtpro.utils.search import find
-from vectorbtpro.utils.knowledge.base_assets import KnowledgeAsset
 
 __all__ = [
     "VBTAsset",

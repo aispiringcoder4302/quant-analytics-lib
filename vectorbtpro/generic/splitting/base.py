@@ -4011,11 +4011,14 @@ class Splitter(Analyzable):
                 template_context["tasks"] = tasks
                 template_context["keys"] = keys
                 if is_merge_func_from_config(merge_func):
-                    merge_kwargs = merge_dicts(dict(
-                        keys=keys,
-                        filter_results=not no_results_filtered,
-                        raise_no_results=raise_no_results,
-                    ), merge_kwargs)
+                    merge_kwargs = merge_dicts(
+                        dict(
+                            keys=keys,
+                            filter_results=not no_results_filtered,
+                            raise_no_results=raise_no_results,
+                        ),
+                        merge_kwargs,
+                    )
                 if isinstance(merge_func, MergeFunc):
                     merge_func = merge_func.replace(
                         merge_kwargs=merge_kwargs,
@@ -4105,11 +4108,14 @@ class Splitter(Analyzable):
                     if len(_results) > 0:
                         _template_context["keys"] = minor_keys_wbounds
                         if is_merge_func_from_config(merge_func):
-                            _merge_kwargs = merge_dicts(dict(
-                                keys=minor_keys_wbounds,
-                                filter_results=not no_results_filtered,
-                                raise_no_results=False,
-                            ), merge_kwargs)
+                            _merge_kwargs = merge_dicts(
+                                dict(
+                                    keys=minor_keys_wbounds,
+                                    filter_results=not no_results_filtered,
+                                    raise_no_results=False,
+                                ),
+                                merge_kwargs,
+                            )
                         else:
                             _merge_kwargs = merge_kwargs
                         if isinstance(merge_func, MergeFunc):

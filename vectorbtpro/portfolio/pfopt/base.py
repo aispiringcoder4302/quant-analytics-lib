@@ -2312,14 +2312,16 @@ class PortfolioOptimizer(Analyzable):
         # Generate allocations
         tasks = []
         for group_idx, group_config in enumerate(group_configs):
-            tasks.append(Task(
-                cls.run_allocation_group,
-                wrapper=wrapper,
-                group_configs=group_configs,
-                group_index=group_index,
-                group_idx=group_idx,
-                pre_group_func=pre_group_func,
-            ))
+            tasks.append(
+                Task(
+                    cls.run_allocation_group,
+                    wrapper=wrapper,
+                    group_configs=group_configs,
+                    group_index=group_index,
+                    group_idx=group_idx,
+                    pre_group_func=pre_group_func,
+                )
+            )
         group_execute_kwargs = merge_dicts(dict(show_progress=False if single_group else None), group_execute_kwargs)
         results = execute(tasks, keys=group_index, **group_execute_kwargs)
         alloc_points, allocations = zip(*results)
@@ -2803,7 +2805,7 @@ class PortfolioOptimizer(Analyzable):
                             freq=wrapper.freq,
                         )
                     __kwargs[k] = v
-                
+
                 tasks.append(Task(_optimize_func, *__args, **__kwargs))
                 if isinstance(wrapper.index, pd.DatetimeIndex):
                     keys.append(
@@ -3255,14 +3257,16 @@ class PortfolioOptimizer(Analyzable):
         # Generate allocations
         tasks = []
         for group_idx, group_config in enumerate(group_configs):
-            tasks.append(Task(
-                cls.run_optimization_group,
-                wrapper=wrapper,
-                group_configs=group_configs,
-                group_index=group_index,
-                group_idx=group_idx,
-                pre_group_func=pre_group_func,
-            ))
+            tasks.append(
+                Task(
+                    cls.run_optimization_group,
+                    wrapper=wrapper,
+                    group_configs=group_configs,
+                    group_index=group_index,
+                    group_idx=group_idx,
+                    pre_group_func=pre_group_func,
+                )
+            )
         group_execute_kwargs = merge_dicts(dict(show_progress=False if single_group else None), group_execute_kwargs)
         results = execute(tasks, keys=group_index, **group_execute_kwargs)
         alloc_ranges, allocations = zip(*results)

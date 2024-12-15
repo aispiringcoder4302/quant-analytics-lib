@@ -2,9 +2,9 @@
 
 """Module with `FinPyData`."""
 
-import pandas as pd
-
 from itertools import product
+
+import pandas as pd
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.data.custom.remote import RemoteData
@@ -179,11 +179,11 @@ class FinPyData(RemoteData):
             if "fields" in row.index:
                 parts.append(row.loc["fields"])
             if combine_parts:
-                split_parts = [part.split(',') for part in parts]
+                split_parts = [part.split(",") for part in parts]
                 combinations = list(product(*split_parts))
             else:
                 combinations = [parts]
-            for symbol in ['.'.join(combination) for combination in combinations]:
+            for symbol in [".".join(combination) for combination in combinations]:
                 if pattern is not None:
                     if not cls.key_match(symbol, pattern, use_regex=use_regex):
                         continue

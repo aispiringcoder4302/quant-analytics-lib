@@ -4,26 +4,26 @@
 
 See `vectorbtpro.utils.knowledge` for the toy dataset."""
 
-import re
 import json
+import re
+import warnings
 from collections.abc import MutableSequence
 from pathlib import Path
-import warnings
 
 import pandas as pd
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.utils import checks, search
 from vectorbtpro.utils.config import Configured
-from vectorbtpro.utils.pickling import decompress, load_bytes
-from vectorbtpro.utils.path_ import check_mkdir, remove_dir, dir_tree_from_paths
-from vectorbtpro.utils.pbar import ProgressBar
-from vectorbtpro.utils.template import CustomTemplate, RepEval, RepFunc, Sub
 from vectorbtpro.utils.config import flat_merge_dicts, deep_merge_dicts
-from vectorbtpro.utils.parsing import get_func_arg_names, get_func_kwargs
+from vectorbtpro.utils.decorators import hybrid_method
 from vectorbtpro.utils.execution import Task, execute, NoResult
 from vectorbtpro.utils.module_ import get_caller_qualname
-from vectorbtpro.utils.decorators import hybrid_method
+from vectorbtpro.utils.parsing import get_func_arg_names, get_func_kwargs
+from vectorbtpro.utils.path_ import check_mkdir, remove_dir, dir_tree_from_paths
+from vectorbtpro.utils.pbar import ProgressBar
+from vectorbtpro.utils.pickling import decompress, load_bytes
+from vectorbtpro.utils.template import CustomTemplate, RepEval, RepFunc, Sub
 
 try:
     if not tp.TYPE_CHECKING:
@@ -1323,10 +1323,10 @@ class KnowledgeAsset(Configured, MutableSequence):
                     language = re.escape(language)
             if isinstance(language, list):
                 language = rf"(?:{'|'.join(language)})"
-                
+
         opt_language = r"[\w+-]+"
         opt_title = r"(?:\s+[^\n`]+)?"
-        
+
         if target is not None:
             if not isinstance(target, list):
                 targets = [target]

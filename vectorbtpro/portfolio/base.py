@@ -5786,16 +5786,14 @@ class Portfolio(Analyzable, PortfolioWithInOutputs, SimRangeMixin, metaclass=Met
         else:
             idx_ma = orders.idx
         order_index = pd.MultiIndex.from_arrays(
-            (orders.col_mapper.get_col_arr(group_by=group_by), orders.id_arr),
-            names=["col", "id"]
+            (orders.col_mapper.get_col_arr(group_by=group_by), orders.id_arr), names=["col", "id"]
         )
         order_idx_sr = pd.Series(idx_ma.values, index=order_index, name="idx")
 
         def _get_type_signals(type_order_ids):
             type_order_ids = type_order_ids.apply_mask(type_order_ids.values != -1)
             type_order_index = pd.MultiIndex.from_arrays(
-                (type_order_ids.col_mapper.get_col_arr(group_by=group_by), type_order_ids.values),
-                names=["col", "id"]
+                (type_order_ids.col_mapper.get_col_arr(group_by=group_by), type_order_ids.values), names=["col", "id"]
             )
             type_idx_df = order_idx_sr.loc[type_order_index].reset_index()
             type_signals = orders.wrapper.fill(False, group_by=group_by)
@@ -5811,7 +5809,6 @@ class Portfolio(Analyzable, PortfolioWithInOutputs, SimRangeMixin, metaclass=Met
             _get_type_signals(entry_trades.short_view.entry_order_id),
             _get_type_signals(exit_trades.short_view.exit_order_id),
         )
-
 
     @hybrid_method
     def get_drawdowns(

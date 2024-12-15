@@ -1853,11 +1853,14 @@ class Parameterizer(Configured):
             from vectorbtpro.base.merging import is_merge_func_from_config
 
             if is_merge_func_from_config(merge_func):
-                merge_kwargs = merge_dicts(dict(
-                    keys=template_context["param_index"],
-                    filter_results=not no_results_filtered,
-                    raise_no_results=raise_no_results,
-                ), merge_kwargs)
+                merge_kwargs = merge_dicts(
+                    dict(
+                        keys=template_context["param_index"],
+                        filter_results=not no_results_filtered,
+                        raise_no_results=raise_no_results,
+                    ),
+                    merge_kwargs,
+                )
             if isinstance(merge_func, MergeFunc):
                 merge_func = merge_func.replace(merge_kwargs=merge_kwargs, context=template_context)
             else:
@@ -2060,7 +2063,7 @@ def parameterized(
             replace_parameterizer = parameterizer_kwargs.pop("replace_parameterizer")
             merge_to_execute_kwargs = parameterizer_kwargs.pop("merge_to_execute_kwargs")
             eval_id = parameterizer_kwargs.pop("eval_id", None)
-            
+
             if merge_to_execute_kwargs is None:
                 merge_to_execute_kwargs = params_cfg["merge_to_execute_kwargs"]
             if merge_to_execute_kwargs and len(parameterizer_kwargs) > 0:

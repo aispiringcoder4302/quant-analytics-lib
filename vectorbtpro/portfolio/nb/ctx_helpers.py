@@ -3,10 +3,10 @@
 """Numba-compiled context helper functions for portfolio simulation."""
 
 from vectorbtpro.base.flex_indexing import flex_select_col_nb
-from vectorbtpro.records import nb as records_nb
-from vectorbtpro.portfolio.nb.core import *
 from vectorbtpro.portfolio.nb import records as pf_records_nb
+from vectorbtpro.portfolio.nb.core import *
 from vectorbtpro.portfolio.nb.iter_ import select_nb
+from vectorbtpro.records import nb as records_nb
 
 
 # ############# Position ############# #
@@ -919,15 +919,17 @@ def get_exec_state_nb(
     """Get execution state."""
     if val_price is not None:
         _val_price = float(val_price)
-        value = float(update_value_nb(
-            cash_before=get_cash_nb(c),
-            cash_now=get_cash_nb(c),
-            position_before=get_position_nb(c),
-            position_now=get_position_nb(c),
-            val_price_before=get_val_price_nb(c),
-            val_price_now=_val_price,
-            value_before=get_value_nb(c),
-        ))
+        value = float(
+            update_value_nb(
+                cash_before=get_cash_nb(c),
+                cash_now=get_cash_nb(c),
+                position_before=get_position_nb(c),
+                position_now=get_position_nb(c),
+                val_price_before=get_val_price_nb(c),
+                val_price_now=_val_price,
+                value_before=get_value_nb(c),
+            )
+        )
     else:
         _val_price = float(get_val_price_nb(c))
         value = float(get_value_nb(c))

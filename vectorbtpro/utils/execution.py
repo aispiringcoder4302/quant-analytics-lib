@@ -4,26 +4,26 @@
 
 import concurrent.futures
 import enum
+import inspect
 import time
 import warnings
 from functools import partial, wraps
 from pathlib import Path
-import inspect
 
 import pandas as pd
 from numba.core.registry import CPUDispatcher
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.utils import checks
+from vectorbtpro.utils.attr_ import define, DefineMixin, MISSING
+from vectorbtpro.utils.config import merge_dicts, Configured, FrozenConfig
+from vectorbtpro.utils.merging import MergeFunc
 from vectorbtpro.utils.parsing import (
     annotate_args,
     flat_ann_args_to_args,
     match_ann_arg,
     match_and_set_flat_ann_arg,
 )
-from vectorbtpro.utils.attr_ import define, DefineMixin, MISSING
-from vectorbtpro.utils.config import merge_dicts, Configured, FrozenConfig
-from vectorbtpro.utils.merging import MergeFunc
 from vectorbtpro.utils.parsing import get_func_arg_names
 from vectorbtpro.utils.path_ import remove_dir, file_exists
 from vectorbtpro.utils.pbar import ProgressBar, ProgressHidden
@@ -56,6 +56,7 @@ __all__ = [
 ]
 
 TaskT = tp.TypeVar("TaskT", bound="Task")
+
 
 @define
 class Task(DefineMixin):

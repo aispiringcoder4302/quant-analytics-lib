@@ -13,9 +13,9 @@ import pandas as pd
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.utils import checks
-from vectorbtpro.utils.base import Base
 from vectorbtpro.utils.annotations import get_annotations, flatten_annotations, Annotatable, Union
 from vectorbtpro.utils.attr_ import DefineMixin, define, MISSING
+from vectorbtpro.utils.base import Base
 from vectorbtpro.utils.config import merge_dicts, FrozenConfig, Configured
 from vectorbtpro.utils.eval_ import Evaluable
 from vectorbtpro.utils.execution import Task, execute
@@ -1842,7 +1842,7 @@ def chunked(
 
     Chunking can be disabled using `disable` argument. Additionally, the entire wrapping mechanism
     can be disabled by using the global setting `disable_wrapping` (=> returns the wrapped function).
-    
+
     Keyword arguments not listed in `Chunker` and `execute_kwargs` are merged into `execute_kwargs`
     if `merge_to_execute_kwargs` is True, otherwise, they are passed directly to `Chunker`.
 

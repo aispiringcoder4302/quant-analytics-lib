@@ -5,8 +5,8 @@
 from collections import defaultdict
 
 from vectorbtpro import _typing as tp
-from vectorbtpro.utils.base import Base
 from vectorbtpro.utils.attr_ import DefineMixin, define
+from vectorbtpro.utils.base import Base
 
 __all__ = [
     "Annotatable",
