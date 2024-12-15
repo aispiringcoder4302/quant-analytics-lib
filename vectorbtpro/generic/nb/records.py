@@ -12,8 +12,8 @@ from vectorbtpro.base.flex_indexing import flex_select_1d_pc_nb, flex_select_nb
 from vectorbtpro.base.reshaping import to_1d_array_nb
 from vectorbtpro.generic.enums import *
 from vectorbtpro.generic.nb.base import repartition_nb
-from vectorbtpro.generic.nb.sim_range import prepare_sim_range_nb
 from vectorbtpro.generic.nb.patterns import pattern_similarity_nb
+from vectorbtpro.generic.nb.sim_range import prepare_sim_range_nb
 from vectorbtpro.records import chunking as records_ch
 from vectorbtpro.registries.ch_registry import register_chunkable
 from vectorbtpro.registries.jit_registry import register_jitted

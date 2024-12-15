@@ -27,6 +27,7 @@ from vectorbtpro.returns.accessors import ReturnsAccessor
 from vectorbtpro.utils import checks, datetime_ as dt
 from vectorbtpro.utils.annotations import has_annotatables
 from vectorbtpro.utils.config import merge_dicts, Config, HybridConfig
+from vectorbtpro.utils.decorators import hybrid_method
 from vectorbtpro.utils.enum_ import map_enum_fields
 from vectorbtpro.utils.execution import Task, execute
 from vectorbtpro.utils.params import Param, combine_params, Parameterizer
@@ -1661,9 +1662,9 @@ PortfolioOptimizerT = tp.TypeVar("PortfolioOptimizerT", bound="PortfolioOptimize
 class PortfolioOptimizer(Analyzable):
     """Class that exposes methods for generating allocations."""
 
-    @classmethod
+    @hybrid_method
     def row_stack(
-        cls: tp.Type[PortfolioOptimizerT],
+        cls_or_self: tp.MaybeType[PortfolioOptimizerT],
         *objs: tp.MaybeTuple[PortfolioOptimizerT],
         wrapper_kwargs: tp.KwargsLike = None,
         **kwargs,
@@ -1671,6 +1672,11 @@ class PortfolioOptimizer(Analyzable):
         """Stack multiple `PortfolioOptimizer` instances along rows.
 
         Uses `vectorbtpro.base.wrapping.ArrayWrapper.row_stack` to stack the wrappers."""
+        if not isinstance(cls_or_self, type):
+            objs = (cls_or_self, *objs)
+            cls = type(cls_or_self)
+        else:
+            cls = cls_or_self
         if len(objs) == 1:
             objs = objs[0]
         objs = list(objs)
@@ -1707,9 +1713,9 @@ class PortfolioOptimizer(Analyzable):
         kwargs = cls.resolve_stack_kwargs(*objs, **kwargs)
         return cls(**kwargs)
 
-    @classmethod
+    @hybrid_method
     def column_stack(
-        cls: tp.Type[PortfolioOptimizerT],
+        cls_or_self: tp.MaybeType[PortfolioOptimizerT],
         *objs: tp.MaybeTuple[PortfolioOptimizerT],
         wrapper_kwargs: tp.KwargsLike = None,
         **kwargs,
@@ -1717,6 +1723,11 @@ class PortfolioOptimizer(Analyzable):
         """Stack multiple `PortfolioOptimizer` instances along columns.
 
         Uses `vectorbtpro.base.wrapping.ArrayWrapper.column_stack` to stack the wrappers."""
+        if not isinstance(cls_or_self, type):
+            objs = (cls_or_self, *objs)
+            cls = type(cls_or_self)
+        else:
+            cls = cls_or_self
         if len(objs) == 1:
             objs = objs[0]
         objs = list(objs)
@@ -1990,7 +2001,7 @@ class PortfolioOptimizer(Analyzable):
         skip_not_found: tp.Union[bool, Param] = point_idxr_defaults["skip_not_found"],
         index_points: tp.Union[None, tp.MaybeSequence[int], Param] = None,
         rescale_to: tp.Union[None, tp.Tuple[float, float], Param] = None,
-        parameterizer_cls: tp.Optional[tp.Type[Parameterizer]] = None,
+        parameterizer: tp.Optional[tp.MaybeType[Parameterizer]] = None,
         param_search_kwargs: tp.KwargsLike = None,
         name_tuple_to_str: tp.Union[None, bool, tp.Callable] = None,
         group_configs: tp.Union[None, tp.Dict[tp.Hashable, tp.Kwargs], tp.Sequence[tp.Kwargs]] = None,
@@ -2013,6 +2024,11 @@ class PortfolioOptimizer(Analyzable):
         Similar to `PortfolioOptimizer.from_optimize_func`, but generates points using
         `vectorbtpro.base.wrapping.ArrayWrapper.get_index_points` and makes each point available
         as `index_point` in the context.
+
+        Templates can use the following variables:
+
+        * `i`: Allocation step
+        * `index_point`: Allocation index
 
         If `jitted_loop` is True, see `vectorbtpro.portfolio.pfopt.nb.allocate_meta_nb`.
 
@@ -2158,10 +2174,10 @@ class PortfolioOptimizer(Analyzable):
 
         params_cfg = settings["params"]
 
-        if parameterizer_cls is None:
-            parameterizer_cls = params_cfg["parameterizer_cls"]
-        if parameterizer_cls is None:
-            parameterizer_cls = Parameterizer
+        if parameterizer is None:
+            parameterizer = params_cfg["parameterizer"]
+        if parameterizer is None:
+            parameterizer = Parameterizer
         param_search_kwargs = merge_dicts(params_cfg["param_search_kwargs"], param_search_kwargs)
         if group_execute_kwargs is None:
             group_execute_kwargs = {}
@@ -2221,7 +2237,7 @@ class PortfolioOptimizer(Analyzable):
             **{f"args_{i}": args[i] for i in range(len(args))},
             **kwargs,
         }
-        param_dct = parameterizer_cls.find_params_in_obj(paramable_kwargs, **param_search_kwargs)
+        param_dct = parameterizer.find_params_in_obj(paramable_kwargs, **param_search_kwargs)
         param_columns = None
         if len(param_dct) > 0:
             param_product, param_columns = combine_params(
@@ -2233,7 +2249,7 @@ class PortfolioOptimizer(Analyzable):
             if param_columns is None:
                 n_param_configs = len(param_product[list(param_product.keys())[0]])
                 param_columns = pd.RangeIndex(stop=n_param_configs, name="param_config")
-            product_group_configs = parameterizer_cls.param_product_to_objs(paramable_kwargs, param_product)
+            product_group_configs = parameterizer.param_product_to_objs(paramable_kwargs, param_product)
             if len(group_configs) == 0:
                 group_configs = product_group_configs
             else:
@@ -2296,14 +2312,16 @@ class PortfolioOptimizer(Analyzable):
         # Generate allocations
         tasks = []
         for group_idx, group_config in enumerate(group_configs):
-            tasks.append(Task(
-                cls.run_allocation_group,
-                wrapper=wrapper,
-                group_configs=group_configs,
-                group_index=group_index,
-                group_idx=group_idx,
-                pre_group_func=pre_group_func,
-            ))
+            tasks.append(
+                Task(
+                    cls.run_allocation_group,
+                    wrapper=wrapper,
+                    group_configs=group_configs,
+                    group_index=group_index,
+                    group_idx=group_idx,
+                    pre_group_func=pre_group_func,
+                )
+            )
         group_execute_kwargs = merge_dicts(dict(show_progress=False if single_group else None), group_execute_kwargs)
         results = execute(tasks, keys=group_index, **group_execute_kwargs)
         alloc_points, allocations = zip(*results)
@@ -2787,7 +2805,7 @@ class PortfolioOptimizer(Analyzable):
                             freq=wrapper.freq,
                         )
                     __kwargs[k] = v
-                
+
                 tasks.append(Task(_optimize_func, *__args, **__kwargs))
                 if isinstance(wrapper.index, pd.DatetimeIndex):
                     keys.append(
@@ -2862,7 +2880,7 @@ class PortfolioOptimizer(Analyzable):
         index_loc: tp.Union[None, tp.MaybeSequence[int], Param] = None,
         rescale_to: tp.Union[None, tp.Tuple[float, float], Param] = None,
         alloc_wait: tp.Union[int, Param] = 1,
-        parameterizer_cls: tp.Optional[tp.Type[Parameterizer]] = None,
+        parameterizer: tp.Optional[tp.MaybeType[Parameterizer]] = None,
         param_search_kwargs: tp.KwargsLike = None,
         name_tuple_to_str: tp.Union[None, bool, tp.Callable] = None,
         group_configs: tp.Union[None, tp.Dict[tp.Hashable, tp.Kwargs], tp.Sequence[tp.Kwargs]] = None,
@@ -2905,6 +2923,13 @@ class PortfolioOptimizer(Analyzable):
         If `jitted_loop` is True, see `vectorbtpro.portfolio.pfopt.nb.optimize_meta_nb`.
         Otherwise, must take template-substituted `*args` and `**kwargs`, and return an array or
         dictionary with asset allocations (also empty).
+
+        Templates can use the following variables:
+
+        * `i`: Optimization step
+        * `index_start`: Optimization start index (including)
+        * `index_end`: Optimization end index (excluding)
+        * `index_slice`: `slice(index_start, index_end)`
 
         !!! note
             When `jitted_loop` is True and in case of multiple groups, use templates
@@ -3086,10 +3111,10 @@ class PortfolioOptimizer(Analyzable):
 
         params_cfg = settings["params"]
 
-        if parameterizer_cls is None:
-            parameterizer_cls = params_cfg["parameterizer_cls"]
-        if parameterizer_cls is None:
-            parameterizer_cls = Parameterizer
+        if parameterizer is None:
+            parameterizer = params_cfg["parameterizer"]
+        if parameterizer is None:
+            parameterizer = Parameterizer
         param_search_kwargs = merge_dicts(params_cfg["param_search_kwargs"], param_search_kwargs)
         if group_execute_kwargs is None:
             group_execute_kwargs = {}
@@ -3155,7 +3180,7 @@ class PortfolioOptimizer(Analyzable):
             **{f"args_{i}": args[i] for i in range(len(args))},
             **kwargs,
         }
-        param_dct = parameterizer_cls.find_params_in_obj(paramable_kwargs, **param_search_kwargs)
+        param_dct = parameterizer.find_params_in_obj(paramable_kwargs, **param_search_kwargs)
         param_columns = None
         if len(param_dct) > 0:
             param_product, param_columns = combine_params(
@@ -3167,7 +3192,7 @@ class PortfolioOptimizer(Analyzable):
             if param_columns is None:
                 n_param_configs = len(param_product[list(param_product.keys())[0]])
                 param_columns = pd.RangeIndex(stop=n_param_configs, name="param_config")
-            product_group_configs = parameterizer_cls.param_product_to_objs(paramable_kwargs, param_product)
+            product_group_configs = parameterizer.param_product_to_objs(paramable_kwargs, param_product)
             if len(group_configs) == 0:
                 group_configs = product_group_configs
             else:
@@ -3232,14 +3257,16 @@ class PortfolioOptimizer(Analyzable):
         # Generate allocations
         tasks = []
         for group_idx, group_config in enumerate(group_configs):
-            tasks.append(Task(
-                cls.run_optimization_group,
-                wrapper=wrapper,
-                group_configs=group_configs,
-                group_index=group_index,
-                group_idx=group_idx,
-                pre_group_func=pre_group_func,
-            ))
+            tasks.append(
+                Task(
+                    cls.run_optimization_group,
+                    wrapper=wrapper,
+                    group_configs=group_configs,
+                    group_index=group_index,
+                    group_idx=group_idx,
+                    pre_group_func=pre_group_func,
+                )
+            )
         group_execute_kwargs = merge_dicts(dict(show_progress=False if single_group else None), group_execute_kwargs)
         results = execute(tasks, keys=group_index, **group_execute_kwargs)
         alloc_ranges, allocations = zip(*results)

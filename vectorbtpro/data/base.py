@@ -23,6 +23,7 @@ from vectorbtpro.generic.drawdowns import Drawdowns
 from vectorbtpro.returns.accessors import ReturnsAccessor
 from vectorbtpro.utils import checks, datetime_ as dt
 from vectorbtpro.utils.attr_ import get_dict_attr
+from vectorbtpro.utils.base import Base
 from vectorbtpro.utils.config import merge_dicts, Config, HybridConfig, copy_dict
 from vectorbtpro.utils.decorators import cached_property, hybrid_method
 from vectorbtpro.utils.execution import Task, NoResult, NoResultsException, filter_out_no_results, execute
@@ -90,7 +91,7 @@ class run_arg_dict(pdict):
 BaseDataMixinT = tp.TypeVar("BaseDataMixinT", bound="BaseDataMixin")
 
 
-class BaseDataMixin:
+class BaseDataMixin(Base):
     """Base mixin class for working with data."""
 
     @property
@@ -133,8 +134,13 @@ class BaseDataMixin:
 
     def get_feature_idx(self, feature: tp.Feature, raise_error: bool = False) -> int:
         """Return the index of a feature."""
-        feature = self.prepare_key(feature)
+        # shortcut
+        columns = self.feature_wrapper.columns
+        if not columns.has_duplicates:
+            if feature in columns:
+                return columns.get_loc(feature)
 
+        feature = self.prepare_key(feature)
         found_indices = []
         for i, c in enumerate(self.features):
             c = self.prepare_key(c)
@@ -150,8 +156,13 @@ class BaseDataMixin:
 
     def get_symbol_idx(self, symbol: tp.Symbol, raise_error: bool = False) -> int:
         """Return the index of a symbol."""
-        symbol = self.prepare_key(symbol)
+        # shortcut
+        columns = self.symbol_wrapper.columns
+        if not columns.has_duplicates:
+            if symbol in columns:
+                return columns.get_loc(symbol)
 
+        symbol = self.prepare_key(symbol)
         found_indices = []
         for i, c in enumerate(self.symbols):
             c = self.prepare_key(c)
@@ -315,10 +326,7 @@ class OHLCDataMixin(BaseDataMixin):
     def has_any_ohlc(self) -> bool:
         """Whether the instance has any of the OHLC features."""
         return (
-            self.has_feature("Open")
-            or self.has_feature("High")
-            or self.has_feature("Low")
-            or self.has_feature("Close")
+            self.has_feature("Open") or self.has_feature("High") or self.has_feature("Low") or self.has_feature("Close")
         )
 
     @property
@@ -458,16 +466,16 @@ class MetaFeatures(type):
 
     @property
     def feature_config(cls) -> Config:
-        """Column config."""
+        """Feature config."""
         return cls._feature_config
 
 
-class DataWithFeatures(metaclass=MetaFeatures):
+class DataWithFeatures(Base, metaclass=MetaFeatures):
     """Class exposes a read-only class property `DataWithFeatures.field_config`."""
 
     @property
     def feature_config(self) -> Config:
-        """Column config of `${cls_name}`.
+        """Feature config of `${cls_name}`.
 
         ```python
         ${feature_config}
@@ -588,9 +596,9 @@ class Data(Analyzable, DataWithFeatures, OHLCDataMixin, metaclass=MetaData):
                 kwargs[attr] = attr_value
         return kwargs
 
-    @classmethod
+    @hybrid_method
     def row_stack(
-        cls: tp.Type[DataT],
+        cls_or_self: tp.MaybeType[DataT],
         *objs: tp.MaybeTuple[DataT],
         wrapper_kwargs: tp.KwargsLike = None,
         **kwargs,
@@ -598,6 +606,11 @@ class Data(Analyzable, DataWithFeatures, OHLCDataMixin, metaclass=MetaData):
         """Stack multiple `Data` instances along rows.
 
         Uses `vectorbtpro.base.wrapping.ArrayWrapper.row_stack` to stack the wrappers."""
+        if not isinstance(cls_or_self, type):
+            objs = (cls_or_self, *objs)
+            cls = type(cls_or_self)
+        else:
+            cls = cls_or_self
         if len(objs) == 1:
             objs = objs[0]
         objs = list(objs)
@@ -645,9 +658,9 @@ class Data(Analyzable, DataWithFeatures, OHLCDataMixin, metaclass=MetaData):
         kwargs = cls.fix_dict_types_in_kwargs(type(kwargs["data"]), **kwargs)
         return cls(**kwargs)
 
-    @classmethod
+    @hybrid_method
     def column_stack(
-        cls: tp.Type[DataT],
+        cls_or_self: tp.MaybeType[DataT],
         *objs: tp.MaybeTuple[DataT],
         wrapper_kwargs: tp.KwargsLike = None,
         **kwargs,
@@ -655,6 +668,11 @@ class Data(Analyzable, DataWithFeatures, OHLCDataMixin, metaclass=MetaData):
         """Stack multiple `Data` instances along columns.
 
         Uses `vectorbtpro.base.wrapping.ArrayWrapper.column_stack` to stack the wrappers."""
+        if not isinstance(cls_or_self, type):
+            objs = (cls_or_self, *objs)
+            cls = type(cls_or_self)
+        else:
+            cls = cls_or_self
         if len(objs) == 1:
             objs = objs[0]
         objs = list(objs)
@@ -2943,13 +2961,15 @@ class Data(Analyzable, DataWithFeatures, OHLCDataMixin, metaclass=MetaData):
             if k in fetch_kwargs:
                 key_fetch_kwargs = merge_dicts(key_fetch_kwargs, fetch_kwargs[k])
 
-            tasks.append(Task(
-                key_fetch_func,
-                k,
-                skip_on_error=skip_on_error,
-                silence_warnings=silence_warnings,
-                fetch_kwargs=key_fetch_kwargs,
-            ))
+            tasks.append(
+                Task(
+                    key_fetch_func,
+                    k,
+                    skip_on_error=skip_on_error,
+                    silence_warnings=silence_warnings,
+                    fetch_kwargs=key_fetch_kwargs,
+                )
+            )
             fetch_kwargs[k] = key_fetch_kwargs
 
         key_index = cls.get_key_index(keys=keys, level_name=level_name, feature_oriented=keys_are_features)
@@ -3206,13 +3226,15 @@ class Data(Analyzable, DataWithFeatures, OHLCDataMixin, metaclass=MetaData):
                     key_update_kwargs = self.select_symbol_kwargs(k, kwargs)
                 if "silence_warnings" in func_arg_names:
                     key_update_kwargs["silence_warnings"] = silence_warnings
-                tasks.append(Task(
-                    key_update_func,
-                    k,
-                    skip_on_error=skip_on_error,
-                    silence_warnings=silence_warnings,
-                    update_kwargs=key_update_kwargs,
-                ))
+                tasks.append(
+                    Task(
+                        key_update_func,
+                        k,
+                        skip_on_error=skip_on_error,
+                        silence_warnings=silence_warnings,
+                        update_kwargs=key_update_kwargs,
+                    )
+                )
                 key_indices.append(i)
 
         outputs = execute(tasks, size=len(self.keys), keys=self.key_index, **execute_kwargs)
@@ -3897,11 +3919,14 @@ class Data(Analyzable, DataWithFeatures, OHLCDataMixin, metaclass=MetaData):
                 merge_func = "column_stack"
             if merge_func is not None:
                 if is_merge_func_from_config(merge_func):
-                    merge_kwargs = merge_dicts(dict(
-                        keys=keys,
-                        filter_results=not no_results_filtered,
-                        raise_no_results=raise_no_results,
-                    ), merge_kwargs)
+                    merge_kwargs = merge_dicts(
+                        dict(
+                            keys=keys,
+                            filter_results=not no_results_filtered,
+                            raise_no_results=raise_no_results,
+                        ),
+                        merge_kwargs,
+                    )
                 if isinstance(merge_func, MergeFunc):
                     merge_func = merge_func.replace(merge_kwargs=merge_kwargs, context=template_context)
                 else:

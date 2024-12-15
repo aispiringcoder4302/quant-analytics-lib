@@ -8,6 +8,7 @@ from copy import copy, deepcopy
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.utils.attr_ import MISSING
+from vectorbtpro.utils.base import Base
 from vectorbtpro.utils.caching import Cacheable
 from vectorbtpro.utils.chaining import Chainable
 from vectorbtpro.utils.checks import Comparable, is_deep_equal, assert_in, assert_instance_of
@@ -31,7 +32,7 @@ __all__ = [
 ]
 
 
-class hdict(dict):
+class hdict(dict, Base):
     """Hashable dict."""
 
     def __hash__(self):
@@ -243,17 +244,17 @@ def reorder_list(lst: list, keys: tp.Iterable[tp.Union[int, type(...)]], skip_mi
     """Reorder a list based on a list of integer indices.
 
     The keys list can include all indices, or a subset of indices with a single Ellipsis (...)
-    representing all other indices."""
+    representing all other indices. When skip_missing is True, missing indices are ignored."""
     if not isinstance(lst, list):
         lst = list(lst)
     if not isinstance(keys, list):
         keys = list(keys)
     ellipsis_count = keys.count(...)
     if ellipsis_count > 1:
-        raise ValueError("Keys list can contain at most one Ellipsis")
+        raise ValueError("Keys list can contain at most one Ellipsis (...)")
     specified_keys = [k for k in keys if k is not Ellipsis]
     if not all(isinstance(k, int) for k in specified_keys):
-        raise TypeError("All keys must be integers or Ellipsis")
+        raise TypeError("All keys must be integers or Ellipsis (...)")
     if skip_missing:
         seen = set()
         valid_specified = []
@@ -276,23 +277,21 @@ def reorder_list(lst: list, keys: tp.Iterable[tp.Union[int, type(...)]], skip_mi
             final_order.extend(remaining_indices)
         else:
             if skip_missing:
-                if 0 <= key < len(lst) and key not in final_order:
+                if key in specified_keys:
                     final_order.append(key)
             else:
                 final_order.append(key)
-    if ellipsis_count == 0:
-        if len(final_order) != len(lst):
-            raise ValueError("Reordered list does not include all elements from the original list")
-    else:
-        if len(final_order) != len(lst):
-            raise ValueError("Reordered list does not include all elements from the original list")
-    if set(final_order) != set(range(len(lst))):
-        missing = set(range(len(lst))) - set(final_order)
-        extra = set(final_order) - set(range(len(lst)))
-        if missing:
-            raise ValueError(f"Missing indices in reordered list: {missing}")
-        if extra:
-            raise ValueError(f"Invalid indices in reordered list: {extra}")
+    if not skip_missing:
+        if ... not in keys:
+            if len(final_order) != len(lst):
+                raise ValueError("Reordered list does not include all elements from the original list")
+        if set(final_order) != set(range(len(lst))):
+            missing = set(range(len(lst))) - set(final_order)
+            extra = set(final_order) - set(range(len(lst)))
+            if missing:
+                raise ValueError(f"Missing indices in reordered list: {missing}")
+            if extra:
+                raise ValueError(f"Invalid indices in reordered list: {extra}")
     return [lst[i] for i in final_order]
 
 
@@ -480,6 +479,7 @@ class Config(pdict):
 
             To make nested dictionaries also accessible via the dot notation, wrap
             them with `child_dict` and set `convert_children` and `nested` to True.
+        override_keys (set of str): Keys to override if `as_attrs` is True.
 
     Defaults can be overridden with settings under `vectorbtpro._settings.config`.
 
@@ -541,6 +541,7 @@ class Config(pdict):
         nested = _resolve_setting("nested", True)
         convert_children = _resolve_setting("convert_children", False)
         as_attrs = _resolve_setting("as_attrs", frozen_keys or readonly)
+        override_keys = _resolve_setting("override_keys", set())
         copy_kwargs = _resolve_setting(
             "copy_kwargs",
             dict(copy_mode="none", nested=nested),
@@ -579,6 +580,7 @@ class Config(pdict):
                             nested=nested,
                             convert_children=convert_children,
                             as_attrs=as_attrs,
+                            override_keys=override_keys,
                         ),
                     )
 
@@ -599,14 +601,18 @@ class Config(pdict):
             nested=nested,
             convert_children=convert_children,
             as_attrs=as_attrs,
+            override_keys=override_keys,
         )
 
         # Set keys as attributes for autocomplete
         if as_attrs:
             self_dir = set(self.__dir__())
             for k, v in self.items():
-                if k in self_dir:
-                    raise ValueError(f"Key '{k}' shadows an attribute of the config. Disable option 'as_attrs'.")
+                if k in self_dir and k not in override_keys:
+                    raise ValueError(
+                        f"Key '{k}' shadows an attribute of the config. "
+                        f"Disable option 'as_attrs' or put the key to 'override_keys'."
+                    )
 
     @property
     def options_(self) -> dict:
@@ -971,7 +977,7 @@ class SettingNotFoundError(KeyError):
 HasSettingsT = tp.TypeVar("HasSettingsT", bound="HasSettings")
 
 
-class HasSettings:
+class HasSettings(Base):
     """Class that has settings in `vectorbtpro._settings`."""
 
     _settings_path: tp.SettingsPath = None
@@ -1316,6 +1322,8 @@ class HasSettings:
         if path is None:
             raise SettingsNotFoundError(f"Found no settings associated with the class {cls.__name__}")
         if sub_path is not None:
+            from vectorbtpro.utils.search import combine_pathlike_keys
+
             path = combine_pathlike_keys(path, sub_path)
         if not cls.has_path_settings(path):
             raise SettingsNotFoundError(f"Found no settings under the path '{path}'")

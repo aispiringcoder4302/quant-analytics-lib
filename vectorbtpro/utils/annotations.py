@@ -6,6 +6,7 @@ from collections import defaultdict
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.utils.attr_ import DefineMixin, define
+from vectorbtpro.utils.base import Base
 
 __all__ = [
     "Annotatable",
@@ -152,7 +153,7 @@ class MetaAnnotatable(type):
         return Union(cls, other).resolve()
 
 
-class Annotatable(metaclass=MetaAnnotatable):
+class Annotatable(Base, metaclass=MetaAnnotatable):
     """Class that can be used in annotations."""
 
     def __or__(self, other: tp.Annotation) -> tp.Annotation:

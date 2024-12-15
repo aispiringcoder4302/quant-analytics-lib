@@ -4,7 +4,6 @@
 
 from numba import prange
 
-from vectorbtpro._dtypes import *
 from vectorbtpro.base import chunking as base_ch
 from vectorbtpro.base.reshaping import to_1d_array_nb, to_2d_array_nb
 from vectorbtpro.generic.enums import BarZone
@@ -429,6 +428,7 @@ def prepare_fs_records_nb(
         save_state=None,
         save_value=None,
         save_returns=None,
+        skip_empty=None,
         max_order_records=None,
         max_log_records=None,
     ),
@@ -484,6 +484,7 @@ def from_basic_signals_nb(
     save_state: bool = False,
     save_value: bool = False,
     save_returns: bool = False,
+    skip_empty: bool = True,
     max_order_records: tp.Optional[int] = None,
     max_log_records: tp.Optional[int] = 0,
 ) -> SimulationOutput:
@@ -683,7 +684,7 @@ def from_basic_signals_nb(
             )
 
             # Get signals
-            skip = True
+            skip = skip_empty
             for c in range(group_len):
                 col = from_col + c
 
@@ -830,14 +831,15 @@ def from_basic_signals_nb(
                         main_info["size_type"][col] = _size_type
                         main_info["direction"][col] = _direction
 
-                skip = True
-                for col in range(from_col, to_col):
-                    if flex_select_nb(log_, i, col):
-                        skip = False
-                        break
-                    if not np.isnan(main_info["size"][col]):
-                        skip = False
-                        break
+                skip = skip_empty
+                if skip:
+                    for col in range(from_col, to_col):
+                        if flex_select_nb(log_, i, col):
+                            skip = False
+                            break
+                        if not np.isnan(main_info["size"][col]):
+                            skip = False
+                            break
 
                 if not skip:
                     # Check bar zone and update valuation price
@@ -914,7 +916,7 @@ def from_basic_signals_nb(
                         else:
                             c = k
                         col = from_col + c
-                        if np.isnan(main_info["size"][col]):  # shortcut
+                        if skip_empty and np.isnan(main_info["size"][col]):  # shortcut
                             continue
 
                         # Get current values per column
@@ -1170,6 +1172,7 @@ def from_basic_signals_nb(
         save_state=None,
         save_value=None,
         save_returns=None,
+        skip_empty=None,
         max_order_records=None,
         max_log_records=None,
     ),
@@ -1253,6 +1256,7 @@ def from_signals_nb(
     save_state: bool = False,
     save_value: bool = False,
     save_returns: bool = False,
+    skip_empty: bool = True,
     max_order_records: tp.Optional[int] = None,
     max_log_records: tp.Optional[int] = 0,
 ) -> SimulationOutput:
@@ -1569,7 +1573,7 @@ def from_signals_nb(
             )
 
             # Get signals
-            skip = True
+            skip = skip_empty
             for c in range(group_len):
                 col = from_col + c
 
@@ -2711,14 +2715,15 @@ def from_signals_nb(
                                     main_info["type"][col] = exec_user_type
                                     main_info["stop_type"][col] = exec_user_stop_type
 
-                skip = True
-                for col in range(from_col, to_col):
-                    if flex_select_nb(log_, i, col):
-                        skip = False
-                        break
-                    if not np.isnan(main_info["size"][col]):
-                        skip = False
-                        break
+                skip = skip_empty
+                if skip:
+                    for col in range(from_col, to_col):
+                        if flex_select_nb(log_, i, col):
+                            skip = False
+                            break
+                        if not np.isnan(main_info["size"][col]):
+                            skip = False
+                            break
 
                 if not skip:
                     # Check bar zone and update valuation price
@@ -2795,7 +2800,7 @@ def from_signals_nb(
                         else:
                             c = k
                         col = from_col + c
-                        if np.isnan(main_info["size"][col]):  # shortcut
+                        if skip_empty and np.isnan(main_info["size"][col]):  # shortcut
                             continue
 
                         # Get current values per column
@@ -3616,6 +3621,7 @@ PostSegmentFuncT = tp.Callable[[SignalSegmentContext, tp.VarArg()], None]
         ffill_val_price=None,
         update_value=None,
         fill_pos_info=None,
+        skip_empty=None,
         max_order_records=None,
         max_log_records=None,
         in_outputs=ch.ArgsTaker(),
@@ -3706,6 +3712,7 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
     ffill_val_price: bool = True,
     update_value: bool = False,
     fill_pos_info: bool = True,
+    skip_empty: bool = True,
     max_order_records: tp.Optional[int] = None,
     max_log_records: tp.Optional[int] = 0,
     in_outputs: tp.Optional[tp.NamedTuple] = None,
@@ -4029,7 +4036,7 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                     update_open_pos_info_stats_nb(last_pos_info[col], last_position[col], last_val_price[col])
 
             # Get signals
-            skip = True
+            skip = skip_empty
             for c in range(group_len):
                 col = from_col + c
 
@@ -5258,14 +5265,15 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                                     main_info["type"][col] = exec_user_type
                                     main_info["stop_type"][col] = exec_user_stop_type
 
-                skip = True
-                for col in range(from_col, to_col):
-                    if flex_select_nb(log_, i, col):
-                        skip = False
-                        break
-                    if not np.isnan(main_info["size"][col]):
-                        skip = False
-                        break
+                skip = skip_empty
+                if skip:
+                    for col in range(from_col, to_col):
+                        if flex_select_nb(log_, i, col):
+                            skip = False
+                            break
+                        if not np.isnan(main_info["size"][col]):
+                            skip = False
+                            break
 
                 if not skip:
                     # Check bar zone and update valuation price
@@ -5342,7 +5350,7 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                         else:
                             c = k
                         col = from_col + c
-                        if np.isnan(main_info["size"][col]):  # shortcut
+                        if skip_empty and np.isnan(main_info["size"][col]):  # shortcut
                             continue
 
                         # Get current values per column

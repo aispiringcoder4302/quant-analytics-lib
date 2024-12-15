@@ -5,6 +5,7 @@
 from vectorbtpro.base.flex_indexing import flex_select_col_nb
 from vectorbtpro.portfolio.nb import records as pf_records_nb
 from vectorbtpro.portfolio.nb.core import *
+from vectorbtpro.portfolio.nb.iter_ import select_nb
 from vectorbtpro.records import nb as records_nb
 
 
@@ -126,10 +127,7 @@ def get_n_active_positions_nb(
 def get_col_cash_nb(c: tp.NamedTuple, col: int) -> float:
     """Get cash of a column."""
     if c.cash_sharing:
-        raise ValueError(
-            "Cannot get cash of a single column from a group with cash sharing. "
-            "Use get_group_cash_nb."
-        )
+        raise ValueError("Cannot get cash of a single column from a group with cash sharing. " "Use get_group_cash_nb.")
     return c.last_cash[col]
 
 
@@ -217,8 +215,7 @@ def get_col_free_cash_nb(c: tp.NamedTuple, col: int) -> float:
     """Get free cash of a column."""
     if c.cash_sharing:
         raise ValueError(
-            "Cannot get free cash of a single column from a group with cash sharing. "
-            "Use get_group_free_cash_nb."
+            "Cannot get free cash of a single column from a group with cash sharing. " "Use get_group_free_cash_nb."
         )
     return c.last_free_cash[col]
 
@@ -312,8 +309,7 @@ def get_col_value_nb(c: tp.NamedTuple, col: int) -> float:
     """Get value of a column."""
     if c.cash_sharing:
         raise ValueError(
-            "Cannot get value of a single column from a group with cash sharing. "
-            "Use get_group_value_nb."
+            "Cannot get value of a single column from a group with cash sharing. " "Use get_group_value_nb."
         )
     return c.last_value[col]
 
@@ -911,6 +907,55 @@ def stop_sim_nb(
 
 
 @register_jitted
+def get_exec_state_nb(
+    c: tp.Union[
+        OrderContext,
+        PostOrderContext,
+        SignalContext,
+        PostSignalContext,
+    ],
+    val_price: tp.Optional[int] = None,
+) -> ExecState:
+    """Get execution state."""
+    if val_price is not None:
+        _val_price = float(val_price)
+        value = float(
+            update_value_nb(
+                cash_before=get_cash_nb(c),
+                cash_now=get_cash_nb(c),
+                position_before=get_position_nb(c),
+                position_now=get_position_nb(c),
+                val_price_before=get_val_price_nb(c),
+                val_price_now=_val_price,
+                value_before=get_value_nb(c),
+            )
+        )
+    else:
+        _val_price = float(get_val_price_nb(c))
+        value = float(get_value_nb(c))
+    return ExecState(
+        cash=get_cash_nb(c),
+        position=get_position_nb(c),
+        debt=get_debt_nb(c),
+        locked_cash=get_locked_cash_nb(c),
+        free_cash=get_free_cash_nb(c),
+        val_price=_val_price,
+        value=value,
+    )
+
+
+@register_jitted
+def get_price_area_nb(c: tp.NamedTuple) -> PriceArea:
+    """Get price area."""
+    return PriceArea(
+        open=select_nb(c, c.open, i=c.i),
+        high=select_nb(c, c.high, i=c.i),
+        low=select_nb(c, c.low, i=c.i),
+        close=select_nb(c, c.close, i=c.i),
+    )
+
+
+@register_jitted
 def get_order_size_nb(
     c: tp.Union[
         OrderContext,
@@ -920,28 +965,18 @@ def get_order_size_nb(
     ],
     size: float,
     size_type: int = SizeType.Amount,
-    price: tp.Optional[int] = None,
+    val_price: tp.Optional[int] = None,
 ) -> float:
     """Get order size."""
-    if price is not None:
-        val_price, value = update_value_nb(
-            cash_before=get_cash_nb(c),
-            cash_now=get_cash_nb(c),
-            position_before=get_position_nb(c),
-            position_now=get_position_nb(c),
-            val_price_before=get_val_price_nb(c),
-            price=price,
-            value_before=get_value_nb(c),
-        )
-    else:
-        val_price = get_val_price_nb(c)
-        value = get_value_nb(c)
+    exec_state = get_exec_state_nb(c, val_price=val_price)
+    if size_type == SizeType.Percent100 or size_type == SizeType.Percent:
+        raise ValueError("Size type Percent(100) is not supported")
     return resolve_size_nb(
         size=size,
         size_type=size_type,
         position=get_position_nb(c),
-        val_price=val_price,
-        value=value,
+        val_price=exec_state.val_price,
+        value=exec_state.value,
     )[0]
 
 
@@ -956,34 +991,38 @@ def get_order_value_nb(
     size: float,
     size_type: int = SizeType.Amount,
     direction: int = Direction.Both,
-    price: tp.Optional[int] = None,
+    val_price: tp.Optional[int] = None,
 ) -> float:
     """Get (approximate) order value."""
-    if price is not None:
-        val_price, value = update_value_nb(
-            cash_before=get_cash_nb(c),
-            cash_now=get_cash_nb(c),
-            position_before=get_position_nb(c),
-            position_now=get_position_nb(c),
-            val_price_before=get_val_price_nb(c),
-            price=price,
-            value_before=get_value_nb(c),
-        )
-    else:
-        val_price = get_val_price_nb(c)
-        value = get_value_nb(c)
-    exec_state = ExecState(
-        cash=get_cash_nb(c),
-        position=get_position_nb(c),
-        debt=get_debt_nb(c),
-        locked_cash=get_locked_cash_nb(c),
-        free_cash=get_free_cash_nb(c),
-        val_price=val_price,
-        value=value,
-    )
+    exec_state = get_exec_state_nb(c, val_price=val_price)
     return approx_order_value_nb(
         exec_state,
         size=size,
         size_type=size_type,
         direction=direction,
+    )
+
+
+@register_jitted
+def get_order_result_nb(
+    c: tp.Union[
+        OrderContext,
+        PostOrderContext,
+        SignalContext,
+        PostSignalContext,
+    ],
+    order: Order,
+    val_price: tp.Optional[float] = None,
+    update_value: bool = False,
+) -> tp.Tuple[OrderResult, ExecState]:
+    """Get order result and new execution state.
+
+    Doesn't have any effect on the simulation state."""
+    exec_state = get_exec_state_nb(c, val_price=val_price)
+    price_area = get_price_area_nb(c)
+    return execute_order_nb(
+        exec_state=exec_state,
+        order=order,
+        price_area=price_area,
+        update_value=update_value,
     )

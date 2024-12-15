@@ -1,14 +1,17 @@
 # Copyright (c) 2021-2024 Oleg Polakow. All rights reserved.
 
-"""Asset pipeline classes."""
+"""Asset pipeline classes.
+
+See `vectorbtpro.utils.knowledge` for the toy dataset."""
 
 from vectorbtpro import _typing as tp
+from vectorbtpro.utils.base import Base
 from vectorbtpro.utils.config import merge_dicts
-from vectorbtpro.utils.parsing import get_func_arg_names
-from vectorbtpro.utils.execution import Task
-from vectorbtpro.utils.module_ import package_shortcut_config
 from vectorbtpro.utils.eval_ import evaluate
+from vectorbtpro.utils.execution import Task
 from vectorbtpro.utils.knowledge.base_asset_funcs import AssetFunc
+from vectorbtpro.utils.module_ import package_shortcut_config
+from vectorbtpro.utils.parsing import get_func_arg_names
 
 __all__ = [
     "AssetPipeline",
@@ -17,7 +20,7 @@ __all__ = [
 ]
 
 
-class AssetPipeline:
+class AssetPipeline(Base):
     """Abstract class representing an asset pipeline."""
 
     @classmethod

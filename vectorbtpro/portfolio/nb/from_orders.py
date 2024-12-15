@@ -4,7 +4,6 @@
 
 from numba import prange
 
-from vectorbtpro._dtypes import *
 from vectorbtpro.base import chunking as base_ch
 from vectorbtpro.base.reshaping import to_1d_array_nb, to_2d_array_nb
 from vectorbtpro.portfolio import chunking as portfolio_ch
@@ -58,9 +57,9 @@ from vectorbtpro.utils.array_ import insert_argsort_nb
         save_state=None,
         save_value=None,
         save_returns=None,
+        skip_empty=None,
         max_order_records=None,
         max_log_records=None,
-        skipna=None,
     ),
     **portfolio_ch.merge_sim_outs_config,
 )
@@ -106,6 +105,7 @@ def from_orders_nb(
     save_state: bool = False,
     save_value: bool = False,
     save_returns: bool = False,
+    skip_empty: bool = True,
     max_order_records: tp.Optional[int] = None,
     max_log_records: tp.Optional[int] = 0,
 ) -> SimulationOutput:
@@ -281,19 +281,20 @@ def from_orders_nb(
             if track_cash_deposits:
                 cash_deposits_out[i, group] += _cash_deposits
 
-            skip = True
-            for c in range(group_len):
-                col = from_col + c
-                _i = i - abs(flex_select_nb(from_ago_, i, col))
-                if _i < 0:
-                    continue
-                if flex_select_nb(log_, i, col):
-                    skip = False
-                    break
-                if not np.isnan(flex_select_nb(size_, _i, col)):
-                    if not np.isnan(flex_select_nb(price_, _i, col)):
+            skip = skip_empty
+            if skip:
+                for c in range(group_len):
+                    col = from_col + c
+                    _i = i - abs(flex_select_nb(from_ago_, i, col))
+                    if _i < 0:
+                        continue
+                    if flex_select_nb(log_, i, col):
                         skip = False
                         break
+                    if not np.isnan(flex_select_nb(size_, _i, col)):
+                        if not np.isnan(flex_select_nb(price_, _i, col)):
+                            skip = False
+                            break
 
             if not skip or ffill_val_price:
                 for c in range(group_len):

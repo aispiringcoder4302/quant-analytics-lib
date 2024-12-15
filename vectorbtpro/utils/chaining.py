@@ -5,6 +5,7 @@
 import inspect
 
 from vectorbtpro import _typing as tp
+from vectorbtpro.utils.base import Base
 from vectorbtpro.utils.decorators import hybrid_method
 
 __all__ = [
@@ -12,7 +13,7 @@ __all__ = [
 ]
 
 
-class Chainable:
+class Chainable(Base):
     """Class representing an object that can be chained."""
 
     @hybrid_method

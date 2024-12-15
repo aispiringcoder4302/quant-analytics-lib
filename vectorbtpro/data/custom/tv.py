@@ -406,7 +406,7 @@ class TVClient(Configured):
                 + symbol
                 + '","adjustment":"'
                 + adjustment
-                + ('' if not backadjustment else '","backadjustment":"default')
+                + ("" if not backadjustment else '","backadjustment":"default')
                 + '","session":'
                 + ('"regular"' if not extended_session else '"extended"')
                 + "}",

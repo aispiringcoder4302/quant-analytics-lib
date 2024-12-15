@@ -5,6 +5,7 @@
 from vectorbtpro import _typing as tp
 from vectorbtpro.utils import checks
 from vectorbtpro.utils.attr_ import DefineMixin, define
+from vectorbtpro.utils.base import Base
 from vectorbtpro.utils.chunking import chunked, resolve_chunked, resolve_chunked_option
 from vectorbtpro.utils.config import merge_dicts
 from vectorbtpro.utils.template import RepEval
@@ -44,7 +45,7 @@ class ChunkedSetup(DefineMixin):
         return (self.setup_id,)
 
 
-class ChunkableRegistry:
+class ChunkableRegistry(Base):
     """Class for registering chunkable functions."""
 
     def __init__(self) -> None:

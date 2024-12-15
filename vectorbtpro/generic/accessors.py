@@ -5073,7 +5073,14 @@ class GenericAccessor(BaseAccessor, Analyzable):
         return merge_dicts(Analyzable.plots_defaults.__get__(self), generic_plots_cfg)
 
     _subplots: tp.ClassVar[Config] = HybridConfig(
-        dict(plot=dict(check_is_not_grouped=True, plot_func="plot", pass_trace_names=False, tags="generic")),
+        dict(
+            plot=dict(
+                check_is_not_grouped=True,
+                plot_func="plot",
+                pass_trace_names=False,
+                tags="generic",
+            )
+        ),
     )
 
     @property

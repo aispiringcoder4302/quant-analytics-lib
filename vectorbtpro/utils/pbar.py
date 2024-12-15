@@ -12,6 +12,7 @@ from tqdm.std import tqdm
 from vectorbtpro import _typing as tp
 from vectorbtpro.registries.pbar_registry import PBarRegistry, pbar_reg
 from vectorbtpro.utils.attr_ import MISSING
+from vectorbtpro.utils.base import Base
 from vectorbtpro.utils.config import merge_dicts
 
 __all__ = [
@@ -25,7 +26,7 @@ __all__ = [
 ProgressBarT = tp.TypeVar("ProgressBarT", bound="ProgressBar")
 
 
-class ProgressBar:
+class ProgressBar(Base):
     """Context manager to manage a progress bar.
 
     Supported types:
@@ -372,7 +373,7 @@ class ProgressBar:
     @classmethod
     def format_num(cls, n: float) -> str:
         """Format a number."""
-        f = '{0:.3g}'.format(n).replace('+0', '+').replace('-0', '-')
+        f = "{0:.3g}".format(n).replace("+0", "+").replace("-0", "-")
         n = str(n)
         return f if len(f) < len(n) else n
 
@@ -544,7 +545,7 @@ class ProgressBar:
 ProgressHiddenT = tp.TypeVar("ProgressHiddenT", bound="ProgressHidden")
 
 
-class ProgressHidden:
+class ProgressHidden(Base):
     """Context manager to hide progress."""
 
     def __init__(self, disable_registry: bool = True, disable_machinery: bool = True) -> None:
@@ -615,7 +616,7 @@ def with_progress_hidden(*args) -> tp.Callable:
 ProgressShownT = tp.TypeVar("ProgressShownT", bound="ProgressShown")
 
 
-class ProgressShown:
+class ProgressShown(Base):
     """Context manager to show progress."""
 
     def __init__(self, enable_registry: bool = True, enable_machinery: bool = True) -> None:

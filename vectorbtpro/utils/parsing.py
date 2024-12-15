@@ -13,6 +13,7 @@ import warnings
 from vectorbtpro import _typing as tp
 from vectorbtpro.utils.annotations import get_annotations, VarArgs, VarKwargs
 from vectorbtpro.utils.attr_ import DefineMixin, define
+from vectorbtpro.utils.base import Base
 
 __all__ = [
     "Regex",
@@ -68,22 +69,57 @@ def get_func_arg_names(
     return arg_names
 
 
-def has_variable_args(func: tp.Callable) -> bool:
-    """Return whether function accepts variable positions arguments."""
+def get_variable_args_name(func: tp.Callable) -> tp.Optional[str]:
+    """Get the name of variable positional arguments."""
     signature = inspect.signature(func)
     for p in signature.parameters.values():
         if p.kind == p.VAR_POSITIONAL:
-            return True
-    return False
+            return p.name
+    return None
+
+
+def has_variable_args(func: tp.Callable) -> bool:
+    """Return whether function accepts variable positions arguments."""
+    return get_variable_args_name(func) is not None
+
+
+def get_variable_kwargs_name(func: tp.Callable) -> tp.Optional[str]:
+    """Get the name of variable keyword arguments."""
+    signature = inspect.signature(func)
+    for p in signature.parameters.values():
+        if p.kind == p.VAR_KEYWORD:
+            return p.name
+    return None
 
 
 def has_variable_kwargs(func: tp.Callable) -> bool:
     """Return whether function accepts variable keyword arguments."""
+    return get_variable_kwargs_name(func) is not None
+
+
+def get_forward_args(func: tp.Callable, local_dict: tp.Kwargs, **kwargs) -> tp.ArgsKwargs:
+    """Get positional and keyword arguments to forward."""
+    new_args = ()
+    new_kwargs = {}
     signature = inspect.signature(func)
     for p in signature.parameters.values():
-        if p.kind == p.VAR_KEYWORD:
-            return True
-    return False
+        k = p.name
+        if k in kwargs:
+            v = kwargs.pop(k)
+        elif k in local_dict:
+            v = local_dict[k]
+        else:
+            continue
+        if p.kind in (p.POSITIONAL_ONLY, p.POSITIONAL_OR_KEYWORD):
+            new_args += (v,)
+        elif p.kind == p.VAR_POSITIONAL:
+            new_args += v
+        elif p.kind == p.KEYWORD_ONLY:
+            new_kwargs[k] = v
+        else:
+            for _k, _v in v.items():
+                new_kwargs[_k] = _v
+    return new_args, new_kwargs
 
 
 def extend_args(func: tp.Callable, args: tp.Args, kwargs: tp.Kwargs, **with_kwargs) -> tp.Tuple[tp.Args, tp.Kwargs]:
@@ -489,7 +525,7 @@ def warn_stdout(func: tp.Callable) -> tp.Callable:
 PrintsSuppressedT = tp.TypeVar("PrintsSuppressedT", bound="PrintsSuppressed")
 
 
-class PrintsSuppressed(contextlib.redirect_stdout):
+class PrintsSuppressed(contextlib.redirect_stdout, Base):
     """Context manager to ignore print statements."""
 
     def __new__(cls, *args, **kwargs) -> PrintsSuppressedT:
@@ -499,7 +535,7 @@ class PrintsSuppressed(contextlib.redirect_stdout):
 WarningsFilteredT = tp.TypeVar("WarningsFilteredT", bound="WarningsFiltered")
 
 
-class WarningsFiltered(warnings.catch_warnings):
+class WarningsFiltered(warnings.catch_warnings, Base):
     """Context manager to ignore warnings."""
 
     def __init__(self, entries: tp.Optional[tp.MaybeSequence[tp.Union[str, tp.Kwargs]]] = "ignore", **kwargs) -> None:

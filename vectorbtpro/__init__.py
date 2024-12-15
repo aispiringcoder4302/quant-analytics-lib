@@ -79,10 +79,16 @@ if settings["importing"]["auto_import"]:
 
     _auto_import(__name__)
 
+    from vectorbtpro.base.grouping import nb as grp_nb
+    from vectorbtpro.base.resampling import nb as res_nb
+    from vectorbtpro.data import nb as data_nb
     from vectorbtpro.generic import nb, enums
+    from vectorbtpro.generic.splitting import nb as spl_nb
     from vectorbtpro.indicators import nb as ind_nb, enums as ind_enums
     from vectorbtpro.labels import nb as lab_nb, enums as lab_enums
+    from vectorbtpro.ohlcv import nb as ohlcv_nb
     from vectorbtpro.portfolio import nb as pf_nb, enums as pf_enums
+    from vectorbtpro.portfolio.pfopt import nb as pfo_nb
     from vectorbtpro.records import nb as rec_nb
     from vectorbtpro.returns import nb as ret_nb, enums as ret_enums
     from vectorbtpro.signals import nb as sig_nb, enums as sig_enums
@@ -166,5 +172,6 @@ if "__all__" in globals():
     __all__.append("whats_imported")
 
 __pdoc__ = dict()
-__pdoc__["_settings"] = True
+__pdoc__["_dtypes"] = True
 __pdoc__["_opt_deps"] = True
+__pdoc__["_settings"] = True

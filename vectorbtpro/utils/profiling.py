@@ -10,6 +10,7 @@ from timeit import default_timer, Timer as Timer_timeit
 import humanize
 
 from vectorbtpro import _typing as tp
+from vectorbtpro.utils.base import Base
 
 __all__ = [
     "Timer",
@@ -23,7 +24,7 @@ __all__ = [
 TimerT = tp.TypeVar("TimerT", bound="Timer")
 
 
-class Timer:
+class Timer(Base):
     """Context manager to measure execution time using `timeit`.
 
     Usage:
@@ -194,7 +195,7 @@ def with_timeit(
 MemTracerT = tp.TypeVar("MemTracerT", bound="MemTracer")
 
 
-class MemTracer:
+class MemTracer(Base):
     """Context manager to trace peak and final memory usage using `tracemalloc`.
 
     Usage:

@@ -25,6 +25,7 @@ from vectorbtpro import _typing as tp
 from vectorbtpro.base import reshaping
 from vectorbtpro.utils import checks
 from vectorbtpro.utils.array_ import rescale
+from vectorbtpro.utils.base import Base
 from vectorbtpro.utils.colors import map_value_to_cmap
 from vectorbtpro.utils.config import Configured, resolve_dict, merge_dicts
 from vectorbtpro.utils.figure import make_figure
@@ -54,7 +55,7 @@ def clean_labels(labels: tp.Labels) -> tp.Labels:
     return labels
 
 
-class TraceUpdater:
+class TraceUpdater(Base):
     def __init__(self, fig: tp.BaseFigure, traces: tp.Tuple[BaseTraceType, ...]) -> None:
         """Base trace updating class."""
         self._fig = fig

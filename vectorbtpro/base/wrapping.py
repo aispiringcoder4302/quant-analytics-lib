@@ -146,9 +146,9 @@ class ArrayWrapper(Configured, IndexApplier, ExtPandasIndexer, Itemable, Paramab
                     raise ValueError(f"Objects to be merged must have compatible '{k}'. Pass to override.")
         return kwargs
 
-    @classmethod
+    @hybrid_method
     def row_stack(
-        cls: tp.Type[ArrayWrapperT],
+        cls_or_self: tp.MaybeType[ArrayWrapperT],
         *wrappers: tp.MaybeTuple[ArrayWrapperT],
         index: tp.Optional[tp.IndexLike] = None,
         columns: tp.Optional[tp.IndexLike] = None,
@@ -175,6 +175,11 @@ class ArrayWrapper(Configured, IndexApplier, ExtPandasIndexer, Itemable, Paramab
 
         All instances must contain the same keys and values in their configs and configs of their
         grouper instances, apart from those arguments provided explicitly via `kwargs`."""
+        if not isinstance(cls_or_self, type):
+            wrappers = (cls_or_self, *wrappers)
+            cls = type(cls_or_self)
+        else:
+            cls = cls_or_self
         if len(wrappers) == 1:
             wrappers = wrappers[0]
         wrappers = list(wrappers)
@@ -263,9 +268,9 @@ class ArrayWrapper(Configured, IndexApplier, ExtPandasIndexer, Itemable, Paramab
 
         return cls(**ArrayWrapper.resolve_stack_kwargs(*wrappers, **kwargs))
 
-    @classmethod
+    @hybrid_method
     def column_stack(
-        cls: tp.Type[ArrayWrapperT],
+        cls_or_self: tp.MaybeType[ArrayWrapperT],
         *wrappers: tp.MaybeTuple[ArrayWrapperT],
         index: tp.Optional[tp.IndexLike] = None,
         columns: tp.Optional[tp.IndexLike] = None,
@@ -296,6 +301,11 @@ class ArrayWrapper(Configured, IndexApplier, ExtPandasIndexer, Itemable, Paramab
 
         All instances must contain the same keys and values in their configs and configs of their
         grouper instances, apart from those arguments provided explicitly via `kwargs`."""
+        if not isinstance(cls_or_self, type):
+            wrappers = (cls_or_self, *wrappers)
+            cls = type(cls_or_self)
+        else:
+            cls = cls_or_self
         if len(wrappers) == 1:
             wrappers = wrappers[0]
         wrappers = list(wrappers)
@@ -954,14 +964,14 @@ class ArrayWrapper(Configured, IndexApplier, ExtPandasIndexer, Itemable, Paramab
         return self.index_acc.any_freq
 
     @property
-    def period(self) -> int:
-        """See `vectorbtpro.base.accessors.BaseIDXAccessor.period`."""
-        return self.index_acc.period
+    def periods(self) -> int:
+        """See `vectorbtpro.base.accessors.BaseIDXAccessor.periods`."""
+        return self.index_acc.periods
 
     @property
-    def dt_period(self) -> float:
-        """See `vectorbtpro.base.accessors.BaseIDXAccessor.dt_period`."""
-        return self.index_acc.dt_period
+    def dt_periods(self) -> float:
+        """See `vectorbtpro.base.accessors.BaseIDXAccessor.dt_periods`."""
+        return self.index_acc.dt_periods
 
     def arr_to_timedelta(self, *args, **kwargs) -> tp.Union[pd.Index, tp.MaybeArray]:
         """See `vectorbtpro.base.accessors.BaseIDXAccessor.arr_to_timedelta`."""
@@ -1892,6 +1902,13 @@ class ArrayWrapper(Configured, IndexApplier, ExtPandasIndexer, Itemable, Paramab
 
     # ############# Iteration ############# #
 
+    def get_item_keys(self, group_by: tp.GroupByLike = None) -> tp.Index:
+        """Get keys for `ArrayWrapper.items`."""
+        _self = self.regroup(group_by=group_by)
+        if _self.group_select and _self.grouper.is_grouped():
+            return _self.get_columns()
+        return _self.columns
+
     def items(
         self,
         group_by: tp.GroupByLike = None,
@@ -1996,10 +2013,10 @@ class Wrapping(Configured, IndexApplier, ExtPandasIndexer, AttrResolverMixin, It
         Should be called after `Wrapping.resolve_row_stack_kwargs` or `Wrapping.resolve_column_stack_kwargs`."""
         return cls.resolve_merge_kwargs(*[wrapping.config for wrapping in wrappings], **kwargs)
 
-    @classmethod
+    @hybrid_method
     def row_stack(
-        cls: tp.Type[WrappingT],
-        *args: tp.MaybeTuple[WrappingT],
+        cls_or_self: tp.MaybeType[WrappingT],
+        *objs: tp.MaybeTuple[WrappingT],
         wrapper_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> WrappingT:
@@ -2008,10 +2025,10 @@ class Wrapping(Configured, IndexApplier, ExtPandasIndexer, AttrResolverMixin, It
         Should use `ArrayWrapper.row_stack`."""
         raise NotImplementedError
 
-    @classmethod
+    @hybrid_method
     def column_stack(
-        cls: tp.Type[WrappingT],
-        *args: tp.MaybeTuple[WrappingT],
+        cls_or_self: tp.MaybeType[WrappingT],
+        *objs: tp.MaybeTuple[WrappingT],
         wrapper_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> WrappingT:
@@ -2229,7 +2246,13 @@ class Wrapping(Configured, IndexApplier, ExtPandasIndexer, AttrResolverMixin, It
 
     # ############# Splitting ############# #
 
-    def split(self, *args, splitter_cls: tp.Optional[tp.Type[SplitterT]] = None, **kwargs) -> tp.Any:
+    def split(
+        self,
+        *args,
+        splitter_cls: tp.Optional[tp.Type[SplitterT]] = None,
+        wrap: bool = True,  # used in subclasses
+        **kwargs,
+    ) -> tp.Any:
         """Split using `vectorbtpro.generic.splitting.base.Splitter.split_and_take`."""
         from vectorbtpro.generic.splitting.base import Splitter
 
@@ -2242,6 +2265,7 @@ class Wrapping(Configured, IndexApplier, ExtPandasIndexer, AttrResolverMixin, It
         apply_func: tp.Callable,
         *args,
         splitter_cls: tp.Optional[tp.Type[SplitterT]] = None,
+        wrap: bool = True,  # used in subclasses
         **kwargs,
     ) -> tp.Any:
         """Split using `vectorbtpro.generic.splitting.base.Splitter.split_and_apply`."""
@@ -2253,12 +2277,20 @@ class Wrapping(Configured, IndexApplier, ExtPandasIndexer, AttrResolverMixin, It
 
     # ############# Iteration ############# #
 
+    def get_item_keys(self, group_by: tp.GroupByLike = None) -> tp.Index:
+        """Get keys for `Wrapping.items`."""
+        _self = self.regroup(group_by=group_by)
+        if _self.group_select and _self.wrapper.grouper.is_grouped():
+            return _self.wrapper.get_columns()
+        return _self.wrapper.columns
+
     def items(
         self,
         group_by: tp.GroupByLike = None,
         apply_group_by: bool = False,
         keep_2d: bool = False,
         key_as_index: bool = False,
+        wrap: bool = True,  # used in subclasses
     ) -> tp.ItemGenerator:
         """Iterate over columns or groups (if grouped and `Wrapping.group_select` is True).
 

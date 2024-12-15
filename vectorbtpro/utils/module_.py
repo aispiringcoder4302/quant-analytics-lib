@@ -20,6 +20,7 @@ from vectorbtpro.utils.config import HybridConfig
 __all__ = [
     "import_module_from_path",
     "get_refname",
+    "get_obj",
     "imlucky",
     "get_api_ref",
     "open_api_ref",
@@ -423,8 +424,8 @@ def get_refname(
     obj: tp.Any,
     module: tp.Union[None, str, ModuleType] = None,
     resolve: bool = True,
-) -> tp.Optional[str]:
-    """Parse and (optionally) resolve the reference name of an object."""
+) -> tp.Optional[tp.MaybeList[str]]:
+    """Parse and (optionally) resolve the reference name(s) of an object."""
     if isinstance(obj, tuple):
         if len(obj) == 1:
             obj = obj[0]
@@ -440,16 +441,50 @@ def get_refname(
     return refname
 
 
+def get_refname_obj(refname: str) -> tp.Any:
+    """Get the object under a reference name."""
+    refname_parts = refname.split(".")
+    obj = None
+    for refname_part in refname_parts:
+        if obj is None:
+            obj = importlib.import_module(refname_part)
+        else:
+            obj = getattr(obj, refname_part)
+    return obj
+
+
+def get_obj(*args, allow_multiple: bool = False, **kwargs) -> tp.MaybeList[tp.Any]:
+    """Get the object by its (resolved) reference name."""
+    refname = get_refname(*args, **kwargs)
+    if isinstance(refname, list):
+        obj = None
+        for _refname in refname:
+            _obj = get_refname_obj(_refname)
+            if obj is None:
+                obj = _obj
+            elif not isinstance(obj, list):
+                if _obj is not obj:
+                    if not allow_multiple:
+                        raise ValueError("Multiple reference names found:\n\n* {}".format("\n* ".join(refname)))
+                    obj = [obj, _obj]
+            else:
+                if _obj not in obj:
+                    obj.append(_obj)
+        return obj
+    return get_refname_obj(refname)
+
+
 def prepare_refname(
     obj: tp.Any,
     module: tp.Union[None, str, ModuleType] = None,
     resolve: bool = True,
     vbt_only: bool = False,
     return_parts: bool = False,
-) -> tp.Union[str, tp.Tuple[str, ModuleType, str]]:
+    raise_error: bool = True,
+) -> tp.Union[None, str, tp.Tuple[str, ModuleType, str]]:
     """Prepare (optionally) the module and the qualified name."""
 
-    def _raise():
+    def _raise_error():
         raise ValueError(
             "Couldn't find the reference name, or the object is external. "
             "If the object is internal, please decompose the object or provide a string instead."
@@ -457,19 +492,38 @@ def prepare_refname(
 
     refname = get_refname(obj, module=module, resolve=resolve)
     if refname is None:
-        _raise()
+        if raise_error:
+            _raise_error()
+        return None
     if isinstance(refname, list):
-        raise ValueError("Multiple reference names found: {}".format(refname))
-    module, qualname = get_refname_module_and_qualname(refname)
-    if module.__name__.split(".")[0] != "vectorbtpro" and vbt_only:
-        _raise()
-    if return_parts:
-        return refname, module, qualname
-    if resolve:
-        if qualname is None:
-            return module.__name__
-        return module.__name__ + "." + qualname
+        raise ValueError("Multiple reference names found:\n\n* {}".format("\n* ".join(refname)))
+    if vbt_only or return_parts or resolve:
+        module, qualname = get_refname_module_and_qualname(refname)
+        if module.__name__.split(".")[0] != "vectorbtpro" and vbt_only:
+            if raise_error:
+                _raise_error()
+            return None
+        if return_parts:
+            return refname, module, qualname
+        if resolve:
+            if qualname is None:
+                return module.__name__
+            return module.__name__ + "." + qualname
     return refname
+
+
+def annotate_refname_parts(refname: str) -> tp.Tuple[dict, ...]:
+    """Return the type of each reference name part."""
+    refname_parts = refname.split(".")
+    obj = None
+    annotated_parts = []
+    for refname_part in refname_parts:
+        if obj is None:
+            obj = importlib.import_module(refname_part)
+        else:
+            obj = getattr(obj, refname_part)
+        annotated_parts.append(dict(name=refname_part, obj=obj))
+    return tuple(annotated_parts)
 
 
 def get_imlucky_url(query: str) -> str:

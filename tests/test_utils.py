@@ -3992,8 +3992,9 @@ asset = vbt.KnowledgeAsset(dataset)
 
 
 class TestKnowledge:
-    def test_stack(self):
-        assert vbt.KnowledgeAsset.stack((asset[:3], asset[3:])) == asset
+    def test_combine(self):
+        assert vbt.KnowledgeAsset.combine((asset[:3], asset[3:])) == asset
+        assert asset[:3].combine(asset[3:]) == asset
 
     def test_merge(self):
         assert vbt.KnowledgeAsset.merge((asset[:2], asset[3:])) == asset[3:]
@@ -4001,7 +4002,7 @@ class TestKnowledge:
         assert asset.merge(wrap=False) == dataset[-1]
 
     def test_item_methods(self):
-        assert asset.get_item(0) == dataset[0]
+        assert asset.get_items(0) == dataset[0]
         assert asset[0] == dataset[0]
         assert asset[:2] == vbt.KnowledgeAsset(data=dataset[:2])
         assert asset[[0, 2]] == vbt.KnowledgeAsset(data=[dataset[0], dataset[2]])
@@ -4011,7 +4012,7 @@ class TestKnowledge:
         with pytest.raises(Exception):
             asset[[0, False, 2, False, False]]
 
-        asset2 = asset.set_item(0, dataset[1])
+        asset2 = asset.set_items(0, dataset[1])
         assert asset2[0] == dataset[1]
         asset2 = asset.copy()
         asset2[0] = dataset[1]
@@ -4038,7 +4039,7 @@ class TestKnowledge:
         with pytest.raises(Exception):
             asset2[[0, False, 2, False, False]] = dataset[::-1]
 
-        asset3 = asset.remove_item(0)
+        asset3 = asset.delete_items(0)
         assert asset3 == asset[1:]
         asset3 = asset.copy()
         del asset3[0]
@@ -4277,7 +4278,14 @@ class TestKnowledge:
             assert asset.find("yenlow", mode="fuzzy").get() == [
                 {"s": "DEF", "b": False, "d2": {"c": "yellow", "l": [7, 8]}},
             ]
-            assert asset.find("yenlow", mode="fuzzy", return_type="match").get() == [[], [], [], ["yellow"], []]
+            assert asset.find("yenlow", mode="fuzzy", return_type="match").get() == "yellow"
+            assert asset.find("yenlow", mode="fuzzy", return_type="match", merge_matches=False).get() == [
+                [],
+                [],
+                [],
+                ["yellow"],
+                [],
+            ]
             assert asset.find("yenlow", mode="fuzzy", return_type="match", return_path=True).get() == [
                 {},
                 {},

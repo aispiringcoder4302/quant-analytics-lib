@@ -34,6 +34,7 @@ import pandas as pd
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.utils import checks, datetime_ as dt
+from vectorbtpro.utils.base import Base
 
 __all__ = [
     "PurgedWalkForwardCV",
@@ -41,7 +42,7 @@ __all__ = [
 ]
 
 
-class BasePurgedCV:
+class BasePurgedCV(Base):
     """Abstract class for purged time series cross-validation.
 
     Time series cross-validation requires each sample has a prediction time, at which the features are used to

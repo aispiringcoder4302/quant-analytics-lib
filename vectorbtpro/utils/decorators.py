@@ -5,6 +5,7 @@
 from functools import wraps
 
 from vectorbtpro import _typing as tp
+from vectorbtpro.utils.base import Base
 
 __all__ = [
     "class_property",
@@ -24,7 +25,7 @@ __pdoc__ = {}
 # ############# Generic ############# #
 
 
-class class_property(object):
+class class_property(Base):
     """Property that can be called on a class."""
 
     def __init__(self, func: tp.Callable) -> None:
@@ -43,7 +44,7 @@ class class_property(object):
         raise AttributeError("can't set attribute")
 
 
-class hybrid_property(object):
+class hybrid_property(Base):
     """Property that binds `self` to a class if the function is called as class method,
     otherwise to an instance."""
 
@@ -65,7 +66,7 @@ class hybrid_property(object):
         raise AttributeError("can't set attribute")
 
 
-class hybrid_method(classmethod):
+class hybrid_method(classmethod, Base):
     """Function decorator that binds `self` to a class if the function is called as class method,
     otherwise to an instance."""
 
@@ -79,7 +80,7 @@ class hybrid_method(classmethod):
 custom_propertyT = tp.TypeVar("custom_propertyT", bound="custom_property")
 
 
-class custom_property(property):
+class custom_property(property, Base):
     """Custom extensible property that stores function and options as attributes.
 
     !!! note

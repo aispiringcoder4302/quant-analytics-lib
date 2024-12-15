@@ -15,6 +15,7 @@ from vectorbtpro._dtypes import *
 from vectorbtpro.registries.jit_registry import jit_reg
 from vectorbtpro.utils import checks, datetime_ as dt, datetime_nb as dt_nb
 from vectorbtpro.utils.attr_ import DefineMixin, define, MISSING
+from vectorbtpro.utils.base import Base
 from vectorbtpro.utils.config import hdict, merge_dicts
 from vectorbtpro.utils.mapping import to_field_mapping
 from vectorbtpro.utils.pickling import pdict
@@ -58,7 +59,7 @@ class IndexingError(Exception):
 IndexingBaseT = tp.TypeVar("IndexingBaseT", bound="IndexingBase")
 
 
-class IndexingBase:
+class IndexingBase(Base):
     """Class that supports indexing through `IndexingBase.indexing_func`."""
 
     def indexing_func(self: IndexingBaseT, pd_indexing_func: tp.Callable, **kwargs) -> IndexingBaseT:
@@ -74,7 +75,7 @@ class IndexingBase:
         raise NotImplementedError
 
 
-class LocBase:
+class LocBase(Base):
     """Class that implements location-based indexing."""
 
     def __init__(
@@ -532,7 +533,7 @@ class hslice(DefineMixin):
         return slice(self.start, self.stop, self.step)
 
 
-class IdxrBase:
+class IdxrBase(Base):
     """Abstract class for resolving indices."""
 
     def get(self, *args, **kwargs) -> tp.Any:
@@ -2520,7 +2521,7 @@ class IdxSetter(DefineMixin):
         return arr
 
 
-class IdxSetterFactory:
+class IdxSetterFactory(Base):
     """Class for building index setters."""
 
     def get(self) -> tp.Union[IdxSetter, tp.Dict[tp.Label, IdxSetter]]:

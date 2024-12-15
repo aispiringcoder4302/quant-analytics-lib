@@ -268,8 +268,8 @@ class BaseIDXAccessor(Configured, IndexApplier):
         return self.get_freq()
 
     @hybrid_method
-    def get_period(cls_or_self, index: tp.Optional[tp.Index] = None) -> int:
-        """Get the period of the index, without taking into account its datetime-like properties."""
+    def get_periods(cls_or_self, index: tp.Optional[tp.Index] = None) -> int:
+        """Get the number of periods in the index, without taking into account its datetime-like properties."""
         if not isinstance(cls_or_self, type):
             if index is None:
                 index = cls_or_self.obj
@@ -278,17 +278,17 @@ class BaseIDXAccessor(Configured, IndexApplier):
         return len(index)
 
     @property
-    def period(self) -> int:
-        """`BaseIDXAccessor.get_period` with default arguments."""
+    def periods(self) -> int:
+        """`BaseIDXAccessor.get_periods` with default arguments."""
         return len(self.obj)
 
     @hybrid_method
-    def get_dt_period(
+    def get_dt_periods(
         cls_or_self,
         index: tp.Optional[tp.Index] = None,
         freq: tp.Optional[tp.PandasFrequency] = None,
     ) -> float:
-        """Get the period of the index, taking into account its datetime-like properties."""
+        """Get the number of periods in the index, taking into account its datetime-like properties."""
         from vectorbtpro._settings import settings
 
         wrapping_cfg = settings["wrapping"]
@@ -320,12 +320,12 @@ class BaseIDXAccessor(Configured, IndexApplier):
             return index[-1] - index[0] + 1
         if not wrapping_cfg["silence_warnings"]:
             warnings.warn("Index is neither datetime-like nor integer", stacklevel=2)
-        return cls_or_self.get_period(index=index)
+        return cls_or_self.get_periods(index=index)
 
     @property
-    def dt_period(self) -> float:
-        """`BaseIDXAccessor.get_dt_period` with default arguments."""
-        return self.get_dt_period()
+    def dt_periods(self) -> float:
+        """`BaseIDXAccessor.get_dt_periods` with default arguments."""
+        return self.get_dt_periods()
 
     def arr_to_timedelta(
         self,
@@ -641,9 +641,9 @@ class BaseAccessor(Wrapping):
             )
         return kwargs
 
-    @classmethod
+    @hybrid_method
     def row_stack(
-        cls: tp.Type[BaseAccessorT],
+        cls_or_self: tp.MaybeType[BaseAccessorT],
         *objs: tp.MaybeTuple[BaseAccessorT],
         wrapper_kwargs: tp.KwargsLike = None,
         **kwargs,
@@ -651,6 +651,11 @@ class BaseAccessor(Wrapping):
         """Stack multiple `BaseAccessor` instances along rows.
 
         Uses `vectorbtpro.base.wrapping.ArrayWrapper.row_stack` to stack the wrappers."""
+        if not isinstance(cls_or_self, type):
+            objs = (cls_or_self, *objs)
+            cls = type(cls_or_self)
+        else:
+            cls = cls_or_self
         if len(objs) == 1:
             objs = objs[0]
         objs = list(objs)
@@ -673,9 +678,9 @@ class BaseAccessor(Wrapping):
             return cls.sr_accessor_cls(**kwargs)
         return cls.df_accessor_cls(**kwargs)
 
-    @classmethod
+    @hybrid_method
     def column_stack(
-        cls: tp.Type[BaseAccessorT],
+        cls_or_self: tp.MaybeType[BaseAccessorT],
         *objs: tp.MaybeTuple[BaseAccessorT],
         wrapper_kwargs: tp.KwargsLike = None,
         reindex_kwargs: tp.KwargsLike = None,
@@ -684,6 +689,11 @@ class BaseAccessor(Wrapping):
         """Stack multiple `BaseAccessor` instances along columns.
 
         Uses `vectorbtpro.base.wrapping.ArrayWrapper.column_stack` to stack the wrappers."""
+        if not isinstance(cls_or_self, type):
+            objs = (cls_or_self, *objs)
+            cls = type(cls_or_self)
+        else:
+            cls = cls_or_self
         if len(objs) == 1:
             objs = objs[0]
         objs = list(objs)
@@ -836,8 +846,20 @@ class BaseAccessor(Wrapping):
 
     # ############# Indexes ############# #
 
-    def apply_to_index(self: BaseAccessorT, *args, **kwargs) -> tp.SeriesFrame:
-        return Wrapping.apply_to_index(self, *args, **kwargs).obj
+    def apply_to_index(
+        self: BaseAccessorT,
+        *args,
+        wrap: bool = False,
+        **kwargs,
+    ) -> tp.Union[BaseAccessorT, tp.SeriesFrame]:
+        """See `vectorbtpro.base.wrapping.Wrapping.apply_to_index`.
+
+        !!! note
+            If `wrap` is False, returns Pandas object, not accessor!"""
+        result = Wrapping.apply_to_index(self, *args, **kwargs)
+        if wrap:
+            return result
+        return result.obj
 
     # ############# Setting ############# #
 
@@ -1748,7 +1770,13 @@ class BaseAccessor(Wrapping):
             out = evaluate(expr, context=objs)
         return wrapper.wrap(out, **wrap_kwargs)
 
-    def split(self, *args, splitter_cls: tp.Optional[tp.Type[SplitterT]] = None, **kwargs) -> tp.Any:
+    def split(
+        self,
+        *args,
+        splitter_cls: tp.Optional[tp.Type[SplitterT]] = None,
+        wrap: bool = False,
+        **kwargs,
+    ) -> tp.Any:
         """Split using `vectorbtpro.generic.splitting.base.Splitter.split_and_take`.
 
         Uses the option `into="reset_stacked"` by default.
@@ -1762,7 +1790,7 @@ class BaseAccessor(Wrapping):
             splitter_cls = Splitter
         return splitter_cls.split_and_take(
             self.wrapper.index,
-            self.obj,
+            self if wrap else self.obj,
             *args,
             _take_kwargs=dict(into="reset_stacked"),
             **kwargs,
@@ -1773,6 +1801,7 @@ class BaseAccessor(Wrapping):
         apply_func: tp.Callable,
         *args,
         splitter_cls: tp.Optional[tp.Type[SplitterT]] = None,
+        wrap: bool = False,
         **kwargs,
     ) -> tp.Any:
         """Split using `vectorbtpro.generic.splitting.base.Splitter.split_and_apply`.
@@ -1783,17 +1812,26 @@ class BaseAccessor(Wrapping):
 
         if splitter_cls is None:
             splitter_cls = Splitter
-        return splitter_cls.split_and_apply(self.wrapper.index, apply_func, Takeable(self.obj), *args, **kwargs)
+        return splitter_cls.split_and_apply(
+            self.wrapper.index,
+            apply_func,
+            Takeable(self) if wrap else Takeable(self.obj),
+            *args,
+            **kwargs,
+        )
 
     # ############# Iteration ############# #
 
-    def items(self, *args, **kwargs) -> tp.ItemGenerator:
+    def items(self, *args, wrap: bool = False, **kwargs) -> tp.ItemGenerator:
         """See `vectorbtpro.base.wrapping.Wrapping.items`.
 
         !!! note
-            Splits Pandas object, not accessor!"""
+            If `wrap` is False, splits Pandas object, not accessor!"""
         for k, v in Wrapping.items(self, *args, **kwargs):
-            yield k, v.obj
+            if wrap:
+                yield k, v
+            else:
+                yield k, v.obj
 
 
 class BaseSRAccessor(BaseAccessor):

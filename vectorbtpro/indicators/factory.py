@@ -1104,9 +1104,9 @@ class IndicatorBase(Analyzable):
         """Public run combinations method."""
         return cls._run_combs(*args, **kwargs)
 
-    @classmethod
+    @hybrid_method
     def row_stack(
-        cls: tp.Type[IndicatorBaseT],
+        cls_or_self: tp.MaybeType[IndicatorBaseT],
         *objs: tp.MaybeTuple[IndicatorBaseT],
         wrapper_kwargs: tp.KwargsLike = None,
         **kwargs,
@@ -1116,6 +1116,11 @@ class IndicatorBase(Analyzable):
         Uses `vectorbtpro.base.wrapping.ArrayWrapper.row_stack` to stack the wrappers.
 
         All objects to be merged must have the same columns x parameters."""
+        if not isinstance(cls_or_self, type):
+            objs = (cls_or_self, *objs)
+            cls = type(cls_or_self)
+        else:
+            cls = cls_or_self
         if len(objs) == 1:
             objs = objs[0]
         objs = list(objs)
@@ -1149,9 +1154,9 @@ class IndicatorBase(Analyzable):
         kwargs = cls.resolve_stack_kwargs(*objs, **kwargs)
         return cls(**kwargs)
 
-    @classmethod
+    @hybrid_method
     def column_stack(
-        cls: tp.Type[IndicatorBaseT],
+        cls_or_self: tp.MaybeType[IndicatorBaseT],
         *objs: tp.MaybeTuple[IndicatorBaseT],
         wrapper_kwargs: tp.KwargsLike = None,
         reindex_kwargs: tp.KwargsLike = None,
@@ -1162,6 +1167,11 @@ class IndicatorBase(Analyzable):
         Uses `vectorbtpro.base.wrapping.ArrayWrapper.column_stack` to stack the wrappers.
 
         All objects to be merged must have the same index."""
+        if not isinstance(cls_or_self, type):
+            objs = (cls_or_self, *objs)
+            cls = type(cls_or_self)
+        else:
+            cls = cls_or_self
         if len(objs) == 1:
             objs = objs[0]
         objs = list(objs)
@@ -3178,18 +3188,20 @@ Other keyword arguments are passed to `{0}.run`.
                     _inputs = _input_tuple
                     _in_outputs = _in_output_tuple
                     _params = _param_tuple
-                tasks.append(Task(
-                    apply_func,
-                    *((i,) if not select_params else ()),
-                    *args_before,
-                    *((_inputs,) if pass_packed else _inputs),
-                    *((_in_outputs,) if pass_packed else _in_outputs),
-                    *((_params,) if pass_packed else _params),
-                    *_args,
-                    *more_args,
-                    *cache,
-                    **_kwargs,
-                ))
+                tasks.append(
+                    Task(
+                        apply_func,
+                        *((i,) if not select_params else ()),
+                        *args_before,
+                        *((_inputs,) if pass_packed else _inputs),
+                        *((_in_outputs,) if pass_packed else _in_outputs),
+                        *((_params,) if pass_packed else _params),
+                        *_args,
+                        *more_args,
+                        *cache,
+                        **_kwargs,
+                    )
+                )
             return combining.apply_and_concat_each(
                 tasks,
                 n_outputs=num_ret_outputs,
@@ -4777,13 +4789,16 @@ Other keyword arguments are passed to `{0}.run`.
                 named_args[input_name] = input_tuple[i]
             for i, param_name in enumerate(config["param_names"]):
                 named_args[param_name] = param_tuple[i]
-            named_args["ohlc"] = pd.concat([
-                named_args["open"].rename("open"),
-                named_args["high"].rename("high"),
-                named_args["low"].rename("low"),
-                named_args["close"].rename("close"),
-                named_args["volume"].rename("volume"),
-            ], axis=1)
+            named_args["ohlc"] = pd.concat(
+                [
+                    named_args["open"].rename("open"),
+                    named_args["high"].rename("high"),
+                    named_args["low"].rename("low"),
+                    named_args["close"].rename("close"),
+                    named_args["volume"].rename("volume"),
+                ],
+                axis=1,
+            )
             if collapse and len(dep_input_names) > 0:
                 for dep_func_name in dep_input_names:
                     dep_func = cls.find_smc_indicator(dep_func_name)
@@ -4798,7 +4813,7 @@ Other keyword arguments are passed to `{0}.run`.
                     named_args[dep_func_name] = pd.concat(
                         [named_args[input_name] for input_name in dep_input_names[dep_func_name]],
                         axis=1,
-                        keys=dep_config["output_names"]
+                        keys=dep_config["output_names"],
                     )
             output = func(*[named_args[camel_to_snake_case(k)] for k in func_arg_names])
             return tuple([output[c] for c in output.columns])

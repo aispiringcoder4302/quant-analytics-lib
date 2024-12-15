@@ -4,8 +4,8 @@
 
 import ast
 import io
-from pathlib import Path
 import zipfile
+from pathlib import Path
 
 import humanize
 import numpy as np
@@ -14,6 +14,7 @@ import pandas as pd
 import vectorbtpro as vbt
 from vectorbtpro import _typing as tp
 from vectorbtpro.utils.attr_ import DefineMixin, define
+from vectorbtpro.utils.base import Base
 from vectorbtpro.utils.checks import Comparable, is_hashable, is_deep_equal
 from vectorbtpro.utils.eval_ import evaluate
 from vectorbtpro.utils.formatting import Prettified, prettify_dict
@@ -494,7 +495,7 @@ def reconstruct(cls: tp.Union[tp.Hashable, tp.Type], rec_state: RecState) -> tp.
     return obj
 
 
-class Pickleable:
+class Pickleable(Base):
     """Superclass that defines abstract properties and methods for pickle-able classes.
 
     If any subclass cannot be pickled, override the `Pickleable.rec_state` property

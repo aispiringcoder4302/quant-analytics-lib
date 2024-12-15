@@ -486,9 +486,9 @@ class MappedArray(Analyzable):
             Useful if any subclass wants to extend the config.
     """
 
-    @classmethod
+    @hybrid_method
     def row_stack(
-        cls: tp.Type[MappedArrayT],
+        cls_or_self: tp.MaybeType[MappedArrayT],
         *objs: tp.MaybeTuple[MappedArrayT],
         wrapper_kwargs: tp.KwargsLike = None,
         **kwargs,
@@ -499,6 +499,11 @@ class MappedArray(Analyzable):
 
         !!! note
             Will produce a column-sorted array."""
+        if not isinstance(cls_or_self, type):
+            objs = (cls_or_self, *objs)
+            cls = type(cls_or_self)
+        else:
+            cls = cls_or_self
         if len(objs) == 1:
             objs = objs[0]
         objs = list(objs)
@@ -573,9 +578,9 @@ class MappedArray(Analyzable):
         kwargs = cls.resolve_stack_kwargs(*objs, **kwargs)
         return cls(**kwargs)
 
-    @classmethod
+    @hybrid_method
     def column_stack(
-        cls: tp.Type[MappedArrayT],
+        cls_or_self: tp.MaybeType[MappedArrayT],
         *objs: tp.MaybeTuple[MappedArrayT],
         wrapper_kwargs: tp.KwargsLike = None,
         get_indexer_kwargs: tp.KwargsLike = None,
@@ -591,6 +596,11 @@ class MappedArray(Analyzable):
 
         !!! note
             Will produce a column-sorted array."""
+        if not isinstance(cls_or_self, type):
+            objs = (cls_or_self, *objs)
+            cls = type(cls_or_self)
+        else:
+            cls = cls_or_self
         if len(objs) == 1:
             objs = objs[0]
         objs = list(objs)

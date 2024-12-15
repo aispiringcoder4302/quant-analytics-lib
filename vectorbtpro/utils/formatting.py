@@ -2,15 +2,16 @@
 
 """Utilities for formatting."""
 
-import attr
 import inspect
-import re
 import io
+import re
 
+import attr
 import numpy as np
 import pandas as pd
 
 from vectorbtpro import _typing as tp
+from vectorbtpro.utils.base import Base
 
 __all__ = [
     "prettify",
@@ -26,12 +27,12 @@ __all__ = [
 def camel_to_snake_case(camel_str: str) -> str:
     """Convert a camel case string to a snake case string."""
     snake_str = re.sub(r"(?<!^)(?<![A-Z_])([A-Z])", r"_\1", camel_str).lower()
-    if snake_str.startswith('_'):
+    if snake_str.startswith("_"):
         snake_str = snake_str[1:]
     return snake_str
 
 
-class Prettified:
+class Prettified(Base):
     """Abstract class that can be prettified."""
 
     def prettify(self, **kwargs) -> str:
@@ -360,6 +361,8 @@ def pdir(*args, **kwargs) -> None:
 
 def dump(obj: tp.Any, dump_engine: str = "prettify", **kwargs) -> str:
     """Dump an object to a string."""
+    if isinstance(obj, str):
+        return obj
     if dump_engine.lower() == "repr":
         return repr(obj)
     if dump_engine.lower() == "prettify":

@@ -15,6 +15,7 @@ from vectorbtpro import _typing as tp
 from vectorbtpro.utils import checks
 from vectorbtpro.utils.annotations import get_annotations, flatten_annotations, Annotatable, Union
 from vectorbtpro.utils.attr_ import DefineMixin, define, MISSING
+from vectorbtpro.utils.base import Base
 from vectorbtpro.utils.config import merge_dicts, FrozenConfig, Configured
 from vectorbtpro.utils.eval_ import Evaluable
 from vectorbtpro.utils.execution import Task, execute
@@ -238,7 +239,7 @@ class ChunkMeta(DefineMixin):
     Has priority over `ChunkMeta.start` and `ChunkMeta.end`."""
 
 
-class ChunkMetaGenerator:
+class ChunkMetaGenerator(Base):
     """Abstract class for generating chunk metadata from annotated arguments."""
 
     def get_chunk_meta(self, ann_args: tp.AnnArgs, **kwargs) -> tp.Iterable[ChunkMeta]:
@@ -1016,7 +1017,6 @@ class Chunker(Configured):
     _settings_path: tp.SettingsPath = "chunking"
 
     _expected_keys: tp.ExpectedKeys = (Configured._expected_keys or set()) | {
-        "func",
         "size",
         "min_size",
         "n_chunks",
@@ -1037,7 +1037,6 @@ class Chunker(Configured):
 
     def __init__(
         self,
-        func: tp.Callable,
         size: tp.Optional[int] = None,
         min_size: tp.Optional[int] = None,
         n_chunks: tp.Optional[tp.SizeLike] = None,
@@ -1058,7 +1057,6 @@ class Chunker(Configured):
     ) -> None:
         Configured.__init__(
             self,
-            func=func,
             size=size,
             min_size=min_size,
             n_chunks=n_chunks,
@@ -1078,7 +1076,6 @@ class Chunker(Configured):
             **kwargs,
         )
 
-        self._func = func
         self._size = self.resolve_setting(size, "size")
         self._min_size = self.resolve_setting(min_size, "min_size")
         self._n_chunks = self.resolve_setting(n_chunks, "n_chunks")
@@ -1095,11 +1092,6 @@ class Chunker(Configured):
         self._forward_kwargs_as = self.resolve_setting(forward_kwargs_as, "forward_kwargs_as", merge=True)
         self._execute_kwargs = self.resolve_setting(execute_kwargs, "execute_kwargs", merge=True)
         self._disable = self.resolve_setting(disable, "disable")
-
-    @property
-    def func(self) -> tp.Callable:
-        """Function."""
-        return self._func
 
     @property
     def size(self) -> tp.Optional[int]:
@@ -1661,9 +1653,8 @@ class Chunker(Configured):
                     pass
         return size
 
-    def run(self, *args, eval_id: tp.Optional[tp.Hashable] = None, **kwargs) -> tp.Any:
+    def run(self, func: tp.Callable, *args, eval_id: tp.Optional[tp.Hashable] = None, **kwargs) -> tp.Any:
         """Chunk arguments and run the function."""
-        func = self.func
         size = self.size
         min_size = self.min_size
         n_chunks = self.n_chunks
@@ -1836,25 +1827,10 @@ class Chunker(Configured):
 
 def chunked(
     *args,
-    chunker_cls: tp.Optional[tp.Type[Chunker]] = None,
-    size: tp.Optional[tp.SizeLike] = None,
-    min_size: tp.Optional[int] = None,
-    n_chunks: tp.Optional[tp.SizeLike] = None,
-    chunk_len: tp.Optional[tp.SizeLike] = None,
-    chunk_meta: tp.Optional[tp.ChunkMetaLike] = None,
-    prepend_chunk_meta: tp.Optional[bool] = None,
-    skip_single_chunk: tp.Optional[bool] = None,
-    arg_take_spec: tp.Optional[tp.ArgTakeSpecLike] = None,
-    template_context: tp.KwargsLike = None,
-    merge_func: tp.Optional[tp.MergeFuncLike] = None,
-    merge_kwargs: tp.KwargsLike = None,
-    return_raw_chunks: bool = False,
-    silence_warnings: tp.Optional[bool] = None,
-    forward_kwargs_as: tp.KwargsLike = None,
-    execute_kwargs: tp.KwargsLike = None,
+    chunker: tp.Optional[tp.Type[Chunker]] = None,
+    replace_chunker: tp.Optional[bool] = None,
     merge_to_execute_kwargs: tp.Optional[bool] = None,
-    disable: tp.Optional[bool] = None,
-    eval_id: tp.Optional[tp.Hashable] = None,
+    prepend_chunk_meta: tp.Optional[bool] = None,
     **kwargs,
 ) -> tp.Callable:
     """Decorator that chunks the inputs of a function using `Chunker`.
@@ -1864,11 +1840,14 @@ def chunked(
     Each option can be modified in the `options` attribute of the wrapper function or
     directly passed as a keyword argument with a leading underscore.
 
-    Keyword arguments `**kwargs` and `execute_kwargs` are merged into `execute_kwargs`
-    if `merge_to_execute_kwargs` is True, otherwise, `**kwargs` are passed directly to `Chunker`.
-
     Chunking can be disabled using `disable` argument. Additionally, the entire wrapping mechanism
     can be disabled by using the global setting `disable_wrapping` (=> returns the wrapped function).
+
+    Keyword arguments not listed in `Chunker` and `execute_kwargs` are merged into `execute_kwargs`
+    if `merge_to_execute_kwargs` is True, otherwise, they are passed directly to `Chunker`.
+
+    If a chunker instance is provided and `replace_chunker` is True, will create a new
+    `Chunker` instance by replacing any arguments that are not None.
 
     Usage:
         For testing purposes, let's divide the input array into 2 chunks and compute
@@ -2118,74 +2097,66 @@ def chunked(
                 if func_arg_names[0] == "chunk_meta":
                     prepend_chunk_meta = True
 
-        if merge_to_execute_kwargs is None:
-            _merge_to_execute_kwargs = chunking_cfg["merge_to_execute_kwargs"]
-        else:
-            _merge_to_execute_kwargs = merge_to_execute_kwargs
-        if _merge_to_execute_kwargs:
-            _execute_kwargs = merge_dicts(kwargs, execute_kwargs)
-            _chunker_kwargs = {}
-        else:
-            _execute_kwargs = execute_kwargs
-            _chunker_kwargs = kwargs
-
         @wraps(func)
         def wrapper(*args, **kwargs) -> tp.Any:
-            def _resolve_key(key, merge=False):
-                if "_" + key in kwargs:
-                    if merge:
-                        return merge_dicts(wrapper.options[key], kwargs.pop("_" + key))
-                    return kwargs.pop("_" + key)
-                return wrapper.options[key]
+            chunker = kwargs.get("_chunker", None)
+            if chunker is None:
+                chunker = wrapper.options["chunker"]
+            if chunker is None:
+                chunker = chunking_cfg["chunker"]
+            if chunker is None:
+                chunker = Chunker
 
-            chunker_cls = wrapper.options["chunker_cls"]
-            if chunker_cls is None:
-                chunker_cls = chunking_cfg["chunker_cls"]
-            if chunker_cls is None:
-                chunker_cls = Chunker
-            return chunker_cls(
-                func=func,
-                size=_resolve_key("size"),
-                min_size=_resolve_key("min_size"),
-                n_chunks=_resolve_key("n_chunks"),
-                chunk_len=_resolve_key("chunk_len"),
-                skip_single_chunk=_resolve_key("skip_single_chunk"),
-                chunk_meta=_resolve_key("chunk_meta"),
-                prepend_chunk_meta=prepend_chunk_meta,
-                arg_take_spec=_resolve_key("arg_take_spec"),
-                template_context=_resolve_key("template_context", merge=True),
-                execute_kwargs=_resolve_key("execute_kwargs", merge=True),
-                merge_func=_resolve_key("merge_func"),
-                merge_kwargs=_resolve_key("merge_kwargs", merge=True),
-                return_raw_chunks=_resolve_key("return_raw_chunks"),
-                silence_warnings=_resolve_key("silence_warnings"),
-                forward_kwargs_as=_resolve_key("forward_kwargs_as", merge=True),
-                disable=_resolve_key("disable"),
-                **_resolve_key("chunker_kwargs", merge=True),
-            ).run(*args, eval_id=_resolve_key("eval_id"), **kwargs)
+            arg_names_set = set(chunker._expected_keys)
+            kwargs_options = {}
+            for k in list(kwargs.keys()):
+                if k.startswith("_"):
+                    if k[1:] in wrapper.options or k[1:] in arg_names_set:
+                        kwargs_options[k[1:]] = kwargs.pop(k)
+            chunker_kwargs = merge_dicts(wrapper.options, kwargs_options)
+            _ = chunker_kwargs.pop("chunker")
+            replace_chunker = chunker_kwargs.pop("replace_chunker")
+            merge_to_execute_kwargs = chunker_kwargs.pop("merge_to_execute_kwargs")
+            eval_id = chunker_kwargs.pop("eval_id", None)
+
+            if merge_to_execute_kwargs is None:
+                merge_to_execute_kwargs = chunking_cfg["merge_to_execute_kwargs"]
+            if merge_to_execute_kwargs and len(chunker_kwargs) > 0:
+                arg_names_set = set(chunker._expected_keys)
+                execute_kwargs = chunker_kwargs.pop("execute_kwargs", None)
+                if execute_kwargs is None:
+                    _execute_kwargs = {}
+                else:
+                    _execute_kwargs = dict(execute_kwargs)
+                execute_kwargs_changed = False
+                for k in list(chunker_kwargs.keys()):
+                    if k not in arg_names_set and k not in _execute_kwargs:
+                        _execute_kwargs[k] = chunker_kwargs.pop(k)
+                        execute_kwargs_changed = True
+                if execute_kwargs_changed:
+                    chunker_kwargs["execute_kwargs"] = _execute_kwargs
+                else:
+                    chunker_kwargs["execute_kwargs"] = execute_kwargs
+            if isinstance(chunker, type):
+                checks.assert_subclass_of(chunker, Chunker, arg_name="chunker")
+                chunker = chunker(**chunker_kwargs)
+            else:
+                checks.assert_instance_of(chunker, Chunker, arg_name="chunker")
+                if replace_chunker is None:
+                    replace_chunker = chunking_cfg["replace_chunker"]
+                if replace_chunker and len(chunker_kwargs) > 0:
+                    chunker = chunker.replace(**chunker_kwargs)
+            return chunker.run(func, *args, eval_id=eval_id, **kwargs)
 
         wrapper.func = func
         wrapper.name = func.__name__
         wrapper.is_chunked = True
         wrapper.options = FrozenConfig(
-            chunker_cls=chunker_cls,
-            size=size,
-            min_size=min_size,
-            n_chunks=n_chunks,
-            chunk_len=chunk_len,
-            chunk_meta=chunk_meta,
-            skip_single_chunk=skip_single_chunk,
-            arg_take_spec=arg_take_spec,
-            template_context=template_context,
-            merge_func=merge_func,
-            merge_kwargs=merge_kwargs,
-            return_raw_chunks=return_raw_chunks,
-            silence_warnings=silence_warnings,
-            forward_kwargs_as=forward_kwargs_as,
-            execute_kwargs=_execute_kwargs,
-            chunker_kwargs=_chunker_kwargs,
-            disable=disable,
-            eval_id=eval_id,
+            chunker=chunker,
+            replace_chunker=replace_chunker,
+            merge_to_execute_kwargs=merge_to_execute_kwargs,
+            prepend_chunk_meta=prepend_chunk_meta,
+            **kwargs,
         )
 
         if prepend_chunk_meta:

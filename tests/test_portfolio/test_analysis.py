@@ -4817,6 +4817,39 @@ class TestPortfolio:
             pf_shared.replace(sim_start=1, sim_end=4).trade_history,
         )
 
+    def test_signals(self):
+        keys = ["long_entries", "long_exits", "short_entries", "short_exits"]
+        assert_frame_equal(
+            pd.concat(pf.get_signals(), keys=keys, axis=1),
+            pd.DataFrame([
+                [False, False, True, False, False, False, False, False, False, False, False, False],
+                [True, False, True, False, False, False, False, True, False, False, False, False],
+                [False, False, False, True, False, True, False, False, False, False, False, False],
+                [False, False, False, True, False, True, False, False, False, False, True, False],
+                [True, False, False, False, False, False, False, True, False, False, False, False],
+            ], index=close_na.index, columns=pd.MultiIndex.from_product((keys, close_na.columns)))
+        )
+        assert_frame_equal(
+            pd.concat(pf_grouped.get_signals(), keys=keys, axis=1),
+            pd.DataFrame([
+                [False, True, False, False, False, False, False, False],
+                [True, True, False, False, True, False, False, False],
+                [False, False, True, True, False, False, True, False],
+                [False, False, True, True, True, False, True, False],
+                [True, False, True, False, True, False, False, False],
+            ], index=close_na.index, columns=pd.MultiIndex.from_product((keys, group_columns)))
+        )
+        assert_frame_equal(
+            pd.concat(pf_shared.get_signals(), keys=keys, axis=1),
+            pd.DataFrame([
+                [False, True, False, False, False, False, False, False],
+                [True, True, False, False, True, False, False, False],
+                [False, False, True, True, False, False, True, False],
+                [False, False, True, True, True, False, True, False],
+                [True, False, True, False, True, False, False, False],
+            ], index=close_na.index, columns=pd.MultiIndex.from_product((keys, group_columns))),
+        )
+
     def test_positions(self):
         result = np.array(
             [
@@ -9387,8 +9420,10 @@ class TestPortfolio:
         pf_shared.plot(column="a", subplots="all", group_by=False)
         with pytest.raises(Exception):
             pf.plot(subplots="all")
+        pf.plot(subplots="all", per_column=True)
         with pytest.raises(Exception):
             pf_grouped.plot(subplots="all")
+        pf_grouped.plot(subplots="all", per_column=True)
         pf.plot(column="a", subplots="all", settings=dict(sim_start=1, sim_end=4))
         pf.replace(bm_close=None).plot(column="a", subplots="all", settings=dict(sim_start=1, sim_end=4))
         pf.replace(bm_close=False).plot(column="a", subplots="all", settings=dict(sim_start=1, sim_end=4))

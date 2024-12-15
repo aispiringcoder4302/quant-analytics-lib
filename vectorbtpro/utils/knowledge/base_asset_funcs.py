@@ -4,19 +4,20 @@
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.utils import checks, search
-from vectorbtpro.utils.config import reorder_dict, reorder_list
-from vectorbtpro.utils.template import CustomTemplate, RepEval, RepFunc
+from vectorbtpro.utils.base import Base
 from vectorbtpro.utils.config import merge_dicts, flat_merge_dicts, deep_merge_dicts
-from vectorbtpro.utils.parsing import get_func_arg_names
+from vectorbtpro.utils.config import reorder_dict, reorder_list
 from vectorbtpro.utils.execution import NoResult
 from vectorbtpro.utils.formatting import dump
+from vectorbtpro.utils.parsing import get_func_arg_names
+from vectorbtpro.utils.template import CustomTemplate, RepEval, RepFunc
 
 __all__ = [
     "AssetFunc",
 ]
 
 
-class AssetFunc:
+class AssetFunc(Base):
     """Abstract class representing an asset function."""
 
     _short_name: tp.ClassVar[tp.Optional[str]] = None
@@ -595,7 +596,7 @@ class QueryAssetFunc(AssetFunc):
         d: tp.Any,
         expression: tp.CustomTemplate,
         template_context: tp.KwargsLike = None,
-        return_type: tp.Optional[str] = None,
+        return_type: str = "item",
         **kwargs,
     ) -> tp.Any:
         _template_context = flat_merge_dicts(
@@ -610,7 +611,7 @@ class QueryAssetFunc(AssetFunc):
         new_d = expression.substitute(_template_context, eval_id="expression", **kwargs)
         if checks.is_function(new_d):
             new_d = new_d(d)
-        if return_type is None:
+        if return_type.lower() == "item":
             as_filter = True
         elif return_type.lower() == "bool":
             as_filter = False
@@ -795,7 +796,7 @@ class FindAssetFunc(AssetFunc):
         dump_kwargs: tp.KwargsLike = None,
         search_kwargs: tp.KwargsLike = None,
         template_context: tp.KwargsLike = None,
-        return_type: tp.Optional[str] = None,
+        return_type: str = "item",
         return_path: bool = False,
         **kwargs,
     ) -> tp.Any:
@@ -831,7 +832,7 @@ class FindAssetFunc(AssetFunc):
                 if not isinstance(x, str) and in_dumps:
                     x = dump(x, **dump_kwargs)
                 t = target[i]
-                if return_type is None or return_type.lower() == "bool":
+                if return_type.lower() in ("item", "bool"):
                     if isinstance(t, search.Not):
                         t = t.value
                         negation = True
@@ -847,20 +848,20 @@ class FindAssetFunc(AssetFunc):
                     ):
                         if negation:
                             if find_all:
-                                return NoResult if return_type is None else False
+                                return NoResult if return_type.lower() == "item" else False
                             continue
                         else:
                             if not find_all:
-                                return d if return_type is None else True
+                                return d if return_type.lower() == "item" else True
                             continue
                     else:
                         if negation:
                             if not find_all:
-                                return d if return_type is None else True
+                                return d if return_type.lower() == "item" else True
                             continue
                         else:
                             if find_all:
-                                return NoResult if return_type is None else False
+                                return NoResult if return_type.lower() == "item" else False
                             continue
                 else:
                     path_dct = search.find_in_obj(
@@ -898,10 +899,10 @@ class FindAssetFunc(AssetFunc):
                                     new_list.append(v)
                             else:
                                 new_list.extend(matches)
-            if return_type is None or return_type.lower() == "bool":
+            if return_type.lower() in ("item", "bool"):
                 if find_all:
-                    return d if return_type is None else True
-                return NoResult if return_type is None else False
+                    return d if return_type.lower() == "item" else True
+                return NoResult if return_type.lower() == "item" else False
             else:
                 if return_path:
                     return new_path_dct
@@ -919,7 +920,7 @@ class FindAssetFunc(AssetFunc):
                                 raise e
                             continue
                     if len(xs) == 0:
-                        if return_type is None:
+                        if return_type.lower() == "item":
                             return NoResult
                         if return_type.lower() == "bool":
                             return False
@@ -931,7 +932,7 @@ class FindAssetFunc(AssetFunc):
                     except (KeyError, IndexError, AttributeError) as e:
                         if not skip_missing:
                             raise e
-                        if return_type is None:
+                        if return_type.lower() == "item":
                             return NoResult
                         if return_type.lower() == "bool":
                             return False
@@ -952,7 +953,7 @@ class FindAssetFunc(AssetFunc):
                     x = _x
             if not isinstance(x, str) and in_dumps:
                 x = dump(x, **dump_kwargs)
-            if return_type is None:
+            if return_type.lower() == "item":
                 if search.contains_in_obj(
                     x,
                     cls.match_func,

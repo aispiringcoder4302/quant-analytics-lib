@@ -78,6 +78,14 @@ class TestArrayWrapper:
             vbt.ArrayWrapper(pd.Index([0, 1, 2]), pd.Index(["a", "b"], name="c"), 2),
             vbt.ArrayWrapper(pd.Index([4, 5, 6]), pd.Index(["a", "b"], name="c"), 2),
         )
+        assert vbt.ArrayWrapper.row_stack(
+            (
+                vbt.ArrayWrapper(pd.Index([0, 1, 2]), pd.Index(["a", "b"], name="c"), 2),
+                vbt.ArrayWrapper(pd.Index([4, 5, 6]), pd.Index(["a", "b"], name="c"), 2),
+            )
+        ) == vbt.ArrayWrapper(pd.Index([0, 1, 2]), pd.Index(["a", "b"], name="c"), 2).row_stack(
+            vbt.ArrayWrapper(pd.Index([4, 5, 6]), pd.Index(["a", "b"], name="c"), 2)
+        )
         wrapper = vbt.ArrayWrapper.row_stack(
             vbt.ArrayWrapper(pd.RangeIndex(start=0, stop=3), pd.Index(["a", "b"], name="c"), 2),
             vbt.ArrayWrapper(pd.RangeIndex(start=3, stop=6), pd.Index(["a", "b"], name="c"), 2),
@@ -325,6 +333,10 @@ class TestArrayWrapper:
         wrapper = vbt.ArrayWrapper.column_stack(
             vbt.ArrayWrapper(pd.Index([0, 1, 2], name="i"), pd.Index(["a", "b"], name="c"), 2),
             vbt.ArrayWrapper(pd.Index([0, 1, 2], name="i"), pd.Index(["c", "d"], name="c"), 2),
+        )
+        assert_index_equal(wrapper.index, pd.Index([0, 1, 2], name="i"))
+        wrapper = vbt.ArrayWrapper(pd.Index([0, 1, 2], name="i"), pd.Index(["a", "b"], name="c"), 2).column_stack(
+            vbt.ArrayWrapper(pd.Index([0, 1, 2], name="i"), pd.Index(["c", "d"], name="c"), 2)
         )
         assert_index_equal(wrapper.index, pd.Index([0, 1, 2], name="i"))
         wrapper = vbt.ArrayWrapper.column_stack(
@@ -1017,16 +1029,16 @@ class TestArrayWrapper:
             == day_dt
         )
 
-    def test_period(self):
+    def test_periods(self):
         test_sr = pd.Series([1, 2], index=pd.date_range("2020", periods=2))
-        assert test_sr.vbt.wrapper.period == 2
+        assert test_sr.vbt.wrapper.periods == 2
 
-    def test_dt_period(self):
-        assert sr2_wrapper.dt_period == 3
-        assert sr2_wrapper.replace(freq="1D").dt_period == 3
+    def test_dt_periods(self):
+        assert sr2_wrapper.dt_periods == 3
+        assert sr2_wrapper.replace(freq="1D").dt_periods == 3
         test_sr = pd.Series([1, 2], index=["2020-01-01", "2021-01-01"])
-        assert test_sr.vbt.wrapper.dt_period == 2
-        assert test_sr.vbt(freq="1D").wrapper.dt_period == 367
+        assert test_sr.vbt.wrapper.dt_periods == 2
+        assert test_sr.vbt(freq="1D").wrapper.dt_periods == 367
 
     def test_to_timedelta(self):
         sr = pd.Series([1, 2, np.nan], index=["x", "y", "z"], name="name")

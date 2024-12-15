@@ -426,6 +426,7 @@ from vectorbtpro.registries.ch_registry import ch_reg
 from vectorbtpro.registries.jit_registry import jit_reg
 from vectorbtpro.utils import checks
 from vectorbtpro.utils.attr_ import get_dict_attr
+from vectorbtpro.utils.base import Base
 from vectorbtpro.utils.config import resolve_dict, merge_dicts, Config, HybridConfig
 from vectorbtpro.utils.decorators import cached_method, hybrid_method
 from vectorbtpro.utils.random_ import set_seed_nb
@@ -449,7 +450,7 @@ class MetaFields(type):
         return cls._field_config
 
 
-class RecordsWithFields(metaclass=MetaFields):
+class RecordsWithFields(Base, metaclass=MetaFields):
     """Class exposes a read-only class property `RecordsWithFields.field_config`."""
 
     @property
@@ -591,9 +592,9 @@ class Records(Analyzable, RecordsWithFields, metaclass=MetaRecords):
             return np.array([], dtype=int_)
         return np.concatenate(record_indices)
 
-    @classmethod
+    @hybrid_method
     def row_stack(
-        cls: tp.Type[RecordsT],
+        cls_or_self: tp.MaybeType[RecordsT],
         *objs: tp.MaybeTuple[RecordsT],
         wrapper_kwargs: tp.KwargsLike = None,
         **kwargs,
@@ -605,6 +606,11 @@ class Records(Analyzable, RecordsWithFields, metaclass=MetaRecords):
 
         !!! note
             Will produce a column-sorted array."""
+        if not isinstance(cls_or_self, type):
+            objs = (cls_or_self, *objs)
+            cls = type(cls_or_self)
+        else:
+            cls = cls_or_self
         if len(objs) == 1:
             objs = objs[0]
         objs = list(objs)
@@ -703,9 +709,9 @@ class Records(Analyzable, RecordsWithFields, metaclass=MetaRecords):
             return np.array([], dtype=int_)
         return np.concatenate(record_indices)
 
-    @classmethod
+    @hybrid_method
     def column_stack(
-        cls: tp.Type[RecordsT],
+        cls_or_self: tp.MaybeType[RecordsT],
         *objs: tp.MaybeTuple[RecordsT],
         wrapper_kwargs: tp.KwargsLike = None,
         get_indexer_kwargs: tp.KwargsLike = None,
@@ -722,6 +728,11 @@ class Records(Analyzable, RecordsWithFields, metaclass=MetaRecords):
 
         !!! note
             Will produce a column-sorted array."""
+        if not isinstance(cls_or_self, type):
+            objs = (cls_or_self, *objs)
+            cls = type(cls_or_self)
+        else:
+            cls = cls_or_self
         if len(objs) == 1:
             objs = objs[0]
         objs = list(objs)
@@ -1141,7 +1152,7 @@ class Records(Analyzable, RecordsWithFields, metaclass=MetaRecords):
     def map_array(
         self,
         a: tp.ArrayLike,
-        idx_arr: tp.Optional[tp.ArrayLike] = None,
+        idx_arr: tp.Union[None, str, tp.Array1d] = None,
         mapping: tp.Optional[tp.MappingLike] = None,
         group_by: tp.GroupByLike = None,
         **kwargs,
@@ -1154,6 +1165,8 @@ class Records(Analyzable, RecordsWithFields, metaclass=MetaRecords):
         checks.assert_shape_equal(a, self.values)
         if idx_arr is None:
             idx_arr = self.idx_arr
+        elif isinstance(idx_arr, str):
+            idx_arr = self.get_field_arr(idx_arr)
         return MappedArray(
             self.wrapper,
             a,

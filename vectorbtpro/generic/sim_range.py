@@ -12,13 +12,14 @@ from vectorbtpro.base.reshaping import broadcast_array_to
 from vectorbtpro.base.wrapping import ArrayWrapper
 from vectorbtpro.generic import nb
 from vectorbtpro.utils import checks
+from vectorbtpro.utils.base import Base
 from vectorbtpro.utils.config import merge_dicts
 from vectorbtpro.utils.decorators import hybrid_method
 
 SimRangeMixinT = tp.TypeVar("SimRangeMixinT", bound="SimRangeMixin")
 
 
-class SimRangeMixin:
+class SimRangeMixin(Base):
     """Mixin class for working with simulation ranges.
 
     Should be subclassed by a subclass of `vectorbtpro.base.wrapping.Wrapping`."""

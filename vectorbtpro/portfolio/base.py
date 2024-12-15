@@ -31,7 +31,7 @@ from vectorbtpro.generic.sim_range import SimRangeMixin
 from vectorbtpro.portfolio import nb, enums
 from vectorbtpro.portfolio.decorators import attach_shortcut_properties, attach_returns_acc_methods
 from vectorbtpro.portfolio.logs import Logs
-from vectorbtpro.portfolio.orders import Orders
+from vectorbtpro.portfolio.orders import Orders, FSOrders
 from vectorbtpro.portfolio.pfopt.base import PortfolioOptimizer
 from vectorbtpro.portfolio.preparing import (
     PFPrepResult,
@@ -48,6 +48,7 @@ from vectorbtpro.registries.jit_registry import jit_reg
 from vectorbtpro.returns.accessors import ReturnsAccessor
 from vectorbtpro.utils import checks
 from vectorbtpro.utils.attr_ import get_dict_attr
+from vectorbtpro.utils.base import Base
 from vectorbtpro.utils.colors import adjust_opacity
 from vectorbtpro.utils.config import resolve_dict, merge_dicts, Config, ReadonlyConfig, HybridConfig, atomic_dict
 from vectorbtpro.utils.decorators import custom_property, cached_property, hybrid_method
@@ -250,6 +251,7 @@ shortcut_config = ReadonlyConfig(
             resample_func=partial(records_resample_func, cls="trades_cls"),
         ),
         "trade_history": dict(),
+        "signals": dict(),
         "positions": dict(
             obj_type="records",
             field_aliases=("position_records",),
@@ -432,7 +434,7 @@ class MetaInOutputs(type):
         return cls._in_output_config
 
 
-class PortfolioWithInOutputs(metaclass=MetaInOutputs):
+class PortfolioWithInOutputs(Base, metaclass=MetaInOutputs):
     """Class exposes a read-only class property `RecordsWithFields.field_config`."""
 
     @property
@@ -658,9 +660,9 @@ class Portfolio(Analyzable, PortfolioWithInOutputs, SimRangeMixin, metaclass=Met
 
         return type(objs[0].in_outputs)(**new_in_outputs)
 
-    @classmethod
+    @hybrid_method
     def row_stack(
-        cls: tp.Type[PortfolioT],
+        cls_or_self: tp.MaybeType[PortfolioT],
         *objs: tp.MaybeTuple[PortfolioT],
         wrapper_kwargs: tp.KwargsLike = None,
         group_by: tp.GroupByLike = None,
@@ -697,6 +699,11 @@ class Portfolio(Analyzable, PortfolioWithInOutputs, SimRangeMixin, metaclass=Met
             there is currently no way of injecting them in the correct order, while simply taking
             the sum or weighted average may distort the reality since they weren't available
             prior to the actual simulation."""
+        if not isinstance(cls_or_self, type):
+            objs = (cls_or_self, *objs)
+            cls = type(cls_or_self)
+        else:
+            cls = cls_or_self
         if len(objs) == 1:
             objs = objs[0]
         objs = list(objs)
@@ -1059,9 +1066,9 @@ class Portfolio(Analyzable, PortfolioWithInOutputs, SimRangeMixin, metaclass=Met
 
         return type(objs[0].in_outputs)(**new_in_outputs)
 
-    @classmethod
+    @hybrid_method
     def column_stack(
-        cls: tp.Type[PortfolioT],
+        cls_or_self: tp.MaybeType[PortfolioT],
         *objs: tp.MaybeTuple[PortfolioT],
         wrapper_kwargs: tp.KwargsLike = None,
         group_by: tp.GroupByLike = None,
@@ -1081,6 +1088,11 @@ class Portfolio(Analyzable, PortfolioWithInOutputs, SimRangeMixin, metaclass=Met
         `vectorbtpro.base.wrapping.ArrayWrapper.concat_arrs`.
         In-outputs are stacked using `Portfolio.column_stack_in_outputs`. Records are stacked using
         `vectorbtpro.records.base.Records.column_stack_records_arrs`."""
+        if not isinstance(cls_or_self, type):
+            objs = (cls_or_self, *objs)
+            cls = type(cls_or_self)
+        else:
+            cls = cls_or_self
         if len(objs) == 1:
             objs = objs[0]
         objs = list(objs)
@@ -2432,6 +2444,7 @@ class Portfolio(Analyzable, PortfolioWithInOutputs, SimRangeMixin, metaclass=Met
         save_state: tp.Optional[bool] = None,
         save_value: tp.Optional[bool] = None,
         save_returns: tp.Optional[bool] = None,
+        skip_empty: tp.Optional[bool] = None,
         max_order_records: tp.Optional[int] = None,
         max_log_records: tp.Optional[int] = None,
         seed: tp.Optional[int] = None,
@@ -2637,6 +2650,7 @@ class Portfolio(Analyzable, PortfolioWithInOutputs, SimRangeMixin, metaclass=Met
             save_returns (bool): Whether to save the returns.
 
                 The array will be available as `returns` in in-outputs.
+            skip_empty (bool): Whether to skip rows with no order.
             max_order_records (int): The max number of order records expected to be filled at each column.
                 Defaults to the maximum number of non-NaN values across all columns of the size array.
 
@@ -2976,6 +2990,7 @@ class Portfolio(Analyzable, PortfolioWithInOutputs, SimRangeMixin, metaclass=Met
         save_state: tp.Optional[bool] = None,
         save_value: tp.Optional[bool] = None,
         save_returns: tp.Optional[bool] = None,
+        skip_empty: tp.Optional[bool] = None,
         max_order_records: tp.Optional[int] = None,
         max_log_records: tp.Optional[int] = None,
         in_outputs: tp.Optional[tp.MappingLike] = None,
@@ -3268,6 +3283,7 @@ class Portfolio(Analyzable, PortfolioWithInOutputs, SimRangeMixin, metaclass=Met
             save_state (bool): See `Portfolio.from_orders`.
             save_value (bool): See `Portfolio.from_orders`.
             save_returns (bool): See `Portfolio.from_orders`.
+            skip_empty (bool): See `Portfolio.from_orders`
             max_order_records (int): See `Portfolio.from_orders`.
             max_log_records (int): See `Portfolio.from_orders`.
             in_outputs (mapping_like): Mapping with in-output objects. Only for flexible mode.
@@ -5629,7 +5645,6 @@ class Portfolio(Analyzable, PortfolioWithInOutputs, SimRangeMixin, metaclass=Met
         rec_sim_range: bool = False,
         wrapper: tp.Optional[ArrayWrapper] = None,
         group_by: tp.GroupByLike = None,
-        **kwargs,
     ) -> tp.Frame:
         """Get order history merged with entry and exit trades as a readable DataFrame.
 
@@ -5658,7 +5673,6 @@ class Portfolio(Analyzable, PortfolioWithInOutputs, SimRangeMixin, metaclass=Met
                     rec_sim_range=rec_sim_range,
                     wrapper=wrapper,
                     group_by=group_by,
-                    **kwargs,
                 )
             if exit_trades is None:
                 exit_trades = cls_or_self.resolve_shortcut_attr(
@@ -5669,7 +5683,6 @@ class Portfolio(Analyzable, PortfolioWithInOutputs, SimRangeMixin, metaclass=Met
                     rec_sim_range=rec_sim_range,
                     wrapper=wrapper,
                     group_by=group_by,
-                    **kwargs,
                 )
         else:
             checks.assert_not_none(orders, arg_name="orders")
@@ -5711,6 +5724,91 @@ class Portfolio(Analyzable, PortfolioWithInOutputs, SimRangeMixin, metaclass=Met
         trade_history["Exit Trade Id"] = trade_history.pop("Exit Trade Id")
         trade_history["Position Id"] = trade_history.pop("Position Id")
         return trade_history
+
+    @hybrid_method
+    def get_signals(
+        cls_or_self,
+        orders: tp.Optional[Orders] = None,
+        entry_trades: tp.Optional[EntryTrades] = None,
+        exit_trades: tp.Optional[ExitTrades] = None,
+        idx_arr: tp.Union[None, str, tp.Array1d] = None,
+        sim_start: tp.Optional[tp.ArrayLike] = None,
+        sim_end: tp.Optional[tp.ArrayLike] = None,
+        rec_sim_range: bool = False,
+        wrapper: tp.Optional[ArrayWrapper] = None,
+        group_by: tp.GroupByLike = None,
+    ) -> tp.Tuple[tp.SeriesFrame, tp.SeriesFrame, tp.SeriesFrame, tp.SeriesFrame]:
+        """Get long entries, long exits, short entries, and short exits.
+
+        Returns per group is grouping is enabled. Pass `group_by=False` to disable."""
+        if not isinstance(cls_or_self, type):
+            if orders is None:
+                orders = cls_or_self.resolve_shortcut_attr(
+                    "orders",
+                    sim_start=sim_start,
+                    sim_end=sim_end,
+                    rec_sim_range=rec_sim_range,
+                    wrapper=wrapper,
+                    group_by=group_by,
+                )
+            if entry_trades is None:
+                entry_trades = cls_or_self.resolve_shortcut_attr(
+                    "entry_trades",
+                    orders=orders,
+                    sim_start=sim_start,
+                    sim_end=sim_end,
+                    rec_sim_range=rec_sim_range,
+                    wrapper=wrapper,
+                    group_by=group_by,
+                )
+            if exit_trades is None:
+                exit_trades = cls_or_self.resolve_shortcut_attr(
+                    "exit_trades",
+                    orders=orders,
+                    sim_start=sim_start,
+                    sim_end=sim_end,
+                    rec_sim_range=rec_sim_range,
+                    wrapper=wrapper,
+                    group_by=group_by,
+                )
+        else:
+            checks.assert_not_none(orders, arg_name="orders")
+            checks.assert_not_none(entry_trades, arg_name="entry_trades")
+            checks.assert_not_none(exit_trades, arg_name="exit_trades")
+
+        if isinstance(orders, FSOrders) and idx_arr is None:
+            idx_arr = "signal_idx"
+        if idx_arr is not None:
+            if isinstance(idx_arr, str):
+                idx_ma = orders.map_field(idx_arr, idx_arr=idx_arr)
+            else:
+                idx_ma = orders.map_array(idx_arr, idx_arr=idx_arr)
+        else:
+            idx_ma = orders.idx
+        order_index = pd.MultiIndex.from_arrays(
+            (orders.col_mapper.get_col_arr(group_by=group_by), orders.id_arr), names=["col", "id"]
+        )
+        order_idx_sr = pd.Series(idx_ma.values, index=order_index, name="idx")
+
+        def _get_type_signals(type_order_ids):
+            type_order_ids = type_order_ids.apply_mask(type_order_ids.values != -1)
+            type_order_index = pd.MultiIndex.from_arrays(
+                (type_order_ids.col_mapper.get_col_arr(group_by=group_by), type_order_ids.values), names=["col", "id"]
+            )
+            type_idx_df = order_idx_sr.loc[type_order_index].reset_index()
+            type_signals = orders.wrapper.fill(False, group_by=group_by)
+            if isinstance(type_signals, pd.Series):
+                type_signals.values[type_idx_df["idx"].values] = True
+            else:
+                type_signals.values[type_idx_df["idx"].values, type_idx_df["col"].values] = True
+            return type_signals
+
+        return (
+            _get_type_signals(entry_trades.long_view.entry_order_id),
+            _get_type_signals(exit_trades.long_view.exit_order_id),
+            _get_type_signals(entry_trades.short_view.entry_order_id),
+            _get_type_signals(exit_trades.short_view.exit_order_id),
+        )
 
     @hybrid_method
     def get_drawdowns(

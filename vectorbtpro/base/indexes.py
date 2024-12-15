@@ -17,6 +17,7 @@ from vectorbtpro._dtypes import *
 from vectorbtpro.registries.jit_registry import jit_reg, register_jitted
 from vectorbtpro.utils import checks
 from vectorbtpro.utils.attr_ import DefineMixin, define
+from vectorbtpro.utils.base import Base
 
 __all__ = [
     "ExceptLevel",
@@ -978,7 +979,7 @@ def find_first_occurrence(index_value: tp.Any, index: tp.Index) -> int:
 IndexApplierT = tp.TypeVar("IndexApplierT", bound="IndexApplier")
 
 
-class IndexApplier:
+class IndexApplier(Base):
     """Abstract class that can apply a function on an index."""
 
     def apply_to_index(self: IndexApplierT, apply_func: tp.Callable, *args, **kwargs) -> IndexApplierT:

@@ -6879,6 +6879,11 @@ class TestFromHolding:
             _ = vbt.pf_nb.get_exit_trade_records_nb(c)
             _ = vbt.pf_nb.get_position_records_nb(c)
             _ = vbt.pf_nb.stop_sim_nb(c)
+            _ = vbt.pf_nb.get_exec_state_nb(c)
+            _ = vbt.pf_nb.get_price_area_nb(c)
+            _ = vbt.pf_nb.get_order_size_nb(c, np.inf)
+            _ = vbt.pf_nb.get_order_value_nb(c, np.inf)
+            _ = vbt.pf_nb.get_order_result_nb(c, vbt.pf_nb.close_position_nb())
 
         _ = vbt.PF.from_signals(
             [1],

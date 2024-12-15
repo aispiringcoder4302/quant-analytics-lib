@@ -362,7 +362,7 @@ ${config_doc}
 _settings["math"] = math
 
 execution = frozen_cfg(
-    executor_cls=None,
+    executor=None,
     engine="SerialEngine",
     engine_config=flex_cfg(),
     min_size=None,
@@ -402,6 +402,7 @@ execution = frozen_cfg(
     template_context=flex_cfg(),
     show_progress=True,
     pbar_kwargs=flex_cfg(),
+    replace_executor=False,
     merge_to_engine_config=True,
     engines=flex_cfg(
         serial=flex_cfg(
@@ -470,7 +471,7 @@ chunking = frozen_cfg(
     disable=False,
     disable_wrapping=False,
     option=False,
-    chunker_cls=None,
+    chunker=None,
     size=None,
     min_size=None,
     n_chunks=None,
@@ -486,6 +487,7 @@ chunking = frozen_cfg(
     silence_warnings=False,
     forward_kwargs_as=flex_cfg(),
     execute_kwargs=flex_cfg(),
+    replace_chunker=False,
     merge_to_execute_kwargs=True,
     options=flex_cfg(),
     override_setup_options=flex_cfg(),
@@ -508,7 +510,7 @@ ${config_doc}
 _settings["chunking"] = chunking
 
 params = frozen_cfg(
-    parameterizer_cls=None,
+    parameterizer=None,
     param_search_kwargs=flex_cfg(),
     skip_single_comb=True,
     template_context=flex_cfg(),
@@ -538,6 +540,7 @@ params = frozen_cfg(
     return_meta=False,
     return_param_index=False,
     execute_kwargs=flex_cfg(),
+    replace_parameterizer=False,
     merge_to_execute_kwargs=True,
 )
 """_"""
@@ -1205,6 +1208,8 @@ _settings["plotting"] = plotting
 stats_builder = frozen_cfg(
     metrics="all",
     tags="all",
+    per_column=False,
+    split_columns=True,
     dropna=False,
     silence_warnings=False,
     template_context=flex_cfg(),
@@ -1242,6 +1247,8 @@ _settings["stats_builder"] = stats_builder
 plots_builder = frozen_cfg(
     subplots="all",
     tags="all",
+    per_column=False,
+    split_columns=True,
     silence_warnings=False,
     template_context=flex_cfg(),
     filters=flex_cfg(
@@ -1268,6 +1275,8 @@ plots_builder = frozen_cfg(
     ),
     subplot_settings=flex_cfg(),
     show_titles=True,
+    show_legend=None,
+    show_column_label=None,
     hide_id_labels=True,
     group_id_labels=True,
     make_subplots_kwargs=flex_cfg(),
@@ -1440,7 +1449,7 @@ returns = frozen_cfg(
         levy_alpha=2.0,
         required_return=0.0,
         cutoff=0.05,
-        period=None,
+        periods=None,
     ),
     stats=flex_cfg(
         filters=flex_cfg(
@@ -1609,6 +1618,7 @@ portfolio = frozen_cfg(
     save_state=False,
     save_value=False,
     save_returns=False,
+    skip_empty=True,
     fill_pos_info=True,
     track_value=True,
     row_wise=False,
@@ -1965,6 +1975,7 @@ ${config_doc}
 _settings["search"] = search
 
 knowledge = frozen_cfg(
+    options_=dict(override_keys={"chat"}),
     cache=True,
     cache_dir="./knowledge",
     cache_mkdir_kwargs=dict(
@@ -1976,9 +1987,17 @@ knowledge = frozen_cfg(
     skip_missing=False,
     make_copy=True,
     query_engine=None,
-    return_type=None,
+    return_type="item",
     return_path=False,
+    merge_matches=True,
+    merge_fields=True,
+    unique_matches=True,
+    unique_fields=True,
     changed_only=False,
+    code=flex_cfg(
+        require_language=False,
+        in_blocks=True,
+    ),
     dump_all=False,
     dump_engine="yaml",
     dump_engine_kwargs=flex_cfg(
@@ -2012,6 +2031,7 @@ knowledge = frozen_cfg(
     uniform_groups=False,
     prepend_index=False,
     template_context=flex_cfg(),
+    silence_warnings=False,
     show_progress=None,
     pbar_kwargs=flex_cfg(),
     execute_kwargs=flex_cfg(
@@ -2116,23 +2136,27 @@ knowledge = frozen_cfg(
         style_extras=[],
         head_extras=[],
         body_extras=[
-            """<script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>""",
-            """<script>window.mermaidConfig={startOnLoad:!1,theme:"default",flowchart:{htmlLabels:!1},er:{useMaxWidth:!1},sequence:{useMaxWidth:!1,noteFontWeight:"14px",actorFontSize:"14px",messageFontSize:"16px"}};</script>""",
-            """<script>const uml=async e=>{class t extends HTMLElement{constructor(){super();let e=this.attachShadow({mode:"open"}),t=document.createElement("style");t.textContent=`:host{display:block;line-height:initial;font-size:16px}div.diagram{margin:0;overflow:visible}`,e.appendChild(t)}}void 0===customElements.get("diagram-div")&&customElements.define("diagram-div",t);let i=e=>{let t="";for(let i=0;i<e.childNodes.length;i++){let a=e.childNodes[i];if("code"===a.tagName.toLowerCase())for(let d=0;d<a.childNodes.length;d++){let l=a.childNodes[d],o=/^\s*$/;if("#text"===l.nodeName&&!o.test(l.nodeValue)){t=l.nodeValue;break}}}return t},a={startOnLoad:!1,theme:"default",flowchart:{htmlLabels:!1},er:{useMaxWidth:!1},sequence:{useMaxWidth:!1,noteFontWeight:"14px",actorFontSize:"14px",messageFontSize:"16px"}};mermaid.mermaidAPI.globalReset();let d="undefined"==typeof mermaidConfig?a:mermaidConfig;mermaid.initialize(d);let l=document.querySelectorAll(`pre.${e}, diagram-div`),o=document.querySelector("html body");for(let n=0;n<l.length;n++){let r=l[n],s="diagram-div"===r.tagName.toLowerCase()?r.shadowRoot.querySelector(`pre.${e}`):r,h=document.createElement("div");h.style.visibility="hidden",h.style.display="display",h.style.padding="0",h.style.margin="0",h.style.lineHeight="initial",h.style.fontSize="16px",o.appendChild(h);try{let m=await mermaid.render(`_diagram_${n}`,i(s),h),c=m.svg,p=m.bindFunctions,g=document.createElement("div");g.className=e,g.innerHTML=c,p&&p(g);let y=document.createElement("diagram-div");y.shadowRoot.appendChild(g),r.parentNode.insertBefore(y,r),s.style.display="none",y.shadowRoot.appendChild(s),s!==r&&r.parentNode.removeChild(r)}catch(u){}o.contains(h)&&o.removeChild(h)}};document.addEventListener("DOMContentLoaded",()=>{uml("mermaid")});</script>""",
+            r"""<script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>""",
+            r"""<script>window.mermaidConfig={startOnLoad:!1,theme:"default",flowchart:{htmlLabels:!1},er:{useMaxWidth:!1},sequence:{useMaxWidth:!1,noteFontWeight:"14px",actorFontSize:"14px",messageFontSize:"16px"}};</script>""",
+            r"""<script>const uml=async e=>{class t extends HTMLElement{constructor(){super();let e=this.attachShadow({mode:"open"}),t=document.createElement("style");t.textContent=`:host{display:block;line-height:initial;font-size:16px}div.diagram{margin:0;overflow:visible}`,e.appendChild(t)}}void 0===customElements.get("diagram-div")&&customElements.define("diagram-div",t);let i=e=>{let t="";for(let i=0;i<e.childNodes.length;i++){let a=e.childNodes[i];if("code"===a.tagName.toLowerCase())for(let d=0;d<a.childNodes.length;d++){let l=a.childNodes[d],o=/^\s*$/;if("#text"===l.nodeName&&!o.test(l.nodeValue)){t=l.nodeValue;break}}}return t},a={startOnLoad:!1,theme:"default",flowchart:{htmlLabels:!1},er:{useMaxWidth:!1},sequence:{useMaxWidth:!1,noteFontWeight:"14px",actorFontSize:"14px",messageFontSize:"16px"}};mermaid.mermaidAPI.globalReset();let d="undefined"==typeof mermaidConfig?a:mermaidConfig;mermaid.initialize(d);let l=document.querySelectorAll(`pre.${e}, diagram-div`),o=document.querySelector("html body");for(let n=0;n<l.length;n++){let r=l[n],s="diagram-div"===r.tagName.toLowerCase()?r.shadowRoot.querySelector(`pre.${e}`):r,h=document.createElement("div");h.style.visibility="hidden",h.style.display="display",h.style.padding="0",h.style.margin="0",h.style.lineHeight="initial",h.style.fontSize="16px",o.appendChild(h);try{let m=await mermaid.render(`_diagram_${n}`,i(s),h),c=m.svg,p=m.bindFunctions,g=document.createElement("div");g.className=e,g.innerHTML=c,p&&p(g);let y=document.createElement("diagram-div");y.shadowRoot.appendChild(g),r.parentNode.insertBefore(y,r),s.style.display="none",y.shadowRoot.appendChild(s),s!==r&&r.parentNode.removeChild(r)}catch(u){}o.contains(h)&&o.removeChild(h)}};document.addEventListener("DOMContentLoaded",()=>{uml("mermaid")});</script>""",
         ],
     ),
     open_browser=True,
     chat=flex_cfg(
         stream=True,
         to_context_kwargs=flex_cfg(),
-        max_context_chars=None,
-        max_context_tokens=None,
-        tokenizer="gpt-4o",
+        max_tokens=120_000,
+        tokenizer="model_or_o200k_base",
+        tokens_per_message=3,
+        tokens_per_name=1,
         system_prompt="You are a helpful assistant. Given the context information and not prior knowledge, answer the query.",
-        context_prompt=Sub(f"""Context information is below.
+        system_as_user=False,
+        context_prompt=Sub(
+            f"""Context information is below.
 ---------------------
 $context
----------------------"""),
+---------------------"""
+        ),
         output_to=None,
         flush_output=True,
         display_format="auto_ipython",
@@ -2173,14 +2197,21 @@ $context
             clear_metadata=True,
             clear_metadata_kwargs=flex_cfg(),
             dump_metadata_kwargs=flex_cfg(),
+            incl_base_attr=True,
+            incl_shortcuts=True,
+            incl_shortcut_access=True,
+            incl_shortcut_call=True,
+            incl_instances=True,
+            incl_custom=None,
+            is_custom_regex=False,
+            as_code=False,
+            as_regex=True,
+            allow_prefix=False,
+            allow_suffix=False,
+            merge_targets=True,
             chat=flex_cfg(
                 system_prompt="You are an assistant with access to the VectorBT PRO (VBT) Python library documentation and Discord history. VBT is a proprietary successor to the open-source vectorbt for financial backtesting. As an expert, provide clear and accurate answers using only these sources. If metadata with links is present, reference these links to support your answers. If information isn't found, inform the user accordingly. Note that VBT exclusively refers to VectorBT PRO, which significantly differs from the open-source version. Given the context information and not prior knowledge, answer the query.",
             ),
-        ),
-        messages=flex_cfg(
-            asset_name="messages.json.zip",
-            cache_dir="./knowledge/messages/",
-            token_required=True,
         ),
         pages=flex_cfg(
             asset_name="pages.json.zip",
@@ -2188,6 +2219,31 @@ $context
             token_required=True,
             append_obj_type=True,
             append_github_link=True,
+            use_parent=None,
+            use_base_parents=False,
+            use_ref_parents=False,
+            incl_bases=True,
+            incl_ancestors=True,
+            incl_base_ancestors=False,
+            incl_refs=None,
+            incl_descendants=True,
+            incl_ancestor_descendants=False,
+            incl_ref_descendants=False,
+            aggregate=True,
+            aggregate_ancestors=False,
+            aggregate_refs=False,
+            topo_sort=True,
+            incl_pages=None,
+            excl_pages=None,
+            page_find_mode="substring",
+            up_aggregate=True,
+            up_aggregate_th=2 / 3,
+            up_aggregate_pages=True,
+        ),
+        messages=flex_cfg(
+            asset_name="messages.json.zip",
+            cache_dir="./knowledge/messages/",
+            token_required=True,
         ),
     ),
 )

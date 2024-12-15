@@ -5,11 +5,12 @@
 from functools import cached_property as cachedproperty
 
 from vectorbtpro import _typing as tp
+from vectorbtpro.utils.base import Base
 
 __all__ = []
 
 
-class Hashable:
+class Hashable(Base):
     """Hashable class."""
 
     @staticmethod
