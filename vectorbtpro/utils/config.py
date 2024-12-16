@@ -607,8 +607,8 @@ class Config(pdict):
         # Set keys as attributes for autocomplete
         if as_attrs:
             self_dir = set(self.__dir__())
-            for k, v in self.items():
-                if k in self_dir and k not in override_keys:
+            for k, v in dct.items():
+                if k in self_dir and (k not in override_keys or (k.startswith("__") and k.endswith("__"))):
                     raise ValueError(
                         f"Key '{k}' shadows an attribute of the config. "
                         f"Disable option 'as_attrs' or put the key to 'override_keys'."
@@ -627,16 +627,18 @@ class Config(pdict):
         """Set an option."""
         self._options_[k] = v
 
-    def __getattr__(self, k: str) -> tp.Any:
-        try:
-            as_attrs = object.__getattribute__(self, "_options_")["as_attrs"]
-        except AttributeError:
+    def __getattribute__(self, k: str) -> tp.Any:
+        if k.startswith("__") and k.endswith("__"):
             return object.__getattribute__(self, k)
+        as_attrs = object.__getattribute__(self, "_options_")["as_attrs"]  # error -> __getattr__
         if as_attrs:
             try:
-                return self.__getitem__(k)
+                return self.__getitem__(k)  # error -> __getattr__
             except KeyError:
                 raise AttributeError
+        return object.__getattribute__(self, k)
+
+    def __getattr__(self, k: str) -> tp.Any:
         return object.__getattribute__(self, k)
 
     def __setattr__(self, k: str, v: tp.Any, force: bool = False) -> None:

@@ -2147,9 +2147,22 @@ class SignalsAccessor(GenericAccessor):
         See `vectorbtpro.signals.nb.unravel_nb`.
 
         Argument `signal_index_type` takes the following values:
+
         * "range": Basic signal counter in a column
         * "position(s)": Integer position (row) of signal in a column
         * "label(s)": Label of signal in a column
+
+        Usage:
+            ```pycon
+            >>> mask.vbt.signals.unravel()
+            signal          0      0      1      2      0      1      2
+                            a      b      b      b      c      c      c
+            2020-01-01   True   True  False  False   True  False  False
+            2020-01-02  False  False  False  False  False   True  False
+            2020-01-03  False  False   True  False  False  False   True
+            2020-01-04  False  False  False  False  False  False  False
+            2020-01-05  False  False  False   True  False  False  False
+            ```
         """
         if clean_index_kwargs is None:
             clean_index_kwargs = {}
@@ -2194,6 +2207,7 @@ class SignalsAccessor(GenericAccessor):
         If two arrays are passed, see `vectorbtpro.signals.nb.unravel_between_two_nb`.
 
         Argument `signal_index_type` takes the following values:
+
         * "pair_range": Basic pair counter in a column
         * "range": Basic signal counter in a column
         * "source_range": Basic signal counter in a source column
@@ -2204,6 +2218,79 @@ class SignalsAccessor(GenericAccessor):
         * "label(s)": Label of signal in a column
         * "source_label(s)": Label of signal in a source column
         * "target_label(s)": Label of signal in a target column
+
+        Usage:
+            * One mask:
+
+            ```pycon
+            >>> mask.vbt.signals.unravel_between()
+            signal         -1      0      1      0      1
+                            a      b      b      c      c
+            2020-01-01  False   True  False   True  False
+            2020-01-02  False  False  False   True   True
+            2020-01-03  False   True   True  False   True
+            2020-01-04  False  False  False  False  False
+            2020-01-05  False  False   True  False  False
+
+            >>> mask.vbt.signals.unravel_between(signal_index_type="position")
+            source_signal     -1      0      2      0      1
+            target_signal     -1      2      4      1      2
+                               a      b      b      c      c
+            2020-01-01     False   True  False   True  False
+            2020-01-02     False  False  False   True   True
+            2020-01-03     False   True   True  False   True
+            2020-01-04     False  False  False  False  False
+            2020-01-05     False  False   True  False  False
+            ```
+
+            * Two masks:
+
+            ```pycon
+            >>> source_mask = pd.Series([True, True, False, False, True, True])
+            >>> target_mask = pd.Series([False, False, True, True, False, False])
+            >>> new_source_mask, new_target_mask = vbt.pd_acc.signals.unravel_between(
+            ...     source_mask,
+            ...     target_mask
+            ... )
+            >>> new_source_mask
+            signal      0      1
+            0       False  False
+            1        True   True
+            2       False  False
+            3       False  False
+            4       False  False
+            5       False  False
+            >>> new_target_mask
+            signal      0      1
+            0       False  False
+            1       False  False
+            2        True  False
+            3       False   True
+            4       False  False
+            5       False  False
+
+            >>> new_source_mask, new_target_mask = vbt.pd_acc.signals.unravel_between(
+            ...     source_mask,
+            ...     target_mask,
+            ...     relation="chain"
+            ... )
+            >>> new_source_mask
+            signal      0      1
+            0        True  False
+            1       False  False
+            2       False  False
+            3       False  False
+            4       False   True
+            5       False  False
+            >>> new_target_mask
+            signal      0      1
+            0       False  False
+            1       False  False
+            2        True   True
+            3       False  False
+            4       False  False
+            5       False  False
+            ```
         """
         if broadcast_kwargs is None:
             broadcast_kwargs = {}
@@ -2320,7 +2407,23 @@ class SignalsAccessor(GenericAccessor):
         jitted: tp.JittedOption = None,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.SeriesFrame:
-        """See `vectorbtpro.signals.nb.ravel_nb`."""
+        """Ravel signals.
+
+        See `vectorbtpro.signals.nb.ravel_nb`.
+
+        Usage:
+            ```pycon
+            >>> unravel_mask = mask.vbt.signals.unravel()
+            >>> original_mask = unravel_mask.vbt.signals.ravel(group_by=vbt.ExceptLevel("signal"))
+            >>> original_mask
+                            a      b      c
+            2020-01-01   True   True   True
+            2020-01-02  False  False   True
+            2020-01-03  False   True   True
+            2020-01-04  False  False  False
+            2020-01-05  False   True  False
+            ```
+        """
         if wrap_kwargs is None:
             wrap_kwargs = {}
 
