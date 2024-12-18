@@ -942,7 +942,7 @@ data = frozen_cfg(
         ),
         alpaca=flex_cfg(
             client=None,
-            client_type="stocks",
+            client_type=None,
             client_config=flex_cfg(
                 api_key=None,
                 secret_key=None,

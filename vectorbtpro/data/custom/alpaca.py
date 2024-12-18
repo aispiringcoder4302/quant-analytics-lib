@@ -60,8 +60,7 @@ class AlpacaData(RemoteData):
 
         ```pycon
         >>> data = vbt.AlpacaData.pull(
-        ...     "BTCUSD",
-        ...     client_type="crypto",
+        ...     "BTC/USD",
         ...     start="2021-01-01",
         ...     end="2022-01-01",
         ...     timeframe="1 day"
@@ -198,6 +197,8 @@ class AlpacaData(RemoteData):
             client_type (str): Client type.
 
                 See `AlpacaData.resolve_client`.
+
+                Determined automatically based on the symbol. Crypto symbols contain "/".
             client_config (dict): Client config.
 
                 See `AlpacaData.resolve_client`.
@@ -231,6 +232,9 @@ class AlpacaData(RemoteData):
         from alpaca.data.historical import CryptoHistoricalDataClient, StockHistoricalDataClient
         from alpaca.data.requests import CryptoBarsRequest, StockBarsRequest
         from alpaca.data.timeframe import TimeFrame, TimeFrameUnit
+
+        if client_type is None:
+            client_type = "crypto" if "/" in symbol else "stocks"
 
         if client_config is None:
             client_config = {}
