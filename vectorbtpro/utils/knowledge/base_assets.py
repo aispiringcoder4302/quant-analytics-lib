@@ -37,6 +37,93 @@ __all__ = [
 ]
 
 
+# ############# Helper classes ############# #
+
+
+class ChatStreamProcessor:
+    """Class for processing chat streams."""
+
+    def __init__(self):
+        self._lines = []
+        self._current_line = []
+        self._in_code_block = False
+        self._code_block_indent = ""
+        self._final_content = ""
+
+    @property
+    def lines(self) -> tp.List[str]:
+        """List of lines."""
+        return self._lines
+
+    @property
+    def current_line(self) -> tp.List[str]:
+        """List of strings representing the current line."""
+        return self._current_line
+
+    @property
+    def in_code_block(self) -> bool:
+        """Whether currently in a code block."""
+        return self._in_code_block
+
+    @property
+    def code_block_indent(self) -> str:
+        """Indentation of the code block."""
+        return self._code_block_indent
+
+    @property
+    def final_content(self) -> str:
+        """Final content."""
+        return self._final_content
+
+    def process_line(self, line: str) -> str:
+        """Process line."""
+        start = 0
+        while True:
+            idx = line.find("```", start)
+            if idx == -1:
+                break
+            if not self.in_code_block:
+                self._in_code_block = True
+                if line[:idx].strip() == "":
+                    self._code_block_indent = line[:idx]
+                else:
+                    self._code_block_indent = ""
+            else:
+                self._in_code_block = False
+            start = idx + 3
+        return line
+
+    def append(self, new_content: str) -> None:
+        """Append newly-arrived content."""
+        lines = new_content.splitlines(keepends=True)
+        for line in lines:
+            if line.endswith("\n") or line.endswith("\r\n"):
+                stripped_line = line.rstrip("\r\n")
+                self.current_line.append(stripped_line)
+                complete_line = "".join(self.current_line)
+                processed_line = self.process_line(complete_line)
+                self.lines.append(processed_line + line[len(stripped_line) :])
+                self.current_line.clear()
+            else:
+                self.current_line.append(line)
+
+        final_content = self.lines.copy()
+        if self.current_line:
+            final_content.extend(self.current_line)
+            if self.in_code_block:
+                final_content.append("\n" + self.code_block_indent + "```")
+        else:
+            if self.in_code_block:
+                final_content.append(self.code_block_indent + "```")
+        self._final_content = "".join(final_content)
+
+    def finalize(self) -> None:
+        """Finalize streaming."""
+        self.lines.extend(self.current_line)
+        self.current_line.clear()
+        self._final_content = "".join(self.lines)
+
+
 # ############# Asset classes ############# #
 
 
@@ -2668,12 +2755,11 @@ class KnowledgeAsset(Configured, MutableSequence):
 
         if stream:
             buffer_contents = []
-            chunk_contents = []
-            in_code_block = False
+            stream_processor = ChatStreamProcessor()
             for i, response_chunk in enumerate(response):
-                chunk_content = meta["chunk_content_lambda"](response_chunk)
-                if chunk_content is not None:
-                    buffer_contents.append(chunk_content)
+                new_content = meta["chunk_content_lambda"](response_chunk)
+                if new_content is not None:
+                    buffer_contents.append(new_content)
                     if refresh_rate is not None:
                         import time
 
@@ -2685,48 +2771,38 @@ class KnowledgeAsset(Configured, MutableSequence):
                             continue
 
                     if display_format.lower() == "plain" or output_to is not None:
-                        print(chunk_content, end="", file=output_to, flush=flush_output)
-                    else:
-                        buffer_content = "".join(buffer_contents)
-                        semi_full_content = "".join(chunk_contents[-2:] + buffer_contents)
-                        buffer_content = semi_full_content[-len(buffer_content) - 2 :]
-                        lines = buffer_content.split("\n")
-                        for line in lines:
-                            if line.strip().startswith("```"):
-                                in_code_block = not in_code_block
-                    if in_code_block:
-                        full_content = "".join(chunk_contents + buffer_contents + ["\n```\n"])
-                    else:
-                        full_content = "".join(chunk_contents + buffer_contents)
+                        print(new_content, end="", file=output_to, flush=flush_output)
+                    stream_processor.append("".join(buffer_contents))
+                    final_content = stream_processor.final_content
                     if display_format.lower() == "ipython_markdown":
-                        _display_ipython_markdown(full_content)
+                        _display_ipython_markdown(final_content)
                     if display_format.lower() == "ipython_html":
-                        _display_ipython_html(full_content)
+                        _display_ipython_html(final_content)
                     if display_format.lower() == "html":
-                        _display_html(full_content, True)
-                    chunk_contents.extend(buffer_contents)
+                        _display_html(final_content, True)
                     buffer_contents = []
 
-            full_content = "".join(chunk_contents)
+            stream_processor.finalize()
+            final_content = stream_processor.final_content
             if display_format.lower() == "ipython_markdown":
-                _display_ipython_markdown(full_content)
+                _display_ipython_markdown(final_content)
             if display_format.lower() == "ipython_html":
-                _display_ipython_html(full_content)
+                _display_ipython_html(final_content)
             if display_format.lower() == "html":
-                _display_html(full_content, False)
+                _display_html(final_content, False)
         else:
-            full_content = meta["full_content_lambda"](response)
+            final_content = meta["full_content_lambda"](response)
             if display_format.lower() == "plain" or output_to is not None:
-                print(full_content, file=output_to, flush=flush_output)
+                print(final_content, file=output_to, flush=flush_output)
             if display_format.lower() == "ipython_markdown":
-                _display_ipython_markdown(full_content)
+                _display_ipython_markdown(final_content)
             if display_format.lower() == "ipython_html":
-                _display_ipython_html(full_content)
+                _display_ipython_html(final_content)
             if display_format.lower() == "html":
-                _display_html(full_content, False)
+                _display_html(final_content, False)
 
         chat_history.append(dict(role="user", content=message))
-        chat_history.append(dict(role="assistant", content=full_content))
+        chat_history.append(dict(role="assistant", content=final_content))
         if close_handle:
             output_to.close()
         if return_response:
