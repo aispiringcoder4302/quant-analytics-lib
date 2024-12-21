@@ -61,7 +61,7 @@ try:
         raise ImportError
     from vectorbtpro.returns.qs_adapter import QSAdapter as QSAdapterT
 except ImportError:
-    QSAdapterT = tp.Any
+    QSAdapterT = "QSAdapter"
 
 __all__ = [
     "Portfolio",

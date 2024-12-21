@@ -54,7 +54,7 @@ try:
         raise ImportError
     from pypfopt.base_optimizer import BaseOptimizer as BaseOptimizerT
 except ImportError:
-    BaseOptimizerT = tp.Any
+    BaseOptimizerT = "BaseOptimizer"
 try:
     if not tp.TYPE_CHECKING:
         raise ImportError
@@ -62,7 +62,7 @@ try:
 
     RPortfolioT = tp.TypeVar("RPortfolioT", bound=tp.Union[RPortfolio, RHCPortfolio])
 except ImportError:
-    RPortfolioT = tp.Any
+    RPortfolioT = "RPortfolio"
 try:
     if not tp.TYPE_CHECKING:
         raise ImportError
@@ -72,8 +72,8 @@ try:
     AlgoT = tp.TypeVar("AlgoT", bound=Algo)
     AlgoResultT = tp.TypeVar("AlgoResultT", bound=AlgoResult)
 except ImportError:
-    AlgoT = tp.Any
-    AlgoResultT = tp.Any
+    AlgoT = "Algo"
+    AlgoResultT = "AlgoResult"
 
 __all__ = [
     "pfopt_func_dict",

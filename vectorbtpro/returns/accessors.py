@@ -668,7 +668,59 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
         return merge_dicts(returns_defaults_cfg, self._defaults)
 
-    # ############# Resampling ############# #
+    # ############# Transformation ############# #
+
+    def mirror(
+        self,
+        sim_start: tp.Optional[tp.ArrayLike] = None,
+        sim_end: tp.Optional[tp.ArrayLike] = None,
+        jitted: tp.JittedOption = None,
+        chunked: tp.ChunkedOption = None,
+        wrap_kwargs: tp.KwargsLike = None,
+    ) -> tp.SeriesFrame:
+        """Mirror returns.
+
+        See `vectorbtpro.returns.nb.mirror_returns_nb`."""
+        sim_start = self.resolve_sim_start(sim_start=sim_start, group_by=False)
+        sim_end = self.resolve_sim_end(sim_end=sim_end, group_by=False)
+
+        func = jit_reg.resolve_option(nb.mirror_returns_nb, jitted)
+        func = ch_reg.resolve_option(func, chunked)
+        mirrored_returns = func(
+            self.to_2d_array(),
+            log_returns=self.log_returns,
+            sim_start=sim_start,
+            sim_end=sim_end,
+        )
+        return self.wrapper.wrap(mirrored_returns, group_by=False, **resolve_dict(wrap_kwargs))
+
+    def cumulative(
+        self,
+        start_value: tp.Optional[float] = None,
+        sim_start: tp.Optional[tp.ArrayLike] = None,
+        sim_end: tp.Optional[tp.ArrayLike] = None,
+        jitted: tp.JittedOption = None,
+        chunked: tp.ChunkedOption = None,
+        wrap_kwargs: tp.KwargsLike = None,
+    ) -> tp.SeriesFrame:
+        """Cumulative returns.
+
+        See `vectorbtpro.returns.nb.cumulative_returns_nb`."""
+        if start_value is None:
+            start_value = self.defaults["start_value"]
+        sim_start = self.resolve_sim_start(sim_start=sim_start, group_by=False)
+        sim_end = self.resolve_sim_end(sim_end=sim_end, group_by=False)
+
+        func = jit_reg.resolve_option(nb.cumulative_returns_nb, jitted)
+        func = ch_reg.resolve_option(func, chunked)
+        cumulative = func(
+            self.to_2d_array(),
+            start_value=start_value,
+            log_returns=self.log_returns,
+            sim_start=sim_start,
+            sim_end=sim_end,
+        )
+        return self.wrapper.wrap(cumulative, group_by=False, **resolve_dict(wrap_kwargs))
 
     def resample(
         self: ReturnsAccessorT,
@@ -757,34 +809,6 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         return self.resample_returns(self.year_freq, jitted=jitted, chunked=chunked, **kwargs)
 
     # ############# Metrics ############# #
-
-    def cumulative(
-        self,
-        start_value: tp.Optional[float] = None,
-        sim_start: tp.Optional[tp.ArrayLike] = None,
-        sim_end: tp.Optional[tp.ArrayLike] = None,
-        jitted: tp.JittedOption = None,
-        chunked: tp.ChunkedOption = None,
-        wrap_kwargs: tp.KwargsLike = None,
-    ) -> tp.SeriesFrame:
-        """Cumulative returns.
-
-        See `vectorbtpro.returns.nb.cumulative_returns_nb`."""
-        if start_value is None:
-            start_value = self.defaults["start_value"]
-        sim_start = self.resolve_sim_start(sim_start=sim_start, group_by=False)
-        sim_end = self.resolve_sim_end(sim_end=sim_end, group_by=False)
-
-        func = jit_reg.resolve_option(nb.cumulative_returns_nb, jitted)
-        func = ch_reg.resolve_option(func, chunked)
-        cumulative = func(
-            self.to_2d_array(),
-            start_value=start_value,
-            log_returns=self.log_returns,
-            sim_start=sim_start,
-            sim_end=sim_end,
-        )
-        return self.wrapper.wrap(cumulative, group_by=False, **resolve_dict(wrap_kwargs))
 
     def final_value(
         self,

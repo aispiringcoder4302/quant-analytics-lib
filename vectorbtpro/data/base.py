@@ -14,37 +14,42 @@ import pandas as pd
 from vectorbtpro import _typing as tp
 from vectorbtpro.base.indexes import stack_indexes
 from vectorbtpro.base.merging import column_stack_arrays, is_merge_func_from_config
-from vectorbtpro.base.reshaping import to_any_array, to_pd_array, to_2d_array
+from vectorbtpro.base.reshaping import to_any_array, to_pd_array, to_1d_array, to_2d_array, broadcast_to
 from vectorbtpro.base.wrapping import ArrayWrapper
 from vectorbtpro.data.decorators import attach_symbol_dict_methods
 from vectorbtpro.generic import nb as generic_nb
 from vectorbtpro.generic.analyzable import Analyzable
 from vectorbtpro.generic.drawdowns import Drawdowns
+from vectorbtpro.ohlcv.nb import mirror_ohlc_nb
+from vectorbtpro.ohlcv.enums import PriceFeature
 from vectorbtpro.returns.accessors import ReturnsAccessor
 from vectorbtpro.utils import checks, datetime_ as dt
 from vectorbtpro.utils.attr_ import get_dict_attr
 from vectorbtpro.utils.base import Base
 from vectorbtpro.utils.config import merge_dicts, Config, HybridConfig, copy_dict
 from vectorbtpro.utils.decorators import cached_property, hybrid_method
+from vectorbtpro.utils.enum_ import map_enum_fields
 from vectorbtpro.utils.execution import Task, NoResult, NoResultsException, filter_out_no_results, execute
 from vectorbtpro.utils.merging import MergeFunc
 from vectorbtpro.utils.parsing import get_func_arg_names, extend_args
 from vectorbtpro.utils.path_ import check_mkdir
 from vectorbtpro.utils.pickling import pdict, RecState
-from vectorbtpro.utils.template import RepEval, CustomTemplate, substitute_templates
+from vectorbtpro.utils.template import Rep, RepEval, CustomTemplate, substitute_templates
+from vectorbtpro.registries.ch_registry import ch_reg
+from vectorbtpro.registries.jit_registry import jit_reg
 
 try:
     if not tp.TYPE_CHECKING:
         raise ImportError
     from sqlalchemy import Engine as EngineT
 except ImportError:
-    EngineT = tp.Any
+    EngineT = "Engine"
 try:
     if not tp.TYPE_CHECKING:
         raise ImportError
     from duckdb import DuckDBPyConnection as DuckDBPyConnectionT
 except ImportError:
-    DuckDBPyConnectionT = tp.Any
+    DuckDBPyConnectionT = "DuckDBPyConnection"
 
 __all__ = [
     "key_dict",
@@ -1324,6 +1329,32 @@ class Data(Analyzable, DataWithFeatures, OHLCDataMixin, metaclass=MetaData):
             return self.wrapper.columns.tolist()
         return self.keys
 
+    def resolve_feature(self, feature: tp.Feature, raise_error: bool = False) -> tp.Optional[tp.Feature]:
+        """Return the feature of this instance that matches the provided feature."""
+        feature_idx = self.get_feature_idx(feature, raise_error=raise_error)
+        if feature_idx == -1:
+            return None
+        return self.features[feature_idx]
+
+    def resolve_symbol(self, symbol: tp.Feature, raise_error: bool = False) -> tp.Optional[tp.Feature]:
+        """Return the symbol of this instance that matches the provided symbol."""
+        symbol_idx = self.get_symbol_idx(symbol, raise_error=raise_error)
+        if symbol_idx == -1:
+            return None
+        return self.symbols[symbol_idx]
+
+    def resolve_key(self, key: tp.Key, raise_error: bool = False) -> tp.Optional[tp.Key]:
+        """Return the key of this instance that matches the provided key."""
+        if self.feature_oriented:
+            return self.resolve_feature(key, raise_error=raise_error)
+        return self.resolve_symbol(key, raise_error=raise_error)
+
+    def resolve_column(self, column: tp.Column, raise_error: bool = False) -> tp.Optional[tp.Column]:
+        """Return the column of this instance that matches the provided column."""
+        if self.feature_oriented:
+            return self.resolve_symbol(column, raise_error=raise_error)
+        return self.resolve_feature(column, raise_error=raise_error)
+
     def resolve_features(self, features: tp.MaybeFeatures, raise_error: bool = True) -> tp.MaybeFeatures:
         """Return the features of this instance that match the provided features."""
         if not self.has_multiple_keys(features):
@@ -1333,11 +1364,7 @@ class Data(Analyzable, DataWithFeatures, OHLCDataMixin, metaclass=MetaData):
             single_feature = False
         new_features = []
         for feature in features:
-            feature_idx = self.get_feature_idx(feature, raise_error=raise_error)
-            if feature_idx == -1:
-                new_features.append(feature)
-            else:
-                new_features.append(self.features[feature_idx])
+            new_features.append(self.resolve_feature(feature, raise_error=raise_error))
         if single_feature:
             return new_features[0]
         return new_features
@@ -1351,11 +1378,7 @@ class Data(Analyzable, DataWithFeatures, OHLCDataMixin, metaclass=MetaData):
             single_symbol = False
         new_symbols = []
         for symbol in symbols:
-            symbol_idx = self.get_symbol_idx(symbol, raise_error=raise_error)
-            if symbol_idx == -1:
-                new_symbols.append(symbol)
-            else:
-                new_symbols.append(self.symbols[symbol_idx])
+            new_symbols.append(self.resolve_symbol(symbol, raise_error=raise_error))
         if single_symbol:
             return new_symbols[0]
         return new_symbols
@@ -3416,6 +3439,7 @@ class Data(Analyzable, DataWithFeatures, OHLCDataMixin, metaclass=MetaData):
         per_symbol: bool = False,
         pass_frame: bool = False,
         key_wrapper_kwargs: tp.KwargsLike = None,
+        broadcast_kwargs: tp.KwargsLike = None,
         template_context: tp.KwargsLike = None,
         **kwargs,
     ) -> DataT:
@@ -3430,7 +3454,8 @@ class Data(Analyzable, DataWithFeatures, OHLCDataMixin, metaclass=MetaData):
         Keyword arguments `key_wrapper_kwargs` are passed to `Data.get_key_wrapper` to control,
         for example, attachment of classes.
 
-        After the transformation, the new data is aligned using `Data.align_data`.
+        After the transformation, the new data is aligned using `Data.align_data`. If the data is not
+        a Pandas object, it's broadcasted to the original data with `broadcast_kwargs`.
 
         !!! note
             The returned object must have the same type and dimensionality as the input object.
@@ -3442,6 +3467,8 @@ class Data(Analyzable, DataWithFeatures, OHLCDataMixin, metaclass=MetaData):
             Index, on the other hand, can be changed freely."""
         if key_wrapper_kwargs is None:
             key_wrapper_kwargs = {}
+        if broadcast_kwargs is None:
+            broadcast_kwargs = {}
         if template_context is None:
             template_context = {}
 
@@ -3449,7 +3476,10 @@ class Data(Analyzable, DataWithFeatures, OHLCDataMixin, metaclass=MetaData):
             _transform_func = substitute_templates(transform_func, _template_context, eval_id="transform_func")
             _args = substitute_templates(args, _template_context, eval_id="args")
             _kwargs = substitute_templates(kwargs, _template_context, eval_id="kwargs")
-            return _transform_func(data, *_args, **_kwargs)
+            out = _transform_func(data, *_args, **_kwargs)
+            if not isinstance(out, (pd.Series, pd.DataFrame)):
+                out = broadcast_to(out, data, **broadcast_kwargs)
+            return out
 
         if (self.feature_oriented and (per_feature and not per_symbol)) or (
             self.symbol_oriented and (per_symbol and not per_feature)
@@ -3583,6 +3613,47 @@ class Data(Analyzable, DataWithFeatures, OHLCDataMixin, metaclass=MetaData):
             return df.dropna(**_kwargs)
 
         return self.transform(_dropna, **kwargs)
+
+    def mirror_ohlc(
+        self: DataT,
+        jitted: tp.JittedOption = None,
+        chunked: tp.ChunkedOption = None,
+        start_value: tp.ArrayLike = np.nan,
+        ref_feature: tp.ArrayLike = -1,
+    ) -> DataT:
+        """Mirror OHLC features."""
+        if isinstance(ref_feature, str):
+            ref_feature = map_enum_fields(ref_feature, PriceFeature)
+
+        open_name = self.resolve_feature("Open")
+        high_name = self.resolve_feature("High")
+        low_name = self.resolve_feature("Low")
+        close_name = self.resolve_feature("Close")
+
+        func = jit_reg.resolve_option(mirror_ohlc_nb, jitted)
+        func = ch_reg.resolve_option(func, chunked)
+        new_open, new_high, new_low, new_close = func(
+            self.symbol_wrapper.shape_2d,
+            open=to_2d_array(self.get_feature(open_name)) if open_name is not None else None,
+            high=to_2d_array(self.get_feature(high_name)) if high_name is not None else None,
+            low=to_2d_array(self.get_feature(low_name)) if low_name is not None else None,
+            close=to_2d_array(self.get_feature(close_name)) if close_name is not None else None,
+            start_value=to_1d_array(start_value),
+            ref_feature=to_1d_array(ref_feature),
+        )
+
+        def _mirror_ohlc(df, feature, **_kwargs):
+            if open_name is not None and feature == open_name:
+                return new_open
+            if high_name is not None and feature == high_name:
+                return new_high
+            if low_name is not None and feature == low_name:
+                return new_low
+            if close_name is not None and feature == close_name:
+                return new_close
+            return df
+
+        return self.transform(_mirror_ohlc, Rep("feature"), per_feature=True)
 
     def resample(self: DataT, *args, wrapper_meta: tp.DictLike = None, **kwargs) -> DataT:
         """Perform resampling on `Data`.

@@ -89,16 +89,21 @@ import pandas as pd
 from vectorbtpro import _typing as tp
 from vectorbtpro.accessors import register_df_vbt_accessor
 from vectorbtpro.base.wrapping import ArrayWrapper
+from vectorbtpro.base.reshaping import to_1d_array, to_2d_array
 from vectorbtpro.data.base import OHLCDataMixin
 from vectorbtpro.generic import nb as generic_nb
 from vectorbtpro.generic.accessors import GenericAccessor, GenericDFAccessor
+from vectorbtpro.ohlcv import nb, enums
 from vectorbtpro.utils.config import merge_dicts, Config, HybridConfig
 from vectorbtpro.utils.decorators import hybrid_property
+from vectorbtpro.utils.enum_ import map_enum_fields
+from vectorbtpro.registries.ch_registry import ch_reg
+from vectorbtpro.registries.jit_registry import jit_reg
 
 if tp.TYPE_CHECKING:
     from vectorbtpro.data.base import Data as DataT
 else:
-    DataT = tp.Any
+    DataT = "Data"
 
 __all__ = [
     "OHLCVDFAccessor",
@@ -195,7 +200,45 @@ class OHLCVDFAccessor(OHLCDataMixin, GenericDFAccessor):
 
         return data_cls.from_data(self.obj, columns_are_symbols=False, **kwargs)
 
-    # ############# Resampling ############# #
+    # ############# Transforming ############# #
+
+    def mirror_ohlc(
+        self: OHLCVDFAccessorT,
+        jitted: tp.JittedOption = None,
+        chunked: tp.ChunkedOption = None,
+        start_value: tp.ArrayLike = np.nan,
+        ref_feature: tp.ArrayLike = -1,
+    ) -> tp.Frame:
+        """Mirror OHLC features."""
+        if isinstance(ref_feature, str):
+            ref_feature = map_enum_fields(ref_feature, enums.PriceFeature)
+
+        open_idx = self.get_feature_idx("Open")
+        high_idx = self.get_feature_idx("High")
+        low_idx = self.get_feature_idx("Low")
+        close_idx = self.get_feature_idx("Close")
+
+        func = jit_reg.resolve_option(nb.mirror_ohlc_nb, jitted)
+        func = ch_reg.resolve_option(func, chunked)
+        new_open, new_high, new_low, new_close = func(
+            self.symbol_wrapper.shape_2d,
+            open=to_2d_array(self.obj.iloc[:, open_idx]) if open_idx is not None else None,
+            high=to_2d_array(self.obj.iloc[:, high_idx]) if high_idx is not None else None,
+            low=to_2d_array(self.obj.iloc[:, low_idx]) if low_idx is not None else None,
+            close=to_2d_array(self.obj.iloc[:, close_idx]) if close_idx is not None else None,
+            start_value=to_1d_array(start_value),
+            ref_feature=to_1d_array(ref_feature),
+        )
+        df = self.obj.copy()
+        if open_idx is not None:
+            df.iloc[:, open_idx] = new_open[:, 0]
+        if high_idx is not None:
+            df.iloc[:, high_idx] = new_high[:, 0]
+        if low_idx is not None:
+            df.iloc[:, low_idx] = new_low[:, 0]
+        if close_idx is not None:
+            df.iloc[:, close_idx] = new_close[:, 0]
+        return df
 
     def resample(self: OHLCVDFAccessorT, *args, wrapper_meta: tp.DictLike = None, **kwargs) -> OHLCVDFAccessorT:
         """Perform resampling on `OHLCVDFAccessor`."""

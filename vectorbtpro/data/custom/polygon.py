@@ -21,7 +21,7 @@ try:
         raise ImportError
     from polygon import RESTClient as PolygonClientT
 except ImportError:
-    PolygonClientT = tp.Any
+    PolygonClientT = "PolygonClient"
 
 __all__ = [
     "PolygonData",

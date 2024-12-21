@@ -261,6 +261,42 @@ class TestAccessors:
             ret_acc.annual(chunked=False),
         )
 
+    def test_mirror(self):
+        assert_series_equal(
+            ret_acc["a"].mirror(),
+            pd.Series(
+                [np.nan, -0.009803921568627416, -0.009708737864077666, -0.009615384615384581, -0.00952380952380949],
+                index=rets.index,
+                name="a",
+            ),
+        )
+        assert_frame_equal(
+            ret_acc.mirror(),
+            pd.DataFrame(
+                [
+                    [np.nan, np.nan, np.nan],
+                    [-0.009803921568627416, 0.009615384615384581, -0.009803921568627416],
+                    [-0.009708737864077666, 0.009708737864077666, -0.009708737864077666],
+                    [-0.009615384615384581, 0.009803921568627416, 0.009803921568627416],
+                    [-0.00952380952380949, 0.00990099009900991, 0.00990099009900991]
+                ],
+                index=rets.index,
+                columns=rets.columns,
+            ),
+        )
+        assert_frame_equal(
+            ret_acc.mirror(jitted=dict(parallel=True)),
+            ret_acc.mirror(jitted=dict(parallel=False)),
+        )
+        assert_frame_equal(
+            ret_acc.mirror(chunked=True),
+            ret_acc.mirror(chunked=False),
+        )
+        assert_frame_equal(
+            prepare_sim_range_obj(ret_acc.mirror(sim_start=sim_start, sim_end=sim_end)),
+            sim_range_ret_acc.mirror(),
+        )
+
     def test_cumulative(self):
         assert_series_equal(
             ret_acc["a"].cumulative(),

@@ -13,7 +13,7 @@ try:
         raise ImportError
     from databento import Historical as HistoricalT
 except ImportError:
-    HistoricalT = tp.Any
+    HistoricalT = "Historical"
 
 __all__ = [
     "BentoData",

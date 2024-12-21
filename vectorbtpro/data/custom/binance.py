@@ -22,7 +22,7 @@ try:
         raise ImportError
     from binance.client import Client as BinanceClientT
 except ImportError:
-    BinanceClientT = tp.Any
+    BinanceClientT = "BinanceClient"
 
 __all__ = [
     "BinanceData",

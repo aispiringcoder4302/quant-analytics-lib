@@ -95,13 +95,13 @@ try:
         raise ImportError
     from ta.utils import IndicatorMixin as IndicatorMixinT
 except ImportError:
-    IndicatorMixinT = tp.Any
+    IndicatorMixinT = "IndicatorMixin"
 try:
     if not tp.TYPE_CHECKING:
         raise ImportError
     from technical.consensus import Consensus as ConsensusT
 except ImportError:
-    ConsensusT = tp.Any
+    ConsensusT = "Consensus"
 
 
 def prepare_params(

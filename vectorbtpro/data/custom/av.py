@@ -23,7 +23,7 @@ try:
         raise ImportError
     from alpha_vantage.alphavantage import AlphaVantage as AlphaVantageT
 except ImportError:
-    AlphaVantageT = tp.Any
+    AlphaVantageT = "AlphaVantage"
 
 __all__ = [
     "AVData",

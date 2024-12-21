@@ -20,7 +20,7 @@ try:
         raise ImportError
     from ccxt.base.exchange import Exchange as CCXTExchangeT
 except ImportError:
-    CCXTExchangeT = tp.Any
+    CCXTExchangeT = "CCXTExchange"
 
 __all__ = [
     "CCXTData",

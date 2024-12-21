@@ -16,9 +16,9 @@ try:
         raise ImportError
     from sqlalchemy import Engine as EngineT, Selectable as SelectableT, Table as TableT
 except ImportError:
-    EngineT = tp.Any
-    SelectableT = tp.Any
-    TableT = tp.Any
+    EngineT = "Engine"
+    SelectableT = "Selectable"
+    TableT = "Table"
 
 __all__ = [
     "SQLData",

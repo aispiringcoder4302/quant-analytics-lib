@@ -15,7 +15,7 @@ try:
         raise ImportError
     from alpaca.common.rest import RESTClient as AlpacaClientT
 except ImportError:
-    AlpacaClientT = tp.Any
+    AlpacaClientT = "AlpacaClient"
 
 __all__ = [
     "AlpacaData",

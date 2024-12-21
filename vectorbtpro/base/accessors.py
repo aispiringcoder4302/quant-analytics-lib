@@ -35,7 +35,7 @@ from vectorbtpro.utils.template import substitute_templates
 if tp.TYPE_CHECKING:
     from vectorbtpro.data.base import Data as DataT
 else:
-    DataT = tp.Any
+    DataT = "Data"
 if tp.TYPE_CHECKING:
     from vectorbtpro.generic.splitting.base import Splitter as SplitterT
 else:

@@ -36,8 +36,8 @@ try:
     from ray.remote_function import RemoteFunction as RemoteFunctionT
     from ray import ObjectRef as ObjectRefT
 except ImportError:
-    RemoteFunctionT = tp.Any
-    ObjectRefT = tp.Any
+    RemoteFunctionT = "RemoteFunction"
+    ObjectRefT = "ObjectRef"
 
 __all__ = [
     "Task",

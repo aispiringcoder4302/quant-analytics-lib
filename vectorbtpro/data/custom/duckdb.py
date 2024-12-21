@@ -18,8 +18,8 @@ try:
         raise ImportError
     from duckdb import DuckDBPyConnection as DuckDBPyConnectionT, DuckDBPyRelation as DuckDBPyRelationT
 except ImportError:
-    DuckDBPyConnectionT = tp.Any
-    DuckDBPyRelationT = tp.Any
+    DuckDBPyConnectionT = "DuckDBPyConnection"
+    DuckDBPyRelationT = "DuckDBPyRelation"
 
 __all__ = [
     "DuckDBData",

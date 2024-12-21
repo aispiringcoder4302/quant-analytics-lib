@@ -17,8 +17,8 @@ try:
     from findatapy.market import Market as MarketT
     from findatapy.util import ConfigManager as ConfigManagerT
 except ImportError:
-    MarketT = tp.Any
-    ConfigManagerT = tp.Any
+    MarketT = "Market"
+    ConfigManagerT = "ConfigManager"
 
 __all__ = [
     "FinPyData",
