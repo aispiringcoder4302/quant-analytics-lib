@@ -132,7 +132,7 @@ def mirror_returns_1d_nb(returns: tp.Array1d, log_returns: bool = False) -> tp.A
     """Calculate mirrored returns.
 
     A mirrored return is an inverse, or negative return. For log returns, it negates each return.
-    For simple returns, it uses the formula \frac{1}{1 + R_t} - 1."""
+    For simple returns, it uses the formula $\frac{1}{1 + R_t} - 1$."""
     out = np.empty(returns.shape, dtype=float_)
     for i in range(returns.shape[0]):
         if log_returns:

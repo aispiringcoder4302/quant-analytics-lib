@@ -2946,7 +2946,7 @@ class KnowledgeAsset(Configured, MutableSequence):
         chat_lambda = lambda messages: llm.chat(prepare_messages_lambda(messages))
         stream_lambda = lambda messages: llm.stream_chat(prepare_messages_lambda(messages))
         chunk_content_lambda = lambda response_chunk: response_chunk.delta
-        full_content_lambda = lambda response: response.message.conten
+        full_content_lambda = lambda response: response.message.content
         return dict(
             model=model,
             chat_lambda=chat_lambda,
