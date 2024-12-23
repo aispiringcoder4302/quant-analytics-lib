@@ -1356,7 +1356,7 @@ def crossed_below_nb(arr1: tp.Array2d, arr2: tp.FlexArray2dLike, wait: int = 0, 
     return out
 
 
-# ############# Transformation ############# #
+# ############# Transforming ############# #
 
 
 @register_chunkable(

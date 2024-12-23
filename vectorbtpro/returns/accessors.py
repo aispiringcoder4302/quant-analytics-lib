@@ -668,7 +668,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
         return merge_dicts(returns_defaults_cfg, self._defaults)
 
-    # ############# Transformation ############# #
+    # ############# Transforming ############# #
 
     def mirror(
         self,

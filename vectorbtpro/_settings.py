@@ -1981,6 +1981,7 @@ knowledge = frozen_cfg(
     cache_mkdir_kwargs=dict(
         mkdir=True,
     ),
+    clear_cache=False,
     per_path=True,
     find_all=False,
     keep_path=False,
@@ -2157,10 +2158,13 @@ knowledge = frozen_cfg(
 $context
 ---------------------"""
         ),
+        display_format="auto_ipython",
         output_to=None,
         flush_output=True,
-        display_format="auto_ipython",
-        refresh_rate=None,
+        buffer_output=True,
+        close_output=None,
+        update_interval=None,
+        refresh_page=True,
         file_prefix_len=20,
         file_suffix_len=6,
         package=None,

@@ -106,7 +106,7 @@ class VBTAsset(KnowledgeAsset):
         cache: tp.Optional[bool] = None,
         cache_dir: tp.Optional[tp.PathLike] = None,
         cache_mkdir_kwargs: tp.KwargsLike = None,
-        clear_cache: bool = False,
+        clear_cache: tp.Optional[bool] = None,
         show_progress: tp.Optional[bool] = None,
         pbar_kwargs: tp.KwargsLike = None,
         **kwargs,
@@ -126,6 +126,7 @@ class VBTAsset(KnowledgeAsset):
         cache = cls.resolve_setting(cache, "cache")
         cache_dir_none = cache_dir is None
         cache_dir = cls.resolve_setting(cache_dir, "cache_dir")
+        clear_cache = cls.resolve_setting(clear_cache, "clear_cache")
         cache_mkdir_kwargs = cls.resolve_setting(cache_mkdir_kwargs, "cache_mkdir_kwargs", merge=True)
         show_progress = cls.resolve_setting(show_progress, "show_progress")
         pbar_kwargs = cls.resolve_setting(pbar_kwargs, "pbar_kwargs", merge=True)
@@ -445,7 +446,7 @@ class VBTAsset(KnowledgeAsset):
         cache: tp.Optional[bool] = None,
         cache_dir: tp.Optional[tp.PathLike] = None,
         cache_mkdir_kwargs: tp.KwargsLike = None,
-        clear_cache: bool = False,
+        clear_cache: tp.Optional[bool] = None,
         show_progress: tp.Optional[bool] = None,
         pbar_kwargs: tp.KwargsLike = None,
         **kwargs,
@@ -467,6 +468,7 @@ class VBTAsset(KnowledgeAsset):
         cache_dir_none = cache_dir is None
         cache_dir = self.resolve_setting(cache_dir, "cache_dir")
         cache_mkdir_kwargs = self.resolve_setting(cache_mkdir_kwargs, "cache_mkdir_kwargs", merge=True)
+        clear_cache = self.resolve_setting(clear_cache, "clear_cache")
         show_progress = self.resolve_setting(show_progress, "show_progress")
         pbar_kwargs = self.resolve_setting(pbar_kwargs, "pbar_kwargs", merge=True)
 
@@ -588,7 +590,7 @@ class VBTAsset(KnowledgeAsset):
         cache: tp.Optional[bool] = None,
         cache_dir: tp.Optional[tp.PathLike] = None,
         cache_mkdir_kwargs: tp.KwargsLike = None,
-        clear_cache: bool = False,
+        clear_cache: tp.Optional[bool] = None,
         show_progress: tp.Optional[bool] = None,
         pbar_kwargs: tp.KwargsLike = None,
         return_url_map: bool = False,
@@ -612,6 +614,7 @@ class VBTAsset(KnowledgeAsset):
         cache_dir_none = cache_dir is None
         cache_dir = self.resolve_setting(cache_dir, "cache_dir")
         cache_mkdir_kwargs = self.resolve_setting(cache_mkdir_kwargs, "cache_mkdir_kwargs", merge=True)
+        clear_cache = self.resolve_setting(clear_cache, "clear_cache")
         show_progress = self.resolve_setting(show_progress, "show_progress")
         pbar_kwargs = self.resolve_setting(pbar_kwargs, "pbar_kwargs", merge=True)
 

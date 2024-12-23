@@ -3548,7 +3548,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             value_counts_pd.index = apply_mapping(value_counts_pd.index, mapping, **kwargs)
         return value_counts_pd
 
-    # ############# Transformation ############# #
+    # ############# Transforming ############# #
 
     def demean(
         self,
