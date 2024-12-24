@@ -1,6 +1,6 @@
 ## Getting Started
 
-Welcome to VectorBT PRO!
+Welcome to VectorBT® PRO!
 
 Visit [the private website](https://github.com/polakowo/vectorbt.pro/blob/pvt-links/README.md) and follow the guide.
 
@@ -25,4 +25,4 @@ do not include a copy of the vectorbtpro source code in your software.
 The end-user of your software is responsible for obtaining his own individual PRO license. 
 The best practice is to make it clear in your docs or on your website.
 
-Copyright (c) 2021-2024 Oleg Polakow. All rights reserved.
+Copyright (c) 2021-2025 Oleg Polakow. All rights reserved.
