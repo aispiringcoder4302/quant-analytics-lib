@@ -55,9 +55,16 @@ def clean_labels(labels: tp.Labels) -> tp.Labels:
     return labels
 
 
+class TraceType(Configured):
+    """Class representing a trace type."""
+
+    _expected_keys_mode: tp.ExpectedKeysMode = "disable"
+
+
 class TraceUpdater(Base):
+    """Class for updating traces."""
+
     def __init__(self, fig: tp.BaseFigure, traces: tp.Tuple[BaseTraceType, ...]) -> None:
-        """Base trace updating class."""
         self._fig = fig
         self._traces = traces
 
@@ -81,7 +88,38 @@ class TraceUpdater(Base):
         raise NotImplementedError
 
 
-class Gauge(Configured, TraceUpdater):
+class Gauge(TraceType, TraceUpdater):
+    """Gauge plot.
+
+    Args:
+        value (float): The value to be displayed.
+        label (str): The label to be displayed.
+        value_range (tuple of float): The value range of the gauge.
+        cmap_name (str): A matplotlib-compatible colormap name.
+
+            See the [list of available colormaps](https://matplotlib.org/tutorials/colors/colormaps.html).
+        trace_kwargs (dict): Keyword arguments passed to the `plotly.graph_objects.Indicator`.
+        add_trace_kwargs (dict): Keyword arguments passed to `add_trace`.
+        make_figure_kwargs (dict): Keyword arguments passed to `vectorbtpro.utils.figure.make_figure`.
+        fig (Figure or FigureWidget): Figure to add traces to.
+        **layout_kwargs: Keyword arguments for layout.
+
+    Usage:
+        ```pycon
+        >>> from vectorbtpro import *
+
+        >>> gauge = vbt.Gauge(
+        ...     value=2,
+        ...     value_range=(1, 3),
+        ...     label='My Gauge'
+        ... )
+        >>> gauge.fig.show()
+        ```
+
+        ![](/assets/images/api/Gauge.light.svg#only-light){: .iimg loading=lazy }
+        ![](/assets/images/api/Gauge.dark.svg#only-dark){: .iimg loading=lazy }
+    """
+
     def __init__(
         self,
         value: tp.Optional[float] = None,
@@ -94,37 +132,7 @@ class Gauge(Configured, TraceUpdater):
         fig: tp.Optional[tp.BaseFigure] = None,
         **layout_kwargs,
     ) -> None:
-        """Create a gauge plot.
-
-        Args:
-            value (float): The value to be displayed.
-            label (str): The label to be displayed.
-            value_range (tuple of float): The value range of the gauge.
-            cmap_name (str): A matplotlib-compatible colormap name.
-
-                See the [list of available colormaps](https://matplotlib.org/tutorials/colors/colormaps.html).
-            trace_kwargs (dict): Keyword arguments passed to the `plotly.graph_objects.Indicator`.
-            add_trace_kwargs (dict): Keyword arguments passed to `add_trace`.
-            make_figure_kwargs (dict): Keyword arguments passed to `vectorbtpro.utils.figure.make_figure`.
-            fig (Figure or FigureWidget): Figure to add traces to.
-            **layout_kwargs: Keyword arguments for layout.
-
-        Usage:
-            ```pycon
-            >>> from vectorbtpro import *
-
-            >>> gauge = vbt.Gauge(
-            ...     value=2,
-            ...     value_range=(1, 3),
-            ...     label='My Gauge'
-            ... )
-            >>> gauge.fig.show()
-            ```
-
-            ![](/assets/images/api/Gauge.light.svg#only-light){: .iimg loading=lazy }
-            ![](/assets/images/api/Gauge.dark.svg#only-dark){: .iimg loading=lazy }
-        """
-        Configured.__init__(
+        TraceType.__init__(
             self,
             value=value,
             label=label,
@@ -210,7 +218,39 @@ class Gauge(Configured, TraceUpdater):
             )
 
 
-class Bar(Configured, TraceUpdater):
+class Bar(TraceType, TraceUpdater):
+    """Bar plot.
+
+    Args:
+        data (array_like): Data in any format that can be converted to NumPy.
+
+            Must be of shape (`x_labels`, `trace_names`).
+        trace_names (str or list of str): Trace names, corresponding to columns in pandas.
+        x_labels (array_like): X-axis labels, corresponding to index in pandas.
+        trace_kwargs (dict or list of dict): Keyword arguments passed to `plotly.graph_objects.Bar`.
+
+            Can be specified per trace as a sequence of dicts.
+        add_trace_kwargs (dict): Keyword arguments passed to `add_trace`.
+        make_figure_kwargs (dict): Keyword arguments passed to `vectorbtpro.utils.figure.make_figure`.
+        fig (Figure or FigureWidget): Figure to add traces to.
+        **layout_kwargs: Keyword arguments for layout.
+
+    Usage:
+        ```pycon
+        >>> from vectorbtpro import *
+
+        >>> bar = vbt.Bar(
+        ...     data=[[1, 2], [3, 4]],
+        ...     trace_names=['a', 'b'],
+        ...     x_labels=['x', 'y']
+        ... )
+        >>> bar.fig.show()
+        ```
+
+        ![](/assets/images/api/Bar.light.svg#only-light){: .iimg loading=lazy }
+        ![](/assets/images/api/Bar.dark.svg#only-dark){: .iimg loading=lazy }
+    """
+
     def __init__(
         self,
         data: tp.Optional[tp.ArrayLike] = None,
@@ -222,38 +262,7 @@ class Bar(Configured, TraceUpdater):
         fig: tp.Optional[tp.BaseFigure] = None,
         **layout_kwargs,
     ) -> None:
-        """Create a bar plot.
-
-        Args:
-            data (array_like): Data in any format that can be converted to NumPy.
-
-                Must be of shape (`x_labels`, `trace_names`).
-            trace_names (str or list of str): Trace names, corresponding to columns in pandas.
-            x_labels (array_like): X-axis labels, corresponding to index in pandas.
-            trace_kwargs (dict or list of dict): Keyword arguments passed to `plotly.graph_objects.Bar`.
-
-                Can be specified per trace as a sequence of dicts.
-            add_trace_kwargs (dict): Keyword arguments passed to `add_trace`.
-            make_figure_kwargs (dict): Keyword arguments passed to `vectorbtpro.utils.figure.make_figure`.
-            fig (Figure or FigureWidget): Figure to add traces to.
-            **layout_kwargs: Keyword arguments for layout.
-
-        Usage:
-            ```pycon
-            >>> from vectorbtpro import *
-
-            >>> bar = vbt.Bar(
-            ...     data=[[1, 2], [3, 4]],
-            ...     trace_names=['a', 'b'],
-            ...     x_labels=['x', 'y']
-            ... )
-            >>> bar.fig.show()
-            ```
-
-            ![](/assets/images/api/Bar.light.svg#only-light){: .iimg loading=lazy }
-            ![](/assets/images/api/Bar.dark.svg#only-dark){: .iimg loading=lazy }
-        """
-        Configured.__init__(
+        TraceType.__init__(
             self,
             data=data,
             trace_names=trace_names,
@@ -319,7 +328,43 @@ class Bar(Configured, TraceUpdater):
                 self.update_trace(trace, data, i)
 
 
-class Scatter(Configured, TraceUpdater):
+class Scatter(TraceType, TraceUpdater):
+    """Scatter plot.
+
+    Args:
+        data (array_like): Data in any format that can be converted to NumPy.
+
+            Must be of shape (`x_labels`, `trace_names`).
+        trace_names (str or list of str): Trace names, corresponding to columns in pandas.
+        x_labels (array_like): X-axis labels, corresponding to index in pandas.
+        trace_kwargs (dict or list of dict): Keyword arguments passed to `plotly.graph_objects.Scatter`.
+
+            Can be specified per trace as a sequence of dicts.
+        add_trace_kwargs (dict): Keyword arguments passed to `add_trace`.
+        make_figure_kwargs (dict): Keyword arguments passed to `vectorbtpro.utils.figure.make_figure`.
+        fig (Figure or FigureWidget): Figure to add traces to.
+        use_gl (bool): Whether to use `plotly.graph_objects.Scattergl`.
+
+            Defaults to the global setting. If the global setting is None, becomes True
+            if there are more than 10,000 data points.
+        **layout_kwargs: Keyword arguments for layout.
+
+    Usage:
+        ```pycon
+        >>> from vectorbtpro import *
+
+        >>> scatter = vbt.Scatter(
+        ...     data=[[1, 2], [3, 4]],
+        ...     trace_names=['a', 'b'],
+        ...     x_labels=['x', 'y']
+        ... )
+        >>> scatter.fig.show()
+        ```
+
+        ![](/assets/images/api/Scatter.light.svg#only-light){: .iimg loading=lazy }
+        ![](/assets/images/api/Scatter.dark.svg#only-dark){: .iimg loading=lazy }
+    """
+
     def __init__(
         self,
         data: tp.Optional[tp.ArrayLike] = None,
@@ -332,42 +377,7 @@ class Scatter(Configured, TraceUpdater):
         use_gl: tp.Optional[bool] = None,
         **layout_kwargs,
     ) -> None:
-        """Create a scatter plot.
-
-        Args:
-            data (array_like): Data in any format that can be converted to NumPy.
-
-                Must be of shape (`x_labels`, `trace_names`).
-            trace_names (str or list of str): Trace names, corresponding to columns in pandas.
-            x_labels (array_like): X-axis labels, corresponding to index in pandas.
-            trace_kwargs (dict or list of dict): Keyword arguments passed to `plotly.graph_objects.Scatter`.
-
-                Can be specified per trace as a sequence of dicts.
-            add_trace_kwargs (dict): Keyword arguments passed to `add_trace`.
-            make_figure_kwargs (dict): Keyword arguments passed to `vectorbtpro.utils.figure.make_figure`.
-            fig (Figure or FigureWidget): Figure to add traces to.
-            use_gl (bool): Whether to use `plotly.graph_objects.Scattergl`.
-
-                Defaults to the global setting. If the global setting is None, becomes True
-                if there are more than 10,000 data points.
-            **layout_kwargs: Keyword arguments for layout.
-
-        Usage:
-            ```pycon
-            >>> from vectorbtpro import *
-
-            >>> scatter = vbt.Scatter(
-            ...     data=[[1, 2], [3, 4]],
-            ...     trace_names=['a', 'b'],
-            ...     x_labels=['x', 'y']
-            ... )
-            >>> scatter.fig.show()
-            ```
-
-            ![](/assets/images/api/Scatter.light.svg#only-light){: .iimg loading=lazy }
-            ![](/assets/images/api/Scatter.dark.svg#only-dark){: .iimg loading=lazy }
-        """
-        Configured.__init__(
+        TraceType.__init__(
             self,
             data=data,
             trace_names=trace_names,
@@ -463,7 +473,45 @@ class Scatter(Configured, TraceUpdater):
                 self.update_trace(trace, data, i)
 
 
-class Histogram(Configured, TraceUpdater):
+class Histogram(TraceType, TraceUpdater):
+    """Histogram plot.
+
+    Args:
+        data (array_like): Data in any format that can be converted to NumPy.
+
+            Must be of shape (any, `trace_names`).
+        trace_names (str or list of str): Trace names, corresponding to columns in pandas.
+        horizontal (bool): Whether to plot horizontally.
+        remove_nan (bool): Whether to remove NaN values.
+        from_quantile (float): Filter out data points before this quantile.
+
+            Must be in range `[0, 1]`.
+        to_quantile (float): Filter out data points after this quantile.
+
+            Must be in range `[0, 1]`.
+        trace_kwargs (dict or list of dict): Keyword arguments passed to `plotly.graph_objects.Histogram`.
+
+            Can be specified per trace as a sequence of dicts.
+        add_trace_kwargs (dict): Keyword arguments passed to `add_trace`.
+        make_figure_kwargs (dict): Keyword arguments passed to `vectorbtpro.utils.figure.make_figure`.
+        fig (Figure or FigureWidget): Figure to add traces to.
+        **layout_kwargs: Keyword arguments for layout.
+
+    Usage:
+        ```pycon
+        >>> from vectorbtpro import *
+
+        >>> hist = vbt.Histogram(
+        ...     data=[[1, 2], [3, 4], [2, 1]],
+        ...     trace_names=['a', 'b']
+        ... )
+        >>> hist.fig.show()
+        ```
+
+        ![](/assets/images/api/Histogram.light.svg#only-light){: .iimg loading=lazy }
+        ![](/assets/images/api/Histogram.dark.svg#only-dark){: .iimg loading=lazy }
+    """
+
     def __init__(
         self,
         data: tp.Optional[tp.ArrayLike] = None,
@@ -478,44 +526,7 @@ class Histogram(Configured, TraceUpdater):
         fig: tp.Optional[tp.BaseFigure] = None,
         **layout_kwargs,
     ) -> None:
-        """Create a histogram plot.
-
-        Args:
-            data (array_like): Data in any format that can be converted to NumPy.
-
-                Must be of shape (any, `trace_names`).
-            trace_names (str or list of str): Trace names, corresponding to columns in pandas.
-            horizontal (bool): Whether to plot horizontally.
-            remove_nan (bool): Whether to remove NaN values.
-            from_quantile (float): Filter out data points before this quantile.
-
-                Must be in range `[0, 1]`.
-            to_quantile (float): Filter out data points after this quantile.
-
-                Must be in range `[0, 1]`.
-            trace_kwargs (dict or list of dict): Keyword arguments passed to `plotly.graph_objects.Histogram`.
-
-                Can be specified per trace as a sequence of dicts.
-            add_trace_kwargs (dict): Keyword arguments passed to `add_trace`.
-            make_figure_kwargs (dict): Keyword arguments passed to `vectorbtpro.utils.figure.make_figure`.
-            fig (Figure or FigureWidget): Figure to add traces to.
-            **layout_kwargs: Keyword arguments for layout.
-
-        Usage:
-            ```pycon
-            >>> from vectorbtpro import *
-
-            >>> hist = vbt.Histogram(
-            ...     data=[[1, 2], [3, 4], [2, 1]],
-            ...     trace_names=['a', 'b']
-            ... )
-            >>> hist.fig.show()
-            ```
-
-            ![](/assets/images/api/Histogram.light.svg#only-light){: .iimg loading=lazy }
-            ![](/assets/images/api/Histogram.dark.svg#only-dark){: .iimg loading=lazy }
-        """
-        Configured.__init__(
+        TraceType.__init__(
             self,
             data=data,
             trace_names=trace_names,
@@ -648,7 +659,26 @@ class Histogram(Configured, TraceUpdater):
                 )
 
 
-class Box(Configured, TraceUpdater):
+class Box(TraceType, TraceUpdater):
+    """Box plot.
+
+    For keyword arguments, see `Histogram`.
+
+    Usage:
+        ```pycon
+        >>> from vectorbtpro import *
+
+        >>> box = vbt.Box(
+        ...     data=[[1, 2], [3, 4], [2, 1]],
+        ...     trace_names=['a', 'b']
+        ... )
+        >>> box.fig.show()
+        ```
+
+        ![](/assets/images/api/Box.light.svg#only-light){: .iimg loading=lazy }
+        ![](/assets/images/api/Box.dark.svg#only-dark){: .iimg loading=lazy }
+    """
+
     def __init__(
         self,
         data: tp.Optional[tp.ArrayLike] = None,
@@ -663,25 +693,7 @@ class Box(Configured, TraceUpdater):
         fig: tp.Optional[tp.BaseFigure] = None,
         **layout_kwargs,
     ) -> None:
-        """Create a box plot.
-
-        For keyword arguments, see `Histogram`.
-
-        Usage:
-            ```pycon
-            >>> from vectorbtpro import *
-
-            >>> box = vbt.Box(
-            ...     data=[[1, 2], [3, 4], [2, 1]],
-            ...     trace_names=['a', 'b']
-            ... )
-            >>> box.fig.show()
-            ```
-
-            ![](/assets/images/api/Box.light.svg#only-light){: .iimg loading=lazy }
-            ![](/assets/images/api/Box.dark.svg#only-dark){: .iimg loading=lazy }
-        """
-        Configured.__init__(
+        TraceType.__init__(
             self,
             data=data,
             trace_names=trace_names,
@@ -809,7 +821,39 @@ class Box(Configured, TraceUpdater):
                 )
 
 
-class Heatmap(Configured, TraceUpdater):
+class Heatmap(TraceType, TraceUpdater):
+    """Heatmap plot.
+
+    Args:
+        data (array_like): Data in any format that can be converted to NumPy.
+
+            Must be of shape (`y_labels`, `x_labels`).
+        x_labels (array_like): X-axis labels, corresponding to columns in pandas.
+        y_labels (array_like): Y-axis labels, corresponding to index in pandas.
+        is_x_category (bool): Whether X-axis is a categorical axis.
+        is_y_category (bool): Whether Y-axis is a categorical axis.
+        trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Heatmap`.
+        add_trace_kwargs (dict): Keyword arguments passed to `add_trace`.
+        make_figure_kwargs (dict): Keyword arguments passed to `vectorbtpro.utils.figure.make_figure`.
+        fig (Figure or FigureWidget): Figure to add traces to.
+        **layout_kwargs: Keyword arguments for layout.
+
+    Usage:
+        ```pycon
+        >>> from vectorbtpro import *
+
+        >>> heatmap = vbt.Heatmap(
+        ...     data=[[1, 2], [3, 4]],
+        ...     x_labels=['a', 'b'],
+        ...     y_labels=['x', 'y']
+        ... )
+        >>> heatmap.fig.show()
+        ```
+
+        ![](/assets/images/api/Heatmap.light.svg#only-light){: .iimg loading=lazy }
+        ![](/assets/images/api/Heatmap.dark.svg#only-dark){: .iimg loading=lazy }
+    """
+
     def __init__(
         self,
         data: tp.Optional[tp.ArrayLike] = None,
@@ -823,38 +867,7 @@ class Heatmap(Configured, TraceUpdater):
         fig: tp.Optional[tp.BaseFigure] = None,
         **layout_kwargs,
     ) -> None:
-        """Create a heatmap plot.
-
-        Args:
-            data (array_like): Data in any format that can be converted to NumPy.
-
-                Must be of shape (`y_labels`, `x_labels`).
-            x_labels (array_like): X-axis labels, corresponding to columns in pandas.
-            y_labels (array_like): Y-axis labels, corresponding to index in pandas.
-            is_x_category (bool): Whether X-axis is a categorical axis.
-            is_y_category (bool): Whether Y-axis is a categorical axis.
-            trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Heatmap`.
-            add_trace_kwargs (dict): Keyword arguments passed to `add_trace`.
-            make_figure_kwargs (dict): Keyword arguments passed to `vectorbtpro.utils.figure.make_figure`.
-            fig (Figure or FigureWidget): Figure to add traces to.
-            **layout_kwargs: Keyword arguments for layout.
-
-        Usage:
-            ```pycon
-            >>> from vectorbtpro import *
-
-            >>> heatmap = vbt.Heatmap(
-            ...     data=[[1, 2], [3, 4]],
-            ...     x_labels=['a', 'b'],
-            ...     y_labels=['x', 'y']
-            ... )
-            >>> heatmap.fig.show()
-            ```
-
-            ![](/assets/images/api/Heatmap.light.svg#only-light){: .iimg loading=lazy }
-            ![](/assets/images/api/Heatmap.dark.svg#only-dark){: .iimg loading=lazy }
-        """
-        Configured.__init__(
+        TraceType.__init__(
             self,
             data=data,
             x_labels=x_labels,
@@ -939,7 +952,44 @@ class Heatmap(Configured, TraceUpdater):
             self.update_trace(self.traces[0], data)
 
 
-class Volume(Configured, TraceUpdater):
+class Volume(TraceType, TraceUpdater):
+    """Volume plot.
+
+    Args:
+        data (array_like): Data in any format that can be converted to NumPy.
+
+            Must be a 3-dim array.
+        x_labels (array_like): X-axis labels.
+        y_labels (array_like): Y-axis labels.
+        z_labels (array_like): Z-axis labels.
+        trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Volume`.
+        add_trace_kwargs (dict): Keyword arguments passed to `add_trace`.
+        scene_name (str): Reference to the 3D scene.
+        make_figure_kwargs (dict): Keyword arguments passed to `vectorbtpro.utils.figure.make_figure`.
+        fig (Figure or FigureWidget): Figure to add traces to.
+        **layout_kwargs: Keyword arguments for layout.
+
+    !!! note
+        Figure widgets have currently problems displaying NaNs.
+        Use `.show()` method for rendering.
+
+    Usage:
+        ```pycon
+        >>> from vectorbtpro import *
+
+        >>> volume = vbt.Volume(
+        ...     data=np.random.randint(1, 10, size=(3, 3, 3)),
+        ...     x_labels=['a', 'b', 'c'],
+        ...     y_labels=['d', 'e', 'f'],
+        ...     z_labels=['g', 'h', 'i']
+        ... )
+        >>> volume.fig.show()
+        ```
+
+        ![](/assets/images/api/Volume.light.svg#only-light){: .iimg loading=lazy }
+        ![](/assets/images/api/Volume.dark.svg#only-dark){: .iimg loading=lazy }
+    """
+
     def __init__(
         self,
         data: tp.Optional[tp.ArrayLike] = None,
@@ -953,43 +1003,7 @@ class Volume(Configured, TraceUpdater):
         fig: tp.Optional[tp.BaseFigure] = None,
         **layout_kwargs,
     ) -> None:
-        """Create a volume plot.
-
-        Args:
-            data (array_like): Data in any format that can be converted to NumPy.
-
-                Must be a 3-dim array.
-            x_labels (array_like): X-axis labels.
-            y_labels (array_like): Y-axis labels.
-            z_labels (array_like): Z-axis labels.
-            trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Volume`.
-            add_trace_kwargs (dict): Keyword arguments passed to `add_trace`.
-            scene_name (str): Reference to the 3D scene.
-            make_figure_kwargs (dict): Keyword arguments passed to `vectorbtpro.utils.figure.make_figure`.
-            fig (Figure or FigureWidget): Figure to add traces to.
-            **layout_kwargs: Keyword arguments for layout.
-
-        !!! note
-            Figure widgets have currently problems displaying NaNs.
-            Use `.show()` method for rendering.
-
-        Usage:
-            ```pycon
-            >>> from vectorbtpro import *
-
-            >>> volume = vbt.Volume(
-            ...     data=np.random.randint(1, 10, size=(3, 3, 3)),
-            ...     x_labels=['a', 'b', 'c'],
-            ...     y_labels=['d', 'e', 'f'],
-            ...     z_labels=['g', 'h', 'i']
-            ... )
-            >>> volume.fig.show()
-            ```
-
-            ![](/assets/images/api/Volume.light.svg#only-light){: .iimg loading=lazy }
-            ![](/assets/images/api/Volume.dark.svg#only-dark){: .iimg loading=lazy }
-        """
-        Configured.__init__(
+        TraceType.__init__(
             self,
             data=data,
             x_labels=x_labels,

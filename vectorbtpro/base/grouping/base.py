@@ -173,15 +173,6 @@ class Grouper(Configured):
             **kwargs,
         )
 
-    _expected_keys: tp.ExpectedKeys = (Configured._expected_keys or set()) | {
-        "index",
-        "group_by",
-        "def_lvl_name",
-        "allow_enable",
-        "allow_disable",
-        "allow_modify",
-    }
-
     def __init__(
         self,
         index: tp.Index,

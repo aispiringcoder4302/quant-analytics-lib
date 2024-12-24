@@ -938,38 +938,6 @@ class Parameterizer(Configured):
 
     _settings_path: tp.SettingsPath = "params"
 
-    _expected_keys: tp.ExpectedKeys = (Configured._expected_keys or set()) | {
-        "param_search_kwargs",
-        "skip_single_comb",
-        "template_context",
-        "build_grid",
-        "grid_indices",
-        "random_subset",
-        "random_replace",
-        "random_sort",
-        "max_guesses",
-        "max_misses",
-        "seed",
-        "clean_index_kwargs",
-        "name_tuple_to_str",
-        "selection",
-        "forward_kwargs_as",
-        "mono_min_size",
-        "mono_n_chunks",
-        "mono_chunk_len",
-        "mono_chunk_meta",
-        "mono_reduce",
-        "mono_merge_func",
-        "mono_merge_kwargs",
-        "filter_results",
-        "raise_no_results",
-        "merge_func",
-        "merge_kwargs",
-        "return_meta",
-        "return_param_index",
-        "execute_kwargs",
-    }
-
     def __init__(
         self,
         param_search_kwargs: tp.KwargsLike = None,

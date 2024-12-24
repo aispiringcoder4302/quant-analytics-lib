@@ -43,10 +43,6 @@ class SignalFactory(IndicatorFactory):
     Other arguments are passed to `vectorbtpro.indicators.factory.IndicatorFactory`.
     """
 
-    _expected_keys: tp.ExpectedKeys = (IndicatorFactory._expected_keys or set()) | {
-        "mode",
-    }
-
     def __init__(
         self,
         *args,

@@ -24,7 +24,7 @@ __all__ = []
 
 
 class MetaStatsBuilderMixin(type):
-    """Meta class that exposes a read-only class property `StatsBuilderMixin.metrics`."""
+    """Metaclass for `StatsBuilderMixin`."""
 
     @property
     def metrics(cls) -> Config:

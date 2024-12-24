@@ -120,10 +120,6 @@ class OHLCVDFAccessor(OHLCDataMixin, GenericDFAccessor):
 
     Accessible via `pd.DataFrame.vbt.ohlcv`."""
 
-    _expected_keys: tp.ExpectedKeys = (GenericDFAccessor._expected_keys or set()) | {
-        "feature_map",
-    }
-
     def __init__(
         self,
         wrapper: tp.Union[ArrayWrapper, tp.ArrayLike],

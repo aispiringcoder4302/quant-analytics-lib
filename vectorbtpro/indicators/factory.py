@@ -1229,16 +1229,6 @@ class IndicatorBase(Analyzable):
         kwargs = cls.resolve_stack_kwargs(*objs, **kwargs)
         return cls(**kwargs)
 
-    _expected_keys: tp.ExpectedKeys = (Analyzable._expected_keys or set()) | {
-        "input_list",
-        "input_mapper",
-        "in_output_list",
-        "output_list",
-        "param_list",
-        "mapper_list",
-        "short_name",
-    }
-
     def __init__(
         self,
         wrapper: ArrayWrapper,
@@ -1597,24 +1587,65 @@ class IndicatorBase(Analyzable):
 
 
 class IndicatorFactory(Configured):
-    _expected_keys: tp.ExpectedKeys = (Configured._expected_keys or set()) | {
-        "class_name",
-        "class_docstring",
-        "module_name",
-        "short_name",
-        "prepend_name",
-        "input_names",
-        "param_names",
-        "in_output_names",
-        "output_names",
-        "output_flags",
-        "lazy_outputs",
-        "attr_settings",
-        "metrics",
-        "stats_defaults",
-        "subplots",
-        "plots_defaults",
-    }
+    """A factory for creating new indicators.
+
+    Initialize `IndicatorFactory` to create a skeleton and then use a class method
+    such as `IndicatorFactory.with_custom_func` to bind a calculation function to the skeleton.
+
+    Args:
+        class_name (str): Name for the created indicator class.
+        class_docstring (str): Docstring for the created indicator class.
+        module_name (str): Name of the module the class originates from.
+        short_name (str): Short name of the indicator.
+
+            Defaults to lower-case `class_name`.
+        prepend_name (bool): Whether to prepend `short_name` to each parameter level.
+        input_names (list of str): List with input names.
+        param_names (list of str): List with parameter names.
+        in_output_names (list of str): List with in-output names.
+
+            An in-place output is an output that is not returned but modified in-place.
+            Some advantages of such outputs include:
+
+            1) they don't need to be returned,
+            2) they can be passed between functions as easily as inputs,
+            3) they can be provided with already allocated data to safe memory,
+            4) if data or default value are not provided, they are created empty to not occupy memory.
+        output_names (list of str): List with output names.
+        output_flags (dict): Dictionary of in-place and regular output flags.
+        lazy_outputs (dict): Dictionary with user-defined functions that will be
+            bound to the indicator class and wrapped with `property` if not already wrapped.
+        attr_settings (dict): Dictionary with attribute settings.
+
+            Attributes can be `input_names`, `in_output_names`, `output_names`, and `lazy_outputs`.
+
+            Following keys are accepted:
+
+            * `dtype`: Data type used to determine which methods to generate around this attribute.
+                Set to None to disable. Default is `float_`. Can be set to instance of
+                `collections.namedtuple` acting as enumerated type, or any other mapping;
+                It will then create a property with suffix `readable` that contains data in a string format.
+            * `enum_unkval`: Value to be considered as unknown. Applies to enumerated data types only.
+            * `make_cacheable`: Whether to make the property cacheable. Applies to inputs only.
+        metrics (dict): Metrics supported by `vectorbtpro.generic.stats_builder.StatsBuilderMixin.stats`.
+
+            If dict, will be converted to `vectorbtpro.utils.config.Config`.
+        stats_defaults (callable or dict): Defaults for `vectorbtpro.generic.stats_builder.StatsBuilderMixin.stats`.
+
+            If dict, will be converted into a property.
+        subplots (dict): Subplots supported by `vectorbtpro.generic.plots_builder.PlotsBuilderMixin.plots`.
+
+            If dict, will be converted to `vectorbtpro.utils.config.Config`.
+        plots_defaults (callable or dict): Defaults for `vectorbtpro.generic.plots_builder.PlotsBuilderMixin.plots`.
+
+            If dict, will be converted into a property.
+        **kwargs: Custom keyword arguments passed to the config.
+
+    !!! note
+        The `__init__` method is not used for running the indicator, for this use `run`.
+        The reason for this is indexing, which requires a clean `__init__` method for creating
+        a new indicator object with newly indexed attributes.
+    """
 
     def __init__(
         self,
@@ -1636,65 +1667,6 @@ class IndicatorFactory(Configured):
         plots_defaults: tp.Union[None, tp.Callable, tp.Kwargs] = None,
         **kwargs,
     ) -> None:
-        """A factory for creating new indicators.
-
-        Initialize `IndicatorFactory` to create a skeleton and then use a class method
-        such as `IndicatorFactory.with_custom_func` to bind a calculation function to the skeleton.
-
-        Args:
-            class_name (str): Name for the created indicator class.
-            class_docstring (str): Docstring for the created indicator class.
-            module_name (str): Name of the module the class originates from.
-            short_name (str): Short name of the indicator.
-
-                Defaults to lower-case `class_name`.
-            prepend_name (bool): Whether to prepend `short_name` to each parameter level.
-            input_names (list of str): List with input names.
-            param_names (list of str): List with parameter names.
-            in_output_names (list of str): List with in-output names.
-
-                An in-place output is an output that is not returned but modified in-place.
-                Some advantages of such outputs include:
-
-                1) they don't need to be returned,
-                2) they can be passed between functions as easily as inputs,
-                3) they can be provided with already allocated data to safe memory,
-                4) if data or default value are not provided, they are created empty to not occupy memory.
-            output_names (list of str): List with output names.
-            output_flags (dict): Dictionary of in-place and regular output flags.
-            lazy_outputs (dict): Dictionary with user-defined functions that will be
-                bound to the indicator class and wrapped with `property` if not already wrapped.
-            attr_settings (dict): Dictionary with attribute settings.
-
-                Attributes can be `input_names`, `in_output_names`, `output_names`, and `lazy_outputs`.
-
-                Following keys are accepted:
-
-                * `dtype`: Data type used to determine which methods to generate around this attribute.
-                    Set to None to disable. Default is `float_`. Can be set to instance of
-                    `collections.namedtuple` acting as enumerated type, or any other mapping;
-                    It will then create a property with suffix `readable` that contains data in a string format.
-                * `enum_unkval`: Value to be considered as unknown. Applies to enumerated data types only.
-                * `make_cacheable`: Whether to make the property cacheable. Applies to inputs only.
-            metrics (dict): Metrics supported by `vectorbtpro.generic.stats_builder.StatsBuilderMixin.stats`.
-
-                If dict, will be converted to `vectorbtpro.utils.config.Config`.
-            stats_defaults (callable or dict): Defaults for `vectorbtpro.generic.stats_builder.StatsBuilderMixin.stats`.
-
-                If dict, will be converted into a property.
-            subplots (dict): Subplots supported by `vectorbtpro.generic.plots_builder.PlotsBuilderMixin.plots`.
-
-                If dict, will be converted to `vectorbtpro.utils.config.Config`.
-            plots_defaults (callable or dict): Defaults for `vectorbtpro.generic.plots_builder.PlotsBuilderMixin.plots`.
-
-                If dict, will be converted into a property.
-            **kwargs: Custom keyword arguments passed to the config.
-
-        !!! note
-            The `__init__` method is not used for running the indicator, for this use `run`.
-            The reason for this is indexing, which requires a clean `__init__` method for creating
-            a new indicator object with newly indexed attributes.
-        """
         Configured.__init__(
             self,
             class_name=class_name,

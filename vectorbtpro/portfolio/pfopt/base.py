@@ -1764,11 +1764,6 @@ class PortfolioOptimizer(Analyzable):
         kwargs = cls.resolve_stack_kwargs(*objs, **kwargs)
         return cls(**kwargs)
 
-    _expected_keys: tp.ExpectedKeys = (Analyzable._expected_keys or set()) | {
-        "alloc_records",
-        "allocations",
-    }
-
     def __init__(
         self,
         wrapper: ArrayWrapper,

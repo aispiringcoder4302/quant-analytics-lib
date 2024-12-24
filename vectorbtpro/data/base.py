@@ -466,8 +466,8 @@ class OHLCDataMixin(BaseDataMixin):
 DataT = tp.TypeVar("DataT", bound="Data")
 
 
-class MetaFeatures(type):
-    """Meta class that exposes a read-only class property `MetaFeatures.feature_config`."""
+class MetaData(type(Analyzable)):
+    """Metaclass for `Data`."""
 
     @property
     def feature_config(cls) -> Config:
@@ -475,26 +475,8 @@ class MetaFeatures(type):
         return cls._feature_config
 
 
-class DataWithFeatures(Base, metaclass=MetaFeatures):
-    """Class exposes a read-only class property `DataWithFeatures.field_config`."""
-
-    @property
-    def feature_config(self) -> Config:
-        """Feature config of `${cls_name}`.
-
-        ```python
-        ${feature_config}
-        ```
-        """
-        return self._feature_config
-
-
-class MetaData(type(Analyzable), type(DataWithFeatures)):
-    pass
-
-
 @attach_symbol_dict_methods
-class Data(Analyzable, DataWithFeatures, OHLCDataMixin, metaclass=MetaData):
+class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
     """Class that downloads, updates, and manages data coming from a data source."""
 
     _settings_path: tp.SettingsPath = dict(base="data")
@@ -732,21 +714,6 @@ class Data(Analyzable, DataWithFeatures, OHLCDataMixin, metaclass=MetaData):
         kwargs = cls.resolve_stack_kwargs(*objs, **kwargs)
         kwargs = cls.fix_dict_types_in_kwargs(type(kwargs["data"]), **kwargs)
         return cls(**kwargs)
-
-    _expected_keys: tp.ExpectedKeys = (Analyzable._expected_keys or set()) | {
-        "data",
-        "single_key",
-        "classes",
-        "level_name",
-        "fetch_kwargs",
-        "returned_kwargs",
-        "last_index",
-        "delisted",
-        "tz_localize",
-        "tz_convert",
-        "missing_index",
-        "missing_columns",
-    }
 
     def __init__(
         self,

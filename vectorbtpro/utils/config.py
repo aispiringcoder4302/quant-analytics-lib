@@ -14,6 +14,7 @@ from vectorbtpro.utils.chaining import Chainable
 from vectorbtpro.utils.checks import Comparable, is_deep_equal, assert_in, assert_instance_of
 from vectorbtpro.utils.decorators import hybrid_method
 from vectorbtpro.utils.formatting import Prettified, prettify_dict, prettify_inited
+from vectorbtpro.utils.parsing import get_func_arg_names
 from vectorbtpro.utils.pickling import RecState, Pickleable, pdict
 
 __all__ = [
@@ -296,7 +297,7 @@ def reorder_list(lst: list, keys: tp.Iterable[tp.Union[int, type(...)]], skip_mi
 
 
 class _unsetkey:
-    pass
+    """Sentinel class for unsetting keys."""
 
 
 unsetkey = _unsetkey()
@@ -1333,7 +1334,54 @@ class HasSettings(Base):
         cls_cfg.reset(force=True)
 
 
-class Configured(HasSettings, Cacheable, Comparable, Pickleable, Prettified, Chainable):
+class MetaConfigured(type):
+    """Metaclass for `Configured`."""
+
+    def __init__(cls, name: str, bases: tp.Tuple[tp.Type, ...], attrs: dict) -> None:
+        super().__init__(name, bases, attrs)
+
+        if hasattr(cls, "_expected_keys_mode"):
+            _expected_keys_mode = getattr(cls, "_expected_keys_mode")
+            if _expected_keys_mode.lower() == "auto":
+                _expected_keys = set()
+                for base in bases:
+                    if hasattr(base, "_expected_keys_mode"):
+                        base_expected_keys_mode = getattr(base, "_expected_keys_mode")
+                        if base_expected_keys_mode.lower() == "disable":
+                            _expected_keys = None
+                            break
+                        if hasattr(base, "_expected_keys"):
+                            _expected_keys |= getattr(base, "_expected_keys")
+                if _expected_keys is None:
+                    setattr(cls, "_expected_keys_mode", "disable")
+                    setattr(cls, "_expected_keys", None)
+                else:
+                    _expected_keys |= set(get_func_arg_names(cls.__init__))
+                    setattr(cls, "_expected_keys", _expected_keys)
+            elif _expected_keys_mode.lower() == "inherit":
+                _expected_keys_mode = getattr(cls, "_expected_keys_mode")
+                if _expected_keys_mode.lower() == "auto":
+                    _expected_keys = set()
+                    for base in bases:
+                        if hasattr(base, "_expected_keys_mode"):
+                            base_expected_keys_mode = getattr(base, "_expected_keys_mode")
+                            if base_expected_keys_mode.lower() == "disable":
+                                _expected_keys = None
+                                break
+                            if hasattr(base, "_expected_keys"):
+                                _expected_keys |= getattr(base, "_expected_keys")
+                    if _expected_keys is None:
+                        setattr(cls, "_expected_keys_mode", "disable")
+                        setattr(cls, "_expected_keys", None)
+                    else:
+                        setattr(cls, "_expected_keys", _expected_keys)
+            elif _expected_keys_mode.lower() == "disable":
+                setattr(cls, "_expected_keys", None)
+            elif not _expected_keys_mode.lower() == "custom":
+                raise ValueError(f"Invalid expected keys mode: '{_expected_keys_mode}'")
+
+
+class Configured(HasSettings, Cacheable, Comparable, Pickleable, Prettified, Chainable, metaclass=MetaConfigured):
     """Class with an initialization config.
 
     All subclasses of `Configured` are initialized using `Config`, which makes it easier to pickle.
@@ -1345,6 +1393,17 @@ class Configured(HasSettings, Cacheable, Comparable, Pickleable, Prettified, Cha
         or if any `Configured.__init__` argument depends upon global defaults,
         their values won't be copied over. Make sure to pass them explicitly to
         make that the saved & loaded / copied instance is resilient to any changes in globals."""
+
+    _expected_keys_mode: tp.ExpectedKeysMode = "auto"
+    """Mode of expected keys.
+    
+    Following options are accepted:
+    
+    * "auto": Combine keys from bases and signature. Becomes disabled if any bases are disabled.
+    * "inherit": Combine keys from bases only. Becomes disabled if any bases are disabled.
+    * "disable": Don't check keys
+    * "custom": Custom keys are provided
+    """
 
     _expected_keys: tp.ExpectedKeys = None
     """Set of expected keys."""

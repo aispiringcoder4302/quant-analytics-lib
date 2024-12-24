@@ -309,10 +309,6 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
     Accessible via `pd.Series.vbt` and `pd.DataFrame.vbt`."""
 
-    _expected_keys: tp.ExpectedKeys = (BaseAccessor._expected_keys or set()) | {
-        "mapping",
-    }
-
     def __init__(
         self,
         wrapper: tp.Union[ArrayWrapper, tp.ArrayLike],

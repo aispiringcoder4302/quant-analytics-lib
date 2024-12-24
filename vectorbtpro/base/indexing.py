@@ -461,6 +461,8 @@ def build_param_indexer(
     """
 
     class ParamIndexer(IndexingBase):
+        """Class with parameter indexing."""
+
         def __init__(
             self,
             param_mappers: tp.Sequence[tp.Series],

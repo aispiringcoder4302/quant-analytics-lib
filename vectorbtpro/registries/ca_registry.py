@@ -445,7 +445,7 @@ __pdoc__ = {}
 
 
 class _GARBAGE:
-    pass
+    """Sentinel class for garbage."""
 
 
 def is_cacheable_function(cacheable: tp.Any) -> bool:

@@ -154,13 +154,6 @@ class PriceRecords(Records):
                     kwargs[price_name] = new_price.values
         return kwargs
 
-    _expected_keys: tp.ExpectedKeys = (Records._expected_keys or set()) | {
-        "open",
-        "high",
-        "low",
-        "close",
-    }
-
     def __init__(
         self,
         wrapper: ArrayWrapper,

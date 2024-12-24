@@ -144,7 +144,7 @@ def flatten_annotations(
 
 
 class MetaAnnotatable(type):
-    """Metaclass that can be used in annotations."""
+    """Metaclass for `Annotatable`."""
 
     def __or__(cls, other: tp.Annotation) -> tp.Annotation:
         return Union(cls, other).resolve()

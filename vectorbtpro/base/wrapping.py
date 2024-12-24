@@ -432,19 +432,6 @@ class ArrayWrapper(Configured, IndexApplier, ExtPandasIndexer, Itemable, Paramab
 
         return cls(**ArrayWrapper.resolve_stack_kwargs(*wrappers, **kwargs))
 
-    _expected_keys: tp.ExpectedKeys = (Configured._expected_keys or set()) | {
-        "index",
-        "columns",
-        "ndim",
-        "freq",
-        "parse_index",
-        "column_only_select",
-        "range_only_select",
-        "group_select",
-        "grouped_ndim",
-        "grouper",
-    }
-
     def __init__(
         self,
         index: tp.IndexLike,
@@ -2036,10 +2023,6 @@ class Wrapping(Configured, IndexApplier, ExtPandasIndexer, AttrResolverMixin, It
 
         Should use `ArrayWrapper.column_stack`."""
         raise NotImplementedError
-
-    _expected_keys: tp.ExpectedKeys = (Configured._expected_keys or set()) | {
-        "wrapper",
-    }
 
     def __init__(self, wrapper: ArrayWrapper, **kwargs) -> None:
         checks.assert_instance_of(wrapper, ArrayWrapper)

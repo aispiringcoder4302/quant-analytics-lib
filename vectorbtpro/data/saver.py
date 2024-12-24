@@ -32,11 +32,6 @@ class DataSaver(DataUpdater):
         **kwargs: Keyword arguments passed to the constructor of `DataUpdater`.
     """
 
-    _expected_keys: tp.ExpectedKeys = (DataUpdater._expected_keys or set()) | {
-        "save_kwargs",
-        "init_save_kwargs",
-    }
-
     def __init__(
         self,
         data: Data,

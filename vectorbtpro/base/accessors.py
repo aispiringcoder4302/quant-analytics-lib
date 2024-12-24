@@ -51,11 +51,6 @@ class BaseIDXAccessor(Configured, IndexApplier):
 
     Accessible via `pd.Index.vbt` and all child accessors."""
 
-    _expected_keys: tp.ExpectedKeys = (Configured._expected_keys or set()) | {
-        "obj",
-        "freq",
-    }
-
     def __init__(self, obj: tp.Index, freq: tp.Optional[tp.FrequencyLike] = None, **kwargs) -> None:
         checks.assert_instance_of(obj, pd.Index)
 
@@ -713,10 +708,6 @@ class BaseAccessor(Wrapping):
         kwargs = cls.resolve_column_stack_kwargs(*objs, **kwargs)
         kwargs = cls.resolve_stack_kwargs(*objs, **kwargs)
         return cls.df_accessor_cls(**kwargs)
-
-    _expected_keys: tp.ExpectedKeys = (Wrapping._expected_keys or set()) | {
-        "obj",
-    }
 
     def __init__(
         self,

@@ -2410,6 +2410,7 @@ class TestFactory:
         assert test_attr_list == [
             "_config",
             "_expected_keys",
+            "_expected_keys_mode",
             "_iloc",
             "_in_out",
             "_in_output_names",

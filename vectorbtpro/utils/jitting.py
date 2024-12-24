@@ -20,8 +20,7 @@ class Jitter(Configured):
     When overriding `Jitter.decorate`, make sure to check whether wrapping is disabled
     globally using `Jitter.wrapping_disabled`."""
 
-    def __init__(self, **kwargs) -> None:
-        Configured.__init__(self, **kwargs)
+    _expected_keys_mode: tp.ExpectedKeysMode = "disable"
 
     @property
     def wrapping_disabled(self) -> bool:

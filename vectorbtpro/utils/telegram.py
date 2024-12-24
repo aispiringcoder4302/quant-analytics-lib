@@ -153,6 +153,8 @@ if __version_info__ < (20, 0, 0, "alpha", 1):
             ```
         """
 
+        _expected_keys_mode: tp.ExpectedKeysMode = "disable"
+
         def __init__(self, giphy_kwargs: tp.KwargsLike = None, **kwargs) -> None:
             from vectorbtpro._settings import settings
 
@@ -495,6 +497,8 @@ else:
                 bot.start()
             ```
         """
+
+        _expected_keys_mode: tp.ExpectedKeysMode = "disable"
 
         def __init__(self, giphy_kwargs: tp.KwargsLike = None, **kwargs) -> None:
             from vectorbtpro._settings import settings

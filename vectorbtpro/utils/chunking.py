@@ -1016,25 +1016,6 @@ class Chunker(Configured):
 
     _settings_path: tp.SettingsPath = "chunking"
 
-    _expected_keys: tp.ExpectedKeys = (Configured._expected_keys or set()) | {
-        "size",
-        "min_size",
-        "n_chunks",
-        "chunk_len",
-        "chunk_meta",
-        "skip_single_chunk",
-        "arg_take_spec",
-        "template_context",
-        "prepend_chunk_meta",
-        "merge_func",
-        "merge_kwargs",
-        "return_raw_chunks",
-        "silence_warnings",
-        "forward_kwargs_as",
-        "execute_kwargs",
-        "disable",
-    }
-
     def __init__(
         self,
         size: tp.Optional[int] = None,

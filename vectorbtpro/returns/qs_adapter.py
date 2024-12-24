@@ -227,11 +227,6 @@ QSAdapterT = tp.TypeVar("QSAdapterT", bound="QSAdapter")
 class QSAdapter(Configured):
     """Adapter class for quantstats."""
 
-    _expected_keys: tp.ExpectedKeys = (Configured._expected_keys or set()) | {
-        "returns_acc",
-        "defaults",
-    }
-
     def __init__(self, returns_acc: ReturnsAccessor, defaults: tp.KwargsLike = None, **kwargs) -> None:
         checks.assert_instance_of(returns_acc, ReturnsAccessor)
 

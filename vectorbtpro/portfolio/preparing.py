@@ -68,8 +68,15 @@ class PFPrepResult(Configured):
         target_func: tp.Optional[tp.Callable] = None,
         target_args: tp.Optional[tp.Kwargs] = None,
         pf_args: tp.Optional[tp.Kwargs] = None,
+        **kwargs,
     ) -> None:
-        Configured.__init__(self, target_func=target_func, target_args=target_args, pf_args=pf_args)
+        Configured.__init__(
+            self,
+            target_func=target_func,
+            target_args=target_args,
+            pf_args=pf_args,
+            **kwargs,
+        )
 
     @cachedproperty
     def target_func(self) -> tp.Optional[tp.Callable]:

@@ -168,12 +168,6 @@ USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36
 class TVClient(Configured):
     """Client for TradingView."""
 
-    _expected_keys: tp.ExpectedKeys = (Configured._expected_keys or set()) | {
-        "username",
-        "password",
-        "auth_token",
-    }
-
     def __init__(
         self,
         username: tp.Optional[str] = None,

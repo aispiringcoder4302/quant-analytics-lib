@@ -63,14 +63,6 @@ class ChatContentProcessor(Configured):
 
     _settings_path: tp.SettingsPath = "knowledge"
 
-    _expected_keys: tp.ExpectedKeys = (Configured._expected_keys or set()) | {
-        "output_to",
-        "flush_output",
-        "buffer_output",
-        "close_output",
-        "update_interval",
-    }
-
     def __init__(
         self,
         output_to: tp.Optional[tp.Union[str, tp.TextIO]] = None,
@@ -318,10 +310,6 @@ class IPythonMarkdownDisplayer(IPythonDisplayer):
 
     Used as `display_format="ipython_markdown"` in `KnowledgeAsset.chat`."""
 
-    _expected_keys: tp.ExpectedKeys = (ChatContentProcessor._expected_keys or set()) | {
-        "to_markdown_kwargs",
-    }
-
     def __init__(self, *args, to_markdown_kwargs: tp.KwargsLike = None, **kwargs) -> None:
         IPythonDisplayer.__init__(
             self,
@@ -352,11 +340,6 @@ class IPythonHTMLDisplayer(IPythonDisplayer):
     """Class for displaying HTML content in IPython.
 
     Used as `display_format="ipython_html"` in `KnowledgeAsset.chat`."""
-
-    _expected_keys: tp.ExpectedKeys = (ChatContentProcessor._expected_keys or set()) | {
-        "to_markdown_kwargs",
-        "to_html_kwargs",
-    }
 
     def __init__(
         self,
@@ -404,21 +387,6 @@ class HTMLFileDisplayer(ChatContentProcessor):
     """Class for displaying static HTML files.
 
     Used as `display_format="html"` in `KnowledgeAsset.chat`."""
-
-    _expected_keys: tp.ExpectedKeys = (ChatContentProcessor._expected_keys or set()) | {
-        "page_title",
-        "refresh_page",
-        "cache",
-        "cache_dir",
-        "cache_mkdir_kwargs",
-        "clear_cache",
-        "file_prefix_len",
-        "file_suffix_len",
-        "open_browser",
-        "to_markdown_kwargs",
-        "to_html_kwargs",
-        "format_html_kwargs",
-    }
 
     def __init__(
         self,
@@ -642,7 +610,12 @@ KnowledgeAssetT = tp.TypeVar("KnowledgeAssetT", bound="KnowledgeAsset")
 MaybeKnowledgeAssetT = tp.Union[KnowledgeAssetT, list, dict]
 
 
-class KnowledgeAsset(Configured, MutableSequence):
+class MetaKnowledgeAsset(type(Configured), type(MutableSequence)):
+    """Metaclass for `KnowledgeAsset`."""
+    pass
+
+
+class KnowledgeAsset(Configured, MutableSequence, metaclass=MetaKnowledgeAsset):
     """Class for working with a knowledge asset.
 
     This class behaves like a mutable sequence.
@@ -650,11 +623,6 @@ class KnowledgeAsset(Configured, MutableSequence):
     For defaults, see `vectorbtpro._settings.knowledge`."""
 
     _settings_path: tp.SettingsPath = "knowledge"
-
-    _expected_keys: tp.ExpectedKeys = (Configured._expected_keys or set()) | {
-        "data",
-        "single_item",
-    }
 
     @hybrid_method
     def combine(

@@ -63,8 +63,8 @@ __pdoc__[
 """
 
 
-class MetaArgs(type):
-    """Meta class that exposes a read-only class property `MetaArgs.arg_config`."""
+class MetaBasePreparer(type(Configured)):
+    """Metaclass for `BasePreparer`."""
 
     @property
     def arg_config(cls) -> Config:
@@ -74,11 +74,13 @@ class MetaArgs(type):
 
 @attach_arg_properties
 @override_arg_config(base_arg_config)
-class BasePreparer(Configured, metaclass=MetaArgs):
+class BasePreparer(Configured, metaclass=MetaBasePreparer):
     """Base class for preparing target functions and arguments.
 
     !!! warning
         Most properties are force-cached - create a new instance to override any attribute."""
+
+    _expected_keys_mode: tp.ExpectedKeysMode = "disable"
 
     _writeable_attrs: tp.WriteableAttrs = {"_arg_config"}
 

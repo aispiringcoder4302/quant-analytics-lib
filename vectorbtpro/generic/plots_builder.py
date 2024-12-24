@@ -22,7 +22,7 @@ __all__ = []
 
 
 class MetaPlotsBuilderMixin(type):
-    """Meta class that exposes a read-only class property `PlotsBuilderMixin.subplots`."""
+    """Metaclass for `PlotsBuilderMixin`."""
 
     @property
     def subplots(cls) -> Config:

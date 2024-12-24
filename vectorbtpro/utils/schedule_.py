@@ -26,6 +26,8 @@ logger = logging.getLogger(__name__)
 
 
 class CustomScheduler(Scheduler, Base):
+    """Custom scheduler."""
+
     def __init__(self) -> None:
         super(CustomScheduler, self).__init__()
 
@@ -34,6 +36,8 @@ CustomJobT = tp.TypeVar("CustomJobT", bound="CustomJob")
 
 
 class CustomJob(Job, Base):
+    """Custom job."""
+
     def __init__(self, interval: int, scheduler: tp.Optional[Scheduler] = None) -> None:
         super(CustomJob, self).__init__(interval, scheduler)
         self._zero_offset = False

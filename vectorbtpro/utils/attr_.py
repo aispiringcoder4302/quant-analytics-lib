@@ -28,7 +28,7 @@ __all__ = [
 
 
 class _Missing(enum.Enum):
-    """Sentinel that represents a missing value."""
+    """Sentinel class for missing values."""
 
     MISSING = enum.auto()
 

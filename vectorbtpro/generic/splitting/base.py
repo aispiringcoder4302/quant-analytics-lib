@@ -2004,11 +2004,6 @@ class Splitter(Analyzable):
         kwargs = cls.resolve_stack_kwargs(*objs, **kwargs)
         return cls(**kwargs)
 
-    _expected_keys: tp.ExpectedKeys = (Analyzable._expected_keys or set()) | {
-        "index",
-        "splits_arr",
-    }
-
     def __init__(
         self,
         wrapper: ArrayWrapper,

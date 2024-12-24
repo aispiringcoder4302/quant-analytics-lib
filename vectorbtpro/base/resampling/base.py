@@ -36,14 +36,6 @@ class Resampler(Configured):
             Set to False to force-set the frequency to None.
         silence_warnings (bool): Whether to silence all warnings."""
 
-    _expected_keys: tp.ExpectedKeys = (Configured._expected_keys or set()) | {
-        "source_index",
-        "target_index",
-        "source_freq",
-        "target_freq",
-        "silence_warnings",
-    }
-
     def __init__(
         self,
         source_index: tp.IndexLike,
@@ -51,6 +43,7 @@ class Resampler(Configured):
         source_freq: tp.Union[None, bool, tp.FrequencyLike] = None,
         target_freq: tp.Union[None, bool, tp.FrequencyLike] = None,
         silence_warnings: tp.Optional[bool] = None,
+        **kwargs,
     ) -> None:
         source_index = dt.prepare_dt_index(source_index)
         target_index = dt.prepare_dt_index(target_index)
@@ -82,6 +75,7 @@ class Resampler(Configured):
             source_freq=source_freq,
             target_freq=target_freq,
             silence_warnings=silence_warnings,
+            **kwargs,
         )
 
     @classmethod

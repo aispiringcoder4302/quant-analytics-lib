@@ -441,8 +441,8 @@ __pdoc__ = {}
 RecordsT = tp.TypeVar("RecordsT", bound="Records")
 
 
-class MetaFields(type):
-    """Meta class that exposes a read-only class property `MetaFields.field_config`."""
+class MetaRecords(type(Analyzable)):
+    """Metaclass for `Records`."""
 
     @property
     def field_config(cls) -> Config:
@@ -450,25 +450,7 @@ class MetaFields(type):
         return cls._field_config
 
 
-class RecordsWithFields(Base, metaclass=MetaFields):
-    """Class exposes a read-only class property `RecordsWithFields.field_config`."""
-
-    @property
-    def field_config(self) -> Config:
-        """Field config of `${cls_name}`.
-
-        ```python
-        ${field_config}
-        ```
-        """
-        return self._field_config
-
-
-class MetaRecords(type(Analyzable), type(RecordsWithFields)):
-    pass
-
-
-class Records(Analyzable, RecordsWithFields, metaclass=MetaRecords):
+class Records(Analyzable, metaclass=MetaRecords):
     """Wraps the actual records array (such as trades) and exposes methods for mapping
     it to some array of values (such as PnL of each trade).
 
@@ -762,11 +744,6 @@ class Records(Analyzable, RecordsWithFields, metaclass=MetaRecords):
         kwargs = cls.resolve_column_stack_kwargs(*objs, **kwargs)
         kwargs = cls.resolve_stack_kwargs(*objs, **kwargs)
         return cls(**kwargs)
-
-    _expected_keys: tp.ExpectedKeys = (Analyzable._expected_keys or set()) | {
-        "records_arr",
-        "col_mapper",
-    }
 
     def __init__(
         self,

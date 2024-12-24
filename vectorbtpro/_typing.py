@@ -191,6 +191,7 @@ ArgsKwargs = Tuple[Args, Kwargs]
 PathLike = Union[str, Path]
 SettingsPath = ClassVar[Union[None, Hashable, Dict[Hashable, Hashable]]]
 WriteableAttrs = ClassVar[Optional[Set[str]]]
+ExpectedKeysMode = ClassVar[str]
 ExpectedKeys = ClassVar[Optional[Set[str]]]
 
 # Data

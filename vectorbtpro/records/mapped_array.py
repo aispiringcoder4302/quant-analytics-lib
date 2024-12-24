@@ -664,15 +664,6 @@ class MappedArray(Analyzable):
         kwargs = cls.resolve_stack_kwargs(*objs, **kwargs)
         return cls(**kwargs)
 
-    _expected_keys: tp.ExpectedKeys = (Analyzable._expected_keys or set()) | {
-        "mapped_arr",
-        "col_arr",
-        "idx_arr",
-        "id_arr",
-        "mapping",
-        "col_mapper",
-    }
-
     def __init__(
         self,
         wrapper: ArrayWrapper,

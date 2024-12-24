@@ -279,15 +279,6 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             kwargs["sim_end"] = cls.column_stack_sim_end(kwargs["wrapper"], *objs)
         return kwargs
 
-    _expected_keys: tp.ExpectedKeys = (GenericAccessor._expected_keys or set()) | {
-        "bm_returns",
-        "log_returns",
-        "year_freq",
-        "defaults",
-        "sim_start",
-        "sim_end",
-    }
-
     def __init__(
         self,
         wrapper: tp.Union[ArrayWrapper, tp.ArrayLike],

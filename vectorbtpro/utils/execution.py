@@ -102,7 +102,7 @@ class Task(DefineMixin):
 
 
 class _NoResult(enum.Enum):
-    """Sentinel that represents no result."""
+    """Sentinel class for no results."""
 
     NoResult = enum.auto()
 
@@ -174,14 +174,6 @@ class SerialEngine(ExecutionEngine):
     For defaults, see `engines.serial` in `vectorbtpro._settings.execution`."""
 
     _settings_path: tp.SettingsPath = "execution.engines.serial"
-
-    _expected_keys: tp.ExpectedKeys = (ExecutionEngine._expected_keys or set()) | {
-        "show_progress",
-        "pbar_kwargs",
-        "clear_cache",
-        "collect_garbage",
-        "delay",
-    }
 
     def __init__(
         self,
@@ -301,11 +293,6 @@ class ThreadPoolEngine(ExecutionEngine):
 
     _settings_path: tp.SettingsPath = "execution.engines.threadpool"
 
-    _expected_keys: tp.ExpectedKeys = (ExecutionEngine._expected_keys or set()) | {
-        "init_kwargs",
-        "timeout",
-    }
-
     def __init__(self, init_kwargs: tp.KwargsLike = None, timeout: tp.Optional[int] = None, **kwargs) -> None:
         ExecutionEngine.__init__(
             self,
@@ -351,11 +338,6 @@ class ProcessPoolEngine(ExecutionEngine):
     For defaults, see `engines.processpool` in `vectorbtpro._settings.execution`."""
 
     _settings_path: tp.SettingsPath = "execution.engines.processpool"
-
-    _expected_keys: tp.ExpectedKeys = (ExecutionEngine._expected_keys or set()) | {
-        "init_kwargs",
-        "timeout",
-    }
 
     def __init__(self, init_kwargs: tp.KwargsLike = None, timeout: tp.Optional[int] = None, **kwargs) -> None:
         ExecutionEngine.__init__(
@@ -407,16 +389,6 @@ class PathosEngine(ExecutionEngine):
     For defaults, see `engines.pathos` in `vectorbtpro._settings.execution`."""
 
     _settings_path: tp.SettingsPath = "execution.engines.pathos"
-
-    _expected_keys: tp.ExpectedKeys = (ExecutionEngine._expected_keys or set()) | {
-        "pool_type",
-        "init_kwargs",
-        "timeout",
-        "check_delay",
-        "show_progress",
-        "pbar_kwargs",
-        "join_pool",
-    }
 
     def __init__(
         self,
@@ -553,12 +525,6 @@ class MpireEngine(ExecutionEngine):
 
     _settings_path: tp.SettingsPath = "execution.engines.mpire"
 
-    _expected_keys: tp.ExpectedKeys = (ExecutionEngine._expected_keys or set()) | {
-        "init_kwargs",
-        "apply_kwargs",
-        "timeout",
-    }
-
     def __init__(
         self,
         init_kwargs: tp.KwargsLike = None,
@@ -617,10 +583,6 @@ class DaskEngine(ExecutionEngine):
 
     _settings_path: tp.SettingsPath = "execution.engines.dask"
 
-    _expected_keys: tp.ExpectedKeys = (ExecutionEngine._expected_keys or set()) | {
-        "compute_kwargs",
-    }
-
     def __init__(self, compute_kwargs: tp.KwargsLike = None, **kwargs) -> None:
         ExecutionEngine.__init__(
             self,
@@ -665,15 +627,6 @@ class RayEngine(ExecutionEngine):
         a little to no speedup."""
 
     _settings_path: tp.SettingsPath = "execution.engines.ray"
-
-    _expected_keys: tp.ExpectedKeys = (ExecutionEngine._expected_keys or set()) | {
-        "restart",
-        "reuse_refs",
-        "del_refs",
-        "shutdown",
-        "init_kwargs",
-        "remote_kwargs",
-    }
 
     def __init__(
         self,
@@ -840,7 +793,7 @@ class RayEngine(ExecutionEngine):
 
 
 class _Dummy(enum.Enum):
-    """Sentinel that represents a dummy value."""
+    """Sentinel class for dummy values."""
 
     DUMMY = enum.auto()
 
@@ -914,44 +867,6 @@ class Executor(Configured):
     For defaults, see `vectorbtpro._settings.execution`."""
 
     _settings_path: tp.SettingsPath = "execution"
-
-    _expected_keys: tp.ExpectedKeys = (Configured._expected_keys or set()) | {
-        "engine",
-        "engine_config",
-        "min_size",
-        "n_chunks",
-        "chunk_len",
-        "chunk_meta",
-        "distribute",
-        "warmup",
-        "in_chunk_order",
-        "cache_chunks",
-        "chunk_cache_dir",
-        "chunk_cache_save_kwargs",
-        "chunk_cache_load_kwargs",
-        "pre_clear_chunk_cache",
-        "post_clear_chunk_cache",
-        "release_chunk_cache",
-        "chunk_clear_cache",
-        "chunk_collect_garbage",
-        "chunk_delay",
-        "pre_execute_func",
-        "pre_execute_kwargs",
-        "pre_chunk_func",
-        "pre_chunk_kwargs",
-        "post_chunk_func",
-        "post_chunk_kwargs",
-        "post_execute_func",
-        "post_execute_kwargs",
-        "post_execute_on_sorted",
-        "filter_results",
-        "raise_no_results",
-        "merge_func",
-        "merge_kwargs",
-        "template_context",
-        "show_progress",
-        "pbar_kwargs",
-    }
 
     @classmethod
     def get_engine_settings(cls, *args, engine_name: tp.Optional[str] = None, **kwargs) -> dict:
