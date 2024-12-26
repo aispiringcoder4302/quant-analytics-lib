@@ -2197,7 +2197,7 @@ knowledge = frozen_cfg(
 $context
 ---------------------"""
         ),
-        display_format="auto_ipython",
+        display_format="ipython_auto",
         output_to=None,
         flush_output=True,
         buffer_output=True,
@@ -2206,19 +2206,21 @@ $context
         refresh_page=True,
         file_prefix_len=20,
         file_suffix_len=6,
-        package=None,
-        openai_config=flex_cfg(
-            model="gpt-4o",
-        ),
-        litellm_config=flex_cfg(
-            model="gpt-4o",
-        ),
-        llama_index_config=flex_cfg(
-            llm="openai",
-            llm_configs=flex_cfg(
-                openai=flex_cfg(
-                    model="gpt-4o",
-                )
+        engine="auto",
+        engines=flex_cfg(
+            openai=flex_cfg(
+                model="gpt-4o",
+            ),
+            litellm=flex_cfg(
+                model="gpt-4o",
+            ),
+            llama_index=flex_cfg(
+                llm="openai",
+                llm_configs=flex_cfg(
+                    openai=flex_cfg(
+                        model="gpt-4o",
+                    )
+                ),
             ),
         ),
     ),

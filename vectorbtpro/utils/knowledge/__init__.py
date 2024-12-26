@@ -30,5 +30,6 @@ if TYPE_CHECKING:
     from vectorbtpro.utils.knowledge.asset_pipelines import *
     from vectorbtpro.utils.knowledge.base_asset_funcs import *
     from vectorbtpro.utils.knowledge.base_assets import *
+    from vectorbtpro.utils.knowledge.chatting import *
     from vectorbtpro.utils.knowledge.custom_asset_funcs import *
     from vectorbtpro.utils.knowledge.custom_assets import *

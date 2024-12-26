@@ -1827,7 +1827,8 @@ class PatternRanges(Ranges):
         arr_2d = to_2d_array(arr)
         arr_wrapper = ArrayWrapper.from_obj(arr)
         psc_keys = [a.name for a in PSC.fields if a.name != "name"]
-        method_locals = {k: v for k, v in locals().items() if k in psc_keys}
+        method_locals = locals()
+        method_locals = {k: v for k, v in method_locals.items() if k in psc_keys}
 
         # Flatten search configs
         flat_search_configs = []
