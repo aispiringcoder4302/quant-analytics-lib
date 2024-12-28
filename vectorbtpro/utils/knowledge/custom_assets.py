@@ -22,13 +22,14 @@ from types import ModuleType
 from vectorbtpro import _typing as tp
 from vectorbtpro.utils import checks
 from vectorbtpro.utils.config import merge_dicts, flat_merge_dicts, reorder_list, HybridConfig
+from vectorbtpro.utils.decorators import class_property
 from vectorbtpro.utils.knowledge.base_assets import KnowledgeAsset
 from vectorbtpro.utils.module_ import prepare_refname, get_caller_qualname
 from vectorbtpro.utils.parsing import get_func_arg_names
 from vectorbtpro.utils.path_ import check_mkdir, remove_dir, get_common_prefix, dir_tree_from_paths
 from vectorbtpro.utils.pbar import ProgressBar
 from vectorbtpro.utils.pickling import suggest_compression
-from vectorbtpro.utils.search import find
+from vectorbtpro.utils.search import find, replace
 
 __all__ = [
     "VBTAsset",
@@ -333,28 +334,38 @@ class VBTAsset(KnowledgeAsset):
                 raise MultipleItemsFoundError(f"Multiple items matching '{link}':\n\n{links_block}")
         return found
 
-    def minimize_links(self: VBTAssetT) -> VBTAssetT:
-        """Minimize links."""
-        return self.find_replace(
-            {
-                r"(https://vectorbt\.pro/pvt_[a-zA-Z0-9]+)": "$pvt_site",
-                r"(https://vectorbt\.pro)": "$pub_site",
-                r"(https://discord\.com/channels/[0-9]+)": "$discord",
-                r"(https://github\.com/polakowo/vectorbt\.pro)": "$github",
-            },
-            mode="regex",
-        )
+    @classmethod
+    def minimize_link(cls, link: str, rules: tp.Optional[tp.Dict[str, str]] = None) -> str:
+        """Minimize a single link."""
+        rules = cls.resolve_setting(rules, "minimize_link_rules", merge=True)
 
-    def minimize(self: VBTAssetT, minimize_links: tp.Optional[bool] = None) -> VBTAssetT:
+        for k, v in rules.items():
+            link = replace(k, v, link, mode="regex")
+        return link
+
+    def minimize_links(self: VBTAssetT, rules: tp.Optional[tp.Dict[str, str]] = None) -> VBTAssetT:
+        """Minimize links."""
+        rules = self.resolve_setting(rules, "minimize_link_rules", merge=True)
+
+        return self.find_replace(rules, mode="regex")
+
+    def minimize(
+        self: VBTAssetT,
+        keys: tp.Optional[tp.List[str]] = None,
+        links: tp.Optional[bool] = None,
+    ) -> VBTAssetT:
         """Minimize by keeping the most useful information.'
 
         If `minimize_links` is True, replaces redundant URL prefixes by templates that can
         be easily substituted later."""
-        minimize_links = self.resolve_setting(minimize_links, "minimize_links")
+        keys = self.resolve_setting(keys, "minimize_keys")
+        links = self.resolve_setting(links, "minimize_links")
 
         new_instance = self.find_remove_empty()
-        if minimize_links:
+        if links:
             return new_instance.minimize_links()
+        if keys:
+            new_instance = new_instance.remove(keys, skip_missing=True)
         return new_instance
 
     def select_previous(self: VBTAssetT, link: str, **kwargs) -> VBTAssetT:
@@ -1164,20 +1175,6 @@ class PagesAsset(VBTAsset):
     For defaults, see `assets.pages` in `vectorbtpro._settings.knowledge`."""
 
     _settings_path: tp.SettingsPath = "knowledge.assets.pages"
-
-    def minimize(self: PagesAssetT, minimize_links: tp.Optional[bool] = None) -> PagesAssetT:
-        new_instance = VBTAsset.minimize(self, minimize_links=minimize_links)
-        new_instance = new_instance.remove(
-            [
-                "parent",
-                "children",
-                "type",
-                "icon",
-                "tags",
-            ],
-            skip_missing=True,
-        )
-        return new_instance
 
     def descend_links(self: PagesAssetT, links: tp.List[str]) -> PagesAssetT:
         """Descend links by removing redundant ones.
@@ -2144,20 +2141,6 @@ class MessagesAsset(VBTAsset):
     For defaults, see `assets.messages` in `vectorbtpro._settings.knowledge`."""
 
     _settings_path: tp.SettingsPath = "knowledge.assets.messages"
-
-    def minimize(self: MessagesAssetT, minimize_links: tp.Optional[bool] = None) -> MessagesAssetT:
-        new_instance = VBTAsset.minimize(self, minimize_links=minimize_links)
-        new_instance = new_instance.remove(
-            [
-                "block",
-                "thread",
-                "replies",
-                "mentions",
-                "reactions",
-            ],
-            skip_missing=True,
-        )
-        return new_instance
 
     def aggregate_messages(
         self: MessagesAssetT,

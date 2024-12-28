@@ -34,7 +34,6 @@ except ImportError:
     FigureWidget = Any
     BaseFigure = Any
     BaseTraceType = Any
-
 try:
     from typing import Protocol
 except ImportError:

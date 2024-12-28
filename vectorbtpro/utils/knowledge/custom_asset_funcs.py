@@ -107,7 +107,7 @@ class ToMarkdownAssetFunc(AssetFunc):
         clear_metadata: bool = True,
         clear_metadata_kwargs: tp.KwargsLike = None,
         dump_metadata_kwargs: tp.KwargsLike = None,
-        **kwargs,
+        **to_markdown_kwargs,
     ) -> str:
         """Get metadata in Markdown format."""
         from vectorbtpro.utils.knowledge.base_asset_funcs import FindRemoveAssetFunc, DumpAssetFunc
@@ -128,7 +128,7 @@ class ToMarkdownAssetFunc(AssetFunc):
                 metadata = None
             metadata = {root_metadata_key: metadata}
         text = DumpAssetFunc.call(metadata, **dump_metadata_kwargs)
-        return cls.to_markdown(text, **kwargs)
+        return cls.to_markdown(text, **to_markdown_kwargs)
 
     @classmethod
     def get_markdown_content(cls, d: dict, **kwargs) -> str:
@@ -290,7 +290,7 @@ class ToHTMLAssetFunc(ToMarkdownAssetFunc):
         clear_metadata_kwargs: tp.KwargsLike = None,
         dump_metadata_kwargs: tp.KwargsLike = None,
         to_markdown_kwargs: tp.KwargsLike = None,
-        **kwargs,
+        **to_html_kwargs,
     ) -> str:
         """Get metadata in HTML format."""
         if to_markdown_kwargs is None:
@@ -305,7 +305,7 @@ class ToHTMLAssetFunc(ToMarkdownAssetFunc):
             **to_markdown_kwargs,
         )
         metadata = "```yaml\n" + metadata + "\n```"
-        return cls.to_html(metadata, **kwargs)
+        return cls.to_html(metadata, **to_html_kwargs)
 
     @classmethod
     def get_html_content(cls, d: dict, to_markdown_kwargs: tp.KwargsLike = None, **kwargs) -> str:

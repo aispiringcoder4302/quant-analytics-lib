@@ -55,10 +55,12 @@ try:
     if not tp.TYPE_CHECKING:
         raise ImportError
     from llama_index.core.llms import LLM as LLMT, ChatMessage as ChatMessageT, ChatResponse as ChatResponseT
+    from llama_index.core.schema import Document as DocumentT
 except ImportError:
     LLMT = "LLM"
     ChatMessageT = "ChatMessage"
     ChatResponseT = "ChatResponse"
+    DocumentT = "Document"
 try:
     if not tp.TYPE_CHECKING:
         raise ImportError
@@ -77,6 +79,7 @@ __all__ = [
     "IPythonMarkdownFormatter",
     "IPythonHTMLFormatter",
     "HTMLFileFormatter",
+    "Indexable",
     "Contextable",
 ]
 
@@ -936,13 +939,21 @@ class HTMLFileFormatter(ContentFormatter):
         self.file_handle.flush()
 
 
-# ############# Contextable class ############# #
+# ############# Main classes ############# #
 
 
-class Contextable(HasSettings):
-    """Abstract class that can be converted into a context."""
+class Indexable(HasSettings):
+    """Abstract class that can be converted to an index."""
 
     _settings_path: tp.SettingsPath = "knowledge"
+
+    def to_documents(self, *args, **kwargs) -> tp.Sequence[DocumentT]:
+        """Convert to documents."""
+        raise NotImplementedError
+
+
+class Contextable(Indexable):
+    """Abstract class that can be converted into a context."""
 
     def to_context(self, *args, **kwargs) -> str:
         """Convert to a context."""

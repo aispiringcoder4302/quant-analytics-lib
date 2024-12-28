@@ -18,7 +18,7 @@ from vectorbtpro.utils.config import reorder_dict, reorder_list
 from vectorbtpro.utils.execution import NoResult
 from vectorbtpro.utils.formatting import dump
 from vectorbtpro.utils.parsing import get_func_arg_names
-from vectorbtpro.utils.template import CustomTemplate, RepEval, RepFunc
+from vectorbtpro.utils.template import CustomTemplate, RepEval, RepFunc, substitute_templates
 
 __all__ = [
     "AssetFunc",
@@ -76,6 +76,7 @@ class GetAssetFunc(AssetFunc):
         keep_path = asset.resolve_setting(keep_path, "keep_path")
         skip_missing = asset.resolve_setting(skip_missing, "skip_missing")
         template_context = asset.resolve_setting(template_context, "template_context", merge=True)
+        template_context = flat_merge_dicts({"asset": asset}, template_context)
 
         if path is not None:
             if isinstance(path, list):
@@ -178,6 +179,7 @@ class SetAssetFunc(AssetFunc):
         make_copy = asset.resolve_setting(make_copy, "make_copy")
         changed_only = asset.resolve_setting(changed_only, "changed_only")
         template_context = asset.resolve_setting(template_context, "template_context", merge=True)
+        template_context = flat_merge_dicts({"asset": asset}, template_context)
 
         if checks.is_function(value):
             if checks.is_builtin_func(value):
@@ -213,7 +215,6 @@ class SetAssetFunc(AssetFunc):
         make_copy: bool = True,
         changed_only: bool = False,
         template_context: tp.KwargsLike = None,
-        **kwargs,
     ) -> tp.Any:
         prev_keys = []
         for p in paths:
@@ -233,7 +234,7 @@ class SetAssetFunc(AssetFunc):
                 },
                 template_context,
             )
-            v = value.substitute(_template_context, eval_id="value", **kwargs)
+            v = value.substitute(_template_context, eval_id="value")
             if checks.is_function(v):
                 v = v(x)
             d = search.set_pathlike_key(d, p, v, make_copy=make_copy, prev_keys=prev_keys)
@@ -461,6 +462,7 @@ class ReorderAssetFunc(AssetFunc):
         make_copy = asset.resolve_setting(make_copy, "make_copy")
         changed_only = asset.resolve_setting(changed_only, "changed_only")
         template_context = asset.resolve_setting(template_context, "template_context", merge=True)
+        template_context = flat_merge_dicts({"asset": asset}, template_context)
 
         if isinstance(new_order, str):
             if new_order.lower() in ("asc", "ascending"):
@@ -518,7 +520,6 @@ class ReorderAssetFunc(AssetFunc):
         make_copy: bool = True,
         changed_only: bool = False,
         template_context: tp.KwargsLike = None,
-        **kwargs,
     ) -> tp.Any:
         prev_keys = []
         for p in paths:
@@ -539,7 +540,7 @@ class ReorderAssetFunc(AssetFunc):
                     },
                     template_context,
                 )
-                _new_order = new_order.substitute(_template_context, eval_id="new_order", **kwargs)
+                _new_order = new_order.substitute(_template_context, eval_id="new_order")
                 if checks.is_function(_new_order):
                     _new_order = _new_order(x)
             else:
@@ -578,6 +579,7 @@ class QueryAssetFunc(AssetFunc):
 
             asset = KnowledgeAsset
         template_context = asset.resolve_setting(template_context, "template_context", merge=True)
+        template_context = flat_merge_dicts({"asset": asset}, template_context)
         return_type = asset.resolve_setting(return_type, "return_type")
 
         if isinstance(expression, str):
@@ -605,7 +607,6 @@ class QueryAssetFunc(AssetFunc):
         expression: tp.CustomTemplate,
         template_context: tp.KwargsLike = None,
         return_type: str = "item",
-        **kwargs,
     ) -> tp.Any:
         _template_context = flat_merge_dicts(
             {
@@ -616,7 +617,7 @@ class QueryAssetFunc(AssetFunc):
             },
             template_context,
         )
-        new_d = expression.substitute(_template_context, eval_id="expression", **kwargs)
+        new_d = expression.substitute(_template_context, eval_id="expression")
         if checks.is_function(new_d):
             new_d = new_d(d)
         if return_type.lower() == "item":
@@ -668,6 +669,7 @@ class FindAssetFunc(AssetFunc):
         in_dumps = asset.resolve_setting(in_dumps, "in_dumps")
         dump_kwargs = asset.resolve_setting(dump_kwargs, "dump_kwargs", merge=True)
         template_context = asset.resolve_setting(template_context, "template_context", merge=True)
+        template_context = flat_merge_dicts({"asset": asset}, template_context)
         return_type = asset.resolve_setting(return_type, "return_type")
         return_path = asset.resolve_setting(return_path, "return_path")
 
@@ -1540,6 +1542,7 @@ class DumpAssetFunc(AssetFunc):
 
             asset = KnowledgeAsset
         template_context = asset.resolve_setting(template_context, "template_context", merge=True)
+        template_context = flat_merge_dicts({"asset": asset}, template_context)
         dump_kwargs = cls.resolve_dump_kwargs(dump_engine=dump_engine, **kwargs)
 
         if source is not None:
@@ -1585,6 +1588,172 @@ class DumpAssetFunc(AssetFunc):
         else:
             new_d = d
         return dump(new_d, dump_engine=dump_engine, **kwargs)
+
+
+class ToDocumentsAssetFunc(AssetFunc):
+    """Asset function class for `vectorbtpro.utils.knowledge.base_assets.KnowledgeAsset.to_documents`."""
+
+    _short_name: tp.ClassVar[tp.Optional[str]] = "to_documents"
+
+    _wrap: tp.ClassVar[tp.Optional[str]] = True
+
+    @classmethod
+    def prepare(
+        cls,
+        source: tp.Union[None, str, tp.Callable, tp.CustomTemplate] = None,
+        document_text_path: tp.Optional[tp.MaybeList[tp.PathLikeKey]] = None,
+        document_metadata_path: tp.Optional[tp.MaybeList[tp.PathLikeKey]] = None,
+        skip_missing: tp.Optional[bool] = None,
+        dump_kwargs: tp.KwargsLike = None,
+        template_context: tp.KwargsLike = None,
+        asset: tp.Optional[tp.MaybeType[tp.KnowledgeAsset]] = None,
+        **document_kwargs,
+    ) -> tp.ArgsKwargs:
+        if asset is None:
+            from vectorbtpro.utils.knowledge.base_assets import KnowledgeAsset
+
+            asset = KnowledgeAsset
+        document_text_path = asset.resolve_setting(document_text_path, "document_text_path")
+        document_metadata_path = asset.resolve_setting(document_metadata_path, "document_metadata_path")
+        skip_missing = asset.resolve_setting(skip_missing, "skip_missing")
+        dump_kwargs = asset.resolve_setting(dump_kwargs, "dump_kwargs", merge=True)
+        template_context = asset.resolve_setting(template_context, "template_context", merge=True)
+        template_context = flat_merge_dicts({"asset": asset}, template_context)
+        document_kwargs = asset.resolve_setting(document_kwargs, "document_kwargs", merge=True)
+
+        if source is not None:
+            if isinstance(source, str):
+                source = RepEval(source)
+            elif checks.is_function(source):
+                if checks.is_builtin_func(source):
+                    source = RepFunc(lambda _source=source: _source)
+                else:
+                    source = RepFunc(source)
+            elif not isinstance(source, CustomTemplate):
+                raise TypeError(f"Source must be a string, function, or template")
+        if document_text_path is not None:
+            if isinstance(document_text_path, list):
+                document_text_path = [search.resolve_pathlike_key(p) for p in document_text_path]
+            else:
+                document_text_path = search.resolve_pathlike_key(document_text_path)
+        if document_metadata_path is not None:
+            if isinstance(document_metadata_path, list):
+                document_metadata_path = [search.resolve_pathlike_key(p) for p in document_metadata_path]
+            else:
+                document_metadata_path = search.resolve_pathlike_key(document_metadata_path)
+        dump_kwargs = DumpAssetFunc.resolve_dump_kwargs(**dump_kwargs)
+        return (), {
+            **dict(
+                source=source,
+                document_text_path=document_text_path,
+                document_metadata_path=document_metadata_path,
+                skip_missing=skip_missing,
+                dump_kwargs=dump_kwargs,
+                template_context=template_context,
+            ),
+            **document_kwargs,
+        }
+
+    @classmethod
+    def call(
+        cls,
+        d: tp.Any,
+        source: tp.Optional[CustomTemplate] = None,
+        document_text_path: tp.Optional[tp.MaybeList[tp.PathLikeKey]] = None,
+        document_metadata_path: tp.Optional[tp.MaybeList[tp.PathLikeKey]] = None,
+        skip_missing: bool = False,
+        dump_kwargs: tp.KwargsLike = None,
+        template_context: tp.KwargsLike = None,
+        **document_kwargs,
+    ) -> tp.Any:
+        from vectorbtpro.utils.module_ import assert_can_import
+
+        assert_can_import("llama_index")
+        from llama_index.core.schema import Document
+
+        if dump_kwargs is None:
+            dump_kwargs = {}
+
+        _template_context = flat_merge_dicts(
+            {
+                "d": d,
+                "x": d,
+                **(d if isinstance(d, dict) else {}),
+            },
+            template_context,
+        )
+        if source is not None:
+            new_d = source.substitute(_template_context, eval_id="source")
+            if checks.is_function(new_d):
+                new_d = new_d(d)
+        else:
+            new_d = d
+        if document_text_path is None and document_metadata_path is None:
+            text = dump(new_d, **dump_kwargs)
+            metadata = {}
+        else:
+            if document_text_path is not None:
+                if not isinstance(document_text_path, list):
+                    try:
+                        x = search.get_pathlike_key(new_d, document_text_path, keep_path=False)
+                    except (KeyError, IndexError, AttributeError) as e:
+                        if not skip_missing:
+                            raise e
+                        return NoResult
+                    document_text_path = [document_text_path]
+                    text = dump(x, **dump_kwargs)
+                else:
+                    document_text_path_dct = {}
+                    for p in document_text_path:
+                        try:
+                            x = search.get_pathlike_key(new_d, p, keep_path=False)
+                        except (KeyError, IndexError, AttributeError) as e:
+                            if not skip_missing:
+                                raise e
+                            continue
+                        document_text_path_dct[p] = x
+                    document_text_path = list(document_text_path_dct.keys())
+                    text = dump(search.unflatten_obj(document_text_path_dct), **dump_kwargs)
+            else:
+                text = None
+                document_text_path = []
+            if document_metadata_path is not None:
+                if not isinstance(document_metadata_path, list):
+                    try:
+                        x = search.get_pathlike_key(new_d, document_metadata_path, keep_path=False)
+                    except (KeyError, IndexError, AttributeError) as e:
+                        if not skip_missing:
+                            raise e
+                        return NoResult
+                    document_metadata_path = [document_metadata_path]
+                    metadata = x
+                else:
+                    document_metadata_path_dct = {}
+                    for p in document_metadata_path:
+                        try:
+                            x = search.get_pathlike_key(new_d, p, keep_path=False)
+                        except (KeyError, IndexError, AttributeError) as e:
+                            if not skip_missing:
+                                raise e
+                            continue
+                        document_metadata_path_dct[p] = x
+                    document_metadata_path = list(document_metadata_path_dct.keys())
+                    metadata = search.unflatten_obj(document_metadata_path_dct)
+            else:
+                metadata = None
+                document_metadata_path = []
+            if text is None:
+                new_d2 = new_d
+                for p in document_metadata_path:
+                    new_d2 = search.remove_pathlike_key(new_d2, p, make_copy=True)
+                text = dump(new_d2, **dump_kwargs)
+            if metadata is None:
+                new_d2 = new_d
+                for p in document_text_path:
+                    new_d2 = search.remove_pathlike_key(new_d2, p, make_copy=True)
+                metadata = new_d2
+        document_kwargs = substitute_templates(document_kwargs, _template_context, eval_id="document_kwargs")
+        return Document(text=text, metadata=metadata, **document_kwargs)
 
 
 # ############# Reduce classes ############# #

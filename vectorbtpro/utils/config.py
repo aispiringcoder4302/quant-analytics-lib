@@ -1161,6 +1161,7 @@ class HasSettings(Base):
         inherit: bool = True,
         sub_path: tp.Optional[tp.PathLikeKey] = None,
         sub_path_only: bool = False,
+        merge: bool = False,
     ) -> tp.Any:
         """Get a value under the settings associated with this class and its superclasses
         (if `inherit` is True)."""
@@ -1170,11 +1171,22 @@ class HasSettings(Base):
                 raise SettingsNotFoundError(f"Found no settings associated with the path id '{path_id}'")
             else:
                 raise SettingsNotFoundError(f"Found no settings associated with the class {cls.__name__}")
+        merged_setting = None
+        found_setting = False
         for cls_, path in paths:
             try:
-                return cls_.get_path_setting(path, key, sub_path=sub_path, sub_path_only=sub_path_only)
+                setting = cls_.get_path_setting(path, key, sub_path=sub_path, sub_path_only=sub_path_only)
+                if merge:
+                    if setting is None or isinstance(setting, dict):
+                        if merged_setting is None or isinstance(merged_setting, dict):
+                            merged_setting = merge_dicts(setting, merged_setting)
+                else:
+                    return setting
+                found_setting = True
             except (SettingsNotFoundError, SettingNotFoundError) as e:
                 continue
+        if found_setting:
+            return merged_setting
         if default is MISSING:
             if path_id is not None:
                 if sub_path is not None:
@@ -1235,12 +1247,12 @@ class HasSettings(Base):
         cls,
         value: tp.Optional[tp.Any],
         key: str,
-        merge: bool = False,
         default: tp.Any = MISSING,
         path_id: tp.Optional[tp.Hashable] = None,
         inherit: bool = True,
         sub_path: tp.Optional[tp.PathLikeKey] = None,
         sub_path_only: bool = False,
+        merge: bool = False,
     ) -> tp.Any:
         """Resolve a value that has a key under the settings in `vectorbtpro._settings`
         associated with this class.
@@ -1258,6 +1270,7 @@ class HasSettings(Base):
                 inherit=inherit,
                 sub_path=sub_path,
                 sub_path_only=sub_path_only,
+                merge=True,
             )
             if setting is None or isinstance(setting, dict):
                 if value is None or isinstance(value, dict):

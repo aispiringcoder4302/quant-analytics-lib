@@ -22,6 +22,7 @@ from vectorbtpro.utils.search import contains_in_obj, find_and_replace_in_obj
 
 __all__ = [
     "CustomTemplate",
+    "Id",
     "Sub",
     "Rep",
     "RepEval",
@@ -114,8 +115,26 @@ class CustomTemplate(Evaluable, DefineMixin):
         raise NotImplementedError
 
 
+class Id(CustomTemplate):
+    """Identity class for returning a template."""
+
+    def get_context_vars(self) -> tp.List[str]:
+        return []
+
+    def substitute(
+        self,
+        context: tp.KwargsLike = None,
+        strict: tp.Optional[bool] = None,
+        eval_id: tp.Optional[tp.Hashable] = None,
+    ) -> tp.Any:
+        """Substitute parts of `Sub.template` as a regular template."""
+        if not self.meets_eval_id(eval_id):
+            return self
+        return self.template
+
+
 class Sub(CustomTemplate):
-    """Template string to substitute parts with the respective values from `context`.
+    """Class for substituting parts of a template string with the respective values from `context`.
 
     Always returns a string."""
 
@@ -152,7 +171,7 @@ class Sub(CustomTemplate):
 
 
 class Rep(CustomTemplate):
-    """Template string to be replaced with the respective value from `context`."""
+    """Class for replacing a template with the respective value from `context`."""
 
     def get_context_vars(self) -> tp.List[str]:
         return [self.template]
@@ -178,7 +197,7 @@ class Rep(CustomTemplate):
 
 
 class RepEval(CustomTemplate):
-    """Template expression to be evaluated using `vectorbtpro.utils.eval_.evaluate`
+    """Class for evaluating a template expression using `vectorbtpro.utils.eval_.evaluate`
     with `context` used as locals."""
 
     def get_context_vars(self) -> tp.List[str]:
@@ -205,7 +224,7 @@ class RepEval(CustomTemplate):
 
 
 class RepFunc(CustomTemplate):
-    """Template function to be called with argument names from `context`."""
+    """Class for calling a template function with argument names from `context`."""
 
     def get_context_vars(self) -> tp.List[str]:
         return get_func_arg_names(self.template)

@@ -141,7 +141,7 @@ from vectorbtpro import _typing as tp
 from vectorbtpro.utils.checks import is_instance_of
 from vectorbtpro.utils.config import Config
 from vectorbtpro.utils.module_ import check_installed
-from vectorbtpro.utils.template import Sub, RepEval, substitute_templates
+from vectorbtpro.utils.template import Id, Sub, RepEval, substitute_templates
 
 __all__ = [
     "settings",
@@ -2032,6 +2032,11 @@ knowledge = frozen_cfg(
     ),
     in_dumps=False,
     dump_kwargs=flex_cfg(),
+    document_text_path=None,
+    document_metadata_path=None,
+    document_kwargs=flex_cfg(
+        text_template=Id("---\n{metadata_str}\n---\n{content}"),
+    ),
     sort_keys=False,
     ignore_empty=True,
     describe_kwargs=flex_cfg(
@@ -2234,7 +2239,14 @@ $context
             token_required=False,
             use_pygithub=None,
             chunk_size=8192,
+            minimize_keys=[],
             minimize_links=False,
+            minimize_link_rules={
+                r"(https://vectorbt\.pro/pvt_[a-zA-Z0-9]+)": "$pvt_site",
+                r"(https://vectorbt\.pro)": "$pub_site",
+                r"(https://discord\.com/channels/[0-9]+)": "$discord",
+                r"(https://github\.com/polakowo/vectorbt\.pro)": "$github",
+            },
             root_metadata_key=None,
             aggregate_fields=False,
             parent_links_only=True,
@@ -2254,14 +2266,27 @@ $context
             allow_prefix=False,
             allow_suffix=False,
             merge_targets=True,
+            document_text_path="content",
+            document_kwargs=flex_cfg(
+                doc_id=RepEval("asset.minimize_link(link)"),
+                excluded_embed_metadata_keys=RepEval("asset.get_setting('minimize_keys')"),
+                excluded_llm_metadata_keys=RepEval("asset.get_setting('minimize_keys')"),
+            ),
             chat=flex_cfg(
-                system_prompt="You are an assistant with access to the VectorBT PRO (VBT) Python library documentation and Discord history. VBT is a proprietary successor to the open-source vectorbt for financial backtesting. As an expert, provide clear and accurate answers using only these sources. If metadata with links is present, reference these links to support your answers. If information isn't found, inform the user accordingly. Note that VBT exclusively refers to VectorBT PRO, which significantly differs from the open-source version. Given the context information and not prior knowledge, answer the query.",
+                system_prompt="You are an assistant with access to the VectorBT PRO (VBT) Python library "
+                "documentation and Discord history. VBT is a proprietary successor to the open-source "
+                "vectorbt for financial backtesting. As an expert, provide clear and accurate answers "
+                "using only these sources. If metadata with links is present, reference these links to "
+                "support your answers. If information isn't found, inform the user accordingly. Note that "
+                "VBT exclusively refers to VectorBT PRO, which significantly differs from the open-source "
+                "version. Given the context information and not prior knowledge, answer the query.",
             ),
         ),
         pages=flex_cfg(
             asset_name="pages.json.zip",
             cache_dir="./knowledge/pages/",
             token_required=True,
+            minimize_keys=["parent", "children", "type", "icon", "tags"],
             append_obj_type=True,
             append_github_link=True,
             use_parent=None,
@@ -2289,6 +2314,7 @@ $context
             asset_name="messages.json.zip",
             cache_dir="./knowledge/messages/",
             token_required=True,
+            minimize_keys=["block", "thread", "replies", "mentions", "reactions"],
         ),
     ),
 )
