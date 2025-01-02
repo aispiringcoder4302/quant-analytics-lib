@@ -1038,8 +1038,8 @@ def nancorr_1d_nb(arr1: tp.Array1d, arr2: tp.Array1d) -> float:
         if not np.isnan(arr1[i]) and not np.isnan(arr2[i]):
             arr1_sum += arr1[i]
             arr2_sum += arr2[i]
-            arr1_sumsq += arr1[i] ** 2
-            arr2_sumsq += arr2[i] ** 2
+            arr1_sumsq += float(arr1[i]) ** 2
+            arr2_sumsq += float(arr2[i]) ** 2
             arr12_sumprod += arr1[i] * arr2[i]
             k += 1
     if k == 0:
