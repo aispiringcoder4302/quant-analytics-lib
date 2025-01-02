@@ -1590,10 +1590,10 @@ class DumpAssetFunc(AssetFunc):
         return dump(new_d, dump_engine=dump_engine, **kwargs)
 
 
-class ToDocumentsAssetFunc(AssetFunc):
+class ToLlamaDocsAssetFunc(AssetFunc):
     """Asset function class for `vectorbtpro.utils.knowledge.base_assets.KnowledgeAsset.to_documents`."""
 
-    _short_name: tp.ClassVar[tp.Optional[str]] = "to_documents"
+    _short_name: tp.ClassVar[tp.Optional[str]] = "to_llama_docs"
 
     _wrap: tp.ClassVar[tp.Optional[str]] = True
 
@@ -1601,8 +1601,8 @@ class ToDocumentsAssetFunc(AssetFunc):
     def prepare(
         cls,
         source: tp.Union[None, str, tp.Callable, tp.CustomTemplate] = None,
-        document_text_path: tp.Optional[tp.MaybeList[tp.PathLikeKey]] = None,
-        document_metadata_path: tp.Optional[tp.MaybeList[tp.PathLikeKey]] = None,
+        text_path: tp.Optional[tp.MaybeList[tp.PathLikeKey]] = None,
+        metadata_path: tp.Optional[tp.MaybeList[tp.PathLikeKey]] = None,
         skip_missing: tp.Optional[bool] = None,
         dump_kwargs: tp.KwargsLike = None,
         template_context: tp.KwargsLike = None,
@@ -1613,13 +1613,17 @@ class ToDocumentsAssetFunc(AssetFunc):
             from vectorbtpro.utils.knowledge.base_assets import KnowledgeAsset
 
             asset = KnowledgeAsset
-        document_text_path = asset.resolve_setting(document_text_path, "document_text_path")
-        document_metadata_path = asset.resolve_setting(document_metadata_path, "document_metadata_path")
-        skip_missing = asset.resolve_setting(skip_missing, "skip_missing")
-        dump_kwargs = asset.resolve_setting(dump_kwargs, "dump_kwargs", merge=True)
-        template_context = asset.resolve_setting(template_context, "template_context", merge=True)
+        text_path = asset.resolve_setting(text_path, "text_path", sub_path="chat.llama_index")
+        metadata_path = asset.resolve_setting(metadata_path, "metadata_path", sub_path="chat.llama_index")
+        skip_missing = asset.resolve_setting(skip_missing, "skip_missing", sub_path="chat.llama_index")
+        dump_kwargs = asset.resolve_setting(dump_kwargs, "dump_kwargs", sub_path="chat.llama_index", merge=True)
+        template_context = asset.resolve_setting(
+            template_context, "template_context", sub_path="chat.llama_index", merge=True
+        )
         template_context = flat_merge_dicts({"asset": asset}, template_context)
-        document_kwargs = asset.resolve_setting(document_kwargs, "document_kwargs", merge=True)
+        document_kwargs = asset.resolve_setting(
+            document_kwargs, "document_kwargs", sub_path="chat.llama_index", merge=True
+        )
 
         if source is not None:
             if isinstance(source, str):
@@ -1631,22 +1635,22 @@ class ToDocumentsAssetFunc(AssetFunc):
                     source = RepFunc(source)
             elif not isinstance(source, CustomTemplate):
                 raise TypeError(f"Source must be a string, function, or template")
-        if document_text_path is not None:
-            if isinstance(document_text_path, list):
-                document_text_path = [search.resolve_pathlike_key(p) for p in document_text_path]
+        if text_path is not None:
+            if isinstance(text_path, list):
+                text_path = [search.resolve_pathlike_key(p) for p in text_path]
             else:
-                document_text_path = search.resolve_pathlike_key(document_text_path)
-        if document_metadata_path is not None:
-            if isinstance(document_metadata_path, list):
-                document_metadata_path = [search.resolve_pathlike_key(p) for p in document_metadata_path]
+                text_path = search.resolve_pathlike_key(text_path)
+        if metadata_path is not None:
+            if isinstance(metadata_path, list):
+                metadata_path = [search.resolve_pathlike_key(p) for p in metadata_path]
             else:
-                document_metadata_path = search.resolve_pathlike_key(document_metadata_path)
+                metadata_path = search.resolve_pathlike_key(metadata_path)
         dump_kwargs = DumpAssetFunc.resolve_dump_kwargs(**dump_kwargs)
         return (), {
             **dict(
                 source=source,
-                document_text_path=document_text_path,
-                document_metadata_path=document_metadata_path,
+                text_path=text_path,
+                metadata_path=metadata_path,
                 skip_missing=skip_missing,
                 dump_kwargs=dump_kwargs,
                 template_context=template_context,
@@ -1659,8 +1663,8 @@ class ToDocumentsAssetFunc(AssetFunc):
         cls,
         d: tp.Any,
         source: tp.Optional[CustomTemplate] = None,
-        document_text_path: tp.Optional[tp.MaybeList[tp.PathLikeKey]] = None,
-        document_metadata_path: tp.Optional[tp.MaybeList[tp.PathLikeKey]] = None,
+        text_path: tp.Optional[tp.MaybeList[tp.PathLikeKey]] = None,
+        metadata_path: tp.Optional[tp.MaybeList[tp.PathLikeKey]] = None,
         skip_missing: bool = False,
         dump_kwargs: tp.KwargsLike = None,
         template_context: tp.KwargsLike = None,
@@ -1688,68 +1692,68 @@ class ToDocumentsAssetFunc(AssetFunc):
                 new_d = new_d(d)
         else:
             new_d = d
-        if document_text_path is None and document_metadata_path is None:
+        if text_path is None and metadata_path is None:
             text = dump(new_d, **dump_kwargs)
             metadata = {}
         else:
-            if document_text_path is not None:
-                if not isinstance(document_text_path, list):
+            if text_path is not None:
+                if not isinstance(text_path, list):
                     try:
-                        x = search.get_pathlike_key(new_d, document_text_path, keep_path=False)
+                        x = search.get_pathlike_key(new_d, text_path, keep_path=False)
                     except (KeyError, IndexError, AttributeError) as e:
                         if not skip_missing:
                             raise e
                         return NoResult
-                    document_text_path = [document_text_path]
+                    text_path = [text_path]
                     text = dump(x, **dump_kwargs)
                 else:
-                    document_text_path_dct = {}
-                    for p in document_text_path:
+                    text_path_dct = {}
+                    for p in text_path:
                         try:
                             x = search.get_pathlike_key(new_d, p, keep_path=False)
                         except (KeyError, IndexError, AttributeError) as e:
                             if not skip_missing:
                                 raise e
                             continue
-                        document_text_path_dct[p] = x
-                    document_text_path = list(document_text_path_dct.keys())
-                    text = dump(search.unflatten_obj(document_text_path_dct), **dump_kwargs)
+                        text_path_dct[p] = x
+                    text_path = list(text_path_dct.keys())
+                    text = dump(search.unflatten_obj(text_path_dct), **dump_kwargs)
             else:
                 text = None
-                document_text_path = []
-            if document_metadata_path is not None:
-                if not isinstance(document_metadata_path, list):
+                text_path = []
+            if metadata_path is not None:
+                if not isinstance(metadata_path, list):
                     try:
-                        x = search.get_pathlike_key(new_d, document_metadata_path, keep_path=False)
+                        x = search.get_pathlike_key(new_d, metadata_path, keep_path=False)
                     except (KeyError, IndexError, AttributeError) as e:
                         if not skip_missing:
                             raise e
                         return NoResult
-                    document_metadata_path = [document_metadata_path]
+                    metadata_path = [metadata_path]
                     metadata = x
                 else:
-                    document_metadata_path_dct = {}
-                    for p in document_metadata_path:
+                    metadata_path_dct = {}
+                    for p in metadata_path:
                         try:
                             x = search.get_pathlike_key(new_d, p, keep_path=False)
                         except (KeyError, IndexError, AttributeError) as e:
                             if not skip_missing:
                                 raise e
                             continue
-                        document_metadata_path_dct[p] = x
-                    document_metadata_path = list(document_metadata_path_dct.keys())
-                    metadata = search.unflatten_obj(document_metadata_path_dct)
+                        metadata_path_dct[p] = x
+                    metadata_path = list(metadata_path_dct.keys())
+                    metadata = search.unflatten_obj(metadata_path_dct)
             else:
                 metadata = None
-                document_metadata_path = []
+                metadata_path = []
             if text is None:
                 new_d2 = new_d
-                for p in document_metadata_path:
+                for p in metadata_path:
                     new_d2 = search.remove_pathlike_key(new_d2, p, make_copy=True)
                 text = dump(new_d2, **dump_kwargs)
             if metadata is None:
                 new_d2 = new_d
-                for p in document_text_path:
+                for p in text_path:
                     new_d2 = search.remove_pathlike_key(new_d2, p, make_copy=True)
                 metadata = new_d2
         document_kwargs = substitute_templates(document_kwargs, _template_context, eval_id="document_kwargs")

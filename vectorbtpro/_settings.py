@@ -2032,11 +2032,6 @@ knowledge = frozen_cfg(
     ),
     in_dumps=False,
     dump_kwargs=flex_cfg(),
-    document_text_path=None,
-    document_metadata_path=None,
-    document_kwargs=flex_cfg(
-        text_template=Id("---\n{metadata_str}\n---\n{content}"),
-    ),
     sort_keys=False,
     ignore_empty=True,
     describe_kwargs=flex_cfg(
@@ -2188,6 +2183,23 @@ knowledge = frozen_cfg(
     ),
     open_browser=True,
     chat=flex_cfg(
+        llama_index=flex_cfg(
+            text_path=None,
+            metadata_path=None,
+            document_kwargs=flex_cfg(
+                text_template=Id("---\n{metadata_str}\n---\n{content}"),
+            ),
+            pipeline=None,
+            pipeline_kwargs=flex_cfg(),
+            run_kwargs=flex_cfg(
+                show_progress=True,
+            ),
+            persist_kwargs=flex_cfg(),
+            index_kwargs=flex_cfg(),
+            similarity_top_k=None,
+            similarity_cutoff=None,
+            retriever_kwargs=flex_cfg(),
+        ),
         stream=True,
         to_context_kwargs=flex_cfg(),
         max_tokens=120_000,
@@ -2266,13 +2278,15 @@ $context
             allow_prefix=False,
             allow_suffix=False,
             merge_targets=True,
-            document_text_path="content",
-            document_kwargs=flex_cfg(
-                doc_id=RepEval("asset.minimize_link(link)"),
-                excluded_embed_metadata_keys=RepEval("asset.get_setting('minimize_keys')"),
-                excluded_llm_metadata_keys=RepEval("asset.get_setting('minimize_keys')"),
-            ),
             chat=flex_cfg(
+                llama_index=flex_cfg(
+                    text_path="content",
+                    document_kwargs=flex_cfg(
+                        doc_id=RepEval("asset.minimize_link(link)"),
+                        excluded_embed_metadata_keys=RepEval("asset.get_setting('minimize_keys')"),
+                        excluded_llm_metadata_keys=RepEval("asset.get_setting('minimize_keys')"),
+                    ),
+                ),
                 system_prompt="You are an assistant with access to the VectorBT PRO (VBT) Python library "
                 "documentation and Discord history. VBT is a proprietary successor to the open-source "
                 "vectorbt for financial backtesting. As an expert, provide clear and accurate answers "

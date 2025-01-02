@@ -55,12 +55,23 @@ try:
     if not tp.TYPE_CHECKING:
         raise ImportError
     from llama_index.core.llms import LLM as LLMT, ChatMessage as ChatMessageT, ChatResponse as ChatResponseT
-    from llama_index.core.schema import Document as DocumentT
+    from llama_index.core.schema import Document as DocumentT, BaseNode as BaseNodeT, NodeWithScore as NodeWithScoreT
+    from llama_index.core.storage.storage_context import StorageContext as StorageContextT
+    from llama_index.core.indices.vector_store import VectorStoreIndex as VectorStoreIndexT
+    from llama_index.core.ingestion.pipeline import IngestionPipeline as IngestionPipelineT
+    from llama_index.core.base.base_retriever import BaseRetriever as BaseRetrieverT
 except ImportError:
     LLMT = "LLM"
     ChatMessageT = "ChatMessage"
     ChatResponseT = "ChatResponse"
     DocumentT = "Document"
+    BaseNodeT = "BaseNode"
+    NodeWithScoreT = "NodeWithScore"
+    QueryTypeT = "QueryType"
+    StorageContextT = "StorageContext"
+    VectorStoreIndexT = "VectorStoreIndex"
+    IngestionPipelineT = "IngestionPipeline"
+    BaseRetrieverT = "BaseRetriever"
 try:
     if not tp.TYPE_CHECKING:
         raise ImportError
@@ -79,7 +90,7 @@ __all__ = [
     "IPythonMarkdownFormatter",
     "IPythonHTMLFormatter",
     "HTMLFileFormatter",
-    "Indexable",
+    "LlamaIndexable",
     "Contextable",
 ]
 
@@ -650,7 +661,7 @@ class IPythonMarkdownFormatter(IPythonFormatter):
             **kwargs,
         )
 
-        to_markdown_kwargs = self.resolve_setting(to_markdown_kwargs, "to_markdown_kwargs", merge=True, sub_path="chat")
+        to_markdown_kwargs = self.resolve_setting(to_markdown_kwargs, "to_markdown_kwargs", sub_path="chat", merge=True)
 
         self._to_markdown_kwargs = to_markdown_kwargs
 
@@ -690,8 +701,8 @@ class IPythonHTMLFormatter(IPythonFormatter):
             **kwargs,
         )
 
-        to_markdown_kwargs = self.resolve_setting(to_markdown_kwargs, "to_markdown_kwargs", merge=True, sub_path="chat")
-        to_html_kwargs = self.resolve_setting(to_html_kwargs, "to_html_kwargs", merge=True, sub_path="chat")
+        to_markdown_kwargs = self.resolve_setting(to_markdown_kwargs, "to_markdown_kwargs", sub_path="chat", merge=True)
+        to_html_kwargs = self.resolve_setting(to_html_kwargs, "to_html_kwargs", sub_path="chat", merge=True)
 
         self._to_markdown_kwargs = to_markdown_kwargs
         self._to_html_kwargs = to_html_kwargs
@@ -762,14 +773,14 @@ class HTMLFileFormatter(ContentFormatter):
         refresh_page = self.resolve_setting(refresh_page, "refresh_page", sub_path="chat")
         cache = self.resolve_setting(cache, "cache", sub_path="chat")
         cache_dir = self.resolve_setting(cache_dir, "cache_dir", sub_path="chat")
-        cache_mkdir_kwargs = self.resolve_setting(cache_mkdir_kwargs, "cache_mkdir_kwargs", merge=True, sub_path="chat")
+        cache_mkdir_kwargs = self.resolve_setting(cache_mkdir_kwargs, "cache_mkdir_kwargs", sub_path="chat", merge=True)
         clear_cache = self.resolve_setting(clear_cache, "clear_cache", sub_path="chat")
         file_prefix_len = self.resolve_setting(file_prefix_len, "file_prefix_len", sub_path="chat")
         file_suffix_len = self.resolve_setting(file_suffix_len, "file_suffix_len", sub_path="chat")
         open_browser = self.resolve_setting(open_browser, "open_browser", sub_path="chat")
-        to_markdown_kwargs = self.resolve_setting(to_markdown_kwargs, "to_markdown_kwargs", merge=True, sub_path="chat")
-        to_html_kwargs = self.resolve_setting(to_html_kwargs, "to_html_kwargs", merge=True, sub_path="chat")
-        format_html_kwargs = self.resolve_setting(format_html_kwargs, "format_html_kwargs", merge=True, sub_path="chat")
+        to_markdown_kwargs = self.resolve_setting(to_markdown_kwargs, "to_markdown_kwargs", sub_path="chat", merge=True)
+        to_html_kwargs = self.resolve_setting(to_html_kwargs, "to_html_kwargs", sub_path="chat", merge=True)
+        format_html_kwargs = self.resolve_setting(format_html_kwargs, "format_html_kwargs", sub_path="chat", merge=True)
 
         self._page_title = page_title
         self._refresh_page = refresh_page
@@ -942,17 +953,165 @@ class HTMLFileFormatter(ContentFormatter):
 # ############# Main classes ############# #
 
 
-class Indexable(HasSettings):
-    """Abstract class that can be converted to an index."""
+class LlamaIndexable(HasSettings):
+    """Abstract class that can be processed by LlamaIndex."""
 
     _settings_path: tp.SettingsPath = "knowledge"
 
-    def to_documents(self, *args, **kwargs) -> tp.Sequence[DocumentT]:
-        """Convert to documents."""
+    def to_llama_documents(self, *args, **kwargs) -> tp.Sequence[DocumentT]:
+        """Convert to documents of type `llama_index.core.schema.Document`."""
         raise NotImplementedError
 
+    def build_llama_pipeline(
+        self,
+        cache: tp.Optional[bool] = None,
+        cache_dir: tp.Optional[tp.PathLike] = None,
+        clear_cache: tp.Optional[bool] = None,
+        persist_kwargs: tp.KwargsLike = None,
+        **pipeline_kwargs,
+    ) -> IngestionPipelineT:
+        """Build a pipeline of type `llama_index.core.ingestion.pipeline.IngestionPipeline`."""
+        from vectorbtpro.utils.module_ import assert_can_import
 
-class Contextable(Indexable):
+        assert_can_import("llama_index")
+        from llama_index.core.ingestion.pipeline import IngestionPipeline
+
+        cache = self.resolve_setting(cache, "cache", sub_path="chat.llama_index")
+        cache_dir_none = cache_dir is None
+        cache_dir = self.resolve_setting(cache_dir, "cache_dir", sub_path="chat.llama_index")
+        clear_cache = self.resolve_setting(clear_cache, "clear_cache", sub_path="chat.llama_index")
+        pipeline_kwargs = self.resolve_setting(
+            pipeline_kwargs, "pipeline_kwargs", sub_path="chat.llama_index", merge=True
+        )
+        persist_kwargs = self.resolve_setting(persist_kwargs, "persist_kwargs", sub_path="chat.llama_index", merge=True)
+
+        pipeline = IngestionPipeline(**pipeline_kwargs)
+        persist_dir = Path(cache_dir)
+        if cache_dir_none:
+            persist_dir /= "llama_pipeline"
+        if cache and not pipeline.disable_cache and persist_dir.exists():
+            if clear_cache:
+                remove_dir(persist_dir, missing_ok=True, with_contents=True)
+            else:
+                pipeline.load(persist_dir=str(persist_dir.resolve()), **persist_kwargs)
+        return pipeline
+
+    def run_llama_pipeline(
+        self,
+        pipeline: tp.Optional[IngestionPipelineT] = None,
+        cache: tp.Optional[bool] = None,
+        cache_dir: tp.Optional[tp.PathLike] = None,
+        cache_mkdir_kwargs: tp.KwargsLike = None,
+        clear_cache: tp.Optional[bool] = None,
+        to_documents_kwargs: tp.KwargsLike = None,
+        build_pipeline_kwargs: tp.KwargsLike = None,
+        persist_kwargs: tp.KwargsLike = None,
+        return_pipeline: bool = False,
+        **run_kwargs,
+    ) -> tp.Union[tp.List[BaseNodeT], tp.Tuple[tp.List[BaseNodeT], IngestionPipelineT]]:
+        """Run the pipeline and return nodes of type `llama_index.core.schema.BaseNode`."""
+        pipeline = self.resolve_setting(pipeline, "pipeline", sub_path="chat.llama_index")
+
+        if pipeline is None:
+            if build_pipeline_kwargs is None:
+                build_pipeline_kwargs = {}
+            pipeline = self.build_llama_pipeline(
+                cache=cache,
+                cache_dir=cache_dir,
+                clear_cache=clear_cache,
+                persist_kwargs=persist_kwargs,
+                **build_pipeline_kwargs,
+            )
+
+        cache = self.resolve_setting(cache, "cache", sub_path="chat.llama_index")
+        cache_dir_none = cache_dir is None
+        cache_dir = self.resolve_setting(cache_dir, "cache_dir", sub_path="chat.llama_index")
+        cache_mkdir_kwargs = self.resolve_setting(
+            cache_mkdir_kwargs, "cache_mkdir_kwargs", sub_path="chat.llama_index", merge=True
+        )
+        persist_kwargs = self.resolve_setting(persist_kwargs, "persist_kwargs", sub_path="chat.llama_index", merge=True)
+        run_kwargs = self.resolve_setting(
+            run_kwargs, "run_kwargs", sub_path="chat.llama_index", merge=True
+        )
+
+        if to_documents_kwargs is None:
+            to_documents_kwargs = {}
+        documents = list(self.to_llama_documents(**to_documents_kwargs))
+        nodes = list(pipeline.run(documents=documents, **run_kwargs))
+        persist_dir = Path(cache_dir)
+        if cache_dir_none:
+            persist_dir /= "llama_pipeline"
+        if cache and not pipeline.disable_cache:
+            check_mkdir(persist_dir, **cache_mkdir_kwargs)
+            pipeline.persist(persist_dir=str(persist_dir.resolve()), **persist_kwargs)
+        if return_pipeline:
+            return nodes, pipeline
+        return nodes
+
+    def build_llama_index(
+        self,
+        run_pipeline_kwargs: tp.KwargsLike = None,
+        return_nodes: bool = False,
+        **index_kwargs,
+    ) -> tp.Union[VectorStoreIndexT, tp.Tuple[VectorStoreIndexT, tp.Sequence[BaseNodeT]]]:
+        """Build an index of type `llama_index.core.indices.vector_store.VectorStoreIndex`."""
+        from vectorbtpro.utils.module_ import assert_can_import
+
+        assert_can_import("llama_index")
+        from llama_index.core.storage.storage_context import StorageContext
+        from llama_index.core.indices.vector_store import VectorStoreIndex
+
+        index_kwargs = self.resolve_setting(index_kwargs, "index_kwargs", sub_path="chat.llama_index", merge=True)
+
+        if run_pipeline_kwargs is None:
+            run_pipeline_kwargs = {}
+        nodes, pipeline = self.run_llama_pipeline(return_pipeline=True, **run_pipeline_kwargs)
+        if pipeline.vector_store is not None and "storage_context" not in index_kwargs:
+            index_kwargs["storage_context"] = StorageContext.from_defaults(vector_store=pipeline.vector_store)
+        index = VectorStoreIndex(nodes=nodes, **index_kwargs)
+        if return_nodes:
+            return index, nodes
+        return index
+
+    def retrieve_llama_nodes(
+        self,
+        query: str,
+        run_pipeline_kwargs: tp.KwargsLike = None,
+        index_kwargs: tp.KwargsLike = None,
+        similarity_top_k: tp.Optional[int] = None,
+        similarity_cutoff: tp.Optional[float] = None,
+        **retriever_kwargs,
+    ) -> tp.List[NodeWithScoreT]:
+        """Retrieve nodes of type `llama_index.core.schema.NodeWithScore`."""
+        from vectorbtpro.utils.module_ import assert_can_import
+
+        assert_can_import("llama_index")
+        from llama_index.core.postprocessor import SimilarityPostprocessor
+
+        similarity_top_k = self.resolve_setting(similarity_top_k, "similarity_top_k", sub_path="chat.llama_index")
+        similarity_cutoff = self.resolve_setting(similarity_cutoff, "similarity_cutoff", sub_path="chat.llama_index")
+        retriever_kwargs = self.resolve_setting(
+            retriever_kwargs, "retriever_kwargs", sub_path="chat.llama_index", merge=True
+        )
+
+        if index_kwargs is None:
+            index_kwargs = {}
+        index, nodes = self.build_llama_index(
+            run_pipeline_kwargs=run_pipeline_kwargs,
+            return_nodes=True,
+            **index_kwargs,
+        )
+        if similarity_top_k is None:
+            similarity_top_k = len(nodes)
+        retriever = index.as_retriever(similarity_top_k=similarity_top_k, **retriever_kwargs)
+        nodes = retriever.retrieve(query)
+        if similarity_cutoff is not None:
+            processor = SimilarityPostprocessor(similarity_cutoff=similarity_cutoff)
+            nodes = processor.postprocess_nodes(nodes)
+        return list(nodes)
+
+
+class Contextable(LlamaIndexable):
     """Abstract class that can be converted into a context."""
 
     def to_context(self, *args, **kwargs) -> str:
@@ -1010,7 +1169,7 @@ class Contextable(Indexable):
         model: tp.Optional[str] = None,
     ) -> int:
         """Count the number of tokens in the context."""
-        to_context_kwargs = self.resolve_setting(to_context_kwargs, "to_context_kwargs", merge=True, sub_path="chat")
+        to_context_kwargs = self.resolve_setting(to_context_kwargs, "to_context_kwargs", sub_path="chat", merge=True)
         context = self.to_context(**to_context_kwargs)
         encoding = self.resolve_encoding(tokenizer=tokenizer, model=model)
         return len(encoding.encode(context))
@@ -1057,12 +1216,12 @@ class Contextable(Indexable):
         """Build messages for chatting."""
         if chat_history is None:
             chat_history = []
-        to_context_kwargs = self.resolve_setting(to_context_kwargs, "to_context_kwargs", merge=True, sub_path="chat")
+        to_context_kwargs = self.resolve_setting(to_context_kwargs, "to_context_kwargs", sub_path="chat", merge=True)
         max_tokens = self.resolve_setting(max_tokens, "max_tokens", sub_path="chat")
         system_prompt = self.resolve_setting(system_prompt, "system_prompt", sub_path="chat")
         system_as_user = self.resolve_setting(system_as_user, "system_as_user", sub_path="chat")
         context_prompt = self.resolve_setting(context_prompt, "context_prompt", sub_path="chat")
-        template_context = self.resolve_setting(template_context, "template_context", merge=True, sub_path="chat")
+        template_context = self.resolve_setting(template_context, "template_context", sub_path="chat", merge=True)
         silence_warnings = self.resolve_setting(silence_warnings, "silence_warnings", sub_path="chat")
 
         if isinstance(context_prompt, str):
@@ -1246,20 +1405,20 @@ class Contextable(Indexable):
         cache = cls_or_self.resolve_setting(cache, "cache", sub_path="chat")
         cache_dir = cls_or_self.resolve_setting(cache_dir, "cache_dir", sub_path="chat")
         cache_mkdir_kwargs = cls_or_self.resolve_setting(
-            cache_mkdir_kwargs, "cache_mkdir_kwargs", merge=True, sub_path="chat"
+            cache_mkdir_kwargs, "cache_mkdir_kwargs", sub_path="chat", merge=True
         )
         file_prefix_len = cls_or_self.resolve_setting(file_prefix_len, "file_prefix_len", sub_path="chat")
         file_suffix_len = cls_or_self.resolve_setting(file_suffix_len, "file_suffix_len", sub_path="chat")
         open_browser = cls_or_self.resolve_setting(open_browser, "open_browser", sub_path="chat")
         to_markdown_kwargs = cls_or_self.resolve_setting(
-            to_markdown_kwargs, "to_markdown_kwargs", merge=True, sub_path="chat"
+            to_markdown_kwargs, "to_markdown_kwargs", sub_path="chat", merge=True
         )
-        to_html_kwargs = cls_or_self.resolve_setting(to_html_kwargs, "to_html_kwargs", merge=True, sub_path="chat")
+        to_html_kwargs = cls_or_self.resolve_setting(to_html_kwargs, "to_html_kwargs", sub_path="chat", merge=True)
         format_html_kwargs = cls_or_self.resolve_setting(
-            format_html_kwargs, "format_html_kwargs", merge=True, sub_path="chat"
+            format_html_kwargs, "format_html_kwargs", sub_path="chat", merge=True
         )
         template_context = cls_or_self.resolve_setting(
-            template_context, "template_context", merge=True, sub_path="chat"
+            template_context, "template_context", sub_path="chat", merge=True
         )
         silence_warnings = cls_or_self.resolve_setting(silence_warnings, "silence_warnings", sub_path="chat")
 
@@ -1290,7 +1449,7 @@ class Contextable(Indexable):
             checks.assert_subclass_of(engine, ChatEngine, arg_name="engine")
             if engine._short_name is not None:
                 kwargs = cls_or_self.resolve_setting(
-                    kwargs, "engines." + engine._short_name, merge=True, sub_path="chat"
+                    kwargs, "engines." + engine._short_name, sub_path="chat", merge=True
                 )
             engine = engine(**kwargs)
         else:

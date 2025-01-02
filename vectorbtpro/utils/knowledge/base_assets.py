@@ -25,7 +25,7 @@ from vectorbtpro.utils.config import Configured
 from vectorbtpro.utils.config import flat_merge_dicts, deep_merge_dicts
 from vectorbtpro.utils.decorators import hybrid_method
 from vectorbtpro.utils.execution import Task, execute, NoResult
-from vectorbtpro.utils.knowledge.chatting import Indexable
+from vectorbtpro.utils.knowledge.chatting import Contextable
 from vectorbtpro.utils.module_ import get_caller_qualname
 from vectorbtpro.utils.parsing import get_func_arg_names
 from vectorbtpro.utils.path_ import dir_tree_from_paths
@@ -48,7 +48,7 @@ class MetaKnowledgeAsset(type(Configured), type(MutableSequence)):
     pass
 
 
-class KnowledgeAsset(Indexable, Configured, MutableSequence, metaclass=MetaKnowledgeAsset):
+class KnowledgeAsset(Contextable, Configured, MutableSequence, metaclass=MetaKnowledgeAsset):
     """Class for working with a knowledge asset.
 
     This class behaves like a mutable sequence.
@@ -1659,27 +1659,27 @@ class KnowledgeAsset(Indexable, Configured, MutableSequence, metaclass=MetaKnowl
             **kwargs,
         )
 
-    def to_documents(
+    def to_llama_documents(
         self,
         source: tp.Union[None, str, tp.Callable, tp.CustomTemplate] = None,
-        document_text_path: tp.Optional[tp.MaybeList[tp.PathLikeKey]] = None,
-        document_metadata_path: tp.Optional[tp.MaybeList[tp.PathLikeKey]] = None,
+        text_path: tp.Optional[tp.MaybeList[tp.PathLikeKey]] = None,
+        metadata_path: tp.Optional[tp.MaybeList[tp.PathLikeKey]] = None,
         skip_missing: tp.Optional[bool] = None,
         dump_kwargs: tp.KwargsLike = None,
         template_context: tp.KwargsLike = None,
         **kwargs,
     ) -> MaybeKnowledgeAssetT:
-        """Convert to documents.
+        """Convert to documents of type `llama_index.core.schema.Document`.
 
         Use argument `source` to also preprocess the source. It can be a string or function
         (will become a template), or any custom template. In this template, the index of the data item
         is represented by "i", the data item itself is represented by "d" while its fields are
         represented by their names.
 
-        Use argument `document_text_path` to specify one or more paths to the content. If one path is provided,
+        Use argument `text_path` to specify one or more paths to the content. If one path is provided,
         dumps it and uses it as text. If multiple paths are provided, merges them into one object, dumps
-        the object, and uses it as text. If `document_text_path` is None, uses paths that are not part of
-        `document_metadata_path`. The same for `document_metadata_path`, but without dumping.
+        the object, and uses it as text. If `text_path` is None, uses paths that are not part of
+        `metadata_path`. The same for `metadata_path`, but without dumping.
 
         If `skip_missing` is True and any path is missing in the data item, will either skip the path
         if multiple paths are provided or skip the entire data item if only one path is provided.
@@ -1689,10 +1689,10 @@ class KnowledgeAsset(Indexable, Configured, MutableSequence, metaclass=MetaKnowl
         Keyword arguments are passed to `llama_index.core.schema.Document`. Before passing,
         any templates are substituted."""
         return self.apply(
-            "to_documents",
+            "to_llama_docs",
             source=source,
-            document_text_path=document_text_path,
-            document_metadata_path=document_metadata_path,
+            text_path=text_path,
+            metadata_path=metadata_path,
             skip_missing=skip_missing,
             dump_kwargs=dump_kwargs,
             template_context=template_context,
