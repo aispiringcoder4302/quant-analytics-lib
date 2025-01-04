@@ -1659,7 +1659,7 @@ class KnowledgeAsset(Contextable, Configured, MutableSequence, metaclass=MetaKno
             **kwargs,
         )
 
-    def to_llama_documents(
+    def to_documents(
         self,
         source: tp.Union[None, str, tp.Callable, tp.CustomTemplate] = None,
         text_path: tp.Optional[tp.MaybeList[tp.PathLikeKey]] = None,
@@ -1669,7 +1669,9 @@ class KnowledgeAsset(Contextable, Configured, MutableSequence, metaclass=MetaKno
         template_context: tp.KwargsLike = None,
         **kwargs,
     ) -> MaybeKnowledgeAssetT:
-        """Convert to documents of type `llama_index.core.schema.Document`.
+        """Convert to documents of type `vectorbtpro.utils.knowledge.chatting.Document`.
+
+        Uses `KnowledgeAsset.apply` on `vectorbtpro.utils.knowledge.base_asset_funcs.ToDocsAssetFunc`.
 
         Use argument `source` to also preprocess the source. It can be a string or function
         (will become a template), or any custom template. In this template, the index of the data item
@@ -1686,10 +1688,10 @@ class KnowledgeAsset(Contextable, Configured, MutableSequence, metaclass=MetaKno
 
         Uses `vectorbtpro.utils.formatting.dump` with `dump_kwargs` for dumping.
 
-        Keyword arguments are passed to `llama_index.core.schema.Document`. Before passing,
-        any templates are substituted."""
+        Keyword arguments are passed to `vectorbtpro.utils.knowledge.chatting.Document`.
+        Before passing, any templates are substituted."""
         return self.apply(
-            "to_llama_docs",
+            "to_docs",
             source=source,
             text_path=text_path,
             metadata_path=metadata_path,

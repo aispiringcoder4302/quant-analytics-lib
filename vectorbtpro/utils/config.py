@@ -1377,7 +1377,7 @@ class MetaConfigured(type):
                     setattr(cls, "_expected_keys_mode", "disable")
                     setattr(cls, "_expected_keys", None)
                 else:
-                    _expected_keys |= set(get_func_arg_names(cls.__init__))
+                    _expected_keys |= set(get_func_arg_names(cls.__init__)).difference({"self"})
                     setattr(cls, "_expected_keys", _expected_keys)
             elif _expected_keys_mode.lower() == "inherit":
                 _expected_keys_mode = getattr(cls, "_expected_keys_mode")

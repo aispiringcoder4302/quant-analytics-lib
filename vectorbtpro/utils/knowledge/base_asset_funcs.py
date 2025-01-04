@@ -1590,10 +1590,10 @@ class DumpAssetFunc(AssetFunc):
         return dump(new_d, dump_engine=dump_engine, **kwargs)
 
 
-class ToLlamaDocsAssetFunc(AssetFunc):
+class ToDocsAssetFunc(AssetFunc):
     """Asset function class for `vectorbtpro.utils.knowledge.base_assets.KnowledgeAsset.to_documents`."""
 
-    _short_name: tp.ClassVar[tp.Optional[str]] = "to_llama_docs"
+    _short_name: tp.ClassVar[tp.Optional[str]] = "to_docs"
 
     _wrap: tp.ClassVar[tp.Optional[str]] = True
 
@@ -1613,16 +1613,16 @@ class ToLlamaDocsAssetFunc(AssetFunc):
             from vectorbtpro.utils.knowledge.base_assets import KnowledgeAsset
 
             asset = KnowledgeAsset
-        text_path = asset.resolve_setting(text_path, "text_path", sub_path="chat.llama_index")
-        metadata_path = asset.resolve_setting(metadata_path, "metadata_path", sub_path="chat.llama_index")
-        skip_missing = asset.resolve_setting(skip_missing, "skip_missing", sub_path="chat.llama_index")
-        dump_kwargs = asset.resolve_setting(dump_kwargs, "dump_kwargs", sub_path="chat.llama_index", merge=True)
+        text_path = asset.resolve_setting(text_path, "text_path", sub_path="chat.indexing")
+        metadata_path = asset.resolve_setting(metadata_path, "metadata_path", sub_path="chat.indexing")
+        skip_missing = asset.resolve_setting(skip_missing, "skip_missing", sub_path="chat.indexing")
+        dump_kwargs = asset.resolve_setting(dump_kwargs, "dump_kwargs", sub_path="chat.indexing", merge=True)
         template_context = asset.resolve_setting(
-            template_context, "template_context", sub_path="chat.llama_index", merge=True
+            template_context, "template_context", sub_path="chat.indexing", merge=True
         )
         template_context = flat_merge_dicts({"asset": asset}, template_context)
         document_kwargs = asset.resolve_setting(
-            document_kwargs, "document_kwargs", sub_path="chat.llama_index", merge=True
+            document_kwargs, "document_kwargs", sub_path="chat.indexing", merge=True
         )
 
         if source is not None:
@@ -1670,11 +1670,6 @@ class ToLlamaDocsAssetFunc(AssetFunc):
         template_context: tp.KwargsLike = None,
         **document_kwargs,
     ) -> tp.Any:
-        from vectorbtpro.utils.module_ import assert_can_import
-
-        assert_can_import("llama_index")
-        from llama_index.core.schema import Document
-
         if dump_kwargs is None:
             dump_kwargs = {}
 

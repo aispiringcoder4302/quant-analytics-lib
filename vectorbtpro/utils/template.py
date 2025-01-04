@@ -22,7 +22,6 @@ from vectorbtpro.utils.search import contains_in_obj, find_and_replace_in_obj
 
 __all__ = [
     "CustomTemplate",
-    "Id",
     "Sub",
     "Rep",
     "RepEval",
@@ -113,24 +112,6 @@ class CustomTemplate(Evaluable, DefineMixin):
         """Abstract method to substitute the template `CustomTemplate.template` using
         the context from merging `CustomTemplate.context` and `context`."""
         raise NotImplementedError
-
-
-class Id(CustomTemplate):
-    """Identity class for returning a template."""
-
-    def get_context_vars(self) -> tp.List[str]:
-        return []
-
-    def substitute(
-        self,
-        context: tp.KwargsLike = None,
-        strict: tp.Optional[bool] = None,
-        eval_id: tp.Optional[tp.Hashable] = None,
-    ) -> tp.Any:
-        """Substitute parts of `Sub.template` as a regular template."""
-        if not self.meets_eval_id(eval_id):
-            return self
-        return self.template
 
 
 class Sub(CustomTemplate):

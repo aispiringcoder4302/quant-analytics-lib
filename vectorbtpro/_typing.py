@@ -51,7 +51,9 @@ if TYPE_CHECKING:
     from vectorbtpro.utils.knowledge.base_asset_funcs import AssetFunc
     from vectorbtpro.utils.knowledge.asset_pipelines import AssetPipeline
     from vectorbtpro.utils.knowledge.base_assets import KnowledgeAsset
+    from vectorbtpro.utils.knowledge.chatting import Tokenizer, Embeddings, Completions
     from vectorbtpro.utils.knowledge.custom_assets import VBTAsset, PagesAsset, MessagesAsset
+    from vectorbtpro.utils.knowledge.formatting import ContentFormatter
     from vectorbtpro.base.indexing import hslice
     from vectorbtpro.base.grouping.base import Grouper
     from vectorbtpro.base.resampling.base import Resampler
@@ -76,9 +78,13 @@ else:
     AssetFunc = "AssetFunc"
     AssetPipeline = "AssetPipeline"
     KnowledgeAsset = "KnowledgeAsset"
+    Tokenizer = "Tokenizer"
+    Embeddings = "Embeddings"
+    Completions = "Completions"
     VBTAsset = "VBTAsset"
     PagesAsset = "PagesAsset"
     MessagesAsset = "MessagesAsset"
+    ContentFormatter = "ContentFormatter"
     hslice = "hslice"
     Grouper = "Grouper"
     Resampler = "Resampler"
@@ -339,7 +345,16 @@ MaybeKnowledgeAsset = MaybeAsset[KnowledgeAsset]
 MaybeVBTAsset = MaybeAsset[VBTAsset]
 MaybePagesAsset = MaybeAsset[PagesAsset]
 MaybeMessagesAsset = MaybeAsset[MessagesAsset]
-ChatHistory = Optional[MutableSequence[str]]
+ContentFormatterLike = Union[None, str, MaybeType[ContentFormatter]]
+TokenizerLike = Union[None, str, MaybeType[Tokenizer]]
+EmbeddingsLike = Union[None, str, MaybeType[Embeddings]]
+EmbeddingOutput = List[float]
+EmbeddingsOutput = List[List[float]]
+MaybeEmbeddingsOutput = MaybeList[List[float]]
+CompletionsLike = Union[None, str, MaybeType[Completions]]
+ChatMessage = dict
+ChatMessages = List[ChatMessage]
+ChatHistory = MutableSequence[ChatMessage]
 ChatOutput = Union[Optional[Path], Tuple[Any, Optional[Path]]]
 
 # Chaining

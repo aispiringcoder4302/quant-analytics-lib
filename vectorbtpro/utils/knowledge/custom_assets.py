@@ -22,7 +22,6 @@ from types import ModuleType
 from vectorbtpro import _typing as tp
 from vectorbtpro.utils import checks
 from vectorbtpro.utils.config import merge_dicts, flat_merge_dicts, reorder_list, HybridConfig
-from vectorbtpro.utils.decorators import class_property
 from vectorbtpro.utils.knowledge.base_assets import KnowledgeAsset
 from vectorbtpro.utils.module_ import prepare_refname, get_caller_qualname
 from vectorbtpro.utils.parsing import get_func_arg_names
@@ -402,7 +401,9 @@ class VBTAsset(KnowledgeAsset):
 
         If `clear_metadata` is True, removes empty fields from the metadata. Arguments in
         `clear_metadata_kwargs` are passed to `vectorbtpro.utils.knowledge.base_asset_funcs.FindRemoveAssetFunc`,
-        while `dump_metadata_kwargs` are passed to `vectorbtpro.utils.knowledge.base_asset_funcs.DumpAssetFunc`."""
+        while `dump_metadata_kwargs` are passed to `vectorbtpro.utils.knowledge.base_asset_funcs.DumpAssetFunc`.
+
+        Last keyword arguments in `kwargs` are passed to `vectorbtpro.utils.knowledge.formatting.to_markdown`."""
         return self.apply(
             "to_markdown",
             root_metadata_key=root_metadata_key,
@@ -478,8 +479,7 @@ class VBTAsset(KnowledgeAsset):
 
         Keyword arguments are passed to `vectorbtpro.utils.knowledge.custom_asset_funcs.ToMarkdownAssetFunc`.
 
-        Last keyword arguments in `kwargs` are forwarded down to
-        `vectorbtpro.utils.knowledge.custom_asset_funcs.ToMarkdownAssetFunc.to_markdown`."""
+        Last keyword arguments in `kwargs` are passed to `vectorbtpro.utils.knowledge.formatting.to_markdown`."""
         import tempfile
         from vectorbtpro.utils.knowledge.custom_asset_funcs import ToMarkdownAssetFunc
 
@@ -541,11 +541,9 @@ class VBTAsset(KnowledgeAsset):
 
         Uses `VBTAsset.apply` on `vectorbtpro.utils.knowledge.custom_asset_funcs.ToHTMLAssetFunc`.
 
-        Arguments in `format_html_kwargs` are passed to
-        `vectorbtpro.utils.knowledge.custom_asset_funcs.ToHTMLAssetFunc.format_html`.
+        Arguments in `format_html_kwargs` are passed to `vectorbtpro.utils.knowledge.formatting.format_html`.
 
-        Last keyword arguments in `kwargs` are forwarded down to
-        `vectorbtpro.utils.knowledge.custom_asset_funcs.ToHTMLAssetFunc.to_html`.
+        Last keyword arguments in `kwargs` are passed to `vectorbtpro.utils.knowledge.formatting.to_html`.
 
         For other arguments, see `VBTAsset.to_markdown`."""
         return self.apply(

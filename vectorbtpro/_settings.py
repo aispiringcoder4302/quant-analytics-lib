@@ -141,7 +141,7 @@ from vectorbtpro import _typing as tp
 from vectorbtpro.utils.checks import is_instance_of
 from vectorbtpro.utils.config import Config
 from vectorbtpro.utils.module_ import check_installed
-from vectorbtpro.utils.template import Id, Sub, RepEval, substitute_templates
+from vectorbtpro.utils.template import Sub, RepEval, substitute_templates
 
 __all__ = [
     "settings",
@@ -2047,105 +2047,91 @@ knowledge = frozen_cfg(
         filter_results=True,
         raise_no_results=False,
     ),
-    to_markdown_kwargs=flex_cfg(
+    open_browser=True,
+    to_markdown_kwargs=flex_cfg(),
+    to_html_kwargs=flex_cfg(),
+    format_html_kwargs=flex_cfg(),
+    formatting=flex_cfg(
         remove_code_title=True,
         even_indentation=True,
-    ),
-    to_html_kwargs=flex_cfg(
         resolve_extensions=True,
         make_links=True,
-        extensions=[
-            "fenced_code",
-            "codehilite",
-            "meta",
-            "admonition",
-            "def_list",
-            "attr_list",
-            "tables",
-            "footnotes",
-            "md_in_html",
-            "toc",
-            "abbr",
-            "pymdownx.tilde",
-            "pymdownx.keys",
-            "pymdownx.details",
-            "pymdownx.inlinehilite",
-            "pymdownx.snippets",
-            "pymdownx.superfences",
-            "pymdownx.tabbed",
-            "pymdownx.progressbar",
-            "pymdownx.magiclink",
-            "pymdownx.emoji",
-            "pymdownx.highlight",
-            "pymdownx.tasklist",
-            "pymdownx.arithmatex",
-        ],
-        extension_configs=flex_cfg(
-            {
-                "codehilite": flex_cfg(
-                    {
-                        "css_class": "highlight",
-                    }
-                ),
-                "pymdownx.superfences": flex_cfg(
-                    {
-                        "preserve_tabs": True,
-                        "custom_fences": [
-                            {
-                                "name": "mermaid",
-                                "class": "mermaid",
-                                "format": mermaid_format,
-                            }
-                        ],
-                    }
-                ),
-                "pymdownx.tabbed": flex_cfg(
-                    {
-                        "alternate_style": True,
-                    }
-                ),
-                "pymdownx.magiclink": flex_cfg(
-                    {
-                        "repo_url_shorthand": True,
-                        "user": "polakowo",
-                        "repo": "vectorbt.pro",
-                    }
-                ),
-                "pymdownx.emoji": flex_cfg(
-                    {
-                        "emoji_index": twemoji_index,
-                        "emoji_generator": twemoji_generator,
-                        "alt": "short",
-                        "options": {
-                            "attributes": {"align": "absmiddle", "height": "20px", "width": "20px"},
-                        },
-                    }
-                ),
-                "pymdownx.highlight": flex_cfg(
-                    {
-                        "css_class": "highlight",
-                        "guess_lang": True,
-                        "anchor_linenums": True,
-                        "line_spans": "__span",
-                        "pygments_lang_class": True,
-                        "extend_pygments_lang": [
-                            {
-                                "name": "pycon3",
-                                "lang": "pycon",
-                                "options": {"python3": True},
-                            }
-                        ],
-                    }
-                ),
-                "pymdownx.arithmatex": flex_cfg(
-                    {
-                        "generic": True,
-                    }
-                ),
-            }
+        markdown_kwargs=flex_cfg(
+            extensions=[
+                "fenced_code",
+                "codehilite",
+                "meta",
+                "admonition",
+                "def_list",
+                "attr_list",
+                "tables",
+                "footnotes",
+                "md_in_html",
+                "toc",
+                "abbr",
+                "pymdownx.tilde",
+                "pymdownx.keys",
+                "pymdownx.details",
+                "pymdownx.inlinehilite",
+                "pymdownx.snippets",
+                "pymdownx.superfences",
+                "pymdownx.tabbed",
+                "pymdownx.progressbar",
+                "pymdownx.magiclink",
+                "pymdownx.emoji",
+                "pymdownx.highlight",
+                "pymdownx.tasklist",
+                "pymdownx.arithmatex",
+            ],
+            extension_configs={
+                "codehilite": {
+                    "css_class": "highlight",
+                },
+                "pymdownx.superfences": {
+                    "preserve_tabs": True,
+                    "custom_fences": [
+                        {
+                            "name": "mermaid",
+                            "class": "mermaid",
+                            "format": mermaid_format,
+                        }
+                    ],
+                },
+                "pymdownx.tabbed": {
+                    "alternate_style": True,
+                },
+                "pymdownx.magiclink": {
+                    "repo_url_shorthand": True,
+                    "user": "polakowo",
+                    "repo": "vectorbt.pro",
+                },
+                "pymdownx.emoji": {
+                    "emoji_index": twemoji_index,
+                    "emoji_generator": twemoji_generator,
+                    "alt": "short",
+                    "options": {
+                        "attributes": {"align": "absmiddle", "height": "20px", "width": "20px"},
+                    },
+                },
+                "pymdownx.highlight": {
+                    "css_class": "highlight",
+                    "guess_lang": True,
+                    "anchor_linenums": True,
+                    "line_spans": "__span",
+                    "pygments_lang_class": True,
+                    "extend_pygments_lang": [
+                        {
+                            "name": "pycon3",
+                            "lang": "pycon",
+                            "options": {"python3": True},
+                        }
+                    ],
+                },
+                "pymdownx.arithmatex": {
+                    "generic": True,
+                },
+            },
         ),
-    ),
-    format_html_kwargs=flex_cfg(
         use_pygments=None,
         pygments_kwargs=flex_cfg(),
         style_extras=[],
@@ -2180,32 +2166,28 @@ knowledge = frozen_cfg(
             ocument$.subscribe(()=>{MathJax.startup.output.clearCache(),MathJax.typesetClear(),MathJax.texRes
             et(),MathJax.typesetPromise()});</script>""",
         ],
-    ),
-    open_browser=True,
-    chat=flex_cfg(
-        llama_index=flex_cfg(
-            text_path=None,
-            metadata_path=None,
-            document_kwargs=flex_cfg(
-                text_template=Id("---\n{metadata_str}\n---\n{content}"),
+        output_to=None,
+        flush_output=True,
+        buffer_output=True,
+        close_output=None,
+        update_interval=None,
+        formatter="ipython_auto",
+        formatter_configs=flex_cfg(
+            plain=flex_cfg(),
+            ipython=flex_cfg(),
+            ipython_markdown=flex_cfg(),
+            ipython_html=flex_cfg(),
+            html=flex_cfg(
+                refresh_page=True,
+                file_prefix_len=20,
+                file_suffix_len=6,
             ),
-            pipeline=None,
-            pipeline_kwargs=flex_cfg(),
-            run_kwargs=flex_cfg(
-                show_progress=True,
-            ),
-            persist_kwargs=flex_cfg(),
-            index_kwargs=flex_cfg(),
-            similarity_top_k=None,
-            similarity_cutoff=None,
-            retriever_kwargs=flex_cfg(),
         ),
+    ),
+    chat=flex_cfg(
         stream=True,
         to_context_kwargs=flex_cfg(),
         max_tokens=120_000,
-        tokenizer="model_or_o200k_base",
-        tokens_per_message=3,
-        tokens_per_name=1,
         system_prompt="You are a helpful assistant. Given the context information and not prior knowledge, answer the query.",
         system_as_user=False,
         context_prompt=Sub(
@@ -2214,17 +2196,34 @@ knowledge = frozen_cfg(
 $context
 ---------------------"""
         ),
-        display_format="ipython_auto",
-        output_to=None,
-        flush_output=True,
-        buffer_output=True,
-        close_output=None,
-        update_interval=None,
-        refresh_page=True,
-        file_prefix_len=20,
-        file_suffix_len=6,
-        engine="auto",
-        engines=flex_cfg(
+        tokenizer="tiktoken",
+        tokenizer_configs=flex_cfg(
+            tiktoken=flex_cfg(
+                encoding="model_or_o200k_base",
+                model=None,
+                tokens_per_message=3,
+                tokens_per_name=1,
+            ),
+        ),
+        embeddings="auto",
+        embeddings_configs=flex_cfg(
+            openai=flex_cfg(
+                model="text-embedding-3-small",
+            ),
+            litellm=flex_cfg(
+                model="text-embedding-3-small",
+            ),
+            llama_index=flex_cfg(
+                embedding="openai",
+                embedding_configs=flex_cfg(
+                    openai=flex_cfg(
+                        model="text-embedding-3-small",
+                    )
+                ),
+            ),
+        ),
+        completions="auto",
+        completions_configs=flex_cfg(
             openai=flex_cfg(
                 model="gpt-4o",
             ),
@@ -2253,12 +2252,14 @@ $context
             chunk_size=8192,
             minimize_keys=[],
             minimize_links=False,
-            minimize_link_rules={
-                r"(https://vectorbt\.pro/pvt_[a-zA-Z0-9]+)": "$pvt_site",
-                r"(https://vectorbt\.pro)": "$pub_site",
-                r"(https://discord\.com/channels/[0-9]+)": "$discord",
-                r"(https://github\.com/polakowo/vectorbt\.pro)": "$github",
-            },
+            minimize_link_rules=flex_cfg(
+                {
+                    r"(https://vectorbt\.pro/pvt_[a-zA-Z0-9]+)": "$pvt_site",
+                    r"(https://vectorbt\.pro)": "$pub_site",
+                    r"(https://discord\.com/channels/[0-9]+)": "$discord",
+                    r"(https://github\.com/polakowo/vectorbt\.pro)": "$github",
+                }
+            ),
             root_metadata_key=None,
             aggregate_fields=False,
             parent_links_only=True,
@@ -2279,14 +2280,6 @@ $context
             allow_suffix=False,
             merge_targets=True,
             chat=flex_cfg(
-                llama_index=flex_cfg(
-                    text_path="content",
-                    document_kwargs=flex_cfg(
-                        doc_id=RepEval("asset.minimize_link(link)"),
-                        excluded_embed_metadata_keys=RepEval("asset.get_setting('minimize_keys')"),
-                        excluded_llm_metadata_keys=RepEval("asset.get_setting('minimize_keys')"),
-                    ),
-                ),
                 system_prompt="You are an assistant with access to the VectorBT PRO (VBT) Python library "
                 "documentation and Discord history. VBT is a proprietary successor to the open-source "
                 "vectorbt for financial backtesting. As an expert, provide clear and accurate answers "

@@ -33,3 +33,4 @@ if TYPE_CHECKING:
     from vectorbtpro.utils.knowledge.chatting import *
     from vectorbtpro.utils.knowledge.custom_asset_funcs import *
     from vectorbtpro.utils.knowledge.custom_assets import *
+    from vectorbtpro.utils.knowledge.formatting import *

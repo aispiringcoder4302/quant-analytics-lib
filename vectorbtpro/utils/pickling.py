@@ -609,6 +609,11 @@ class Pickleable(Base):
                 return False
             return True
 
+        def _preprocess_key(k):
+            k = k.replace(":", "__COL__")
+            k = k.replace("=", "__EQ__")
+            return k
+
         # Flatten nested dicts
         if top_name is None:
             top_name = "top"
@@ -620,6 +625,7 @@ class Pickleable(Base):
             parent_k, k, v = stack.pop(0)
             if not isinstance(k, str):
                 raise TypeError("Dictionary keys must be strings")
+
             if parent_k is not None and use_refs and _is_referable(k):
                 if id(v) in id_paths:
                     v = "&" + id_paths[id(v)]
@@ -643,6 +649,7 @@ class Pickleable(Base):
                     v = {"_": "_"}
                 i = 0
                 for k2, v2 in v.items():
+                    k2 = _preprocess_key(k2)
                     stack.insert(i, (_k, k2, v2))
                     i += 1
             else:
@@ -662,6 +669,7 @@ class Pickleable(Base):
                         new_v = new_v["init_kwargs"]
                     else:
                         new_v = {k + "~": v for k, v in new_v.items()}
+                    k = _preprocess_key(k)
                     stack.insert(0, (parent_k, k + " @" + class_id, new_v))
                 else:
                     if parent_k is None:
@@ -826,6 +834,11 @@ class Pickleable(Base):
         except configparser.MissingSectionHeaderError as e:
             parser.read_string("[top]\n" + str_)
 
+        def _preprocess_key(k):
+            k = k.replace("__COL__", ":")
+            k = k.replace("__EQ__", "=")
+            return k
+
         def _get_path(k):
             if "@" in k:
                 return k.split("@")[0].strip()
@@ -834,6 +847,7 @@ class Pickleable(Base):
         dct = {}
         has_top_section = False
         for k in parser.sections():
+            k = _preprocess_key(k)
             v = dict(parser.items(k))
             if _get_path(k) == "top":
                 has_top_section = True
@@ -841,6 +855,7 @@ class Pickleable(Base):
                 k = "top." + k
             new_v = {}
             for k2, v2 in v.items():
+                k2 = _preprocess_key(k2)
                 if use_refs and v2.startswith("&") and not v2[1:].startswith("top."):
                     new_v[k2] = "&top." + v2[1:]
                 else:
