@@ -1114,7 +1114,7 @@ class HasSettings(Base):
     def get_path_setting(
         cls,
         path: tp.PathLikeKey,
-        key: str,
+        key: tp.PathLikeKey,
         default: tp.Any = MISSING,
         sub_path: tp.Optional[tp.PathLikeKey] = None,
         sub_path_only: bool = False,
@@ -1155,7 +1155,7 @@ class HasSettings(Base):
     @classmethod
     def get_setting(
         cls,
-        key: str,
+        key: tp.PathLikeKey,
         default: tp.Any = MISSING,
         path_id: tp.Optional[tp.Hashable] = None,
         inherit: bool = True,
@@ -1214,7 +1214,7 @@ class HasSettings(Base):
     def has_path_setting(
         cls,
         path: tp.PathLikeKey,
-        key: str,
+        key: tp.PathLikeKey,
         sub_path: tp.Optional[tp.PathLikeKey] = None,
         sub_path_only: bool = False,
     ) -> bool:
@@ -1228,7 +1228,7 @@ class HasSettings(Base):
     @classmethod
     def has_setting(
         cls,
-        key: str,
+        key: tp.PathLikeKey,
         path_id: tp.Optional[tp.Hashable] = None,
         inherit: bool = True,
         sub_path: tp.Optional[tp.PathLikeKey] = None,
@@ -1246,7 +1246,7 @@ class HasSettings(Base):
     def resolve_setting(
         cls,
         value: tp.Optional[tp.Any],
-        key: str,
+        key: tp.PathLikeKey,
         default: tp.Any = MISSING,
         path_id: tp.Optional[tp.Hashable] = None,
         inherit: bool = True,

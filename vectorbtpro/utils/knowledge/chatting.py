@@ -507,7 +507,7 @@ def embed(query: tp.MaybeList[str], embeddings: tp.EmbeddingsLike = None, **kwar
     """Get embedding(s) for one or more queries.
 
     Resolves `embeddings` with `resolve_embeddings`. Keyword arguments are passed to either
-    initialize a class or replace an instance."""
+    initialize a class or replace an instance of `Embeddings`."""
     embeddings = resolve_embeddings(embeddings=embeddings)
     if isinstance(embeddings, type):
         embeddings = embeddings(**kwargs)
@@ -523,6 +523,8 @@ def embed(query: tp.MaybeList[str], embeddings: tp.EmbeddingsLike = None, **kwar
 
 class Completions(Configured):
     """Abstract class for completions.
+
+    For argument descriptions, see their properties, like `Completions.chat_history`.
 
     For defaults, see `chat` in `vectorbtpro._settings.knowledge`."""
 
@@ -643,7 +645,7 @@ class Completions(Configured):
     def tokenizer_kwargs(self) -> tp.Kwargs:
         """Keyword arguments passed to `Completions.tokenizer`.
 
-        Used either to initialize a class or replace an instance."""
+        Used either to initialize a class or replace an instance of `Tokenizer`."""
         return self._tokenizer_kwargs
 
     @property
@@ -679,7 +681,8 @@ class Completions(Configured):
     def formatter_kwargs(self) -> tp.Kwargs:
         """Keyword arguments passed to `Completions.formatter`.
 
-        Used either to initialize a class or replace an instance."""
+        Used either to initialize a class or replace an instance of
+        `vectorbtpro.utils.knowledge.formatting.ContentFormatter`."""
         return self._formatter_kwargs
 
     @property
@@ -1212,7 +1215,7 @@ def complete(message: str, completions: tp.CompletionsLike = None, **kwargs) -> 
     """Get completion for a message.
 
     Resolves `completions` with `resolve_completions`. Keyword arguments are passed to either
-    initialize a class or replace an instance."""
+    initialize a class or replace an instance of `Completions`."""
     completions = resolve_completions(completions=completions)
     if isinstance(completions, type):
         completions = completions(**kwargs)
@@ -1263,9 +1266,9 @@ class Contextable(HasSettings):
         to_context_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> tp.ChatOutput:
-        """Chat with an LLM and the dumped asset as a context.
+        """Chat with an LLM while using the instance as a context.
 
-        Uses `completion`.
+        Uses `complete`.
 
         Usage:
             ```pycon
@@ -1290,4 +1293,4 @@ class Contextable(HasSettings):
             to_context_kwargs, "to_context_kwargs", sub_path="chat", merge=True
         )
         context = cls_or_self.to_context(**to_context_kwargs)
-        return completion(message, context=context, chat_history=chat_history, **kwargs)
+        return complete(message, context=context, chat_history=chat_history, **kwargs)

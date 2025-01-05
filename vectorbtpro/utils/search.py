@@ -174,7 +174,32 @@ def combine_pathlike_keys(
 
 
 def get_pathlike_key(obj: tp.Any, key: tp.PathLikeKey, keep_path: bool = False) -> tp.Any:
-    """Get the value under a path-like key in an object."""
+    """Get the value under a path-like key in an object.
+
+    Paths can be tuples out of individual tokens, or a string with tokens.
+    Each token can be either a key in a mapping, a position in a sequence, or an attribute.
+
+    Usage:
+        ```pycon
+        >>> obj = dict(a=[dict(b="cde")])
+        >>> vbt.utils.search.get_pathlike_key(obj, "a")
+        [{'b': 'cde'}]
+
+        >>> vbt.utils.search.get_pathlike_key(obj, ("a", 0))
+        >>> vbt.utils.search.get_pathlike_key(obj, "a.0")
+        >>> vbt.utils.search.get_pathlike_key(obj, "a[0]")
+        {'b': 'cde'}
+
+        >>> vbt.utils.search.get_pathlike_key(obj, ("a", 0, "b"))
+        >>> vbt.utils.search.get_pathlike_key(obj, "a[0].b")
+        >>> vbt.utils.search.get_pathlike_key(obj, "a[0]['b']")
+        'cde'
+
+        >>> vbt.utils.search.get_pathlike_key(obj, ("a", 0, "b", 1))
+        >>> vbt.utils.search.get_pathlike_key(obj, "a[0].b[1]")
+        'd'
+        ```
+    """
     tokens = resolve_pathlike_key(key)
     for token in tokens:
         if isinstance(obj, (set, frozenset)):

@@ -138,6 +138,7 @@ import numpy as np
 from numba import config as nb_config
 
 from vectorbtpro import _typing as tp
+from vectorbtpro.utils.attr_ import MISSING
 from vectorbtpro.utils.checks import is_instance_of
 from vectorbtpro.utils.config import Config
 from vectorbtpro.utils.module_ import check_installed
@@ -275,7 +276,7 @@ jitting = frozen_cfg(
     allow_new=False,
     register_new=False,
     jitters=flex_cfg(
-        nb=frozen_cfg(
+        nb=flex_cfg(
             cls="NumbaJitter",
             aliases={"numba"},
             options=flex_cfg(),
@@ -283,7 +284,7 @@ jitting = frozen_cfg(
             resolve_kwargs=flex_cfg(),
             tasks=flex_cfg(),
         ),
-        np=frozen_cfg(
+        np=flex_cfg(
             cls="NumPyJitter",
             aliases={"numpy"},
             options=flex_cfg(),
@@ -630,7 +631,7 @@ _settings["config"] = config
 
 configured = frozen_cfg(
     check_expected_keys_=True,
-    config=frozen_cfg(
+    config=flex_cfg(
         options=flex_cfg(
             readonly=True,
             nested=False,
@@ -744,14 +745,14 @@ datetime = frozen_cfg(
     naive_tz="tzlocal()",
     to_fixed_offset=None,
     parse_with_dateparser=True,
-    index=frozen_cfg(
+    index=flex_cfg(
         parse_index=True,
         parse_with_dateparser=False,
     ),
     dateparser_kwargs=flex_cfg(),
     freq_from_n=20,
     tz_naive_ns=True,
-    readable=frozen_cfg(
+    readable=flex_cfg(
         drop_tz=True,
     ),
 )
@@ -1133,7 +1134,7 @@ plotting = frozen_cfg(
         pink="#DD59AA",
     ),
     themes=flex_cfg(
-        light=frozen_cfg(
+        light=flex_cfg(
             color_schema=flex_cfg(
                 blue="#1f77b4",
                 orange="#ff7f0e",
@@ -1148,7 +1149,7 @@ plotting = frozen_cfg(
             ),
             path="__name__/templates/light.json",
         ),
-        dark=frozen_cfg(
+        dark=flex_cfg(
             color_schema=flex_cfg(
                 blue="#1f77b4",
                 orange="#ff7f0e",
@@ -1163,7 +1164,7 @@ plotting = frozen_cfg(
             ),
             path="__name__/templates/dark.json",
         ),
-        seaborn=frozen_cfg(
+        seaborn=flex_cfg(
             color_schema=flex_cfg(
                 blue="rgb(76,114,176)",
                 orange="rgb(221,132,82)",
@@ -1944,7 +1945,7 @@ ${config_doc}
 _settings["pbar"] = pbar
 
 path = frozen_cfg(
-    mkdir=frozen_cfg(
+    mkdir=flex_cfg(
         mkdir=False,
         mode=0o777,
         parents=True,
@@ -2405,6 +2406,48 @@ class SettingsConfig(Config):
                     context=dict(config_doc=config_doc),
                     eval_id="__pdoc__",
                 )
+
+    def get(self, key: tp.PathLikeKey, default: tp.Any = MISSING) -> tp.Any:
+        """Get setting(s) under a path.
+
+        See `vectorbtpro.utils.search.get_pathlike_key` for path format."""
+        from vectorbtpro.utils.search import get_pathlike_key
+
+        try:
+            return get_pathlike_key(self, key)
+        except (KeyError, IndexError, AttributeError) as e:
+            if default is MISSING:
+                raise e
+            return default
+
+    def set(self, key: tp.PathLikeKey, value: tp.Any, default_config_type: tp.Type[Config] = flex_cfg) -> None:
+        """Set setting(s) under a path.
+
+        See `vectorbtpro.utils.search.get_pathlike_key` for path format."""
+        from vectorbtpro.utils.search import resolve_pathlike_key
+
+        tokens = resolve_pathlike_key(key)
+        obj = self
+        for i, token in enumerate(tokens):
+            if isinstance(obj, Config):
+                if token not in obj:
+                    obj[token] = default_config_type()
+            if i < len(tokens) - 1:
+                if isinstance(obj, (set, frozenset)):
+                    obj = list(obj)[token]
+                elif hasattr(obj, "__getitem__"):
+                    obj = obj[token]
+                elif isinstance(token, str) and hasattr(obj, token):
+                    obj = getattr(obj, token)
+                else:
+                    raise TypeError(f"Cannot navigate object of type {type(obj).__name__}")
+            else:
+                if hasattr(obj, "__setitem__"):
+                    obj[token] = value
+                elif hasattr(obj, "__dict__"):
+                    setattr(obj, token, value)
+                else:
+                    raise TypeError(f"Cannot modify object of type {type(obj).__name__}")
 
 
 settings = SettingsConfig(_settings)
