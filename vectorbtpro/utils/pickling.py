@@ -911,7 +911,7 @@ class Pickleable(Base):
                             v2 = evaluate(v2.lstrip("!"), context=code_context)
                     else:
                         if (v2.startswith("'") and v2.endswith("'")) or (v2.startswith('"') and v2.endswith('"')):
-                            v2 = v2[1:-1]
+                            v2 = v2[1:-1].replace(r"\n", "\n")
                         elif parse_literals:
                             if v2 == "np.nan":
                                 v2 = np.nan

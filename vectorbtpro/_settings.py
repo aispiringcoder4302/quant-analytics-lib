@@ -2129,12 +2129,88 @@ knowledge = frozen_cfg(
                     ],
                 },
                 "pymdownx.arithmatex": {
-                    "generic": True,
+                    "inline_syntax": ["round"],
                 },
             },
         ),
         use_pygments=None,
         pygments_kwargs=flex_cfg(),
+        html_template="""<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>$title</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 40px;
+            line-height: 1.6;
+            background-color: #fff;
+            color: #000;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            color: #333;
+        }
+        pre {
+            padding: 10px;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+        .admonition {
+            background-color: #f9f9f9;
+            margin: 20px 0;
+            padding: 10px 20px;
+            border-left: 5px solid #ccc;
+            border-radius: 4px;
+        }
+        .admonition > p:first-child {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .admonition.example {
+            background-color: #e7f5ff;
+            border-left-color: #339af0;
+        }
+        .admonition.hint {
+            background-color: #fff4e6;
+            border-left-color: #ffa940;
+        }
+        .admonition.important {
+            background-color: #ffe3e3;
+            border-left-color: #ff6b6b;
+        }
+        .admonition.info {
+            background-color: #e3f2fd;
+            border-left-color: #42a5f5;
+        }
+        .admonition.note {
+            background-color: #e8f5e9;
+            border-left-color: #66bb6a;
+        }
+        .admonition.question {
+            background-color: #f3e5f5;
+            border-left-color: #ab47bc;
+        }
+        .admonition.tip {
+            background-color: #fffde7;
+            border-left-color: #ffee58;
+        }
+        .admonition.warning {
+            background-color: #fff3cd;
+            border-left-color: #ffc107;
+        }
+        $style_extras
+    </style>
+    $head_extras
+</head>
+<body>
+    $html_metadata
+    $html_content
+    $body_extras
+</body>
+</html>""",
         style_extras=[],
         head_extras=[],
         body_extras=[
@@ -2191,12 +2267,10 @@ knowledge = frozen_cfg(
         max_tokens=120_000,
         system_prompt="You are a helpful assistant. Given the context information and not prior knowledge, answer the query.",
         system_as_user=False,
-        context_prompt=Sub(
-            f"""Context information is below.
+        context_prompt="""Context information is below.
 ---------------------
 $context
----------------------"""
-        ),
+---------------------""",
         tokenizer="tiktoken",
         tokenizer_configs=flex_cfg(
             tiktoken=flex_cfg(

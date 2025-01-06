@@ -20,9 +20,10 @@ from pathlib import Path
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.utils import checks
-from vectorbtpro.utils.config import Configured, merge_dicts
+from vectorbtpro.utils.config import Configured, merge_dicts, flat_merge_dicts
 from vectorbtpro.utils.module_ import get_caller_qualname
 from vectorbtpro.utils.path_ import check_mkdir, remove_dir
+from vectorbtpro.utils.template import CustomTemplate, Sub, RepFunc
 
 try:
     if not tp.TYPE_CHECKING:
@@ -153,14 +154,16 @@ def to_html(
 
 
 def format_html(
+    html_template: tp.Optional[str] = None,
     title: tp.Optional[str] = None,
     html_metadata: tp.Optional[str] = None,
     html_content: tp.Optional[str] = None,
-    use_pygments: tp.Optional[bool] = None,
-    pygments_kwargs: tp.KwargsLike = None,
     style_extras: tp.Optional[tp.MaybeList[str]] = None,
     head_extras: tp.Optional[tp.MaybeList[str]] = None,
     body_extras: tp.Optional[tp.MaybeList[str]] = None,
+    use_pygments: tp.Optional[bool] = None,
+    pygments_kwargs: tp.KwargsLike = None,
+    template_context: tp.KwargsLike = None,
 ) -> str:
     """Format HTML template.
 
@@ -170,14 +173,17 @@ def format_html(
     Use `style_extras` to inject additional CSS rules outside the predefined ones.
     Use `head_extras` to inject additional HTML elements into the `<head>` section, such as meta tags,
     links to external stylesheets, or scripts. Use `body_extras` to inject JavaScript files or inline
-    scripts at the end of the `<body>`. All of these arguments can be lists."""
+    scripts at the end of the `<body>`. All of these arguments can be lists.
+
+    HTML template is a template that can use all the arguments except those related to pygments.
+    It can be either a custom template, or string or function that will become one."""
     from vectorbtpro._settings import settings
     from vectorbtpro.utils.module_ import check_installed, assert_can_import
 
     formatting_cfg = settings["knowledge"]["formatting"]
-    if use_pygments is None:
-        use_pygments = formatting_cfg["use_pygments"]
-    pygments_kwargs = merge_dicts(formatting_cfg["pygments_kwargs"], pygments_kwargs)
+
+    if html_template is None:
+        html_template = formatting_cfg["html_template"]
     if style_extras is None:
         style_extras = []
     style_extras = formatting_cfg["style_extras"] + style_extras
@@ -187,6 +193,9 @@ def format_html(
     if body_extras is None:
         body_extras = []
     body_extras = formatting_cfg["body_extras"] + body_extras
+    if use_pygments is None:
+        use_pygments = formatting_cfg["use_pygments"]
+    pygments_kwargs = merge_dicts(formatting_cfg["pygments_kwargs"], pygments_kwargs)
 
     if title is None:
         title = ""
@@ -227,81 +236,26 @@ def format_html(
             style_extras = highlight_css
         else:
             style_extras = highlight_css + "\n" + style_extras
-    return f"""<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{title}</title>
-    <style>
-        body {{
-            font-family: Arial, sans-serif;
-            padding: 40px;
-            line-height: 1.6;
-        }}
-        h1, h2, h3, h4, h5, h6 {{
-            color: #333;
-        }}
-        pre {{
-            background-color: #f8f8f8;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            white-space: pre-wrap;
-        }}
-        .admonition {{
-            background-color: #f9f9f9;
-            margin: 20px 0;
-            padding: 10px 20px;
-            border-left: 5px solid #ccc;
-            border-radius: 4px;
-        }}
-        .admonition > p:first-child {{
-            font-weight: bold;
-            margin-bottom: 5px;
-        }}
-        .admonition.example {{
-            background-color: #e7f5ff;
-            border-left-color: #339af0;
-        }}
-        .admonition.hint {{
-            background-color: #fff4e6;
-            border-left-color: #ffa940;
-        }}
-        .admonition.important {{
-            background-color: #ffe3e3;
-            border-left-color: #ff6b6b;
-        }}
-        .admonition.info {{
-            background-color: #e3f2fd;
-            border-left-color: #42a5f5;
-        }}
-        .admonition.note {{
-            background-color: #e8f5e9;
-            border-left-color: #66bb6a;
-        }}
-        .admonition.question {{
-            background-color: #f3e5f5;
-            border-left-color: #ab47bc;
-        }}
-        .admonition.tip {{
-            background-color: #fffde7;
-            border-left-color: #ffee58;
-        }}
-        .admonition.warning {{
-            background-color: #fff3cd;
-            border-left-color: #ffc107;
-        }}
-        {style_extras}
-    </style>
-    {head_extras}
-</head>
-<body>
-    {html_metadata}
-    {html_content}
-    {body_extras}
-</body>
-</html>"""
+    if isinstance(html_template, str):
+        html_template = Sub(html_template)
+    elif checks.is_function(html_template):
+        html_template = RepFunc(html_template)
+    elif not isinstance(html_template, CustomTemplate):
+        raise TypeError(f"HTML template must be a string, function, or template")
+    return html_template.substitute(
+        flat_merge_dicts(
+            dict(
+                title=title,
+                html_metadata=html_metadata,
+                html_content=html_content,
+                style_extras=style_extras,
+                head_extras=head_extras,
+                body_extras=body_extras,
+            ),
+            template_context,
+        ),
+        eval_id="context_prompt",
+    )
 
 
 ContentFormatterT = tp.TypeVar("ContentFormatterT", bound="ContentFormatter")
@@ -681,6 +635,7 @@ class HTMLFileFormatter(ContentFormatter):
         refresh_page: tp.Optional[bool] = None,
         cache: tp.Optional[bool] = None,
         cache_dir: tp.Optional[tp.PathLike] = None,
+        def_cache_suffix: tp.Optional[tp.PathLike] = "html",
         cache_mkdir_kwargs: tp.KwargsLike = None,
         clear_cache: tp.Optional[bool] = None,
         file_prefix_len: tp.Optional[int] = None,
@@ -698,6 +653,7 @@ class HTMLFileFormatter(ContentFormatter):
             refresh_page=refresh_page,
             cache=cache,
             cache_dir=cache_dir,
+            def_cache_suffix=def_cache_suffix,
             cache_mkdir_kwargs=cache_mkdir_kwargs,
             clear_cache=clear_cache,
             file_prefix_len=file_prefix_len,
@@ -711,6 +667,7 @@ class HTMLFileFormatter(ContentFormatter):
 
         refresh_page = self.resolve_setting(refresh_page, "refresh_page", sub_path="formatting")
         cache = self.resolve_setting(cache, "cache", sub_path="formatting")
+        def_cache_dir = cache_dir is None
         cache_dir = self.resolve_setting(cache_dir, "cache_dir", sub_path="formatting")
         cache_mkdir_kwargs = self.resolve_setting(
             cache_mkdir_kwargs, "cache_mkdir_kwargs", sub_path="formatting", merge=True
@@ -726,6 +683,10 @@ class HTMLFileFormatter(ContentFormatter):
         format_html_kwargs = self.resolve_setting(
             format_html_kwargs, "format_html_kwargs", sub_path="formatting", merge=True
         )
+
+        cache_dir = Path(cache_dir)
+        if def_cache_dir and def_cache_suffix is not None:
+            cache_dir /= def_cache_suffix
 
         self._page_title = page_title
         self._refresh_page = refresh_page
@@ -816,11 +777,10 @@ class HTMLFileFormatter(ContentFormatter):
             import secrets
             import string
 
-            html_dir = Path(self.cache_dir) / "formatting"
-            if html_dir.exists():
+            if self.cache_dir.exists():
                 if self.clear_cache:
-                    remove_dir(html_dir, missing_ok=True, with_contents=True)
-            check_mkdir(html_dir, **self.cache_mkdir_kwargs)
+                    remove_dir(self.cache_dir, missing_ok=True, with_contents=True)
+            check_mkdir(self.cache_dir, **self.cache_mkdir_kwargs)
             page_title = self.page_title.lower().replace(" ", "-")
             if len(page_title) > self.file_prefix_len:
                 words = page_title.split("-")
@@ -839,7 +799,7 @@ class HTMLFileFormatter(ContentFormatter):
                 short_filename = f"{truncated_page_title}-{random_suffix}.html"
             else:
                 short_filename = f"{random_suffix}.html"
-            file_path = html_dir / short_filename
+            file_path = self.cache_dir / short_filename
             self._file_handle = open(str(file_path.resolve()), "w", encoding="utf-8")
         else:
             import tempfile

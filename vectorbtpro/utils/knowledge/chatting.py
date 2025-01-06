@@ -800,9 +800,12 @@ class Completions(Configured):
             response = self.get_chat_response(messages)
 
         if isinstance(formatter, type):
-            if issubclass(formatter, HTMLFileFormatter) and "page_title" not in formatter_kwargs:
+            if issubclass(formatter, HTMLFileFormatter):
                 formatter_kwargs = dict(formatter_kwargs)
-                formatter_kwargs["page_title"] = message
+                if "page_title" not in formatter_kwargs:
+                    formatter_kwargs["page_title"] = message
+                if "def_cache_suffix" not in formatter_kwargs:
+                    formatter_kwargs["def_cache_suffix"] = "chat"
             formatter = formatter(**formatter_kwargs)
         elif formatter_kwargs:
             formatter = formatter.replace(**formatter_kwargs)

@@ -113,6 +113,7 @@ class VBTAsset(KnowledgeAsset):
         chunk_size: tp.Optional[int] = None,
         cache: tp.Optional[bool] = None,
         cache_dir: tp.Optional[tp.PathLike] = None,
+        def_cache_suffix: tp.Optional[tp.PathLike] = "releases",
         cache_mkdir_kwargs: tp.KwargsLike = None,
         clear_cache: tp.Optional[bool] = None,
         show_progress: tp.Optional[bool] = None,
@@ -132,7 +133,7 @@ class VBTAsset(KnowledgeAsset):
         use_pygithub = cls.resolve_setting(use_pygithub, "use_pygithub")
         chunk_size = cls.resolve_setting(chunk_size, "chunk_size")
         cache = cls.resolve_setting(cache, "cache")
-        cache_dir_none = cache_dir is None
+        def_cache_dir = cache_dir is None
         cache_dir = cls.resolve_setting(cache_dir, "cache_dir")
         clear_cache = cls.resolve_setting(clear_cache, "clear_cache")
         cache_mkdir_kwargs = cls.resolve_setting(cache_mkdir_kwargs, "cache_mkdir_kwargs", merge=True)
@@ -143,8 +144,8 @@ class VBTAsset(KnowledgeAsset):
         if release_name is None:
             release_name = current_release
         release_dir = Path(cache_dir)
-        if cache_dir_none:
-            release_dir /= "releases"
+        if def_cache_dir and def_cache_suffix is not None:
+            release_dir /= def_cache_suffix
             release_dir /= release_name
         if cache:
             if release_dir.exists():
@@ -465,6 +466,7 @@ class VBTAsset(KnowledgeAsset):
         self,
         cache: tp.Optional[bool] = None,
         cache_dir: tp.Optional[tp.PathLike] = None,
+        def_cache_suffix: tp.Optional[tp.PathLike] = "markdown",
         cache_mkdir_kwargs: tp.KwargsLike = None,
         clear_cache: tp.Optional[bool] = None,
         show_progress: tp.Optional[bool] = None,
@@ -484,7 +486,7 @@ class VBTAsset(KnowledgeAsset):
         from vectorbtpro.utils.knowledge.custom_asset_funcs import ToMarkdownAssetFunc
 
         cache = self.resolve_setting(cache, "cache")
-        cache_dir_none = cache_dir is None
+        def_cache_dir = cache_dir is None
         cache_dir = self.resolve_setting(cache_dir, "cache_dir")
         cache_mkdir_kwargs = self.resolve_setting(cache_mkdir_kwargs, "cache_mkdir_kwargs", merge=True)
         clear_cache = self.resolve_setting(clear_cache, "clear_cache")
@@ -493,8 +495,8 @@ class VBTAsset(KnowledgeAsset):
 
         if cache:
             markdown_dir = Path(cache_dir)
-            if cache_dir_none:
-                markdown_dir /= "markdown"
+            if def_cache_dir and def_cache_suffix is not None:
+                markdown_dir /= def_cache_suffix
             if markdown_dir.exists():
                 if clear_cache:
                     remove_dir(markdown_dir, missing_ok=True, with_contents=True)
@@ -606,6 +608,7 @@ class VBTAsset(KnowledgeAsset):
         self,
         cache: tp.Optional[bool] = None,
         cache_dir: tp.Optional[tp.PathLike] = None,
+        def_cache_suffix: tp.Optional[tp.PathLike] = "html",
         cache_mkdir_kwargs: tp.KwargsLike = None,
         clear_cache: tp.Optional[bool] = None,
         show_progress: tp.Optional[bool] = None,
@@ -628,7 +631,7 @@ class VBTAsset(KnowledgeAsset):
         from vectorbtpro.utils.knowledge.custom_asset_funcs import ToHTMLAssetFunc
 
         cache = self.resolve_setting(cache, "cache")
-        cache_dir_none = cache_dir is None
+        def_cache_dir = cache_dir is None
         cache_dir = self.resolve_setting(cache_dir, "cache_dir")
         cache_mkdir_kwargs = self.resolve_setting(cache_mkdir_kwargs, "cache_mkdir_kwargs", merge=True)
         clear_cache = self.resolve_setting(clear_cache, "clear_cache")
@@ -637,8 +640,8 @@ class VBTAsset(KnowledgeAsset):
 
         if cache:
             html_dir = Path(cache_dir)
-            if cache_dir_none:
-                html_dir /= "html"
+            if def_cache_dir and def_cache_suffix is not None:
+                html_dir /= def_cache_suffix
             if html_dir.exists():
                 if clear_cache:
                     remove_dir(html_dir, missing_ok=True, with_contents=True)
