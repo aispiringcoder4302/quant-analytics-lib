@@ -1177,7 +1177,7 @@ class PagesAsset(VBTAsset):
 
     _settings_path: tp.SettingsPath = "knowledge.assets.pages"
 
-    def descend_links(self: PagesAssetT, links: tp.List[str]) -> PagesAssetT:
+    def descend_links(self: PagesAssetT, links: tp.List[str], **kwargs) -> PagesAssetT:
         """Descend links by removing redundant ones.
 
         Only headings are descended."""
@@ -1194,9 +1194,14 @@ class PagesAsset(VBTAsset):
         for link in links:
             if link in redundant_links and link in new_data:
                 del new_data[link]
-        return self.replace(data=list(new_data.values()))
+        return self.replace(data=list(new_data.values()), **kwargs)
 
-    def aggregate_links(self: PagesAssetT, links: tp.List[str], aggregate_kwargs: tp.KwargsLike = None) -> PagesAssetT:
+    def aggregate_links(
+        self: PagesAssetT,
+        links: tp.List[str],
+        aggregate_kwargs: tp.KwargsLike = None,
+        **kwargs,
+    ) -> PagesAssetT:
         """Aggregate links by removing redundant ones.
 
         Only headings are aggregated."""
@@ -1216,7 +1221,7 @@ class PagesAsset(VBTAsset):
         for link in links:
             if link in redundant_links and link in new_data:
                 del new_data[link]
-        return self.replace(data=list(new_data.values()))
+        return self.replace(data=list(new_data.values()), **kwargs)
 
     def find_page(
         self: PagesAssetT,
@@ -1224,18 +1229,26 @@ class PagesAsset(VBTAsset):
         aggregate: bool = False,
         aggregate_kwargs: tp.KwargsLike = None,
         incl_descendants: bool = False,
+        single_item: bool = True,
         **kwargs,
     ) -> tp.MaybePagesAsset:
         """Find the page(s) corresponding to link(s).
 
         Keyword arguments are passed to `VBTAsset.find_link`."""
-        found = self.find_link(link, **kwargs)
+        found = self.find_link(link, single_item=single_item, **kwargs)
         if not isinstance(found, (type(self), list)):
             return found
         if aggregate:
-            return self.aggregate_links([d["link"] for d in found], aggregate_kwargs=aggregate_kwargs)
+            return self.aggregate_links(
+                [d["link"] for d in found],
+                aggregate_kwargs=aggregate_kwargs,
+                single_item=single_item,
+            )
         if incl_descendants:
-            return self.descend_links([d["link"] for d in found])
+            return self.descend_links(
+                [d["link"] for d in found],
+                single_item=single_item,
+            )
         return found
 
     def find_refname(

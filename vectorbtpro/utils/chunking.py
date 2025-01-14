@@ -280,7 +280,7 @@ def yield_chunk_meta(
     min_size: tp.Optional[int] = None,
     n_chunks: tp.Union[None, int, str] = None,
     chunk_len: tp.Union[None, int, str] = None,
-) -> tp.Generator[ChunkMeta, None, None]:
+) -> tp.Iterator[ChunkMeta]:
     """Yield meta of each successive chunk from a sequence with a number of elements.
 
     Args:
@@ -1382,7 +1382,7 @@ class Chunker(Configured):
         arg_take_spec: tp.Optional[tp.ArgTakeSpecLike] = None,
         template_context: tp.KwargsLike = None,
         **kwargs,
-    ) -> tp.Generator[Task, None, None]:
+    ) -> tp.Iterator[Task]:
         """Split annotated arguments into chunks using `Chunker.take_from_args` and yield each chunk as a task.
 
         Args:

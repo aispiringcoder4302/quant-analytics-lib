@@ -342,7 +342,7 @@ class Param(Evaluable, Annotatable, DefineMixin):
 class Itemable(Base):
     """Class representing an object that can be returned as items."""
 
-    def items(self, **kwargs) -> tp.ItemGenerator:
+    def items(self, **kwargs) -> tp.Items:
         """Return this instance as items."""
         raise NotImplementedError
 

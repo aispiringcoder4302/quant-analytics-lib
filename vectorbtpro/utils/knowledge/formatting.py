@@ -856,7 +856,7 @@ class HTMLFileFormatter(ContentFormatter):
 def resolve_formatter(formatter: tp.ContentFormatterLike) -> tp.MaybeType[ContentFormatter]:
     """Resolve a subclass or an instance of `ContentFormatter`.
 
-    The following strings are supported:
+    The following values are supported:
 
     * "plain" (`PlainFormatter`): Prints the raw output
     * "ipython" (`IPythonFormatter`): Renders an unformatted text in a notebook environment

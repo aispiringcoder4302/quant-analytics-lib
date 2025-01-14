@@ -1091,7 +1091,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         apply_group_by: bool = False,
         keep_2d: bool = False,
         key_as_index: bool = False,
-    ) -> tp.ItemGenerator:
+    ) -> tp.Items:
         """Iterate over columns (or groups if grouped and `Wrapping.group_select` is True), keys,
         features, or symbols. The respective mode can be selected with `over`.
 

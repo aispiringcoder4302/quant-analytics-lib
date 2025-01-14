@@ -2314,6 +2314,17 @@ $context
                 ),
             ),
         ),
+        text_splitter="auto",
+        text_splitter_configs=flex_cfg(
+            token=flex_cfg(
+                chunk_size=1024,
+                chunk_overlap=200,
+            ),
+            segment=flex_cfg(
+                separators=[[r"\n\s*\n", r"(?<=[.!?])\s+"], r"\s+", "tokens"],
+                min_chunk_size=0,
+            ),
+        ),
     ),
     assets=flex_cfg(
         vbt=flex_cfg(

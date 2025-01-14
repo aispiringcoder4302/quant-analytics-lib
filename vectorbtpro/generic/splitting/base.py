@@ -4745,7 +4745,7 @@ class Splitter(Analyzable):
         set_group_by: tp.AnyGroupByLike = None,
         template_context: tp.KwargsLike = None,
         **kwargs,
-    ) -> tp.Generator[tp.Array2d, None, None]:
+    ) -> tp.Iterator[tp.Array2d]:
         """Generator of two-dimensional boolean arrays, one per split.
 
         First axis represents sets. Second axis represents index.
@@ -4769,7 +4769,7 @@ class Splitter(Analyzable):
             yield out
 
     @property
-    def iter_split_mask_arrs(self) -> tp.Generator[tp.Array2d, None, None]:
+    def iter_split_mask_arrs(self) -> tp.Iterator[tp.Array2d]:
         """`Splitter.get_iter_split_mask_arrs` with default arguments."""
         return self.get_iter_split_mask_arrs()
 
@@ -4779,7 +4779,7 @@ class Splitter(Analyzable):
         set_group_by: tp.AnyGroupByLike = None,
         template_context: tp.KwargsLike = None,
         **kwargs,
-    ) -> tp.Generator[tp.Array2d, None, None]:
+    ) -> tp.Iterator[tp.Array2d]:
         """Generator of two-dimensional boolean arrays, one per set.
 
         First axis represents splits. Second axis represents index.
@@ -4803,7 +4803,7 @@ class Splitter(Analyzable):
             yield out
 
     @property
-    def iter_set_mask_arrs(self) -> tp.Generator[tp.Array2d, None, None]:
+    def iter_set_mask_arrs(self) -> tp.Iterator[tp.Array2d]:
         """`Splitter.get_iter_set_mask_arrs` with default arguments."""
         return self.get_iter_set_mask_arrs()
 
@@ -4812,7 +4812,7 @@ class Splitter(Analyzable):
         split_group_by: tp.AnyGroupByLike = None,
         set_group_by: tp.AnyGroupByLike = None,
         **kwargs,
-    ) -> tp.Generator[tp.Frame, None, None]:
+    ) -> tp.Iterator[tp.Frame]:
         """Generator of boolean DataFrames, one per split.
 
         Keyword arguments `**kwargs` are passed to `Splitter.get_iter_split_mask_arrs`."""
@@ -4827,7 +4827,7 @@ class Splitter(Analyzable):
             yield pd.DataFrame(np.moveaxis(mask, -1, 0), index=self.index, columns=set_labels)
 
     @property
-    def iter_split_masks(self) -> tp.Generator[tp.Frame, None, None]:
+    def iter_split_masks(self) -> tp.Iterator[tp.Frame]:
         """`Splitter.get_iter_split_masks` with default arguments."""
         return self.get_iter_split_masks()
 
@@ -4836,7 +4836,7 @@ class Splitter(Analyzable):
         split_group_by: tp.AnyGroupByLike = None,
         set_group_by: tp.AnyGroupByLike = None,
         **kwargs,
-    ) -> tp.Generator[tp.Frame, None, None]:
+    ) -> tp.Iterator[tp.Frame]:
         """Generator of boolean DataFrames, one per set.
 
         Keyword arguments `**kwargs` are passed to `Splitter.get_iter_set_mask_arrs`."""
@@ -4851,7 +4851,7 @@ class Splitter(Analyzable):
             yield pd.DataFrame(np.moveaxis(mask, -1, 0), index=self.index, columns=split_labels)
 
     @property
-    def iter_set_masks(self) -> tp.Generator[tp.Frame, None, None]:
+    def iter_set_masks(self) -> tp.Iterator[tp.Frame]:
         """`Splitter.get_iter_set_masks` with default arguments."""
         return self.get_iter_set_masks()
 

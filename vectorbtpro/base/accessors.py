@@ -1821,7 +1821,7 @@ class BaseAccessor(Wrapping):
 
     # ############# Iteration ############# #
 
-    def items(self, *args, wrap: bool = False, **kwargs) -> tp.ItemGenerator:
+    def items(self, *args, wrap: bool = False, **kwargs) -> tp.Items:
         """See `vectorbtpro.base.wrapping.Wrapping.items`.
 
         !!! note

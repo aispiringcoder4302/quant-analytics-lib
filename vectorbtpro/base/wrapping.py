@@ -1910,7 +1910,7 @@ class ArrayWrapper(Configured, IndexApplier, ExtPandasIndexer, Itemable, Paramab
         apply_group_by: bool = False,
         keep_2d: bool = False,
         key_as_index: bool = False,
-    ) -> tp.ItemGenerator:
+    ) -> tp.Items:
         """Iterate over columns or groups (if grouped and `Wrapping.group_select` is True).
 
         If `apply_group_by` is False, `group_by` becomes a grouping instruction for the iteration,
@@ -2282,7 +2282,7 @@ class Wrapping(Configured, IndexApplier, ExtPandasIndexer, AttrResolverMixin, It
         keep_2d: bool = False,
         key_as_index: bool = False,
         wrap: bool = True,  # used in subclasses
-    ) -> tp.ItemGenerator:
+    ) -> tp.Items:
         """Iterate over columns or groups (if grouped and `Wrapping.group_select` is True).
 
         If `apply_group_by` is False, `group_by` becomes a grouping instruction for the iteration,

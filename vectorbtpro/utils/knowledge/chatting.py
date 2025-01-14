@@ -13,14 +13,19 @@
 See `vectorbtpro.utils.knowledge` for the toy dataset."""
 
 import inspect
+import re
 import sys
 import warnings
 from pathlib import Path
+from functools import partial
+
+import numpy as np
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.utils import checks
+from vectorbtpro.utils.attr_ import DefineMixin, define
 from vectorbtpro.utils.config import merge_dicts, flat_merge_dicts, deep_merge_dicts, Configured, HasSettings
-from vectorbtpro.utils.decorators import hybrid_method
+from vectorbtpro.utils.decorators import memoized_method, hybrid_method
 from vectorbtpro.utils.knowledge.formatting import ContentFormatter, HTMLFileFormatter, resolve_formatter
 from vectorbtpro.utils.parsing import get_func_arg_names, get_func_kwargs
 from vectorbtpro.utils.template import CustomTemplate, RepFunc, Sub
@@ -69,6 +74,8 @@ except ImportError:
 __all__ = [
     "Tokenizer",
     "TikTokenizer",
+    "tokenize",
+    "detokenize",
     "Embeddings",
     "OpenAIEmbeddings",
     "LiteLLMEmbeddings",
@@ -79,6 +86,9 @@ __all__ = [
     "LiteLLMCompletions",
     "LlamaIndexCompletions",
     "complete",
+    "TextSplitter",
+    "TokenSplitter",
+    "SegmentSplitter",
     "Contextable",
 ]
 
@@ -101,13 +111,18 @@ class Tokenizer(Configured):
     def __init__(self, **kwargs) -> None:
         Configured.__init__(self, **kwargs)
 
-    def encode(self, text: str) -> tp.List[int]:
+    def encode(self, text: str) -> tp.Tokens:
         """Encode text into a list of tokens."""
         raise NotImplementedError
 
-    def decode(self, tokens: tp.List[int]) -> str:
+    def decode(self, tokens: tp.Tokens) -> str:
         """Decode a list of tokens into text."""
         raise NotImplementedError
+
+    @memoized_method
+    def decode_single(self, token: tp.Token) -> str:
+        """Decode a single token into text."""
+        return self.decode([token])
 
     def count_tokens_in_messages(self, messages: tp.ChatMessages) -> int:
         """Count tokens in messages."""
@@ -184,10 +199,10 @@ class TikTokenizer(Tokenizer):
         """Tokens per name."""
         return self._tokens_per_name
 
-    def encode(self, text: str) -> tp.List[int]:
+    def encode(self, text: str) -> tp.Tokens:
         return self.encoding.encode(text)
 
-    def decode(self, tokens: tp.List[int]) -> str:
+    def decode(self, tokens: tp.Tokens) -> str:
         return self.encoding.decode(tokens)
 
     def count_tokens_in_messages(self, messages: tp.ChatMessages) -> int:
@@ -205,7 +220,7 @@ class TikTokenizer(Tokenizer):
 def resolve_tokenizer(tokenizer: tp.TokenizerLike = None) -> tp.MaybeType[Tokenizer]:
     """Resolve a subclass or an instance of `Tokenizer`.
 
-    The following strings are supported:
+    The following values are supported:
 
     * "tiktoken" (`TikTokenizer`)
     * A subclass or an instance of `Tokenizer`
@@ -232,6 +247,32 @@ def resolve_tokenizer(tokenizer: tp.TokenizerLike = None) -> tp.MaybeType[Tokeni
     else:
         checks.assert_instance_of(tokenizer, Tokenizer, arg_name="tokenizer")
     return tokenizer
+
+
+def tokenize(text: str, tokenizer: tp.TokenizerLike = None, **kwargs) -> tp.Tokens:
+    """Tokenize text.
+
+    Resolves `tokenizer` with `resolve_tokenizer`. Keyword arguments are passed to either
+    initialize a class or replace an instance of `Tokenizer`."""
+    tokenizer = resolve_tokenizer(tokenizer=tokenizer)
+    if isinstance(tokenizer, type):
+        tokenizer = tokenizer(**kwargs)
+    elif kwargs:
+        tokenizer = tokenizer.replace(**kwargs)
+    return tokenizer.encode(text)
+
+
+def detokenize(tokens: tp.Tokens, tokenizer: tp.TokenizerLike = None, **kwargs) -> str:
+    """Detokenize text.
+
+    Resolves `tokenizer` with `resolve_tokenizer`. Keyword arguments are passed to either
+    initialize a class or replace an instance of `Tokenizer`."""
+    tokenizer = resolve_tokenizer(tokenizer=tokenizer)
+    if isinstance(tokenizer, type):
+        tokenizer = tokenizer(**kwargs)
+    elif kwargs:
+        tokenizer = tokenizer.replace(**kwargs)
+    return tokenizer.decode(tokens)
 
 
 # ############# Embeddings ############# #
@@ -460,7 +501,7 @@ class LlamaIndexEmbeddings(Embeddings):
 def resolve_embeddings(embeddings: tp.EmbeddingsLike = None) -> tp.MaybeType[Embeddings]:
     """Resolve a subclass or an instance of `Embeddings`.
 
-    The following strings are supported:
+    The following values are supported:
 
     * "openai" (`OpenAIEmbeddings`)
     * "litellm" (`LiteLLMEmbeddings`)
@@ -1159,7 +1200,7 @@ class LlamaIndexCompletions(Completions):
     def get_message_content(self, response: ChatResponseT) -> tp.Optional[str]:
         return response.message.content
 
-    def get_stream_response(self, messages: tp.ChatMessages) -> tp.Generator[ChatResponseT, None, None]:
+    def get_stream_response(self, messages: tp.ChatMessages) -> tp.Iterator[ChatResponseT]:
         from llama_index.core.llms import ChatMessage
 
         return self.llm.stream_chat(list(map(lambda x: ChatMessage(**dict(x)), messages)))
@@ -1171,7 +1212,7 @@ class LlamaIndexCompletions(Completions):
 def resolve_completions(completions: tp.CompletionsLike = None) -> tp.MaybeType[Completions]:
     """Resolve a subclass or an instance of `Completions`.
 
-    The following strings are supported:
+    The following values are supported:
 
     * "openai" (`OpenAICompletions`)
     * "litellm" (`LiteLLMCompletions`)
@@ -1227,7 +1268,320 @@ def complete(message: str, completions: tp.CompletionsLike = None, **kwargs) -> 
     return completions.get_completion(message)
 
 
-# ############# Contextable ############# #
+# ############# Splitting ############# #
+
+
+class TextSplitter(Configured):
+    """Abstract class for text splitters.
+
+    For defaults, see `chat` in `vectorbtpro._settings.knowledge`."""
+
+    _short_name: tp.ClassVar[tp.Optional[str]] = None
+    """Short name of the class."""
+
+    _expected_keys_mode: tp.ExpectedKeysMode = "disable"
+
+    _settings_path: tp.SettingsPath = "knowledge"
+
+    def __init__(self, **kwargs) -> None:
+        Configured.__init__(self, **kwargs)
+
+    def split(self, text: str) -> tp.TSChunks:
+        """Split text and yield start index, end index, text, and token count of each chunk."""
+        raise NotImplementedError
+
+    def split_text(self, text: str) -> tp.List[str]:
+        """Split text and return text chunks."""
+        return [chunk[2] for chunk in self.split(text)]
+
+
+class TokenSplitter(TextSplitter):
+    """Splitter class for tokens.
+
+    For defaults, see `chat.text_splitter_configs.token` in `vectorbtpro._settings.knowledge`."""
+
+    _short_name = "token"
+
+    _settings_path: tp.SettingsPath = "knowledge.chat.text_splitter_configs.token"
+
+    def __init__(
+        self,
+        chunk_size: tp.Optional[int] = None,
+        chunk_overlap: tp.Optional[int] = None,
+        tokenizer: tp.TokenizerLike = None,
+        tokenizer_kwargs: tp.KwargsLike = None,
+        **kwargs,
+    ) -> None:
+        TextSplitter.__init__(
+            self,
+            chunk_size=chunk_size,
+            chunk_overlap=chunk_overlap,
+            tokenizer=tokenizer,
+            tokenizer_kwargs=tokenizer_kwargs,
+            **kwargs,
+        )
+
+        chunk_size = self.resolve_setting(chunk_size, "chunk_size", sub_path="chat")
+        chunk_overlap = self.resolve_setting(chunk_overlap, "chunk_overlap", sub_path="chat")
+        tokenizer = self.resolve_setting(tokenizer, "tokenizer", default=None, sub_path="chat", sub_path_only=True)
+        tokenizer_kwargs = self.resolve_setting(
+            tokenizer_kwargs, "tokenizer_kwargs", default=None, sub_path="chat", sub_path_only=True, merge=True
+        )
+
+        tokenizer = resolve_tokenizer(tokenizer)
+        if isinstance(tokenizer, type):
+            tokenizer = tokenizer(**tokenizer_kwargs)
+        elif tokenizer_kwargs:
+            tokenizer = tokenizer.replace(**tokenizer_kwargs)
+
+        self._chunk_size = chunk_size
+        self._chunk_overlap = chunk_overlap
+        self._tokenizer = tokenizer
+
+    @property
+    def chunk_size(self) -> int:
+        """Maximum number of tokens per chunk."""
+        return self._chunk_size
+
+    @property
+    def chunk_overlap(self) -> int:
+        """Number of overlapping tokens between chunks."""
+        return self._chunk_overlap
+
+    @property
+    def tokenizer(self) -> Tokenizer:
+        """An instance of `Tokenizer`."""
+        return self._tokenizer
+
+    def split_into_tokens(self, text: str) -> tp.TSChunks:
+        """Split text into tokens."""
+        tokens = self.tokenizer.encode(text)
+        last_end = 0
+        for token in tokens:
+            _text = self.tokenizer.decode_single(token)
+            start = last_end
+            end = start + len(_text)
+            yield start, end
+            last_end = end
+
+    def split(self, text: str) -> tp.TSChunks:
+        return self.split_into_tokens(text)
+
+
+class SegmentSplitter(TokenSplitter):
+    """Splitter class for segments based on separators.
+
+    If a segment is too big, the next separator within the same layer is taken to split the segment
+    into smaller segments. If a segment is too big and there are no segments previously added
+    to the chunk, or, if the number of tokens is less than the minimal count, the next layer is taken.
+    To split into tokens, set any separator to None. To split into characters, use an empty string.
+
+    For defaults, see `chat.text_splitter_configs.segment` in `vectorbtpro._settings.knowledge`."""
+
+    _short_name = "segment"
+
+    _settings_path: tp.SettingsPath = "knowledge.chat.text_splitter_configs.segment"
+
+    def __init__(
+        self,
+        separators: tp.MaybeList[tp.MaybeList[tp.Optional[str]]] = None,
+        min_chunk_size: tp.Optional[int] = None,
+        **kwargs,
+    ) -> None:
+        TokenSplitter.__init__(
+            self,
+            separators=separators,
+            min_chunk_size=min_chunk_size,
+            **kwargs,
+        )
+
+        separators = self.resolve_setting(separators, "separators", sub_path="chat")
+        min_chunk_size = self.resolve_setting(min_chunk_size, "min_chunk_size", sub_path="chat")
+
+        if not isinstance(separators, list):
+            separators = [separators]
+        else:
+            separators = list(separators)
+        for layer in range(len(separators)):
+            if not isinstance(separators[layer], list):
+                separators[layer] = [separators[layer]]
+            else:
+                separators[layer] = list(separators[layer])
+
+        self._separators = separators
+        self._min_chunk_size = min_chunk_size
+
+    @property
+    def separators(self) -> tp.List[tp.List[tp.Optional[str]]]:
+        """Nested list of separators grouped into layers."""
+        return self._separators
+
+    @property
+    def min_chunk_size(self) -> int:
+        """Minimum number of tokens per chunk."""
+        return self._min_chunk_size
+
+    def split_into_segments(self, text: str, separator: tp.Optional[str] = None) -> tp.TSChunks:
+        """Split text into segments."""
+        if separator is None:
+            return self.split_into_tokens(text)
+        if not separator:
+            for i in range(len(text)):
+                yield i, i + 1
+        else:
+            last_end = 0
+
+            for match in re.finditer(separator, text):
+                start, end = match.span()
+                if start > last_end:
+                    _text = text[last_end:start]
+                    yield last_end, start
+
+                _text = text[start:end]
+                yield start, end
+                last_end = end
+
+            if last_end < len(text):
+                _text = text[last_end:]
+                yield last_end, len(text)
+
+    def split(self, text: str) -> tp.TSChunks:
+        current_layer = 0
+        chunk_start = 0
+        chunk_tokens = []
+        remaining_text = text
+        overlap_segments = []
+
+        while remaining_text:
+            current_separators = self.separators[current_layer]
+            current_start = chunk_start
+            current_text = remaining_text
+            current_segments = overlap_segments
+            overlap_segments = []
+
+            for separator in current_separators:
+                segments = self.split_into_segments(current_text, separator=separator)
+                current_text = ""
+                finished = False
+
+                for segment in segments:
+                    segment_start = current_start + segment[0]
+                    segment_end = current_start + segment[1]
+
+                    pre_chunk_tokens = self.tokenizer.encode(text[chunk_start:segment_end])
+                    if len(pre_chunk_tokens) > self.chunk_size:
+                        current_text = text[segment_start:segment_end]
+                        current_start = segment_start
+                        finished = False
+                        break
+                    else:
+                        current_segments.append((segment_start, segment_end))
+                        chunk_tokens = pre_chunk_tokens
+                        finished = True
+
+                if finished:
+                    break
+
+            if current_segments and len(chunk_tokens) >= self.min_chunk_size:
+                chunk_start = current_segments[0][0]
+                chunk_end = current_segments[-1][1]
+                yield chunk_start, chunk_end
+
+                if self.chunk_overlap:
+                    if len(chunk_tokens) <= self.chunk_overlap:
+                        raise ValueError(
+                            "Chunk overlap is equal to or greater than the total number of tokens in the chunk. "
+                            "Reduce chunk_overlap or increase the separator granularity."
+                        )
+
+                    chunk_tokens = chunk_tokens[-self.chunk_overlap :]
+                    chunk_start = chunk_end - len(self.tokenizer.decode(chunk_tokens))
+                    overlap_segments = [(chunk_start, chunk_end)]
+                else:
+                    chunk_tokens = []
+                    chunk_start = chunk_end
+
+                remaining_text = text[chunk_start:]
+                current_layer = 0
+
+            else:
+                current_layer += 1
+                if current_layer == len(self.separators):
+                    remaining_tokens = self.tokenizer.encode(remaining_text)
+                    if len(remaining_tokens) < self.chunk_size:
+                        if current_segments:
+                            chunk_start = current_segments[0][0]
+                            chunk_end = current_segments[-1][1]
+                            yield chunk_start, chunk_end
+                        break
+                    if len(chunk_tokens) < self.min_chunk_size:
+                        raise ValueError(
+                            "Total number of tokens in the chunk is less than the minimal chunk size. "
+                            "Increase the separator granularity."
+                        )
+                    break
+
+
+def resolve_text_splitter(text_splitter: tp.TextSplitterLike = None) -> tp.MaybeType[TextSplitter]:
+    """Resolve a subclass or an instance of `TextSplitter`.
+
+    The following values are supported:
+
+    * "token" (`TokenSplitter`)
+    * "segment" (`SegmentSplitter`)
+    * A subclass or an instance of `TextSplitter`
+    """
+    if text_splitter is None:
+        from vectorbtpro._settings import settings
+
+        chat_cfg = settings["knowledge"]["chat"]
+        text_splitter = chat_cfg["text_splitter"]
+    if isinstance(text_splitter, str):
+        current_module = sys.modules[__name__]
+        found_text_splitter = None
+        for name, cls in inspect.getmembers(current_module, inspect.isclass):
+            if name.endswith("TextSplitter"):
+                _short_name = getattr(cls, "_short_name", None)
+                if _short_name is not None and _short_name.lower() == text_splitter.lower():
+                    found_text_splitter = cls
+                    break
+        if found_text_splitter is None:
+            raise ValueError(f"Invalid text splitter: '{text_splitter}'")
+        text_splitter = found_text_splitter
+    if isinstance(text_splitter, type):
+        checks.assert_subclass_of(text_splitter, TextSplitter, arg_name="text_splitter")
+    else:
+        checks.assert_instance_of(text_splitter, TextSplitter, arg_name="text_splitter")
+    return text_splitter
+
+
+# ############# Indexing ############# #
+
+
+@define
+class IndexNode(DefineMixin):
+    """Class for index nodes."""
+
+    id_: str = define.field()
+    """Node identifier."""
+
+    parent_id: tp.Optional[str] = define.field(default=None)
+    """Parent node identifier."""
+
+    parent_start_idx: tp.Optional[int] = define.field(default=None)
+    """Start index in the parent node."""
+
+    parent_end_idx: tp.Optional[int] = define.field(default=None)
+    """End index in the parent node."""
+
+    children_ids: tp.List[str] = define.field(factory=list)
+    """Child node identifiers."""
+
+    embedding: tp.Optional[tp.EmbeddingOutput] = define.field(default=None)
+    """Embedding."""
+
+
+# ############# Contexting ############# #
 
 
 class Contextable(HasSettings):
