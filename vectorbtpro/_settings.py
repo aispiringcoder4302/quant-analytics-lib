@@ -2314,16 +2314,24 @@ $context
                 ),
             ),
         ),
-        text_splitter="auto",
+        text_splitter="segment",
         text_splitter_configs=flex_cfg(
             token=flex_cfg(
-                chunk_size=1024,
-                chunk_overlap=200,
+                chunk_size=1000,
+                chunk_overlap=0.2,
+                tokenizer="tiktoken",
+                tokenizer_kwargs=flex_cfg(
+                    encoding="cl100k_base",
+                ),
             ),
             segment=flex_cfg(
-                separators=[[r"\n\s*\n", r"(?<=[.!?])\s+"], r"\s+", "tokens"],
-                min_chunk_size=0,
+                separators=[[r"\n\s*\n", r"(?<=[.!?])\s+"], r"\s+", None],
+                min_chunk_size=0.5,
             ),
+            llama_index=flex_cfg(
+                node_parser="sentence",
+                node_parser_configs=flex_cfg(),
+            )
         ),
     ),
     assets=flex_cfg(

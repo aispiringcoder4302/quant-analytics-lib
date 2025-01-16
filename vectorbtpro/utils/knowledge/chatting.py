@@ -17,9 +17,6 @@ import re
 import sys
 import warnings
 from pathlib import Path
-from functools import partial
-
-import numpy as np
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.utils import checks
@@ -59,11 +56,13 @@ try:
         raise ImportError
     from llama_index.core.embeddings import BaseEmbedding as BaseEmbeddingT
     from llama_index.core.llms import LLM as LLMT, ChatMessage as ChatMessageT, ChatResponse as ChatResponseT
+    from llama_index.core.node_parser import NodeParser as NodeParserT
 except ImportError:
     BaseEmbeddingT = "BaseEmbedding"
     LLMT = "LLM"
     ChatMessageT = "ChatMessage"
     ChatResponseT = "ChatResponse"
+    NodeParserT = "NodeParser"
 try:
     if not tp.TYPE_CHECKING:
         raise ImportError
@@ -89,6 +88,8 @@ __all__ = [
     "TextSplitter",
     "TokenSplitter",
     "SegmentSplitter",
+    "LlamaIndexSplitter",
+    "split_text",
     "Contextable",
 ]
 
@@ -104,9 +105,7 @@ class Tokenizer(Configured):
     _short_name: tp.ClassVar[tp.Optional[str]] = None
     """Short name of the class."""
 
-    _expected_keys_mode: tp.ExpectedKeysMode = "disable"
-
-    _settings_path: tp.SettingsPath = "knowledge"
+    _settings_path: tp.SettingsPath = ["knowledge", "knowledge.chat"]
 
     def __init__(self, **kwargs) -> None:
         Configured.__init__(self, **kwargs)
@@ -118,6 +117,14 @@ class Tokenizer(Configured):
     def decode(self, tokens: tp.Tokens) -> str:
         """Decode a list of tokens into text."""
         raise NotImplementedError
+
+    @memoized_method
+    def encode_single(self, text: str) -> tp.Token:
+        """Encode text into a single token."""
+        tokens = self.encode(text)
+        if len(tokens) > 1:
+            raise ValueError("Text contains multiple tokens")
+        return tokens[0]
 
     @memoized_method
     def decode_single(self, token: tp.Token) -> str:
@@ -162,10 +169,10 @@ class TikTokenizer(Tokenizer):
         assert_can_import("tiktoken")
         from tiktoken import Encoding, get_encoding, encoding_for_model
 
-        encoding = self.resolve_setting(encoding, "encoding", sub_path="chat")
-        model = self.resolve_setting(model, "model", sub_path="chat")
-        tokens_per_message = self.resolve_setting(tokens_per_message, "tokens_per_message", sub_path="chat")
-        tokens_per_name = self.resolve_setting(tokens_per_name, "tokens_per_name", sub_path="chat")
+        encoding = self.resolve_setting(encoding, "encoding")
+        model = self.resolve_setting(model, "model")
+        tokens_per_message = self.resolve_setting(tokens_per_message, "tokens_per_message")
+        tokens_per_name = self.resolve_setting(tokens_per_name, "tokens_per_name")
 
         if isinstance(encoding, str):
             if encoding.startswith("model_or_"):
@@ -316,8 +323,8 @@ class OpenAIEmbeddings(Embeddings):
 
     _settings_path: tp.SettingsPath = "knowledge.chat.embeddings_configs.openai"
 
-    def __init__(self, **kwargs) -> None:
-        Embeddings.__init__(self, **kwargs)
+    def __init__(self, model: tp.Optional[str] = None, **kwargs) -> None:
+        Embeddings.__init__(self, model=model, **kwargs)
 
         from vectorbtpro.utils.module_ import assert_can_import
 
@@ -325,7 +332,8 @@ class OpenAIEmbeddings(Embeddings):
         from openai import OpenAI
 
         openai_config = merge_dicts(self.get_settings(inherit=False), kwargs)
-        model = openai_config.pop("model", None)
+        if model is None:
+            model = openai_config.pop("model", None)
         if model is None:
             raise ValueError("Must provide a model")
         client_arg_names = set(get_func_arg_names(OpenAI.__init__))
@@ -374,15 +382,16 @@ class LiteLLMEmbeddings(Embeddings):
 
     _settings_path: tp.SettingsPath = "knowledge.chat.embeddings_configs.litellm"
 
-    def __init__(self, **kwargs) -> None:
-        Embeddings.__init__(self, **kwargs)
+    def __init__(self, model: tp.Optional[str] = None, **kwargs) -> None:
+        Embeddings.__init__(self, model=model, **kwargs)
 
         from vectorbtpro.utils.module_ import assert_can_import
 
         assert_can_import("litellm")
 
         embedding_kwargs = merge_dicts(self.get_settings(inherit=False), kwargs)
-        model = embedding_kwargs.pop("model", None)
+        if model is None:
+            model = embedding_kwargs.pop("model", None)
         if model is None:
             raise ValueError("Must provide a model")
 
@@ -420,8 +429,8 @@ class LlamaIndexEmbeddings(Embeddings):
 
     _settings_path: tp.SettingsPath = "knowledge.chat.embeddings_configs.llama_index"
 
-    def __init__(self, **kwargs) -> None:
-        Embeddings.__init__(self, **kwargs)
+    def __init__(self, embedding: tp.Union[None, str, tp.MaybeType[BaseEmbeddingT]] = None, **kwargs) -> None:
+        Embeddings.__init__(self, embedding=embedding, **kwargs)
 
         from vectorbtpro.utils.module_ import assert_can_import
 
@@ -429,36 +438,37 @@ class LlamaIndexEmbeddings(Embeddings):
         from llama_index.core.embeddings import BaseEmbedding
 
         llama_index_config = merge_dicts(self.get_settings(inherit=False), kwargs)
-        embedding = llama_index_config.pop("embedding", None)
+        if embedding is None:
+            embedding = llama_index_config.pop("embedding", None)
         if embedding is None:
             raise ValueError("Must provide an embedding name or path")
         if isinstance(embedding, str):
-            from importlib import import_module
+            import llama_index.embeddings
             from vectorbtpro.utils.module_ import search_package
 
-            if "." in embedding:
-                path_parts = embedding.split(".")
-                embedding = path_parts[-1]
-                if len(path_parts) == 2:
-                    module_name = "llama_index.embeddings." + path_parts[0]
-                else:
-                    module_name = ".".join(path_parts[:-1])
-                module = import_module(module_name)
-            else:
-                import llama_index.embeddings
+            def _match_func(k, v):
+                if isinstance(v, type) and issubclass(v, BaseEmbedding):
+                    if "." in embedding:
+                        if k.endswith(embedding):
+                            return True
+                    else:
+                        if k.split(".")[-1].lower() == embedding.lower():
+                            return True
+                        if k.split(".")[-1].replace("Embedding", "").lower() == embedding.lower().replace("_", ""):
+                            return True
+                return False
 
-                module = llama_index.embeddings
-            match_func = lambda k, v: isinstance(v, type) and issubclass(v, BaseEmbedding)
-            candidates = search_package(module, match_func)
-            class_found = False
-            for k, v in candidates.items():
-                if embedding.lower().replace("_", "") == k.rstrip("Embedding").lower():
-                    embedding = v
-                    class_found = True
-                    break
-            if not class_found:
+            found_embedding = search_package(
+                llama_index.embeddings,
+                _match_func,
+                path_attrs=True,
+                return_first=True,
+            )
+            if found_embedding is None:
                 raise ValueError(f"Embedding '{embedding}' not found")
+            embedding = found_embedding
         if isinstance(embedding, type):
+            checks.assert_subclass_of(embedding, BaseEmbedding, arg_name="embedding")
             embedding_name = embedding.__name__.lower()
             module_name = embedding.__module__
         else:
@@ -574,7 +584,7 @@ class Completions(Configured):
 
     _expected_keys_mode: tp.ExpectedKeysMode = "disable"
 
-    _settings_path: tp.SettingsPath = "knowledge"
+    _settings_path: tp.SettingsPath = ["knowledge", "knowledge.chat"]
 
     def __init__(
         self,
@@ -613,21 +623,17 @@ class Completions(Configured):
 
         if chat_history is None:
             chat_history = []
-        stream = self.resolve_setting(stream, "stream", sub_path="chat")
-        max_tokens = self.resolve_setting(max_tokens, "max_tokens", sub_path="chat")
-        tokenizer = self.resolve_setting(tokenizer, "tokenizer", default=None, sub_path="chat", sub_path_only=True)
-        tokenizer_kwargs = self.resolve_setting(
-            tokenizer_kwargs, "tokenizer_kwargs", default=None, sub_path="chat", sub_path_only=True, merge=True
-        )
-        system_prompt = self.resolve_setting(system_prompt, "system_prompt", sub_path="chat")
-        system_as_user = self.resolve_setting(system_as_user, "system_as_user", sub_path="chat")
-        context_prompt = self.resolve_setting(context_prompt, "context_prompt", sub_path="chat")
-        formatter = self.resolve_setting(formatter, "formatter", default=None, sub_path="chat", sub_path_only=True)
-        formatter_kwargs = self.resolve_setting(
-            formatter_kwargs, "formatter_kwargs", default=None, sub_path="chat", merge=True, sub_path_only=True
-        )
-        template_context = self.resolve_setting(template_context, "template_context", sub_path="chat", merge=True)
-        silence_warnings = self.resolve_setting(silence_warnings, "silence_warnings", sub_path="chat")
+        stream = self.resolve_setting(stream, "stream")
+        max_tokens = self.resolve_setting(max_tokens, "max_tokens")
+        tokenizer = self.resolve_setting(tokenizer, "tokenizer", default=None)
+        tokenizer_kwargs = self.resolve_setting(tokenizer_kwargs, "tokenizer_kwargs", default=None, merge=True)
+        system_prompt = self.resolve_setting(system_prompt, "system_prompt")
+        system_as_user = self.resolve_setting(system_as_user, "system_as_user")
+        context_prompt = self.resolve_setting(context_prompt, "context_prompt")
+        formatter = self.resolve_setting(formatter, "formatter", default=None)
+        formatter_kwargs = self.resolve_setting(formatter_kwargs, "formatter_kwargs", default=None, merge=True)
+        template_context = self.resolve_setting(template_context, "template_context", merge=True)
+        silence_warnings = self.resolve_setting(silence_warnings, "silence_warnings")
 
         tokenizer = resolve_tokenizer(tokenizer)
         formatter = resolve_formatter(formatter)
@@ -900,6 +906,7 @@ class OpenAICompletions(Completions):
         formatter_kwargs: tp.KwargsLike = None,
         template_context: tp.KwargsLike = None,
         silence_warnings: tp.Optional[bool] = None,
+        model: tp.Optional[str] = None,
         **kwargs,
     ) -> None:
         Completions.__init__(
@@ -917,6 +924,7 @@ class OpenAICompletions(Completions):
             formatter_kwargs=formatter_kwargs,
             template_context=template_context,
             silence_warnings=silence_warnings,
+            model=model,
             **kwargs,
         )
 
@@ -926,7 +934,8 @@ class OpenAICompletions(Completions):
         from openai import OpenAI
 
         openai_config = merge_dicts(self.get_settings(inherit=False), kwargs)
-        model = openai_config.pop("model", None)
+        if model is None:
+            model = openai_config.pop("model", None)
         if model is None:
             raise ValueError("Must provide a model")
         client_arg_names = set(get_func_arg_names(OpenAI.__init__))
@@ -1006,6 +1015,7 @@ class LiteLLMCompletions(Completions):
         formatter_kwargs: tp.KwargsLike = None,
         template_context: tp.KwargsLike = None,
         silence_warnings: tp.Optional[bool] = None,
+        model: tp.Optional[str] = None,
         **kwargs,
     ) -> None:
         Completions.__init__(
@@ -1023,6 +1033,7 @@ class LiteLLMCompletions(Completions):
             formatter_kwargs=formatter_kwargs,
             template_context=template_context,
             silence_warnings=silence_warnings,
+            model=model,
             **kwargs,
         )
 
@@ -1031,7 +1042,8 @@ class LiteLLMCompletions(Completions):
         assert_can_import("litellm")
 
         completion_kwargs = merge_dicts(self.get_settings(inherit=False), kwargs)
-        model = completion_kwargs.pop("model", None)
+        if model is None:
+            model = completion_kwargs.pop("model", None)
         if model is None:
             raise ValueError("Must provide a model")
 
@@ -1077,9 +1089,9 @@ class LiteLLMCompletions(Completions):
 class LlamaIndexCompletions(Completions):
     """Completions class for LlamaIndex.
 
-    LLM can be provided via `llm`, which can be either the name of the class, the path to the class
-    (accepted are both "llama_index.xxx.yyy" and "xxx.yyy"), or a subclass or an instance of
-    `llama_index.core.llms.LLM`. Case of strings doesn't matter.
+    LLM can be provided via `llm`, which can be either the name of the class (case doesn't matter),
+    the path or its suffix to the class (case matters), or a subclass or an instance of
+    `llama_index.core.llms.LLM`.
 
     Keyword arguments are passed to the resolved LLM.
 
@@ -1104,6 +1116,7 @@ class LlamaIndexCompletions(Completions):
         formatter_kwargs: tp.KwargsLike = None,
         template_context: tp.KwargsLike = None,
         silence_warnings: tp.Optional[bool] = None,
+        llm: tp.Union[None, str, tp.MaybeType[LLMT]] = None,
         **kwargs,
     ) -> None:
         Completions.__init__(
@@ -1121,6 +1134,7 @@ class LlamaIndexCompletions(Completions):
             formatter_kwargs=formatter_kwargs,
             template_context=template_context,
             silence_warnings=silence_warnings,
+            llm=llm,
             **kwargs,
         )
 
@@ -1130,36 +1144,37 @@ class LlamaIndexCompletions(Completions):
         from llama_index.core.llms import LLM
 
         llama_index_config = merge_dicts(self.get_settings(inherit=False), kwargs)
-        llm = llama_index_config.pop("llm", None)
+        if llm is None:
+            llm = llama_index_config.pop("llm", None)
         if llm is None:
             raise ValueError("Must provide an LLM name or path")
         if isinstance(llm, str):
-            from importlib import import_module
+            import llama_index.llms
             from vectorbtpro.utils.module_ import search_package
 
-            if "." in llm:
-                path_parts = llm.split(".")
-                llm = path_parts[-1]
-                if len(path_parts) == 2:
-                    module_name = "llama_index.llms." + path_parts[0]
-                else:
-                    module_name = ".".join(path_parts[:-1])
-                module = import_module(module_name)
-            else:
-                import llama_index.llms
+            def _match_func(k, v):
+                if isinstance(v, type) and issubclass(v, LLM):
+                    if "." in llm:
+                        if k.endswith(llm):
+                            return True
+                    else:
+                        if k.split(".")[-1].lower() == llm.lower():
+                            return True
+                        if k.split(".")[-1].lower() == llm.lower().replace("_", ""):
+                            return True
+                return False
 
-                module = llama_index.llms
-            match_func = lambda k, v: isinstance(v, type) and issubclass(v, LLM)
-            candidates = search_package(module, match_func)
-            class_found = False
-            for k, v in candidates.items():
-                if llm.lower().replace("_", "") == k.lower():
-                    llm = v
-                    class_found = True
-                    break
-            if not class_found:
+            found_llm = search_package(
+                llama_index.llms,
+                _match_func,
+                path_attrs=True,
+                return_first=True,
+            )
+            if found_llm is None:
                 raise ValueError(f"LLM '{llm}' not found")
+            llm = found_llm
         if isinstance(llm, type):
+            checks.assert_subclass_of(llm, LLM, arg_name="llm")
             llm_name = llm.__name__.lower()
             module_name = llm.__module__
         else:
@@ -1279,20 +1294,19 @@ class TextSplitter(Configured):
     _short_name: tp.ClassVar[tp.Optional[str]] = None
     """Short name of the class."""
 
-    _expected_keys_mode: tp.ExpectedKeysMode = "disable"
-
-    _settings_path: tp.SettingsPath = "knowledge"
+    _settings_path: tp.SettingsPath = ["knowledge", "knowledge.chat"]
 
     def __init__(self, **kwargs) -> None:
         Configured.__init__(self, **kwargs)
 
-    def split(self, text: str) -> tp.TSChunks:
-        """Split text and yield start index, end index, text, and token count of each chunk."""
+    def split(self, text: str) -> tp.TSRangeChunks:
+        """Split text and yield start character and end character position of each chunk."""
         raise NotImplementedError
 
-    def split_text(self, text: str) -> tp.List[str]:
+    def split_text(self, text: str) -> tp.TSTextChunks:
         """Split text and return text chunks."""
-        return [chunk[2] for chunk in self.split(text)]
+        for start, end in self.split(text):
+            yield text[start:end]
 
 
 class TokenSplitter(TextSplitter):
@@ -1307,7 +1321,7 @@ class TokenSplitter(TextSplitter):
     def __init__(
         self,
         chunk_size: tp.Optional[int] = None,
-        chunk_overlap: tp.Optional[int] = None,
+        chunk_overlap: tp.Union[None, int, float] = None,
         tokenizer: tp.TokenizerLike = None,
         tokenizer_kwargs: tp.KwargsLike = None,
         **kwargs,
@@ -1321,18 +1335,22 @@ class TokenSplitter(TextSplitter):
             **kwargs,
         )
 
-        chunk_size = self.resolve_setting(chunk_size, "chunk_size", sub_path="chat")
-        chunk_overlap = self.resolve_setting(chunk_overlap, "chunk_overlap", sub_path="chat")
-        tokenizer = self.resolve_setting(tokenizer, "tokenizer", default=None, sub_path="chat", sub_path_only=True)
-        tokenizer_kwargs = self.resolve_setting(
-            tokenizer_kwargs, "tokenizer_kwargs", default=None, sub_path="chat", sub_path_only=True, merge=True
-        )
+        chunk_size = self.resolve_setting(chunk_size, "chunk_size")
+        chunk_overlap = self.resolve_setting(chunk_overlap, "chunk_overlap")
+        tokenizer = self.resolve_setting(tokenizer, "tokenizer", default=None)
+        tokenizer_kwargs = self.resolve_setting(tokenizer_kwargs, "tokenizer_kwargs", default=None, merge=True)
 
         tokenizer = resolve_tokenizer(tokenizer)
         if isinstance(tokenizer, type):
             tokenizer = tokenizer(**tokenizer_kwargs)
         elif tokenizer_kwargs:
             tokenizer = tokenizer.replace(**tokenizer_kwargs)
+        if checks.is_float(chunk_overlap):
+            if 0 <= abs(chunk_overlap) <= 1:
+                chunk_overlap = chunk_overlap * chunk_size
+            elif not chunk_overlap.is_integer():
+                raise TypeError("Floating number for chunk_overlap must be between 0 and 1")
+            chunk_overlap = int(chunk_overlap)
 
         self._chunk_size = chunk_size
         self._chunk_overlap = chunk_overlap
@@ -1345,7 +1363,9 @@ class TokenSplitter(TextSplitter):
 
     @property
     def chunk_overlap(self) -> int:
-        """Number of overlapping tokens between chunks."""
+        """Number of overlapping tokens between chunks.
+
+        Can also be provided as a floating number relative to `SegmentSplitter.chunk_size`."""
         return self._chunk_overlap
 
     @property
@@ -1353,7 +1373,7 @@ class TokenSplitter(TextSplitter):
         """An instance of `Tokenizer`."""
         return self._tokenizer
 
-    def split_into_tokens(self, text: str) -> tp.TSChunks:
+    def split_into_tokens(self, text: str) -> tp.TSRangeChunks:
         """Split text into tokens."""
         tokens = self.tokenizer.encode(text)
         last_end = 0
@@ -1364,7 +1384,7 @@ class TokenSplitter(TextSplitter):
             yield start, end
             last_end = end
 
-    def split(self, text: str) -> tp.TSChunks:
+    def split(self, text: str) -> tp.TSRangeChunks:
         return self.split_into_tokens(text)
 
 
@@ -1385,7 +1405,7 @@ class SegmentSplitter(TokenSplitter):
     def __init__(
         self,
         separators: tp.MaybeList[tp.MaybeList[tp.Optional[str]]] = None,
-        min_chunk_size: tp.Optional[int] = None,
+        min_chunk_size: tp.Union[None, int, float] = None,
         **kwargs,
     ) -> None:
         TokenSplitter.__init__(
@@ -1395,8 +1415,8 @@ class SegmentSplitter(TokenSplitter):
             **kwargs,
         )
 
-        separators = self.resolve_setting(separators, "separators", sub_path="chat")
-        min_chunk_size = self.resolve_setting(min_chunk_size, "min_chunk_size", sub_path="chat")
+        separators = self.resolve_setting(separators, "separators")
+        min_chunk_size = self.resolve_setting(min_chunk_size, "min_chunk_size")
 
         if not isinstance(separators, list):
             separators = [separators]
@@ -1407,6 +1427,12 @@ class SegmentSplitter(TokenSplitter):
                 separators[layer] = [separators[layer]]
             else:
                 separators[layer] = list(separators[layer])
+        if checks.is_float(min_chunk_size):
+            if 0 <= abs(min_chunk_size) <= 1:
+                min_chunk_size = min_chunk_size * self.chunk_size
+            elif not min_chunk_size.is_integer():
+                raise TypeError("Floating number for min_chunk_size must be between 0 and 1")
+            min_chunk_size = int(min_chunk_size)
 
         self._separators = separators
         self._min_chunk_size = min_chunk_size
@@ -1418,16 +1444,20 @@ class SegmentSplitter(TokenSplitter):
 
     @property
     def min_chunk_size(self) -> int:
-        """Minimum number of tokens per chunk."""
+        """Minimum number of tokens per chunk.
+
+        Can also be provided as a floating number relative to `SegmentSplitter.chunk_size`."""
         return self._min_chunk_size
 
-    def split_into_segments(self, text: str, separator: tp.Optional[str] = None) -> tp.TSChunks:
+    def split_into_segments(self, text: str, separator: tp.Optional[str] = None) -> tp.TSRangeChunks:
         """Split text into segments."""
-        if separator is None:
-            return self.split_into_tokens(text)
         if not separator:
-            for i in range(len(text)):
-                yield i, i + 1
+            if separator is None:
+                for start, end in self.split_into_tokens(text):
+                    yield start, end
+            else:
+                for i in range(len(text)):
+                    yield i, i + 1
         else:
             last_end = 0
 
@@ -1445,10 +1475,12 @@ class SegmentSplitter(TokenSplitter):
                 _text = text[last_end:]
                 yield last_end, len(text)
 
-    def split(self, text: str) -> tp.TSChunks:
+    def split(self, text: str) -> tp.TSRangeChunks:
         current_layer = 0
         chunk_start = 0
         chunk_tokens = []
+        stable_token_count = 0
+        stable_char_count = 0
         remaining_text = text
         overlap_segments = []
 
@@ -1468,15 +1500,49 @@ class SegmentSplitter(TokenSplitter):
                     segment_start = current_start + segment[0]
                     segment_end = current_start + segment[1]
 
-                    pre_chunk_tokens = self.tokenizer.encode(text[chunk_start:segment_end])
-                    if len(pre_chunk_tokens) > self.chunk_size:
+                    if not chunk_tokens:
+                        segment_text = text[segment_start:segment_end]
+                        new_chunk_tokens = self.tokenizer.encode(segment_text)
+                        new_stable_token_count = 0
+                        new_stable_char_count = 0
+                    elif not stable_token_count:
+                        chunk_text = text[chunk_start:segment_end]
+                        new_chunk_tokens = self.tokenizer.encode(chunk_text)
+                        new_stable_token_count = 0
+                        new_stable_char_count = 0
+                        min_token_count = min(len(chunk_tokens), len(new_chunk_tokens))
+                        for i in range(min_token_count):
+                            if chunk_tokens[i] == new_chunk_tokens[i]:
+                                new_stable_token_count += 1
+                                new_stable_char_count += len(self.tokenizer.decode_single(chunk_tokens[i]))
+                            else:
+                                break
+                    else:
+                        stable_tokens = chunk_tokens[:stable_token_count]
+                        unstable_start = chunk_start + len(self.tokenizer.decode(stable_tokens))
+                        partial_text = text[unstable_start:segment_end]
+                        partial_tokens = self.tokenizer.encode(partial_text)
+                        new_chunk_tokens = stable_tokens + partial_tokens
+                        new_stable_token_count = stable_token_count
+                        new_stable_char_count = stable_char_count
+                        min_token_count = min(len(chunk_tokens), len(new_chunk_tokens))
+                        for i in range(stable_token_count, min_token_count):
+                            if chunk_tokens[i] == new_chunk_tokens[i]:
+                                new_stable_token_count += 1
+                                new_stable_char_count += len(self.tokenizer.decode_single(chunk_tokens[i]))
+                            else:
+                                break
+
+                    if len(new_chunk_tokens) > self.chunk_size:
                         current_text = text[segment_start:segment_end]
                         current_start = segment_start
                         finished = False
                         break
                     else:
                         current_segments.append((segment_start, segment_end))
-                        chunk_tokens = pre_chunk_tokens
+                        chunk_tokens = new_chunk_tokens
+                        stable_token_count = new_stable_token_count
+                        stable_char_count = new_stable_char_count
                         finished = True
 
                 if finished:
@@ -1491,7 +1557,7 @@ class SegmentSplitter(TokenSplitter):
                     if len(chunk_tokens) <= self.chunk_overlap:
                         raise ValueError(
                             "Chunk overlap is equal to or greater than the total number of tokens in the chunk. "
-                            "Reduce chunk_overlap or increase the separator granularity."
+                            "Reduce chunk_overlap, or increase min_chunk_size or the separator granularity."
                         )
 
                     chunk_tokens = chunk_tokens[-self.chunk_overlap :]
@@ -1501,6 +1567,8 @@ class SegmentSplitter(TokenSplitter):
                     chunk_tokens = []
                     chunk_start = chunk_end
 
+                stable_token_count = 0
+                stable_char_count = 0
                 remaining_text = text[chunk_start:]
                 current_layer = 0
 
@@ -1517,9 +1585,104 @@ class SegmentSplitter(TokenSplitter):
                     if len(chunk_tokens) < self.min_chunk_size:
                         raise ValueError(
                             "Total number of tokens in the chunk is less than the minimal chunk size. "
-                            "Increase the separator granularity."
+                            "Increase min_chunk_size or the separator granularity."
                         )
                     break
+
+
+class LlamaIndexSplitter(TextSplitter):
+    """Splitter class based on a node parser from LlamaIndex.
+
+    For defaults, see `chat.text_splitter_configs.llama_index` in `vectorbtpro._settings.knowledge`."""
+
+    _short_name = "llama_index"
+
+    _settings_path: tp.SettingsPath = "knowledge.chat.text_splitter_configs.llama_index"
+
+    def __init__(self, node_parser: tp.Union[None, str, NodeParserT] = None, **kwargs) -> None:
+        TextSplitter.__init__(self, **kwargs)
+
+        from vectorbtpro.utils.module_ import assert_can_import
+
+        assert_can_import("llama_index")
+        from llama_index.core.node_parser import NodeParser
+
+        llama_index_config = merge_dicts(self.get_settings(inherit=False), kwargs)
+        if node_parser is None:
+            node_parser = llama_index_config.pop("node_parser", None)
+
+        if isinstance(node_parser, str):
+            import llama_index.core.node_parser
+            from vectorbtpro.utils.module_ import search_package
+
+            def _match_func(k, v):
+                if isinstance(v, type) and issubclass(v, NodeParser):
+                    if "." in node_parser:
+                        if k.endswith(node_parser):
+                            return True
+                    else:
+                        if k.split(".")[-1].lower() == node_parser.lower():
+                            return True
+                        if k.split(".")[-1].replace("Splitter", "").replace(
+                            "NodeParser", ""
+                        ).lower() == node_parser.lower().replace("_", ""):
+                            return True
+                return False
+
+            found_node_parser = search_package(
+                llama_index.core.node_parser,
+                _match_func,
+                path_attrs=True,
+                return_first=True,
+            )
+            if found_node_parser is None:
+                raise ValueError(f"Node parser '{node_parser}' not found")
+            node_parser = found_node_parser
+        if isinstance(node_parser, type):
+            checks.assert_subclass_of(node_parser, NodeParser, arg_name="node_parser")
+            node_parser_name = node_parser.__name__.lower()
+            module_name = node_parser.__module__
+        else:
+            checks.assert_instance_of(node_parser, NodeParser, arg_name="node_parser")
+            node_parser_name = type(node_parser).__name__.lower()
+            module_name = type(node_parser).__module__
+        node_parser_configs = llama_index_config.pop("node_parser_configs", {})
+        if node_parser_name in node_parser_configs:
+            llama_index_config = deep_merge_dicts(llama_index_config, node_parser_configs[node_parser_name])
+        elif module_name in node_parser_configs:
+            llama_index_config = deep_merge_dicts(llama_index_config, node_parser_configs[module_name])
+        if isinstance(node_parser, type):
+            node_parser = node_parser(**llama_index_config)
+        elif len(kwargs) > 0:
+            raise ValueError("Cannot apply config to already initialized node parser")
+        model_name = llama_index_config.get("model_name", None)
+        if model_name is None:
+            func_kwargs = get_func_kwargs(type(node_parser).__init__)
+            model_name = func_kwargs.get("model_name", None)
+
+        self._model = model_name
+        self._node_parser = node_parser
+
+    @property
+    def node_parser(self) -> NodeParserT:
+        """An instance of `llama_index.core.node_parser.interface.NodeParser`."""
+        return self._node_parser
+
+    def split(self, text: str) -> tp.TSRangeChunks:
+        for text_chunk in self.split_text(text):
+            start = text.find(text_chunk)
+            if start == -1:
+                end = -1
+            else:
+                end = start + len(text_chunk)
+            yield start, end
+
+    def split_text(self, text: str) -> tp.TSTextChunks:
+        from llama_index.core.schema import Document
+
+        nodes = self.node_parser.get_nodes_from_documents([Document(text=text)])
+        for node in nodes:
+            yield node.text
 
 
 def resolve_text_splitter(text_splitter: tp.TextSplitterLike = None) -> tp.MaybeType[TextSplitter]:
@@ -1529,6 +1692,7 @@ def resolve_text_splitter(text_splitter: tp.TextSplitterLike = None) -> tp.Maybe
 
     * "token" (`TokenSplitter`)
     * "segment" (`SegmentSplitter`)
+    * "llama_index" (`LlamaIndexSplitter`)
     * A subclass or an instance of `TextSplitter`
     """
     if text_splitter is None:
@@ -1540,7 +1704,7 @@ def resolve_text_splitter(text_splitter: tp.TextSplitterLike = None) -> tp.Maybe
         current_module = sys.modules[__name__]
         found_text_splitter = None
         for name, cls in inspect.getmembers(current_module, inspect.isclass):
-            if name.endswith("TextSplitter"):
+            if name.endswith("Splitter"):
                 _short_name = getattr(cls, "_short_name", None)
                 if _short_name is not None and _short_name.lower() == text_splitter.lower():
                     found_text_splitter = cls
@@ -1553,6 +1717,19 @@ def resolve_text_splitter(text_splitter: tp.TextSplitterLike = None) -> tp.Maybe
     else:
         checks.assert_instance_of(text_splitter, TextSplitter, arg_name="text_splitter")
     return text_splitter
+
+
+def split_text(text: str, text_splitter: tp.TextSplitterLike = None, **kwargs) -> tp.List[str]:
+    """Split text.
+
+    Resolves `text_splitter` with `resolve_text_splitter`. Keyword arguments are passed to either
+    initialize a class or replace an instance of `TextSplitter`."""
+    text_splitter = resolve_text_splitter(text_splitter=text_splitter)
+    if isinstance(text_splitter, type):
+        text_splitter = text_splitter(**kwargs)
+    elif kwargs:
+        text_splitter = text_splitter.replace(**kwargs)
+    return list(text_splitter.split_text(text))
 
 
 # ############# Indexing ############# #
@@ -1587,7 +1764,7 @@ class IndexNode(DefineMixin):
 class Contextable(HasSettings):
     """Abstract class that can be converted into a context."""
 
-    _settings_path: tp.SettingsPath = "knowledge"
+    _settings_path: tp.SettingsPath = ["knowledge", "knowledge.chat"]
 
     def to_context(self, *args, **kwargs) -> str:
         """Convert to a context."""
@@ -1600,11 +1777,9 @@ class Contextable(HasSettings):
         tokenizer_kwargs: tp.KwargsLike = None,
     ) -> int:
         """Count the number of tokens in the context."""
-        to_context_kwargs = self.resolve_setting(to_context_kwargs, "to_context_kwargs", sub_path="chat", merge=True)
-        tokenizer = self.resolve_setting(tokenizer, "tokenizer", default=None, sub_path="chat", sub_path_only=True)
-        tokenizer_kwargs = self.resolve_setting(
-            tokenizer_kwargs, "tokenizer_kwargs", default=None, sub_path="chat", sub_path_only=True, merge=True
-        )
+        to_context_kwargs = self.resolve_setting(to_context_kwargs, "to_context_kwargs", merge=True)
+        tokenizer = self.resolve_setting(tokenizer, "tokenizer", default=None)
+        tokenizer_kwargs = self.resolve_setting(tokenizer_kwargs, "tokenizer_kwargs", default=None, merge=True)
 
         context = self.to_context(**to_context_kwargs)
         tokenizer = resolve_tokenizer(tokenizer)
@@ -1646,8 +1821,6 @@ class Contextable(HasSettings):
             args, kwargs = get_forward_args(super().chat, locals())
             return super().chat(*args, **kwargs)
 
-        to_context_kwargs = cls_or_self.resolve_setting(
-            to_context_kwargs, "to_context_kwargs", sub_path="chat", merge=True
-        )
+        to_context_kwargs = cls_or_self.resolve_setting(to_context_kwargs, "to_context_kwargs", merge=True)
         context = cls_or_self.to_context(**to_context_kwargs)
         return complete(message, context=context, chat_history=chat_history, **kwargs)

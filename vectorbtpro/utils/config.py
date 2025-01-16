@@ -1054,7 +1054,12 @@ class HasSettings(Base):
                         path = path[path_id]
                         if path is None:
                             continue
-                    paths.append((cls_, path))
+                        paths.append((cls_, path))
+                    elif isinstance(path, list):
+                        for p in path:
+                            paths.append((cls_, p))
+                    else:
+                        paths.append((cls_, path))
         return paths
 
     @classmethod

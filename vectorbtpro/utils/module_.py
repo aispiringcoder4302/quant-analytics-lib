@@ -100,29 +100,64 @@ def search_package(
     package: tp.Union[str, ModuleType],
     match_func: tp.Callable,
     blacklist: tp.Optional[tp.Sequence[str]] = None,
-) -> tp.Dict[str, tp.Any]:
+    path_attrs: bool = False,
+    return_first: bool = False,
+    _visited: tp.Optional[tp.Set[str]] = None,
+) -> tp.Union[None, tp.Any, tp.Dict[str, tp.Any]]:
     """Search a package.
 
     Match function should accept the name of the object and the object itself, and return a boolean."""
     if blacklist is None:
         blacklist = []
+    if _visited is None:
+        _visited = set()
+    results = {}
+
     if isinstance(package, str):
         package = importlib.import_module(package)
-    results = {}
+    if package.__name__ not in _visited:
+        _visited.add(package.__name__)
+        for attr in dir(package):
+            if path_attrs:
+                path_attr = package.__name__ + "." + attr
+            else:
+                path_attr = attr
+            if not attr.startswith("_") and match_func(path_attr, getattr(package, attr)):
+                if return_first:
+                    return getattr(package, attr)
+                results[path_attr] = getattr(package, attr)
+
     for _, name, is_pkg in pkgutil.walk_packages(package.__path__, package.__name__ + "."):
         if ".".join(name.split(".")[:-1]) != package.__name__:
             continue
         try:
-            if name in blacklist:
+            if name in _visited or name in blacklist:
                 continue
+            _visited.add(name)
             module = importlib.import_module(name)
             for attr in dir(module):
-                if not attr.startswith("_") and match_func(attr, getattr(module, attr)):
-                    results[attr] = getattr(module, attr)
+                if path_attrs:
+                    path_attr = module.__name__ + "." + attr
+                else:
+                    path_attr = attr
+                if not attr.startswith("_") and match_func(path_attr, getattr(module, attr)):
+                    if return_first:
+                        return getattr(module, attr)
+                    results[path_attr] = getattr(module, attr)
             if is_pkg:
-                results.update(search_package(name, match_func, blacklist=blacklist))
+                results.update(
+                    search_package(
+                        name,
+                        match_func,
+                        blacklist=blacklist,
+                        path_attrs=path_attrs,
+                        _visited=_visited,
+                    )
+                )
         except (ModuleNotFoundError, ImportError):
             pass
+    if return_first:
+        return None
     return results
 
 

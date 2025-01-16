@@ -269,7 +269,7 @@ class ContentFormatter(Configured):
     _short_name: tp.ClassVar[tp.Optional[str]] = None
     """Short name of the class."""
 
-    _settings_path: tp.SettingsPath = "knowledge"
+    _settings_path: tp.SettingsPath = ["knowledge", "knowledge.formatting"]
 
     def __init__(
         self,
@@ -290,11 +290,11 @@ class ContentFormatter(Configured):
             **kwargs,
         )
 
-        output_to = self.resolve_setting(output_to, "output_to", sub_path="formatting")
-        flush_output = self.resolve_setting(flush_output, "flush_output", sub_path="formatting")
-        buffer_output = self.resolve_setting(buffer_output, "buffer_output", sub_path="formatting")
-        close_output = self.resolve_setting(close_output, "close_output", sub_path="formatting")
-        update_interval = self.resolve_setting(update_interval, "update_interval", sub_path="formatting")
+        output_to = self.resolve_setting(output_to, "output_to")
+        flush_output = self.resolve_setting(flush_output, "flush_output")
+        buffer_output = self.resolve_setting(buffer_output, "buffer_output")
+        close_output = self.resolve_setting(close_output, "close_output")
+        update_interval = self.resolve_setting(update_interval, "update_interval")
 
         if isinstance(output_to, (str, Path)):
             output_to = Path(output_to).open("w")
@@ -551,9 +551,7 @@ class IPythonMarkdownFormatter(IPythonFormatter):
             **kwargs,
         )
 
-        to_markdown_kwargs = self.resolve_setting(
-            to_markdown_kwargs, "to_markdown_kwargs", sub_path="formatting", merge=True
-        )
+        to_markdown_kwargs = self.resolve_setting(to_markdown_kwargs, "to_markdown_kwargs", merge=True)
 
         self._to_markdown_kwargs = to_markdown_kwargs
 
@@ -593,10 +591,8 @@ class IPythonHTMLFormatter(IPythonFormatter):
             **kwargs,
         )
 
-        to_markdown_kwargs = self.resolve_setting(
-            to_markdown_kwargs, "to_markdown_kwargs", sub_path="formatting", merge=True
-        )
-        to_html_kwargs = self.resolve_setting(to_html_kwargs, "to_html_kwargs", sub_path="formatting", merge=True)
+        to_markdown_kwargs = self.resolve_setting(to_markdown_kwargs, "to_markdown_kwargs", merge=True)
+        to_html_kwargs = self.resolve_setting(to_html_kwargs, "to_html_kwargs", merge=True)
 
         self._to_markdown_kwargs = to_markdown_kwargs
         self._to_html_kwargs = to_html_kwargs
@@ -665,24 +661,18 @@ class HTMLFileFormatter(ContentFormatter):
             **kwargs,
         )
 
-        refresh_page = self.resolve_setting(refresh_page, "refresh_page", sub_path="formatting")
-        cache = self.resolve_setting(cache, "cache", sub_path="formatting")
+        refresh_page = self.resolve_setting(refresh_page, "refresh_page")
+        cache = self.resolve_setting(cache, "cache")
         def_cache_dir = cache_dir is None
-        cache_dir = self.resolve_setting(cache_dir, "cache_dir", sub_path="formatting")
-        cache_mkdir_kwargs = self.resolve_setting(
-            cache_mkdir_kwargs, "cache_mkdir_kwargs", sub_path="formatting", merge=True
-        )
-        clear_cache = self.resolve_setting(clear_cache, "clear_cache", sub_path="formatting")
-        file_prefix_len = self.resolve_setting(file_prefix_len, "file_prefix_len", sub_path="formatting")
-        file_suffix_len = self.resolve_setting(file_suffix_len, "file_suffix_len", sub_path="formatting")
-        open_browser = self.resolve_setting(open_browser, "open_browser", sub_path="formatting")
-        to_markdown_kwargs = self.resolve_setting(
-            to_markdown_kwargs, "to_markdown_kwargs", sub_path="formatting", merge=True
-        )
-        to_html_kwargs = self.resolve_setting(to_html_kwargs, "to_html_kwargs", sub_path="formatting", merge=True)
-        format_html_kwargs = self.resolve_setting(
-            format_html_kwargs, "format_html_kwargs", sub_path="formatting", merge=True
-        )
+        cache_dir = self.resolve_setting(cache_dir, "cache_dir")
+        cache_mkdir_kwargs = self.resolve_setting(cache_mkdir_kwargs, "cache_mkdir_kwargs", merge=True)
+        clear_cache = self.resolve_setting(clear_cache, "clear_cache")
+        file_prefix_len = self.resolve_setting(file_prefix_len, "file_prefix_len")
+        file_suffix_len = self.resolve_setting(file_suffix_len, "file_suffix_len")
+        open_browser = self.resolve_setting(open_browser, "open_browser")
+        to_markdown_kwargs = self.resolve_setting(to_markdown_kwargs, "to_markdown_kwargs", merge=True)
+        to_html_kwargs = self.resolve_setting(to_html_kwargs, "to_html_kwargs", merge=True)
+        format_html_kwargs = self.resolve_setting(format_html_kwargs, "format_html_kwargs", merge=True)
 
         cache_dir = Path(cache_dir)
         if def_cache_dir and def_cache_suffix is not None:
