@@ -1032,6 +1032,7 @@ class HasSettings(Base):
         path_id: tp.Optional[tp.Hashable] = None,
         inherit: bool = True,
         super_first: bool = True,
+        unique_only: bool = True,
     ) -> tp.List[tp.Tuple[tp.Type[HasSettingsT], str]]:
         """Resolve the settings paths associated with this class and its superclasses (if `inherit` is True)."""
         paths = []
@@ -1042,6 +1043,7 @@ class HasSettings(Base):
                 classes = cls.__mro__
         else:
             classes = [cls]
+        unique_paths = set()
         for i, cls_ in enumerate(classes):
             if issubclass(cls_, HasSettings):
                 path = getattr(cls_, "_settings_path")
@@ -1054,12 +1056,18 @@ class HasSettings(Base):
                         path = path[path_id]
                         if path is None:
                             continue
-                        paths.append((cls_, path))
+                        if path not in unique_paths or not unique_only:
+                            paths.append((cls_, path))
+                            unique_paths.add(path)
                     elif isinstance(path, list):
                         for p in path:
-                            paths.append((cls_, p))
+                            if p not in unique_paths or not unique_only:
+                                paths.append((cls_, p))
+                                unique_paths.add(p)
                     else:
-                        paths.append((cls_, path))
+                        if path not in unique_paths or not unique_only:
+                            paths.append((cls_, path))
+                            unique_paths.add(path)
         return paths
 
     @classmethod

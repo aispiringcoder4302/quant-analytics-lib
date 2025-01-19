@@ -203,17 +203,23 @@ class ArraySizer(ShapeSizer):
     @classmethod
     def get_obj_size(cls, obj: tp.AnyArray, axis: int, single_type: tp.Optional[type] = None) -> int:
         """Get size of an object."""
+        from vectorbtpro.base.wrapping import Wrapping
+
+        if isinstance(obj, Wrapping):
+            shape = obj.wrapper.shape
+        else:
+            shape = obj.shape
         if single_type is not None:
             if checks.is_instance_of(obj, single_type):
                 return 1
-        if len(obj.shape) == 0:
+        if len(shape) == 0:
             return 0
         if axis is None:
-            if len(obj.shape) == 1:
+            if len(shape) == 1:
                 axis = 0
         checks.assert_not_none(axis, arg_name="axis")
-        if axis <= len(obj.shape) - 1:
-            return obj.shape[axis]
+        if axis <= len(shape) - 1:
+            return shape[axis]
         return 0
 
     def get_size(self, ann_args: tp.AnnArgs, **kwargs) -> int:
@@ -569,22 +575,28 @@ class ArraySelector(ShapeSelector):
         return ArraySizer.get_obj_size(obj, self.axis, single_type=self.single_type)
 
     def take(self, obj: tp.AnyArray, chunk_meta: ChunkMeta, **kwargs) -> tp.ArrayLike:
-        checks.assert_instance_of(obj, (pd.Series, pd.DataFrame, np.ndarray))
-        if len(obj.shape) == 0:
+        from vectorbtpro.base.wrapping import Wrapping
+        from vectorbtpro.base.indexing import PandasIndexer
+
+        if isinstance(obj, Wrapping):
+            shape = obj.wrapper.shape
+        else:
+            shape = obj.shape
+        if len(shape) == 0:
             return obj
         axis = self.axis
         if axis is None:
-            if len(obj.shape) == 1:
+            if len(shape) == 1:
                 axis = 0
         checks.assert_not_none(axis, arg_name="axis")
-        if axis >= len(obj.shape):
-            raise IndexError(f"Array is {len(obj.shape)}-dimensional, but {axis} were indexed")
-        slc = [slice(None)] * len(obj.shape)
+        if axis >= len(shape):
+            raise IndexError(f"Array is {len(shape)}-dimensional, but {axis} were indexed")
+        slc = [slice(None)] * len(shape)
         if self.keep_dims:
             slc[axis] = slice(chunk_meta.idx, chunk_meta.idx + 1)
         else:
             slc[axis] = chunk_meta.idx
-        if isinstance(obj, (pd.Series, pd.DataFrame)):
+        if isinstance(obj, (pd.Series, pd.DataFrame, PandasIndexer)):
             return obj.iloc[tuple(slc)]
         return obj[tuple(slc)]
 
@@ -596,22 +608,28 @@ class ArraySlicer(ShapeSlicer):
         return ArraySizer.get_obj_size(obj, self.axis, single_type=self.single_type)
 
     def take(self, obj: tp.AnyArray, chunk_meta: ChunkMeta, **kwargs) -> tp.AnyArray:
-        checks.assert_instance_of(obj, (pd.Series, pd.DataFrame, np.ndarray))
-        if len(obj.shape) == 0:
+        from vectorbtpro.base.wrapping import Wrapping
+        from vectorbtpro.base.indexing import PandasIndexer
+
+        if isinstance(obj, Wrapping):
+            shape = obj.wrapper.shape
+        else:
+            shape = obj.shape
+        if len(shape) == 0:
             return obj
         axis = self.axis
         if axis is None:
-            if len(obj.shape) == 1:
+            if len(shape) == 1:
                 axis = 0
         checks.assert_not_none(axis, arg_name="axis")
-        if axis >= len(obj.shape):
-            raise IndexError(f"Array is {len(obj.shape)}-dimensional, but {axis} were indexed")
-        slc = [slice(None)] * len(obj.shape)
+        if axis >= len(shape):
+            raise IndexError(f"Array is {len(shape)}-dimensional, but {axis} were indexed")
+        slc = [slice(None)] * len(shape)
         if chunk_meta.indices is not None:
             slc[axis] = np.asarray(chunk_meta.indices)
         else:
             slc[axis] = slice(chunk_meta.start, chunk_meta.end)
-        if isinstance(obj, (pd.Series, pd.DataFrame)):
+        if isinstance(obj, (pd.Series, pd.DataFrame, PandasIndexer)):
             return obj.iloc[tuple(slc)]
         return obj[tuple(slc)]
 

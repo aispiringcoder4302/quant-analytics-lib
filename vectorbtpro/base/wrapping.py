@@ -26,9 +26,11 @@ from vectorbtpro.base.resampling.base import Resampler
 from vectorbtpro.utils import checks, datetime_ as dt
 from vectorbtpro.utils.array_ import is_range, cast_to_min_precision, cast_to_max_precision
 from vectorbtpro.utils.attr_ import AttrResolverMixin, AttrResolverMixinT
+from vectorbtpro.utils.chunking import ChunkMeta, yield_chunk_meta, ArraySelector, ArraySlicer
 from vectorbtpro.utils.config import Configured, merge_dicts, resolve_dict
 from vectorbtpro.utils.decorators import hybrid_method, cached_method, cached_property
-from vectorbtpro.utils.params import Param, Itemable, Paramable
+from vectorbtpro.utils.execution import Task, execute
+from vectorbtpro.utils.params import ItemParamable
 from vectorbtpro.utils.parsing import get_func_arg_names
 
 if tp.TYPE_CHECKING:
@@ -46,7 +48,7 @@ __all__ = [
 ArrayWrapperT = tp.TypeVar("ArrayWrapperT", bound="ArrayWrapper")
 
 
-class ArrayWrapper(Configured, IndexApplier, ExtPandasIndexer, Itemable, Paramable):
+class ArrayWrapper(Configured, IndexApplier, ExtPandasIndexer, ItemParamable):
     """Class that stores index, columns, and shape metadata for wrapping NumPy arrays.
     Tightly integrated with `vectorbtpro.base.grouping.base.Grouper` for grouping columns.
 
@@ -1883,7 +1885,7 @@ class ArrayWrapper(Configured, IndexApplier, ExtPandasIndexer, Itemable, Paramab
 
     def split_apply(
         self,
-        apply_func: tp.Callable,
+        apply_func: tp.Union[str, tp.Callable],
         *args,
         splitter_cls: tp.Optional[tp.Type[SplitterT]] = None,
         **kwargs,
@@ -1891,9 +1893,71 @@ class ArrayWrapper(Configured, IndexApplier, ExtPandasIndexer, Itemable, Paramab
         """Split using `vectorbtpro.generic.splitting.base.Splitter.split_and_apply`."""
         from vectorbtpro.generic.splitting.base import Splitter, Takeable
 
+        if isinstance(apply_func, str):
+            apply_func = getattr(type(self), apply_func)
         if splitter_cls is None:
             splitter_cls = Splitter
         return splitter_cls.split_and_apply(self.index, apply_func, Takeable(self), *args, **kwargs)
+
+    # ############# Chunking ############# #
+
+    def chunk(
+        self: ArrayWrapperT,
+        axis: tp.Optional[int] = None,
+        min_size: tp.Optional[int] = None,
+        n_chunks: tp.Union[None, int, str] = None,
+        chunk_len: tp.Union[None, int, str] = None,
+        chunk_meta: tp.Optional[tp.Iterable[ChunkMeta]] = None,
+        select: bool = False,
+    ) -> tp.Iterator[ArrayWrapperT]:
+        """Chunk this instance.
+
+        If `axis` is None, becomes 0 if the instance is one-dimensional and 1 otherwise.
+
+        For chunking meta, see `vectorbtpro.utils.chunking.yield_chunk_meta`."""
+        if axis is None:
+            axis = 0 if self.ndim == 1 else 1
+        if self.ndim == 1 and axis == 1:
+            raise TypeError("Axis 1 is not supported for one dimension")
+        checks.assert_in(axis, (0, 1))
+        size = self.shape_2d[axis]
+        if chunk_meta is None:
+            chunk_meta = yield_chunk_meta(size=size, min_size=min_size, n_chunks=n_chunks, chunk_len=chunk_len)
+        for _chunk_meta in chunk_meta:
+            if select:
+                array_taker = ArraySelector(axis=axis)
+            else:
+                array_taker = ArraySlicer(axis=axis)
+            yield array_taker.take(self, _chunk_meta)
+
+    def chunk_apply(
+        self: ArrayWrapperT,
+        apply_func: tp.Union[str, tp.Callable],
+        *args,
+        chunk_kwargs: tp.KwargsLike = None,
+        execute_kwargs: tp.KwargsLike = None,
+        **kwargs,
+    ) -> tp.MergeableResults:
+        """Chunk this instance or a method of this instance.
+
+        If `apply_func` is a string, becomes the method name.
+
+        For arguments related to chunking, see `ArrayWrapper.chunk`."""
+        if isinstance(apply_func, str):
+            apply_func = getattr(type(self), apply_func)
+        if chunk_kwargs is None:
+            chunk_arg_names = set(get_func_arg_names(self.chunk))
+            chunk_kwargs = {}
+            for k in list(kwargs.keys()):
+                if k in chunk_arg_names:
+                    chunk_kwargs[k] = kwargs.pop(k)
+        if execute_kwargs is None:
+            execute_kwargs = {}
+        chunks = self.chunk(**chunk_kwargs)
+        tasks = []
+        for chunk in chunks:
+            tasks.append(Task(apply_func, chunk, *args, **kwargs))
+        return execute(tasks, size=len(tasks), **execute_kwargs)
 
     # ############# Iteration ############# #
 
@@ -1968,27 +2032,11 @@ class ArrayWrapper(Configured, IndexApplier, ExtPandasIndexer, Itemable, Paramab
                         else:
                             yield group, self.iloc[:, group_idxs[0]]
 
-    def as_param(self, **kwargs) -> Param:
-        param_values = []
-        index_values = []
-        first_index = None
-        keys = None
-        for k, v in self.items(key_as_index=True, **kwargs):
-            param_values.append(v)
-            index_values.append(k[0])
-            if first_index is None:
-                first_index = k
-        if isinstance(first_index, pd.MultiIndex):
-            keys = pd.MultiIndex.from_tuples(index_values, names=first_index.names)
-        elif isinstance(first_index, pd.Index):
-            keys = pd.Index(index_values, name=first_index.name)
-        return Param(param_values, keys=keys)
-
 
 WrappingT = tp.TypeVar("WrappingT", bound="Wrapping")
 
 
-class Wrapping(Configured, IndexApplier, ExtPandasIndexer, AttrResolverMixin, Itemable, Paramable):
+class Wrapping(Configured, IndexApplier, ExtPandasIndexer, AttrResolverMixin, ItemParamable):
     """Class that uses `ArrayWrapper` globally."""
 
     @classmethod
@@ -2253,7 +2301,7 @@ class Wrapping(Configured, IndexApplier, ExtPandasIndexer, AttrResolverMixin, It
 
     def split_apply(
         self,
-        apply_func: tp.Callable,
+        apply_func: tp.Union[str, tp.Callable],
         *args,
         splitter_cls: tp.Optional[tp.Type[SplitterT]] = None,
         wrap: bool = True,  # used in subclasses
@@ -2262,9 +2310,71 @@ class Wrapping(Configured, IndexApplier, ExtPandasIndexer, AttrResolverMixin, It
         """Split using `vectorbtpro.generic.splitting.base.Splitter.split_and_apply`."""
         from vectorbtpro.generic.splitting.base import Splitter, Takeable
 
+        if isinstance(apply_func, str):
+            apply_func = getattr(type(self), apply_func)
         if splitter_cls is None:
             splitter_cls = Splitter
         return splitter_cls.split_and_apply(self.wrapper.index, apply_func, Takeable(self), *args, **kwargs)
+
+    # ############# Chunking ############# #
+
+    def chunk(
+        self: ArrayWrapperT,
+        axis: tp.Optional[int] = None,
+        min_size: tp.Optional[int] = None,
+        n_chunks: tp.Union[None, int, str] = None,
+        chunk_len: tp.Union[None, int, str] = None,
+        chunk_meta: tp.Optional[tp.Iterable[ChunkMeta]] = None,
+        select: bool = False,
+    ) -> tp.Iterator[ArrayWrapperT]:
+        """Chunk this instance.
+
+        If `axis` is None, becomes 0 if the instance is one-dimensional and 1 otherwise.
+
+        For arguments related to chunking meta, see `vectorbtpro.utils.chunking.yield_chunk_meta`."""
+        if axis is None:
+            axis = 0 if self.wrapper.ndim == 1 else 1
+        if self.wrapper.ndim == 1 and axis == 1:
+            raise TypeError("Axis 1 is not supported for one dimension")
+        checks.assert_in(axis, (0, 1))
+        size = self.wrapper.shape_2d[axis]
+        if chunk_meta is None:
+            chunk_meta = yield_chunk_meta(size=size, min_size=min_size, n_chunks=n_chunks, chunk_len=chunk_len)
+        for _chunk_meta in chunk_meta:
+            if select:
+                array_taker = ArraySelector(axis=axis)
+            else:
+                array_taker = ArraySlicer(axis=axis)
+            yield array_taker.take(self, _chunk_meta)
+
+    def chunk_apply(
+        self: ArrayWrapperT,
+        apply_func: tp.Union[str, tp.Callable],
+        *args,
+        chunk_kwargs: tp.KwargsLike = None,
+        execute_kwargs: tp.KwargsLike = None,
+        **kwargs,
+    ) -> tp.MergeableResults:
+        """Chunk this instance or a method of this instance.
+
+        If `apply_func` is a string, becomes the method name.
+
+        For arguments related to chunking, see `Wrapping.chunk`."""
+        if isinstance(apply_func, str):
+            apply_func = getattr(type(self), apply_func)
+        if chunk_kwargs is None:
+            chunk_arg_names = set(get_func_arg_names(self.chunk))
+            chunk_kwargs = {}
+            for k in list(kwargs.keys()):
+                if k in chunk_arg_names:
+                    chunk_kwargs[k] = kwargs.pop(k)
+        if execute_kwargs is None:
+            execute_kwargs = {}
+        chunks = self.chunk(**chunk_kwargs)
+        tasks = []
+        for chunk in chunks:
+            tasks.append(Task(apply_func, chunk, *args, **kwargs))
+        return execute(tasks, size=len(tasks), **execute_kwargs)
 
     # ############# Iteration ############# #
 
@@ -2339,19 +2449,3 @@ class Wrapping(Configured, IndexApplier, ExtPandasIndexer, AttrResolverMixin, It
                             yield group, self.iloc[:, group_idxs]
                         else:
                             yield group, self.iloc[:, group_idxs[0]]
-
-    def as_param(self, **kwargs) -> Param:
-        param_values = []
-        index_values = []
-        first_index = None
-        keys = None
-        for k, v in self.items(key_as_index=True, **kwargs):
-            param_values.append(v)
-            index_values.append(k[0])
-            if first_index is None:
-                first_index = k
-        if isinstance(first_index, pd.MultiIndex):
-            keys = pd.MultiIndex.from_tuples(index_values, names=first_index.names)
-        elif isinstance(first_index, pd.Index):
-            keys = pd.Index(index_values, name=first_index.name)
-        return Param(param_values, keys=keys)

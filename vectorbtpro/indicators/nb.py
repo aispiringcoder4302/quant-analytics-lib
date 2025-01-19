@@ -41,7 +41,9 @@ def ma_1d_nb(
     minp: tp.Optional[int] = None,
     adjust: bool = False,
 ) -> tp.Array1d:
-    """Moving average."""
+    """Moving average.
+
+    For `wtype`, see `vectorbtpro.generic.enums.WType`."""
     return generic_nb.ma_1d_nb(close, window, wtype=wtype, minp=minp, adjust=adjust)
 
 
@@ -92,7 +94,9 @@ def msd_1d_nb(
     adjust: bool = False,
     ddof: int = 0,
 ) -> tp.Array1d:
-    """Moving standard deviation."""
+    """Moving standard deviation.
+
+    For `wtype`, see `vectorbtpro.generic.enums.WType`."""
     return generic_nb.msd_1d_nb(close, window, wtype=wtype, minp=minp, adjust=adjust, ddof=ddof)
 
 
@@ -149,7 +153,9 @@ def bbands_1d_nb(
 ) -> tp.Tuple[tp.Array1d, tp.Array1d, tp.Array1d]:
     """Bollinger Bands.
 
-    Returns the upper band, the middle band, and the lower band."""
+    Returns the upper band, the middle band, and the lower band.
+
+    For `wtype`, see `vectorbtpro.generic.enums.WType`."""
     ma = ma_1d_nb(close, window=window, wtype=wtype, minp=minp, adjust=adjust)
     msd = msd_1d_nb(close, window=window, wtype=wtype, minp=minp, adjust=adjust, ddof=ddof)
     upper = ma + alpha * msd
@@ -377,7 +383,9 @@ def rsi_1d_nb(
     minp: tp.Optional[int] = None,
     adjust: bool = False,
 ) -> tp.Array1d:
-    """RSI."""
+    """RSI.
+
+    For `wtype`, see `vectorbtpro.generic.enums.WType`."""
     avg_gain = avg_gain_1d_nb(close, window=window, wtype=wtype, minp=minp, adjust=adjust)
     avg_loss = avg_loss_1d_nb(close, window=window, wtype=wtype, minp=minp, adjust=adjust)
     return 100 * avg_gain / (avg_gain + avg_loss)
@@ -491,7 +499,9 @@ def stoch_1d_nb(
 ) -> tp.Tuple[tp.Array1d, tp.Array1d, tp.Array1d]:
     """Stochastic Oscillator.
 
-    Returns the fast %K, the slow %K, and the slow %D."""
+    Returns the fast %K, the slow %K, and the slow %D.
+
+    For `wtype`, see `vectorbtpro.generic.enums.WType`."""
     if slow_k_wtype is not None:
         slow_k_wtype_ = slow_k_wtype
     else:
@@ -627,7 +637,9 @@ def macd_1d_nb(
 ) -> tp.Tuple[tp.Array1d, tp.Array1d]:
     """MACD.
 
-    Returns the MACD and the signal."""
+    Returns the MACD and the signal.
+
+    For `wtype`, see `vectorbtpro.generic.enums.WType`."""
     if macd_wtype is not None:
         macd_wtype_ = macd_wtype
     else:
@@ -808,7 +820,9 @@ def atr_1d_nb(
 ) -> tp.Tuple[tp.Array1d, tp.Array1d]:
     """Average True Range (ATR).
 
-    Returns TR and ATR."""
+    Returns TR and ATR.
+
+    For `wtype`, see `vectorbtpro.generic.enums.WType`."""
     tr = tr_1d_nb(high, low, close)
     atr = ma_1d_nb(tr, window, wtype=wtype, minp=minp, adjust=adjust)
     return tr, atr
@@ -871,7 +885,9 @@ def adx_1d_nb(
 ) -> tp.Tuple[tp.Array1d, tp.Array1d, tp.Array1d, tp.Array1d]:
     """Average Directional Movement Index (ADX).
 
-    Returns +DI, -DI, DX, and ADX."""
+    Returns +DI, -DI, DX, and ADX.
+
+    For `wtype`, see `vectorbtpro.generic.enums.WType`."""
     _, atr = atr_1d_nb(
         high,
         low,
@@ -2004,7 +2020,9 @@ def rolling_hurst_1d_nb(
     minp: tp.Optional[int] = None,
     stabilize: bool = False,
 ) -> tp.Array1d:
-    """Rolling version of `get_hurst_nb`."""
+    """Rolling version of `get_hurst_nb`.
+
+    For `method`, see `vectorbtpro.indicators.enums.HurstMethod`."""
     if minp is None:
         minp = window
     if minp > window:

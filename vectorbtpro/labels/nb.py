@@ -47,7 +47,9 @@ def future_mean_1d_nb(
     minp: tp.Optional[int] = None,
     adjust: bool = False,
 ) -> tp.Array1d:
-    """Rolling average over future values."""
+    """Rolling average over future values.
+
+    For `wtype`, see `vectorbtpro.generic.enums.WType`."""
     future_mean = generic_nb.ma_1d_nb(close[::-1], window, wtype=wtype, minp=minp, adjust=adjust)[::-1]
     if wait > 0:
         return generic_nb.bshift_1d_nb(future_mean, wait)
@@ -106,7 +108,9 @@ def future_std_1d_nb(
     adjust: bool = False,
     ddof: int = 0,
 ) -> tp.Array1d:
-    """Rolling standard deviation over future values."""
+    """Rolling standard deviation over future values.
+
+    For `wtype`, see `vectorbtpro.generic.enums.WType`."""
     future_std = generic_nb.msd_1d_nb(close[::-1], window, wtype=wtype, minp=minp, adjust=adjust, ddof=ddof)[::-1]
     if wait > 0:
         return generic_nb.bshift_1d_nb(future_std, wait)
@@ -302,7 +306,9 @@ def mean_labels_1d_nb(
     minp: tp.Optional[int] = None,
     adjust: bool = False,
 ) -> tp.Array1d:
-    """Percentage change of the current value relative to the average of a future period."""
+    """Percentage change of the current value relative to the average of a future period.
+
+    For `wtype`, see `vectorbtpro.generic.enums.WType`."""
     future_mean = future_mean_1d_nb(close, window=window, wtype=wtype, wait=wait, minp=minp, adjust=adjust)
     return (future_mean - close) / close
 
@@ -700,7 +706,7 @@ def trend_labels_1d_nb(
     down_th: tp.FlexArray1dLike,
     mode: int = TrendLabelMode.Binary,
 ) -> tp.Array2d:
-    """Trend labels based on `TrendLabelMode`."""
+    """Trend labels based on `vectorbtpro.labels.enums.TrendLabelMode`."""
     pivots = pivots_1d_nb(high, low, up_th, down_th)
     if mode == TrendLabelMode.Binary:
         return bin_trend_labels_1d_nb(pivots)

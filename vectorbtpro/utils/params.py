@@ -39,6 +39,7 @@ __all__ = [
     "Param",
     "Itemable",
     "Paramable",
+    "ItemParamable",
     "combine_params",
     "Parameterizer",
     "parameterized",
@@ -353,6 +354,29 @@ class Paramable(Base):
     def as_param(self, **kwargs) -> Param:
         """Return this instance as a parameter."""
         raise NotImplementedError
+
+
+class ItemParamable(Itemable, Paramable):
+    """Class representing an object that can be returned as both items and parameters."""
+
+    def items(self, key_as_index: bool = False, **kwargs) -> tp.Items:
+        raise NotImplementedError
+
+    def as_param(self, **kwargs) -> Param:
+        param_values = []
+        index_values = []
+        first_index = None
+        keys = None
+        for k, v in self.items(key_as_index=True, **kwargs):
+            param_values.append(v)
+            index_values.append(k[0])
+            if first_index is None:
+                first_index = k
+        if isinstance(first_index, pd.MultiIndex):
+            keys = pd.MultiIndex.from_tuples(index_values, names=first_index.names)
+        elif isinstance(first_index, pd.Index):
+            keys = pd.Index(index_values, name=first_index.name)
+        return Param(param_values, keys=keys)
 
 
 def combine_params(

@@ -224,7 +224,13 @@ def pattern_similarity_nb(
     At each position in the array, the value in `arr` is first mapped into the range of `pattern`.
     Then, the absolute distance between the actual and expected value is calculated (= error).
     This error is then divided by the maximum error at this position to get a relative value between 0 and 1.
-    Finally, all relative errors are added together and subtracted from 1 to get the similarity measure."""
+    Finally, all relative errors are added together and subtracted from 1 to get the similarity measure.
+
+    * For `interp_mode`, see `vectorbtpro.generic.enums.InterpMode`
+    * For `rescale_mode`, see `vectorbtpro.generic.enums.RescaleMode`
+    * For `error_type`, see `vectorbtpro.generic.enums.ErrorType`
+    * For `distance_measure`, see `vectorbtpro.generic.enums.DistanceMeasure`
+    """
     max_error_ = to_1d_array_nb(np.asarray(max_error))
 
     if len(arr) == 0:

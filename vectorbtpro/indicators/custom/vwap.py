@@ -55,7 +55,9 @@ class _VWAP(VWAP):
     VWAP is a technical analysis indicator used on intraday charts that resets at the start
     of every new trading session.
 
-    See [Volume-Weighted Average Price (VWAP)](https://www.investopedia.com/terms/v/vwap.asp)."""
+    See [Volume-Weighted Average Price (VWAP)](https://www.investopedia.com/terms/v/vwap.asp).
+
+    Anchor can be any index grouper."""
 
     def plot(
         self,

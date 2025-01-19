@@ -81,14 +81,16 @@ PIVOTINFO = IndicatorFactory(
 class _PIVOTINFO(PIVOTINFO):
     """Indicator that returns various information on pivots identified based on thresholds.
 
-    * `conf_pivot`: the type of the latest confirmed pivot (running)
+    * `conf_pivot` (`vectorbtpro.indicators.enums.Pivot`): the type of the latest confirmed pivot (running)
     * `conf_idx`: the index of the latest confirmed pivot (running)
     * `conf_value`: the high/low value under the latest confirmed pivot (running)
-    * `last_pivot`: the type of the latest pivot (running)
+    * `last_pivot` (`vectorbtpro.indicators.enums.Pivot`): the type of the latest pivot (running)
     * `last_idx`: the index of the latest pivot (running)
     * `last_value`: the high/low value under the latest pivot (running)
-    * `pivots`: confirmed pivots stored under their indices (looking ahead - use only for plotting!)
-    * `modes`: modes between confirmed pivot points (looking ahead - use only for plotting!)
+    * `pivots` (`vectorbtpro.indicators.enums.Pivot`): confirmed pivots stored under their indices
+        (looking ahead - use only for plotting!)
+    * `modes` (`vectorbtpro.indicators.enums.TrendMode`): modes between confirmed pivot points
+        (looking ahead - use only for plotting!)
     """
 
     def plot(
