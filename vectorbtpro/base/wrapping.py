@@ -26,7 +26,7 @@ from vectorbtpro.base.resampling.base import Resampler
 from vectorbtpro.utils import checks, datetime_ as dt
 from vectorbtpro.utils.array_ import is_range, cast_to_min_precision, cast_to_max_precision
 from vectorbtpro.utils.attr_ import AttrResolverMixin, AttrResolverMixinT
-from vectorbtpro.utils.chunking import ChunkMeta, yield_chunk_meta, ArraySelector, ArraySlicer
+from vectorbtpro.utils.chunking import ChunkMeta, yield_chunk_meta, get_chunk_meta_key, ArraySelector, ArraySlicer
 from vectorbtpro.utils.config import Configured, merge_dicts, resolve_dict
 from vectorbtpro.utils.decorators import hybrid_method, cached_method, cached_property
 from vectorbtpro.utils.execution import Task, execute
@@ -45,10 +45,387 @@ __all__ = [
     "Wrapping",
 ]
 
+
+HasWrapperT = tp.TypeVar("HasWrapperT", bound="HasWrapper")
+
+
+class HasWrapper(ExtPandasIndexer, ItemParamable):
+    """Abstract class that manages a wrapper."""
+
+    @property
+    def unwrapped(self) -> tp.Any:
+        """Unwrapped object."""
+        raise NotImplementedError
+
+    @hybrid_method
+    def should_wrap(cls_or_self) -> bool:
+        """Whether to wrap where applicable."""
+        return True
+
+    @property
+    def wrapper(self) -> "ArrayWrapper":
+        """Array wrapper of the type `ArrayWrapper`."""
+        raise NotImplementedError
+
+    @property
+    def column_only_select(self) -> bool:
+        """Whether to perform indexing on columns only."""
+        raise NotImplementedError
+
+    @property
+    def range_only_select(self) -> bool:
+        """Whether to perform indexing on rows using slices only."""
+        raise NotImplementedError
+
+    @property
+    def group_select(self) -> bool:
+        """Whether to allow indexing on groups."""
+        raise NotImplementedError
+
+    def regroup(self: HasWrapperT, group_by: tp.GroupByLike, **kwargs) -> HasWrapperT:
+        """Regroup this instance."""
+        raise NotImplementedError
+
+    # ############# Selection ############# #
+
+    def select_col(
+        self: HasWrapperT,
+        column: tp.Any = None,
+        group_by: tp.GroupByLike = None,
+        **kwargs,
+    ) -> HasWrapperT:
+        """Select one column/group.
+
+        `column` can be a label-based position as well as an integer position (if label fails)."""
+        _self = self.regroup(group_by, **kwargs)
+
+        def _check_out_dim(out: HasWrapperT) -> HasWrapperT:
+            if out.wrapper.get_ndim() == 2:
+                if out.wrapper.get_shape_2d()[1] == 1:
+                    if out.column_only_select:
+                        return out.iloc[0]
+                    return out.iloc[:, 0]
+                if _self.wrapper.grouper.is_grouped():
+                    raise TypeError("Could not select one group: multiple groups returned")
+                else:
+                    raise TypeError("Could not select one column: multiple columns returned")
+            return out
+
+        if column is None:
+            if _self.wrapper.get_ndim() == 2 and _self.wrapper.get_shape_2d()[1] == 1:
+                column = 0
+        if column is not None:
+            if _self.wrapper.grouper.is_grouped():
+                if _self.wrapper.grouped_ndim == 1:
+                    raise TypeError("This instance already contains one group of data")
+                if column not in _self.wrapper.get_columns():
+                    if isinstance(column, int):
+                        if _self.column_only_select:
+                            return _check_out_dim(_self.iloc[column])
+                        return _check_out_dim(_self.iloc[:, column])
+                    raise KeyError(f"Group '{column}' not found")
+            else:
+                if _self.wrapper.ndim == 1:
+                    raise TypeError("This instance already contains one column of data")
+                if column not in _self.wrapper.columns:
+                    if isinstance(column, int):
+                        if _self.column_only_select:
+                            return _check_out_dim(_self.iloc[column])
+                        return _check_out_dim(_self.iloc[:, column])
+                    raise KeyError(f"Column '{column}' not found")
+            return _check_out_dim(_self[column])
+        if _self.wrapper.grouper.is_grouped():
+            if _self.wrapper.grouped_ndim == 1:
+                return _self
+            raise TypeError("Only one group is allowed. Use indexing or column argument.")
+        if _self.wrapper.ndim == 1:
+            return _self
+        raise TypeError("Only one column is allowed. Use indexing or column argument.")
+
+    @hybrid_method
+    def select_col_from_obj(
+        cls_or_self,
+        obj: tp.Optional[tp.SeriesFrame],
+        column: tp.Any = None,
+        obj_ungrouped: bool = False,
+        group_by: tp.GroupByLike = None,
+        wrapper: tp.Optional["ArrayWrapper"] = None,
+        **kwargs,
+    ) -> tp.MaybeSeries:
+        """Select one column/group from a Pandas object.
+
+        `column` can be a label-based position as well as an integer position (if label fails)."""
+        if obj is None:
+            return None
+        if not isinstance(cls_or_self, type):
+            if wrapper is None:
+                wrapper = cls_or_self.wrapper
+        else:
+            checks.assert_not_none(wrapper, arg_name="wrapper")
+        _wrapper = wrapper.regroup(group_by, **kwargs)
+
+        def _check_out_dim(out: tp.SeriesFrame, from_df: bool) -> tp.Series:
+            bad_shape = False
+            if from_df and isinstance(out, pd.DataFrame):
+                if len(out.columns) == 1:
+                    return out.iloc[:, 0]
+                bad_shape = True
+            if not from_df and isinstance(out, pd.Series):
+                if len(out) == 1:
+                    return out.iloc[0]
+                bad_shape = True
+            if bad_shape:
+                if _wrapper.grouper.is_grouped():
+                    raise TypeError("Could not select one group: multiple groups returned")
+                else:
+                    raise TypeError("Could not select one column: multiple columns returned")
+            return out
+
+        if column is None:
+            if _wrapper.get_ndim() == 2 and _wrapper.get_shape_2d()[1] == 1:
+                column = 0
+        if column is not None:
+            if _wrapper.grouper.is_grouped():
+                if _wrapper.grouped_ndim == 1:
+                    raise TypeError("This instance already contains one group of data")
+                if obj_ungrouped:
+                    mask = _wrapper.grouper.group_by == column
+                    if not mask.any():
+                        raise KeyError(f"Group '{column}' not found")
+                    if isinstance(obj, pd.DataFrame):
+                        return obj.loc[:, mask]
+                    return obj.loc[mask]
+                else:
+                    if column not in _wrapper.get_columns():
+                        if isinstance(column, int):
+                            if isinstance(obj, pd.DataFrame):
+                                return _check_out_dim(obj.iloc[:, column], True)
+                            return _check_out_dim(obj.iloc[column], False)
+                        raise KeyError(f"Group '{column}' not found")
+            else:
+                if _wrapper.ndim == 1:
+                    raise TypeError("This instance already contains one column of data")
+                if column not in _wrapper.columns:
+                    if isinstance(column, int):
+                        if isinstance(obj, pd.DataFrame):
+                            return _check_out_dim(obj.iloc[:, column], True)
+                        return _check_out_dim(obj.iloc[column], False)
+                    raise KeyError(f"Column '{column}' not found")
+            if isinstance(obj, pd.DataFrame):
+                return _check_out_dim(obj[column], True)
+            return _check_out_dim(obj[column], False)
+        if not _wrapper.grouper.is_grouped():
+            if _wrapper.ndim == 1:
+                return obj
+            raise TypeError("Only one column is allowed. Use indexing or column argument.")
+        if _wrapper.grouped_ndim == 1:
+            return obj
+        raise TypeError("Only one group is allowed. Use indexing or column argument.")
+
+    # ############# Splitting ############# #
+
+    def split(
+        self,
+        *args,
+        splitter_cls: tp.Optional[tp.Type[SplitterT]] = None,
+        wrap: tp.Optional[bool] = None,
+        **kwargs,
+    ) -> tp.Any:
+        """Split this instance.
+
+        Uses `vectorbtpro.generic.splitting.base.Splitter.split_and_take`."""
+        from vectorbtpro.generic.splitting.base import Splitter
+
+        if splitter_cls is None:
+            splitter_cls = Splitter
+        if wrap is None:
+            wrap = self.should_wrap()
+        wrapped_self = self if wrap else self.unwrapped
+        return splitter_cls.split_and_take(self.wrapper.index, wrapped_self, *args, **kwargs)
+
+    def split_apply(
+        self,
+        apply_func: tp.Union[str, tp.Callable],
+        *args,
+        splitter_cls: tp.Optional[tp.Type[SplitterT]] = None,
+        wrap: tp.Optional[bool] = None,
+        **kwargs,
+    ) -> tp.Any:
+        """Split this instance and apply a function to each split.
+
+        Uses `vectorbtpro.generic.splitting.base.Splitter.split_and_apply`."""
+        from vectorbtpro.generic.splitting.base import Splitter, Takeable
+
+        if isinstance(apply_func, str):
+            apply_func = getattr(type(self), apply_func)
+        if splitter_cls is None:
+            splitter_cls = Splitter
+        if wrap is None:
+            wrap = self.should_wrap()
+        wrapped_self = self if wrap else self.unwrapped
+        return splitter_cls.split_and_apply(self.wrapper.index, apply_func, Takeable(wrapped_self), *args, **kwargs)
+
+    # ############# Chunking ############# #
+
+    def chunk(
+        self: HasWrapperT,
+        axis: tp.Optional[int] = None,
+        min_size: tp.Optional[int] = None,
+        n_chunks: tp.Union[None, int, str] = None,
+        chunk_len: tp.Union[None, int, str] = None,
+        chunk_meta: tp.Optional[tp.Iterable[ChunkMeta]] = None,
+        select: bool = False,
+        wrap: tp.Optional[bool] = None,
+        return_chunk_meta: bool = False,
+    ) -> tp.Iterator[tp.Union[HasWrapperT, tp.Tuple[ChunkMeta, HasWrapperT]]]:
+        """Chunk this instance.
+
+        If `axis` is None, becomes 0 if the instance is one-dimensional and 1 otherwise.
+
+        For arguments related to chunking meta, see `vectorbtpro.utils.chunking.yield_chunk_meta`."""
+        if axis is None:
+            axis = 0 if self.wrapper.ndim == 1 else 1
+        if self.wrapper.ndim == 1 and axis == 1:
+            raise TypeError("Axis 1 is not supported for one dimension")
+        checks.assert_in(axis, (0, 1))
+        size = self.wrapper.shape_2d[axis]
+        if wrap is None:
+            wrap = self.should_wrap()
+        wrapped_self = self if wrap else self.unwrapped
+        if chunk_meta is None:
+            chunk_meta = yield_chunk_meta(
+                size=size,
+                min_size=min_size,
+                n_chunks=n_chunks,
+                chunk_len=chunk_len,
+            )
+        for _chunk_meta in chunk_meta:
+            if select:
+                array_taker = ArraySelector(axis=axis)
+            else:
+                array_taker = ArraySlicer(axis=axis)
+            if return_chunk_meta:
+                yield _chunk_meta, array_taker.take(wrapped_self, _chunk_meta)
+            else:
+                yield array_taker.take(wrapped_self, _chunk_meta)
+
+    def chunk_apply(
+        self: HasWrapperT,
+        apply_func: tp.Union[str, tp.Callable],
+        *args,
+        chunk_kwargs: tp.KwargsLike = None,
+        execute_kwargs: tp.KwargsLike = None,
+        **kwargs,
+    ) -> tp.MergeableResults:
+        """Chunk this instance and apply a function to each chunk.
+
+        If `apply_func` is a string, becomes the method name.
+
+        For arguments related to chunking, see `Wrapping.chunk`."""
+        if isinstance(apply_func, str):
+            apply_func = getattr(type(self), apply_func)
+        if chunk_kwargs is None:
+            chunk_arg_names = set(get_func_arg_names(self.chunk))
+            chunk_kwargs = {}
+            for k in list(kwargs.keys()):
+                if k in chunk_arg_names:
+                    chunk_kwargs[k] = kwargs.pop(k)
+        if execute_kwargs is None:
+            execute_kwargs = {}
+        chunks = self.chunk(return_chunk_meta=True, **chunk_kwargs)
+        tasks = []
+        keys = []
+        for _chunk_meta, chunk in chunks:
+            tasks.append(Task(apply_func, chunk, *args, **kwargs))
+            keys.append(get_chunk_meta_key(_chunk_meta))
+        keys = pd.Index(keys, name="chunk_indices")
+        return execute(tasks, size=len(tasks), keys=keys, **execute_kwargs)
+
+    # ############# Iteration ############# #
+
+    def get_item_keys(self, group_by: tp.GroupByLike = None) -> tp.Index:
+        """Get keys for `Wrapping.items`."""
+        _self = self.regroup(group_by=group_by)
+        if _self.group_select and _self.wrapper.grouper.is_grouped():
+            return _self.wrapper.get_columns()
+        return _self.wrapper.columns
+
+    def items(
+        self,
+        group_by: tp.GroupByLike = None,
+        apply_group_by: bool = False,
+        keep_2d: bool = False,
+        key_as_index: bool = False,
+        wrap: tp.Optional[bool] = None,
+    ) -> tp.Items:
+        """Iterate over columns or groups (if grouped and `Wrapping.group_select` is True).
+
+        If `apply_group_by` is False, `group_by` becomes a grouping instruction for the iteration,
+        not for the final object. In this case, will raise an error if the instance is grouped
+        and that grouping must be changed."""
+        if wrap is None:
+            wrap = self.should_wrap()
+
+        def _resolve_v(self):
+            return self if wrap else self.unwrapped
+
+        if group_by is None or apply_group_by:
+            _self = self.regroup(group_by=group_by)
+            if _self.group_select and _self.wrapper.grouper.is_grouped():
+                columns = _self.wrapper.get_columns()
+                ndim = _self.wrapper.get_ndim()
+            else:
+                columns = _self.wrapper.columns
+                ndim = _self.wrapper.ndim
+
+            if ndim == 1:
+                if key_as_index:
+                    yield columns, _resolve_v(_self)
+                else:
+                    yield columns[0], _resolve_v(_self)
+            else:
+                for i in range(len(columns)):
+                    if key_as_index:
+                        key = columns[[i]]
+                    else:
+                        key = columns[i]
+                    if _self.column_only_select:
+                        if keep_2d:
+                            yield key, _resolve_v(_self.iloc[i : i + 1])
+                        else:
+                            yield key, _resolve_v(_self.iloc[i])
+                    else:
+                        if keep_2d:
+                            yield key, _resolve_v(_self.iloc[:, i : i + 1])
+                        else:
+                            yield key, _resolve_v(_self.iloc[:, i])
+        else:
+            if self.group_select and self.wrapper.grouper.is_grouped():
+                raise ValueError("Cannot change grouping")
+            wrapper = self.wrapper.regroup(group_by=group_by)
+            if wrapper.get_ndim() == 1:
+                if key_as_index:
+                    yield wrapper.get_columns(), _resolve_v(self)
+                else:
+                    yield wrapper.get_columns()[0], _resolve_v(self)
+            else:
+                for group, group_idxs in wrapper.grouper.iter_groups(key_as_index=key_as_index):
+                    if self.column_only_select:
+                        if keep_2d or len(group_idxs) > 1:
+                            yield group, _resolve_v(self.iloc[group_idxs])
+                        else:
+                            yield group, _resolve_v(self.iloc[group_idxs[0]])
+                    else:
+                        if keep_2d or len(group_idxs) > 1:
+                            yield group, _resolve_v(self.iloc[:, group_idxs])
+                        else:
+                            yield group, _resolve_v(self.iloc[:, group_idxs[0]])
+
+
 ArrayWrapperT = tp.TypeVar("ArrayWrapperT", bound="ArrayWrapper")
 
 
-class ArrayWrapper(Configured, IndexApplier, ExtPandasIndexer, ItemParamable):
+class ArrayWrapper(Configured, HasWrapper, IndexApplier):
     """Class that stores index, columns, and shape metadata for wrapping NumPy arrays.
     Tightly integrated with `vectorbtpro.base.grouping.base.Grouper` for grouping columns.
 
@@ -481,7 +858,7 @@ class ArrayWrapper(Configured, IndexApplier, ExtPandasIndexer, ItemParamable):
         elif not checks.is_index_equal(columns, grouper.index) or len(grouper_kwargs) > 0:
             grouper = grouper.replace(index=columns, **grouper_kwargs)
 
-        ExtPandasIndexer.__init__(self)
+        HasWrapper.__init__(self)
         Configured.__init__(
             self,
             index=index,
@@ -596,12 +973,12 @@ class ArrayWrapper(Configured, IndexApplier, ExtPandasIndexer, ItemParamable):
 
         if column_only_select:
             if i_wrapper.ndim == 1:
-                raise IndexingError("Columns only: This object already contains one column of data")
+                raise IndexingError("Columns only: This instance already contains one column of data")
             try:
                 col_mapper = pd_indexing_func(i_wrapper.wrap_reduced(np.arange(n_cols), columns=columns))
             except pd.core.indexing.IndexingError as e:
                 warnings.warn(
-                    "Columns only: Make sure to treat this object as a Series of columns rather than a DataFrame",
+                    "Columns only: Make sure to treat this instance as a Series of columns rather than a DataFrame",
                     stacklevel=2,
                 )
                 raise e
@@ -868,6 +1245,10 @@ class ArrayWrapper(Configured, IndexApplier, ExtPandasIndexer, ItemParamable):
         return self.resample_meta(*args, **kwargs)["new_wrapper"]
 
     @property
+    def wrapper(self) -> "ArrayWrapper":
+        return self
+
+    @property
     def index(self) -> tp.Index:
         """Index."""
         return self._index
@@ -932,7 +1313,7 @@ class ArrayWrapper(Configured, IndexApplier, ExtPandasIndexer, ItemParamable):
 
     @property
     def shape_2d(self) -> tp.Shape:
-        """Shape as if the object was two-dimensional."""
+        """Shape as if the instance was two-dimensional."""
         if self.ndim == 1:
             return self.shape[0], 1
         return self.shape
@@ -983,7 +1364,6 @@ class ArrayWrapper(Configured, IndexApplier, ExtPandasIndexer, ItemParamable):
 
     @property
     def column_only_select(self) -> bool:
-        """Whether to perform indexing on columns only."""
         from vectorbtpro._settings import settings
 
         wrapping_cfg = settings["wrapping"]
@@ -995,7 +1375,6 @@ class ArrayWrapper(Configured, IndexApplier, ExtPandasIndexer, ItemParamable):
 
     @property
     def range_only_select(self) -> bool:
-        """Whether to perform indexing on rows using slices only."""
         from vectorbtpro._settings import settings
 
         wrapping_cfg = settings["wrapping"]
@@ -1007,7 +1386,6 @@ class ArrayWrapper(Configured, IndexApplier, ExtPandasIndexer, ItemParamable):
 
     @property
     def group_select(self) -> bool:
-        """Whether to allow indexing on groups."""
         from vectorbtpro._settings import settings
 
         wrapping_cfg = settings["wrapping"]
@@ -1033,7 +1411,7 @@ class ArrayWrapper(Configured, IndexApplier, ExtPandasIndexer, ItemParamable):
 
     @cached_method(whitelist=True)
     def regroup(self: ArrayWrapperT, group_by: tp.GroupByLike, **kwargs) -> ArrayWrapperT:
-        """Regroup this object.
+        """Regroup this instance.
 
         Only creates a new instance if grouping has changed, otherwise returns itself."""
         if self.grouper.is_grouping_changed(group_by=group_by):
@@ -1055,7 +1433,7 @@ class ArrayWrapper(Configured, IndexApplier, ExtPandasIndexer, ItemParamable):
 
     @cached_method(whitelist=True)
     def resolve(self: ArrayWrapperT, group_by: tp.GroupByLike = None, **kwargs) -> ArrayWrapperT:
-        """Resolve this object.
+        """Resolve this instance.
 
         Replaces columns and other metadata with groups."""
         _self = self.regroup(group_by=group_by, **kwargs)
@@ -1744,299 +2122,11 @@ class ArrayWrapper(Configured, IndexApplier, ExtPandasIndexer, ItemParamable):
             return self.wrap(arr, group_by=False)
         return arr
 
-    # ############# Selection ############# #
-
-    def select_col(
-        self: ArrayWrapperT,
-        column: tp.Any = None,
-        group_by: tp.GroupByLike = None,
-        **kwargs,
-    ) -> ArrayWrapperT:
-        """Select one column/group.
-
-        `column` can be a label-based position as well as an integer position (if label fails)."""
-        _self = self.regroup(group_by, **kwargs)
-
-        def _check_out_dim(out: ArrayWrapperT) -> ArrayWrapperT:
-            if out.get_ndim() == 2:
-                if out.get_shape_2d()[1] == 1:
-                    if out.column_only_select:
-                        return out.iloc[0]
-                    return out.iloc[:, 0]
-                if _self.grouper.is_grouped():
-                    raise TypeError("Could not select one group: multiple groups returned")
-                else:
-                    raise TypeError("Could not select one column: multiple columns returned")
-            return out
-
-        if column is None:
-            if _self.get_ndim() == 2 and _self.get_shape_2d()[1] == 1:
-                column = 0
-        if column is not None:
-            if _self.grouper.is_grouped():
-                if _self.grouped_ndim == 1:
-                    raise TypeError("This object already contains one group of data")
-                if column not in _self.get_columns():
-                    if isinstance(column, int):
-                        if _self.column_only_select:
-                            return _check_out_dim(_self.iloc[column])
-                        return _check_out_dim(_self.iloc[:, column])
-                    raise KeyError(f"Group '{column}' not found")
-            else:
-                if _self.ndim == 1:
-                    raise TypeError("This object already contains one column of data")
-                if column not in _self.columns:
-                    if isinstance(column, int):
-                        if _self.column_only_select:
-                            return _check_out_dim(_self.iloc[column])
-                        return _check_out_dim(_self.iloc[:, column])
-                    raise KeyError(f"Column '{column}' not found")
-            return _check_out_dim(_self[column])
-        if _self.grouper.is_grouped():
-            if _self.grouped_ndim == 1:
-                return _self
-            raise TypeError("Only one group is allowed. Use indexing or column argument.")
-        if _self.ndim == 1:
-            return _self
-        raise TypeError("Only one column is allowed. Use indexing or column argument.")
-
-    def select_col_from_obj(
-        self,
-        obj: tp.Optional[tp.SeriesFrame],
-        column: tp.Any = None,
-        obj_ungrouped: bool = False,
-        group_by: tp.GroupByLike = None,
-        **kwargs,
-    ) -> tp.MaybeSeries:
-        """Select one column/group from a Pandas object.
-
-        `column` can be a label-based position as well as an integer position (if label fails)."""
-        if obj is None:
-            return None
-        _self = self.regroup(group_by, **kwargs)
-
-        def _check_out_dim(out: tp.SeriesFrame, from_df: bool) -> tp.Series:
-            bad_shape = False
-            if from_df and isinstance(out, pd.DataFrame):
-                if len(out.columns) == 1:
-                    return out.iloc[:, 0]
-                bad_shape = True
-            if not from_df and isinstance(out, pd.Series):
-                if len(out) == 1:
-                    return out.iloc[0]
-                bad_shape = True
-            if bad_shape:
-                if _self.grouper.is_grouped():
-                    raise TypeError("Could not select one group: multiple groups returned")
-                else:
-                    raise TypeError("Could not select one column: multiple columns returned")
-            return out
-
-        if column is None:
-            if _self.get_ndim() == 2 and _self.get_shape_2d()[1] == 1:
-                column = 0
-        if column is not None:
-            if _self.grouper.is_grouped():
-                if _self.grouped_ndim == 1:
-                    raise TypeError("This object already contains one group of data")
-                if obj_ungrouped:
-                    mask = _self.grouper.group_by == column
-                    if not mask.any():
-                        raise KeyError(f"Group '{column}' not found")
-                    if isinstance(obj, pd.DataFrame):
-                        return obj.loc[:, mask]
-                    return obj.loc[mask]
-                else:
-                    if column not in _self.get_columns():
-                        if isinstance(column, int):
-                            if isinstance(obj, pd.DataFrame):
-                                return _check_out_dim(obj.iloc[:, column], True)
-                            return _check_out_dim(obj.iloc[column], False)
-                        raise KeyError(f"Group '{column}' not found")
-            else:
-                if _self.ndim == 1:
-                    raise TypeError("This object already contains one column of data")
-                if column not in _self.columns:
-                    if isinstance(column, int):
-                        if isinstance(obj, pd.DataFrame):
-                            return _check_out_dim(obj.iloc[:, column], True)
-                        return _check_out_dim(obj.iloc[column], False)
-                    raise KeyError(f"Column '{column}' not found")
-            if isinstance(obj, pd.DataFrame):
-                return _check_out_dim(obj[column], True)
-            return _check_out_dim(obj[column], False)
-        if not _self.grouper.is_grouped():
-            if _self.ndim == 1:
-                return obj
-            raise TypeError("Only one column is allowed. Use indexing or column argument.")
-        if _self.grouped_ndim == 1:
-            return obj
-        raise TypeError("Only one group is allowed. Use indexing or column argument.")
-
-    # ############# Splitting ############# #
-
-    def split(self, *args, splitter_cls: tp.Optional[tp.Type[SplitterT]] = None, **kwargs) -> tp.Any:
-        """Split using `vectorbtpro.generic.splitting.base.Splitter.split_and_take`."""
-        from vectorbtpro.generic.splitting.base import Splitter
-
-        if splitter_cls is None:
-            splitter_cls = Splitter
-        return splitter_cls.split_and_take(self.index, self, *args, **kwargs)
-
-    def split_apply(
-        self,
-        apply_func: tp.Union[str, tp.Callable],
-        *args,
-        splitter_cls: tp.Optional[tp.Type[SplitterT]] = None,
-        **kwargs,
-    ) -> tp.Any:
-        """Split using `vectorbtpro.generic.splitting.base.Splitter.split_and_apply`."""
-        from vectorbtpro.generic.splitting.base import Splitter, Takeable
-
-        if isinstance(apply_func, str):
-            apply_func = getattr(type(self), apply_func)
-        if splitter_cls is None:
-            splitter_cls = Splitter
-        return splitter_cls.split_and_apply(self.index, apply_func, Takeable(self), *args, **kwargs)
-
-    # ############# Chunking ############# #
-
-    def chunk(
-        self: ArrayWrapperT,
-        axis: tp.Optional[int] = None,
-        min_size: tp.Optional[int] = None,
-        n_chunks: tp.Union[None, int, str] = None,
-        chunk_len: tp.Union[None, int, str] = None,
-        chunk_meta: tp.Optional[tp.Iterable[ChunkMeta]] = None,
-        select: bool = False,
-    ) -> tp.Iterator[ArrayWrapperT]:
-        """Chunk this instance.
-
-        If `axis` is None, becomes 0 if the instance is one-dimensional and 1 otherwise.
-
-        For chunking meta, see `vectorbtpro.utils.chunking.yield_chunk_meta`."""
-        if axis is None:
-            axis = 0 if self.ndim == 1 else 1
-        if self.ndim == 1 and axis == 1:
-            raise TypeError("Axis 1 is not supported for one dimension")
-        checks.assert_in(axis, (0, 1))
-        size = self.shape_2d[axis]
-        if chunk_meta is None:
-            chunk_meta = yield_chunk_meta(size=size, min_size=min_size, n_chunks=n_chunks, chunk_len=chunk_len)
-        for _chunk_meta in chunk_meta:
-            if select:
-                array_taker = ArraySelector(axis=axis)
-            else:
-                array_taker = ArraySlicer(axis=axis)
-            yield array_taker.take(self, _chunk_meta)
-
-    def chunk_apply(
-        self: ArrayWrapperT,
-        apply_func: tp.Union[str, tp.Callable],
-        *args,
-        chunk_kwargs: tp.KwargsLike = None,
-        execute_kwargs: tp.KwargsLike = None,
-        **kwargs,
-    ) -> tp.MergeableResults:
-        """Chunk this instance or a method of this instance.
-
-        If `apply_func` is a string, becomes the method name.
-
-        For arguments related to chunking, see `ArrayWrapper.chunk`."""
-        if isinstance(apply_func, str):
-            apply_func = getattr(type(self), apply_func)
-        if chunk_kwargs is None:
-            chunk_arg_names = set(get_func_arg_names(self.chunk))
-            chunk_kwargs = {}
-            for k in list(kwargs.keys()):
-                if k in chunk_arg_names:
-                    chunk_kwargs[k] = kwargs.pop(k)
-        if execute_kwargs is None:
-            execute_kwargs = {}
-        chunks = self.chunk(**chunk_kwargs)
-        tasks = []
-        for chunk in chunks:
-            tasks.append(Task(apply_func, chunk, *args, **kwargs))
-        return execute(tasks, size=len(tasks), **execute_kwargs)
-
-    # ############# Iteration ############# #
-
-    def get_item_keys(self, group_by: tp.GroupByLike = None) -> tp.Index:
-        """Get keys for `ArrayWrapper.items`."""
-        _self = self.regroup(group_by=group_by)
-        if _self.group_select and _self.grouper.is_grouped():
-            return _self.get_columns()
-        return _self.columns
-
-    def items(
-        self,
-        group_by: tp.GroupByLike = None,
-        apply_group_by: bool = False,
-        keep_2d: bool = False,
-        key_as_index: bool = False,
-    ) -> tp.Items:
-        """Iterate over columns or groups (if grouped and `Wrapping.group_select` is True).
-
-        If `apply_group_by` is False, `group_by` becomes a grouping instruction for the iteration,
-        not for the final object. In this case, will raise an error if the instance is grouped
-        and that grouping must be changed."""
-        if group_by is None or apply_group_by:
-            _self = self.regroup(group_by=group_by)
-            if _self.group_select and _self.grouper.is_grouped():
-                columns = _self.get_columns()
-                ndim = _self.get_ndim()
-            else:
-                columns = _self.columns
-                ndim = _self.ndim
-
-            if ndim == 1:
-                if key_as_index:
-                    yield columns, _self
-                else:
-                    yield columns[0], _self
-            else:
-                for i in range(len(columns)):
-                    if key_as_index:
-                        key = columns[[i]]
-                    else:
-                        key = columns[i]
-                    if _self.column_only_select:
-                        if keep_2d:
-                            yield key, _self.iloc[i : i + 1]
-                        else:
-                            yield key, _self.iloc[i]
-                    else:
-                        if keep_2d:
-                            yield key, _self.iloc[:, i : i + 1]
-                        else:
-                            yield key, _self.iloc[:, i]
-        else:
-            if self.group_select and self.grouper.is_grouped():
-                raise ValueError("Cannot change grouping")
-            wrapper = self.regroup(group_by=group_by)
-            if wrapper.get_ndim() == 1:
-                if key_as_index:
-                    yield wrapper.get_columns(), self
-                else:
-                    yield wrapper.get_columns()[0], self
-            else:
-                for group, group_idxs in wrapper.grouper.iter_groups(key_as_index=key_as_index):
-                    if self.column_only_select:
-                        if keep_2d or len(group_idxs) > 1:
-                            yield group, self.iloc[group_idxs]
-                        else:
-                            yield group, self.iloc[group_idxs[0]]
-                    else:
-                        if keep_2d or len(group_idxs) > 1:
-                            yield group, self.iloc[:, group_idxs]
-                        else:
-                            yield group, self.iloc[:, group_idxs[0]]
-
 
 WrappingT = tp.TypeVar("WrappingT", bound="Wrapping")
 
 
-class Wrapping(Configured, IndexApplier, ExtPandasIndexer, AttrResolverMixin, ItemParamable):
+class Wrapping(Configured, HasWrapper, IndexApplier, AttrResolverMixin):
     """Class that uses `ArrayWrapper` globally."""
 
     @classmethod
@@ -2085,7 +2175,7 @@ class Wrapping(Configured, IndexApplier, ExtPandasIndexer, AttrResolverMixin, It
         self._wrapper = wrapper
 
         Configured.__init__(self, wrapper=wrapper, **kwargs)
-        ExtPandasIndexer.__init__(self)
+        HasWrapper.__init__(self)
         AttrResolverMixin.__init__(self)
 
     def indexing_func(self: WrappingT, *args, **kwargs) -> WrappingT:
@@ -2108,7 +2198,6 @@ class Wrapping(Configured, IndexApplier, ExtPandasIndexer, AttrResolverMixin, It
 
     @property
     def wrapper(self) -> ArrayWrapper:
-        """Array wrapper of the type `ArrayWrapper`."""
         return self._wrapper
 
     def apply_to_index(
@@ -2132,7 +2221,6 @@ class Wrapping(Configured, IndexApplier, ExtPandasIndexer, AttrResolverMixin, It
 
     @property
     def column_only_select(self) -> bool:
-        """Overrides `ArrayWrapper.column_only_select`."""
         column_only_select = getattr(self, "_column_only_select", None)
         if column_only_select is None:
             return self.wrapper.column_only_select
@@ -2140,7 +2228,6 @@ class Wrapping(Configured, IndexApplier, ExtPandasIndexer, AttrResolverMixin, It
 
     @property
     def range_only_select(self) -> bool:
-        """Overrides `ArrayWrapper.range_only_select`."""
         range_only_select = getattr(self, "_range_only_select", None)
         if range_only_select is None:
             return self.wrapper.range_only_select
@@ -2148,14 +2235,13 @@ class Wrapping(Configured, IndexApplier, ExtPandasIndexer, AttrResolverMixin, It
 
     @property
     def group_select(self) -> bool:
-        """Overrides `ArrayWrapper.group_select`."""
         group_select = getattr(self, "_group_select", None)
         if group_select is None:
             return self.wrapper.group_select
         return group_select
 
     def regroup(self: WrappingT, group_by: tp.GroupByLike, **kwargs) -> WrappingT:
-        """Regroup this object.
+        """Regroup this instance.
 
         Only creates a new instance if grouping has changed, otherwise returns itself.
 
@@ -2193,8 +2279,8 @@ class Wrapping(Configured, IndexApplier, ExtPandasIndexer, AttrResolverMixin, It
                 if not silence_warnings:
                     warnings.warn(
                         (
-                            f"Changing the frequency will create a copy of this object. "
-                            f"Consider setting it upon object creation to re-use existing cache."
+                            f"Changing the frequency will create a copy of this instance. "
+                            f"Consider setting it upon instantiation to re-use existing cache."
                         ),
                         stacklevel=2,
                     )
@@ -2207,245 +2293,3 @@ class Wrapping(Configured, IndexApplier, ExtPandasIndexer, AttrResolverMixin, It
                     cond_kwargs["use_caching"] = False
                 return self_copy
         return self
-
-    # ############# Selection ############# #
-
-    def select_col(self: WrappingT, column: tp.Any = None, group_by: tp.GroupByLike = None, **kwargs) -> WrappingT:
-        """Select one column/group.
-
-        `column` can be a label-based position as well as an integer position (if label fails)."""
-        _self = self.regroup(group_by, **kwargs)
-
-        def _check_out_dim(out: WrappingT) -> WrappingT:
-            if out.wrapper.get_ndim() == 2:
-                if out.wrapper.get_shape_2d()[1] == 1:
-                    if out.column_only_select:
-                        return out.iloc[0]
-                    return out.iloc[:, 0]
-                if _self.wrapper.grouper.is_grouped():
-                    raise TypeError("Could not select one group: multiple groups returned")
-                else:
-                    raise TypeError("Could not select one column: multiple columns returned")
-            return out
-
-        if column is None:
-            if _self.wrapper.get_ndim() == 2 and _self.wrapper.get_shape_2d()[1] == 1:
-                column = 0
-        if column is not None:
-            if _self.wrapper.grouper.is_grouped():
-                if _self.wrapper.grouped_ndim == 1:
-                    raise TypeError("This object already contains one group of data")
-                if column not in _self.wrapper.get_columns():
-                    if isinstance(column, int):
-                        if _self.column_only_select:
-                            return _check_out_dim(_self.iloc[column])
-                        return _check_out_dim(_self.iloc[:, column])
-                    raise KeyError(f"Group '{column}' not found")
-            else:
-                if _self.wrapper.ndim == 1:
-                    raise TypeError("This object already contains one column of data")
-                if column not in _self.wrapper.columns:
-                    if isinstance(column, int):
-                        if _self.column_only_select:
-                            return _check_out_dim(_self.iloc[column])
-                        return _check_out_dim(_self.iloc[:, column])
-                    raise KeyError(f"Column '{column}' not found")
-            return _check_out_dim(_self[column])
-        if _self.wrapper.grouper.is_grouped():
-            if _self.wrapper.grouped_ndim == 1:
-                return _self
-            raise TypeError("Only one group is allowed. Use indexing or column argument.")
-        if _self.wrapper.ndim == 1:
-            return _self
-        raise TypeError("Only one column is allowed. Use indexing or column argument.")
-
-    @hybrid_method
-    def select_col_from_obj(
-        cls_or_self,
-        obj: tp.Optional[tp.SeriesFrame],
-        column: tp.Any = None,
-        obj_ungrouped: bool = False,
-        wrapper: tp.Optional[ArrayWrapper] = None,
-        group_by: tp.GroupByLike = None,
-        **kwargs,
-    ) -> tp.MaybeSeries:
-        """See `ArrayWrapper.select_col_from_obj`."""
-        if not isinstance(cls_or_self, type):
-            if wrapper is None:
-                wrapper = cls_or_self.wrapper
-        else:
-            checks.assert_not_none(wrapper, arg_name="wrapper")
-        return wrapper.select_col_from_obj(
-            obj,
-            column=column,
-            obj_ungrouped=obj_ungrouped,
-            group_by=group_by,
-            **kwargs,
-        )
-
-    # ############# Splitting ############# #
-
-    def split(
-        self,
-        *args,
-        splitter_cls: tp.Optional[tp.Type[SplitterT]] = None,
-        wrap: bool = True,  # used in subclasses
-        **kwargs,
-    ) -> tp.Any:
-        """Split using `vectorbtpro.generic.splitting.base.Splitter.split_and_take`."""
-        from vectorbtpro.generic.splitting.base import Splitter
-
-        if splitter_cls is None:
-            splitter_cls = Splitter
-        return splitter_cls.split_and_take(self.wrapper.index, self, *args, **kwargs)
-
-    def split_apply(
-        self,
-        apply_func: tp.Union[str, tp.Callable],
-        *args,
-        splitter_cls: tp.Optional[tp.Type[SplitterT]] = None,
-        wrap: bool = True,  # used in subclasses
-        **kwargs,
-    ) -> tp.Any:
-        """Split using `vectorbtpro.generic.splitting.base.Splitter.split_and_apply`."""
-        from vectorbtpro.generic.splitting.base import Splitter, Takeable
-
-        if isinstance(apply_func, str):
-            apply_func = getattr(type(self), apply_func)
-        if splitter_cls is None:
-            splitter_cls = Splitter
-        return splitter_cls.split_and_apply(self.wrapper.index, apply_func, Takeable(self), *args, **kwargs)
-
-    # ############# Chunking ############# #
-
-    def chunk(
-        self: ArrayWrapperT,
-        axis: tp.Optional[int] = None,
-        min_size: tp.Optional[int] = None,
-        n_chunks: tp.Union[None, int, str] = None,
-        chunk_len: tp.Union[None, int, str] = None,
-        chunk_meta: tp.Optional[tp.Iterable[ChunkMeta]] = None,
-        select: bool = False,
-    ) -> tp.Iterator[ArrayWrapperT]:
-        """Chunk this instance.
-
-        If `axis` is None, becomes 0 if the instance is one-dimensional and 1 otherwise.
-
-        For arguments related to chunking meta, see `vectorbtpro.utils.chunking.yield_chunk_meta`."""
-        if axis is None:
-            axis = 0 if self.wrapper.ndim == 1 else 1
-        if self.wrapper.ndim == 1 and axis == 1:
-            raise TypeError("Axis 1 is not supported for one dimension")
-        checks.assert_in(axis, (0, 1))
-        size = self.wrapper.shape_2d[axis]
-        if chunk_meta is None:
-            chunk_meta = yield_chunk_meta(size=size, min_size=min_size, n_chunks=n_chunks, chunk_len=chunk_len)
-        for _chunk_meta in chunk_meta:
-            if select:
-                array_taker = ArraySelector(axis=axis)
-            else:
-                array_taker = ArraySlicer(axis=axis)
-            yield array_taker.take(self, _chunk_meta)
-
-    def chunk_apply(
-        self: ArrayWrapperT,
-        apply_func: tp.Union[str, tp.Callable],
-        *args,
-        chunk_kwargs: tp.KwargsLike = None,
-        execute_kwargs: tp.KwargsLike = None,
-        **kwargs,
-    ) -> tp.MergeableResults:
-        """Chunk this instance or a method of this instance.
-
-        If `apply_func` is a string, becomes the method name.
-
-        For arguments related to chunking, see `Wrapping.chunk`."""
-        if isinstance(apply_func, str):
-            apply_func = getattr(type(self), apply_func)
-        if chunk_kwargs is None:
-            chunk_arg_names = set(get_func_arg_names(self.chunk))
-            chunk_kwargs = {}
-            for k in list(kwargs.keys()):
-                if k in chunk_arg_names:
-                    chunk_kwargs[k] = kwargs.pop(k)
-        if execute_kwargs is None:
-            execute_kwargs = {}
-        chunks = self.chunk(**chunk_kwargs)
-        tasks = []
-        for chunk in chunks:
-            tasks.append(Task(apply_func, chunk, *args, **kwargs))
-        return execute(tasks, size=len(tasks), **execute_kwargs)
-
-    # ############# Iteration ############# #
-
-    def get_item_keys(self, group_by: tp.GroupByLike = None) -> tp.Index:
-        """Get keys for `Wrapping.items`."""
-        _self = self.regroup(group_by=group_by)
-        if _self.group_select and _self.wrapper.grouper.is_grouped():
-            return _self.wrapper.get_columns()
-        return _self.wrapper.columns
-
-    def items(
-        self,
-        group_by: tp.GroupByLike = None,
-        apply_group_by: bool = False,
-        keep_2d: bool = False,
-        key_as_index: bool = False,
-        wrap: bool = True,  # used in subclasses
-    ) -> tp.Items:
-        """Iterate over columns or groups (if grouped and `Wrapping.group_select` is True).
-
-        If `apply_group_by` is False, `group_by` becomes a grouping instruction for the iteration,
-        not for the final object. In this case, will raise an error if the instance is grouped
-        and that grouping must be changed."""
-        if group_by is None or apply_group_by:
-            _self = self.regroup(group_by=group_by)
-            if _self.group_select and _self.wrapper.grouper.is_grouped():
-                columns = _self.wrapper.get_columns()
-                ndim = _self.wrapper.get_ndim()
-            else:
-                columns = _self.wrapper.columns
-                ndim = _self.wrapper.ndim
-
-            if ndim == 1:
-                if key_as_index:
-                    yield columns, _self
-                else:
-                    yield columns[0], _self
-            else:
-                for i in range(len(columns)):
-                    if key_as_index:
-                        key = columns[[i]]
-                    else:
-                        key = columns[i]
-                    if _self.column_only_select:
-                        if keep_2d:
-                            yield key, _self.iloc[i : i + 1]
-                        else:
-                            yield key, _self.iloc[i]
-                    else:
-                        if keep_2d:
-                            yield key, _self.iloc[:, i : i + 1]
-                        else:
-                            yield key, _self.iloc[:, i]
-        else:
-            if self.group_select and self.wrapper.grouper.is_grouped():
-                raise ValueError("Cannot change grouping")
-            wrapper = self.wrapper.regroup(group_by=group_by)
-            if wrapper.get_ndim() == 1:
-                if key_as_index:
-                    yield wrapper.get_columns(), self
-                else:
-                    yield wrapper.get_columns()[0], self
-            else:
-                for group, group_idxs in wrapper.grouper.iter_groups(key_as_index=key_as_index):
-                    if self.column_only_select:
-                        if keep_2d or len(group_idxs) > 1:
-                            yield group, self.iloc[group_idxs]
-                        else:
-                            yield group, self.iloc[group_idxs[0]]
-                    else:
-                        if keep_2d or len(group_idxs) > 1:
-                            yield group, self.iloc[:, group_idxs]
-                        else:
-                            yield group, self.iloc[:, group_idxs[0]]

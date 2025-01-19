@@ -355,6 +355,17 @@ def yield_chunk_meta(
                 )
 
 
+def get_chunk_meta_key(chunk_meta: ChunkMeta) -> tp.Any:
+    """Get key corresponding to chunk meta."""
+    if chunk_meta.indices is not None:
+        return "{}..{}".format(chunk_meta.indices[0], chunk_meta.indices[-1])
+    if chunk_meta.start is not None and chunk_meta.end is not None:
+        if chunk_meta.start == chunk_meta.end - 1:
+            return chunk_meta.start
+        return "{}..{}".format(chunk_meta.start, chunk_meta.end - 1)
+    return MISSING
+
+
 # ############# Chunk mapping ############# #
 
 
@@ -1797,15 +1808,7 @@ class Chunker(Configured):
         execute_kwargs = merge_dicts(dict(show_progress=False if len(chunk_meta) == 1 else None), execute_kwargs)
         keys = []
         for _chunk_meta in chunk_meta:
-            if _chunk_meta.indices is not None:
-                key = "{}..{}".format(_chunk_meta.indices[0], _chunk_meta.indices[-1])
-            elif _chunk_meta.start is not None and _chunk_meta.end is not None:
-                if _chunk_meta.start == _chunk_meta.end - 1:
-                    key = _chunk_meta.start
-                else:
-                    key = "{}..{}".format(_chunk_meta.start, _chunk_meta.end - 1)
-            else:
-                key = MISSING
+            key = get_chunk_meta_key(_chunk_meta)
             if eval_id is not None:
                 keys.append((MISSING, key))
             else:
