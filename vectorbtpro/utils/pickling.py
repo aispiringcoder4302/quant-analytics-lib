@@ -70,7 +70,7 @@ def get_compression_extensions(cls_name: tp.Optional[str] = None) -> tp.Set[str]
 
 def compress(
     bytes_: bytes,
-    compression: tp.Union[None, bool, str] = None,
+    compression: tp.CompressionLike = None,
     file_name: tp.Optional[str] = None,
     **compress_kwargs,
 ) -> bytes:
@@ -151,7 +151,7 @@ def compress(
 
 def decompress(
     bytes_: bytes,
-    compression: tp.Union[None, bool, str] = None,
+    compression: tp.CompressionLike = None,
     file_name: tp.Optional[str] = None,
     **decompress_kwargs,
 ) -> bytes:
@@ -239,7 +239,7 @@ def decompress(
 
 def dumps(
     obj: tp.Any,
-    compression: tp.Union[None, bool, str] = None,
+    compression: tp.CompressionLike = None,
     compress_kwargs: tp.KwargsLike = None,
     **kwargs,
 ) -> bytes:
@@ -265,7 +265,7 @@ def dumps(
 
 def loads(
     bytes_: bytes,
-    compression: tp.Union[None, bool, str] = None,
+    compression: tp.CompressionLike = None,
     decompress_kwargs: tp.KwargsLike = None,
     **kwargs,
 ) -> tp.Any:
@@ -303,7 +303,7 @@ def save_bytes(
     bytes_: bytes,
     path: tp.PathLike,
     mkdir_kwargs: tp.KwargsLike = None,
-    compression: tp.Union[None, bool, str] = None,
+    compression: tp.CompressionLike = None,
     compress_kwargs: tp.KwargsLike = None,
 ) -> Path:
     """Write a byte stream to a file.
@@ -334,7 +334,7 @@ def save_bytes(
 
 def load_bytes(
     path: tp.PathLike,
-    compression: tp.Union[None, bool, str] = None,
+    compression: tp.CompressionLike = None,
     decompress_kwargs: tp.KwargsLike = None,
 ) -> bytes:
     """Read a byte stream from a file.
@@ -354,7 +354,7 @@ def save(
     obj: tp.Any,
     path: tp.Optional[tp.PathLike] = None,
     mkdir_kwargs: tp.KwargsLike = None,
-    compression: tp.Union[None, bool, str] = None,
+    compression: tp.CompressionLike = None,
     compress_kwargs: tp.KwargsLike = None,
     **kwargs,
 ) -> Path:
@@ -378,7 +378,7 @@ def save(
 
 def load(
     path: tp.PathLike,
-    compression: tp.Union[None, bool, str] = None,
+    compression: tp.CompressionLike = None,
     decompress_kwargs: tp.KwargsLike = None,
     **kwargs,
 ) -> tp.Any:
@@ -1005,7 +1005,7 @@ class Pickleable(Base):
         cls,
         path: tp.Optional[tp.PathLike] = None,
         file_format: tp.Optional[str] = None,
-        compression: tp.Union[None, bool, str] = None,
+        compression: tp.CompressionLike = None,
         for_save: bool = False,
     ) -> Path:
         """Resolve a file path.
@@ -1160,7 +1160,7 @@ class Pickleable(Base):
         self,
         path: tp.Optional[tp.PathLike] = None,
         file_format: tp.Optional[str] = None,
-        compression: tp.Union[None, bool, str] = None,
+        compression: tp.CompressionLike = None,
         mkdir_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> Path:
@@ -1195,7 +1195,7 @@ class Pickleable(Base):
         cls: tp.Type[PickleableT],
         path: tp.Optional[tp.PathLike] = None,
         file_format: tp.Optional[str] = None,
-        compression: tp.Union[None, bool, str] = None,
+        compression: tp.CompressionLike = None,
         **kwargs,
     ) -> PickleableT:
         """Unpickle/decode the instance from a file.

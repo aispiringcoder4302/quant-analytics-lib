@@ -1600,59 +1600,19 @@ class ToDocsAssetFunc(AssetFunc):
     @classmethod
     def prepare(
         cls,
-        source: tp.Union[None, str, tp.Callable, tp.CustomTemplate] = None,
-        text_path: tp.Optional[tp.MaybeList[tp.PathLikeKey]] = None,
-        metadata_path: tp.Optional[tp.MaybeList[tp.PathLikeKey]] = None,
-        skip_missing: tp.Optional[bool] = None,
-        dump_kwargs: tp.KwargsLike = None,
-        template_context: tp.KwargsLike = None,
         asset: tp.Optional[tp.MaybeType[tp.KnowledgeAsset]] = None,
+        template_context: tp.KwargsLike = None,
         **document_kwargs,
     ) -> tp.ArgsKwargs:
         if asset is None:
             from vectorbtpro.utils.knowledge.base_assets import KnowledgeAsset
 
             asset = KnowledgeAsset
-        text_path = asset.resolve_setting(text_path, "text_path", sub_path="chat.indexing")
-        metadata_path = asset.resolve_setting(metadata_path, "metadata_path", sub_path="chat.indexing")
-        skip_missing = asset.resolve_setting(skip_missing, "skip_missing", sub_path="chat.indexing")
-        dump_kwargs = asset.resolve_setting(dump_kwargs, "dump_kwargs", sub_path="chat.indexing", merge=True)
-        template_context = asset.resolve_setting(
-            template_context, "template_context", sub_path="chat.indexing", merge=True
-        )
-        template_context = flat_merge_dicts({"asset": asset}, template_context)
-        document_kwargs = asset.resolve_setting(
-            document_kwargs, "document_kwargs", sub_path="chat.indexing", merge=True
-        )
 
-        if source is not None:
-            if isinstance(source, str):
-                source = RepEval(source)
-            elif checks.is_function(source):
-                if checks.is_builtin_func(source):
-                    source = RepFunc(lambda _source=source: _source)
-                else:
-                    source = RepFunc(source)
-            elif not isinstance(source, CustomTemplate):
-                raise TypeError(f"Source must be a string, function, or template")
-        if text_path is not None:
-            if isinstance(text_path, list):
-                text_path = [search.resolve_pathlike_key(p) for p in text_path]
-            else:
-                text_path = search.resolve_pathlike_key(text_path)
-        if metadata_path is not None:
-            if isinstance(metadata_path, list):
-                metadata_path = [search.resolve_pathlike_key(p) for p in metadata_path]
-            else:
-                metadata_path = search.resolve_pathlike_key(metadata_path)
-        dump_kwargs = DumpAssetFunc.resolve_dump_kwargs(**dump_kwargs)
+        template_context = flat_merge_dicts({"asset": asset}, template_context)
+        document_kwargs = asset.resolve_setting(document_kwargs, "document_kwargs", merge=True)
         return (), {
             **dict(
-                source=source,
-                text_path=text_path,
-                metadata_path=metadata_path,
-                skip_missing=skip_missing,
-                dump_kwargs=dump_kwargs,
                 template_context=template_context,
             ),
             **document_kwargs,
@@ -1662,16 +1622,10 @@ class ToDocsAssetFunc(AssetFunc):
     def call(
         cls,
         d: tp.Any,
-        source: tp.Optional[CustomTemplate] = None,
-        text_path: tp.Optional[tp.MaybeList[tp.PathLikeKey]] = None,
-        metadata_path: tp.Optional[tp.MaybeList[tp.PathLikeKey]] = None,
-        skip_missing: bool = False,
-        dump_kwargs: tp.KwargsLike = None,
         template_context: tp.KwargsLike = None,
         **document_kwargs,
     ) -> tp.Any:
-        if dump_kwargs is None:
-            dump_kwargs = {}
+        from vectorbtpro.utils.knowledge.chatting import KnowledgeDocument
 
         _template_context = flat_merge_dicts(
             {
@@ -1681,78 +1635,59 @@ class ToDocsAssetFunc(AssetFunc):
             },
             template_context,
         )
-        if source is not None:
-            new_d = source.substitute(_template_context, eval_id="source")
-            if checks.is_function(new_d):
-                new_d = new_d(d)
-        else:
-            new_d = d
-        if text_path is None and metadata_path is None:
-            text = dump(new_d, **dump_kwargs)
-            metadata = {}
-        else:
-            if text_path is not None:
-                if not isinstance(text_path, list):
-                    try:
-                        x = search.get_pathlike_key(new_d, text_path, keep_path=False)
-                    except (KeyError, IndexError, AttributeError) as e:
-                        if not skip_missing:
-                            raise e
-                        return NoResult
-                    text_path = [text_path]
-                    text = dump(x, **dump_kwargs)
-                else:
-                    text_path_dct = {}
-                    for p in text_path:
-                        try:
-                            x = search.get_pathlike_key(new_d, p, keep_path=False)
-                        except (KeyError, IndexError, AttributeError) as e:
-                            if not skip_missing:
-                                raise e
-                            continue
-                        text_path_dct[p] = x
-                    text_path = list(text_path_dct.keys())
-                    text = dump(search.unflatten_obj(text_path_dct), **dump_kwargs)
-            else:
-                text = None
-                text_path = []
-            if metadata_path is not None:
-                if not isinstance(metadata_path, list):
-                    try:
-                        x = search.get_pathlike_key(new_d, metadata_path, keep_path=False)
-                    except (KeyError, IndexError, AttributeError) as e:
-                        if not skip_missing:
-                            raise e
-                        return NoResult
-                    metadata_path = [metadata_path]
-                    metadata = x
-                else:
-                    metadata_path_dct = {}
-                    for p in metadata_path:
-                        try:
-                            x = search.get_pathlike_key(new_d, p, keep_path=False)
-                        except (KeyError, IndexError, AttributeError) as e:
-                            if not skip_missing:
-                                raise e
-                            continue
-                        metadata_path_dct[p] = x
-                    metadata_path = list(metadata_path_dct.keys())
-                    metadata = search.unflatten_obj(metadata_path_dct)
-            else:
-                metadata = None
-                metadata_path = []
-            if text is None:
-                new_d2 = new_d
-                for p in metadata_path:
-                    new_d2 = search.remove_pathlike_key(new_d2, p, make_copy=True)
-                text = dump(new_d2, **dump_kwargs)
-            if metadata is None:
-                new_d2 = new_d
-                for p in text_path:
-                    new_d2 = search.remove_pathlike_key(new_d2, p, make_copy=True)
-                metadata = new_d2
         document_kwargs = substitute_templates(document_kwargs, _template_context, eval_id="document_kwargs")
-        return Document(text=text, metadata=metadata, **document_kwargs)
+        return KnowledgeDocument(d, **document_kwargs)
+
+
+class SplitTextAssetFunc(AssetFunc):
+    """Asset function class for `vectorbtpro.utils.knowledge.base_assets.KnowledgeAsset.split_text`."""
+
+    _short_name: tp.ClassVar[tp.Optional[str]] = "split_text"
+
+    _wrap: tp.ClassVar[tp.Optional[str]] = True
+
+    @classmethod
+    def prepare(
+        cls,
+        text_path: tp.Optional[tp.PathLikeKey] = None,
+        asset: tp.Optional[tp.MaybeType[tp.KnowledgeAsset]] = None,
+        **split_text_kwargs,
+    ) -> tp.ArgsKwargs:
+        if asset is None:
+            from vectorbtpro.utils.knowledge.base_assets import KnowledgeAsset
+
+            asset = KnowledgeAsset
+        from vectorbtpro.utils.knowledge.chatting import resolve_text_splitter
+
+        text_path = asset.resolve_setting(text_path, "text_path", sub_path="document_kwargs")
+        split_text_kwargs = asset.resolve_setting(
+            split_text_kwargs, "split_text_kwargs", sub_path="document_kwargs", merge=True
+        )
+
+        text_splitter = split_text_kwargs.pop("text_splitter", None)
+        text_splitter = resolve_text_splitter(text_splitter=text_splitter)
+        if isinstance(text_splitter, type):
+            text_splitter = text_splitter(**split_text_kwargs)
+        elif split_text_kwargs:
+            text_splitter = text_splitter.replace(**split_text_kwargs)
+        return (), {
+            **dict(
+                text_path=text_path,
+                text_splitter=text_splitter,
+            ),
+        }
+
+    @classmethod
+    def call(
+        cls,
+        d: tp.Any,
+        text_path: tp.Optional[tp.PathLikeKey] = None,
+        **split_text_kwargs,
+    ) -> tp.Any:
+        from vectorbtpro.utils.knowledge.chatting import KnowledgeDocument
+
+        document = KnowledgeDocument(d, id_="", text_path=text_path, split_text_kwargs=split_text_kwargs)
+        return [document_chunk.data for document_chunk in document.split()]
 
 
 # ############# Reduce classes ############# #

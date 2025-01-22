@@ -193,6 +193,17 @@ GroupMap = Tuple[GroupIdxs, GroupLens]
 # Wrapping
 NameIndex = Union[None, Any, Index]
 
+# Search
+PathKeyToken = Hashable
+PathKeyTokens = Sequence[Hashable]
+PathKey = Tuple[PathKeyToken, ...]
+MaybePathKey = Union[None, PathKeyToken, PathKey]
+PathLikeKey = Union[MaybePathKey, Path]
+PathLikeKeys = Sequence[PathLikeKey]
+PathMoveDict = Dict[PathLikeKey, PathLikeKey]
+PathRenameDict = Dict[PathLikeKey, PathKeyToken]
+PathDict = Dict[PathLikeKey, Any]
+
 # Config
 DictLike = Union[None, dict]
 DictLikeSequence = MaybeSequence[DictLike]
@@ -203,7 +214,8 @@ KwargsLike = Union[None, Kwargs]
 KwargsLikeSequence = MaybeSequence[KwargsLike]
 ArgsKwargs = Tuple[Args, Kwargs]
 PathLike = Union[str, Path]
-SettingsPath = ClassVar[Union[None, MaybeList[Hashable], Dict[Hashable, Hashable]]]
+SettingsPath = ClassVar[Union[None, MaybeList[PathLikeKey], Dict[Hashable, PathLikeKey]]]
+SpecSettingsPaths = Dict[PathLikeKey, MaybeList[PathLikeKey]]
 WriteableAttrs = ClassVar[Optional[Set[str]]]
 ExpectedKeysMode = ClassVar[str]
 ExpectedKeys = ClassVar[Optional[Set[str]]]
@@ -328,17 +340,6 @@ StaticizedOption = Union[None, bool, Kwargs, TaskId]
 # Selection
 Selection = Union[PosSel, LabelSel, MaybeIterable[Union[PosSel, LabelSel, Hashable]]]
 
-# Search
-PathKeyToken = Hashable
-PathKeyTokens = Sequence[Hashable]
-PathKey = Tuple[PathKeyToken, ...]
-MaybePathKey = Union[None, PathKeyToken, PathKey]
-PathLikeKey = Union[MaybePathKey, Path]
-PathLikeKeys = Sequence[PathLikeKey]
-PathMoveDict = Dict[PathLikeKey, PathLikeKey]
-PathRenameDict = Dict[PathLikeKey, PathKeyToken]
-PathDict = Dict[PathLikeKey, Any]
-
 # Knowledge
 AssetFuncLike = Union[str, Type[AssetFunc], FuncArgs, Task, Callable]
 MaybeAsset = Union[T, dict, list]
@@ -351,9 +352,6 @@ TokenizerLike = Union[None, str, MaybeType[Tokenizer]]
 Token = int
 Tokens = List[Token]
 EmbeddingsLike = Union[None, str, MaybeType[Embeddings]]
-EmbeddingOutput = List[float]
-EmbeddingsOutput = List[List[float]]
-MaybeEmbeddingsOutput = MaybeList[List[float]]
 CompletionsLike = Union[None, str, MaybeType[Completions]]
 ChatMessage = dict
 ChatMessages = List[ChatMessage]
@@ -368,3 +366,6 @@ TSTextChunks = Iterator[str]
 PipeFunc = Union[str, Callable, Tuple[Union[str, Callable], str]]
 PipeTask = Union[PipeFunc, Tuple[PipeFunc, Args, Kwargs], Task]
 PipeTasks = Iterable[PipeTask]
+
+# Pickling
+CompressionLike = Union[None, bool, str]

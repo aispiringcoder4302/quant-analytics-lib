@@ -147,6 +147,21 @@ def resolve_pathlike_key(key: tp.PathLikeKey, minimize: bool = False) -> tp.Path
     return key
 
 
+def stringify_pathlike_key(key: tp.PathLikeKey) -> str:
+    """Convert a path-like key into a string."""
+    tokens = resolve_pathlike_key(key)
+    parts = []
+    for token in tokens:
+        if isinstance(token, str) and token.isidentifier():
+            parts.append(f".{token}")
+        else:
+            parts.append(f"[{repr(token)}]")
+    str_key = "".join(parts)
+    if str_key.startswith("."):
+        str_key = str_key[1:]
+    return str_key
+
+
 def combine_pathlike_keys(
     key1: tp.PathLikeKey,
     key2: tp.PathLikeKey,

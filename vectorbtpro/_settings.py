@@ -2033,6 +2033,8 @@ knowledge = frozen_cfg(
     ),
     in_dumps=False,
     dump_kwargs=flex_cfg(),
+    document_kwargs=flex_cfg(),
+    merge_chunks=True,
     sort_keys=False,
     ignore_empty=True,
     describe_kwargs=flex_cfg(
@@ -2284,9 +2286,15 @@ $context
         embeddings_configs=flex_cfg(
             openai=flex_cfg(
                 model="text-embedding-3-small",
+                batch_size=512,
+                show_progress=None,
+                pbar_kwargs=flex_cfg(),
             ),
             litellm=flex_cfg(
                 model="text-embedding-3-small",
+                batch_size=512,
+                show_progress=None,
+                pbar_kwargs=flex_cfg(),
             ),
             llama_index=flex_cfg(
                 embedding="openai",
@@ -2333,6 +2341,19 @@ $context
                 node_parser_configs=flex_cfg(),
             )
         ),
+        node_index="local",
+        node_index_configs=flex_cfg(
+            local=flex_cfg(
+                path="./knowledge/node_index",
+                compression=None,
+                save_kwargs=flex_cfg(
+                    mkdir_kwargs=dict(
+                        mkdir=True,
+                    ),
+                ),
+                load_kwargs=flex_cfg(),
+            ),
+        ),
     ),
     assets=flex_cfg(
         vbt=flex_cfg(
@@ -2344,6 +2365,10 @@ $context
             token_required=False,
             use_pygithub=None,
             chunk_size=8192,
+            document_kwargs=flex_cfg(
+                text_path="content",
+                split_text_kwargs=flex_cfg(),
+            ),
             minimize_keys=[],
             minimize_links=False,
             minimize_link_rules=flex_cfg(

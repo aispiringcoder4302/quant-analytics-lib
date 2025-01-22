@@ -21,7 +21,8 @@ from types import ModuleType
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.utils import checks
-from vectorbtpro.utils.config import merge_dicts, flat_merge_dicts, reorder_list, HybridConfig
+from vectorbtpro.utils.config import merge_dicts, flat_merge_dicts, reorder_list, HybridConfig, SpecSettingsPath
+from vectorbtpro.utils.decorators import hybrid_method
 from vectorbtpro.utils.knowledge.base_assets import KnowledgeAsset
 from vectorbtpro.utils.module_ import prepare_refname, get_caller_qualname
 from vectorbtpro.utils.parsing import get_func_arg_names
@@ -1150,6 +1151,28 @@ class VBTAsset(KnowledgeAsset):
                 **kwargs,
             )
         return mentions_asset
+
+    @hybrid_method
+    def chat(cls_or_self, *args, **kwargs) -> tp.ChatOutput:
+        spec_settings_path = {}
+        if isinstance(cls_or_self, type):
+            cls = cls_or_self
+        else:
+            cls = type(cls_or_self)
+        for cls_ in cls.__mro__[::-1]:
+            if issubclass(cls_, VBTAsset):
+                if not isinstance(cls_._settings_path, str):
+                    raise TypeError("_settings_path for VBTAsset and its subclasses should be a string")
+                if "knowledge" not in spec_settings_path:
+                    spec_settings_path["knowledge"] = []
+                spec_settings_path["knowledge"].append(cls_._settings_path)
+                if "knowledge.chat" not in spec_settings_path:
+                    spec_settings_path["knowledge.chat"] = []
+                spec_settings_path["knowledge.chat"].append(cls_._settings_path + ".chat")
+        if spec_settings_path:
+            with SpecSettingsPath(spec_settings_path):
+                return KnowledgeAsset.chat.__func__(cls_or_self, *args, **kwargs)
+        return KnowledgeAsset.chat.__func__(cls_or_self, *args, **kwargs)
 
 
 PagesAssetT = tp.TypeVar("PagesAssetT", bound="PagesAsset")

@@ -86,6 +86,10 @@ class HasWrapper(ExtPandasIndexer, ItemParamable):
         """Regroup this instance."""
         raise NotImplementedError
 
+    def ungroup(self: HasWrapperT, **kwargs) -> HasWrapperT:
+        """Ungroup this instance."""
+        return self.regroup(False, **kwargs)
+
     # ############# Selection ############# #
 
     def select_col(

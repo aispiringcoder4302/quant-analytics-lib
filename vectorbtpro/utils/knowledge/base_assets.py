@@ -1187,7 +1187,7 @@ class KnowledgeAsset(Contextable, Configured, MutableSequence, metaclass=MetaKno
         the data item under the path is represented by "x" while its fields are represented by their names.
 
         Set `in_dumps` to True to convert the entire data item to string and search in that string.
-        Will use `vectorbtpro.utils.formatting.dump` with `dump_kwargs`.
+        Will use `vectorbtpro.utils.formatting.dump` with `**dump_kwargs`.
 
         Disable `merge_matches` and `merge_fields` to keep empty lists when searching for matches and
         fields respectively. Disable `unique_matches` and `unique_fields` to keep duplicate matches
@@ -1659,47 +1659,43 @@ class KnowledgeAsset(Contextable, Configured, MutableSequence, metaclass=MetaKno
             **kwargs,
         )
 
-    def to_documents(
+    def to_documents(self, **kwargs) -> MaybeKnowledgeAssetT:
+        """Convert to documents of type `vectorbtpro.utils.knowledge.chatting.KnowledgeDocument`.
+
+        Document-related keyword arguments may contain templates. In such templates,
+        the index of the data item is represented by "i", the data item itself is represented by "d",
+        the data item under the path is represented by "x" while its fields are represented by their names."""
+        return self.apply("to_docs", **kwargs)
+
+    def split_text(
         self,
-        source: tp.Union[None, str, tp.Callable, tp.CustomTemplate] = None,
-        text_path: tp.Optional[tp.MaybeList[tp.PathLikeKey]] = None,
-        metadata_path: tp.Optional[tp.MaybeList[tp.PathLikeKey]] = None,
-        skip_missing: tp.Optional[bool] = None,
-        dump_kwargs: tp.KwargsLike = None,
-        template_context: tp.KwargsLike = None,
+        text_path: tp.Optional[tp.PathLikeKey] = None,
+        merge_chunks: tp.Optional[bool] = None,
         **kwargs,
     ) -> MaybeKnowledgeAssetT:
-        """Convert to documents of type `vectorbtpro.utils.knowledge.chatting.Document`.
+        """Split text.
 
-        Uses `KnowledgeAsset.apply` on `vectorbtpro.utils.knowledge.base_asset_funcs.ToDocsAssetFunc`.
+        Uses `KnowledgeAsset.apply` on `vectorbtpro.utils.knowledge.base_asset_funcs.SplitTextAssetFunc`.
 
-        Use argument `source` to also preprocess the source. It can be a string or function
-        (will become a template), or any custom template. In this template, the index of the data item
-        is represented by "i", the data item itself is represented by "d" while its fields are
-        represented by their names.
+        Use argument `text_path` to specify a path to the content.
 
-        Use argument `text_path` to specify one or more paths to the content. If one path is provided,
-        dumps it and uses it as text. If multiple paths are provided, merges them into one object, dumps
-        the object, and uses it as text. If `text_path` is None, uses paths that are not part of
-        `metadata_path`. The same for `metadata_path`, but without dumping.
+        If `merge_chunks` is True, merges all chunks into a single list.
 
-        If `skip_missing` is True and any path is missing in the data item, will either skip the path
-        if multiple paths are provided or skip the entire data item if only one path is provided.
-
-        Uses `vectorbtpro.utils.formatting.dump` with `dump_kwargs` for dumping.
-
-        Keyword arguments are passed to `vectorbtpro.utils.knowledge.chatting.Document`.
-        Before passing, any templates are substituted."""
-        return self.apply(
-            "to_docs",
-            source=source,
+        Uses `vectorbtpro.utils.knowledge.chatting.split_text` with `**split_text_kwargs` for text splitting."""
+        split_asset = self.apply(
+            "split_text",
             text_path=text_path,
-            metadata_path=metadata_path,
-            skip_missing=skip_missing,
-            dump_kwargs=dump_kwargs,
-            template_context=template_context,
             **kwargs,
         )
+        merge_chunks = self.resolve_setting(merge_chunks, "merge_chunks")
+        if (
+            merge_chunks
+            and isinstance(split_asset, KnowledgeAsset)
+            and len(split_asset) > 0
+            and isinstance(split_asset[0], list)
+        ):
+            split_asset = split_asset.merge()
+        return split_asset
 
     # ############# Reduce methods ############# #
 

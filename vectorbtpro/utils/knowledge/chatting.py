@@ -12,11 +12,14 @@
 
 See `vectorbtpro.utils.knowledge` for the toy dataset."""
 
+import hashlib
 import inspect
 import re
 import sys
 import warnings
 from pathlib import Path
+
+import numpy as np
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.utils import checks
@@ -25,6 +28,8 @@ from vectorbtpro.utils.config import merge_dicts, flat_merge_dicts, deep_merge_d
 from vectorbtpro.utils.decorators import memoized_method, hybrid_method
 from vectorbtpro.utils.knowledge.formatting import ContentFormatter, HTMLFileFormatter, resolve_formatter
 from vectorbtpro.utils.parsing import get_func_arg_names, get_func_kwargs
+from vectorbtpro.utils.pbar import ProgressBar
+from vectorbtpro.utils.pickling import dumps
 from vectorbtpro.utils.template import CustomTemplate, RepFunc, Sub
 
 try:
@@ -89,6 +94,11 @@ __all__ = [
     "TokenSplitter",
     "SegmentSplitter",
     "LlamaIndexSplitter",
+    "IndexDocument",
+    "KnowledgeDocument",
+    "IndexNode",
+    "NodeIndex",
+    "LocalIndex",
     "split_text",
     "Contextable",
 ]
@@ -130,6 +140,10 @@ class Tokenizer(Configured):
     def decode_single(self, token: tp.Token) -> str:
         """Decode a single token into text."""
         return self.decode([token])
+
+    def count_tokens(self, text: str) -> int:
+        """Count tokens in a text."""
+        return len(self.encode(text))
 
     def count_tokens_in_messages(self, messages: tp.ChatMessages) -> int:
         """Count tokens in messages."""
@@ -217,7 +231,7 @@ class TikTokenizer(Tokenizer):
         for message in messages:
             num_tokens += self.tokens_per_message
             for key, value in message.items():
-                num_tokens += len(self.encode(value))
+                num_tokens += self.count_tokens(value)
                 if key == "name":
                     num_tokens += self.tokens_per_name
         num_tokens += 3
@@ -323,7 +337,14 @@ class OpenAIEmbeddings(Embeddings):
 
     _settings_path: tp.SettingsPath = "knowledge.chat.embeddings_configs.openai"
 
-    def __init__(self, model: tp.Optional[str] = None, **kwargs) -> None:
+    def __init__(
+        self,
+        model: tp.Optional[str] = None,
+        batch_size: tp.Optional[int] = None,
+        show_progress: tp.Optional[bool] = None,
+        pbar_kwargs: tp.KwargsLike = None,
+        **kwargs,
+    ) -> None:
         Embeddings.__init__(self, model=model, **kwargs)
 
         from vectorbtpro.utils.module_ import assert_can_import
@@ -332,10 +353,20 @@ class OpenAIEmbeddings(Embeddings):
         from openai import OpenAI
 
         openai_config = merge_dicts(self.get_settings(inherit=False), kwargs)
+        def_model = openai_config.pop("model", None)
         if model is None:
-            model = openai_config.pop("model", None)
+            model = def_model
         if model is None:
             raise ValueError("Must provide a model")
+        def_batch_size = openai_config.pop("batch_size", None)
+        if batch_size is None:
+            batch_size = def_batch_size
+        def_show_progress = openai_config.pop("show_progress", None)
+        if show_progress is None:
+            show_progress = def_show_progress
+        def_pbar_kwargs = openai_config.pop("pbar_kwargs", {})
+        pbar_kwargs = merge_dicts(dict(prefix="get_embeddings"), def_pbar_kwargs, pbar_kwargs)
+
         client_arg_names = set(get_func_arg_names(OpenAI.__init__))
         client_kwargs = {}
         embeddings_kwargs = {}
@@ -349,6 +380,9 @@ class OpenAIEmbeddings(Embeddings):
         self._model = model
         self._client = client
         self._embeddings_kwargs = embeddings_kwargs
+        self._batch_size = batch_size
+        self._show_progress = show_progress
+        self._pbar_kwargs = pbar_kwargs
 
     @property
     def model(self) -> str:
@@ -364,13 +398,43 @@ class OpenAIEmbeddings(Embeddings):
         """Keyword arguments passed to `openai.resources.embeddings.Embeddings.create`."""
         return self._embeddings_kwargs
 
+    @property
+    def batch_size(self) -> tp.Optional[int]:
+        """Batch size.
+
+        Set to None to disable batching."""
+        return self._batch_size
+
+    @property
+    def show_progress(self) -> tp.Optional[bool]:
+        """Whether to show progress bar."""
+        return self._show_progress
+
+    @property
+    def pbar_kwargs(self) -> tp.Kwargs:
+        """Keyword arguments passed to `vectorbtpro.utils.pbar.ProgressBar`."""
+        return self._pbar_kwargs
+
     def get_embedding(self, query: str) -> tp.List[float]:
         response = self.client.embeddings.create(input=query, model=self.model, **self.embeddings_kwargs)
         return response.data[0].embedding
 
     def get_embeddings(self, queries: tp.List[str]) -> tp.List[tp.List[float]]:
-        response = self.client.embeddings.create(input=queries, model=self.model, **self.embeddings_kwargs)
-        return [embedding.embedding for embedding in response.data]
+        if self.batch_size is not None:
+            batches = [queries[i:i + self.batch_size] for i in range(0, len(queries), self. batch_size)]
+        else:
+            batches = [queries]
+        embeddings = []
+        with ProgressBar(total=len(queries), show_progress=self.show_progress, **self.pbar_kwargs) as pbar:
+            for batch in batches:
+                response = self.client.embeddings.create(
+                    input=batch,
+                    model=self.model,
+                    **self.embeddings_kwargs
+                )
+                embeddings.extend([embedding.embedding for embedding in response.data])
+                pbar.update(len(batch))
+        return embeddings
 
 
 class LiteLLMEmbeddings(Embeddings):
@@ -382,21 +446,40 @@ class LiteLLMEmbeddings(Embeddings):
 
     _settings_path: tp.SettingsPath = "knowledge.chat.embeddings_configs.litellm"
 
-    def __init__(self, model: tp.Optional[str] = None, **kwargs) -> None:
+    def __init__(
+        self,
+        model: tp.Optional[str] = None,
+        batch_size: tp.Optional[int] = None,
+        show_progress: tp.Optional[bool] = None,
+        pbar_kwargs: tp.KwargsLike = None,
+        **kwargs,
+    ) -> None:
         Embeddings.__init__(self, model=model, **kwargs)
 
         from vectorbtpro.utils.module_ import assert_can_import
 
         assert_can_import("litellm")
 
-        embedding_kwargs = merge_dicts(self.get_settings(inherit=False), kwargs)
+        litellm_config = merge_dicts(self.get_settings(inherit=False), kwargs)
+        def_model = litellm_config.pop("model", None)
         if model is None:
-            model = embedding_kwargs.pop("model", None)
+            model = def_model
         if model is None:
             raise ValueError("Must provide a model")
+        def_batch_size = litellm_config.pop("batch_size", None)
+        if batch_size is None:
+            batch_size = def_batch_size
+        def_show_progress = litellm_config.pop("show_progress", None)
+        if show_progress is None:
+            show_progress = def_show_progress
+        def_pbar_kwargs = litellm_config.pop("pbar_kwargs", {})
+        pbar_kwargs = merge_dicts(dict(prefix="get_embeddings"), def_pbar_kwargs, pbar_kwargs)
 
         self._model = model
-        self._embedding_kwargs = embedding_kwargs
+        self._embedding_kwargs = litellm_config
+        self._batch_size = batch_size
+        self._show_progress = show_progress
+        self._pbar_kwargs = pbar_kwargs
 
     @property
     def model(self) -> str:
@@ -407,6 +490,23 @@ class LiteLLMEmbeddings(Embeddings):
         """Keyword arguments passed to `litellm.embedding`."""
         return self._embedding_kwargs
 
+    @property
+    def batch_size(self) -> tp.Optional[int]:
+        """Batch size.
+
+        Set to None to disable batching."""
+        return self._batch_size
+
+    @property
+    def show_progress(self) -> tp.Optional[bool]:
+        """Whether to show progress bar."""
+        return self._show_progress
+
+    @property
+    def pbar_kwargs(self) -> tp.Kwargs:
+        """Keyword arguments passed to `vectorbtpro.utils.pbar.ProgressBar`."""
+        return self._pbar_kwargs
+
     def get_embedding(self, query: str) -> tp.List[float]:
         from litellm import embedding
 
@@ -416,8 +516,17 @@ class LiteLLMEmbeddings(Embeddings):
     def get_embeddings(self, queries: tp.List[str]) -> tp.List[tp.List[float]]:
         from litellm import embedding
 
-        response = embedding(self.model, input=queries, **self.embedding_kwargs)
-        return [embedding["embedding"] for embedding in response.data]
+        if self.batch_size is not None:
+            batches = [queries[i:i + self.batch_size] for i in range(0, len(queries), self. batch_size)]
+        else:
+            batches = [queries]
+        embeddings = []
+        with ProgressBar(total=len(queries), show_progress=self.show_progress, **self.pbar_kwargs) as pbar:
+            for batch in batches:
+                response = embedding(self.model, input=batch, **self.embedding_kwargs)
+                embeddings.extend([embedding["embedding"] for embedding in response.data])
+                pbar.update(len(batch))
+        return embeddings
 
 
 class LlamaIndexEmbeddings(Embeddings):
@@ -554,7 +663,7 @@ def resolve_embeddings(embeddings: tp.EmbeddingsLike = None) -> tp.MaybeType[Emb
     return embeddings
 
 
-def embed(query: tp.MaybeList[str], embeddings: tp.EmbeddingsLike = None, **kwargs) -> tp.MaybeEmbeddingsOutput:
+def embed(query: tp.MaybeList[str], embeddings: tp.EmbeddingsLike = None, **kwargs) -> tp.MaybeList[tp.List[float]]:
     """Get embedding(s) for one or more queries.
 
     Resolves `embeddings` with `resolve_embeddings`. Keyword arguments are passed to either
@@ -1476,6 +1585,13 @@ class SegmentSplitter(TokenSplitter):
                 yield last_end, len(text)
 
     def split(self, text: str) -> tp.TSRangeChunks:
+        if not text:
+            yield 0, 0
+            return None
+        if self.tokenizer.count_tokens(text) <= self.chunk_size:
+            yield 0, len(text)
+            return None
+
         current_layer = 0
         chunk_start = 0
         chunk_tokens = []
@@ -1519,7 +1635,7 @@ class SegmentSplitter(TokenSplitter):
                                 break
                     else:
                         stable_tokens = chunk_tokens[:stable_token_count]
-                        unstable_start = chunk_start + len(self.tokenizer.decode(stable_tokens))
+                        unstable_start = chunk_start + stable_char_count
                         partial_text = text[unstable_start:segment_end]
                         partial_tokens = self.tokenizer.encode(partial_text)
                         new_chunk_tokens = stable_tokens + partial_tokens
@@ -1734,10 +1850,196 @@ def split_text(text: str, text_splitter: tp.TextSplitterLike = None, **kwargs) -
 
 # ############# Indexing ############# #
 
+IndexDocumentT = tp.TypeVar("IndexDocumentT", bound="IndexDocument")
+
+
+@define
+class IndexDocument(DefineMixin):
+    """Abstract class for index documents.
+
+    An index document stores data and an identifier, and exposes methods for getting and splitting content.
+    If an identifier wasn't provided, generates the MD5 hash of the data."""
+
+    data: tp.Any = define.field()
+    """Data."""
+
+    id_: str = define.field(default=None)
+    """Document identifier."""
+
+    def get_text(self) -> tp.Optional[str]:
+        """Get text.
+
+        Returns None if no text."""
+        raise NotImplementedError
+
+    def get_metadata(self) -> tp.Optional[tp.Any]:
+        """Get metadata.
+
+        Returns None if no metadata."""
+        raise NotImplementedError
+
+    def get_metadata_content(self) -> tp.Optional[str]:
+        """Get metadata content.
+
+        Returns None if no metadata."""
+        raise NotImplementedError
+
+    def get_content(self) -> tp.Optional[str]:
+        """Get content (text + metadata).
+
+        Returns None if no text or metadata."""
+        raise NotImplementedError
+
+    def split(self: IndexDocumentT) -> tp.List[IndexDocumentT]:
+        """Split document into multiple documents."""
+        raise NotImplementedError
+
+    def __attrs_post_init__(self):
+        if self.id_ is None:
+            new_id = self.generate_id()
+            object.__setattr__(self, "id_", new_id)
+
+    def generate_id(self) -> str:
+        """Generate a unique identifier."""
+        return hashlib.md5(dumps(self.data)).hexdigest()
+
+    @property
+    def hash_key(self) -> tuple:
+        return (self.id_,)
+
+
+@define
+class KnowledgeDocument(IndexDocument, DefineMixin):
+    """Class for knowledge documents."""
+
+    text_path: tp.Optional[tp.PathLikeKey] = define.field(default=None)
+    """Path to the text field."""
+
+    metadata_path: tp.Optional[tp.MaybeList[tp.PathLikeKey]] = define.field(default=None)
+    """Path(s) to metadata fields.
+    
+    To not include metadata, set it to empty list."""
+
+    skip_missing: bool = define.field(default=True)
+    """Set missing text or metadata to None rather than raise an error."""
+
+    split_text_kwargs: tp.KwargsLike = define.field(factory=dict)
+    """Keyword arguments passed to `split_text`."""
+
+    dump_kwargs: tp.KwargsLike = define.field(factory=dict)
+    """Keyword arguments passed to `vectorbtpro.utils.formatting.dump`."""
+
+    metadata_template: str = define.field(default="---\n{metadata_content}\n---\n\n")
+    """Metadata template."""
+
+    content_template: str = define.field(default="{metadata_content}{text}")
+    """Content template."""
+
+    def get_text(self) -> tp.Optional[str]:
+        from vectorbtpro.utils.search import get_pathlike_key
+
+        if self.text_path is not None:
+            try:
+                text = get_pathlike_key(self.data, self.text_path, keep_path=False)
+            except (KeyError, IndexError, AttributeError) as e:
+                if not self.skip_missing:
+                    raise e
+                return None
+            if text is None:
+                return None
+            if not isinstance(text, str):
+                raise TypeError(f"Text field must be a string, not {type(text)}")
+            return text
+        if self.data is None:
+            return None
+        if not isinstance(self.data, str):
+            raise TypeError(f"If text path is not provided, data item must be a string, not {type(self.data)}")
+        return self.data
+
+    def get_metadata(self) -> tp.Optional[tp.Any]:
+        from vectorbtpro.utils.search import get_pathlike_key, remove_pathlike_key
+
+        if self.metadata_path is not None:
+            if isinstance(self.metadata_path, list):
+                xs = []
+                for p in self.metadata_path:
+                    try:
+                        xs.append(get_pathlike_key(self.data, p, keep_path=True))
+                    except (KeyError, IndexError, AttributeError) as e:
+                        if not self.skip_missing:
+                            raise e
+                        continue
+                if len(xs) == 0:
+                    return None
+                return deep_merge_dicts(*xs)
+            else:
+                try:
+                    return get_pathlike_key(self.data, self.metadata_path, keep_path=False)
+                except (KeyError, IndexError, AttributeError) as e:
+                    if not self.skip_missing:
+                        raise e
+                    return None
+        if self.text_path is not None:
+            try:
+                return remove_pathlike_key(self.data, self.text_path, make_copy=True)
+            except (KeyError, IndexError, AttributeError) as e:
+                if not self.skip_missing:
+                    raise e
+                return self.data
+        return None
+
+    def get_metadata_content(self) -> tp.Optional[str]:
+        from vectorbtpro.utils.formatting import dump
+
+        metadata = self.get_metadata()
+        if metadata is None:
+            return None
+        return dump(metadata, **self.dump_kwargs)
+
+    def get_content(self) -> tp.Optional[str]:
+        text = self.get_text()
+        metadata_content = self.get_metadata_content()
+        if text is None and metadata_content is None:
+            return None
+        if text is None:
+            text = ""
+        if metadata_content is None:
+            metadata_content = ""
+        if metadata_content:
+            metadata_content = self.metadata_template.format(metadata_content=metadata_content)
+        return self.content_template.format(metadata_content=metadata_content, text=text)
+
+    def split(self: IndexDocumentT) -> tp.List[IndexDocumentT]:
+        from vectorbtpro.utils.search import set_pathlike_key
+
+        text = self.get_text()
+        if text is None:
+            return [self]
+        text_chunks = split_text(text, **self.split_text_kwargs)
+        document_chunks = []
+        prev_keys = []
+        for text_chunk in text_chunks:
+            if self.text_path is not None:
+                data_chunk = set_pathlike_key(
+                    self.data,
+                    self.text_path,
+                    text_chunk,
+                    make_copy=True,
+                    prev_keys=prev_keys,
+                )
+            else:
+                data_chunk = text_chunk
+            document_chunks.append(self.replace(data=data_chunk, id_=None))
+        return document_chunks
+
 
 @define
 class IndexNode(DefineMixin):
-    """Class for index nodes."""
+    """Class for index nodes.
+
+    An index node stores the identifier of a document, its relationships to other documents,
+    as well as the embedding (if provided). It's a different entity from a document to avoid
+    persisting document's data."""
 
     id_: str = define.field()
     """Node identifier."""
@@ -1745,17 +2047,200 @@ class IndexNode(DefineMixin):
     parent_id: tp.Optional[str] = define.field(default=None)
     """Parent node identifier."""
 
-    parent_start_idx: tp.Optional[int] = define.field(default=None)
-    """Start index in the parent node."""
-
-    parent_end_idx: tp.Optional[int] = define.field(default=None)
-    """End index in the parent node."""
-
-    children_ids: tp.List[str] = define.field(factory=list)
+    child_ids: tp.List[str] = define.field(factory=list)
     """Child node identifiers."""
 
-    embedding: tp.Optional[tp.EmbeddingOutput] = define.field(default=None)
+    embedding: tp.Optional[tp.List[int]] = define.field(default=None, repr=lambda x: f"List[{len(x)}]" if x else None)
     """Embedding."""
+
+    @property
+    def hash_key(self) -> tuple:
+        return (self.id_,)
+
+
+def embedding_similarity(
+    emb1: tp.Union[tp.List[float], np.ndarray],
+    emb2: tp.Union[tp.MaybeList[tp.List[float]], np.ndarray],
+    metric: tp.Union[str, tp.Callable] = "cosine",
+) -> tp.Union[float, np.ndarray]:
+    """Compute similarity scores between two embeddings, which can be either single or multiple.
+
+    Supported metrics are 'cosine', 'euclidean', and 'dot'. A metric can also be a callable that should
+    take two and return one 2-dim NumPy array."""
+    emb1 = np.asarray(emb1)
+    emb2 = np.asarray(emb2)
+    emb1_single = emb1.ndim == 1
+    emb2_single = emb2.ndim == 1
+    if emb1_single:
+        emb1 = emb1.reshape(1, -1)
+    if emb2_single:
+        emb2 = emb2.reshape(1, -1)
+
+    if metric.lower() == "cosine":
+        emb1_norm = emb1 / np.linalg.norm(emb1, axis=1, keepdims=True)
+        emb2_norm = emb2 / np.linalg.norm(emb2, axis=1, keepdims=True)
+        emb1_norm = np.nan_to_num(emb1_norm)
+        emb2_norm = np.nan_to_num(emb2_norm)
+        similarity_matrix = np.dot(emb1_norm, emb2_norm.T)
+    elif metric.lower() == "euclidean":
+        diff = emb1[:, np.newaxis, :] - emb2[np.newaxis, :, :]
+        distances = np.linalg.norm(diff, axis=2)
+        similarity_matrix = 1 / (distances + 1e-10)
+    elif metric.lower() == "dot":
+        similarity_matrix = np.dot(emb1, emb2.T)
+    elif callable(metric):
+        similarity_matrix = metric(emb1, emb2)
+    else:
+        raise ValueError(f"Invalid metric: '{metric}'")
+
+    if emb1_single and emb2_single:
+        return float(similarity_matrix[0, 0])
+    if emb1_single or emb2_single:
+        return similarity_matrix.flatten()
+    return similarity_matrix
+
+
+class NodeIndex(Configured):
+    """Abstract class for node indexes.
+
+    For defaults, see `chat` in `vectorbtpro._settings.knowledge`."""
+
+    _short_name: tp.ClassVar[tp.Optional[str]] = None
+    """Short name of the class."""
+
+    _settings_path: tp.SettingsPath = ["knowledge", "knowledge.chat"]
+
+    def __init__(self, **kwargs) -> None:
+        Configured.__init__(self, **kwargs)
+
+        self._index = {}
+
+    @property
+    def index(self) -> tp.Dict[str, IndexNode]:
+        """Dictionary with index nodes keyed by their ids."""
+        return self._index
+
+    def save_index(self) -> tp.Path:
+        """Save index."""
+        raise NotImplementedError
+
+    def load_index(self) -> tp.Dict[str, IndexNode]:
+        """Load and return index."""
+        raise NotImplementedError
+
+    def load_update_index(self) -> None:
+        """Load and update index."""
+        self._index = self.load_index()
+
+    def add_node(self, node: IndexNode) -> None:
+        """Add node to the index."""
+        self.index[node.id_] = node
+
+    def embed_documents(self, documents: tp.MaybeIterable[IndexDocument], **kwargs) -> None:
+        """Convert document(s) to nodes, embed them, and add them to the index.
+
+        Keyword arguments are passed to `embed`."""
+        node_id_contents = {}
+        if isinstance(documents, IndexDocument):
+            documents = [documents]
+        for document in documents:
+            if document.id_ not in self.index:
+                document_chunks = document.split()
+                child_ids = []
+                parent_node = IndexNode(document.id_, child_ids=child_ids)
+                self.index[parent_node.id_] = parent_node
+                for document_chunk in document_chunks:
+                    if document_chunk.id_ != document.id_:
+                        if document_chunk.id_ not in self.index:
+                            child_node = IndexNode(document_chunk.id_, parent_id=document.id_)
+                            self.index[child_node.id_] = child_node
+                            child_ids.append(child_node.id_)
+                            node_id_contents[child_node.id_] = document_chunk.get_content()
+                if not parent_node.child_ids:
+                    node_id_contents[parent_node.id_] = document.get_content()
+
+        if node_id_contents:
+            embeddings = embed(list(node_id_contents.values()), **kwargs)
+            node_id_embeddings = dict(zip(node_id_contents.keys(), embeddings))
+            for node_id, embedding in node_id_embeddings.items():
+                new_node = self.index[node_id].replace(embedding=embedding)
+                self.index[node_id] = new_node
+
+
+class LocalIndex(NodeIndex):
+    """Index class based locally.
+
+    For defaults, see `chat.node_index_configs.local` in `vectorbtpro._settings.knowledge`."""
+
+    _short_name = "local"
+
+    _settings_path: tp.SettingsPath = "knowledge.chat.node_index_configs.local"
+
+    def __init__(
+        self,
+        path: tp.Optional[tp.PathLike] = None,
+        compression: tp.Union[None, bool, str] = None,
+        save_kwargs: tp.KwargsLike = None,
+        load_kwargs: tp.KwargsLike = None,
+        **kwargs,
+    ) -> None:
+        NodeIndex.__init__(
+            self,
+            path=path,
+            compression=compression,
+            save_kwargs=save_kwargs,
+            load_kwargs=load_kwargs,
+            **kwargs,
+        )
+
+        path = self.resolve_setting(path, "path")
+        compression = self.resolve_setting(compression, "compression")
+        save_kwargs = self.resolve_setting(save_kwargs, "save_kwargs", merge=True)
+        load_kwargs = self.resolve_setting(load_kwargs, "load_kwargs", merge=True)
+
+        self._path = path
+        self._compression = compression
+        self._save_kwargs = save_kwargs
+        self._load_kwargs = load_kwargs
+
+    @property
+    def path(self) -> tp.Optional[tp.Path]:
+        """Path to the index file."""
+        return self._path
+
+    @property
+    def compression(self) -> tp.CompressionLike:
+        """Compression."""
+        return self._compression
+
+    @property
+    def save_kwargs(self) -> tp.Kwargs:
+        """Keyword arguments passed to `vectorbtpro.utils.path_.save`."""
+        return self._save_kwargs
+
+    @property
+    def load_kwargs(self) -> tp.Kwargs:
+        """Keyword arguments passed to `vectorbtpro.utils.path_.load`."""
+        return self._load_kwargs
+
+    def save_index(self) -> tp.Path:
+        from vectorbtpro.utils.pickling import save
+
+        return save(
+            self.index,
+            path=self.path,
+            compression=self.compression,
+            **self.save_kwargs,
+        )
+
+    def load_index(self) -> tp.Dict[int, IndexNode]:
+        from vectorbtpro.utils.pickling import load
+
+        return load(
+            path=self.path,
+            compression=self.compression,
+            **self.load_kwargs,
+        )
 
 
 # ############# Contexting ############# #

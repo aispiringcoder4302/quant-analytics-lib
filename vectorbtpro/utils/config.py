@@ -13,6 +13,7 @@
 import inspect
 import warnings
 from copy import copy, deepcopy
+import uuid
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.utils.attr_ import MISSING
@@ -39,6 +40,8 @@ __all__ = [
     "Configured",
     "AtomicConfig",
 ]
+
+__pdoc__ = {}
 
 
 class hdict(dict, Base):
@@ -988,13 +991,58 @@ class SettingNotFoundError(KeyError):
 HasSettingsT = tp.TypeVar("HasSettingsT", bound="HasSettings")
 
 
+spec_settings_paths_config = HybridConfig()
+"""_"""
+
+__pdoc__[
+    "spec_settings_paths_config"
+] = f"""Config for (currently active) specialized settings paths.
+
+Stores settings path dictionaries by unique ids. In a path dictionary, each key is a path that points 
+to one or more other paths. For instance, a relationship "knowledge" -> "pages" will also consider "pages" 
+settings whenever "knowledge" settings are requested.
+
+```python
+{spec_settings_paths_config.prettify()}
+```
+"""
+
+
+SpecSettingsPathT = tp.TypeVar("SpecSettingsPathT", bound="SpecSettingsPath")
+
+
+class SpecSettingsPath(Base):
+    """Context manager to add specialized settings paths."""
+
+    def __init__(self, spec_settings_paths: tp.SpecSettingsPaths) -> None:
+        self._unique_id = uuid.uuid4()
+        self._spec_settings_paths = spec_settings_paths
+
+    @property
+    def unique_id(self) -> uuid.UUID:
+        """Unique id."""
+        return self._unique_id
+
+    @property
+    def spec_settings_paths(self) -> tp.SpecSettingsPaths:
+        """Dictionary with specialized settings paths."""
+        return self._spec_settings_paths
+
+    def __enter__(self: SpecSettingsPathT) -> SpecSettingsPathT:
+        spec_settings_paths_config[self.unique_id] = self.spec_settings_paths
+        return self
+
+    def __exit__(self, *args) -> None:
+        del spec_settings_paths_config[self.unique_id]
+
+
 class HasSettings(Base):
     """Class that has settings in `vectorbtpro._settings`."""
 
     _settings_path: tp.SettingsPath = None
     """Path(s) corresponding to this class in `vectorbtpro._settings`.
 
-    Must be either string (one path) or a dictionary of path ids and paths.
+    Must be either a path, a list of paths (in order of specialization), or a dictionary of path ids and paths.
 
     Lookup is done using `get_dict_item`."""
 
@@ -1035,39 +1083,54 @@ class HasSettings(Base):
         unique_only: bool = True,
     ) -> tp.List[tp.Tuple[tp.Type[HasSettingsT], str]]:
         """Resolve the settings paths associated with this class and its superclasses (if `inherit` is True)."""
+        from vectorbtpro.utils.search import resolve_pathlike_key
+
         paths = []
+        unique_paths = set()
+
+        def _add_path(cls_, path):
+            if path not in unique_paths or not unique_only:
+                paths.append((cls_, path))
+                unique_paths.add(path)
+                if spec_settings_paths_config:
+                    path_ = resolve_pathlike_key(path)
+                    for spec_settings_paths in spec_settings_paths_config.values():
+                        for from_path, to_path in spec_settings_paths.items():
+                            from_path = resolve_pathlike_key(from_path)
+                            if path_ == from_path:
+                                if not isinstance(to_path, list):
+                                    to_path = [to_path]
+                                for to_path_ in to_path:
+                                    paths.append((cls_, to_path_))
+                                    unique_paths.add(to_path_)
+
+        def _process_path(cls_, path):
+            if path is not None:
+                if isinstance(path, dict):
+                    if path_id is None:
+                        raise ValueError("Must specify path id")
+                    if path_id not in path:
+                        return
+                    path = path[path_id]
+                    if path is None:
+                        return
+                    _add_path(cls_, path)
+                elif isinstance(path, list):
+                    for p in path:
+                        _add_path(cls_, p)
+                else:
+                    _add_path(cls_, path)
+
         if inherit:
-            if super_first:
-                classes = cls.__mro__[::-1]
-            else:
-                classes = cls.__mro__
+            classes = cls.__mro__[::-1]
         else:
             classes = [cls]
-        unique_paths = set()
         for i, cls_ in enumerate(classes):
             if issubclass(cls_, HasSettings):
-                path = getattr(cls_, "_settings_path")
-                if path is not None:
-                    if isinstance(path, dict):
-                        if path_id is None:
-                            raise ValueError("Must specify path id")
-                        if path_id not in path:
-                            continue
-                        path = path[path_id]
-                        if path is None:
-                            continue
-                        if path not in unique_paths or not unique_only:
-                            paths.append((cls_, path))
-                            unique_paths.add(path)
-                    elif isinstance(path, list):
-                        for p in path:
-                            if p not in unique_paths or not unique_only:
-                                paths.append((cls_, p))
-                                unique_paths.add(p)
-                    else:
-                        if path not in unique_paths or not unique_only:
-                            paths.append((cls_, path))
-                            unique_paths.add(path)
+                _process_path(cls_, getattr(cls_, "_settings_path"))
+
+        if not super_first:
+            return paths[::-1]
         return paths
 
     @classmethod
@@ -1079,7 +1142,11 @@ class HasSettings(Base):
         sub_path_only: bool = False,
     ) -> dict:
         """Get the settings associated with this class and its superclasses (if `inherit` is True)."""
-        paths = cls.resolve_settings_paths(path_id=path_id, inherit=inherit)
+        paths = cls.resolve_settings_paths(
+            path_id=path_id,
+            inherit=inherit,
+            super_first=True,
+        )
         if len(paths) == 0:
             if path_id is not None:
                 raise SettingsNotFoundError(f"Found no settings associated with the path id '{path_id}'")
@@ -1118,7 +1185,12 @@ class HasSettings(Base):
         """Return whether there the settings associated with this class and its superclasses
         (if `inherit` is True) exist."""
         try:
-            cls.get_settings(path_id=path_id, inherit=inherit, sub_path=sub_path, sub_path_only=sub_path_only)
+            cls.get_settings(
+                path_id=path_id,
+                inherit=inherit,
+                sub_path=sub_path,
+                sub_path_only=sub_path_only,
+            )
             return True
         except SettingsNotFoundError as e:
             return False
@@ -1178,7 +1250,11 @@ class HasSettings(Base):
     ) -> tp.Any:
         """Get a value under the settings associated with this class and its superclasses
         (if `inherit` is True)."""
-        paths = cls.resolve_settings_paths(path_id=path_id, inherit=inherit, super_first=False)
+        paths = cls.resolve_settings_paths(
+            path_id=path_id,
+            inherit=inherit,
+            super_first=merge,
+        )
         if len(paths) == 0:
             if path_id is not None:
                 raise SettingsNotFoundError(f"Found no settings associated with the path id '{path_id}'")
@@ -1250,7 +1326,13 @@ class HasSettings(Base):
         """Return whether the settings associated with this class and its superclasses
         (if `inherit` is True) exists."""
         try:
-            cls.get_setting(key, path_id=path_id, inherit=inherit, sub_path=sub_path, sub_path_only=sub_path_only)
+            cls.get_setting(
+                key,
+                path_id=path_id,
+                inherit=inherit,
+                sub_path=sub_path,
+                sub_path_only=sub_path_only,
+            )
             return True
         except (SettingsNotFoundError, SettingNotFoundError) as e:
             return False
@@ -1319,6 +1401,8 @@ class HasSettings(Base):
             if path_id not in cls._settings_path:
                 raise SettingsNotFoundError(f"Found no settings associated with the path id '{path_id}'")
             path = cls._settings_path[path_id]
+        elif isinstance(cls._settings_path, list):
+            path = cls._settings_path[-1]
         else:
             path = cls._settings_path
         if path is None:
@@ -1354,6 +1438,8 @@ class HasSettings(Base):
             if path_id not in cls._settings_path:
                 raise SettingsNotFoundError(f"Found no settings associated with the path id '{path_id}'")
             path = cls._settings_path[path_id]
+        elif isinstance(cls._settings_path, list):
+            path = cls._settings_path[-1]
         else:
             path = cls._settings_path
         if path is None:
