@@ -13,6 +13,10 @@
 from datetime import datetime, timedelta, tzinfo, date, time
 from enum import EnumMeta
 from pathlib import Path
+import sys
+if sys.version_info < (3, 9):
+    import typing
+    typing.__all__.append("TextIO")
 from typing import *
 
 import numpy as np
