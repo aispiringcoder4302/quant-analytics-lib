@@ -432,6 +432,22 @@ def combine_params(
         clean_index_kwargs = {}
     rng = np.random.default_rng(seed=seed)
 
+    def _name_tuple_to_str(name_tuple):
+        return "_".join(map(lambda x: str(x).strip().lower(), name_tuple))
+
+    if isinstance(name_tuple_to_str, bool):
+        if name_tuple_to_str:
+            name_tuple_to_str = _name_tuple_to_str
+        else:
+            name_tuple_to_str = None
+
+    def _str_name(name):
+        if isinstance(name, tuple):
+            if name_tuple_to_str:
+                return name_tuple_to_str(name)
+            return _name_tuple_to_str(name)
+        return str(name)
+
     level_map = OrderedDict()
     param_level = {}
     param_keys = {}
@@ -605,19 +621,20 @@ def combine_params(
             if isinstance(expr, str):
                 arg_names = (
                     {"x"}
-                    | set(map(lambda x: f"__{x}__", param_dct_keys))
-                    | set(map(lambda x: f"__{x}__", names.values()))
-                    | set(param_dct_keys)
-                    | set(names.values())
+                    | set(map(lambda x: f"__{_str_name(x)}__", param_dct_keys))
+                    | set(map(lambda x: f"__{_str_name(x)}__", names.values()))
+                    | set(map(_str_name, param_dct_keys))
+                    | set(map(_str_name, names.values()))
                     | set(contexts[k].keys())
                 )
                 for level_index in level_indexes:
                     if level_index is not None:
                         if isinstance(level_index, pd.MultiIndex):
                             for level_name in level_index.names:
-                                arg_names.add(f"__{level_name}__")
+                                arg_names.add(f"__{_str_name(level_name)}__")
                         elif isinstance(level_index, pd.Index):
-                            arg_names.add(f"__{level_index.name}__")
+                            arg_names.add(f"__{_str_name(level_index.name)}__")
+                print(f"lambda {'=None, '.join(arg_names)}=None: {expr}")
                 condition_funcs[k] = eval(f"lambda {'=None, '.join(arg_names)}=None: {expr}")
             else:
                 condition_funcs[k] = expr
@@ -700,20 +717,20 @@ def combine_params(
                     for j in range(len(params)):
                         p_keys = param_keys[param_dct_keys[k]]
                         if p_keys is not None:
-                            param_comb_keys[f"__{param_dct_keys[k]}__"] = p_keys[i]
+                            param_comb_keys[f"__{_str_name(param_dct_keys[k])}__"] = p_keys[i]
                             if param_dct_keys[k] in names:
-                                param_comb_keys[f"__{names[param_dct_keys[k]]}__"] = p_keys[i]
+                                param_comb_keys[f"__{_str_name(names[param_dct_keys[k]])}__"] = p_keys[i]
                             if isinstance(p_keys, pd.MultiIndex):
                                 for l, level_name in enumerate(p_keys.names):
                                     if level_name is not None:
-                                        param_comb_keys[f"__{level_name}__"] = p_keys[i][l]
+                                        param_comb_keys[f"__{_str_name(level_name)}__"] = p_keys[i][l]
                             elif isinstance(p_keys, pd.Index):
                                 if p_keys.name is not None:
-                                    param_comb_keys[f"__{p_keys.name}__"] = p_keys[i]
+                                    param_comb_keys[f"__{_str_name(p_keys.name)}__"] = p_keys[i]
                         picked_value = params[j][i]
-                        param_comb[param_dct_keys[k]] = picked_value
+                        param_comb[_str_name(param_dct_keys[k])] = picked_value
                         if param_dct_keys[k] in names:
-                            param_comb[names[param_dct_keys[k]]] = picked_value
+                            param_comb[_str_name(names[param_dct_keys[k]])] = picked_value
                         k += 1
                     picked_indices.append(i)
                 visited_indices_set.add(tuple(picked_indices))
@@ -834,22 +851,22 @@ def combine_params(
                     p_keys = param_keys[k]
                     if p_keys is not None:
                         p_keys_value = p_keys[level_indices[param_level[k]]]
-                        param_comb_keys[f"__{k}__"] = p_keys_value
+                        param_comb_keys[f"__{_str_name(k)}__"] = p_keys_value
                         if k in names:
-                            param_comb_keys[f"__{names[k]}__"] = p_keys_value
+                            param_comb_keys[f"__{_str_name(names[k])}__"] = p_keys_value
                 if param_index is not None:
                     if isinstance(param_index, pd.MultiIndex):
                         for l, level_name in enumerate(param_index.names):
                             if level_name is not None:
-                                param_comb_keys[f"__{level_name}__"] = param_index[i][l]
+                                param_comb_keys[f"__{_str_name(level_name)}__"] = param_index[i][l]
                     elif isinstance(param_index, pd.Index):
                         if param_index.name is not None:
-                            param_comb_keys[f"__{param_index.name}__"] = param_index[i]
+                            param_comb_keys[f"__{_str_name(param_index.name)}__"] = param_index[i]
                 param_comb = {}
                 for k in param_product:
-                    param_comb[k] = param_product[k][i]
+                    param_comb[_str_name(k)] = param_product[k][i]
                     if k in names:
-                        param_comb[names[k]] = param_product[k][i]
+                        param_comb[_str_name(names[k])] = param_product[k][i]
                 conditions_met = True
                 for k, condition_func in condition_funcs.items():
                     param_context = {"x": param_comb[k], **param_comb_keys, **param_comb, **contexts[k]}
@@ -894,15 +911,6 @@ def combine_params(
                 param_index = param_index[random_indices]
 
     if build_index and len(shown_levels) > 0:
-        if isinstance(name_tuple_to_str, bool):
-            if name_tuple_to_str:
-
-                def _name_tuple_to_str(name_tuple):
-                    return "_".join(map(lambda x: str(x).strip().lower(), name_tuple))
-
-                name_tuple_to_str = _name_tuple_to_str
-            else:
-                name_tuple_to_str = None
         if name_tuple_to_str is not None:
             found_tuple = False
             new_names = []
