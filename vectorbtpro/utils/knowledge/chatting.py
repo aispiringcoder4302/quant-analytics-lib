@@ -94,11 +94,15 @@ __all__ = [
     "TokenSplitter",
     "SegmentSplitter",
     "LlamaIndexSplitter",
-    "IndexDocument",
+    "TextDocument",
     "KnowledgeDocument",
+    "DocumentStore",
+    "MemoryStore",
+    "FileStore",
     "IndexNode",
     "NodeIndex",
-    "LocalIndex",
+    "MemoryIndex",
+    "FileIndex",
     "split_text",
     "Contextable",
 ]
@@ -421,17 +425,13 @@ class OpenAIEmbeddings(Embeddings):
 
     def get_embeddings(self, queries: tp.List[str]) -> tp.List[tp.List[float]]:
         if self.batch_size is not None:
-            batches = [queries[i:i + self.batch_size] for i in range(0, len(queries), self. batch_size)]
+            batches = [queries[i : i + self.batch_size] for i in range(0, len(queries), self.batch_size)]
         else:
             batches = [queries]
         embeddings = []
         with ProgressBar(total=len(queries), show_progress=self.show_progress, **self.pbar_kwargs) as pbar:
             for batch in batches:
-                response = self.client.embeddings.create(
-                    input=batch,
-                    model=self.model,
-                    **self.embeddings_kwargs
-                )
+                response = self.client.embeddings.create(input=batch, model=self.model, **self.embeddings_kwargs)
                 embeddings.extend([embedding.embedding for embedding in response.data])
                 pbar.update(len(batch))
         return embeddings
@@ -517,7 +517,7 @@ class LiteLLMEmbeddings(Embeddings):
         from litellm import embedding
 
         if self.batch_size is not None:
-            batches = [queries[i:i + self.batch_size] for i in range(0, len(queries), self. batch_size)]
+            batches = [queries[i : i + self.batch_size] for i in range(0, len(queries), self.batch_size)]
         else:
             batches = [queries]
         embeddings = []
@@ -1848,16 +1848,16 @@ def split_text(text: str, text_splitter: tp.TextSplitterLike = None, **kwargs) -
     return list(text_splitter.split_text(text))
 
 
-# ############# Indexing ############# #
+# ############# Documents ############# #
 
-IndexDocumentT = tp.TypeVar("IndexDocumentT", bound="IndexDocument")
+TextDocumentT = tp.TypeVar("TextDocumentT", bound="TextDocument")
 
 
 @define
-class IndexDocument(DefineMixin):
-    """Abstract class for index documents.
+class TextDocument(DefineMixin):
+    """Abstract class for text documents.
 
-    An index document stores data and an identifier, and exposes methods for getting and splitting content.
+    A text document stores data and an identifier, and exposes methods for getting and splitting content.
     If an identifier wasn't provided, generates the MD5 hash of the data."""
 
     data: tp.Any = define.field()
@@ -1872,25 +1872,25 @@ class IndexDocument(DefineMixin):
         Returns None if no text."""
         raise NotImplementedError
 
-    def get_metadata(self) -> tp.Optional[tp.Any]:
+    def get_metadata(self, for_embed: bool = False) -> tp.Optional[tp.Any]:
         """Get metadata.
 
         Returns None if no metadata."""
         raise NotImplementedError
 
-    def get_metadata_content(self) -> tp.Optional[str]:
+    def get_metadata_content(self, for_embed: bool = False) -> tp.Optional[str]:
         """Get metadata content.
 
         Returns None if no metadata."""
         raise NotImplementedError
 
-    def get_content(self) -> tp.Optional[str]:
+    def get_content(self, for_embed: bool = False) -> tp.Optional[str]:
         """Get content (text + metadata).
 
-        Returns None if no text or metadata."""
+        Returns None if no text and metadata."""
         raise NotImplementedError
 
-    def split(self: IndexDocumentT) -> tp.List[IndexDocumentT]:
+    def split(self: TextDocumentT) -> tp.List[TextDocumentT]:
         """Split document into multiple documents."""
         raise NotImplementedError
 
@@ -1909,31 +1909,34 @@ class IndexDocument(DefineMixin):
 
 
 @define
-class KnowledgeDocument(IndexDocument, DefineMixin):
+class KnowledgeDocument(TextDocument, HasSettings, DefineMixin):
     """Class for knowledge documents."""
 
     text_path: tp.Optional[tp.PathLikeKey] = define.field(default=None)
     """Path to the text field."""
 
-    metadata_path: tp.Optional[tp.MaybeList[tp.PathLikeKey]] = define.field(default=None)
-    """Path(s) to metadata fields.
-    
-    To not include metadata, set it to empty list."""
+    excl_metadata: tp.Union[bool, tp.MaybeList[tp.PathLikeKey]] = define.field(default=False)
+    """Whether to exclude metadata and which fields to exclude."""
+
+    excl_embed_metadata: tp.Union[None, bool, tp.MaybeList[tp.PathLikeKey]] = define.field(default=None)
+    """Whether to exclude metadata and which fields to exclude for embeddings.
+
+    If None, becomes `KnowledgeDocument.excl_metadata`."""
 
     skip_missing: bool = define.field(default=True)
     """Set missing text or metadata to None rather than raise an error."""
 
-    split_text_kwargs: tp.KwargsLike = define.field(factory=dict)
-    """Keyword arguments passed to `split_text`."""
-
     dump_kwargs: tp.KwargsLike = define.field(factory=dict)
     """Keyword arguments passed to `vectorbtpro.utils.formatting.dump`."""
 
-    metadata_template: str = define.field(default="---\n{metadata_content}\n---\n\n")
+    metadata_format: str = define.field(default="---\n{metadata_content}\n---\n\n")
     """Metadata template."""
 
-    content_template: str = define.field(default="{metadata_content}{text}")
+    content_format: str = define.field(default="{metadata_content}{text}")
     """Content template."""
+
+    split_text_kwargs: tp.KwargsLike = define.field(factory=dict)
+    """Keyword arguments passed to `split_text`."""
 
     def get_text(self) -> tp.Optional[str]:
         from vectorbtpro.utils.search import get_pathlike_key
@@ -1956,49 +1959,52 @@ class KnowledgeDocument(IndexDocument, DefineMixin):
             raise TypeError(f"If text path is not provided, data item must be a string, not {type(self.data)}")
         return self.data
 
-    def get_metadata(self) -> tp.Optional[tp.Any]:
-        from vectorbtpro.utils.search import get_pathlike_key, remove_pathlike_key
+    def get_metadata(self, for_embed: bool = False) -> tp.Optional[tp.Any]:
+        from vectorbtpro.utils.search import remove_pathlike_key
 
-        if self.metadata_path is not None:
-            if isinstance(self.metadata_path, list):
-                xs = []
-                for p in self.metadata_path:
-                    try:
-                        xs.append(get_pathlike_key(self.data, p, keep_path=True))
-                    except (KeyError, IndexError, AttributeError) as e:
-                        if not self.skip_missing:
-                            raise e
-                        continue
-                if len(xs) == 0:
-                    return None
-                return deep_merge_dicts(*xs)
-            else:
-                try:
-                    return get_pathlike_key(self.data, self.metadata_path, keep_path=False)
-                except (KeyError, IndexError, AttributeError) as e:
-                    if not self.skip_missing:
-                        raise e
-                    return None
+        data = self.data
+        prev_keys = []
         if self.text_path is not None:
             try:
-                return remove_pathlike_key(self.data, self.text_path, make_copy=True)
+                data = remove_pathlike_key(data, self.text_path, make_copy=True, prev_keys=prev_keys)
             except (KeyError, IndexError, AttributeError) as e:
                 if not self.skip_missing:
                     raise e
-                return self.data
-        return None
 
-    def get_metadata_content(self) -> tp.Optional[str]:
+        excl_metadata = self.excl_metadata
+        if for_embed:
+            excl_embed_metadata = self.excl_embed_metadata
+            if excl_embed_metadata is None:
+                excl_embed_metadata = excl_metadata
+            excl_metadata = excl_embed_metadata
+        if isinstance(excl_metadata, bool):
+            if excl_metadata:
+                return None
+            return data
+        if not excl_metadata:
+            return data
+        if not isinstance(excl_metadata, list):
+            excl_metadata = [excl_metadata]
+        for p in excl_metadata:
+            try:
+                data = remove_pathlike_key(data, p, make_copy=True, prev_keys=prev_keys)
+            except (KeyError, IndexError, AttributeError) as e:
+                if not self.skip_missing:
+                    raise e
+                continue
+        return data
+
+    def get_metadata_content(self, for_embed: bool = False) -> tp.Optional[str]:
         from vectorbtpro.utils.formatting import dump
 
-        metadata = self.get_metadata()
+        metadata = self.get_metadata(for_embed=for_embed)
         if metadata is None:
             return None
         return dump(metadata, **self.dump_kwargs)
 
-    def get_content(self) -> tp.Optional[str]:
+    def get_content(self, for_embed: bool = False) -> tp.Optional[str]:
         text = self.get_text()
-        metadata_content = self.get_metadata_content()
+        metadata_content = self.get_metadata_content(for_embed=for_embed)
         if text is None and metadata_content is None:
             return None
         if text is None:
@@ -2006,10 +2012,10 @@ class KnowledgeDocument(IndexDocument, DefineMixin):
         if metadata_content is None:
             metadata_content = ""
         if metadata_content:
-            metadata_content = self.metadata_template.format(metadata_content=metadata_content)
-        return self.content_template.format(metadata_content=metadata_content, text=text)
+            metadata_content = self.metadata_format.format(metadata_content=metadata_content)
+        return self.content_format.format(metadata_content=metadata_content, text=text)
 
-    def split(self: IndexDocumentT) -> tp.List[IndexDocumentT]:
+    def split(self: TextDocumentT) -> tp.List[TextDocumentT]:
         from vectorbtpro.utils.search import set_pathlike_key
 
         text = self.get_text()
@@ -2017,7 +2023,6 @@ class KnowledgeDocument(IndexDocument, DefineMixin):
             return [self]
         text_chunks = split_text(text, **self.split_text_kwargs)
         document_chunks = []
-        prev_keys = []
         for text_chunk in text_chunks:
             if self.text_path is not None:
                 data_chunk = set_pathlike_key(
@@ -2025,12 +2030,241 @@ class KnowledgeDocument(IndexDocument, DefineMixin):
                     self.text_path,
                     text_chunk,
                     make_copy=True,
-                    prev_keys=prev_keys,
                 )
             else:
                 data_chunk = text_chunk
             document_chunks.append(self.replace(data=data_chunk, id_=None))
         return document_chunks
+
+
+class DocumentStore(Configured):
+    """Abstract class for managing a document store.
+
+    For defaults, see `chat` in `vectorbtpro._settings.knowledge`."""
+
+    _short_name: tp.ClassVar[tp.Optional[str]] = None
+    """Short name of the class."""
+
+    _settings_path: tp.SettingsPath = ["knowledge", "knowledge.chat"]
+
+    def __init__(self, store_id: tp.Optional[str] = None, **kwargs) -> None:
+        Configured.__init__(self, store_id=store_id, **kwargs)
+
+        store_id = self.resolve_setting(store_id, "store_id")
+
+        self._store_id = store_id
+
+        self._store = {}
+        self._staged_store = {}
+
+    @property
+    def store_id(self) -> str:
+        """Store id."""
+        return self._store_id
+
+    @property
+    def store(self) -> tp.Dict[str, TextDocument]:
+        """Dictionary with store documents keyed by their ids."""
+        return self._store
+
+    @property
+    def staged_store(self) -> tp.Dict[str, TextDocument]:
+        """Dictionary with store documents keyed by their ids staged for the next commit."""
+        return self._staged_store
+
+    def save_store(self) -> None:
+        """Save store."""
+        raise NotImplementedError
+
+    def store_exists(self) -> bool:
+        """Whether store exists."""
+        raise NotImplementedError
+
+    def load_store(self) -> tp.Dict[str, TextDocument]:
+        """Load and return store."""
+        raise NotImplementedError
+
+    def clear_store(self) -> None:
+        """Clear store."""
+        raise NotImplementedError
+
+    def load_update_store(self) -> None:
+        """Load and update store."""
+        self._store = self.load_store()
+
+    def has_document(self, id_: str) -> bool:
+        """Whether store has the document."""
+        return id_ in self.store
+
+    def add_document(self, document: TextDocument) -> None:
+        """Add document to the store."""
+        self.store[document.id_] = document
+        self.staged_store[document.id_] = document
+
+    def get_document(self, id_: str) -> TextDocument:
+        """Get document from the store."""
+        return self.store[id_]
+
+    def commit(self) -> None:
+        """Commit staged documents."""
+        self.save_store()
+        self.staged_store.clear()
+
+
+class MemoryStore(DocumentStore):
+    """Store class based in memory.
+
+    For defaults, see `chat.document_store_configs.memory` in `vectorbtpro._settings.knowledge`."""
+
+    _short_name: tp.ClassVar[tp.Optional[str]] = "memory"
+
+    _settings_path: tp.SettingsPath = "knowledge.chat.document_store_configs.memory"
+
+    def save_store(self) -> None:
+        pass
+
+    def store_exists(self) -> bool:
+        return True
+
+    def load_store(self) -> tp.Dict[str, TextDocument]:
+        return self.store
+
+    def clear_store(self) -> None:
+        self.store.clear()
+
+
+class FileStore(DocumentStore):
+    """Store class based on files.
+
+    For defaults, see `chat.document_store_configs.file` in `vectorbtpro._settings.knowledge`."""
+
+    _short_name = "file"
+
+    _settings_path: tp.SettingsPath = "knowledge.chat.document_store_configs.file"
+
+    def __init__(
+        self,
+        dir_path: tp.Optional[tp.PathLike] = None,
+        compression: tp.Union[None, bool, str] = None,
+        save_kwargs: tp.KwargsLike = None,
+        load_kwargs: tp.KwargsLike = None,
+        **kwargs,
+    ) -> None:
+        DocumentStore.__init__(
+            self,
+            dir_path=dir_path,
+            compression=compression,
+            save_kwargs=save_kwargs,
+            load_kwargs=load_kwargs,
+            **kwargs,
+        )
+
+        dir_path = self.resolve_setting(dir_path, "dir_path")
+        compression = self.resolve_setting(compression, "compression")
+        save_kwargs = self.resolve_setting(save_kwargs, "save_kwargs", merge=True)
+        load_kwargs = self.resolve_setting(load_kwargs, "load_kwargs", merge=True)
+
+        self._dir_path = dir_path
+        self._compression = compression
+        self._save_kwargs = save_kwargs
+        self._load_kwargs = load_kwargs
+
+        if self.store_exists():
+            self._store = self.load_store()
+        else:
+            self._store = {}
+
+    @property
+    def dir_path(self) -> tp.Optional[tp.Path]:
+        """Path to the directory."""
+        return self._dir_path
+
+    @property
+    def compression(self) -> tp.CompressionLike:
+        """Compression."""
+        return self._compression
+
+    @property
+    def save_kwargs(self) -> tp.Kwargs:
+        """Keyword arguments passed to `vectorbtpro.utils.path_.save`."""
+        return self._save_kwargs
+
+    @property
+    def load_kwargs(self) -> tp.Kwargs:
+        """Keyword arguments passed to `vectorbtpro.utils.path_.load`."""
+        return self._load_kwargs
+
+    @property
+    def path(self) -> tp.Path:
+        """File path."""
+        dir_path = self.dir_path
+        if dir_path is None:
+            dir_path = "."
+        dir_path = Path(dir_path)
+        return dir_path / self.store_id
+
+    def save_store(self) -> tp.Path:
+        from vectorbtpro.utils.pickling import save
+
+        return save(
+            self.store,
+            path=self.path,
+            compression=self.compression,
+            **self.save_kwargs,
+        )
+
+    def store_exists(self) -> bool:
+        return self.path.exists()
+
+    def load_store(self) -> tp.Dict[int, TextDocument]:
+        from vectorbtpro.utils.pickling import load
+
+        return load(
+            path=self.path,
+            compression=self.compression,
+            **self.load_kwargs,
+        )
+
+    def clear_store(self) -> None:
+        from vectorbtpro.utils.path_ import remove_file
+
+        remove_file(self.path, missing_ok=True)
+
+
+def resolve_document_store(document_store: tp.DocumentStoreLike = None) -> tp.MaybeType[DocumentStore]:
+    """Resolve a subclass or an instance of `DocumentStore`.
+
+    The following values are supported:
+
+    * "memory" (`MemoryStore`)
+    * "file" (`FileStore`)
+    * A subclass or an instance of `DocumentStore`
+    """
+    if document_store is None:
+        from vectorbtpro._settings import settings
+
+        chat_cfg = settings["knowledge"]["chat"]
+        document_store = chat_cfg["document_store"]
+    if isinstance(document_store, str):
+        current_module = sys.modules[__name__]
+        found_document_store = None
+        for name, cls in inspect.getmembers(current_module, inspect.isclass):
+            if name.endswith("Store"):
+                _short_name = getattr(cls, "_short_name", None)
+                if _short_name is not None and _short_name.lower() == document_store.lower():
+                    found_document_store = cls
+                    break
+        if found_document_store is None:
+            raise ValueError(f"Invalid document store: '{document_store}'")
+        document_store = found_document_store
+    if isinstance(document_store, type):
+        checks.assert_subclass_of(document_store, DocumentStore, arg_name="document_store")
+    else:
+        checks.assert_instance_of(document_store, DocumentStore, arg_name="document_store")
+    return document_store
+
+
+# ############# Nodes ############# #
 
 
 @define
@@ -2058,50 +2292,8 @@ class IndexNode(DefineMixin):
         return (self.id_,)
 
 
-def embedding_similarity(
-    emb1: tp.Union[tp.List[float], np.ndarray],
-    emb2: tp.Union[tp.MaybeList[tp.List[float]], np.ndarray],
-    metric: tp.Union[str, tp.Callable] = "cosine",
-) -> tp.Union[float, np.ndarray]:
-    """Compute similarity scores between two embeddings, which can be either single or multiple.
-
-    Supported metrics are 'cosine', 'euclidean', and 'dot'. A metric can also be a callable that should
-    take two and return one 2-dim NumPy array."""
-    emb1 = np.asarray(emb1)
-    emb2 = np.asarray(emb2)
-    emb1_single = emb1.ndim == 1
-    emb2_single = emb2.ndim == 1
-    if emb1_single:
-        emb1 = emb1.reshape(1, -1)
-    if emb2_single:
-        emb2 = emb2.reshape(1, -1)
-
-    if metric.lower() == "cosine":
-        emb1_norm = emb1 / np.linalg.norm(emb1, axis=1, keepdims=True)
-        emb2_norm = emb2 / np.linalg.norm(emb2, axis=1, keepdims=True)
-        emb1_norm = np.nan_to_num(emb1_norm)
-        emb2_norm = np.nan_to_num(emb2_norm)
-        similarity_matrix = np.dot(emb1_norm, emb2_norm.T)
-    elif metric.lower() == "euclidean":
-        diff = emb1[:, np.newaxis, :] - emb2[np.newaxis, :, :]
-        distances = np.linalg.norm(diff, axis=2)
-        similarity_matrix = 1 / (distances + 1e-10)
-    elif metric.lower() == "dot":
-        similarity_matrix = np.dot(emb1, emb2.T)
-    elif callable(metric):
-        similarity_matrix = metric(emb1, emb2)
-    else:
-        raise ValueError(f"Invalid metric: '{metric}'")
-
-    if emb1_single and emb2_single:
-        return float(similarity_matrix[0, 0])
-    if emb1_single or emb2_single:
-        return similarity_matrix.flatten()
-    return similarity_matrix
-
-
 class NodeIndex(Configured):
-    """Abstract class for node indexes.
+    """Abstract class for managing a node index.
 
     For defaults, see `chat` in `vectorbtpro._settings.knowledge`."""
 
@@ -2110,75 +2302,354 @@ class NodeIndex(Configured):
 
     _settings_path: tp.SettingsPath = ["knowledge", "knowledge.chat"]
 
-    def __init__(self, **kwargs) -> None:
-        Configured.__init__(self, **kwargs)
+    def __init__(self, index_id: tp.Optional[str] = None, **kwargs) -> None:
+        Configured.__init__(self, index_id=index_id, **kwargs)
+
+        index_id = self.resolve_setting(index_id, "index_id")
+
+        self._index_id = index_id
 
         self._index = {}
+        self._staged_index = {}
+
+    @property
+    def index_id(self) -> str:
+        """Store id."""
+        return self._index_id
 
     @property
     def index(self) -> tp.Dict[str, IndexNode]:
         """Dictionary with index nodes keyed by their ids."""
         return self._index
 
-    def save_index(self) -> tp.Path:
+    @property
+    def staged_index(self) -> tp.Dict[str, IndexNode]:
+        """Dictionary with index nodes keyed by their ids staged for the next commit."""
+        return self._staged_index
+
+    def save_index(self) -> None:
         """Save index."""
+        raise NotImplementedError
+
+    def index_exists(self) -> bool:
+        """Whether index exists."""
         raise NotImplementedError
 
     def load_index(self) -> tp.Dict[str, IndexNode]:
         """Load and return index."""
         raise NotImplementedError
 
+    def clear_index(self) -> None:
+        """Clear index."""
+        raise NotImplementedError
+
     def load_update_index(self) -> None:
         """Load and update index."""
         self._index = self.load_index()
 
+    def has_node(self, id_: str) -> bool:
+        """Whether index has the node."""
+        return id_ in self.index
+
     def add_node(self, node: IndexNode) -> None:
         """Add node to the index."""
         self.index[node.id_] = node
+        self.staged_index[node.id_] = node
 
-    def embed_documents(self, documents: tp.MaybeIterable[IndexDocument], **kwargs) -> None:
+    def get_node(self, id_: str) -> IndexNode:
+        """Get node from the index."""
+        return self.index[id_]
+
+    def commit(self) -> None:
+        """Commit staged nodes."""
+        self.save_index()
+        self.staged_index.clear()
+
+    def embed_documents(
+        self,
+        documents: tp.MaybeIterable[TextDocument],
+        document_store: tp.Optional[DocumentStore] = None,
+        commit_index: bool = True,
+        commit_document_store: bool = True,
+        **kwargs,
+    ) -> None:
         """Convert document(s) to nodes, embed them, and add them to the index.
 
         Keyword arguments are passed to `embed`."""
-        node_id_contents = {}
-        if isinstance(documents, IndexDocument):
+        if isinstance(documents, TextDocument):
             documents = [documents]
+        if document_store is None:
+            document_store = DocumentStore()
+
+        node_id_contents = {}
         for document in documents:
+            document_store.add_document(document)
             if document.id_ not in self.index:
                 document_chunks = document.split()
                 child_ids = []
-                parent_node = IndexNode(document.id_, child_ids=child_ids)
-                self.index[parent_node.id_] = parent_node
+                node = IndexNode(document.id_, child_ids=child_ids)
+                self.add_node(node)
                 for document_chunk in document_chunks:
                     if document_chunk.id_ != document.id_:
+                        document_store.add_document(document_chunk)
                         if document_chunk.id_ not in self.index:
                             child_node = IndexNode(document_chunk.id_, parent_id=document.id_)
-                            self.index[child_node.id_] = child_node
-                            child_ids.append(child_node.id_)
-                            node_id_contents[child_node.id_] = document_chunk.get_content()
-                if not parent_node.child_ids:
-                    node_id_contents[parent_node.id_] = document.get_content()
+                            self.add_node(child_node)
+                        else:
+                            child_node = self.get_node(document_chunk.id_)
+                        child_ids.append(child_node.id_)
+                        if not child_node.embedding:
+                            content = document_chunk.get_content(for_embed=True)
+                            if content:
+                                node_id_contents[child_node.id_] = content
+            else:
+                node = self.get_node(document.id_)
+            if not node.child_ids and not node.embedding:
+                content = document.get_content(for_embed=True)
+                if content:
+                    node_id_contents[node.id_] = content
 
         if node_id_contents:
             embeddings = embed(list(node_id_contents.values()), **kwargs)
             node_id_embeddings = dict(zip(node_id_contents.keys(), embeddings))
             for node_id, embedding in node_id_embeddings.items():
-                new_node = self.index[node_id].replace(embedding=embedding)
-                self.index[node_id] = new_node
+                node = self.get_node(node_id)
+                self.add_node(node.replace(embedding=embedding))
+
+        if commit_index:
+            self.commit()
+        if commit_document_store:
+            document_store.commit()
+
+    @classmethod
+    def compute_similarity(
+        cls,
+        emb1: tp.Union[tp.MaybeIterable[tp.List[float]], np.ndarray],
+        emb2: tp.Union[tp.MaybeIterable[tp.List[float]], np.ndarray],
+        sim_metric: tp.Union[str, tp.Callable] = "cosine",
+    ) -> tp.Union[float, np.ndarray]:
+        """Compute similarity scores between two embeddings, which can be either single or multiple.
+
+        Supported metrics are 'cosine', 'euclidean', and 'dot'. A metric can also be a callable that should
+        take two and return one 2-dim NumPy array."""
+        emb1 = np.asarray(emb1)
+        emb2 = np.asarray(emb2)
+        emb1_single = emb1.ndim == 1
+        emb2_single = emb2.ndim == 1
+        if emb1_single:
+            emb1 = emb1.reshape(1, -1)
+        if emb2_single:
+            emb2 = emb2.reshape(1, -1)
+
+        if isinstance(sim_metric, str):
+            if sim_metric.lower() == "cosine":
+                emb1_norm = emb1 / np.linalg.norm(emb1, axis=1, keepdims=True)
+                emb2_norm = emb2 / np.linalg.norm(emb2, axis=1, keepdims=True)
+                emb1_norm = np.nan_to_num(emb1_norm)
+                emb2_norm = np.nan_to_num(emb2_norm)
+                similarity_matrix = np.dot(emb1_norm, emb2_norm.T)
+            elif sim_metric.lower() == "euclidean":
+                diff = emb1[:, np.newaxis, :] - emb2[np.newaxis, :, :]
+                distances = np.linalg.norm(diff, axis=2)
+                similarity_matrix = 1 / (distances + 1e-10)
+            elif sim_metric.lower() == "dot":
+                similarity_matrix = np.dot(emb1, emb2.T)
+            else:
+                raise ValueError(f"Invalid similarity metric: '{sim_metric}'")
+        else:
+            similarity_matrix = sim_metric(emb1, emb2)
+
+        if emb1_single and emb2_single:
+            return float(similarity_matrix[0, 0])
+        if emb1_single or emb2_single:
+            return similarity_matrix.flatten()
+        return similarity_matrix
+
+    def sort_documents(
+        self,
+        query: str,
+        documents: tp.Optional[tp.Iterable[TextDocument]] = None,
+        document_store: tp.Optional[DocumentStore] = None,
+        commit_index: bool = True,
+        commit_document_store: bool = True,
+        sim_metric: tp.Union[str, tp.Callable] = "cosine",
+        sim_agg_func: tp.Union[str, tp.Callable] = "mean",
+        return_chunks: bool = False,
+        return_score: bool = False,
+        **kwargs,
+    ) -> tp.List[tp.Union[TextDocument, tp.Tuple[TextDocument, float]]]:
+        """Sort documents by similarity to the query.
+
+        Similarity is measured with `NodeIndex.compute_similarity`.
+
+        Keyword arguments are passed to `NodeIndex.embed_documents`."""
+        if documents is None:
+            if document_store is None:
+                raise ValueError("Must provide at least documents or document_store")
+            documents = document_store.store.values()
+            documents_provided = False
+        else:
+            documents_provided = True
+        documents = list(documents)
+        if document_store is None:
+            document_store = DocumentStore()
+        self.embed_documents(
+            documents,
+            document_store=document_store,
+            commit_index=commit_index,
+            commit_document_store=commit_document_store,
+        )
+        if return_chunks:
+            document_chunks = []
+            for document in documents:
+                node = self.get_node(document.id_)
+                if node.child_ids:
+                    for child_id in node.child_ids:
+                        document_chunk = document_store.get_document(child_id)
+                        document_chunks.append(document_chunk)
+                elif not node.parent_id or not document_store.has_document(node.parent_id):
+                    document_chunk = document_store.get_document(node.id_)
+                    document_chunks.append(document_chunk)
+            documents = document_chunks
+        elif not documents_provided:
+            document_parents = []
+            for document in documents:
+                node = self.get_node(document.id_)
+                if not node.parent_id or not document_store.has_document(node.parent_id):
+                    document_parent = document_store.get_document(node.id_)
+                    document_parents.append(document_parent)
+            documents = document_parents
+
+        query_embedding = embed(query, **kwargs)
+        node_embeddings = {}
+        for document in documents:
+            node = self.get_node(document.id_)
+            if node.embedding:
+                node_embeddings[node.id_] = node.embedding
+            elif node.child_ids:
+                for child_id in node.child_ids:
+                    child_node = self.get_node(child_id)
+                    if child_node.embedding:
+                        node_embeddings[child_id] = child_node.embedding
+        sim_scores = self.compute_similarity(
+            query_embedding,
+            list(node_embeddings.values()),
+            sim_metric=sim_metric,
+        )
+        node_sim_scores = dict(zip(node_embeddings.keys(), sim_scores))
+
+        doc_sim_scores = []
+        for document in documents:
+            node = self.get_node(document.id_)
+            if node.child_ids:
+                child_sim_scores = []
+                for child_id in node.child_ids:
+                    if child_id in node_sim_scores:
+                        child_sim_scores.append(node_sim_scores[child_id])
+                if isinstance(sim_agg_func, str):
+                    sim_agg_func = getattr(np, sim_agg_func)
+                doc_sim_score = sim_agg_func(child_sim_scores)
+            else:
+                if node.id_ in node_sim_scores:
+                    doc_sim_score = node_sim_scores[node.id_]
+                else:
+                    doc_sim_score = float("-inf")
+            doc_sim_scores.append(doc_sim_score)
+
+        sorted_pairs = sorted(zip(documents, doc_sim_scores), key=lambda x: x[1], reverse=True)
+        if return_score:
+            return sorted_pairs
+        return [document for document, score in sorted_pairs]
+
+    @classmethod
+    def resolve_top_k(cls, scores: tp.Iterable[float], top_k: tp.TopK = "elbow") -> int:
+        """Resolve `top_k`.
+
+        Supported values are integers (top number), floats (top %), strings (supported methods are
+        'elbow' and 'kmeans'), as well as callables that should take a 1-dim NumPy array and return
+        an integer or a float. Filters out negative infinity before computation."""
+        scores = np.asarray(scores)
+        scores = scores[np.isfinite(scores)]
+
+        if isinstance(top_k, str):
+            if top_k.lower() == "elbow":
+                if scores.size == 0:
+                    return 0
+                scores = np.sort(scores)[::-1]
+                diffs = np.diff(scores)
+                top_k = np.argmax(-diffs) + 1
+            elif top_k.lower() == "kmeans":
+                from sklearn.cluster import KMeans
+
+                kmeans = KMeans(n_clusters=2, random_state=0).fit(scores.reshape(-1, 1))
+                high_sim_cluster = np.argmax(kmeans.cluster_centers_)
+                top_k_indices = np.where(kmeans.labels_ == high_sim_cluster)[0]
+                top_k = max(top_k_indices) + 1
+            else:
+                raise ValueError(f"Invalid top_k method: '{top_k}'")
+        elif callable(top_k):
+            top_k = top_k(scores)
+        if checks.is_float(top_k):
+            top_k = int(top_k * len(scores))
+        return top_k
+
+    def filter_documents(
+        self,
+        query: str,
+        return_score: bool = False,
+        top_k: tp.TopK = "elbow",
+        **kwargs,
+    ) -> tp.List[tp.Union[TextDocument, tp.Tuple[TextDocument, float]]]:
+        """Filter documents by similarity to the query.
+
+        Uses `NodeIndex.resolve_top_k` to resolve the integer value of `top_k`.
+
+        Keyword arguments are passed to `NodeIndex.sort_documents`."""
+        documents_with_score = self.sort_documents(query, return_score=True, **kwargs)
+        documents, scores = zip(*documents_with_score)
+        if top_k is not None:
+            top_k = self.resolve_top_k(scores, top_k=top_k)
+        if return_score:
+            return documents_with_score[:top_k]
+        return documents[:top_k]
 
 
-class LocalIndex(NodeIndex):
-    """Index class based locally.
+class MemoryIndex(NodeIndex):
+    """Index class based in memory.
 
-    For defaults, see `chat.node_index_configs.local` in `vectorbtpro._settings.knowledge`."""
+    For defaults, see `chat.node_index_configs.memory` in `vectorbtpro._settings.knowledge`."""
 
-    _short_name = "local"
+    _short_name: tp.ClassVar[tp.Optional[str]] = "memory"
 
-    _settings_path: tp.SettingsPath = "knowledge.chat.node_index_configs.local"
+    _settings_path: tp.SettingsPath = "knowledge.chat.node_index_configs.memory"
+
+    def save_index(self) -> None:
+        """Save index."""
+        pass
+
+    def index_exists(self) -> bool:
+        return True
+
+    def load_index(self) -> tp.Dict[str, IndexNode]:
+        """Load and return index."""
+        return self.index
+
+    def clear_index(self) -> None:
+        self.index.clear()
+
+
+class FileIndex(NodeIndex):
+    """Index class based on files.
+
+    For defaults, see `chat.node_index_configs.file` in `vectorbtpro._settings.knowledge`."""
+
+    _short_name = "file"
+
+    _settings_path: tp.SettingsPath = "knowledge.chat.node_index_configs.file"
 
     def __init__(
         self,
-        path: tp.Optional[tp.PathLike] = None,
+        dir_path: tp.Optional[tp.PathLike] = None,
         compression: tp.Union[None, bool, str] = None,
         save_kwargs: tp.KwargsLike = None,
         load_kwargs: tp.KwargsLike = None,
@@ -2186,27 +2657,32 @@ class LocalIndex(NodeIndex):
     ) -> None:
         NodeIndex.__init__(
             self,
-            path=path,
+            dir_path=dir_path,
             compression=compression,
             save_kwargs=save_kwargs,
             load_kwargs=load_kwargs,
             **kwargs,
         )
 
-        path = self.resolve_setting(path, "path")
+        dir_path = self.resolve_setting(dir_path, "dir_path")
         compression = self.resolve_setting(compression, "compression")
         save_kwargs = self.resolve_setting(save_kwargs, "save_kwargs", merge=True)
         load_kwargs = self.resolve_setting(load_kwargs, "load_kwargs", merge=True)
 
-        self._path = path
+        self._dir_path = dir_path
         self._compression = compression
         self._save_kwargs = save_kwargs
         self._load_kwargs = load_kwargs
 
+        if self.index_exists():
+            self._index = self.load_index()
+        else:
+            self._index = {}
+
     @property
-    def path(self) -> tp.Optional[tp.Path]:
-        """Path to the index file."""
-        return self._path
+    def dir_path(self) -> tp.Optional[tp.Path]:
+        """Path to the directory."""
+        return self._dir_path
 
     @property
     def compression(self) -> tp.CompressionLike:
@@ -2223,6 +2699,15 @@ class LocalIndex(NodeIndex):
         """Keyword arguments passed to `vectorbtpro.utils.path_.load`."""
         return self._load_kwargs
 
+    @property
+    def path(self) -> tp.Path:
+        """File path."""
+        dir_path = self.dir_path
+        if dir_path is None:
+            dir_path = "."
+        dir_path = Path(dir_path)
+        return dir_path / self.index_id
+
     def save_index(self) -> tp.Path:
         from vectorbtpro.utils.pickling import save
 
@@ -2233,6 +2718,9 @@ class LocalIndex(NodeIndex):
             **self.save_kwargs,
         )
 
+    def index_exists(self) -> bool:
+        return self.path.exists()
+
     def load_index(self) -> tp.Dict[int, IndexNode]:
         from vectorbtpro.utils.pickling import load
 
@@ -2241,6 +2729,39 @@ class LocalIndex(NodeIndex):
             compression=self.compression,
             **self.load_kwargs,
         )
+
+
+def resolve_node_index(node_index: tp.NodeIndexLike = None) -> tp.MaybeType[NodeIndex]:
+    """Resolve a subclass or an instance of `NodeIndex`.
+
+    The following values are supported:
+
+    * "memory" (`MemoryIndex`)
+    * "file" (`FileIndex`)
+    * A subclass or an instance of `NodeIndex`
+    """
+    if node_index is None:
+        from vectorbtpro._settings import settings
+
+        chat_cfg = settings["knowledge"]["chat"]
+        node_index = chat_cfg["node_index"]
+    if isinstance(node_index, str):
+        current_module = sys.modules[__name__]
+        found_node_index = None
+        for name, cls in inspect.getmembers(current_module, inspect.isclass):
+            if name.endswith("Index"):
+                _short_name = getattr(cls, "_short_name", None)
+                if _short_name is not None and _short_name.lower() == node_index.lower():
+                    found_node_index = cls
+                    break
+        if found_node_index is None:
+            raise ValueError(f"Invalid node index: '{node_index}'")
+        node_index = found_node_index
+    if isinstance(node_index, type):
+        checks.assert_subclass_of(node_index, NodeIndex, arg_name="node_index")
+    else:
+        checks.assert_instance_of(node_index, NodeIndex, arg_name="node_index")
+    return node_index
 
 
 # ############# Contexting ############# #

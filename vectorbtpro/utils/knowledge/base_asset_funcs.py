@@ -10,8 +10,11 @@
 
 """Base asset function classes."""
 
+import attr
+
 from vectorbtpro import _typing as tp
 from vectorbtpro.utils import checks, search
+from vectorbtpro.utils.attr_ import MISSING
 from vectorbtpro.utils.base import Base
 from vectorbtpro.utils.config import merge_dicts, flat_merge_dicts, deep_merge_dicts
 from vectorbtpro.utils.config import reorder_dict, reorder_list
@@ -1600,17 +1603,30 @@ class ToDocsAssetFunc(AssetFunc):
     @classmethod
     def prepare(
         cls,
-        asset: tp.Optional[tp.MaybeType[tp.KnowledgeAsset]] = None,
-        template_context: tp.KwargsLike = None,
+        asset: tp.Union[None, tp.MaybeType[tp.KnowledgeAsset], tp.CustomTemplate] = None,
+        template_context: tp.Union[tp.KwargsLike, tp.CustomTemplate] = None,
         **document_kwargs,
     ) -> tp.ArgsKwargs:
         if asset is None:
             from vectorbtpro.utils.knowledge.base_assets import KnowledgeAsset
 
             asset = KnowledgeAsset
+        from vectorbtpro.utils.knowledge.chatting import KnowledgeDocument
 
+        document_kwargs = {}
+        for k, v in KnowledgeDocument.fields_dict.items():
+            if v.default is not MISSING:
+                if k in document_kwargs or asset.has_setting(k, sub_path="document_kwargs"):
+                    document_kwargs[k] = asset.resolve_setting(
+                        document_kwargs.get(k, None),
+                        k,
+                        sub_path="document_kwargs",
+                        merge=isinstance(v.default, attr.Factory) and v.default.factory is dict
+                    )
+                    if k == "dump_kwargs":
+                        document_kwargs[k] = DumpAssetFunc.resolve_dump_kwargs(**document_kwargs[k])
+        template_context = asset.resolve_setting(template_context, "template_context", merge=True)
         template_context = flat_merge_dicts({"asset": asset}, template_context)
-        document_kwargs = asset.resolve_setting(document_kwargs, "document_kwargs", merge=True)
         return (), {
             **dict(
                 template_context=template_context,

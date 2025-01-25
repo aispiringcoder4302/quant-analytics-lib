@@ -465,6 +465,7 @@ def find_in_obj(
     traversal: tp.Optional[str] = None,
     excl_types: tp.Union[None, bool, tp.MaybeSequence[type]] = None,
     incl_types: tp.Union[None, bool, tp.MaybeSequence[type]] = None,
+    stringify_keys: bool = False,
     max_len: tp.Optional[int] = None,
     max_depth: tp.Optional[int] = None,
     **kwargs,
@@ -507,6 +508,12 @@ def find_in_obj(
         max_depth = search_cfg["max_depth"]
 
     path_dct = {}
+
+    def _set_key(k, v):
+        if stringify_keys:
+            k = stringify_pathlike_key(k)
+        path_dct[k] = v
+
     if traversal.upper() == "DFS":
         stack = [(None, 0, obj)]
     elif traversal.upper() == "BFS":
@@ -519,7 +526,7 @@ def find_in_obj(
         else:
             key, depth, obj = stack.popleft()
         if match_func(key, obj, **kwargs):
-            path_dct[key] = obj
+            _set_key(key, obj)
             continue
         if max_depth is not None and depth >= max_depth:
             continue
@@ -749,6 +756,7 @@ def flatten_obj(
     annotate_all: bool = False,
     excl_types: tp.Union[None, bool, tp.MaybeSequence[type]] = None,
     incl_types: tp.Union[None, bool, tp.MaybeSequence[type]] = None,
+    stringify_keys: bool = False,
     max_len: tp.Optional[int] = None,
     max_depth: tp.Optional[int] = None,
 ) -> tp.PathDict:
@@ -777,6 +785,12 @@ def flatten_obj(
         max_depth = search_cfg["max_depth"]
 
     path_dct = {}
+
+    def _set_key(k, v):
+        if stringify_keys:
+            k = stringify_pathlike_key(k)
+        path_dct[k] = v
+
     if traversal.upper() == "DFS":
         stack = [(None, 0, obj)]
     elif traversal.upper() == "BFS":
@@ -789,18 +803,18 @@ def flatten_obj(
         else:
             key, depth, obj = stack.popleft()
         if max_depth is not None and depth >= max_depth:
-            path_dct[key] = obj
+            _set_key(key, obj)
             continue
         if excl_types not in (None, False) and checks.is_instance_of(obj, excl_types):
             if incl_types is None or not (incl_types is True or checks.is_instance_of(obj, incl_types)):
-                path_dct[key] = obj
+                _set_key(key, obj)
                 continue
         if isinstance(obj, dict):
             if max_len is not None and len(obj) > max_len:
-                path_dct[key] = obj
+                _set_key(key, obj)
                 continue
             if annotate_all:
-                path_dct[key] = type(obj)
+                _set_key(key, type(obj))
             obj_items = obj.items()
             if not isinstance(stack, deque):
                 obj_items = reversed(obj_items)
@@ -809,10 +823,10 @@ def flatten_obj(
                 stack.append((new_key, depth + 1, v))
         elif isinstance(obj, (tuple, list, set, frozenset)):
             if max_len is not None and len(obj) > max_len:
-                path_dct[key] = obj
+                _set_key(key, obj)
                 continue
             if annotate_all or not isinstance(obj, list):
-                path_dct[key] = type(obj)
+                _set_key(key, type(obj))
             if isinstance(obj, (set, frozenset)):
                 obj = list(obj)
             obj_len = len(obj)
@@ -824,7 +838,7 @@ def flatten_obj(
                 new_key = combine_pathlike_keys(key, i, minimize=True)
                 stack.append((new_key, depth + 1, v))
         else:
-            path_dct[key] = obj
+            _set_key(key, obj)
     return path_dct
 
 

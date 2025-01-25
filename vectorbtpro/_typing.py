@@ -14,8 +14,10 @@ from datetime import datetime, timedelta, tzinfo, date, time
 from enum import EnumMeta
 from pathlib import Path
 import sys
+
 if sys.version_info < (3, 9):
     import typing
+
     typing.__all__.append("TextIO")
 from typing import *
 
@@ -55,7 +57,14 @@ if TYPE_CHECKING:
     from vectorbtpro.utils.knowledge.base_asset_funcs import AssetFunc
     from vectorbtpro.utils.knowledge.asset_pipelines import AssetPipeline
     from vectorbtpro.utils.knowledge.base_assets import KnowledgeAsset
-    from vectorbtpro.utils.knowledge.chatting import Tokenizer, Embeddings, Completions, TextSplitter
+    from vectorbtpro.utils.knowledge.chatting import (
+        Tokenizer,
+        Embeddings,
+        Completions,
+        TextSplitter,
+        DocumentStore,
+        NodeIndex,
+    )
     from vectorbtpro.utils.knowledge.custom_assets import VBTAsset, PagesAsset, MessagesAsset
     from vectorbtpro.utils.knowledge.formatting import ContentFormatter
     from vectorbtpro.base.indexing import hslice
@@ -86,6 +95,8 @@ else:
     Embeddings = "Embeddings"
     Completions = "Completions"
     TextSplitter = "TextSplitter"
+    DocumentStore = "DocumentStore"
+    NodeIndex = "NodeIndex"
     VBTAsset = "VBTAsset"
     PagesAsset = "PagesAsset"
     MessagesAsset = "MessagesAsset"
@@ -365,6 +376,9 @@ TextSplitterLike = Union[None, str, MaybeType[TextSplitter]]
 TSRange = Tuple[int, int]
 TSRangeChunks = Iterator[TSRange]
 TSTextChunks = Iterator[str]
+DocumentStoreLike = Union[None, str, MaybeType[DocumentStore]]
+NodeIndexLike = Union[None, str, MaybeType[NodeIndex]]
+TopK = Union[None, int, float, str, Callable]
 
 # Chaining
 PipeFunc = Union[str, Callable, Tuple[Union[str, Callable], str]]

@@ -1272,13 +1272,14 @@ def get_index_points(
 
     if kind.lower() == "labels":
         on = dt.try_align_to_dt_index(on, index)
-        indexer_method = indexer_method.lower()
-        if indexer_method == "before":
-            on = on - pd.Timedelta(1, "ns")
-            indexer_method = "ffill"
-        elif indexer_method == "after":
-            on = on + pd.Timedelta(1, "ns")
-            indexer_method = "bfill"
+        if indexer_method is not None:
+            indexer_method = indexer_method.lower()
+            if indexer_method == "before":
+                on = on - pd.Timedelta(1, "ns")
+                indexer_method = "ffill"
+            elif indexer_method == "after":
+                on = on + pd.Timedelta(1, "ns")
+                indexer_method = "bfill"
         index_points = index.get_indexer(on, method=indexer_method, tolerance=indexer_tolerance)
     else:
         index_points = np.asarray(on)

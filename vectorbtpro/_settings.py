@@ -2341,10 +2341,25 @@ $context
                 node_parser_configs=flex_cfg(),
             )
         ),
-        node_index="local",
+        document_store="file",
+        store_id="default",
+        document_store_configs=flex_cfg(
+            file=flex_cfg(
+                dir_path="./knowledge/document_store",
+                compression=None,
+                save_kwargs=flex_cfg(
+                    mkdir_kwargs=dict(
+                        mkdir=True,
+                    ),
+                ),
+                load_kwargs=flex_cfg(),
+            ),
+        ),
+        node_index="file",
+        index_id="default",
         node_index_configs=flex_cfg(
-            local=flex_cfg(
-                path="./knowledge/node_index",
+            file=flex_cfg(
+                dir_path="./knowledge/node_index",
                 compression=None,
                 save_kwargs=flex_cfg(
                     mkdir_kwargs=dict(
@@ -2367,7 +2382,8 @@ $context
             chunk_size=8192,
             document_kwargs=flex_cfg(
                 text_path="content",
-                split_text_kwargs=flex_cfg(),
+                excl_metadata=RepEval("asset.get_setting('minimize_keys')"),
+                excl_embed_metadata=True,
             ),
             minimize_keys=[],
             minimize_links=False,
