@@ -738,7 +738,7 @@ def combine_params(
                     continue
                 conditions_met = True
                 for k, condition_func in condition_funcs.items():
-                    param_context = {"x": param_comb[k], **param_comb_keys, **param_comb, **contexts[k]}
+                    param_context = {"x": param_comb[_str_name(k)], **param_comb_keys, **param_comb, **contexts[k]}
                     if isinstance(condition_func, CustomTemplate):
                         condition_met = condition_func.substitute(param_context)
                     else:
@@ -869,7 +869,7 @@ def combine_params(
                         param_comb[_str_name(names[k])] = param_product[k][i]
                 conditions_met = True
                 for k, condition_func in condition_funcs.items():
-                    param_context = {"x": param_comb[k], **param_comb_keys, **param_comb, **contexts[k]}
+                    param_context = {"x": param_comb[_str_name(k)], **param_comb_keys, **param_comb, **contexts[k]}
                     if isinstance(condition_func, CustomTemplate):
                         condition_met = condition_func.substitute(param_context)
                     else:
