@@ -25,7 +25,7 @@ from vectorbtpro.utils.config import Configured
 from vectorbtpro.utils.config import flat_merge_dicts, deep_merge_dicts
 from vectorbtpro.utils.decorators import hybrid_method
 from vectorbtpro.utils.execution import Task, execute, NoResult
-from vectorbtpro.utils.knowledge.chatting import Contextable
+from vectorbtpro.utils.knowledge.chatting import StoreDocument, rank_documents, Contextable
 from vectorbtpro.utils.module_ import get_caller_qualname
 from vectorbtpro.utils.parsing import get_func_arg_names
 from vectorbtpro.utils.path_ import dir_tree_from_paths
@@ -39,7 +39,6 @@ __all__ = [
 
 
 KnowledgeAssetT = tp.TypeVar("KnowledgeAssetT", bound="KnowledgeAsset")
-MaybeKnowledgeAssetT = tp.Union[KnowledgeAssetT, list, dict]
 
 
 class MetaKnowledgeAsset(type(Configured), type(MutableSequence)):
@@ -549,7 +548,7 @@ class KnowledgeAsset(Contextable, Configured, MutableSequence, metaclass=MetaKno
         wrap: tp.Optional[bool] = None,
         single_item: tp.Optional[bool] = None,
         **kwargs,
-    ) -> MaybeKnowledgeAssetT:
+    ) -> tp.MaybeKnowledgeAsset:
         """Apply a function to each data item.
 
         Function can be either a callable, a tuple of function and its arguments,
@@ -670,7 +669,7 @@ class KnowledgeAsset(Contextable, Configured, MutableSequence, metaclass=MetaKno
         source: tp.Union[None, str, tp.Callable, tp.CustomTemplate] = None,
         template_context: tp.KwargsLike = None,
         **kwargs,
-    ) -> MaybeKnowledgeAssetT:
+    ) -> tp.MaybeKnowledgeAsset:
         """Get data items or parts of them.
 
         Uses `KnowledgeAsset.apply` on `vectorbtpro.utils.knowledge.base_asset_funcs.GetAssetFunc`.
@@ -749,7 +748,7 @@ class KnowledgeAsset(Contextable, Configured, MutableSequence, metaclass=MetaKno
         changed_only: tp.Optional[bool] = None,
         template_context: tp.KwargsLike = None,
         **kwargs,
-    ) -> MaybeKnowledgeAssetT:
+    ) -> tp.MaybeKnowledgeAsset:
         """Set data items or parts of them.
 
         Uses `KnowledgeAsset.apply` on `vectorbtpro.utils.knowledge.base_asset_funcs.SetAssetFunc`.
@@ -806,7 +805,7 @@ class KnowledgeAsset(Contextable, Configured, MutableSequence, metaclass=MetaKno
         make_copy: tp.Optional[bool] = None,
         changed_only: tp.Optional[bool] = None,
         **kwargs,
-    ) -> MaybeKnowledgeAssetT:
+    ) -> tp.MaybeKnowledgeAsset:
         """Remove data items or parts of them.
 
         If `path` is an integer, removes the entire data item at that index.
@@ -855,7 +854,7 @@ class KnowledgeAsset(Contextable, Configured, MutableSequence, metaclass=MetaKno
         make_copy: tp.Optional[bool] = None,
         changed_only: tp.Optional[bool] = None,
         **kwargs,
-    ) -> MaybeKnowledgeAssetT:
+    ) -> tp.MaybeKnowledgeAsset:
         """Move data items or parts of them.
 
         Uses `KnowledgeAsset.apply` on `vectorbtpro.utils.knowledge.base_asset_funcs.MoveAssetFunc`.
@@ -907,7 +906,7 @@ class KnowledgeAsset(Contextable, Configured, MutableSequence, metaclass=MetaKno
         make_copy: tp.Optional[bool] = None,
         changed_only: tp.Optional[bool] = None,
         **kwargs,
-    ) -> MaybeKnowledgeAssetT:
+    ) -> tp.MaybeKnowledgeAsset:
         """Rename data items or parts of them.
 
         Uses `KnowledgeAsset.apply` on `vectorbtpro.utils.knowledge.base_asset_funcs.RenameAssetFunc`.
@@ -946,7 +945,7 @@ class KnowledgeAsset(Contextable, Configured, MutableSequence, metaclass=MetaKno
         changed_only: tp.Optional[bool] = None,
         template_context: tp.KwargsLike = None,
         **kwargs,
-    ) -> MaybeKnowledgeAssetT:
+    ) -> tp.MaybeKnowledgeAsset:
         """Reorder data items or parts of them.
 
         Uses `KnowledgeAsset.apply` on `vectorbtpro.utils.knowledge.base_asset_funcs.ReorderAssetFunc`.
@@ -1006,7 +1005,7 @@ class KnowledgeAsset(Contextable, Configured, MutableSequence, metaclass=MetaKno
         template_context: tp.KwargsLike = None,
         return_type: tp.Optional[str] = None,
         **kwargs,
-    ) -> MaybeKnowledgeAssetT:
+    ) -> tp.MaybeKnowledgeAsset:
         """Query using an engine and return the queried data item(s).
 
         Following engines are supported:
@@ -1161,7 +1160,7 @@ class KnowledgeAsset(Contextable, Configured, MutableSequence, metaclass=MetaKno
         unique_matches: tp.Optional[bool] = None,
         unique_fields: tp.Optional[bool] = None,
         **kwargs,
-    ) -> MaybeKnowledgeAssetT:
+    ) -> tp.MaybeKnowledgeAsset:
         """Find occurrences and return a new `KnowledgeAsset` instance.
 
         Uses `KnowledgeAsset.apply` on `vectorbtpro.utils.knowledge.base_asset_funcs.FindAssetFunc`.
@@ -1300,7 +1299,7 @@ class KnowledgeAsset(Contextable, Configured, MutableSequence, metaclass=MetaKno
         return_type: tp.Optional[str] = "match",
         flags: int = 0,
         **kwargs,
-    ) -> MaybeKnowledgeAssetT:
+    ) -> tp.MaybeKnowledgeAsset:
         """Find code using `KnowledgeAsset.find`.
 
         For defaults, see `code` in `vectorbtpro._settings.knowledge`."""
@@ -1391,7 +1390,7 @@ class KnowledgeAsset(Contextable, Configured, MutableSequence, metaclass=MetaKno
         make_copy: tp.Optional[bool] = None,
         changed_only: tp.Optional[bool] = None,
         **kwargs,
-    ) -> MaybeKnowledgeAssetT:
+    ) -> tp.MaybeKnowledgeAsset:
         """Find and replace occurrences and return a new `KnowledgeAsset` instance.
 
         Uses `KnowledgeAsset.apply` on `vectorbtpro.utils.knowledge.base_asset_funcs.FindReplaceAssetFunc`.
@@ -1480,7 +1479,7 @@ class KnowledgeAsset(Contextable, Configured, MutableSequence, metaclass=MetaKno
         make_copy: tp.Optional[bool] = None,
         changed_only: tp.Optional[bool] = None,
         **kwargs,
-    ) -> MaybeKnowledgeAssetT:
+    ) -> tp.MaybeKnowledgeAsset:
         """Find and remove occurrences and return a new `KnowledgeAsset` instance.
 
         Uses `KnowledgeAsset.apply` on `vectorbtpro.utils.knowledge.base_asset_funcs.FindRemoveAssetFunc`.
@@ -1499,7 +1498,7 @@ class KnowledgeAsset(Contextable, Configured, MutableSequence, metaclass=MetaKno
             **kwargs,
         )
 
-    def find_remove_empty(self: KnowledgeAssetT, **kwargs) -> MaybeKnowledgeAssetT:
+    def find_remove_empty(self: KnowledgeAssetT, **kwargs) -> tp.MaybeKnowledgeAsset:
         """Find and remove empty objects."""
         from vectorbtpro.utils.knowledge.base_asset_funcs import FindRemoveAssetFunc
 
@@ -1512,7 +1511,7 @@ class KnowledgeAsset(Contextable, Configured, MutableSequence, metaclass=MetaKno
         make_copy: tp.Optional[bool] = None,
         changed_only: tp.Optional[bool] = None,
         **kwargs,
-    ) -> MaybeKnowledgeAssetT:
+    ) -> tp.MaybeKnowledgeAsset:
         """Flatten data items or parts of them.
 
         Uses `KnowledgeAsset.apply` on `vectorbtpro.utils.knowledge.base_asset_funcs.FlattenAssetFunc`.
@@ -1560,7 +1559,7 @@ class KnowledgeAsset(Contextable, Configured, MutableSequence, metaclass=MetaKno
         make_copy: tp.Optional[bool] = None,
         changed_only: tp.Optional[bool] = None,
         **kwargs,
-    ) -> MaybeKnowledgeAssetT:
+    ) -> tp.MaybeKnowledgeAsset:
         """Unflatten data items or parts of them.
 
         Uses `KnowledgeAsset.apply` on `vectorbtpro.utils.knowledge.base_asset_funcs.UnflattenAssetFunc`.
@@ -1600,7 +1599,7 @@ class KnowledgeAsset(Contextable, Configured, MutableSequence, metaclass=MetaKno
         dump_engine: tp.Optional[str] = None,
         template_context: tp.KwargsLike = None,
         **kwargs,
-    ) -> MaybeKnowledgeAssetT:
+    ) -> tp.MaybeKnowledgeAsset:
         """Dump data items.
 
         Uses `KnowledgeAsset.apply` on `vectorbtpro.utils.knowledge.base_asset_funcs.DumpAssetFunc`.
@@ -1659,7 +1658,7 @@ class KnowledgeAsset(Contextable, Configured, MutableSequence, metaclass=MetaKno
             **kwargs,
         )
 
-    def to_documents(self, **kwargs) -> MaybeKnowledgeAssetT:
+    def to_documents(self, **kwargs) -> tp.MaybeKnowledgeAsset:
         """Convert to documents of type `vectorbtpro.utils.knowledge.chatting.KnowledgeDocument`.
 
         Document-related keyword arguments may contain templates. In such templates,
@@ -1672,7 +1671,7 @@ class KnowledgeAsset(Contextable, Configured, MutableSequence, metaclass=MetaKno
         text_path: tp.Optional[tp.PathLikeKey] = None,
         merge_chunks: tp.Optional[bool] = None,
         **kwargs,
-    ) -> MaybeKnowledgeAssetT:
+    ) -> tp.MaybeKnowledgeAsset:
         """Split text.
 
         Uses `KnowledgeAsset.apply` on `vectorbtpro.utils.knowledge.base_asset_funcs.SplitTextAssetFunc`.
@@ -1696,6 +1695,31 @@ class KnowledgeAsset(Contextable, Configured, MutableSequence, metaclass=MetaKno
         ):
             split_asset = split_asset.merge()
         return split_asset
+
+    def rank_documents(
+        self,
+        query: str,
+        to_documents_kwargs: tp.KwargsLike = None,
+        wrap_documents: tp.Optional[bool] = None,
+        **kwargs,
+    ) -> tp.MaybeKnowledgeAsset:
+        """Rank documents by their similarity to a query.
+
+        First, converts to `vectorbtpro.utils.knowledge.chatting.TextDocument` format using
+        `KnowledgeAsset.to_documents` and `**to_documents_kwargs`. Then, uses
+        `vectorbtpro.utils.knowledge.chatting.rank_documents` with `**kwargs` for actual ranking."""
+        if self.data and not isinstance(self.data[0], StoreDocument):
+            if to_documents_kwargs is None:
+                to_documents_kwargs = {}
+            documents = self.to_documents(**to_documents_kwargs)
+            if wrap_documents is None:
+                wrap_documents = True
+        else:
+            documents = self.data
+            if wrap_documents is None:
+                wrap_documents = False
+        new_data = rank_documents(query=query, documents=documents, wrap_documents=wrap_documents, **kwargs)
+        return self.replace(data=new_data)
 
     # ############# Reduce methods ############# #
 
@@ -1742,7 +1766,7 @@ class KnowledgeAsset(Contextable, Configured, MutableSequence, metaclass=MetaKno
         pbar_kwargs: tp.KwargsLike = None,
         wrap: tp.Optional[bool] = None,
         **kwargs,
-    ) -> MaybeKnowledgeAssetT:
+    ) -> tp.MaybeKnowledgeAsset:
         """Reduce data items.
 
         Function can be a callable, a tuple of function and its arguments,
@@ -1915,13 +1939,13 @@ class KnowledgeAsset(Contextable, Configured, MutableSequence, metaclass=MetaKno
             return type(self).combine(results)
         return results
 
-    def merge_dicts(self: KnowledgeAssetT, **kwargs) -> MaybeKnowledgeAssetT:
+    def merge_dicts(self: KnowledgeAssetT, **kwargs) -> tp.MaybeKnowledgeAsset:
         """Merge (dict) date items into a single dict.
 
         Final keyword arguments are passed to `vectorbtpro.utils.config.merge_dicts`."""
         return self.reduce("merge_dicts", **kwargs)
 
-    def merge_lists(self: KnowledgeAssetT, **kwargs) -> MaybeKnowledgeAssetT:
+    def merge_lists(self: KnowledgeAssetT, **kwargs) -> tp.MaybeKnowledgeAsset:
         """Merge (list) date items into a single list."""
         return self.reduce("merge_lists", **kwargs)
 
@@ -1929,7 +1953,7 @@ class KnowledgeAsset(Contextable, Configured, MutableSequence, metaclass=MetaKno
         self: KnowledgeAssetT,
         sort_keys: tp.Optional[bool] = None,
         **kwargs,
-    ) -> MaybeKnowledgeAssetT:
+    ) -> tp.MaybeKnowledgeAsset:
         """Collect values of each key in each data item."""
         return self.reduce("collect", sort_keys=sort_keys, **kwargs)
 
@@ -2058,14 +2082,21 @@ class KnowledgeAsset(Contextable, Configured, MutableSequence, metaclass=MetaKno
         if len(self.data) == 1:
             return self.data[0]
         if separator is None:
-            if not all(isinstance(d, str) for d in self.data):
-                raise TypeError("All data items must be strings")
-            if self.data[0].endswith(("\n", "\t", " ")):
+            use_empty_separator = True
+            use_comma_separator = True
+            for d in self.data:
+                if not d.endswith(("\n", "\t", " ")):
+                    use_empty_separator = False
+                if not d.endswith(("}", "]")):
+                    use_comma_separator = False
+                if not use_empty_separator and not use_comma_separator:
+                    break
+            if use_empty_separator:
                 separator = ""
-            elif self.data[0].endswith(("}", "]")):
+            elif use_comma_separator:
                 separator = ", "
             else:
-                separator = "\n"
+                separator = "\n\n"
         joined = separator.join(self.data)
         if joined.startswith("{") and joined.endswith("}"):
             return "[" + joined + "]"
@@ -2078,14 +2109,20 @@ class KnowledgeAsset(Contextable, Configured, MutableSequence, metaclass=MetaKno
         separator: tp.Optional[str] = None,
         **kwargs,
     ) -> str:
-        if dump_all is None:
-            dump_all = len(self.data) > 1 and separator is None
-        if dump_all:
-            return self.dump_all(*args, **kwargs)
-        dumped = self.dump(*args, **kwargs)
-        if isinstance(dumped, KnowledgeAsset):
-            return dumped.join(separator=separator)
-        return dumped
+        if self.data and isinstance(self.data[0], StoreDocument):
+            dumped = [d.get_content() for d in self.data]
+        else:
+            if dump_all is None:
+                dump_all = len(self.data) > 1 and separator is None
+            if dump_all:
+                dumped = self.dump_all(*args, **kwargs)
+            else:
+                dumped = self.dump(*args, **kwargs)
+        if isinstance(dumped, str):
+            return dumped
+        if not isinstance(dumped, KnowledgeAsset):
+            dumped = self.replace(data=dumped)
+        return dumped.join(separator=separator)
 
     def print(self, *args, **kwargs) -> None:
         """Convert to context and print.

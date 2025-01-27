@@ -2341,11 +2341,11 @@ $context
                 node_parser_configs=flex_cfg(),
             )
         ),
-        document_store="file",
+        document_store="memory",
         store_id="default",
         document_store_configs=flex_cfg(
             file=flex_cfg(
-                dir_path="./knowledge/document_store",
+                dir_path=Sub("$cache_dir/document_store"),
                 compression=None,
                 save_kwargs=flex_cfg(
                     mkdir_kwargs=dict(
@@ -2355,11 +2355,11 @@ $context
                 load_kwargs=flex_cfg(),
             ),
         ),
-        node_index="file",
+        node_index="memory",
         index_id="default",
         node_index_configs=flex_cfg(
             file=flex_cfg(
-                dir_path="./knowledge/node_index",
+                dir_path=Sub("$cache_dir/node_index"),
                 compression=None,
                 save_kwargs=flex_cfg(
                     mkdir_kwargs=dict(
@@ -2369,10 +2369,16 @@ $context
                 load_kwargs=flex_cfg(),
             ),
         ),
+        top_k=None,
+        sim_func="cosine",
+        sim_agg_func="mean",
+        commit_document_store=True,
+        commit_node_index=True,
     ),
     assets=flex_cfg(
         vbt=flex_cfg(
             asset_name=None,
+            cache_dir="./knowledge/vbt/",
             release_name=None,
             repo_owner="polakowo",
             repo_name="vectorbt.pro",
@@ -2422,11 +2428,12 @@ $context
                 "support your answers. If information isn't found, inform the user accordingly. Note that "
                 "VBT exclusively refers to VectorBT PRO, which significantly differs from the open-source "
                 "version. Given the context information and not prior knowledge, answer the query.",
+                document_store="file",
+                node_index="file",
             ),
         ),
         pages=flex_cfg(
             asset_name="pages.json.zip",
-            cache_dir="./knowledge/pages/",
             token_required=True,
             minimize_keys=["parent", "children", "type", "icon", "tags"],
             append_obj_type=True,
@@ -2454,7 +2461,6 @@ $context
         ),
         messages=flex_cfg(
             asset_name="messages.json.zip",
-            cache_dir="./knowledge/messages/",
             token_required=True,
             minimize_keys=["block", "thread", "replies", "mentions", "reactions"],
         ),

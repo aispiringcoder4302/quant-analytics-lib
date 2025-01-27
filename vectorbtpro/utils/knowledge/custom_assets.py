@@ -1152,13 +1152,10 @@ class VBTAsset(KnowledgeAsset):
             )
         return mentions_asset
 
-    @hybrid_method
-    def chat(cls_or_self, *args, **kwargs) -> tp.ChatOutput:
+    @classmethod
+    def resolve_spec_settings_path(cls) -> dict:
+        """Resolve specialized settings paths."""
         spec_settings_path = {}
-        if isinstance(cls_or_self, type):
-            cls = cls_or_self
-        else:
-            cls = type(cls_or_self)
         for cls_ in cls.__mro__[::-1]:
             if issubclass(cls_, VBTAsset):
                 if not isinstance(cls_._settings_path, str):
@@ -1169,6 +1166,18 @@ class VBTAsset(KnowledgeAsset):
                 if "knowledge.chat" not in spec_settings_path:
                     spec_settings_path["knowledge.chat"] = []
                 spec_settings_path["knowledge.chat"].append(cls_._settings_path + ".chat")
+        return spec_settings_path
+
+    def rank_documents(self, *args, **kwargs) -> tp.MaybeVBTAsset:
+        spec_settings_path = self.resolve_spec_settings_path()
+        if spec_settings_path:
+            with SpecSettingsPath(spec_settings_path):
+                return KnowledgeAsset.rank_documents(self, *args, **kwargs)
+        return KnowledgeAsset.rank_documents(self, *args, **kwargs)
+
+    @hybrid_method
+    def chat(cls_or_self, *args, **kwargs) -> tp.ChatOutput:
+        spec_settings_path = cls_or_self.resolve_spec_settings_path()
         if spec_settings_path:
             with SpecSettingsPath(spec_settings_path):
                 return KnowledgeAsset.chat.__func__(cls_or_self, *args, **kwargs)

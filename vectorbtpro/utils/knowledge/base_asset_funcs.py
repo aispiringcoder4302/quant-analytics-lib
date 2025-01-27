@@ -1611,10 +1611,10 @@ class ToDocsAssetFunc(AssetFunc):
             from vectorbtpro.utils.knowledge.base_assets import KnowledgeAsset
 
             asset = KnowledgeAsset
-        from vectorbtpro.utils.knowledge.chatting import KnowledgeDocument
+        from vectorbtpro.utils.knowledge.chatting import TextDocument
 
         document_kwargs = {}
-        for k, v in KnowledgeDocument.fields_dict.items():
+        for k, v in TextDocument.fields_dict.items():
             if v.default is not MISSING:
                 if k in document_kwargs or asset.has_setting(k, sub_path="document_kwargs"):
                     document_kwargs[k] = asset.resolve_setting(
@@ -1641,7 +1641,7 @@ class ToDocsAssetFunc(AssetFunc):
         template_context: tp.KwargsLike = None,
         **document_kwargs,
     ) -> tp.Any:
-        from vectorbtpro.utils.knowledge.chatting import KnowledgeDocument
+        from vectorbtpro.utils.knowledge.chatting import TextDocument
 
         _template_context = flat_merge_dicts(
             {
@@ -1652,7 +1652,7 @@ class ToDocsAssetFunc(AssetFunc):
             template_context,
         )
         document_kwargs = substitute_templates(document_kwargs, _template_context, eval_id="document_kwargs")
-        return KnowledgeDocument(d, **document_kwargs)
+        return TextDocument(d, **document_kwargs)
 
 
 class SplitTextAssetFunc(AssetFunc):
@@ -1700,9 +1700,9 @@ class SplitTextAssetFunc(AssetFunc):
         text_path: tp.Optional[tp.PathLikeKey] = None,
         **split_text_kwargs,
     ) -> tp.Any:
-        from vectorbtpro.utils.knowledge.chatting import KnowledgeDocument
+        from vectorbtpro.utils.knowledge.chatting import TextDocument
 
-        document = KnowledgeDocument(d, id_="", text_path=text_path, split_text_kwargs=split_text_kwargs)
+        document = TextDocument(d, id_="", text_path=text_path, split_text_kwargs=split_text_kwargs)
         return [document_chunk.data for document_chunk in document.split()]
 
 

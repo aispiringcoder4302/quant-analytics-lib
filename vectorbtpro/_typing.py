@@ -62,6 +62,7 @@ if TYPE_CHECKING:
         Embeddings,
         Completions,
         TextSplitter,
+        TextDocument,
         DocumentStore,
         NodeIndex,
     )
@@ -95,6 +96,7 @@ else:
     Embeddings = "Embeddings"
     Completions = "Completions"
     TextSplitter = "TextSplitter"
+    TextDocument = "TextDocument"
     DocumentStore = "DocumentStore"
     NodeIndex = "NodeIndex"
     VBTAsset = "VBTAsset"
@@ -357,7 +359,7 @@ Selection = Union[PosSel, LabelSel, MaybeIterable[Union[PosSel, LabelSel, Hashab
 
 # Knowledge
 AssetFuncLike = Union[str, Type[AssetFunc], FuncArgs, Task, Callable]
-MaybeAsset = Union[T, dict, list]
+MaybeAsset = Union[None, T, dict, list]
 MaybeKnowledgeAsset = MaybeAsset[KnowledgeAsset]
 MaybeVBTAsset = MaybeAsset[VBTAsset]
 MaybePagesAsset = MaybeAsset[PagesAsset]
@@ -378,7 +380,9 @@ TSRangeChunks = Iterator[TSRange]
 TSTextChunks = Iterator[str]
 DocumentStoreLike = Union[None, str, MaybeType[DocumentStore]]
 NodeIndexLike = Union[None, str, MaybeType[NodeIndex]]
-TopK = Union[None, int, float, str, Callable]
+ScoredDocuments = List[Union[float, Tuple[TextDocument, float]]]
+RankedDocuments = List[Union[TextDocument, Tuple[TextDocument, float]]]
+TopKLike = Union[None, int, float, str, Callable]
 
 # Chaining
 PipeFunc = Union[str, Callable, Tuple[Union[str, Callable], str]]

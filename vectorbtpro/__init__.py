@@ -36,7 +36,7 @@ if typing.TYPE_CHECKING:
 
 from vectorbtpro import _typing as tp
 from vectorbtpro._settings import settings
-from vectorbtpro._version import __version__ as version
+from vectorbtpro._version import __version__ as version, __release__ as release
 
 # Silence warnings
 import warnings

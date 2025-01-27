@@ -24,6 +24,9 @@ except Exception as e:
 
     __version__ = importlib.metadata.version(__package__ or __name__)
 
+__release__ = "v" + __version__
+
 __all__ = [
     "__version__",
+    "__release__",
 ]

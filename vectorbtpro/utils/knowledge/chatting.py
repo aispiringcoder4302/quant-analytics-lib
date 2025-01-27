@@ -94,8 +94,8 @@ __all__ = [
     "TokenSplitter",
     "SegmentSplitter",
     "LlamaIndexSplitter",
+    "StoreDocument",
     "TextDocument",
-    "KnowledgeDocument",
     "DocumentStore",
     "MemoryStore",
     "FileStore",
@@ -103,6 +103,8 @@ __all__ = [
     "NodeIndex",
     "MemoryIndex",
     "FileIndex",
+    "DocumentRanker",
+    "rank_documents",
     "split_text",
     "Contextable",
 ]
@@ -1850,14 +1852,14 @@ def split_text(text: str, text_splitter: tp.TextSplitterLike = None, **kwargs) -
 
 # ############# Documents ############# #
 
-TextDocumentT = tp.TypeVar("TextDocumentT", bound="TextDocument")
+StoreDocumentT = tp.TypeVar("StoreDocumentT", bound="StoreDocument")
 
 
 @define
-class TextDocument(DefineMixin):
-    """Abstract class for text documents.
+class StoreDocument(DefineMixin):
+    """Abstract class for documents to be managed by a store.
 
-    A text document stores data and an identifier, and exposes methods for getting and splitting content.
+    A document stores data and an identifier, and exposes methods for getting and splitting content.
     If an identifier wasn't provided, generates the MD5 hash of the data."""
 
     data: tp.Any = define.field()
@@ -1866,31 +1868,13 @@ class TextDocument(DefineMixin):
     id_: str = define.field(default=None)
     """Document identifier."""
 
-    def get_text(self) -> tp.Optional[str]:
-        """Get text.
-
-        Returns None if no text."""
-        raise NotImplementedError
-
-    def get_metadata(self, for_embed: bool = False) -> tp.Optional[tp.Any]:
-        """Get metadata.
-
-        Returns None if no metadata."""
-        raise NotImplementedError
-
-    def get_metadata_content(self, for_embed: bool = False) -> tp.Optional[str]:
-        """Get metadata content.
-
-        Returns None if no metadata."""
-        raise NotImplementedError
-
     def get_content(self, for_embed: bool = False) -> tp.Optional[str]:
-        """Get content (text + metadata).
+        """Get content.
 
-        Returns None if no text and metadata."""
+        Returns None if there's no content."""
         raise NotImplementedError
 
-    def split(self: TextDocumentT) -> tp.List[TextDocumentT]:
+    def split(self: StoreDocumentT) -> tp.List[StoreDocumentT]:
         """Split document into multiple documents."""
         raise NotImplementedError
 
@@ -1908,20 +1892,31 @@ class TextDocument(DefineMixin):
         return (self.id_,)
 
 
+TextDocumentT = tp.TypeVar("TextDocumentT", bound="TextDocument")
+
+
 @define
-class KnowledgeDocument(TextDocument, HasSettings, DefineMixin):
-    """Class for knowledge documents."""
+class TextDocument(StoreDocument, HasSettings, DefineMixin):
+    """Class for text documents.
+
+    A text document either contains text as data or has a text field in data.
+    Metadata can be incorporated into data as well."""
 
     text_path: tp.Optional[tp.PathLikeKey] = define.field(default=None)
     """Path to the text field."""
 
+    split_text_kwargs: tp.KwargsLike = define.field(factory=dict)
+    """Keyword arguments passed to `split_text`."""
+
     excl_metadata: tp.Union[bool, tp.MaybeList[tp.PathLikeKey]] = define.field(default=False)
-    """Whether to exclude metadata and which fields to exclude."""
+    """Whether to exclude metadata and which fields to exclude.
+    
+    If False, metadata becomes everything except text."""
 
     excl_embed_metadata: tp.Union[None, bool, tp.MaybeList[tp.PathLikeKey]] = define.field(default=None)
     """Whether to exclude metadata and which fields to exclude for embeddings.
 
-    If None, becomes `KnowledgeDocument.excl_metadata`."""
+    If None, becomes `TextDocument.excl_metadata`."""
 
     skip_missing: bool = define.field(default=True)
     """Set missing text or metadata to None rather than raise an error."""
@@ -1935,10 +1930,10 @@ class KnowledgeDocument(TextDocument, HasSettings, DefineMixin):
     content_format: str = define.field(default="{metadata_content}{text}")
     """Content template."""
 
-    split_text_kwargs: tp.KwargsLike = define.field(factory=dict)
-    """Keyword arguments passed to `split_text`."""
-
     def get_text(self) -> tp.Optional[str]:
+        """Get text.
+
+        Returns None if no text."""
         from vectorbtpro.utils.search import get_pathlike_key
 
         if self.text_path is not None:
@@ -1960,17 +1955,20 @@ class KnowledgeDocument(TextDocument, HasSettings, DefineMixin):
         return self.data
 
     def get_metadata(self, for_embed: bool = False) -> tp.Optional[tp.Any]:
+        """Get metadata.
+
+        Returns None if no metadata."""
         from vectorbtpro.utils.search import remove_pathlike_key
 
+        if self.text_path is None:
+            return None
         data = self.data
         prev_keys = []
-        if self.text_path is not None:
-            try:
-                data = remove_pathlike_key(data, self.text_path, make_copy=True, prev_keys=prev_keys)
-            except (KeyError, IndexError, AttributeError) as e:
-                if not self.skip_missing:
-                    raise e
-
+        try:
+            data = remove_pathlike_key(data, self.text_path, make_copy=True, prev_keys=prev_keys)
+        except (KeyError, IndexError, AttributeError) as e:
+            if not self.skip_missing:
+                raise e
         excl_metadata = self.excl_metadata
         if for_embed:
             excl_embed_metadata = self.excl_embed_metadata
@@ -1995,6 +1993,9 @@ class KnowledgeDocument(TextDocument, HasSettings, DefineMixin):
         return data
 
     def get_metadata_content(self, for_embed: bool = False) -> tp.Optional[str]:
+        """Get metadata content.
+
+        Returns None if no metadata."""
         from vectorbtpro.utils.formatting import dump
 
         metadata = self.get_metadata(for_embed=for_embed)
@@ -2063,25 +2064,25 @@ class DocumentStore(Configured):
         return self._store_id
 
     @property
-    def store(self) -> tp.Dict[str, TextDocument]:
+    def store(self) -> tp.Dict[str, StoreDocument]:
         """Dictionary with store documents keyed by their ids."""
         return self._store
 
     @property
-    def staged_store(self) -> tp.Dict[str, TextDocument]:
+    def staged_store(self) -> tp.Dict[str, StoreDocument]:
         """Dictionary with store documents keyed by their ids staged for the next commit."""
         return self._staged_store
-
-    def save_store(self) -> None:
-        """Save store."""
-        raise NotImplementedError
 
     def store_exists(self) -> bool:
         """Whether store exists."""
         raise NotImplementedError
 
-    def load_store(self) -> tp.Dict[str, TextDocument]:
+    def load_store(self) -> tp.Dict[str, StoreDocument]:
         """Load and return store."""
+        raise NotImplementedError
+
+    def save_store(self) -> None:
+        """Save store."""
         raise NotImplementedError
 
     def clear_store(self) -> None:
@@ -2096,12 +2097,12 @@ class DocumentStore(Configured):
         """Whether store has the document."""
         return id_ in self.store
 
-    def add_document(self, document: TextDocument) -> None:
+    def add_document(self, document: StoreDocument) -> None:
         """Add document to the store."""
         self.store[document.id_] = document
         self.staged_store[document.id_] = document
 
-    def get_document(self, id_: str) -> TextDocument:
+    def get_document(self, id_: str) -> StoreDocument:
         """Get document from the store."""
         return self.store[id_]
 
@@ -2109,6 +2110,10 @@ class DocumentStore(Configured):
         """Commit staged documents."""
         self.save_store()
         self.staged_store.clear()
+
+
+memory_store: tp.Dict[str, tp.Dict[str, StoreDocument]] = {}
+"""Document store by store id for `MemoryStore`."""
 
 
 class MemoryStore(DocumentStore):
@@ -2120,17 +2125,25 @@ class MemoryStore(DocumentStore):
 
     _settings_path: tp.SettingsPath = "knowledge.chat.document_store_configs.memory"
 
-    def save_store(self) -> None:
-        pass
+    def __init__(self, **kwargs) -> None:
+        DocumentStore.__init__(self, **kwargs)
+
+        if self.store_exists():
+            self._index = self.load_store()
+        else:
+            self._index = {}
 
     def store_exists(self) -> bool:
-        return True
+        return self.store_id in memory_store
 
-    def load_store(self) -> tp.Dict[str, TextDocument]:
-        return self.store
+    def load_store(self) -> tp.Dict[str, StoreDocument]:
+        return dict(memory_store[self.store_id])
+
+    def save_store(self) -> None:
+        memory_store[self.store_id] = dict(self.store)
 
     def clear_store(self) -> None:
-        self.store.clear()
+        memory_store[self.store_id].clear()
 
 
 class FileStore(DocumentStore):
@@ -2148,6 +2161,7 @@ class FileStore(DocumentStore):
         compression: tp.Union[None, bool, str] = None,
         save_kwargs: tp.KwargsLike = None,
         load_kwargs: tp.KwargsLike = None,
+        template_context: tp.KwargsLike = None,
         **kwargs,
     ) -> None:
         DocumentStore.__init__(
@@ -2156,10 +2170,17 @@ class FileStore(DocumentStore):
             compression=compression,
             save_kwargs=save_kwargs,
             load_kwargs=load_kwargs,
+            template_context=template_context,
             **kwargs,
         )
 
         dir_path = self.resolve_setting(dir_path, "dir_path")
+        if isinstance(dir_path, CustomTemplate):
+            cache_dir = self.get_setting("cache_dir")
+            if isinstance(cache_dir, CustomTemplate):
+                cache_dir = cache_dir.substitute(template_context, eval_id="cache_dir")
+            template_context = flat_merge_dicts(dict(cache_dir=cache_dir), template_context)
+            dir_path = dir_path.substitute(template_context, eval_id="dir_path")
         compression = self.resolve_setting(compression, "compression")
         save_kwargs = self.resolve_setting(save_kwargs, "save_kwargs", merge=True)
         load_kwargs = self.resolve_setting(load_kwargs, "load_kwargs", merge=True)
@@ -2203,6 +2224,18 @@ class FileStore(DocumentStore):
         dir_path = Path(dir_path)
         return dir_path / self.store_id
 
+    def store_exists(self) -> bool:
+        return self.path.exists()
+
+    def load_store(self) -> tp.Dict[int, StoreDocument]:
+        from vectorbtpro.utils.pickling import load
+
+        return load(
+            path=self.path,
+            compression=self.compression,
+            **self.load_kwargs,
+        )
+
     def save_store(self) -> tp.Path:
         from vectorbtpro.utils.pickling import save
 
@@ -2211,18 +2244,6 @@ class FileStore(DocumentStore):
             path=self.path,
             compression=self.compression,
             **self.save_kwargs,
-        )
-
-    def store_exists(self) -> bool:
-        return self.path.exists()
-
-    def load_store(self) -> tp.Dict[int, TextDocument]:
-        from vectorbtpro.utils.pickling import load
-
-        return load(
-            path=self.path,
-            compression=self.compression,
-            **self.load_kwargs,
         )
 
     def clear_store(self) -> None:
@@ -2269,9 +2290,9 @@ def resolve_document_store(document_store: tp.DocumentStoreLike = None) -> tp.Ma
 
 @define
 class IndexNode(DefineMixin):
-    """Class for index nodes.
+    """Class for nodes to be managed by an index.
 
-    An index node stores the identifier of a document, its relationships to other documents,
+    A  node stores the identifier of a document, its relationships to other documents,
     as well as the embedding (if provided). It's a different entity from a document to avoid
     persisting document's data."""
 
@@ -2319,17 +2340,13 @@ class NodeIndex(Configured):
 
     @property
     def index(self) -> tp.Dict[str, IndexNode]:
-        """Dictionary with index nodes keyed by their ids."""
+        """Dictionary with nodes keyed by their ids."""
         return self._index
 
     @property
     def staged_index(self) -> tp.Dict[str, IndexNode]:
-        """Dictionary with index nodes keyed by their ids staged for the next commit."""
+        """Dictionary with nodes keyed by their ids staged for the next commit."""
         return self._staged_index
-
-    def save_index(self) -> None:
-        """Save index."""
-        raise NotImplementedError
 
     def index_exists(self) -> bool:
         """Whether index exists."""
@@ -2337,6 +2354,10 @@ class NodeIndex(Configured):
 
     def load_index(self) -> tp.Dict[str, IndexNode]:
         """Load and return index."""
+        raise NotImplementedError
+
+    def save_index(self) -> None:
+        """Save index."""
         raise NotImplementedError
 
     def clear_index(self) -> None:
@@ -2365,253 +2386,9 @@ class NodeIndex(Configured):
         self.save_index()
         self.staged_index.clear()
 
-    def embed_documents(
-        self,
-        documents: tp.MaybeIterable[TextDocument],
-        document_store: tp.Optional[DocumentStore] = None,
-        commit_index: bool = True,
-        commit_document_store: bool = True,
-        **kwargs,
-    ) -> None:
-        """Convert document(s) to nodes, embed them, and add them to the index.
 
-        Keyword arguments are passed to `embed`."""
-        if isinstance(documents, TextDocument):
-            documents = [documents]
-        if document_store is None:
-            document_store = DocumentStore()
-
-        node_id_contents = {}
-        for document in documents:
-            document_store.add_document(document)
-            if document.id_ not in self.index:
-                document_chunks = document.split()
-                child_ids = []
-                node = IndexNode(document.id_, child_ids=child_ids)
-                self.add_node(node)
-                for document_chunk in document_chunks:
-                    if document_chunk.id_ != document.id_:
-                        document_store.add_document(document_chunk)
-                        if document_chunk.id_ not in self.index:
-                            child_node = IndexNode(document_chunk.id_, parent_id=document.id_)
-                            self.add_node(child_node)
-                        else:
-                            child_node = self.get_node(document_chunk.id_)
-                        child_ids.append(child_node.id_)
-                        if not child_node.embedding:
-                            content = document_chunk.get_content(for_embed=True)
-                            if content:
-                                node_id_contents[child_node.id_] = content
-            else:
-                node = self.get_node(document.id_)
-            if not node.child_ids and not node.embedding:
-                content = document.get_content(for_embed=True)
-                if content:
-                    node_id_contents[node.id_] = content
-
-        if node_id_contents:
-            embeddings = embed(list(node_id_contents.values()), **kwargs)
-            node_id_embeddings = dict(zip(node_id_contents.keys(), embeddings))
-            for node_id, embedding in node_id_embeddings.items():
-                node = self.get_node(node_id)
-                self.add_node(node.replace(embedding=embedding))
-
-        if commit_index:
-            self.commit()
-        if commit_document_store:
-            document_store.commit()
-
-    @classmethod
-    def compute_similarity(
-        cls,
-        emb1: tp.Union[tp.MaybeIterable[tp.List[float]], np.ndarray],
-        emb2: tp.Union[tp.MaybeIterable[tp.List[float]], np.ndarray],
-        sim_metric: tp.Union[str, tp.Callable] = "cosine",
-    ) -> tp.Union[float, np.ndarray]:
-        """Compute similarity scores between two embeddings, which can be either single or multiple.
-
-        Supported metrics are 'cosine', 'euclidean', and 'dot'. A metric can also be a callable that should
-        take two and return one 2-dim NumPy array."""
-        emb1 = np.asarray(emb1)
-        emb2 = np.asarray(emb2)
-        emb1_single = emb1.ndim == 1
-        emb2_single = emb2.ndim == 1
-        if emb1_single:
-            emb1 = emb1.reshape(1, -1)
-        if emb2_single:
-            emb2 = emb2.reshape(1, -1)
-
-        if isinstance(sim_metric, str):
-            if sim_metric.lower() == "cosine":
-                emb1_norm = emb1 / np.linalg.norm(emb1, axis=1, keepdims=True)
-                emb2_norm = emb2 / np.linalg.norm(emb2, axis=1, keepdims=True)
-                emb1_norm = np.nan_to_num(emb1_norm)
-                emb2_norm = np.nan_to_num(emb2_norm)
-                similarity_matrix = np.dot(emb1_norm, emb2_norm.T)
-            elif sim_metric.lower() == "euclidean":
-                diff = emb1[:, np.newaxis, :] - emb2[np.newaxis, :, :]
-                distances = np.linalg.norm(diff, axis=2)
-                similarity_matrix = 1 / (distances + 1e-10)
-            elif sim_metric.lower() == "dot":
-                similarity_matrix = np.dot(emb1, emb2.T)
-            else:
-                raise ValueError(f"Invalid similarity metric: '{sim_metric}'")
-        else:
-            similarity_matrix = sim_metric(emb1, emb2)
-
-        if emb1_single and emb2_single:
-            return float(similarity_matrix[0, 0])
-        if emb1_single or emb2_single:
-            return similarity_matrix.flatten()
-        return similarity_matrix
-
-    def sort_documents(
-        self,
-        query: str,
-        documents: tp.Optional[tp.Iterable[TextDocument]] = None,
-        document_store: tp.Optional[DocumentStore] = None,
-        commit_index: bool = True,
-        commit_document_store: bool = True,
-        sim_metric: tp.Union[str, tp.Callable] = "cosine",
-        sim_agg_func: tp.Union[str, tp.Callable] = "mean",
-        return_chunks: bool = False,
-        return_score: bool = False,
-        **kwargs,
-    ) -> tp.List[tp.Union[TextDocument, tp.Tuple[TextDocument, float]]]:
-        """Sort documents by similarity to the query.
-
-        Similarity is measured with `NodeIndex.compute_similarity`.
-
-        Keyword arguments are passed to `NodeIndex.embed_documents`."""
-        if documents is None:
-            if document_store is None:
-                raise ValueError("Must provide at least documents or document_store")
-            documents = document_store.store.values()
-            documents_provided = False
-        else:
-            documents_provided = True
-        documents = list(documents)
-        if document_store is None:
-            document_store = DocumentStore()
-        self.embed_documents(
-            documents,
-            document_store=document_store,
-            commit_index=commit_index,
-            commit_document_store=commit_document_store,
-        )
-        if return_chunks:
-            document_chunks = []
-            for document in documents:
-                node = self.get_node(document.id_)
-                if node.child_ids:
-                    for child_id in node.child_ids:
-                        document_chunk = document_store.get_document(child_id)
-                        document_chunks.append(document_chunk)
-                elif not node.parent_id or not document_store.has_document(node.parent_id):
-                    document_chunk = document_store.get_document(node.id_)
-                    document_chunks.append(document_chunk)
-            documents = document_chunks
-        elif not documents_provided:
-            document_parents = []
-            for document in documents:
-                node = self.get_node(document.id_)
-                if not node.parent_id or not document_store.has_document(node.parent_id):
-                    document_parent = document_store.get_document(node.id_)
-                    document_parents.append(document_parent)
-            documents = document_parents
-
-        query_embedding = embed(query, **kwargs)
-        node_embeddings = {}
-        for document in documents:
-            node = self.get_node(document.id_)
-            if node.embedding:
-                node_embeddings[node.id_] = node.embedding
-            elif node.child_ids:
-                for child_id in node.child_ids:
-                    child_node = self.get_node(child_id)
-                    if child_node.embedding:
-                        node_embeddings[child_id] = child_node.embedding
-        sim_scores = self.compute_similarity(
-            query_embedding,
-            list(node_embeddings.values()),
-            sim_metric=sim_metric,
-        )
-        node_sim_scores = dict(zip(node_embeddings.keys(), sim_scores))
-
-        doc_sim_scores = []
-        for document in documents:
-            node = self.get_node(document.id_)
-            if node.child_ids:
-                child_sim_scores = []
-                for child_id in node.child_ids:
-                    if child_id in node_sim_scores:
-                        child_sim_scores.append(node_sim_scores[child_id])
-                if isinstance(sim_agg_func, str):
-                    sim_agg_func = getattr(np, sim_agg_func)
-                doc_sim_score = sim_agg_func(child_sim_scores)
-            else:
-                if node.id_ in node_sim_scores:
-                    doc_sim_score = node_sim_scores[node.id_]
-                else:
-                    doc_sim_score = float("-inf")
-            doc_sim_scores.append(doc_sim_score)
-
-        sorted_pairs = sorted(zip(documents, doc_sim_scores), key=lambda x: x[1], reverse=True)
-        if return_score:
-            return sorted_pairs
-        return [document for document, score in sorted_pairs]
-
-    @classmethod
-    def resolve_top_k(cls, scores: tp.Iterable[float], top_k: tp.TopK = "elbow") -> int:
-        """Resolve `top_k`.
-
-        Supported values are integers (top number), floats (top %), strings (supported methods are
-        'elbow' and 'kmeans'), as well as callables that should take a 1-dim NumPy array and return
-        an integer or a float. Filters out negative infinity before computation."""
-        scores = np.asarray(scores)
-        scores = scores[np.isfinite(scores)]
-
-        if isinstance(top_k, str):
-            if top_k.lower() == "elbow":
-                if scores.size == 0:
-                    return 0
-                scores = np.sort(scores)[::-1]
-                diffs = np.diff(scores)
-                top_k = np.argmax(-diffs) + 1
-            elif top_k.lower() == "kmeans":
-                from sklearn.cluster import KMeans
-
-                kmeans = KMeans(n_clusters=2, random_state=0).fit(scores.reshape(-1, 1))
-                high_sim_cluster = np.argmax(kmeans.cluster_centers_)
-                top_k_indices = np.where(kmeans.labels_ == high_sim_cluster)[0]
-                top_k = max(top_k_indices) + 1
-            else:
-                raise ValueError(f"Invalid top_k method: '{top_k}'")
-        elif callable(top_k):
-            top_k = top_k(scores)
-        if checks.is_float(top_k):
-            top_k = int(top_k * len(scores))
-        return top_k
-
-    def filter_documents(
-        self,
-        query: str,
-        return_score: bool = False,
-        top_k: tp.TopK = "elbow",
-        **kwargs,
-    ) -> tp.List[tp.Union[TextDocument, tp.Tuple[TextDocument, float]]]:
-        """Filter documents by similarity to the query.
-
-        Uses `NodeIndex.resolve_top_k` to resolve the integer value of `top_k`.
-
-        Keyword arguments are passed to `NodeIndex.sort_documents`."""
-        documents_with_score = self.sort_documents(query, return_score=True, **kwargs)
-        documents, scores = zip(*documents_with_score)
-        if top_k is not None:
-            top_k = self.resolve_top_k(scores, top_k=top_k)
-        if return_score:
-            return documents_with_score[:top_k]
-        return documents[:top_k]
+memory_index: tp.Dict[str, tp.Dict[str, IndexNode]] = {}
+"""Node index by index id for `MemoryIndex`."""
 
 
 class MemoryIndex(NodeIndex):
@@ -2623,19 +2400,25 @@ class MemoryIndex(NodeIndex):
 
     _settings_path: tp.SettingsPath = "knowledge.chat.node_index_configs.memory"
 
-    def save_index(self) -> None:
-        """Save index."""
-        pass
+    def __init__(self, **kwargs) -> None:
+        NodeIndex.__init__(self, **kwargs)
+
+        if self.index_exists():
+            self._index = self.load_index()
+        else:
+            self._index = {}
 
     def index_exists(self) -> bool:
-        return True
+        return self.index_id in memory_index
 
     def load_index(self) -> tp.Dict[str, IndexNode]:
-        """Load and return index."""
-        return self.index
+        return dict(memory_index[self.index_id])
+
+    def save_index(self) -> None:
+        memory_index[self.index_id] = dict(self.index)
 
     def clear_index(self) -> None:
-        self.index.clear()
+        memory_index[self.index_id].clear()
 
 
 class FileIndex(NodeIndex):
@@ -2653,6 +2436,7 @@ class FileIndex(NodeIndex):
         compression: tp.Union[None, bool, str] = None,
         save_kwargs: tp.KwargsLike = None,
         load_kwargs: tp.KwargsLike = None,
+        template_context: tp.KwargsLike = None,
         **kwargs,
     ) -> None:
         NodeIndex.__init__(
@@ -2661,10 +2445,17 @@ class FileIndex(NodeIndex):
             compression=compression,
             save_kwargs=save_kwargs,
             load_kwargs=load_kwargs,
+            template_context=template_context,
             **kwargs,
         )
 
         dir_path = self.resolve_setting(dir_path, "dir_path")
+        if isinstance(dir_path, CustomTemplate):
+            cache_dir = self.get_setting("cache_dir")
+            if isinstance(cache_dir, CustomTemplate):
+                cache_dir = cache_dir.substitute(template_context, eval_id="cache_dir")
+            template_context = flat_merge_dicts(dict(cache_dir=cache_dir), template_context)
+            dir_path = dir_path.substitute(template_context, eval_id="dir_path")
         compression = self.resolve_setting(compression, "compression")
         save_kwargs = self.resolve_setting(save_kwargs, "save_kwargs", merge=True)
         load_kwargs = self.resolve_setting(load_kwargs, "load_kwargs", merge=True)
@@ -2708,16 +2499,6 @@ class FileIndex(NodeIndex):
         dir_path = Path(dir_path)
         return dir_path / self.index_id
 
-    def save_index(self) -> tp.Path:
-        from vectorbtpro.utils.pickling import save
-
-        return save(
-            self.index,
-            path=self.path,
-            compression=self.compression,
-            **self.save_kwargs,
-        )
-
     def index_exists(self) -> bool:
         return self.path.exists()
 
@@ -2729,6 +2510,21 @@ class FileIndex(NodeIndex):
             compression=self.compression,
             **self.load_kwargs,
         )
+
+    def save_index(self) -> tp.Path:
+        from vectorbtpro.utils.pickling import save
+
+        return save(
+            self.index,
+            path=self.path,
+            compression=self.compression,
+            **self.save_kwargs,
+        )
+
+    def clear_index(self) -> None:
+        from vectorbtpro.utils.path_ import remove_file
+
+        remove_file(self.path, missing_ok=True)
 
 
 def resolve_node_index(node_index: tp.NodeIndexLike = None) -> tp.MaybeType[NodeIndex]:
@@ -2762,6 +2558,392 @@ def resolve_node_index(node_index: tp.NodeIndexLike = None) -> tp.MaybeType[Node
     else:
         checks.assert_instance_of(node_index, NodeIndex, arg_name="node_index")
     return node_index
+
+
+# ############# Ranking ############# #
+
+
+class DocumentRanker(Configured):
+    """Class for embedding, scoring, and ranking documents.
+
+    For defaults, see `chat` in `vectorbtpro._settings.knowledge`."""
+
+    _settings_path: tp.SettingsPath = ["knowledge", "knowledge.chat"]
+
+    def __init__(
+        self,
+        sim_func: tp.Union[None, str, tp.Callable] = None,
+        sim_agg_func: tp.Union[None, str, tp.Callable] = None,
+        embeddings: tp.EmbeddingsLike = None,
+        embeddings_kwargs: tp.KwargsLike = None,
+        document_store: tp.TokenizerLike = None,
+        document_store_kwargs: tp.KwargsLike = None,
+        node_index: tp.TokenizerLike = None,
+        node_index_kwargs: tp.KwargsLike = None,
+        commit_document_store: tp.Optional[bool] = None,
+        commit_node_index: tp.Optional[bool] = None,
+        **kwargs,
+    ) -> None:
+        Configured.__init__(
+            self,
+            sim_func=sim_func,
+            sim_agg_func=sim_agg_func,
+            embeddings=embeddings,
+            embeddings_kwargs=embeddings_kwargs,
+            document_store=document_store,
+            document_store_kwargs=document_store_kwargs,
+            node_index=node_index,
+            node_index_kwargs=node_index_kwargs,
+            commit_document_store=commit_document_store,
+            commit_node_index=commit_node_index,
+            **kwargs,
+        )
+
+        sim_func = self.resolve_setting(sim_func, "sim_func")
+        sim_agg_func = self.resolve_setting(sim_agg_func, "sim_agg_func")
+        embeddings = self.resolve_setting(embeddings, "embeddings", default=None)
+        embeddings_kwargs = self.resolve_setting(embeddings_kwargs, "embeddings_kwargs", default=None, merge=True)
+        document_store = self.resolve_setting(document_store, "document_store", default=None)
+        document_store_kwargs = self.resolve_setting(
+            document_store_kwargs, "document_store_kwargs", default=None, merge=True
+        )
+        node_index = self.resolve_setting(node_index, "node_index", default=None)
+        node_index_kwargs = self.resolve_setting(node_index_kwargs, "node_index_kwargs", default=None, merge=True)
+        commit_document_store = self.resolve_setting(commit_document_store, "commit_document_store")
+        commit_node_index = self.resolve_setting(commit_node_index, "commit_node_index")
+
+        if isinstance(sim_agg_func, str):
+            sim_agg_func = getattr(np, sim_agg_func)
+        embeddings = resolve_embeddings(embeddings)
+        if isinstance(embeddings, type):
+            embeddings = embeddings(**embeddings_kwargs)
+        elif embeddings_kwargs:
+            embeddings = embeddings.replace(**embeddings_kwargs)
+        document_store = resolve_document_store(document_store)
+        if isinstance(document_store, type):
+            document_store = document_store(**document_store_kwargs)
+        elif document_store_kwargs:
+            document_store = document_store.replace(**document_store_kwargs)
+        node_index = resolve_node_index(node_index)
+        if isinstance(node_index, type):
+            node_index = node_index(**node_index_kwargs)
+        elif node_index_kwargs:
+            node_index = node_index.replace(**node_index_kwargs)
+
+        self._sim_func = sim_func
+        self._sim_agg_func = sim_agg_func
+        self._embeddings = embeddings
+        self._document_store = document_store
+        self._node_index = node_index
+        self._commit_document_store = commit_document_store
+        self._commit_node_index = commit_node_index
+
+    @property
+    def sim_func(self) -> tp.Union[str, tp.Callable]:
+        """Similarity function.
+
+        See `DocumentRanker.compute_similarity`."""
+        return self._sim_func
+
+    @property
+    def sim_agg_func(self) -> tp.Callable:
+        """Similarity aggregation function."""
+        return self._sim_agg_func
+
+    @property
+    def embeddings(self) -> Embeddings:
+        """An instance of `Embeddings`."""
+        return self._embeddings
+
+    @property
+    def document_store(self) -> DocumentStore:
+        """An instance of `DocumentStore`."""
+        return self._document_store
+
+    @property
+    def node_index(self) -> NodeIndex:
+        """An instance of `NodeIndex`."""
+        return self._node_index
+
+    @property
+    def commit_document_store(self) -> bool:
+        """Whether to commit document store after generating embeddings."""
+        return self._commit_document_store
+
+    @property
+    def commit_node_index(self) -> bool:
+        """Whether to commit node index after generating embeddings."""
+        return self._commit_node_index
+
+    def commit(self) -> None:
+        """Commit staged changes."""
+        if self.commit_document_store:
+            self.document_store.commit()
+        if self.commit_node_index:
+            self.node_index.commit()
+
+    def embed(self, documents: tp.MaybeIterable[StoreDocument]) -> None:
+        """Convert document(s) to nodes and embed them."""
+        if isinstance(documents, StoreDocument):
+            documents = [documents]
+
+        node_contents = {}
+        for document in documents:
+            self.document_store.add_document(document)
+            if not self.node_index.has_node(document.id_):
+                document_chunks = document.split()
+                child_ids = []
+                node = IndexNode(document.id_, child_ids=child_ids)
+                self.node_index.add_node(node)
+                for document_chunk in document_chunks:
+                    if document_chunk.id_ != document.id_:
+                        self.document_store.add_document(document_chunk)
+                        if not self.node_index.has_node(document_chunk.id_):
+                            child_node = IndexNode(document_chunk.id_, parent_id=document.id_)
+                            self.node_index.add_node(child_node)
+                        else:
+                            child_node = self.node_index.get_node(document_chunk.id_)
+                        child_ids.append(child_node.id_)
+                        if not child_node.embedding:
+                            content = document_chunk.get_content(for_embed=True)
+                            if content:
+                                node_contents[child_node.id_] = content
+            else:
+                node = self.node_index.get_node(document.id_)
+            if not node.child_ids and not node.embedding:
+                content = document.get_content(for_embed=True)
+                if content:
+                    node_contents[node.id_] = content
+
+        if node_contents:
+            embeddings = self.embeddings.get_embeddings(list(node_contents.values()))
+            node_embeddings = dict(zip(node_contents.keys(), embeddings))
+            for node_id, embedding in node_embeddings.items():
+                node = self.node_index.get_node(node_id)
+                self.node_index.add_node(node.replace(embedding=embedding))
+
+        self.commit()
+
+    def compute_similarity(
+        self,
+        emb1: tp.Union[tp.MaybeIterable[tp.List[float]], np.ndarray],
+        emb2: tp.Union[tp.MaybeIterable[tp.List[float]], np.ndarray],
+    ) -> tp.Union[float, np.ndarray]:
+        """Compute similarity scores between two embeddings, which can be either single or multiple.
+
+        Supported distance functions are 'cosine', 'euclidean', and 'dot'. A metric can also be a callable that should
+        take two and return one 2-dim NumPy array."""
+        emb1 = np.asarray(emb1)
+        emb2 = np.asarray(emb2)
+        emb1_single = emb1.ndim == 1
+        emb2_single = emb2.ndim == 1
+        if emb1_single:
+            emb1 = emb1.reshape(1, -1)
+        if emb2_single:
+            emb2 = emb2.reshape(1, -1)
+
+        if isinstance(self.sim_func, str):
+            if self.sim_func.lower() == "cosine":
+                emb1_norm = emb1 / np.linalg.norm(emb1, axis=1, keepdims=True)
+                emb2_norm = emb2 / np.linalg.norm(emb2, axis=1, keepdims=True)
+                emb1_norm = np.nan_to_num(emb1_norm)
+                emb2_norm = np.nan_to_num(emb2_norm)
+                sim_matrix = np.dot(emb1_norm, emb2_norm.T)
+            elif self.sim_func.lower() == "euclidean":
+                diff = emb1[:, np.newaxis, :] - emb2[np.newaxis, :, :]
+                distances = np.linalg.norm(diff, axis=2)
+                sim_matrix = np.divide(1, distances, where=distances != 0, out=np.full_like(distances, np.inf))
+            elif self.sim_func.lower() == "dot":
+                sim_matrix = np.dot(emb1, emb2.T)
+            else:
+                raise ValueError(f"Invalid distance function: '{self.sim_func}'")
+        else:
+            sim_matrix = self.sim_func(emb1, emb2)
+
+        if emb1_single and emb2_single:
+            return float(sim_matrix[0, 0])
+        if emb1_single or emb2_single:
+            return sim_matrix.flatten()
+        return sim_matrix
+
+    @classmethod
+    def resolve_top_k(cls, scores: tp.Iterable[float], top_k: tp.TopKLike = None) -> tp.Optional[int]:
+        """Resolve `top_k` based on _sorted_ similarity scores.
+
+        Supported values are integers (top number), floats (top %), strings (supported methods are
+        'elbow' and 'kmeans'), as well as callables that should take a 1-dim NumPy array and return
+        an integer or a float. Filters out NaN before computation (requires them to be at the tail)."""
+        if top_k is None:
+            return None
+        scores = np.asarray(scores)
+        scores = scores[~np.isnan(scores)]
+
+        if isinstance(top_k, str):
+            if top_k.lower() == "elbow":
+                if scores.size == 0:
+                    return 0
+                diffs = np.diff(scores)
+                top_k = np.argmax(-diffs) + 1
+            elif top_k.lower() == "kmeans":
+                from sklearn.cluster import KMeans
+
+                kmeans = KMeans(n_clusters=2, random_state=0).fit(scores.reshape(-1, 1))
+                high_sim_cluster = np.argmax(kmeans.cluster_centers_)
+                top_k_indices = np.where(kmeans.labels_ == high_sim_cluster)[0]
+                top_k = max(top_k_indices) + 1
+            else:
+                raise ValueError(f"Invalid top_k method: '{top_k}'")
+        elif callable(top_k):
+            top_k = top_k(scores)
+        if checks.is_float(top_k):
+            top_k = int(top_k * len(scores))
+        return top_k
+
+    def score(
+        self,
+        query: str,
+        documents: tp.Optional[tp.Iterable[StoreDocument]] = None,
+        return_chunks: bool = False,
+        return_documents: bool = False,
+    ) -> tp.ScoredDocuments:
+        """Score documents by similarity to a query."""
+        if documents is None:
+            if self.document_store is None:
+                raise ValueError("Must provide at least documents or document_store")
+            documents = self.document_store.store.values()
+            documents_provided = False
+        else:
+            documents_provided = True
+        documents = list(documents)
+        if not documents:
+            return []
+        self.embed(documents)
+        if return_chunks:
+            document_chunks = []
+            for document in documents:
+                node = self.node_index.get_node(document.id_)
+                if node.child_ids:
+                    for child_id in node.child_ids:
+                        document_chunk = self.document_store.get_document(child_id)
+                        document_chunks.append(document_chunk)
+                elif not node.parent_id or not self.document_store.has_document(node.parent_id):
+                    document_chunk = self.document_store.get_document(node.id_)
+                    document_chunks.append(document_chunk)
+            documents = document_chunks
+        elif not documents_provided:
+            document_parents = []
+            for document in documents:
+                node = self.node_index.get_node(document.id_)
+                if not node.parent_id or not self.document_store.has_document(node.parent_id):
+                    document_parent = self.document_store.get_document(node.id_)
+                    document_parents.append(document_parent)
+            documents = document_parents
+
+        node_embeddings = {}
+        for document in documents:
+            node = self.node_index.get_node(document.id_)
+            if node.embedding:
+                node_embeddings[node.id_] = node.embedding
+            elif node.child_ids:
+                for child_id in node.child_ids:
+                    child_node = self.node_index.get_node(child_id)
+                    if child_node.embedding:
+                        node_embeddings[child_id] = child_node.embedding
+        if node_embeddings:
+            query_embedding = self.embeddings.get_embedding(query)
+            sim_scores = self.compute_similarity(query_embedding, list(node_embeddings.values()))
+            node_sim_scores = dict(zip(node_embeddings.keys(), sim_scores))
+        else:
+            node_sim_scores = {}
+
+        scores = []
+        for document in documents:
+            node = self.node_index.get_node(document.id_)
+            if node.child_ids:
+                child_sim_scores = []
+                for child_id in node.child_ids:
+                    if child_id in node_sim_scores:
+                        child_sim_scores.append(node_sim_scores[child_id])
+                if child_sim_scores:
+                    doc_sim_score = self.sim_agg_func(child_sim_scores)
+                else:
+                    doc_sim_score = float("nan")
+            else:
+                if node.id_ in node_sim_scores:
+                    doc_sim_score = node_sim_scores[node.id_]
+                else:
+                    doc_sim_score = float("nan")
+            scores.append(doc_sim_score)
+
+        if return_documents:
+            return list(zip(documents, scores))
+        return scores
+
+    def rank(
+        self,
+        query: str,
+        documents: tp.Optional[tp.Iterable[StoreDocument]] = None,
+        top_k: tp.TopKLike = None,
+        return_chunks: bool = False,
+        return_score: bool = False,
+    ) -> tp.RankedDocuments:
+        """Sort documents by similarity to a query."""
+        scored_documents = self.score(query, documents=documents, return_chunks=return_chunks, return_documents=True)
+        scored_documents = sorted(scored_documents, key=lambda x: (not np.isnan(x[1]), x[1]), reverse=True)
+        top_k = self.resolve_top_k([score for _, score in scored_documents], top_k=top_k)
+        if top_k is not None:
+            scored_documents = scored_documents[:top_k]
+        if return_score:
+            return scored_documents
+        return [document for document, _ in scored_documents]
+
+
+def rank_documents(
+    query: str,
+    documents: tp.Optional[tp.Iterable[tp.Any]] = None,
+    document_ranker: tp.Optional[tp.MaybeType[DocumentRanker]] = None,
+    top_k: tp.TopKLike = None,
+    wrap_documents: tp.Optional[bool] = None,
+    return_chunks: bool = False,
+    return_score: bool = False,
+    **kwargs,
+) -> tp.RankedDocuments:
+    """Rank documents by their similarity to a query.
+
+    Keyword arguments are passed to either initialize a class or replace an
+    instance of `DocumentRanker`."""
+    if documents is not None:
+        new_documents = []
+        wrapped = False
+        for document in documents:
+            if not isinstance(document, StoreDocument):
+                document = TextDocument(document)
+                wrapped = True
+            new_documents.append(document)
+        documents = new_documents
+        if wrapped and wrap_documents is None:
+            wrap_documents = False
+    elif wrap_documents is None:
+        wrap_documents = True
+    if document_ranker is None:
+        document_ranker = DocumentRanker
+    if isinstance(document_ranker, type):
+        checks.assert_subclass_of(document_ranker, DocumentRanker, "document_ranker")
+        document_ranker = document_ranker(**kwargs)
+    else:
+        checks.assert_instance_of(document_ranker, DocumentRanker, "document_ranker")
+        if kwargs:
+            document_ranker = document_ranker.replace(**kwargs)
+    ranked_documents = document_ranker.rank(
+        query,
+        documents=documents,
+        top_k=top_k,
+        return_chunks=return_chunks,
+        return_score=return_score,
+    )
+    if not wrap_documents:
+        return [document.data for document in ranked_documents]
+    return ranked_documents
 
 
 # ############# Contexting ############# #
