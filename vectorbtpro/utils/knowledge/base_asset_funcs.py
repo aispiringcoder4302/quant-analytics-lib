@@ -67,19 +67,19 @@ class GetAssetFunc(AssetFunc):
         path: tp.Optional[tp.MaybeList[tp.PathLikeKey]] = None,
         keep_path: tp.Optional[bool] = None,
         skip_missing: tp.Optional[bool] = None,
-        source: tp.Union[None, str, tp.Callable, tp.CustomTemplate] = None,
+        source: tp.Optional[tp.CustomTemplateLike] = None,
         template_context: tp.KwargsLike = None,
-        asset: tp.Optional[tp.MaybeType[tp.KnowledgeAsset]] = None,
+        asset_cls: tp.Optional[tp.Type[tp.KnowledgeAsset]] = None,
         **kwargs,
     ) -> tp.ArgsKwargs:
-        if asset is None:
+        if asset_cls is None:
             from vectorbtpro.utils.knowledge.base_assets import KnowledgeAsset
 
-            asset = KnowledgeAsset
-        keep_path = asset.resolve_setting(keep_path, "keep_path")
-        skip_missing = asset.resolve_setting(skip_missing, "skip_missing")
-        template_context = asset.resolve_setting(template_context, "template_context", merge=True)
-        template_context = flat_merge_dicts({"asset": asset}, template_context)
+            asset_cls = KnowledgeAsset
+        keep_path = asset_cls.resolve_setting(keep_path, "keep_path")
+        skip_missing = asset_cls.resolve_setting(skip_missing, "skip_missing")
+        template_context = asset_cls.resolve_setting(template_context, "template_context", merge=True)
+        template_context = flat_merge_dicts({"asset_cls": asset_cls}, template_context)
 
         if path is not None:
             if isinstance(path, list):
@@ -95,7 +95,7 @@ class GetAssetFunc(AssetFunc):
                 else:
                     source = RepFunc(source)
             elif not isinstance(source, CustomTemplate):
-                raise TypeError(f"Source must be a string, function, or template")
+                raise TypeError(f"Source must be a string, function, or template, not {type(source)}")
         return (), {
             **dict(
                 path=path,
@@ -171,18 +171,18 @@ class SetAssetFunc(AssetFunc):
         make_copy: tp.Optional[bool] = None,
         changed_only: tp.Optional[bool] = None,
         template_context: tp.KwargsLike = None,
-        asset: tp.Optional[tp.MaybeType[tp.KnowledgeAsset]] = None,
+        asset_cls: tp.Optional[tp.Type[tp.KnowledgeAsset]] = None,
         **kwargs,
     ) -> tp.ArgsKwargs:
-        if asset is None:
+        if asset_cls is None:
             from vectorbtpro.utils.knowledge.base_assets import KnowledgeAsset
 
-            asset = KnowledgeAsset
-        skip_missing = asset.resolve_setting(skip_missing, "skip_missing")
-        make_copy = asset.resolve_setting(make_copy, "make_copy")
-        changed_only = asset.resolve_setting(changed_only, "changed_only")
-        template_context = asset.resolve_setting(template_context, "template_context", merge=True)
-        template_context = flat_merge_dicts({"asset": asset}, template_context)
+            asset_cls = KnowledgeAsset
+        skip_missing = asset_cls.resolve_setting(skip_missing, "skip_missing")
+        make_copy = asset_cls.resolve_setting(make_copy, "make_copy")
+        changed_only = asset_cls.resolve_setting(changed_only, "changed_only")
+        template_context = asset_cls.resolve_setting(template_context, "template_context", merge=True)
+        template_context = flat_merge_dicts({"asset_cls": asset_cls}, template_context)
 
         if checks.is_function(value):
             if checks.is_builtin_func(value):
@@ -260,16 +260,16 @@ class RemoveAssetFunc(AssetFunc):
         skip_missing: tp.Optional[bool] = None,
         make_copy: tp.Optional[bool] = None,
         changed_only: tp.Optional[bool] = None,
-        asset: tp.Optional[tp.MaybeType[tp.KnowledgeAsset]] = None,
+        asset_cls: tp.Optional[tp.Type[tp.KnowledgeAsset]] = None,
         **kwargs,
     ) -> tp.ArgsKwargs:
-        if asset is None:
+        if asset_cls is None:
             from vectorbtpro.utils.knowledge.base_assets import KnowledgeAsset
 
-            asset = KnowledgeAsset
-        skip_missing = asset.resolve_setting(skip_missing, "skip_missing")
-        make_copy = asset.resolve_setting(make_copy, "make_copy")
-        changed_only = asset.resolve_setting(changed_only, "changed_only")
+            asset_cls = KnowledgeAsset
+        skip_missing = asset_cls.resolve_setting(skip_missing, "skip_missing")
+        make_copy = asset_cls.resolve_setting(make_copy, "make_copy")
+        changed_only = asset_cls.resolve_setting(changed_only, "changed_only")
 
         if isinstance(path, list):
             paths = [search.resolve_pathlike_key(p) for p in path]
@@ -322,16 +322,16 @@ class MoveAssetFunc(AssetFunc):
         skip_missing: tp.Optional[bool] = None,
         make_copy: tp.Optional[bool] = None,
         changed_only: tp.Optional[bool] = None,
-        asset: tp.Optional[tp.MaybeType[tp.KnowledgeAsset]] = None,
+        asset_cls: tp.Optional[tp.Type[tp.KnowledgeAsset]] = None,
         **kwargs,
     ) -> tp.ArgsKwargs:
-        if asset is None:
+        if asset_cls is None:
             from vectorbtpro.utils.knowledge.base_assets import KnowledgeAsset
 
-            asset = KnowledgeAsset
-        skip_missing = asset.resolve_setting(skip_missing, "skip_missing")
-        make_copy = asset.resolve_setting(make_copy, "make_copy")
-        changed_only = asset.resolve_setting(changed_only, "changed_only")
+            asset_cls = KnowledgeAsset
+        skip_missing = asset_cls.resolve_setting(skip_missing, "skip_missing")
+        make_copy = asset_cls.resolve_setting(make_copy, "make_copy")
+        changed_only = asset_cls.resolve_setting(changed_only, "changed_only")
 
         if new_path is None:
             checks.assert_instance_of(path, dict, arg_name="path")
@@ -396,16 +396,16 @@ class RenameAssetFunc(MoveAssetFunc):
         skip_missing: tp.Optional[bool] = None,
         make_copy: tp.Optional[bool] = None,
         changed_only: tp.Optional[bool] = None,
-        asset: tp.Optional[tp.MaybeType[tp.KnowledgeAsset]] = None,
+        asset_cls: tp.Optional[tp.Type[tp.KnowledgeAsset]] = None,
         **kwargs,
     ) -> tp.ArgsKwargs:
-        if asset is None:
+        if asset_cls is None:
             from vectorbtpro.utils.knowledge.base_assets import KnowledgeAsset
 
-            asset = KnowledgeAsset
-        skip_missing = asset.resolve_setting(skip_missing, "skip_missing")
-        make_copy = asset.resolve_setting(make_copy, "make_copy")
-        changed_only = asset.resolve_setting(changed_only, "changed_only")
+            asset_cls = KnowledgeAsset
+        skip_missing = asset_cls.resolve_setting(skip_missing, "skip_missing")
+        make_copy = asset_cls.resolve_setting(make_copy, "make_copy")
+        changed_only = asset_cls.resolve_setting(changed_only, "changed_only")
 
         if new_token is None:
             checks.assert_instance_of(path, dict, arg_name="path")
@@ -454,18 +454,18 @@ class ReorderAssetFunc(AssetFunc):
         make_copy: tp.Optional[bool] = None,
         changed_only: tp.Optional[bool] = None,
         template_context: tp.KwargsLike = None,
-        asset: tp.Optional[tp.MaybeType[tp.KnowledgeAsset]] = None,
+        asset_cls: tp.Optional[tp.Type[tp.KnowledgeAsset]] = None,
         **kwargs,
     ) -> tp.ArgsKwargs:
-        if asset is None:
+        if asset_cls is None:
             from vectorbtpro.utils.knowledge.base_assets import KnowledgeAsset
 
-            asset = KnowledgeAsset
-        skip_missing = asset.resolve_setting(skip_missing, "skip_missing")
-        make_copy = asset.resolve_setting(make_copy, "make_copy")
-        changed_only = asset.resolve_setting(changed_only, "changed_only")
-        template_context = asset.resolve_setting(template_context, "template_context", merge=True)
-        template_context = flat_merge_dicts({"asset": asset}, template_context)
+            asset_cls = KnowledgeAsset
+        skip_missing = asset_cls.resolve_setting(skip_missing, "skip_missing")
+        make_copy = asset_cls.resolve_setting(make_copy, "make_copy")
+        changed_only = asset_cls.resolve_setting(changed_only, "changed_only")
+        template_context = asset_cls.resolve_setting(template_context, "template_context", merge=True)
+        template_context = flat_merge_dicts({"asset_cls": asset_cls}, template_context)
 
         if isinstance(new_order, str):
             if new_order.lower() in ("asc", "ascending"):
@@ -571,19 +571,19 @@ class QueryAssetFunc(AssetFunc):
     @classmethod
     def prepare(
         cls,
-        expression: tp.Union[str, tp.Callable, tp.CustomTemplate],
+        expression: tp.CustomTemplateLike,
         template_context: tp.KwargsLike = None,
         return_type: tp.Optional[str] = None,
-        asset: tp.Optional[tp.MaybeType[tp.KnowledgeAsset]] = None,
+        asset_cls: tp.Optional[tp.Type[tp.KnowledgeAsset]] = None,
         **kwargs,
     ) -> tp.ArgsKwargs:
-        if asset is None:
+        if asset_cls is None:
             from vectorbtpro.utils.knowledge.base_assets import KnowledgeAsset
 
-            asset = KnowledgeAsset
-        template_context = asset.resolve_setting(template_context, "template_context", merge=True)
-        template_context = flat_merge_dicts({"asset": asset}, template_context)
-        return_type = asset.resolve_setting(return_type, "return_type")
+            asset_cls = KnowledgeAsset
+        template_context = asset_cls.resolve_setting(template_context, "template_context", merge=True)
+        template_context = flat_merge_dicts({"asset_cls": asset_cls}, template_context)
+        return_type = asset_cls.resolve_setting(return_type, "return_type")
 
         if isinstance(expression, str):
             expression = RepEval(expression)
@@ -593,7 +593,7 @@ class QueryAssetFunc(AssetFunc):
             else:
                 expression = RepFunc(expression)
         elif not isinstance(expression, CustomTemplate):
-            raise TypeError(f"Expression must be a string, function, or template")
+            raise TypeError(f"Expression must be a string, function, or template, not {type(expression)}")
         return (), {
             **dict(
                 expression=expression,
@@ -652,29 +652,29 @@ class FindAssetFunc(AssetFunc):
         find_all: tp.Optional[bool] = None,
         keep_path: tp.Optional[bool] = None,
         skip_missing: tp.Optional[bool] = None,
-        source: tp.Union[None, str, tp.Callable, tp.CustomTemplate] = None,
+        source: tp.Optional[tp.CustomTemplateLike] = None,
         in_dumps: tp.Optional[bool] = None,
         dump_kwargs: tp.KwargsLike = None,
         template_context: tp.KwargsLike = None,
         return_type: tp.Optional[str] = None,
         return_path: tp.Optional[bool] = None,
-        asset: tp.Optional[tp.MaybeType[tp.KnowledgeAsset]] = None,
+        asset_cls: tp.Optional[tp.Type[tp.KnowledgeAsset]] = None,
         **kwargs,
     ) -> tp.ArgsKwargs:
-        if asset is None:
+        if asset_cls is None:
             from vectorbtpro.utils.knowledge.base_assets import KnowledgeAsset
 
-            asset = KnowledgeAsset
-        per_path = asset.resolve_setting(per_path, "per_path")
-        find_all = asset.resolve_setting(find_all, "find_all")
-        keep_path = asset.resolve_setting(keep_path, "keep_path")
-        skip_missing = asset.resolve_setting(skip_missing, "skip_missing")
-        in_dumps = asset.resolve_setting(in_dumps, "in_dumps")
-        dump_kwargs = asset.resolve_setting(dump_kwargs, "dump_kwargs", merge=True)
-        template_context = asset.resolve_setting(template_context, "template_context", merge=True)
-        template_context = flat_merge_dicts({"asset": asset}, template_context)
-        return_type = asset.resolve_setting(return_type, "return_type")
-        return_path = asset.resolve_setting(return_path, "return_path")
+            asset_cls = KnowledgeAsset
+        per_path = asset_cls.resolve_setting(per_path, "per_path")
+        find_all = asset_cls.resolve_setting(find_all, "find_all")
+        keep_path = asset_cls.resolve_setting(keep_path, "keep_path")
+        skip_missing = asset_cls.resolve_setting(skip_missing, "skip_missing")
+        in_dumps = asset_cls.resolve_setting(in_dumps, "in_dumps")
+        dump_kwargs = asset_cls.resolve_setting(dump_kwargs, "dump_kwargs", merge=True)
+        template_context = asset_cls.resolve_setting(template_context, "template_context", merge=True)
+        template_context = flat_merge_dicts({"asset_cls": asset_cls}, template_context)
+        return_type = asset_cls.resolve_setting(return_type, "return_type")
+        return_path = asset_cls.resolve_setting(return_path, "return_path")
 
         if path is not None:
             if isinstance(path, list):
@@ -701,7 +701,7 @@ class FindAssetFunc(AssetFunc):
                 else:
                     source = RepFunc(source)
             elif not isinstance(source, CustomTemplate):
-                raise TypeError(f"Source must be a string, function, or template")
+                raise TypeError(f"Source must be a string, function, or template, not {type(source)}")
         dump_kwargs = DumpAssetFunc.resolve_dump_kwargs(**dump_kwargs)
         contains_arg_names = set(get_func_arg_names(search.contains_in_obj))
         search_kwargs = {k: kwargs.pop(k) for k in list(kwargs.keys()) if k in contains_arg_names}
@@ -1049,19 +1049,19 @@ class FindReplaceAssetFunc(FindAssetFunc):
         skip_missing: tp.Optional[bool] = None,
         make_copy: tp.Optional[bool] = None,
         changed_only: tp.Optional[bool] = None,
-        asset: tp.Optional[tp.MaybeType[tp.KnowledgeAsset]] = None,
+        asset_cls: tp.Optional[tp.Type[tp.KnowledgeAsset]] = None,
         **kwargs,
     ) -> tp.ArgsKwargs:
-        if asset is None:
+        if asset_cls is None:
             from vectorbtpro.utils.knowledge.base_assets import KnowledgeAsset
 
-            asset = KnowledgeAsset
-        per_path = asset.resolve_setting(per_path, "per_path")
-        find_all = asset.resolve_setting(find_all, "find_all")
-        keep_path = asset.resolve_setting(keep_path, "keep_path")
-        skip_missing = asset.resolve_setting(skip_missing, "skip_missing")
-        make_copy = asset.resolve_setting(make_copy, "make_copy")
-        changed_only = asset.resolve_setting(changed_only, "changed_only")
+            asset_cls = KnowledgeAsset
+        per_path = asset_cls.resolve_setting(per_path, "per_path")
+        find_all = asset_cls.resolve_setting(find_all, "find_all")
+        keep_path = asset_cls.resolve_setting(keep_path, "keep_path")
+        skip_missing = asset_cls.resolve_setting(skip_missing, "skip_missing")
+        make_copy = asset_cls.resolve_setting(make_copy, "make_copy")
+        changed_only = asset_cls.resolve_setting(changed_only, "changed_only")
 
         if replacement is None:
             checks.assert_instance_of(target, dict, arg_name="path")
@@ -1258,19 +1258,19 @@ class FindRemoveAssetFunc(FindAssetFunc):
         skip_missing: tp.Optional[bool] = None,
         make_copy: tp.Optional[bool] = None,
         changed_only: tp.Optional[bool] = None,
-        asset: tp.Optional[tp.MaybeType[tp.KnowledgeAsset]] = None,
+        asset_cls: tp.Optional[tp.Type[tp.KnowledgeAsset]] = None,
         **kwargs,
     ) -> tp.ArgsKwargs:
-        if asset is None:
+        if asset_cls is None:
             from vectorbtpro.utils.knowledge.base_assets import KnowledgeAsset
 
-            asset = KnowledgeAsset
-        per_path = asset.resolve_setting(per_path, "per_path")
-        find_all = asset.resolve_setting(find_all, "find_all")
-        keep_path = asset.resolve_setting(keep_path, "keep_path")
-        skip_missing = asset.resolve_setting(skip_missing, "skip_missing")
-        make_copy = asset.resolve_setting(make_copy, "make_copy")
-        changed_only = asset.resolve_setting(changed_only, "changed_only")
+            asset_cls = KnowledgeAsset
+        per_path = asset_cls.resolve_setting(per_path, "per_path")
+        find_all = asset_cls.resolve_setting(find_all, "find_all")
+        keep_path = asset_cls.resolve_setting(keep_path, "keep_path")
+        skip_missing = asset_cls.resolve_setting(skip_missing, "skip_missing")
+        make_copy = asset_cls.resolve_setting(make_copy, "make_copy")
+        changed_only = asset_cls.resolve_setting(changed_only, "changed_only")
 
         if path is not None:
             if isinstance(path, list):
@@ -1382,16 +1382,16 @@ class FlattenAssetFunc(AssetFunc):
         skip_missing: tp.Optional[bool] = None,
         make_copy: tp.Optional[bool] = None,
         changed_only: tp.Optional[bool] = None,
-        asset: tp.Optional[tp.MaybeType[tp.KnowledgeAsset]] = None,
+        asset_cls: tp.Optional[tp.Type[tp.KnowledgeAsset]] = None,
         **kwargs,
     ) -> tp.ArgsKwargs:
-        if asset is None:
+        if asset_cls is None:
             from vectorbtpro.utils.knowledge.base_assets import KnowledgeAsset
 
-            asset = KnowledgeAsset
-        skip_missing = asset.resolve_setting(skip_missing, "skip_missing")
-        make_copy = asset.resolve_setting(make_copy, "make_copy")
-        changed_only = asset.resolve_setting(changed_only, "changed_only")
+            asset_cls = KnowledgeAsset
+        skip_missing = asset_cls.resolve_setting(skip_missing, "skip_missing")
+        make_copy = asset_cls.resolve_setting(make_copy, "make_copy")
+        changed_only = asset_cls.resolve_setting(changed_only, "changed_only")
 
         if path is not None:
             if isinstance(path, list):
@@ -1453,16 +1453,16 @@ class UnflattenAssetFunc(AssetFunc):
         skip_missing: tp.Optional[bool] = None,
         make_copy: tp.Optional[bool] = None,
         changed_only: tp.Optional[bool] = None,
-        asset: tp.Optional[tp.MaybeType[tp.KnowledgeAsset]] = None,
+        asset_cls: tp.Optional[tp.Type[tp.KnowledgeAsset]] = None,
         **kwargs,
     ) -> tp.ArgsKwargs:
-        if asset is None:
+        if asset_cls is None:
             from vectorbtpro.utils.knowledge.base_assets import KnowledgeAsset
 
-            asset = KnowledgeAsset
-        skip_missing = asset.resolve_setting(skip_missing, "skip_missing")
-        make_copy = asset.resolve_setting(make_copy, "make_copy")
-        changed_only = asset.resolve_setting(changed_only, "changed_only")
+            asset_cls = KnowledgeAsset
+        skip_missing = asset_cls.resolve_setting(skip_missing, "skip_missing")
+        make_copy = asset_cls.resolve_setting(make_copy, "make_copy")
+        changed_only = asset_cls.resolve_setting(changed_only, "changed_only")
 
         if path is not None:
             if isinstance(path, list):
@@ -1519,33 +1519,33 @@ class DumpAssetFunc(AssetFunc):
     def resolve_dump_kwargs(
         cls,
         dump_engine: tp.Optional[str] = None,
-        asset: tp.Optional[tp.MaybeType[tp.KnowledgeAsset]] = None,
+        asset_cls: tp.Optional[tp.Type[tp.KnowledgeAsset]] = None,
         **kwargs,
     ) -> tp.Kwargs:
         """Resolve keyword arguments related to dumping."""
-        if asset is None:
+        if asset_cls is None:
             from vectorbtpro.utils.knowledge.base_assets import KnowledgeAsset
 
-            asset = KnowledgeAsset
-        dump_engine = asset.resolve_setting(dump_engine, "dump_engine")
-        kwargs = asset.resolve_setting(kwargs, f"dump_engine_kwargs.{dump_engine}", default={}, merge=True)
+            asset_cls = KnowledgeAsset
+        dump_engine = asset_cls.resolve_setting(dump_engine, "dump_engine")
+        kwargs = asset_cls.resolve_setting(kwargs, f"dump_engine_kwargs.{dump_engine}", default={}, merge=True)
         return {"dump_engine": dump_engine, **kwargs}
 
     @classmethod
     def prepare(
         cls,
-        source: tp.Union[None, str, tp.Callable, tp.CustomTemplate] = None,
+        source: tp.Optional[tp.CustomTemplateLike] = None,
         dump_engine: tp.Optional[str] = None,
         template_context: tp.KwargsLike = None,
-        asset: tp.Optional[tp.MaybeType[tp.KnowledgeAsset]] = None,
+        asset_cls: tp.Optional[tp.Type[tp.KnowledgeAsset]] = None,
         **kwargs,
     ) -> tp.ArgsKwargs:
-        if asset is None:
+        if asset_cls is None:
             from vectorbtpro.utils.knowledge.base_assets import KnowledgeAsset
 
-            asset = KnowledgeAsset
-        template_context = asset.resolve_setting(template_context, "template_context", merge=True)
-        template_context = flat_merge_dicts({"asset": asset}, template_context)
+            asset_cls = KnowledgeAsset
+        template_context = asset_cls.resolve_setting(template_context, "template_context", merge=True)
+        template_context = flat_merge_dicts({"asset_cls": asset_cls}, template_context)
         dump_kwargs = cls.resolve_dump_kwargs(dump_engine=dump_engine, **kwargs)
 
         if source is not None:
@@ -1557,7 +1557,7 @@ class DumpAssetFunc(AssetFunc):
                 else:
                     source = RepFunc(source)
             elif not isinstance(source, CustomTemplate):
-                raise TypeError(f"Source must be a string, function, or template")
+                raise TypeError(f"Source must be a string, function, or template, not {type(source)}")
         return (), {
             **dict(
                 source=source,
@@ -1576,6 +1576,8 @@ class DumpAssetFunc(AssetFunc):
         template_context: tp.KwargsLike = None,
         **kwargs,
     ) -> tp.Any:
+        from vectorbtpro.utils.knowledge.chatting import StoreDocument, EmbeddedDocument, ScoredDocument
+
         if source is not None:
             _template_context = flat_merge_dicts(
                 {
@@ -1590,6 +1592,10 @@ class DumpAssetFunc(AssetFunc):
                 new_d = new_d(d)
         else:
             new_d = d
+        if isinstance(new_d, StoreDocument):
+            return new_d.get_content()
+        if isinstance(new_d, (EmbeddedDocument, ScoredDocument)):
+            return new_d.document.get_content()
         return dump(new_d, dump_engine=dump_engine, **kwargs)
 
 
@@ -1603,34 +1609,43 @@ class ToDocsAssetFunc(AssetFunc):
     @classmethod
     def prepare(
         cls,
-        asset: tp.Union[None, tp.MaybeType[tp.KnowledgeAsset], tp.CustomTemplate] = None,
+        asset_cls: tp.Optional[tp.Type[tp.KnowledgeAsset]] = None,
+        document_cls: tp.Optional[tp.Type[tp.StoreDocument]] = None,
         template_context: tp.Union[tp.KwargsLike, tp.CustomTemplate] = None,
         **document_kwargs,
     ) -> tp.ArgsKwargs:
-        if asset is None:
+        if asset_cls is None:
             from vectorbtpro.utils.knowledge.base_assets import KnowledgeAsset
 
-            asset = KnowledgeAsset
-        from vectorbtpro.utils.knowledge.chatting import TextDocument
+            asset_cls = KnowledgeAsset
+
+        document_cls = asset_cls.resolve_setting(document_cls, "document_cls")
+        if document_cls is None:
+            from vectorbtpro.utils.knowledge.chatting import TextDocument
+
+            document_cls = TextDocument
+        template_context = asset_cls.resolve_setting(template_context, "template_context", merge=True)
+        template_context = flat_merge_dicts({"asset_cls": asset_cls}, template_context)
 
         document_kwargs = {}
-        for k, v in TextDocument.fields_dict.items():
+        for k, v in document_cls.fields_dict.items():
             if v.default is not MISSING:
-                if k in document_kwargs or asset.has_setting(k, sub_path="document_kwargs"):
-                    document_kwargs[k] = asset.resolve_setting(
+                if k in document_kwargs or asset_cls.has_setting(k, sub_path="document_kwargs"):
+                    document_kwargs[k] = asset_cls.resolve_setting(
                         document_kwargs.get(k, None),
                         k,
                         sub_path="document_kwargs",
-                        merge=isinstance(v.default, attr.Factory) and v.default.factory is dict
+                        merge=isinstance(v.default, attr.Factory) and v.default.factory is dict,
                     )
+                    if k == "template_context":
+                        document_kwargs[k] = merge_dicts(template_context, document_kwargs[k])
                     if k == "dump_kwargs":
                         document_kwargs[k] = DumpAssetFunc.resolve_dump_kwargs(**document_kwargs[k])
-        template_context = asset.resolve_setting(template_context, "template_context", merge=True)
-        template_context = flat_merge_dicts({"asset": asset}, template_context)
+        document_kwargs = substitute_templates(
+            document_kwargs, template_context, eval_id="document_kwargs", strict=False
+        )
         return (), {
-            **dict(
-                template_context=template_context,
-            ),
+            **dict(document_cls=document_cls),
             **document_kwargs,
         }
 
@@ -1638,10 +1653,14 @@ class ToDocsAssetFunc(AssetFunc):
     def call(
         cls,
         d: tp.Any,
+        document_cls: tp.Optional[tp.Type[tp.StoreDocument]] = None,
         template_context: tp.KwargsLike = None,
         **document_kwargs,
     ) -> tp.Any:
-        from vectorbtpro.utils.knowledge.chatting import TextDocument
+        if document_cls is None:
+            from vectorbtpro.utils.knowledge.chatting import TextDocument
+
+            document_cls = TextDocument
 
         _template_context = flat_merge_dicts(
             {
@@ -1652,7 +1671,7 @@ class ToDocsAssetFunc(AssetFunc):
             template_context,
         )
         document_kwargs = substitute_templates(document_kwargs, _template_context, eval_id="document_kwargs")
-        return TextDocument(d, **document_kwargs)
+        return document_cls(d, template_context=_template_context, **document_kwargs)
 
 
 class SplitTextAssetFunc(AssetFunc):
@@ -1666,17 +1685,17 @@ class SplitTextAssetFunc(AssetFunc):
     def prepare(
         cls,
         text_path: tp.Optional[tp.PathLikeKey] = None,
-        asset: tp.Optional[tp.MaybeType[tp.KnowledgeAsset]] = None,
+        asset_cls: tp.Optional[tp.Type[tp.KnowledgeAsset]] = None,
         **split_text_kwargs,
     ) -> tp.ArgsKwargs:
-        if asset is None:
+        if asset_cls is None:
             from vectorbtpro.utils.knowledge.base_assets import KnowledgeAsset
 
-            asset = KnowledgeAsset
+            asset_cls = KnowledgeAsset
         from vectorbtpro.utils.knowledge.chatting import resolve_text_splitter
 
-        text_path = asset.resolve_setting(text_path, "text_path", sub_path="document_kwargs")
-        split_text_kwargs = asset.resolve_setting(
+        text_path = asset_cls.resolve_setting(text_path, "text_path", sub_path="document_kwargs")
+        split_text_kwargs = asset_cls.resolve_setting(
             split_text_kwargs, "split_text_kwargs", sub_path="document_kwargs", merge=True
         )
 
@@ -1737,14 +1756,14 @@ class CollectAssetFunc(ReduceAssetFunc):
     def prepare(
         cls,
         sort_keys: tp.Optional[bool] = None,
-        asset: tp.Optional[tp.MaybeType[tp.KnowledgeAsset]] = None,
+        asset_cls: tp.Optional[tp.Type[tp.KnowledgeAsset]] = None,
         **kwargs,
     ) -> tp.ArgsKwargs:
-        if asset is None:
+        if asset_cls is None:
             from vectorbtpro.utils.knowledge.base_assets import KnowledgeAsset
 
-            asset = KnowledgeAsset
-        sort_keys = asset.resolve_setting(sort_keys, "sort_keys")
+            asset_cls = KnowledgeAsset
+        sort_keys = asset_cls.resolve_setting(sort_keys, "sort_keys")
 
         return (), {**dict(sort_keys=sort_keys), **kwargs}
 
@@ -1755,8 +1774,12 @@ class CollectAssetFunc(ReduceAssetFunc):
 
     @classmethod
     def call(cls, d1: tp.Any, d2: tp.Any, sort_keys: bool = False) -> tp.Any:
+        if isinstance(d1, list):
+            d1 = {i: v for i, v in enumerate(d1)}
+        if isinstance(d2, list):
+            d2 = {i: v for i, v in enumerate(d2)}
         if not isinstance(d1, dict) or not isinstance(d2, dict):
-            raise TypeError("Data items must be dicts")
+            raise TypeError(f"Data items must be either dicts or lists, not {type(d1)} and {type(d2)}")
         new_d1 = dict(d1)
         for k1 in d1:
             if k1 not in new_d1:
@@ -1783,7 +1806,7 @@ class MergeDictsAssetFunc(ReduceAssetFunc):
     @classmethod
     def call(cls, d1: tp.Any, d2: tp.Any, **kwargs) -> tp.Any:
         if not isinstance(d1, dict) or not isinstance(d2, dict):
-            raise TypeError("Data items must be dicts")
+            raise TypeError(f"Data items must be dicts, not {type(d1)} and {type(d2)}")
         return merge_dicts(d1, d2, **kwargs)
 
 
@@ -1799,5 +1822,5 @@ class MergeListsAssetFunc(ReduceAssetFunc):
     @classmethod
     def call(cls, d1: tp.Any, d2: tp.Any) -> tp.Any:
         if not isinstance(d1, list) or not isinstance(d2, list):
-            raise TypeError("Data items must be lists")
+            raise TypeError(f"Data items must be lists, not {type(d1)} and {type(d2)}")
         return d1 + d2

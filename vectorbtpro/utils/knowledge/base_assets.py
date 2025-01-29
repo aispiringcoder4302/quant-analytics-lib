@@ -25,7 +25,7 @@ from vectorbtpro.utils.config import Configured
 from vectorbtpro.utils.config import flat_merge_dicts, deep_merge_dicts
 from vectorbtpro.utils.decorators import hybrid_method
 from vectorbtpro.utils.execution import Task, execute, NoResult
-from vectorbtpro.utils.knowledge.chatting import StoreDocument, rank_documents, Contextable
+from vectorbtpro.utils.knowledge.chatting import RankContextable
 from vectorbtpro.utils.module_ import get_caller_qualname
 from vectorbtpro.utils.parsing import get_func_arg_names
 from vectorbtpro.utils.path_ import dir_tree_from_paths
@@ -47,7 +47,7 @@ class MetaKnowledgeAsset(type(Configured), type(MutableSequence)):
     pass
 
 
-class KnowledgeAsset(Contextable, Configured, MutableSequence, metaclass=MetaKnowledgeAsset):
+class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=MetaKnowledgeAsset):
     """Class for working with a knowledge asset.
 
     This class behaves like a mutable sequence.
@@ -99,7 +99,13 @@ class KnowledgeAsset(Contextable, Configured, MutableSequence, metaclass=MetaKno
             new_data.extend(obj.data)
             if not obj.single_item:
                 new_single_item = False
-        return cls(data=new_data, single_item=new_single_item, **kwargs)
+        kwargs = cls_or_self.resolve_merge_kwargs(
+            *[obj.config for obj in objs],
+            single_item=new_single_item,
+            data=new_data,
+            **kwargs,
+        )
+        return cls(**kwargs)
 
     @hybrid_method
     def merge(
@@ -168,7 +174,13 @@ class KnowledgeAsset(Contextable, Configured, MutableSequence, metaclass=MetaKno
         for flat_dcts in zip(*flat_data):
             merged_flat_dct = flat_merge_dicts(*flat_dcts)
             new_data.append(search.unflatten_obj(merged_flat_dct))
-        return cls(data=new_data, single_item=new_single_item, **kwargs)
+        kwargs = cls_or_self.resolve_merge_kwargs(
+            *[obj.config for obj in objs],
+            single_item=new_single_item,
+            data=new_data,
+            **kwargs,
+        )
+        return cls(**kwargs)
 
     @classmethod
     def from_json_file(
@@ -580,7 +592,7 @@ class KnowledgeAsset(Contextable, Configured, MutableSequence, metaclass=MetaKno
                 BasicAssetPipeline(
                     func,
                     *args,
-                    cond_kwargs=dict(asset=self),
+                    cond_kwargs=dict(asset_cls=type(self)),
                     asset_func_meta=asset_func_meta,
                     **kwargs,
                 ),
@@ -594,7 +606,7 @@ class KnowledgeAsset(Contextable, Configured, MutableSequence, metaclass=MetaKno
                 ComplexAssetPipeline(
                     func,
                     context=kwargs.get("template_context", None),
-                    cond_kwargs=dict(asset=self),
+                    cond_kwargs=dict(asset_cls=type(self)),
                     asset_func_meta=asset_func_meta,
                     **kwargs,
                 ),
@@ -605,7 +617,7 @@ class KnowledgeAsset(Contextable, Configured, MutableSequence, metaclass=MetaKno
             func, args, kwargs = AssetPipeline.resolve_task(
                 func,
                 *args,
-                cond_kwargs=dict(asset=self),
+                cond_kwargs=dict(asset_cls=type(self)),
                 asset_func_meta=asset_func_meta,
                 **kwargs,
             )
@@ -666,7 +678,7 @@ class KnowledgeAsset(Contextable, Configured, MutableSequence, metaclass=MetaKno
         path: tp.Optional[tp.MaybeList[tp.PathLikeKey]] = None,
         keep_path: tp.Optional[bool] = None,
         skip_missing: tp.Optional[bool] = None,
-        source: tp.Union[None, str, tp.Callable, tp.CustomTemplate] = None,
+        source: tp.Optional[tp.CustomTemplateLike] = None,
         template_context: tp.KwargsLike = None,
         **kwargs,
     ) -> tp.MaybeKnowledgeAsset:
@@ -1000,7 +1012,7 @@ class KnowledgeAsset(Contextable, Configured, MutableSequence, metaclass=MetaKno
 
     def query(
         self: KnowledgeAssetT,
-        expression: tp.Union[str, tp.Callable, tp.CustomTemplate],
+        expression: tp.CustomTemplateLike,
         query_engine: tp.Optional[str] = None,
         template_context: tp.KwargsLike = None,
         return_type: tp.Optional[str] = None,
@@ -1149,7 +1161,7 @@ class KnowledgeAsset(Contextable, Configured, MutableSequence, metaclass=MetaKno
         find_all: tp.Optional[bool] = None,
         keep_path: tp.Optional[bool] = None,
         skip_missing: tp.Optional[bool] = None,
-        source: tp.Union[None, str, tp.Callable, tp.CustomTemplate] = None,
+        source: tp.Optional[tp.CustomTemplateLike] = None,
         in_dumps: tp.Optional[bool] = None,
         dump_kwargs: tp.KwargsLike = None,
         template_context: tp.KwargsLike = None,
@@ -1595,7 +1607,7 @@ class KnowledgeAsset(Contextable, Configured, MutableSequence, metaclass=MetaKno
 
     def dump(
         self: KnowledgeAssetT,
-        source: tp.Union[None, str, tp.Callable, tp.CustomTemplate] = None,
+        source: tp.Optional[tp.CustomTemplateLike] = None,
         dump_engine: tp.Optional[str] = None,
         template_context: tp.KwargsLike = None,
         **kwargs,
@@ -1640,7 +1652,7 @@ class KnowledgeAsset(Contextable, Configured, MutableSequence, metaclass=MetaKno
 
     def dump_all(
         self,
-        source: tp.Union[None, str, tp.Callable, tp.CustomTemplate] = None,
+        source: tp.Optional[tp.CustomTemplateLike] = None,
         dump_engine: tp.Optional[str] = None,
         template_context: tp.KwargsLike = None,
         **kwargs,
@@ -1696,31 +1708,6 @@ class KnowledgeAsset(Contextable, Configured, MutableSequence, metaclass=MetaKno
             split_asset = split_asset.merge()
         return split_asset
 
-    def rank_documents(
-        self,
-        query: str,
-        to_documents_kwargs: tp.KwargsLike = None,
-        wrap_documents: tp.Optional[bool] = None,
-        **kwargs,
-    ) -> tp.MaybeKnowledgeAsset:
-        """Rank documents by their similarity to a query.
-
-        First, converts to `vectorbtpro.utils.knowledge.chatting.TextDocument` format using
-        `KnowledgeAsset.to_documents` and `**to_documents_kwargs`. Then, uses
-        `vectorbtpro.utils.knowledge.chatting.rank_documents` with `**kwargs` for actual ranking."""
-        if self.data and not isinstance(self.data[0], StoreDocument):
-            if to_documents_kwargs is None:
-                to_documents_kwargs = {}
-            documents = self.to_documents(**to_documents_kwargs)
-            if wrap_documents is None:
-                wrap_documents = True
-        else:
-            documents = self.data
-            if wrap_documents is None:
-                wrap_documents = False
-        new_data = rank_documents(query=query, documents=documents, wrap_documents=wrap_documents, **kwargs)
-        return self.replace(data=new_data)
-
     # ############# Reduce methods ############# #
 
     @classmethod
@@ -1757,7 +1744,7 @@ class KnowledgeAsset(Contextable, Configured, MutableSequence, metaclass=MetaKno
 
     def reduce(
         self: KnowledgeAssetT,
-        func: tp.Union[str, tp.Callable, tp.CustomTemplate],
+        func: tp.CustomTemplateLike,
         *args,
         initializer: tp.Optional[tp.Any] = None,
         by: tp.Optional[tp.PathLikeKey] = None,
@@ -1820,7 +1807,7 @@ class KnowledgeAsset(Contextable, Configured, MutableSequence, metaclass=MetaKno
             func, args, kwargs = AssetPipeline.resolve_task(
                 func,
                 *args,
-                cond_kwargs=dict(asset=self),
+                cond_kwargs=dict(asset_cls=type(self)),
                 asset_func_meta=asset_func_meta,
                 **kwargs,
             )
@@ -1891,7 +1878,7 @@ class KnowledgeAsset(Contextable, Configured, MutableSequence, metaclass=MetaKno
 
     def groupby_reduce(
         self: KnowledgeAssetT,
-        func: tp.Union[str, tp.Callable, tp.CustomTemplate],
+        func: tp.CustomTemplateLike,
         *args,
         by: tp.Optional[tp.PathLikeKey] = None,
         uniform_groups: tp.Optional[bool] = None,
@@ -2000,6 +1987,10 @@ class KnowledgeAsset(Contextable, Configured, MutableSequence, metaclass=MetaKno
                 describe_dict = {"count": len(v)}
             else:
                 describe_dict = describe_sr.describe(**describe_kwargs).to_dict()
+                if "count" in describe_dict:
+                    describe_dict["count"] = int(describe_dict["count"])
+                if "unique" in describe_dict:
+                    describe_dict["unique"] = int(describe_dict["unique"])
             if pd.api.types.is_integer_dtype(describe_sr.dtype):
                 new_describe_dict = {}
                 for _k, _v in describe_dict.items():
@@ -2102,6 +2093,87 @@ class KnowledgeAsset(Contextable, Configured, MutableSequence, metaclass=MetaKno
             return "[" + joined + "]"
         return joined
 
+    def embed(
+        self,
+        to_documents_kwargs: tp.KwargsLike = None,
+        wrap_documents: tp.Optional[bool] = None,
+        **kwargs,
+    ) -> tp.Optional[tp.MaybeKnowledgeAsset]:
+        """Embed documents.
+
+        First, converts to `vectorbtpro.utils.knowledge.chatting.TextDocument` format using
+        `KnowledgeAsset.to_documents` and `**to_documents_kwargs`. Then, uses
+        `vectorbtpro.utils.knowledge.chatting.embed_documents` with `**kwargs` for actual ranking."""
+        from vectorbtpro.utils.knowledge.chatting import StoreDocument, EmbeddedDocument, embed_documents
+
+        if self.data and not isinstance(self.data[0], StoreDocument):
+            if to_documents_kwargs is None:
+                to_documents_kwargs = {}
+            documents = self.to_documents(**to_documents_kwargs)
+            if wrap_documents is None:
+                wrap_documents = False
+        else:
+            documents = self.data
+            if wrap_documents is None:
+                wrap_documents = True
+        embedded_documents = embed_documents(documents, **kwargs)
+        if embedded_documents is None:
+            return None
+        if not wrap_documents:
+
+            def _unwrap(document):
+                if isinstance(document, EmbeddedDocument):
+                    return document.replace(
+                        document=_unwrap(document.document),
+                        child_documents=[_unwrap(d) for d in document.child_documents],
+                    )
+                if isinstance(document, StoreDocument):
+                    return document.data
+                return document
+
+            embedded_documents = list(map(_unwrap, embedded_documents))
+        return self.replace(data=embedded_documents)
+
+    def rank(
+        self,
+        query: str,
+        to_documents_kwargs: tp.KwargsLike = None,
+        wrap_documents: tp.Optional[bool] = None,
+        **kwargs,
+    ) -> tp.MaybeKnowledgeAsset:
+        """Rank documents by their similarity to a query.
+
+        First, converts to `vectorbtpro.utils.knowledge.chatting.TextDocument` format using
+        `KnowledgeAsset.to_documents` and `**to_documents_kwargs`. Then, uses
+        `vectorbtpro.utils.knowledge.chatting.rank_documents` with `**kwargs` for actual ranking."""
+        from vectorbtpro.utils.knowledge.chatting import StoreDocument, ScoredDocument, rank_documents
+
+        if self.data and not isinstance(self.data[0], StoreDocument):
+            if to_documents_kwargs is None:
+                to_documents_kwargs = {}
+            documents = self.to_documents(**to_documents_kwargs)
+            if wrap_documents is None:
+                wrap_documents = False
+        else:
+            documents = self.data
+            if wrap_documents is None:
+                wrap_documents = True
+        ranked_documents = rank_documents(query=query, documents=documents, **kwargs)
+        if not wrap_documents:
+
+            def _unwrap(document):
+                if isinstance(document, ScoredDocument):
+                    return document.replace(
+                        document=_unwrap(document.document),
+                        child_documents=[_unwrap(d) for d in document.child_documents],
+                    )
+                if isinstance(document, StoreDocument):
+                    return document.data
+                return document
+
+            ranked_documents = list(map(_unwrap, ranked_documents))
+        return self.replace(data=ranked_documents)
+
     def to_context(
         self,
         *args,
@@ -2109,15 +2181,24 @@ class KnowledgeAsset(Contextable, Configured, MutableSequence, metaclass=MetaKno
         separator: tp.Optional[str] = None,
         **kwargs,
     ) -> str:
-        if self.data and isinstance(self.data[0], StoreDocument):
-            dumped = [d.get_content() for d in self.data]
+        """Convert to a context.
+
+        If `dump_all` is True, calls `KnowledgeAsset.dump_all` with `*args` and `**kwargs`.
+        Otherwise, calls `KnowledgeAsset.dump`.
+
+        Finally, calls `KnowledgeAsset.join` with `separator`."""
+        from vectorbtpro.utils.knowledge.chatting import StoreDocument, EmbeddedDocument, ScoredDocument
+
+        if dump_all is None:
+            dump_all = (
+                len(self.data) > 1
+                and not isinstance(self.data[0], (StoreDocument, EmbeddedDocument, ScoredDocument))
+                and separator is None
+            )
+        if dump_all:
+            dumped = self.dump_all(*args, **kwargs)
         else:
-            if dump_all is None:
-                dump_all = len(self.data) > 1 and separator is None
-            if dump_all:
-                dumped = self.dump_all(*args, **kwargs)
-            else:
-                dumped = self.dump(*args, **kwargs)
+            dumped = self.dump(*args, **kwargs)
         if isinstance(dumped, str):
             return dumped
         if not isinstance(dumped, KnowledgeAsset):
@@ -2125,7 +2206,7 @@ class KnowledgeAsset(Contextable, Configured, MutableSequence, metaclass=MetaKno
         return dumped.join(separator=separator)
 
     def print(self, *args, **kwargs) -> None:
-        """Convert to context and print.
+        """Convert to a context and print.
 
         Uses `KnowledgeAsset.to_context`."""
         print(self.to_context(*args, **kwargs))

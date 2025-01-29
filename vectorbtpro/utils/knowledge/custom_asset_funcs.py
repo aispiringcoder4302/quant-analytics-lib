@@ -32,20 +32,20 @@ class ToMarkdownAssetFunc(AssetFunc):
         clear_metadata: tp.Optional[bool] = None,
         clear_metadata_kwargs: tp.KwargsLike = None,
         dump_metadata_kwargs: tp.KwargsLike = None,
-        asset: tp.Optional[tp.MaybeType[tp.KnowledgeAsset]] = None,
+        asset_cls: tp.Optional[tp.Type[tp.KnowledgeAsset]] = None,
         **to_markdown_kwargs,
     ) -> tp.ArgsKwargs:
         from vectorbtpro.utils.knowledge.base_asset_funcs import FindRemoveAssetFunc, DumpAssetFunc
 
-        if asset is None:
+        if asset_cls is None:
             from vectorbtpro.utils.knowledge.custom_assets import VBTAsset
 
-            asset = VBTAsset
-        root_metadata_key = asset.resolve_setting(root_metadata_key, "root_metadata_key")
-        clear_metadata = asset.resolve_setting(clear_metadata, "clear_metadata")
-        clear_metadata_kwargs = asset.resolve_setting(clear_metadata_kwargs, "clear_metadata_kwargs", merge=True)
-        dump_metadata_kwargs = asset.resolve_setting(dump_metadata_kwargs, "dump_metadata_kwargs", merge=True)
-        to_markdown_kwargs = asset.resolve_setting(to_markdown_kwargs, "to_markdown_kwargs", merge=True)
+            asset_cls = VBTAsset
+        root_metadata_key = asset_cls.resolve_setting(root_metadata_key, "root_metadata_key")
+        clear_metadata = asset_cls.resolve_setting(clear_metadata, "clear_metadata")
+        clear_metadata_kwargs = asset_cls.resolve_setting(clear_metadata_kwargs, "clear_metadata_kwargs", merge=True)
+        dump_metadata_kwargs = asset_cls.resolve_setting(dump_metadata_kwargs, "dump_metadata_kwargs", merge=True)
+        to_markdown_kwargs = asset_cls.resolve_setting(to_markdown_kwargs, "to_markdown_kwargs", merge=True)
 
         clear_metadata_kwargs = flat_merge_dicts(dict(target=FindRemoveAssetFunc.is_empty_func), clear_metadata_kwargs)
         _, clear_metadata_kwargs = FindRemoveAssetFunc.prepare(**clear_metadata_kwargs)
@@ -143,22 +143,22 @@ class ToHTMLAssetFunc(ToMarkdownAssetFunc):
         dump_metadata_kwargs: tp.KwargsLike = None,
         to_markdown_kwargs: tp.KwargsLike = None,
         format_html_kwargs: tp.KwargsLike = None,
-        asset: tp.Optional[tp.MaybeType[tp.KnowledgeAsset]] = None,
+        asset_cls: tp.Optional[tp.Type[tp.KnowledgeAsset]] = None,
         **to_html_kwargs,
     ) -> tp.ArgsKwargs:
         from vectorbtpro.utils.knowledge.base_asset_funcs import FindRemoveAssetFunc, DumpAssetFunc
 
-        if asset is None:
+        if asset_cls is None:
             from vectorbtpro.utils.knowledge.custom_assets import VBTAsset
 
-            asset = VBTAsset
-        root_metadata_key = asset.resolve_setting(root_metadata_key, "root_metadata_key")
-        clear_metadata = asset.resolve_setting(clear_metadata, "clear_metadata")
-        clear_metadata_kwargs = asset.resolve_setting(clear_metadata_kwargs, "clear_metadata_kwargs", merge=True)
-        dump_metadata_kwargs = asset.resolve_setting(dump_metadata_kwargs, "dump_metadata_kwargs", merge=True)
-        to_markdown_kwargs = asset.resolve_setting(to_markdown_kwargs, "to_markdown_kwargs", merge=True)
-        format_html_kwargs = asset.resolve_setting(format_html_kwargs, "format_html_kwargs", merge=True)
-        to_html_kwargs = asset.resolve_setting(to_html_kwargs, "to_html_kwargs", merge=True)
+            asset_cls = VBTAsset
+        root_metadata_key = asset_cls.resolve_setting(root_metadata_key, "root_metadata_key")
+        clear_metadata = asset_cls.resolve_setting(clear_metadata, "clear_metadata")
+        clear_metadata_kwargs = asset_cls.resolve_setting(clear_metadata_kwargs, "clear_metadata_kwargs", merge=True)
+        dump_metadata_kwargs = asset_cls.resolve_setting(dump_metadata_kwargs, "dump_metadata_kwargs", merge=True)
+        to_markdown_kwargs = asset_cls.resolve_setting(to_markdown_kwargs, "to_markdown_kwargs", merge=True)
+        format_html_kwargs = asset_cls.resolve_setting(format_html_kwargs, "format_html_kwargs", merge=True)
+        to_html_kwargs = asset_cls.resolve_setting(to_html_kwargs, "to_html_kwargs", merge=True)
 
         clear_metadata_kwargs = flat_merge_dicts(dict(target=FindRemoveAssetFunc.is_empty_func), clear_metadata_kwargs)
         _, clear_metadata_kwargs = FindRemoveAssetFunc.prepare(**clear_metadata_kwargs)
@@ -285,20 +285,20 @@ class AggMessageAssetFunc(AssetFunc):
         dump_metadata_kwargs: tp.KwargsLike = None,
         to_markdown_kwargs: tp.KwargsLike = None,
         to_html_kwargs: tp.KwargsLike = None,
-        asset: tp.Optional[tp.MaybeType[tp.KnowledgeAsset]] = None,
+        asset_cls: tp.Optional[tp.Type[tp.KnowledgeAsset]] = None,
         **kwargs,
     ) -> tp.ArgsKwargs:
         from vectorbtpro.utils.knowledge.base_asset_funcs import FindRemoveAssetFunc, DumpAssetFunc
 
-        if asset is None:
+        if asset_cls is None:
             from vectorbtpro.utils.knowledge.custom_assets import MessagesAsset
 
-            asset = MessagesAsset
-        metadata_format = asset.resolve_setting(metadata_format, "metadata_format")
-        clear_metadata = asset.resolve_setting(clear_metadata, "clear_metadata")
-        clear_metadata_kwargs = asset.resolve_setting(clear_metadata_kwargs, "clear_metadata_kwargs", merge=True)
-        dump_metadata_kwargs = asset.resolve_setting(dump_metadata_kwargs, "dump_metadata_kwargs", merge=True)
-        to_html_kwargs = asset.resolve_setting(to_html_kwargs, "to_html_kwargs", merge=True)
+            asset_cls = MessagesAsset
+        metadata_format = asset_cls.resolve_setting(metadata_format, "metadata_format")
+        clear_metadata = asset_cls.resolve_setting(clear_metadata, "clear_metadata")
+        clear_metadata_kwargs = asset_cls.resolve_setting(clear_metadata_kwargs, "clear_metadata_kwargs", merge=True)
+        dump_metadata_kwargs = asset_cls.resolve_setting(dump_metadata_kwargs, "dump_metadata_kwargs", merge=True)
+        to_html_kwargs = asset_cls.resolve_setting(to_html_kwargs, "to_html_kwargs", merge=True)
 
         clear_metadata_kwargs = flat_merge_dicts(dict(target=FindRemoveAssetFunc.is_empty_func), clear_metadata_kwargs)
         _, clear_metadata_kwargs = FindRemoveAssetFunc.prepare(**clear_metadata_kwargs)
@@ -395,22 +395,22 @@ class AggBlockAssetFunc(AssetFunc):
         to_markdown_kwargs: tp.KwargsLike = None,
         to_html_kwargs: tp.KwargsLike = None,
         link_map: tp.Optional[tp.Dict[str, dict]] = None,
-        asset: tp.Optional[tp.MaybeType[tp.KnowledgeAsset]] = None,
+        asset_cls: tp.Optional[tp.Type[tp.KnowledgeAsset]] = None,
         **kwargs,
     ) -> tp.ArgsKwargs:
         from vectorbtpro.utils.knowledge.base_asset_funcs import FindRemoveAssetFunc, DumpAssetFunc
 
-        if asset is None:
+        if asset_cls is None:
             from vectorbtpro.utils.knowledge.custom_assets import MessagesAsset
 
-            asset = MessagesAsset
-        aggregate_fields = asset.resolve_setting(aggregate_fields, "aggregate_fields")
-        parent_links_only = asset.resolve_setting(parent_links_only, "parent_links_only")
-        metadata_format = asset.resolve_setting(metadata_format, "metadata_format")
-        clear_metadata = asset.resolve_setting(clear_metadata, "clear_metadata")
-        clear_metadata_kwargs = asset.resolve_setting(clear_metadata_kwargs, "clear_metadata_kwargs", merge=True)
-        dump_metadata_kwargs = asset.resolve_setting(dump_metadata_kwargs, "dump_metadata_kwargs", merge=True)
-        to_html_kwargs = asset.resolve_setting(to_html_kwargs, "to_html_kwargs", merge=True)
+            asset_cls = MessagesAsset
+        aggregate_fields = asset_cls.resolve_setting(aggregate_fields, "aggregate_fields")
+        parent_links_only = asset_cls.resolve_setting(parent_links_only, "parent_links_only")
+        metadata_format = asset_cls.resolve_setting(metadata_format, "metadata_format")
+        clear_metadata = asset_cls.resolve_setting(clear_metadata, "clear_metadata")
+        clear_metadata_kwargs = asset_cls.resolve_setting(clear_metadata_kwargs, "clear_metadata_kwargs", merge=True)
+        dump_metadata_kwargs = asset_cls.resolve_setting(dump_metadata_kwargs, "dump_metadata_kwargs", merge=True)
+        to_html_kwargs = asset_cls.resolve_setting(to_html_kwargs, "to_html_kwargs", merge=True)
 
         clear_metadata_kwargs = flat_merge_dicts(dict(target=FindRemoveAssetFunc.is_empty_func), clear_metadata_kwargs)
         _, clear_metadata_kwargs = FindRemoveAssetFunc.prepare(**clear_metadata_kwargs)

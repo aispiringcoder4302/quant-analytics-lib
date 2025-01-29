@@ -30,6 +30,7 @@ from vectorbtpro.utils.path_ import check_mkdir, remove_dir, get_common_prefix, 
 from vectorbtpro.utils.pbar import ProgressBar
 from vectorbtpro.utils.pickling import suggest_compression
 from vectorbtpro.utils.search import find, replace
+from vectorbtpro.utils.template import CustomTemplate
 
 __all__ = [
     "VBTAsset",
@@ -101,11 +102,21 @@ class VBTAsset(KnowledgeAsset):
 
     _settings_path: tp.SettingsPath = "knowledge.assets.vbt"
 
+    def __init__(self, *args, release_name: tp.Optional[str] = None, **kwargs) -> None:
+        KnowledgeAsset.__init__(self, *args, release_name=release_name, **kwargs)
+
+        self._release_name = release_name
+
+    @property
+    def release_name(self) -> tp.Optional[str]:
+        """Release name."""
+        return self._release_name
+
     @classmethod
     def pull(
         cls: tp.Type[VBTAssetT],
-        asset_name: tp.Optional[str] = None,
         release_name: tp.Optional[str] = None,
+        asset_name: tp.Optional[str] = None,
         repo_owner: tp.Optional[str] = None,
         repo_name: tp.Optional[str] = None,
         token: tp.Optional[str] = None,
@@ -114,19 +125,33 @@ class VBTAsset(KnowledgeAsset):
         chunk_size: tp.Optional[int] = None,
         cache: tp.Optional[bool] = None,
         cache_dir: tp.Optional[tp.PathLike] = None,
-        def_cache_suffix: tp.Optional[tp.PathLike] = "releases",
         cache_mkdir_kwargs: tp.KwargsLike = None,
         clear_cache: tp.Optional[bool] = None,
         show_progress: tp.Optional[bool] = None,
         pbar_kwargs: tp.KwargsLike = None,
+        template_context: tp.KwargsLike = None,
         **kwargs,
     ) -> VBTAssetT:
-        """Build `VBTAsset` from a JSON asset of a release."""
-        from vectorbtpro._version import __version__
+        """Build `VBTAsset` from a JSON asset of a release.
+
+        Examples of a release name include None or 'current' for the current release, 'latest' for the
+        latest release, and any other tag name such as 'v2024.12.15'.
+
+        An example of an asset file name is 'messages.json.zip'. You can find all asset file names
+        at https://github.com/polakowo/vectorbt.pro/releases/latest
+
+        Token must be a valid GitHub token. It doesn't have to be provided if the asset has already been downloaded.
+
+        If `use_pygithub` is True, uses https://github.com/PyGithub/PyGithub (otherwise requests)
+
+        Argument `chunk_size` denotes the number of bytes in each chunk when downloading an asset file.
+
+        If `cache` is True, uses the cache directory (`assets_dir` in settings). Otherwise, builds the asset
+        instance in memory. If `clear_cache` is True, deletes any existing directory before creating a new one."""
         import requests
 
-        asset_name = cls.resolve_setting(asset_name, "asset_name")
         release_name = cls.resolve_setting(release_name, "release_name")
+        asset_name = cls.resolve_setting(asset_name, "asset_name")
         repo_owner = cls.resolve_setting(repo_owner, "repo_owner")
         repo_name = cls.resolve_setting(repo_name, "repo_name")
         token = cls.resolve_setting(token, "token")
@@ -134,32 +159,79 @@ class VBTAsset(KnowledgeAsset):
         use_pygithub = cls.resolve_setting(use_pygithub, "use_pygithub")
         chunk_size = cls.resolve_setting(chunk_size, "chunk_size")
         cache = cls.resolve_setting(cache, "cache")
-        def_cache_dir = cache_dir is None
-        cache_dir = cls.resolve_setting(cache_dir, "cache_dir")
+        assets_dir = cls.resolve_setting(cache_dir, "assets_dir")
         clear_cache = cls.resolve_setting(clear_cache, "clear_cache")
         cache_mkdir_kwargs = cls.resolve_setting(cache_mkdir_kwargs, "cache_mkdir_kwargs", merge=True)
         show_progress = cls.resolve_setting(show_progress, "show_progress")
         pbar_kwargs = cls.resolve_setting(pbar_kwargs, "pbar_kwargs", merge=True)
+        template_context = cls.resolve_setting(template_context, "template_context", merge=True)
 
-        current_release = "v" + __version__
-        if release_name is None:
-            release_name = current_release
-        release_dir = Path(cache_dir)
-        if def_cache_dir and def_cache_suffix is not None:
-            release_dir /= def_cache_suffix
-            release_dir /= release_name
+        if release_name is None or release_name.lower() == "current":
+            from vectorbtpro._version import __release__
+
+            release_name = __release__
+        if release_name.lower() == "latest":
+            if token is None:
+                token = os.environ.get("GITHUB_TOKEN", None)
+            if token is None and token_required:
+                raise ValueError("GitHub token is required")
+            if use_pygithub is None:
+                from vectorbtpro.utils.module_ import check_installed
+
+                use_pygithub = check_installed("github")
+            if use_pygithub:
+                from vectorbtpro.utils.module_ import assert_can_import
+
+                assert_can_import("github")
+                from github import Github, Auth
+                from github.GithubException import UnknownObjectException
+
+                if token is not None:
+                    g = Github(auth=Auth.Token(token))
+                else:
+                    g = Github()
+                try:
+                    repo = g.get_repo(f"{repo_owner}/{repo_name}")
+                except UnknownObjectException:
+                    raise Exception(f"Repository '{repo_owner}/{repo_name}' not found or access denied")
+                try:
+                    release = repo.get_latest_release()
+                except UnknownObjectException:
+                    raise Exception("Latest release not found")
+                release_name = release.title
+            else:
+                headers = {"Accept": "application/vnd.github+json"}
+                if token is not None:
+                    headers["Authorization"] = f"token {token}"
+                release_url = f"https://api.github.com/repos/{repo_owner}/{repo_name}/releases/latest"
+                response = requests.get(release_url, headers=headers)
+                response.raise_for_status()
+                release_info = response.json()
+                release_name = release_info.get("name")
+
+        template_context = flat_merge_dicts(dict(release_name=release_name), template_context)
+        if isinstance(assets_dir, CustomTemplate):
+            cache_dir = cls.get_setting("cache_dir")
+            if isinstance(cache_dir, CustomTemplate):
+                cache_dir = cache_dir.substitute(template_context, eval_id="cache_dir")
+            template_context = flat_merge_dicts(dict(cache_dir=cache_dir), template_context)
+            release_dir = cls.get_setting("release_dir")
+            if isinstance(release_dir, CustomTemplate):
+                release_dir = release_dir.substitute(template_context, eval_id="release_dir")
+            template_context = flat_merge_dicts(dict(release_dir=release_dir), template_context)
+            assets_dir = assets_dir.substitute(template_context, eval_id="assets_dir")
         if cache:
-            if release_dir.exists():
+            if assets_dir.exists():
                 if clear_cache:
-                    remove_dir(release_dir, missing_ok=True, with_contents=True)
+                    remove_dir(assets_dir, missing_ok=True, with_contents=True)
                 else:
                     cache_file = None
-                    for file in release_dir.iterdir():
+                    for file in assets_dir.iterdir():
                         if file.is_file() and file.name == asset_name:
                             cache_file = file
                             break
                     if cache_file is not None:
-                        return cls.from_json_file(cache_file, **kwargs)
+                        return cls.from_json_file(cache_file, release_name=release_name, **kwargs)
 
         if token is None:
             token = os.environ.get("GITHUB_TOKEN", None)
@@ -184,25 +256,19 @@ class VBTAsset(KnowledgeAsset):
                 repo = g.get_repo(f"{repo_owner}/{repo_name}")
             except UnknownObjectException:
                 raise Exception(f"Repository '{repo_owner}/{repo_name}' not found or access denied")
-            if release_name == "latest":
-                try:
-                    release = repo.get_latest_release()
-                except UnknownObjectException:
-                    raise Exception("Latest release not found")
-            else:
-                releases = repo.get_releases()
-                found_release = None
-                for release in releases:
-                    if release.title == release_name:
-                        found_release = release
-                if found_release is None:
-                    raise Exception(f"Release '{release_name}' not found")
-                release = found_release
+            releases = repo.get_releases()
+            found_release = None
+            for release in releases:
+                if release.title == release_name:
+                    found_release = release
+            if found_release is None:
+                raise Exception(f"Release '{release_name}' not found")
+            release = found_release
             assets = release.get_assets()
             if asset_name is not None:
                 asset = next((a for a in assets if a.name == asset_name), None)
                 if asset is None:
-                    raise Exception(f"Asset '{asset_name}' not found in release {release}")
+                    raise Exception(f"Asset '{asset_name}' not found in release {release_name}")
             else:
                 assets_list = list(assets)
                 if len(assets_list) == 1:
@@ -214,27 +280,21 @@ class VBTAsset(KnowledgeAsset):
             headers = {"Accept": "application/vnd.github+json"}
             if token is not None:
                 headers["Authorization"] = f"token {token}"
-            if release_name == "latest":
-                release_url = f"https://api.github.com/repos/{repo_owner}/{repo_name}/releases/latest"
-                response = requests.get(release_url, headers=headers)
-                response.raise_for_status()
-                release_info = response.json()
-            else:
-                releases_url = f"https://api.github.com/repos/{repo_owner}/{repo_name}/releases"
-                response = requests.get(releases_url, headers=headers)
-                response.raise_for_status()
-                releases = response.json()
-                release_info = None
-                for release in releases:
-                    if release.get("name") == release_name:
-                        release_info = release
-                if release_info is None:
-                    raise ValueError(f"Release '{release_name}' not found")
+            releases_url = f"https://api.github.com/repos/{repo_owner}/{repo_name}/releases"
+            response = requests.get(releases_url, headers=headers)
+            response.raise_for_status()
+            releases = response.json()
+            release_info = None
+            for release in releases:
+                if release.get("name") == release_name:
+                    release_info = release
+            if release_info is None:
+                raise ValueError(f"Release '{release_name}' not found")
             assets = release_info.get("assets", [])
             if asset_name is not None:
                 asset = next((a for a in assets if a["name"] == asset_name), None)
                 if asset is None:
-                    raise Exception(f"Asset '{asset_name}' not found in release {release}")
+                    raise Exception(f"Asset '{asset_name}' not found in release {release_name}")
             else:
                 if len(assets) == 1:
                     asset = assets[0]
@@ -263,15 +323,15 @@ class VBTAsset(KnowledgeAsset):
         )
 
         if cache:
-            check_mkdir(release_dir, **cache_mkdir_kwargs)
-            cache_file = release_dir / asset_name
+            check_mkdir(assets_dir, **cache_mkdir_kwargs)
+            cache_file = assets_dir / asset_name
             with open(cache_file, "wb") as f:
                 with ProgressBar(total=file_size, show_progress=show_progress, **pbar_kwargs) as pbar:
                     for chunk in asset_response.iter_content(chunk_size=chunk_size):
                         if chunk:
                             f.write(chunk)
                             pbar.update(len(chunk))
-            return cls.from_json_file(cache_file, **kwargs)
+            return cls.from_json_file(cache_file, release_name=release_name, **kwargs)
         else:
             with io.BytesIO() as bytes_io:
                 with ProgressBar(total=file_size, show_progress=show_progress, **pbar_kwargs) as pbar:
@@ -283,7 +343,7 @@ class VBTAsset(KnowledgeAsset):
             compression = suggest_compression(asset_name)
             if compression is not None and "compression" not in kwargs:
                 kwargs["compression"] = compression
-            return cls.from_json_bytes(bytes_, **kwargs)
+            return cls.from_json_bytes(bytes_, release_name=release_name, **kwargs)
 
     def find_link(
         self: VBTAssetT,
@@ -467,18 +527,18 @@ class VBTAsset(KnowledgeAsset):
         self,
         cache: tp.Optional[bool] = None,
         cache_dir: tp.Optional[tp.PathLike] = None,
-        def_cache_suffix: tp.Optional[tp.PathLike] = "markdown",
         cache_mkdir_kwargs: tp.KwargsLike = None,
         clear_cache: tp.Optional[bool] = None,
         show_progress: tp.Optional[bool] = None,
         pbar_kwargs: tp.KwargsLike = None,
+        template_context: tp.KwargsLike = None,
         **kwargs,
     ) -> Path:
         """Save to Markdown files.
 
-        If `cache` is True, uses the cache directory. Otherwise, creates a temporary directory.
-        If `clear_cache` is True, deletes any existing directory before creating a new one.
-        Returns the path of the directory where Markdown files are stored.
+        If `cache` is True, uses the cache directory (`markdown_dir` in settings). Otherwise,
+        creates a temporary directory. If `clear_cache` is True, deletes any existing directory
+        before creating a new one. Returns the path of the directory where Markdown files are stored.
 
         Keyword arguments are passed to `vectorbtpro.utils.knowledge.custom_asset_funcs.ToMarkdownAssetFunc`.
 
@@ -487,17 +547,26 @@ class VBTAsset(KnowledgeAsset):
         from vectorbtpro.utils.knowledge.custom_asset_funcs import ToMarkdownAssetFunc
 
         cache = self.resolve_setting(cache, "cache")
-        def_cache_dir = cache_dir is None
-        cache_dir = self.resolve_setting(cache_dir, "cache_dir")
+        markdown_dir = self.resolve_setting(cache_dir, "markdown_dir")
         cache_mkdir_kwargs = self.resolve_setting(cache_mkdir_kwargs, "cache_mkdir_kwargs", merge=True)
         clear_cache = self.resolve_setting(clear_cache, "clear_cache")
         show_progress = self.resolve_setting(show_progress, "show_progress")
         pbar_kwargs = self.resolve_setting(pbar_kwargs, "pbar_kwargs", merge=True)
+        template_context = self.resolve_setting(template_context, "template_context", merge=True)
 
         if cache:
-            markdown_dir = Path(cache_dir)
-            if def_cache_dir and def_cache_suffix is not None:
-                markdown_dir /= def_cache_suffix
+            if self.release_name:
+                template_context = flat_merge_dicts(dict(release_name=self.release_name), template_context)
+            if isinstance(markdown_dir, CustomTemplate):
+                cache_dir = self.get_setting("cache_dir")
+                if isinstance(cache_dir, CustomTemplate):
+                    cache_dir = cache_dir.substitute(template_context, eval_id="cache_dir")
+                template_context = flat_merge_dicts(dict(cache_dir=cache_dir), template_context)
+                release_dir = self.get_setting("release_dir")
+                if isinstance(release_dir, CustomTemplate):
+                    release_dir = release_dir.substitute(template_context, eval_id="release_dir")
+                template_context = flat_merge_dicts(dict(release_dir=release_dir), template_context)
+                markdown_dir = markdown_dir.substitute(template_context, eval_id="markdown_dir")
             if markdown_dir.exists():
                 if clear_cache:
                     remove_dir(markdown_dir, missing_ok=True, with_contents=True)
@@ -609,11 +678,11 @@ class VBTAsset(KnowledgeAsset):
         self,
         cache: tp.Optional[bool] = None,
         cache_dir: tp.Optional[tp.PathLike] = None,
-        def_cache_suffix: tp.Optional[tp.PathLike] = "html",
         cache_mkdir_kwargs: tp.KwargsLike = None,
         clear_cache: tp.Optional[bool] = None,
         show_progress: tp.Optional[bool] = None,
         pbar_kwargs: tp.KwargsLike = None,
+        template_context: tp.KwargsLike = None,
         return_url_map: bool = False,
         **kwargs,
     ) -> tp.Union[Path, tp.Tuple[Path, dict]]:
@@ -624,25 +693,33 @@ class VBTAsset(KnowledgeAsset):
 
         In addition, if there are multiple top-level parents, creates an index page.
 
-        If `cache` is True, uses the cache directory. Otherwise, creates a temporary directory.
-        If `clear_cache` is True, deletes any existing directory before creating a new one.
+        If `cache` is True, uses the cache directory (`html_dir` in settings). Otherwise, creates
+        a temporary directory. If `clear_cache` is True, deletes any existing directory before creating a new one.
 
         Keyword arguments are passed to `vectorbtpro.utils.knowledge.custom_asset_funcs.ToHTMLAssetFunc`."""
         import tempfile
         from vectorbtpro.utils.knowledge.custom_asset_funcs import ToHTMLAssetFunc
 
         cache = self.resolve_setting(cache, "cache")
-        def_cache_dir = cache_dir is None
-        cache_dir = self.resolve_setting(cache_dir, "cache_dir")
+        html_dir = self.resolve_setting(cache_dir, "html_dir")
         cache_mkdir_kwargs = self.resolve_setting(cache_mkdir_kwargs, "cache_mkdir_kwargs", merge=True)
         clear_cache = self.resolve_setting(clear_cache, "clear_cache")
         show_progress = self.resolve_setting(show_progress, "show_progress")
         pbar_kwargs = self.resolve_setting(pbar_kwargs, "pbar_kwargs", merge=True)
 
         if cache:
-            html_dir = Path(cache_dir)
-            if def_cache_dir and def_cache_suffix is not None:
-                html_dir /= def_cache_suffix
+            if self.release_name:
+                template_context = flat_merge_dicts(dict(release_name=self.release_name), template_context)
+            if isinstance(html_dir, CustomTemplate):
+                cache_dir = self.get_setting("cache_dir")
+                if isinstance(cache_dir, CustomTemplate):
+                    cache_dir = cache_dir.substitute(template_context, eval_id="cache_dir")
+                template_context = flat_merge_dicts(dict(cache_dir=cache_dir), template_context)
+                release_dir = self.get_setting("release_dir")
+                if isinstance(release_dir, CustomTemplate):
+                    release_dir = release_dir.substitute(template_context, eval_id="release_dir")
+                template_context = flat_merge_dicts(dict(release_dir=release_dir), template_context)
+                html_dir = html_dir.substitute(template_context, eval_id="html_dir")
             if html_dir.exists():
                 if clear_cache:
                     remove_dir(html_dir, missing_ok=True, with_contents=True)
@@ -1168,20 +1245,31 @@ class VBTAsset(KnowledgeAsset):
                 spec_settings_path["knowledge.chat"].append(cls_._settings_path + ".chat")
         return spec_settings_path
 
-    def rank_documents(self, *args, **kwargs) -> tp.MaybeVBTAsset:
+    def embed(self, *args, template_context: tp.KwargsLike = None, **kwargs) -> tp.Optional[tp.MaybeVBTAsset]:
+        template_context = flat_merge_dicts(dict(release_name=self.release_name), template_context)
         spec_settings_path = self.resolve_spec_settings_path()
         if spec_settings_path:
             with SpecSettingsPath(spec_settings_path):
-                return KnowledgeAsset.rank_documents(self, *args, **kwargs)
-        return KnowledgeAsset.rank_documents(self, *args, **kwargs)
+                return KnowledgeAsset.embed(self, *args, template_context=template_context, **kwargs)
+        return KnowledgeAsset.embed(self, *args, template_context=template_context, **kwargs)
+
+    def rank(self, *args, template_context: tp.KwargsLike = None, **kwargs) -> tp.MaybeVBTAsset:
+        template_context = flat_merge_dicts(dict(release_name=self.release_name), template_context)
+        spec_settings_path = self.resolve_spec_settings_path()
+        if spec_settings_path:
+            with SpecSettingsPath(spec_settings_path):
+                return KnowledgeAsset.rank(self, *args, template_context=template_context, **kwargs)
+        return KnowledgeAsset.rank(self, *args, template_context=template_context, **kwargs)
 
     @hybrid_method
-    def chat(cls_or_self, *args, **kwargs) -> tp.ChatOutput:
+    def chat(cls_or_self, *args, template_context: tp.KwargsLike = None, **kwargs) -> tp.ChatOutput:
+        if not isinstance(cls_or_self, type):
+            template_context = flat_merge_dicts(dict(release_name=cls_or_self.release_name), template_context)
         spec_settings_path = cls_or_self.resolve_spec_settings_path()
         if spec_settings_path:
             with SpecSettingsPath(spec_settings_path):
-                return KnowledgeAsset.chat.__func__(cls_or_self, *args, **kwargs)
-        return KnowledgeAsset.chat.__func__(cls_or_self, *args, **kwargs)
+                return KnowledgeAsset.chat.__func__(cls_or_self, *args, template_context=template_context, **kwargs)
+        return KnowledgeAsset.chat.__func__(cls_or_self, *args, template_context=template_context, **kwargs)
 
 
 PagesAssetT = tp.TypeVar("PagesAssetT", bound="PagesAsset")

@@ -2033,6 +2033,7 @@ knowledge = frozen_cfg(
     ),
     in_dumps=False,
     dump_kwargs=flex_cfg(),
+    document_cls=None,
     document_kwargs=flex_cfg(),
     merge_chunks=True,
     sort_keys=False,
@@ -2257,6 +2258,11 @@ knowledge = frozen_cfg(
             ipython_markdown=flex_cfg(),
             ipython_html=flex_cfg(),
             html=flex_cfg(
+                dir_path=RepEval("Path(cache_dir) / 'html'"),
+                mkdir_kwargs=dict(
+                    mkdir=True,
+                ),
+                temp_files=False,
                 refresh_page=True,
                 file_prefix_len=20,
                 file_suffix_len=6,
@@ -2264,8 +2270,11 @@ knowledge = frozen_cfg(
         ),
     ),
     chat=flex_cfg(
+        chat_dir=RepEval("Path(cache_dir) / 'chat'"),
         stream=True,
         to_context_kwargs=flex_cfg(),
+        rank=False,
+        rank_kwargs=flex_cfg(),
         max_tokens=120_000,
         system_prompt="You are a helpful assistant. Given the context information and not prior knowledge, answer the query.",
         system_as_user=False,
@@ -2345,7 +2354,7 @@ $context
         store_id="default",
         document_store_configs=flex_cfg(
             file=flex_cfg(
-                dir_path=Sub("$cache_dir/document_store"),
+                dir_path=RepEval("Path(cache_dir) / 'document_store'"),
                 compression=None,
                 save_kwargs=flex_cfg(
                     mkdir_kwargs=dict(
@@ -2359,7 +2368,7 @@ $context
         index_id="default",
         node_index_configs=flex_cfg(
             file=flex_cfg(
-                dir_path=Sub("$cache_dir/node_index"),
+                dir_path=RepEval("Path(cache_dir) / 'node_index'"),
                 compression=None,
                 save_kwargs=flex_cfg(
                     mkdir_kwargs=dict(
@@ -2369,26 +2378,30 @@ $context
                 load_kwargs=flex_cfg(),
             ),
         ),
-        top_k=None,
-        sim_func="cosine",
-        sim_agg_func="mean",
+        score_func="cosine",
+        score_agg_func="mean",
         commit_document_store=True,
         commit_node_index=True,
     ),
     assets=flex_cfg(
         vbt=flex_cfg(
-            asset_name=None,
             cache_dir="./knowledge/vbt/",
+            release_dir=RepEval("(Path(cache_dir) / 'releases' / release_name) if release_name else cache_dir"),
+            assets_dir=RepEval("Path(release_dir) / 'assets'"),
+            markdown_dir=RepEval("Path(release_dir) / 'markdown'"),
+            html_dir=RepEval("Path(release_dir) / 'html'"),
             release_name=None,
+            asset_name=None,
             repo_owner="polakowo",
             repo_name="vectorbt.pro",
             token=None,
             token_required=False,
             use_pygithub=None,
             chunk_size=8192,
+            document_cls=None,
             document_kwargs=flex_cfg(
                 text_path="content",
-                excl_metadata=RepEval("asset.get_setting('minimize_keys')"),
+                excl_metadata=RepEval("asset_cls.get_setting('minimize_keys')"),
                 excl_embed_metadata=True,
             ),
             minimize_keys=[],
@@ -2421,6 +2434,7 @@ $context
             allow_suffix=False,
             merge_targets=True,
             chat=flex_cfg(
+                chat_dir=RepEval("Path(release_dir) / 'chat'"),
                 system_prompt="You are an assistant with access to the VectorBT PRO (VBT) Python library "
                 "documentation and Discord history. VBT is a proprietary successor to the open-source "
                 "vectorbt for financial backtesting. As an expert, provide clear and accurate answers "
@@ -2429,10 +2443,23 @@ $context
                 "VBT exclusively refers to VectorBT PRO, which significantly differs from the open-source "
                 "version. Given the context information and not prior knowledge, answer the query.",
                 document_store="file",
+                document_store_configs=flex_cfg(
+                    file=flex_cfg(
+                        dir_path=RepEval("Path(release_dir) / 'document_store'"),
+                    ),
+                ),
                 node_index="file",
+                node_index_configs=flex_cfg(
+                    file=flex_cfg(
+                        dir_path=RepEval("Path(release_dir) / 'node_index'"),
+                    ),
+                ),
             ),
         ),
         pages=flex_cfg(
+            assets_dir=RepEval("Path(release_dir) / 'pages' / 'assets'"),
+            markdown_dir=RepEval("Path(release_dir) / 'pages' / 'markdown'"),
+            html_dir=RepEval("Path(release_dir) / 'pages' / 'html'"),
             asset_name="pages.json.zip",
             token_required=True,
             minimize_keys=["parent", "children", "type", "icon", "tags"],
@@ -2460,6 +2487,9 @@ $context
             up_aggregate_pages=True,
         ),
         messages=flex_cfg(
+            assets_dir=RepEval("Path(release_dir) / 'messages' / 'assets'"),
+            markdown_dir=RepEval("Path(release_dir) / 'messages' / 'markdown'"),
+            html_dir=RepEval("Path(release_dir) / 'messages' / 'html'"),
             asset_name="messages.json.zip",
             token_required=True,
             minimize_keys=["block", "thread", "replies", "mentions", "reactions"],

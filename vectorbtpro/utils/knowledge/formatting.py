@@ -278,6 +278,7 @@ class ContentFormatter(Configured):
         buffer_output: tp.Optional[bool] = None,
         close_output: tp.Optional[bool] = None,
         update_interval: tp.Optional[float] = None,
+        template_context: tp.KwargsLike = None,
         **kwargs,
     ) -> None:
         Configured.__init__(
@@ -287,6 +288,7 @@ class ContentFormatter(Configured):
             buffer_output=buffer_output,
             close_output=close_output,
             update_interval=update_interval,
+            template_context=template_context,
             **kwargs,
         )
 
@@ -295,6 +297,7 @@ class ContentFormatter(Configured):
         buffer_output = self.resolve_setting(buffer_output, "buffer_output")
         close_output = self.resolve_setting(close_output, "close_output")
         update_interval = self.resolve_setting(update_interval, "update_interval")
+        template_context = self.resolve_setting(template_context, "template_context", merge=True)
 
         if isinstance(output_to, (str, Path)):
             output_to = Path(output_to).open("w")
@@ -309,6 +312,7 @@ class ContentFormatter(Configured):
         self._buffer_output = buffer_output
         self._close_output = close_output
         self._update_interval = update_interval
+        self._template_context = template_context
 
         self._last_update = None
         self._lines = []
@@ -342,6 +346,11 @@ class ContentFormatter(Configured):
     def update_interval(self) -> tp.Optional[float]:
         """Update interval (in seconds)."""
         return self._update_interval
+
+    @property
+    def template_context(self) -> tp.Kwargs:
+        """Context used to substitute templates."""
+        return self._template_context
 
     @property
     def last_update(self) -> tp.Optional[int]:
@@ -629,11 +638,9 @@ class HTMLFileFormatter(ContentFormatter):
         *args,
         page_title: str = "",
         refresh_page: tp.Optional[bool] = None,
-        cache: tp.Optional[bool] = None,
-        cache_dir: tp.Optional[tp.PathLike] = None,
-        def_cache_suffix: tp.Optional[tp.PathLike] = "html",
-        cache_mkdir_kwargs: tp.KwargsLike = None,
-        clear_cache: tp.Optional[bool] = None,
+        dir_path: tp.Optional[tp.PathLike] = None,
+        mkdir_kwargs: tp.KwargsLike = None,
+        temp_files: tp.Optional[bool] = None,
         file_prefix_len: tp.Optional[int] = None,
         file_suffix_len: tp.Optional[int] = None,
         open_browser: tp.Optional[bool] = None,
@@ -647,11 +654,9 @@ class HTMLFileFormatter(ContentFormatter):
             *args,
             page_title=page_title,
             refresh_page=refresh_page,
-            cache=cache,
-            cache_dir=cache_dir,
-            def_cache_suffix=def_cache_suffix,
-            cache_mkdir_kwargs=cache_mkdir_kwargs,
-            clear_cache=clear_cache,
+            dir_path=dir_path,
+            mkdir_kwargs=mkdir_kwargs,
+            temp_files=temp_files,
             file_prefix_len=file_prefix_len,
             file_suffix_len=file_suffix_len,
             open_browser=open_browser,
@@ -662,11 +667,9 @@ class HTMLFileFormatter(ContentFormatter):
         )
 
         refresh_page = self.resolve_setting(refresh_page, "refresh_page")
-        cache = self.resolve_setting(cache, "cache")
-        def_cache_dir = cache_dir is None
-        cache_dir = self.resolve_setting(cache_dir, "cache_dir")
-        cache_mkdir_kwargs = self.resolve_setting(cache_mkdir_kwargs, "cache_mkdir_kwargs", merge=True)
-        clear_cache = self.resolve_setting(clear_cache, "clear_cache")
+        dir_path = self.resolve_setting(dir_path, "dir_path")
+        mkdir_kwargs = self.resolve_setting(mkdir_kwargs, "mkdir_kwargs", merge=True)
+        temp_files = self.resolve_setting(temp_files, "temp_files")
         file_prefix_len = self.resolve_setting(file_prefix_len, "file_prefix_len")
         file_suffix_len = self.resolve_setting(file_suffix_len, "file_suffix_len")
         open_browser = self.resolve_setting(open_browser, "open_browser")
@@ -674,16 +677,26 @@ class HTMLFileFormatter(ContentFormatter):
         to_html_kwargs = self.resolve_setting(to_html_kwargs, "to_html_kwargs", merge=True)
         format_html_kwargs = self.resolve_setting(format_html_kwargs, "format_html_kwargs", merge=True)
 
-        cache_dir = Path(cache_dir)
-        if def_cache_dir and def_cache_suffix is not None:
-            cache_dir /= def_cache_suffix
+        dir_path = self.resolve_setting(dir_path, "dir_path")
+        template_context = self.template_context
+        if isinstance(dir_path, CustomTemplate):
+            cache_dir = self.get_setting("cache_dir", default=None)
+            if cache_dir is not None:
+                if isinstance(cache_dir, CustomTemplate):
+                    cache_dir = cache_dir.substitute(template_context, eval_id="cache_dir")
+                template_context = flat_merge_dicts(dict(cache_dir=cache_dir), template_context)
+            release_dir = self.get_setting("release_dir", default=None)
+            if release_dir is not None:
+                if isinstance(release_dir, CustomTemplate):
+                    release_dir = release_dir.substitute(template_context, eval_id="release_dir")
+                template_context = flat_merge_dicts(dict(release_dir=release_dir), template_context)
+            dir_path = dir_path.substitute(template_context, eval_id="dir_path")
 
         self._page_title = page_title
         self._refresh_page = refresh_page
-        self._cache = cache
-        self._cache_dir = cache_dir
-        self._cache_mkdir_kwargs = cache_mkdir_kwargs
-        self._clear_cache = clear_cache
+        self._dir_path = dir_path
+        self._mkdir_kwargs = mkdir_kwargs
+        self._temp_files = temp_files
         self._file_prefix_len = file_prefix_len
         self._file_suffix_len = file_suffix_len
         self._open_browser = open_browser
@@ -704,26 +717,21 @@ class HTMLFileFormatter(ContentFormatter):
         return self._refresh_page
 
     @property
-    def cache(self) -> bool:
-        """Whether to store the HTML file in the cache directory or as a temporary file."""
-        return self._cache
+    def dir_path(self) -> tp.Optional[tp.Path]:
+        """Path to the directory."""
+        return self._dir_path
 
     @property
-    def cache_dir(self) -> tp.PathLike:
-        """Path to the cache directory.
-
-        Files will be stored in the subdirectory "formatting"."""
-        return self._cache_dir
-
-    @property
-    def cache_mkdir_kwargs(self) -> tp.Kwargs:
+    def mkdir_kwargs(self) -> tp.Kwargs:
         """Keyword arguments passed to `vectorbtpro.utils.path_.check_mkdir`."""
-        return self._cache_mkdir_kwargs
+        return self._mkdir_kwargs
 
     @property
-    def clear_cache(self) -> bool:
-        """Whether to remove the cache directory."""
-        return self._clear_cache
+    def temp_files(self) -> bool:
+        """Whether to save as temporary files
+
+        Otherwise, will save under `HTMLFileFormatter.dir_path`."""
+        return self._temp_files
 
     @property
     def file_prefix_len(self) -> int:
@@ -763,14 +771,11 @@ class HTMLFileFormatter(ContentFormatter):
     def initialize(self) -> None:
         ContentFormatter.initialize(self)
 
-        if self.cache:
+        if not self.temp_files:
             import secrets
             import string
 
-            if self.cache_dir.exists():
-                if self.clear_cache:
-                    remove_dir(self.cache_dir, missing_ok=True, with_contents=True)
-            check_mkdir(self.cache_dir, **self.cache_mkdir_kwargs)
+            check_mkdir(self.dir_path, **self.mkdir_kwargs)
             page_title = self.page_title.lower().replace(" ", "-")
             if len(page_title) > self.file_prefix_len:
                 words = page_title.split("-")
@@ -789,7 +794,7 @@ class HTMLFileFormatter(ContentFormatter):
                 short_filename = f"{truncated_page_title}-{random_suffix}.html"
             else:
                 short_filename = f"{random_suffix}.html"
-            file_path = self.cache_dir / short_filename
+            file_path = self.dir_path / short_filename
             self._file_handle = open(str(file_path.resolve()), "w", encoding="utf-8")
         else:
             import tempfile

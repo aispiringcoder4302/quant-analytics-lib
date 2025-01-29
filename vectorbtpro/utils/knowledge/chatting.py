@@ -30,7 +30,7 @@ from vectorbtpro.utils.knowledge.formatting import ContentFormatter, HTMLFileFor
 from vectorbtpro.utils.parsing import get_func_arg_names, get_func_kwargs
 from vectorbtpro.utils.pbar import ProgressBar
 from vectorbtpro.utils.pickling import dumps
-from vectorbtpro.utils.template import CustomTemplate, RepFunc, Sub
+from vectorbtpro.utils.template import CustomTemplate, Sub, Rep, RepFunc
 
 try:
     if not tp.TYPE_CHECKING:
@@ -94,6 +94,7 @@ __all__ = [
     "TokenSplitter",
     "SegmentSplitter",
     "LlamaIndexSplitter",
+    "split_text",
     "StoreDocument",
     "TextDocument",
     "DocumentStore",
@@ -103,10 +104,14 @@ __all__ = [
     "NodeIndex",
     "MemoryIndex",
     "FileIndex",
+    "EmbeddedDocument",
+    "ScoredDocument",
     "DocumentRanker",
+    "embed_documents",
     "rank_documents",
-    "split_text",
+    "Rankable",
     "Contextable",
+    "RankContextable",
 ]
 
 
@@ -123,8 +128,17 @@ class Tokenizer(Configured):
 
     _settings_path: tp.SettingsPath = ["knowledge", "knowledge.chat"]
 
-    def __init__(self, **kwargs) -> None:
-        Configured.__init__(self, **kwargs)
+    def __init__(self, template_context: tp.KwargsLike = None, **kwargs) -> None:
+        Configured.__init__(self, template_context=template_context, **kwargs)
+
+        template_context = self.resolve_setting(template_context, "template_context", merge=True)
+
+        self._template_context = template_context
+
+    @property
+    def template_context(self) -> tp.Kwargs:
+        """Context used to substitute templates."""
+        return self._template_context
 
     def encode(self, text: str) -> tp.Tokens:
         """Encode text into a list of tokens."""
@@ -317,8 +331,17 @@ class Embeddings(Configured):
 
     _settings_path: tp.SettingsPath = "knowledge"
 
-    def __init__(self, **kwargs) -> None:
-        Configured.__init__(self, **kwargs)
+    def __init__(self, template_context: tp.KwargsLike = None, **kwargs) -> None:
+        Configured.__init__(self, template_context=template_context, **kwargs)
+
+        template_context = self.resolve_setting(template_context, "template_context", merge=True)
+
+        self._template_context = template_context
+
+    @property
+    def template_context(self) -> tp.Kwargs:
+        """Context used to substitute templates."""
+        return self._template_context
 
     @property
     def model(self) -> tp.Optional[str]:
@@ -349,9 +372,18 @@ class OpenAIEmbeddings(Embeddings):
         batch_size: tp.Optional[int] = None,
         show_progress: tp.Optional[bool] = None,
         pbar_kwargs: tp.KwargsLike = None,
+        template_context: tp.KwargsLike = None,
         **kwargs,
     ) -> None:
-        Embeddings.__init__(self, model=model, **kwargs)
+        Embeddings.__init__(
+            self,
+            model=model,
+            batch_size=batch_size,
+            show_progress=show_progress,
+            pbar_kwargs=pbar_kwargs,
+            template_context=template_context,
+            **kwargs,
+        )
 
         from vectorbtpro.utils.module_ import assert_can_import
 
@@ -454,9 +486,18 @@ class LiteLLMEmbeddings(Embeddings):
         batch_size: tp.Optional[int] = None,
         show_progress: tp.Optional[bool] = None,
         pbar_kwargs: tp.KwargsLike = None,
+        template_context: tp.KwargsLike = None,
         **kwargs,
     ) -> None:
-        Embeddings.__init__(self, model=model, **kwargs)
+        Embeddings.__init__(
+            self,
+            model=model,
+            batch_size=batch_size,
+            show_progress=show_progress,
+            pbar_kwargs=pbar_kwargs,
+            template_context=template_context,
+            **kwargs,
+        )
 
         from vectorbtpro.utils.module_ import assert_can_import
 
@@ -540,8 +581,18 @@ class LlamaIndexEmbeddings(Embeddings):
 
     _settings_path: tp.SettingsPath = "knowledge.chat.embeddings_configs.llama_index"
 
-    def __init__(self, embedding: tp.Union[None, str, tp.MaybeType[BaseEmbeddingT]] = None, **kwargs) -> None:
-        Embeddings.__init__(self, embedding=embedding, **kwargs)
+    def __init__(
+        self,
+        embedding: tp.Union[None, str, tp.MaybeType[BaseEmbeddingT]] = None,
+        template_context: tp.KwargsLike = None,
+        **kwargs,
+    ) -> None:
+        Embeddings.__init__(
+            self,
+            embedding=embedding,
+            template_context=template_context,
+            **kwargs,
+        )
 
         from vectorbtpro.utils.module_ import assert_can_import
 
@@ -710,8 +761,8 @@ class Completions(Configured):
         context_prompt: tp.Optional[str] = None,
         formatter: tp.ContentFormatterLike = None,
         formatter_kwargs: tp.KwargsLike = None,
-        template_context: tp.KwargsLike = None,
         silence_warnings: tp.Optional[bool] = None,
+        template_context: tp.KwargsLike = None,
         **kwargs,
     ) -> None:
         Configured.__init__(
@@ -727,8 +778,8 @@ class Completions(Configured):
             context_prompt=context_prompt,
             formatter=formatter,
             formatter_kwargs=formatter_kwargs,
-            template_context=template_context,
             silence_warnings=silence_warnings,
+            template_context=template_context,
             **kwargs,
         )
 
@@ -743,8 +794,8 @@ class Completions(Configured):
         context_prompt = self.resolve_setting(context_prompt, "context_prompt")
         formatter = self.resolve_setting(formatter, "formatter", default=None)
         formatter_kwargs = self.resolve_setting(formatter_kwargs, "formatter_kwargs", default=None, merge=True)
-        template_context = self.resolve_setting(template_context, "template_context", merge=True)
         silence_warnings = self.resolve_setting(silence_warnings, "silence_warnings")
+        template_context = self.resolve_setting(template_context, "template_context", merge=True)
 
         tokenizer = resolve_tokenizer(tokenizer)
         formatter = resolve_formatter(formatter)
@@ -760,8 +811,8 @@ class Completions(Configured):
         self._context_prompt = context_prompt
         self._formatter = formatter
         self._formatter_kwargs = formatter_kwargs
-        self._template_context = template_context
         self._silence_warnings = silence_warnings
+        self._template_context = template_context
 
     @property
     def context(self) -> str:
@@ -844,14 +895,14 @@ class Completions(Configured):
         return self._formatter_kwargs
 
     @property
-    def template_context(self) -> tp.Kwargs:
-        """Context used to substitute templates."""
-        return self._template_context
-
-    @property
     def silence_warnings(self) -> bool:
         """Whether to silence warnings."""
         return self._silence_warnings
+
+    @property
+    def template_context(self) -> tp.Kwargs:
+        """Context used to substitute templates."""
+        return self._template_context
 
     @property
     def model(self) -> tp.Optional[str]:
@@ -888,8 +939,11 @@ class Completions(Configured):
         silence_warnings = self.silence_warnings
 
         if isinstance(tokenizer, type):
-            if issubclass(tokenizer, TikTokenizer) and "page_title" not in tokenizer_kwargs:
-                tokenizer_kwargs = dict(tokenizer_kwargs)
+            tokenizer_kwargs = dict(tokenizer_kwargs)
+            tokenizer_kwargs["template_context"] = merge_dicts(
+                template_context, tokenizer_kwargs.get("template_context", None)
+            )
+            if issubclass(tokenizer, TikTokenizer) and "model" not in tokenizer_kwargs:
                 tokenizer_kwargs["model"] = self.model
             tokenizer = tokenizer(**tokenizer_kwargs)
         elif tokenizer_kwargs:
@@ -950,6 +1004,7 @@ class Completions(Configured):
         stream = self.stream
         formatter = self.formatter
         formatter_kwargs = self.formatter_kwargs
+        template_context = self.template_context
 
         messages = self.prepare_messages(message)
         if self.stream:
@@ -958,12 +1013,29 @@ class Completions(Configured):
             response = self.get_chat_response(messages)
 
         if isinstance(formatter, type):
+            formatter_kwargs = dict(formatter_kwargs)
+            formatter_kwargs["template_context"] = merge_dicts(
+                template_context, formatter_kwargs.get("template_context", None)
+            )
             if issubclass(formatter, HTMLFileFormatter):
-                formatter_kwargs = dict(formatter_kwargs)
                 if "page_title" not in formatter_kwargs:
                     formatter_kwargs["page_title"] = message
-                if "def_cache_suffix" not in formatter_kwargs:
-                    formatter_kwargs["def_cache_suffix"] = "chat"
+                if "cache_dir" not in formatter_kwargs:
+                    chat_dir = self.get_setting("chat_dir", default=None)
+                    if isinstance(chat_dir, CustomTemplate):
+                        cache_dir = self.get_setting("cache_dir", default=None)
+                        if cache_dir is not None:
+                            if isinstance(cache_dir, CustomTemplate):
+                                cache_dir = cache_dir.substitute(template_context, eval_id="cache_dir")
+                            template_context = flat_merge_dicts(dict(cache_dir=cache_dir), template_context)
+                        release_dir = self.get_setting("release_dir", default=None)
+                        if release_dir is not None:
+                            if isinstance(release_dir, CustomTemplate):
+                                release_dir = release_dir.substitute(template_context, eval_id="release_dir")
+                            template_context = flat_merge_dicts(dict(release_dir=release_dir), template_context)
+                        chat_dir = chat_dir.substitute(template_context, eval_id="chat_dir")
+                    chat_dir = Path(chat_dir) / "html"
+                    formatter_kwargs["dir_path"] = chat_dir
             formatter = formatter(**formatter_kwargs)
         elif formatter_kwargs:
             formatter = formatter.replace(**formatter_kwargs)
@@ -1015,8 +1087,8 @@ class OpenAICompletions(Completions):
         context_prompt: tp.Optional[str] = None,
         formatter: tp.ContentFormatterLike = None,
         formatter_kwargs: tp.KwargsLike = None,
-        template_context: tp.KwargsLike = None,
         silence_warnings: tp.Optional[bool] = None,
+        template_context: tp.KwargsLike = None,
         model: tp.Optional[str] = None,
         **kwargs,
     ) -> None:
@@ -1033,8 +1105,8 @@ class OpenAICompletions(Completions):
             context_prompt=context_prompt,
             formatter=formatter,
             formatter_kwargs=formatter_kwargs,
-            template_context=template_context,
             silence_warnings=silence_warnings,
+            template_context=template_context,
             model=model,
             **kwargs,
         )
@@ -1124,8 +1196,8 @@ class LiteLLMCompletions(Completions):
         context_prompt: tp.Optional[str] = None,
         formatter: tp.ContentFormatterLike = None,
         formatter_kwargs: tp.KwargsLike = None,
-        template_context: tp.KwargsLike = None,
         silence_warnings: tp.Optional[bool] = None,
+        template_context: tp.KwargsLike = None,
         model: tp.Optional[str] = None,
         **kwargs,
     ) -> None:
@@ -1142,8 +1214,8 @@ class LiteLLMCompletions(Completions):
             context_prompt=context_prompt,
             formatter=formatter,
             formatter_kwargs=formatter_kwargs,
-            template_context=template_context,
             silence_warnings=silence_warnings,
+            template_context=template_context,
             model=model,
             **kwargs,
         )
@@ -1225,8 +1297,8 @@ class LlamaIndexCompletions(Completions):
         context_prompt: tp.Optional[str] = None,
         formatter: tp.ContentFormatterLike = None,
         formatter_kwargs: tp.KwargsLike = None,
-        template_context: tp.KwargsLike = None,
         silence_warnings: tp.Optional[bool] = None,
+        template_context: tp.KwargsLike = None,
         llm: tp.Union[None, str, tp.MaybeType[LLMT]] = None,
         **kwargs,
     ) -> None:
@@ -1243,8 +1315,8 @@ class LlamaIndexCompletions(Completions):
             context_prompt=context_prompt,
             formatter=formatter,
             formatter_kwargs=formatter_kwargs,
-            template_context=template_context,
             silence_warnings=silence_warnings,
+            template_context=template_context,
             llm=llm,
             **kwargs,
         )
@@ -1407,8 +1479,17 @@ class TextSplitter(Configured):
 
     _settings_path: tp.SettingsPath = ["knowledge", "knowledge.chat"]
 
-    def __init__(self, **kwargs) -> None:
-        Configured.__init__(self, **kwargs)
+    def __init__(self, template_context: tp.KwargsLike = None, **kwargs) -> None:
+        Configured.__init__(self, template_context=template_context, **kwargs)
+
+        template_context = self.resolve_setting(template_context, "template_context", merge=True)
+
+        self._template_context = template_context
+
+    @property
+    def template_context(self) -> tp.Kwargs:
+        """Context used to substitute templates."""
+        return self._template_context
 
     def split(self, text: str) -> tp.TSRangeChunks:
         """Split text and yield start character and end character position of each chunk."""
@@ -1453,6 +1534,10 @@ class TokenSplitter(TextSplitter):
 
         tokenizer = resolve_tokenizer(tokenizer)
         if isinstance(tokenizer, type):
+            tokenizer_kwargs = dict(tokenizer_kwargs)
+            tokenizer_kwargs["template_context"] = merge_dicts(
+                self.template_context, tokenizer_kwargs.get("template_context", None)
+            )
             tokenizer = tokenizer(**tokenizer_kwargs)
         elif tokenizer_kwargs:
             tokenizer = tokenizer.replace(**tokenizer_kwargs)
@@ -1717,8 +1802,13 @@ class LlamaIndexSplitter(TextSplitter):
 
     _settings_path: tp.SettingsPath = "knowledge.chat.text_splitter_configs.llama_index"
 
-    def __init__(self, node_parser: tp.Union[None, str, NodeParserT] = None, **kwargs) -> None:
-        TextSplitter.__init__(self, **kwargs)
+    def __init__(
+        self,
+        node_parser: tp.Union[None, str, NodeParserT] = None,
+        template_context: tp.KwargsLike = None,
+        **kwargs,
+    ) -> None:
+        TextSplitter.__init__(self, template_context=template_context, **kwargs)
 
         from vectorbtpro.utils.module_ import assert_can_import
 
@@ -1868,6 +1958,9 @@ class StoreDocument(DefineMixin):
     id_: str = define.field(default=None)
     """Document identifier."""
 
+    template_context: tp.KwargsLike = define.field(factory=dict)
+    """Context used to substitute templates."""
+
     def get_content(self, for_embed: bool = False) -> tp.Optional[str]:
         """Get content.
 
@@ -1893,6 +1986,13 @@ class StoreDocument(DefineMixin):
 
 
 TextDocumentT = tp.TypeVar("TextDocumentT", bound="TextDocument")
+
+
+def def_metadata_template(metadata_content: str) -> str:
+    """Default metadata template"""
+    if metadata_content.endswith("\n"):
+        return "---\n{metadata_content}---\n\n".format(metadata_content=metadata_content)
+    return "---\n{metadata_content}\n---\n\n".format(metadata_content=metadata_content)
 
 
 @define
@@ -1924,11 +2024,19 @@ class TextDocument(StoreDocument, HasSettings, DefineMixin):
     dump_kwargs: tp.KwargsLike = define.field(factory=dict)
     """Keyword arguments passed to `vectorbtpro.utils.formatting.dump`."""
 
-    metadata_format: str = define.field(default="---\n{metadata_content}\n---\n\n")
-    """Metadata template."""
+    metadata_template: tp.CustomTemplateLike = define.field(
+        default=RepFunc(def_metadata_template, eval_id="metadata_template")
+    )
+    """Metadata template.
+    
+    Must be suitable for formatting via the `format()` method."""
 
-    content_format: str = define.field(default="{metadata_content}{text}")
-    """Content template."""
+    content_template: tp.CustomTemplateLike = define.field(
+        default=Sub("${metadata_content}${text}", eval_id="content_template")
+    )
+    """Content template.
+    
+    Must be suitable for formatting via the `format()` method."""
 
     def get_text(self) -> tp.Optional[str]:
         """Get text.
@@ -2013,8 +2121,30 @@ class TextDocument(StoreDocument, HasSettings, DefineMixin):
         if metadata_content is None:
             metadata_content = ""
         if metadata_content:
-            metadata_content = self.metadata_format.format(metadata_content=metadata_content)
-        return self.content_format.format(metadata_content=metadata_content, text=text)
+            metadata_template = self.metadata_template
+            if isinstance(metadata_template, str):
+                metadata_template = Sub(metadata_template)
+            elif checks.is_function(metadata_template):
+                metadata_template = RepFunc(metadata_template)
+            elif not isinstance(metadata_template, CustomTemplate):
+                raise TypeError(f"Metadata template must be a string, function, or template")
+            template_context = flat_merge_dicts(
+                dict(metadata_content=metadata_content),
+                self.template_context,
+            )
+            metadata_content = metadata_template.substitute(template_context, eval_id="metadata_template")
+        content_template = self.content_template
+        if isinstance(content_template, str):
+            content_template = Sub(content_template)
+        elif checks.is_function(content_template):
+            content_template = RepFunc(content_template)
+        elif not isinstance(content_template, CustomTemplate):
+            raise TypeError(f"Content template must be a string, function, or template")
+        template_context = flat_merge_dicts(
+            dict(metadata_content=metadata_content, text=text),
+            self.template_context,
+        )
+        return content_template.substitute(template_context, eval_id="content_template")
 
     def split(self: TextDocumentT) -> tp.List[TextDocumentT]:
         from vectorbtpro.utils.search import set_pathlike_key
@@ -2048,12 +2178,24 @@ class DocumentStore(Configured):
 
     _settings_path: tp.SettingsPath = ["knowledge", "knowledge.chat"]
 
-    def __init__(self, store_id: tp.Optional[str] = None, **kwargs) -> None:
-        Configured.__init__(self, store_id=store_id, **kwargs)
+    def __init__(
+        self,
+        store_id: tp.Optional[str] = None,
+        template_context: tp.KwargsLike = None,
+        **kwargs,
+    ) -> None:
+        Configured.__init__(
+            self,
+            store_id=store_id,
+            template_context=template_context,
+            **kwargs,
+        )
 
         store_id = self.resolve_setting(store_id, "store_id")
+        template_context = self.resolve_setting(template_context, "template_context", merge=True)
 
         self._store_id = store_id
+        self._template_context = template_context
 
         self._store = {}
         self._staged_store = {}
@@ -2062,6 +2204,11 @@ class DocumentStore(Configured):
     def store_id(self) -> str:
         """Store id."""
         return self._store_id
+
+    @property
+    def template_context(self) -> tp.Kwargs:
+        """Context used to substitute templates."""
+        return self._template_context
 
     @property
     def store(self) -> tp.Dict[str, StoreDocument]:
@@ -2108,8 +2255,9 @@ class DocumentStore(Configured):
 
     def commit(self) -> None:
         """Commit staged documents."""
-        self.save_store()
-        self.staged_store.clear()
+        if self.staged_store:
+            self.save_store()
+            self.staged_store.clear()
 
 
 memory_store: tp.Dict[str, tp.Dict[str, StoreDocument]] = {}
@@ -2129,9 +2277,9 @@ class MemoryStore(DocumentStore):
         DocumentStore.__init__(self, **kwargs)
 
         if self.store_exists():
-            self._index = self.load_store()
+            self._store = self.load_store()
         else:
-            self._index = {}
+            self._store = {}
 
     def store_exists(self) -> bool:
         return self.store_id in memory_store
@@ -2161,7 +2309,6 @@ class FileStore(DocumentStore):
         compression: tp.Union[None, bool, str] = None,
         save_kwargs: tp.KwargsLike = None,
         load_kwargs: tp.KwargsLike = None,
-        template_context: tp.KwargsLike = None,
         **kwargs,
     ) -> None:
         DocumentStore.__init__(
@@ -2170,16 +2317,22 @@ class FileStore(DocumentStore):
             compression=compression,
             save_kwargs=save_kwargs,
             load_kwargs=load_kwargs,
-            template_context=template_context,
             **kwargs,
         )
 
         dir_path = self.resolve_setting(dir_path, "dir_path")
+        template_context = self.template_context
         if isinstance(dir_path, CustomTemplate):
-            cache_dir = self.get_setting("cache_dir")
-            if isinstance(cache_dir, CustomTemplate):
-                cache_dir = cache_dir.substitute(template_context, eval_id="cache_dir")
-            template_context = flat_merge_dicts(dict(cache_dir=cache_dir), template_context)
+            cache_dir = self.get_setting("cache_dir", default=None)
+            if cache_dir is not None:
+                if isinstance(cache_dir, CustomTemplate):
+                    cache_dir = cache_dir.substitute(template_context, eval_id="cache_dir")
+                template_context = flat_merge_dicts(dict(cache_dir=cache_dir), template_context)
+            release_dir = self.get_setting("release_dir", default=None)
+            if release_dir is not None:
+                if isinstance(release_dir, CustomTemplate):
+                    release_dir = release_dir.substitute(template_context, eval_id="release_dir")
+                template_context = flat_merge_dicts(dict(release_dir=release_dir), template_context)
             dir_path = dir_path.substitute(template_context, eval_id="dir_path")
         compression = self.resolve_setting(compression, "compression")
         save_kwargs = self.resolve_setting(save_kwargs, "save_kwargs", merge=True)
@@ -2323,12 +2476,24 @@ class NodeIndex(Configured):
 
     _settings_path: tp.SettingsPath = ["knowledge", "knowledge.chat"]
 
-    def __init__(self, index_id: tp.Optional[str] = None, **kwargs) -> None:
-        Configured.__init__(self, index_id=index_id, **kwargs)
+    def __init__(
+        self,
+        index_id: tp.Optional[str] = None,
+        template_context: tp.KwargsLike = None,
+        **kwargs,
+    ) -> None:
+        Configured.__init__(
+            self,
+            index_id=index_id,
+            template_context=template_context,
+            **kwargs,
+        )
 
         index_id = self.resolve_setting(index_id, "index_id")
+        template_context = self.resolve_setting(template_context, "template_context", merge=True)
 
         self._index_id = index_id
+        self._template_context = template_context
 
         self._index = {}
         self._staged_index = {}
@@ -2337,6 +2502,11 @@ class NodeIndex(Configured):
     def index_id(self) -> str:
         """Store id."""
         return self._index_id
+
+    @property
+    def template_context(self) -> tp.Kwargs:
+        """Context used to substitute templates."""
+        return self._template_context
 
     @property
     def index(self) -> tp.Dict[str, IndexNode]:
@@ -2383,8 +2553,9 @@ class NodeIndex(Configured):
 
     def commit(self) -> None:
         """Commit staged nodes."""
-        self.save_index()
-        self.staged_index.clear()
+        if self.staged_index:
+            self.save_index()
+            self.staged_index.clear()
 
 
 memory_index: tp.Dict[str, tp.Dict[str, IndexNode]] = {}
@@ -2436,7 +2607,6 @@ class FileIndex(NodeIndex):
         compression: tp.Union[None, bool, str] = None,
         save_kwargs: tp.KwargsLike = None,
         load_kwargs: tp.KwargsLike = None,
-        template_context: tp.KwargsLike = None,
         **kwargs,
     ) -> None:
         NodeIndex.__init__(
@@ -2445,16 +2615,22 @@ class FileIndex(NodeIndex):
             compression=compression,
             save_kwargs=save_kwargs,
             load_kwargs=load_kwargs,
-            template_context=template_context,
             **kwargs,
         )
 
         dir_path = self.resolve_setting(dir_path, "dir_path")
+        template_context = self.template_context
         if isinstance(dir_path, CustomTemplate):
-            cache_dir = self.get_setting("cache_dir")
-            if isinstance(cache_dir, CustomTemplate):
-                cache_dir = cache_dir.substitute(template_context, eval_id="cache_dir")
-            template_context = flat_merge_dicts(dict(cache_dir=cache_dir), template_context)
+            cache_dir = self.get_setting("cache_dir", default=None)
+            if cache_dir is not None:
+                if isinstance(cache_dir, CustomTemplate):
+                    cache_dir = cache_dir.substitute(template_context, eval_id="cache_dir")
+                template_context = flat_merge_dicts(dict(cache_dir=cache_dir), template_context)
+            release_dir = self.get_setting("release_dir", default=None)
+            if release_dir is not None:
+                if isinstance(release_dir, CustomTemplate):
+                    release_dir = release_dir.substitute(template_context, eval_id="release_dir")
+                template_context = flat_merge_dicts(dict(release_dir=release_dir), template_context)
             dir_path = dir_path.substitute(template_context, eval_id="dir_path")
         compression = self.resolve_setting(compression, "compression")
         save_kwargs = self.resolve_setting(save_kwargs, "save_kwargs", merge=True)
@@ -2563,6 +2739,34 @@ def resolve_node_index(node_index: tp.NodeIndexLike = None) -> tp.MaybeType[Node
 # ############# Ranking ############# #
 
 
+@define
+class EmbeddedDocument(DefineMixin):
+    """Abstract class for embedded documents."""
+
+    document: StoreDocument = define.field()
+    """Document."""
+
+    embedding: tp.Optional[tp.List[float]] = define.field(default=None)
+    """Embedding."""
+
+    child_documents: tp.List["EmbeddedDocument"] = define.field(factory=list)
+    """Embedded child documents."""
+
+
+@define
+class ScoredDocument(DefineMixin):
+    """Abstract class for scored documents."""
+
+    document: StoreDocument = define.field()
+    """Document."""
+
+    score: float = define.field(default=float("nan"))
+    """Score."""
+
+    child_documents: tp.List["ScoredDocument"] = define.field(factory=list)
+    """Scored child documents."""
+
+
 class DocumentRanker(Configured):
     """Class for embedding, scoring, and ranking documents.
 
@@ -2572,8 +2776,8 @@ class DocumentRanker(Configured):
 
     def __init__(
         self,
-        sim_func: tp.Union[None, str, tp.Callable] = None,
-        sim_agg_func: tp.Union[None, str, tp.Callable] = None,
+        score_func: tp.Union[None, str, tp.Callable] = None,
+        score_agg_func: tp.Union[None, str, tp.Callable] = None,
         embeddings: tp.EmbeddingsLike = None,
         embeddings_kwargs: tp.KwargsLike = None,
         document_store: tp.TokenizerLike = None,
@@ -2582,12 +2786,13 @@ class DocumentRanker(Configured):
         node_index_kwargs: tp.KwargsLike = None,
         commit_document_store: tp.Optional[bool] = None,
         commit_node_index: tp.Optional[bool] = None,
+        template_context: tp.KwargsLike = None,
         **kwargs,
     ) -> None:
         Configured.__init__(
             self,
-            sim_func=sim_func,
-            sim_agg_func=sim_agg_func,
+            score_func=score_func,
+            score_agg_func=score_agg_func,
             embeddings=embeddings,
             embeddings_kwargs=embeddings_kwargs,
             document_store=document_store,
@@ -2596,11 +2801,12 @@ class DocumentRanker(Configured):
             node_index_kwargs=node_index_kwargs,
             commit_document_store=commit_document_store,
             commit_node_index=commit_node_index,
+            template_context=template_context,
             **kwargs,
         )
 
-        sim_func = self.resolve_setting(sim_func, "sim_func")
-        sim_agg_func = self.resolve_setting(sim_agg_func, "sim_agg_func")
+        score_func = self.resolve_setting(score_func, "score_func")
+        score_agg_func = self.resolve_setting(score_agg_func, "score_agg_func")
         embeddings = self.resolve_setting(embeddings, "embeddings", default=None)
         embeddings_kwargs = self.resolve_setting(embeddings_kwargs, "embeddings_kwargs", default=None, merge=True)
         document_store = self.resolve_setting(document_store, "document_store", default=None)
@@ -2611,44 +2817,58 @@ class DocumentRanker(Configured):
         node_index_kwargs = self.resolve_setting(node_index_kwargs, "node_index_kwargs", default=None, merge=True)
         commit_document_store = self.resolve_setting(commit_document_store, "commit_document_store")
         commit_node_index = self.resolve_setting(commit_node_index, "commit_node_index")
+        template_context = self.resolve_setting(template_context, "template_context", merge=True)
 
-        if isinstance(sim_agg_func, str):
-            sim_agg_func = getattr(np, sim_agg_func)
+        if isinstance(score_agg_func, str):
+            score_agg_func = getattr(np, score_agg_func)
         embeddings = resolve_embeddings(embeddings)
         if isinstance(embeddings, type):
+            embeddings_kwargs = dict(embeddings_kwargs)
+            embeddings_kwargs["template_context"] = merge_dicts(
+                template_context, embeddings_kwargs.get("template_context", None)
+            )
             embeddings = embeddings(**embeddings_kwargs)
         elif embeddings_kwargs:
             embeddings = embeddings.replace(**embeddings_kwargs)
         document_store = resolve_document_store(document_store)
         if isinstance(document_store, type):
+            document_store_kwargs = dict(document_store_kwargs)
+            document_store_kwargs["template_context"] = merge_dicts(
+                template_context, document_store_kwargs.get("template_context", None)
+            )
             document_store = document_store(**document_store_kwargs)
         elif document_store_kwargs:
             document_store = document_store.replace(**document_store_kwargs)
         node_index = resolve_node_index(node_index)
         if isinstance(node_index, type):
+            node_index_kwargs = dict(node_index_kwargs)
+            node_index_kwargs["template_context"] = merge_dicts(
+                template_context, node_index_kwargs.get("template_context", None)
+            )
             node_index = node_index(**node_index_kwargs)
         elif node_index_kwargs:
             node_index = node_index.replace(**node_index_kwargs)
 
-        self._sim_func = sim_func
-        self._sim_agg_func = sim_agg_func
+        self._score_func = score_func
+        self._score_agg_func = score_agg_func
         self._embeddings = embeddings
         self._document_store = document_store
         self._node_index = node_index
         self._commit_document_store = commit_document_store
         self._commit_node_index = commit_node_index
+        self._template_context = template_context
 
     @property
-    def sim_func(self) -> tp.Union[str, tp.Callable]:
-        """Similarity function.
+    def score_func(self) -> tp.Union[str, tp.Callable]:
+        """Score function.
 
-        See `DocumentRanker.compute_similarity`."""
-        return self._sim_func
+        See `DocumentRanker.compute_score`."""
+        return self._score_func
 
     @property
-    def sim_agg_func(self) -> tp.Callable:
-        """Similarity aggregation function."""
-        return self._sim_agg_func
+    def score_agg_func(self) -> tp.Callable:
+        """Score aggregation function."""
+        return self._score_agg_func
 
     @property
     def embeddings(self) -> Embeddings:
@@ -2675,6 +2895,11 @@ class DocumentRanker(Configured):
         """Whether to commit node index after generating embeddings."""
         return self._commit_node_index
 
+    @property
+    def template_context(self) -> tp.Kwargs:
+        """Context used to substitute templates."""
+        return self._template_context
+
     def commit(self) -> None:
         """Commit staged changes."""
         if self.commit_document_store:
@@ -2682,14 +2907,22 @@ class DocumentRanker(Configured):
         if self.commit_node_index:
             self.node_index.commit()
 
-    def embed(self, documents: tp.MaybeIterable[StoreDocument]) -> None:
-        """Convert document(s) to nodes and embed them."""
-        if isinstance(documents, StoreDocument):
-            documents = [documents]
+    def embed_documents(
+        self,
+        documents: tp.Iterable[StoreDocument],
+        return_embeddings: bool = False,
+        return_documents: bool = False,
+    ) -> tp.Optional[tp.EmbeddedDocuments]:
+        """Convert document(s) to nodes and embed them.
 
+        If `return_embeddings` and `return_documents` are both False, returns nothing.
+        If `return_embeddings` and `return_documents` are both True, for each document,
+        returns the document and either an embedding or a list of document chunks and their embeddings.
+        If `return_documents` is False, returns only embeddings."""
         node_contents = {}
         for document in documents:
-            self.document_store.add_document(document)
+            if not self.document_store.has_document(document.id_):
+                self.document_store.add_document(document)
             if not self.node_index.has_node(document.id_):
                 document_chunks = document.split()
                 child_ids = []
@@ -2697,7 +2930,8 @@ class DocumentRanker(Configured):
                 self.node_index.add_node(node)
                 for document_chunk in document_chunks:
                     if document_chunk.id_ != document.id_:
-                        self.document_store.add_document(document_chunk)
+                        if not self.document_store.has_document(document_chunk.id_):
+                            self.document_store.add_document(document_chunk)
                         if not self.node_index.has_node(document_chunk.id_):
                             child_node = IndexNode(document_chunk.id_, parent_id=document.id_)
                             self.node_index.add_node(child_node)
@@ -2724,12 +2958,50 @@ class DocumentRanker(Configured):
 
         self.commit()
 
-    def compute_similarity(
+        if return_embeddings or return_documents:
+            embeddings = []
+            for document in documents:
+                node = self.node_index.get_node(document.id_)
+                if node.embedding:
+                    if return_documents:
+                        embeddings.append(EmbeddedDocument(document, embedding=node.embedding))
+                    else:
+                        embeddings.append(node.embedding)
+                elif node.child_ids:
+                    child_embeddings = []
+                    for child_id in node.child_ids:
+                        child_node = self.node_index.get_node(child_id)
+                        if child_node.embedding:
+                            if return_documents:
+                                child_document = self.document_store.get_document(child_id)
+                                child_embeddings.append(
+                                    EmbeddedDocument(child_document, embedding=child_node.embedding)
+                                )
+                            else:
+                                child_embeddings.append(child_node.embedding)
+                        else:
+                            if return_documents:
+                                child_document = self.document_store.get_document(child_id)
+                                child_embeddings.append(EmbeddedDocument(child_document))
+                            else:
+                                child_embeddings.append(None)
+                    if return_documents:
+                        embeddings.append(EmbeddedDocument(document, child_documents=child_embeddings))
+                    else:
+                        embeddings.append(child_embeddings)
+                else:
+                    if return_documents:
+                        embeddings.append(EmbeddedDocument(document))
+                    else:
+                        embeddings.append(None)
+            return embeddings
+
+    def compute_score(
         self,
         emb1: tp.Union[tp.MaybeIterable[tp.List[float]], np.ndarray],
         emb2: tp.Union[tp.MaybeIterable[tp.List[float]], np.ndarray],
     ) -> tp.Union[float, np.ndarray]:
-        """Compute similarity scores between two embeddings, which can be either single or multiple.
+        """Compute scores between embeddings, which can be either single or multiple.
 
         Supported distance functions are 'cosine', 'euclidean', and 'dot'. A metric can also be a callable that should
         take two and return one 2-dim NumPy array."""
@@ -2742,71 +3014,38 @@ class DocumentRanker(Configured):
         if emb2_single:
             emb2 = emb2.reshape(1, -1)
 
-        if isinstance(self.sim_func, str):
-            if self.sim_func.lower() == "cosine":
+        if isinstance(self.score_func, str):
+            if self.score_func.lower() == "cosine":
                 emb1_norm = emb1 / np.linalg.norm(emb1, axis=1, keepdims=True)
                 emb2_norm = emb2 / np.linalg.norm(emb2, axis=1, keepdims=True)
                 emb1_norm = np.nan_to_num(emb1_norm)
                 emb2_norm = np.nan_to_num(emb2_norm)
-                sim_matrix = np.dot(emb1_norm, emb2_norm.T)
-            elif self.sim_func.lower() == "euclidean":
+                score_matrix = np.dot(emb1_norm, emb2_norm.T)
+            elif self.score_func.lower() == "euclidean":
                 diff = emb1[:, np.newaxis, :] - emb2[np.newaxis, :, :]
                 distances = np.linalg.norm(diff, axis=2)
-                sim_matrix = np.divide(1, distances, where=distances != 0, out=np.full_like(distances, np.inf))
-            elif self.sim_func.lower() == "dot":
-                sim_matrix = np.dot(emb1, emb2.T)
+                score_matrix = np.divide(1, distances, where=distances != 0, out=np.full_like(distances, np.inf))
+            elif self.score_func.lower() == "dot":
+                score_matrix = np.dot(emb1, emb2.T)
             else:
-                raise ValueError(f"Invalid distance function: '{self.sim_func}'")
+                raise ValueError(f"Invalid distance function: '{self.score_func}'")
         else:
-            sim_matrix = self.sim_func(emb1, emb2)
+            score_matrix = self.score_func(emb1, emb2)
 
         if emb1_single and emb2_single:
-            return float(sim_matrix[0, 0])
+            return float(score_matrix[0, 0])
         if emb1_single or emb2_single:
-            return sim_matrix.flatten()
-        return sim_matrix
+            return score_matrix.flatten()
+        return score_matrix
 
-    @classmethod
-    def resolve_top_k(cls, scores: tp.Iterable[float], top_k: tp.TopKLike = None) -> tp.Optional[int]:
-        """Resolve `top_k` based on _sorted_ similarity scores.
-
-        Supported values are integers (top number), floats (top %), strings (supported methods are
-        'elbow' and 'kmeans'), as well as callables that should take a 1-dim NumPy array and return
-        an integer or a float. Filters out NaN before computation (requires them to be at the tail)."""
-        if top_k is None:
-            return None
-        scores = np.asarray(scores)
-        scores = scores[~np.isnan(scores)]
-
-        if isinstance(top_k, str):
-            if top_k.lower() == "elbow":
-                if scores.size == 0:
-                    return 0
-                diffs = np.diff(scores)
-                top_k = np.argmax(-diffs) + 1
-            elif top_k.lower() == "kmeans":
-                from sklearn.cluster import KMeans
-
-                kmeans = KMeans(n_clusters=2, random_state=0).fit(scores.reshape(-1, 1))
-                high_sim_cluster = np.argmax(kmeans.cluster_centers_)
-                top_k_indices = np.where(kmeans.labels_ == high_sim_cluster)[0]
-                top_k = max(top_k_indices) + 1
-            else:
-                raise ValueError(f"Invalid top_k method: '{top_k}'")
-        elif callable(top_k):
-            top_k = top_k(scores)
-        if checks.is_float(top_k):
-            top_k = int(top_k * len(scores))
-        return top_k
-
-    def score(
+    def score_documents(
         self,
         query: str,
         documents: tp.Optional[tp.Iterable[StoreDocument]] = None,
         return_chunks: bool = False,
         return_documents: bool = False,
     ) -> tp.ScoredDocuments:
-        """Score documents by similarity to a query."""
+        """Score documents by relevance to a query."""
         if documents is None:
             if self.document_store is None:
                 raise ValueError("Must provide at least documents or document_store")
@@ -2817,7 +3056,7 @@ class DocumentRanker(Configured):
         documents = list(documents)
         if not documents:
             return []
-        self.embed(documents)
+        self.embed_documents(documents)
         if return_chunks:
             document_chunks = []
             for document in documents:
@@ -2851,80 +3090,126 @@ class DocumentRanker(Configured):
                         node_embeddings[child_id] = child_node.embedding
         if node_embeddings:
             query_embedding = self.embeddings.get_embedding(query)
-            sim_scores = self.compute_similarity(query_embedding, list(node_embeddings.values()))
-            node_sim_scores = dict(zip(node_embeddings.keys(), sim_scores))
+            scores = self.compute_score(query_embedding, list(node_embeddings.values()))
+            node_scores = dict(zip(node_embeddings.keys(), scores))
         else:
-            node_sim_scores = {}
+            node_scores = {}
 
         scores = []
         for document in documents:
             node = self.node_index.get_node(document.id_)
+            child_scores = []
             if node.child_ids:
-                child_sim_scores = []
                 for child_id in node.child_ids:
-                    if child_id in node_sim_scores:
-                        child_sim_scores.append(node_sim_scores[child_id])
-                if child_sim_scores:
-                    doc_sim_score = self.sim_agg_func(child_sim_scores)
+                    child_score = node_scores[child_id]
+                    if child_id in node_scores:
+                        if return_documents:
+                            child_document = self.document_store.get_document(child_id)
+                            child_scores.append(ScoredDocument(child_document, score=child_score))
+                        else:
+                            child_scores.append(child_score)
+                if child_scores:
+                    if return_documents:
+                        doc_score = self.score_agg_func([document.score for document in child_scores])
+                    else:
+                        doc_score = self.score_agg_func(child_scores)
                 else:
-                    doc_sim_score = float("nan")
+                    doc_score = float("nan")
             else:
-                if node.id_ in node_sim_scores:
-                    doc_sim_score = node_sim_scores[node.id_]
+                if node.id_ in node_scores:
+                    doc_score = node_scores[node.id_]
                 else:
-                    doc_sim_score = float("nan")
-            scores.append(doc_sim_score)
-
-        if return_documents:
-            return list(zip(documents, scores))
+                    doc_score = float("nan")
+            if return_documents:
+                scores.append(ScoredDocument(document, score=doc_score, child_documents=child_scores))
+            else:
+                scores.append(doc_score)
         return scores
 
-    def rank(
+    @classmethod
+    def resolve_top_k(
+        cls,
+        scores: tp.Iterable[float],
+        top_k: tp.TopKLike = None,
+        cutoff: tp.Optional[float] = None,
+    ) -> tp.Optional[int]:
+        """Resolve `top_k` based on _sorted_ scores.
+
+        Supported values are integers (top number), floats (top %), strings (supported methods are
+        'elbow' and 'kmeans'), as well as callables that should take a 1-dim NumPy array and return
+        an integer or a float. Filters out NaN before computation (requires them to be at the tail)."""
+        if top_k is None and cutoff is None:
+            return None
+        scores = np.asarray(scores)
+        scores = scores[~np.isnan(scores)]
+        if cutoff is not None:
+            scores = scores[scores >= cutoff]
+
+        if isinstance(top_k, str):
+            if top_k.lower() == "elbow":
+                if scores.size == 0:
+                    return 0
+                diffs = np.diff(scores)
+                top_k = np.argmax(-diffs) + 1
+            elif top_k.lower() == "kmeans":
+                from sklearn.cluster import KMeans
+
+                kmeans = KMeans(n_clusters=2, random_state=0).fit(scores.reshape(-1, 1))
+                high_score_cluster = np.argmax(kmeans.cluster_centers_)
+                top_k_indices = np.where(kmeans.labels_ == high_score_cluster)[0]
+                top_k = max(top_k_indices) + 1
+            else:
+                raise ValueError(f"Invalid top_k method: '{top_k}'")
+        elif callable(top_k):
+            top_k = top_k(scores)
+        if checks.is_float(top_k):
+            top_k = int(top_k * len(scores))
+        return top_k
+
+    def rank_documents(
         self,
         query: str,
         documents: tp.Optional[tp.Iterable[StoreDocument]] = None,
         top_k: tp.TopKLike = None,
+        cutoff: tp.Optional[float] = None,
         return_chunks: bool = False,
-        return_score: bool = False,
+        return_scores: bool = False,
     ) -> tp.RankedDocuments:
-        """Sort documents by similarity to a query."""
-        scored_documents = self.score(query, documents=documents, return_chunks=return_chunks, return_documents=True)
-        scored_documents = sorted(scored_documents, key=lambda x: (not np.isnan(x[1]), x[1]), reverse=True)
-        top_k = self.resolve_top_k([score for _, score in scored_documents], top_k=top_k)
+        """Sort documents by relevance to a query."""
+        scored_documents = self.score_documents(
+            query,
+            documents=documents,
+            return_chunks=return_chunks,
+            return_documents=True,
+        )
+        scored_documents = sorted(scored_documents, key=lambda x: (not np.isnan(x.score), x.score), reverse=True)
+        scores = [document.score for document in scored_documents]
+        top_k = self.resolve_top_k(scores, top_k=top_k, cutoff=cutoff)
         if top_k is not None:
             scored_documents = scored_documents[:top_k]
-        if return_score:
+        if return_scores:
             return scored_documents
-        return [document for document, _ in scored_documents]
+        return [document.document for document in scored_documents]
 
 
-def rank_documents(
-    query: str,
-    documents: tp.Optional[tp.Iterable[tp.Any]] = None,
+def embed_documents(
+    documents: tp.Iterable[tp.Any],
+    return_embeddings: bool = False,
+    return_documents: bool = False,
     document_ranker: tp.Optional[tp.MaybeType[DocumentRanker]] = None,
-    top_k: tp.TopKLike = None,
-    wrap_documents: tp.Optional[bool] = None,
-    return_chunks: bool = False,
-    return_score: bool = False,
     **kwargs,
-) -> tp.RankedDocuments:
-    """Rank documents by their similarity to a query.
+) -> tp.Optional[tp.EmbeddedDocuments]:
+    """Embed documents.
 
     Keyword arguments are passed to either initialize a class or replace an
     instance of `DocumentRanker`."""
     if documents is not None:
         new_documents = []
-        wrapped = False
         for document in documents:
             if not isinstance(document, StoreDocument):
                 document = TextDocument(document)
-                wrapped = True
             new_documents.append(document)
         documents = new_documents
-        if wrapped and wrap_documents is None:
-            wrap_documents = False
-    elif wrap_documents is None:
-        wrap_documents = True
     if document_ranker is None:
         document_ranker = DocumentRanker
     if isinstance(document_ranker, type):
@@ -2934,16 +3219,68 @@ def rank_documents(
         checks.assert_instance_of(document_ranker, DocumentRanker, "document_ranker")
         if kwargs:
             document_ranker = document_ranker.replace(**kwargs)
-    ranked_documents = document_ranker.rank(
+    return document_ranker.embed_documents(
+        documents,
+        return_embeddings=return_embeddings,
+        return_documents=return_documents,
+    )
+
+
+def rank_documents(
+    query: str,
+    documents: tp.Optional[tp.Iterable[tp.Any]] = None,
+    top_k: tp.TopKLike = None,
+    cutoff: tp.Optional[float] = None,
+    return_chunks: bool = False,
+    return_scores: bool = False,
+    document_ranker: tp.Optional[tp.MaybeType[DocumentRanker]] = None,
+    **kwargs,
+) -> tp.RankedDocuments:
+    """Rank documents by their relevance to a query.
+
+    Keyword arguments are passed to either initialize a class or replace an
+    instance of `DocumentRanker`."""
+    if documents is not None:
+        new_documents = []
+        for document in documents:
+            if not isinstance(document, StoreDocument):
+                document = TextDocument(document)
+            new_documents.append(document)
+        documents = new_documents
+    if document_ranker is None:
+        document_ranker = DocumentRanker
+    if isinstance(document_ranker, type):
+        checks.assert_subclass_of(document_ranker, DocumentRanker, "document_ranker")
+        document_ranker = document_ranker(**kwargs)
+    else:
+        checks.assert_instance_of(document_ranker, DocumentRanker, "document_ranker")
+        if kwargs:
+            document_ranker = document_ranker.replace(**kwargs)
+    return document_ranker.rank_documents(
         query,
         documents=documents,
         top_k=top_k,
+        cutoff=cutoff,
         return_chunks=return_chunks,
-        return_score=return_score,
+        return_scores=return_scores,
     )
-    if not wrap_documents:
-        return [document.data for document in ranked_documents]
-    return ranked_documents
+
+
+RankableT = tp.TypeVar("RankableT", bound="Rankable")
+
+
+class Rankable(HasSettings):
+    """Abstract class that can be ranked."""
+
+    _settings_path: tp.SettingsPath = ["knowledge", "knowledge.chat"]
+
+    def embed(self: RankableT, *args, **kwargs) -> tp.Optional[RankableT]:
+        """Embed documents."""
+        raise NotImplementedError
+
+    def rank(self: RankableT, query: str, *args, **kwargs) -> RankableT:
+        """Rank documents by their relevance to a query."""
+        raise NotImplementedError
 
 
 # ############# Contexting ############# #
@@ -3012,3 +3349,30 @@ class Contextable(HasSettings):
         to_context_kwargs = cls_or_self.resolve_setting(to_context_kwargs, "to_context_kwargs", merge=True)
         context = cls_or_self.to_context(**to_context_kwargs)
         return complete(message, context=context, chat_history=chat_history, **kwargs)
+
+
+class RankContextable(Rankable, Contextable):
+    """Abstract class that combines both `Rankable` and `Contextable` to rank a context."""
+
+    @hybrid_method
+    def chat(
+        cls_or_self,
+        message: str,
+        *args,
+        rank: tp.Optional[bool] = None,
+        rank_kwargs: tp.KwargsLike = None,
+        **kwargs,
+    ) -> tp.ChatOutput:
+        if isinstance(cls_or_self, type):
+            from vectorbtpro.utils.parsing import get_forward_args
+
+            args, kwargs = get_forward_args(super().chat, locals())
+            return super().chat(*args, **kwargs)
+
+        rank = cls_or_self.resolve_setting(rank, "rank")
+        rank_kwargs = cls_or_self.resolve_setting(rank_kwargs, "rank_kwargs", merge=True)
+        if rank:
+            _cls_or_self = cls_or_self.rank(message, **rank_kwargs)
+        else:
+            _cls_or_self = cls_or_self
+        return Contextable.chat.__func__(_cls_or_self, message, *args, **kwargs)

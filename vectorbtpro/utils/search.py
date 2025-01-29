@@ -173,18 +173,18 @@ def combine_pathlike_keys(
         if isinstance(key1, Path) and isinstance(key2, Path):
             new_k = key1 / key2
             if minimize:
-                return minimize_pathlike_key(new_k)
+                new_k = minimize_pathlike_key(new_k)
             return new_k
         if isinstance(key1, str) and isinstance(key2, str):
             new_k = combine_path_str(key1, key2)
             if minimize:
-                return minimize_pathlike_key(new_k)
+                new_k = minimize_pathlike_key(new_k)
             return new_k
     key1 = resolve_pathlike_key(key1)
     key2 = resolve_pathlike_key(key2)
     new_k = key1 + key2
     if minimize:
-        return minimize_pathlike_key(new_k)
+        new_k = minimize_pathlike_key(new_k)
     return new_k
 
 

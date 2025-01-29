@@ -1081,9 +1081,9 @@ class HasSettings(Base):
         inherit: bool = True,
         super_first: bool = True,
         unique_only: bool = True,
-    ) -> tp.List[tp.Tuple[tp.Type[HasSettingsT], str]]:
+    ) -> tp.List[tp.Tuple[tp.Type[HasSettingsT], tp.PathLikeKey]]:
         """Resolve the settings paths associated with this class and its superclasses (if `inherit` is True)."""
-        from vectorbtpro.utils.search import resolve_pathlike_key
+        from vectorbtpro.utils.search import resolve_pathlike_key, combine_pathlike_keys
 
         paths = []
         unique_paths = set()
@@ -1092,17 +1092,29 @@ class HasSettings(Base):
             if path not in unique_paths or not unique_only:
                 paths.append((cls_, path))
                 unique_paths.add(path)
+
                 if spec_settings_paths_config:
                     path_ = resolve_pathlike_key(path)
                     for spec_settings_paths in spec_settings_paths_config.values():
                         for from_path, to_path in spec_settings_paths.items():
-                            from_path = resolve_pathlike_key(from_path)
-                            if path_ == from_path:
+                            from_path_ = resolve_pathlike_key(from_path)
+
+                            if path_ == from_path_:
                                 if not isinstance(to_path, list):
                                     to_path = [to_path]
                                 for to_path_ in to_path:
-                                    paths.append((cls_, to_path_))
-                                    unique_paths.add(to_path_)
+                                    if to_path_ not in unique_paths:
+                                        paths.append((cls_, to_path_))
+                                        unique_paths.add(to_path_)
+
+                            elif len(path_) > len(from_path_) and path_[:len(from_path_)] == from_path_:
+                                if not isinstance(to_path, list):
+                                    to_path = [to_path]
+                                for to_path_ in to_path:
+                                    to_path_ = combine_pathlike_keys(to_path_, path_[len(from_path_):])
+                                    if to_path_ not in unique_paths:
+                                        paths.append((cls_, to_path_))
+                                        unique_paths.add(to_path_)
 
         def _process_path(cls_, path):
             if path is not None:
@@ -1154,8 +1166,16 @@ class HasSettings(Base):
                 raise SettingsNotFoundError(f"Found no settings associated with the class {cls.__name__}")
         setting_dicts = []
         for cls_, path in paths:
-            path_settings = cls_.get_path_settings(path, sub_path=sub_path, sub_path_only=sub_path_only)
-            setting_dicts.append(path_settings)
+            try:
+                path_settings = cls_.get_path_settings(path, sub_path=sub_path, sub_path_only=sub_path_only)
+                setting_dicts.append(path_settings)
+            except SettingsNotFoundError as e:
+                pass
+        if len(setting_dicts) == 0:
+            if path_id is not None:
+                raise SettingsNotFoundError(f"Found no settings associated with the path id '{path_id}'")
+            else:
+                raise SettingsNotFoundError(f"Found no settings associated with the class {cls.__name__}")
         if len(setting_dicts) == 1:
             return setting_dicts[0]
         return merge_dicts(*setting_dicts)

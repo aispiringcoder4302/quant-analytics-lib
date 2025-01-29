@@ -62,9 +62,11 @@ if TYPE_CHECKING:
         Embeddings,
         Completions,
         TextSplitter,
-        TextDocument,
+        StoreDocument,
         DocumentStore,
         NodeIndex,
+        EmbeddedDocument,
+        ScoredDocument,
     )
     from vectorbtpro.utils.knowledge.custom_assets import VBTAsset, PagesAsset, MessagesAsset
     from vectorbtpro.utils.knowledge.formatting import ContentFormatter
@@ -96,9 +98,11 @@ else:
     Embeddings = "Embeddings"
     Completions = "Completions"
     TextSplitter = "TextSplitter"
-    TextDocument = "TextDocument"
+    StoreDocument = "StoreDocument"
     DocumentStore = "DocumentStore"
     NodeIndex = "NodeIndex"
+    EmbeddedDocument = "EmbeddedDocument"
+    ScoredDocument = "ScoredDocument"
     VBTAsset = "VBTAsset"
     PagesAsset = "PagesAsset"
     MessagesAsset = "MessagesAsset"
@@ -172,6 +176,9 @@ FlexArray1d = Array1d
 FlexArray2d = Array2d
 FlexArray1dLike = Union[Scalar, Array1d, Array2d]
 FlexArray2dLike = Union[Scalar, Array1d, Array2d]
+
+# Templates
+CustomTemplateLike = Union[str, Callable, CustomTemplate]
 
 # Labels
 Label = Hashable
@@ -380,8 +387,9 @@ TSRangeChunks = Iterator[TSRange]
 TSTextChunks = Iterator[str]
 DocumentStoreLike = Union[None, str, MaybeType[DocumentStore]]
 NodeIndexLike = Union[None, str, MaybeType[NodeIndex]]
-ScoredDocuments = List[Union[float, Tuple[TextDocument, float]]]
-RankedDocuments = List[Union[TextDocument, Tuple[TextDocument, float]]]
+EmbeddedDocuments = List[EmbeddedDocument]
+ScoredDocuments = List[Union[float, ScoredDocument]]
+RankedDocuments = List[Union[StoreDocument, ScoredDocument]]
 TopKLike = Union[None, int, float, str, Callable]
 
 # Chaining
