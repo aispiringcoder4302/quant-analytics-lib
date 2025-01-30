@@ -147,11 +147,12 @@ class _PATSIM(PATSIM):
             fig=fig,
         )
 
-        yaxis = getattr(fig.data[-1], "yaxis", None)
-        if yaxis is None:
-            yaxis = "y"
+        xref = fig.data[-1]["xaxis"] if fig.data[-1]["xaxis"] is not None else "x"
+        yref = fig.data[-1]["yaxis"] if fig.data[-1]["yaxis"] is not None else "y"
+        xaxis = "xaxis" + xref[1:]
+        yaxis = "yaxis" + yref[1:]
         default_layout = dict()
-        default_layout[yaxis.replace("y", "yaxis")] = dict(tickformat=",.0%")
+        default_layout[yaxis] = dict(tickformat=",.0%")
         fig.update_layout(**default_layout)
         fig.update_layout(**layout_kwargs)
 

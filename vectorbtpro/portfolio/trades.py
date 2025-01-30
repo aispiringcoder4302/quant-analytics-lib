@@ -1905,9 +1905,10 @@ class Trades(Ranges):
             colorize=colorize,
             **kwargs,
         )
-        yaxis = getattr(fig.data[-1], "yaxis", None)
-        if yaxis is None:
-            yaxis = "yaxis"
+        xref = fig.data[-1]["xaxis"] if fig.data[-1]["xaxis"] is not None else "x"
+        yref = fig.data[-1]["yaxis"] if fig.data[-1]["yaxis"] is not None else "y"
+        xaxis = "xaxis" + xref[1:]
+        yaxis = "yaxis" + yref[1:]
         if field_label is not None and "title" not in kwargs.get(yaxis, {}):
             fig.update_layout(**{yaxis: dict(title=field_label)})
         if field_pct_scale and "tickformat" not in kwargs.get(yaxis, {}):

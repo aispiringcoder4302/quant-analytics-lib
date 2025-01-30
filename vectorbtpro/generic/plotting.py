@@ -935,17 +935,15 @@ class Heatmap(TraceType, TraceUpdater):
             self.update_trace(trace, data)
         fig.add_trace(trace, **add_trace_kwargs)
 
+        xref = fig.data[-1]["xaxis"] if fig.data[-1]["xaxis"] is not None else "x"
+        yref = fig.data[-1]["yaxis"] if fig.data[-1]["yaxis"] is not None else "y"
+        xaxis = "xaxis" + xref[1:]
+        yaxis = "yaxis" + yref[1:]
         axis_kwargs = dict()
         if is_x_category:
-            if fig.data[-1]["xaxis"] is not None:
-                axis_kwargs["xaxis" + fig.data[-1]["xaxis"][1:]] = dict(type="category")
-            else:
-                axis_kwargs["xaxis"] = dict(type="category")
+            axis_kwargs[xaxis] = dict(type="category")
         if is_y_category:
-            if fig.data[-1]["yaxis"] is not None:
-                axis_kwargs["yaxis" + fig.data[-1]["yaxis"][1:]] = dict(type="category")
-            else:
-                axis_kwargs["yaxis"] = dict(type="category")
+            axis_kwargs[yaxis] = dict(type="category")
         fig.update_layout(**axis_kwargs)
         fig.update_layout(**layout_kwargs)
 

@@ -416,17 +416,15 @@ def talib_plot_func(func_name: str) -> tp.Callable:
             fig = plot_func(trace_kwargs=trace_kwargs, add_trace_kwargs=add_trace_kwargs, fig=fig, **kwargs)
 
         if limits is not None:
-            xaxis = getattr(fig.data[-1], "xaxis", None)
-            if xaxis is None:
-                xaxis = "x"
-            yaxis = getattr(fig.data[-1], "yaxis", None)
-            if yaxis is None:
-                yaxis = "y"
+            xref = fig.data[-1]["xaxis"] if fig.data[-1]["xaxis"] is not None else "x"
+            yref = fig.data[-1]["yaxis"] if fig.data[-1]["yaxis"] is not None else "y"
+            xaxis = "xaxis" + xref[1:]
+            yaxis = "yaxis" + yref[1:]
             add_shape_kwargs = merge_dicts(
                 dict(
                     type="rect",
-                    xref=xaxis,
-                    yref=yaxis,
+                    xref=xref,
+                    yref=yref,
                     x0=outputs[output_names[0]].index[0],
                     y0=limits[0],
                     x1=outputs[output_names[0]].index[-1],

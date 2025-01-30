@@ -191,17 +191,15 @@ class _OLS(OLS):
         )
 
         # Fill void between limits
-        xaxis = getattr(fig.data[-1], "xaxis", None)
-        if xaxis is None:
-            xaxis = "x"
-        yaxis = getattr(fig.data[-1], "yaxis", None)
-        if yaxis is None:
-            yaxis = "y"
+        xref = fig.data[-1]["xaxis"] if fig.data[-1]["xaxis"] is not None else "x"
+        yref = fig.data[-1]["yaxis"] if fig.data[-1]["yaxis"] is not None else "y"
+        xaxis = "xaxis" + xref[1:]
+        yaxis = "yaxis" + yref[1:]
         add_shape_kwargs = merge_dicts(
             dict(
                 type="rect",
-                xref=xaxis,
-                yref=yaxis,
+                xref=xref,
+                yref=yref,
                 x0=self_col.wrapper.index[0],
                 y0=st.norm.ppf(1 - alpha / 2),
                 x1=self_col.wrapper.index[-1],

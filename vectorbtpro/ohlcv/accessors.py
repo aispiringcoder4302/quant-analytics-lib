@@ -448,11 +448,12 @@ class OHLCVDFAccessor(OHLCDataMixin, GenericDFAccessor):
         _trace_kwargs = merge_dicts(def_trace_kwargs, trace_kwargs)
         ohlc = plot_obj(**_trace_kwargs)
         fig.add_trace(ohlc, **add_trace_kwargs)
-        xaxis = getattr(fig.data[-1], "xaxis", None)
-        if xaxis is None:
-            xaxis = "x"
-        if "rangeslider_visible" not in layout_kwargs.get(xaxis.replace("x", "xaxis"), {}):
-            fig.update_layout({xaxis.replace("x", "xaxis"): dict(rangeslider_visible=False)})
+        xref = fig.data[-1]["xaxis"] if fig.data[-1]["xaxis"] is not None else "x"
+        yref = fig.data[-1]["yaxis"] if fig.data[-1]["yaxis"] is not None else "y"
+        xaxis = "xaxis" + xref[1:]
+        yaxis = "yaxis" + yref[1:]
+        if "rangeslider_visible" not in layout_kwargs.get(xaxis, {}):
+            fig.update_layout({xaxis: dict(rangeslider_visible=False)})
         return fig
 
     def plot_volume(

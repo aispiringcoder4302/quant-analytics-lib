@@ -103,14 +103,12 @@ class _RSI(RSI):
             fig=fig,
         )
 
-        xaxis = getattr(fig.data[-1], "xaxis", None)
-        if xaxis is None:
-            xaxis = "x"
-        yaxis = getattr(fig.data[-1], "yaxis", None)
-        if yaxis is None:
-            yaxis = "y"
+        xref = fig.data[-1]["xaxis"] if fig.data[-1]["xaxis"] is not None else "x"
+        yref = fig.data[-1]["yaxis"] if fig.data[-1]["yaxis"] is not None else "y"
+        xaxis = "xaxis" + xref[1:]
+        yaxis = "yaxis" + yref[1:]
         default_layout = dict()
-        default_layout[yaxis.replace("y", "yaxis")] = dict(range=[-5, 105])
+        default_layout[yaxis] = dict(range=[-5, 105])
         fig.update_layout(**default_layout)
         fig.update_layout(**layout_kwargs)
 
@@ -118,8 +116,8 @@ class _RSI(RSI):
         add_shape_kwargs = merge_dicts(
             dict(
                 type="rect",
-                xref=xaxis,
-                yref=yaxis,
+                xref=xref,
+                yref=yref,
                 x0=self_col.wrapper.index[0],
                 y0=limits[0],
                 x1=self_col.wrapper.index[-1],
