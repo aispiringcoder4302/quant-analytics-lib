@@ -2197,9 +2197,6 @@ class DocumentStore(Configured):
         self._store_id = store_id
         self._template_context = template_context
 
-        self._store = {}
-        self._staged_store = {}
-
     @property
     def store_id(self) -> str:
         """Store id."""
@@ -2210,54 +2207,29 @@ class DocumentStore(Configured):
         """Context used to substitute templates."""
         return self._template_context
 
-    @property
-    def store(self) -> tp.Dict[str, StoreDocument]:
-        """Dictionary with store documents keyed by their ids."""
-        return self._store
-
-    @property
-    def staged_store(self) -> tp.Dict[str, StoreDocument]:
-        """Dictionary with store documents keyed by their ids staged for the next commit."""
-        return self._staged_store
-
-    def store_exists(self) -> bool:
-        """Whether store exists."""
+    def list_documents(self) -> tp.List[StoreDocument]:
+        """List documents."""
         raise NotImplementedError
-
-    def load_store(self) -> tp.Dict[str, StoreDocument]:
-        """Load and return store."""
-        raise NotImplementedError
-
-    def save_store(self) -> None:
-        """Save store."""
-        raise NotImplementedError
-
-    def clear_store(self) -> None:
-        """Clear store."""
-        raise NotImplementedError
-
-    def load_update_store(self) -> None:
-        """Load and update store."""
-        self._store = self.load_store()
 
     def has_document(self, id_: str) -> bool:
         """Whether store has the document."""
-        return id_ in self.store
-
-    def add_document(self, document: StoreDocument) -> None:
-        """Add document to the store."""
-        self.store[document.id_] = document
-        self.staged_store[document.id_] = document
+        raise NotImplementedError
 
     def get_document(self, id_: str) -> StoreDocument:
         """Get document from the store."""
-        return self.store[id_]
+        raise NotImplementedError
+
+    def add_document(self, document: StoreDocument) -> None:
+        """Add document to the store."""
+        raise NotImplementedError
+
+    def remove_document(self, id_: str) -> None:
+        """Remove document from the store."""
+        raise NotImplementedError
 
     def commit(self) -> None:
-        """Commit staged documents."""
-        if self.staged_store:
-            self.save_store()
-            self.staged_store.clear()
+        """Commit changes."""
+        raise NotImplementedError
 
 
 memory_store: tp.Dict[str, tp.Dict[str, StoreDocument]] = {}
@@ -2273,28 +2245,70 @@ class MemoryStore(DocumentStore):
 
     _settings_path: tp.SettingsPath = "knowledge.chat.document_store_configs.memory"
 
-    def __init__(self, **kwargs) -> None:
-        DocumentStore.__init__(self, **kwargs)
+    def __init__(
+        self,
+        clear_store: tp.Optional[bool] = None,
+        load_store: tp.Optional[bool] = None,
+        _init_store: bool = True,
+        **kwargs,
+    ) -> None:
+        DocumentStore.__init__(self, clear_store=clear_store, load_store=load_store, **kwargs)
 
-        if self.store_exists():
-            self._store = self.load_store()
+        clear_store = self.resolve_setting(clear_store, "clear_store")
+        load_store = self.resolve_setting(load_store, "load_store")
+
+        if _init_store and self.store_exists():
+            if clear_store:
+                self.clear_store()
+                self._store = {}
+            elif load_store:
+                self._store = self.load_store()
+            else:
+                self._store = {}
         else:
             self._store = {}
 
+    @property
+    def store(self) -> tp.Dict[str, StoreDocument]:
+        """Dictionary with store documents keyed by their ids."""
+        return self._store
+
     def store_exists(self) -> bool:
+        """Whether store exists."""
         return self.store_id in memory_store
 
     def load_store(self) -> tp.Dict[str, StoreDocument]:
+        """Load and return store."""
         return dict(memory_store[self.store_id])
 
     def save_store(self) -> None:
+        """Save store."""
         memory_store[self.store_id] = dict(self.store)
 
     def clear_store(self) -> None:
+        """Clear store."""
         memory_store[self.store_id].clear()
 
+    def list_documents(self) -> tp.List[StoreDocument]:
+        return list(self.store.values())
 
-class FileStore(DocumentStore):
+    def has_document(self, id_: str) -> bool:
+        return id_ in self.store
+
+    def get_document(self, id_: str) -> StoreDocument:
+        return self.store[id_]
+
+    def add_document(self, document: StoreDocument) -> None:
+        self.store[document.id_] = document
+
+    def remove_document(self, id_: str) -> None:
+        del self.store[id_]
+
+    def commit(self) -> None:
+        self.save_store()
+
+
+class FileStore(MemoryStore):
     """Store class based on files.
 
     For defaults, see `chat.document_store_configs.file` in `vectorbtpro._settings.knowledge`."""
@@ -2309,14 +2323,22 @@ class FileStore(DocumentStore):
         compression: tp.Union[None, bool, str] = None,
         save_kwargs: tp.KwargsLike = None,
         load_kwargs: tp.KwargsLike = None,
+        memory_mirror: tp.Optional[bool] = None,
+        clear_store: tp.Optional[bool] = None,
+        load_store: tp.Optional[bool] = None,
+        _init_store: bool = True,
         **kwargs,
     ) -> None:
-        DocumentStore.__init__(
+        MemoryStore.__init__(
             self,
             dir_path=dir_path,
             compression=compression,
             save_kwargs=save_kwargs,
             load_kwargs=load_kwargs,
+            memory_mirror=memory_mirror,
+            clear_store=clear_store,
+            load_store=load_store,
+            _init_store=False,
             **kwargs,
         )
 
@@ -2334,17 +2356,29 @@ class FileStore(DocumentStore):
                     release_dir = release_dir.substitute(template_context, eval_id="release_dir")
                 template_context = flat_merge_dicts(dict(release_dir=release_dir), template_context)
             dir_path = dir_path.substitute(template_context, eval_id="dir_path")
+        clear_store = self.resolve_setting(clear_store, "clear_store")
         compression = self.resolve_setting(compression, "compression")
         save_kwargs = self.resolve_setting(save_kwargs, "save_kwargs", merge=True)
         load_kwargs = self.resolve_setting(load_kwargs, "load_kwargs", merge=True)
+        memory_mirror = self.resolve_setting(memory_mirror, "memory_mirror")
+        clear_store = self.resolve_setting(clear_store, "clear_store")
+        load_store = self.resolve_setting(load_store, "load_store")
 
         self._dir_path = dir_path
         self._compression = compression
         self._save_kwargs = save_kwargs
         self._load_kwargs = load_kwargs
+        self._memory_mirror = memory_mirror
 
-        if self.store_exists():
-            self._store = self.load_store()
+        self._changed_ids = set()
+        if _init_store and self.store_exists():
+            if clear_store:
+                self.clear_store()
+                self._store = {}
+            elif load_store:
+                self._store = self.load_store()
+            else:
+                self._store = {}
         else:
             self._store = {}
 
@@ -2369,6 +2403,21 @@ class FileStore(DocumentStore):
         return self._load_kwargs
 
     @property
+    def memory_mirror(self) -> bool:
+        """Whether to mirror the store in memory for the next instance."""
+        return self._memory_mirror
+
+    @property
+    def memory_store_id(self):
+        """Store id in memory."""
+        return f"__{type(self).__name__}.{self.store_id}__"
+
+    @property
+    def changed_ids(self) -> tp.Set[str]:
+        """Ids of changed documents."""
+        return self._changed_ids
+
+    @property
     def path(self) -> tp.Path:
         """File path."""
         dir_path = self.dir_path
@@ -2378,9 +2427,13 @@ class FileStore(DocumentStore):
         return dir_path / self.store_id
 
     def store_exists(self) -> bool:
+        if self.memory_mirror and MemoryStore.store_exists(self):
+            return True
         return self.path.exists()
 
-    def load_store(self) -> tp.Dict[int, StoreDocument]:
+    def load_store(self) -> tp.Dict[str, StoreDocument]:
+        if self.memory_mirror and MemoryStore.store_exists(self):
+            return MemoryStore.load_store(self)
         from vectorbtpro.utils.pickling import load
 
         return load(
@@ -2390,6 +2443,8 @@ class FileStore(DocumentStore):
         )
 
     def save_store(self) -> tp.Path:
+        if self.memory_mirror:
+            MemoryStore.save_store(self)
         from vectorbtpro.utils.pickling import save
 
         return save(
@@ -2400,9 +2455,26 @@ class FileStore(DocumentStore):
         )
 
     def clear_store(self) -> None:
+        if self.memory_mirror and MemoryStore.store_exists(self):
+            MemoryStore.clear_store(self)
         from vectorbtpro.utils.path_ import remove_file
 
         remove_file(self.path, missing_ok=True)
+
+    def add_document(self, document: StoreDocument) -> None:
+        MemoryStore.add_document(self, document)
+        self.changed_ids.add(document.id_)
+
+    def remove_document(self, document: StoreDocument) -> None:
+        MemoryStore.remove_document(self, document.id_)
+        self.changed_ids.add(document.id_)
+
+    def commit(self) -> None:
+        if self.changed_ids:
+            self.save_store()
+            self.changed_ids.clear()
+        elif self.memory_mirror:
+            MemoryStore.save_store(self)
 
 
 def resolve_document_store(document_store: tp.DocumentStoreLike = None) -> tp.MaybeType[DocumentStore]:
@@ -2495,12 +2567,9 @@ class NodeIndex(Configured):
         self._index_id = index_id
         self._template_context = template_context
 
-        self._index = {}
-        self._staged_index = {}
-
     @property
     def index_id(self) -> str:
-        """Store id."""
+        """Index id."""
         return self._index_id
 
     @property
@@ -2508,54 +2577,29 @@ class NodeIndex(Configured):
         """Context used to substitute templates."""
         return self._template_context
 
-    @property
-    def index(self) -> tp.Dict[str, IndexNode]:
-        """Dictionary with nodes keyed by their ids."""
-        return self._index
-
-    @property
-    def staged_index(self) -> tp.Dict[str, IndexNode]:
-        """Dictionary with nodes keyed by their ids staged for the next commit."""
-        return self._staged_index
-
-    def index_exists(self) -> bool:
-        """Whether index exists."""
+    def list_nodes(self) -> tp.List[IndexNode]:
+        """List nodes."""
         raise NotImplementedError
-
-    def load_index(self) -> tp.Dict[str, IndexNode]:
-        """Load and return index."""
-        raise NotImplementedError
-
-    def save_index(self) -> None:
-        """Save index."""
-        raise NotImplementedError
-
-    def clear_index(self) -> None:
-        """Clear index."""
-        raise NotImplementedError
-
-    def load_update_index(self) -> None:
-        """Load and update index."""
-        self._index = self.load_index()
 
     def has_node(self, id_: str) -> bool:
         """Whether index has the node."""
-        return id_ in self.index
-
-    def add_node(self, node: IndexNode) -> None:
-        """Add node to the index."""
-        self.index[node.id_] = node
-        self.staged_index[node.id_] = node
+        raise NotImplementedError
 
     def get_node(self, id_: str) -> IndexNode:
         """Get node from the index."""
-        return self.index[id_]
+        raise NotImplementedError
+
+    def add_node(self, node: IndexNode) -> None:
+        """Add node to the index."""
+        raise NotImplementedError
+
+    def remove_node(self, id_: str) -> None:
+        """Remove node from the index."""
+        raise NotImplementedError
 
     def commit(self) -> None:
-        """Commit staged nodes."""
-        if self.staged_index:
-            self.save_index()
-            self.staged_index.clear()
+        """Commit changes."""
+        raise NotImplementedError
 
 
 memory_index: tp.Dict[str, tp.Dict[str, IndexNode]] = {}
@@ -2571,28 +2615,70 @@ class MemoryIndex(NodeIndex):
 
     _settings_path: tp.SettingsPath = "knowledge.chat.node_index_configs.memory"
 
-    def __init__(self, **kwargs) -> None:
-        NodeIndex.__init__(self, **kwargs)
+    def __init__(
+        self,
+        clear_index: tp.Optional[bool] = None,
+        load_index: tp.Optional[bool] = None,
+        _init_index: bool = True,
+        **kwargs,
+    ) -> None:
+        NodeIndex.__init__(self, clear_index=clear_index, load_index=load_index, **kwargs)
 
-        if self.index_exists():
-            self._index = self.load_index()
+        clear_index = self.resolve_setting(clear_index, "clear_index")
+        load_index = self.resolve_setting(load_index, "load_index")
+
+        if _init_index and self.index_exists():
+            if clear_index:
+                self.clear_index()
+                self._index = {}
+            elif load_index:
+                self._index = self.load_index()
+            else:
+                self._index = {}
         else:
             self._index = {}
 
+    @property
+    def index(self) -> tp.Dict[str, IndexNode]:
+        """Dictionary with index nodes keyed by their ids."""
+        return self._index
+
     def index_exists(self) -> bool:
+        """Whether index exists."""
         return self.index_id in memory_index
 
     def load_index(self) -> tp.Dict[str, IndexNode]:
+        """Load and return index."""
         return dict(memory_index[self.index_id])
 
     def save_index(self) -> None:
+        """Save index."""
         memory_index[self.index_id] = dict(self.index)
 
     def clear_index(self) -> None:
+        """Clear index."""
         memory_index[self.index_id].clear()
 
+    def list_nodes(self) -> tp.List[IndexNode]:
+        return list(self.index.values())
 
-class FileIndex(NodeIndex):
+    def has_node(self, id_: str) -> bool:
+        return id_ in self.index
+
+    def get_node(self, id_: str) -> IndexNode:
+        return self.index[id_]
+
+    def add_node(self, node: IndexNode) -> None:
+        self.index[node.id_] = node
+
+    def remove_node(self, id_: str) -> None:
+        del self.index[id_]
+
+    def commit(self) -> None:
+        self.save_index()
+
+
+class FileIndex(MemoryIndex):
     """Index class based on files.
 
     For defaults, see `chat.node_index_configs.file` in `vectorbtpro._settings.knowledge`."""
@@ -2607,14 +2693,22 @@ class FileIndex(NodeIndex):
         compression: tp.Union[None, bool, str] = None,
         save_kwargs: tp.KwargsLike = None,
         load_kwargs: tp.KwargsLike = None,
+        memory_mirror: tp.Optional[bool] = None,
+        clear_index: tp.Optional[bool] = None,
+        load_index: tp.Optional[bool] = None,
+        _init_index: bool = True,
         **kwargs,
     ) -> None:
-        NodeIndex.__init__(
+        MemoryIndex.__init__(
             self,
             dir_path=dir_path,
             compression=compression,
             save_kwargs=save_kwargs,
             load_kwargs=load_kwargs,
+            memory_mirror=memory_mirror,
+            clear_index=clear_index,
+            load_index=load_index,
+            _init_index=False,
             **kwargs,
         )
 
@@ -2632,17 +2726,29 @@ class FileIndex(NodeIndex):
                     release_dir = release_dir.substitute(template_context, eval_id="release_dir")
                 template_context = flat_merge_dicts(dict(release_dir=release_dir), template_context)
             dir_path = dir_path.substitute(template_context, eval_id="dir_path")
+        clear_index = self.resolve_setting(clear_index, "clear_index")
         compression = self.resolve_setting(compression, "compression")
         save_kwargs = self.resolve_setting(save_kwargs, "save_kwargs", merge=True)
         load_kwargs = self.resolve_setting(load_kwargs, "load_kwargs", merge=True)
+        memory_mirror = self.resolve_setting(memory_mirror, "memory_mirror")
+        clear_index = self.resolve_setting(clear_index, "clear_index")
+        load_index = self.resolve_setting(load_index, "load_index")
 
         self._dir_path = dir_path
         self._compression = compression
         self._save_kwargs = save_kwargs
         self._load_kwargs = load_kwargs
+        self._memory_mirror = memory_mirror
 
-        if self.index_exists():
-            self._index = self.load_index()
+        self._changed_ids = set()
+        if _init_index and self.index_exists():
+            if clear_index:
+                self.clear_index()
+                self._index = {}
+            elif load_index:
+                self._index = self.load_index()
+            else:
+                self._index = {}
         else:
             self._index = {}
 
@@ -2667,6 +2773,21 @@ class FileIndex(NodeIndex):
         return self._load_kwargs
 
     @property
+    def memory_mirror(self) -> bool:
+        """Whether to mirror the index in memory for the next instance."""
+        return self._memory_mirror
+
+    @property
+    def memory_index_id(self):
+        """Index id in memory."""
+        return f"__{type(self).__name__}.{self.index_id}__"
+
+    @property
+    def changed_ids(self) -> tp.Set[str]:
+        """Ids of changed nodes."""
+        return self._changed_ids
+
+    @property
     def path(self) -> tp.Path:
         """File path."""
         dir_path = self.dir_path
@@ -2676,9 +2797,13 @@ class FileIndex(NodeIndex):
         return dir_path / self.index_id
 
     def index_exists(self) -> bool:
+        if self.memory_mirror and MemoryIndex.index_exists(self):
+            return True
         return self.path.exists()
 
-    def load_index(self) -> tp.Dict[int, IndexNode]:
+    def load_index(self) -> tp.Dict[str, IndexNode]:
+        if self.memory_mirror and MemoryIndex.index_exists(self):
+            return MemoryIndex.load_index(self)
         from vectorbtpro.utils.pickling import load
 
         return load(
@@ -2688,6 +2813,8 @@ class FileIndex(NodeIndex):
         )
 
     def save_index(self) -> tp.Path:
+        if self.memory_mirror:
+            MemoryIndex.save_index(self)
         from vectorbtpro.utils.pickling import save
 
         return save(
@@ -2698,9 +2825,26 @@ class FileIndex(NodeIndex):
         )
 
     def clear_index(self) -> None:
+        if self.memory_mirror and MemoryIndex.index_exists(self):
+            MemoryIndex.clear_index(self)
         from vectorbtpro.utils.path_ import remove_file
 
         remove_file(self.path, missing_ok=True)
+
+    def add_node(self, node: IndexNode) -> None:
+        MemoryIndex.add_node(self, node)
+        self.changed_ids.add(node.id_)
+
+    def remove_node(self, node: IndexNode) -> None:
+        MemoryIndex.remove_node(self, node.id_)
+        self.changed_ids.add(node.id_)
+
+    def commit(self) -> None:
+        if self.changed_ids:
+            self.save_index()
+            self.changed_ids.clear()
+        elif self.memory_mirror:
+            MemoryIndex.save_index(self)
 
 
 def resolve_node_index(node_index: tp.NodeIndexLike = None) -> tp.MaybeType[NodeIndex]:
@@ -2776,6 +2920,7 @@ class DocumentRanker(Configured):
 
     def __init__(
         self,
+        dataset_id: tp.Optional[str] = None,
         score_func: tp.Union[None, str, tp.Callable] = None,
         score_agg_func: tp.Union[None, str, tp.Callable] = None,
         embeddings: tp.EmbeddingsLike = None,
@@ -2791,6 +2936,7 @@ class DocumentRanker(Configured):
     ) -> None:
         Configured.__init__(
             self,
+            dataset_id=dataset_id,
             score_func=score_func,
             score_agg_func=score_agg_func,
             embeddings=embeddings,
@@ -2805,6 +2951,7 @@ class DocumentRanker(Configured):
             **kwargs,
         )
 
+        dataset_id = self.resolve_setting(dataset_id, "dataset_id")
         score_func = self.resolve_setting(score_func, "score_func")
         score_agg_func = self.resolve_setting(score_agg_func, "score_agg_func")
         embeddings = self.resolve_setting(embeddings, "embeddings", default=None)
@@ -2833,6 +2980,8 @@ class DocumentRanker(Configured):
         document_store = resolve_document_store(document_store)
         if isinstance(document_store, type):
             document_store_kwargs = dict(document_store_kwargs)
+            if "store_id" not in document_store_kwargs:
+                document_store_kwargs["store_id"] = dataset_id
             document_store_kwargs["template_context"] = merge_dicts(
                 template_context, document_store_kwargs.get("template_context", None)
             )
@@ -2842,6 +2991,8 @@ class DocumentRanker(Configured):
         node_index = resolve_node_index(node_index)
         if isinstance(node_index, type):
             node_index_kwargs = dict(node_index_kwargs)
+            if "index_id" not in node_index_kwargs:
+                node_index_kwargs["index_id"] = dataset_id
             node_index_kwargs["template_context"] = merge_dicts(
                 template_context, node_index_kwargs.get("template_context", None)
             )
@@ -2849,6 +3000,7 @@ class DocumentRanker(Configured):
         elif node_index_kwargs:
             node_index = node_index.replace(**node_index_kwargs)
 
+        self._dataset_id = dataset_id
         self._score_func = score_func
         self._score_agg_func = score_agg_func
         self._embeddings = embeddings
@@ -2857,6 +3009,11 @@ class DocumentRanker(Configured):
         self._commit_document_store = commit_document_store
         self._commit_node_index = commit_node_index
         self._template_context = template_context
+
+    @property
+    def dataset_id(self) -> tp.Optional[str]:
+        """Dataset (document store + node index) id."""
+        return self._dataset_id
 
     @property
     def score_func(self) -> tp.Union[str, tp.Callable]:
@@ -2887,12 +3044,12 @@ class DocumentRanker(Configured):
 
     @property
     def commit_document_store(self) -> bool:
-        """Whether to commit document store after generating embeddings."""
+        """Whether to commit changes in the document store after generating embeddings."""
         return self._commit_document_store
 
     @property
     def commit_node_index(self) -> bool:
-        """Whether to commit node index after generating embeddings."""
+        """Whether to commit changes in the node index after generating embeddings."""
         return self._commit_node_index
 
     @property
@@ -2901,7 +3058,7 @@ class DocumentRanker(Configured):
         return self._template_context
 
     def commit(self) -> None:
-        """Commit staged changes."""
+        """Commit changes."""
         if self.commit_document_store:
             self.document_store.commit()
         if self.commit_node_index:
@@ -3049,7 +3206,7 @@ class DocumentRanker(Configured):
         if documents is None:
             if self.document_store is None:
                 raise ValueError("Must provide at least documents or document_store")
-            documents = self.document_store.store.values()
+            documents = self.document_store.list_documents()
             documents_provided = False
         else:
             documents_provided = True
@@ -3274,11 +3431,24 @@ class Rankable(HasSettings):
 
     _settings_path: tp.SettingsPath = ["knowledge", "knowledge.chat"]
 
-    def embed(self: RankableT, *args, **kwargs) -> tp.Optional[RankableT]:
+    def embed(
+        self: RankableT,
+        return_embeddings: bool = False,
+        return_documents: bool = False,
+        **kwargs,
+    ) -> tp.Optional[RankableT]:
         """Embed documents."""
         raise NotImplementedError
 
-    def rank(self: RankableT, query: str, *args, **kwargs) -> RankableT:
+    def rank(
+        self: RankableT,
+        query: str,
+        top_k: tp.TopKLike = None,
+        cutoff: tp.Optional[float] = None,
+        return_chunks: bool = False,
+        return_scores: bool = False,
+        **kwargs,
+    ) -> RankableT:
         """Rank documents by their relevance to a query."""
         raise NotImplementedError
 
@@ -3314,18 +3484,49 @@ class Contextable(HasSettings):
             tokenizer = tokenizer.replace(**tokenizer_kwargs)
         return len(tokenizer.encode(context))
 
+    def create_chat(
+        self,
+        to_context_kwargs: tp.KwargsLike = None,
+        completions: tp.CompletionsLike = None,
+        **kwargs,
+    ) -> Completions:
+        """Create a chat by returning an instance of `Completions`.
+
+        Uses `Contextable.to_context` to turn this instance to a context.
+
+        Usage:
+            ```pycon
+            >>> chat = asset.create_chat()
+
+            >>> chat.get_completion("What's the value under 'xyz'?")
+            The value under 'xyz' is 123.
+
+            >>> chat.get_completion("Are you sure?")
+            Yes, I am sure. The value under 'xyz' is 123 for the entry where `s` is "EFG".
+            ```"""
+        to_context_kwargs = self.resolve_setting(to_context_kwargs, "to_context_kwargs", merge=True)
+        context = self.to_context(**to_context_kwargs)
+        completions = resolve_completions(completions=completions)
+        if isinstance(completions, type):
+            completions = completions(context=context, **kwargs)
+        else:
+            completions = completions.replace(context=context, **kwargs)
+        return completions
+
     @hybrid_method
     def chat(
         cls_or_self,
         message: str,
         chat_history: tp.Optional[tp.ChatHistory] = None,
-        *,
-        to_context_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> tp.ChatOutput:
         """Chat with an LLM while using the instance as a context.
 
-        Uses `complete`.
+        Uses `Contextable.create_chat` and then `Completions.get_completion`.
+
+        !!! note
+            Context is recalculated each time this method is invoked. For multiple turns,
+            it's more efficient to use `Contextable.create_chat`.
 
         Usage:
             ```pycon
@@ -3346,9 +3547,8 @@ class Contextable(HasSettings):
             args, kwargs = get_forward_args(super().chat, locals())
             return super().chat(*args, **kwargs)
 
-        to_context_kwargs = cls_or_self.resolve_setting(to_context_kwargs, "to_context_kwargs", merge=True)
-        context = cls_or_self.to_context(**to_context_kwargs)
-        return complete(message, context=context, chat_history=chat_history, **kwargs)
+        completions = cls_or_self.create_chat(chat_history=chat_history, **kwargs)
+        return completions.get_completion(message)
 
 
 class RankContextable(Rankable, Contextable):
@@ -3360,9 +3560,16 @@ class RankContextable(Rankable, Contextable):
         message: str,
         *args,
         rank: tp.Optional[bool] = None,
+        top_k: tp.TopKLike = None,
+        cutoff: tp.Optional[float] = None,
+        return_chunks: tp.Optional[bool] = None,
         rank_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> tp.ChatOutput:
+        """See `Contextable.chat`.
+
+        If `rank` is True, or `rank` is None and any of `top_k`, `cutoff`, or `return_chunks` is set,
+        will rank the documents with `Rankable.rank` first."""
         if isinstance(cls_or_self, type):
             from vectorbtpro.utils.parsing import get_forward_args
 
@@ -3371,8 +3578,23 @@ class RankContextable(Rankable, Contextable):
 
         rank = cls_or_self.resolve_setting(rank, "rank")
         rank_kwargs = cls_or_self.resolve_setting(rank_kwargs, "rank_kwargs", merge=True)
-        if rank:
-            _cls_or_self = cls_or_self.rank(message, **rank_kwargs)
+        def_top_k = rank_kwargs.pop("top_k")
+        if top_k is None:
+            top_k = def_top_k
+        def_cutoff = rank_kwargs.pop("cutoff")
+        if cutoff is None:
+            cutoff = def_cutoff
+        def_return_chunks = rank_kwargs.pop("return_chunks")
+        if return_chunks is None:
+            return_chunks = def_return_chunks
+        if rank or (rank is None and (top_k or cutoff or return_chunks)):
+            _cls_or_self = cls_or_self.rank(
+                message,
+                top_k=top_k,
+                cutoff=cutoff,
+                return_chunks=return_chunks,
+                **rank_kwargs,
+            )
         else:
             _cls_or_self = cls_or_self
         return Contextable.chat.__func__(_cls_or_self, message, *args, **kwargs)

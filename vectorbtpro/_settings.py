@@ -2273,8 +2273,12 @@ knowledge = frozen_cfg(
         chat_dir=RepEval("Path(cache_dir) / 'chat'"),
         stream=True,
         to_context_kwargs=flex_cfg(),
-        rank=False,
-        rank_kwargs=flex_cfg(),
+        rank=None,
+        rank_kwargs=flex_cfg(
+            top_k=None,
+            cutoff=None,
+            return_chunks=False,
+        ),
         max_tokens=120_000,
         system_prompt="You are a helpful assistant. Given the context information and not prior knowledge, answer the query.",
         system_as_user=False,
@@ -2353,6 +2357,10 @@ $context
         document_store="memory",
         store_id="default",
         document_store_configs=flex_cfg(
+            memory=flex_cfg(
+                clear_store=False,
+                load_store=True,
+            ),
             file=flex_cfg(
                 dir_path=RepEval("Path(cache_dir) / 'document_store'"),
                 compression=None,
@@ -2362,11 +2370,16 @@ $context
                     ),
                 ),
                 load_kwargs=flex_cfg(),
+                memory_mirror=True,
             ),
         ),
         node_index="memory",
         index_id="default",
         node_index_configs=flex_cfg(
+            memory=flex_cfg(
+                clear_index=False,
+                load_index=True,
+            ),
             file=flex_cfg(
                 dir_path=RepEval("Path(cache_dir) / 'node_index'"),
                 compression=None,
@@ -2376,12 +2389,14 @@ $context
                     ),
                 ),
                 load_kwargs=flex_cfg(),
+                memory_mirror=True,
             ),
         ),
         score_func="cosine",
         score_agg_func="mean",
         commit_document_store=True,
         commit_node_index=True,
+        dataset_id=None,
     ),
     assets=flex_cfg(
         vbt=flex_cfg(
