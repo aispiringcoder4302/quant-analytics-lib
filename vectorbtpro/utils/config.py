@@ -430,11 +430,6 @@ def flat_merge_dicts(*dicts: InConfigLikeT, **kwargs) -> OutConfigLikeT:
     return merge_dicts(*dicts, nested=False, **kwargs)
 
 
-def deep_merge_dicts(*dicts: InConfigLikeT, **kwargs) -> OutConfigLikeT:
-    """Merge dicts with default arguments and `nested=True`."""
-    return merge_dicts(*dicts, nested=True, **kwargs)
-
-
 class child_dict(pdict):
     """Subclass of `dict` acting as a child dict."""
 
@@ -991,6 +986,49 @@ class SettingNotFoundError(KeyError):
 HasSettingsT = tp.TypeVar("HasSettingsT", bound="HasSettings")
 
 
+ext_settings_paths_config = HybridConfig()
+"""_"""
+
+__pdoc__[
+    "ext_settings_paths_config"
+] = f"""Config for (currently active) extensional settings paths.
+
+Stores tuples of class names and their settings paths by unique ids.
+
+```python
+{ext_settings_paths_config.prettify()}
+```
+"""
+
+
+ExtSettingsPathT = tp.TypeVar("ExtSettingsPathT", bound="ExtSettingsPath")
+
+
+class ExtSettingsPath(Base):
+    """Context manager to add extensional settings paths."""
+
+    def __init__(self, ext_settings_paths: tp.ExtSettingsPaths) -> None:
+        self._unique_id = str(uuid.uuid4())
+        self._ext_settings_paths = ext_settings_paths
+
+    @property
+    def unique_id(self) -> str:
+        """Unique id."""
+        return self._unique_id
+
+    @property
+    def ext_settings_paths(self) -> tp.ExtSettingsPaths:
+        """Dictionary with extensional settings paths."""
+        return self._ext_settings_paths
+
+    def __enter__(self: ExtSettingsPathT) -> ExtSettingsPathT:
+        ext_settings_paths_config[self.unique_id] = self.ext_settings_paths
+        return self
+
+    def __exit__(self, *args) -> None:
+        del ext_settings_paths_config[self.unique_id]
+
+
 spec_settings_paths_config = HybridConfig()
 """_"""
 
@@ -1015,11 +1053,11 @@ class SpecSettingsPath(Base):
     """Context manager to add specialized settings paths."""
 
     def __init__(self, spec_settings_paths: tp.SpecSettingsPaths) -> None:
-        self._unique_id = uuid.uuid4()
+        self._unique_id = str(uuid.uuid4())
         self._spec_settings_paths = spec_settings_paths
 
     @property
-    def unique_id(self) -> uuid.UUID:
+    def unique_id(self) -> str:
         """Unique id."""
         return self._unique_id
 
@@ -1140,7 +1178,10 @@ class HasSettings(Base):
         for i, cls_ in enumerate(classes):
             if issubclass(cls_, HasSettings):
                 _process_path(cls_, getattr(cls_, "_settings_path"))
-
+                for ext_settings_paths in ext_settings_paths_config.values():
+                    for ext_cls, ext_path in ext_settings_paths:
+                        if ext_cls is cls_:
+                            _process_path(ext_cls, ext_path)
         if not super_first:
             return paths[::-1]
         return paths

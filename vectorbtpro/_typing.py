@@ -63,8 +63,7 @@ if TYPE_CHECKING:
         Completions,
         TextSplitter,
         StoreDocument,
-        DocumentStore,
-        NodeIndex,
+        ObjectStore,
         EmbeddedDocument,
         ScoredDocument,
     )
@@ -99,8 +98,7 @@ else:
     Completions = "Completions"
     TextSplitter = "TextSplitter"
     StoreDocument = "StoreDocument"
-    DocumentStore = "DocumentStore"
-    NodeIndex = "NodeIndex"
+    ObjectStore = "ObjectStore"
     EmbeddedDocument = "EmbeddedDocument"
     ScoredDocument = "ScoredDocument"
     VBTAsset = "VBTAsset"
@@ -238,7 +236,9 @@ KwargsLike = Union[None, Kwargs]
 KwargsLikeSequence = MaybeSequence[KwargsLike]
 ArgsKwargs = Tuple[Args, Kwargs]
 PathLike = Union[str, Path]
-SettingsPath = ClassVar[Union[None, MaybeList[PathLikeKey], Dict[Hashable, PathLikeKey]]]
+_SettingsPath = Union[None, MaybeList[PathLikeKey], Dict[Hashable, PathLikeKey]]
+SettingsPath = ClassVar[_SettingsPath]
+ExtSettingsPaths = List[Tuple[type, _SettingsPath]]
 SpecSettingsPaths = Dict[PathLikeKey, MaybeList[PathLikeKey]]
 WriteableAttrs = ClassVar[Optional[Set[str]]]
 ExpectedKeysMode = ClassVar[str]
@@ -385,8 +385,7 @@ TextSplitterLike = Union[None, str, MaybeType[TextSplitter]]
 TSRange = Tuple[int, int]
 TSRangeChunks = Iterator[TSRange]
 TSTextChunks = Iterator[str]
-DocumentStoreLike = Union[None, str, MaybeType[DocumentStore]]
-NodeIndexLike = Union[None, str, MaybeType[NodeIndex]]
+ObjectStoreLike = Union[None, str, MaybeType[ObjectStore]]
 EmbeddedDocuments = List[EmbeddedDocument]
 ScoredDocuments = List[Union[float, ScoredDocument]]
 RankedDocuments = List[Union[StoreDocument, ScoredDocument]]

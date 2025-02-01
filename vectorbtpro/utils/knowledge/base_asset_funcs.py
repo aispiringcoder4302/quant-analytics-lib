@@ -16,7 +16,7 @@ from vectorbtpro import _typing as tp
 from vectorbtpro.utils import checks, search
 from vectorbtpro.utils.attr_ import MISSING
 from vectorbtpro.utils.base import Base
-from vectorbtpro.utils.config import merge_dicts, flat_merge_dicts, deep_merge_dicts
+from vectorbtpro.utils.config import merge_dicts, flat_merge_dicts
 from vectorbtpro.utils.config import reorder_dict, reorder_list
 from vectorbtpro.utils.execution import NoResult
 from vectorbtpro.utils.formatting import dump
@@ -130,7 +130,7 @@ class GetAssetFunc(AssetFunc):
                         continue
                 if len(xs) == 0:
                     return NoResult
-                x = deep_merge_dicts(*xs)
+                x = merge_dicts(*xs)
             else:
                 try:
                     x = search.get_pathlike_key(x, path, keep_path=keep_path)
@@ -938,7 +938,7 @@ class FindAssetFunc(AssetFunc):
                         if return_type.lower() == "bool":
                             return False
                         return {} if return_path else []
-                    x = deep_merge_dicts(*xs)
+                    x = merge_dicts(*xs)
                 else:
                     try:
                         x = search.get_pathlike_key(x, path, keep_path=keep_path)
@@ -1671,7 +1671,7 @@ class ToDocsAssetFunc(AssetFunc):
             template_context,
         )
         document_kwargs = substitute_templates(document_kwargs, _template_context, eval_id="document_kwargs")
-        return document_cls(d, template_context=_template_context, **document_kwargs)
+        return document_cls.from_data(d, template_context=_template_context, **document_kwargs)
 
 
 class SplitTextAssetFunc(AssetFunc):
@@ -1721,7 +1721,7 @@ class SplitTextAssetFunc(AssetFunc):
     ) -> tp.Any:
         from vectorbtpro.utils.knowledge.chatting import TextDocument
 
-        document = TextDocument(d, id_="", text_path=text_path, split_text_kwargs=split_text_kwargs)
+        document = TextDocument("", d, text_path=text_path, split_text_kwargs=split_text_kwargs)
         return [document_chunk.data for document_chunk in document.split()]
 
 

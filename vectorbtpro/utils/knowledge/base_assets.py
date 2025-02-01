@@ -22,7 +22,7 @@ import pandas as pd
 from vectorbtpro import _typing as tp
 from vectorbtpro.utils import checks, search
 from vectorbtpro.utils.config import Configured
-from vectorbtpro.utils.config import flat_merge_dicts, deep_merge_dicts
+from vectorbtpro.utils.config import merge_dicts, flat_merge_dicts
 from vectorbtpro.utils.decorators import hybrid_method
 from vectorbtpro.utils.execution import Task, execute, NoResult
 from vectorbtpro.utils.knowledge.chatting import RankContextable
@@ -633,7 +633,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
             prefix += f"[{func.__name__}]"
         else:
             prefix += f"[{type(func).__name__}]"
-        execute_kwargs = deep_merge_dicts(
+        execute_kwargs = merge_dicts(
             dict(
                 show_progress=False if self.single_item else None,
                 pbar_kwargs=dict(
@@ -1909,7 +1909,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
             group_instance = self.get_items(group)
             tasks.append(Task(group_instance.reduce, func, *args, **kwargs))
         prefix = get_caller_qualname().split(".")[-1]
-        execute_kwargs = deep_merge_dicts(
+        execute_kwargs = merge_dicts(
             dict(
                 show_progress=len(groups) > 1,
                 pbar_kwargs=dict(

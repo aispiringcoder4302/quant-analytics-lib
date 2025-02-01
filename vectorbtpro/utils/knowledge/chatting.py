@@ -24,13 +24,13 @@ import numpy as np
 from vectorbtpro import _typing as tp
 from vectorbtpro.utils import checks
 from vectorbtpro.utils.attr_ import DefineMixin, define
-from vectorbtpro.utils.config import merge_dicts, flat_merge_dicts, deep_merge_dicts, Configured, HasSettings
+from vectorbtpro.utils.config import merge_dicts, flat_merge_dicts, Configured, HasSettings, ExtSettingsPath
 from vectorbtpro.utils.decorators import memoized_method, hybrid_method
 from vectorbtpro.utils.knowledge.formatting import ContentFormatter, HTMLFileFormatter, resolve_formatter
 from vectorbtpro.utils.parsing import get_func_arg_names, get_func_kwargs
 from vectorbtpro.utils.pbar import ProgressBar
 from vectorbtpro.utils.pickling import dumps
-from vectorbtpro.utils.template import CustomTemplate, Sub, Rep, RepFunc
+from vectorbtpro.utils.template import CustomTemplate, Sub, RepFunc
 
 try:
     if not tp.TYPE_CHECKING:
@@ -95,15 +95,13 @@ __all__ = [
     "SegmentSplitter",
     "LlamaIndexSplitter",
     "split_text",
+    "StoreObject",
     "StoreDocument",
     "TextDocument",
-    "DocumentStore",
+    "StoreEmbedding",
+    "ObjectStore",
     "MemoryStore",
     "FileStore",
-    "IndexNode",
-    "NodeIndex",
-    "MemoryIndex",
-    "FileIndex",
     "EmbeddedDocument",
     "ScoredDocument",
     "DocumentRanker",
@@ -639,9 +637,9 @@ class LlamaIndexEmbeddings(Embeddings):
             module_name = type(embedding).__module__
         embedding_configs = llama_index_config.pop("embedding_configs", {})
         if embedding_name in embedding_configs:
-            llama_index_config = deep_merge_dicts(llama_index_config, embedding_configs[embedding_name])
+            llama_index_config = merge_dicts(llama_index_config, embedding_configs[embedding_name])
         elif module_name in embedding_configs:
-            llama_index_config = deep_merge_dicts(llama_index_config, embedding_configs[module_name])
+            llama_index_config = merge_dicts(llama_index_config, embedding_configs[module_name])
         if isinstance(embedding, type):
             embedding = embedding(**llama_index_config)
         elif len(kwargs) > 0:
@@ -1366,9 +1364,9 @@ class LlamaIndexCompletions(Completions):
             module_name = type(llm).__module__
         llm_configs = llama_index_config.pop("llm_configs", {})
         if llm_name in llm_configs:
-            llama_index_config = deep_merge_dicts(llama_index_config, llm_configs[llm_name])
+            llama_index_config = merge_dicts(llama_index_config, llm_configs[llm_name])
         elif module_name in llm_configs:
-            llama_index_config = deep_merge_dicts(llama_index_config, llm_configs[module_name])
+            llama_index_config = merge_dicts(llama_index_config, llm_configs[module_name])
         if isinstance(llm, type):
             llm = llm(**llama_index_config)
         elif len(kwargs) > 0:
@@ -1856,9 +1854,9 @@ class LlamaIndexSplitter(TextSplitter):
             module_name = type(node_parser).__module__
         node_parser_configs = llama_index_config.pop("node_parser_configs", {})
         if node_parser_name in node_parser_configs:
-            llama_index_config = deep_merge_dicts(llama_index_config, node_parser_configs[node_parser_name])
+            llama_index_config = merge_dicts(llama_index_config, node_parser_configs[node_parser_name])
         elif module_name in node_parser_configs:
-            llama_index_config = deep_merge_dicts(llama_index_config, node_parser_configs[module_name])
+            llama_index_config = merge_dicts(llama_index_config, node_parser_configs[module_name])
         if isinstance(node_parser, type):
             node_parser = node_parser(**llama_index_config)
         elif len(kwargs) > 0:
@@ -1940,26 +1938,58 @@ def split_text(text: str, text_splitter: tp.TextSplitterLike = None, **kwargs) -
     return list(text_splitter.split_text(text))
 
 
-# ############# Documents ############# #
+# ############# Storing ############# #
+
+
+StoreObjectT = tp.TypeVar("StoreObjectT", bound="StoreObject")
+
+
+@define
+class StoreObject(DefineMixin):
+    """Class for objects to be managed by a store."""
+
+    id_: str = define.field()
+    """Object identifier."""
+
+    @property
+    def hash_key(self) -> tuple:
+        return (self.id_,)
+
 
 StoreDocumentT = tp.TypeVar("StoreDocumentT", bound="StoreDocument")
 
 
 @define
-class StoreDocument(DefineMixin):
-    """Abstract class for documents to be managed by a store.
-
-    A document stores data and an identifier, and exposes methods for getting and splitting content.
-    If an identifier wasn't provided, generates the MD5 hash of the data."""
+class StoreDocument(StoreObject, DefineMixin):
+    """Abstract class for documents to be stored."""
 
     data: tp.Any = define.field()
     """Data."""
 
-    id_: str = define.field(default=None)
-    """Document identifier."""
-
     template_context: tp.KwargsLike = define.field(factory=dict)
     """Context used to substitute templates."""
+
+    @classmethod
+    def id_from_data(cls, data: tp.Any) -> str:
+        """Generate a unique identifier from data."""
+        return hashlib.md5(dumps(data)).hexdigest()
+
+    @classmethod
+    def from_data(
+        cls: tp.Type[StoreDocumentT],
+        data: tp.Any,
+        id_: tp.Optional[str] = None,
+        **kwargs,
+    ) -> StoreDocumentT:
+        """Create an instance of `StoreDocument` from data."""
+        if id_ is None:
+            id_ = cls.id_from_data(data)
+        return cls(id_, data, **kwargs)
+
+    def __attrs_post_init__(self):
+        if self.id_ is None:
+            new_id = self.id_from_data(self.data)
+            object.__setattr__(self, "id_", new_id)
 
     def get_content(self, for_embed: bool = False) -> tp.Optional[str]:
         """Get content.
@@ -1970,19 +2000,6 @@ class StoreDocument(DefineMixin):
     def split(self: StoreDocumentT) -> tp.List[StoreDocumentT]:
         """Split document into multiple documents."""
         raise NotImplementedError
-
-    def __attrs_post_init__(self):
-        if self.id_ is None:
-            new_id = self.generate_id()
-            object.__setattr__(self, "id_", new_id)
-
-    def generate_id(self) -> str:
-        """Generate a unique identifier."""
-        return hashlib.md5(dumps(self.data)).hexdigest()
-
-    @property
-    def hash_key(self) -> tuple:
-        return (self.id_,)
 
 
 TextDocumentT = tp.TypeVar("TextDocumentT", bound="TextDocument")
@@ -1997,10 +2014,7 @@ def def_metadata_template(metadata_content: str) -> str:
 
 @define
 class TextDocument(StoreDocument, HasSettings, DefineMixin):
-    """Class for text documents.
-
-    A text document either contains text as data or has a text field in data.
-    Metadata can be incorporated into data as well."""
+    """Class for text documents."""
 
     text_path: tp.Optional[tp.PathLikeKey] = define.field(default=None)
     """Path to the text field."""
@@ -2168,8 +2182,22 @@ class TextDocument(StoreDocument, HasSettings, DefineMixin):
         return document_chunks
 
 
-class DocumentStore(Configured):
-    """Abstract class for managing a document store.
+@define
+class StoreEmbedding(StoreObject, DefineMixin):
+    """Class for embeddings to be stored."""
+
+    parent_id: tp.Optional[str] = define.field(default=None)
+    """Parent object identifier."""
+
+    child_ids: tp.List[str] = define.field(factory=list)
+    """Child object identifiers."""
+
+    embedding: tp.Optional[tp.List[int]] = define.field(default=None, repr=lambda x: f"List[{len(x)}]" if x else None)
+    """Embedding."""
+
+
+class ObjectStore(Configured):
+    """Abstract class for managing an object store.
 
     For defaults, see `chat` in `vectorbtpro._settings.knowledge`."""
 
@@ -2207,24 +2235,20 @@ class DocumentStore(Configured):
         """Context used to substitute templates."""
         return self._template_context
 
-    def list_documents(self) -> tp.List[StoreDocument]:
-        """List documents."""
+    def list_objs(self) -> tp.List[StoreObjectT]:
+        """List objects."""
         raise NotImplementedError
 
-    def has_document(self, id_: str) -> bool:
-        """Whether store has the document."""
+    def has_obj(self, id_: str) -> bool:
+        """Whether store has the object."""
         raise NotImplementedError
 
-    def get_document(self, id_: str) -> StoreDocument:
-        """Get document from the store."""
+    def get_obj(self, id_: str) -> StoreObjectT:
+        """Get object from the store."""
         raise NotImplementedError
 
-    def add_document(self, document: StoreDocument) -> None:
-        """Add document to the store."""
-        raise NotImplementedError
-
-    def remove_document(self, id_: str) -> None:
-        """Remove document from the store."""
+    def add_obj(self, obj: StoreObjectT) -> None:
+        """Add object to the store."""
         raise NotImplementedError
 
     def commit(self) -> None:
@@ -2232,18 +2256,20 @@ class DocumentStore(Configured):
         raise NotImplementedError
 
 
-memory_store: tp.Dict[str, tp.Dict[str, StoreDocument]] = {}
-"""Document store by store id for `MemoryStore`."""
+memory_store: tp.Dict[str, tp.Dict[str, StoreObjectT]] = {}
+"""Object store by store id for `MemoryStore`."""
 
 
-class MemoryStore(DocumentStore):
+class MemoryStore(ObjectStore):
     """Store class based in memory.
 
-    For defaults, see `chat.document_store_configs.memory` in `vectorbtpro._settings.knowledge`."""
+    Commits changes to `memory_store`.
+
+    For defaults, see `chat.obj_store_configs.memory` in `vectorbtpro._settings.knowledge`."""
 
     _short_name: tp.ClassVar[tp.Optional[str]] = "memory"
 
-    _settings_path: tp.SettingsPath = "knowledge.chat.document_store_configs.memory"
+    _settings_path: tp.SettingsPath = "knowledge.chat.obj_store_configs.memory"
 
     def __init__(
         self,
@@ -2252,34 +2278,46 @@ class MemoryStore(DocumentStore):
         _init_store: bool = True,
         **kwargs,
     ) -> None:
-        DocumentStore.__init__(self, clear_store=clear_store, load_store=load_store, **kwargs)
+        ObjectStore.__init__(self, clear_store=clear_store, load_store=load_store, **kwargs)
 
         clear_store = self.resolve_setting(clear_store, "clear_store")
         load_store = self.resolve_setting(load_store, "load_store")
 
+        self._store = {}
+
         if _init_store and self.store_exists():
             if clear_store:
                 self.clear_store()
-                self._store = {}
             elif load_store:
-                self._store = self.load_store()
-            else:
-                self._store = {}
-        else:
-            self._store = {}
+                self.load_store()
 
     @property
-    def store(self) -> tp.Dict[str, StoreDocument]:
-        """Dictionary with store documents keyed by their ids."""
+    def store(self) -> tp.Dict[str, StoreObjectT]:
+        """Dictionary with store objects keyed by their ids."""
         return self._store
+
+    def list_objs(self) -> tp.List[StoreObjectT]:
+        return list(self.store.values())
+
+    def has_obj(self, id_: str) -> bool:
+        return id_ in self.store
+
+    def get_obj(self, id_: str) -> StoreObjectT:
+        return self.store[id_]
+
+    def add_obj(self, obj: StoreObjectT) -> None:
+        self.store[obj.id_] = obj
+
+    def commit(self) -> None:
+        self.save_store()
 
     def store_exists(self) -> bool:
         """Whether store exists."""
         return self.store_id in memory_store
 
-    def load_store(self) -> tp.Dict[str, StoreDocument]:
-        """Load and return store."""
-        return dict(memory_store[self.store_id])
+    def load_store(self) -> None:
+        """Load store."""
+        self._store = dict(memory_store[self.store_id])
 
     def save_store(self) -> None:
         """Save store."""
@@ -2289,33 +2327,19 @@ class MemoryStore(DocumentStore):
         """Clear store."""
         memory_store[self.store_id].clear()
 
-    def list_documents(self) -> tp.List[StoreDocument]:
-        return list(self.store.values())
-
-    def has_document(self, id_: str) -> bool:
-        return id_ in self.store
-
-    def get_document(self, id_: str) -> StoreDocument:
-        return self.store[id_]
-
-    def add_document(self, document: StoreDocument) -> None:
-        self.store[document.id_] = document
-
-    def remove_document(self, id_: str) -> None:
-        del self.store[id_]
-
-    def commit(self) -> None:
-        self.save_store()
-
 
 class FileStore(MemoryStore):
     """Store class based on files.
 
-    For defaults, see `chat.document_store_configs.file` in `vectorbtpro._settings.knowledge`."""
+    Either commits changes to a single file (with index id being the file name), or commits the initial
+    changes to the base file and any other change to patch file(s) (with index id being the directory name).
+    Also, can mirror the store to `memory_store` to avoid repeated disk I/O operations within a single session.
+
+    For defaults, see `chat.obj_store_configs.file` in `vectorbtpro._settings.knowledge`."""
 
     _short_name = "file"
 
-    _settings_path: tp.SettingsPath = "knowledge.chat.document_store_configs.file"
+    _settings_path: tp.SettingsPath = "knowledge.chat.obj_store_configs.file"
 
     def __init__(
         self,
@@ -2323,6 +2347,7 @@ class FileStore(MemoryStore):
         compression: tp.Union[None, bool, str] = None,
         save_kwargs: tp.KwargsLike = None,
         load_kwargs: tp.KwargsLike = None,
+        use_patching: tp.Optional[bool] = None,
         memory_mirror: tp.Optional[bool] = None,
         clear_store: tp.Optional[bool] = None,
         load_store: tp.Optional[bool] = None,
@@ -2335,6 +2360,7 @@ class FileStore(MemoryStore):
             compression=compression,
             save_kwargs=save_kwargs,
             load_kwargs=load_kwargs,
+            use_patching=use_patching,
             memory_mirror=memory_mirror,
             clear_store=clear_store,
             load_store=load_store,
@@ -2360,6 +2386,7 @@ class FileStore(MemoryStore):
         compression = self.resolve_setting(compression, "compression")
         save_kwargs = self.resolve_setting(save_kwargs, "save_kwargs", merge=True)
         load_kwargs = self.resolve_setting(load_kwargs, "load_kwargs", merge=True)
+        use_patching = self.resolve_setting(use_patching, "use_patching")
         memory_mirror = self.resolve_setting(memory_mirror, "memory_mirror")
         clear_store = self.resolve_setting(clear_store, "clear_store")
         load_store = self.resolve_setting(load_store, "load_store")
@@ -2368,19 +2395,16 @@ class FileStore(MemoryStore):
         self._compression = compression
         self._save_kwargs = save_kwargs
         self._load_kwargs = load_kwargs
+        self._use_patching = use_patching
         self._memory_mirror = memory_mirror
 
-        self._changed_ids = set()
+        self._store_changes = {}
+
         if _init_store and self.store_exists():
             if clear_store:
                 self.clear_store()
-                self._store = {}
             elif load_store:
-                self._store = self.load_store()
-            else:
-                self._store = {}
-        else:
-            self._store = {}
+                self.load_store()
 
     @property
     def dir_path(self) -> tp.Optional[tp.Path]:
@@ -2401,6 +2425,11 @@ class FileStore(MemoryStore):
     def load_kwargs(self) -> tp.Kwargs:
         """Keyword arguments passed to `vectorbtpro.utils.path_.load`."""
         return self._load_kwargs
+
+    @property
+    def use_patching(self) -> bool:
+        """Whether to use directory with patch files or create a single file."""
+        return self._use_patching
 
     @property
     def memory_mirror(self) -> bool:
@@ -2413,471 +2442,149 @@ class FileStore(MemoryStore):
         return f"__{type(self).__name__}.{self.store_id}__"
 
     @property
-    def changed_ids(self) -> tp.Set[str]:
-        """Ids of changed documents."""
-        return self._changed_ids
+    def store_changes(self) -> tp.Dict[str, StoreObjectT]:
+        """Store with new or modified objects only."""
+        return self._store_changes
+
+    def add_obj(self, obj: StoreObjectT) -> None:
+        self.store_changes[obj.id_] = obj
+        MemoryStore.add_obj(self, obj)
 
     @property
-    def path(self) -> tp.Path:
-        """File path."""
+    def store_path(self) -> tp.Path:
+        """Path to the directory with patch files or a single file."""
         dir_path = self.dir_path
         if dir_path is None:
             dir_path = "."
         dir_path = Path(dir_path)
         return dir_path / self.store_id
 
+    def get_next_patch_path(self) -> tp.Path:
+        """Get path to the next patch file to be saved."""
+        indices = []
+        for file in self.store_path.glob("patch_*"):
+            indices.append(int(file.stem.split("_")[1]))
+        next_index = max(indices) + 1 if indices else 0
+        return self.store_path / f"patch_{next_index}"
+
     def store_exists(self) -> bool:
         if self.memory_mirror and MemoryStore.store_exists(self):
             return True
-        return self.path.exists()
+        return self.store_path.exists()
 
-    def load_store(self) -> tp.Dict[str, StoreDocument]:
+    def load_store(self) -> None:
         if self.memory_mirror and MemoryStore.store_exists(self):
-            return MemoryStore.load_store(self)
-        from vectorbtpro.utils.pickling import load
+            MemoryStore.load_store(self)
+        else:
+            from vectorbtpro.utils.pickling import load
 
-        return load(
-            path=self.path,
-            compression=self.compression,
-            **self.load_kwargs,
-        )
+            if self.use_patching:
+                store = {}
+                store.update(
+                    load(
+                        path=self.store_path / "base",
+                        compression=self.compression,
+                        **self.load_kwargs,
+                    )
+                )
+                for patch_path in sorted(
+                    self.store_path.glob("patch_*"),
+                    key=lambda f: int(f.stem.split("_")[1]),
+                ):
+                    store.update(
+                        load(
+                            path=patch_path,
+                            compression=self.compression,
+                            **self.load_kwargs,
+                        )
+                    )
+                self._store = store
+            else:
+                self._store = load(
+                    path=self.store_path,
+                    compression=self.compression,
+                    **self.load_kwargs,
+                )
 
-    def save_store(self) -> tp.Path:
+        self._store_changes = {}
+
+    def save_store(self) -> tp.Optional[tp.Path]:
         if self.memory_mirror:
             MemoryStore.save_store(self)
         from vectorbtpro.utils.pickling import save
 
-        return save(
-            self.store,
-            path=self.path,
-            compression=self.compression,
-            **self.save_kwargs,
-        )
+        if self.use_patching:
+            base_path = self.store_path / "base"
+            if self.store_changes:
+                if not base_path.exists():
+                    file_path = save(
+                        self.store_changes,
+                        path=base_path,
+                        compression=self.compression,
+                        **self.save_kwargs,
+                    )
+                else:
+                    file_path = save(
+                        self.store_changes,
+                        path=self.get_next_patch_path(),
+                        compression=self.compression,
+                        **self.save_kwargs,
+                    )
+                self._store_changes = {}
+                return file_path
+        elif self.store_changes:
+            file_path = save(
+                self.store,
+                path=self.store_path,
+                compression=self.compression,
+                **self.save_kwargs,
+            )
+            self._store_changes = {}
+            return file_path
 
     def clear_store(self) -> None:
         if self.memory_mirror and MemoryStore.store_exists(self):
             MemoryStore.clear_store(self)
-        from vectorbtpro.utils.path_ import remove_file
+        from vectorbtpro.utils.path_ import remove_file, remove_dir
 
-        remove_file(self.path, missing_ok=True)
-
-    def add_document(self, document: StoreDocument) -> None:
-        MemoryStore.add_document(self, document)
-        self.changed_ids.add(document.id_)
-
-    def remove_document(self, document: StoreDocument) -> None:
-        MemoryStore.remove_document(self, document.id_)
-        self.changed_ids.add(document.id_)
-
-    def commit(self) -> None:
-        if self.changed_ids:
-            self.save_store()
-            self.changed_ids.clear()
-        elif self.memory_mirror:
-            MemoryStore.save_store(self)
+        if self.store_path.exists():
+            if self.store_path.is_dir():
+                remove_dir(self.store_path, with_contents=True)
+            else:
+                remove_file(self.store_path)
 
 
-def resolve_document_store(document_store: tp.DocumentStoreLike = None) -> tp.MaybeType[DocumentStore]:
-    """Resolve a subclass or an instance of `DocumentStore`.
+def resolve_obj_store(obj_store: tp.ObjectStoreLike = None) -> tp.MaybeType[ObjectStore]:
+    """Resolve a subclass or an instance of `ObjectStore`.
 
     The following values are supported:
 
     * "memory" (`MemoryStore`)
     * "file" (`FileStore`)
-    * A subclass or an instance of `DocumentStore`
+    * A subclass or an instance of `ObjectStore`
     """
-    if document_store is None:
+    if obj_store is None:
         from vectorbtpro._settings import settings
 
         chat_cfg = settings["knowledge"]["chat"]
-        document_store = chat_cfg["document_store"]
-    if isinstance(document_store, str):
+        obj_store = chat_cfg["obj_store"]
+    if isinstance(obj_store, str):
         current_module = sys.modules[__name__]
-        found_document_store = None
+        found_obj_store = None
         for name, cls in inspect.getmembers(current_module, inspect.isclass):
             if name.endswith("Store"):
                 _short_name = getattr(cls, "_short_name", None)
-                if _short_name is not None and _short_name.lower() == document_store.lower():
-                    found_document_store = cls
+                if _short_name is not None and _short_name.lower() == obj_store.lower():
+                    found_obj_store = cls
                     break
-        if found_document_store is None:
-            raise ValueError(f"Invalid document store: '{document_store}'")
-        document_store = found_document_store
-    if isinstance(document_store, type):
-        checks.assert_subclass_of(document_store, DocumentStore, arg_name="document_store")
+        if found_obj_store is None:
+            raise ValueError(f"Invalid object store: '{obj_store}'")
+        obj_store = found_obj_store
+    if isinstance(obj_store, type):
+        checks.assert_subclass_of(obj_store, ObjectStore, arg_name="obj_store")
     else:
-        checks.assert_instance_of(document_store, DocumentStore, arg_name="document_store")
-    return document_store
-
-
-# ############# Nodes ############# #
-
-
-@define
-class IndexNode(DefineMixin):
-    """Class for nodes to be managed by an index.
-
-    A  node stores the identifier of a document, its relationships to other documents,
-    as well as the embedding (if provided). It's a different entity from a document to avoid
-    persisting document's data."""
-
-    id_: str = define.field()
-    """Node identifier."""
-
-    parent_id: tp.Optional[str] = define.field(default=None)
-    """Parent node identifier."""
-
-    child_ids: tp.List[str] = define.field(factory=list)
-    """Child node identifiers."""
-
-    embedding: tp.Optional[tp.List[int]] = define.field(default=None, repr=lambda x: f"List[{len(x)}]" if x else None)
-    """Embedding."""
-
-    @property
-    def hash_key(self) -> tuple:
-        return (self.id_,)
-
-
-class NodeIndex(Configured):
-    """Abstract class for managing a node index.
-
-    For defaults, see `chat` in `vectorbtpro._settings.knowledge`."""
-
-    _short_name: tp.ClassVar[tp.Optional[str]] = None
-    """Short name of the class."""
-
-    _settings_path: tp.SettingsPath = ["knowledge", "knowledge.chat"]
-
-    def __init__(
-        self,
-        index_id: tp.Optional[str] = None,
-        template_context: tp.KwargsLike = None,
-        **kwargs,
-    ) -> None:
-        Configured.__init__(
-            self,
-            index_id=index_id,
-            template_context=template_context,
-            **kwargs,
-        )
-
-        index_id = self.resolve_setting(index_id, "index_id")
-        template_context = self.resolve_setting(template_context, "template_context", merge=True)
-
-        self._index_id = index_id
-        self._template_context = template_context
-
-    @property
-    def index_id(self) -> str:
-        """Index id."""
-        return self._index_id
-
-    @property
-    def template_context(self) -> tp.Kwargs:
-        """Context used to substitute templates."""
-        return self._template_context
-
-    def list_nodes(self) -> tp.List[IndexNode]:
-        """List nodes."""
-        raise NotImplementedError
-
-    def has_node(self, id_: str) -> bool:
-        """Whether index has the node."""
-        raise NotImplementedError
-
-    def get_node(self, id_: str) -> IndexNode:
-        """Get node from the index."""
-        raise NotImplementedError
-
-    def add_node(self, node: IndexNode) -> None:
-        """Add node to the index."""
-        raise NotImplementedError
-
-    def remove_node(self, id_: str) -> None:
-        """Remove node from the index."""
-        raise NotImplementedError
-
-    def commit(self) -> None:
-        """Commit changes."""
-        raise NotImplementedError
-
-
-memory_index: tp.Dict[str, tp.Dict[str, IndexNode]] = {}
-"""Node index by index id for `MemoryIndex`."""
-
-
-class MemoryIndex(NodeIndex):
-    """Index class based in memory.
-
-    For defaults, see `chat.node_index_configs.memory` in `vectorbtpro._settings.knowledge`."""
-
-    _short_name: tp.ClassVar[tp.Optional[str]] = "memory"
-
-    _settings_path: tp.SettingsPath = "knowledge.chat.node_index_configs.memory"
-
-    def __init__(
-        self,
-        clear_index: tp.Optional[bool] = None,
-        load_index: tp.Optional[bool] = None,
-        _init_index: bool = True,
-        **kwargs,
-    ) -> None:
-        NodeIndex.__init__(self, clear_index=clear_index, load_index=load_index, **kwargs)
-
-        clear_index = self.resolve_setting(clear_index, "clear_index")
-        load_index = self.resolve_setting(load_index, "load_index")
-
-        if _init_index and self.index_exists():
-            if clear_index:
-                self.clear_index()
-                self._index = {}
-            elif load_index:
-                self._index = self.load_index()
-            else:
-                self._index = {}
-        else:
-            self._index = {}
-
-    @property
-    def index(self) -> tp.Dict[str, IndexNode]:
-        """Dictionary with index nodes keyed by their ids."""
-        return self._index
-
-    def index_exists(self) -> bool:
-        """Whether index exists."""
-        return self.index_id in memory_index
-
-    def load_index(self) -> tp.Dict[str, IndexNode]:
-        """Load and return index."""
-        return dict(memory_index[self.index_id])
-
-    def save_index(self) -> None:
-        """Save index."""
-        memory_index[self.index_id] = dict(self.index)
-
-    def clear_index(self) -> None:
-        """Clear index."""
-        memory_index[self.index_id].clear()
-
-    def list_nodes(self) -> tp.List[IndexNode]:
-        return list(self.index.values())
-
-    def has_node(self, id_: str) -> bool:
-        return id_ in self.index
-
-    def get_node(self, id_: str) -> IndexNode:
-        return self.index[id_]
-
-    def add_node(self, node: IndexNode) -> None:
-        self.index[node.id_] = node
-
-    def remove_node(self, id_: str) -> None:
-        del self.index[id_]
-
-    def commit(self) -> None:
-        self.save_index()
-
-
-class FileIndex(MemoryIndex):
-    """Index class based on files.
-
-    For defaults, see `chat.node_index_configs.file` in `vectorbtpro._settings.knowledge`."""
-
-    _short_name = "file"
-
-    _settings_path: tp.SettingsPath = "knowledge.chat.node_index_configs.file"
-
-    def __init__(
-        self,
-        dir_path: tp.Optional[tp.PathLike] = None,
-        compression: tp.Union[None, bool, str] = None,
-        save_kwargs: tp.KwargsLike = None,
-        load_kwargs: tp.KwargsLike = None,
-        memory_mirror: tp.Optional[bool] = None,
-        clear_index: tp.Optional[bool] = None,
-        load_index: tp.Optional[bool] = None,
-        _init_index: bool = True,
-        **kwargs,
-    ) -> None:
-        MemoryIndex.__init__(
-            self,
-            dir_path=dir_path,
-            compression=compression,
-            save_kwargs=save_kwargs,
-            load_kwargs=load_kwargs,
-            memory_mirror=memory_mirror,
-            clear_index=clear_index,
-            load_index=load_index,
-            _init_index=False,
-            **kwargs,
-        )
-
-        dir_path = self.resolve_setting(dir_path, "dir_path")
-        template_context = self.template_context
-        if isinstance(dir_path, CustomTemplate):
-            cache_dir = self.get_setting("cache_dir", default=None)
-            if cache_dir is not None:
-                if isinstance(cache_dir, CustomTemplate):
-                    cache_dir = cache_dir.substitute(template_context, eval_id="cache_dir")
-                template_context = flat_merge_dicts(dict(cache_dir=cache_dir), template_context)
-            release_dir = self.get_setting("release_dir", default=None)
-            if release_dir is not None:
-                if isinstance(release_dir, CustomTemplate):
-                    release_dir = release_dir.substitute(template_context, eval_id="release_dir")
-                template_context = flat_merge_dicts(dict(release_dir=release_dir), template_context)
-            dir_path = dir_path.substitute(template_context, eval_id="dir_path")
-        clear_index = self.resolve_setting(clear_index, "clear_index")
-        compression = self.resolve_setting(compression, "compression")
-        save_kwargs = self.resolve_setting(save_kwargs, "save_kwargs", merge=True)
-        load_kwargs = self.resolve_setting(load_kwargs, "load_kwargs", merge=True)
-        memory_mirror = self.resolve_setting(memory_mirror, "memory_mirror")
-        clear_index = self.resolve_setting(clear_index, "clear_index")
-        load_index = self.resolve_setting(load_index, "load_index")
-
-        self._dir_path = dir_path
-        self._compression = compression
-        self._save_kwargs = save_kwargs
-        self._load_kwargs = load_kwargs
-        self._memory_mirror = memory_mirror
-
-        self._changed_ids = set()
-        if _init_index and self.index_exists():
-            if clear_index:
-                self.clear_index()
-                self._index = {}
-            elif load_index:
-                self._index = self.load_index()
-            else:
-                self._index = {}
-        else:
-            self._index = {}
-
-    @property
-    def dir_path(self) -> tp.Optional[tp.Path]:
-        """Path to the directory."""
-        return self._dir_path
-
-    @property
-    def compression(self) -> tp.CompressionLike:
-        """Compression."""
-        return self._compression
-
-    @property
-    def save_kwargs(self) -> tp.Kwargs:
-        """Keyword arguments passed to `vectorbtpro.utils.path_.save`."""
-        return self._save_kwargs
-
-    @property
-    def load_kwargs(self) -> tp.Kwargs:
-        """Keyword arguments passed to `vectorbtpro.utils.path_.load`."""
-        return self._load_kwargs
-
-    @property
-    def memory_mirror(self) -> bool:
-        """Whether to mirror the index in memory for the next instance."""
-        return self._memory_mirror
-
-    @property
-    def memory_index_id(self):
-        """Index id in memory."""
-        return f"__{type(self).__name__}.{self.index_id}__"
-
-    @property
-    def changed_ids(self) -> tp.Set[str]:
-        """Ids of changed nodes."""
-        return self._changed_ids
-
-    @property
-    def path(self) -> tp.Path:
-        """File path."""
-        dir_path = self.dir_path
-        if dir_path is None:
-            dir_path = "."
-        dir_path = Path(dir_path)
-        return dir_path / self.index_id
-
-    def index_exists(self) -> bool:
-        if self.memory_mirror and MemoryIndex.index_exists(self):
-            return True
-        return self.path.exists()
-
-    def load_index(self) -> tp.Dict[str, IndexNode]:
-        if self.memory_mirror and MemoryIndex.index_exists(self):
-            return MemoryIndex.load_index(self)
-        from vectorbtpro.utils.pickling import load
-
-        return load(
-            path=self.path,
-            compression=self.compression,
-            **self.load_kwargs,
-        )
-
-    def save_index(self) -> tp.Path:
-        if self.memory_mirror:
-            MemoryIndex.save_index(self)
-        from vectorbtpro.utils.pickling import save
-
-        return save(
-            self.index,
-            path=self.path,
-            compression=self.compression,
-            **self.save_kwargs,
-        )
-
-    def clear_index(self) -> None:
-        if self.memory_mirror and MemoryIndex.index_exists(self):
-            MemoryIndex.clear_index(self)
-        from vectorbtpro.utils.path_ import remove_file
-
-        remove_file(self.path, missing_ok=True)
-
-    def add_node(self, node: IndexNode) -> None:
-        MemoryIndex.add_node(self, node)
-        self.changed_ids.add(node.id_)
-
-    def remove_node(self, node: IndexNode) -> None:
-        MemoryIndex.remove_node(self, node.id_)
-        self.changed_ids.add(node.id_)
-
-    def commit(self) -> None:
-        if self.changed_ids:
-            self.save_index()
-            self.changed_ids.clear()
-        elif self.memory_mirror:
-            MemoryIndex.save_index(self)
-
-
-def resolve_node_index(node_index: tp.NodeIndexLike = None) -> tp.MaybeType[NodeIndex]:
-    """Resolve a subclass or an instance of `NodeIndex`.
-
-    The following values are supported:
-
-    * "memory" (`MemoryIndex`)
-    * "file" (`FileIndex`)
-    * A subclass or an instance of `NodeIndex`
-    """
-    if node_index is None:
-        from vectorbtpro._settings import settings
-
-        chat_cfg = settings["knowledge"]["chat"]
-        node_index = chat_cfg["node_index"]
-    if isinstance(node_index, str):
-        current_module = sys.modules[__name__]
-        found_node_index = None
-        for name, cls in inspect.getmembers(current_module, inspect.isclass):
-            if name.endswith("Index"):
-                _short_name = getattr(cls, "_short_name", None)
-                if _short_name is not None and _short_name.lower() == node_index.lower():
-                    found_node_index = cls
-                    break
-        if found_node_index is None:
-            raise ValueError(f"Invalid node index: '{node_index}'")
-        node_index = found_node_index
-    if isinstance(node_index, type):
-        checks.assert_subclass_of(node_index, NodeIndex, arg_name="node_index")
-    else:
-        checks.assert_instance_of(node_index, NodeIndex, arg_name="node_index")
-    return node_index
+        checks.assert_instance_of(obj_store, ObjectStore, arg_name="obj_store")
+    return obj_store
 
 
 # ############# Ranking ############# #
@@ -2920,54 +2627,56 @@ class DocumentRanker(Configured):
 
     def __init__(
         self,
-        dataset_id: tp.Optional[str] = None,
-        score_func: tp.Union[None, str, tp.Callable] = None,
-        score_agg_func: tp.Union[None, str, tp.Callable] = None,
         embeddings: tp.EmbeddingsLike = None,
         embeddings_kwargs: tp.KwargsLike = None,
-        document_store: tp.TokenizerLike = None,
-        document_store_kwargs: tp.KwargsLike = None,
-        node_index: tp.TokenizerLike = None,
-        node_index_kwargs: tp.KwargsLike = None,
-        commit_document_store: tp.Optional[bool] = None,
-        commit_node_index: tp.Optional[bool] = None,
+        doc_store: tp.TokenizerLike = None,
+        doc_store_kwargs: tp.KwargsLike = None,
+        commit_doc_store: tp.Optional[bool] = None,
+        emb_store: tp.TokenizerLike = None,
+        emb_store_kwargs: tp.KwargsLike = None,
+        commit_emb_store: tp.Optional[bool] = None,
+        score_func: tp.Union[None, str, tp.Callable] = None,
+        score_agg_func: tp.Union[None, str, tp.Callable] = None,
         template_context: tp.KwargsLike = None,
         **kwargs,
     ) -> None:
         Configured.__init__(
             self,
-            dataset_id=dataset_id,
-            score_func=score_func,
-            score_agg_func=score_agg_func,
             embeddings=embeddings,
             embeddings_kwargs=embeddings_kwargs,
-            document_store=document_store,
-            document_store_kwargs=document_store_kwargs,
-            node_index=node_index,
-            node_index_kwargs=node_index_kwargs,
-            commit_document_store=commit_document_store,
-            commit_node_index=commit_node_index,
+            doc_store=doc_store,
+            doc_store_kwargs=doc_store_kwargs,
+            commit_doc_store=commit_doc_store,
+            emb_store=emb_store,
+            emb_store_kwargs=emb_store_kwargs,
+            commit_emb_store=commit_emb_store,
+            score_func=score_func,
+            score_agg_func=score_agg_func,
             template_context=template_context,
             **kwargs,
         )
 
-        dataset_id = self.resolve_setting(dataset_id, "dataset_id")
-        score_func = self.resolve_setting(score_func, "score_func")
-        score_agg_func = self.resolve_setting(score_agg_func, "score_agg_func")
         embeddings = self.resolve_setting(embeddings, "embeddings", default=None)
         embeddings_kwargs = self.resolve_setting(embeddings_kwargs, "embeddings_kwargs", default=None, merge=True)
-        document_store = self.resolve_setting(document_store, "document_store", default=None)
-        document_store_kwargs = self.resolve_setting(
-            document_store_kwargs, "document_store_kwargs", default=None, merge=True
-        )
-        node_index = self.resolve_setting(node_index, "node_index", default=None)
-        node_index_kwargs = self.resolve_setting(node_index_kwargs, "node_index_kwargs", default=None, merge=True)
-        commit_document_store = self.resolve_setting(commit_document_store, "commit_document_store")
-        commit_node_index = self.resolve_setting(commit_node_index, "commit_node_index")
+        doc_store = self.resolve_setting(doc_store, "doc_store", default=None)
+        doc_store_kwargs = self.resolve_setting(doc_store_kwargs, "doc_store_kwargs", default=None, merge=True)
+        commit_doc_store = self.resolve_setting(commit_doc_store, "commit_doc_store")
+        emb_store = self.resolve_setting(emb_store, "emb_store", default=None)
+        emb_store_kwargs = self.resolve_setting(emb_store_kwargs, "emb_store_kwargs", default=None, merge=True)
+        commit_emb_store = self.resolve_setting(commit_emb_store, "commit_emb_store")
+        score_func = self.resolve_setting(score_func, "score_func")
+        score_agg_func = self.resolve_setting(score_agg_func, "score_agg_func")
         template_context = self.resolve_setting(template_context, "template_context", merge=True)
 
-        if isinstance(score_agg_func, str):
-            score_agg_func = getattr(np, score_agg_func)
+        obj_store = self.get_setting("obj_store", default=None)
+        obj_store_kwargs = self.get_setting("obj_store_kwargs", default=None, merge=True)
+        if doc_store is None:
+            doc_store = obj_store
+        doc_store_kwargs = merge_dicts(obj_store_kwargs, doc_store_kwargs)
+        if emb_store is None:
+            emb_store = obj_store
+        emb_store_kwargs = merge_dicts(obj_store_kwargs, emb_store_kwargs)
+
         embeddings = resolve_embeddings(embeddings)
         if isinstance(embeddings, type):
             embeddings_kwargs = dict(embeddings_kwargs)
@@ -2977,43 +2686,71 @@ class DocumentRanker(Configured):
             embeddings = embeddings(**embeddings_kwargs)
         elif embeddings_kwargs:
             embeddings = embeddings.replace(**embeddings_kwargs)
-        document_store = resolve_document_store(document_store)
-        if isinstance(document_store, type):
-            document_store_kwargs = dict(document_store_kwargs)
-            if "store_id" not in document_store_kwargs:
-                document_store_kwargs["store_id"] = dataset_id
-            document_store_kwargs["template_context"] = merge_dicts(
-                template_context, document_store_kwargs.get("template_context", None)
-            )
-            document_store = document_store(**document_store_kwargs)
-        elif document_store_kwargs:
-            document_store = document_store.replace(**document_store_kwargs)
-        node_index = resolve_node_index(node_index)
-        if isinstance(node_index, type):
-            node_index_kwargs = dict(node_index_kwargs)
-            if "index_id" not in node_index_kwargs:
-                node_index_kwargs["index_id"] = dataset_id
-            node_index_kwargs["template_context"] = merge_dicts(
-                template_context, node_index_kwargs.get("template_context", None)
-            )
-            node_index = node_index(**node_index_kwargs)
-        elif node_index_kwargs:
-            node_index = node_index.replace(**node_index_kwargs)
 
-        self._dataset_id = dataset_id
+        doc_store = resolve_obj_store(doc_store)
+        if not isinstance(doc_store._settings_path, str):
+            raise TypeError("_settings_path for ObjectStore and its subclasses should be a string")
+        doc_store_cls = doc_store if isinstance(doc_store, type) else type(doc_store)
+        with ExtSettingsPath([(doc_store_cls, doc_store._settings_path.replace("obj_store", "doc_store"))]):
+            if isinstance(doc_store, type):
+                doc_store_kwargs = dict(doc_store_kwargs)
+                doc_store_kwargs["template_context"] = merge_dicts(
+                    template_context, doc_store_kwargs.get("template_context", None)
+                )
+                doc_store = doc_store(**doc_store_kwargs)
+            elif doc_store_kwargs:
+                doc_store = doc_store.replace(**doc_store_kwargs)
+
+        emb_store = resolve_obj_store(emb_store)
+        if not isinstance(emb_store._settings_path, str):
+            raise TypeError("_settings_path for ObjectStore and its subclasses should be a string")
+        emb_store_cls = emb_store if isinstance(emb_store, type) else type(emb_store)
+        with ExtSettingsPath([(emb_store_cls, emb_store._settings_path.replace("obj_store", "emb_store"))]):
+            if isinstance(emb_store, type):
+                emb_store_kwargs = dict(emb_store_kwargs)
+                emb_store_kwargs["template_context"] = merge_dicts(
+                    template_context, emb_store_kwargs.get("template_context", None)
+                )
+                emb_store = emb_store(**emb_store_kwargs)
+            elif emb_store_kwargs:
+                emb_store = emb_store.replace(**emb_store_kwargs)
+
+        if isinstance(score_agg_func, str):
+            score_agg_func = getattr(np, score_agg_func)
+
+        self._embeddings = embeddings
+        self._doc_store = doc_store
+        self._commit_doc_store = commit_doc_store
+        self._emb_store = emb_store
+        self._commit_emb_store = commit_emb_store
         self._score_func = score_func
         self._score_agg_func = score_agg_func
-        self._embeddings = embeddings
-        self._document_store = document_store
-        self._node_index = node_index
-        self._commit_document_store = commit_document_store
-        self._commit_node_index = commit_node_index
         self._template_context = template_context
 
     @property
-    def dataset_id(self) -> tp.Optional[str]:
-        """Dataset (document store + node index) id."""
-        return self._dataset_id
+    def embeddings(self) -> Embeddings:
+        """An instance of `Embeddings`."""
+        return self._embeddings
+
+    @property
+    def doc_store(self) -> ObjectStore:
+        """An instance of `ObjectStore` for documents."""
+        return self._doc_store
+
+    @property
+    def commit_doc_store(self) -> bool:
+        """Whether to commit changes in the document store after generating embeddings."""
+        return self._commit_doc_store
+
+    @property
+    def emb_store(self) -> ObjectStore:
+        """An instance of `ObjectStore` for embeddings."""
+        return self._emb_store
+
+    @property
+    def commit_emb_store(self) -> bool:
+        """Whether to commit changes in the embedding store after generating embeddings."""
+        return self._commit_emb_store
 
     @property
     def score_func(self) -> tp.Union[str, tp.Callable]:
@@ -3028,41 +2765,16 @@ class DocumentRanker(Configured):
         return self._score_agg_func
 
     @property
-    def embeddings(self) -> Embeddings:
-        """An instance of `Embeddings`."""
-        return self._embeddings
-
-    @property
-    def document_store(self) -> DocumentStore:
-        """An instance of `DocumentStore`."""
-        return self._document_store
-
-    @property
-    def node_index(self) -> NodeIndex:
-        """An instance of `NodeIndex`."""
-        return self._node_index
-
-    @property
-    def commit_document_store(self) -> bool:
-        """Whether to commit changes in the document store after generating embeddings."""
-        return self._commit_document_store
-
-    @property
-    def commit_node_index(self) -> bool:
-        """Whether to commit changes in the node index after generating embeddings."""
-        return self._commit_node_index
-
-    @property
     def template_context(self) -> tp.Kwargs:
         """Context used to substitute templates."""
         return self._template_context
 
     def commit(self) -> None:
         """Commit changes."""
-        if self.commit_document_store:
-            self.document_store.commit()
-        if self.commit_node_index:
-            self.node_index.commit()
+        if self.commit_doc_store:
+            self.doc_store.commit()
+        if self.commit_emb_store:
+            self.emb_store.commit()
 
     def embed_documents(
         self,
@@ -3070,75 +2782,73 @@ class DocumentRanker(Configured):
         return_embeddings: bool = False,
         return_documents: bool = False,
     ) -> tp.Optional[tp.EmbeddedDocuments]:
-        """Convert document(s) to nodes and embed them.
+        """Embed documents.
 
         If `return_embeddings` and `return_documents` are both False, returns nothing.
         If `return_embeddings` and `return_documents` are both True, for each document,
         returns the document and either an embedding or a list of document chunks and their embeddings.
         If `return_documents` is False, returns only embeddings."""
-        node_contents = {}
+        obj_contents = {}
         for document in documents:
-            if not self.document_store.has_document(document.id_):
-                self.document_store.add_document(document)
-            if not self.node_index.has_node(document.id_):
+            if not self.doc_store.has_obj(document.id_):
+                self.doc_store.add_obj(document)
+            if not self.emb_store.has_obj(document.id_):
                 document_chunks = document.split()
                 child_ids = []
-                node = IndexNode(document.id_, child_ids=child_ids)
-                self.node_index.add_node(node)
+                obj = StoreEmbedding(document.id_, child_ids=child_ids)
+                self.emb_store.add_obj(obj)
                 for document_chunk in document_chunks:
                     if document_chunk.id_ != document.id_:
-                        if not self.document_store.has_document(document_chunk.id_):
-                            self.document_store.add_document(document_chunk)
-                        if not self.node_index.has_node(document_chunk.id_):
-                            child_node = IndexNode(document_chunk.id_, parent_id=document.id_)
-                            self.node_index.add_node(child_node)
+                        if not self.doc_store.has_obj(document_chunk.id_):
+                            self.doc_store.add_obj(document_chunk)
+                        if not self.emb_store.has_obj(document_chunk.id_):
+                            child_obj = StoreEmbedding(document_chunk.id_, parent_id=document.id_)
+                            self.emb_store.add_obj(child_obj)
                         else:
-                            child_node = self.node_index.get_node(document_chunk.id_)
-                        child_ids.append(child_node.id_)
-                        if not child_node.embedding:
+                            child_obj = self.emb_store.get_obj(document_chunk.id_)
+                        child_ids.append(child_obj.id_)
+                        if not child_obj.embedding:
                             content = document_chunk.get_content(for_embed=True)
                             if content:
-                                node_contents[child_node.id_] = content
+                                obj_contents[child_obj.id_] = content
             else:
-                node = self.node_index.get_node(document.id_)
-            if not node.child_ids and not node.embedding:
+                obj = self.emb_store.get_obj(document.id_)
+            if not obj.child_ids and not obj.embedding:
                 content = document.get_content(for_embed=True)
                 if content:
-                    node_contents[node.id_] = content
+                    obj_contents[obj.id_] = content
 
-        if node_contents:
-            embeddings = self.embeddings.get_embeddings(list(node_contents.values()))
-            node_embeddings = dict(zip(node_contents.keys(), embeddings))
-            for node_id, embedding in node_embeddings.items():
-                node = self.node_index.get_node(node_id)
-                self.node_index.add_node(node.replace(embedding=embedding))
+        if obj_contents:
+            embeddings = self.embeddings.get_embeddings(list(obj_contents.values()))
+            obj_embeddings = dict(zip(obj_contents.keys(), embeddings))
+            for obj_id, embedding in obj_embeddings.items():
+                obj = self.emb_store.get_obj(obj_id)
+                self.emb_store.add_obj(obj.replace(embedding=embedding))
 
         self.commit()
 
         if return_embeddings or return_documents:
             embeddings = []
             for document in documents:
-                node = self.node_index.get_node(document.id_)
-                if node.embedding:
+                obj = self.emb_store.get_obj(document.id_)
+                if obj.embedding:
                     if return_documents:
-                        embeddings.append(EmbeddedDocument(document, embedding=node.embedding))
+                        embeddings.append(EmbeddedDocument(document, embedding=obj.embedding))
                     else:
-                        embeddings.append(node.embedding)
-                elif node.child_ids:
+                        embeddings.append(obj.embedding)
+                elif obj.child_ids:
                     child_embeddings = []
-                    for child_id in node.child_ids:
-                        child_node = self.node_index.get_node(child_id)
-                        if child_node.embedding:
+                    for child_id in obj.child_ids:
+                        child_obj = self.emb_store.get_obj(child_id)
+                        if child_obj.embedding:
                             if return_documents:
-                                child_document = self.document_store.get_document(child_id)
-                                child_embeddings.append(
-                                    EmbeddedDocument(child_document, embedding=child_node.embedding)
-                                )
+                                child_document = self.doc_store.get_obj(child_id)
+                                child_embeddings.append(EmbeddedDocument(child_document, embedding=child_obj.embedding))
                             else:
-                                child_embeddings.append(child_node.embedding)
+                                child_embeddings.append(child_obj.embedding)
                         else:
                             if return_documents:
-                                child_document = self.document_store.get_document(child_id)
+                                child_document = self.doc_store.get_obj(child_id)
                                 child_embeddings.append(EmbeddedDocument(child_document))
                             else:
                                 child_embeddings.append(None)
@@ -3204,9 +2914,9 @@ class DocumentRanker(Configured):
     ) -> tp.ScoredDocuments:
         """Score documents by relevance to a query."""
         if documents is None:
-            if self.document_store is None:
-                raise ValueError("Must provide at least documents or document_store")
-            documents = self.document_store.list_documents()
+            if self.doc_store is None:
+                raise ValueError("Must provide at least documents or doc_store")
+            documents = self.doc_store.list_objs()
             documents_provided = False
         else:
             documents_provided = True
@@ -3217,51 +2927,51 @@ class DocumentRanker(Configured):
         if return_chunks:
             document_chunks = []
             for document in documents:
-                node = self.node_index.get_node(document.id_)
-                if node.child_ids:
-                    for child_id in node.child_ids:
-                        document_chunk = self.document_store.get_document(child_id)
+                obj = self.emb_store.get_obj(document.id_)
+                if obj.child_ids:
+                    for child_id in obj.child_ids:
+                        document_chunk = self.doc_store.get_obj(child_id)
                         document_chunks.append(document_chunk)
-                elif not node.parent_id or not self.document_store.has_document(node.parent_id):
-                    document_chunk = self.document_store.get_document(node.id_)
+                elif not obj.parent_id or not self.doc_store.has_obj(obj.parent_id):
+                    document_chunk = self.doc_store.get_obj(obj.id_)
                     document_chunks.append(document_chunk)
             documents = document_chunks
         elif not documents_provided:
             document_parents = []
             for document in documents:
-                node = self.node_index.get_node(document.id_)
-                if not node.parent_id or not self.document_store.has_document(node.parent_id):
-                    document_parent = self.document_store.get_document(node.id_)
+                obj = self.emb_store.get_obj(document.id_)
+                if not obj.parent_id or not self.doc_store.has_obj(obj.parent_id):
+                    document_parent = self.doc_store.get_obj(obj.id_)
                     document_parents.append(document_parent)
             documents = document_parents
 
-        node_embeddings = {}
+        obj_embeddings = {}
         for document in documents:
-            node = self.node_index.get_node(document.id_)
-            if node.embedding:
-                node_embeddings[node.id_] = node.embedding
-            elif node.child_ids:
-                for child_id in node.child_ids:
-                    child_node = self.node_index.get_node(child_id)
-                    if child_node.embedding:
-                        node_embeddings[child_id] = child_node.embedding
-        if node_embeddings:
+            obj = self.emb_store.get_obj(document.id_)
+            if obj.embedding:
+                obj_embeddings[obj.id_] = obj.embedding
+            elif obj.child_ids:
+                for child_id in obj.child_ids:
+                    child_obj = self.emb_store.get_obj(child_id)
+                    if child_obj.embedding:
+                        obj_embeddings[child_id] = child_obj.embedding
+        if obj_embeddings:
             query_embedding = self.embeddings.get_embedding(query)
-            scores = self.compute_score(query_embedding, list(node_embeddings.values()))
-            node_scores = dict(zip(node_embeddings.keys(), scores))
+            scores = self.compute_score(query_embedding, list(obj_embeddings.values()))
+            obj_scores = dict(zip(obj_embeddings.keys(), scores))
         else:
-            node_scores = {}
+            obj_scores = {}
 
         scores = []
         for document in documents:
-            node = self.node_index.get_node(document.id_)
+            obj = self.emb_store.get_obj(document.id_)
             child_scores = []
-            if node.child_ids:
-                for child_id in node.child_ids:
-                    child_score = node_scores[child_id]
-                    if child_id in node_scores:
+            if obj.child_ids:
+                for child_id in obj.child_ids:
+                    child_score = obj_scores[child_id]
+                    if child_id in obj_scores:
                         if return_documents:
-                            child_document = self.document_store.get_document(child_id)
+                            child_document = self.doc_store.get_obj(child_id)
                             child_scores.append(ScoredDocument(child_document, score=child_score))
                         else:
                             child_scores.append(child_score)
@@ -3273,8 +2983,8 @@ class DocumentRanker(Configured):
                 else:
                     doc_score = float("nan")
             else:
-                if node.id_ in node_scores:
-                    doc_score = node_scores[node.id_]
+                if obj.id_ in obj_scores:
+                    doc_score = obj_scores[obj.id_]
                 else:
                     doc_score = float("nan")
             if return_documents:
@@ -3364,7 +3074,7 @@ def embed_documents(
         new_documents = []
         for document in documents:
             if not isinstance(document, StoreDocument):
-                document = TextDocument(document)
+                document = TextDocument.from_data(document)
             new_documents.append(document)
         documents = new_documents
     if document_ranker is None:
@@ -3401,7 +3111,7 @@ def rank_documents(
         new_documents = []
         for document in documents:
             if not isinstance(document, StoreDocument):
-                document = TextDocument(document)
+                document = TextDocument.from_data(document)
             new_documents.append(document)
         documents = new_documents
     if document_ranker is None:

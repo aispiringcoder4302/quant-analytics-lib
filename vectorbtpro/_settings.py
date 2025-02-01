@@ -2354,15 +2354,15 @@ $context
                 node_parser_configs=flex_cfg(),
             )
         ),
-        document_store="memory",
+        obj_store="memory",
         store_id="default",
-        document_store_configs=flex_cfg(
+        obj_store_configs=flex_cfg(
             memory=flex_cfg(
                 clear_store=False,
                 load_store=True,
             ),
             file=flex_cfg(
-                dir_path=RepEval("Path(cache_dir) / 'document_store'"),
+                dir_path=RepEval("Path(cache_dir) / 'obj_store'"),
                 compression=None,
                 save_kwargs=flex_cfg(
                     mkdir_kwargs=dict(
@@ -2370,33 +2370,24 @@ $context
                     ),
                 ),
                 load_kwargs=flex_cfg(),
+                use_patching=True,
                 memory_mirror=True,
             ),
         ),
-        node_index="memory",
-        index_id="default",
-        node_index_configs=flex_cfg(
-            memory=flex_cfg(
-                clear_index=False,
-                load_index=True,
-            ),
+        doc_store_configs=flex_cfg(
             file=flex_cfg(
-                dir_path=RepEval("Path(cache_dir) / 'node_index'"),
-                compression=None,
-                save_kwargs=flex_cfg(
-                    mkdir_kwargs=dict(
-                        mkdir=True,
-                    ),
-                ),
-                load_kwargs=flex_cfg(),
-                memory_mirror=True,
+                dir_path=RepEval("Path(cache_dir) / 'doc_store'"),
             ),
         ),
+        commit_doc_store=True,
+        emb_store_configs=flex_cfg(
+            file=flex_cfg(
+                dir_path=RepEval("Path(cache_dir) / 'emb_store'"),
+            ),
+        ),
+        commit_emb_store=True,
         score_func="cosine",
         score_agg_func="mean",
-        commit_document_store=True,
-        commit_node_index=True,
-        dataset_id=None,
     ),
     assets=flex_cfg(
         vbt=flex_cfg(
@@ -2457,16 +2448,16 @@ $context
                 "support your answers. If information isn't found, inform the user accordingly. Note that "
                 "VBT exclusively refers to VectorBT PRO, which significantly differs from the open-source "
                 "version. Given the context information and not prior knowledge, answer the query.",
-                document_store="file",
-                document_store_configs=flex_cfg(
+                doc_store="file",
+                doc_store_configs=flex_cfg(
                     file=flex_cfg(
-                        dir_path=RepEval("Path(release_dir) / 'document_store'"),
+                        dir_path=RepEval("Path(release_dir) / 'doc_store'"),
                     ),
                 ),
-                node_index="file",
-                node_index_configs=flex_cfg(
+                emb_store="file",
+                emb_store_configs=flex_cfg(
                     file=flex_cfg(
-                        dir_path=RepEval("Path(release_dir) / 'node_index'"),
+                        dir_path=RepEval("Path(release_dir) / 'emb_store'"),
                     ),
                 ),
             ),
