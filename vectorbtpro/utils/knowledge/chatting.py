@@ -18,6 +18,7 @@ import re
 import sys
 import warnings
 from pathlib import Path
+from collections.abc import MutableMapping
 
 import numpy as np
 
@@ -28,8 +29,6 @@ from vectorbtpro.utils.config import merge_dicts, flat_merge_dicts, Configured, 
 from vectorbtpro.utils.decorators import memoized_method, hybrid_method
 from vectorbtpro.utils.knowledge.formatting import ContentFormatter, HTMLFileFormatter, resolve_formatter
 from vectorbtpro.utils.parsing import get_func_arg_names, get_func_kwargs
-from vectorbtpro.utils.pbar import ProgressBar
-from vectorbtpro.utils.pickling import dumps
 from vectorbtpro.utils.template import CustomTemplate, Sub, RepFunc
 
 try:
@@ -74,6 +73,12 @@ try:
     from IPython.display import DisplayHandle as DisplayHandleT
 except ImportError:
     DisplayHandleT = "DisplayHandle"
+try:
+    if not tp.TYPE_CHECKING:
+        raise ImportError
+    from lmdbm import Lmdb as LmdbT
+except ImportError:
+    LmdbT = "Lmdb"
 
 __all__ = [
     "Tokenizer",
@@ -102,6 +107,7 @@ __all__ = [
     "ObjectStore",
     "MemoryStore",
     "FileStore",
+    "LMDBStore",
     "EmbeddedDocument",
     "ScoredDocument",
     "DocumentRanker",
@@ -456,6 +462,8 @@ class OpenAIEmbeddings(Embeddings):
         return response.data[0].embedding
 
     def get_embeddings(self, queries: tp.List[str]) -> tp.List[tp.List[float]]:
+        from vectorbtpro.utils.pbar import ProgressBar
+
         if self.batch_size is not None:
             batches = [queries[i : i + self.batch_size] for i in range(0, len(queries), self.batch_size)]
         else:
@@ -556,6 +564,7 @@ class LiteLLMEmbeddings(Embeddings):
 
     def get_embeddings(self, queries: tp.List[str]) -> tp.List[tp.List[float]]:
         from litellm import embedding
+        from vectorbtpro.utils.pbar import ProgressBar
 
         if self.batch_size is not None:
             batches = [queries[i : i + self.batch_size] for i in range(0, len(queries), self.batch_size)]
@@ -1972,6 +1981,8 @@ class StoreDocument(StoreObject, DefineMixin):
     @classmethod
     def id_from_data(cls, data: tp.Any) -> str:
         """Generate a unique identifier from data."""
+        from vectorbtpro.utils.pickling import dumps
+
         return hashlib.md5(dumps(data)).hexdigest()
 
     @classmethod
@@ -2196,7 +2207,13 @@ class StoreEmbedding(StoreObject, DefineMixin):
     """Embedding."""
 
 
-class ObjectStore(Configured):
+class MetaObjectStore(type(Configured), type(MutableMapping)):
+    """Metaclass for `ObjectStore`."""
+
+    pass
+
+
+class ObjectStore(Configured, MutableMapping, metaclass=MetaObjectStore):
     """Abstract class for managing an object store.
 
     For defaults, see `chat` in `vectorbtpro._settings.knowledge`."""
@@ -2209,6 +2226,7 @@ class ObjectStore(Configured):
     def __init__(
         self,
         store_id: tp.Optional[str] = None,
+        purge_on_open: tp.Optional[bool] = None,
         template_context: tp.KwargsLike = None,
         **kwargs,
     ) -> None:
@@ -2220,10 +2238,15 @@ class ObjectStore(Configured):
         )
 
         store_id = self.resolve_setting(store_id, "store_id")
+        purge_on_open = self.resolve_setting(purge_on_open, "purge_on_open")
         template_context = self.resolve_setting(template_context, "template_context", merge=True)
 
         self._store_id = store_id
+        self._purge_on_open = purge_on_open
         self._template_context = template_context
+
+        self._opened = False
+        self._enter_calls = 0
 
     @property
     def store_id(self) -> str:
@@ -2231,36 +2254,116 @@ class ObjectStore(Configured):
         return self._store_id
 
     @property
+    def purge_on_open(self) -> bool:
+        """Whether to purge on open."""
+        return self._purge_on_open
+
+    @property
     def template_context(self) -> tp.Kwargs:
         """Context used to substitute templates."""
         return self._template_context
 
-    def list_objs(self) -> tp.List[StoreObjectT]:
-        """List objects."""
-        raise NotImplementedError
+    @property
+    def opened(self) -> bool:
+        """Whether the store has been opened."""
+        return self._opened
 
-    def has_obj(self, id_: str) -> bool:
-        """Whether store has the object."""
-        raise NotImplementedError
+    @property
+    def enter_calls(self) -> int:
+        """Number of enter calls."""
+        return self._enter_calls
 
-    def get_obj(self, id_: str) -> StoreObjectT:
-        """Get object from the store."""
-        raise NotImplementedError
-
-    def add_obj(self, obj: StoreObjectT) -> None:
-        """Add object to the store."""
-        raise NotImplementedError
+    def open(self) -> None:
+        """Open the store."""
+        if self.opened:
+            self.close()
+        if self.purge_on_open:
+            self.purge()
+        self._opened = True
 
     def commit(self) -> None:
         """Commit changes."""
+        pass
+
+    def close(self) -> None:
+        """Close the store."""
+        self.commit()
+        self._opened = False
+
+    def purge(self) -> None:
+        """Purge the store."""
+        self.close()
+
+    def __getitem__(self, id_: str) -> StoreObjectT:
         raise NotImplementedError
+
+    def __setitem__(self, id_: str, obj: StoreObjectT) -> None:
+        raise NotImplementedError
+
+    def __delitem__(self, id_: str) -> None:
+        raise NotImplementedError
+
+    def __iter__(self) -> tp.Iterator[str]:
+        raise NotImplementedError
+
+    def __len__(self) -> int:
+        raise NotImplementedError
+
+    def __enter__(self) -> tp.Self:
+        if not self.opened:
+            self.open()
+        self._enter_calls += 1
+        return self
+
+    def __exit__(self, *args) -> None:
+        if self.enter_calls == 1:
+            self.close()
+            self._close_on_exit = False
+        self._enter_calls -= 1
+        if self.enter_calls < 0:
+            self._enter_calls = 0
+
+
+class DictStore(ObjectStore):
+    """Store class based on a dictionary.
+
+    For defaults, see `chat.obj_store_configs.memory` in `vectorbtpro._settings.knowledge`."""
+
+    _short_name: tp.ClassVar[tp.Optional[str]] = "dict"
+
+    _settings_path: tp.SettingsPath = "knowledge.chat.obj_store_configs.dict"
+
+    def __init__(self, **kwargs) -> None:
+        ObjectStore.__init__(self, **kwargs)
+
+        self._store = {}
+
+    @property
+    def store(self) -> tp.Dict[str, StoreObjectT]:
+        """Store dictionary."""
+        return self._store
+
+    def __getitem__(self, id_: str) -> StoreObjectT:
+        return self.store[id_]
+
+    def __setitem__(self, id_: str, obj: StoreObjectT) -> None:
+        self.store[id_] = obj
+
+    def __delitem__(self, id_: str) -> None:
+        del self.store[id_]
+
+    def __iter__(self) -> tp.Iterator[str]:
+        return iter(self.store)
+
+    def __len__(self) -> int:
+        return len(self.store)
 
 
 memory_store: tp.Dict[str, tp.Dict[str, StoreObjectT]] = {}
 """Object store by store id for `MemoryStore`."""
 
 
-class MemoryStore(ObjectStore):
+class MemoryStore(DictStore):
     """Store class based in memory.
 
     Commits changes to `memory_store`.
@@ -2271,64 +2374,34 @@ class MemoryStore(ObjectStore):
 
     _settings_path: tp.SettingsPath = "knowledge.chat.obj_store_configs.memory"
 
-    def __init__(
-        self,
-        clear_store: tp.Optional[bool] = None,
-        load_store: tp.Optional[bool] = None,
-        _init_store: bool = True,
-        **kwargs,
-    ) -> None:
-        ObjectStore.__init__(self, clear_store=clear_store, load_store=load_store, **kwargs)
-
-        clear_store = self.resolve_setting(clear_store, "clear_store")
-        load_store = self.resolve_setting(load_store, "load_store")
-
-        self._store = {}
-
-        if _init_store and self.store_exists():
-            if clear_store:
-                self.clear_store()
-            elif load_store:
-                self.load_store()
+    def __init__(self, **kwargs) -> None:
+        DictStore.__init__(self, **kwargs)
 
     @property
     def store(self) -> tp.Dict[str, StoreObjectT]:
-        """Dictionary with store objects keyed by their ids."""
+        """Store dictionary."""
         return self._store
-
-    def list_objs(self) -> tp.List[StoreObjectT]:
-        return list(self.store.values())
-
-    def has_obj(self, id_: str) -> bool:
-        return id_ in self.store
-
-    def get_obj(self, id_: str) -> StoreObjectT:
-        return self.store[id_]
-
-    def add_obj(self, obj: StoreObjectT) -> None:
-        self.store[obj.id_] = obj
-
-    def commit(self) -> None:
-        self.save_store()
 
     def store_exists(self) -> bool:
         """Whether store exists."""
         return self.store_id in memory_store
 
-    def load_store(self) -> None:
-        """Load store."""
-        self._store = dict(memory_store[self.store_id])
+    def open(self) -> None:
+        ObjectStore.open(self)
+        if self.store_exists():
+            self._store = dict(memory_store[self.store_id])
 
-    def save_store(self) -> None:
-        """Save store."""
+    def commit(self) -> None:
+        ObjectStore.commit(self)
         memory_store[self.store_id] = dict(self.store)
 
-    def clear_store(self) -> None:
-        """Clear store."""
-        memory_store[self.store_id].clear()
+    def purge(self) -> None:
+        ObjectStore.purge(self)
+        if self.store_exists():
+            del memory_store[self.store_id]
 
 
-class FileStore(MemoryStore):
+class FileStore(DictStore):
     """Store class based on files.
 
     Either commits changes to a single file (with index id being the file name), or commits the initial
@@ -2348,23 +2421,19 @@ class FileStore(MemoryStore):
         save_kwargs: tp.KwargsLike = None,
         load_kwargs: tp.KwargsLike = None,
         use_patching: tp.Optional[bool] = None,
+        consolidate: tp.Optional[bool] = None,
         memory_mirror: tp.Optional[bool] = None,
-        clear_store: tp.Optional[bool] = None,
-        load_store: tp.Optional[bool] = None,
-        _init_store: bool = True,
         **kwargs,
     ) -> None:
-        MemoryStore.__init__(
+        DictStore.__init__(
             self,
             dir_path=dir_path,
             compression=compression,
             save_kwargs=save_kwargs,
             load_kwargs=load_kwargs,
             use_patching=use_patching,
+            consolidate=consolidate,
             memory_mirror=memory_mirror,
-            clear_store=clear_store,
-            load_store=load_store,
-            _init_store=False,
             **kwargs,
         )
 
@@ -2382,29 +2451,24 @@ class FileStore(MemoryStore):
                     release_dir = release_dir.substitute(template_context, eval_id="release_dir")
                 template_context = flat_merge_dicts(dict(release_dir=release_dir), template_context)
             dir_path = dir_path.substitute(template_context, eval_id="dir_path")
-        clear_store = self.resolve_setting(clear_store, "clear_store")
         compression = self.resolve_setting(compression, "compression")
         save_kwargs = self.resolve_setting(save_kwargs, "save_kwargs", merge=True)
         load_kwargs = self.resolve_setting(load_kwargs, "load_kwargs", merge=True)
         use_patching = self.resolve_setting(use_patching, "use_patching")
+        consolidate = self.resolve_setting(consolidate, "consolidate")
         memory_mirror = self.resolve_setting(memory_mirror, "memory_mirror")
-        clear_store = self.resolve_setting(clear_store, "clear_store")
-        load_store = self.resolve_setting(load_store, "load_store")
 
         self._dir_path = dir_path
         self._compression = compression
         self._save_kwargs = save_kwargs
         self._load_kwargs = load_kwargs
         self._use_patching = use_patching
+        self._consolidate = consolidate
         self._memory_mirror = memory_mirror
 
         self._store_changes = {}
-
-        if _init_store and self.store_exists():
-            if clear_store:
-                self.clear_store()
-            elif load_store:
-                self.load_store()
+        self._new_keys = set()
+        self._memory_store = MemoryStore(store_id=str(self.store_path.resolve()))
 
     @property
     def dir_path(self) -> tp.Optional[tp.Path]:
@@ -2432,23 +2496,29 @@ class FileStore(MemoryStore):
         return self._use_patching
 
     @property
+    def consolidate(self) -> bool:
+        """Whether to consolidate patch files."""
+        return self._consolidate
+
+    @property
     def memory_mirror(self) -> bool:
         """Whether to mirror the store in memory for the next instance."""
         return self._memory_mirror
-
-    @property
-    def memory_store_id(self):
-        """Store id in memory."""
-        return f"__{type(self).__name__}.{self.store_id}__"
 
     @property
     def store_changes(self) -> tp.Dict[str, StoreObjectT]:
         """Store with new or modified objects only."""
         return self._store_changes
 
-    def add_obj(self, obj: StoreObjectT) -> None:
-        self.store_changes[obj.id_] = obj
-        MemoryStore.add_obj(self, obj)
+    @property
+    def new_keys(self) -> tp.Set[str]:
+        """Keys that haven't been added to the store."""
+        return self._new_keys
+
+    @property
+    def memory_store(self) -> MemoryStore:
+        """Memory store."""
+        return self._memory_store
 
     @property
     def store_path(self) -> tp.Path:
@@ -2468,54 +2538,73 @@ class FileStore(MemoryStore):
         return self.store_path / f"patch_{next_index}"
 
     def store_exists(self) -> bool:
-        if self.memory_mirror and MemoryStore.store_exists(self):
+        if self.memory_mirror and self.memory_store.store_exists():
             return True
         return self.store_path.exists()
 
-    def load_store(self) -> None:
-        if self.memory_mirror and MemoryStore.store_exists(self):
-            MemoryStore.load_store(self)
+    def open(self) -> None:
+        DictStore.open(self)
+        if self.memory_mirror and self.memory_store.store_exists():
+            self.memory_store.open()
+            self.store.clear()
+            self.store.update(self.memory_store.store)
         else:
-            from vectorbtpro.utils.pickling import load
+            if self.store_path.exists():
+                from vectorbtpro.utils.pickling import load
 
-            if self.use_patching:
-                store = {}
-                store.update(
-                    load(
-                        path=self.store_path / "base",
-                        compression=self.compression,
-                        **self.load_kwargs,
-                    )
-                )
-                for patch_path in sorted(
-                    self.store_path.glob("patch_*"),
-                    key=lambda f: int(f.stem.split("_")[1]),
-                ):
+                if self.store_path.is_dir():
+                    store = {}
                     store.update(
                         load(
-                            path=patch_path,
+                            path=self.store_path / "base",
                             compression=self.compression,
                             **self.load_kwargs,
                         )
                     )
+                    patch_paths = sorted(self.store_path.glob("patch_*"), key=lambda f: int(f.stem.split("_")[1]))
+                    for patch_path in patch_paths:
+                        store.update(
+                            load(
+                                path=patch_path,
+                                compression=self.compression,
+                                **self.load_kwargs,
+                            )
+                        )
+                else:
+                    store = load(
+                        path=self.store_path,
+                        compression=self.compression,
+                        **self.load_kwargs,
+                    )
                 self._store = store
-            else:
-                self._store = load(
-                    path=self.store_path,
-                    compression=self.compression,
-                    **self.load_kwargs,
-                )
+                if self.memory_mirror:
+                    self.memory_store.store.clear()
+                    self.memory_store.store.update(store)
 
         self._store_changes = {}
+        self._new_keys = set()
+        self._consolidate = False
 
-    def save_store(self) -> tp.Optional[tp.Path]:
+    def commit(self) -> tp.Optional[tp.Path]:
+        DictStore.commit(self)
         if self.memory_mirror:
-            MemoryStore.save_store(self)
+            self.memory_store.commit()
         from vectorbtpro.utils.pickling import save
 
+        file_path = None
         if self.use_patching:
             base_path = self.store_path / "base"
-            if self.store_changes:
+            if self.consolidate:
+                self.purge()
+                file_path = save(
+                    self.store,
+                    path=base_path,
+                    compression=self.compression,
+                    **self.save_kwargs,
+                )
+            elif self.store_changes:
+                if self.store_path.exists() and self.store_path.is_file():
+                    self.purge()
                 if not base_path.exists():
                     file_path = save(
                         self.store_changes,
@@ -2530,21 +2619,26 @@ class FileStore(MemoryStore):
                         compression=self.compression,
                         **self.save_kwargs,
                     )
-                self._store_changes = {}
-                return file_path
-        elif self.store_changes:
-            file_path = save(
-                self.store,
-                path=self.store_path,
-                compression=self.compression,
-                **self.save_kwargs,
-            )
-            self._store_changes = {}
-            return file_path
+        else:
+            if self.consolidate or self.store_changes:
+                if self.store_path.exists() and self.store_path.is_dir():
+                    self.purge()
+                file_path = save(
+                    self.store,
+                    path=self.store_path,
+                    compression=self.compression,
+                    **self.save_kwargs,
+                )
 
-    def clear_store(self) -> None:
-        if self.memory_mirror and MemoryStore.store_exists(self):
-            MemoryStore.clear_store(self)
+        self._store_changes = {}
+        self._new_keys = set()
+        self._consolidate = False
+        return file_path
+
+    def purge(self) -> None:
+        DictStore.purge(self)
+        if self.memory_mirror:
+            self.memory_store.purge()
         from vectorbtpro.utils.path_ import remove_file, remove_dir
 
         if self.store_path.exists():
@@ -2553,14 +2647,186 @@ class FileStore(MemoryStore):
             else:
                 remove_file(self.store_path)
 
+        self._store_changes = {}
+        self._new_keys = set()
+        self._consolidate = False
+
+    def __setitem__(self, id_: str, obj: StoreObjectT) -> None:
+        if obj.id_ not in self:
+            self.new_keys.add(obj.id_)
+        self.store_changes[obj.id_] = obj
+        DictStore.__setitem__(self, id_, obj)
+        if self.memory_mirror:
+            self.memory_store[id_] = obj
+
+    def __delitem__(self, id_: str) -> None:
+        if id_ in self.new_keys:
+            del self.store_changes[id_]
+            self.new_keys.remove(id_)
+        else:
+            if id_ in self.store_changes:
+                del self.store_changes[id_]
+        DictStore.__delitem__(self, id_)
+        if self.memory_mirror:
+            del self.memory_store[id_]
+
+
+class LMDBStore(ObjectStore):
+    """Store class based on LMDB (Lightning Memory-Mapped Database).
+
+    Uses [lmdbm](https://pypi.org/project/lmdbm/) package.
+
+    For defaults, see `chat.obj_store_configs.lmdb` in `vectorbtpro._settings.knowledge`."""
+
+    _short_name: tp.ClassVar[tp.Optional[str]] = "lmdb"
+
+    _expected_keys_mode: tp.ExpectedKeysMode = "disable"
+
+    _settings_path: tp.SettingsPath = "knowledge.chat.obj_store_configs.lmdb"
+
+    def __init__(
+        self,
+        dir_path: tp.Optional[tp.PathLike] = None,
+        mkdir_kwargs: tp.KwargsLike = None,
+        dumps_kwargs: tp.KwargsLike = None,
+        loads_kwargs: tp.KwargsLike = None,
+        **kwargs,
+    ) -> None:
+        ObjectStore.__init__(self, dir_path=dir_path, mkdir_kwargs=mkdir_kwargs, **kwargs)
+
+        from vectorbtpro.utils.module_ import assert_can_import
+
+        assert_can_import("lmdbm")
+
+        dir_path = self.resolve_setting(dir_path, "dir_path")
+        template_context = self.template_context
+        if isinstance(dir_path, CustomTemplate):
+            cache_dir = self.get_setting("cache_dir", default=None)
+            if cache_dir is not None:
+                if isinstance(cache_dir, CustomTemplate):
+                    cache_dir = cache_dir.substitute(template_context, eval_id="cache_dir")
+                template_context = flat_merge_dicts(dict(cache_dir=cache_dir), template_context)
+            release_dir = self.get_setting("release_dir", default=None)
+            if release_dir is not None:
+                if isinstance(release_dir, CustomTemplate):
+                    release_dir = release_dir.substitute(template_context, eval_id="release_dir")
+                template_context = flat_merge_dicts(dict(release_dir=release_dir), template_context)
+            dir_path = dir_path.substitute(template_context, eval_id="dir_path")
+        mkdir_kwargs = self.resolve_setting(mkdir_kwargs, "mkdir_kwargs", merge=True)
+        dumps_kwargs = self.resolve_setting(dumps_kwargs, "dumps_kwargs", merge=True)
+        loads_kwargs = self.resolve_setting(loads_kwargs, "loads_kwargs", merge=True)
+        open_kwargs = merge_dicts(self.get_settings(inherit=False), kwargs)
+        for arg_name in get_func_arg_names(ObjectStore.__init__) + get_func_arg_names(type(self).__init__):
+            if arg_name in open_kwargs:
+                del open_kwargs[arg_name]
+
+        self._dir_path = dir_path
+        self._mkdir_kwargs = mkdir_kwargs
+        self._dumps_kwargs = dumps_kwargs
+        self._loads_kwargs = loads_kwargs
+        self._open_kwargs = open_kwargs
+
+        self._db = None
+
+    @property
+    def dir_path(self) -> tp.Optional[tp.Path]:
+        """Path to the directory."""
+        return self._dir_path
+
+    @property
+    def mkdir_kwargs(self) -> tp.Kwargs:
+        """Keyword arguments passed to `vectorbtpro.utils.path_.check_mkdir`."""
+        return self._mkdir_kwargs
+
+    @property
+    def dumps_kwargs(self) -> tp.Kwargs:
+        """Keyword arguments passed to `vectorbtpro.utils.pickling.dumps`."""
+        return self._dumps_kwargs
+
+    @property
+    def loads_kwargs(self) -> tp.Kwargs:
+        """Keyword arguments passed to `vectorbtpro.utils.pickling.loads`."""
+        return self._loads_kwargs
+
+    @property
+    def open_kwargs(self) -> tp.Kwargs:
+        """Keyword arguments passed to `lmdbm.lmdbm.Lmdb.open`."""
+        return self._open_kwargs
+
+    @property
+    def db_path(self) -> tp.Path:
+        """Path to the database."""
+        dir_path = self.dir_path
+        if dir_path is None:
+            dir_path = "."
+        dir_path = Path(dir_path)
+        return dir_path / self.store_id
+
+    @property
+    def db(self) -> tp.Optional[LmdbT]:
+        """Database."""
+        return self._db
+
+    def open(self) -> None:
+        ObjectStore.open(self)
+        from lmdbm import Lmdb
+        from vectorbtpro.utils.path_ import check_mkdir
+
+        check_mkdir(self.db_path.parent, **self.mkdir_kwargs)
+        self._db = Lmdb.open(str(self.db_path.resolve()), **self.open_kwargs)
+
+    def commit(self) -> None:
+        self.db.sync()
+
+    def close(self) -> None:
+        ObjectStore.close(self)
+        if self.db:
+            self.db.close()
+        self._db = None
+
+    def purge(self) -> None:
+        ObjectStore.purge(self)
+        from vectorbtpro.utils.path_ import remove_dir
+
+        remove_dir(self.db_path, missing_ok=True, with_contents=True)
+
+    def encode(self, obj: StoreObjectT) -> bytes:
+        """Encode an object."""
+        from vectorbtpro.utils.pickling import dumps
+
+        return dumps(obj, **self.dumps_kwargs)
+
+    def decode(self, bytes_: bytes) -> StoreObjectT:
+        """Decode an object."""
+        from vectorbtpro.utils.pickling import loads
+
+        return loads(bytes_, **self.loads_kwargs)
+
+    def __getitem__(self, id_: str) -> StoreObjectT:
+        return self.decode(self.db[id_])
+
+    def __setitem__(self, id_: str, obj: StoreObjectT) -> None:
+        self.db[id_] = self.encode(obj)
+
+    def __delitem__(self, id_: str) -> None:
+        del self.db[id_]
+
+    def __iter__(self) -> tp.Iterator[str]:
+        return iter(self.db)
+
+    def __len__(self) -> int:
+        return len(self.db)
+
 
 def resolve_obj_store(obj_store: tp.ObjectStoreLike = None) -> tp.MaybeType[ObjectStore]:
     """Resolve a subclass or an instance of `ObjectStore`.
 
     The following values are supported:
 
+    * "dict" (`DictStore`)
     * "memory" (`MemoryStore`)
     * "file" (`FileStore`)
+    * "lmdb" (`LMDBStore`)
     * A subclass or an instance of `ObjectStore`
     """
     if obj_store is None:
@@ -2631,10 +2897,8 @@ class DocumentRanker(Configured):
         embeddings_kwargs: tp.KwargsLike = None,
         doc_store: tp.TokenizerLike = None,
         doc_store_kwargs: tp.KwargsLike = None,
-        commit_doc_store: tp.Optional[bool] = None,
         emb_store: tp.TokenizerLike = None,
         emb_store_kwargs: tp.KwargsLike = None,
-        commit_emb_store: tp.Optional[bool] = None,
         score_func: tp.Union[None, str, tp.Callable] = None,
         score_agg_func: tp.Union[None, str, tp.Callable] = None,
         template_context: tp.KwargsLike = None,
@@ -2646,10 +2910,8 @@ class DocumentRanker(Configured):
             embeddings_kwargs=embeddings_kwargs,
             doc_store=doc_store,
             doc_store_kwargs=doc_store_kwargs,
-            commit_doc_store=commit_doc_store,
             emb_store=emb_store,
             emb_store_kwargs=emb_store_kwargs,
-            commit_emb_store=commit_emb_store,
             score_func=score_func,
             score_agg_func=score_agg_func,
             template_context=template_context,
@@ -2660,10 +2922,8 @@ class DocumentRanker(Configured):
         embeddings_kwargs = self.resolve_setting(embeddings_kwargs, "embeddings_kwargs", default=None, merge=True)
         doc_store = self.resolve_setting(doc_store, "doc_store", default=None)
         doc_store_kwargs = self.resolve_setting(doc_store_kwargs, "doc_store_kwargs", default=None, merge=True)
-        commit_doc_store = self.resolve_setting(commit_doc_store, "commit_doc_store")
         emb_store = self.resolve_setting(emb_store, "emb_store", default=None)
         emb_store_kwargs = self.resolve_setting(emb_store_kwargs, "emb_store_kwargs", default=None, merge=True)
-        commit_emb_store = self.resolve_setting(commit_emb_store, "commit_emb_store")
         score_func = self.resolve_setting(score_func, "score_func")
         score_agg_func = self.resolve_setting(score_agg_func, "score_agg_func")
         template_context = self.resolve_setting(template_context, "template_context", merge=True)
@@ -2720,9 +2980,7 @@ class DocumentRanker(Configured):
 
         self._embeddings = embeddings
         self._doc_store = doc_store
-        self._commit_doc_store = commit_doc_store
         self._emb_store = emb_store
-        self._commit_emb_store = commit_emb_store
         self._score_func = score_func
         self._score_agg_func = score_agg_func
         self._template_context = template_context
@@ -2738,19 +2996,9 @@ class DocumentRanker(Configured):
         return self._doc_store
 
     @property
-    def commit_doc_store(self) -> bool:
-        """Whether to commit changes in the document store after generating embeddings."""
-        return self._commit_doc_store
-
-    @property
     def emb_store(self) -> ObjectStore:
         """An instance of `ObjectStore` for embeddings."""
         return self._emb_store
-
-    @property
-    def commit_emb_store(self) -> bool:
-        """Whether to commit changes in the embedding store after generating embeddings."""
-        return self._commit_emb_store
 
     @property
     def score_func(self) -> tp.Union[str, tp.Callable]:
@@ -2769,13 +3017,6 @@ class DocumentRanker(Configured):
         """Context used to substitute templates."""
         return self._template_context
 
-    def commit(self) -> None:
-        """Commit changes."""
-        if self.commit_doc_store:
-            self.doc_store.commit()
-        if self.commit_emb_store:
-            self.emb_store.commit()
-
     def embed_documents(
         self,
         documents: tp.Iterable[StoreDocument],
@@ -2788,80 +3029,83 @@ class DocumentRanker(Configured):
         If `return_embeddings` and `return_documents` are both True, for each document,
         returns the document and either an embedding or a list of document chunks and their embeddings.
         If `return_documents` is False, returns only embeddings."""
-        obj_contents = {}
-        for document in documents:
-            if not self.doc_store.has_obj(document.id_):
-                self.doc_store.add_obj(document)
-            if not self.emb_store.has_obj(document.id_):
-                document_chunks = document.split()
-                child_ids = []
-                obj = StoreEmbedding(document.id_, child_ids=child_ids)
-                self.emb_store.add_obj(obj)
-                for document_chunk in document_chunks:
-                    if document_chunk.id_ != document.id_:
-                        if not self.doc_store.has_obj(document_chunk.id_):
-                            self.doc_store.add_obj(document_chunk)
-                        if not self.emb_store.has_obj(document_chunk.id_):
-                            child_obj = StoreEmbedding(document_chunk.id_, parent_id=document.id_)
-                            self.emb_store.add_obj(child_obj)
-                        else:
-                            child_obj = self.emb_store.get_obj(document_chunk.id_)
-                        child_ids.append(child_obj.id_)
-                        if not child_obj.embedding:
-                            content = document_chunk.get_content(for_embed=True)
-                            if content:
-                                obj_contents[child_obj.id_] = content
-            else:
-                obj = self.emb_store.get_obj(document.id_)
-            if not obj.child_ids and not obj.embedding:
-                content = document.get_content(for_embed=True)
-                if content:
-                    obj_contents[obj.id_] = content
+        with self.doc_store, self.emb_store:
 
-        if obj_contents:
-            embeddings = self.embeddings.get_embeddings(list(obj_contents.values()))
-            obj_embeddings = dict(zip(obj_contents.keys(), embeddings))
-            for obj_id, embedding in obj_embeddings.items():
-                obj = self.emb_store.get_obj(obj_id)
-                self.emb_store.add_obj(obj.replace(embedding=embedding))
-
-        self.commit()
-
-        if return_embeddings or return_documents:
-            embeddings = []
+            obj_contents = {}
             for document in documents:
-                obj = self.emb_store.get_obj(document.id_)
-                if obj.embedding:
-                    if return_documents:
-                        embeddings.append(EmbeddedDocument(document, embedding=obj.embedding))
-                    else:
-                        embeddings.append(obj.embedding)
-                elif obj.child_ids:
-                    child_embeddings = []
-                    for child_id in obj.child_ids:
-                        child_obj = self.emb_store.get_obj(child_id)
-                        if child_obj.embedding:
-                            if return_documents:
-                                child_document = self.doc_store.get_obj(child_id)
-                                child_embeddings.append(EmbeddedDocument(child_document, embedding=child_obj.embedding))
+                if document.id_ not in self.doc_store:
+                    self.doc_store[document.id_] = document
+                if document.id_ not in self.emb_store:
+                    document_chunks = document.split()
+                    obj = StoreEmbedding(document.id_)
+                    for document_chunk in document_chunks:
+                        if document_chunk.id_ != document.id_:
+                            if document_chunk.id_ not in self.doc_store:
+                                self.doc_store[document_chunk.id_] = document_chunk
+                            if document_chunk.id_ not in self.emb_store:
+                                child_obj = StoreEmbedding(document_chunk.id_, parent_id=document.id_)
+                                self.emb_store[child_obj.id_] = child_obj
                             else:
-                                child_embeddings.append(child_obj.embedding)
-                        else:
-                            if return_documents:
-                                child_document = self.doc_store.get_obj(child_id)
-                                child_embeddings.append(EmbeddedDocument(child_document))
-                            else:
-                                child_embeddings.append(None)
-                    if return_documents:
-                        embeddings.append(EmbeddedDocument(document, child_documents=child_embeddings))
-                    else:
-                        embeddings.append(child_embeddings)
+                                child_obj = self.emb_store[document_chunk.id_]
+                            obj.child_ids.append(child_obj.id_)
+                            if not child_obj.embedding:
+                                content = document_chunk.get_content(for_embed=True)
+                                if content:
+                                    obj_contents[child_obj.id_] = content
+                    self.emb_store[obj.id_] = obj
                 else:
-                    if return_documents:
-                        embeddings.append(EmbeddedDocument(document))
+                    obj = self.emb_store[document.id_]
+                if not obj.child_ids and not obj.embedding:
+                    content = document.get_content(for_embed=True)
+                    if content:
+                        obj_contents[obj.id_] = content
+
+            if obj_contents:
+                embeddings = self.embeddings.get_embeddings(list(obj_contents.values()))
+                obj_embeddings = dict(zip(obj_contents.keys(), embeddings))
+                for obj_id, embedding in obj_embeddings.items():
+                    obj = self.emb_store[obj_id]
+                    new_obj = obj.replace(embedding=embedding)
+                    self.emb_store[new_obj.id_] = new_obj
+
+            if return_embeddings or return_documents:
+                embeddings = []
+                for document in documents:
+                    obj = self.emb_store[document.id_]
+                    if obj.embedding:
+                        if return_documents:
+                            embeddings.append(EmbeddedDocument(document, embedding=obj.embedding))
+                        else:
+                            embeddings.append(obj.embedding)
+                    elif obj.child_ids:
+                        child_embeddings = []
+                        for child_id in obj.child_ids:
+                            child_obj = self.emb_store[child_id]
+                            if child_obj.embedding:
+                                if return_documents:
+                                    child_document = self.doc_store[child_id]
+                                    child_embeddings.append(
+                                        EmbeddedDocument(child_document, embedding=child_obj.embedding)
+                                    )
+                                else:
+                                    child_embeddings.append(child_obj.embedding)
+                            else:
+                                if return_documents:
+                                    child_document = self.doc_store[child_id]
+                                    child_embeddings.append(EmbeddedDocument(child_document))
+                                else:
+                                    child_embeddings.append(None)
+                        if return_documents:
+                            embeddings.append(EmbeddedDocument(document, child_documents=child_embeddings))
+                        else:
+                            embeddings.append(child_embeddings)
                     else:
-                        embeddings.append(None)
-            return embeddings
+                        if return_documents:
+                            embeddings.append(EmbeddedDocument(document))
+                        else:
+                            embeddings.append(None)
+
+                return embeddings
 
     def compute_score(
         self,
@@ -2913,85 +3157,87 @@ class DocumentRanker(Configured):
         return_documents: bool = False,
     ) -> tp.ScoredDocuments:
         """Score documents by relevance to a query."""
-        if documents is None:
-            if self.doc_store is None:
-                raise ValueError("Must provide at least documents or doc_store")
-            documents = self.doc_store.list_objs()
-            documents_provided = False
-        else:
-            documents_provided = True
-        documents = list(documents)
-        if not documents:
-            return []
-        self.embed_documents(documents)
-        if return_chunks:
-            document_chunks = []
+        with self.doc_store, self.emb_store:
+
+            if documents is None:
+                if self.doc_store is None:
+                    raise ValueError("Must provide at least documents or doc_store")
+                documents = self.doc_store.values()
+                documents_provided = False
+            else:
+                documents_provided = True
+            documents = list(documents)
+            if not documents:
+                return []
+            self.embed_documents(documents)
+            if return_chunks:
+                document_chunks = []
+                for document in documents:
+                    obj = self.emb_store[document.id_]
+                    if obj.child_ids:
+                        for child_id in obj.child_ids:
+                            document_chunk = self.doc_store[child_id]
+                            document_chunks.append(document_chunk)
+                    elif not obj.parent_id or obj.parent_id not in self.doc_store:
+                        document_chunk = self.doc_store[obj.id_]
+                        document_chunks.append(document_chunk)
+                documents = document_chunks
+            elif not documents_provided:
+                document_parents = []
+                for document in documents:
+                    obj = self.emb_store[document.id_]
+                    if not obj.parent_id or obj.parent_id not in self.doc_store:
+                        document_parent = self.doc_store[obj.id_]
+                        document_parents.append(document_parent)
+                documents = document_parents
+
+            obj_embeddings = {}
             for document in documents:
-                obj = self.emb_store.get_obj(document.id_)
+                obj = self.emb_store[document.id_]
+                if obj.embedding:
+                    obj_embeddings[obj.id_] = obj.embedding
+                elif obj.child_ids:
+                    for child_id in obj.child_ids:
+                        child_obj = self.emb_store[child_id]
+                        if child_obj.embedding:
+                            obj_embeddings[child_id] = child_obj.embedding
+            if obj_embeddings:
+                query_embedding = self.embeddings.get_embedding(query)
+                scores = self.compute_score(query_embedding, list(obj_embeddings.values()))
+                obj_scores = dict(zip(obj_embeddings.keys(), scores))
+            else:
+                obj_scores = {}
+
+            scores = []
+            for document in documents:
+                obj = self.emb_store[document.id_]
+                child_scores = []
                 if obj.child_ids:
                     for child_id in obj.child_ids:
-                        document_chunk = self.doc_store.get_obj(child_id)
-                        document_chunks.append(document_chunk)
-                elif not obj.parent_id or not self.doc_store.has_obj(obj.parent_id):
-                    document_chunk = self.doc_store.get_obj(obj.id_)
-                    document_chunks.append(document_chunk)
-            documents = document_chunks
-        elif not documents_provided:
-            document_parents = []
-            for document in documents:
-                obj = self.emb_store.get_obj(document.id_)
-                if not obj.parent_id or not self.doc_store.has_obj(obj.parent_id):
-                    document_parent = self.doc_store.get_obj(obj.id_)
-                    document_parents.append(document_parent)
-            documents = document_parents
-
-        obj_embeddings = {}
-        for document in documents:
-            obj = self.emb_store.get_obj(document.id_)
-            if obj.embedding:
-                obj_embeddings[obj.id_] = obj.embedding
-            elif obj.child_ids:
-                for child_id in obj.child_ids:
-                    child_obj = self.emb_store.get_obj(child_id)
-                    if child_obj.embedding:
-                        obj_embeddings[child_id] = child_obj.embedding
-        if obj_embeddings:
-            query_embedding = self.embeddings.get_embedding(query)
-            scores = self.compute_score(query_embedding, list(obj_embeddings.values()))
-            obj_scores = dict(zip(obj_embeddings.keys(), scores))
-        else:
-            obj_scores = {}
-
-        scores = []
-        for document in documents:
-            obj = self.emb_store.get_obj(document.id_)
-            child_scores = []
-            if obj.child_ids:
-                for child_id in obj.child_ids:
-                    child_score = obj_scores[child_id]
-                    if child_id in obj_scores:
+                        child_score = obj_scores[child_id]
+                        if child_id in obj_scores:
+                            if return_documents:
+                                child_document = self.doc_store[child_id]
+                                child_scores.append(ScoredDocument(child_document, score=child_score))
+                            else:
+                                child_scores.append(child_score)
+                    if child_scores:
                         if return_documents:
-                            child_document = self.doc_store.get_obj(child_id)
-                            child_scores.append(ScoredDocument(child_document, score=child_score))
+                            doc_score = self.score_agg_func([document.score for document in child_scores])
                         else:
-                            child_scores.append(child_score)
-                if child_scores:
-                    if return_documents:
-                        doc_score = self.score_agg_func([document.score for document in child_scores])
+                            doc_score = self.score_agg_func(child_scores)
                     else:
-                        doc_score = self.score_agg_func(child_scores)
+                        doc_score = float("nan")
                 else:
-                    doc_score = float("nan")
-            else:
-                if obj.id_ in obj_scores:
-                    doc_score = obj_scores[obj.id_]
+                    if obj.id_ in obj_scores:
+                        doc_score = obj_scores[obj.id_]
+                    else:
+                        doc_score = float("nan")
+                if return_documents:
+                    scores.append(ScoredDocument(document, score=doc_score, child_documents=child_scores))
                 else:
-                    doc_score = float("nan")
-            if return_documents:
-                scores.append(ScoredDocument(document, score=doc_score, child_documents=child_scores))
-            else:
-                scores.append(doc_score)
-        return scores
+                    scores.append(doc_score)
+            return scores
 
     @classmethod
     def resolve_top_k(

@@ -232,6 +232,9 @@ opt_dep_config = HybridConfig(
         tiktoken=dict(
             link="https://pypi.org/project/tiktoken/",
         ),
+        lmdbm=dict(
+            link="https://pypi.org/project/lmdbm/",
+        )
     )
 )
 """_"""
