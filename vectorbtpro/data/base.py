@@ -3366,9 +3366,9 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
                 else:
                     new_obj = new_obj[0]
             if isinstance(obj, pd.DataFrame):
-                new_obj = new_obj.astype(obj.dtypes)
+                new_obj = new_obj.astype(obj.dtypes, errors="ignore")
             else:
-                new_obj = new_obj.astype(obj.dtype)
+                new_obj = new_obj.astype(obj.dtype, errors="ignore")
             new_data[k] = new_obj
 
         if not concat:
