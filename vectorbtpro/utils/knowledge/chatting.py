@@ -29,7 +29,7 @@ from vectorbtpro.utils.config import merge_dicts, flat_merge_dicts, Configured, 
 from vectorbtpro.utils.decorators import memoized_method, hybrid_method
 from vectorbtpro.utils.knowledge.formatting import ContentFormatter, HTMLFileFormatter, resolve_formatter
 from vectorbtpro.utils.parsing import get_func_arg_names, get_func_kwargs
-from vectorbtpro.utils.template import CustomTemplate, Sub, RepFunc
+from vectorbtpro.utils.template import CustomTemplate, Sub, RepFunc, substitute_templates
 
 try:
     if not tp.TYPE_CHECKING:
@@ -105,6 +105,7 @@ __all__ = [
     "TextDocument",
     "StoreEmbedding",
     "ObjectStore",
+    "DictStore",
     "MemoryStore",
     "FileStore",
     "LMDBStore",
@@ -407,7 +408,7 @@ class OpenAIEmbeddings(Embeddings):
         if show_progress is None:
             show_progress = def_show_progress
         def_pbar_kwargs = openai_config.pop("pbar_kwargs", {})
-        pbar_kwargs = merge_dicts(dict(prefix="get_embeddings"), def_pbar_kwargs, pbar_kwargs)
+        pbar_kwargs = merge_dicts(def_pbar_kwargs, pbar_kwargs)
 
         client_arg_names = set(get_func_arg_names(OpenAI.__init__))
         client_kwargs = {}
@@ -469,7 +470,8 @@ class OpenAIEmbeddings(Embeddings):
         else:
             batches = [queries]
         embeddings = []
-        with ProgressBar(total=len(queries), show_progress=self.show_progress, **self.pbar_kwargs) as pbar:
+        pbar_kwargs = merge_dicts(dict(prefix="get_embeddings"), self.pbar_kwargs)
+        with ProgressBar(total=len(queries), show_progress=self.show_progress, **pbar_kwargs) as pbar:
             for batch in batches:
                 response = self.client.embeddings.create(input=batch, model=self.model, **self.embeddings_kwargs)
                 embeddings.extend([embedding.embedding for embedding in response.data])
@@ -522,7 +524,7 @@ class LiteLLMEmbeddings(Embeddings):
         if show_progress is None:
             show_progress = def_show_progress
         def_pbar_kwargs = litellm_config.pop("pbar_kwargs", {})
-        pbar_kwargs = merge_dicts(dict(prefix="get_embeddings"), def_pbar_kwargs, pbar_kwargs)
+        pbar_kwargs = merge_dicts(def_pbar_kwargs, pbar_kwargs)
 
         self._model = model
         self._embedding_kwargs = litellm_config
@@ -571,7 +573,8 @@ class LiteLLMEmbeddings(Embeddings):
         else:
             batches = [queries]
         embeddings = []
-        with ProgressBar(total=len(queries), show_progress=self.show_progress, **self.pbar_kwargs) as pbar:
+        pbar_kwargs = merge_dicts(dict(prefix="get_embeddings"), self.pbar_kwargs)
+        with ProgressBar(total=len(queries), show_progress=self.show_progress, **pbar_kwargs) as pbar:
             for batch in batches:
                 response = embedding(self.model, input=batch, **self.embedding_kwargs)
                 embeddings.extend([embedding["embedding"] for embedding in response.data])
@@ -2067,8 +2070,12 @@ class TextDocument(StoreDocument, HasSettings, DefineMixin):
         """Get text.
 
         Returns None if no text."""
-        from vectorbtpro.utils.search import get_pathlike_key
+        from vectorbtpro.utils.search_ import get_pathlike_key
 
+        if self.data is None:
+            return None
+        if isinstance(self.data, str):
+            return self.data
         if self.text_path is not None:
             try:
                 text = get_pathlike_key(self.data, self.text_path, keep_path=False)
@@ -2081,22 +2088,18 @@ class TextDocument(StoreDocument, HasSettings, DefineMixin):
             if not isinstance(text, str):
                 raise TypeError(f"Text field must be a string, not {type(text)}")
             return text
-        if self.data is None:
-            return None
-        if not isinstance(self.data, str):
-            raise TypeError(f"If text path is not provided, data item must be a string, not {type(self.data)}")
-        return self.data
+        raise TypeError(f"If text path is not provided, data item must be a string, not {type(self.data)}")
 
     def get_metadata(self, for_embed: bool = False) -> tp.Optional[tp.Any]:
         """Get metadata.
 
         Returns None if no metadata."""
-        from vectorbtpro.utils.search import remove_pathlike_key
+        from vectorbtpro.utils.search_ import remove_pathlike_key
 
-        if self.text_path is None:
+        if self.data is None or isinstance(self.data, str) or self.text_path is None:
             return None
-        data = self.data
         prev_keys = []
+        data = self.data
         try:
             data = remove_pathlike_key(data, self.text_path, make_copy=True, prev_keys=prev_keys)
         except (KeyError, IndexError, AttributeError) as e:
@@ -2120,8 +2123,6 @@ class TextDocument(StoreDocument, HasSettings, DefineMixin):
             try:
                 data = remove_pathlike_key(data, p, make_copy=True, prev_keys=prev_keys)
             except (KeyError, IndexError, AttributeError) as e:
-                if not self.skip_missing:
-                    raise e
                 continue
         return data
 
@@ -2172,7 +2173,7 @@ class TextDocument(StoreDocument, HasSettings, DefineMixin):
         return content_template.substitute(template_context, eval_id="content_template")
 
     def split(self: TextDocumentT) -> tp.List[TextDocumentT]:
-        from vectorbtpro.utils.search import set_pathlike_key
+        from vectorbtpro.utils.search_ import set_pathlike_key
 
         text = self.get_text()
         if text is None:
@@ -2180,7 +2181,7 @@ class TextDocument(StoreDocument, HasSettings, DefineMixin):
         text_chunks = split_text(text, **self.split_text_kwargs)
         document_chunks = []
         for text_chunk in text_chunks:
-            if self.text_path is not None:
+            if not isinstance(self.data, str) and self.text_path is not None:
                 data_chunk = set_pathlike_key(
                     self.data,
                     self.text_path,
@@ -2901,6 +2902,8 @@ class DocumentRanker(Configured):
         emb_store_kwargs: tp.KwargsLike = None,
         score_func: tp.Union[None, str, tp.Callable] = None,
         score_agg_func: tp.Union[None, str, tp.Callable] = None,
+        show_progress: tp.Optional[bool] = None,
+        pbar_kwargs: tp.KwargsLike = None,
         template_context: tp.KwargsLike = None,
         **kwargs,
     ) -> None:
@@ -2914,6 +2917,8 @@ class DocumentRanker(Configured):
             emb_store_kwargs=emb_store_kwargs,
             score_func=score_func,
             score_agg_func=score_agg_func,
+            show_progress=show_progress,
+            pbar_kwargs=pbar_kwargs,
             template_context=template_context,
             **kwargs,
         )
@@ -2926,6 +2931,8 @@ class DocumentRanker(Configured):
         emb_store_kwargs = self.resolve_setting(emb_store_kwargs, "emb_store_kwargs", default=None, merge=True)
         score_func = self.resolve_setting(score_func, "score_func")
         score_agg_func = self.resolve_setting(score_agg_func, "score_agg_func")
+        show_progress = self.resolve_setting(show_progress, "show_progress")
+        pbar_kwargs = self.resolve_setting(pbar_kwargs, "pbar_kwargs", merge=True)
         template_context = self.resolve_setting(template_context, "template_context", merge=True)
 
         obj_store = self.get_setting("obj_store", default=None)
@@ -2983,6 +2990,8 @@ class DocumentRanker(Configured):
         self._emb_store = emb_store
         self._score_func = score_func
         self._score_agg_func = score_agg_func
+        self._show_progress = show_progress
+        self._pbar_kwargs = pbar_kwargs
         self._template_context = template_context
 
     @property
@@ -3013,6 +3022,16 @@ class DocumentRanker(Configured):
         return self._score_agg_func
 
     @property
+    def show_progress(self) -> tp.Optional[bool]:
+        """Whether to show progress bar."""
+        return self._show_progress
+
+    @property
+    def pbar_kwargs(self) -> tp.Kwargs:
+        """Keyword arguments passed to `vectorbtpro.utils.pbar.ProgressBar`."""
+        return self._pbar_kwargs
+
+    @property
     def template_context(self) -> tp.Kwargs:
         """Context used to substitute templates."""
         return self._template_context
@@ -3030,13 +3049,27 @@ class DocumentRanker(Configured):
         returns the document and either an embedding or a list of document chunks and their embeddings.
         If `return_documents` is False, returns only embeddings."""
         with self.doc_store, self.emb_store:
+            documents = list(documents)
+            documents_to_split = []
+            document_splits = {}
+            for document in documents:
+                if document.id_ not in self.emb_store:
+                    documents_to_split.append(document)
+            if documents_to_split:
+                from vectorbtpro.utils.pbar import ProgressBar
+
+                pbar_kwargs = merge_dicts(dict(prefix="split_documents"), self.pbar_kwargs)
+                with ProgressBar(total=len(documents), show_progress=self.show_progress, **pbar_kwargs) as pbar:
+                    for document in documents_to_split:
+                        document_splits[document.id_] = document.split()
+                        pbar.update()
 
             obj_contents = {}
             for document in documents:
                 if document.id_ not in self.doc_store:
                     self.doc_store[document.id_] = document
-                if document.id_ not in self.emb_store:
-                    document_chunks = document.split()
+                if document.id_ in document_splits:
+                    document_chunks = document_splits[document.id_]
                     obj = StoreEmbedding(document.id_)
                     for document_chunk in document_chunks:
                         if document_chunk.id_ != document.id_:
@@ -3158,7 +3191,6 @@ class DocumentRanker(Configured):
     ) -> tp.ScoredDocuments:
         """Score documents by relevance to a query."""
         with self.doc_store, self.emb_store:
-
             if documents is None:
                 if self.doc_store is None:
                     raise ValueError("Must provide at least documents or doc_store")
@@ -3214,8 +3246,8 @@ class DocumentRanker(Configured):
                 child_scores = []
                 if obj.child_ids:
                     for child_id in obj.child_ids:
-                        child_score = obj_scores[child_id]
                         if child_id in obj_scores:
+                            child_score = obj_scores[child_id]
                             if return_documents:
                                 child_document = self.doc_store[child_id]
                                 child_scores.append(ScoredDocument(child_document, score=child_score))
@@ -3257,6 +3289,8 @@ class DocumentRanker(Configured):
         scores = scores[~np.isnan(scores)]
         if cutoff is not None:
             scores = scores[scores >= cutoff]
+            if top_k is None:
+                return len(scores)
 
         if isinstance(top_k, str):
             if top_k.lower() == "elbow":
@@ -3277,6 +3311,8 @@ class DocumentRanker(Configured):
             top_k = top_k(scores)
         if checks.is_float(top_k):
             top_k = int(top_k * len(scores))
+        if cutoff is not None:
+            return min(top_k, len(scores))
         return top_k
 
     def rank_documents(
@@ -3299,6 +3335,8 @@ class DocumentRanker(Configured):
         scores = [document.score for document in scored_documents]
         top_k = self.resolve_top_k(scores, top_k=top_k, cutoff=cutoff)
         if top_k is not None:
+            if top_k == 0:
+                raise ValueError("No documents selected after ranking. Change top_k or cutoff.")
             scored_documents = scored_documents[:top_k]
         if return_scores:
             return scored_documents
@@ -3306,7 +3344,7 @@ class DocumentRanker(Configured):
 
 
 def embed_documents(
-    documents: tp.Iterable[tp.Any],
+    documents: tp.Iterable[StoreDocument],
     return_embeddings: bool = False,
     return_documents: bool = False,
     document_ranker: tp.Optional[tp.MaybeType[DocumentRanker]] = None,
@@ -3316,13 +3354,6 @@ def embed_documents(
 
     Keyword arguments are passed to either initialize a class or replace an
     instance of `DocumentRanker`."""
-    if documents is not None:
-        new_documents = []
-        for document in documents:
-            if not isinstance(document, StoreDocument):
-                document = TextDocument.from_data(document)
-            new_documents.append(document)
-        documents = new_documents
     if document_ranker is None:
         document_ranker = DocumentRanker
     if isinstance(document_ranker, type):
@@ -3341,7 +3372,7 @@ def embed_documents(
 
 def rank_documents(
     query: str,
-    documents: tp.Optional[tp.Iterable[tp.Any]] = None,
+    documents: tp.Optional[tp.Iterable[StoreDocument]] = None,
     top_k: tp.TopKLike = None,
     cutoff: tp.Optional[float] = None,
     return_chunks: bool = False,
@@ -3353,13 +3384,6 @@ def rank_documents(
 
     Keyword arguments are passed to either initialize a class or replace an
     instance of `DocumentRanker`."""
-    if documents is not None:
-        new_documents = []
-        for document in documents:
-            if not isinstance(document, StoreDocument):
-                document = TextDocument.from_data(document)
-            new_documents.append(document)
-        documents = new_documents
     if document_ranker is None:
         document_ranker = DocumentRanker
     if isinstance(document_ranker, type):

@@ -18,7 +18,7 @@ from vectorbtpro.utils.attr_ import DefineMixin, define
 from vectorbtpro.utils.config import merge_dicts
 from vectorbtpro.utils.eval_ import evaluate, get_free_vars, Evaluable
 from vectorbtpro.utils.parsing import get_func_arg_names
-from vectorbtpro.utils.search import contains_in_obj, find_and_replace_in_obj
+from vectorbtpro.utils.search_ import contains_in_obj, find_and_replace_in_obj
 
 __all__ = [
     "CustomTemplate",
@@ -239,7 +239,7 @@ class RepFunc(CustomTemplate):
 def has_templates(obj: tp.Any, **kwargs) -> tp.Any:
     """Check if the object has any templates.
 
-    Uses `vectorbtpro.utils.search.contains_in_obj`.
+    Uses `vectorbtpro.utils.search_.contains_in_obj`.
 
     Default can be overridden with `search_kwargs` under `vectorbtpro._settings.template`."""
     from vectorbtpro._settings import settings
@@ -263,7 +263,7 @@ def substitute_templates(
 ) -> tp.Any:
     """Traverses the object recursively and, if any template found, substitutes it using a context.
 
-    Uses `vectorbtpro.utils.search.find_and_replace_in_obj`.
+    Uses `vectorbtpro.utils.search_.find_and_replace_in_obj`.
 
     If `strict` is True, raises an error if processing template fails. Otherwise, returns the original template.
 

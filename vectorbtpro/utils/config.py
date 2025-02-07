@@ -106,7 +106,7 @@ def get_dict_item(dct: dict, k: tp.PathLikeKey, populate: bool = False) -> tp.An
     The key can be nested using the dot notation, `pathlib.Path`, or a tuple, and must be hashable."""
     if k in dct:
         return dct[k]
-    from vectorbtpro.utils.search import resolve_pathlike_key
+    from vectorbtpro.utils.search_ import resolve_pathlike_key
 
     k = resolve_pathlike_key(k)
     if len(k) == 1:
@@ -1001,9 +1001,6 @@ Stores tuples of class names and their settings paths by unique ids.
 """
 
 
-ExtSettingsPathT = tp.TypeVar("ExtSettingsPathT", bound="ExtSettingsPath")
-
-
 class ExtSettingsPath(Base):
     """Context manager to add extensional settings paths."""
 
@@ -1021,7 +1018,7 @@ class ExtSettingsPath(Base):
         """Dictionary with extensional settings paths."""
         return self._ext_settings_paths
 
-    def __enter__(self: ExtSettingsPathT) -> ExtSettingsPathT:
+    def __enter__(self) -> tp.Self:
         ext_settings_paths_config[self.unique_id] = self.ext_settings_paths
         return self
 
@@ -1046,9 +1043,6 @@ settings whenever "knowledge" settings are requested.
 """
 
 
-SpecSettingsPathT = tp.TypeVar("SpecSettingsPathT", bound="SpecSettingsPath")
-
-
 class SpecSettingsPath(Base):
     """Context manager to add specialized settings paths."""
 
@@ -1066,7 +1060,7 @@ class SpecSettingsPath(Base):
         """Dictionary with specialized settings paths."""
         return self._spec_settings_paths
 
-    def __enter__(self: SpecSettingsPathT) -> SpecSettingsPathT:
+    def __enter__(self) -> tp.Self:
         spec_settings_paths_config[self.unique_id] = self.spec_settings_paths
         return self
 
@@ -1096,7 +1090,7 @@ class HasSettings(Base):
 
         sub_path_settings = None
         if sub_path is not None:
-            from vectorbtpro.utils.search import combine_pathlike_keys
+            from vectorbtpro.utils.search_ import combine_pathlike_keys
 
             sub_path = combine_pathlike_keys(path, sub_path)
             try:
@@ -1121,7 +1115,7 @@ class HasSettings(Base):
         unique_only: bool = True,
     ) -> tp.List[tp.Tuple[tp.Type[HasSettingsT], tp.PathLikeKey]]:
         """Resolve the settings paths associated with this class and its superclasses (if `inherit` is True)."""
-        from vectorbtpro.utils.search import resolve_pathlike_key, combine_pathlike_keys
+        from vectorbtpro.utils.search_ import resolve_pathlike_key, combine_pathlike_keys
 
         paths = []
         unique_paths = set()
@@ -1269,7 +1263,7 @@ class HasSettings(Base):
         from vectorbtpro._settings import settings
 
         if sub_path is not None:
-            from vectorbtpro.utils.search import combine_pathlike_keys
+            from vectorbtpro.utils.search_ import combine_pathlike_keys
 
             sub_path = combine_pathlike_keys(path, sub_path)
             try:
@@ -1469,7 +1463,7 @@ class HasSettings(Base):
         if path is None:
             raise SettingsNotFoundError(f"Found no settings associated with the class {cls.__name__}")
         if sub_path is not None:
-            from vectorbtpro.utils.search import combine_pathlike_keys
+            from vectorbtpro.utils.search_ import combine_pathlike_keys
 
             path = combine_pathlike_keys(path, sub_path)
         cls_cfg = get_dict_item(settings, path, populate=populate_)
@@ -1506,7 +1500,7 @@ class HasSettings(Base):
         if path is None:
             raise SettingsNotFoundError(f"Found no settings associated with the class {cls.__name__}")
         if sub_path is not None:
-            from vectorbtpro.utils.search import combine_pathlike_keys
+            from vectorbtpro.utils.search_ import combine_pathlike_keys
 
             path = combine_pathlike_keys(path, sub_path)
         if not cls.has_path_settings(path):

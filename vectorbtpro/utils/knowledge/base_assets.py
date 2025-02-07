@@ -20,7 +20,7 @@ from pathlib import Path
 import pandas as pd
 
 from vectorbtpro import _typing as tp
-from vectorbtpro.utils import checks, search
+from vectorbtpro.utils import checks
 from vectorbtpro.utils.config import Configured
 from vectorbtpro.utils.config import merge_dicts, flat_merge_dicts
 from vectorbtpro.utils.decorators import hybrid_method
@@ -31,6 +31,7 @@ from vectorbtpro.utils.parsing import get_func_arg_names
 from vectorbtpro.utils.path_ import dir_tree_from_paths
 from vectorbtpro.utils.pbar import ProgressBar
 from vectorbtpro.utils.pickling import decompress, load_bytes
+from vectorbtpro.utils.search_ import flatten_obj, unflatten_obj
 from vectorbtpro.utils.template import CustomTemplate, RepEval, RepFunc
 
 __all__ = [
@@ -168,12 +169,12 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
             obj_data = obj.data
             if len(obj_data) == 1:
                 obj_data = [obj_data] * max_items
-            flat_obj_data = list(map(lambda x: search.flatten_obj(x, **flatten_kwargs), obj_data))
+            flat_obj_data = list(map(lambda x: flatten_obj(x, **flatten_kwargs), obj_data))
             flat_data.append(flat_obj_data)
         new_data = []
         for flat_dcts in zip(*flat_data):
             merged_flat_dct = flat_merge_dicts(*flat_dcts)
-            new_data.append(search.unflatten_obj(merged_flat_dct))
+            new_data.append(unflatten_obj(merged_flat_dct))
         kwargs = cls_or_self.resolve_merge_kwargs(
             *[obj.config for obj in objs],
             single_item=new_single_item,
@@ -559,6 +560,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         execute_kwargs: tp.KwargsLike = None,
         wrap: tp.Optional[bool] = None,
         single_item: tp.Optional[bool] = None,
+        return_iterator: bool = False,
         **kwargs,
     ) -> tp.MaybeKnowledgeAsset:
         """Apply a function to each data item.
@@ -652,9 +654,14 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
                         {"i": i},
                         _kwargs["template_context"],
                     )
-                yield Task(func, d, *args, **_kwargs)
+                if return_iterator:
+                    yield Task(func, d, *args, **_kwargs).execute()
+                else:
+                    yield Task(func, d, *args, **_kwargs)
 
         tasks = _get_task_generator()
+        if return_iterator:
+            return tasks
         new_data = execute(tasks, size=len(self.data), **execute_kwargs)
         if new_data is NoResult:
             new_data = []
@@ -1034,7 +1041,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         If `return_type` is "item", returns the data item when matched. If `return_type` is "bool",
         returns True when matched.
 
-        Templates can also use the functions defined in `vectorbtpro.utils.search.search_config`.
+        Templates can also use the functions defined in `vectorbtpro.utils.search_.search_config`.
 
         They work on single values and sequences alike.
 
@@ -1177,10 +1184,10 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
 
         Uses `KnowledgeAsset.apply` on `vectorbtpro.utils.knowledge.base_asset_funcs.FindAssetFunc`.
 
-        Uses `vectorbtpro.utils.search.contains_in_obj` (keyword arguments are passed here)
+        Uses `vectorbtpro.utils.search_.contains_in_obj` (keyword arguments are passed here)
         to find any occurrences in each data item if `return_type` is "item" (returns the data item when matched),
         `return_type` is "field" (returns the field), or `return_type` is "bool" (returns True when matched).
-        For all other return types, uses `vectorbtpro.utils.search.find_in_obj` and `vectorbtpro.utils.search.find`.
+        For all other return types, uses `vectorbtpro.utils.search_.find_in_obj` and `vectorbtpro.utils.search_.find`.
 
         Target can be one or multiple data items. If there are multiple targets and `find_all` is True,
         the match function will return True only if all targets have been found.
@@ -1407,8 +1414,8 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
 
         Uses `KnowledgeAsset.apply` on `vectorbtpro.utils.knowledge.base_asset_funcs.FindReplaceAssetFunc`.
 
-        Uses `vectorbtpro.utils.search.find_in_obj` (keyword arguments are passed here) to find
-        occurrences in each data item. Then, uses `vectorbtpro.utils.search.replace_in_obj` to replace them.
+        Uses `vectorbtpro.utils.search_.find_in_obj` (keyword arguments are passed here) to find
+        occurrences in each data item. Then, uses `vectorbtpro.utils.search_.replace_in_obj` to replace them.
 
         Target can be one or multiple of data items, either as a list or a dictionary. If there are multiple
         targets and `find_all` is True, the match function will return True only if all targets have been found.
@@ -1536,7 +1543,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
 
         Set `changed_only` to True to keep only the data items that have been changed.
 
-        Keyword arguments are passed to `vectorbtpro.utils.search.flatten_obj`.
+        Keyword arguments are passed to `vectorbtpro.utils.search_.flatten_obj`.
 
         Usage:
             ```pycon
@@ -1584,7 +1591,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
 
         Set `changed_only` to True to keep only the data items that have been changed.
 
-        Keyword arguments are passed to `vectorbtpro.utils.search.unflatten_obj`.
+        Keyword arguments are passed to `vectorbtpro.utils.search_.unflatten_obj`.
 
         Usage:
             ```pycon
@@ -1752,6 +1759,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         show_progress: tp.Optional[bool] = None,
         pbar_kwargs: tp.KwargsLike = None,
         wrap: tp.Optional[bool] = None,
+        return_iterator: bool = False,
         **kwargs,
     ) -> tp.MaybeKnowledgeAsset:
         """Reduce data items.
@@ -1823,23 +1831,8 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         else:
             d1 = initializer
             total = len(self.data)
-        if show_progress is None:
-            show_progress = total > 1
-        prefix = get_caller_qualname().split(".")[-1]
-        if "_short_name" in asset_func_meta:
-            prefix += f"[{asset_func_meta['_short_name']}]"
-        elif isinstance(func, type):
-            prefix += f"[{func.__name__}]"
-        else:
-            prefix += f"[{type(func).__name__}]"
-        pbar_kwargs = flat_merge_dicts(
-            dict(
-                bar_id=get_caller_qualname(),
-                prefix=prefix,
-            ),
-            pbar_kwargs,
-        )
-        with ProgressBar(total=total, show_progress=show_progress, **pbar_kwargs) as pbar:
+            
+        def _get_d1_generator(d1):
             for i, d2 in enumerate(it):
                 if isinstance(func, CustomTemplate):
                     _template_context = flat_merge_dicts(
@@ -1865,6 +1858,30 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
                             _kwargs["template_context"],
                         )
                     d1 = func(d1, d2, *args, **_kwargs)
+                yield d1
+
+        d1s = _get_d1_generator(d1)
+        if return_iterator:
+            return d1s
+            
+        if show_progress is None:
+            show_progress = total > 1
+        prefix = get_caller_qualname().split(".")[-1]
+        if "_short_name" in asset_func_meta:
+            prefix += f"[{asset_func_meta['_short_name']}]"
+        elif isinstance(func, type):
+            prefix += f"[{func.__name__}]"
+        else:
+            prefix += f"[{type(func).__name__}]"
+        pbar_kwargs = flat_merge_dicts(
+            dict(
+                bar_id=get_caller_qualname(),
+                prefix=prefix,
+            ),
+            pbar_kwargs,
+        )
+        with ProgressBar(total=total, show_progress=show_progress, **pbar_kwargs) as pbar:
+            for d1 in d1s:
                 pbar.update()
         if wrap is None and asset_func_meta.get("_wrap", None) is not None:
             wrap = asset_func_meta["_wrap"]
@@ -2151,6 +2168,8 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         if self.data and not isinstance(self.data[0], StoreDocument):
             if to_documents_kwargs is None:
                 to_documents_kwargs = {}
+            if "return_iterator" not in to_documents_kwargs:
+                to_documents_kwargs["return_iterator"] = True
             documents = self.to_documents(**to_documents_kwargs)
             if wrap_documents is None:
                 wrap_documents = False

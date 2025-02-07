@@ -197,21 +197,21 @@ def get_pathlike_key(obj: tp.Any, key: tp.PathLikeKey, keep_path: bool = False) 
     Usage:
         ```pycon
         >>> obj = dict(a=[dict(b="cde")])
-        >>> vbt.utils.search.get_pathlike_key(obj, "a")
+        >>> vbt.utils.search_.get_pathlike_key(obj, "a")
         [{'b': 'cde'}]
 
-        >>> vbt.utils.search.get_pathlike_key(obj, ("a", 0))
-        >>> vbt.utils.search.get_pathlike_key(obj, "a.0")
-        >>> vbt.utils.search.get_pathlike_key(obj, "a[0]")
+        >>> vbt.utils.search_.get_pathlike_key(obj, ("a", 0))
+        >>> vbt.utils.search_.get_pathlike_key(obj, "a.0")
+        >>> vbt.utils.search_.get_pathlike_key(obj, "a[0]")
         {'b': 'cde'}
 
-        >>> vbt.utils.search.get_pathlike_key(obj, ("a", 0, "b"))
-        >>> vbt.utils.search.get_pathlike_key(obj, "a[0].b")
-        >>> vbt.utils.search.get_pathlike_key(obj, "a[0]['b']")
+        >>> vbt.utils.search_.get_pathlike_key(obj, ("a", 0, "b"))
+        >>> vbt.utils.search_.get_pathlike_key(obj, "a[0].b")
+        >>> vbt.utils.search_.get_pathlike_key(obj, "a[0]['b']")
         'cde'
 
-        >>> vbt.utils.search.get_pathlike_key(obj, ("a", 0, "b", 1))
-        >>> vbt.utils.search.get_pathlike_key(obj, "a[0].b[1]")
+        >>> vbt.utils.search_.get_pathlike_key(obj, ("a", 0, "b", 1))
+        >>> vbt.utils.search_.get_pathlike_key(obj, "a[0].b[1]")
         'd'
         ```
     """

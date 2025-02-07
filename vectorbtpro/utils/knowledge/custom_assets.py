@@ -29,7 +29,7 @@ from vectorbtpro.utils.parsing import get_func_arg_names
 from vectorbtpro.utils.path_ import check_mkdir, remove_dir, get_common_prefix, dir_tree_from_paths
 from vectorbtpro.utils.pbar import ProgressBar
 from vectorbtpro.utils.pickling import suggest_compression
-from vectorbtpro.utils.search import find, replace
+from vectorbtpro.utils.search_ import find, replace
 from vectorbtpro.utils.template import CustomTemplate
 
 __all__ = [
@@ -42,6 +42,7 @@ __all__ = [
     "find_examples",
     "find_assets",
     "chat_about",
+    "chat",
 ]
 
 
@@ -415,7 +416,7 @@ class VBTAsset(KnowledgeAsset):
         keys: tp.Optional[tp.List[str]] = None,
         links: tp.Optional[bool] = None,
     ) -> VBTAssetT:
-        """Minimize by keeping the most useful information.'
+        """Minimize by keeping the most useful information.
 
         If `minimize_links` is True, replaces redundant URL prefixes by templates that can
         be easily substituted later."""
@@ -630,7 +631,7 @@ class VBTAsset(KnowledgeAsset):
         )
 
     @classmethod
-    def get_top_parent_links(cls, data: tp.List[tp.Any]) -> tp.List[str]:
+    def get_top_parent_links(cls, data: tp.List) -> tp.List[str]:
         """Get links of top parents in data."""
         link_map = {d["link"]: dict(d) for d in data}
         top_parents = []
@@ -1835,7 +1836,7 @@ class PagesAsset(VBTAsset):
         If a link matches one of the links or link parts in `incl_pages`, it will be included,
         otherwise, it will be excluded if `incl_pages` is not empty. If a link matches one of the links
         or link parts in `excl_pages`, it will be excluded, otherwise, it will be included. Matching is
-        done using `vectorbtpro.utils.search.find` with `page_find_mode` used as `mode`.
+        done using `vectorbtpro.utils.search_.find` with `page_find_mode` used as `mode`.
         For example, using `excl_pages=["release-notes"]` won't search in release notes.
 
         If `up_aggregate` is True, will aggregate each set of headings into their parent if their number
@@ -2276,6 +2277,10 @@ class MessagesAsset(VBTAsset):
 
     _settings_path: tp.SettingsPath = "knowledge.assets.messages"
 
+    def latest_first(self, **kwargs) -> tp.MaybeMessagesAsset:
+        """Sort by timestamp in descending order."""
+        return self.sort(keys=self.get("timestamp"), ascending=False, **kwargs)
+
     def aggregate_messages(
         self: MessagesAssetT,
         metadata_format: tp.Optional[str] = None,
@@ -2424,10 +2429,13 @@ class MessagesAsset(VBTAsset):
         )
 
     @property
-    def lowest_aggregate_by(self) -> str:
+    def lowest_aggregate_by(self) -> tp.Optional[str]:
         """Get the lowest level that aggregates all messages."""
-        if len(self) == 1 and self[0].get("attachments", []):
-            return "message"
+        try:
+            if self.get("attachments"):
+                return "message"
+        except KeyError:
+            pass
         try:
             if len(set(self.get("block"))) == 1:
                 return "block"
@@ -2443,17 +2451,42 @@ class MessagesAsset(VBTAsset):
                 return "channel"
         except KeyError:
             pass
-        raise ValueError("Must provide by")
 
-    def aggregate(self, by: tp.Optional[str] = None, *args, **kwargs) -> tp.MaybeMessagesAsset:
+    @property
+    def highest_aggregate_by(self) -> tp.Optional[str]:
+        """Get the highest level that aggregates all messages."""
+        try:
+            if len(set(self.get("channel"))) == 1:
+                return "channel"
+        except KeyError:
+            pass
+        try:
+            if len(set(self.get("thread"))) == 1:
+                return "thread"
+        except KeyError:
+            pass
+        try:
+            if len(set(self.get("block"))) == 1:
+                return "block"
+        except KeyError:
+            pass
+        try:
+            if self.get("attachments"):
+                return "message"
+        except KeyError:
+            pass
+
+    def aggregate(self, by: str = "lowest", **kwargs) -> tp.MaybeMessagesAsset:
         """Aggregate by "message" (attachments), "block", "thread", or "channel".
 
         If `by` is None, uses `MessagesAsset.lowest_aggregate_by`."""
-        if by is None:
+        if by.lower() == "lowest":
             by = self.lowest_aggregate_by
+        elif by.lower() == "highest":
+            by = self.highest_aggregate_by
         if not by.lower().endswith("s"):
             by += "s"
-        return getattr(self, "aggregate_" + by.lower())(*args, **kwargs)
+        return getattr(self, "aggregate_" + by.lower())(**kwargs)
 
     def select_reference(self: MessagesAssetT, link: str, **kwargs) -> MessagesAssetT:
         """Select the reference message."""
@@ -2526,21 +2559,30 @@ class MessagesAsset(VBTAsset):
         return self.find_obj_mentions(obj, attr=attr, module=module, resolve=resolve, **kwargs)
 
 
+def is_obj_or_query_ref(obj_or_query: tp.MaybeList) -> bool:
+    """Return whether `obj_or_query` is a reference to an object."""
+    if isinstance(obj_or_query, str):
+        return all(segment.isidentifier() for segment in obj_or_query.split("."))
+    return True
+
+
 def find_api(
-    obj: tp.MaybeList,
+    obj_or_query: tp.Optional[tp.MaybeList] = None,
     *,
+    as_query: tp.Optional[bool] = None,
     attr: tp.Optional[str] = None,
     module: tp.Union[None, str, ModuleType] = None,
     resolve: bool = True,
     pages_asset: tp.Optional[tp.MaybeType[PagesAssetT]] = None,
     pull_kwargs: tp.KwargsLike = None,
+    aggregate: bool = False,
+    aggregate_kwargs: tp.KwargsLike = None,
     **kwargs,
 ) -> tp.MaybePagesAsset:
-    """Find API pages and headings relevant to object(s).
+    """Find API pages and headings relevant to object(s) or a query.
 
-    Based on `PagesAsset.find_obj_api`.
-
-    Use `pages_asset` to provide a custom subclass or instance of `PagesAsset`."""
+    If `obj_or_query` is None, returns all API pages. If it's a reference to an object, uses
+    `PagesAsset.find_obj_api`. Otherwise, uses `PagesAsset.rank`."""
     if pages_asset is None:
         pages_asset = PagesAsset
     if isinstance(pages_asset, type):
@@ -2548,25 +2590,40 @@ def find_api(
         if pull_kwargs is None:
             pull_kwargs = {}
         pages_asset = pages_asset.pull(**pull_kwargs)
-    checks.assert_instance_of(pages_asset, PagesAsset, arg_name="pages_asset")
-    return pages_asset.find_obj_api(obj, attr=attr, module=module, resolve=resolve, **kwargs)
+    else:
+        checks.assert_instance_of(pages_asset, PagesAsset, arg_name="pages_asset")
+    if aggregate:
+        if aggregate_kwargs is None:
+            aggregate_kwargs = {}
+        pages_asset = pages_asset.aggregate(**aggregate_kwargs)
+
+    if as_query is None:
+        as_query = obj_or_query is not None and not is_obj_or_query_ref(obj_or_query)
+    if obj_or_query is not None and not as_query:
+        return pages_asset.find_obj_api(obj_or_query, attr=attr, module=module, resolve=resolve, **kwargs)
+    pages_asset = pages_asset.filter(lambda x: "link" in x and "/api/" in x["link"])
+    if obj_or_query is None:
+        return pages_asset
+    return pages_asset.rank(obj_or_query, **kwargs)
 
 
 def find_docs(
-    obj: tp.MaybeList,
+    obj_or_query: tp.Optional[tp.MaybeList] = None,
     *,
+    as_query: tp.Optional[bool] = None,
     attr: tp.Optional[str] = None,
     module: tp.Union[None, str, ModuleType] = None,
     resolve: bool = True,
     pages_asset: tp.Optional[tp.MaybeType[PagesAssetT]] = None,
     pull_kwargs: tp.KwargsLike = None,
+    aggregate: bool = False,
+    aggregate_kwargs: tp.KwargsLike = None,
     **kwargs,
 ) -> tp.MaybePagesAsset:
-    """Find documentation pages and headings relevant to object(s).
+    """Find documentation pages and headings relevant to object(s) or a query.
 
-    Based on `PagesAsset.find_obj_docs`.
-
-    Use `pages_asset` to provide a custom subclass or instance of `PagesAsset`."""
+    If `obj_or_query` is None, returns all documentation pages. If it's a reference to an object, uses
+    `PagesAsset.find_obj_docs`. Otherwise, uses `PagesAsset.rank`."""
     if pages_asset is None:
         pages_asset = PagesAsset
     if isinstance(pages_asset, type):
@@ -2574,29 +2631,42 @@ def find_docs(
         if pull_kwargs is None:
             pull_kwargs = {}
         pages_asset = pages_asset.pull(**pull_kwargs)
-    checks.assert_instance_of(pages_asset, PagesAsset, arg_name="pages_asset")
-    return pages_asset.find_obj_docs(obj, attr=attr, module=module, resolve=resolve, **kwargs)
+    else:
+        checks.assert_instance_of(pages_asset, PagesAsset, arg_name="pages_asset")
+    if aggregate:
+        if aggregate_kwargs is None:
+            aggregate_kwargs = {}
+        pages_asset = pages_asset.aggregate(**aggregate_kwargs)
+
+    if as_query is None:
+        as_query = obj_or_query is not None and not is_obj_or_query_ref(obj_or_query)
+    if obj_or_query is not None and not as_query:
+        return pages_asset.find_obj_docs(obj_or_query, attr=attr, module=module, resolve=resolve, **kwargs)
+    pages_asset = pages_asset.filter(lambda x: "link" in x and "/api/" not in x["link"])
+    if obj_or_query is None:
+        return pages_asset
+    return pages_asset.rank(obj_or_query, **kwargs)
 
 
 def find_messages(
-    obj: tp.MaybeList,
+    obj_or_query: tp.Optional[tp.MaybeList] = None,
     *,
+    as_query: tp.Optional[bool] = None,
     attr: tp.Optional[str] = None,
     module: tp.Union[None, str, ModuleType] = None,
     resolve: bool = True,
     messages_asset: tp.Optional[tp.MaybeType[MessagesAssetT]] = None,
     pull_kwargs: tp.KwargsLike = None,
-    aggregate_messages: bool = True,
+    aggregate: tp.Union[bool, str] = "messages",
     aggregate_kwargs: tp.KwargsLike = None,
+    latest_first: bool = False,
+    shuffle: bool = False,
     **kwargs,
 ) -> tp.MaybeMessagesAsset:
-    """Find messages relevant to object(s).
+    """Find messages relevant to object(s) or a query.
 
-    Based on `MessagesAsset.find_obj_messages`.
-
-    Use `messages_asset` to provide a custom subclass or instance of `MessagesAsset`.
-
-    Set `aggregate_messages` to True to aggregate attachments into message content."""
+    If `obj_or_query` is None, returns all messages. If it's a reference to an object, uses
+    `MessagesAsset.find_obj_messages`. Otherwise, uses `MessagesAsset.rank`."""
     if messages_asset is None:
         messages_asset = MessagesAsset
     if isinstance(messages_asset, type):
@@ -2604,17 +2674,32 @@ def find_messages(
         if pull_kwargs is None:
             pull_kwargs = {}
         messages_asset = messages_asset.pull(**pull_kwargs)
-    checks.assert_instance_of(messages_asset, MessagesAsset, arg_name="messages_asset")
-    if aggregate_messages:
+    else:
+        checks.assert_instance_of(messages_asset, MessagesAsset, arg_name="messages_asset")
+    if aggregate:
         if aggregate_kwargs is None:
             aggregate_kwargs = {}
-        messages_asset = messages_asset.aggregate_messages(**aggregate_kwargs)
-    return messages_asset.find_obj_messages(obj, attr=attr, module=module, resolve=resolve, **kwargs)
+        if isinstance(aggregate, str) and "by" not in aggregate_kwargs:
+            aggregate_kwargs["by"] = aggregate
+        messages_asset = messages_asset.aggregate(**aggregate_kwargs)
+    if latest_first:
+        messages_asset = messages_asset.latest_first()
+    elif shuffle:
+        messages_asset = messages_asset.shuffle()
+
+    if as_query is None:
+        as_query = obj_or_query is not None and not is_obj_or_query_ref(obj_or_query)
+    if obj_or_query is not None and not as_query:
+        return messages_asset.find_obj_messages(obj_or_query, attr=attr, module=module, resolve=resolve, **kwargs)
+    if obj_or_query is None:
+        return messages_asset
+    return messages_asset.rank(obj_or_query, **kwargs)
 
 
 def find_examples(
-    obj: tp.MaybeList,
+    obj_or_query: tp.Optional[tp.MaybeList] = None,
     *,
+    as_query: tp.Optional[bool] = None,
     attr: tp.Optional[str] = None,
     module: tp.Union[None, str, ModuleType] = None,
     resolve: bool = True,
@@ -2623,25 +2708,25 @@ def find_examples(
     pages_asset: tp.Optional[tp.MaybeType[PagesAssetT]] = None,
     messages_asset: tp.Optional[tp.MaybeType[MessagesAssetT]] = None,
     pull_kwargs: tp.KwargsLike = None,
-    aggregate_messages: bool = True,
-    aggregate_kwargs: tp.KwargsLike = None,
+    aggregate_pages: bool = False,
+    aggregate_pages_kwargs: tp.KwargsLike = None,
+    aggregate_messages: tp.Union[bool, str] = "messages",
+    aggregate_messages_kwargs: tp.KwargsLike = None,
+    latest_messages_first: bool = False,
     shuffle_messages: bool = False,
+    find_kwargs: tp.KwargsLike = None,
     **kwargs,
 ) -> tp.MaybeVBTAsset:
-    """Find (code) examples relevant to object(s).
+    """Find (code) examples relevant to object(s) or a query.
 
-    Based on `VBTAsset.find_obj_mentions`.
+    If `obj_or_query` is None, returns all examples with `VBTAsset.find_code` or `VBTAsset.find`.
+    If it's a reference to an object, uses `VBTAsset.find_obj_mentions`. Otherwise, uses `VBTAsset.find_code`
+    or `VBTAsset.find` and then `VBTAsset.rank`. Keyword arguments are distributed among these methods
+    automatically, unless some keys cannot be found in both signatures. In such a case, the key will be
+    used for ranking. If this is not wanted, specify `find_kwargs`.
 
     By default, extracts code with text. Use `return_type="match"` to extract code without text,
-    or, for instance, `return_type="item"` to also get links.
-
-    Use `pages_asset` to provide a custom subclass or instance of `PagesAsset`. Use `messages_asset`
-    to provide a custom subclass or instance of `MessagesAsset`.
-
-    Set `aggregate_messages` to True to aggregate attachments into message content.
-
-    Set `shuffle_messages` to True to shuffle messages. Useful in chatting to increase diversity
-    when context is too big."""
+    or, for instance, `return_type="item"` to also get links."""
     if pages_asset is None:
         pages_asset = PagesAsset
     if isinstance(pages_asset, type):
@@ -2649,7 +2734,12 @@ def find_examples(
         if pull_kwargs is None:
             pull_kwargs = {}
         pages_asset = pages_asset.pull(**pull_kwargs)
-    checks.assert_instance_of(pages_asset, PagesAsset, arg_name="pages_asset")
+    else:
+        checks.assert_instance_of(pages_asset, PagesAsset, arg_name="pages_asset")
+    if aggregate_pages:
+        if aggregate_pages_kwargs is None:
+            aggregate_pages_kwargs = {}
+        pages_asset = pages_asset.aggregate(**aggregate_pages_kwargs)
     if messages_asset is None:
         messages_asset = MessagesAsset
     if isinstance(messages_asset, type):
@@ -2657,28 +2747,58 @@ def find_examples(
         if pull_kwargs is None:
             pull_kwargs = {}
         messages_asset = messages_asset.pull(**pull_kwargs)
-    checks.assert_instance_of(messages_asset, MessagesAsset, arg_name="messages_asset")
+    else:
+        checks.assert_instance_of(messages_asset, MessagesAsset, arg_name="messages_asset")
     if aggregate_messages:
-        if aggregate_kwargs is None:
-            aggregate_kwargs = {}
-        messages_asset = messages_asset.aggregate_messages(**aggregate_kwargs)
-    if shuffle_messages:
+        if aggregate_messages_kwargs is None:
+            aggregate_messages_kwargs = {}
+        if isinstance(aggregate_messages, str) and "by" not in aggregate_messages_kwargs:
+            aggregate_messages_kwargs["by"] = aggregate_messages
+        messages_asset = messages_asset.aggregate(**aggregate_messages_kwargs)
+    if latest_messages_first:
+        messages_asset = messages_asset.latest_first()
+    elif shuffle_messages:
         messages_asset = messages_asset.shuffle()
     combined_asset = pages_asset + messages_asset
-    return combined_asset.find_obj_mentions(
-        obj,
-        attr=attr,
-        module=module,
-        resolve=resolve,
-        as_code=as_code,
-        return_type=return_type,
-        **kwargs,
-    )
+
+    if as_query is None:
+        as_query = obj_or_query is not None and not is_obj_or_query_ref(obj_or_query)
+    if find_kwargs is None:
+        find_kwargs = {}
+    else:
+        find_kwargs = dict(find_kwargs)
+    find_kwargs["return_type"] = return_type
+    if obj_or_query is not None and not as_query:
+        return combined_asset.find_obj_mentions(
+            obj_or_query,
+            attr=attr,
+            module=module,
+            resolve=resolve,
+            as_code=as_code,
+            **find_kwargs,
+            **kwargs,
+        )
+    if as_code:
+        method = combined_asset.find_code
+    else:
+        method = combined_asset.find
+    if obj_or_query is None:
+        return method(**find_kwargs, **kwargs)
+    find_code_arg_names = set(get_func_arg_names(method))
+    rank_kwargs = {}
+    for k, v in kwargs.items():
+        if k in find_code_arg_names:
+            if k not in find_kwargs:
+                find_kwargs[k] = v
+        else:
+            rank_kwargs[k] = v
+    return method(**find_kwargs).rank(obj_or_query, **rank_kwargs)
 
 
 def find_assets(
-    obj: tp.MaybeList,
+    obj_or_query: tp.Optional[tp.MaybeList] = None,
     *,
+    as_query: tp.Optional[bool] = None,
     attr: tp.Optional[str] = None,
     module: tp.Union[None, str, ModuleType] = None,
     resolve: bool = True,
@@ -2686,24 +2806,27 @@ def find_assets(
     pages_asset: tp.Optional[tp.MaybeType[PagesAssetT]] = None,
     messages_asset: tp.Optional[tp.MaybeType[MessagesAssetT]] = None,
     pull_kwargs: tp.KwargsLike = None,
-    aggregate_messages: bool = True,
-    aggregate_kwargs: tp.KwargsLike = None,
+    aggregate_pages: bool = False,
+    aggregate_pages_kwargs: tp.KwargsLike = None,
+    aggregate_messages: tp.Union[bool, str] = "messages",
+    aggregate_messages_kwargs: tp.KwargsLike = None,
+    latest_messages_first: bool = False,
     shuffle_messages: bool = False,
-    minimize: tp.Optional[bool] = None,
-    minimize_pages: tp.Optional[bool] = None,
-    minimize_messages: tp.Optional[bool] = None,
-    combine: bool = True,
     api_kwargs: tp.KwargsLike = None,
     docs_kwargs: tp.KwargsLike = None,
     messages_kwargs: tp.KwargsLike = None,
     examples_kwargs: tp.KwargsLike = None,
+    minimize: tp.Optional[bool] = None,
+    minimize_pages: tp.Optional[bool] = None,
+    minimize_messages: tp.Optional[bool] = None,
     minimize_kwargs: tp.KwargsLike = None,
     minimize_pages_kwargs: tp.KwargsLike = None,
     minimize_messages_kwargs: tp.KwargsLike = None,
+    combine: bool = True,
     combine_kwargs: tp.KwargsLike = None,
-    **find_kwargs,
+    **kwargs,
 ) -> tp.MaybeDict[tp.VBTAsset]:
-    """Find all assets relevant to object(s).
+    """Find all assets relevant to object(s) or a query.
 
     Argument `asset_names` can be a list of asset names in any order. It defaults to "api", "docs",
     and "messages", It can also include ellipsis (`...`). For example, `["messages", ...]` puts
@@ -2719,23 +2842,21 @@ def find_assets(
     !!! note
         Examples usually overlap with other assets, thus they are excluded by default.
 
-    Use `pages_asset` to provide a custom subclass or instance of `PagesAsset`. Use `messages_asset`
-    to provide a custom subclass or instance of `MessagesAsset`. Both assets are reused among "find" calls.
-
-    Set `aggregate_messages` to True to aggregate attachments into message content.
-
-    Set `shuffle_messages` to True to shuffle messages. Useful in chatting to increase diversity
-    when context is too big.
-
     Set `combine` to True to combine all assets into a single asset. Uses
     `vectorbtpro.utils.knowledge.base_assets.KnowledgeAsset.combine` with `combine_kwargs`.
+    If `obj_or_query` is a query, will rank the combined asset. Otherwise, will rank each individual asset.
 
     Set `minimize` to True (or `minimize_pages` for pages and `minimize_messages` for messages)
     in order to minimize to remove fields that aren't relevant for chatting.
     It defaults to True if `combine` is True, otherwise, it defaults to False. Uses `VBTAsset.minimize`
     with `minimize_kwargs`, `PagesAsset.minimize` with `minimize_pages_kwargs`, and `MessagesAsset.minimize`
     with `minimize_messages_kwargs`. Arguments `minimize_pages_kwargs` and `minimize_messages_kwargs`
-    are merged over `minimize_kwargs`."""
+    are merged over `minimize_kwargs`.
+
+    Keyword arguments are passed to all functions (except for `find_api` when `obj_or_query` is an object
+    since it doesn't share common arguments with other three functions), unless `combine` and `as_query`
+    are both True; in this case they are passed to `VBTAsset.rank`. Use specialized arguments like
+    `api_kwargs` to provide keyword arguments to the respective function."""
     if pages_asset is None:
         pages_asset = PagesAsset
     if isinstance(pages_asset, type):
@@ -2743,7 +2864,12 @@ def find_assets(
         if pull_kwargs is None:
             pull_kwargs = {}
         pages_asset = pages_asset.pull(**pull_kwargs)
-    checks.assert_instance_of(pages_asset, PagesAsset, arg_name="pages_asset")
+    else:
+        checks.assert_instance_of(pages_asset, PagesAsset, arg_name="pages_asset")
+    if aggregate_pages:
+        if aggregate_pages_kwargs is None:
+            aggregate_pages_kwargs = {}
+        pages_asset = pages_asset.aggregate(**aggregate_pages_kwargs)
     if messages_asset is None:
         messages_asset = MessagesAsset
     if isinstance(messages_asset, type):
@@ -2751,19 +2877,39 @@ def find_assets(
         if pull_kwargs is None:
             pull_kwargs = {}
         messages_asset = messages_asset.pull(**pull_kwargs)
-    checks.assert_instance_of(messages_asset, MessagesAsset, arg_name="messages_asset")
+    else:
+        checks.assert_instance_of(messages_asset, MessagesAsset, arg_name="messages_asset")
     if aggregate_messages:
-        if aggregate_kwargs is None:
-            aggregate_kwargs = {}
-        messages_asset = messages_asset.aggregate_messages(**aggregate_kwargs)
-    if shuffle_messages:
+        if aggregate_messages_kwargs is None:
+            aggregate_messages_kwargs = {}
+        if isinstance(aggregate_messages, str) and "by" not in aggregate_messages_kwargs:
+            aggregate_messages_kwargs["by"] = aggregate_messages
+        messages_asset = messages_asset.aggregate(**aggregate_messages_kwargs)
+    if latest_messages_first:
+        messages_asset = messages_asset.latest_first()
+    elif shuffle_messages:
         messages_asset = messages_asset.shuffle()
 
-    if api_kwargs is None:
-        api_kwargs = {}
-    docs_kwargs = merge_dicts(find_kwargs, docs_kwargs)
-    messages_kwargs = merge_dicts(find_kwargs, messages_kwargs)
-    examples_kwargs = merge_dicts(find_kwargs, examples_kwargs)
+    if as_query is None:
+        as_query = obj_or_query is not None and not is_obj_or_query_ref(obj_or_query)
+    if combine and as_query and obj_or_query is not None:
+        if api_kwargs is None:
+            api_kwargs = {}
+        if docs_kwargs is None:
+            docs_kwargs = {}
+        if messages_kwargs is None:
+            messages_kwargs = {}
+        if examples_kwargs is None:
+            examples_kwargs = {}
+    else:
+        if as_query:
+            api_kwargs = merge_dicts(kwargs, api_kwargs)
+        else:
+            if api_kwargs is None:
+                api_kwargs = {}
+        docs_kwargs = merge_dicts(kwargs, docs_kwargs)
+        messages_kwargs = merge_dicts(kwargs, messages_kwargs)
+        examples_kwargs = merge_dicts(kwargs, examples_kwargs)
 
     asset_dict = {}
     all_asset_names = ["api", "docs", "messages", "examples"]
@@ -2791,35 +2937,40 @@ def find_assets(
     for asset_name in asset_names:
         if asset_name == "api":
             asset = find_api(
-                obj,
+                None if combine and as_query else obj_or_query,
+                as_query=as_query,
                 attr=attr,
                 module=module,
                 resolve=resolve,
                 pages_asset=pages_asset,
+                aggregate=False,
                 **api_kwargs,
             )
             if len(asset) > 0:
                 asset_dict[asset_name] = asset
         elif asset_name == "docs":
             asset = find_docs(
-                obj,
+                None if combine and as_query else obj_or_query,
+                as_query=as_query,
                 attr=attr,
                 module=module,
                 resolve=resolve,
                 pages_asset=pages_asset,
+                aggregate=False,
                 **docs_kwargs,
             )
             if len(asset) > 0:
                 asset_dict[asset_name] = asset
         elif asset_name == "messages":
             asset = find_messages(
-                obj,
+                None if combine and as_query else obj_or_query,
+                as_query=as_query,
                 attr=attr,
                 module=module,
                 resolve=resolve,
                 messages_asset=messages_asset,
-                aggregate_messages=False,
-                aggregate_kwargs=aggregate_kwargs,
+                aggregate=False,
+                latest_first=False,
                 **messages_kwargs,
             )
             if len(asset) > 0:
@@ -2828,22 +2979,23 @@ def find_assets(
             if examples_kwargs is None:
                 examples_kwargs = {}
             asset = find_examples(
-                obj,
+                None if combine and as_query else obj_or_query,
+                as_query=as_query,
                 attr=attr,
                 module=module,
                 resolve=resolve,
                 pages_asset=pages_asset,
                 messages_asset=messages_asset,
                 aggregate_messages=False,
-                aggregate_kwargs=aggregate_kwargs,
-                shuffle_messages=False,
+                aggregate_pages=False,
+                latest_messages_first=False,
                 **examples_kwargs,
             )
             if len(asset) > 0:
                 asset_dict[asset_name] = asset
 
     if minimize is None:
-        minimize = combine
+        minimize = combine and not as_query
     if minimize:
         if minimize_kwargs is None:
             minimize_kwargs = {}
@@ -2868,10 +3020,14 @@ def find_assets(
         if len(asset_dict) >= 2:
             if combine_kwargs is None:
                 combine_kwargs = {}
-            return VBTAsset.combine(*asset_dict.values(), **combine_kwargs)
-        if len(asset_dict) == 1:
-            return list(asset_dict.values())[0]
-        return VBTAsset([])
+            combined_asset = VBTAsset.combine(*asset_dict.values(), **combine_kwargs)
+        elif len(asset_dict) == 1:
+            combined_asset = list(asset_dict.values())[0]
+        else:
+            combined_asset = VBTAsset()
+        if combined_asset and as_query and obj_or_query is not None:
+            combined_asset = combined_asset.rank(obj_or_query, **kwargs)
+        return combined_asset
     return asset_dict
 
 
@@ -2881,17 +3037,20 @@ def chat_about(
     chat_history: tp.ChatHistory = None,
     *,
     asset_names: tp.Optional[tp.MaybeIterable[str]] = "examples",
+    latest_messages_first: bool = True,
     shuffle_messages: tp.Optional[bool] = None,
     shuffle: tp.Optional[bool] = None,
-    find_kwargs: tp.KwargsLike = None,
+    find_assets_kwargs: tp.KwargsLike = None,
     **kwargs,
 ) -> tp.ChatOutput:
     """Chat about object(s).
 
+    By default, uses examples only.
+
     Uses `find_assets` with `combine=True` and `vectorbtpro.utils.knowledge.base_assets.KnowledgeAsset.chat`.
     Keyword arguments are distributed among these two methods automatically, unless some keys cannot be
     found in both signatures. In such a case, the key will be used for chatting. If this is not wanted,
-    specify the `find_assets`-related arguments explicitly with `find_kwargs`.
+    specify the `find_assets`-related arguments explicitly with `find_assets_kwargs`.
 
     If `shuffle` is True, shuffles the combined asset. By default, shuffles only messages (`shuffle=False`
     and `shuffle_messages=True`). If `shuffle` is False, shuffles neither messages nor combined asset."""
@@ -2903,25 +3062,94 @@ def chat_about(
         if shuffle_messages is None:
             shuffle_messages = True
     find_arg_names = set(get_func_arg_names(find_assets))
-    if find_kwargs is None:
-        find_kwargs = {}
+    if find_assets_kwargs is None:
+        find_assets_kwargs = {}
     else:
-        find_kwargs = dict(find_kwargs)
+        find_assets_kwargs = dict(find_assets_kwargs)
     chat_kwargs = {}
     for k, v in kwargs.items():
         if k in find_arg_names:
-            if k not in find_kwargs:
-                find_kwargs[k] = v
+            if k not in find_assets_kwargs:
+                find_assets_kwargs[k] = v
         else:
             chat_kwargs[k] = v
-
     asset = find_assets(
         obj,
+        as_query=False,
         asset_names=asset_names,
         combine=True,
+        latest_messages_first=latest_messages_first,
         shuffle_messages=shuffle_messages,
-        **find_kwargs,
+        **find_assets_kwargs,
     )
     if shuffle:
         asset = asset.shuffle()
     return asset.chat(message, chat_history, **chat_kwargs)
+
+
+def chat(
+    query: str,
+    chat_history: tp.ChatHistory = None,
+    *,
+    latest_messages_first: bool = True,
+    shuffle_messages: tp.Optional[bool] = None,
+    shuffle: tp.Optional[bool] = None,
+    find_assets_kwargs: tp.KwargsLike = None,
+    rank: tp.Optional[bool] = True,
+    top_k: tp.TopKLike = 100,
+    cutoff: tp.Optional[float] = 0.5,
+    return_chunks: tp.Optional[bool] = True,
+    wrap_documents: tp.Optional[bool] = True,
+    **kwargs,
+) -> tp.ChatOutput:
+    """Chat about a query.
+
+    By default, uses API, documentation, and messages.
+
+    See `chat_about` for keyword arguments."""
+    if shuffle is not None:
+        if shuffle_messages is None:
+            shuffle_messages = False
+    else:
+        shuffle = False
+        if shuffle_messages is None:
+            shuffle_messages = True
+    find_arg_names = set(get_func_arg_names(find_assets))
+    if find_assets_kwargs is None:
+        find_assets_kwargs = {}
+    else:
+        find_assets_kwargs = dict(find_assets_kwargs)
+    chat_kwargs = {}
+    for k, v in kwargs.items():
+        if k in find_arg_names:
+            if k not in find_assets_kwargs:
+                find_assets_kwargs[k] = v
+        else:
+            chat_kwargs[k] = v
+    asset = find_assets(
+        None,
+        as_query=True,
+        combine=True,
+        latest_messages_first=latest_messages_first,
+        shuffle_messages=shuffle_messages,
+        **find_assets_kwargs,
+    )
+    if shuffle:
+        asset = asset.shuffle()
+    rank_kwargs = kwargs.pop("rank_kwargs", {})
+    if rank_kwargs is None:
+        rank_kwargs = {}
+    else:
+        rank_kwargs = dict(rank_kwargs)
+    if "wrap_documents" not in rank_kwargs:
+        rank_kwargs["wrap_documents"] = wrap_documents
+    return asset.chat(
+        query,
+        chat_history,
+        rank=rank,
+        top_k=top_k,
+        cutoff=cutoff,
+        return_chunks=return_chunks,
+        rank_kwargs=rank_kwargs,
+        **chat_kwargs,
+    )

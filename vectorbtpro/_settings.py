@@ -1972,7 +1972,7 @@ search = frozen_cfg(
 """_"""
 
 __pdoc__["search"] = Sub(
-    """Sub-config with settings applied across `vectorbtpro.utils.search`.
+    """Sub-config with settings applied across `vectorbtpro.utils.search_`.
 
 ```python
 ${config_doc}
@@ -2294,14 +2294,10 @@ $context
             openai=flex_cfg(
                 model="text-embedding-3-small",
                 batch_size=512,
-                show_progress=None,
-                pbar_kwargs=flex_cfg(),
             ),
             litellm=flex_cfg(
                 model="text-embedding-3-small",
                 batch_size=512,
-                show_progress=None,
-                pbar_kwargs=flex_cfg(),
             ),
             llama_index=flex_cfg(
                 embedding="openai",
@@ -2346,7 +2342,7 @@ $context
             llama_index=flex_cfg(
                 node_parser="sentence",
                 node_parser_configs=flex_cfg(),
-            )
+            ),
         ),
         obj_store="memory",
         store_id="default",
@@ -2412,7 +2408,18 @@ $context
                 excl_metadata=RepEval("asset_cls.get_setting('minimize_keys')"),
                 excl_embed_metadata=True,
             ),
-            minimize_keys=[],
+            minimize_keys=[
+                "parent",
+                "children",
+                "type",
+                "icon",
+                "tags",
+                "block",
+                "thread",
+                "replies",
+                "mentions",
+                "reactions",
+            ],
             minimize_links=False,
             minimize_link_rules=flex_cfg(
                 {
@@ -2476,7 +2483,6 @@ $context
             html_dir=RepEval("Path(release_dir) / 'pages' / 'html'"),
             asset_name="pages.json.zip",
             token_required=True,
-            minimize_keys=["parent", "children", "type", "icon", "tags"],
             append_obj_type=True,
             append_github_link=True,
             use_parent=None,
@@ -2506,7 +2512,6 @@ $context
             html_dir=RepEval("Path(release_dir) / 'messages' / 'html'"),
             asset_name="messages.json.zip",
             token_required=True,
-            minimize_keys=["block", "thread", "replies", "mentions", "reactions"],
         ),
     ),
 )
@@ -2594,8 +2599,8 @@ class SettingsConfig(Config):
     def get(self, key: tp.PathLikeKey, default: tp.Any = MISSING) -> tp.Any:
         """Get setting(s) under a path.
 
-        See `vectorbtpro.utils.search.get_pathlike_key` for path format."""
-        from vectorbtpro.utils.search import get_pathlike_key
+        See `vectorbtpro.utils.search_.get_pathlike_key` for path format."""
+        from vectorbtpro.utils.search_ import get_pathlike_key
 
         try:
             return get_pathlike_key(self, key)
@@ -2607,8 +2612,8 @@ class SettingsConfig(Config):
     def set(self, key: tp.PathLikeKey, value: tp.Any, default_config_type: tp.Type[Config] = flex_cfg) -> None:
         """Set setting(s) under a path.
 
-        See `vectorbtpro.utils.search.get_pathlike_key` for path format."""
-        from vectorbtpro.utils.search import resolve_pathlike_key
+        See `vectorbtpro.utils.search_.get_pathlike_key` for path format."""
+        from vectorbtpro.utils.search_ import resolve_pathlike_key
 
         tokens = resolve_pathlike_key(key)
         obj = self

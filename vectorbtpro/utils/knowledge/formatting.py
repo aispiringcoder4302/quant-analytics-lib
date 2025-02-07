@@ -22,7 +22,7 @@ from vectorbtpro import _typing as tp
 from vectorbtpro.utils import checks
 from vectorbtpro.utils.config import Configured, merge_dicts, flat_merge_dicts
 from vectorbtpro.utils.module_ import get_caller_qualname
-from vectorbtpro.utils.path_ import check_mkdir, remove_dir
+from vectorbtpro.utils.path_ import check_mkdir
 from vectorbtpro.utils.template import CustomTemplate, Sub, RepFunc
 
 try:
@@ -258,9 +258,6 @@ def format_html(
     )
 
 
-ContentFormatterT = tp.TypeVar("ContentFormatterT", bound="ContentFormatter")
-
-
 class ContentFormatter(Configured):
     """Class for formatting content.
 
@@ -484,7 +481,7 @@ class ContentFormatter(Configured):
         if self.close_output and self.output_to is not None:
             self.output_to.close()
 
-    def __enter__(self: ContentFormatterT) -> ContentFormatterT:
+    def __enter__(self) -> tp.Self:
         self.initialize()
         return self
 

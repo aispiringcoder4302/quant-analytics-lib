@@ -2580,9 +2580,6 @@ def enable_caching() -> None:
     caching_cfg["disable_machinery"] = False
 
 
-CachingDisabledT = tp.TypeVar("CachingDisabledT", bound="CachingDisabled")
-
-
 class CachingDisabled(Base):
     """Context manager to disable caching."""
 
@@ -2679,7 +2676,7 @@ class CachingDisabled(Base):
         """Initial setup settings."""
         return self._init_setup_settings
 
-    def __enter__(self: CachingDisabledT) -> CachingDisabledT:
+    def __enter__(self) -> tp.Self:
         if self.query_like is None:
             from vectorbtpro._settings import settings
 
@@ -2768,9 +2765,6 @@ def with_caching_disabled(*args, **caching_disabled_kwargs) -> tp.Callable:
     elif len(args) == 1:
         return decorator(args[0])
     raise ValueError("Either function or keyword arguments must be passed")
-
-
-CachingEnabledT = tp.TypeVar("CachingEnabledT", bound="CachingEnabled")
 
 
 class CachingEnabled(Base):
@@ -2869,7 +2863,7 @@ class CachingEnabled(Base):
         """Initial setup settings."""
         return self._init_setup_settings
 
-    def __enter__(self: CachingEnabledT) -> CachingEnabledT:
+    def __enter__(self) -> tp.Self:
         if self.query_like is None:
             from vectorbtpro._settings import settings
 

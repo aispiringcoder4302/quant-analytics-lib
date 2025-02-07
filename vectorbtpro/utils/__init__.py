@@ -50,7 +50,7 @@ if TYPE_CHECKING:
     from vectorbtpro.utils.random_ import *
     from vectorbtpro.utils.requests_ import *
     from vectorbtpro.utils.schedule_ import *
-    from vectorbtpro.utils.search import *
+    from vectorbtpro.utils.search_ import *
     from vectorbtpro.utils.selection import *
     from vectorbtpro.utils.tagging import *
     from vectorbtpro.utils.telegram import *

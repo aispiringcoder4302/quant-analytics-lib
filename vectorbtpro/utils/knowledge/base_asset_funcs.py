@@ -13,7 +13,7 @@
 import attr
 
 from vectorbtpro import _typing as tp
-from vectorbtpro.utils import checks, search
+from vectorbtpro.utils import checks, search_
 from vectorbtpro.utils.attr_ import MISSING
 from vectorbtpro.utils.base import Base
 from vectorbtpro.utils.config import merge_dicts, flat_merge_dicts
@@ -83,9 +83,9 @@ class GetAssetFunc(AssetFunc):
 
         if path is not None:
             if isinstance(path, list):
-                path = [search.resolve_pathlike_key(p) for p in path]
+                path = [search_.resolve_pathlike_key(p) for p in path]
             else:
-                path = search.resolve_pathlike_key(path)
+                path = search_.resolve_pathlike_key(path)
         if source is not None:
             if isinstance(source, str):
                 source = RepEval(source)
@@ -123,7 +123,7 @@ class GetAssetFunc(AssetFunc):
                 xs = []
                 for p in path:
                     try:
-                        xs.append(search.get_pathlike_key(x, p, keep_path=True))
+                        xs.append(search_.get_pathlike_key(x, p, keep_path=True))
                     except (KeyError, IndexError, AttributeError) as e:
                         if not skip_missing:
                             raise e
@@ -133,7 +133,7 @@ class GetAssetFunc(AssetFunc):
                 x = merge_dicts(*xs)
             else:
                 try:
-                    x = search.get_pathlike_key(x, path, keep_path=keep_path)
+                    x = search_.get_pathlike_key(x, path, keep_path=keep_path)
                 except (KeyError, IndexError, AttributeError) as e:
                     if not skip_missing:
                         raise e
@@ -191,9 +191,9 @@ class SetAssetFunc(AssetFunc):
                 value = RepFunc(value)
         if path is not None:
             if isinstance(path, list):
-                paths = [search.resolve_pathlike_key(p) for p in path]
+                paths = [search_.resolve_pathlike_key(p) for p in path]
             else:
-                paths = [search.resolve_pathlike_key(path)]
+                paths = [search_.resolve_pathlike_key(path)]
         else:
             paths = [None]
         return (), {
@@ -224,7 +224,7 @@ class SetAssetFunc(AssetFunc):
             x = d
             if p is not None:
                 try:
-                    x = search.get_pathlike_key(x, p[:-1])
+                    x = search_.get_pathlike_key(x, p[:-1])
                 except (KeyError, IndexError, AttributeError) as e:
                     if not skip_missing:
                         raise e
@@ -240,7 +240,7 @@ class SetAssetFunc(AssetFunc):
             v = value.substitute(_template_context, eval_id="value")
             if checks.is_function(v):
                 v = v(x)
-            d = search.set_pathlike_key(d, p, v, make_copy=make_copy, prev_keys=prev_keys)
+            d = search_.set_pathlike_key(d, p, v, make_copy=make_copy, prev_keys=prev_keys)
         if not changed_only or len(prev_keys) > 0:
             return d
         return NoResult
@@ -272,9 +272,9 @@ class RemoveAssetFunc(AssetFunc):
         changed_only = asset_cls.resolve_setting(changed_only, "changed_only")
 
         if isinstance(path, list):
-            paths = [search.resolve_pathlike_key(p) for p in path]
+            paths = [search_.resolve_pathlike_key(p) for p in path]
         else:
-            paths = [search.resolve_pathlike_key(path)]
+            paths = [search_.resolve_pathlike_key(path)]
         return (), {
             **dict(
                 paths=paths,
@@ -297,7 +297,7 @@ class RemoveAssetFunc(AssetFunc):
         prev_keys = []
         for p in paths:
             try:
-                d = search.remove_pathlike_key(d, p, make_copy=make_copy, prev_keys=prev_keys)
+                d = search_.remove_pathlike_key(d, p, make_copy=make_copy, prev_keys=prev_keys)
             except (KeyError, IndexError, AttributeError) as e:
                 if not skip_missing:
                     raise e
@@ -338,13 +338,13 @@ class MoveAssetFunc(AssetFunc):
             new_path = list(path.values())
             path = list(path.keys())
         if isinstance(path, list):
-            paths = [search.resolve_pathlike_key(p) for p in path]
+            paths = [search_.resolve_pathlike_key(p) for p in path]
         else:
-            paths = [search.resolve_pathlike_key(path)]
+            paths = [search_.resolve_pathlike_key(path)]
         if isinstance(new_path, list):
-            new_paths = [search.resolve_pathlike_key(p) for p in new_path]
+            new_paths = [search_.resolve_pathlike_key(p) for p in new_path]
         else:
-            new_paths = [search.resolve_pathlike_key(new_path)]
+            new_paths = [search_.resolve_pathlike_key(new_path)]
         if len(paths) != len(new_paths):
             raise ValueError("Number of new paths must match number of paths")
         return (), {
@@ -371,9 +371,9 @@ class MoveAssetFunc(AssetFunc):
         prev_keys = []
         for i, p in enumerate(paths):
             try:
-                x = search.get_pathlike_key(d, p)
-                d = search.remove_pathlike_key(d, p, make_copy=make_copy, prev_keys=prev_keys)
-                d = search.set_pathlike_key(d, new_paths[i], x, make_copy=make_copy, prev_keys=prev_keys)
+                x = search_.get_pathlike_key(d, p)
+                d = search_.remove_pathlike_key(d, p, make_copy=make_copy, prev_keys=prev_keys)
+                d = search_.set_pathlike_key(d, new_paths[i], x, make_copy=make_copy, prev_keys=prev_keys)
             except (KeyError, IndexError, AttributeError) as e:
                 if not skip_missing:
                     raise e
@@ -412,13 +412,13 @@ class RenameAssetFunc(MoveAssetFunc):
             new_token = list(path.values())
             path = list(path.keys())
         if isinstance(path, list):
-            paths = [search.resolve_pathlike_key(p) for p in path]
+            paths = [search_.resolve_pathlike_key(p) for p in path]
         else:
-            paths = [search.resolve_pathlike_key(path)]
+            paths = [search_.resolve_pathlike_key(path)]
         if isinstance(new_token, list):
-            new_tokens = [search.resolve_pathlike_key(t) for t in new_token]
+            new_tokens = [search_.resolve_pathlike_key(t) for t in new_token]
         else:
-            new_tokens = [search.resolve_pathlike_key(new_token)]
+            new_tokens = [search_.resolve_pathlike_key(new_token)]
         if len(paths) != len(new_tokens):
             raise ValueError("Number of new tokens must match number of paths")
         new_paths = []
@@ -496,9 +496,9 @@ class ReorderAssetFunc(AssetFunc):
                 new_order = RepFunc(new_order)
         if path is not None:
             if isinstance(path, list):
-                paths = [search.resolve_pathlike_key(p) for p in path]
+                paths = [search_.resolve_pathlike_key(p) for p in path]
             else:
-                paths = [search.resolve_pathlike_key(path)]
+                paths = [search_.resolve_pathlike_key(path)]
         else:
             paths = [None]
         return (), {
@@ -529,7 +529,7 @@ class ReorderAssetFunc(AssetFunc):
             x = d
             if p is not None:
                 try:
-                    x = search.get_pathlike_key(x, p)
+                    x = search_.get_pathlike_key(x, p)
                 except (KeyError, IndexError, AttributeError) as e:
                     if not skip_missing:
                         raise e
@@ -555,7 +555,7 @@ class ReorderAssetFunc(AssetFunc):
                     x = type(x)(*reorder_list(x, _new_order, skip_missing=skip_missing))
                 else:
                     x = type(x)(reorder_list(x, _new_order, skip_missing=skip_missing))
-            d = search.set_pathlike_key(d, p, x, make_copy=make_copy, prev_keys=prev_keys)
+            d = search_.set_pathlike_key(d, p, x, make_copy=make_copy, prev_keys=prev_keys)
         if not changed_only or len(prev_keys) > 0:
             return d
         return NoResult
@@ -615,7 +615,7 @@ class QueryAssetFunc(AssetFunc):
             {
                 "d": d,
                 "x": d,
-                **search.search_config,
+                **search_.search_config,
                 **(d if isinstance(d, dict) else {}),
             },
             template_context,
@@ -678,9 +678,9 @@ class FindAssetFunc(AssetFunc):
 
         if path is not None:
             if isinstance(path, list):
-                path = [search.resolve_pathlike_key(p) for p in path]
+                path = [search_.resolve_pathlike_key(p) for p in path]
             else:
-                path = search.resolve_pathlike_key(path)
+                path = search_.resolve_pathlike_key(path)
         if per_path:
             if not isinstance(target, list):
                 target = [target]
@@ -703,7 +703,7 @@ class FindAssetFunc(AssetFunc):
             elif not isinstance(source, CustomTemplate):
                 raise TypeError(f"Source must be a string, function, or template, not {type(source)}")
         dump_kwargs = DumpAssetFunc.resolve_dump_kwargs(**dump_kwargs)
-        contains_arg_names = set(get_func_arg_names(search.contains_in_obj))
+        contains_arg_names = set(get_func_arg_names(search_.contains_in_obj))
         search_kwargs = {k: kwargs.pop(k) for k in list(kwargs.keys()) if k in contains_arg_names}
         if "excl_types" not in search_kwargs:
             search_kwargs["excl_types"] = (tuple, set, frozenset)
@@ -737,17 +737,17 @@ class FindAssetFunc(AssetFunc):
     ) -> bool:
         """Match function for `FindAssetFunc.call`.
 
-        Uses `vectorbtpro.utils.search.find` with `return_type="bool"` for text,
+        Uses `vectorbtpro.utils.search_.find` with `return_type="bool"` for text,
         and equality checks for other types.
 
         Target can be a function taking the value and returning a boolean. Target can also be an
-        instance of `vectorbtpro.utils.search.Not` for negation."""
+        instance of `vectorbtpro.utils.search_.Not` for negation."""
         if not isinstance(target, list):
             targets = [target]
         else:
             targets = target
         for target in targets:
-            if isinstance(target, search.Not):
+            if isinstance(target, search_.Not):
                 target = target.value
                 negation = True
             else:
@@ -776,7 +776,7 @@ class FindAssetFunc(AssetFunc):
                         return not negation
                     continue
             elif isinstance(d, str) and isinstance(target, str):
-                if search.find(target, d, return_type="bool", **kwargs):
+                if search_.find(target, d, return_type="bool", **kwargs):
                     if (negation and find_all) or (not negation and not find_all):
                         return not negation
                     continue
@@ -823,7 +823,7 @@ class FindAssetFunc(AssetFunc):
             for i, p in enumerate(path):
                 x = d
                 try:
-                    x = search.get_pathlike_key(x, p, keep_path=keep_path)
+                    x = search_.get_pathlike_key(x, p, keep_path=keep_path)
                 except (KeyError, IndexError, AttributeError) as e:
                     if not skip_missing:
                         raise e
@@ -846,12 +846,12 @@ class FindAssetFunc(AssetFunc):
                     x = dump(x, **dump_kwargs)
                 t = target[i]
                 if return_type.lower() in ("item", "bool"):
-                    if isinstance(t, search.Not):
+                    if isinstance(t, search_.Not):
                         t = t.value
                         negation = True
                     else:
                         negation = False
-                    if search.contains_in_obj(
+                    if search_.contains_in_obj(
                         x,
                         cls.match_func,
                         target=t,
@@ -877,7 +877,7 @@ class FindAssetFunc(AssetFunc):
                                 return NoResult if return_type.lower() == "item" else False
                             continue
                 else:
-                    path_dct = search.find_in_obj(
+                    path_dct = search_.find_in_obj(
                         x,
                         cls.match_func,
                         target=t,
@@ -889,7 +889,7 @@ class FindAssetFunc(AssetFunc):
                         if find_all:
                             return {} if return_path else []
                         continue
-                    if isinstance(t, search.Not):
+                    if isinstance(t, search_.Not):
                         raise TypeError("Target cannot be negated here")
                     if not isinstance(t, str):
                         raise ValueError("Target must be string")
@@ -897,7 +897,7 @@ class FindAssetFunc(AssetFunc):
                         if not isinstance(v, str):
                             raise ValueError("Matched value must be string")
                         _return_type = "bool" if return_type.lower() == "field" else return_type
-                        matches = search.find(t, v, return_type=_return_type, **kwargs)
+                        matches = search_.find(t, v, return_type=_return_type, **kwargs)
                         if return_path:
                             if k not in new_path_dct:
                                 new_path_dct[k] = []
@@ -927,7 +927,7 @@ class FindAssetFunc(AssetFunc):
                     xs = []
                     for p in path:
                         try:
-                            xs.append(search.get_pathlike_key(x, p, keep_path=True))
+                            xs.append(search_.get_pathlike_key(x, p, keep_path=True))
                         except (KeyError, IndexError, AttributeError) as e:
                             if not skip_missing:
                                 raise e
@@ -941,7 +941,7 @@ class FindAssetFunc(AssetFunc):
                     x = merge_dicts(*xs)
                 else:
                     try:
-                        x = search.get_pathlike_key(x, path, keep_path=keep_path)
+                        x = search_.get_pathlike_key(x, path, keep_path=keep_path)
                     except (KeyError, IndexError, AttributeError) as e:
                         if not skip_missing:
                             raise e
@@ -967,7 +967,7 @@ class FindAssetFunc(AssetFunc):
             if not isinstance(x, str) and in_dumps:
                 x = dump(x, **dump_kwargs)
             if return_type.lower() == "item":
-                if search.contains_in_obj(
+                if search_.contains_in_obj(
                     x,
                     cls.match_func,
                     target=target,
@@ -978,7 +978,7 @@ class FindAssetFunc(AssetFunc):
                     return d
                 return NoResult
             elif return_type.lower() == "bool":
-                return search.contains_in_obj(
+                return search_.contains_in_obj(
                     x,
                     cls.match_func,
                     target=target,
@@ -987,7 +987,7 @@ class FindAssetFunc(AssetFunc):
                     **kwargs,
                 )
             else:
-                path_dct = search.find_in_obj(
+                path_dct = search_.find_in_obj(
                     x,
                     cls.match_func,
                     target=target,
@@ -1004,7 +1004,7 @@ class FindAssetFunc(AssetFunc):
                 new_path_dct = {}
                 new_list = []
                 for target in targets:
-                    if isinstance(target, search.Not):
+                    if isinstance(target, search_.Not):
                         raise TypeError("Target cannot be negated here")
                     if not isinstance(target, str):
                         raise ValueError("Target must be string")
@@ -1012,7 +1012,7 @@ class FindAssetFunc(AssetFunc):
                         if not isinstance(v, str):
                             raise ValueError("Matched value must be string")
                         _return_type = "bool" if return_type.lower() == "field" else return_type
-                        matches = search.find(target, v, return_type=_return_type, **kwargs)
+                        matches = search_.find(target, v, return_type=_return_type, **kwargs)
                         if return_path:
                             if k not in new_path_dct:
                                 new_path_dct[k] = []
@@ -1069,9 +1069,9 @@ class FindReplaceAssetFunc(FindAssetFunc):
             target = list(target.keys())
         if path is not None:
             if isinstance(path, list):
-                paths = [search.resolve_pathlike_key(p) for p in path]
+                paths = [search_.resolve_pathlike_key(p) for p in path]
             else:
-                paths = [search.resolve_pathlike_key(path)]
+                paths = [search_.resolve_pathlike_key(path)]
                 if isinstance(target, list):
                     paths *= len(target)
                 elif isinstance(replacement, list):
@@ -1089,7 +1089,7 @@ class FindReplaceAssetFunc(FindAssetFunc):
                 replacement = [replacement] * len(paths)
             if len(target) != len(replacement) != len(paths):
                 raise ValueError("Number of targets and replacements must match number of paths")
-        find_arg_names = set(get_func_arg_names(search.find_in_obj))
+        find_arg_names = set(get_func_arg_names(search_.find_in_obj))
         find_kwargs = {k: kwargs.pop(k) for k in list(kwargs.keys()) if k in find_arg_names}
         if "excl_types" not in find_kwargs:
             find_kwargs["excl_types"] = (tuple, set, frozenset)
@@ -1120,7 +1120,7 @@ class FindReplaceAssetFunc(FindAssetFunc):
     ) -> tp.Any:
         """Replace function for `FindReplaceAssetFunc.call`.
 
-        Uses `vectorbtpro.utils.search.replace` for text and returns replacement for other types.
+        Uses `vectorbtpro.utils.search_.replace` for text and returns replacement for other types.
 
         Target can be a function taking the value and returning a boolean.
         Replacement can also be a function taking the value and returning a new value."""
@@ -1137,7 +1137,7 @@ class FindReplaceAssetFunc(FindAssetFunc):
         if len(targets) != len(replacements):
             raise ValueError("Number of targets must match number of replacements")
         for i, target in enumerate(targets):
-            if isinstance(target, search.Not):
+            if isinstance(target, search_.Not):
                 raise TypeError("Target cannot be negated here")
             replacement = replacements[i]
             if checks.is_function(replacement):
@@ -1156,7 +1156,7 @@ class FindReplaceAssetFunc(FindAssetFunc):
                 if d == target:
                     return replacement
             elif isinstance(d, str) and isinstance(target, str):
-                d = search.replace(target, replacement, d, **kwargs)
+                d = search_.replace(target, replacement, d, **kwargs)
             elif type(d) is type(target):
                 try:
                     if d == target:
@@ -1190,12 +1190,12 @@ class FindReplaceAssetFunc(FindAssetFunc):
                 x = d
                 if p is not None:
                     try:
-                        x = search.get_pathlike_key(x, p, keep_path=keep_path)
+                        x = search_.get_pathlike_key(x, p, keep_path=keep_path)
                     except (KeyError, IndexError, AttributeError) as e:
                         if not skip_missing:
                             raise e
                         continue
-                path_dct = search.find_in_obj(
+                path_dct = search_.find_in_obj(
                     x,
                     cls.match_func,
                     target=target[i] if per_path else target,
@@ -1211,12 +1211,12 @@ class FindReplaceAssetFunc(FindAssetFunc):
                 x = d
                 if p is not None:
                     try:
-                        x = search.get_pathlike_key(x, p, keep_path=keep_path)
+                        x = search_.get_pathlike_key(x, p, keep_path=keep_path)
                     except (KeyError, IndexError, AttributeError) as e:
                         if not skip_missing:
                             raise e
                         continue
-                path_dct = search.find_in_obj(
+                path_dct = search_.find_in_obj(
                     x,
                     cls.match_func,
                     target=target[i] if per_path else target,
@@ -1226,7 +1226,7 @@ class FindReplaceAssetFunc(FindAssetFunc):
                 )
                 for k, v in path_dct.items():
                     if p is not None and not keep_path:
-                        new_p = search.combine_pathlike_keys(p, k, minimize=True)
+                        new_p = search_.combine_pathlike_keys(p, k, minimize=True)
                     else:
                         new_p = k
                     v = cls.replace_func(
@@ -1236,7 +1236,7 @@ class FindReplaceAssetFunc(FindAssetFunc):
                         replacement[i] if per_path else replacement,
                         **kwargs,
                     )
-                    d = search.set_pathlike_key(d, new_p, v, make_copy=make_copy, prev_keys=prev_keys)
+                    d = search_.set_pathlike_key(d, new_p, v, make_copy=make_copy, prev_keys=prev_keys)
         if not changed_only or len(prev_keys) > 0:
             return d
         return NoResult
@@ -1274,9 +1274,9 @@ class FindRemoveAssetFunc(FindAssetFunc):
 
         if path is not None:
             if isinstance(path, list):
-                paths = [search.resolve_pathlike_key(p) for p in path]
+                paths = [search_.resolve_pathlike_key(p) for p in path]
             else:
-                paths = [search.resolve_pathlike_key(path)]
+                paths = [search_.resolve_pathlike_key(path)]
                 if isinstance(target, list):
                     paths *= len(target)
         else:
@@ -1288,7 +1288,7 @@ class FindRemoveAssetFunc(FindAssetFunc):
                 target = [target] * len(paths)
             if len(target) != len(paths):
                 raise ValueError("Number of targets must match number of paths")
-        find_arg_names = set(get_func_arg_names(search.find_in_obj))
+        find_arg_names = set(get_func_arg_names(search_.find_in_obj))
         find_kwargs = {k: kwargs.pop(k) for k in list(kwargs.keys()) if k in find_arg_names}
         if "excl_types" not in find_kwargs:
             find_kwargs["excl_types"] = (tuple, set, frozenset)
@@ -1339,12 +1339,12 @@ class FindRemoveAssetFunc(FindAssetFunc):
             x = d
             if p is not None:
                 try:
-                    x = search.get_pathlike_key(x, p, keep_path=keep_path)
+                    x = search_.get_pathlike_key(x, p, keep_path=keep_path)
                 except (KeyError, IndexError, AttributeError) as e:
                     if not skip_missing:
                         raise e
                     continue
-            path_dct = search.find_in_obj(
+            path_dct = search_.find_in_obj(
                 x,
                 cls.match_func,
                 target=target[i] if per_path else target,
@@ -1357,12 +1357,12 @@ class FindRemoveAssetFunc(FindAssetFunc):
                 break
             for k, v in path_dct.items():
                 if p is not None and not keep_path:
-                    new_p = search.combine_pathlike_keys(p, k, minimize=True)
+                    new_p = search_.combine_pathlike_keys(p, k, minimize=True)
                 else:
                     new_p = k
                 new_p_v_map[new_p] = v
         for new_p, v in new_p_v_map.items():
-            d = search.remove_pathlike_key(d, new_p, make_copy=make_copy, prev_keys=prev_keys)
+            d = search_.remove_pathlike_key(d, new_p, make_copy=make_copy, prev_keys=prev_keys)
         if not changed_only or len(prev_keys) > 0:
             return d
         return NoResult
@@ -1395,9 +1395,9 @@ class FlattenAssetFunc(AssetFunc):
 
         if path is not None:
             if isinstance(path, list):
-                paths = [search.resolve_pathlike_key(p) for p in path]
+                paths = [search_.resolve_pathlike_key(p) for p in path]
             else:
-                paths = [search.resolve_pathlike_key(path)]
+                paths = [search_.resolve_pathlike_key(path)]
         else:
             paths = [None]
         if "excl_types" not in kwargs:
@@ -1427,13 +1427,13 @@ class FlattenAssetFunc(AssetFunc):
             x = d
             if p is not None:
                 try:
-                    x = search.get_pathlike_key(x, p)
+                    x = search_.get_pathlike_key(x, p)
                 except (KeyError, IndexError, AttributeError) as e:
                     if not skip_missing:
                         raise e
                     continue
-            x = search.flatten_obj(x, **kwargs)
-            d = search.set_pathlike_key(d, p, x, make_copy=make_copy, prev_keys=prev_keys)
+            x = search_.flatten_obj(x, **kwargs)
+            d = search_.set_pathlike_key(d, p, x, make_copy=make_copy, prev_keys=prev_keys)
         if not changed_only or len(prev_keys) > 0:
             return d
         return NoResult
@@ -1466,9 +1466,9 @@ class UnflattenAssetFunc(AssetFunc):
 
         if path is not None:
             if isinstance(path, list):
-                paths = [search.resolve_pathlike_key(p) for p in path]
+                paths = [search_.resolve_pathlike_key(p) for p in path]
             else:
-                paths = [search.resolve_pathlike_key(path)]
+                paths = [search_.resolve_pathlike_key(path)]
         else:
             paths = [None]
         return (), {
@@ -1496,13 +1496,13 @@ class UnflattenAssetFunc(AssetFunc):
             x = d
             if p is not None:
                 try:
-                    x = search.get_pathlike_key(x, p)
+                    x = search_.get_pathlike_key(x, p)
                 except (KeyError, IndexError, AttributeError) as e:
                     if not skip_missing:
                         raise e
                     continue
-            x = search.unflatten_obj(x, **kwargs)
-            d = search.set_pathlike_key(d, p, x, make_copy=make_copy, prev_keys=prev_keys)
+            x = search_.unflatten_obj(x, **kwargs)
+            d = search_.set_pathlike_key(d, p, x, make_copy=make_copy, prev_keys=prev_keys)
         if not changed_only or len(prev_keys) > 0:
             return d
         return NoResult

@@ -31,8 +31,6 @@ __all__ = [
     "with_progress_shown",
 ]
 
-ProgressBarT = tp.TypeVar("ProgressBarT", bound="ProgressBar")
-
 
 class ProgressBar(Base):
     """Context manager to manage a progress bar.
@@ -503,13 +501,13 @@ class ProgressBar(Base):
         else:
             self.set_prefix_str(desc, refresh=refresh)
 
-    def enter(self: ProgressBarT, **kwargs) -> ProgressBarT:
+    def enter(self, **kwargs) -> tp.Self:
         """Enter the bar."""
         if self.show_progress or self.force_open_bar:
             self.open(**kwargs)
         return self
 
-    def __enter__(self: ProgressBarT) -> ProgressBarT:
+    def __enter__(self) -> tp.Self:
         return self.enter()
 
     def exit(self, **kwargs) -> None:
@@ -550,9 +548,6 @@ class ProgressBar(Base):
         self.close()
 
 
-ProgressHiddenT = tp.TypeVar("ProgressHiddenT", bound="ProgressHidden")
-
-
 class ProgressHidden(Base):
     """Context manager to hide progress."""
 
@@ -576,7 +571,7 @@ class ProgressHidden(Base):
         """Initial settings."""
         return self._init_settings
 
-    def __enter__(self: ProgressHiddenT) -> ProgressHiddenT:
+    def __enter__(self) -> tp.Self:
         from vectorbtpro._settings import settings
 
         pbar_cfg = settings["pbar"]
@@ -621,9 +616,6 @@ def with_progress_hidden(*args) -> tp.Callable:
     raise ValueError("Either function or keyword arguments must be passed")
 
 
-ProgressShownT = tp.TypeVar("ProgressShownT", bound="ProgressShown")
-
-
 class ProgressShown(Base):
     """Context manager to show progress."""
 
@@ -647,7 +639,7 @@ class ProgressShown(Base):
         """Initial settings."""
         return self._init_settings
 
-    def __enter__(self: ProgressShownT) -> ProgressShownT:
+    def __enter__(self) -> tp.Self:
         from vectorbtpro._settings import settings
 
         pbar_cfg = settings["pbar"]

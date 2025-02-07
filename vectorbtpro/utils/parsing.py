@@ -540,9 +540,6 @@ class PrintsSuppressed(contextlib.redirect_stdout, Base):
         return cls(io.StringIO(), *args, **kwargs)
 
 
-WarningsFilteredT = tp.TypeVar("WarningsFilteredT", bound="WarningsFiltered")
-
-
 class WarningsFiltered(warnings.catch_warnings, Base):
     """Context manager to ignore warnings."""
 
@@ -555,7 +552,7 @@ class WarningsFiltered(warnings.catch_warnings, Base):
         """One or more simple entries to add into the list of warnings filters."""
         return self._entries
 
-    def __enter__(self: WarningsFilteredT) -> WarningsFilteredT:
+    def __enter__(self) -> tp.Self:
         warnings.catch_warnings.__enter__(self)
         if self.entries is not None:
             if isinstance(self.entries, (str, dict)):

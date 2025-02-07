@@ -366,7 +366,7 @@ Selection = Union[PosSel, LabelSel, MaybeIterable[Union[PosSel, LabelSel, Hashab
 
 # Knowledge
 AssetFuncLike = Union[str, Type[AssetFunc], FuncArgs, Task, Callable]
-MaybeAsset = Union[None, T, dict, list]
+MaybeAsset = Union[None, T, dict, list, Iterator[T]]
 MaybeKnowledgeAsset = MaybeAsset[KnowledgeAsset]
 MaybeVBTAsset = MaybeAsset[VBTAsset]
 MaybePagesAsset = MaybeAsset[PagesAsset]

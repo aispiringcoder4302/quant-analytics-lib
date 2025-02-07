@@ -29,7 +29,7 @@ from vectorbtpro.utils.eval_ import Evaluable
 from vectorbtpro.utils.execution import NoResult, NoResultsException, filter_out_no_results, execute
 from vectorbtpro.utils.merging import MergeFunc, parse_merge_func
 from vectorbtpro.utils.parsing import annotate_args, flatten_ann_args, unflatten_ann_args, ann_args_to_args
-from vectorbtpro.utils.search import find_in_obj, replace_in_obj
+from vectorbtpro.utils.search_ import find_in_obj, replace_in_obj
 from vectorbtpro.utils.selection import PosSel, LabelSel
 from vectorbtpro.utils.template import CustomTemplate, substitute_templates
 
@@ -1263,14 +1263,14 @@ class Parameterizer(Configured):
     def find_params_in_obj(cls, obj: tp.Any, eval_id: tp.Optional[tp.Hashable] = None, **kwargs) -> dict:
         """Find values wrapped with `Param` in a recursive manner.
 
-        Uses `vectorbtpro.utils.search.find_in_obj`."""
+        Uses `vectorbtpro.utils.search_.find_in_obj`."""
         return find_in_obj(obj, lambda k, v: isinstance(v, Param) and v.meets_eval_id(eval_id), **kwargs)
 
     @classmethod
     def param_product_to_objs(cls, obj: tp.Any, param_product: dict) -> tp.List[dict]:
         """Resolve parameter product into a list of objects based on the original object.
 
-        Uses `vectorbtpro.utils.search.replace_in_obj`."""
+        Uses `vectorbtpro.utils.search_.replace_in_obj`."""
         if len(param_product) == 0:
             return []
         param_product_items = list(param_product.items())
