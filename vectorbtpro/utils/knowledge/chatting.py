@@ -29,7 +29,7 @@ from vectorbtpro.utils.config import merge_dicts, flat_merge_dicts, Configured, 
 from vectorbtpro.utils.decorators import memoized_method, hybrid_method
 from vectorbtpro.utils.knowledge.formatting import ContentFormatter, HTMLFileFormatter, resolve_formatter
 from vectorbtpro.utils.parsing import get_func_arg_names, get_func_kwargs
-from vectorbtpro.utils.template import CustomTemplate, Sub, RepFunc, substitute_templates
+from vectorbtpro.utils.template import CustomTemplate, Sub, RepFunc
 
 try:
     if not tp.TYPE_CHECKING:
@@ -131,7 +131,7 @@ class Tokenizer(Configured):
     _short_name: tp.ClassVar[tp.Optional[str]] = None
     """Short name of the class."""
 
-    _settings_path: tp.SettingsPath = ["knowledge", "knowledge.chat"]
+    _settings_path: tp.SettingsPath = ["knowledge", "knowledge.chat", "knowledge.chat.tokenizer_config"]
 
     def __init__(self, template_context: tp.KwargsLike = None, **kwargs) -> None:
         Configured.__init__(self, template_context=template_context, **kwargs)
@@ -334,7 +334,7 @@ class Embeddings(Configured):
 
     _expected_keys_mode: tp.ExpectedKeysMode = "disable"
 
-    _settings_path: tp.SettingsPath = "knowledge"
+    _settings_path: tp.SettingsPath = ["knowledge", "knowledge.chat", "knowledge.chat.embeddings_config"]
 
     def __init__(self, template_context: tp.KwargsLike = None, **kwargs) -> None:
         Configured.__init__(self, template_context=template_context, **kwargs)
@@ -756,7 +756,7 @@ class Completions(Configured):
 
     _expected_keys_mode: tp.ExpectedKeysMode = "disable"
 
-    _settings_path: tp.SettingsPath = ["knowledge", "knowledge.chat"]
+    _settings_path: tp.SettingsPath = ["knowledge", "knowledge.chat", "knowledge.chat.completions_config"]
 
     def __init__(
         self,
@@ -771,6 +771,7 @@ class Completions(Configured):
         context_prompt: tp.Optional[str] = None,
         formatter: tp.ContentFormatterLike = None,
         formatter_kwargs: tp.KwargsLike = None,
+        minimal_format: tp.Optional[bool] = None,
         silence_warnings: tp.Optional[bool] = None,
         template_context: tp.KwargsLike = None,
         **kwargs,
@@ -788,6 +789,7 @@ class Completions(Configured):
             context_prompt=context_prompt,
             formatter=formatter,
             formatter_kwargs=formatter_kwargs,
+            minimal_format=minimal_format,
             silence_warnings=silence_warnings,
             template_context=template_context,
             **kwargs,
@@ -804,6 +806,7 @@ class Completions(Configured):
         context_prompt = self.resolve_setting(context_prompt, "context_prompt")
         formatter = self.resolve_setting(formatter, "formatter", default=None)
         formatter_kwargs = self.resolve_setting(formatter_kwargs, "formatter_kwargs", default=None, merge=True)
+        minimal_format = self.resolve_setting(minimal_format, "minimal_format", default=None)
         silence_warnings = self.resolve_setting(silence_warnings, "silence_warnings")
         template_context = self.resolve_setting(template_context, "template_context", merge=True)
 
@@ -821,6 +824,7 @@ class Completions(Configured):
         self._context_prompt = context_prompt
         self._formatter = formatter
         self._formatter_kwargs = formatter_kwargs
+        self._minimal_format = minimal_format
         self._silence_warnings = silence_warnings
         self._template_context = template_context
 
@@ -903,6 +907,11 @@ class Completions(Configured):
         Used either to initialize a class or replace an instance of
         `vectorbtpro.utils.knowledge.formatting.ContentFormatter`."""
         return self._formatter_kwargs
+
+    @property
+    def minimal_format(self) -> bool:
+        """Whether input is minimally-formatted."""
+        return self._minimal_format
 
     @property
     def silence_warnings(self) -> bool:
@@ -1024,6 +1033,8 @@ class Completions(Configured):
 
         if isinstance(formatter, type):
             formatter_kwargs = dict(formatter_kwargs)
+            if "minimal_format" not in formatter_kwargs:
+                formatter_kwargs["minimal_format"] = self.minimal_format
             formatter_kwargs["template_context"] = merge_dicts(
                 template_context, formatter_kwargs.get("template_context", None)
             )
@@ -1487,7 +1498,7 @@ class TextSplitter(Configured):
     _short_name: tp.ClassVar[tp.Optional[str]] = None
     """Short name of the class."""
 
-    _settings_path: tp.SettingsPath = ["knowledge", "knowledge.chat"]
+    _settings_path: tp.SettingsPath = ["knowledge", "knowledge.chat", "knowledge.chat.text_splitter_config"]
 
     def __init__(self, template_context: tp.KwargsLike = None, **kwargs) -> None:
         Configured.__init__(self, template_context=template_context, **kwargs)
@@ -2222,7 +2233,7 @@ class ObjectStore(Configured, MutableMapping, metaclass=MetaObjectStore):
     _short_name: tp.ClassVar[tp.Optional[str]] = None
     """Short name of the class."""
 
-    _settings_path: tp.SettingsPath = ["knowledge", "knowledge.chat"]
+    _settings_path: tp.SettingsPath = ["knowledge", "knowledge.chat", "knowledge.chat.obj_store_config"]
 
     def __init__(
         self,
@@ -2234,6 +2245,7 @@ class ObjectStore(Configured, MutableMapping, metaclass=MetaObjectStore):
         Configured.__init__(
             self,
             store_id=store_id,
+            purge_on_open=purge_on_open,
             template_context=template_context,
             **kwargs,
         )
@@ -2273,6 +2285,11 @@ class ObjectStore(Configured, MutableMapping, metaclass=MetaObjectStore):
     def enter_calls(self) -> int:
         """Number of enter calls."""
         return self._enter_calls
+    
+    @property
+    def mirror_store_id(self) -> str:
+        """Mirror store id."""
+        return type(self).__name__ + "." + self.store_id
 
     def open(self) -> None:
         """Open the store."""
@@ -2281,6 +2298,11 @@ class ObjectStore(Configured, MutableMapping, metaclass=MetaObjectStore):
         if self.purge_on_open:
             self.purge()
         self._opened = True
+
+    def check_opened(self) -> None:
+        """Check the store is opened."""
+        if not self.opened:
+            raise Exception(f"{type(self)} must be opened first")
 
     def commit(self) -> None:
         """Commit changes."""
@@ -2344,6 +2366,10 @@ class DictStore(ObjectStore):
         """Store dictionary."""
         return self._store
 
+    def purge(self) -> None:
+        ObjectStore.purge(self)
+        self.store.clear()
+
     def __getitem__(self, id_: str) -> StoreObjectT:
         return self.store[id_]
 
@@ -2388,16 +2414,16 @@ class MemoryStore(DictStore):
         return self.store_id in memory_store
 
     def open(self) -> None:
-        ObjectStore.open(self)
+        DictStore.open(self)
         if self.store_exists():
             self._store = dict(memory_store[self.store_id])
 
     def commit(self) -> None:
-        ObjectStore.commit(self)
+        DictStore.commit(self)
         memory_store[self.store_id] = dict(self.store)
 
     def purge(self) -> None:
-        ObjectStore.purge(self)
+        DictStore.purge(self)
         if self.store_exists():
             del memory_store[self.store_id]
 
@@ -2407,7 +2433,6 @@ class FileStore(DictStore):
 
     Either commits changes to a single file (with index id being the file name), or commits the initial
     changes to the base file and any other change to patch file(s) (with index id being the directory name).
-    Also, can mirror the store to `memory_store` to avoid repeated disk I/O operations within a single session.
 
     For defaults, see `chat.obj_store_configs.file` in `vectorbtpro._settings.knowledge`."""
 
@@ -2423,7 +2448,6 @@ class FileStore(DictStore):
         load_kwargs: tp.KwargsLike = None,
         use_patching: tp.Optional[bool] = None,
         consolidate: tp.Optional[bool] = None,
-        memory_mirror: tp.Optional[bool] = None,
         **kwargs,
     ) -> None:
         DictStore.__init__(
@@ -2434,7 +2458,6 @@ class FileStore(DictStore):
             load_kwargs=load_kwargs,
             use_patching=use_patching,
             consolidate=consolidate,
-            memory_mirror=memory_mirror,
             **kwargs,
         )
 
@@ -2457,7 +2480,6 @@ class FileStore(DictStore):
         load_kwargs = self.resolve_setting(load_kwargs, "load_kwargs", merge=True)
         use_patching = self.resolve_setting(use_patching, "use_patching")
         consolidate = self.resolve_setting(consolidate, "consolidate")
-        memory_mirror = self.resolve_setting(memory_mirror, "memory_mirror")
 
         self._dir_path = dir_path
         self._compression = compression
@@ -2465,11 +2487,9 @@ class FileStore(DictStore):
         self._load_kwargs = load_kwargs
         self._use_patching = use_patching
         self._consolidate = consolidate
-        self._memory_mirror = memory_mirror
 
         self._store_changes = {}
         self._new_keys = set()
-        self._memory_store = MemoryStore(store_id=str(self.store_path.resolve()))
 
     @property
     def dir_path(self) -> tp.Optional[tp.Path]:
@@ -2502,11 +2522,6 @@ class FileStore(DictStore):
         return self._consolidate
 
     @property
-    def memory_mirror(self) -> bool:
-        """Whether to mirror the store in memory for the next instance."""
-        return self._memory_mirror
-
-    @property
     def store_changes(self) -> tp.Dict[str, StoreObjectT]:
         """Store with new or modified objects only."""
         return self._store_changes
@@ -2516,10 +2531,11 @@ class FileStore(DictStore):
         """Keys that haven't been added to the store."""
         return self._new_keys
 
-    @property
-    def memory_store(self) -> MemoryStore:
-        """Memory store."""
-        return self._memory_store
+    def reset_state(self) -> None:
+        """Reset state."""
+        self._consolidate = False
+        self._store_changes = {}
+        self._new_keys = set()
 
     @property
     def store_path(self) -> tp.Path:
@@ -2530,6 +2546,10 @@ class FileStore(DictStore):
         dir_path = Path(dir_path)
         return dir_path / self.store_id
 
+    @property
+    def mirror_store_id(self) -> str:
+        return str(self.store_path.resolve())
+
     def get_next_patch_path(self) -> tp.Path:
         """Get path to the next patch file to be saved."""
         indices = []
@@ -2538,58 +2558,40 @@ class FileStore(DictStore):
         next_index = max(indices) + 1 if indices else 0
         return self.store_path / f"patch_{next_index}"
 
-    def store_exists(self) -> bool:
-        if self.memory_mirror and self.memory_store.store_exists():
-            return True
-        return self.store_path.exists()
-
     def open(self) -> None:
         DictStore.open(self)
-        if self.memory_mirror and self.memory_store.store_exists():
-            self.memory_store.open()
-            self.store.clear()
-            self.store.update(self.memory_store.store)
-        else:
-            if self.store_path.exists():
-                from vectorbtpro.utils.pickling import load
+        if self.store_path.exists():
+            from vectorbtpro.utils.pickling import load
 
-                if self.store_path.is_dir():
-                    store = {}
+            if self.store_path.is_dir():
+                store = {}
+                store.update(
+                    load(
+                        path=self.store_path / "base",
+                        compression=self.compression,
+                        **self.load_kwargs,
+                    )
+                )
+                patch_paths = sorted(self.store_path.glob("patch_*"), key=lambda f: int(f.stem.split("_")[1]))
+                for patch_path in patch_paths:
                     store.update(
                         load(
-                            path=self.store_path / "base",
+                            path=patch_path,
                             compression=self.compression,
                             **self.load_kwargs,
                         )
                     )
-                    patch_paths = sorted(self.store_path.glob("patch_*"), key=lambda f: int(f.stem.split("_")[1]))
-                    for patch_path in patch_paths:
-                        store.update(
-                            load(
-                                path=patch_path,
-                                compression=self.compression,
-                                **self.load_kwargs,
-                            )
-                        )
-                else:
-                    store = load(
-                        path=self.store_path,
-                        compression=self.compression,
-                        **self.load_kwargs,
-                    )
-                self._store = store
-                if self.memory_mirror:
-                    self.memory_store.store.clear()
-                    self.memory_store.store.update(store)
-
-        self._store_changes = {}
-        self._new_keys = set()
-        self._consolidate = False
+            else:
+                store = load(
+                    path=self.store_path,
+                    compression=self.compression,
+                    **self.load_kwargs,
+                )
+            self._store = store
+        self.reset_state()
 
     def commit(self) -> tp.Optional[tp.Path]:
         DictStore.commit(self)
-        if self.memory_mirror:
-            self.memory_store.commit()
         from vectorbtpro.utils.pickling import save
 
         file_path = None
@@ -2631,15 +2633,15 @@ class FileStore(DictStore):
                     **self.save_kwargs,
                 )
 
-        self._store_changes = {}
-        self._new_keys = set()
-        self._consolidate = False
+        self.reset_state()
         return file_path
+
+    def close(self) -> None:
+        DictStore.close(self)
+        self.reset_state()
 
     def purge(self) -> None:
         DictStore.purge(self)
-        if self.memory_mirror:
-            self.memory_store.purge()
         from vectorbtpro.utils.path_ import remove_file, remove_dir
 
         if self.store_path.exists():
@@ -2647,18 +2649,13 @@ class FileStore(DictStore):
                 remove_dir(self.store_path, with_contents=True)
             else:
                 remove_file(self.store_path)
-
-        self._store_changes = {}
-        self._new_keys = set()
-        self._consolidate = False
+        self.reset_state()
 
     def __setitem__(self, id_: str, obj: StoreObjectT) -> None:
         if obj.id_ not in self:
             self.new_keys.add(obj.id_)
         self.store_changes[obj.id_] = obj
         DictStore.__setitem__(self, id_, obj)
-        if self.memory_mirror:
-            self.memory_store[id_] = obj
 
     def __delitem__(self, id_: str) -> None:
         if id_ in self.new_keys:
@@ -2668,8 +2665,6 @@ class FileStore(DictStore):
             if id_ in self.store_changes:
                 del self.store_changes[id_]
         DictStore.__delitem__(self, id_)
-        if self.memory_mirror:
-            del self.memory_store[id_]
 
 
 class LMDBStore(ObjectStore):
@@ -2693,7 +2688,14 @@ class LMDBStore(ObjectStore):
         loads_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> None:
-        ObjectStore.__init__(self, dir_path=dir_path, mkdir_kwargs=mkdir_kwargs, **kwargs)
+        ObjectStore.__init__(
+            self,
+            dir_path=dir_path,
+            mkdir_kwargs=mkdir_kwargs,
+            dumps_kwargs=dumps_kwargs,
+            loads_kwargs=loads_kwargs,
+            **kwargs,
+        )
 
         from vectorbtpro.utils.module_ import assert_can_import
 
@@ -2720,6 +2722,8 @@ class LMDBStore(ObjectStore):
         for arg_name in get_func_arg_names(ObjectStore.__init__) + get_func_arg_names(type(self).__init__):
             if arg_name in open_kwargs:
                 del open_kwargs[arg_name]
+        if "mirror" in open_kwargs:
+            del open_kwargs["mirror"]
 
         self._dir_path = dir_path
         self._mkdir_kwargs = mkdir_kwargs
@@ -2764,6 +2768,10 @@ class LMDBStore(ObjectStore):
         return dir_path / self.store_id
 
     @property
+    def mirror_store_id(self) -> str:
+        return str(self.db_path.resolve())
+
+    @property
     def db(self) -> tp.Optional[LmdbT]:
         """Database."""
         return self._db
@@ -2775,9 +2783,6 @@ class LMDBStore(ObjectStore):
 
         check_mkdir(self.db_path.parent, **self.mkdir_kwargs)
         self._db = Lmdb.open(str(self.db_path.resolve()), **self.open_kwargs)
-
-    def commit(self) -> None:
-        self.db.sync()
 
     def close(self) -> None:
         ObjectStore.close(self)
@@ -2804,19 +2809,137 @@ class LMDBStore(ObjectStore):
         return loads(bytes_, **self.loads_kwargs)
 
     def __getitem__(self, id_: str) -> StoreObjectT:
+        self.check_opened()
         return self.decode(self.db[id_])
 
     def __setitem__(self, id_: str, obj: StoreObjectT) -> None:
+        self.check_opened()
         self.db[id_] = self.encode(obj)
 
     def __delitem__(self, id_: str) -> None:
+        self.check_opened()
         del self.db[id_]
 
     def __iter__(self) -> tp.Iterator[str]:
+        self.check_opened()
         return iter(self.db)
 
     def __len__(self) -> int:
+        self.check_opened()
         return len(self.db)
+
+
+class CachedStore(DictStore):
+    """Store class that acts as a (temporary) cache to another store.
+
+    For defaults, see `chat.obj_store_configs.cached` in `vectorbtpro._settings.knowledge`."""
+
+    _short_name: tp.ClassVar[tp.Optional[str]] = "cached"
+
+    _settings_path: tp.SettingsPath = "knowledge.chat.obj_store_configs.cached"
+
+    def __init__(
+        self,
+        obj_store: ObjectStore,
+        lazy_open: tp.Optional[bool] = None,
+        mirror: tp.Optional[bool] = None,
+        **kwargs,
+    ) -> None:
+        DictStore.__init__(
+            self,
+            obj_store=obj_store,
+            lazy_open=lazy_open,
+            mirror=mirror,
+            **kwargs,
+        )
+
+        lazy_open = self.resolve_setting(lazy_open, "lazy_open")
+        mirror = obj_store.resolve_setting(mirror, "mirror", default=None)
+        mirror = self.resolve_setting(mirror, "mirror")
+
+        self._obj_store = obj_store
+        self._lazy_open = lazy_open
+        self._mirror = mirror
+
+        self._force_open = False
+
+    @property
+    def obj_store(self) -> ObjectStore:
+        """Object store."""
+        return self._obj_store
+
+    @property
+    def lazy_open(self) -> bool:
+        """Whether to open the store lazily."""
+        return self._lazy_open
+
+    @property
+    def mirror(self) -> bool:
+        """Whether to mirror the store in `memory_store`."""
+        return self._mirror
+
+    @property
+    def force_open(self) -> bool:
+        """Whether to open the store forcefully."""
+        return self._force_open
+
+    def open(self) -> None:
+        DictStore.open(self)
+        if self.mirror and self.obj_store.mirror_store_id in memory_store:
+            self.store.update(memory_store[self.obj_store.mirror_store_id])
+        elif not self.lazy_open or self.force_open:
+            self.obj_store.open()
+
+    def check_opened(self) -> None:
+        if self.lazy_open and not self.obj_store.opened:
+            self._force_open = True
+            self.obj_store.open()
+        DictStore.check_opened(self)
+
+    def commit(self) -> None:
+        DictStore.commit(self)
+        self.check_opened()
+        self.obj_store.commit()
+        if self.mirror:
+            memory_store[self.obj_store.mirror_store_id] = dict(self.store)
+
+    def close(self) -> None:
+        DictStore.close(self)
+        self.obj_store.close()
+        self._force_open = False
+
+    def purge(self) -> None:
+        DictStore.purge(self)
+        self.obj_store.purge()
+        if self.mirror and self.obj_store.mirror_store_id in memory_store:
+            del memory_store[self.obj_store.mirror_store_id]
+
+    def __getitem__(self, id_: str) -> StoreObjectT:
+        if id_ in self.store:
+            return self.store[id_]
+        self.check_opened()
+        obj = self.obj_store[id_]
+        self.store[id_] = obj
+        return obj
+
+    def __setitem__(self, id_: str, obj: StoreObjectT) -> None:
+        self.check_opened()
+        self.store[id_] = obj
+        self.obj_store[id_] = obj
+
+    def __delitem__(self, id_: str) -> None:
+        self.check_opened()
+        if id_ in self.store:
+            del self.store[id_]
+        del self.obj_store[id_]
+
+    def __iter__(self) -> tp.Iterator[str]:
+        self.check_opened()
+        return iter(self.obj_store)
+
+    def __len__(self) -> int:
+        self.check_opened()
+        return len(self.obj_store)
 
 
 def resolve_obj_store(obj_store: tp.ObjectStoreLike = None) -> tp.MaybeType[ObjectStore]:
@@ -2828,6 +2951,7 @@ def resolve_obj_store(obj_store: tp.ObjectStoreLike = None) -> tp.MaybeType[Obje
     * "memory" (`MemoryStore`)
     * "file" (`FileStore`)
     * "lmdb" (`LMDBStore`)
+    * "cached" (`CachedStore`)
     * A subclass or an instance of `ObjectStore`
     """
     if obj_store is None:
@@ -2890,7 +3014,7 @@ class DocumentRanker(Configured):
 
     For defaults, see `chat` in `vectorbtpro._settings.knowledge`."""
 
-    _settings_path: tp.SettingsPath = ["knowledge", "knowledge.chat"]
+    _settings_path: tp.SettingsPath = ["knowledge", "knowledge.chat", "knowledge.chat.doc_ranker_config"]
 
     def __init__(
         self,
@@ -2898,8 +3022,10 @@ class DocumentRanker(Configured):
         embeddings_kwargs: tp.KwargsLike = None,
         doc_store: tp.TokenizerLike = None,
         doc_store_kwargs: tp.KwargsLike = None,
+        cache_doc_store: tp.Optional[bool] = None,
         emb_store: tp.TokenizerLike = None,
         emb_store_kwargs: tp.KwargsLike = None,
+        cache_emb_store: tp.Optional[bool] = None,
         score_func: tp.Union[None, str, tp.Callable] = None,
         score_agg_func: tp.Union[None, str, tp.Callable] = None,
         show_progress: tp.Optional[bool] = None,
@@ -2913,8 +3039,10 @@ class DocumentRanker(Configured):
             embeddings_kwargs=embeddings_kwargs,
             doc_store=doc_store,
             doc_store_kwargs=doc_store_kwargs,
+            cache_doc_store=cache_doc_store,
             emb_store=emb_store,
             emb_store_kwargs=emb_store_kwargs,
+            cache_emb_store=cache_emb_store,
             score_func=score_func,
             score_agg_func=score_agg_func,
             show_progress=show_progress,
@@ -2927,8 +3055,10 @@ class DocumentRanker(Configured):
         embeddings_kwargs = self.resolve_setting(embeddings_kwargs, "embeddings_kwargs", default=None, merge=True)
         doc_store = self.resolve_setting(doc_store, "doc_store", default=None)
         doc_store_kwargs = self.resolve_setting(doc_store_kwargs, "doc_store_kwargs", default=None, merge=True)
+        cache_doc_store = self.resolve_setting(cache_doc_store, "cache_doc_store")
         emb_store = self.resolve_setting(emb_store, "emb_store", default=None)
         emb_store_kwargs = self.resolve_setting(emb_store_kwargs, "emb_store_kwargs", default=None, merge=True)
+        cache_emb_store = self.resolve_setting(cache_emb_store, "cache_emb_store")
         score_func = self.resolve_setting(score_func, "score_func")
         score_agg_func = self.resolve_setting(score_agg_func, "score_agg_func")
         show_progress = self.resolve_setting(show_progress, "show_progress")
@@ -2954,11 +3084,23 @@ class DocumentRanker(Configured):
         elif embeddings_kwargs:
             embeddings = embeddings.replace(**embeddings_kwargs)
 
+        if isinstance(self._settings_path, list):
+            if not isinstance(self._settings_path[-1], str):
+                raise TypeError("_settings_path[-1] for DocumentRanker and its subclasses must be a string")
+            target_settings_path = self._settings_path[-1]
+        elif isinstance(self._settings_path, str):
+            target_settings_path = self._settings_path
+        else:
+            raise TypeError("_settings_path for DocumentRanker and its subclasses must be a list or string")
+
         doc_store = resolve_obj_store(doc_store)
         if not isinstance(doc_store._settings_path, str):
-            raise TypeError("_settings_path for ObjectStore and its subclasses should be a string")
+            raise TypeError("_settings_path for ObjectStore and its subclasses must be a string")
         doc_store_cls = doc_store if isinstance(doc_store, type) else type(doc_store)
-        with ExtSettingsPath([(doc_store_cls, doc_store._settings_path.replace("obj_store", "doc_store"))]):
+        doc_store_settings_path = doc_store._settings_path
+        doc_store_settings_path = doc_store_settings_path.replace("knowledge.chat", target_settings_path)
+        doc_store_settings_path = doc_store_settings_path.replace("obj_store", "doc_store")
+        with ExtSettingsPath([(doc_store_cls, doc_store_settings_path)]):
             if isinstance(doc_store, type):
                 doc_store_kwargs = dict(doc_store_kwargs)
                 doc_store_kwargs["template_context"] = merge_dicts(
@@ -2967,12 +3109,17 @@ class DocumentRanker(Configured):
                 doc_store = doc_store(**doc_store_kwargs)
             elif doc_store_kwargs:
                 doc_store = doc_store.replace(**doc_store_kwargs)
+        if cache_doc_store and not isinstance(doc_store, CachedStore):
+            doc_store = CachedStore(doc_store)
 
         emb_store = resolve_obj_store(emb_store)
         if not isinstance(emb_store._settings_path, str):
-            raise TypeError("_settings_path for ObjectStore and its subclasses should be a string")
+            raise TypeError("_settings_path for ObjectStore and its subclasses must be a string")
         emb_store_cls = emb_store if isinstance(emb_store, type) else type(emb_store)
-        with ExtSettingsPath([(emb_store_cls, emb_store._settings_path.replace("obj_store", "emb_store"))]):
+        emb_store_settings_path = emb_store._settings_path
+        emb_store_settings_path = emb_store_settings_path.replace("knowledge.chat", target_settings_path)
+        emb_store_settings_path = emb_store_settings_path.replace("obj_store", "emb_store")
+        with ExtSettingsPath([(emb_store_cls, emb_store_settings_path)]):
             if isinstance(emb_store, type):
                 emb_store_kwargs = dict(emb_store_kwargs)
                 emb_store_kwargs["template_context"] = merge_dicts(
@@ -2981,6 +3128,8 @@ class DocumentRanker(Configured):
                 emb_store = emb_store(**emb_store_kwargs)
             elif emb_store_kwargs:
                 emb_store = emb_store.replace(**emb_store_kwargs)
+        if cache_emb_store and not isinstance(emb_store, CachedStore):
+            emb_store = CachedStore(emb_store)
 
         if isinstance(score_agg_func, str):
             score_agg_func = getattr(np, score_agg_func)
@@ -3147,8 +3296,8 @@ class DocumentRanker(Configured):
     ) -> tp.Union[float, np.ndarray]:
         """Compute scores between embeddings, which can be either single or multiple.
 
-        Supported distance functions are 'cosine', 'euclidean', and 'dot'. A metric can also be a callable that should
-        take two and return one 2-dim NumPy array."""
+        Supported distance functions are 'cosine', 'euclidean', and 'dot'. A metric can also be
+        a callable that should take two and return one 2-dim NumPy array."""
         emb1 = np.asarray(emb1)
         emb2 = np.asarray(emb2)
         emb1_single = emb1.ndim == 1

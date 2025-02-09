@@ -1237,7 +1237,7 @@ class VBTAsset(KnowledgeAsset):
         for cls_ in cls.__mro__[::-1]:
             if issubclass(cls_, VBTAsset):
                 if not isinstance(cls_._settings_path, str):
-                    raise TypeError("_settings_path for VBTAsset and its subclasses should be a string")
+                    raise TypeError("_settings_path for VBTAsset and its subclasses must be a string")
                 if "knowledge" not in spec_settings_path:
                     spec_settings_path["knowledge"] = []
                 spec_settings_path["knowledge"].append(cls_._settings_path)

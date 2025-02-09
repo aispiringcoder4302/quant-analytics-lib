@@ -150,7 +150,8 @@ knwl-base = [
     "markdown",
     "Pygments",
     "openai",
-    "tiktoken"
+    "tiktoken",
+    "lmdbm",
 ]
 knwl = [
     "vectorbtpro[knwl-base]",

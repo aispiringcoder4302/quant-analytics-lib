@@ -266,7 +266,7 @@ class ContentFormatter(Configured):
     _short_name: tp.ClassVar[tp.Optional[str]] = None
     """Short name of the class."""
 
-    _settings_path: tp.SettingsPath = ["knowledge", "knowledge.formatting"]
+    _settings_path: tp.SettingsPath = ["knowledge", "knowledge.formatting", "knowledge.formatting.formatter_config"]
 
     def __init__(
         self,
@@ -275,6 +275,7 @@ class ContentFormatter(Configured):
         buffer_output: tp.Optional[bool] = None,
         close_output: tp.Optional[bool] = None,
         update_interval: tp.Optional[float] = None,
+        minimal_format: tp.Optional[bool] = None,
         template_context: tp.KwargsLike = None,
         **kwargs,
     ) -> None:
@@ -285,6 +286,7 @@ class ContentFormatter(Configured):
             buffer_output=buffer_output,
             close_output=close_output,
             update_interval=update_interval,
+            minimal_format=minimal_format,
             template_context=template_context,
             **kwargs,
         )
@@ -294,6 +296,7 @@ class ContentFormatter(Configured):
         buffer_output = self.resolve_setting(buffer_output, "buffer_output")
         close_output = self.resolve_setting(close_output, "close_output")
         update_interval = self.resolve_setting(update_interval, "update_interval")
+        minimal_format = self.resolve_setting(minimal_format, "minimal_format")
         template_context = self.resolve_setting(template_context, "template_context", merge=True)
 
         if isinstance(output_to, (str, Path)):
@@ -309,6 +312,7 @@ class ContentFormatter(Configured):
         self._buffer_output = buffer_output
         self._close_output = close_output
         self._update_interval = update_interval
+        self._minimal_format = minimal_format
         self._template_context = template_context
 
         self._last_update = None
@@ -343,6 +347,11 @@ class ContentFormatter(Configured):
     def update_interval(self) -> tp.Optional[float]:
         """Update interval (in seconds)."""
         return self._update_interval
+
+    @property
+    def minimal_format(self) -> bool:
+        """Whether input is minimally-formatted."""
+        return self._minimal_format
 
     @property
     def template_context(self) -> tp.Kwargs:
@@ -557,7 +566,12 @@ class IPythonMarkdownFormatter(IPythonFormatter):
             **kwargs,
         )
 
-        to_markdown_kwargs = self.resolve_setting(to_markdown_kwargs, "to_markdown_kwargs", merge=True)
+        if self.minimal_format:
+            to_markdown_kwargs = self.resolve_setting(
+                to_markdown_kwargs, "to_markdown_kwargs", sub_path="minimal_format_config", merge=True
+            )
+        else:
+            to_markdown_kwargs = self.resolve_setting(to_markdown_kwargs, "to_markdown_kwargs", merge=True)
 
         self._to_markdown_kwargs = to_markdown_kwargs
 
@@ -597,8 +611,16 @@ class IPythonHTMLFormatter(IPythonFormatter):
             **kwargs,
         )
 
-        to_markdown_kwargs = self.resolve_setting(to_markdown_kwargs, "to_markdown_kwargs", merge=True)
-        to_html_kwargs = self.resolve_setting(to_html_kwargs, "to_html_kwargs", merge=True)
+        if self.minimal_format:
+            to_markdown_kwargs = self.resolve_setting(
+                to_markdown_kwargs, "to_markdown_kwargs", sub_path="minimal_format_config", merge=True
+            )
+            to_html_kwargs = self.resolve_setting(
+                to_html_kwargs, "to_html_kwargs", sub_path="minimal_format_config", merge=True
+            )
+        else:
+            to_markdown_kwargs = self.resolve_setting(to_markdown_kwargs, "to_markdown_kwargs", merge=True)
+            to_html_kwargs = self.resolve_setting(to_html_kwargs, "to_html_kwargs", merge=True)
 
         self._to_markdown_kwargs = to_markdown_kwargs
         self._to_html_kwargs = to_html_kwargs
@@ -670,9 +692,21 @@ class HTMLFileFormatter(ContentFormatter):
         file_prefix_len = self.resolve_setting(file_prefix_len, "file_prefix_len")
         file_suffix_len = self.resolve_setting(file_suffix_len, "file_suffix_len")
         open_browser = self.resolve_setting(open_browser, "open_browser")
-        to_markdown_kwargs = self.resolve_setting(to_markdown_kwargs, "to_markdown_kwargs", merge=True)
-        to_html_kwargs = self.resolve_setting(to_html_kwargs, "to_html_kwargs", merge=True)
-        format_html_kwargs = self.resolve_setting(format_html_kwargs, "format_html_kwargs", merge=True)
+
+        if self.minimal_format:
+            to_markdown_kwargs = self.resolve_setting(
+                to_markdown_kwargs, "to_markdown_kwargs", sub_path="minimal_format_config", merge=True
+            )
+            to_html_kwargs = self.resolve_setting(
+                to_html_kwargs, "to_html_kwargs", sub_path="minimal_format_config", merge=True
+            )
+            format_html_kwargs = self.resolve_setting(
+                format_html_kwargs, "format_html_kwargs", sub_path="minimal_format_config", merge=True
+            )
+        else:
+            to_markdown_kwargs = self.resolve_setting(to_markdown_kwargs, "to_markdown_kwargs", merge=True)
+            to_html_kwargs = self.resolve_setting(to_html_kwargs, "to_html_kwargs", merge=True)
+            format_html_kwargs = self.resolve_setting(format_html_kwargs, "format_html_kwargs", merge=True)
 
         dir_path = self.resolve_setting(dir_path, "dir_path")
         template_context = self.template_context

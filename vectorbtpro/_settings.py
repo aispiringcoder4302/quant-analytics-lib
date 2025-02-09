@@ -2051,6 +2051,25 @@ knowledge = frozen_cfg(
     to_markdown_kwargs=flex_cfg(),
     to_html_kwargs=flex_cfg(),
     format_html_kwargs=flex_cfg(),
+    minimal_format_config=flex_cfg(
+        to_html_kwargs=flex_cfg(
+            extensions=[
+                "fenced_code",
+                "codehilite",
+                "admonition",
+                "tables",
+                "footnotes",
+                "md_in_html",
+                "toc",
+                "pymdownx.tilde",
+                "pymdownx.superfences",
+                "pymdownx.magiclink",
+                "pymdownx.highlight",
+                "pymdownx.tasklist",
+                "pymdownx.arithmatex",
+            ],
+        ),
+    ),
     formatting=flex_cfg(
         remove_code_title=True,
         even_indentation=True,
@@ -2247,7 +2266,9 @@ knowledge = frozen_cfg(
         buffer_output=True,
         close_output=None,
         update_interval=None,
+        minimal_format=False,
         formatter="ipython_auto",
+        formatter_config=flex_cfg(),
         formatter_configs=flex_cfg(
             plain=flex_cfg(),
             ipython=flex_cfg(),
@@ -2280,7 +2301,9 @@ knowledge = frozen_cfg(
 ---------------------
 $context
 ---------------------""",
+        minimal_format=True,
         tokenizer="tiktoken",
+        tokenizer_config=flex_cfg(),
         tokenizer_configs=flex_cfg(
             tiktoken=flex_cfg(
                 encoding="model_or_o200k_base",
@@ -2290,6 +2313,7 @@ $context
             ),
         ),
         embeddings="auto",
+        embeddings_config=flex_cfg(),
         embeddings_configs=flex_cfg(
             openai=flex_cfg(
                 model="text-embedding-3-small",
@@ -2309,6 +2333,7 @@ $context
             ),
         ),
         completions="auto",
+        completions_config=flex_cfg(),
         completions_configs=flex_cfg(
             openai=flex_cfg(
                 model="gpt-4o",
@@ -2326,6 +2351,7 @@ $context
             ),
         ),
         text_splitter="segment",
+        text_splitter_config=flex_cfg(),
         text_splitter_configs=flex_cfg(
             token=flex_cfg(
                 chunk_size=1000,
@@ -2345,8 +2371,10 @@ $context
             ),
         ),
         obj_store="memory",
-        store_id="default",
-        purge_on_open=False,
+        obj_store_config=flex_cfg(
+            store_id="default",
+            purge_on_open=False,
+        ),
         obj_store_configs=flex_cfg(
             memory=flex_cfg(),
             file=flex_cfg(
@@ -2358,34 +2386,43 @@ $context
                 load_kwargs=flex_cfg(),
                 use_patching=True,
                 consolidate=False,
-                memory_mirror=True,
+                mirror=True,
             ),
             lmdb=flex_cfg(
                 dir_path=RepEval("Path(cache_dir) / 'lmdb_store'"),
                 mkdir_kwargs=flex_cfg(),
                 dumps_kwargs=flex_cfg(),
                 loads_kwargs=flex_cfg(),
+                mirror=True,
                 flag="c",
             ),
-        ),
-        doc_store_configs=flex_cfg(
-            file=flex_cfg(
-                dir_path=RepEval("Path(cache_dir) / 'doc_file_store'"),
-            ),
-            lmdb=flex_cfg(
-                dir_path=RepEval("Path(cache_dir) / 'doc_lmdb_store'"),
+            cached=flex_cfg(
+                lazy_open=True,
+                mirror=False,
             ),
         ),
-        emb_store_configs=flex_cfg(
-            file=flex_cfg(
-                dir_path=RepEval("Path(cache_dir) / 'emb_file_store'"),
+        doc_ranker_config=flex_cfg(
+            cache_doc_store=True,
+            cache_emb_store=True,
+            doc_store_configs=flex_cfg(
+                file=flex_cfg(
+                    dir_path=RepEval("Path(cache_dir) / 'doc_file_store'"),
+                ),
+                lmdb=flex_cfg(
+                    dir_path=RepEval("Path(cache_dir) / 'doc_lmdb_store'"),
+                ),
             ),
-            lmdb=flex_cfg(
-                dir_path=RepEval("Path(cache_dir) / 'emb_lmdb_store'"),
+            emb_store_configs=flex_cfg(
+                file=flex_cfg(
+                    dir_path=RepEval("Path(cache_dir) / 'emb_file_store'"),
+                ),
+                lmdb=flex_cfg(
+                    dir_path=RepEval("Path(cache_dir) / 'emb_lmdb_store'"),
+                ),
             ),
+            score_func="cosine",
+            score_agg_func="mean",
         ),
-        score_func="cosine",
-        score_agg_func="mean",
     ),
     assets=flex_cfg(
         vbt=flex_cfg(
@@ -2457,22 +2494,24 @@ $context
                 "support your answers. If information isn't found, inform the user accordingly. Note that "
                 "VBT exclusively refers to VectorBT PRO, which significantly differs from the open-source "
                 "version. Given the context information and not prior knowledge, answer the query.",
-                doc_store="lmdb",
-                doc_store_configs=flex_cfg(
-                    file=flex_cfg(
-                        dir_path=RepEval("Path(release_dir) / 'doc_file_store'"),
+                doc_ranker_config=flex_cfg(
+                    doc_store="lmdb",
+                    doc_store_configs=flex_cfg(
+                        file=flex_cfg(
+                            dir_path=RepEval("Path(release_dir) / 'doc_file_store'"),
+                        ),
+                        lmdb=flex_cfg(
+                            dir_path=RepEval("Path(release_dir) / 'doc_lmdb_store'"),
+                        ),
                     ),
-                    lmdb=flex_cfg(
-                        dir_path=RepEval("Path(release_dir) / 'doc_lmdb_store'"),
-                    ),
-                ),
-                emb_store="lmdb",
-                emb_store_configs=flex_cfg(
-                    file=flex_cfg(
-                        dir_path=RepEval("Path(release_dir) / 'emb_file_store'"),
-                    ),
-                    lmdb=flex_cfg(
-                        dir_path=RepEval("Path(release_dir) / 'emb_lmdb_store'"),
+                    emb_store="lmdb",
+                    emb_store_configs=flex_cfg(
+                        file=flex_cfg(
+                            dir_path=RepEval("Path(release_dir) / 'emb_file_store'"),
+                        ),
+                        lmdb=flex_cfg(
+                            dir_path=RepEval("Path(release_dir) / 'emb_lmdb_store'"),
+                        ),
                     ),
                 ),
             ),
