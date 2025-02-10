@@ -17,6 +17,7 @@ import time
 import warnings
 from functools import partial, wraps
 from pathlib import Path
+from contextlib import nullcontext
 
 import pandas as pd
 from numba.core.registry import CPUDispatcher
@@ -301,16 +302,24 @@ class ThreadPoolEngine(ExecutionEngine):
 
     _settings_path: tp.SettingsPath = "execution.engines.threadpool"
 
-    def __init__(self, init_kwargs: tp.KwargsLike = None, timeout: tp.Optional[int] = None, **kwargs) -> None:
+    def __init__(
+        self,
+        init_kwargs: tp.KwargsLike = None,
+        timeout: tp.Optional[int] = None,
+        hide_inner_progress: tp.Optional[bool] = None,
+        **kwargs,
+    ) -> None:
         ExecutionEngine.__init__(
             self,
             init_kwargs=init_kwargs,
             timeout=timeout,
+            hide_inner_progress=hide_inner_progress,
             **kwargs,
         )
 
         self._init_kwargs = self.resolve_setting(init_kwargs, "init_kwargs", merge=True)
         self._timeout = self.resolve_setting(timeout, "timeout")
+        self._hide_inner_progress = self.resolve_setting(hide_inner_progress, "hide_inner_progress")
 
     @property
     def init_kwargs(self) -> tp.Kwargs:
@@ -322,13 +331,22 @@ class ThreadPoolEngine(ExecutionEngine):
         """Timeout."""
         return self._timeout
 
+    @property
+    def hide_inner_progress(self) -> bool:
+        """Whether to hide progress bars within each thread."""
+        return self._hide_inner_progress
+
     def execute(
         self,
         tasks: tp.TasksLike,
         size: tp.Optional[int] = None,
         keys: tp.Optional[tp.IndexLike] = None,
     ) -> tp.ExecResults:
-        with ProgressHidden():
+        if self.hide_inner_progress:
+            inner_progress_context = ProgressHidden()
+        else:
+            inner_progress_context = nullcontext()
+        with inner_progress_context:
             with concurrent.futures.ThreadPoolExecutor(**self.init_kwargs) as executor:
                 futures = {}
                 for i, (func, args, kwargs) in enumerate(tasks):
@@ -347,16 +365,24 @@ class ProcessPoolEngine(ExecutionEngine):
 
     _settings_path: tp.SettingsPath = "execution.engines.processpool"
 
-    def __init__(self, init_kwargs: tp.KwargsLike = None, timeout: tp.Optional[int] = None, **kwargs) -> None:
+    def __init__(
+        self,
+        init_kwargs: tp.KwargsLike = None,
+        timeout: tp.Optional[int] = None,
+        hide_inner_progress: tp.Optional[bool] = None,
+        **kwargs,
+    ) -> None:
         ExecutionEngine.__init__(
             self,
             init_kwargs=init_kwargs,
             timeout=timeout,
+            hide_inner_progress=hide_inner_progress,
             **kwargs,
         )
 
         self._init_kwargs = self.resolve_setting(init_kwargs, "init_kwargs", merge=True)
         self._timeout = self.resolve_setting(timeout, "timeout")
+        self._hide_inner_progress = self.resolve_setting(hide_inner_progress, "hide_inner_progress")
 
     @property
     def init_kwargs(self) -> tp.Kwargs:
@@ -368,13 +394,22 @@ class ProcessPoolEngine(ExecutionEngine):
         """Timeout."""
         return self._timeout
 
+    @property
+    def hide_inner_progress(self) -> bool:
+        """Whether to hide progress bars within each thread."""
+        return self._hide_inner_progress
+
     def execute(
         self,
         tasks: tp.TasksLike,
         size: tp.Optional[int] = None,
         keys: tp.Optional[tp.IndexLike] = None,
     ) -> tp.ExecResults:
-        with ProgressHidden():
+        if self.hide_inner_progress:
+            inner_progress_context = ProgressHidden()
+        else:
+            inner_progress_context = nullcontext()
+        with inner_progress_context:
             with concurrent.futures.ProcessPoolExecutor(**self.init_kwargs) as executor:
                 futures = {}
                 for i, (func, args, kwargs) in enumerate(tasks):
@@ -406,6 +441,7 @@ class PathosEngine(ExecutionEngine):
         check_delay: tp.Optional[float] = None,
         show_progress: tp.Optional[bool] = None,
         pbar_kwargs: tp.KwargsLike = None,
+        hide_inner_progress: tp.Optional[bool] = None,
         join_pool: tp.Optional[bool] = None,
         **kwargs,
     ) -> None:
@@ -417,6 +453,7 @@ class PathosEngine(ExecutionEngine):
             check_delay=check_delay,
             show_progress=show_progress,
             pbar_kwargs=pbar_kwargs,
+            hide_inner_progress=hide_inner_progress,
             join_pool=join_pool,
             **kwargs,
         )
@@ -427,6 +464,7 @@ class PathosEngine(ExecutionEngine):
         self._check_delay = self.resolve_setting(check_delay, "check_delay")
         self._show_progress = self.resolve_setting(show_progress, "show_progress")
         self._pbar_kwargs = self.resolve_setting(pbar_kwargs, "pbar_kwargs", merge=True)
+        self._hide_inner_progress = self.resolve_setting(hide_inner_progress, "hide_inner_progress")
         self._join_pool = self.resolve_setting(join_pool, "join_pool")
 
     @property
@@ -458,6 +496,11 @@ class PathosEngine(ExecutionEngine):
     def pbar_kwargs(self) -> tp.Kwargs:
         """Keyword arguments passed to `vectorbtpro.utils.pbar.ProgressBar`."""
         return self._pbar_kwargs
+
+    @property
+    def hide_inner_progress(self) -> bool:
+        """Whether to hide progress bars within each thread."""
+        return self._hide_inner_progress
 
     @property
     def join_pool(self) -> bool:
@@ -497,7 +540,11 @@ class PathosEngine(ExecutionEngine):
                     pbar_kwargs["bar_id"] = keys.name
         pbar = ProgressBar(total=size, show_progress=self.show_progress, **pbar_kwargs)
 
-        with ProgressHidden():
+        if self.hide_inner_progress:
+            inner_progress_context = ProgressHidden()
+        else:
+            inner_progress_context = nullcontext()
+        with inner_progress_context:
             with Pool(**self.init_kwargs) as pool:
                 async_results = []
                 for func, args, kwargs in tasks:
@@ -537,17 +584,20 @@ class MpireEngine(ExecutionEngine):
         self,
         init_kwargs: tp.KwargsLike = None,
         apply_kwargs: tp.KwargsLike = None,
+        hide_inner_progress: tp.Optional[bool] = None,
         **kwargs,
     ) -> None:
         ExecutionEngine.__init__(
             self,
             init_kwargs=init_kwargs,
             apply_kwargs=apply_kwargs,
+            hide_inner_progress=hide_inner_progress,
             **kwargs,
         )
 
         self._init_kwargs = self.resolve_setting(init_kwargs, "init_kwargs", merge=True)
         self._apply_kwargs = self.resolve_setting(apply_kwargs, "apply_kwargs", merge=True)
+        self._hide_inner_progress = self.resolve_setting(hide_inner_progress, "hide_inner_progress")
 
     @property
     def init_kwargs(self) -> tp.Kwargs:
@@ -558,6 +608,11 @@ class MpireEngine(ExecutionEngine):
     def apply_kwargs(self) -> tp.Kwargs:
         """Keyword arguments passed to `WorkerPool.async_apply`."""
         return self._apply_kwargs
+
+    @property
+    def hide_inner_progress(self) -> bool:
+        """Whether to hide progress bars within each thread."""
+        return self._hide_inner_progress
 
     def execute(
         self,
@@ -570,7 +625,11 @@ class MpireEngine(ExecutionEngine):
         assert_can_import("mpire")
         from mpire import WorkerPool
 
-        with ProgressHidden():
+        if self.hide_inner_progress:
+            inner_progress_context = ProgressHidden()
+        else:
+            inner_progress_context = nullcontext()
+        with inner_progress_context:
             with WorkerPool(**self.init_kwargs) as pool:
                 async_results = []
                 for i, (func, args, kwargs) in enumerate(tasks):
@@ -591,19 +650,31 @@ class DaskEngine(ExecutionEngine):
 
     _settings_path: tp.SettingsPath = "execution.engines.dask"
 
-    def __init__(self, compute_kwargs: tp.KwargsLike = None, **kwargs) -> None:
+    def __init__(
+        self,
+        compute_kwargs: tp.KwargsLike = None,
+        hide_inner_progress: tp.Optional[bool] = None,
+        **kwargs,
+    ) -> None:
         ExecutionEngine.__init__(
             self,
             compute_kwargs=compute_kwargs,
+            hide_inner_progress=hide_inner_progress,
             **kwargs,
         )
 
         self._compute_kwargs = self.resolve_setting(compute_kwargs, "compute_kwargs", merge=True)
+        self._hide_inner_progress = self.resolve_setting(hide_inner_progress, "hide_inner_progress")
 
     @property
     def compute_kwargs(self) -> tp.Kwargs:
         """Keyword arguments passed to `dask.compute`."""
         return self._compute_kwargs
+
+    @property
+    def hide_inner_progress(self) -> bool:
+        """Whether to hide progress bars within each thread."""
+        return self._hide_inner_progress
 
     def execute(
         self,
@@ -616,7 +687,11 @@ class DaskEngine(ExecutionEngine):
         assert_can_import("dask")
         import dask
 
-        with ProgressHidden():
+        if self.hide_inner_progress:
+            inner_progress_context = ProgressHidden()
+        else:
+            inner_progress_context = nullcontext()
+        with inner_progress_context:
             results_delayed = []
             for func, args, kwargs in tasks:
                 results_delayed.append(dask.delayed(func)(*args, **kwargs))
@@ -644,6 +719,7 @@ class RayEngine(ExecutionEngine):
         shutdown: tp.Optional[bool] = None,
         init_kwargs: tp.KwargsLike = None,
         remote_kwargs: tp.KwargsLike = None,
+        hide_inner_progress: tp.Optional[bool] = None,
         **kwargs,
     ) -> None:
         ExecutionEngine.__init__(
@@ -654,6 +730,7 @@ class RayEngine(ExecutionEngine):
             shutdown=shutdown,
             init_kwargs=init_kwargs,
             remote_kwargs=remote_kwargs,
+            hide_inner_progress=hide_inner_progress,
             **kwargs,
         )
 
@@ -663,6 +740,7 @@ class RayEngine(ExecutionEngine):
         self._shutdown = self.resolve_setting(shutdown, "shutdown")
         self._init_kwargs = self.resolve_setting(init_kwargs, "init_kwargs", merge=True)
         self._remote_kwargs = self.resolve_setting(remote_kwargs, "remote_kwargs", merge=True)
+        self._hide_inner_progress = self.resolve_setting(hide_inner_progress, "hide_inner_progress")
 
     @property
     def restart(self) -> bool:
@@ -694,6 +772,11 @@ class RayEngine(ExecutionEngine):
     def remote_kwargs(self) -> tp.Kwargs:
         """Keyword arguments passed to `ray.remote`."""
         return self._remote_kwargs
+
+    @property
+    def hide_inner_progress(self) -> bool:
+        """Whether to hide progress bars within each thread."""
+        return self._hide_inner_progress
 
     @classmethod
     def get_ray_refs(
@@ -779,7 +862,11 @@ class RayEngine(ExecutionEngine):
         assert_can_import("ray")
         import ray
 
-        with ProgressHidden():
+        if self.hide_inner_progress:
+            inner_progress_context = ProgressHidden()
+        else:
+            inner_progress_context = nullcontext()
+        with inner_progress_context:
             if self.restart:
                 if ray.is_initialized():
                     ray.shutdown()

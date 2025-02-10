@@ -424,11 +424,13 @@ execution = frozen_cfg(
             cls="ThreadPoolEngine",
             init_kwargs=flex_cfg(),
             timeout=None,
+            hide_inner_progress=True,
         ),
         processpool=flex_cfg(
             cls="ProcessPoolEngine",
             init_kwargs=flex_cfg(),
             timeout=None,
+            hide_inner_progress=True,
         ),
         pathos=flex_cfg(
             cls="PathosEngine",
@@ -438,6 +440,7 @@ execution = frozen_cfg(
             check_delay=0.001,
             show_progress=False,
             pbar_kwargs=flex_cfg(),
+            hide_inner_progress=True,
             join_pool=False,
         ),
         mpire=flex_cfg(
@@ -446,10 +449,12 @@ execution = frozen_cfg(
                 use_dill=True,
             ),
             apply_kwargs=flex_cfg(),
+            hide_inner_progress=True,
         ),
         dask=flex_cfg(
             cls="DaskEngine",
             compute_kwargs=flex_cfg(),
+            hide_inner_progress=True,
         ),
         ray=flex_cfg(
             cls="RayEngine",
@@ -459,6 +464,7 @@ execution = frozen_cfg(
             shutdown=False,
             init_kwargs=flex_cfg(),
             remote_kwargs=flex_cfg(),
+            hide_inner_progress=True,
         ),
     ),
 )
@@ -2402,6 +2408,7 @@ $context
             ),
         ),
         doc_ranker_config=flex_cfg(
+            dataset_id=None,
             cache_doc_store=True,
             cache_emb_store=True,
             doc_store_configs=flex_cfg(
