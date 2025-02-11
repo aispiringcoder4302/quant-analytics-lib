@@ -182,9 +182,8 @@ class DefineMixin(Hashable):
 
     def __repr__(self):
         dct = self.asdict(full=False)
-        attr_dct = {}
-        for k, v in self.fields_dict.items():
-            attr_dct[k] = attr.field(repr=v.repr)
+        fields_dict = self.fields_dict
+        attr_dct = {k: attr.field(repr=fields_dict[k].repr) for k, v in dct.items()}
         new_cls = attr.make_class(type(self).__name__, attr_dct, cmp=False)
         new_obj = new_cls(**dct)
         return new_obj.__repr__()
