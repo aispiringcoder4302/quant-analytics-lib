@@ -115,7 +115,7 @@ from vectorbtpro import _typing as tp
 from vectorbtpro.returns.accessors import ReturnsAccessor
 from vectorbtpro.utils import checks
 from vectorbtpro.utils.config import merge_dicts, Configured
-from vectorbtpro.utils.parsing import get_func_arg_names
+from vectorbtpro.utils.parsing import get_func_arg_names, has_variable_kwargs
 
 __all__ = [
     "QSAdapter",
@@ -146,9 +146,13 @@ def attach_qs_methods(cls: tp.Type[tp.T], replace_signature: bool = True) -> tp.
                     **kwargs,
                 ) -> tp.Any:
                     func_arg_names = get_func_arg_names(_func)
+                    has_var_kwargs = has_variable_kwargs(_func)
                     defaults = self.defaults
 
-                    pass_kwargs = dict()
+                    if has_var_kwargs:
+                        pass_kwargs = dict(kwargs)
+                    else:
+                        pass_kwargs = {}
                     for arg_name in func_arg_names:
                         if arg_name not in kwargs:
                             if arg_name in defaults:
@@ -160,7 +164,7 @@ def attach_qs_methods(cls: tp.Type[tp.T], replace_signature: bool = True) -> tp.
                                 pass_kwargs["periods"] = int(self.returns_acc.ann_factor)
                             elif arg_name == "periods_per_year":
                                 pass_kwargs["periods_per_year"] = int(self.returns_acc.ann_factor)
-                        else:
+                        elif not has_var_kwargs:
                             pass_kwargs[arg_name] = kwargs[arg_name]
 
                     returns = self.returns_acc.select_col_from_obj(
