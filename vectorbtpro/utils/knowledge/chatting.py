@@ -16,7 +16,6 @@ import hashlib
 import inspect
 import re
 import sys
-import warnings
 from pathlib import Path
 from collections.abc import MutableMapping
 
@@ -30,6 +29,7 @@ from vectorbtpro.utils.decorators import memoized_method, hybrid_method
 from vectorbtpro.utils.knowledge.formatting import ContentFormatter, HTMLFileFormatter, resolve_formatter
 from vectorbtpro.utils.parsing import get_func_arg_names, get_func_kwargs
 from vectorbtpro.utils.template import CustomTemplate, Sub, RepFunc
+from vectorbtpro.utils.warnings_ import warn
 
 try:
     if not tp.TYPE_CHECKING:
@@ -992,11 +992,10 @@ class Completions(Configured):
                 if len(encoded_context) > max_context_tokens:
                     context = tokenizer.decode(encoded_context[:max_context_tokens])
                     if not silence_warnings:
-                        warnings.warn(
+                        warn(
                             f"Context is too long ({len(encoded_context)}). "
                             f"Truncating to {max_context_tokens} tokens. "
                             f"Pass silence_warnings=True to silence this warning.",
-                            stacklevel=2,
                         )
             template_context = flat_merge_dicts(dict(context=context), template_context)
             context_prompt = context_prompt.substitute(template_context, eval_id="context_prompt")

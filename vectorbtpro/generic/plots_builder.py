@@ -12,7 +12,6 @@
 
 import inspect
 import string
-import warnings
 from collections import Counter
 
 from vectorbtpro import _typing as tp
@@ -25,6 +24,7 @@ from vectorbtpro.utils.config import Config, HybridConfig, merge_dicts
 from vectorbtpro.utils.parsing import get_func_arg_names, get_forward_args
 from vectorbtpro.utils.tagging import match_tags
 from vectorbtpro.utils.template import substitute_templates, CustomTemplate
+from vectorbtpro.utils.warnings_ import warn
 
 __all__ = []
 
@@ -454,9 +454,9 @@ class PlotsBuilderMixin(Base, metaclass=MetaPlotsBuilderMixin):
                     to_remove = (to_check and not whether_true) or (inv_to_check and whether_true)
                     if to_remove:
                         if to_check and warning_message is not None and not _silence_warnings:
-                            warnings.warn(warning_message)
+                            warn(warning_message)
                         if inv_to_check and inv_warning_message is not None and not _silence_warnings:
-                            warnings.warn(inv_warning_message)
+                            warn(inv_warning_message)
 
                         subplots_dct.pop(subplot_name, None)
                         custom_arg_names_dct.pop(subplot_name, None)
@@ -468,7 +468,7 @@ class PlotsBuilderMixin(Base, metaclass=MetaPlotsBuilderMixin):
         # Any subplots left?
         if len(subplots_dct) == 0:
             if not silence_warnings:
-                warnings.warn("No subplots to plot", stacklevel=2)
+                warn("No subplots to plot")
             return None
 
         # Set up figure
@@ -780,7 +780,7 @@ class PlotsBuilderMixin(Base, metaclass=MetaPlotsBuilderMixin):
                 subplot_layout[yaxis] = merge_dicts(dict(), yaxis_kwargs)
                 fig.update_layout(**subplot_layout)
             except Exception as e:
-                warnings.warn(f"Subplot '{subplot_name}' raised an exception", stacklevel=2)
+                warn(f"Subplot '{subplot_name}' raised an exception")
                 raise e
 
         # Hide legend labels

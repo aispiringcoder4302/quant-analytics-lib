@@ -125,8 +125,6 @@ dtype: object
 ![](/assets/images/api/returns_plots.dark.svg#only-dark){: .iimg loading=lazy }
 """
 
-import warnings
-
 import numpy as np
 import pandas as pd
 from pandas.tseries.offsets import BaseOffset
@@ -144,6 +142,7 @@ from vectorbtpro.returns import nb
 from vectorbtpro.utils import checks, chunking as ch, datetime_ as dt
 from vectorbtpro.utils.config import resolve_dict, merge_dicts, HybridConfig, Config
 from vectorbtpro.utils.decorators import hybrid_property, hybrid_method
+from vectorbtpro.utils.warnings_ import warn
 
 __all__ = [
     "ReturnsAccessor",
@@ -2415,12 +2414,9 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
             if self_copy.year_freq != reself.year_freq:
                 if not silence_warnings:
-                    warnings.warn(
-                        (
-                            f"Changing the year frequency will create a copy of this object. "
-                            f"Consider setting it upon object creation to re-use existing cache."
-                        ),
-                        stacklevel=2,
+                    warn(
+                        f"Changing the year frequency will create a copy of this object. "
+                        f"Consider setting it upon object creation to re-use existing cache."
                     )
                 for alias in reself.self_aliases:
                     if alias not in custom_arg_names:

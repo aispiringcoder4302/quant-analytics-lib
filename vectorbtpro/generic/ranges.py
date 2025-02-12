@@ -119,8 +119,6 @@ Name: group, dtype: object
 ![](/assets/images/api/ranges_plots.dark.svg#only-dark){: .iimg loading=lazy }
 """
 
-import warnings
-
 import numpy as np
 import pandas as pd
 
@@ -145,6 +143,7 @@ from vectorbtpro.utils.params import combine_params, Param
 from vectorbtpro.utils.parsing import get_func_kwargs
 from vectorbtpro.utils.random_ import set_seed
 from vectorbtpro.utils.template import substitute_templates
+from vectorbtpro.utils.warnings_ import warn
 
 __all__ = [
     "Ranges",
@@ -894,7 +893,7 @@ class Ranges(PriceRecords):
         if random_n is not None:
             self_col = self_col.random_n(random_n, seed=seed)
         if self_col.count() == 0:
-            warnings.warn("No ranges to plot. Relax the requirements.")
+            warn("No ranges to plot. Relax the requirements.")
 
         if ohlc_trace_kwargs is None:
             ohlc_trace_kwargs = {}
@@ -969,7 +968,7 @@ class Ranges(PriceRecords):
 
         proj_period = _resolve_period(proj_period)
         if isinstance(proj_period, int) and proj_period == 0:
-            warnings.warn("Projection period is zero. Setting to maximum.")
+            warn("Projection period is zero. Setting to maximum.")
             proj_period = int(np.max(self_col.duration.values))
         if plot_past_period is not None and isinstance(plot_past_period, str):
             plot_past_period = plot_past_period.lower().replace(" ", "")

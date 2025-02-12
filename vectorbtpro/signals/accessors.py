@@ -172,7 +172,6 @@ Name: 0, dtype: object
 This class inherits subplots from `vectorbtpro.generic.accessors.GenericAccessor`.
 """
 
-import warnings
 from functools import partialmethod
 
 import numpy as np
@@ -198,6 +197,7 @@ from vectorbtpro.utils.decorators import hybrid_method, hybrid_property
 from vectorbtpro.utils.enum_ import map_enum_fields
 from vectorbtpro.utils.random_ import set_seed_nb
 from vectorbtpro.utils.template import RepEval, substitute_templates
+from vectorbtpro.utils.warnings_ import warn
 
 __all__ = [
     "SignalsAccessor",
@@ -1160,7 +1160,7 @@ class SignalsAccessor(GenericAccessor):
                 ),
             )
             if skip_until_exit and until_next:
-                warnings.warn("skip_until_exit=True has only effect when until_next=False", stacklevel=2)
+                warn("skip_until_exit=True has only effect when until_next=False")
             out_dict["stop_ts"] = wrapper.wrap(stop_ts, group_by=False, **wrap_kwargs)
             return entries.vbt.signals.generate_exits(
                 jit_reg.resolve_option(nb.stop_place_nb, jitted),
@@ -1502,7 +1502,7 @@ class SignalsAccessor(GenericAccessor):
             return new_entries, exits
         else:
             if skip_until_exit and until_next:
-                warnings.warn("skip_until_exit=True has only effect when until_next=False", stacklevel=2)
+                warn("skip_until_exit=True has only effect when until_next=False")
             chunked = ch.specialize_chunked_option(
                 chunked,
                 arg_take_spec=dict(

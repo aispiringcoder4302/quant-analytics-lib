@@ -12,7 +12,6 @@
 
 import re
 import urllib.parse
-import warnings
 from functools import lru_cache
 
 import numpy as np
@@ -25,6 +24,7 @@ from vectorbtpro.utils import datetime_ as dt
 from vectorbtpro.utils.config import merge_dicts
 from vectorbtpro.utils.module_ import check_installed
 from vectorbtpro.utils.parsing import get_func_arg_names
+from vectorbtpro.utils.warnings_ import warn
 
 try:
     if not tp.TYPE_CHECKING:
@@ -286,7 +286,7 @@ class AVData(RemoteData):
 
         if use_parser and api_meta is None and (function is None or match_params):
             if not silence_warnings and cls.parse_api_meta.cache_info().misses == 0:
-                warnings.warn("Parsing API documentation...", stacklevel=2)
+                warn("Parsing API documentation...")
             try:
                 api_meta = cls.parse_api_meta()
             except Exception as e:

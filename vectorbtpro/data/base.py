@@ -13,7 +13,6 @@
 import inspect
 import string
 import traceback
-import warnings
 from pathlib import Path
 
 import numpy as np
@@ -43,6 +42,7 @@ from vectorbtpro.utils.parsing import get_func_arg_names, extend_args
 from vectorbtpro.utils.path_ import check_mkdir
 from vectorbtpro.utils.pickling import pdict, RecState
 from vectorbtpro.utils.template import Rep, RepEval, CustomTemplate, substitute_templates
+from vectorbtpro.utils.warnings_ import warn
 from vectorbtpro.registries.ch_registry import ch_reg
 from vectorbtpro.registries.jit_registry import jit_reg
 
@@ -1725,18 +1725,12 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
                 if not checks.is_index_equal(index, obj.index, check_names=False):
                     if missing == "nan":
                         if not silence_warnings:
-                            warnings.warn(
-                                "Symbols have mismatching index. Setting missing data points to NaN.",
-                                stacklevel=2,
-                            )
+                            warn("Symbols have mismatching index. Setting missing data points to NaN.")
                         index = index.union(obj.index)
                         index_changed = True
                     elif missing == "drop":
                         if not silence_warnings:
-                            warnings.warn(
-                                "Symbols have mismatching index. Dropping missing data points.",
-                                stacklevel=2,
-                            )
+                            warn("Symbols have mismatching index. Dropping missing data points.")
                         index = index.intersection(obj.index)
                         index_changed = True
                     elif missing == "raise":
@@ -1783,18 +1777,12 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
                 if not checks.is_index_equal(columns, obj_columns, check_names=False):
                     if missing == "nan":
                         if not silence_warnings:
-                            warnings.warn(
-                                "Symbols have mismatching columns. Setting missing data points to NaN.",
-                                stacklevel=2,
-                            )
+                            warn("Symbols have mismatching columns. Setting missing data points to NaN.")
                         columns = columns.union(obj_columns)
                         columns_changed = True
                     elif missing == "drop":
                         if not silence_warnings:
-                            warnings.warn(
-                                "Symbols have mismatching columns. Dropping missing data points.",
-                                stacklevel=2,
-                            )
+                            warn("Symbols have mismatching columns. Dropping missing data points.")
                         columns = columns.intersection(obj_columns)
                         columns_changed = True
                     elif missing == "raise":
@@ -2701,20 +2689,14 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             out = cls.fetch_feature(feature, **fetch_kwargs)
             if out is None:
                 if not silence_warnings:
-                    warnings.warn(
-                        f"Feature '{str(feature)}' returned None. Skipping.",
-                        stacklevel=2,
-                    )
+                    warn(f"Feature '{str(feature)}' returned None. Skipping.")
             return out
         except Exception as e:
             if not skip_on_error:
                 raise e
             if not silence_warnings:
-                warnings.warn(traceback.format_exc(), stacklevel=2)
-                warnings.warn(
-                    f"Feature '{str(feature)}' raised an exception. Skipping.",
-                    stacklevel=2,
-                )
+                warn(traceback.format_exc())
+                warn(f"Feature '{str(feature)}' raised an exception. Skipping.")
         return None
 
     @classmethod
@@ -2747,20 +2729,14 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             out = cls.fetch_symbol(symbol, **fetch_kwargs)
             if out is None:
                 if not silence_warnings:
-                    warnings.warn(
-                        f"Symbol '{str(symbol)}' returned None. Skipping.",
-                        stacklevel=2,
-                    )
+                    warn(f"Symbol '{str(symbol)}' returned None. Skipping.")
             return out
         except Exception as e:
             if not skip_on_error:
                 raise e
             if not silence_warnings:
-                warnings.warn(traceback.format_exc(), stacklevel=2)
-                warnings.warn(
-                    f"Symbol '{str(symbol)}' raised an exception. Skipping.",
-                    stacklevel=2,
-                )
+                warn(traceback.format_exc())
+                warn(f"Symbol '{str(symbol)}' raised an exception. Skipping.")
         return None
 
     @classmethod
@@ -3009,10 +2985,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
                         common_tz_convert = _tz_convert
                     elif common_tz_convert != _tz_convert:
                         if not silence_warnings:
-                            warnings.warn(
-                                f"Returned objects have different timezones (tz_convert). Setting to UTC.",
-                                stacklevel=2,
-                            )
+                            warn(f"Returned objects have different timezones (tz_convert). Setting to UTC.")
                         common_tz_convert = "utc"
                 if _freq is not None:
                     if common_freq is None:
@@ -3022,15 +2995,9 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
                 if _data.size == 0:
                     if not silence_warnings:
                         if keys_are_features:
-                            warnings.warn(
-                                f"Feature '{str(k)}' returned an empty array. Skipping.",
-                                stacklevel=2,
-                            )
+                            warn(f"Feature '{str(k)}' returned an empty array. Skipping.")
                         else:
-                            warnings.warn(
-                                f"Symbol '{str(k)}' returned an empty array. Skipping.",
-                                stacklevel=2,
-                            )
+                            warn(f"Symbol '{str(k)}' returned an empty array. Skipping.")
                 else:
                     data[k] = _data
                     returned_kwargs[k] = _returned_kwargs
@@ -3110,20 +3077,14 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             out = self.update_feature(feature, **update_kwargs)
             if out is None:
                 if not silence_warnings:
-                    warnings.warn(
-                        f"Feature '{str(feature)}' returned None. Skipping.",
-                        stacklevel=2,
-                    )
+                    warn(f"Feature '{str(feature)}' returned None. Skipping.")
             return out
         except Exception as e:
             if not skip_on_error:
                 raise e
             if not silence_warnings:
-                warnings.warn(traceback.format_exc(), stacklevel=2)
-                warnings.warn(
-                    f"Feature '{str(feature)}' raised an exception. Skipping.",
-                    stacklevel=2,
-                )
+                warn(traceback.format_exc())
+                warn(f"Feature '{str(feature)}' raised an exception. Skipping.")
         return None
 
     def update_symbol(
@@ -3152,20 +3113,14 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             out = self.update_symbol(symbol, **update_kwargs)
             if out is None:
                 if not silence_warnings:
-                    warnings.warn(
-                        f"Symbol '{str(symbol)}' returned None. Skipping.",
-                        stacklevel=2,
-                    )
+                    warn(f"Symbol '{str(symbol)}' returned None. Skipping.")
             return out
         except Exception as e:
             if not skip_on_error:
                 raise e
             if not silence_warnings:
-                warnings.warn(traceback.format_exc(), stacklevel=2)
-                warnings.warn(
-                    f"Symbol '{str(symbol)}' raised an exception. Skipping.",
-                    stacklevel=2,
-                )
+                warn(traceback.format_exc())
+                warn(f"Symbol '{str(symbol)}' raised an exception. Skipping.")
         return None
 
     def update(
@@ -3261,15 +3216,9 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
                 if new_obj.size == 0:
                     if not silence_warnings:
                         if self.feature_oriented:
-                            warnings.warn(
-                                f"Feature '{str(k)}' returned an empty array. Skipping.",
-                                stacklevel=2,
-                            )
+                            warn(f"Feature '{str(k)}' returned an empty array. Skipping.")
                         else:
-                            warnings.warn(
-                                f"Symbol '{str(k)}' returned an empty array. Skipping.",
-                                stacklevel=2,
-                            )
+                            warn(f"Symbol '{str(k)}' returned an empty array. Skipping.")
                     skip_key = True
                 else:
                     if not isinstance(new_obj, (pd.Series, pd.DataFrame)):
@@ -3313,15 +3262,9 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         if from_index is None:
             if not silence_warnings:
                 if self.feature_oriented:
-                    warnings.warn(
-                        f"None of the features were updated",
-                        stacklevel=2,
-                    )
+                    warn(f"None of the features were updated")
                 else:
-                    warnings.warn(
-                        f"None of the symbols were updated",
-                        stacklevel=2,
-                    )
+                    warn(f"None of the symbols were updated")
             return self.copy()
 
         # Concatenate the updated old data and the new data
@@ -3775,7 +3718,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             if raise_errors:
                 raise e
             if not silence_warnings:
-                warnings.warn(func_name + ": " + str(e), stacklevel=2)
+                warn(func_name + ": " + str(e))
         return NoResult
 
     @classmethod

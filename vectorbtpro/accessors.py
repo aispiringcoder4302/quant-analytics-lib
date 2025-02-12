@@ -52,8 +52,6 @@ Class methods of any accessor can be conveniently accessed using `pd_acc`, `sr_a
     Accessors in vectorbt are not cached, so querying `df.vbt` twice will also call `Vbt_DFAccessor` twice.
     You can change this in global settings."""
 
-import warnings
-
 import pandas as pd
 from pandas.core.accessor import DirNamesMixin
 
@@ -62,6 +60,7 @@ from vectorbtpro.base.accessors import BaseIDXAccessor
 from vectorbtpro.base.wrapping import ArrayWrapper
 from vectorbtpro.generic.accessors import GenericAccessor, GenericSRAccessor, GenericDFAccessor
 from vectorbtpro.utils.base import Base
+from vectorbtpro.utils.warnings_ import warn
 
 __all__ = [
     "Vbt_Accessor",
@@ -129,12 +128,10 @@ def register_accessor(name: str, cls: tp.Type[DirNamesMixin]) -> tp.Callable:
         caching_cfg = settings["caching"]
 
         if hasattr(cls, name):
-            warnings.warn(
+            warn(
                 f"registration of accessor {repr(accessor)} under name "
                 f"{repr(name)} for type {repr(cls)} is overriding a preexisting "
-                "attribute with the same name.",
-                UserWarning,
-                stacklevel=2,
+                "attribute with the same name."
             )
         if caching_cfg["use_cached_accessors"]:
             setattr(cls, name, CachedAccessor(name, accessor))

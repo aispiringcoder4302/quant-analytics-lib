@@ -10,7 +10,6 @@
 
 """Utilities for progress bars."""
 
-import warnings
 from functools import wraps
 from numbers import Number
 from time import time as utc_time
@@ -22,6 +21,7 @@ from vectorbtpro.registries.pbar_registry import PBarRegistry, pbar_reg
 from vectorbtpro.utils.attr_ import MISSING
 from vectorbtpro.utils.base import Base
 from vectorbtpro.utils.config import merge_dicts
+from vectorbtpro.utils.warnings_ import warn
 
 __all__ = [
     "ProgressBar",
@@ -246,7 +246,7 @@ class ProgressBar(Base):
                     else:
                         bar_id = self.bar_id
                     if not self.silence_warnings:
-                        warnings.warn(
+                        warn(
                             f"Two active progress bars share the same bar id {bar_id}. "
                             f"Setting bar id of the new progress bar to '{new_bar_id}'."
                         )

@@ -13,7 +13,6 @@
 import inspect
 import multiprocessing
 import uuid
-import warnings
 from functools import wraps
 
 import numpy as np
@@ -30,6 +29,7 @@ from vectorbtpro.utils.execution import Task, execute
 from vectorbtpro.utils.merging import MergeFunc, parse_merge_func
 from vectorbtpro.utils.parsing import annotate_args, ann_args_to_args, match_ann_arg, get_func_arg_names, Regex
 from vectorbtpro.utils.template import substitute_templates, Rep
+from vectorbtpro.utils.warnings_ import warn
 
 __all__ = [
     "ChunkMeta",
@@ -716,12 +716,9 @@ class SequenceTaker(ContainerTaker):
                                 size_i = i
                                 size = new_size
                             elif size != new_size:
-                                warnings.warn(
-                                    (
-                                        f"Arguments at indices {size_i} and {i} have conflicting sizes "
-                                        f"{size} and {new_size}. Setting size to None."
-                                    ),
-                                    stacklevel=2,
+                                warn(
+                                    f"Arguments at indices {size_i} and {i} have conflicting sizes "
+                                    f"{size} and {new_size}. Setting size to None."
                                 )
                                 return None
                     except NotImplementedError as e:
@@ -746,12 +743,9 @@ class SequenceTaker(ContainerTaker):
                 take_spec = cont_take_spec[i]
             else:
                 if not silence_warnings:
-                    warnings.warn(
-                        (
-                            f"Argument at index {i} not found in SequenceTaker.cont_take_spec. "
-                            "Setting its specification to None."
-                        ),
-                        stacklevel=2,
+                    warn(
+                        f"Argument at index {i} not found in SequenceTaker.cont_take_spec. "
+                        "Setting its specification to None."
                     )
                 take_spec = None
             new_obj.append(
@@ -809,12 +803,9 @@ class MappingTaker(ContainerTaker):
                                 size_k = k
                                 size = new_size
                             elif size != new_size:
-                                warnings.warn(
-                                    (
-                                        f"Arguments with keys '{size_k}' and '{k}' have conflicting sizes "
-                                        f"{size} and {new_size}. Setting size to None."
-                                    ),
-                                    stacklevel=2,
+                                warn(
+                                    f"Arguments with keys '{size_k}' and '{k}' have conflicting sizes "
+                                    f"{size} and {new_size}. Setting size to None."
                                 )
                                 return None
                     except NotImplementedError as e:
@@ -839,12 +830,9 @@ class MappingTaker(ContainerTaker):
                 take_spec = cont_take_spec[k]
             else:
                 if not silence_warnings:
-                    warnings.warn(
-                        (
-                            f"Argument with key '{k}' not found in MappingTaker.cont_take_spec. "
-                            "Setting its specification to None."
-                        ),
-                        stacklevel=2,
+                    warn(
+                        f"Argument with key '{k}' not found in MappingTaker.cont_take_spec. "
+                        "Setting its specification to None."
                     )
                 take_spec = None
             new_obj[k] = chunker.take_from_arg(
@@ -1376,10 +1364,7 @@ class Chunker(Configured):
             if take_spec is MISSING:
                 take_spec = None
                 if not silence_warnings:
-                    warnings.warn(
-                        f"Argument '{k}' not found in arg_take_spec. Setting its specification to None.",
-                        stacklevel=2,
-                    )
+                    warn(f"Argument '{k}' not found in arg_take_spec. Setting its specification to None.")
             result = cls.take_from_arg(
                 v["value"],
                 take_spec,
@@ -1659,12 +1644,9 @@ class Chunker(Configured):
                             size_k = k
                             size = new_size
                         elif size != new_size:
-                            warnings.warn(
-                                (
-                                    f"Arguments '{size_k}' and '{k}' have conflicting sizes "
-                                    f"{size} and {new_size}. Setting size to None."
-                                ),
-                                stacklevel=2,
+                            warn(
+                                f"Arguments '{size_k}' and '{k}' have conflicting sizes "
+                                f"{size} and {new_size}. Setting size to None."
                             )
                             return None
                 except NotImplementedError as e:

@@ -10,8 +10,6 @@
 
 """Base classes and functions for resampling."""
 
-import warnings
-
 import numpy as np
 import pandas as pd
 
@@ -22,6 +20,7 @@ from vectorbtpro.registries.jit_registry import jit_reg
 from vectorbtpro.utils import checks, datetime_ as dt
 from vectorbtpro.utils.config import Configured
 from vectorbtpro.utils.decorators import cached_property, hybrid_method
+from vectorbtpro.utils.warnings_ import warn
 
 __all__ = [
     "Resampler",
@@ -184,14 +183,12 @@ class Resampler(Configured):
                     source_freq = dt.to_timedelta64(source_freq)
                 except ValueError as e:
                     if not silence_warnings:
-                        warnings.warn(f"Cannot convert {source_freq} to np.timedelta64. Setting to None.", stacklevel=2)
+                        warn(f"Cannot convert {source_freq} to np.timedelta64. Setting to None.")
                         warned = True
                     source_freq = None
         if source_freq is None:
             if not warned and not silence_warnings:
-                warnings.warn(
-                    "Using right bound of source index without frequency. Set source frequency.", stacklevel=2
-                )
+                warn("Using right bound of source index without frequency. Set source frequency.")
         return source_freq
 
     def get_np_target_freq(self, silence_warnings: tp.Optional[bool] = None) -> tp.AnyPandasFrequency:
@@ -207,14 +204,12 @@ class Resampler(Configured):
                     target_freq = dt.to_timedelta64(target_freq)
                 except ValueError as e:
                     if not silence_warnings:
-                        warnings.warn(f"Cannot convert {target_freq} to np.timedelta64. Setting to None.", stacklevel=2)
+                        warn(f"Cannot convert {target_freq} to np.timedelta64. Setting to None.")
                         warned = True
                     target_freq = None
         if target_freq is None:
             if not warned and not silence_warnings:
-                warnings.warn(
-                    "Using right bound of target index without frequency. Set target frequency.", stacklevel=2
-                )
+                warn("Using right bound of target index without frequency. Set target frequency.")
         return target_freq
 
     @classmethod

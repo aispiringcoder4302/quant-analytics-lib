@@ -10,7 +10,6 @@
 
 """Classes for preparing portfolio simulations."""
 
-import warnings
 from collections import namedtuple
 from functools import cached_property as cachedproperty
 
@@ -37,6 +36,7 @@ from vectorbtpro.utils import checks, chunking as ch
 from vectorbtpro.utils.config import Configured, merge_dicts, ReadonlyConfig
 from vectorbtpro.utils.mapping import to_field_mapping
 from vectorbtpro.utils.template import CustomTemplate, substitute_templates, RepFunc
+from vectorbtpro.utils.warnings_ import warn
 
 __all__ = [
     "PFPrepResult",
@@ -403,7 +403,7 @@ class BasePFPreparer(BasePreparer):
             arg_name="init_position",
         )
         if (((init_position > 0) | (init_position < 0)) & np.isnan(self.init_price)).any():
-            warnings.warn(f"Initial position has undefined price. Set init_price.", stacklevel=2)
+            warn(f"Initial position has undefined price. Set init_price.")
         return init_position
 
     @cachedproperty

@@ -16,7 +16,6 @@ import inspect
 import pkgutil
 import sys
 import urllib.request
-import warnings
 import webbrowser
 from pathlib import Path
 from types import ModuleType
@@ -24,6 +23,7 @@ from types import ModuleType
 from vectorbtpro import _typing as tp
 from vectorbtpro._opt_deps import opt_dep_config
 from vectorbtpro.utils.config import HybridConfig
+from vectorbtpro.utils.warnings_ import warn
 
 __all__ = [
     "import_module_from_path",
@@ -255,7 +255,7 @@ def warn_cannot_import(pkg_name: str) -> bool:
         assert_can_import(pkg_name)
         return False
     except ImportError as e:
-        warnings.warn(str(e), stacklevel=2)
+        warn(str(e))
         return True
 
 

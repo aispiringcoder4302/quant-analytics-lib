@@ -10,8 +10,6 @@
 
 """Classes for wrapping NumPy arrays into Series/DataFrames."""
 
-import warnings
-
 import numpy as np
 import pandas as pd
 from pandas.core.groupby import GroupBy as PandasGroupBy
@@ -32,6 +30,7 @@ from vectorbtpro.utils.decorators import hybrid_method, cached_method, cached_pr
 from vectorbtpro.utils.execution import Task, execute
 from vectorbtpro.utils.params import ItemParamable
 from vectorbtpro.utils.parsing import get_func_arg_names
+from vectorbtpro.utils.warnings_ import warn
 
 if tp.TYPE_CHECKING:
     from vectorbtpro.base.accessors import BaseIDXAccessor as BaseIDXAccessorT
@@ -981,10 +980,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
             try:
                 col_mapper = pd_indexing_func(i_wrapper.wrap_reduced(np.arange(n_cols), columns=columns))
             except pd.core.indexing.IndexingError as e:
-                warnings.warn(
-                    "Columns only: Make sure to treat this instance as a Series of columns rather than a DataFrame",
-                    stacklevel=2,
-                )
+                warn("Columns only: Make sure to treat this instance as a Series of columns rather than a DataFrame")
                 raise e
             if checks.is_series(col_mapper):
                 new_columns = col_mapper.index
@@ -2281,12 +2277,9 @@ class Wrapping(Configured, HasWrapper, IndexApplier, AttrResolverMixin):
 
             if wrapper_copy.freq != self.wrapper.freq:
                 if not silence_warnings:
-                    warnings.warn(
-                        (
-                            f"Changing the frequency will create a copy of this instance. "
-                            f"Consider setting it upon instantiation to re-use existing cache."
-                        ),
-                        stacklevel=2,
+                    warn(
+                        f"Changing the frequency will create a copy of this instance. "
+                        f"Consider setting it upon instantiation to re-use existing cache."
                     )
                 self_copy = self.replace(wrapper=wrapper_copy)
                 for alias in self.self_aliases:

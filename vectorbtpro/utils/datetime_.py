@@ -11,7 +11,6 @@
 """Utilities for working with dates and time."""
 
 import re
-import warnings
 from collections import namedtuple
 from datetime import datetime, timezone, timedelta, tzinfo, date, time
 from functools import partial
@@ -26,7 +25,7 @@ from vectorbtpro.utils import checks
 from vectorbtpro.utils.array_ import min_count_nb
 from vectorbtpro.utils.attr_ import DefineMixin, define
 from vectorbtpro.utils.config import merge_dicts, HybridConfig
-from vectorbtpro.utils.parsing import WarningsFiltered
+from vectorbtpro.utils.warnings_ import warn, WarningsFiltered
 
 __all__ = [
     "DTC",
@@ -558,7 +557,7 @@ def to_freq(freq: tp.FrequencyLike, allow_offset: bool = True, keep_offset: bool
                 if to_offset(td_freq) == freq:
                     freq = td_freq
                 else:
-                    warnings.warn(f"Ambiguous frequency {freq}", stacklevel=2)
+                    warn(f"Ambiguous frequency {freq}")
             except Exception as e:
                 pass
         return freq

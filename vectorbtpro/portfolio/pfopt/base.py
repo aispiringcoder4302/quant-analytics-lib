@@ -11,7 +11,6 @@
 """Base functions and classes for portfolio optimization."""
 
 import inspect
-import warnings
 
 import numpy as np
 import pandas as pd
@@ -45,12 +44,11 @@ from vectorbtpro.utils.parsing import (
     flatten_ann_args,
     unflatten_ann_args,
     ann_args_to_args,
-    warn_stdout,
-    WarningsFiltered,
 )
 from vectorbtpro.utils.pickling import pdict
 from vectorbtpro.utils.random_ import set_seed_nb
 from vectorbtpro.utils.template import substitute_templates, Rep, RepFunc, CustomTemplate
+from vectorbtpro.utils.warnings_ import warn, warn_stdout, WarningsFiltered
 
 if tp.TYPE_CHECKING:
     from vectorbtpro.portfolio.base import Portfolio as PortfolioT
@@ -762,7 +760,7 @@ def pypfopt_optimize(
                 if isinstance(e, ValueError) and "expected return exceeding the risk-free rate" not in str(e):
                     raise e
                 if ignore_opt_errors:
-                    warnings.warn(str(e), stacklevel=2)
+                    warn(str(e))
                     return {}
                 raise e
 
@@ -780,7 +778,7 @@ def pypfopt_optimize(
             passed_arg_names.remove("weights")
             unused_arg_names = passed_arg_names.difference(kwargs["used_arg_names"])
             if len(unused_arg_names) > 0:
-                warnings.warn(f"Some arguments were not used: {unused_arg_names}", stacklevel=2)
+                warn(f"Some arguments were not used: {unused_arg_names}")
 
             if not discrete_allocation:
                 weights = {k: 1 if v >= 1 else v for k, v in weights.items()}
@@ -1578,7 +1576,7 @@ def riskfolio_optimize(
                     if ann_factor is not None:
                         Q /= ann_factor
                     else:
-                        warnings.warn(f"Set frequency and year frequency to adjust expected returns", stacklevel=2)
+                        warn(f"Set frequency and year frequency to adjust expected returns")
                     kwargs["P"] = P
                     unused_arg_names.add("P")
                     kwargs["Q"] = Q
@@ -1615,7 +1613,7 @@ def riskfolio_optimize(
                     if ann_factor is not None:
                         Q_f /= ann_factor
                     else:
-                        warnings.warn(f"Set frequency and year frequency to adjust expected returns", stacklevel=2)
+                        warn(f"Set frequency and year frequency to adjust expected returns")
                     kwargs["P_f"] = P_f
                     unused_arg_names.add("P_f")
                     kwargs["Q_f"] = Q_f
@@ -1645,7 +1643,7 @@ def riskfolio_optimize(
 
             # Post-process weights
             if len(unused_arg_names) > 0:
-                warnings.warn(f"Some arguments were not used: {unused_arg_names}", stacklevel=2)
+                warn(f"Some arguments were not used: {unused_arg_names}")
             if weights is None:
                 weights = {}
             if isinstance(weights, pd.DataFrame):

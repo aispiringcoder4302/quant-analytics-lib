@@ -410,7 +410,6 @@ To remove all setups:
 
 import inspect
 import sys
-import warnings
 from collections.abc import ValuesView
 from datetime import datetime, timezone, timedelta
 from functools import wraps
@@ -429,6 +428,7 @@ from vectorbtpro.utils.decorators import cacheableT, cacheable_property
 from vectorbtpro.utils.formatting import ptable
 from vectorbtpro.utils.parsing import Regex, hash_args, UnhashableArgsError, get_func_arg_names
 from vectorbtpro.utils.profiling import Timer
+from vectorbtpro.utils.warnings_ import warn
 
 __all__ = [
     "CacheableRegistry",
@@ -1252,15 +1252,9 @@ class CABaseSetup(CAMetrics, DefineMixin):
             object.__setattr__(self, "whitelist", True)
         else:
             if caching_cfg["disable"] and not caching_cfg["disable_whitelist"] and not silence_warnings:
-                warnings.warn(
-                    "This operation has no effect: caching is disabled globally and this setup is not whitelisted",
-                    stacklevel=2,
-                )
+                warn("This operation has no effect: caching is disabled globally and this setup is not whitelisted")
         if caching_cfg["disable"] and caching_cfg["disable_whitelist"] and not silence_warnings:
-            warnings.warn(
-                "This operation has no effect: caching and whitelisting are disabled globally",
-                stacklevel=2,
-            )
+            warn("This operation has no effect: caching and whitelisting are disabled globally")
         object.__setattr__(self, "_use_cache_lut", datetime.now(timezone.utc))
 
     def disable_caching(self, clear_cache: bool = True) -> None:

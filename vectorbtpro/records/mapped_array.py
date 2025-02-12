@@ -414,8 +414,6 @@ To use scatterplots or any other plots that require index, convert to pandas fir
 `vectorbtpro.generic.accessors.GenericAccessor.plot`.
 """
 
-import warnings
-
 import numpy as np
 import pandas as pd
 
@@ -438,6 +436,7 @@ from vectorbtpro.utils.config import resolve_dict, merge_dicts, Config, HybridCo
 from vectorbtpro.utils.decorators import hybrid_method, cached_method
 from vectorbtpro.utils.magic_decorators import attach_binary_magic_methods, attach_unary_magic_methods
 from vectorbtpro.utils.mapping import to_value_mapping, apply_mapping
+from vectorbtpro.utils.warnings_ import warn
 
 __all__ = [
     "MappedArray",
@@ -1799,10 +1798,7 @@ class MappedArray(Analyzable):
                     idx_arr = self_.idx_arr
                 else:
                     if not silence_warnings:
-                        warnings.warn(
-                            "Multiple values are pointing to the same position. Only the latest value is used.",
-                            stacklevel=2,
-                        )
+                        warn("Multiple values are pointing to the same position. Only the latest value is used.")
                     self_ = self
             else:
                 self_ = self

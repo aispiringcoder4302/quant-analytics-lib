@@ -12,7 +12,6 @@
 
 import ast
 import inspect
-import warnings
 
 import numpy as np
 import pandas as pd
@@ -41,6 +40,7 @@ from vectorbtpro.utils.eval_ import evaluate
 from vectorbtpro.utils.magic_decorators import attach_binary_magic_methods, attach_unary_magic_methods
 from vectorbtpro.utils.parsing import get_context_vars, get_func_arg_names
 from vectorbtpro.utils.template import substitute_templates
+from vectorbtpro.utils.warnings_ import warn
 
 if tp.TYPE_CHECKING:
     from vectorbtpro.data.base import Data as DataT
@@ -311,12 +311,9 @@ class BaseIDXAccessor(Configured, IndexApplier):
                     freq = dt.to_timedelta(freq, approximate=True)
                 return (index[-1] - index[0]) / freq + 1
             if not wrapping_cfg["silence_warnings"]:
-                warnings.warn(
-                    (
-                        "Couldn't parse the frequency of index. Pass it as `freq` or "
-                        "define it globally under `settings.wrapping`."
-                    ),
-                    stacklevel=2,
+                warn(
+                    "Couldn't parse the frequency of index. Pass it as `freq` or "
+                    "define it globally under `settings.wrapping`."
                 )
         if checks.is_number(index[0]) and checks.is_number(index[-1]):
             freq = cls_or_self.get_freq(index=index, freq=freq, allow_offset=False, allow_numeric=True)
@@ -324,7 +321,7 @@ class BaseIDXAccessor(Configured, IndexApplier):
                 return (index[-1] - index[0]) / freq + 1
             return index[-1] - index[0] + 1
         if not wrapping_cfg["silence_warnings"]:
-            warnings.warn("Index is neither datetime-like nor integer", stacklevel=2)
+            warn("Index is neither datetime-like nor integer")
         return cls_or_self.get_periods(index=index)
 
     @property
@@ -349,12 +346,9 @@ class BaseIDXAccessor(Configured, IndexApplier):
         freq = self.freq
         if freq is None:
             if not silence_warnings:
-                warnings.warn(
-                    (
-                        "Couldn't parse the frequency of index. Pass it as `freq` or "
-                        "define it globally under `settings.wrapping`."
-                    ),
-                    stacklevel=2,
+                warn(
+                    "Couldn't parse the frequency of index. Pass it as `freq` or "
+                    "define it globally under `settings.wrapping`."
                 )
             return a
         if not isinstance(freq, pd.Timedelta):

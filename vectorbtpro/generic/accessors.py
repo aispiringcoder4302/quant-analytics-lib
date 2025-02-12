@@ -196,7 +196,6 @@ Name: 0, dtype: object
 ![](/assets/images/api/generic_plots.dark.svg#only-dark){: .iimg loading=lazy }
 """
 
-import warnings
 from functools import partial
 
 import numpy as np
@@ -229,6 +228,7 @@ from vectorbtpro.utils.decorators import hybrid_method, hybrid_property
 from vectorbtpro.utils.enum_ import map_enum_fields
 from vectorbtpro.utils.mapping import apply_mapping, to_value_mapping
 from vectorbtpro.utils.template import substitute_templates
+from vectorbtpro.utils.warnings_ import warn
 
 try:
     import bottleneck as bn
@@ -3870,12 +3870,9 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
             if not checks.is_deep_equal(self_copy.mapping, reself.mapping):
                 if not silence_warnings:
-                    warnings.warn(
-                        (
-                            f"Changing the mapping will create a copy of this object. "
-                            f"Consider setting it upon object creation to re-use existing cache."
-                        ),
-                        stacklevel=2,
+                    warn(
+                        f"Changing the mapping will create a copy of this object. "
+                        f"Consider setting it upon object creation to re-use existing cache."
                     )
                 for alias in reself.self_aliases:
                     if alias not in custom_arg_names:
@@ -4702,10 +4699,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             fig.update_layout(sliders=sliders)
 
         if contains_nan:
-            warnings.warn(
-                "Data contains NaNs. Use `fillna` argument or `show` method in case of visualization issues.",
-                stacklevel=2,
-            )
+            warn("Data contains NaNs. Use `fillna` argument or `show` method in case of visualization issues.")
         return fig
 
     def qqplot(

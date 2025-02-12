@@ -14,7 +14,6 @@ import concurrent.futures
 import enum
 import inspect
 import time
-import warnings
 from functools import partial, wraps
 from pathlib import Path
 from contextlib import nullcontext
@@ -38,6 +37,7 @@ from vectorbtpro.utils.path_ import remove_dir, file_exists
 from vectorbtpro.utils.pbar import ProgressBar, ProgressHidden
 from vectorbtpro.utils.pickling import load, save
 from vectorbtpro.utils.template import CustomTemplate, substitute_templates
+from vectorbtpro.utils.warnings_ import warn
 
 try:
     if not tp.TYPE_CHECKING:
@@ -1939,7 +1939,7 @@ class Executor(Configured):
                 n_chunks = 1
             else:
                 if cache_chunks:
-                    warnings.warn("Cannot cache chunks without chunking", stacklevel=2)
+                    warn("Cannot cache chunks without chunking")
                     cache_chunks = False
                 self.call_pre_execute_func(
                     cache_chunks=cache_chunks,
@@ -1998,7 +1998,7 @@ class Executor(Configured):
 
         if isinstance(tasks, CustomTemplate):
             if cache_chunks:
-                warnings.warn("Cannot cache chunks with custom chunking", stacklevel=2)
+                warn("Cannot cache chunks with custom chunking")
                 cache_chunks = False
             tasks = substitute_templates(tasks, template_context, eval_id="tasks")
             if hasattr(tasks, "__len__"):
@@ -2315,7 +2315,7 @@ class Executor(Configured):
 
         elif distribute.lower() == "chunks":
             if cache_chunks:
-                warnings.warn("Cannot cache chunks with chunk distribution", stacklevel=2)
+                warn("Cannot cache chunks with chunk distribution")
                 cache_chunks = False
             if indices_sorted and not hasattr(tasks, "__len__"):
                 chunk_idx = 0

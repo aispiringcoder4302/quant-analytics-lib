@@ -22,6 +22,7 @@ from vectorbtpro.utils.base import Base
 from vectorbtpro.utils.config import merge_dicts, Configured
 from vectorbtpro.utils.parsing import get_func_kwargs
 from vectorbtpro.utils.requests_ import text_to_giphy_url
+from vectorbtpro.utils.warnings_ import warn
 
 __all__ = [
     "TelegramBot",
@@ -394,7 +395,6 @@ else:
     import asyncio
     import platform
     import signal
-    import warnings
 
     from telegram import Update
     from telegram.ext import (
@@ -768,11 +768,10 @@ else:
                     for sig in stop_signals or []:
                         self.loop.add_signal_handler(sig, _raise_system_exit)
             except NotImplementedError as exc:
-                warnings.warn(
+                warn(
                     f"Could not add signal handlers for the stop signals {stop_signals} due to "
                     f"exception `{exc!r}`. If your event loop does not implement `add_signal_handler`,"
-                    " please pass `stop_signals=None`.",
-                    stacklevel=3,
+                    " please pass `stop_signals=None`."
                 )
 
             try:

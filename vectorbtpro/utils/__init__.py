@@ -55,6 +55,7 @@ if TYPE_CHECKING:
     from vectorbtpro.utils.tagging import *
     from vectorbtpro.utils.telegram import *
     from vectorbtpro.utils.template import *
+    from vectorbtpro.utils.warnings_ import *
 
 __import_if_installed__ = dict()
 __import_if_installed__["figure"] = "plotly"

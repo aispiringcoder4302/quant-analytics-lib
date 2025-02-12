@@ -33,7 +33,6 @@ import functools
 import inspect
 import itertools
 import re
-import warnings
 from collections import Counter, OrderedDict
 from types import ModuleType, FunctionType
 
@@ -72,15 +71,10 @@ from vectorbtpro.utils.params import (
     is_single_param_value,
     params_to_list,
 )
-from vectorbtpro.utils.parsing import (
-    get_expr_var_names,
-    get_func_arg_names,
-    get_func_kwargs,
-    suppress_stdout,
-    WarningsFiltered,
-)
+from vectorbtpro.utils.parsing import get_expr_var_names, get_func_arg_names, get_func_kwargs, suppress_stdout
 from vectorbtpro.utils.random_ import set_seed
 from vectorbtpro.utils.template import has_templates, substitute_templates, Rep
+from vectorbtpro.utils.warnings_ import warn, WarningsFiltered
 
 __all__ = [
     "IndicatorBase",
@@ -950,10 +944,7 @@ class IndicatorBase(Analyzable):
             if isinstance(return_raw, str):
                 if return_raw.lower() == "outputs":
                     if use_run_unique and not silence_warnings:
-                        warnings.warn(
-                            "Raw outputs are produced by unique parameter combinations when run_unique=True",
-                            stacklevel=2,
-                        )
+                        warn("Raw outputs are produced by unique parameter combinations when run_unique=True")
                     return outputs
                 else:
                     raise ValueError(f"Invalid return_raw: '{return_raw}'")
@@ -961,10 +952,7 @@ class IndicatorBase(Analyzable):
             # Return cache
             if kwargs.get("return_cache", False):
                 if use_run_unique and not silence_warnings:
-                    warnings.warn(
-                        "Cache is produced by unique parameter combinations when run_unique=True",
-                        stacklevel=2,
-                    )
+                    warn("Cache is produced by unique parameter combinations when run_unique=True")
                 return outputs
 
             # Post-process results
@@ -980,12 +968,9 @@ class IndicatorBase(Analyzable):
                 if len(output_list) > num_ret_outputs:
                     other_list = output_list[num_ret_outputs:]
                     if use_run_unique and not silence_warnings:
-                        warnings.warn(
-                            (
-                                "Additional output objects are produced by unique parameter combinations when"
-                                " run_unique=True"
-                            ),
-                            stacklevel=2,
+                        warn(
+                            "Additional output objects are produced by unique parameter combinations "
+                            "when run_unique=True"
                         )
                 else:
                     other_list = []
@@ -1022,10 +1007,7 @@ class IndicatorBase(Analyzable):
             raw = output_list, param_map, n_input_cols, other_list
             if return_raw:
                 if use_run_unique and not silence_warnings:
-                    warnings.warn(
-                        "Raw outputs are produced by unique parameter combinations when run_unique=True",
-                        stacklevel=2,
-                    )
+                    warn("Raw outputs are produced by unique parameter combinations when run_unique=True")
                 return raw
             if use_run_unique:
                 output_list, param_map, n_input_cols, other_list = _use_raw(raw)
@@ -3804,7 +3786,7 @@ Other keyword arguments are passed to `{0}.run`.
             for i, r in enumerate(result):
                 if len(r.index) != len(test_df.index):
                     if not silence_warnings:
-                        warnings.warn(f"Couldn't parse the output at index {i}: mismatching index", stacklevel=2)
+                        warn(f"Couldn't parse the output at index {i}: mismatching index")
                 else:
                     results.append(r)
             if len(results) > 1:
@@ -3867,7 +3849,7 @@ Other keyword arguments are passed to `{0}.run`.
                 indicators.add(func_name.upper())
             except Exception as e:
                 if not silence_warnings:
-                    warnings.warn(f"Function {func_name}: " + str(e), stacklevel=2)
+                    warn(f"Function {func_name}: " + str(e))
         return sorted(indicators)
 
     @classmethod
@@ -4322,7 +4304,7 @@ Other keyword arguments are passed to `{0}.run`.
                 indicators.add(func_name.upper())
             except Exception as e:
                 if not silence_warnings:
-                    warnings.warn(f"Function {func_name}: " + str(e), stacklevel=2)
+                    warn(f"Function {func_name}: " + str(e))
         return sorted(indicators)
 
     @classmethod
@@ -4721,7 +4703,7 @@ Other keyword arguments are passed to `{0}.run`.
                     indicators.add(func_name.upper())
                 except Exception as e:
                     if not silence_warnings:
-                        warnings.warn(f"Function {func_name}: " + str(e), stacklevel=2)
+                        warn(f"Function {func_name}: " + str(e))
         return sorted(indicators)
 
     @classmethod

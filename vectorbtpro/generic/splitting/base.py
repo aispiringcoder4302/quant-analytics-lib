@@ -12,7 +12,6 @@
 
 import inspect
 import math
-import warnings
 
 import numpy as np
 import pandas as pd
@@ -50,6 +49,7 @@ from vectorbtpro.utils.parsing import (
 )
 from vectorbtpro.utils.selection import PosSel, LabelSel
 from vectorbtpro.utils.template import CustomTemplate, Rep, RepFunc, substitute_templates
+from vectorbtpro.utils.warnings_ import warn
 
 if tp.TYPE_CHECKING:
     from sklearn.model_selection import BaseCrossValidator as BaseCrossValidatorT
@@ -290,7 +290,7 @@ class RelRange(DefineMixin):
             if self.out_of_bounds == "ignore":
                 start = 0
             elif self.out_of_bounds == "warn":
-                warnings.warn(f"Range start ({start}) is out of bounds", stacklevel=2)
+                warn(f"Range start ({start}) is out of bounds")
                 start = 0
             elif self.out_of_bounds == "raise":
                 raise ValueError(f"Range start ({start}) is out of bounds")
@@ -298,7 +298,7 @@ class RelRange(DefineMixin):
             if self.out_of_bounds == "ignore":
                 stop = total_len
             elif self.out_of_bounds == "warn":
-                warnings.warn(f"Range stop ({stop}) is out of bounds", stacklevel=2)
+                warn(f"Range stop ({stop}) is out of bounds")
                 stop = total_len
             elif self.out_of_bounds == "raise":
                 raise ValueError(f"Range stop ({stop}) is out of bounds")

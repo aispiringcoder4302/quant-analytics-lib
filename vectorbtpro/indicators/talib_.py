@@ -11,7 +11,6 @@
 """Helper functions for TA-Lib."""
 
 import inspect
-import warnings
 
 import numpy as np
 import pandas as pd
@@ -25,6 +24,7 @@ from vectorbtpro.generic.accessors import GenericAccessor
 from vectorbtpro.utils.array_ import build_nan_mask, squeeze_nan, unsqueeze_nan
 from vectorbtpro.utils.colors import adjust_opacity
 from vectorbtpro.utils.config import merge_dicts, resolve_dict
+from vectorbtpro.utils.warnings_ import warn
 
 __all__ = [
     "talib_func",
@@ -132,12 +132,9 @@ def talib_func(func_name: str) -> tp.Callable:
                     raise ValueError("Resampling requires a wrapper")
                 if wrapper.freq is None:
                     if not silence_warnings:
-                        warnings.warn(
-                            (
-                                "Couldn't parse the frequency of index. "
-                                "Set freq in wrapper_kwargs via broadcast_kwargs, or globally."
-                            ),
-                            stacklevel=2,
+                        warn(
+                            "Couldn't parse the frequency of index. "
+                            "Set freq in wrapper_kwargs via broadcast_kwargs, or globally."
                         )
                 new_inputs = ()
                 _resample_map = merge_dicts(

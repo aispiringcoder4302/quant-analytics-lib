@@ -11,7 +11,6 @@
 """Utilities for configuration."""
 
 import inspect
-import warnings
 from copy import copy, deepcopy
 import uuid
 
@@ -25,6 +24,7 @@ from vectorbtpro.utils.decorators import hybrid_method
 from vectorbtpro.utils.formatting import Prettified, prettify_dict, prettify_inited
 from vectorbtpro.utils.parsing import get_func_arg_names
 from vectorbtpro.utils.pickling import RecState, Pickleable, pdict
+from vectorbtpro.utils.warnings_ import warn
 
 __all__ = [
     "hdict",
@@ -1603,7 +1603,7 @@ class Configured(HasSettings, Cacheable, Comparable, Pickleable, Prettified, Cha
             if len(keys_diff) > 0:
                 assert_in(check_expected_keys_, ("warn", "raise"))
                 if check_expected_keys_ == "warn":
-                    warnings.warn(f"{type(self).__name__} doesn't expect arguments {keys_diff}", stacklevel=2)
+                    warn(f"{type(self).__name__} doesn't expect arguments {keys_diff}")
                 else:
                     raise ValueError(f"{type(self).__name__} doesn't expect arguments {keys_diff}")
 

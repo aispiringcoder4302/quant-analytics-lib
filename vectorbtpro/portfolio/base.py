@@ -12,7 +12,6 @@
 
 import inspect
 import string
-import warnings
 from functools import partial
 
 import numpy as np
@@ -63,6 +62,7 @@ from vectorbtpro.utils.decorators import custom_property, cached_property, hybri
 from vectorbtpro.utils.enum_ import map_enum_fields
 from vectorbtpro.utils.parsing import get_func_kwargs
 from vectorbtpro.utils.template import Rep, RepEval, RepFunc
+from vectorbtpro.utils.warnings_ import warn
 
 try:
     if not tp.TYPE_CHECKING:
@@ -1694,10 +1694,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         if force_wrapping:
             raise NotImplementedError(f"Cannot wrap object '{obj_name}'")
         if not silence_warnings:
-            warnings.warn(
-                f"Cannot figure out how to wrap object '{obj_name}'",
-                stacklevel=2,
-            )
+            warn(f"Cannot figure out how to wrap object '{obj_name}'")
         return obj
 
     def get_in_output(
@@ -1924,10 +1921,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         if force_indexing:
             raise NotImplementedError(f"Cannot index object '{obj_name}'")
         if not silence_warnings:
-            warnings.warn(
-                f"Cannot figure out how to index object '{obj_name}'",
-                stacklevel=2,
-            )
+            warn(f"Cannot figure out how to index object '{obj_name}'")
         return obj
 
     def in_outputs_indexing_func(self, wrapper_meta: dict, **kwargs) -> tp.Optional[tp.NamedTuple]:
@@ -2199,10 +2193,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         if force_resampling:
             raise NotImplementedError(f"Cannot resample object '{obj_name}'")
         if not silence_warnings:
-            warnings.warn(
-                f"Cannot figure out how to resample object '{obj_name}'",
-                stacklevel=2,
-            )
+            warn(f"Cannot figure out how to resample object '{obj_name}'")
         return obj
 
     def resample_in_outputs(
