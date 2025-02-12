@@ -39,6 +39,10 @@ __all__ = [
 ]
 
 
+rank_asset_cache: tp.Dict[tp.Hashable, "KnowledgeAsset"] = {}
+"""Asset cache for ranking."""
+
+
 KnowledgeAssetT = tp.TypeVar("KnowledgeAssetT", bound="KnowledgeAsset")
 
 
@@ -2156,6 +2160,8 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         query: str,
         to_documents_kwargs: tp.KwargsLike = None,
         wrap_documents: tp.Optional[bool] = None,
+        cache_documents: bool = False,
+        cache_key: tp.Optional[tp.Hashable] = None,
         **kwargs,
     ) -> tp.MaybeKnowledgeAsset:
         """Rank documents by their similarity to a query.
@@ -2165,18 +2171,23 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         `vectorbtpro.utils.knowledge.chatting.rank_documents` with `**kwargs` for actual ranking."""
         from vectorbtpro.utils.knowledge.chatting import StoreDocument, ScoredDocument, rank_documents
 
-        if self.data and not isinstance(self.data[0], StoreDocument):
-            if to_documents_kwargs is None:
-                to_documents_kwargs = {}
-            if "return_iterator" not in to_documents_kwargs:
-                to_documents_kwargs["return_iterator"] = True
-            documents = self.to_documents(**to_documents_kwargs)
+        if cache_documents and cache_key in rank_asset_cache:
+            documents = rank_asset_cache[cache_key]
             if wrap_documents is None:
                 wrap_documents = False
         else:
-            documents = self.data
-            if wrap_documents is None:
-                wrap_documents = True
+            if self.data and not isinstance(self.data[0], StoreDocument):
+                if to_documents_kwargs is None:
+                    to_documents_kwargs = {}
+                documents = self.to_documents(**to_documents_kwargs)
+                if cache_documents and isinstance(documents, KnowledgeAsset):
+                    rank_asset_cache[cache_key] = documents
+                if wrap_documents is None:
+                    wrap_documents = False
+            else:
+                documents = self.data
+                if wrap_documents is None:
+                    wrap_documents = True
         ranked_documents = rank_documents(query=query, documents=documents, **kwargs)
         if not wrap_documents:
 

@@ -261,7 +261,7 @@ def format_html(
 class ContentFormatter(Configured):
     """Class for formatting content.
 
-    For defaults, see `formatting` in `vectorbtpro._settings.knowledge`."""
+    For defaults, see `knowledge.formatting.formatter_config` in `vectorbtpro._settings.knowledge`."""
 
     _short_name: tp.ClassVar[tp.Optional[str]] = None
     """Short name of the class."""

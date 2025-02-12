@@ -126,7 +126,7 @@ __all__ = [
 class Tokenizer(Configured):
     """Abstract class for tokenizers.
 
-    For defaults, see `chat` in `vectorbtpro._settings.knowledge`."""
+    For defaults, see `knowledge.chat.tokenizer_config` in `vectorbtpro._settings.knowledge`."""
 
     _short_name: tp.ClassVar[tp.Optional[str]] = None
     """Short name of the class."""
@@ -327,7 +327,7 @@ def detokenize(tokens: tp.Tokens, tokenizer: tp.TokenizerLike = None, **kwargs) 
 class Embeddings(Configured):
     """Abstract class for embeddings.
 
-    For defaults, see `chat` in `vectorbtpro._settings.knowledge`."""
+    For defaults, see `knowledge.chat.embeddings_config` in `vectorbtpro._settings.knowledge`."""
 
     _short_name: tp.ClassVar[tp.Optional[str]] = None
     """Short name of the class."""
@@ -749,7 +749,7 @@ class Completions(Configured):
 
     For argument descriptions, see their properties, like `Completions.chat_history`.
 
-    For defaults, see `chat` in `vectorbtpro._settings.knowledge`."""
+    For defaults, see `knowledge.chat.completions_config` in `vectorbtpro._settings.knowledge`."""
 
     _short_name: tp.ClassVar[tp.Optional[str]] = None
     """Short name of the class."""
@@ -1493,7 +1493,7 @@ def complete(message: str, completions: tp.CompletionsLike = None, **kwargs) -> 
 class TextSplitter(Configured):
     """Abstract class for text splitters.
 
-    For defaults, see `chat` in `vectorbtpro._settings.knowledge`."""
+    For defaults, see `knowledge.chat.text_splitter_config` in `vectorbtpro._settings.knowledge`."""
 
     _short_name: tp.ClassVar[tp.Optional[str]] = None
     """Short name of the class."""
@@ -2228,7 +2228,7 @@ class MetaObjectStore(type(Configured), type(MutableMapping)):
 class ObjectStore(Configured, MutableMapping, metaclass=MetaObjectStore):
     """Abstract class for managing an object store.
 
-    For defaults, see `chat` in `vectorbtpro._settings.knowledge`."""
+    For defaults, see `knowledge.chat.obj_store_config` in `vectorbtpro._settings.knowledge`."""
 
     _short_name: tp.ClassVar[tp.Optional[str]] = None
     """Short name of the class."""
@@ -2285,11 +2285,11 @@ class ObjectStore(Configured, MutableMapping, metaclass=MetaObjectStore):
     def enter_calls(self) -> int:
         """Number of enter calls."""
         return self._enter_calls
-    
+
     @property
-    def mirror_store_id(self) -> str:
+    def mirror_store_id(self) -> tp.Optional[str]:
         """Mirror store id."""
-        return type(self).__name__ + "." + self.store_id
+        return None
 
     def open(self) -> None:
         """Open the store."""
@@ -2856,6 +2856,8 @@ class CachedStore(DictStore):
         lazy_open = self.resolve_setting(lazy_open, "lazy_open")
         mirror = obj_store.resolve_setting(mirror, "mirror", default=None)
         mirror = self.resolve_setting(mirror, "mirror")
+        if mirror and obj_store.mirror_store_id is None:
+            mirror = False
 
         self._obj_store = obj_store
         self._lazy_open = lazy_open
@@ -3012,12 +3014,13 @@ class ScoredDocument(DefineMixin):
 class DocumentRanker(Configured):
     """Class for embedding, scoring, and ranking documents.
 
-    For defaults, see `chat` in `vectorbtpro._settings.knowledge`."""
+    For defaults, see `knowledge.chat.doc_ranker_config` in `vectorbtpro._settings.knowledge`."""
 
     _settings_path: tp.SettingsPath = ["knowledge", "knowledge.chat", "knowledge.chat.doc_ranker_config"]
 
     def __init__(
         self,
+        dataset_id: tp.Optional[str] = None,
         embeddings: tp.EmbeddingsLike = None,
         embeddings_kwargs: tp.KwargsLike = None,
         doc_store: tp.TokenizerLike = None,
@@ -3035,6 +3038,7 @@ class DocumentRanker(Configured):
     ) -> None:
         Configured.__init__(
             self,
+            dataset_id=dataset_id,
             embeddings=embeddings,
             embeddings_kwargs=embeddings_kwargs,
             doc_store=doc_store,
@@ -3051,6 +3055,7 @@ class DocumentRanker(Configured):
             **kwargs,
         )
 
+        dataset_id = self.resolve_setting(dataset_id, "dataset_id")
         embeddings = self.resolve_setting(embeddings, "embeddings", default=None)
         embeddings_kwargs = self.resolve_setting(embeddings_kwargs, "embeddings_kwargs", default=None, merge=True)
         doc_store = self.resolve_setting(doc_store, "doc_store", default=None)
@@ -3103,6 +3108,8 @@ class DocumentRanker(Configured):
         with ExtSettingsPath([(doc_store_cls, doc_store_settings_path)]):
             if isinstance(doc_store, type):
                 doc_store_kwargs = dict(doc_store_kwargs)
+                if dataset_id is not None and "store_id" not in doc_store_kwargs:
+                    doc_store_kwargs["store_id"] = dataset_id
                 doc_store_kwargs["template_context"] = merge_dicts(
                     template_context, doc_store_kwargs.get("template_context", None)
                 )
@@ -3122,6 +3129,8 @@ class DocumentRanker(Configured):
         with ExtSettingsPath([(emb_store_cls, emb_store_settings_path)]):
             if isinstance(emb_store, type):
                 emb_store_kwargs = dict(emb_store_kwargs)
+                if dataset_id is not None and "store_id" not in emb_store_kwargs:
+                    emb_store_kwargs["store_id"] = dataset_id
                 emb_store_kwargs["template_context"] = merge_dicts(
                     template_context, emb_store_kwargs.get("template_context", None)
                 )
@@ -3188,21 +3197,31 @@ class DocumentRanker(Configured):
     def embed_documents(
         self,
         documents: tp.Iterable[StoreDocument],
+        refresh: bool = False,
+        refresh_documents: tp.Optional[bool] = None,
+        refresh_embeddings: tp.Optional[bool] = None,
         return_embeddings: bool = False,
         return_documents: bool = False,
     ) -> tp.Optional[tp.EmbeddedDocuments]:
         """Embed documents.
 
+        Enable `refresh` or its sub-arguments to refresh documents and/or embeddings in their
+        particular stores. Without refreshing, will rely on the persisted objects.
+
         If `return_embeddings` and `return_documents` are both False, returns nothing.
         If `return_embeddings` and `return_documents` are both True, for each document,
         returns the document and either an embedding or a list of document chunks and their embeddings.
         If `return_documents` is False, returns only embeddings."""
+        if refresh_documents is None:
+            refresh_documents = refresh
+        if refresh_embeddings is None:
+            refresh_embeddings = refresh
         with self.doc_store, self.emb_store:
             documents = list(documents)
             documents_to_split = []
             document_splits = {}
             for document in documents:
-                if document.id_ not in self.emb_store:
+                if refresh_documents or refresh_embeddings or document.id_ not in self.emb_store:
                     documents_to_split.append(document)
             if documents_to_split:
                 from vectorbtpro.utils.pbar import ProgressBar
@@ -3215,16 +3234,16 @@ class DocumentRanker(Configured):
 
             obj_contents = {}
             for document in documents:
-                if document.id_ not in self.doc_store:
+                if refresh_documents or document.id_ not in self.doc_store:
                     self.doc_store[document.id_] = document
                 if document.id_ in document_splits:
                     document_chunks = document_splits[document.id_]
                     obj = StoreEmbedding(document.id_)
                     for document_chunk in document_chunks:
                         if document_chunk.id_ != document.id_:
-                            if document_chunk.id_ not in self.doc_store:
+                            if refresh_documents or document_chunk.id_ not in self.doc_store:
                                 self.doc_store[document_chunk.id_] = document_chunk
-                            if document_chunk.id_ not in self.emb_store:
+                            if refresh_embeddings or document_chunk.id_ not in self.emb_store:
                                 child_obj = StoreEmbedding(document_chunk.id_, parent_id=document.id_)
                                 self.emb_store[child_obj.id_] = child_obj
                             else:
@@ -3234,7 +3253,8 @@ class DocumentRanker(Configured):
                                 content = document_chunk.get_content(for_embed=True)
                                 if content:
                                     obj_contents[child_obj.id_] = content
-                    self.emb_store[obj.id_] = obj
+                    if refresh_documents or refresh_embeddings or document.id_ not in self.emb_store:
+                        self.emb_store[obj.id_] = obj
                 else:
                     obj = self.emb_store[document.id_]
                 if not obj.child_ids and not obj.embedding:
@@ -3335,6 +3355,9 @@ class DocumentRanker(Configured):
         self,
         query: str,
         documents: tp.Optional[tp.Iterable[StoreDocument]] = None,
+        refresh: bool = False,
+        refresh_documents: tp.Optional[bool] = None,
+        refresh_embeddings: tp.Optional[bool] = None,
         return_chunks: bool = False,
         return_documents: bool = False,
     ) -> tp.ScoredDocuments:
@@ -3350,7 +3373,12 @@ class DocumentRanker(Configured):
             documents = list(documents)
             if not documents:
                 return []
-            self.embed_documents(documents)
+            self.embed_documents(
+                documents,
+                refresh=refresh,
+                refresh_documents=refresh_documents,
+                refresh_embeddings=refresh_embeddings,
+            )
             if return_chunks:
                 document_chunks = []
                 for document in documents:
@@ -3470,6 +3498,9 @@ class DocumentRanker(Configured):
         documents: tp.Optional[tp.Iterable[StoreDocument]] = None,
         top_k: tp.TopKLike = None,
         cutoff: tp.Optional[float] = None,
+        refresh: bool = False,
+        refresh_documents: tp.Optional[bool] = None,
+        refresh_embeddings: tp.Optional[bool] = None,
         return_chunks: bool = False,
         return_scores: bool = False,
     ) -> tp.RankedDocuments:
@@ -3477,6 +3508,9 @@ class DocumentRanker(Configured):
         scored_documents = self.score_documents(
             query,
             documents=documents,
+            refresh=refresh,
+            refresh_documents=refresh_documents,
+            refresh_embeddings=refresh_embeddings,
             return_chunks=return_chunks,
             return_documents=True,
         )
@@ -3494,26 +3528,32 @@ class DocumentRanker(Configured):
 
 def embed_documents(
     documents: tp.Iterable[StoreDocument],
+    refresh: bool = False,
+    refresh_documents: tp.Optional[bool] = None,
+    refresh_embeddings: tp.Optional[bool] = None,
     return_embeddings: bool = False,
     return_documents: bool = False,
-    document_ranker: tp.Optional[tp.MaybeType[DocumentRanker]] = None,
+    doc_ranker: tp.Optional[tp.MaybeType[DocumentRanker]] = None,
     **kwargs,
 ) -> tp.Optional[tp.EmbeddedDocuments]:
     """Embed documents.
 
     Keyword arguments are passed to either initialize a class or replace an
     instance of `DocumentRanker`."""
-    if document_ranker is None:
-        document_ranker = DocumentRanker
-    if isinstance(document_ranker, type):
-        checks.assert_subclass_of(document_ranker, DocumentRanker, "document_ranker")
-        document_ranker = document_ranker(**kwargs)
+    if doc_ranker is None:
+        doc_ranker = DocumentRanker
+    if isinstance(doc_ranker, type):
+        checks.assert_subclass_of(doc_ranker, DocumentRanker, "doc_ranker")
+        doc_ranker = doc_ranker(**kwargs)
     else:
-        checks.assert_instance_of(document_ranker, DocumentRanker, "document_ranker")
+        checks.assert_instance_of(doc_ranker, DocumentRanker, "doc_ranker")
         if kwargs:
-            document_ranker = document_ranker.replace(**kwargs)
-    return document_ranker.embed_documents(
+            doc_ranker = doc_ranker.replace(**kwargs)
+    return doc_ranker.embed_documents(
         documents,
+        refresh=refresh,
+        refresh_documents=refresh_documents,
+        refresh_embeddings=refresh_embeddings,
         return_embeddings=return_embeddings,
         return_documents=return_documents,
     )
@@ -3524,29 +3564,35 @@ def rank_documents(
     documents: tp.Optional[tp.Iterable[StoreDocument]] = None,
     top_k: tp.TopKLike = None,
     cutoff: tp.Optional[float] = None,
+    refresh: bool = False,
+    refresh_documents: tp.Optional[bool] = None,
+    refresh_embeddings: tp.Optional[bool] = None,
     return_chunks: bool = False,
     return_scores: bool = False,
-    document_ranker: tp.Optional[tp.MaybeType[DocumentRanker]] = None,
+    doc_ranker: tp.Optional[tp.MaybeType[DocumentRanker]] = None,
     **kwargs,
 ) -> tp.RankedDocuments:
     """Rank documents by their relevance to a query.
 
     Keyword arguments are passed to either initialize a class or replace an
     instance of `DocumentRanker`."""
-    if document_ranker is None:
-        document_ranker = DocumentRanker
-    if isinstance(document_ranker, type):
-        checks.assert_subclass_of(document_ranker, DocumentRanker, "document_ranker")
-        document_ranker = document_ranker(**kwargs)
+    if doc_ranker is None:
+        doc_ranker = DocumentRanker
+    if isinstance(doc_ranker, type):
+        checks.assert_subclass_of(doc_ranker, DocumentRanker, "doc_ranker")
+        doc_ranker = doc_ranker(**kwargs)
     else:
-        checks.assert_instance_of(document_ranker, DocumentRanker, "document_ranker")
+        checks.assert_instance_of(doc_ranker, DocumentRanker, "doc_ranker")
         if kwargs:
-            document_ranker = document_ranker.replace(**kwargs)
-    return document_ranker.rank_documents(
+            doc_ranker = doc_ranker.replace(**kwargs)
+    return doc_ranker.rank_documents(
         query,
         documents=documents,
         top_k=top_k,
         cutoff=cutoff,
+        refresh=refresh,
+        refresh_documents=refresh_documents,
+        refresh_embeddings=refresh_embeddings,
         return_chunks=return_chunks,
         return_scores=return_scores,
     )
@@ -3562,6 +3608,9 @@ class Rankable(HasSettings):
 
     def embed(
         self: RankableT,
+        refresh: bool = False,
+        refresh_documents: tp.Optional[bool] = None,
+        refresh_embeddings: tp.Optional[bool] = None,
         return_embeddings: bool = False,
         return_documents: bool = False,
         **kwargs,
@@ -3574,6 +3623,9 @@ class Rankable(HasSettings):
         query: str,
         top_k: tp.TopKLike = None,
         cutoff: tp.Optional[float] = None,
+        refresh: bool = False,
+        refresh_documents: tp.Optional[bool] = None,
+        refresh_embeddings: tp.Optional[bool] = None,
         return_chunks: bool = False,
         return_scores: bool = False,
         **kwargs,

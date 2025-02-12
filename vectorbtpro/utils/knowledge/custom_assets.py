@@ -10,6 +10,7 @@
 
 """Custom asset classes."""
 
+import hashlib
 import inspect
 import io
 import os
@@ -3091,6 +3092,8 @@ def chat(
     query: str,
     chat_history: tp.ChatHistory = None,
     *,
+    cache_documents: bool = True,
+    cache_key: tp.Optional[tp.Hashable] = None,
     latest_messages_first: bool = True,
     shuffle_messages: tp.Optional[bool] = None,
     shuffle: tp.Optional[bool] = None,
@@ -3099,6 +3102,7 @@ def chat(
     top_k: tp.TopKLike = 100,
     cutoff: tp.Optional[float] = 0.5,
     return_chunks: tp.Optional[bool] = True,
+    rank_kwargs: tp.KwargsLike = None,
     wrap_documents: tp.Optional[bool] = True,
     **kwargs,
 ) -> tp.ChatOutput:
@@ -3106,7 +3110,10 @@ def chat(
 
     By default, uses API, documentation, and messages.
 
-    See `chat_about` for keyword arguments."""
+    Documents are cached based on `cache_key`, which defaults to the hash of `find_assets_kwargs`.
+    To avoid document caching, disable `cache_documents`.
+
+    See `chat_about` for other keyword arguments."""
     if shuffle is not None:
         if shuffle_messages is None:
             shuffle_messages = False
@@ -3126,21 +3133,36 @@ def chat(
                 find_assets_kwargs[k] = v
         else:
             chat_kwargs[k] = v
-    asset = find_assets(
-        None,
-        as_query=True,
-        combine=True,
-        latest_messages_first=latest_messages_first,
-        shuffle_messages=shuffle_messages,
-        **find_assets_kwargs,
-    )
-    if shuffle:
-        asset = asset.shuffle()
-    rank_kwargs = kwargs.pop("rank_kwargs", {})
+    if cache_documents:
+        from vectorbtpro.utils.knowledge.base_assets import rank_asset_cache
+
+        if cache_key is None:
+            from vectorbtpro.utils.pickling import dumps
+
+            cache_key = hashlib.md5(dumps(find_assets_kwargs)).hexdigest()
+        if cache_key in rank_asset_cache:
+            asset = rank_asset_cache[cache_key]
+        else:
+            asset = None
+    else:
+        asset = None
+    if asset is None:
+        asset = find_assets(
+            None,
+            as_query=True,
+            combine=True,
+            latest_messages_first=latest_messages_first,
+            shuffle_messages=shuffle_messages,
+            **find_assets_kwargs,
+        )
+        if shuffle:
+            asset = asset.shuffle()
     if rank_kwargs is None:
         rank_kwargs = {}
     else:
         rank_kwargs = dict(rank_kwargs)
+    rank_kwargs["cache_documents"] = cache_documents
+    rank_kwargs["cache_key"] = cache_key
     if "wrap_documents" not in rank_kwargs:
         rank_kwargs["wrap_documents"] = wrap_documents
     return asset.chat(
