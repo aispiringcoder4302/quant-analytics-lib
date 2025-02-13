@@ -457,3 +457,25 @@ def dump(obj: tp.Any, dump_engine: str = "prettify", **kwargs) -> str:
 
         return json.dumps(obj, **kwargs)
     raise ValueError(f"Invalid dump engine: '{dump_engine}'")
+
+
+def get_dump_language(dump_engine: str) -> str:
+    """Get language corresponding to the dump engine."""
+    if dump_engine.lower() == "repr":
+        return "python"
+    if dump_engine.lower() == "prettify":
+        return "python"
+    if dump_engine.lower() == "nestedtext":
+        return "text"
+    if dump_engine.lower() == "yaml":
+        return "yaml"
+    if dump_engine.lower() == "pyyaml":
+        return "yaml"
+    if dump_engine.lower() in ("ruamel", "ruamel.yaml"):
+        return "yaml"
+    if dump_engine.lower() == "toml":
+        return "toml"
+    if dump_engine.lower() == "json":
+        return "json"
+    return ""
+

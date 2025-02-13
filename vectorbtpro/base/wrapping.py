@@ -24,7 +24,7 @@ from vectorbtpro.base.resampling.base import Resampler
 from vectorbtpro.utils import checks, datetime_ as dt
 from vectorbtpro.utils.array_ import is_range, cast_to_min_precision, cast_to_max_precision
 from vectorbtpro.utils.attr_ import AttrResolverMixin, AttrResolverMixinT
-from vectorbtpro.utils.chunking import ChunkMeta, yield_chunk_meta, get_chunk_meta_key, ArraySelector, ArraySlicer
+from vectorbtpro.utils.chunking import ChunkMeta, iter_chunk_meta, get_chunk_meta_key, ArraySelector, ArraySlicer
 from vectorbtpro.utils.config import Configured, merge_dicts, resolve_dict
 from vectorbtpro.utils.decorators import hybrid_method, cached_method, cached_property
 from vectorbtpro.utils.execution import Task, execute
@@ -285,7 +285,7 @@ class HasWrapper(ExtPandasIndexer, ItemParamable):
 
         If `axis` is None, becomes 0 if the instance is one-dimensional and 1 otherwise.
 
-        For arguments related to chunking meta, see `vectorbtpro.utils.chunking.yield_chunk_meta`."""
+        For arguments related to chunking meta, see `vectorbtpro.utils.chunking.iter_chunk_meta`."""
         if axis is None:
             axis = 0 if self.wrapper.ndim == 1 else 1
         if self.wrapper.ndim == 1 and axis == 1:
@@ -296,7 +296,7 @@ class HasWrapper(ExtPandasIndexer, ItemParamable):
             wrap = self.should_wrap()
         wrapped_self = self if wrap else self.unwrapped
         if chunk_meta is None:
-            chunk_meta = yield_chunk_meta(
+            chunk_meta = iter_chunk_meta(
                 size=size,
                 min_size=min_size,
                 n_chunks=n_chunks,

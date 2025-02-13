@@ -35,7 +35,7 @@ __all__ = [
     "ChunkMeta",
     "ArgChunkMeta",
     "LenChunkMeta",
-    "yield_chunk_meta",
+    "iter_chunk_meta",
     "Sizer",
     "ArgSizer",
     "CountSizer",
@@ -281,7 +281,7 @@ class LenChunkMeta(ArgChunkMeta):
             start = end
 
 
-def yield_chunk_meta(
+def iter_chunk_meta(
     size: tp.Optional[int] = None,
     min_size: tp.Optional[int] = None,
     n_chunks: tp.Union[None, int, str] = None,
@@ -1032,7 +1032,7 @@ class Chunker(Configured):
     1. Generates chunk metadata by passing `n_chunks`, `size`, `min_size`, `chunk_len`,
         and `chunk_meta` to `Chunker.get_chunk_meta_from_args`.
     2. Splits arguments and keyword arguments by passing chunk metadata, `arg_take_spec`,
-        and `template_context` to `Chunker.yield_tasks`, which yields one chunk at a time.
+        and `template_context` to `Chunker.iter_tasks`, which yields one chunk at a time.
     3. Executes all chunks by passing `**execute_kwargs` to `vectorbtpro.utils.execution.execute`.
     4. Optionally, post-processes and merges the results by passing them and
         `**merge_kwargs` to `merge_func`.
@@ -1138,7 +1138,7 @@ class Chunker(Configured):
 
     @property
     def arg_take_spec(self) -> tp.Optional[tp.ArgTakeSpecLike]:
-        """See `yield_tasks`."""
+        """See `iter_tasks`."""
         return self._arg_take_spec
 
     @property
@@ -1204,16 +1204,16 @@ class Chunker(Configured):
 
         Args:
             ann_args (dict): Arguments annotated with `vectorbtpro.utils.parsing.annotate_args`.
-            size (int, Sizer, or callable): See `yield_chunk_meta`.
+            size (int, Sizer, or callable): See `iter_chunk_meta`.
 
                 Can be an integer, an instance of `Sizer`, or a callable taking
                 the annotated arguments and returning a value.
-            min_size (int): See `yield_chunk_meta`.
-            n_chunks (int, str, Sizer, or callable): See `yield_chunk_meta`.
+            min_size (int): See `iter_chunk_meta`.
+            n_chunks (int, str, Sizer, or callable): See `iter_chunk_meta`.
 
                 Can be an integer, a string, an instance of `Sizer`, or a callable taking
                 the annotated arguments and other keyword arguments and returning a value.
-            chunk_len (int, str, Sizer, or callable): See `yield_chunk_meta`.
+            chunk_len (int, str, Sizer, or callable): See `iter_chunk_meta`.
 
                 Can be an integer, a string, an instance of `Sizer`, or a callable taking
                 the annotated arguments and returning a value.
@@ -1245,7 +1245,7 @@ class Chunker(Configured):
                     chunk_len = chunk_len(ann_args, **kwargs)
                 elif not isinstance(chunk_len, (int, str)):
                     raise TypeError(f"Type {type(chunk_len)} for chunk_len is not supported")
-            return yield_chunk_meta(size=size, min_size=min_size, n_chunks=n_chunks, chunk_len=chunk_len)
+            return iter_chunk_meta(size=size, min_size=min_size, n_chunks=n_chunks, chunk_len=chunk_len)
         if isinstance(chunk_meta, ChunkMetaGenerator):
             return chunk_meta.get_chunk_meta(ann_args, **kwargs)
         if callable(chunk_meta):
@@ -1388,7 +1388,7 @@ class Chunker(Configured):
         return new_args, new_kwargs
 
     @classmethod
-    def yield_tasks(
+    def iter_tasks(
         cls,
         func: tp.Callable,
         ann_args: tp.AnnArgs,
@@ -1774,7 +1774,7 @@ class Chunker(Configured):
         template_context["chunk_meta"] = chunk_meta
         if len(chunk_meta) < 2 and skip_single_chunk:
             return func(*args, **kwargs)
-        tasks = self.yield_tasks(
+        tasks = self.iter_tasks(
             func,
             ann_args,
             chunk_meta,
@@ -1931,7 +1931,7 @@ def chunked(
         Chunk metadata contains the chunk index that can be used to split any input:
 
         ```pycon
-        >>> list(vbt.yield_chunk_meta(n_chunks=2))
+        >>> list(vbt.iter_chunk_meta(n_chunks=2))
         [ChunkMeta(uuid='84d64eed-fbac-41e7-ad61-c917e809b3b8', idx=0, start=None, end=None, indices=None),
          ChunkMeta(uuid='577817c4-fdee-4ceb-ab38-dcd663d9ab11', idx=1, start=None, end=None, indices=None)]
         ```
@@ -1940,7 +1940,7 @@ def chunked(
         The space can be defined by the length of an input array, for example. In our case:
 
         ```pycon
-        >>> list(vbt.yield_chunk_meta(n_chunks=2, size=10))
+        >>> list(vbt.iter_chunk_meta(n_chunks=2, size=10))
         [ChunkMeta(uuid='c1593842-dc31-474c-a089-e47200baa2be', idx=0, start=0, end=5, indices=None),
          ChunkMeta(uuid='6d0265e7-1204-497f-bc2c-c7b7800ec57d', idx=1, start=5, end=10, indices=None)]
         ```

@@ -32,6 +32,7 @@ from vectorbtpro.utils.pbar import ProgressBar
 from vectorbtpro.utils.pickling import suggest_compression
 from vectorbtpro.utils.search_ import find, replace
 from vectorbtpro.utils.template import CustomTemplate
+from vectorbtpro.utils.warnings_ import warn
 
 __all__ = [
     "VBTAsset",
@@ -43,6 +44,7 @@ __all__ = [
     "find_examples",
     "find_assets",
     "chat_about",
+    "search",
     "chat",
 ]
 
@@ -2284,28 +2286,23 @@ class MessagesAsset(VBTAsset):
 
     def aggregate_messages(
         self: MessagesAssetT,
-        metadata_format: tp.Optional[str] = None,
         clear_metadata: tp.Optional[bool] = None,
         clear_metadata_kwargs: tp.KwargsLike = None,
         dump_metadata_kwargs: tp.KwargsLike = None,
         to_markdown_kwargs: tp.KwargsLike = None,
-        to_html_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> tp.MaybeMessagesAsset:
         """Aggregate attachments by message.
 
-        Argument `metadata_format` can be either "markdown" or "html". For keyword arguments, see
-        `MessagesAsset.to_markdown` and `MessagesAsset.to_html` respectively.
+        For keyword arguments, see `MessagesAsset.to_markdown`.
 
         Uses `MessagesAsset.apply` on `vectorbtpro.utils.knowledge.custom_asset_funcs.AggMessageAssetFunc`."""
         return self.apply(
             "agg_message",
-            metadata_format=metadata_format,
             clear_metadata=clear_metadata,
             clear_metadata_kwargs=clear_metadata_kwargs,
             dump_metadata_kwargs=dump_metadata_kwargs,
             to_markdown_kwargs=to_markdown_kwargs,
-            to_html_kwargs=to_html_kwargs,
             **kwargs,
         )
 
@@ -2314,12 +2311,10 @@ class MessagesAsset(VBTAsset):
         collect_kwargs: tp.KwargsLike = None,
         aggregate_fields: tp.Union[None, bool, tp.MaybeIterable[str]] = None,
         parent_links_only: tp.Optional[bool] = None,
-        metadata_format: tp.Optional[str] = None,
         clear_metadata: tp.Optional[bool] = None,
         clear_metadata_kwargs: tp.KwargsLike = None,
         dump_metadata_kwargs: tp.KwargsLike = None,
         to_markdown_kwargs: tp.KwargsLike = None,
-        to_html_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> tp.MaybeMessagesAsset:
         """Aggregate messages by block.
@@ -2334,8 +2329,7 @@ class MessagesAsset(VBTAsset):
 
         If `parent_links_only` is True, doesn't include links in the metadata of each message.
 
-        Argument `metadata_format` can be either "markdown" or "html". For other keyword arguments, see
-        `MessagesAsset.to_markdown` and `MessagesAsset.to_html` respectively."""
+        For other keyword arguments, see `MessagesAsset.to_markdown`."""
         if collect_kwargs is None:
             collect_kwargs = {}
         if "uniform_groups" not in collect_kwargs:
@@ -2345,12 +2339,10 @@ class MessagesAsset(VBTAsset):
             "agg_block",
             aggregate_fields=aggregate_fields,
             parent_links_only=parent_links_only,
-            metadata_format=metadata_format,
             clear_metadata=clear_metadata,
             clear_metadata_kwargs=clear_metadata_kwargs,
             dump_metadata_kwargs=dump_metadata_kwargs,
             to_markdown_kwargs=to_markdown_kwargs,
-            to_html_kwargs=to_html_kwargs,
             link_map={d["link"]: dict(d) for d in self.data},
             **kwargs,
         )
@@ -2360,12 +2352,10 @@ class MessagesAsset(VBTAsset):
         collect_kwargs: tp.KwargsLike = None,
         aggregate_fields: tp.Union[None, bool, tp.MaybeIterable[str]] = None,
         parent_links_only: tp.Optional[bool] = None,
-        metadata_format: tp.Optional[str] = None,
         clear_metadata: tp.Optional[bool] = None,
         clear_metadata_kwargs: tp.KwargsLike = None,
         dump_metadata_kwargs: tp.KwargsLike = None,
         to_markdown_kwargs: tp.KwargsLike = None,
-        to_html_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> tp.MaybeMessagesAsset:
         """Aggregate messages by thread.
@@ -2382,12 +2372,10 @@ class MessagesAsset(VBTAsset):
             "agg_thread",
             aggregate_fields=aggregate_fields,
             parent_links_only=parent_links_only,
-            metadata_format=metadata_format,
             clear_metadata=clear_metadata,
             clear_metadata_kwargs=clear_metadata_kwargs,
             dump_metadata_kwargs=dump_metadata_kwargs,
             to_markdown_kwargs=to_markdown_kwargs,
-            to_html_kwargs=to_html_kwargs,
             link_map={d["link"]: dict(d) for d in self.data},
             **kwargs,
         )
@@ -2397,12 +2385,10 @@ class MessagesAsset(VBTAsset):
         collect_kwargs: tp.KwargsLike = None,
         aggregate_fields: tp.Union[None, bool, tp.MaybeIterable[str]] = None,
         parent_links_only: tp.Optional[bool] = None,
-        metadata_format: tp.Optional[str] = None,
         clear_metadata: tp.Optional[bool] = None,
         clear_metadata_kwargs: tp.KwargsLike = None,
         dump_metadata_kwargs: tp.KwargsLike = None,
         to_markdown_kwargs: tp.KwargsLike = None,
-        to_html_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> tp.MaybeMessagesAsset:
         """Aggregate messages by channel.
@@ -2419,12 +2405,10 @@ class MessagesAsset(VBTAsset):
             "agg_channel",
             aggregate_fields=aggregate_fields,
             parent_links_only=parent_links_only,
-            metadata_format=metadata_format,
             clear_metadata=clear_metadata,
             clear_metadata_kwargs=clear_metadata_kwargs,
             dump_metadata_kwargs=dump_metadata_kwargs,
             to_markdown_kwargs=to_markdown_kwargs,
-            to_html_kwargs=to_html_kwargs,
             link_map={d["link"]: dict(d) for d in self.data},
             **kwargs,
         )
@@ -3088,15 +3072,78 @@ def chat_about(
     return asset.chat(message, chat_history, **chat_kwargs)
 
 
+def search(
+    query: str,
+    cache_documents: bool = True,
+    cache_key: tp.Optional[tp.Hashable] = None,
+    aggregate_messages: tp.Union[bool, str] = "threads",
+    find_assets_kwargs: tp.KwargsLike = None,
+    silence_warnings: bool = False,
+    display: bool = True,
+    display_kwargs: tp.KwargsLike = None,
+    **kwargs,
+) -> tp.ChatOutput:
+    """Search for a query.
+
+    By default, uses API, documentation, and messages.
+
+    Uses `find_assets` with `combine=True` and `vectorbtpro.utils.knowledge.base_assets.KnowledgeAsset.rank`.
+    Keyword arguments are distributed among these two methods automatically, unless some keys cannot be
+    found in both signatures. In such a case, the key will be used for ranking. If this is not wanted,
+    specify the `find_assets`-related arguments explicitly with `find_assets_kwargs`.
+
+    Documents are cached based on `cache_key`, which defaults to the hash of `find_assets_kwargs`.
+    To avoid document caching, disable `cache_documents`."""
+    find_arg_names = set(get_func_arg_names(find_assets))
+    if find_assets_kwargs is None:
+        find_assets_kwargs = {}
+    else:
+        find_assets_kwargs = dict(find_assets_kwargs)
+    rank_kwargs = {}
+    for k, v in kwargs.items():
+        if k in find_arg_names:
+            if k not in find_assets_kwargs:
+                find_assets_kwargs[k] = v
+        else:
+            rank_kwargs[k] = v
+    find_assets_kwargs["aggregate_messages"] = aggregate_messages
+    if cache_documents:
+        from vectorbtpro.utils.knowledge.base_assets import rank_asset_cache
+
+        if cache_key is None:
+            from vectorbtpro.utils.pickling import dumps
+
+            cache_key = hashlib.md5(dumps(find_assets_kwargs)).hexdigest()
+        if cache_key in rank_asset_cache:
+            asset = rank_asset_cache[cache_key]
+        else:
+            if not silence_warnings:
+                warn("Caching documents...")
+            asset = None
+    else:
+        asset = None
+    if asset is None:
+        asset = find_assets(None, as_query=True, **find_assets_kwargs)
+    found_asset = asset.rank(
+        query,
+        cache_documents=cache_documents,
+        cache_key=cache_key,
+        **rank_kwargs,
+    )
+    if display:
+        if display_kwargs is None:
+            display_kwargs = {}
+        return found_asset[:display].display(**display_kwargs)
+    return found_asset
+
+
 def chat(
     query: str,
     chat_history: tp.ChatHistory = None,
     *,
     cache_documents: bool = True,
     cache_key: tp.Optional[tp.Hashable] = None,
-    latest_messages_first: bool = True,
-    shuffle_messages: tp.Optional[bool] = None,
-    shuffle: tp.Optional[bool] = None,
+    aggregate_messages: tp.Union[bool, str] = "threads",
     find_assets_kwargs: tp.KwargsLike = None,
     rank: tp.Optional[bool] = True,
     top_k: tp.TopKLike = 100,
@@ -3104,6 +3151,7 @@ def chat(
     return_chunks: tp.Optional[bool] = True,
     rank_kwargs: tp.KwargsLike = None,
     wrap_documents: tp.Optional[bool] = True,
+    silence_warnings: bool = False,
     **kwargs,
 ) -> tp.ChatOutput:
     """Chat about a query.
@@ -3114,13 +3162,6 @@ def chat(
     To avoid document caching, disable `cache_documents`.
 
     See `chat_about` for other keyword arguments."""
-    if shuffle is not None:
-        if shuffle_messages is None:
-            shuffle_messages = False
-    else:
-        shuffle = False
-        if shuffle_messages is None:
-            shuffle_messages = True
     find_arg_names = set(get_func_arg_names(find_assets))
     if find_assets_kwargs is None:
         find_assets_kwargs = {}
@@ -3133,6 +3174,7 @@ def chat(
                 find_assets_kwargs[k] = v
         else:
             chat_kwargs[k] = v
+    find_assets_kwargs["aggregate_messages"] = aggregate_messages
     if cache_documents:
         from vectorbtpro.utils.knowledge.base_assets import rank_asset_cache
 
@@ -3143,20 +3185,13 @@ def chat(
         if cache_key in rank_asset_cache:
             asset = rank_asset_cache[cache_key]
         else:
+            if not silence_warnings:
+                warn("Caching documents...")
             asset = None
     else:
         asset = None
     if asset is None:
-        asset = find_assets(
-            None,
-            as_query=True,
-            combine=True,
-            latest_messages_first=latest_messages_first,
-            shuffle_messages=shuffle_messages,
-            **find_assets_kwargs,
-        )
-        if shuffle:
-            asset = asset.shuffle()
+        asset = find_assets(None, as_query=True, **find_assets_kwargs)
     if rank_kwargs is None:
         rank_kwargs = {}
     else:

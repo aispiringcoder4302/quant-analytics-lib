@@ -1166,21 +1166,21 @@ class Parameterizer(Configured):
 
     @property
     def mono_min_size(self) -> tp.Optional[int]:
-        """See `vectorbtpro.utils.chunking.yield_chunk_meta`.
+        """See `vectorbtpro.utils.chunking.iter_chunk_meta`.
 
         Applied to generate chunk meta."""
         return self._mono_min_size
 
     @property
     def mono_n_chunks(self) -> tp.Optional[tp.Union[str, int]]:
-        """See `vectorbtpro.utils.chunking.yield_chunk_meta`.
+        """See `vectorbtpro.utils.chunking.iter_chunk_meta`.
 
         Applied to generate chunk meta."""
         return self._mono_n_chunks
 
     @property
     def mono_chunk_len(self) -> tp.Optional[tp.Union[str, int]]:
-        """See `vectorbtpro.utils.chunking.yield_chunk_meta`.
+        """See `vectorbtpro.utils.chunking.iter_chunk_meta`.
 
         Applied to generate chunk meta."""
         return self._mono_chunk_len
@@ -1417,7 +1417,7 @@ class Parameterizer(Configured):
         return new_param_configs, param_index, single_comb
 
     @classmethod
-    def yield_tasks(
+    def iter_tasks(
         cls,
         func: tp.Callable,
         ann_args: tp.AnnArgs,
@@ -1449,9 +1449,9 @@ class Parameterizer(Configured):
     ) -> tp.List[tp.List[int]]:
         """Get the indices of each mono-chunk."""
         if mono_chunk_meta is None:
-            from vectorbtpro.utils.chunking import yield_chunk_meta
+            from vectorbtpro.utils.chunking import iter_chunk_meta
 
-            mono_chunk_meta = yield_chunk_meta(
+            mono_chunk_meta = iter_chunk_meta(
                 n_chunks=mono_n_chunks,
                 size=len(param_configs),
                 min_size=mono_min_size,
@@ -1758,7 +1758,7 @@ class Parameterizer(Configured):
 
         if skip_single_comb and template_context["single_comb"]:
             tasks = list(
-                self.yield_tasks(
+                self.iter_tasks(
                     func,
                     template_context["ann_args"],
                     template_context["param_configs"],
@@ -1804,7 +1804,7 @@ class Parameterizer(Configured):
         else:
             template_context["mono_chunk_indices"] = None
 
-        template_context["tasks"] = self.yield_tasks(
+        template_context["tasks"] = self.iter_tasks(
             func,
             template_context["ann_args"],
             template_context["param_configs"],

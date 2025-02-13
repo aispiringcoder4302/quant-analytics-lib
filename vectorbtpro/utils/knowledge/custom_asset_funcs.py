@@ -72,6 +72,7 @@ class ToMarkdownAssetFunc(AssetFunc):
         **to_markdown_kwargs,
     ) -> str:
         """Get metadata in Markdown format."""
+        from vectorbtpro.utils.formatting import get_dump_language
         from vectorbtpro.utils.knowledge.base_asset_funcs import FindRemoveAssetFunc, DumpAssetFunc
 
         if clear_metadata_kwargs is None:
@@ -90,6 +91,9 @@ class ToMarkdownAssetFunc(AssetFunc):
                 metadata = None
             metadata = {root_metadata_key: metadata}
         text = DumpAssetFunc.call(metadata, **dump_metadata_kwargs)
+        dump_engine = dump_metadata_kwargs.get("dump_engine", "nestedtext")
+        dump_language = get_dump_language(dump_engine)
+        text = f"```{dump_language}\n{text}\n```"
         return to_markdown(text, **to_markdown_kwargs)
 
     @classmethod
@@ -119,8 +123,6 @@ class ToMarkdownAssetFunc(AssetFunc):
             dump_metadata_kwargs=dump_metadata_kwargs,
             **to_markdown_kwargs,
         )
-        if markdown_metadata:
-            markdown_metadata = "---\n" + markdown_metadata + "\n---"
         markdown_content = cls.get_markdown_content(d, **to_markdown_kwargs)
         if markdown_metadata and markdown_content:
             markdown_content = markdown_metadata + "\n\n" + markdown_content
@@ -199,7 +201,6 @@ class ToHTMLAssetFunc(ToMarkdownAssetFunc):
             dump_metadata_kwargs=dump_metadata_kwargs,
             **to_markdown_kwargs,
         )
-        metadata = "```yaml\n" + metadata + "\n```"
         return to_html(metadata, **to_html_kwargs)
 
     @classmethod
@@ -279,12 +280,10 @@ class AggMessageAssetFunc(AssetFunc):
     @classmethod
     def prepare(
         cls,
-        metadata_format: tp.Optional[str] = None,
         clear_metadata: tp.Optional[bool] = None,
         clear_metadata_kwargs: tp.KwargsLike = None,
         dump_metadata_kwargs: tp.KwargsLike = None,
         to_markdown_kwargs: tp.KwargsLike = None,
-        to_html_kwargs: tp.KwargsLike = None,
         asset_cls: tp.Optional[tp.Type[tp.KnowledgeAsset]] = None,
         **kwargs,
     ) -> tp.ArgsKwargs:
@@ -294,22 +293,18 @@ class AggMessageAssetFunc(AssetFunc):
             from vectorbtpro.utils.knowledge.custom_assets import MessagesAsset
 
             asset_cls = MessagesAsset
-        metadata_format = asset_cls.resolve_setting(metadata_format, "metadata_format")
         clear_metadata = asset_cls.resolve_setting(clear_metadata, "clear_metadata")
         clear_metadata_kwargs = asset_cls.resolve_setting(clear_metadata_kwargs, "clear_metadata_kwargs", merge=True)
         dump_metadata_kwargs = asset_cls.resolve_setting(dump_metadata_kwargs, "dump_metadata_kwargs", merge=True)
-        to_html_kwargs = asset_cls.resolve_setting(to_html_kwargs, "to_html_kwargs", merge=True)
 
         clear_metadata_kwargs = flat_merge_dicts(dict(target=FindRemoveAssetFunc.is_empty_func), clear_metadata_kwargs)
         _, clear_metadata_kwargs = FindRemoveAssetFunc.prepare(**clear_metadata_kwargs)
         _, dump_metadata_kwargs = DumpAssetFunc.prepare(**dump_metadata_kwargs)
         return (), {
             **dict(
-                metadata_format=metadata_format,
                 clear_metadata=clear_metadata,
                 clear_metadata_kwargs=clear_metadata_kwargs,
                 dump_metadata_kwargs=dump_metadata_kwargs,
-                to_html_kwargs=to_html_kwargs,
             ),
             **kwargs,
         }
@@ -318,12 +313,10 @@ class AggMessageAssetFunc(AssetFunc):
     def call(
         cls,
         d: tp.Any,
-        metadata_format: str = "markdown",
         clear_metadata: bool = True,
         clear_metadata_kwargs: tp.KwargsLike = None,
         dump_metadata_kwargs: tp.KwargsLike = None,
         to_markdown_kwargs: tp.KwargsLike = None,
-        to_html_kwargs: tp.KwargsLike = None,
         link_map: tp.Optional[tp.Dict[str, dict]] = None,
     ) -> tp.Any:
         if not isinstance(d, dict):
@@ -336,8 +329,6 @@ class AggMessageAssetFunc(AssetFunc):
             dump_metadata_kwargs = {}
         if to_markdown_kwargs is None:
             to_markdown_kwargs = {}
-        if to_html_kwargs is None:
-            to_html_kwargs = {}
 
         new_d = dict(d)
         new_d["content"] = new_d["content"].strip()
@@ -346,31 +337,16 @@ class AggMessageAssetFunc(AssetFunc):
             content = attachment["content"].strip()
             if new_d["content"]:
                 new_d["content"] += "\n\n"
-            if metadata_format.lower() == "markdown":
-                metadata = ToMarkdownAssetFunc.get_markdown_metadata(
-                    attachment,
-                    root_metadata_key="attachment",
-                    allow_empty=not content,
-                    clear_metadata=clear_metadata,
-                    clear_metadata_kwargs=clear_metadata_kwargs,
-                    dump_metadata_kwargs=dump_metadata_kwargs,
-                    **to_markdown_kwargs,
-                )
-                new_d["content"] += "---\n" + metadata + "\n---"
-            elif metadata_format.lower() == "html":
-                metadata = ToHTMLAssetFunc.get_html_metadata(
-                    attachment,
-                    root_metadata_key="attachment",
-                    allow_empty=not content,
-                    clear_metadata=clear_metadata,
-                    clear_metadata_kwargs=clear_metadata_kwargs,
-                    dump_metadata_kwargs=dump_metadata_kwargs,
-                    to_markdown_kwargs=to_markdown_kwargs,
-                    **to_html_kwargs,
-                )
-                new_d["content"] += metadata
-            else:
-                raise ValueError(f"Invalid metadata format: '{metadata_format}'")
+            metadata = ToMarkdownAssetFunc.get_markdown_metadata(
+                attachment,
+                root_metadata_key="attachment",
+                allow_empty=not content,
+                clear_metadata=clear_metadata,
+                clear_metadata_kwargs=clear_metadata_kwargs,
+                dump_metadata_kwargs=dump_metadata_kwargs,
+                **to_markdown_kwargs,
+            )
+            new_d["content"] += metadata
             if content:
                 new_d["content"] += "\n\n" + content
         return new_d
@@ -388,12 +364,10 @@ class AggBlockAssetFunc(AssetFunc):
         cls,
         aggregate_fields: tp.Union[None, bool, tp.MaybeIterable[str]] = None,
         parent_links_only: tp.Optional[bool] = None,
-        metadata_format: tp.Optional[str] = None,
         clear_metadata: tp.Optional[bool] = None,
         clear_metadata_kwargs: tp.KwargsLike = None,
         dump_metadata_kwargs: tp.KwargsLike = None,
         to_markdown_kwargs: tp.KwargsLike = None,
-        to_html_kwargs: tp.KwargsLike = None,
         link_map: tp.Optional[tp.Dict[str, dict]] = None,
         asset_cls: tp.Optional[tp.Type[tp.KnowledgeAsset]] = None,
         **kwargs,
@@ -406,11 +380,9 @@ class AggBlockAssetFunc(AssetFunc):
             asset_cls = MessagesAsset
         aggregate_fields = asset_cls.resolve_setting(aggregate_fields, "aggregate_fields")
         parent_links_only = asset_cls.resolve_setting(parent_links_only, "parent_links_only")
-        metadata_format = asset_cls.resolve_setting(metadata_format, "metadata_format")
         clear_metadata = asset_cls.resolve_setting(clear_metadata, "clear_metadata")
         clear_metadata_kwargs = asset_cls.resolve_setting(clear_metadata_kwargs, "clear_metadata_kwargs", merge=True)
         dump_metadata_kwargs = asset_cls.resolve_setting(dump_metadata_kwargs, "dump_metadata_kwargs", merge=True)
-        to_html_kwargs = asset_cls.resolve_setting(to_html_kwargs, "to_html_kwargs", merge=True)
 
         clear_metadata_kwargs = flat_merge_dicts(dict(target=FindRemoveAssetFunc.is_empty_func), clear_metadata_kwargs)
         _, clear_metadata_kwargs = FindRemoveAssetFunc.prepare(**clear_metadata_kwargs)
@@ -419,11 +391,9 @@ class AggBlockAssetFunc(AssetFunc):
             **dict(
                 aggregate_fields=aggregate_fields,
                 parent_links_only=parent_links_only,
-                metadata_format=metadata_format,
                 clear_metadata=clear_metadata,
                 clear_metadata_kwargs=clear_metadata_kwargs,
                 dump_metadata_kwargs=dump_metadata_kwargs,
-                to_html_kwargs=to_html_kwargs,
                 link_map=link_map,
             ),
             **kwargs,
@@ -435,12 +405,10 @@ class AggBlockAssetFunc(AssetFunc):
         d: tp.Any,
         aggregate_fields: tp.Union[bool, tp.MaybeIterable[str]] = False,
         parent_links_only: bool = True,
-        metadata_format: str = "markdown",
         clear_metadata: bool = True,
         clear_metadata_kwargs: tp.KwargsLike = None,
         dump_metadata_kwargs: tp.KwargsLike = None,
         to_markdown_kwargs: tp.KwargsLike = None,
-        to_html_kwargs: tp.KwargsLike = None,
         link_map: tp.Optional[tp.Dict[str, dict]] = None,
     ) -> tp.Any:
         if not isinstance(d, dict):
@@ -460,8 +428,6 @@ class AggBlockAssetFunc(AssetFunc):
             dump_metadata_kwargs = {}
         if to_markdown_kwargs is None:
             to_markdown_kwargs = {}
-        if to_html_kwargs is None:
-            to_html_kwargs = {}
 
         new_d = {}
         metadata_keys = []
@@ -470,7 +436,7 @@ class AggBlockAssetFunc(AssetFunc):
                 new_d[k] = d["block"][0]
             if k == "block":
                 continue
-            if k in {"thread", "channel", "author"}:
+            if k in {"thread", "channel", "author", "timestamp"}:
                 new_d[k] = v[0]
                 continue
             if k == "reference" and link_map is not None:
@@ -526,31 +492,16 @@ class AggBlockAssetFunc(AssetFunc):
                     metadata[k] = d[k][i]
                 if len(new_d["content"]) > 0:
                     new_d["content"].append("\n\n")
-                if metadata_format.lower() == "markdown":
-                    metadata = ToMarkdownAssetFunc.get_markdown_metadata(
-                        metadata,
-                        root_metadata_key="message",
-                        allow_empty=not content,
-                        clear_metadata=clear_metadata,
-                        clear_metadata_kwargs=clear_metadata_kwargs,
-                        dump_metadata_kwargs=dump_metadata_kwargs,
-                        **to_markdown_kwargs,
-                    )
-                    new_d["content"].append("---\n" + metadata + "\n---")
-                elif metadata_format.lower() == "html":
-                    metadata = ToHTMLAssetFunc.get_html_metadata(
-                        metadata,
-                        root_metadata_key="message",
-                        allow_empty=not content,
-                        clear_metadata=clear_metadata,
-                        clear_metadata_kwargs=clear_metadata_kwargs,
-                        dump_metadata_kwargs=dump_metadata_kwargs,
-                        to_markdown_kwargs=to_markdown_kwargs,
-                        **to_html_kwargs,
-                    )
-                    new_d["content"].append(metadata)
-                else:
-                    raise ValueError(f"Invalid metadata format: '{metadata_format}'")
+                metadata = ToMarkdownAssetFunc.get_markdown_metadata(
+                    metadata,
+                    root_metadata_key="message",
+                    allow_empty=not content,
+                    clear_metadata=clear_metadata,
+                    clear_metadata_kwargs=clear_metadata_kwargs,
+                    dump_metadata_kwargs=dump_metadata_kwargs,
+                    **to_markdown_kwargs,
+                )
+                new_d["content"].append(metadata)
                 if content:
                     new_d["content"].append("\n\n" + content)
         new_d["content"] = "".join(new_d["content"])
@@ -568,12 +519,10 @@ class AggThreadAssetFunc(AggBlockAssetFunc):
         d: tp.Any,
         aggregate_fields: tp.Union[bool, tp.MaybeIterable[str]] = False,
         parent_links_only: bool = True,
-        metadata_format: str = "markdown",
         clear_metadata: bool = True,
         clear_metadata_kwargs: tp.KwargsLike = None,
         dump_metadata_kwargs: tp.KwargsLike = None,
         to_markdown_kwargs: tp.KwargsLike = None,
-        to_html_kwargs: tp.KwargsLike = None,
         link_map: tp.Optional[tp.Dict[str, dict]] = None,
     ) -> tp.Any:
         if not isinstance(d, dict):
@@ -593,8 +542,6 @@ class AggThreadAssetFunc(AggBlockAssetFunc):
             dump_metadata_kwargs = {}
         if to_markdown_kwargs is None:
             to_markdown_kwargs = {}
-        if to_html_kwargs is None:
-            to_html_kwargs = {}
 
         new_d = {}
         metadata_keys = []
@@ -603,7 +550,7 @@ class AggThreadAssetFunc(AggBlockAssetFunc):
                 new_d[k] = d["thread"][0]
             if k == "thread":
                 continue
-            if k == "channel":
+            if k in {"channel", "timestamp"}:
                 new_d[k] = v[0]
                 continue
             if k == "content":
@@ -632,31 +579,16 @@ class AggThreadAssetFunc(AggBlockAssetFunc):
                     metadata[k] = d[k][i]
                 if len(new_d["content"]) > 0:
                     new_d["content"].append("\n\n")
-                if metadata_format.lower() == "markdown":
-                    metadata = ToMarkdownAssetFunc.get_markdown_metadata(
-                        metadata,
-                        root_metadata_key="message",
-                        allow_empty=not content,
-                        clear_metadata=clear_metadata,
-                        clear_metadata_kwargs=clear_metadata_kwargs,
-                        dump_metadata_kwargs=dump_metadata_kwargs,
-                        **to_markdown_kwargs,
-                    )
-                    new_d["content"].append("---\n" + metadata + "\n---")
-                elif metadata_format.lower() == "html":
-                    metadata = ToHTMLAssetFunc.get_html_metadata(
-                        metadata,
-                        root_metadata_key="message",
-                        allow_empty=not content,
-                        clear_metadata=clear_metadata,
-                        clear_metadata_kwargs=clear_metadata_kwargs,
-                        dump_metadata_kwargs=dump_metadata_kwargs,
-                        to_markdown_kwargs=to_markdown_kwargs,
-                        **to_html_kwargs,
-                    )
-                    new_d["content"].append(metadata)
-                else:
-                    raise ValueError(f"Invalid metadata format: '{metadata_format}'")
+                metadata = ToMarkdownAssetFunc.get_markdown_metadata(
+                    metadata,
+                    root_metadata_key="message",
+                    allow_empty=not content,
+                    clear_metadata=clear_metadata,
+                    clear_metadata_kwargs=clear_metadata_kwargs,
+                    dump_metadata_kwargs=dump_metadata_kwargs,
+                    **to_markdown_kwargs,
+                )
+                new_d["content"].append(metadata)
                 if content:
                     new_d["content"].append("\n\n" + content)
         new_d["content"] = "".join(new_d["content"])
@@ -690,12 +622,10 @@ class AggChannelAssetFunc(AggThreadAssetFunc):
         d: tp.Any,
         aggregate_fields: tp.Union[bool, tp.MaybeIterable[str]] = False,
         parent_links_only: bool = True,
-        metadata_format: str = "markdown",
         clear_metadata: bool = True,
         clear_metadata_kwargs: tp.KwargsLike = None,
         dump_metadata_kwargs: tp.KwargsLike = None,
         to_markdown_kwargs: tp.KwargsLike = None,
-        to_html_kwargs: tp.KwargsLike = None,
         link_map: tp.Optional[tp.Dict[str, dict]] = None,
     ) -> tp.Any:
         if not isinstance(d, dict):
@@ -715,15 +645,13 @@ class AggChannelAssetFunc(AggThreadAssetFunc):
             dump_metadata_kwargs = {}
         if to_markdown_kwargs is None:
             to_markdown_kwargs = {}
-        if to_html_kwargs is None:
-            to_html_kwargs = {}
 
         new_d = {}
         metadata_keys = []
         for k, v in d.items():
             if k == "link":
                 new_d[k] = cls.get_channel_link(v[0])
-            if k == "channel":
+            if k in {"channel", "timestamp"}:
                 new_d[k] = v[0]
                 continue
             if k == "content":
@@ -752,31 +680,16 @@ class AggChannelAssetFunc(AggThreadAssetFunc):
                     metadata[k] = d[k][i]
                 if len(new_d["content"]) > 0:
                     new_d["content"].append("\n\n")
-                if metadata_format.lower() == "markdown":
-                    metadata = ToMarkdownAssetFunc.get_markdown_metadata(
-                        metadata,
-                        root_metadata_key="message",
-                        allow_empty=not content,
-                        clear_metadata=clear_metadata,
-                        clear_metadata_kwargs=clear_metadata_kwargs,
-                        dump_metadata_kwargs=dump_metadata_kwargs,
-                        **to_markdown_kwargs,
-                    )
-                    new_d["content"].append("---\n" + metadata + "\n---")
-                elif metadata_format.lower() == "html":
-                    metadata = ToHTMLAssetFunc.get_html_metadata(
-                        metadata,
-                        root_metadata_key="message",
-                        allow_empty=not content,
-                        clear_metadata=clear_metadata,
-                        clear_metadata_kwargs=clear_metadata_kwargs,
-                        dump_metadata_kwargs=dump_metadata_kwargs,
-                        to_markdown_kwargs=to_markdown_kwargs,
-                        **to_html_kwargs,
-                    )
-                    new_d["content"].append(metadata)
-                else:
-                    raise ValueError(f"Invalid metadata format: '{metadata_format}'")
+                metadata = ToMarkdownAssetFunc.get_markdown_metadata(
+                    metadata,
+                    root_metadata_key="message",
+                    allow_empty=not content,
+                    clear_metadata=clear_metadata,
+                    clear_metadata_kwargs=clear_metadata_kwargs,
+                    dump_metadata_kwargs=dump_metadata_kwargs,
+                    **to_markdown_kwargs,
+                )
+                new_d["content"].append(metadata)
                 if content:
                     new_d["content"].append("\n\n" + content)
         new_d["content"] = "".join(new_d["content"])

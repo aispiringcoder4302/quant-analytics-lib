@@ -336,12 +336,49 @@ class Embeddings(Configured):
 
     _settings_path: tp.SettingsPath = ["knowledge", "knowledge.chat", "knowledge.chat.embeddings_config"]
 
-    def __init__(self, template_context: tp.KwargsLike = None, **kwargs) -> None:
-        Configured.__init__(self, template_context=template_context, **kwargs)
+    def __init__(
+        self,
+        batch_size: tp.Optional[int] = None,
+        show_progress: tp.Optional[bool] = None,
+        pbar_kwargs: tp.KwargsLike = None,
+        template_context: tp.KwargsLike = None,
+        **kwargs,
+    ) -> None:
+        Configured.__init__(
+            self,
+            batch_size=batch_size,
+            show_progress=show_progress,
+            pbar_kwargs=pbar_kwargs,
+            template_context=template_context,
+            **kwargs,
+        )
 
+        batch_size = self.resolve_setting(batch_size, "batch_size")
+        show_progress = self.resolve_setting(show_progress, "show_progress")
+        pbar_kwargs = self.resolve_setting(pbar_kwargs, "pbar_kwargs", merge=True)
         template_context = self.resolve_setting(template_context, "template_context", merge=True)
 
+        self._batch_size = batch_size
+        self._show_progress = show_progress
+        self._pbar_kwargs = pbar_kwargs
         self._template_context = template_context
+
+    @property
+    def batch_size(self) -> tp.Optional[int]:
+        """Batch size.
+
+        Set to None to disable batching."""
+        return self._batch_size
+
+    @property
+    def show_progress(self) -> tp.Optional[bool]:
+        """Whether to show progress bar."""
+        return self._show_progress
+
+    @property
+    def pbar_kwargs(self) -> tp.Kwargs:
+        """Keyword arguments passed to `vectorbtpro.utils.pbar.ProgressBar`."""
+        return self._pbar_kwargs
 
     @property
     def template_context(self) -> tp.Kwargs:
@@ -357,9 +394,27 @@ class Embeddings(Configured):
         """Get embedding for a query."""
         raise NotImplementedError
 
+    def get_embedding_batch(self, batch: tp.List[str]) -> tp.List[tp.List[float]]:
+        """Get embeddings for one batch of queries."""
+        return [self.get_embedding(query) for query in batch]
+
+    def iter_embedding_batches(self, queries: tp.List[str]) -> tp.Iterator[tp.List[tp.List[float]]]:
+        """Get iterator of embedding batches."""
+        from vectorbtpro.utils.pbar import ProgressBar
+
+        if self.batch_size is not None:
+            batches = [queries[i: i + self.batch_size] for i in range(0, len(queries), self.batch_size)]
+        else:
+            batches = [queries]
+        pbar_kwargs = merge_dicts(dict(prefix="get_embeddings"), self.pbar_kwargs)
+        with ProgressBar(total=len(queries), show_progress=self.show_progress, **pbar_kwargs) as pbar:
+            for batch in batches:
+                yield self.get_embedding_batch(batch)
+                pbar.update(len(batch))
+
     def get_embeddings(self, queries: tp.List[str]) -> tp.List[tp.List[float]]:
         """Get embeddings for multiple queries."""
-        return [self.get_embedding(query) for query in queries]
+        return [embedding for batch in self.iter_embedding_batches(queries) for embedding in batch]
 
 
 class OpenAIEmbeddings(Embeddings):
@@ -396,19 +451,14 @@ class OpenAIEmbeddings(Embeddings):
         from openai import OpenAI
 
         openai_config = merge_dicts(self.get_settings(inherit=False), kwargs)
+        openai_config.pop("batch_size", None)
+        openai_config.pop("show_progress", None)
+        openai_config.pop("pbar_kwargs", None)
         def_model = openai_config.pop("model", None)
         if model is None:
             model = def_model
         if model is None:
             raise ValueError("Must provide a model")
-        def_batch_size = openai_config.pop("batch_size", None)
-        if batch_size is None:
-            batch_size = def_batch_size
-        def_show_progress = openai_config.pop("show_progress", None)
-        if show_progress is None:
-            show_progress = def_show_progress
-        def_pbar_kwargs = openai_config.pop("pbar_kwargs", {})
-        pbar_kwargs = merge_dicts(def_pbar_kwargs, pbar_kwargs)
 
         client_arg_names = set(get_func_arg_names(OpenAI.__init__))
         client_kwargs = {}
@@ -423,9 +473,6 @@ class OpenAIEmbeddings(Embeddings):
         self._model = model
         self._client = client
         self._embeddings_kwargs = embeddings_kwargs
-        self._batch_size = batch_size
-        self._show_progress = show_progress
-        self._pbar_kwargs = pbar_kwargs
 
     @property
     def model(self) -> str:
@@ -441,42 +488,13 @@ class OpenAIEmbeddings(Embeddings):
         """Keyword arguments passed to `openai.resources.embeddings.Embeddings.create`."""
         return self._embeddings_kwargs
 
-    @property
-    def batch_size(self) -> tp.Optional[int]:
-        """Batch size.
-
-        Set to None to disable batching."""
-        return self._batch_size
-
-    @property
-    def show_progress(self) -> tp.Optional[bool]:
-        """Whether to show progress bar."""
-        return self._show_progress
-
-    @property
-    def pbar_kwargs(self) -> tp.Kwargs:
-        """Keyword arguments passed to `vectorbtpro.utils.pbar.ProgressBar`."""
-        return self._pbar_kwargs
-
     def get_embedding(self, query: str) -> tp.List[float]:
         response = self.client.embeddings.create(input=query, model=self.model, **self.embeddings_kwargs)
         return response.data[0].embedding
 
-    def get_embeddings(self, queries: tp.List[str]) -> tp.List[tp.List[float]]:
-        from vectorbtpro.utils.pbar import ProgressBar
-
-        if self.batch_size is not None:
-            batches = [queries[i : i + self.batch_size] for i in range(0, len(queries), self.batch_size)]
-        else:
-            batches = [queries]
-        embeddings = []
-        pbar_kwargs = merge_dicts(dict(prefix="get_embeddings"), self.pbar_kwargs)
-        with ProgressBar(total=len(queries), show_progress=self.show_progress, **pbar_kwargs) as pbar:
-            for batch in batches:
-                response = self.client.embeddings.create(input=batch, model=self.model, **self.embeddings_kwargs)
-                embeddings.extend([embedding.embedding for embedding in response.data])
-                pbar.update(len(batch))
-        return embeddings
+    def get_embedding_batch(self, batch: tp.List[str]) -> tp.List[tp.List[float]]:
+        response = self.client.embeddings.create(input=batch, model=self.model, **self.embeddings_kwargs)
+        return [embedding.embedding for embedding in response.data]
 
 
 class LiteLLMEmbeddings(Embeddings):
@@ -512,25 +530,17 @@ class LiteLLMEmbeddings(Embeddings):
         assert_can_import("litellm")
 
         litellm_config = merge_dicts(self.get_settings(inherit=False), kwargs)
+        litellm_config.pop("batch_size", None)
+        litellm_config.pop("show_progress", None)
+        litellm_config.pop("pbar_kwargs", None)
         def_model = litellm_config.pop("model", None)
         if model is None:
             model = def_model
         if model is None:
             raise ValueError("Must provide a model")
-        def_batch_size = litellm_config.pop("batch_size", None)
-        if batch_size is None:
-            batch_size = def_batch_size
-        def_show_progress = litellm_config.pop("show_progress", None)
-        if show_progress is None:
-            show_progress = def_show_progress
-        def_pbar_kwargs = litellm_config.pop("pbar_kwargs", {})
-        pbar_kwargs = merge_dicts(def_pbar_kwargs, pbar_kwargs)
 
         self._model = model
         self._embedding_kwargs = litellm_config
-        self._batch_size = batch_size
-        self._show_progress = show_progress
-        self._pbar_kwargs = pbar_kwargs
 
     @property
     def model(self) -> str:
@@ -541,45 +551,17 @@ class LiteLLMEmbeddings(Embeddings):
         """Keyword arguments passed to `litellm.embedding`."""
         return self._embedding_kwargs
 
-    @property
-    def batch_size(self) -> tp.Optional[int]:
-        """Batch size.
-
-        Set to None to disable batching."""
-        return self._batch_size
-
-    @property
-    def show_progress(self) -> tp.Optional[bool]:
-        """Whether to show progress bar."""
-        return self._show_progress
-
-    @property
-    def pbar_kwargs(self) -> tp.Kwargs:
-        """Keyword arguments passed to `vectorbtpro.utils.pbar.ProgressBar`."""
-        return self._pbar_kwargs
-
     def get_embedding(self, query: str) -> tp.List[float]:
         from litellm import embedding
 
         response = embedding(self.model, input=query, **self.embedding_kwargs)
         return response.data[0]["embedding"]
 
-    def get_embeddings(self, queries: tp.List[str]) -> tp.List[tp.List[float]]:
+    def get_embedding_batch(self, batch: tp.List[str]) -> tp.List[tp.List[float]]:
         from litellm import embedding
-        from vectorbtpro.utils.pbar import ProgressBar
 
-        if self.batch_size is not None:
-            batches = [queries[i : i + self.batch_size] for i in range(0, len(queries), self.batch_size)]
-        else:
-            batches = [queries]
-        embeddings = []
-        pbar_kwargs = merge_dicts(dict(prefix="get_embeddings"), self.pbar_kwargs)
-        with ProgressBar(total=len(queries), show_progress=self.show_progress, **pbar_kwargs) as pbar:
-            for batch in batches:
-                response = embedding(self.model, input=batch, **self.embedding_kwargs)
-                embeddings.extend([embedding["embedding"] for embedding in response.data])
-                pbar.update(len(batch))
-        return embeddings
+        response = embedding(self.model, input=batch, **self.embedding_kwargs)
+        return [embedding["embedding"] for embedding in response.data]
 
 
 class LlamaIndexEmbeddings(Embeddings):
@@ -594,12 +576,18 @@ class LlamaIndexEmbeddings(Embeddings):
     def __init__(
         self,
         embedding: tp.Union[None, str, tp.MaybeType[BaseEmbeddingT]] = None,
+        batch_size: tp.Optional[int] = None,
+        show_progress: tp.Optional[bool] = None,
+        pbar_kwargs: tp.KwargsLike = None,
         template_context: tp.KwargsLike = None,
         **kwargs,
     ) -> None:
         Embeddings.__init__(
             self,
             embedding=embedding,
+            batch_size=batch_size,
+            show_progress=show_progress,
+            pbar_kwargs=pbar_kwargs,
             template_context=template_context,
             **kwargs,
         )
@@ -610,6 +598,9 @@ class LlamaIndexEmbeddings(Embeddings):
         from llama_index.core.embeddings import BaseEmbedding
 
         llama_index_config = merge_dicts(self.get_settings(inherit=False), kwargs)
+        llama_index_config.pop("batch_size", None)
+        llama_index_config.pop("show_progress", None)
+        llama_index_config.pop("pbar_kwargs", None)
         if embedding is None:
             embedding = llama_index_config.pop("embedding", None)
         if embedding is None:
@@ -676,8 +667,8 @@ class LlamaIndexEmbeddings(Embeddings):
     def get_embedding(self, query: str) -> tp.List[float]:
         return self.embedding.get_text_embedding(query)
 
-    def get_embeddings(self, queries: tp.List[str]) -> tp.List[tp.List[float]]:
-        return self.embedding.get_text_embedding_batch(queries)
+    def get_embedding_batch(self, batch: tp.List[str]) -> tp.List[tp.List[float]]:
+        return self.embedding.get_text_embedding_batch(batch)
 
 
 def resolve_embeddings(embeddings: tp.EmbeddingsLike = None) -> tp.MaybeType[Embeddings]:
@@ -3226,7 +3217,11 @@ class DocumentRanker(Configured):
                 from vectorbtpro.utils.pbar import ProgressBar
 
                 pbar_kwargs = merge_dicts(dict(prefix="split_documents"), self.pbar_kwargs)
-                with ProgressBar(total=len(documents), show_progress=self.show_progress, **pbar_kwargs) as pbar:
+                with ProgressBar(
+                    total=len(documents_to_split),
+                    show_progress=self.show_progress,
+                    **pbar_kwargs,
+                ) as pbar:
                     for document in documents_to_split:
                         document_splits[document.id_] = document.split()
                         pbar.update()
@@ -3262,12 +3257,15 @@ class DocumentRanker(Configured):
                         obj_contents[obj.id_] = content
 
             if obj_contents:
-                embeddings = self.embeddings.get_embeddings(list(obj_contents.values()))
-                obj_embeddings = dict(zip(obj_contents.keys(), embeddings))
-                for obj_id, embedding in obj_embeddings.items():
-                    obj = self.emb_store[obj_id]
-                    new_obj = obj.replace(embedding=embedding)
-                    self.emb_store[new_obj.id_] = new_obj
+                total = 0
+                for batch in self.embeddings.iter_embedding_batches(list(obj_contents.values())):
+                    batch_keys = list(obj_contents.keys())[total:total + len(batch)]
+                    obj_embeddings = dict(zip(batch_keys, batch))
+                    for obj_id, embedding in obj_embeddings.items():
+                        obj = self.emb_store[obj_id]
+                        new_obj = obj.replace(embedding=embedding)
+                        self.emb_store[new_obj.id_] = new_obj
+                    total += len(batch)
 
             if return_embeddings or return_documents:
                 embeddings = []

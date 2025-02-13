@@ -32,7 +32,7 @@ from vectorbtpro.base.indexing import (
 from vectorbtpro.base.resampling.base import Resampler
 from vectorbtpro.base.wrapping import ArrayWrapper, Wrapping
 from vectorbtpro.utils import checks, datetime_ as dt
-from vectorbtpro.utils.chunking import ChunkMeta, yield_chunk_meta, get_chunk_meta_key, ArraySelector, ArraySlicer
+from vectorbtpro.utils.chunking import ChunkMeta, iter_chunk_meta, get_chunk_meta_key, ArraySelector, ArraySlicer
 from vectorbtpro.utils.config import merge_dicts, resolve_dict, Configured
 from vectorbtpro.utils.decorators import hybrid_property, hybrid_method
 from vectorbtpro.utils.execution import Task, execute
@@ -494,12 +494,12 @@ class BaseIDXAccessor(Configured, IndexApplier):
 
         If `axis` is None, becomes 0 if the instance is one-dimensional and 1 otherwise.
 
-        For arguments related to chunking meta, see `vectorbtpro.utils.chunking.yield_chunk_meta`.
+        For arguments related to chunking meta, see `vectorbtpro.utils.chunking.iter_chunk_meta`.
 
         !!! note
             Splits Pandas object, not accessor!"""
         if chunk_meta is None:
-            chunk_meta = yield_chunk_meta(
+            chunk_meta = iter_chunk_meta(
                 size=len(self.obj),
                 min_size=min_size,
                 n_chunks=n_chunks,

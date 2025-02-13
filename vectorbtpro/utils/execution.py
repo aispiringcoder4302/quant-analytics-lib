@@ -914,7 +914,7 @@ class Executor(Configured):
     * Callable - passes `tasks`, `size` (if not None), and `engine_config`
 
     Can execute per chunk if `chunk_meta` is provided. Otherwise, if any of `n_chunks` and `chunk_len`
-    are set, passes them to `vectorbtpro.utils.chunking.yield_chunk_meta` to generate `chunk_meta`.
+    are set, passes them to `vectorbtpro.utils.chunking.iter_chunk_meta` to generate `chunk_meta`.
     Arguments `n_chunks` and `chunk_len` can be set globally in the engine-specific settings.
     Set `n_chunks` and `chunk_len` to 'auto' to set them to the number of cores.
 
@@ -1381,22 +1381,22 @@ class Executor(Configured):
 
     @property
     def min_size(self) -> tp.Optional[int]:
-        """See `vectorbtpro.utils.chunking.yield_chunk_meta`."""
+        """See `vectorbtpro.utils.chunking.iter_chunk_meta`."""
         return self._min_size
 
     @property
     def n_chunks(self) -> tp.Union[None, int, str]:
-        """See `vectorbtpro.utils.chunking.yield_chunk_meta`."""
+        """See `vectorbtpro.utils.chunking.iter_chunk_meta`."""
         return self._n_chunks
 
     @property
     def chunk_len(self) -> tp.Union[None, int, str]:
-        """See `vectorbtpro.utils.chunking.yield_chunk_meta`."""
+        """See `vectorbtpro.utils.chunking.iter_chunk_meta`."""
         return self._chunk_len
 
     @property
     def chunk_meta(self) -> tp.Optional[tp.ChunkMetaLike]:
-        """See `vectorbtpro.utils.chunking.yield_chunk_meta`."""
+        """See `vectorbtpro.utils.chunking.iter_chunk_meta`."""
         return self._chunk_meta
 
     @property
@@ -1974,7 +1974,7 @@ class Executor(Configured):
                 )
 
         if chunk_meta is None:
-            from vectorbtpro.utils.chunking import yield_chunk_meta
+            from vectorbtpro.utils.chunking import iter_chunk_meta
 
             if not isinstance(tasks, CustomTemplate) and hasattr(tasks, "__len__"):
                 _size = len(tasks)
@@ -1987,7 +1987,7 @@ class Executor(Configured):
                     raise ValueError("When tasks is a template, must provide size")
                 tasks = list(tasks)
                 _size = len(tasks)
-            chunk_meta = yield_chunk_meta(
+            chunk_meta = iter_chunk_meta(
                 size=_size,
                 min_size=min_size,
                 n_chunks=n_chunks,

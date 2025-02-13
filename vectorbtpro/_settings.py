@@ -2476,7 +2476,6 @@ $context
             root_metadata_key=None,
             aggregate_fields=False,
             parent_links_only=True,
-            metadata_format="markdown",
             clear_metadata=True,
             clear_metadata_kwargs=flex_cfg(),
             dump_metadata_kwargs=flex_cfg(),
