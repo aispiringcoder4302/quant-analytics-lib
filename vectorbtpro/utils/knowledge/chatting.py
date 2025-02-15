@@ -28,7 +28,7 @@ from vectorbtpro.utils.config import merge_dicts, flat_merge_dicts, Configured, 
 from vectorbtpro.utils.decorators import memoized_method, hybrid_method
 from vectorbtpro.utils.knowledge.formatting import ContentFormatter, HTMLFileFormatter, resolve_formatter
 from vectorbtpro.utils.parsing import get_func_arg_names, get_func_kwargs
-from vectorbtpro.utils.template import CustomTemplate, Sub, RepFunc
+from vectorbtpro.utils.template import CustomTemplate, SafeSub, RepFunc
 from vectorbtpro.utils.warnings_ import warn
 
 try:
@@ -961,7 +961,7 @@ class Completions(Configured):
 
         if context:
             if isinstance(context_prompt, str):
-                context_prompt = Sub(context_prompt)
+                context_prompt = SafeSub(context_prompt)
             elif checks.is_function(context_prompt):
                 context_prompt = RepFunc(context_prompt)
             elif not isinstance(context_prompt, CustomTemplate):
@@ -2061,7 +2061,7 @@ class TextDocument(StoreDocument, HasSettings, DefineMixin):
     Must be suitable for formatting via the `format()` method."""
 
     content_template: tp.CustomTemplateLike = define.field(
-        default=Sub("${metadata_content}${text}", eval_id="content_template")
+        default=SafeSub("${metadata_content}${text}", eval_id="content_template")
     )
     """Content template.
     
@@ -2150,7 +2150,7 @@ class TextDocument(StoreDocument, HasSettings, DefineMixin):
         if metadata_content:
             metadata_template = self.metadata_template
             if isinstance(metadata_template, str):
-                metadata_template = Sub(metadata_template)
+                metadata_template = SafeSub(metadata_template)
             elif checks.is_function(metadata_template):
                 metadata_template = RepFunc(metadata_template)
             elif not isinstance(metadata_template, CustomTemplate):
@@ -2162,7 +2162,7 @@ class TextDocument(StoreDocument, HasSettings, DefineMixin):
             metadata_content = metadata_template.substitute(template_context, eval_id="metadata_template")
         content_template = self.content_template
         if isinstance(content_template, str):
-            content_template = Sub(content_template)
+            content_template = SafeSub(content_template)
         elif checks.is_function(content_template):
             content_template = RepFunc(content_template)
         elif not isinstance(content_template, CustomTemplate):

@@ -23,6 +23,7 @@ from vectorbtpro.utils.search_ import contains_in_obj, find_and_replace_in_obj
 __all__ = [
     "CustomTemplate",
     "Sub",
+    "SafeSub",
     "Rep",
     "RepEval",
     "RepFunc",
@@ -117,6 +118,8 @@ class CustomTemplate(Evaluable, DefineMixin):
 class Sub(CustomTemplate):
     """Class for substituting parts of a template string with the respective values from `context`.
 
+    Uses `string.Template.substitute`.
+
     Always returns a string."""
 
     def get_context_vars(self) -> tp.List[str]:
@@ -145,6 +148,45 @@ class Sub(CustomTemplate):
 
         try:
             return Template(self.template).substitute(context)
+        except KeyError as e:
+            if strict:
+                raise e
+        return self
+
+
+class SafeSub(CustomTemplate):
+    """Class for substituting parts of a template string with the respective values from `context`.
+
+    Uses `string.Template.safe_substitute`.
+
+    Always returns a string."""
+
+    def get_context_vars(self) -> tp.List[str]:
+        tmpl = Template(self.template)
+        variables = []
+        for match in tmpl.pattern.finditer(tmpl.template):
+            named = match.group("named")
+            braced = match.group("braced")
+            if named is not None and named not in variables:
+                variables.append(named)
+            elif braced is not None and braced not in variables:
+                variables.append(braced)
+        return variables
+
+    def substitute(
+        self,
+        context: tp.KwargsLike = None,
+        strict: tp.Optional[bool] = None,
+        eval_id: tp.Optional[tp.Hashable] = None,
+    ) -> tp.Any:
+        """Substitute parts of `Sub.template` as a regular template."""
+        if not self.meets_eval_id(eval_id):
+            return self
+        context = self.resolve_context(context=context, eval_id=eval_id)
+        strict = self.resolve_strict(strict=strict)
+
+        try:
+            return Template(self.template).safe_substitute(context)
         except KeyError as e:
             if strict:
                 raise e

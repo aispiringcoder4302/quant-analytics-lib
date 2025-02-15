@@ -16,6 +16,7 @@ import io
 import os
 import pkgutil
 import re
+import base64
 from collections import defaultdict, deque
 from pathlib import Path
 from types import ModuleType
@@ -31,7 +32,7 @@ from vectorbtpro.utils.path_ import check_mkdir, remove_dir, get_common_prefix, 
 from vectorbtpro.utils.pbar import ProgressBar
 from vectorbtpro.utils.pickling import suggest_compression
 from vectorbtpro.utils.search_ import find, replace
-from vectorbtpro.utils.template import CustomTemplate
+from vectorbtpro.utils.template import CustomTemplate, SafeSub, RepFunc
 from vectorbtpro.utils.warnings_ import warn
 
 __all__ = [
@@ -408,17 +409,17 @@ class VBTAsset(KnowledgeAsset):
             link = replace(k, v, link, mode="regex")
         return link
 
-    def minimize_links(self: VBTAssetT, rules: tp.Optional[tp.Dict[str, str]] = None) -> VBTAssetT:
+    def minimize_links(self, rules: tp.Optional[tp.Dict[str, str]] = None) -> tp.MaybeVBTAsset:
         """Minimize links."""
         rules = self.resolve_setting(rules, "minimize_link_rules", merge=True)
 
         return self.find_replace(rules, mode="regex")
 
     def minimize(
-        self: VBTAssetT,
+        self,
         keys: tp.Optional[tp.List[str]] = None,
         links: tp.Optional[bool] = None,
-    ) -> VBTAssetT:
+    ) -> tp.MaybeVBTAsset:
         """Minimize by keeping the most useful information.
 
         If `minimize_links` is True, replaces redundant URL prefixes by templates that can
@@ -452,10 +453,10 @@ class VBTAsset(KnowledgeAsset):
         return self.replace(data=new_data, single_item=True)
 
     def to_markdown(
-        self: VBTAssetT,
+        self,
         root_metadata_key: tp.Optional[tp.Key] = None,
-        clear_metadata: tp.Optional[bool] = None,
-        clear_metadata_kwargs: tp.KwargsLike = None,
+        clean_metadata: tp.Optional[bool] = None,
+        clean_metadata_kwargs: tp.KwargsLike = None,
         dump_metadata_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> tp.MaybeVBTAsset:
@@ -465,16 +466,16 @@ class VBTAsset(KnowledgeAsset):
 
         Use `root_metadata_key` to provide the root key for the metadata markdown.
 
-        If `clear_metadata` is True, removes empty fields from the metadata. Arguments in
-        `clear_metadata_kwargs` are passed to `vectorbtpro.utils.knowledge.base_asset_funcs.FindRemoveAssetFunc`,
+        If `clean_metadata` is True, removes empty fields from the metadata. Arguments in
+        `clean_metadata_kwargs` are passed to `vectorbtpro.utils.knowledge.base_asset_funcs.FindRemoveAssetFunc`,
         while `dump_metadata_kwargs` are passed to `vectorbtpro.utils.knowledge.base_asset_funcs.DumpAssetFunc`.
 
         Last keyword arguments in `kwargs` are passed to `vectorbtpro.utils.knowledge.formatting.to_markdown`."""
         return self.apply(
             "to_markdown",
             root_metadata_key=root_metadata_key,
-            clear_metadata=clear_metadata,
-            clear_metadata_kwargs=clear_metadata_kwargs,
+            clean_metadata=clean_metadata,
+            clean_metadata_kwargs=clean_metadata_kwargs,
             dump_metadata_kwargs=dump_metadata_kwargs,
             **kwargs,
         )
@@ -606,8 +607,8 @@ class VBTAsset(KnowledgeAsset):
     def to_html(
         self: VBTAssetT,
         root_metadata_key: tp.Optional[tp.Key] = None,
-        clear_metadata: tp.Optional[bool] = None,
-        clear_metadata_kwargs: tp.KwargsLike = None,
+        clean_metadata: tp.Optional[bool] = None,
+        clean_metadata_kwargs: tp.KwargsLike = None,
         dump_metadata_kwargs: tp.KwargsLike = None,
         to_markdown_kwargs: tp.KwargsLike = None,
         format_html_kwargs: tp.KwargsLike = None,
@@ -625,8 +626,8 @@ class VBTAsset(KnowledgeAsset):
         return self.apply(
             "to_html",
             root_metadata_key=root_metadata_key,
-            clear_metadata=clear_metadata,
-            clear_metadata_kwargs=clear_metadata_kwargs,
+            clean_metadata=clean_metadata,
+            clean_metadata_kwargs=clean_metadata_kwargs,
             dump_metadata_kwargs=dump_metadata_kwargs,
             to_markdown_kwargs=to_markdown_kwargs,
             format_html_kwargs=format_html_kwargs,
@@ -815,25 +816,51 @@ class VBTAsset(KnowledgeAsset):
         self,
         link: tp.Optional[str] = None,
         find_kwargs: tp.KwargsLike = None,
+        title: str = "",
+        html_template: tp.Optional[str] = None,
         open_browser: tp.Optional[bool] = None,
+        template_context: tp.KwargsLike = None,
         **kwargs,
     ) -> Path:
         """Display as an HTML page.
 
-        Opens the web browser. Also, returns the path of the temporary HTML file."""
+        If there are multiple HTML pages, shows them as iframes inside a parent HTML page with pagination.
+
+        Opens the web browser. Also, returns the path of the temporary HTML file.
+
+        !!! note
+            The file __won't__ be deleted automatically.
+        """
         import tempfile
 
+        title = self.resolve_setting(title, "display_title")
+        html_template = self.resolve_setting(html_template, "display_html_template")
+        template_context = self.resolve_setting(template_context, "template_context", merge=True)
         open_browser = self.resolve_setting(open_browser, "open_browser")
 
         if link is not None:
             if find_kwargs is None:
                 find_kwargs = {}
-            single_instance = self.find_link(link, **find_kwargs)
+            instance = self.find_link(link, **find_kwargs)
         else:
-            if len(self.data) != 1:
-                raise ValueError("Must provide link")
-            single_instance = self
-        html = single_instance.to_html(wrap=False, single_item=True, **kwargs)
+            instance = self
+        html = instance.to_html(wrap=False, single_item=True, **kwargs)
+        if len(instance) > 1:
+            encoded_pages = map(lambda x: base64.b64encode(x.encode("utf-8")).decode("ascii"), html)
+            pages = "[\n" + ",\n".join(f'    "{page}"' for page in encoded_pages) + "\n]"
+            if isinstance(html_template, str):
+                html_template = SafeSub(html_template)
+            elif checks.is_function(html_template):
+                html_template = RepFunc(html_template)
+            elif not isinstance(html_template, CustomTemplate):
+                raise TypeError(f"HTML template must be a string, function, or template")
+            html = html_template.substitute(
+                flat_merge_dicts(
+                    dict(title=title, pages=pages),
+                    template_context,
+                ),
+                eval_id="html_template",
+            )
         with tempfile.NamedTemporaryFile(
             "w",
             encoding="utf-8",
@@ -2286,8 +2313,10 @@ class MessagesAsset(VBTAsset):
 
     def aggregate_messages(
         self: MessagesAssetT,
-        clear_metadata: tp.Optional[bool] = None,
-        clear_metadata_kwargs: tp.KwargsLike = None,
+        minimize_metadata: tp.Optional[bool] = None,
+        minimize_keys: tp.Optional[tp.MaybeList[tp.PathLikeKey]] = None,
+        clean_metadata: tp.Optional[bool] = None,
+        clean_metadata_kwargs: tp.KwargsLike = None,
         dump_metadata_kwargs: tp.KwargsLike = None,
         to_markdown_kwargs: tp.KwargsLike = None,
         **kwargs,
@@ -2299,8 +2328,10 @@ class MessagesAsset(VBTAsset):
         Uses `MessagesAsset.apply` on `vectorbtpro.utils.knowledge.custom_asset_funcs.AggMessageAssetFunc`."""
         return self.apply(
             "agg_message",
-            clear_metadata=clear_metadata,
-            clear_metadata_kwargs=clear_metadata_kwargs,
+            minimize_metadata=minimize_metadata,
+            minimize_keys=minimize_keys,
+            clean_metadata=clean_metadata,
+            clean_metadata_kwargs=clean_metadata_kwargs,
             dump_metadata_kwargs=dump_metadata_kwargs,
             to_markdown_kwargs=to_markdown_kwargs,
             **kwargs,
@@ -2311,8 +2342,10 @@ class MessagesAsset(VBTAsset):
         collect_kwargs: tp.KwargsLike = None,
         aggregate_fields: tp.Union[None, bool, tp.MaybeIterable[str]] = None,
         parent_links_only: tp.Optional[bool] = None,
-        clear_metadata: tp.Optional[bool] = None,
-        clear_metadata_kwargs: tp.KwargsLike = None,
+        minimize_metadata: tp.Optional[bool] = None,
+        minimize_keys: tp.Optional[tp.MaybeList[tp.PathLikeKey]] = None,
+        clean_metadata: tp.Optional[bool] = None,
+        clean_metadata_kwargs: tp.KwargsLike = None,
         dump_metadata_kwargs: tp.KwargsLike = None,
         to_markdown_kwargs: tp.KwargsLike = None,
         **kwargs,
@@ -2339,8 +2372,10 @@ class MessagesAsset(VBTAsset):
             "agg_block",
             aggregate_fields=aggregate_fields,
             parent_links_only=parent_links_only,
-            clear_metadata=clear_metadata,
-            clear_metadata_kwargs=clear_metadata_kwargs,
+            minimize_metadata=minimize_metadata,
+            minimize_keys=minimize_keys,
+            clean_metadata=clean_metadata,
+            clean_metadata_kwargs=clean_metadata_kwargs,
             dump_metadata_kwargs=dump_metadata_kwargs,
             to_markdown_kwargs=to_markdown_kwargs,
             link_map={d["link"]: dict(d) for d in self.data},
@@ -2352,8 +2387,10 @@ class MessagesAsset(VBTAsset):
         collect_kwargs: tp.KwargsLike = None,
         aggregate_fields: tp.Union[None, bool, tp.MaybeIterable[str]] = None,
         parent_links_only: tp.Optional[bool] = None,
-        clear_metadata: tp.Optional[bool] = None,
-        clear_metadata_kwargs: tp.KwargsLike = None,
+        minimize_metadata: tp.Optional[bool] = None,
+        minimize_keys: tp.Optional[tp.MaybeList[tp.PathLikeKey]] = None,
+        clean_metadata: tp.Optional[bool] = None,
+        clean_metadata_kwargs: tp.KwargsLike = None,
         dump_metadata_kwargs: tp.KwargsLike = None,
         to_markdown_kwargs: tp.KwargsLike = None,
         **kwargs,
@@ -2372,8 +2409,10 @@ class MessagesAsset(VBTAsset):
             "agg_thread",
             aggregate_fields=aggregate_fields,
             parent_links_only=parent_links_only,
-            clear_metadata=clear_metadata,
-            clear_metadata_kwargs=clear_metadata_kwargs,
+            minimize_metadata=minimize_metadata,
+            minimize_keys=minimize_keys,
+            clean_metadata=clean_metadata,
+            clean_metadata_kwargs=clean_metadata_kwargs,
             dump_metadata_kwargs=dump_metadata_kwargs,
             to_markdown_kwargs=to_markdown_kwargs,
             link_map={d["link"]: dict(d) for d in self.data},
@@ -2385,8 +2424,10 @@ class MessagesAsset(VBTAsset):
         collect_kwargs: tp.KwargsLike = None,
         aggregate_fields: tp.Union[None, bool, tp.MaybeIterable[str]] = None,
         parent_links_only: tp.Optional[bool] = None,
-        clear_metadata: tp.Optional[bool] = None,
-        clear_metadata_kwargs: tp.KwargsLike = None,
+        minimize_metadata: tp.Optional[bool] = None,
+        minimize_keys: tp.Optional[tp.MaybeList[tp.PathLikeKey]] = None,
+        clean_metadata: tp.Optional[bool] = None,
+        clean_metadata_kwargs: tp.KwargsLike = None,
         dump_metadata_kwargs: tp.KwargsLike = None,
         to_markdown_kwargs: tp.KwargsLike = None,
         **kwargs,
@@ -2405,8 +2446,10 @@ class MessagesAsset(VBTAsset):
             "agg_channel",
             aggregate_fields=aggregate_fields,
             parent_links_only=parent_links_only,
-            clear_metadata=clear_metadata,
-            clear_metadata_kwargs=clear_metadata_kwargs,
+            minimize_metadata=minimize_metadata,
+            minimize_keys=minimize_keys,
+            clean_metadata=clean_metadata,
+            clean_metadata_kwargs=clean_metadata_kwargs,
             dump_metadata_kwargs=dump_metadata_kwargs,
             to_markdown_kwargs=to_markdown_kwargs,
             link_map={d["link"]: dict(d) for d in self.data},
@@ -3077,12 +3120,13 @@ def search(
     cache_documents: bool = True,
     cache_key: tp.Optional[tp.Hashable] = None,
     aggregate_messages: tp.Union[bool, str] = "threads",
+    aggregate_messages_kwargs: tp.KwargsLike = None,
     find_assets_kwargs: tp.KwargsLike = None,
-    silence_warnings: bool = False,
-    display: bool = True,
+    display: tp.Union[bool, int] = 20,
     display_kwargs: tp.KwargsLike = None,
+    silence_warnings: bool = False,
     **kwargs,
-) -> tp.ChatOutput:
+) -> tp.Union[tp.ChatOutput, tp.Path]:
     """Search for a query.
 
     By default, uses API, documentation, and messages.
@@ -3092,8 +3136,13 @@ def search(
     found in both signatures. In such a case, the key will be used for ranking. If this is not wanted,
     specify the `find_assets`-related arguments explicitly with `find_assets_kwargs`.
 
+    If `display` is True, displays the top results as static HTML pages with `VBTAsset.display`.
+    Pass an integer to display n top results. Will return the path to the temporary file.
+
     Documents are cached based on `cache_key`, which defaults to the hash of `find_assets_kwargs`.
-    To avoid document caching, disable `cache_documents`."""
+    To avoid document caching, disable `cache_documents`.
+
+    Metadata when aggregating messages will be minimized by default."""
     find_arg_names = set(get_func_arg_names(find_assets))
     if find_assets_kwargs is None:
         find_assets_kwargs = {}
@@ -3107,6 +3156,13 @@ def search(
         else:
             rank_kwargs[k] = v
     find_assets_kwargs["aggregate_messages"] = aggregate_messages
+    if aggregate_messages_kwargs is None:
+        aggregate_messages_kwargs = {}
+    else:
+        aggregate_messages_kwargs = dict(aggregate_messages_kwargs)
+    if "minimize_metadata" not in aggregate_messages_kwargs:
+        aggregate_messages_kwargs["minimize_metadata"] = True
+    find_assets_kwargs["aggregate_messages_kwargs"] = aggregate_messages_kwargs
     if cache_documents:
         from vectorbtpro.utils.knowledge.base_assets import rank_asset_cache
 
@@ -3133,7 +3189,15 @@ def search(
     if display:
         if display_kwargs is None:
             display_kwargs = {}
-        return found_asset[:display].display(**display_kwargs)
+        else:
+            display_kwargs = dict(display_kwargs)
+        if "title" not in display_kwargs:
+            display_kwargs["title"] = query
+        if isinstance(display, bool):
+            display_asset = found_asset
+        else:
+            display_asset = found_asset[:display]
+        return display_asset.display(**display_kwargs)
     return found_asset
 
 
@@ -3144,6 +3208,7 @@ def chat(
     cache_documents: bool = True,
     cache_key: tp.Optional[tp.Hashable] = None,
     aggregate_messages: tp.Union[bool, str] = "threads",
+    aggregate_messages_kwargs: tp.KwargsLike = None,
     find_assets_kwargs: tp.KwargsLike = None,
     rank: tp.Optional[bool] = True,
     top_k: tp.TopKLike = 100,
@@ -3158,10 +3223,16 @@ def chat(
 
     By default, uses API, documentation, and messages.
 
+    Uses `find_assets` with `obj_or_query=None`, `as_query=True`, and `combine=True`, and
+    `vectorbtpro.utils.knowledge.base_assets.KnowledgeAsset.chat`. Keyword arguments are distributed
+    among these two methods automatically, unless some keys cannot be found in both signatures.
+    In such a case, the key will be used for chatting. If this is not wanted, specify the `find_assets`-
+    related arguments explicitly with `find_assets_kwargs`.
+
     Documents are cached based on `cache_key`, which defaults to the hash of `find_assets_kwargs`.
     To avoid document caching, disable `cache_documents`.
 
-    See `chat_about` for other keyword arguments."""
+    Metadata when aggregating messages will be minimized by default."""
     find_arg_names = set(get_func_arg_names(find_assets))
     if find_assets_kwargs is None:
         find_assets_kwargs = {}
@@ -3175,6 +3246,13 @@ def chat(
         else:
             chat_kwargs[k] = v
     find_assets_kwargs["aggregate_messages"] = aggregate_messages
+    if aggregate_messages_kwargs is None:
+        aggregate_messages_kwargs = {}
+    else:
+        aggregate_messages_kwargs = dict(aggregate_messages_kwargs)
+    if "minimize_metadata" not in aggregate_messages_kwargs:
+        aggregate_messages_kwargs["minimize_metadata"] = True
+    find_assets_kwargs["aggregate_messages_kwargs"] = aggregate_messages_kwargs
     if cache_documents:
         from vectorbtpro.utils.knowledge.base_assets import rank_asset_cache
 

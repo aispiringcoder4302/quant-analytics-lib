@@ -2159,11 +2159,12 @@ knowledge = frozen_cfg(
         ),
         use_pygments=None,
         pygments_kwargs=flex_cfg(),
-        html_template="""<!DOCTYPE html>
+        html_template=r"""<!DOCTYPE html>
 <html>
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="https://vectorbt.pro/assets/logo/favicon.png">
     <title>$title</title>
     <style>
         body {
@@ -2239,33 +2240,10 @@ knowledge = frozen_cfg(
         head_extras=[],
         body_extras=[
             r"""<script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>""",
-            r"""<script>window.mermaidConfig={startOnLoad:!1,theme:"default",flowchart:{htmlLabels:!1},er:{us
-            eMaxWidth:!1},sequence:{useMaxWidth:!1,noteFontWeight:"14px",actorFontSize:"14px",messageFontSize
-            :"16px"}};</script>""",
-            r"""<script>const uml=async e=>{class t extends HTMLElement{constructor(){super();let e=this.atta
-            chShadow({mode:"open"}),t=document.createElement("style");t.textContent=`:host{display:block;line
-            -height:initial;font-size:16px}div.diagram{margin:0;overflow:visible}`,e.appendChild(t)}}void 0==
-            =customElements.get("diagram-div")&&customElements.define("diagram-div",t);let i=e=>{let t="";for
-            (let i=0;i<e.childNodes.length;i++){let a=e.childNodes[i];if("code"===a.tagName.toLowerCase())for
-            (let d=0;d<a.childNodes.length;d++){let l=a.childNodes[d],o=/^\s*$/;if("#text"===l.nodeName&&!o.t
-            est(l.nodeValue)){t=l.nodeValue;break}}}return t},a={startOnLoad:!1,theme:"default",flowchart:{ht
-            mlLabels:!1},er:{useMaxWidth:!1},sequence:{useMaxWidth:!1,noteFontWeight:"14px",actorFontSize:"14
-            px",messageFontSize:"16px"}};mermaid.mermaidAPI.globalReset();let d="undefined"==typeof mermaidCo
-            nfig?a:mermaidConfig;mermaid.initialize(d);let l=document.querySelectorAll(`pre.${e}, diagram-div
-            `),o=document.querySelector("html body");for(let n=0;n<l.length;n++){let r=l[n],s="diagram-div"==
-            =r.tagName.toLowerCase()?r.shadowRoot.querySelector(`pre.${e}`):r,h=document.createElement("div")
-            ;h.style.visibility="hidden",h.style.display="display",h.style.padding="0",h.style.margin="0",h.s
-            tyle.lineHeight="initial",h.style.fontSize="16px",o.appendChild(h);try{let m=await mermaid.render
-            (`_diagram_${n}`,i(s),h),c=m.svg,p=m.bindFunctions,g=document.createElement("div");g.className=e,
-            g.innerHTML=c,p&&p(g);let y=document.createElement("diagram-div");y.shadowRoot.appendChild(g),r.p
-            arentNode.insertBefore(y,r),s.style.display="none",y.shadowRoot.appendChild(s),s!==r&&r.parentNod
-            e.removeChild(r)}catch(u){}o.contains(h)&&o.removeChild(h)}};document.addEventListener("DOMConten
-            tLoaded",()=>{uml("mermaid")});</script>""",
+            r"""<script>window.mermaidConfig={startOnLoad:!1,theme:"default",flowchart:{htmlLabels:!1},er:{useMaxWidth:!1},sequence:{useMaxWidth:!1,noteFontWeight:"14px",actorFontSize:"14px",messageFontSize:"16px"}};</script>""",
+            r"""<script>const uml=async e=>{class t extends HTMLElement{constructor(){super();let e=this.attachShadow({mode:"open"}),t=document.createElement("style");t.textContent=`:host{display:block;line-height:initial;font-size:16px}div.diagram{margin:0;overflow:visible}`,e.appendChild(t)}}void 0===customElements.get("diagram-div")&&customElements.define("diagram-div",t);let i=e=>{let t="";for(let i=0;i<e.childNodes.length;i++){let a=e.childNodes[i];if("code"===a.tagName.toLowerCase())for(let d=0;d<a.childNodes.length;d++){let l=a.childNodes[d],o=/^\s*$/;if("#text"===l.nodeName&&!o.test(l.nodeValue)){t=l.nodeValue;break}}}return t},a={startOnLoad:!1,theme:"default",flowchart:{htmlLabels:!1},er:{useMaxWidth:!1},sequence:{useMaxWidth:!1,noteFontWeight:"14px",actorFontSize:"14px",messageFontSize:"16px"}};mermaid.mermaidAPI.globalReset();let d="undefined"==typeof mermaidConfig?a:mermaidConfig;mermaid.initialize(d);let l=document.querySelectorAll(`pre.${e}, diagram-div`),o=document.querySelector("html body");for(let n=0;n<l.length;n++){let r=l[n],s="diagram-div"===r.tagName.toLowerCase()?r.shadowRoot.querySelector(`pre.${e}`):r,h=document.createElement("div");h.style.visibility="hidden",h.style.display="display",h.style.padding="0",h.style.margin="0",h.style.lineHeight="initial",h.style.fontSize="16px",o.appendChild(h);try{let m=await mermaid.render(`_diagram_${n}`,i(s),h),c=m.svg,p=m.bindFunctions,g=document.createElement("div");g.className=e,g.innerHTML=c,p&&p(g);let y=document.createElement("diagram-div");y.shadowRoot.appendChild(g),r.parentNode.insertBefore(y,r),s.style.display="none",y.shadowRoot.appendChild(s),s!==r&&r.parentNode.removeChild(r)}catch(u){}o.contains(h)&&o.removeChild(h)}};document.addEventListener("DOMContentLoaded",()=>{uml("mermaid")});</script>""",
             r"""<script src="https://cdn.jsdelivr.net/npm/mathjax/es5/tex-mml-chtml.min.js"></script>""",
-            r"""<script>window.MathJax={tex:{inlineMath:[["\\(","\\)"]],displayMath:[["\\[","\\]"]],processEs
-            capes:!0,processEnvironments:!0},options:{ignoreHtmlClass:".*|",processHtmlClass:"arithmatex"}},d
-            ocument$.subscribe(()=>{MathJax.startup.output.clearCache(),MathJax.typesetClear(),MathJax.texRes
-            et(),MathJax.typesetPromise()});</script>""",
+            r"""<script>window.MathJax={tex:{inlineMath:[["\\(","\\)"]],displayMath:[["\\[","\\]"]],processEscapes:!0,processEnvironments:!0},options:{ignoreHtmlClass:".*|",processHtmlClass:"arithmatex"}},document$.subscribe(()=>{MathJax.startup.output.clearCache(),MathJax.typesetClear(),MathJax.texReset(),MathJax.typesetPromise()});</script>""",
         ],
         output_to=None,
         flush_output=True,
@@ -2301,9 +2279,9 @@ knowledge = frozen_cfg(
             return_chunks=False,
         ),
         max_tokens=120_000,
-        system_prompt="You are a helpful assistant. Given the context information and not prior knowledge, answer the query.",
+        system_prompt=r"You are a helpful assistant. Given the context information and not prior knowledge, answer the query.",
         system_as_user=False,
-        context_prompt="""Context information is below.
+        context_prompt=r"""Context information is below.
 ---------------------
 $context
 ---------------------""",
@@ -2452,6 +2430,7 @@ $context
                 excl_metadata=RepEval("asset_cls.get_setting('minimize_keys')"),
                 excl_embed_metadata=True,
             ),
+            minimize_metadata=False,
             minimize_keys=[
                 "parent",
                 "children",
@@ -2476,8 +2455,8 @@ $context
             root_metadata_key=None,
             aggregate_fields=False,
             parent_links_only=True,
-            clear_metadata=True,
-            clear_metadata_kwargs=flex_cfg(),
+            clean_metadata=True,
+            clean_metadata_kwargs=flex_cfg(),
             dump_metadata_kwargs=flex_cfg(),
             incl_base_attr=True,
             incl_shortcuts=True,
@@ -2491,15 +2470,92 @@ $context
             allow_prefix=False,
             allow_suffix=False,
             merge_targets=True,
+            display_html_template=r"""<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="https://vectorbt.pro/assets/logo/favicon.png">
+    <title>$title</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            padding: 40px;
+            line-height: 1.6;
+            background: #fff;
+            color: #000;
+            margin: 0;
+        }
+        .pagination {
+            text-align: center;
+            margin: 20px 0;
+            font-size: 14px;
+        }
+        .pagination ul {
+            display: inline-block;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+        .pagination li {
+            display: inline;
+            margin: 0 4px;
+        }
+        .nav-btn,
+        .page-link {
+            text-decoration: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+        }
+        .nav-btn {
+            background: transparent;
+            color: blue;
+            border: none;
+            cursor: pointer;
+        }
+        .nav-btn.disabled {
+            color: gray;
+            cursor: default;
+            pointer-events: none;
+        }
+        .nav-btn:hover:not(.disabled) {
+            background: rgba(0, 0, 255, 0.1);
+        }
+        .page-link {
+            color: #000;
+        }
+        .page-link:hover:not(.active) {
+            background: lightgray;
+        }
+        .page-link.active {
+            background: blue;
+            color: #fff;
+            cursor: default;
+        }
+        .iframe-container {
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            border-radius: 4px;
+        }
+        iframe {
+            width: 100%;
+            border: none;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div id="pagination-top" class="pagination"></div>
+    <div class="iframe-container"><iframe id="page-iframe" scrolling="no" onload="adjustIframeHeight(this)"></iframe></div>
+    <div id="pagination-bottom" class="pagination"></div>
+    <script>const pages=$pages;let currentPage=1,totalPages=pages.length;function base64DecodeUtf8(e){return decodeURIComponent(atob(e).split("").map(e=>"%"+("00"+e.charCodeAt(0).toString(16)).slice(-2)).join(""))}function showPage(e){e<1&&(e=1),e>totalPages&&(e=totalPages),currentPage=e,document.getElementById("page-iframe").srcdoc=base64DecodeUtf8(pages[e-1]),renderPagination(),adjustIframeHeight(document.getElementById("page-iframe"))}function prevPage(){showPage(currentPage-1)}function nextPage(){showPage(currentPage+1)}function renderPagination(){let e="<ul>";if(e+=1===currentPage?'<li><span class="nav-btn disabled">&lt; Previous</span></li>':'<li><a href="#" class="nav-btn" onclick="prevPage()">&lt; Previous</a></li>',totalPages<=7)for(let a=1;a<=totalPages;a++)e+=`<li><a href="#" data-page="${a}" class="page-link" onclick="showPage(${a})">${a}</a></li>`;else if(currentPage<=4){for(let t=1;t<=5;t++)e+=linkTpl(t);e+=" <li><span>…</span></li> "+linkTpl(totalPages)}else if(currentPage>=totalPages-3){e+=linkTpl(1)+" <li><span>…</span></li> ";for(let n=totalPages-4;n<=totalPages;n++)e+=linkTpl(n)}else e+=linkTpl(1)+" <li><span>…</span></li> "+linkTpl(currentPage-1)+linkTpl(currentPage)+linkTpl(currentPage+1)+" <li><span>…</span></li> "+linkTpl(totalPages);e+=currentPage===totalPages?'<li><span class="nav-btn disabled">Next &gt;</span></li>':'<li><a href="#" class="nav-btn" onclick="nextPage()">Next &gt;</a></li>',e+="</ul>",document.getElementById("pagination-top").innerHTML=e,document.getElementById("pagination-bottom").innerHTML=e,updateActiveLink()}function linkTpl(e){return`<li><a href="#" data-page="${e}" class="page-link" onclick="showPage(${e})">${e}</a></li>`}function updateActiveLink(){document.querySelectorAll(".page-link").forEach(e=>{e.classList.toggle("active",e.getAttribute("data-page")==currentPage)})}function adjustIframeHeight(e){try{let a=e.contentDocument||e.contentWindow.document;a.querySelectorAll('img[loading="lazy"]').forEach(a=>a.addEventListener("load",()=>setTimeout(()=>adjustIframeHeight(e),100))),e.style.height=a.body.scrollHeight+"px",[...a.getElementsByTagName("a")].forEach(e=>e.target="_blank")}catch(t){}}window.addEventListener("DOMContentLoaded",()=>{totalPages>0&&showPage(1)});</script>
+</body>
+</html>""",
             chat=flex_cfg(
                 chat_dir=RepEval("Path(release_dir) / 'chat'"),
-                system_prompt="You are an assistant with access to the VectorBT PRO (VBT) Python library "
-                "documentation and Discord history. VBT is a proprietary successor to the open-source "
-                "vectorbt for financial backtesting. As an expert, provide clear and accurate answers "
-                "using only these sources. If metadata with links is present, reference these links to "
-                "support your answers. If information isn't found, inform the user accordingly. Note that "
-                "VBT exclusively refers to VectorBT PRO, which significantly differs from the open-source "
-                "version. Given the context information and not prior knowledge, answer the query.",
+                system_prompt=r"You are an assistant with access to the VectorBT PRO (VBT) Python library documentation and Discord history. VBT is a proprietary successor to the open-source vectorbt for financial backtesting. As an expert, provide clear and accurate answers using only these sources. If metadata with links is present, reference these links to support your answers. If information isn't found, inform the user accordingly. Note that VBT exclusively refers to VectorBT PRO, which significantly differs from the open-source version. Given the context information and not prior knowledge, answer the query.",
                 doc_ranker_config=flex_cfg(
                     doc_store="lmdb",
                     doc_store_configs=flex_cfg(

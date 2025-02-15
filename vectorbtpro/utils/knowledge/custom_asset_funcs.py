@@ -12,7 +12,7 @@
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.utils.config import flat_merge_dicts
-from vectorbtpro.utils.knowledge.base_asset_funcs import AssetFunc
+from vectorbtpro.utils.knowledge.base_asset_funcs import AssetFunc, RemoveAssetFunc
 from vectorbtpro.utils.knowledge.formatting import to_markdown, to_html, format_html
 
 __all__ = []
@@ -29,8 +29,10 @@ class ToMarkdownAssetFunc(AssetFunc):
     def prepare(
         cls,
         root_metadata_key: tp.Optional[tp.Key] = None,
-        clear_metadata: tp.Optional[bool] = None,
-        clear_metadata_kwargs: tp.KwargsLike = None,
+        minimize_metadata: tp.Optional[bool] = None,
+        minimize_keys: tp.Optional[tp.MaybeList[tp.PathLikeKey]] = None,
+        clean_metadata: tp.Optional[bool] = None,
+        clean_metadata_kwargs: tp.KwargsLike = None,
         dump_metadata_kwargs: tp.KwargsLike = None,
         asset_cls: tp.Optional[tp.Type[tp.KnowledgeAsset]] = None,
         **to_markdown_kwargs,
@@ -42,19 +44,23 @@ class ToMarkdownAssetFunc(AssetFunc):
 
             asset_cls = VBTAsset
         root_metadata_key = asset_cls.resolve_setting(root_metadata_key, "root_metadata_key")
-        clear_metadata = asset_cls.resolve_setting(clear_metadata, "clear_metadata")
-        clear_metadata_kwargs = asset_cls.resolve_setting(clear_metadata_kwargs, "clear_metadata_kwargs", merge=True)
+        minimize_metadata = asset_cls.resolve_setting(minimize_metadata, "minimize_metadata")
+        minimize_keys = asset_cls.resolve_setting(minimize_keys, "minimize_keys")
+        clean_metadata = asset_cls.resolve_setting(clean_metadata, "clean_metadata")
+        clean_metadata_kwargs = asset_cls.resolve_setting(clean_metadata_kwargs, "clean_metadata_kwargs", merge=True)
         dump_metadata_kwargs = asset_cls.resolve_setting(dump_metadata_kwargs, "dump_metadata_kwargs", merge=True)
         to_markdown_kwargs = asset_cls.resolve_setting(to_markdown_kwargs, "to_markdown_kwargs", merge=True)
 
-        clear_metadata_kwargs = flat_merge_dicts(dict(target=FindRemoveAssetFunc.is_empty_func), clear_metadata_kwargs)
-        _, clear_metadata_kwargs = FindRemoveAssetFunc.prepare(**clear_metadata_kwargs)
+        clean_metadata_kwargs = flat_merge_dicts(dict(target=FindRemoveAssetFunc.is_empty_func), clean_metadata_kwargs)
+        _, clean_metadata_kwargs = FindRemoveAssetFunc.prepare(**clean_metadata_kwargs)
         _, dump_metadata_kwargs = DumpAssetFunc.prepare(**dump_metadata_kwargs)
         return (), {
             **dict(
+                minimize_metadata=minimize_metadata,
+                minimize_keys=minimize_keys,
                 root_metadata_key=root_metadata_key,
-                clear_metadata=clear_metadata,
-                clear_metadata_kwargs=clear_metadata_kwargs,
+                clean_metadata=clean_metadata,
+                clean_metadata_kwargs=clean_metadata_kwargs,
                 dump_metadata_kwargs=dump_metadata_kwargs,
             ),
             **to_markdown_kwargs,
@@ -65,9 +71,11 @@ class ToMarkdownAssetFunc(AssetFunc):
         cls,
         d: dict,
         root_metadata_key: tp.Optional[tp.Key] = None,
-        allow_empty: bool = True,
-        clear_metadata: bool = True,
-        clear_metadata_kwargs: tp.KwargsLike = None,
+        allow_empty: tp.Optional[bool] = None,
+        minimize_metadata: bool = False,
+        minimize_keys: tp.Optional[tp.MaybeList[tp.PathLikeKey]] = None,
+        clean_metadata: bool = True,
+        clean_metadata_kwargs: tp.KwargsLike = None,
         dump_metadata_kwargs: tp.KwargsLike = None,
         **to_markdown_kwargs,
     ) -> str:
@@ -75,22 +83,26 @@ class ToMarkdownAssetFunc(AssetFunc):
         from vectorbtpro.utils.formatting import get_dump_language
         from vectorbtpro.utils.knowledge.base_asset_funcs import FindRemoveAssetFunc, DumpAssetFunc
 
-        if clear_metadata_kwargs is None:
-            clear_metadata_kwargs = {}
+        if allow_empty is None:
+            allow_empty = root_metadata_key is not None
+        if clean_metadata_kwargs is None:
+            clean_metadata_kwargs = {}
         if dump_metadata_kwargs is None:
             dump_metadata_kwargs = {}
         metadata = dict(d)
         if "content" in metadata:
             del metadata["content"]
-        if metadata and clear_metadata:
-            metadata = FindRemoveAssetFunc.call(metadata, **clear_metadata_kwargs)
+        if metadata and minimize_metadata and minimize_keys:
+            metadata = RemoveAssetFunc.call(metadata, minimize_keys, skip_missing=True)
+        if metadata and clean_metadata:
+            metadata = FindRemoveAssetFunc.call(metadata, **clean_metadata_kwargs)
         if not metadata and not allow_empty:
             return ""
         if root_metadata_key is not None:
             if not metadata:
                 metadata = None
             metadata = {root_metadata_key: metadata}
-        text = DumpAssetFunc.call(metadata, **dump_metadata_kwargs)
+        text = DumpAssetFunc.call(metadata, **dump_metadata_kwargs).strip()
         dump_engine = dump_metadata_kwargs.get("dump_engine", "nestedtext")
         dump_language = get_dump_language(dump_engine)
         text = f"```{dump_language}\n{text}\n```"
@@ -108,18 +120,24 @@ class ToMarkdownAssetFunc(AssetFunc):
         cls,
         d: tp.Any,
         root_metadata_key: tp.Optional[tp.Key] = None,
-        clear_metadata: bool = True,
-        clear_metadata_kwargs: tp.KwargsLike = None,
+        minimize_metadata: bool = False,
+        minimize_keys: tp.Optional[tp.MaybeList[tp.PathLikeKey]] = None,
+        clean_metadata: bool = True,
+        clean_metadata_kwargs: tp.KwargsLike = None,
         dump_metadata_kwargs: tp.KwargsLike = None,
         **to_markdown_kwargs,
     ) -> tp.Any:
-        if not isinstance(d, dict):
-            raise TypeError("Data item must be a dict")
+        if not isinstance(d, (str, dict)):
+            raise TypeError("Data item must be a string or dict")
+        if isinstance(d, str):
+            d = dict(content=d)
         markdown_metadata = cls.get_markdown_metadata(
             d,
             root_metadata_key=root_metadata_key,
-            clear_metadata=clear_metadata,
-            clear_metadata_kwargs=clear_metadata_kwargs,
+            minimize_metadata=minimize_metadata,
+            minimize_keys=minimize_keys,
+            clean_metadata=clean_metadata,
+            clean_metadata_kwargs=clean_metadata_kwargs,
             dump_metadata_kwargs=dump_metadata_kwargs,
             **to_markdown_kwargs,
         )
@@ -140,8 +158,10 @@ class ToHTMLAssetFunc(ToMarkdownAssetFunc):
     def prepare(
         cls,
         root_metadata_key: tp.Optional[tp.Key] = None,
-        clear_metadata: tp.Optional[bool] = None,
-        clear_metadata_kwargs: tp.KwargsLike = None,
+        minimize_metadata: tp.Optional[bool] = None,
+        minimize_keys: tp.Optional[tp.MaybeList[tp.PathLikeKey]] = None,
+        clean_metadata: tp.Optional[bool] = None,
+        clean_metadata_kwargs: tp.KwargsLike = None,
         dump_metadata_kwargs: tp.KwargsLike = None,
         to_markdown_kwargs: tp.KwargsLike = None,
         format_html_kwargs: tp.KwargsLike = None,
@@ -155,21 +175,25 @@ class ToHTMLAssetFunc(ToMarkdownAssetFunc):
 
             asset_cls = VBTAsset
         root_metadata_key = asset_cls.resolve_setting(root_metadata_key, "root_metadata_key")
-        clear_metadata = asset_cls.resolve_setting(clear_metadata, "clear_metadata")
-        clear_metadata_kwargs = asset_cls.resolve_setting(clear_metadata_kwargs, "clear_metadata_kwargs", merge=True)
+        minimize_metadata = asset_cls.resolve_setting(minimize_metadata, "minimize_metadata")
+        minimize_keys = asset_cls.resolve_setting(minimize_keys, "minimize_keys")
+        clean_metadata = asset_cls.resolve_setting(clean_metadata, "clean_metadata")
+        clean_metadata_kwargs = asset_cls.resolve_setting(clean_metadata_kwargs, "clean_metadata_kwargs", merge=True)
         dump_metadata_kwargs = asset_cls.resolve_setting(dump_metadata_kwargs, "dump_metadata_kwargs", merge=True)
         to_markdown_kwargs = asset_cls.resolve_setting(to_markdown_kwargs, "to_markdown_kwargs", merge=True)
         format_html_kwargs = asset_cls.resolve_setting(format_html_kwargs, "format_html_kwargs", merge=True)
         to_html_kwargs = asset_cls.resolve_setting(to_html_kwargs, "to_html_kwargs", merge=True)
 
-        clear_metadata_kwargs = flat_merge_dicts(dict(target=FindRemoveAssetFunc.is_empty_func), clear_metadata_kwargs)
-        _, clear_metadata_kwargs = FindRemoveAssetFunc.prepare(**clear_metadata_kwargs)
+        clean_metadata_kwargs = flat_merge_dicts(dict(target=FindRemoveAssetFunc.is_empty_func), clean_metadata_kwargs)
+        _, clean_metadata_kwargs = FindRemoveAssetFunc.prepare(**clean_metadata_kwargs)
         _, dump_metadata_kwargs = DumpAssetFunc.prepare(**dump_metadata_kwargs)
         return (), {
             **dict(
                 root_metadata_key=root_metadata_key,
-                clear_metadata=clear_metadata,
-                clear_metadata_kwargs=clear_metadata_kwargs,
+                minimize_metadata=minimize_metadata,
+                minimize_keys=minimize_keys,
+                clean_metadata=clean_metadata,
+                clean_metadata_kwargs=clean_metadata_kwargs,
                 dump_metadata_kwargs=dump_metadata_kwargs,
                 to_markdown_kwargs=to_markdown_kwargs,
                 format_html_kwargs=format_html_kwargs,
@@ -182,9 +206,11 @@ class ToHTMLAssetFunc(ToMarkdownAssetFunc):
         cls,
         d: dict,
         root_metadata_key: tp.Optional[tp.Key] = None,
-        allow_empty: bool = True,
-        clear_metadata: bool = True,
-        clear_metadata_kwargs: tp.KwargsLike = None,
+        allow_empty: tp.Optional[bool] = None,
+        minimize_metadata: bool = False,
+        minimize_keys: tp.Optional[tp.MaybeList[tp.PathLikeKey]] = None,
+        clean_metadata: bool = True,
+        clean_metadata_kwargs: tp.KwargsLike = None,
         dump_metadata_kwargs: tp.KwargsLike = None,
         to_markdown_kwargs: tp.KwargsLike = None,
         **to_html_kwargs,
@@ -196,11 +222,15 @@ class ToHTMLAssetFunc(ToMarkdownAssetFunc):
             d,
             root_metadata_key=root_metadata_key,
             allow_empty=allow_empty,
-            clear_metadata=clear_metadata,
-            clear_metadata_kwargs=clear_metadata_kwargs,
+            minimize_metadata=minimize_metadata,
+            minimize_keys=minimize_keys,
+            clean_metadata=clean_metadata,
+            clean_metadata_kwargs=clean_metadata_kwargs,
             dump_metadata_kwargs=dump_metadata_kwargs,
             **to_markdown_kwargs,
         )
+        if not metadata:
+            return ""
         return to_html(metadata, **to_html_kwargs)
 
     @classmethod
@@ -216,26 +246,34 @@ class ToHTMLAssetFunc(ToMarkdownAssetFunc):
         cls,
         d: tp.Any,
         root_metadata_key: tp.Optional[tp.Key] = None,
-        clear_metadata: bool = True,
-        clear_metadata_kwargs: tp.KwargsLike = None,
+        minimize_metadata: bool = False,
+        minimize_keys: tp.Optional[tp.MaybeList[tp.PathLikeKey]] = None,
+        clean_metadata: bool = True,
+        clean_metadata_kwargs: tp.KwargsLike = None,
         dump_metadata_kwargs: tp.KwargsLike = None,
         to_markdown_kwargs: tp.KwargsLike = None,
         format_html_kwargs: tp.KwargsLike = None,
         **to_html_kwargs,
     ) -> tp.Any:
-        if not isinstance(d, (dict, list)):
-            raise TypeError("Data item must be a dict or a list of dicts")
+        if not isinstance(d, (str, dict, list)):
+            raise TypeError("Data item must be a string, dict, or list of such")
+        if isinstance(d, str):
+            d = dict(content=d)
         if isinstance(d, list):
             html_metadata = []
             for _d in d:
-                if not isinstance(_d, dict):
-                    raise TypeError("Data item must be a dict or a list of dicts")
+                if not isinstance(_d, (str, dict)):
+                    raise TypeError("Data item must be a string, dict, or list of such")
+                if isinstance(_d, str):
+                    _d = dict(content=_d)
                 html_metadata.append(
                     cls.get_html_metadata(
                         _d,
                         root_metadata_key=root_metadata_key,
-                        clear_metadata=clear_metadata,
-                        clear_metadata_kwargs=clear_metadata_kwargs,
+                        minimize_metadata=minimize_metadata,
+                        minimize_keys=minimize_keys,
+                        clean_metadata=clean_metadata,
+                        clean_metadata_kwargs=clean_metadata_kwargs,
                         dump_metadata_kwargs=dump_metadata_kwargs,
                         to_markdown_kwargs=to_markdown_kwargs,
                         **to_html_kwargs,
@@ -250,8 +288,10 @@ class ToHTMLAssetFunc(ToMarkdownAssetFunc):
             html_metadata = cls.get_html_metadata(
                 d,
                 root_metadata_key=root_metadata_key,
-                clear_metadata=clear_metadata,
-                clear_metadata_kwargs=clear_metadata_kwargs,
+                minimize_metadata=minimize_metadata,
+                minimize_keys=minimize_keys,
+                clean_metadata=clean_metadata,
+                clean_metadata_kwargs=clean_metadata_kwargs,
                 dump_metadata_kwargs=dump_metadata_kwargs,
                 to_markdown_kwargs=to_markdown_kwargs,
                 **to_html_kwargs,
@@ -262,7 +302,7 @@ class ToHTMLAssetFunc(ToMarkdownAssetFunc):
                 **to_html_kwargs,
             )
             html = format_html(
-                title=d["link"],
+                title=d["link"] if "link" in d else "",
                 html_metadata=html_metadata,
                 html_content=html_content,
                 **format_html_kwargs,
@@ -280,8 +320,10 @@ class AggMessageAssetFunc(AssetFunc):
     @classmethod
     def prepare(
         cls,
-        clear_metadata: tp.Optional[bool] = None,
-        clear_metadata_kwargs: tp.KwargsLike = None,
+        minimize_metadata: tp.Optional[bool] = None,
+        minimize_keys: tp.Optional[tp.MaybeList[tp.PathLikeKey]] = None,
+        clean_metadata: tp.Optional[bool] = None,
+        clean_metadata_kwargs: tp.KwargsLike = None,
         dump_metadata_kwargs: tp.KwargsLike = None,
         to_markdown_kwargs: tp.KwargsLike = None,
         asset_cls: tp.Optional[tp.Type[tp.KnowledgeAsset]] = None,
@@ -293,17 +335,21 @@ class AggMessageAssetFunc(AssetFunc):
             from vectorbtpro.utils.knowledge.custom_assets import MessagesAsset
 
             asset_cls = MessagesAsset
-        clear_metadata = asset_cls.resolve_setting(clear_metadata, "clear_metadata")
-        clear_metadata_kwargs = asset_cls.resolve_setting(clear_metadata_kwargs, "clear_metadata_kwargs", merge=True)
+        minimize_metadata = asset_cls.resolve_setting(minimize_metadata, "minimize_metadata")
+        minimize_keys = asset_cls.resolve_setting(minimize_keys, "minimize_keys")
+        clean_metadata = asset_cls.resolve_setting(clean_metadata, "clean_metadata")
+        clean_metadata_kwargs = asset_cls.resolve_setting(clean_metadata_kwargs, "clean_metadata_kwargs", merge=True)
         dump_metadata_kwargs = asset_cls.resolve_setting(dump_metadata_kwargs, "dump_metadata_kwargs", merge=True)
 
-        clear_metadata_kwargs = flat_merge_dicts(dict(target=FindRemoveAssetFunc.is_empty_func), clear_metadata_kwargs)
-        _, clear_metadata_kwargs = FindRemoveAssetFunc.prepare(**clear_metadata_kwargs)
+        clean_metadata_kwargs = flat_merge_dicts(dict(target=FindRemoveAssetFunc.is_empty_func), clean_metadata_kwargs)
+        _, clean_metadata_kwargs = FindRemoveAssetFunc.prepare(**clean_metadata_kwargs)
         _, dump_metadata_kwargs = DumpAssetFunc.prepare(**dump_metadata_kwargs)
         return (), {
             **dict(
-                clear_metadata=clear_metadata,
-                clear_metadata_kwargs=clear_metadata_kwargs,
+                minimize_metadata=minimize_metadata,
+                minimize_keys=minimize_keys,
+                clean_metadata=clean_metadata,
+                clean_metadata_kwargs=clean_metadata_kwargs,
                 dump_metadata_kwargs=dump_metadata_kwargs,
             ),
             **kwargs,
@@ -313,18 +359,19 @@ class AggMessageAssetFunc(AssetFunc):
     def call(
         cls,
         d: tp.Any,
-        clear_metadata: bool = True,
-        clear_metadata_kwargs: tp.KwargsLike = None,
+        minimize_metadata: bool = False,
+        minimize_keys: tp.Optional[tp.MaybeList[tp.PathLikeKey]] = None,
+        clean_metadata: bool = True,
+        clean_metadata_kwargs: tp.KwargsLike = None,
         dump_metadata_kwargs: tp.KwargsLike = None,
         to_markdown_kwargs: tp.KwargsLike = None,
-        link_map: tp.Optional[tp.Dict[str, dict]] = None,
     ) -> tp.Any:
         if not isinstance(d, dict):
             raise TypeError("Data item must be a dict")
         if "attachments" not in d:
             return dict(d)
-        if clear_metadata_kwargs is None:
-            clear_metadata_kwargs = {}
+        if clean_metadata_kwargs is None:
+            clean_metadata_kwargs = {}
         if dump_metadata_kwargs is None:
             dump_metadata_kwargs = {}
         if to_markdown_kwargs is None:
@@ -341,8 +388,10 @@ class AggMessageAssetFunc(AssetFunc):
                 attachment,
                 root_metadata_key="attachment",
                 allow_empty=not content,
-                clear_metadata=clear_metadata,
-                clear_metadata_kwargs=clear_metadata_kwargs,
+                minimize_metadata=minimize_metadata,
+                minimize_keys=minimize_keys,
+                clean_metadata=clean_metadata,
+                clean_metadata_kwargs=clean_metadata_kwargs,
                 dump_metadata_kwargs=dump_metadata_kwargs,
                 **to_markdown_kwargs,
             )
@@ -364,8 +413,10 @@ class AggBlockAssetFunc(AssetFunc):
         cls,
         aggregate_fields: tp.Union[None, bool, tp.MaybeIterable[str]] = None,
         parent_links_only: tp.Optional[bool] = None,
-        clear_metadata: tp.Optional[bool] = None,
-        clear_metadata_kwargs: tp.KwargsLike = None,
+        minimize_metadata: tp.Optional[bool] = None,
+        minimize_keys: tp.Optional[tp.MaybeList[tp.PathLikeKey]] = None,
+        clean_metadata: tp.Optional[bool] = None,
+        clean_metadata_kwargs: tp.KwargsLike = None,
         dump_metadata_kwargs: tp.KwargsLike = None,
         to_markdown_kwargs: tp.KwargsLike = None,
         link_map: tp.Optional[tp.Dict[str, dict]] = None,
@@ -380,19 +431,23 @@ class AggBlockAssetFunc(AssetFunc):
             asset_cls = MessagesAsset
         aggregate_fields = asset_cls.resolve_setting(aggregate_fields, "aggregate_fields")
         parent_links_only = asset_cls.resolve_setting(parent_links_only, "parent_links_only")
-        clear_metadata = asset_cls.resolve_setting(clear_metadata, "clear_metadata")
-        clear_metadata_kwargs = asset_cls.resolve_setting(clear_metadata_kwargs, "clear_metadata_kwargs", merge=True)
+        minimize_metadata = asset_cls.resolve_setting(minimize_metadata, "minimize_metadata")
+        minimize_keys = asset_cls.resolve_setting(minimize_keys, "minimize_keys")
+        clean_metadata = asset_cls.resolve_setting(clean_metadata, "clean_metadata")
+        clean_metadata_kwargs = asset_cls.resolve_setting(clean_metadata_kwargs, "clean_metadata_kwargs", merge=True)
         dump_metadata_kwargs = asset_cls.resolve_setting(dump_metadata_kwargs, "dump_metadata_kwargs", merge=True)
 
-        clear_metadata_kwargs = flat_merge_dicts(dict(target=FindRemoveAssetFunc.is_empty_func), clear_metadata_kwargs)
-        _, clear_metadata_kwargs = FindRemoveAssetFunc.prepare(**clear_metadata_kwargs)
+        clean_metadata_kwargs = flat_merge_dicts(dict(target=FindRemoveAssetFunc.is_empty_func), clean_metadata_kwargs)
+        _, clean_metadata_kwargs = FindRemoveAssetFunc.prepare(**clean_metadata_kwargs)
         _, dump_metadata_kwargs = DumpAssetFunc.prepare(**dump_metadata_kwargs)
         return (), {
             **dict(
                 aggregate_fields=aggregate_fields,
                 parent_links_only=parent_links_only,
-                clear_metadata=clear_metadata,
-                clear_metadata_kwargs=clear_metadata_kwargs,
+                minimize_metadata=minimize_metadata,
+                minimize_keys=minimize_keys,
+                clean_metadata=clean_metadata,
+                clean_metadata_kwargs=clean_metadata_kwargs,
                 dump_metadata_kwargs=dump_metadata_kwargs,
                 link_map=link_map,
             ),
@@ -405,8 +460,10 @@ class AggBlockAssetFunc(AssetFunc):
         d: tp.Any,
         aggregate_fields: tp.Union[bool, tp.MaybeIterable[str]] = False,
         parent_links_only: bool = True,
-        clear_metadata: bool = True,
-        clear_metadata_kwargs: tp.KwargsLike = None,
+        minimize_metadata: bool = False,
+        minimize_keys: tp.Optional[tp.MaybeList[tp.PathLikeKey]] = None,
+        clean_metadata: bool = True,
+        clean_metadata_kwargs: tp.KwargsLike = None,
         dump_metadata_kwargs: tp.KwargsLike = None,
         to_markdown_kwargs: tp.KwargsLike = None,
         link_map: tp.Optional[tp.Dict[str, dict]] = None,
@@ -422,8 +479,8 @@ class AggBlockAssetFunc(AssetFunc):
             aggregate_fields = {aggregate_fields}
         elif not isinstance(aggregate_fields, set):
             aggregate_fields = set(aggregate_fields)
-        if clear_metadata_kwargs is None:
-            clear_metadata_kwargs = {}
+        if clean_metadata_kwargs is None:
+            clean_metadata_kwargs = {}
         if dump_metadata_kwargs is None:
             dump_metadata_kwargs = {}
         if to_markdown_kwargs is None:
@@ -436,7 +493,9 @@ class AggBlockAssetFunc(AssetFunc):
                 new_d[k] = d["block"][0]
             if k == "block":
                 continue
-            if k in {"thread", "channel", "author", "timestamp"}:
+            if k == "timestamp":
+                new_d[k] = v[0]
+            if k in {"thread", "channel", "author"}:
                 new_d[k] = v[0]
                 continue
             if k == "reference" and link_map is not None:
@@ -496,8 +555,10 @@ class AggBlockAssetFunc(AssetFunc):
                     metadata,
                     root_metadata_key="message",
                     allow_empty=not content,
-                    clear_metadata=clear_metadata,
-                    clear_metadata_kwargs=clear_metadata_kwargs,
+                    minimize_metadata=minimize_metadata,
+                    minimize_keys=minimize_keys,
+                    clean_metadata=clean_metadata,
+                    clean_metadata_kwargs=clean_metadata_kwargs,
                     dump_metadata_kwargs=dump_metadata_kwargs,
                     **to_markdown_kwargs,
                 )
@@ -519,8 +580,10 @@ class AggThreadAssetFunc(AggBlockAssetFunc):
         d: tp.Any,
         aggregate_fields: tp.Union[bool, tp.MaybeIterable[str]] = False,
         parent_links_only: bool = True,
-        clear_metadata: bool = True,
-        clear_metadata_kwargs: tp.KwargsLike = None,
+        minimize_metadata: bool = False,
+        minimize_keys: tp.Optional[tp.MaybeList[tp.PathLikeKey]] = None,
+        clean_metadata: bool = True,
+        clean_metadata_kwargs: tp.KwargsLike = None,
         dump_metadata_kwargs: tp.KwargsLike = None,
         to_markdown_kwargs: tp.KwargsLike = None,
         link_map: tp.Optional[tp.Dict[str, dict]] = None,
@@ -536,8 +599,8 @@ class AggThreadAssetFunc(AggBlockAssetFunc):
             aggregate_fields = {aggregate_fields}
         elif not isinstance(aggregate_fields, set):
             aggregate_fields = set(aggregate_fields)
-        if clear_metadata_kwargs is None:
-            clear_metadata_kwargs = {}
+        if clean_metadata_kwargs is None:
+            clean_metadata_kwargs = {}
         if dump_metadata_kwargs is None:
             dump_metadata_kwargs = {}
         if to_markdown_kwargs is None:
@@ -550,7 +613,9 @@ class AggThreadAssetFunc(AggBlockAssetFunc):
                 new_d[k] = d["thread"][0]
             if k == "thread":
                 continue
-            if k in {"channel", "timestamp"}:
+            if k == "timestamp":
+                new_d[k] = v[0]
+            if k == "channel":
                 new_d[k] = v[0]
                 continue
             if k == "content":
@@ -583,8 +648,10 @@ class AggThreadAssetFunc(AggBlockAssetFunc):
                     metadata,
                     root_metadata_key="message",
                     allow_empty=not content,
-                    clear_metadata=clear_metadata,
-                    clear_metadata_kwargs=clear_metadata_kwargs,
+                    minimize_metadata=minimize_metadata,
+                    minimize_keys=minimize_keys,
+                    clean_metadata=clean_metadata,
+                    clean_metadata_kwargs=clean_metadata_kwargs,
                     dump_metadata_kwargs=dump_metadata_kwargs,
                     **to_markdown_kwargs,
                 )
@@ -622,8 +689,10 @@ class AggChannelAssetFunc(AggThreadAssetFunc):
         d: tp.Any,
         aggregate_fields: tp.Union[bool, tp.MaybeIterable[str]] = False,
         parent_links_only: bool = True,
-        clear_metadata: bool = True,
-        clear_metadata_kwargs: tp.KwargsLike = None,
+        minimize_metadata: bool = False,
+        minimize_keys: tp.Optional[tp.MaybeList[tp.PathLikeKey]] = None,
+        clean_metadata: bool = True,
+        clean_metadata_kwargs: tp.KwargsLike = None,
         dump_metadata_kwargs: tp.KwargsLike = None,
         to_markdown_kwargs: tp.KwargsLike = None,
         link_map: tp.Optional[tp.Dict[str, dict]] = None,
@@ -639,8 +708,8 @@ class AggChannelAssetFunc(AggThreadAssetFunc):
             aggregate_fields = {aggregate_fields}
         elif not isinstance(aggregate_fields, set):
             aggregate_fields = set(aggregate_fields)
-        if clear_metadata_kwargs is None:
-            clear_metadata_kwargs = {}
+        if clean_metadata_kwargs is None:
+            clean_metadata_kwargs = {}
         if dump_metadata_kwargs is None:
             dump_metadata_kwargs = {}
         if to_markdown_kwargs is None:
@@ -651,7 +720,9 @@ class AggChannelAssetFunc(AggThreadAssetFunc):
         for k, v in d.items():
             if k == "link":
                 new_d[k] = cls.get_channel_link(v[0])
-            if k in {"channel", "timestamp"}:
+            if k == "timestamp":
+                new_d[k] = v[0]
+            if k == "channel":
                 new_d[k] = v[0]
                 continue
             if k == "content":
@@ -684,8 +755,10 @@ class AggChannelAssetFunc(AggThreadAssetFunc):
                     metadata,
                     root_metadata_key="message",
                     allow_empty=not content,
-                    clear_metadata=clear_metadata,
-                    clear_metadata_kwargs=clear_metadata_kwargs,
+                    minimize_metadata=minimize_metadata,
+                    minimize_keys=minimize_keys,
+                    clean_metadata=clean_metadata,
+                    clean_metadata_kwargs=clean_metadata_kwargs,
                     dump_metadata_kwargs=dump_metadata_kwargs,
                     **to_markdown_kwargs,
                 )

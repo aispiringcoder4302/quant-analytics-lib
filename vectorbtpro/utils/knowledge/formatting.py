@@ -23,7 +23,7 @@ from vectorbtpro.utils import checks
 from vectorbtpro.utils.config import Configured, merge_dicts, flat_merge_dicts
 from vectorbtpro.utils.module_ import get_caller_qualname
 from vectorbtpro.utils.path_ import check_mkdir
-from vectorbtpro.utils.template import CustomTemplate, Sub, RepFunc
+from vectorbtpro.utils.template import CustomTemplate, SafeSub, RepFunc
 
 try:
     if not tp.TYPE_CHECKING:
@@ -237,7 +237,7 @@ def format_html(
         else:
             style_extras = highlight_css + "\n" + style_extras
     if isinstance(html_template, str):
-        html_template = Sub(html_template)
+        html_template = SafeSub(html_template)
     elif checks.is_function(html_template):
         html_template = RepFunc(html_template)
     elif not isinstance(html_template, CustomTemplate):
@@ -254,7 +254,7 @@ def format_html(
             ),
             template_context,
         ),
-        eval_id="context_prompt",
+        eval_id="html_template",
     )
 
 
