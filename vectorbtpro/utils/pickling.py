@@ -132,6 +132,8 @@ def compress(
 
             import blosc2
 
+            if "_ignore_multiple_size" not in compress_kwargs:
+                compress_kwargs["_ignore_multiple_size"] = True
             bytes_ = blosc2.compress(bytes_, **compress_kwargs)
         elif compression.lower() in get_compression_extensions("blosc"):
             assert_can_import_any("blosc2", "blosc")
