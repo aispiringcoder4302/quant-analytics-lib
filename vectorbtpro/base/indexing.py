@@ -984,7 +984,7 @@ class DTCIdxr(UniIdxr, DefineMixin):
         if isinstance(self.value, (slice, hslice)):
             if self.value.step is not None:
                 raise ValueError("Step must be None")
-            if self.value.start is None and self.value.step is None:
+            if self.value.start is None and self.value.stop is None:
                 return slice(None, None, None)
             start_dtc = self.get_dtc_namedtuple(self.value.start, **parse_kwargs)
             end_dtc = self.get_dtc_namedtuple(self.value.stop, **parse_kwargs)
