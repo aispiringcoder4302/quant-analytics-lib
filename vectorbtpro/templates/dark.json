@@ -375,7 +375,7 @@
         },
         "marker": {
           "line": {
-            "color": "#212226",
+            "color": "#232428",
             "width": 0.5
           }
         },
@@ -501,7 +501,7 @@
             "color": "#313439"
           },
           "line": {
-            "color": "#212226"
+            "color": "#232428"
           }
         },
         "header": {
@@ -509,7 +509,7 @@
             "color": "#2a3f5f"
           },
           "line": {
-            "color": "#212226"
+            "color": "#232428"
           }
         },
         "type": "table"
@@ -519,7 +519,7 @@
       {
         "marker": {
           "line": {
-            "color": "#212226",
+            "color": "#232428",
             "width": 0.5
           }
         },
@@ -553,10 +553,10 @@
     "hoverlabel": {
       "align": "left"
     },
-    "paper_bgcolor": "#212226",
-    "plot_bgcolor": "#212226",
+    "paper_bgcolor": "#232428",
+    "plot_bgcolor": "#232428",
     "polar": {
-      "bgcolor": "#212226",
+      "bgcolor": "#232428",
       "angularaxis": {
         "gridcolor": "#313439",
         "linecolor": "#313439",
@@ -569,7 +569,7 @@
       }
     },
     "ternary": {
-      "bgcolor": "#212226",
+      "bgcolor": "#232428",
       "aaxis": {
         "gridcolor": "#313439",
         "linecolor": "#313439",
@@ -748,7 +748,7 @@
     },
     "scene": {
       "xaxis": {
-        "backgroundcolor": "#212226",
+        "backgroundcolor": "#232428",
         "gridcolor": "#313439",
         "linecolor": "#313439",
         "showbackground": true,
@@ -757,7 +757,7 @@
         "gridwidth": 2
       },
       "yaxis": {
-        "backgroundcolor": "#212226",
+        "backgroundcolor": "#232428",
         "gridcolor": "#313439",
         "linecolor": "#313439",
         "showbackground": true,
@@ -766,7 +766,7 @@
         "gridwidth": 2
       },
       "zaxis": {
-        "backgroundcolor": "#212226",
+        "backgroundcolor": "#232428",
         "gridcolor": "#313439",
         "linecolor": "#313439",
         "showbackground": true,
@@ -786,12 +786,12 @@
       "arrowwidth": 1
     },
     "geo": {
-      "bgcolor": "#212226",
-      "landcolor": "#212226",
+      "bgcolor": "#232428",
+      "landcolor": "#232428",
       "subunitcolor": "#313439",
       "showland": true,
       "showlakes": true,
-      "lakecolor": "#212226"
+      "lakecolor": "#232428"
     },
     "title": {
       "x": 0.05
@@ -803,7 +803,7 @@
     "sliderdefaults": {
       "bgcolor": "#aec0d6",
       "borderwidth": 1,
-      "bordercolor": "#212226",
+      "bordercolor": "#232428",
       "tickwidth": 0
     },
     "mapbox": {
