@@ -10,7 +10,6 @@
 
 """Custom asset classes."""
 
-import hashlib
 import inspect
 import io
 import os
@@ -25,7 +24,7 @@ from vectorbtpro import _typing as tp
 from vectorbtpro.utils import checks
 from vectorbtpro.utils.config import merge_dicts, flat_merge_dicts, reorder_list, HybridConfig, SpecSettingsPath
 from vectorbtpro.utils.decorators import hybrid_method
-from vectorbtpro.utils.knowledge.base_assets import KnowledgeAsset
+from vectorbtpro.utils.knowledge.base_assets import AssetCacheManager, KnowledgeAsset
 from vectorbtpro.utils.knowledge.formatting import FormatHTML
 from vectorbtpro.utils.module_ import prepare_refname, get_caller_qualname
 from vectorbtpro.utils.parsing import get_func_arg_names
@@ -166,8 +165,8 @@ class VBTAsset(KnowledgeAsset):
         chunk_size = cls.resolve_setting(chunk_size, "chunk_size")
         cache = cls.resolve_setting(cache, "cache")
         assets_dir = cls.resolve_setting(cache_dir, "assets_dir")
-        clear_cache = cls.resolve_setting(clear_cache, "clear_cache")
         cache_mkdir_kwargs = cls.resolve_setting(cache_mkdir_kwargs, "cache_mkdir_kwargs", merge=True)
+        clear_cache = cls.resolve_setting(clear_cache, "clear_cache")
         show_progress = cls.resolve_setting(show_progress, "show_progress")
         pbar_kwargs = cls.resolve_setting(pbar_kwargs, "pbar_kwargs", merge=True)
         template_context = cls.resolve_setting(template_context, "template_context", merge=True)
@@ -3140,7 +3139,9 @@ def chat_about(
 def search(
     query: str,
     cache_documents: bool = True,
-    cache_key: tp.Optional[tp.Hashable] = None,
+    cache_key: tp.Optional[str] = None,
+    asset_cache_manager: tp.Optional[tp.MaybeType[AssetCacheManager]] = None,
+    asset_cache_manager_kwargs: tp.KwargsLike = None,
     aggregate_messages: tp.Union[bool, str] = "threads",
     aggregate_messages_kwargs: tp.KwargsLike = None,
     find_assets_kwargs: tp.KwargsLike = None,
@@ -3148,7 +3149,7 @@ def search(
     display_kwargs: tp.KwargsLike = None,
     silence_warnings: bool = False,
     **kwargs,
-) -> tp.Union[tp.ChatOutput, tp.Path]:
+) -> tp.Union[tp.MaybeVBTAsset, tp.Path]:
     """Search for a query.
 
     By default, uses API, documentation, and messages.
@@ -3161,10 +3162,10 @@ def search(
     If `display` is True, displays the top results as static HTML pages with `VBTAsset.display`.
     Pass an integer to display n top results. Will return the path to the temporary file.
 
-    Documents are cached based on `cache_key`, which defaults to the hash of `find_assets_kwargs`.
-    To avoid document caching, disable `cache_documents`.
+    Metadata when aggregating messages will be minimized by default.
 
-    Metadata when aggregating messages will be minimized by default."""
+    If `cache_documents` is True, will use an asset cache manager to store the generated text documents
+    in a local and/or disk cache after conversion. Running the same method again will use the cached documents."""
     find_arg_names = set(get_func_arg_names(find_assets))
     if find_assets_kwargs is None:
         find_assets_kwargs = {}
@@ -3186,18 +3187,25 @@ def search(
         aggregate_messages_kwargs["minimize_metadata"] = True
     find_assets_kwargs["aggregate_messages_kwargs"] = aggregate_messages_kwargs
     if cache_documents:
-        from vectorbtpro.utils.knowledge.base_assets import rank_asset_cache
-
-        if cache_key is None:
-            from vectorbtpro.utils.pickling import dumps
-
-            cache_key = hashlib.md5(dumps(find_assets_kwargs)).hexdigest()
-        if cache_key in rank_asset_cache:
-            asset = rank_asset_cache[cache_key]
+        if asset_cache_manager is None:
+            asset_cache_manager = AssetCacheManager
+        if asset_cache_manager_kwargs is None:
+            asset_cache_manager_kwargs = {}
+        if isinstance(asset_cache_manager, type):
+            checks.assert_subclass_of(asset_cache_manager, AssetCacheManager, "asset_cache_manager")
+            asset_cache_manager = asset_cache_manager(**asset_cache_manager_kwargs)
         else:
+            checks.assert_instance_of(asset_cache_manager, AssetCacheManager, "asset_cache_manager")
+            if asset_cache_manager_kwargs:
+                asset_cache_manager = asset_cache_manager.replace(**asset_cache_manager_kwargs)
+        asset_cache_manager_kwargs = {}
+        if cache_key is None:
+            cache_key = asset_cache_manager.generate_cache_key(**find_assets_kwargs)
+        asset = asset_cache_manager.load_asset(cache_key)
+        if asset is None:
             if not silence_warnings:
                 warn("Caching documents...")
-            asset = None
+                silence_warnings = True
     else:
         asset = None
     if asset is None:
@@ -3206,6 +3214,9 @@ def search(
         query,
         cache_documents=cache_documents,
         cache_key=cache_key,
+        asset_cache_manager=asset_cache_manager,
+        asset_cache_manager_kwargs=asset_cache_manager_kwargs,
+        silence_warnings=silence_warnings,
         **rank_kwargs,
     )
     if display:
@@ -3228,7 +3239,9 @@ def chat(
     chat_history: tp.ChatHistory = None,
     *,
     cache_documents: bool = True,
-    cache_key: tp.Optional[tp.Hashable] = None,
+    cache_key: tp.Optional[str] = None,
+    asset_cache_manager: tp.Optional[tp.MaybeType[AssetCacheManager]] = None,
+    asset_cache_manager_kwargs: tp.KwargsLike = None,
     aggregate_messages: tp.Union[bool, str] = "threads",
     aggregate_messages_kwargs: tp.KwargsLike = None,
     find_assets_kwargs: tp.KwargsLike = None,
@@ -3253,10 +3266,10 @@ def chat(
     In such a case, the key will be used for chatting. If this is not wanted, specify the `find_assets`-
     related arguments explicitly with `find_assets_kwargs`.
 
-    Documents are cached based on `cache_key`, which defaults to the hash of `find_assets_kwargs`.
-    To avoid document caching, disable `cache_documents`.
+    Metadata when aggregating messages will be minimized by default.
 
-    Metadata when aggregating messages will be minimized by default."""
+    If `cache_documents` is True, will use an asset cache manager to store the generated text documents
+    in a local and/or disk cache after conversion. Running the same method again will use the cached documents."""
     find_arg_names = set(get_func_arg_names(find_assets))
     if find_assets_kwargs is None:
         find_assets_kwargs = {}
@@ -3278,18 +3291,25 @@ def chat(
         aggregate_messages_kwargs["minimize_metadata"] = True
     find_assets_kwargs["aggregate_messages_kwargs"] = aggregate_messages_kwargs
     if cache_documents:
-        from vectorbtpro.utils.knowledge.base_assets import rank_asset_cache
-
-        if cache_key is None:
-            from vectorbtpro.utils.pickling import dumps
-
-            cache_key = hashlib.md5(dumps(find_assets_kwargs)).hexdigest()
-        if cache_key in rank_asset_cache:
-            asset = rank_asset_cache[cache_key]
+        if asset_cache_manager is None:
+            asset_cache_manager = AssetCacheManager
+        if asset_cache_manager_kwargs is None:
+            asset_cache_manager_kwargs = {}
+        if isinstance(asset_cache_manager, type):
+            checks.assert_subclass_of(asset_cache_manager, AssetCacheManager, "asset_cache_manager")
+            asset_cache_manager = asset_cache_manager(**asset_cache_manager_kwargs)
         else:
+            checks.assert_instance_of(asset_cache_manager, AssetCacheManager, "asset_cache_manager")
+            if asset_cache_manager_kwargs:
+                asset_cache_manager = asset_cache_manager.replace(**asset_cache_manager_kwargs)
+            asset_cache_manager_kwargs = {}
+        if cache_key is None:
+            cache_key = asset_cache_manager.generate_cache_key(**find_assets_kwargs)
+        asset = asset_cache_manager.load_asset(cache_key)
+        if asset is None:
             if not silence_warnings:
                 warn("Caching documents...")
-            asset = None
+                silence_warnings = True
     else:
         asset = None
     if asset is None:
@@ -3300,6 +3320,9 @@ def chat(
         rank_kwargs = dict(rank_kwargs)
     rank_kwargs["cache_documents"] = cache_documents
     rank_kwargs["cache_key"] = cache_key
+    rank_kwargs["asset_cache_manager"] = asset_cache_manager
+    rank_kwargs["asset_cache_manager_kwargs"] = asset_cache_manager_kwargs
+    rank_kwargs["silence_warnings"] = silence_warnings
     if "wrap_documents" not in rank_kwargs:
         rank_kwargs["wrap_documents"] = wrap_documents
     return asset.chat(

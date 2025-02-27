@@ -1078,6 +1078,12 @@ class HasSettings(Base):
 
     Lookup is done using `get_dict_item`."""
 
+    _specializable: tp.ClassVar[bool] = True
+    """Whether settings of this class can be specialized."""
+
+    _extendable: tp.ClassVar[bool] = True
+    """Whether settings of this class can be extended."""
+
     @classmethod
     def get_path_settings(
         cls,
@@ -1125,7 +1131,7 @@ class HasSettings(Base):
                 paths.append((cls_, path))
                 unique_paths.add(path)
 
-                if spec_settings_paths_config:
+                if cls_._specializable and spec_settings_paths_config:
                     path_ = resolve_pathlike_key(path)
                     for spec_settings_paths in spec_settings_paths_config.values():
                         for from_path, to_path in spec_settings_paths.items():
@@ -1172,10 +1178,11 @@ class HasSettings(Base):
         for i, cls_ in enumerate(classes):
             if issubclass(cls_, HasSettings):
                 _process_path(cls_, getattr(cls_, "_settings_path"))
-                for ext_settings_paths in ext_settings_paths_config.values():
-                    for ext_cls, ext_path in ext_settings_paths:
-                        if ext_cls is cls_:
-                            _process_path(ext_cls, ext_path)
+                if cls_._extendable and ext_settings_paths_config:
+                    for ext_settings_paths in ext_settings_paths_config.values():
+                        for ext_cls, ext_path in ext_settings_paths:
+                            if ext_cls is cls_:
+                                _process_path(ext_cls, ext_path)
         if not super_first:
             return paths[::-1]
         return paths

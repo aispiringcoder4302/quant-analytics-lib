@@ -12,6 +12,7 @@
 
 See `vectorbtpro.utils.knowledge` for the toy dataset."""
 
+import hashlib
 import json
 import re
 from collections.abc import MutableSequence
@@ -28,19 +29,129 @@ from vectorbtpro.utils.execution import Task, execute, NoResult
 from vectorbtpro.utils.knowledge.chatting import RankContextable
 from vectorbtpro.utils.module_ import get_caller_qualname
 from vectorbtpro.utils.parsing import get_func_arg_names
-from vectorbtpro.utils.path_ import dir_tree_from_paths
+from vectorbtpro.utils.path_ import dir_tree_from_paths, remove_dir, check_mkdir
 from vectorbtpro.utils.pbar import ProgressBar
-from vectorbtpro.utils.pickling import decompress, load_bytes
+from vectorbtpro.utils.pickling import decompress, dumps, load_bytes, save, load
 from vectorbtpro.utils.search_ import flatten_obj, unflatten_obj
 from vectorbtpro.utils.template import CustomTemplate, RepEval, RepFunc
+from vectorbtpro.utils.warnings_ import warn
 
 __all__ = [
+    "AssetCacheManager",
     "KnowledgeAsset",
 ]
 
 
-rank_asset_cache: tp.Dict[tp.Hashable, "KnowledgeAsset"] = {}
-"""Asset cache for ranking."""
+asset_cache: tp.Dict[tp.Hashable, "KnowledgeAsset"] = {}
+"""Asset cache."""
+
+
+class AssetCacheManager(Configured):
+    """Class for managing knowledge asset cache.
+
+    For defaults, see `vectorbtpro._settings.knowledge`."""
+
+    _settings_path: tp.SettingsPath = "knowledge"
+
+    _specializable: tp.ClassVar[bool] = False
+
+    _extendable: tp.ClassVar[bool] = False
+
+    def __init__(
+        self,
+        persist_cache: tp.Optional[bool] = None,
+        cache_dir: tp.Optional[tp.PathLike] = None,
+        cache_mkdir_kwargs: tp.KwargsLike = None,
+        clear_cache: tp.Optional[bool] = None,
+        save_cache_kwargs: tp.KwargsLike = None,
+        load_cache_kwargs: tp.KwargsLike = None,
+        template_context: tp.KwargsLike = None,
+        **kwargs,
+    ) -> None:
+        Configured.__init__(
+            self,
+            persist_cache=persist_cache,
+            cache_dir=cache_dir,
+            cache_mkdir_kwargs=cache_mkdir_kwargs,
+            clear_cache=clear_cache,
+            save_cache_kwargs=save_cache_kwargs,
+            load_cache_kwargs=load_cache_kwargs,
+            template_context=template_context,
+            **kwargs,
+        )
+
+        persist_cache = self.resolve_setting(persist_cache, "cache")
+        cache_dir = self.resolve_setting(cache_dir, "asset_cache_dir")
+        cache_mkdir_kwargs = self.resolve_setting(cache_mkdir_kwargs, "cache_mkdir_kwargs", merge=True)
+        clear_cache = self.resolve_setting(clear_cache, "clear_cache")
+        save_cache_kwargs = self.resolve_setting(save_cache_kwargs, "save_cache_kwargs", merge=True)
+        load_cache_kwargs = self.resolve_setting(load_cache_kwargs, "load_cache_kwargs", merge=True)
+        template_context = self.resolve_setting(template_context, "template_context", merge=True)
+
+        if isinstance(cache_dir, CustomTemplate):
+            asset_cache_dir = cache_dir
+            cache_dir = self.get_setting("cache_dir")
+            if isinstance(cache_dir, CustomTemplate):
+                cache_dir = cache_dir.substitute(template_context, eval_id="cache_dir")
+            template_context = flat_merge_dicts(dict(cache_dir=cache_dir), template_context)
+            asset_cache_dir = asset_cache_dir.substitute(template_context, eval_id="asset_cache_dir")
+            cache_dir = asset_cache_dir
+        if cache_dir.exists():
+            if clear_cache:
+                remove_dir(cache_dir, missing_ok=True, with_contents=True)
+        check_mkdir(cache_dir, **cache_mkdir_kwargs)
+
+        self._persist_cache = persist_cache
+        self._cache_dir = cache_dir
+        self._save_cache_kwargs = save_cache_kwargs
+        self._load_cache_kwargs = load_cache_kwargs
+        self._template_context = template_context
+
+    @property
+    def persist_cache(self) -> bool:
+        """Whether to persist cache on disk."""
+        return self._persist_cache
+
+    @property
+    def cache_dir(self) -> tp.PathLike:
+        """Cache directory."""
+        return self._cache_dir
+
+    @property
+    def save_cache_kwargs(self) -> tp.Kwargs:
+        """Keyword arguments passed to `vectorbtpro.utils.pickling.save`."""
+        return self._save_cache_kwargs
+
+    @property
+    def load_cache_kwargs(self) -> tp.Kwargs:
+        """Keyword arguments passed to `vectorbtpro.utils.pickling.load`."""
+        return self._load_cache_kwargs
+
+    @classmethod
+    def generate_cache_key(cls, **kwargs) -> str:
+        """Generate a cache key based on the current VBT version, settings, and keyword arguments."""
+        from vectorbtpro._version import __version__
+
+        bytes_ = b""
+        bytes_ += dumps(kwargs)
+        bytes_ += dumps(cls.get_settings())
+        bytes_ += dumps(__version__)
+        return hashlib.md5(bytes_).hexdigest()
+
+    def load_asset(self, cache_key: str) -> tp.Optional[tp.MaybeKnowledgeAsset]:
+        """Load the knowledge asset under a cache key."""
+        if cache_key in asset_cache:
+            return asset_cache[cache_key]
+        asset_cache_file = self.cache_dir / cache_key
+        if asset_cache_file.exists():
+            return load(asset_cache_file, **self.load_cache_kwargs)
+
+    def save_asset(self, asset: tp.MaybeKnowledgeAsset, cache_key: str) -> tp.Optional[tp.Path]:
+        """Save a knowledge asset under a cache key."""
+        asset_cache[cache_key] = asset
+        if self.persist_cache:
+            asset_cache_file = self.cache_dir / cache_key
+            return save(asset, path=asset_cache_file, **self.save_cache_kwargs)
 
 
 KnowledgeAssetT = tp.TypeVar("KnowledgeAssetT", bound="KnowledgeAsset")
@@ -1834,7 +1945,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         else:
             d1 = initializer
             total = len(self.data)
-            
+
         def _get_d1_generator(d1):
             for i, d2 in enumerate(it):
                 if isinstance(func, CustomTemplate):
@@ -1866,7 +1977,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         d1s = _get_d1_generator(d1)
         if return_iterator:
             return d1s
-            
+
         if show_progress is None:
             show_progress = total > 1
         prefix = get_caller_qualname().split(".")[-1]
@@ -2160,27 +2271,51 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         to_documents_kwargs: tp.KwargsLike = None,
         wrap_documents: tp.Optional[bool] = None,
         cache_documents: bool = False,
-        cache_key: tp.Optional[tp.Hashable] = None,
+        cache_key: tp.Optional[str] = None,
+        asset_cache_manager: tp.Optional[tp.MaybeType[AssetCacheManager]] = None,
+        asset_cache_manager_kwargs: tp.KwargsLike = None,
+        silence_warnings: bool = False,
         **kwargs,
     ) -> tp.MaybeKnowledgeAsset:
         """Rank documents by their similarity to a query.
 
         First, converts to `vectorbtpro.utils.knowledge.chatting.TextDocument` format using
         `KnowledgeAsset.to_documents` and `**to_documents_kwargs`. Then, uses
-        `vectorbtpro.utils.knowledge.chatting.rank_documents` with `**kwargs` for actual ranking."""
+        `vectorbtpro.utils.knowledge.chatting.rank_documents` with `**kwargs` for actual ranking.
+
+        If `cache_documents` is True and `cache_key` is not None, will use an asset cache manager
+        to store the generated text documents in a local and/or disk cache after conversion.
+        Running the same method again will use the cached documents."""
         from vectorbtpro.utils.knowledge.chatting import StoreDocument, ScoredDocument, rank_documents
 
-        if cache_documents and cache_key in rank_asset_cache:
-            documents = rank_asset_cache[cache_key]
-            if wrap_documents is None:
-                wrap_documents = False
-        else:
+        if cache_documents:
+            if asset_cache_manager is None:
+                asset_cache_manager = AssetCacheManager
+            if asset_cache_manager_kwargs is None:
+                asset_cache_manager_kwargs = {}
+            if isinstance(asset_cache_manager, type):
+                checks.assert_subclass_of(asset_cache_manager, AssetCacheManager, "asset_cache_manager")
+                asset_cache_manager = asset_cache_manager(**asset_cache_manager_kwargs)
+            else:
+                checks.assert_instance_of(asset_cache_manager, AssetCacheManager, "asset_cache_manager")
+                if asset_cache_manager_kwargs:
+                    asset_cache_manager = asset_cache_manager.replace(**asset_cache_manager_kwargs)
+        documents = None
+        if cache_documents and cache_key is not None:
+            documents = asset_cache_manager.load_asset(cache_key)
+            if documents is not None:
+                if wrap_documents is None:
+                    wrap_documents = False
+            else:
+                if not silence_warnings:
+                    warn("Caching documents...")
+        if documents is None:
             if self.data and not isinstance(self.data[0], StoreDocument):
                 if to_documents_kwargs is None:
                     to_documents_kwargs = {}
                 documents = self.to_documents(**to_documents_kwargs)
-                if cache_documents and isinstance(documents, KnowledgeAsset):
-                    rank_asset_cache[cache_key] = documents
+                if cache_documents and cache_key is not None and isinstance(documents, KnowledgeAsset):
+                    asset_cache_manager.save_asset(documents, cache_key)
                 if wrap_documents is None:
                     wrap_documents = False
             else:

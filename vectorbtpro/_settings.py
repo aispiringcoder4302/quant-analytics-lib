@@ -1993,6 +1993,9 @@ knowledge = frozen_cfg(
     cache_dir="./knowledge",
     cache_mkdir_kwargs=flex_cfg(),
     clear_cache=False,
+    asset_cache_dir=RepEval("Path(cache_dir) / 'asset_cache'"),
+    save_cache_kwargs=flex_cfg(),
+    load_cache_kwargs=flex_cfg(),
     per_path=True,
     find_all=False,
     keep_path=False,
@@ -2581,7 +2584,7 @@ $chunk_text""",
             ),
             chat=flex_cfg(
                 chat_dir=RepEval("Path(release_dir) / 'chat'"),
-                system_prompt=r"""You are a helpful assistant with access to VectorBT PRO (also called VBT or vectorbtpro) documentation and relevant Discord history. Use only this provided context to generate clear, accurate answers. Do not reference the open‑source vectorbt, as VectorBT PRO is a proprietary successor with significant differences.\n\nWhen coding in Python, use:\n```python\nimport vectorbtpro as vbt\n```\n\nIf the provided documentation or Discord logs do not answer the user's query, respond with:\n> I could not find an answer.\n\nIf metadata includes links, reference them to support your answer. Do not include external or fabricated links, and exclude any information not present in the given context.\n\nFor each query, follow this structure:\n1. Optionally restate the question in your own words.\n2. Answer using only the available context.\n3. Include any relevant metadata or links.""",
+                system_prompt=r"""You are a helpful assistant with access to VectorBT PRO (also called VBT or vectorbtpro) documentation and relevant Discord history. Use only this provided context to generate clear, accurate answers. Do not reference the open‑source vectorbt, as VectorBT PRO is a proprietary successor with significant differences.\n\nWhen coding in Python, use:\n```python\nimport vectorbtpro as vbt\n```\n\nIf the provided documentation or Discord logs do not answer the user's query, respond with:\n> I could not find an answer.\n\nIf metadata includes links, reference them to support your answer. Do not include external or fabricated links, and exclude any information not present in the given context.\n\nFor each query, follow this structure:\n1. Optionally restate the question in your own words.\n2. Answer using only the available context.\n3. Include any relevant links.""",
                 doc_ranker_config=flex_cfg(
                     doc_store="lmdb",
                     doc_store_configs=flex_cfg(
