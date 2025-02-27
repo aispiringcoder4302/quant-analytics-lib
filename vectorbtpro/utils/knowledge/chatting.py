@@ -277,9 +277,9 @@ def resolve_tokenizer(tokenizer: tp.TokenizerLike = None) -> tp.MaybeType[Tokeni
         chat_cfg = settings["knowledge"]["chat"]
         tokenizer = chat_cfg["tokenizer"]
     if isinstance(tokenizer, str):
-        current_module = sys.modules[__name__]
+        curr_module = sys.modules[__name__]
         found_tokenizer = None
-        for name, cls in inspect.getmembers(current_module, inspect.isclass):
+        for name, cls in inspect.getmembers(curr_module, inspect.isclass):
             if name.endswith("Tokenizer"):
                 _short_name = getattr(cls, "_short_name", None)
                 if _short_name is not None and _short_name.lower() == tokenizer.lower():
@@ -325,7 +325,7 @@ def detokenize(tokens: tp.Tokens, tokenizer: tp.TokenizerLike = None, **kwargs) 
 
 
 class Embeddings(Configured):
-    """Abstract class for embeddings.
+    """Abstract class for embedding providers.
 
     For defaults, see `knowledge.chat.embeddings_config` in `vectorbtpro._settings.knowledge`."""
 
@@ -403,7 +403,7 @@ class Embeddings(Configured):
         from vectorbtpro.utils.pbar import ProgressBar
 
         if self.batch_size is not None:
-            batches = [queries[i: i + self.batch_size] for i in range(0, len(queries), self.batch_size)]
+            batches = [queries[i : i + self.batch_size] for i in range(0, len(queries), self.batch_size)]
         else:
             batches = [queries]
         pbar_kwargs = merge_dicts(dict(prefix="get_embeddings"), self.pbar_kwargs)
@@ -601,8 +601,9 @@ class LlamaIndexEmbeddings(Embeddings):
         llama_index_config.pop("batch_size", None)
         llama_index_config.pop("show_progress", None)
         llama_index_config.pop("pbar_kwargs", None)
+        def_embedding = llama_index_config.pop("embedding", None)
         if embedding is None:
-            embedding = llama_index_config.pop("embedding", None)
+            embedding = def_embedding
         if embedding is None:
             raise ValueError("Must provide an embedding name or path")
         if isinstance(embedding, str):
@@ -632,11 +633,11 @@ class LlamaIndexEmbeddings(Embeddings):
             embedding = found_embedding
         if isinstance(embedding, type):
             checks.assert_subclass_of(embedding, BaseEmbedding, arg_name="embedding")
-            embedding_name = embedding.__name__.lower()
+            embedding_name = embedding.__name__.replace("Embedding", "").lower()
             module_name = embedding.__module__
         else:
             checks.assert_instance_of(embedding, BaseEmbedding, arg_name="embedding")
-            embedding_name = type(embedding).__name__.lower()
+            embedding_name = type(embedding).__name__.replace("Embedding", "").lower()
             module_name = type(embedding).__module__
         embedding_configs = llama_index_config.pop("embedding_configs", {})
         if embedding_name in embedding_configs:
@@ -668,7 +669,7 @@ class LlamaIndexEmbeddings(Embeddings):
         return self.embedding.get_text_embedding(query)
 
     def get_embedding_batch(self, batch: tp.List[str]) -> tp.List[tp.List[float]]:
-        return self.embedding.get_text_embedding_batch(batch)
+        return [embedding for embedding in self.embedding.get_text_embedding_batch(batch)]
 
 
 def resolve_embeddings(embeddings: tp.EmbeddingsLike = None) -> tp.MaybeType[Embeddings]:
@@ -699,9 +700,9 @@ def resolve_embeddings(embeddings: tp.EmbeddingsLike = None) -> tp.MaybeType[Emb
                 embeddings = "llama_index"
             else:
                 raise ValueError("No packages for embeddings installed")
-        current_module = sys.modules[__name__]
+        curr_module = sys.modules[__name__]
         found_embeddings = None
-        for name, cls in inspect.getmembers(current_module, inspect.isclass):
+        for name, cls in inspect.getmembers(curr_module, inspect.isclass):
             if name.endswith("Embeddings"):
                 _short_name = getattr(cls, "_short_name", None)
                 if _short_name is not None and _short_name.lower() == embeddings.lower():
@@ -736,7 +737,7 @@ def embed(query: tp.MaybeList[str], embeddings: tp.EmbeddingsLike = None, **kwar
 
 
 class Completions(Configured):
-    """Abstract class for completions.
+    """Abstract class for completion providers.
 
     For argument descriptions, see their properties, like `Completions.chat_history`.
 
@@ -789,6 +790,7 @@ class Completions(Configured):
         if chat_history is None:
             chat_history = []
         stream = self.resolve_setting(stream, "stream")
+        max_tokens_set = max_tokens is not None
         max_tokens = self.resolve_setting(max_tokens, "max_tokens")
         tokenizer = self.resolve_setting(tokenizer, "tokenizer", default=None)
         tokenizer_kwargs = self.resolve_setting(tokenizer_kwargs, "tokenizer_kwargs", default=None, merge=True)
@@ -807,6 +809,7 @@ class Completions(Configured):
         self._context = context
         self._chat_history = chat_history
         self._stream = stream
+        self._max_tokens_set = max_tokens_set
         self._max_tokens = max_tokens
         self._tokenizer = tokenizer
         self._tokenizer_kwargs = tokenizer_kwargs
@@ -842,6 +845,11 @@ class Completions(Configured):
         When streaming, appends chunks one by one and displays the intermediate result.
         Otherwise, displays the entire message."""
         return self._stream
+
+    @property
+    def max_tokens_set(self) -> tp.Optional[int]:
+        """Whether the user provided `max_tokens`."""
+        return self._max_tokens_set
 
     @property
     def max_tokens(self) -> tp.Optional[int]:
@@ -939,6 +947,7 @@ class Completions(Configured):
         """Prepare messages for a completion."""
         context = self.context
         chat_history = self.chat_history
+        max_tokens_set = self.max_tokens_set
         max_tokens = self.max_tokens
         tokenizer = self.tokenizer
         tokenizer_kwargs = self.tokenizer_kwargs
@@ -982,11 +991,10 @@ class Completions(Configured):
                 encoded_context = tokenizer.encode(context)
                 if len(encoded_context) > max_context_tokens:
                     context = tokenizer.decode(encoded_context[:max_context_tokens])
-                    if not silence_warnings:
+                    if not max_tokens_set and not silence_warnings:
                         warn(
                             f"Context is too long ({len(encoded_context)}). "
-                            f"Truncating to {max_context_tokens} tokens. "
-                            f"Pass silence_warnings=True to silence this warning.",
+                            f"Truncating to {max_context_tokens} tokens."
                         )
             template_context = flat_merge_dicts(dict(context=context), template_context)
             context_prompt = context_prompt.substitute(template_context, eval_id="context_prompt")
@@ -1070,7 +1078,7 @@ class Completions(Configured):
         else:
             file_path = None
         if return_response:
-            return response, file_path
+            return file_path, response
         return file_path
 
 
@@ -1128,8 +1136,9 @@ class OpenAICompletions(Completions):
         from openai import OpenAI
 
         openai_config = merge_dicts(self.get_settings(inherit=False), kwargs)
+        def_model = openai_config.pop("model", None)
         if model is None:
-            model = openai_config.pop("model", None)
+            model = def_model
         if model is None:
             raise ValueError("Must provide a model")
         client_arg_names = set(get_func_arg_names(OpenAI.__init__))
@@ -1236,8 +1245,9 @@ class LiteLLMCompletions(Completions):
         assert_can_import("litellm")
 
         completion_kwargs = merge_dicts(self.get_settings(inherit=False), kwargs)
+        def_model = completion_kwargs.pop("model", None)
         if model is None:
-            model = completion_kwargs.pop("model", None)
+            model = def_model
         if model is None:
             raise ValueError("Must provide a model")
 
@@ -1338,8 +1348,9 @@ class LlamaIndexCompletions(Completions):
         from llama_index.core.llms import LLM
 
         llama_index_config = merge_dicts(self.get_settings(inherit=False), kwargs)
+        def_llm = llama_index_config.pop("llm", None)
         if llm is None:
-            llm = llama_index_config.pop("llm", None)
+            llm = def_llm
         if llm is None:
             raise ValueError("Must provide an LLM name or path")
         if isinstance(llm, str):
@@ -1446,9 +1457,9 @@ def resolve_completions(completions: tp.CompletionsLike = None) -> tp.MaybeType[
                 completions = "llama_index"
             else:
                 raise ValueError("No packages for completions installed")
-        current_module = sys.modules[__name__]
+        curr_module = sys.modules[__name__]
         found_completions = None
-        for name, cls in inspect.getmembers(current_module, inspect.isclass):
+        for name, cls in inspect.getmembers(curr_module, inspect.isclass):
             if name.endswith("Completions"):
                 _short_name = getattr(cls, "_short_name", None)
                 if _short_name is not None and _short_name.lower() == completions.lower():
@@ -1490,12 +1501,31 @@ class TextSplitter(Configured):
 
     _settings_path: tp.SettingsPath = ["knowledge", "knowledge.chat", "knowledge.chat.text_splitter_config"]
 
-    def __init__(self, template_context: tp.KwargsLike = None, **kwargs) -> None:
-        Configured.__init__(self, template_context=template_context, **kwargs)
+    def __init__(
+        self,
+        chunk_template: tp.Optional[tp.CustomTemplateLike] = None,
+        template_context: tp.KwargsLike = None,
+        **kwargs,
+    ) -> None:
+        Configured.__init__(
+            self,
+            chunk_template=chunk_template,
+            template_context=template_context,
+            **kwargs,
+        )
 
+        chunk_template = self.resolve_setting(chunk_template, "chunk_template")
         template_context = self.resolve_setting(template_context, "template_context", merge=True)
 
+        self._chunk_template = chunk_template
         self._template_context = template_context
+
+    @property
+    def chunk_template(self) -> tp.Kwargs:
+        """Chunk template.
+
+        Can use the following context: `chunk_idx`, `chunk_start`, `chunk_end`, `chunk_text`, and `text`."""
+        return self._chunk_template
 
     @property
     def template_context(self) -> tp.Kwargs:
@@ -1508,8 +1538,26 @@ class TextSplitter(Configured):
 
     def split_text(self, text: str) -> tp.TSTextChunks:
         """Split text and return text chunks."""
-        for start, end in self.split(text):
-            yield text[start:end]
+        for chunk_idx, (chunk_start, chunk_end) in enumerate(self.split(text)):
+            chunk_text = text[chunk_start:chunk_end]
+            chunk_template = self.chunk_template
+            if isinstance(chunk_template, str):
+                chunk_template = SafeSub(chunk_template)
+            elif checks.is_function(chunk_template):
+                chunk_template = RepFunc(chunk_template)
+            elif not isinstance(chunk_template, CustomTemplate):
+                raise TypeError(f"Chunk template must be a string, function, or template")
+            template_context = flat_merge_dicts(
+                dict(
+                    chunk_idx=chunk_idx,
+                    chunk_start=chunk_start,
+                    chunk_end=chunk_end,
+                    chunk_text=chunk_text,
+                    text=text,
+                ),
+                self.template_context,
+            )
+            yield chunk_template.substitute(template_context, eval_id="chunk_template")
 
 
 class TokenSplitter(TextSplitter):
@@ -1558,6 +1606,8 @@ class TokenSplitter(TextSplitter):
             elif not chunk_overlap.is_integer():
                 raise TypeError("Floating number for chunk_overlap must be between 0 and 1")
             chunk_overlap = int(chunk_overlap)
+        if chunk_overlap >= chunk_size:
+            raise ValueError("Chunk overlap must be less than the chunk size")
 
         self._chunk_size = chunk_size
         self._chunk_overlap = chunk_overlap
@@ -1592,7 +1642,21 @@ class TokenSplitter(TextSplitter):
             last_end = end
 
     def split(self, text: str) -> tp.TSRangeChunks:
-        return self.split_into_tokens(text)
+        tokens = list(self.split_into_tokens(text))
+        total_tokens = len(tokens)
+        if not tokens:
+            return
+
+        token_count = 0
+        while token_count < total_tokens:
+            chunk_tokens = tokens[token_count:token_count + self.chunk_size]
+            chunk_start = chunk_tokens[0][0]
+            chunk_end = chunk_tokens[-1][1]
+            yield chunk_start, chunk_end
+
+            if token_count + self.chunk_size >= total_tokens:
+                break
+            token_count += self.chunk_size - self.chunk_overlap
 
 
 class SegmentSplitter(TokenSplitter):
@@ -1613,17 +1677,20 @@ class SegmentSplitter(TokenSplitter):
         self,
         separators: tp.MaybeList[tp.MaybeList[tp.Optional[str]]] = None,
         min_chunk_size: tp.Union[None, int, float] = None,
+        fixed_overlap: tp.Optional[bool] = None,
         **kwargs,
     ) -> None:
         TokenSplitter.__init__(
             self,
             separators=separators,
             min_chunk_size=min_chunk_size,
+            fixed_overlap=fixed_overlap,
             **kwargs,
         )
 
         separators = self.resolve_setting(separators, "separators")
         min_chunk_size = self.resolve_setting(min_chunk_size, "min_chunk_size")
+        fixed_overlap = self.resolve_setting(fixed_overlap, "fixed_overlap")
 
         if not isinstance(separators, list):
             separators = [separators]
@@ -1643,6 +1710,7 @@ class SegmentSplitter(TokenSplitter):
 
         self._separators = separators
         self._min_chunk_size = min_chunk_size
+        self._fixed_overlap = fixed_overlap
 
     @property
     def separators(self) -> tp.List[tp.List[tp.Optional[str]]]:
@@ -1656,15 +1724,20 @@ class SegmentSplitter(TokenSplitter):
         Can also be provided as a floating number relative to `SegmentSplitter.chunk_size`."""
         return self._min_chunk_size
 
-    def split_into_segments(self, text: str, separator: tp.Optional[str] = None) -> tp.TSRangeChunks:
+    @property
+    def fixed_overlap(self) -> bool:
+        """Whether overlap should be fixed."""
+        return self._fixed_overlap
+
+    def split_into_segments(self, text: str, separator: tp.Optional[str] = None) -> tp.TSSegmentChunks:
         """Split text into segments."""
         if not separator:
             if separator is None:
                 for start, end in self.split_into_tokens(text):
-                    yield start, end
+                    yield start, end, False
             else:
                 for i in range(len(text)):
-                    yield i, i + 1
+                    yield i, i + 1, False
         else:
             last_end = 0
 
@@ -1672,135 +1745,194 @@ class SegmentSplitter(TokenSplitter):
                 start, end = match.span()
                 if start > last_end:
                     _text = text[last_end:start]
-                    yield last_end, start
+                    yield last_end, start, False
 
                 _text = text[start:end]
-                yield start, end
+                yield start, end, True
                 last_end = end
 
             if last_end < len(text):
                 _text = text[last_end:]
-                yield last_end, len(text)
+                yield last_end, len(text), False
 
     def split(self, text: str) -> tp.TSRangeChunks:
         if not text:
             yield 0, 0
             return None
-        if self.tokenizer.count_tokens(text) <= self.chunk_size:
+        total_tokens = self.tokenizer.count_tokens(text)
+        if total_tokens <= self.chunk_size:
             yield 0, len(text)
             return None
 
-        current_layer = 0
+        layer = 0
         chunk_start = 0
+        chunk_continue = 0
         chunk_tokens = []
         stable_token_count = 0
         stable_char_count = 0
         remaining_text = text
         overlap_segments = []
+        token_offset_map = {}
 
         while remaining_text:
-            current_separators = self.separators[current_layer]
-            current_start = chunk_start
-            current_text = remaining_text
-            current_segments = overlap_segments
-            overlap_segments = []
+            if layer == 0:
+                if chunk_continue:
+                    curr_start = chunk_continue
+                else:
+                    curr_start = chunk_start
+                curr_text = remaining_text
+                curr_segments = list(overlap_segments)
+                curr_tokens = list(chunk_tokens)
+                curr_stable_token_count = stable_token_count
+                curr_stable_char_count = stable_char_count
+                sep_curr_segments = None
+                sep_curr_tokens = None
+                sep_curr_stable_token_count = None
+                sep_curr_stable_char_count = None
 
-            for separator in current_separators:
-                segments = self.split_into_segments(current_text, separator=separator)
-                current_text = ""
+            for separator in self.separators[layer]:
+                segments = self.split_into_segments(curr_text, separator=separator)
+                curr_text = ""
                 finished = False
 
                 for segment in segments:
-                    segment_start = current_start + segment[0]
-                    segment_end = current_start + segment[1]
+                    segment_start = curr_start + segment[0]
+                    segment_end = curr_start + segment[1]
+                    segment_is_separator = segment[2]
 
-                    if not chunk_tokens:
+                    if not curr_tokens:
                         segment_text = text[segment_start:segment_end]
-                        new_chunk_tokens = self.tokenizer.encode(segment_text)
-                        new_stable_token_count = 0
-                        new_stable_char_count = 0
-                    elif not stable_token_count:
+                        new_curr_tokens = self.tokenizer.encode(segment_text)
+                        new_curr_stable_token_count = 0
+                        new_curr_stable_char_count = 0
+                    elif not curr_stable_token_count:
                         chunk_text = text[chunk_start:segment_end]
-                        new_chunk_tokens = self.tokenizer.encode(chunk_text)
-                        new_stable_token_count = 0
-                        new_stable_char_count = 0
-                        min_token_count = min(len(chunk_tokens), len(new_chunk_tokens))
+                        new_curr_tokens = self.tokenizer.encode(chunk_text)
+                        new_curr_stable_token_count = 0
+                        new_curr_stable_char_count = 0
+                        min_token_count = min(len(curr_tokens), len(new_curr_tokens))
                         for i in range(min_token_count):
-                            if chunk_tokens[i] == new_chunk_tokens[i]:
-                                new_stable_token_count += 1
-                                new_stable_char_count += len(self.tokenizer.decode_single(chunk_tokens[i]))
+                            if curr_tokens[i] == new_curr_tokens[i]:
+                                new_curr_stable_token_count += 1
+                                new_curr_stable_char_count += len(self.tokenizer.decode_single(curr_tokens[i]))
                             else:
                                 break
                     else:
-                        stable_tokens = chunk_tokens[:stable_token_count]
-                        unstable_start = chunk_start + stable_char_count
+                        stable_tokens = curr_tokens[:curr_stable_token_count]
+                        unstable_start = chunk_start + curr_stable_char_count
                         partial_text = text[unstable_start:segment_end]
                         partial_tokens = self.tokenizer.encode(partial_text)
-                        new_chunk_tokens = stable_tokens + partial_tokens
-                        new_stable_token_count = stable_token_count
-                        new_stable_char_count = stable_char_count
-                        min_token_count = min(len(chunk_tokens), len(new_chunk_tokens))
-                        for i in range(stable_token_count, min_token_count):
-                            if chunk_tokens[i] == new_chunk_tokens[i]:
-                                new_stable_token_count += 1
-                                new_stable_char_count += len(self.tokenizer.decode_single(chunk_tokens[i]))
+                        new_curr_tokens = stable_tokens + partial_tokens
+                        new_curr_stable_token_count = curr_stable_token_count
+                        new_curr_stable_char_count = curr_stable_char_count
+                        min_token_count = min(len(curr_tokens), len(new_curr_tokens))
+                        for i in range(curr_stable_token_count, min_token_count):
+                            if curr_tokens[i] == new_curr_tokens[i]:
+                                new_curr_stable_token_count += 1
+                                new_curr_stable_char_count += len(self.tokenizer.decode_single(curr_tokens[i]))
                             else:
                                 break
 
-                    if len(new_chunk_tokens) > self.chunk_size:
-                        current_text = text[segment_start:segment_end]
-                        current_start = segment_start
+                    if len(new_curr_tokens) > self.chunk_size:
+                        if segment_is_separator:
+                            if (
+                                sep_curr_segments
+                                and len(sep_curr_tokens) >= self.min_chunk_size
+                                and not (self.chunk_overlap and len(sep_curr_tokens) <= self.chunk_overlap)
+                            ):
+                                curr_segments = list(sep_curr_segments)
+                                curr_tokens = list(sep_curr_tokens)
+                                curr_stable_token_count = sep_curr_stable_token_count
+                                curr_stable_char_count = sep_curr_stable_char_count
+                                segment_start = curr_segments[-1][0]
+                                segment_end = curr_segments[-1][1]
+                        curr_text = text[segment_start:segment_end]
+                        curr_start = segment_start
                         finished = False
                         break
                     else:
-                        current_segments.append((segment_start, segment_end))
-                        chunk_tokens = new_chunk_tokens
-                        stable_token_count = new_stable_token_count
-                        stable_char_count = new_stable_char_count
+                        curr_segments.append((segment_start, segment_end, segment_is_separator))
+                        token_offset_map[segment_start] = len(curr_tokens)
+                        curr_tokens = new_curr_tokens
+                        curr_stable_token_count = new_curr_stable_token_count
+                        curr_stable_char_count = new_curr_stable_char_count
+                        if segment_is_separator:
+                            sep_curr_segments = list(curr_segments)
+                            sep_curr_tokens = list(curr_tokens)
+                            sep_curr_stable_token_count = curr_stable_token_count
+                            sep_curr_stable_char_count = curr_stable_char_count
                         finished = True
 
                 if finished:
                     break
 
-            if current_segments and len(chunk_tokens) >= self.min_chunk_size:
-                chunk_start = current_segments[0][0]
-                chunk_end = current_segments[-1][1]
+            if (
+                curr_segments
+                and len(curr_tokens) >= self.min_chunk_size
+                and not (self.chunk_overlap and len(curr_tokens) <= self.chunk_overlap)
+            ):
+                chunk_start = curr_segments[0][0]
+                chunk_end = curr_segments[-1][1]
                 yield chunk_start, chunk_end
 
+                if chunk_end == len(text):
+                    break
                 if self.chunk_overlap:
-                    if len(chunk_tokens) <= self.chunk_overlap:
-                        raise ValueError(
-                            "Chunk overlap is equal to or greater than the total number of tokens in the chunk. "
-                            "Reduce chunk_overlap, or increase min_chunk_size or the separator granularity."
-                        )
-
-                    chunk_tokens = chunk_tokens[-self.chunk_overlap :]
-                    chunk_start = chunk_end - len(self.tokenizer.decode(chunk_tokens))
-                    overlap_segments = [(chunk_start, chunk_end)]
+                    fixed_overlap = True
+                    if not self.fixed_overlap:
+                        for segment in curr_segments:
+                            if not segment[2]:
+                                token_offset = token_offset_map[segment[0]]
+                                if token_offset > curr_stable_token_count:
+                                    break
+                                if len(curr_tokens) - token_offset <= self.chunk_overlap:
+                                    chunk_tokens = curr_tokens[token_offset:]
+                                    new_chunk_start = segment[0]
+                                    chunk_offset = new_chunk_start - chunk_start
+                                    chunk_start = new_chunk_start
+                                    chunk_continue = chunk_end
+                                    fixed_overlap = False
+                                    break
+                    if fixed_overlap:
+                        chunk_tokens = curr_tokens[-self.chunk_overlap:]
+                        token_offset = len(curr_tokens) - len(chunk_tokens)
+                        new_chunk_start = chunk_end - len(self.tokenizer.decode(chunk_tokens))
+                        chunk_offset = new_chunk_start - chunk_start
+                        chunk_start = new_chunk_start
+                        chunk_continue = chunk_end
+                    stable_token_count = max(0, curr_stable_token_count - token_offset)
+                    stable_char_count = max(0, curr_stable_char_count - chunk_offset)
+                    overlap_segments = [(chunk_start, chunk_end, False)]
+                    token_offset_map[chunk_start] = 0
                 else:
                     chunk_tokens = []
                     chunk_start = chunk_end
+                    chunk_continue = 0
+                    stable_token_count = 0
+                    stable_char_count = 0
+                    overlap_segments = []
+                    token_offset_map = {}
 
-                stable_token_count = 0
-                stable_char_count = 0
-                remaining_text = text[chunk_start:]
-                current_layer = 0
-
+                if chunk_continue:
+                    remaining_text = text[chunk_continue:]
+                else:
+                    remaining_text = text[chunk_start:]
+                layer = 0
             else:
-                current_layer += 1
-                if current_layer == len(self.separators):
-                    remaining_tokens = self.tokenizer.encode(remaining_text)
-                    if len(remaining_tokens) < self.chunk_size:
-                        if current_segments:
-                            chunk_start = current_segments[0][0]
-                            chunk_end = current_segments[-1][1]
-                            yield chunk_start, chunk_end
+                layer += 1
+                if layer == len(self.separators):
+                    if curr_segments and curr_segments[-1][1] == len(text):
+                        chunk_start = curr_segments[0][0]
+                        chunk_end = curr_segments[-1][1]
+                        yield chunk_start, chunk_end
                         break
-                    if len(chunk_tokens) < self.min_chunk_size:
+                    remaining_tokens = self.tokenizer.encode(remaining_text)
+                    if len(remaining_tokens) > self.chunk_size:
                         raise ValueError(
-                            "Total number of tokens in the chunk is less than the minimal chunk size. "
-                            "Increase min_chunk_size or the separator granularity."
+                            "Total number of tokens in the last chunk is greater than the chunk size. "
+                            "Increase chunk_size or the separator granularity."
                         )
+                    yield curr_start, len(text)
                     break
 
 
@@ -1827,8 +1959,9 @@ class LlamaIndexSplitter(TextSplitter):
         from llama_index.core.node_parser import NodeParser
 
         llama_index_config = merge_dicts(self.get_settings(inherit=False), kwargs)
+        def_node_parser = llama_index_config.pop("node_parser", None)
         if node_parser is None:
-            node_parser = llama_index_config.pop("node_parser", None)
+            node_parser = def_node_parser
 
         if isinstance(node_parser, str):
             import llama_index.core.node_parser
@@ -1859,11 +1992,11 @@ class LlamaIndexSplitter(TextSplitter):
             node_parser = found_node_parser
         if isinstance(node_parser, type):
             checks.assert_subclass_of(node_parser, NodeParser, arg_name="node_parser")
-            node_parser_name = node_parser.__name__.lower()
+            node_parser_name = node_parser.__name__.replace("Splitter", "").replace("NodeParser", "").lower()
             module_name = node_parser.__module__
         else:
             checks.assert_instance_of(node_parser, NodeParser, arg_name="node_parser")
-            node_parser_name = type(node_parser).__name__.lower()
+            node_parser_name = type(node_parser).__name__.replace("Splitter", "").replace("NodeParser", "").lower()
             module_name = type(node_parser).__module__
         node_parser_configs = llama_index_config.pop("node_parser_configs", {})
         if node_parser_name in node_parser_configs:
@@ -1920,9 +2053,9 @@ def resolve_text_splitter(text_splitter: tp.TextSplitterLike = None) -> tp.Maybe
         chat_cfg = settings["knowledge"]["chat"]
         text_splitter = chat_cfg["text_splitter"]
     if isinstance(text_splitter, str):
-        current_module = sys.modules[__name__]
+        curr_module = sys.modules[__name__]
         found_text_splitter = None
-        for name, cls in inspect.getmembers(current_module, inspect.isclass):
+        for name, cls in inspect.getmembers(curr_module, inspect.isclass):
             if name.endswith("Splitter"):
                 _short_name = getattr(cls, "_short_name", None)
                 if _short_name is not None and _short_name.lower() == text_splitter.lower():
@@ -2016,6 +2149,9 @@ class StoreDocument(StoreObject, DefineMixin):
         """Split document into multiple documents."""
         raise NotImplementedError
 
+    def __str__(self) -> str:
+        return self.get_content()
+
 
 TextDocumentT = tp.TypeVar("TextDocumentT", bound="TextDocument")
 
@@ -2028,7 +2164,7 @@ def def_metadata_template(metadata_content: str) -> str:
 
 
 @define
-class TextDocument(StoreDocument, HasSettings, DefineMixin):
+class TextDocument(StoreDocument, DefineMixin):
     """Class for text documents."""
 
     text_path: tp.Optional[tp.PathLikeKey] = define.field(default=None)
@@ -2952,9 +3088,9 @@ def resolve_obj_store(obj_store: tp.ObjectStoreLike = None) -> tp.MaybeType[Obje
         chat_cfg = settings["knowledge"]["chat"]
         obj_store = chat_cfg["obj_store"]
     if isinstance(obj_store, str):
-        current_module = sys.modules[__name__]
+        curr_module = sys.modules[__name__]
         found_obj_store = None
-        for name, cls in inspect.getmembers(current_module, inspect.isclass):
+        for name, cls in inspect.getmembers(curr_module, inspect.isclass):
             if name.endswith("Store"):
                 _short_name = getattr(cls, "_short_name", None)
                 if _short_name is not None and _short_name.lower() == obj_store.lower():
@@ -3259,7 +3395,7 @@ class DocumentRanker(Configured):
             if obj_contents:
                 total = 0
                 for batch in self.embeddings.iter_embedding_batches(list(obj_contents.values())):
-                    batch_keys = list(obj_contents.keys())[total:total + len(batch)]
+                    batch_keys = list(obj_contents.keys())[total : total + len(batch)]
                     obj_embeddings = dict(zip(batch_keys, batch))
                     for obj_id, embedding in obj_embeddings.items():
                         obj = self.emb_store[obj_id]
@@ -3446,25 +3582,16 @@ class DocumentRanker(Configured):
             return scores
 
     @classmethod
-    def resolve_top_k(
-        cls,
-        scores: tp.Iterable[float],
-        top_k: tp.TopKLike = None,
-        cutoff: tp.Optional[float] = None,
-    ) -> tp.Optional[int]:
+    def resolve_top_k(cls, scores: tp.Iterable[float], top_k: tp.TopKLike = None) -> tp.Optional[int]:
         """Resolve `top_k` based on _sorted_ scores.
 
         Supported values are integers (top number), floats (top %), strings (supported methods are
         'elbow' and 'kmeans'), as well as callables that should take a 1-dim NumPy array and return
         an integer or a float. Filters out NaN before computation (requires them to be at the tail)."""
-        if top_k is None and cutoff is None:
+        if top_k is None:
             return None
         scores = np.asarray(scores)
         scores = scores[~np.isnan(scores)]
-        if cutoff is not None:
-            scores = scores[scores >= cutoff]
-            if top_k is None:
-                return len(scores)
 
         if isinstance(top_k, str):
             if top_k.lower() == "elbow":
@@ -3485,15 +3612,24 @@ class DocumentRanker(Configured):
             top_k = top_k(scores)
         if checks.is_float(top_k):
             top_k = int(top_k * len(scores))
-        if cutoff is not None:
-            return min(top_k, len(scores))
         return top_k
+
+    @classmethod
+    def top_k_from_cutoff(cls, scores: tp.Iterable[float], cutoff: tp.Optional[float] = None) -> tp.Optional[int]:
+        """Get `top_k` from `cutoff` based on _sorted_ scores."""
+        if cutoff is None:
+            return None
+        scores = np.asarray(scores)
+        scores = scores[~np.isnan(scores)]
+        return len(scores[scores >= cutoff])
 
     def rank_documents(
         self,
         query: str,
         documents: tp.Optional[tp.Iterable[StoreDocument]] = None,
         top_k: tp.TopKLike = None,
+        min_top_k: tp.TopKLike = None,
+        max_top_k: tp.TopKLike = None,
         cutoff: tp.Optional[float] = None,
         refresh: bool = False,
         refresh_documents: tp.Optional[bool] = None,
@@ -3501,7 +3637,12 @@ class DocumentRanker(Configured):
         return_chunks: bool = False,
         return_scores: bool = False,
     ) -> tp.RankedDocuments:
-        """Sort documents by relevance to a query."""
+        """Sort documents by relevance to a query.
+
+        Top-k, minimum top-k, and maximum top-k are resolved with `DocumentRanker.resolve_top_k`.
+        Score cutoff is converted into top-k with `DocumentRanker.top_k_from_cutoff`.
+        Minimum and maximum top-k are used to override non-integer top-k and cutoff; it has no effect on
+        the integer top-k, which can be outside the top-k bounds and won't be overridden."""
         scored_documents = self.score_documents(
             query,
             documents=documents,
@@ -3513,11 +3654,28 @@ class DocumentRanker(Configured):
         )
         scored_documents = sorted(scored_documents, key=lambda x: (not np.isnan(x.score), x.score), reverse=True)
         scores = [document.score for document in scored_documents]
-        top_k = self.resolve_top_k(scores, top_k=top_k, cutoff=cutoff)
-        if top_k is not None:
-            if top_k == 0:
-                raise ValueError("No documents selected after ranking. Change top_k or cutoff.")
-            scored_documents = scored_documents[:top_k]
+
+        int_top_k = top_k is not None and checks.is_int(top_k)
+        top_k = self.resolve_top_k(scores, top_k=top_k)
+        min_top_k = self.resolve_top_k(scores, top_k=min_top_k)
+        max_top_k = self.resolve_top_k(scores, top_k=max_top_k)
+        cutoff = self.top_k_from_cutoff(scores, cutoff=cutoff)
+        if not int_top_k and min_top_k is not None and min_top_k > top_k:
+            top_k = min_top_k
+        if not int_top_k and max_top_k is not None and max_top_k < top_k:
+            top_k = max_top_k
+        if cutoff is not None and min_top_k is not None and min_top_k > cutoff:
+            cutoff = min_top_k
+        if cutoff is not None and max_top_k is not None and max_top_k < cutoff:
+            cutoff = max_top_k
+        if top_k is None:
+            top_k = len(scores)
+        if cutoff is None:
+            cutoff = len(scores)
+        top_k = min(top_k, cutoff)
+        if top_k == 0:
+            raise ValueError("No documents selected after ranking. Change top_k or cutoff.")
+        scored_documents = scored_documents[:top_k]
         if return_scores:
             return scored_documents
         return [document.document for document in scored_documents]
@@ -3560,6 +3718,8 @@ def rank_documents(
     query: str,
     documents: tp.Optional[tp.Iterable[StoreDocument]] = None,
     top_k: tp.TopKLike = None,
+    min_top_k: tp.TopKLike = None,
+    max_top_k: tp.TopKLike = None,
     cutoff: tp.Optional[float] = None,
     refresh: bool = False,
     refresh_documents: tp.Optional[bool] = None,
@@ -3586,6 +3746,8 @@ def rank_documents(
         query,
         documents=documents,
         top_k=top_k,
+        min_top_k=min_top_k,
+        max_top_k=max_top_k,
         cutoff=cutoff,
         refresh=refresh,
         refresh_documents=refresh_documents,
@@ -3619,6 +3781,8 @@ class Rankable(HasSettings):
         self: RankableT,
         query: str,
         top_k: tp.TopKLike = None,
+        min_top_k: tp.TopKLike = None,
+        max_top_k: tp.TopKLike = None,
         cutoff: tp.Optional[float] = None,
         refresh: bool = False,
         refresh_documents: tp.Optional[bool] = None,
@@ -3667,7 +3831,7 @@ class Contextable(HasSettings):
         to_context_kwargs: tp.KwargsLike = None,
         completions: tp.CompletionsLike = None,
         **kwargs,
-    ) -> Completions:
+    ) -> tp.Completions:
         """Create a chat by returning an instance of `Completions`.
 
         Uses `Contextable.to_context` to turn this instance to a context.
@@ -3696,8 +3860,10 @@ class Contextable(HasSettings):
         cls_or_self,
         message: str,
         chat_history: tp.Optional[tp.ChatHistory] = None,
+        *,
+        return_chat: bool = False,
         **kwargs,
-    ) -> tp.ChatOutput:
+    ) -> tp.MaybeChatOutput:
         """Chat with an LLM while using the instance as a context.
 
         Uses `Contextable.create_chat` and then `Completions.get_completion`.
@@ -3726,6 +3892,8 @@ class Contextable(HasSettings):
             return super().chat(*args, **kwargs)
 
         completions = cls_or_self.create_chat(chat_history=chat_history, **kwargs)
+        if return_chat:
+            return completions.get_completion(message), completions
         return completions.get_completion(message)
 
 
@@ -3736,43 +3904,68 @@ class RankContextable(Rankable, Contextable):
     def chat(
         cls_or_self,
         message: str,
-        *args,
+        chat_history: tp.Optional[tp.ChatHistory] = None,
+        *,
+        incl_past_queries: tp.Optional[bool] = None,
         rank: tp.Optional[bool] = None,
         top_k: tp.TopKLike = None,
+        min_top_k: tp.TopKLike = None,
+        max_top_k: tp.TopKLike = None,
         cutoff: tp.Optional[float] = None,
         return_chunks: tp.Optional[bool] = None,
         rank_kwargs: tp.KwargsLike = None,
         **kwargs,
-    ) -> tp.ChatOutput:
+    ) -> tp.MaybeChatOutput:
         """See `Contextable.chat`.
 
-        If `rank` is True, or `rank` is None and any of `top_k`, `cutoff`, or `return_chunks` is set,
-        will rank the documents with `Rankable.rank` first."""
+        If `rank` is True, or `rank` is None and any of `top_k`, `min_top_k`, `max_top_k`, `cutoff`, or
+        `return_chunks` is set, will rank the documents with `Rankable.rank` first."""
         if isinstance(cls_or_self, type):
             from vectorbtpro.utils.parsing import get_forward_args
 
             args, kwargs = get_forward_args(super().chat, locals())
             return super().chat(*args, **kwargs)
 
+        incl_past_queries = cls_or_self.resolve_setting(incl_past_queries, "incl_past_queries")
         rank = cls_or_self.resolve_setting(rank, "rank")
         rank_kwargs = cls_or_self.resolve_setting(rank_kwargs, "rank_kwargs", merge=True)
         def_top_k = rank_kwargs.pop("top_k")
         if top_k is None:
             top_k = def_top_k
+        def_min_top_k = rank_kwargs.pop("min_top_k")
+        if min_top_k is None:
+            min_top_k = def_min_top_k
+        def_max_top_k = rank_kwargs.pop("max_top_k")
+        if max_top_k is None:
+            max_top_k = def_max_top_k
         def_cutoff = rank_kwargs.pop("cutoff")
         if cutoff is None:
             cutoff = def_cutoff
         def_return_chunks = rank_kwargs.pop("return_chunks")
         if return_chunks is None:
             return_chunks = def_return_chunks
-        if rank or (rank is None and (top_k or cutoff or return_chunks)):
+        if rank or (rank is None and (top_k or min_top_k or max_top_k or cutoff or return_chunks)):
+            if incl_past_queries and chat_history is not None:
+                queries = []
+                for message_dct in chat_history:
+                    if "role" in message_dct and message_dct["role"] == "user":
+                        queries.append(message_dct["content"])
+                queries.append(message)
+                if len(queries) > 1:
+                    query = "\n\n".join(queries)
+                else:
+                    query = queries[0]
+            else:
+                query = message
             _cls_or_self = cls_or_self.rank(
-                message,
+                query,
                 top_k=top_k,
+                min_top_k=min_top_k,
+                max_top_k=max_top_k,
                 cutoff=cutoff,
                 return_chunks=return_chunks,
                 **rank_kwargs,
             )
         else:
             _cls_or_self = cls_or_self
-        return Contextable.chat.__func__(_cls_or_self, message, *args, **kwargs)
+        return Contextable.chat.__func__(_cls_or_self, message, chat_history, **kwargs)

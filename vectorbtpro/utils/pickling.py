@@ -710,7 +710,7 @@ class Pickleable(Base):
                             float(repr(v2))
                             v2 = repr(v2)
                         except Exception as e:
-                            v2 = "!loads(" + repr(dumps(v2)) + ")"
+                            v2 = "!vbt.loads(" + repr(dumps(v2)) + ")"
                 parser.set(k, k2, v2)
         with StringIO() as f:
             parser.write(f)
@@ -892,7 +892,14 @@ class Pickleable(Base):
         new_dct = dict()
         if code_context is None:
             code_context = {}
-        code_context = {"np": np, "pd": pd, "vbt": vbt, "loads": loads, **code_context}
+        else:
+            code_context = dict(code_context)
+        try:
+            for k, v in vbt.imported_stuff.items():
+                if k not in code_context:
+                    code_context[k] = v
+        except AttributeError:
+            pass
         ref_edges = set()
         for k, v in dct.items():
             new_dct[k] = {}
@@ -910,13 +917,11 @@ class Pickleable(Base):
                         v2 = get_class_from_id(v2[1:])
                     elif run_code and v2.startswith("!"):
                         if v2.startswith("!vbt.loads(") and v2.endswith(")"):
-                            v2 = evaluate(v2[5:], context=code_context)
+                            v2 = evaluate(v2[len("!vbt."):], context={**code_context, "loads": loads})
                         else:
                             v2 = evaluate(v2.lstrip("!"), context=code_context)
                     else:
-                        if (v2.startswith("'") and v2.endswith("'")) or (v2.startswith('"') and v2.endswith('"')):
-                            v2 = v2[1:-1].replace(r"\n", "\n")
-                        elif parse_literals:
+                        if parse_literals:
                             if v2 == "np.nan":
                                 v2 = np.nan
                             elif v2 == "np.inf":

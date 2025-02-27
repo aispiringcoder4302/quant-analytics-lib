@@ -26,13 +26,14 @@ from vectorbtpro.utils import checks
 from vectorbtpro.utils.config import merge_dicts, flat_merge_dicts, reorder_list, HybridConfig, SpecSettingsPath
 from vectorbtpro.utils.decorators import hybrid_method
 from vectorbtpro.utils.knowledge.base_assets import KnowledgeAsset
+from vectorbtpro.utils.knowledge.formatting import FormatHTML
 from vectorbtpro.utils.module_ import prepare_refname, get_caller_qualname
 from vectorbtpro.utils.parsing import get_func_arg_names
 from vectorbtpro.utils.path_ import check_mkdir, remove_dir, get_common_prefix, dir_tree_from_paths
 from vectorbtpro.utils.pbar import ProgressBar
 from vectorbtpro.utils.pickling import suggest_compression
 from vectorbtpro.utils.search_ import find, replace
-from vectorbtpro.utils.template import CustomTemplate, SafeSub, RepFunc
+from vectorbtpro.utils.template import CustomTemplate
 from vectorbtpro.utils.warnings_ import warn
 
 __all__ = [
@@ -816,15 +817,20 @@ class VBTAsset(KnowledgeAsset):
         self,
         link: tp.Optional[str] = None,
         find_kwargs: tp.KwargsLike = None,
-        title: str = "",
-        html_template: tp.Optional[str] = None,
         open_browser: tp.Optional[bool] = None,
+        html_template: tp.Optional[str] = None,
+        style_extras: tp.Optional[tp.MaybeList[str]] = None,
+        head_extras: tp.Optional[tp.MaybeList[str]] = None,
+        body_extras: tp.Optional[tp.MaybeList[str]] = None,
+        invert_colors: tp.Optional[bool] = None,
+        title: str = "",
         template_context: tp.KwargsLike = None,
         **kwargs,
     ) -> Path:
         """Display as an HTML page.
 
         If there are multiple HTML pages, shows them as iframes inside a parent HTML page with pagination.
+        For this, uses `vectorbtpro.utils.knowledge.formatting.FormatHTML`.
 
         Opens the web browser. Also, returns the path of the temporary HTML file.
 
@@ -833,10 +839,7 @@ class VBTAsset(KnowledgeAsset):
         """
         import tempfile
 
-        title = self.resolve_setting(title, "display_title")
-        html_template = self.resolve_setting(html_template, "display_html_template")
-        template_context = self.resolve_setting(template_context, "template_context", merge=True)
-        open_browser = self.resolve_setting(open_browser, "open_browser")
+        open_browser = self.resolve_setting(open_browser, "open_browser", sub_path="display")
 
         if link is not None:
             if find_kwargs is None:
@@ -846,21 +849,25 @@ class VBTAsset(KnowledgeAsset):
             instance = self
         html = instance.to_html(wrap=False, single_item=True, **kwargs)
         if len(instance) > 1:
+            from vectorbtpro.utils.config import ExtSettingsPath
+
             encoded_pages = map(lambda x: base64.b64encode(x.encode("utf-8")).decode("ascii"), html)
             pages = "[\n" + ",\n".join(f'    "{page}"' for page in encoded_pages) + "\n]"
-            if isinstance(html_template, str):
-                html_template = SafeSub(html_template)
-            elif checks.is_function(html_template):
-                html_template = RepFunc(html_template)
-            elif not isinstance(html_template, CustomTemplate):
-                raise TypeError(f"HTML template must be a string, function, or template")
-            html = html_template.substitute(
-                flat_merge_dicts(
-                    dict(title=title, pages=pages),
-                    template_context,
-                ),
-                eval_id="html_template",
-            )
+            ext_settings_paths = []
+            for cls_ in type(self).__mro__[::-1]:
+                if issubclass(cls_, VBTAsset):
+                    if not isinstance(cls_._settings_path, str):
+                        raise TypeError("_settings_path for VBTAsset and its subclasses must be a string")
+                    ext_settings_paths.append((FormatHTML, cls_._settings_path + ".display"))
+            with ExtSettingsPath(ext_settings_paths):
+                html = FormatHTML(
+                    html_template=html_template,
+                    style_extras=style_extras,
+                    head_extras=head_extras,
+                    body_extras=body_extras,
+                    invert_colors=invert_colors,
+                    auto_scroll=False,
+                ).format_html(title=title, pages=pages)
         with tempfile.NamedTemporaryFile(
             "w",
             encoding="utf-8",
@@ -1292,8 +1299,16 @@ class VBTAsset(KnowledgeAsset):
                 return KnowledgeAsset.rank(self, *args, template_context=template_context, **kwargs)
         return KnowledgeAsset.rank(self, *args, template_context=template_context, **kwargs)
 
+    def create_chat(self, *args, template_context: tp.KwargsLike = None, **kwargs) -> tp.Completions:
+        template_context = flat_merge_dicts(dict(release_name=self.release_name), template_context)
+        spec_settings_path = self.resolve_spec_settings_path()
+        if spec_settings_path:
+            with SpecSettingsPath(spec_settings_path):
+                return KnowledgeAsset.create_chat(self, *args, template_context=template_context, **kwargs)
+        return KnowledgeAsset.create_chat(self, *args, template_context=template_context, **kwargs)
+
     @hybrid_method
-    def chat(cls_or_self, *args, template_context: tp.KwargsLike = None, **kwargs) -> tp.ChatOutput:
+    def chat(cls_or_self, *args, template_context: tp.KwargsLike = None, **kwargs) -> tp.MaybeChatOutput:
         if not isinstance(cls_or_self, type):
             template_context = flat_merge_dicts(dict(release_name=cls_or_self.release_name), template_context)
         spec_settings_path = cls_or_self.resolve_spec_settings_path()
@@ -2512,6 +2527,8 @@ class MessagesAsset(VBTAsset):
             by = self.lowest_aggregate_by
         elif by.lower() == "highest":
             by = self.highest_aggregate_by
+        if by is None:
+            raise ValueError("Must provide by")
         if not by.lower().endswith("s"):
             by += "s"
         return getattr(self, "aggregate_" + by.lower())(**kwargs)
@@ -3028,21 +3045,26 @@ def find_assets(
         if minimize_kwargs is None:
             minimize_kwargs = {}
         for k, v in asset_dict.items():
-            if isinstance(v, VBTAsset) and not isinstance(v, (PagesAsset, MessagesAsset)):
+            if (
+                isinstance(v, VBTAsset)
+                and not isinstance(v, (PagesAsset, MessagesAsset))
+                and len(v) > 0
+                and not isinstance(v[0], str)
+            ):
                 asset_dict[k] = v.minimize(**minimize_kwargs)
     if minimize_pages is None:
         minimize_pages = minimize
     if minimize_pages:
         minimize_pages_kwargs = merge_dicts(minimize_kwargs, minimize_pages_kwargs)
         for k, v in asset_dict.items():
-            if isinstance(v, PagesAsset):
+            if isinstance(v, PagesAsset) and len(v) > 0 and not isinstance(v[0], str):
                 asset_dict[k] = v.minimize(**minimize_pages_kwargs)
     if minimize_messages is None:
         minimize_messages = minimize
     if minimize_messages:
         minimize_messages_kwargs = merge_dicts(minimize_kwargs, minimize_messages_kwargs)
         for k, v in asset_dict.items():
-            if isinstance(v, MessagesAsset):
+            if isinstance(v, MessagesAsset) and len(v) > 0 and not isinstance(v[0], str):
                 asset_dict[k] = v.minimize(**minimize_messages_kwargs)
     if combine:
         if len(asset_dict) >= 2:
@@ -3070,7 +3092,7 @@ def chat_about(
     shuffle: tp.Optional[bool] = None,
     find_assets_kwargs: tp.KwargsLike = None,
     **kwargs,
-) -> tp.ChatOutput:
+) -> tp.MaybeChatOutput:
     """Chat about object(s).
 
     By default, uses examples only.
@@ -3211,14 +3233,16 @@ def chat(
     aggregate_messages_kwargs: tp.KwargsLike = None,
     find_assets_kwargs: tp.KwargsLike = None,
     rank: tp.Optional[bool] = True,
-    top_k: tp.TopKLike = 100,
-    cutoff: tp.Optional[float] = 0.5,
+    top_k: tp.TopKLike = "elbow",
+    min_top_k: tp.TopKLike = 20,
+    max_top_k: tp.TopKLike = 100,
+    cutoff: tp.Optional[float] = None,
     return_chunks: tp.Optional[bool] = True,
     rank_kwargs: tp.KwargsLike = None,
     wrap_documents: tp.Optional[bool] = True,
     silence_warnings: bool = False,
     **kwargs,
-) -> tp.ChatOutput:
+) -> tp.MaybeChatOutput:
     """Chat about a query.
 
     By default, uses API, documentation, and messages.
@@ -3283,6 +3307,8 @@ def chat(
         chat_history,
         rank=rank,
         top_k=top_k,
+        min_top_k=min_top_k,
+        max_top_k=max_top_k,
         cutoff=cutoff,
         return_chunks=return_chunks,
         rank_kwargs=rank_kwargs,

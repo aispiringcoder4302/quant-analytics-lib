@@ -20,7 +20,7 @@ from pathlib import Path
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.utils import checks
-from vectorbtpro.utils.config import Configured, merge_dicts, flat_merge_dicts
+from vectorbtpro.utils.config import Configured, flat_merge_dicts
 from vectorbtpro.utils.module_ import get_caller_qualname
 from vectorbtpro.utils.path_ import check_mkdir
 from vectorbtpro.utils.template import CustomTemplate, SafeSub, RepFunc
@@ -42,130 +42,191 @@ __all__ = [
 ]
 
 
-def to_markdown(
-    text: str,
-    remove_code_title: tp.Optional[bool] = None,
-    even_indentation: tp.Optional[bool] = None,
-) -> str:
-    """Convert text to Markdown.
+class ToMarkdown(Configured):
+    """Class to convert text to Markdown."""
 
-    If `remove_code_title` is True, removes `title` attribute from a code block and puts it above it.
+    _settings_path: tp.SettingsPath = ["knowledge", "knowledge.formatting"]
 
-    If `even_indentation` is True, makes leading spaces even. For example, 3 leading spaces become 4."""
-    from vectorbtpro._settings import settings
+    def __init__(
+        self,
+        remove_code_title: tp.Optional[bool] = None,
+        even_indentation: tp.Optional[bool] = None,
+        newline_before_list: tp.Optional[bool] = None,
+        **kwargs,
+    ) -> None:
+        Configured.__init__(
+            self,
+            remove_code_title=remove_code_title,
+            even_indentation=even_indentation,
+            newline_before_list=newline_before_list,
+            **kwargs,
+        )
 
-    formatting_cfg = settings["knowledge"]["formatting"]
-    if remove_code_title is None:
-        remove_code_title = formatting_cfg["remove_code_title"]
-    if even_indentation is None:
-        even_indentation = formatting_cfg["even_indentation"]
+        remove_code_title = self.resolve_setting(remove_code_title, "remove_code_title")
+        even_indentation = self.resolve_setting(even_indentation, "even_indentation")
+        newline_before_list = self.resolve_setting(newline_before_list, "newline_before_list")
 
-    markdown = text
-    if remove_code_title:
+        self._remove_code_title = remove_code_title
+        self._even_indentation = even_indentation
+        self._newline_before_list = newline_before_list
 
-        def _replace_code_block(match):
-            language = match.group(1)
-            title = match.group(2)
-            code = match.group(3)
-            if title:
-                title_md = f"**{title}**\n\n"
-            else:
-                title_md = ""
-            code_md = f"```{language}\n{code}\n```"
-            return title_md + code_md
+    @property
+    def remove_code_title(self) -> bool:
+        """Whether to remove `title` attribute from a code block and puts it above it."""
+        return self._remove_code_title
 
-        code_block_pattern = re.compile(r'```(\w+)\s+title="([^"]*)"\s*\n(.*?)\n```', re.DOTALL)
-        markdown = code_block_pattern.sub(_replace_code_block, markdown)
+    @property
+    def newline_before_list(self) -> bool:
+        """Whether to add a new line before a list."""
+        return self._newline_before_list
 
-    if even_indentation:
-        leading_spaces_pattern = re.compile(r"^( +)(?=\S|$|\n)")
-        fixed_lines = []
-        for line in markdown.splitlines(keepends=True):
-            match = leading_spaces_pattern.match(line)
-            if match and len(match.group(0)) % 2 != 0:
-                line = " " + line
-            fixed_lines.append(line)
-        markdown = "".join(fixed_lines)
+    @property
+    def even_indentation(self) -> bool:
+        """Whether to make leading spaces even.
 
-    return markdown
+        For example, 3 leading spaces become 4."""
+        return self._even_indentation
+
+    def to_markdown(self, text: str) -> str:
+        """Convert text to Markdown."""
+        markdown = text
+        if self.remove_code_title:
+
+            def _replace_code_block(match):
+                language = match.group(1)
+                title = match.group(2)
+                code = match.group(3)
+                if title:
+                    title_md = f"**{title}**\n\n"
+                else:
+                    title_md = ""
+                code_md = f"```{language}\n{code}\n```"
+                return title_md + code_md
+
+            code_block_pattern = re.compile(r'```(\w+)\s+title="([^"]*)"\s*\n(.*?)\n```', re.DOTALL)
+            markdown = code_block_pattern.sub(_replace_code_block, markdown)
+
+        if self.even_indentation:
+            leading_spaces_pattern = re.compile(r"^( +)(?=\S|$|\n)")
+            fixed_lines = []
+            for line in markdown.splitlines(keepends=True):
+                match = leading_spaces_pattern.match(line)
+                if match and len(match.group(0)) % 2 != 0:
+                    line = " " + line
+                fixed_lines.append(line)
+            markdown = "".join(fixed_lines)
+
+        if self.newline_before_list:
+            markdown = re.sub(r"(?<=[^\n])\n(?=[ \t]*(?:[*+-]\s|\d+\.\s))", "\n\n", markdown)
+
+        return markdown
 
 
-def to_html(
-    markdown: str,
-    resolve_extensions: tp.Optional[bool] = None,
-    make_links: tp.Optional[bool] = None,
-    **markdown_kwargs,
-) -> str:
-    """Convert Markdown to HTML.
+def to_markdown(text: str, **kwargs) -> str:
+    """Convert text to Markdown using `ToMarkdown`."""
+    return ToMarkdown(**kwargs).to_markdown(text)
 
-    If `resolve_extensions` is True, resolves Markdown extensions. Uses `pymdownx` extensions over
-    native extensions if installed.
 
-    If `make_links` is True, detects raw URLs in HTML text (p and span elements only) and convert them to links.
+class ToHTML(Configured):
+    """Class to convert Markdown to HTML."""
 
-    Keyword arguments are passed to `markdown.markdown`."""
-    from vectorbtpro._settings import settings
-    from vectorbtpro.utils.module_ import assert_can_import
+    _expected_keys_mode: tp.ExpectedKeysMode = "disable"
 
-    assert_can_import("markdown")
-    import markdown as md
+    _settings_path: tp.SettingsPath = ["knowledge", "knowledge.formatting"]
 
-    formatting_cfg = settings["knowledge"]["formatting"]
-    if resolve_extensions is None:
-        resolve_extensions = formatting_cfg["resolve_extensions"]
-    if make_links is None:
-        make_links = formatting_cfg["make_links"]
-    markdown_kwargs = merge_dicts(formatting_cfg["markdown_kwargs"], markdown_kwargs)
+    def __init__(
+        self,
+        resolve_extensions: tp.Optional[bool] = None,
+        make_links: tp.Optional[bool] = None,
+        **markdown_kwargs,
+    ) -> None:
+        Configured.__init__(
+            self,
+            resolve_extensions=resolve_extensions,
+            make_links=make_links,
+            **markdown_kwargs,
+        )
 
-    extensions = markdown_kwargs.pop("extensions", [])
-    if resolve_extensions:
-        from vectorbtpro.utils.module_ import check_installed
+        resolve_extensions = self.resolve_setting(resolve_extensions, "resolve_extensions")
+        make_links = self.resolve_setting(make_links, "make_links")
+        markdown_kwargs = self.resolve_setting(markdown_kwargs, "markdown_kwargs", merge=True)
 
-        filtered_extensions = [ext for ext in extensions if "." not in ext or check_installed(ext.partition(".")[0])]
-        ext_set = set(filtered_extensions)
-        remove_fenced_code = "fenced_code" in ext_set and "pymdownx.superfences" in ext_set
-        remove_codehilite = "codehilite" in ext_set and "pymdownx.highlight" in ext_set
-        if remove_fenced_code or remove_codehilite:
+        self._resolve_extensions = resolve_extensions
+        self._make_links = make_links
+        self._markdown_kwargs = markdown_kwargs
+
+    @property
+    def resolve_extensions(self) -> bool:
+        """Whether to resolve Markdown extensions.
+
+        Uses `pymdownx` extensions over native extensions if installed."""
+        return self._resolve_extensions
+
+    @property
+    def make_links(self) -> bool:
+        """Whether to detect raw URLs in HTML text (`p` and `span` elements only) and convert them to links."""
+        return self._make_links
+
+    @property
+    def markdown_kwargs(self) -> tp.Kwargs:
+        """Keyword arguments passed to `markdown.markdown`."""
+        return self._markdown_kwargs
+
+    def to_html(self, markdown: str) -> str:
+        """Convert Markdown to HTML."""
+        from vectorbtpro.utils.module_ import assert_can_import
+
+        assert_can_import("markdown")
+        import markdown as md
+
+        markdown_kwargs = dict(self.markdown_kwargs)
+        extensions = markdown_kwargs.pop("extensions", [])
+        if self.resolve_extensions:
+            from vectorbtpro.utils.module_ import check_installed
+
             filtered_extensions = [
-                ext
-                for ext in filtered_extensions
-                if not ((ext == "fenced_code" and remove_fenced_code) or (ext == "codehilite" and remove_codehilite))
+                ext for ext in extensions if "." not in ext or check_installed(ext.partition(".")[0])
             ]
-        extensions = filtered_extensions
-    html = md.markdown(markdown, extensions=extensions, **markdown_kwargs)
-    if make_links:
-        tag_pattern = re.compile(r"<(p|span)(\s[^>]*)?>(.*?)</\1>", re.DOTALL | re.IGNORECASE)
-        url_pattern = re.compile(r'(https?://[^\s<>"\'`]+?)(?=[.,;:!?)\]]*(?:\s|$))', re.IGNORECASE)
+            ext_set = set(filtered_extensions)
+            remove_fenced_code = "fenced_code" in ext_set and "pymdownx.superfences" in ext_set
+            remove_codehilite = "codehilite" in ext_set and "pymdownx.highlight" in ext_set
+            if remove_fenced_code or remove_codehilite:
+                filtered_extensions = [
+                    ext
+                    for ext in filtered_extensions
+                    if not (
+                        (ext == "fenced_code" and remove_fenced_code) or (ext == "codehilite" and remove_codehilite)
+                    )
+                ]
+            extensions = filtered_extensions
+        html = md.markdown(markdown, extensions=extensions, **markdown_kwargs)
+        if self.make_links:
+            tag_pattern = re.compile(r"<(p|span)(\s[^>]*)?>(.*?)</\1>", re.DOTALL | re.IGNORECASE)
+            url_pattern = re.compile(r'(https?://[^\s<>"\'`]+?)(?=[.,;:!?)\]]*(?:\s|$))', re.IGNORECASE)
 
-        def _replace_urls(match, _url_pattern=url_pattern):
-            tag = match.group(1)
-            attributes = match.group(2) if match.group(2) else ""
-            content = match.group(3)
-            parts = re.split(r"(<a\b[^>]*>.*?</a>)", content, flags=re.DOTALL | re.IGNORECASE)
-            for i, part in enumerate(parts):
-                if not re.match(r"<a\b[^>]*>.*?</a>", part, re.DOTALL | re.IGNORECASE):
-                    part = _url_pattern.sub(r'<a href="\1">\1</a>', part)
-                    parts[i] = part
-            new_content = "".join(parts)
-            return f"<{tag}{attributes}>{new_content}</{tag}>"
+            def _replace_urls(match, _url_pattern=url_pattern):
+                tag = match.group(1)
+                attributes = match.group(2) if match.group(2) else ""
+                content = match.group(3)
+                parts = re.split(r"(<a\b[^>]*>.*?</a>)", content, flags=re.DOTALL | re.IGNORECASE)
+                for i, part in enumerate(parts):
+                    if not re.match(r"<a\b[^>]*>.*?</a>", part, re.DOTALL | re.IGNORECASE):
+                        part = _url_pattern.sub(r'<a href="\1">\1</a>', part)
+                        parts[i] = part
+                new_content = "".join(parts)
+                return f"<{tag}{attributes}>{new_content}</{tag}>"
 
-        html = tag_pattern.sub(_replace_urls, html)
-    return html.strip()
+            html = tag_pattern.sub(_replace_urls, html)
+        return html.strip()
 
 
-def format_html(
-    html_template: tp.Optional[str] = None,
-    title: tp.Optional[str] = None,
-    html_metadata: tp.Optional[str] = None,
-    html_content: tp.Optional[str] = None,
-    style_extras: tp.Optional[tp.MaybeList[str]] = None,
-    head_extras: tp.Optional[tp.MaybeList[str]] = None,
-    body_extras: tp.Optional[tp.MaybeList[str]] = None,
-    use_pygments: tp.Optional[bool] = None,
-    pygments_kwargs: tp.KwargsLike = None,
-    template_context: tp.KwargsLike = None,
-) -> str:
-    """Format HTML template.
+def to_html(text: str, **kwargs) -> str:
+    """Convert Markdown to HTML using `ToHTML`."""
+    return ToHTML(**kwargs).to_html(text)
+
+
+class FormatHTML(Configured):
+    """Class to format HTML.
 
     If `use_pygments` is True, uses Pygments package for code highlighting. Arguments in
     `pygments_kwargs` are then passed to `pygments.formatters.HtmlFormatter`.
@@ -177,85 +238,164 @@ def format_html(
 
     HTML template is a template that can use all the arguments except those related to pygments.
     It can be either a custom template, or string or function that will become one."""
-    from vectorbtpro._settings import settings
-    from vectorbtpro.utils.module_ import check_installed, assert_can_import
 
-    formatting_cfg = settings["knowledge"]["formatting"]
+    _settings_path: tp.SettingsPath = ["knowledge", "knowledge.formatting"]
 
-    if html_template is None:
-        html_template = formatting_cfg["html_template"]
-    if style_extras is None:
-        style_extras = []
-    style_extras = formatting_cfg["style_extras"] + style_extras
-    if head_extras is None:
-        head_extras = []
-    head_extras = formatting_cfg["head_extras"] + head_extras
-    if body_extras is None:
-        body_extras = []
-    body_extras = formatting_cfg["body_extras"] + body_extras
-    if use_pygments is None:
-        use_pygments = formatting_cfg["use_pygments"]
-    pygments_kwargs = merge_dicts(formatting_cfg["pygments_kwargs"], pygments_kwargs)
+    def __init__(
+        self,
+        html_template: tp.Optional[str] = None,
+        style_extras: tp.Optional[tp.MaybeList[str]] = None,
+        head_extras: tp.Optional[tp.MaybeList[str]] = None,
+        body_extras: tp.Optional[tp.MaybeList[str]] = None,
+        invert_colors: tp.Optional[bool] = None,
+        auto_scroll: tp.Optional[bool] = None,
+        use_pygments: tp.Optional[bool] = None,
+        pygments_kwargs: tp.KwargsLike = None,
+        template_context: tp.KwargsLike = None,
+        **kwargs,
+    ) -> None:
+        from vectorbtpro.utils.module_ import check_installed, assert_can_import
 
-    if title is None:
-        title = ""
-    if html_metadata is None:
-        html_metadata = ""
-    if html_content is None:
-        html_content = ""
-    if style_extras is None:
-        style_extras = []
-    if isinstance(style_extras, str):
-        style_extras = [style_extras]
-    if not isinstance(style_extras, list):
-        style_extras = list(style_extras)
-    style_extras = "\n".join(style_extras)
-    if head_extras is None:
-        head_extras = []
-    if isinstance(head_extras, str):
-        head_extras = [head_extras]
-    if not isinstance(head_extras, list):
-        head_extras = list(head_extras)
-    head_extras = "\n".join(head_extras)
-    if body_extras is None:
-        body_extras = []
-    if isinstance(body_extras, str):
-        body_extras = [body_extras]
-    if not isinstance(body_extras, list):
-        body_extras = list(body_extras)
-    body_extras = "\n".join(body_extras)
-    if use_pygments is None:
-        use_pygments = check_installed("pygments")
-    if use_pygments:
-        assert_can_import("pygments")
-        from pygments.formatters import HtmlFormatter
+        Configured.__init__(
+            self,
+            html_template=html_template,
+            style_extras=style_extras,
+            head_extras=head_extras,
+            body_extras=body_extras,
+            invert_colors=invert_colors,
+            auto_scroll=auto_scroll,
+            use_pygments=use_pygments,
+            pygments_kwargs=pygments_kwargs,
+            template_context=template_context,
+            **kwargs,
+        )
 
-        formatter = HtmlFormatter(**pygments_kwargs)
-        highlight_css = formatter.get_style_defs(".highlight")
-        if style_extras == "":
-            style_extras = highlight_css
-        else:
-            style_extras = highlight_css + "\n" + style_extras
-    if isinstance(html_template, str):
-        html_template = SafeSub(html_template)
-    elif checks.is_function(html_template):
-        html_template = RepFunc(html_template)
-    elif not isinstance(html_template, CustomTemplate):
-        raise TypeError(f"HTML template must be a string, function, or template")
-    return html_template.substitute(
-        flat_merge_dicts(
-            dict(
-                title=title,
-                html_metadata=html_metadata,
-                html_content=html_content,
-                style_extras=style_extras,
-                head_extras=head_extras,
-                body_extras=body_extras,
+        html_template = self.resolve_setting(html_template, "html_template")
+        invert_colors = self.resolve_setting(invert_colors, "invert_colors")
+        auto_scroll = self.resolve_setting(auto_scroll, "auto_scroll")
+        use_pygments = self.resolve_setting(use_pygments, "use_pygments")
+        pygments_kwargs = self.resolve_setting(pygments_kwargs, "pygments_kwargs", merge=True)
+        template_context = self.resolve_setting(template_context, "template_context", merge=True)
+
+        def _prepare_extras(extras):
+            if extras is None:
+                extras = []
+            if isinstance(extras, str):
+                extras = [extras]
+            if not isinstance(extras, list):
+                extras = list(extras)
+            return "\n".join(extras)
+
+        if isinstance(html_template, str):
+            html_template = SafeSub(html_template)
+        elif checks.is_function(html_template):
+            html_template = RepFunc(html_template)
+        elif not isinstance(html_template, CustomTemplate):
+            raise TypeError(f"HTML template must be a string, function, or template")
+        style_extras = _prepare_extras(self.get_setting("style_extras")) + _prepare_extras(style_extras)
+        head_extras = _prepare_extras(self.get_setting("head_extras")) + _prepare_extras(head_extras)
+        body_extras = _prepare_extras(self.get_setting("body_extras")) + _prepare_extras(body_extras)
+        if invert_colors:
+            style_extras = "\n".join(
+                [
+                    """:root {
+        filter: invert(100%);
+    }""",
+                    style_extras,
+                ]
+            )
+        if auto_scroll:
+            body_extras = "\n".join(
+                [
+                    """<script>
+    function scrollToBottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+    function hasMetaRefresh() {
+        return document.querySelector('meta[http-equiv="refresh"]') !== null;
+    }
+    window.onload = function() {
+        if (hasMetaRefresh()) {
+            scrollToBottom();
+            setInterval(scrollToBottom, 100); // Keep scrolling to the bottom
+        }
+    };
+    </script>""",
+                    body_extras,
+                ]
+            )
+        if use_pygments is None:
+            use_pygments = check_installed("pygments")
+        if use_pygments:
+            assert_can_import("pygments")
+            from pygments.formatters import HtmlFormatter
+
+            formatter = HtmlFormatter(**pygments_kwargs)
+            highlight_css = formatter.get_style_defs(".highlight")
+            if style_extras == "":
+                style_extras = highlight_css
+            else:
+                style_extras = highlight_css + "\n" + style_extras
+
+        self._html_template = html_template
+        self._style_extras = style_extras
+        self._head_extras = head_extras
+        self._body_extras = body_extras
+        self._template_context = template_context
+
+    @property
+    def html_template(self) -> CustomTemplate:
+        """HTML template."""
+        return self._html_template
+
+    @property
+    def style_extras(self) -> str:
+        """Extras for `<style>`."""
+        return self._style_extras
+
+    @property
+    def head_extras(self) -> str:
+        """Extras for `<head>`."""
+        return self._head_extras
+
+    @property
+    def body_extras(self) -> str:
+        """Extras for `<body>`."""
+        return self._body_extras
+
+    @property
+    def template_context(self) -> tp.Kwargs:
+        """Context used to substitute templates."""
+        return self._template_context
+
+    def format_html(self, title: str = "", html_metadata: str = "", html_content: str = "", **kwargs) -> str:
+        """Format HTML."""
+        return self.html_template.substitute(
+            flat_merge_dicts(
+                self.template_context,
+                dict(
+                    title=title,
+                    html_metadata=html_metadata,
+                    html_content=html_content,
+                    style_extras=self.style_extras,
+                    head_extras=self.head_extras,
+                    body_extras=self.body_extras,
+                ),
+                kwargs,
             ),
-            template_context,
-        ),
-        eval_id="html_template",
-    )
+            eval_id="html_template",
+        )
+
+
+def format_html(**kwargs) -> str:
+    """Convert Markdown to HTML using `ToHTML`."""
+    from vectorbtpro.utils.parsing import get_func_arg_names
+
+    init_kwargs = {}
+    for k in get_func_arg_names(FormatHTML.__init__):
+        if k in kwargs:
+            init_kwargs[k] = kwargs.pop(k)
+    return FormatHTML(**init_kwargs).format_html(**kwargs)
 
 
 class ContentFormatter(Configured):

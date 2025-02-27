@@ -2007,7 +2007,7 @@ knowledge = frozen_cfg(
     unique_fields=True,
     changed_only=False,
     code=flex_cfg(
-        require_language=False,
+        language=None,
         in_blocks=True,
     ),
     dump_all=False,
@@ -2079,6 +2079,7 @@ knowledge = frozen_cfg(
     formatting=flex_cfg(
         remove_code_title=True,
         even_indentation=True,
+        newline_before_list=True,
         resolve_extensions=True,
         make_links=True,
         markdown_kwargs=flex_cfg(
@@ -2236,6 +2237,7 @@ knowledge = frozen_cfg(
     $body_extras
 </body>
 </html>""",
+        root_style_extras=[],
         style_extras=[],
         head_extras=[],
         body_extras=[
@@ -2245,6 +2247,8 @@ knowledge = frozen_cfg(
             r"""<script src="https://cdn.jsdelivr.net/npm/mathjax/es5/tex-mml-chtml.min.js"></script>""",
             r"""<script>window.MathJax={tex:{inlineMath:[["\\(","\\)"]],displayMath:[["\\[","\\]"]],processEscapes:!0,processEnvironments:!0},options:{ignoreHtmlClass:".*|",processHtmlClass:"arithmatex"}},document$.subscribe(()=>{MathJax.startup.output.clearCache(),MathJax.typesetClear(),MathJax.texReset(),MathJax.typesetPromise()});</script>""",
         ],
+        invert_colors=False,
+        auto_scroll=False,
         output_to=None,
         flush_output=True,
         buffer_output=True,
@@ -2272,15 +2276,18 @@ knowledge = frozen_cfg(
         chat_dir=RepEval("Path(cache_dir) / 'chat'"),
         stream=True,
         to_context_kwargs=flex_cfg(),
+        incl_past_queries=True,
         rank=None,
         rank_kwargs=flex_cfg(
             top_k=None,
+            min_top_k=None,
+            max_top_k=None,
             cutoff=None,
             return_chunks=False,
         ),
         max_tokens=120_000,
         system_prompt=r"You are a helpful assistant. Given the context information and not prior knowledge, answer the query.",
-        system_as_user=False,
+        system_as_user=True,
         context_prompt=r"""Context information is below.
 ---------------------
 $context
@@ -2297,21 +2304,24 @@ $context
             ),
         ),
         embeddings="auto",
-        embeddings_config=flex_cfg(),
+        embeddings_config=flex_cfg(
+            batch_size=512,
+        ),
         embeddings_configs=flex_cfg(
             openai=flex_cfg(
-                model="text-embedding-3-small",
-                batch_size=512,
+                model="text-embedding-3-large",
+                dimensions=256,
             ),
             litellm=flex_cfg(
-                model="text-embedding-3-small",
-                batch_size=512,
+                model="text-embedding-3-large",
+                dimensions=256,
             ),
             llama_index=flex_cfg(
                 embedding="openai",
                 embedding_configs=flex_cfg(
                     openai=flex_cfg(
-                        model="text-embedding-3-small",
+                        model="text-embedding-3-large",
+                        dimensions=256,
                     )
                 ),
             ),
@@ -2335,19 +2345,24 @@ $context
             ),
         ),
         text_splitter="segment",
-        text_splitter_config=flex_cfg(),
+        text_splitter_config=flex_cfg(
+            chunk_template=r"""... (previous text omitted)
+            
+$chunk_text""",
+        ),
         text_splitter_configs=flex_cfg(
             token=flex_cfg(
-                chunk_size=1000,
-                chunk_overlap=0.2,
+                chunk_size=800,
+                chunk_overlap=400,
                 tokenizer="tiktoken",
                 tokenizer_kwargs=flex_cfg(
                     encoding="cl100k_base",
                 ),
             ),
             segment=flex_cfg(
-                separators=[[r"\n\s*\n", r"(?<=[.!?])\s+"], r"\s+", None],
-                min_chunk_size=0.5,
+                separators=[[r"\n\s*\n", r"(?<=[^\s.?!])[.?!]+(?:\s+|$)"], r"\s+", None],
+                min_chunk_size=0.8,
+                fixed_overlap=False,
             ),
             llama_index=flex_cfg(
                 node_parser="sentence",
@@ -2390,6 +2405,9 @@ $context
             cache_doc_store=True,
             cache_emb_store=True,
             doc_store_configs=flex_cfg(
+                memory=flex_cfg(
+                    store_id="doc_default",
+                ),
                 file=flex_cfg(
                     dir_path=RepEval("Path(cache_dir) / 'doc_file_store'"),
                 ),
@@ -2398,6 +2416,9 @@ $context
                 ),
             ),
             emb_store_configs=flex_cfg(
+                memory=flex_cfg(
+                    store_id="emb_default",
+                ),
                 file=flex_cfg(
                     dir_path=RepEval("Path(cache_dir) / 'emb_file_store'"),
                 ),
@@ -2412,7 +2433,7 @@ $context
     assets=flex_cfg(
         vbt=flex_cfg(
             cache_dir="./knowledge/vbt/",
-            release_dir=RepEval("(Path(cache_dir) / 'releases' / release_name) if release_name else cache_dir"),
+            release_dir=RepEval("(Path(cache_dir) / release_name) if release_name else cache_dir"),
             assets_dir=RepEval("Path(release_dir) / 'assets'"),
             markdown_dir=RepEval("Path(release_dir) / 'markdown'"),
             html_dir=RepEval("Path(release_dir) / 'html'"),
@@ -2429,6 +2450,7 @@ $context
                 text_path="content",
                 excl_metadata=RepEval("asset_cls.get_setting('minimize_keys')"),
                 excl_embed_metadata=True,
+                split_text_kwargs=flex_cfg(),
             ),
             minimize_metadata=False,
             minimize_keys=[
@@ -2470,7 +2492,8 @@ $context
             allow_prefix=False,
             allow_suffix=False,
             merge_targets=True,
-            display_html_template=r"""<!DOCTYPE html>
+            display=flex_cfg(
+                html_template=r"""<!DOCTYPE html>
 <html>
 <head>
     <meta charset="utf-8" />
@@ -2535,27 +2558,30 @@ $context
             color: #fff;
             cursor: default;
         }
-        .iframe-container {
-            border: 1px solid rgba(0, 0, 0, 0.1);
-            border-radius: 4px;
-        }
         iframe {
             width: 100%;
             border: none;
             display: block;
         }
+        $style_extras
     </style>
+    $head_extras
 </head>
 <body>
     <div id="pagination-top" class="pagination"></div>
-    <div class="iframe-container"><iframe id="page-iframe" scrolling="no" onload="adjustIframeHeight(this)"></iframe></div>
+    <iframe id="page-iframe" scrolling="no" onload="adjustIframeHeight(this)"></iframe>
     <div id="pagination-bottom" class="pagination"></div>
     <script>const pages=$pages;let currentPage=1,totalPages=pages.length;function base64DecodeUtf8(e){return decodeURIComponent(atob(e).split("").map(e=>"%"+("00"+e.charCodeAt(0).toString(16)).slice(-2)).join(""))}function showPage(e){e<1&&(e=1),e>totalPages&&(e=totalPages),currentPage=e,document.getElementById("page-iframe").srcdoc=base64DecodeUtf8(pages[e-1]),renderPagination(),adjustIframeHeight(document.getElementById("page-iframe"))}function prevPage(){showPage(currentPage-1)}function nextPage(){showPage(currentPage+1)}function renderPagination(){let e="<ul>";if(e+=1===currentPage?'<li><span class="nav-btn disabled">&lt; Previous</span></li>':'<li><a href="#" class="nav-btn" onclick="prevPage()">&lt; Previous</a></li>',totalPages<=7)for(let a=1;a<=totalPages;a++)e+=`<li><a href="#" data-page="${a}" class="page-link" onclick="showPage(${a})">${a}</a></li>`;else if(currentPage<=4){for(let t=1;t<=5;t++)e+=linkTpl(t);e+=" <li><span>…</span></li> "+linkTpl(totalPages)}else if(currentPage>=totalPages-3){e+=linkTpl(1)+" <li><span>…</span></li> ";for(let n=totalPages-4;n<=totalPages;n++)e+=linkTpl(n)}else e+=linkTpl(1)+" <li><span>…</span></li> "+linkTpl(currentPage-1)+linkTpl(currentPage)+linkTpl(currentPage+1)+" <li><span>…</span></li> "+linkTpl(totalPages);e+=currentPage===totalPages?'<li><span class="nav-btn disabled">Next &gt;</span></li>':'<li><a href="#" class="nav-btn" onclick="nextPage()">Next &gt;</a></li>',e+="</ul>",document.getElementById("pagination-top").innerHTML=e,document.getElementById("pagination-bottom").innerHTML=e,updateActiveLink()}function linkTpl(e){return`<li><a href="#" data-page="${e}" class="page-link" onclick="showPage(${e})">${e}</a></li>`}function updateActiveLink(){document.querySelectorAll(".page-link").forEach(e=>{e.classList.toggle("active",e.getAttribute("data-page")==currentPage)})}function adjustIframeHeight(e){try{let a=e.contentDocument||e.contentWindow.document;a.querySelectorAll('img[loading="lazy"]').forEach(a=>a.addEventListener("load",()=>setTimeout(()=>adjustIframeHeight(e),100))),e.style.height=a.body.scrollHeight+"px",[...a.getElementsByTagName("a")].forEach(e=>e.target="_blank")}catch(t){}}window.addEventListener("DOMContentLoaded",()=>{totalPages>0&&showPage(1)});</script>
+    $body_extras
 </body>
 </html>""",
+                style_extras=[],
+                head_extras=[],
+                body_extras=[],
+            ),
             chat=flex_cfg(
                 chat_dir=RepEval("Path(release_dir) / 'chat'"),
-                system_prompt=r"You are an assistant with access to the VectorBT PRO (VBT) Python library documentation and Discord history. VBT is a proprietary successor to the open-source vectorbt for financial backtesting. As an expert, provide clear and accurate answers using only these sources. If metadata with links is present, reference these links to support your answers. If information isn't found, inform the user accordingly. Note that VBT exclusively refers to VectorBT PRO, which significantly differs from the open-source version. Given the context information and not prior knowledge, answer the query.",
+                system_prompt=r"""You are a helpful assistant with access to VectorBT PRO (also called VBT or vectorbtpro) documentation and relevant Discord history. Use only this provided context to generate clear, accurate answers. Do not reference the open‑source vectorbt, as VectorBT PRO is a proprietary successor with significant differences.\n\nWhen coding in Python, use:\n```python\nimport vectorbtpro as vbt\n```\n\nIf the provided documentation or Discord logs do not answer the user's query, respond with:\n> I could not find an answer.\n\nIf metadata includes links, reference them to support your answer. Do not include external or fabricated links, and exclude any information not present in the given context.\n\nFor each query, follow this structure:\n1. Optionally restate the question in your own words.\n2. Answer using only the available context.\n3. Include any relevant metadata or links.""",
                 doc_ranker_config=flex_cfg(
                     doc_store="lmdb",
                     doc_store_configs=flex_cfg(

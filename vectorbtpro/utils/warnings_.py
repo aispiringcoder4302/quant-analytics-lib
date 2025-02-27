@@ -44,7 +44,11 @@ def custom_formatwarning(
     return f"{filename}:{lineno}: {category.__name__}: {message}\n"
 
 
-def warn(message: tp.Any, category: type = UserWarning, stacklevel: int = 2) -> None:
+class VBTWarning(Warning):
+    """Base class for warnings raised by VBT."""
+
+
+def warn(message: tp.Any, category: type = VBTWarning, stacklevel: int = 2) -> None:
     """Emit a warning with a custom formatter."""
     with use_formatwarning(custom_formatwarning):
         warnings.warn(message, category, stacklevel=stacklevel)

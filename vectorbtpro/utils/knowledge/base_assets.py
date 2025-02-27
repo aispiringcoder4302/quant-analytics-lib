@@ -1314,8 +1314,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
     def find_code(
         self,
         target: tp.Optional[tp.MaybeIterable[tp.Any]] = None,
-        language: tp.Optional[tp.MaybeIterable[str]] = None,
-        require_language: tp.Optional[bool] = None,
+        language: tp.Union[None, bool, tp.MaybeIterable[str]] = None,
         in_blocks: tp.Optional[bool] = None,
         escape_target: bool = True,
         escape_language: bool = True,
@@ -1326,7 +1325,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         """Find code using `KnowledgeAsset.find`.
 
         For defaults, see `code` in `vectorbtpro._settings.knowledge`."""
-        require_language = self.resolve_setting(require_language, "require_language", sub_path="code")
+        language = self.resolve_setting(language, "language", sub_path="code")
         in_blocks = self.resolve_setting(in_blocks, "in_blocks", sub_path="code")
 
         if target is not None:
@@ -1358,7 +1357,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
                 if escape_target:
                     t = re.escape(t)
                 if in_blocks:
-                    if language is not None:
+                    if language is not None and not isinstance(language, bool):
                         new_t = rf"""
                         ```{language}{opt_title}\n
                         (?:(?!```)[\s\S])*?
@@ -1366,7 +1365,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
                         (?:(?!```)[\s\S])*?
                         ```\s*$
                         """
-                    elif require_language:
+                    elif language is not None and isinstance(language, bool) and language:
                         new_t = rf"""
                         ```{opt_language}{opt_title}\n
                         (?:(?!```)[\s\S])*?
@@ -1389,9 +1388,9 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
                 new_target = new_target[0]
         else:
             if in_blocks:
-                if language is not None:
+                if language is not None and not isinstance(language, bool):
                     new_target = rf"```{language}{opt_title}\n([\s\S]*?)```\s*$"
-                elif require_language:
+                elif language is not None and isinstance(language, bool) and language:
                     new_target = rf"```{opt_language}{opt_title}\n([\s\S]*?)```\s*$"
                 else:
                     new_target = rf"```(?:{opt_language}{opt_title})?\n([\s\S]*?)```\s*$"
@@ -1932,7 +1931,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         prefix = get_caller_qualname().split(".")[-1]
         execute_kwargs = merge_dicts(
             dict(
-                show_progress=len(groups) > 1,
+                show_progress=False if len(groups) == 1 else None,
                 pbar_kwargs=dict(
                     bar_id=get_caller_qualname(),
                     prefix=prefix,

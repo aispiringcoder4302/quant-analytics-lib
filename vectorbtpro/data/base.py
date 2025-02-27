@@ -3030,6 +3030,11 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         )
 
     @classmethod
+    def download(cls: tp.Type[DataT], *args, **kwargs) -> tp.Union[DataT, tp.List[tp.Any]]:
+        """Exists for backward compatibility. Use `Data.pull` instead."""
+        return cls.pull(*args, **kwargs)
+
+    @classmethod
     def fetch(cls: tp.Type[DataT], *args, **kwargs) -> tp.Union[DataT, tp.List[tp.Any]]:
         """Exists for backward compatibility. Use `Data.pull` instead."""
         return cls.pull(*args, **kwargs)
