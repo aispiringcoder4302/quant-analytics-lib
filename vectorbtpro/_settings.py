@@ -1994,6 +1994,7 @@ knowledge = frozen_cfg(
     cache_mkdir_kwargs=flex_cfg(),
     clear_cache=False,
     asset_cache_dir=RepEval("Path(cache_dir) / 'asset_cache'"),
+    max_cache_count=5,
     save_cache_kwargs=flex_cfg(),
     load_cache_kwargs=flex_cfg(),
     per_path=True,

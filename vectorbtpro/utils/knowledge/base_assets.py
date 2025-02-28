@@ -63,6 +63,7 @@ class AssetCacheManager(Configured):
         cache_dir: tp.Optional[tp.PathLike] = None,
         cache_mkdir_kwargs: tp.KwargsLike = None,
         clear_cache: tp.Optional[bool] = None,
+        max_cache_count: tp.Optional[int] = None,
         save_cache_kwargs: tp.KwargsLike = None,
         load_cache_kwargs: tp.KwargsLike = None,
         template_context: tp.KwargsLike = None,
@@ -74,6 +75,7 @@ class AssetCacheManager(Configured):
             cache_dir=cache_dir,
             cache_mkdir_kwargs=cache_mkdir_kwargs,
             clear_cache=clear_cache,
+            max_cache_count=max_cache_count,
             save_cache_kwargs=save_cache_kwargs,
             load_cache_kwargs=load_cache_kwargs,
             template_context=template_context,
@@ -84,6 +86,7 @@ class AssetCacheManager(Configured):
         cache_dir = self.resolve_setting(cache_dir, "asset_cache_dir")
         cache_mkdir_kwargs = self.resolve_setting(cache_mkdir_kwargs, "cache_mkdir_kwargs", merge=True)
         clear_cache = self.resolve_setting(clear_cache, "clear_cache")
+        max_cache_count = self.resolve_setting(max_cache_count, "max_cache_count")
         save_cache_kwargs = self.resolve_setting(save_cache_kwargs, "save_cache_kwargs", merge=True)
         load_cache_kwargs = self.resolve_setting(load_cache_kwargs, "load_cache_kwargs", merge=True)
         template_context = self.resolve_setting(template_context, "template_context", merge=True)
@@ -96,6 +99,7 @@ class AssetCacheManager(Configured):
             template_context = flat_merge_dicts(dict(cache_dir=cache_dir), template_context)
             asset_cache_dir = asset_cache_dir.substitute(template_context, eval_id="asset_cache_dir")
             cache_dir = asset_cache_dir
+        cache_dir = Path(cache_dir)
         if cache_dir.exists():
             if clear_cache:
                 remove_dir(cache_dir, missing_ok=True, with_contents=True)
@@ -103,6 +107,7 @@ class AssetCacheManager(Configured):
 
         self._persist_cache = persist_cache
         self._cache_dir = cache_dir
+        self._max_cache_count = max_cache_count
         self._save_cache_kwargs = save_cache_kwargs
         self._load_cache_kwargs = load_cache_kwargs
         self._template_context = template_context
@@ -113,9 +118,16 @@ class AssetCacheManager(Configured):
         return self._persist_cache
 
     @property
-    def cache_dir(self) -> tp.PathLike:
+    def cache_dir(self) -> tp.Path:
         """Cache directory."""
         return self._cache_dir
+
+    @property
+    def max_cache_count(self) -> tp.Optional[int]:
+        """Maximum number of assets to be cached.
+
+        Keeps only the most recent assets."""
+        return self._max_cache_count
 
     @property
     def save_cache_kwargs(self) -> tp.Kwargs:
@@ -146,12 +158,26 @@ class AssetCacheManager(Configured):
         if asset_cache_file.exists():
             return load(asset_cache_file, **self.load_cache_kwargs)
 
+    def cleanup_cache_dir(self) -> None:
+        """Keep only the most recent assets."""
+        if not self.max_cache_count:
+            return
+        files = [f for f in self.cache_dir.iterdir() if f.is_file()]
+        if len(files) <= self.max_cache_count:
+            return
+        files.sort(key=lambda f: f.stat().st_mtime, reverse=True)
+        files_to_delete = files[self.max_cache_count:]
+        for file_path in files_to_delete:
+            file_path.unlink(missing_ok=True)
+
     def save_asset(self, asset: tp.MaybeKnowledgeAsset, cache_key: str) -> tp.Optional[tp.Path]:
         """Save a knowledge asset under a cache key."""
         asset_cache[cache_key] = asset
         if self.persist_cache:
             asset_cache_file = self.cache_dir / cache_key
-            return save(asset, path=asset_cache_file, **self.save_cache_kwargs)
+            path = save(asset, path=asset_cache_file, **self.save_cache_kwargs)
+            self.cleanup_cache_dir()
+            return path
 
 
 KnowledgeAssetT = tp.TypeVar("KnowledgeAssetT", bound="KnowledgeAsset")
@@ -1792,7 +1818,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         )
 
     def to_documents(self, **kwargs) -> tp.MaybeKnowledgeAsset:
-        """Convert to documents of type `vectorbtpro.utils.knowledge.chatting.KnowledgeDocument`.
+        """Convert to documents of type `vectorbtpro.utils.knowledge.chatting.TextDocument`.
 
         Document-related keyword arguments may contain templates. In such templates,
         the index of the data item is represented by "i", the data item itself is represented by "d",

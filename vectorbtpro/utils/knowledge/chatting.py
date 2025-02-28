@@ -2629,12 +2629,12 @@ class FileStore(DictStore):
 
     @property
     def save_kwargs(self) -> tp.Kwargs:
-        """Keyword arguments passed to `vectorbtpro.utils.path_.save`."""
+        """Keyword arguments passed to `vectorbtpro.utils.pickling.save`."""
         return self._save_kwargs
 
     @property
     def load_kwargs(self) -> tp.Kwargs:
-        """Keyword arguments passed to `vectorbtpro.utils.path_.load`."""
+        """Keyword arguments passed to `vectorbtpro.utils.pickling.load`."""
         return self._load_kwargs
 
     @property
