@@ -29,7 +29,7 @@ OLS = IndicatorFactory(
     module_name=__name__,
     short_name="ols",
     input_names=["x", "y"],
-    param_names=["window"],
+    param_names=["window", "norm_window"],
     output_names=["slope", "intercept", "zscore"],
     lazy_outputs=dict(
         pred=lambda self: self.wrapper.wrap(
@@ -55,6 +55,7 @@ OLS = IndicatorFactory(
     nb.ols_nb,
     kwargs_as_args=["minp", "ddof", "with_zscore"],
     window=14,
+    norm_window=None,
     minp=None,
     ddof=0,
     with_zscore=True,

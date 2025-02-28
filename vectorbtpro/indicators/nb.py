@@ -1008,17 +1008,22 @@ def ols_1d_nb(
     x: tp.Array1d,
     y: tp.Array1d,
     window: int = 14,
+    norm_window: tp.Optional[int] = None,
     minp: tp.Optional[int] = None,
     ddof: int = 0,
     with_zscore: bool = True,
 ) -> tp.Tuple[tp.Array1d, tp.Array1d, tp.Array1d]:
     """Rolling Ordinary Least Squares (OLS)."""
+    if norm_window is not None:
+        norm_window_ = norm_window
+    else:
+        norm_window_ = window
     slope, intercept = generic_nb.rolling_ols_1d_nb(x, y, window, minp=minp)
     if with_zscore:
         pred = intercept + slope * x
         error = y - pred
-        error_mean = generic_nb.rolling_mean_1d_nb(error, window, minp=minp)
-        error_std = generic_nb.rolling_std_1d_nb(error, window, minp=minp, ddof=ddof)
+        error_mean = generic_nb.rolling_mean_1d_nb(error, norm_window_, minp=minp)
+        error_std = generic_nb.rolling_std_1d_nb(error, norm_window_, minp=minp, ddof=ddof)
         zscore = (error - error_mean) / error_std
     else:
         zscore = np.full(x.shape, np.nan, dtype=float_)
@@ -1031,6 +1036,7 @@ def ols_1d_nb(
         x=ch.ArraySlicer(axis=1),
         y=ch.ArraySlicer(axis=1),
         window=base_ch.FlexArraySlicer(),
+        norm_window=base_ch.FlexArraySlicer(),
         minp=None,
         ddof=None,
         with_zscore=None,
@@ -1042,12 +1048,17 @@ def ols_nb(
     x: tp.Array2d,
     y: tp.Array2d,
     window: tp.FlexArray1dLike = 14,
+    norm_window: tp.Optional[tp.FlexArray1dLike] = None,
     minp: tp.Optional[int] = None,
     ddof: int = 0,
     with_zscore: bool = True,
 ) -> tp.Tuple[tp.Array2d, tp.Array2d, tp.Array2d]:
     """2-dim version of `ols_1d_nb`."""
     window_ = to_1d_array_nb(np.asarray(window))
+    if norm_window is not None:
+        norm_window_ = to_1d_array_nb(np.asarray(norm_window))
+    else:
+        norm_window_ = window_
 
     slope = np.empty(x.shape, dtype=float_)
     intercept = np.empty(x.shape, dtype=float_)
@@ -1057,6 +1068,7 @@ def ols_nb(
             x[:, col],
             y[:, col],
             window=flex_select_1d_nb(window_, col),
+            norm_window=flex_select_1d_nb(norm_window_, col),
             minp=minp,
             ddof=ddof,
             with_zscore=with_zscore,
