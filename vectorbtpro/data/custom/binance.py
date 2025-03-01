@@ -1,10 +1,17 @@
-# Copyright (c) 2021-2024 Oleg Polakow. All rights reserved.
+# ==================================== VBTPROXYZ ====================================
+# Copyright (c) 2021-2025 Oleg Polakow. All rights reserved.
+#
+# This file is part of the proprietary VectorBT® PRO package and is licensed under
+# the VectorBT® PRO License available at https://vectorbt.pro/terms/software-license/
+#
+# Unauthorized publishing, distribution, sublicensing, or sale of this software
+# or its parts is strictly prohibited.
+# ===================================================================================
 
 """Module with `BinanceData`."""
 
 import time
 import traceback
-import warnings
 from functools import partial
 
 import pandas as pd
@@ -16,13 +23,14 @@ from vectorbtpro.utils import datetime_ as dt
 from vectorbtpro.utils.config import merge_dicts, Config, HybridConfig
 from vectorbtpro.utils.enum_ import map_enum_fields
 from vectorbtpro.utils.pbar import ProgressBar
+from vectorbtpro.utils.warnings_ import warn
 
 try:
     if not tp.TYPE_CHECKING:
         raise ImportError
     from binance.client import Client as BinanceClientT
 except ImportError:
-    BinanceClientT = tp.Any
+    BinanceClientT = "BinanceClient"
 
 __all__ = [
     "BinanceData",
@@ -299,13 +307,10 @@ class BinanceData(RemoteData):
                         time.sleep(delay)  # be kind to api
         except Exception as e:
             if not silence_warnings:
-                warnings.warn(traceback.format_exc(), stacklevel=2)
-                warnings.warn(
-                    (
-                        f"Symbol '{str(symbol)}' raised an exception. Returning incomplete data. "
-                        "Use update() method to fetch missing data."
-                    ),
-                    stacklevel=2,
+                warn(traceback.format_exc())
+                warn(
+                    f"Symbol '{str(symbol)}' raised an exception. Returning incomplete data. "
+                    "Use update() method to fetch missing data."
                 )
 
         # Convert data to a DataFrame

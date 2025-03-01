@@ -1,11 +1,18 @@
-# Copyright (c) 2021-2024 Oleg Polakow. All rights reserved.
+# ==================================== VBTPROXYZ ====================================
+# Copyright (c) 2021-2025 Oleg Polakow. All rights reserved.
+#
+# This file is part of the proprietary VectorBT® PRO package and is licensed under
+# the VectorBT® PRO License available at https://vectorbt.pro/terms/software-license/
+#
+# Unauthorized publishing, distribution, sublicensing, or sale of this software
+# or its parts is strictly prohibited.
+# ===================================================================================
 
 """Utilities for chunking."""
 
 import inspect
 import multiprocessing
 import uuid
-import warnings
 from functools import wraps
 
 import numpy as np
@@ -22,12 +29,13 @@ from vectorbtpro.utils.execution import Task, execute
 from vectorbtpro.utils.merging import MergeFunc, parse_merge_func
 from vectorbtpro.utils.parsing import annotate_args, ann_args_to_args, match_ann_arg, get_func_arg_names, Regex
 from vectorbtpro.utils.template import substitute_templates, Rep
+from vectorbtpro.utils.warnings_ import warn
 
 __all__ = [
     "ChunkMeta",
     "ArgChunkMeta",
     "LenChunkMeta",
-    "yield_chunk_meta",
+    "iter_chunk_meta",
     "Sizer",
     "ArgSizer",
     "CountSizer",
@@ -195,17 +203,23 @@ class ArraySizer(ShapeSizer):
     @classmethod
     def get_obj_size(cls, obj: tp.AnyArray, axis: int, single_type: tp.Optional[type] = None) -> int:
         """Get size of an object."""
+        from vectorbtpro.base.wrapping import Wrapping
+
+        if isinstance(obj, Wrapping):
+            shape = obj.wrapper.shape
+        else:
+            shape = obj.shape
         if single_type is not None:
             if checks.is_instance_of(obj, single_type):
                 return 1
-        if len(obj.shape) == 0:
+        if len(shape) == 0:
             return 0
         if axis is None:
-            if len(obj.shape) == 1:
+            if len(shape) == 1:
                 axis = 0
         checks.assert_not_none(axis, arg_name="axis")
-        if axis <= len(obj.shape) - 1:
-            return obj.shape[axis]
+        if axis <= len(shape) - 1:
+            return shape[axis]
         return 0
 
     def get_size(self, ann_args: tp.AnnArgs, **kwargs) -> int:
@@ -267,12 +281,12 @@ class LenChunkMeta(ArgChunkMeta):
             start = end
 
 
-def yield_chunk_meta(
+def iter_chunk_meta(
     size: tp.Optional[int] = None,
     min_size: tp.Optional[int] = None,
     n_chunks: tp.Union[None, int, str] = None,
     chunk_len: tp.Union[None, int, str] = None,
-) -> tp.Generator[ChunkMeta, None, None]:
+) -> tp.Iterator[ChunkMeta]:
     """Yield meta of each successive chunk from a sequence with a number of elements.
 
     Args:
@@ -339,6 +353,17 @@ def yield_chunk_meta(
                     end=min(i + chunk_len, size),
                     indices=None,
                 )
+
+
+def get_chunk_meta_key(chunk_meta: ChunkMeta) -> tp.Any:
+    """Get key corresponding to chunk meta."""
+    if chunk_meta.indices is not None:
+        return "{}..{}".format(chunk_meta.indices[0], chunk_meta.indices[-1])
+    if chunk_meta.start is not None and chunk_meta.end is not None:
+        if chunk_meta.start == chunk_meta.end - 1:
+            return chunk_meta.start
+        return "{}..{}".format(chunk_meta.start, chunk_meta.end - 1)
+    return MISSING
 
 
 # ############# Chunk mapping ############# #
@@ -561,22 +586,28 @@ class ArraySelector(ShapeSelector):
         return ArraySizer.get_obj_size(obj, self.axis, single_type=self.single_type)
 
     def take(self, obj: tp.AnyArray, chunk_meta: ChunkMeta, **kwargs) -> tp.ArrayLike:
-        checks.assert_instance_of(obj, (pd.Series, pd.DataFrame, np.ndarray))
-        if len(obj.shape) == 0:
+        from vectorbtpro.base.wrapping import Wrapping
+        from vectorbtpro.base.indexing import PandasIndexer
+
+        if isinstance(obj, Wrapping):
+            shape = obj.wrapper.shape
+        else:
+            shape = obj.shape
+        if len(shape) == 0:
             return obj
         axis = self.axis
         if axis is None:
-            if len(obj.shape) == 1:
+            if len(shape) == 1:
                 axis = 0
         checks.assert_not_none(axis, arg_name="axis")
-        if axis >= len(obj.shape):
-            raise IndexError(f"Array is {len(obj.shape)}-dimensional, but {axis} were indexed")
-        slc = [slice(None)] * len(obj.shape)
+        if axis >= len(shape):
+            raise IndexError(f"Array is {len(shape)}-dimensional, but {axis} were indexed")
+        slc = [slice(None)] * len(shape)
         if self.keep_dims:
             slc[axis] = slice(chunk_meta.idx, chunk_meta.idx + 1)
         else:
             slc[axis] = chunk_meta.idx
-        if isinstance(obj, (pd.Series, pd.DataFrame)):
+        if isinstance(obj, (pd.Series, pd.DataFrame, PandasIndexer)):
             return obj.iloc[tuple(slc)]
         return obj[tuple(slc)]
 
@@ -588,22 +619,28 @@ class ArraySlicer(ShapeSlicer):
         return ArraySizer.get_obj_size(obj, self.axis, single_type=self.single_type)
 
     def take(self, obj: tp.AnyArray, chunk_meta: ChunkMeta, **kwargs) -> tp.AnyArray:
-        checks.assert_instance_of(obj, (pd.Series, pd.DataFrame, np.ndarray))
-        if len(obj.shape) == 0:
+        from vectorbtpro.base.wrapping import Wrapping
+        from vectorbtpro.base.indexing import PandasIndexer
+
+        if isinstance(obj, Wrapping):
+            shape = obj.wrapper.shape
+        else:
+            shape = obj.shape
+        if len(shape) == 0:
             return obj
         axis = self.axis
         if axis is None:
-            if len(obj.shape) == 1:
+            if len(shape) == 1:
                 axis = 0
         checks.assert_not_none(axis, arg_name="axis")
-        if axis >= len(obj.shape):
-            raise IndexError(f"Array is {len(obj.shape)}-dimensional, but {axis} were indexed")
-        slc = [slice(None)] * len(obj.shape)
+        if axis >= len(shape):
+            raise IndexError(f"Array is {len(shape)}-dimensional, but {axis} were indexed")
+        slc = [slice(None)] * len(shape)
         if chunk_meta.indices is not None:
             slc[axis] = np.asarray(chunk_meta.indices)
         else:
             slc[axis] = slice(chunk_meta.start, chunk_meta.end)
-        if isinstance(obj, (pd.Series, pd.DataFrame)):
+        if isinstance(obj, (pd.Series, pd.DataFrame, PandasIndexer)):
             return obj.iloc[tuple(slc)]
         return obj[tuple(slc)]
 
@@ -679,12 +716,9 @@ class SequenceTaker(ContainerTaker):
                                 size_i = i
                                 size = new_size
                             elif size != new_size:
-                                warnings.warn(
-                                    (
-                                        f"Arguments at indices {size_i} and {i} have conflicting sizes "
-                                        f"{size} and {new_size}. Setting size to None."
-                                    ),
-                                    stacklevel=2,
+                                warn(
+                                    f"Arguments at indices {size_i} and {i} have conflicting sizes "
+                                    f"{size} and {new_size}. Setting size to None."
                                 )
                                 return None
                     except NotImplementedError as e:
@@ -709,12 +743,9 @@ class SequenceTaker(ContainerTaker):
                 take_spec = cont_take_spec[i]
             else:
                 if not silence_warnings:
-                    warnings.warn(
-                        (
-                            f"Argument at index {i} not found in SequenceTaker.cont_take_spec. "
-                            "Setting its specification to None."
-                        ),
-                        stacklevel=2,
+                    warn(
+                        f"Argument at index {i} not found in SequenceTaker.cont_take_spec. "
+                        "Setting its specification to None."
                     )
                 take_spec = None
             new_obj.append(
@@ -772,12 +803,9 @@ class MappingTaker(ContainerTaker):
                                 size_k = k
                                 size = new_size
                             elif size != new_size:
-                                warnings.warn(
-                                    (
-                                        f"Arguments with keys '{size_k}' and '{k}' have conflicting sizes "
-                                        f"{size} and {new_size}. Setting size to None."
-                                    ),
-                                    stacklevel=2,
+                                warn(
+                                    f"Arguments with keys '{size_k}' and '{k}' have conflicting sizes "
+                                    f"{size} and {new_size}. Setting size to None."
                                 )
                                 return None
                     except NotImplementedError as e:
@@ -802,12 +830,9 @@ class MappingTaker(ContainerTaker):
                 take_spec = cont_take_spec[k]
             else:
                 if not silence_warnings:
-                    warnings.warn(
-                        (
-                            f"Argument with key '{k}' not found in MappingTaker.cont_take_spec. "
-                            "Setting its specification to None."
-                        ),
-                        stacklevel=2,
+                    warn(
+                        f"Argument with key '{k}' not found in MappingTaker.cont_take_spec. "
+                        "Setting its specification to None."
                     )
                 take_spec = None
             new_obj[k] = chunker.take_from_arg(
@@ -1007,7 +1032,7 @@ class Chunker(Configured):
     1. Generates chunk metadata by passing `n_chunks`, `size`, `min_size`, `chunk_len`,
         and `chunk_meta` to `Chunker.get_chunk_meta_from_args`.
     2. Splits arguments and keyword arguments by passing chunk metadata, `arg_take_spec`,
-        and `template_context` to `Chunker.yield_tasks`, which yields one chunk at a time.
+        and `template_context` to `Chunker.iter_tasks`, which yields one chunk at a time.
     3. Executes all chunks by passing `**execute_kwargs` to `vectorbtpro.utils.execution.execute`.
     4. Optionally, post-processes and merges the results by passing them and
         `**merge_kwargs` to `merge_func`.
@@ -1015,25 +1040,6 @@ class Chunker(Configured):
     For defaults, see `vectorbtpro._settings.chunking`."""
 
     _settings_path: tp.SettingsPath = "chunking"
-
-    _expected_keys: tp.ExpectedKeys = (Configured._expected_keys or set()) | {
-        "size",
-        "min_size",
-        "n_chunks",
-        "chunk_len",
-        "chunk_meta",
-        "skip_single_chunk",
-        "arg_take_spec",
-        "template_context",
-        "prepend_chunk_meta",
-        "merge_func",
-        "merge_kwargs",
-        "return_raw_chunks",
-        "silence_warnings",
-        "forward_kwargs_as",
-        "execute_kwargs",
-        "disable",
-    }
 
     def __init__(
         self,
@@ -1132,7 +1138,7 @@ class Chunker(Configured):
 
     @property
     def arg_take_spec(self) -> tp.Optional[tp.ArgTakeSpecLike]:
-        """See `yield_tasks`."""
+        """See `iter_tasks`."""
         return self._arg_take_spec
 
     @property
@@ -1198,16 +1204,16 @@ class Chunker(Configured):
 
         Args:
             ann_args (dict): Arguments annotated with `vectorbtpro.utils.parsing.annotate_args`.
-            size (int, Sizer, or callable): See `yield_chunk_meta`.
+            size (int, Sizer, or callable): See `iter_chunk_meta`.
 
                 Can be an integer, an instance of `Sizer`, or a callable taking
                 the annotated arguments and returning a value.
-            min_size (int): See `yield_chunk_meta`.
-            n_chunks (int, str, Sizer, or callable): See `yield_chunk_meta`.
+            min_size (int): See `iter_chunk_meta`.
+            n_chunks (int, str, Sizer, or callable): See `iter_chunk_meta`.
 
                 Can be an integer, a string, an instance of `Sizer`, or a callable taking
                 the annotated arguments and other keyword arguments and returning a value.
-            chunk_len (int, str, Sizer, or callable): See `yield_chunk_meta`.
+            chunk_len (int, str, Sizer, or callable): See `iter_chunk_meta`.
 
                 Can be an integer, a string, an instance of `Sizer`, or a callable taking
                 the annotated arguments and returning a value.
@@ -1239,7 +1245,7 @@ class Chunker(Configured):
                     chunk_len = chunk_len(ann_args, **kwargs)
                 elif not isinstance(chunk_len, (int, str)):
                     raise TypeError(f"Type {type(chunk_len)} for chunk_len is not supported")
-            return yield_chunk_meta(size=size, min_size=min_size, n_chunks=n_chunks, chunk_len=chunk_len)
+            return iter_chunk_meta(size=size, min_size=min_size, n_chunks=n_chunks, chunk_len=chunk_len)
         if isinstance(chunk_meta, ChunkMetaGenerator):
             return chunk_meta.get_chunk_meta(ann_args, **kwargs)
         if callable(chunk_meta):
@@ -1358,10 +1364,7 @@ class Chunker(Configured):
             if take_spec is MISSING:
                 take_spec = None
                 if not silence_warnings:
-                    warnings.warn(
-                        f"Argument '{k}' not found in arg_take_spec. Setting its specification to None.",
-                        stacklevel=2,
-                    )
+                    warn(f"Argument '{k}' not found in arg_take_spec. Setting its specification to None.")
             result = cls.take_from_arg(
                 v["value"],
                 take_spec,
@@ -1385,7 +1388,7 @@ class Chunker(Configured):
         return new_args, new_kwargs
 
     @classmethod
-    def yield_tasks(
+    def iter_tasks(
         cls,
         func: tp.Callable,
         ann_args: tp.AnnArgs,
@@ -1393,7 +1396,7 @@ class Chunker(Configured):
         arg_take_spec: tp.Optional[tp.ArgTakeSpecLike] = None,
         template_context: tp.KwargsLike = None,
         **kwargs,
-    ) -> tp.Generator[Task, None, None]:
+    ) -> tp.Iterator[Task]:
         """Split annotated arguments into chunks using `Chunker.take_from_args` and yield each chunk as a task.
 
         Args:
@@ -1641,12 +1644,9 @@ class Chunker(Configured):
                             size_k = k
                             size = new_size
                         elif size != new_size:
-                            warnings.warn(
-                                (
-                                    f"Arguments '{size_k}' and '{k}' have conflicting sizes "
-                                    f"{size} and {new_size}. Setting size to None."
-                                ),
-                                stacklevel=2,
+                            warn(
+                                f"Arguments '{size_k}' and '{k}' have conflicting sizes "
+                                f"{size} and {new_size}. Setting size to None."
                             )
                             return None
                 except NotImplementedError as e:
@@ -1774,7 +1774,7 @@ class Chunker(Configured):
         template_context["chunk_meta"] = chunk_meta
         if len(chunk_meta) < 2 and skip_single_chunk:
             return func(*args, **kwargs)
-        tasks = self.yield_tasks(
+        tasks = self.iter_tasks(
             func,
             ann_args,
             chunk_meta,
@@ -1790,15 +1790,7 @@ class Chunker(Configured):
         execute_kwargs = merge_dicts(dict(show_progress=False if len(chunk_meta) == 1 else None), execute_kwargs)
         keys = []
         for _chunk_meta in chunk_meta:
-            if _chunk_meta.indices is not None:
-                key = "{}..{}".format(_chunk_meta.indices[0], _chunk_meta.indices[-1])
-            elif _chunk_meta.start is not None and _chunk_meta.end is not None:
-                if _chunk_meta.start == _chunk_meta.end - 1:
-                    key = _chunk_meta.start
-                else:
-                    key = "{}..{}".format(_chunk_meta.start, _chunk_meta.end - 1)
-            else:
-                key = MISSING
+            key = get_chunk_meta_key(_chunk_meta)
             if eval_id is not None:
                 keys.append((MISSING, key))
             else:
@@ -1939,7 +1931,7 @@ def chunked(
         Chunk metadata contains the chunk index that can be used to split any input:
 
         ```pycon
-        >>> list(vbt.yield_chunk_meta(n_chunks=2))
+        >>> list(vbt.iter_chunk_meta(n_chunks=2))
         [ChunkMeta(uuid='84d64eed-fbac-41e7-ad61-c917e809b3b8', idx=0, start=None, end=None, indices=None),
          ChunkMeta(uuid='577817c4-fdee-4ceb-ab38-dcd663d9ab11', idx=1, start=None, end=None, indices=None)]
         ```
@@ -1948,7 +1940,7 @@ def chunked(
         The space can be defined by the length of an input array, for example. In our case:
 
         ```pycon
-        >>> list(vbt.yield_chunk_meta(n_chunks=2, size=10))
+        >>> list(vbt.iter_chunk_meta(n_chunks=2, size=10))
         [ChunkMeta(uuid='c1593842-dc31-474c-a089-e47200baa2be', idx=0, start=0, end=5, indices=None),
          ChunkMeta(uuid='6d0265e7-1204-497f-bc2c-c7b7800ec57d', idx=1, start=5, end=10, indices=None)]
         ```

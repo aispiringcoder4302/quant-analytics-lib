@@ -1,4 +1,12 @@
-# Copyright (c) 2021-2024 Oleg Polakow. All rights reserved.
+# ==================================== VBTPROXYZ ====================================
+# Copyright (c) 2021-2025 Oleg Polakow. All rights reserved.
+#
+# This file is part of the proprietary VectorBT® PRO package and is licensed under
+# the VectorBT® PRO License available at https://vectorbt.pro/terms/software-license/
+#
+# Unauthorized publishing, distribution, sublicensing, or sale of this software
+# or its parts is strictly prohibited.
+# ===================================================================================
 
 """Root Pandas accessors of vectorbtpro.
 
@@ -44,8 +52,6 @@ Class methods of any accessor can be conveniently accessed using `pd_acc`, `sr_a
     Accessors in vectorbt are not cached, so querying `df.vbt` twice will also call `Vbt_DFAccessor` twice.
     You can change this in global settings."""
 
-import warnings
-
 import pandas as pd
 from pandas.core.accessor import DirNamesMixin
 
@@ -54,6 +60,7 @@ from vectorbtpro.base.accessors import BaseIDXAccessor
 from vectorbtpro.base.wrapping import ArrayWrapper
 from vectorbtpro.generic.accessors import GenericAccessor, GenericSRAccessor, GenericDFAccessor
 from vectorbtpro.utils.base import Base
+from vectorbtpro.utils.warnings_ import warn
 
 __all__ = [
     "Vbt_Accessor",
@@ -121,12 +128,10 @@ def register_accessor(name: str, cls: tp.Type[DirNamesMixin]) -> tp.Callable:
         caching_cfg = settings["caching"]
 
         if hasattr(cls, name):
-            warnings.warn(
+            warn(
                 f"registration of accessor {repr(accessor)} under name "
                 f"{repr(name)} for type {repr(cls)} is overriding a preexisting "
-                "attribute with the same name.",
-                UserWarning,
-                stacklevel=2,
+                "attribute with the same name."
             )
         if caching_cfg["use_cached_accessors"]:
             setattr(cls, name, CachedAccessor(name, accessor))

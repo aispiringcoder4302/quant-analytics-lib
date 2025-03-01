@@ -1,4 +1,12 @@
-# Copyright (c) 2021-2024 Oleg Polakow. All rights reserved.
+# ==================================== VBTPROXYZ ====================================
+# Copyright (c) 2021-2025 Oleg Polakow. All rights reserved.
+#
+# This file is part of the proprietary VectorBT® PRO package and is licensed under
+# the VectorBT® PRO License available at https://vectorbt.pro/terms/software-license/
+#
+# Unauthorized publishing, distribution, sublicensing, or sale of this software
+# or its parts is strictly prohibited.
+# ===================================================================================
 
 """Scikit-learn compatible class for splitting."""
 
@@ -147,7 +155,7 @@ class SplitterCV(BaseCrossValidator, Base):
         X: tp.Any = None,
         y: tp.Any = None,
         groups: tp.Any = None,
-    ) -> tp.Generator[tp.Tuple[tp.Array1d, tp.Array1d], None, None]:
+    ) -> tp.Iterator[tp.Tuple[tp.Array1d, tp.Array1d]]:
         """Generates boolean masks corresponding to train and test sets."""
         splitter = self.get_splitter(X=X, y=y, groups=groups)
         for mask_arr in splitter.get_iter_split_mask_arrs(
@@ -162,7 +170,7 @@ class SplitterCV(BaseCrossValidator, Base):
         X: tp.Any = None,
         y: tp.Any = None,
         groups: tp.Any = None,
-    ) -> tp.Generator[tp.Array1d, None, None]:
+    ) -> tp.Iterator[tp.Array1d]:
         """Generates boolean masks corresponding to train sets."""
         for train_mask_arr, _ in self._iter_masks(X=X, y=y, groups=groups):
             yield train_mask_arr
@@ -172,7 +180,7 @@ class SplitterCV(BaseCrossValidator, Base):
         X: tp.Any = None,
         y: tp.Any = None,
         groups: tp.Any = None,
-    ) -> tp.Generator[tp.Array1d, None, None]:
+    ) -> tp.Iterator[tp.Array1d]:
         """Generates boolean masks corresponding to test sets."""
         for _, test_mask_arr in self._iter_masks(X=X, y=y, groups=groups):
             yield test_mask_arr
@@ -182,7 +190,7 @@ class SplitterCV(BaseCrossValidator, Base):
         X: tp.Any = None,
         y: tp.Any = None,
         groups: tp.Any = None,
-    ) -> tp.Generator[tp.Tuple[tp.Array1d, tp.Array1d], None, None]:
+    ) -> tp.Iterator[tp.Tuple[tp.Array1d, tp.Array1d]]:
         """Generates integer indices corresponding to train and test sets."""
         for train_mask_arr, test_mask_arr in self._iter_masks(X=X, y=y, groups=groups):
             yield np.flatnonzero(train_mask_arr), np.flatnonzero(test_mask_arr)
@@ -192,7 +200,7 @@ class SplitterCV(BaseCrossValidator, Base):
         X: tp.Any = None,
         y: tp.Any = None,
         groups: tp.Any = None,
-    ) -> tp.Generator[tp.Array1d, None, None]:
+    ) -> tp.Iterator[tp.Array1d]:
         """Generates integer indices corresponding to train sets."""
         for train_indices, _ in self._iter_indices(X=X, y=y, groups=groups):
             yield train_indices
@@ -202,7 +210,7 @@ class SplitterCV(BaseCrossValidator, Base):
         X: tp.Any = None,
         y: tp.Any = None,
         groups: tp.Any = None,
-    ) -> tp.Generator[tp.Array1d, None, None]:
+    ) -> tp.Iterator[tp.Array1d]:
         """Generates integer indices corresponding to test sets."""
         for _, test_indices in self._iter_indices(X=X, y=y, groups=groups):
             yield test_indices
@@ -222,6 +230,6 @@ class SplitterCV(BaseCrossValidator, Base):
         X: tp.Any = None,
         y: tp.Any = None,
         groups: tp.Any = None,
-    ) -> tp.Generator[tp.Tuple[tp.Array1d, tp.Array1d], None, None]:
+    ) -> tp.Iterator[tp.Tuple[tp.Array1d, tp.Array1d]]:
         """Generate indices to split data into training and test set."""
         return self._iter_indices(X=X, y=y, groups=groups)

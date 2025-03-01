@@ -1,8 +1,15 @@
-# Copyright (c) 2021-2024 Oleg Polakow. All rights reserved.
+# ==================================== VBTPROXYZ ====================================
+# Copyright (c) 2021-2025 Oleg Polakow. All rights reserved.
+#
+# This file is part of the proprietary VectorBT® PRO package and is licensed under
+# the VectorBT® PRO License available at https://vectorbt.pro/terms/software-license/
+#
+# Unauthorized publishing, distribution, sublicensing, or sale of this software
+# or its parts is strictly prohibited.
+# ===================================================================================
 
 """Utilities for progress bars."""
 
-import warnings
 from functools import wraps
 from numbers import Number
 from time import time as utc_time
@@ -14,6 +21,7 @@ from vectorbtpro.registries.pbar_registry import PBarRegistry, pbar_reg
 from vectorbtpro.utils.attr_ import MISSING
 from vectorbtpro.utils.base import Base
 from vectorbtpro.utils.config import merge_dicts
+from vectorbtpro.utils.warnings_ import warn
 
 __all__ = [
     "ProgressBar",
@@ -22,8 +30,6 @@ __all__ = [
     "ProgressShown",
     "with_progress_shown",
 ]
-
-ProgressBarT = tp.TypeVar("ProgressBarT", bound="ProgressBar")
 
 
 class ProgressBar(Base):
@@ -240,7 +246,7 @@ class ProgressBar(Base):
                     else:
                         bar_id = self.bar_id
                     if not self.silence_warnings:
-                        warnings.warn(
+                        warn(
                             f"Two active progress bars share the same bar id {bar_id}. "
                             f"Setting bar id of the new progress bar to '{new_bar_id}'."
                         )
@@ -495,13 +501,13 @@ class ProgressBar(Base):
         else:
             self.set_prefix_str(desc, refresh=refresh)
 
-    def enter(self: ProgressBarT, **kwargs) -> ProgressBarT:
+    def enter(self, **kwargs) -> tp.Self:
         """Enter the bar."""
         if self.show_progress or self.force_open_bar:
             self.open(**kwargs)
         return self
 
-    def __enter__(self: ProgressBarT) -> ProgressBarT:
+    def __enter__(self) -> tp.Self:
         return self.enter()
 
     def exit(self, **kwargs) -> None:
@@ -542,9 +548,6 @@ class ProgressBar(Base):
         self.close()
 
 
-ProgressHiddenT = tp.TypeVar("ProgressHiddenT", bound="ProgressHidden")
-
-
 class ProgressHidden(Base):
     """Context manager to hide progress."""
 
@@ -568,7 +571,7 @@ class ProgressHidden(Base):
         """Initial settings."""
         return self._init_settings
 
-    def __enter__(self: ProgressHiddenT) -> ProgressHiddenT:
+    def __enter__(self) -> tp.Self:
         from vectorbtpro._settings import settings
 
         pbar_cfg = settings["pbar"]
@@ -613,9 +616,6 @@ def with_progress_hidden(*args) -> tp.Callable:
     raise ValueError("Either function or keyword arguments must be passed")
 
 
-ProgressShownT = tp.TypeVar("ProgressShownT", bound="ProgressShown")
-
-
 class ProgressShown(Base):
     """Context manager to show progress."""
 
@@ -639,7 +639,7 @@ class ProgressShown(Base):
         """Initial settings."""
         return self._init_settings
 
-    def __enter__(self: ProgressShownT) -> ProgressShownT:
+    def __enter__(self) -> tp.Self:
         from vectorbtpro._settings import settings
 
         pbar_cfg = settings["pbar"]

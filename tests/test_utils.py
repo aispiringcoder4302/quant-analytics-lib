@@ -3290,12 +3290,12 @@ class TestChunking:
         assert chunking.ArraySizer(arg_query="a", axis=1).apply(ann_args) == 3
         assert chunking.ArraySizer(arg_query="a", axis=2).apply(ann_args) == 0
 
-    def test_yield_chunk_meta(self):
+    def test_iter_chunk_meta(self):
         with pytest.raises(Exception):
-            list(vbt.yield_chunk_meta(n_chunks=0))
+            list(vbt.iter_chunk_meta(n_chunks=0))
 
         chunk_meta_equal(
-            list(vbt.yield_chunk_meta(n_chunks=4)),
+            list(vbt.iter_chunk_meta(n_chunks=4)),
             [
                 chunking.ChunkMeta(uuid="", idx=0, start=None, end=None, indices=None),
                 chunking.ChunkMeta(uuid="", idx=1, start=None, end=None, indices=None),
@@ -3304,18 +3304,18 @@ class TestChunking:
             ],
         )
         chunk_meta_equal(
-            list(vbt.yield_chunk_meta(n_chunks=1, size=4)),
+            list(vbt.iter_chunk_meta(n_chunks=1, size=4)),
             [chunking.ChunkMeta(uuid="", idx=0, start=0, end=4, indices=None)],
         )
         chunk_meta_equal(
-            list(vbt.yield_chunk_meta(n_chunks=2, size=4)),
+            list(vbt.iter_chunk_meta(n_chunks=2, size=4)),
             [
                 chunking.ChunkMeta(uuid="", idx=0, start=0, end=2, indices=None),
                 chunking.ChunkMeta(uuid="", idx=1, start=2, end=4, indices=None),
             ],
         )
         chunk_meta_equal(
-            list(vbt.yield_chunk_meta(n_chunks=3, size=4)),
+            list(vbt.iter_chunk_meta(n_chunks=3, size=4)),
             [
                 chunking.ChunkMeta(uuid="", idx=0, start=0, end=2, indices=None),
                 chunking.ChunkMeta(uuid="", idx=1, start=2, end=3, indices=None),
@@ -3323,7 +3323,7 @@ class TestChunking:
             ],
         )
         chunk_meta_equal(
-            list(vbt.yield_chunk_meta(n_chunks=4, size=4)),
+            list(vbt.iter_chunk_meta(n_chunks=4, size=4)),
             [
                 chunking.ChunkMeta(uuid="", idx=0, start=0, end=1, indices=None),
                 chunking.ChunkMeta(uuid="", idx=1, start=1, end=2, indices=None),
@@ -3332,7 +3332,7 @@ class TestChunking:
             ],
         )
         chunk_meta_equal(
-            list(vbt.yield_chunk_meta(n_chunks=5, size=4)),
+            list(vbt.iter_chunk_meta(n_chunks=5, size=4)),
             [
                 chunking.ChunkMeta(uuid="", idx=0, start=0, end=1, indices=None),
                 chunking.ChunkMeta(uuid="", idx=1, start=1, end=2, indices=None),
@@ -3341,9 +3341,9 @@ class TestChunking:
             ],
         )
         with pytest.raises(Exception):
-            list(vbt.yield_chunk_meta(chunk_len=0, size=4))
+            list(vbt.iter_chunk_meta(chunk_len=0, size=4))
         chunk_meta_equal(
-            list(vbt.yield_chunk_meta(chunk_len=1, size=4)),
+            list(vbt.iter_chunk_meta(chunk_len=1, size=4)),
             [
                 chunking.ChunkMeta(uuid="", idx=0, start=0, end=1, indices=None),
                 chunking.ChunkMeta(uuid="", idx=1, start=1, end=2, indices=None),
@@ -3352,40 +3352,40 @@ class TestChunking:
             ],
         )
         chunk_meta_equal(
-            list(vbt.yield_chunk_meta(chunk_len=2, size=4)),
+            list(vbt.iter_chunk_meta(chunk_len=2, size=4)),
             [
                 chunking.ChunkMeta(uuid="", idx=0, start=0, end=2, indices=None),
                 chunking.ChunkMeta(uuid="", idx=1, start=2, end=4, indices=None),
             ],
         )
         chunk_meta_equal(
-            list(vbt.yield_chunk_meta(chunk_len=3, size=4)),
+            list(vbt.iter_chunk_meta(chunk_len=3, size=4)),
             [
                 chunking.ChunkMeta(uuid="", idx=0, start=0, end=3, indices=None),
                 chunking.ChunkMeta(uuid="", idx=1, start=3, end=4, indices=None),
             ],
         )
         chunk_meta_equal(
-            list(vbt.yield_chunk_meta(chunk_len=4, size=4)),
+            list(vbt.iter_chunk_meta(chunk_len=4, size=4)),
             [chunking.ChunkMeta(uuid="", idx=0, start=0, end=4, indices=None)],
         )
         chunk_meta_equal(
-            list(vbt.yield_chunk_meta(chunk_len=5, size=4)),
+            list(vbt.iter_chunk_meta(chunk_len=5, size=4)),
             [chunking.ChunkMeta(uuid="", idx=0, start=0, end=4, indices=None)],
         )
         chunk_meta_equal(
-            list(vbt.yield_chunk_meta(n_chunks=2, size=2, min_size=2)),
+            list(vbt.iter_chunk_meta(n_chunks=2, size=2, min_size=2)),
             [
                 chunking.ChunkMeta(uuid="", idx=0, start=0, end=1, indices=None),
                 chunking.ChunkMeta(uuid="", idx=1, start=1, end=2, indices=None),
             ],
         )
         chunk_meta_equal(
-            list(vbt.yield_chunk_meta(n_chunks=2, size=2, min_size=3)),
+            list(vbt.iter_chunk_meta(n_chunks=2, size=2, min_size=3)),
             [chunking.ChunkMeta(uuid="", idx=0, start=0, end=2, indices=None)],
         )
         with pytest.raises(Exception):
-            list(vbt.yield_chunk_meta(n_chunks=2, size=4, chunk_len=2))
+            list(vbt.iter_chunk_meta(n_chunks=2, size=4, chunk_len=2))
 
     def test_chunk_meta_generators(self):
         def f(a):
@@ -3601,7 +3601,7 @@ class TestChunking:
             df.iloc[:, [0]],
         )
 
-    def test_yield_tasks(self):
+    def test_iter_tasks(self):
         def f(a, *args, b=None, **kwargs):
             pass
 
@@ -3613,7 +3613,7 @@ class TestChunking:
         ]
         arg_take_spec = dict(b=chunking.ChunkSelector())
         result = [vbt.Task(f, 2, 3, 1, b=1), vbt.Task(f, 2, 3, 1, b=2), vbt.Task(f, 2, 3, 1, b=3)]
-        assert list(vbt.Chunker.yield_tasks(f, ann_args, chunk_meta, arg_take_spec=arg_take_spec)) == result
+        assert list(vbt.Chunker.iter_tasks(f, ann_args, chunk_meta, arg_take_spec=arg_take_spec)) == result
         ann_args = parsing.annotate_args(
             f,
             (template.RepEval('ann_args["args"]["value"][1] + 1'), 3, 1),
@@ -3621,7 +3621,7 @@ class TestChunking:
         )
         assert (
             list(
-                vbt.Chunker.yield_tasks(
+                vbt.Chunker.iter_tasks(
                     f,
                     ann_args,
                     chunk_meta,

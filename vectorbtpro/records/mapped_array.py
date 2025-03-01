@@ -1,4 +1,12 @@
-# Copyright (c) 2021-2024 Oleg Polakow. All rights reserved.
+# ==================================== VBTPROXYZ ====================================
+# Copyright (c) 2021-2025 Oleg Polakow. All rights reserved.
+#
+# This file is part of the proprietary VectorBT® PRO package and is licensed under
+# the VectorBT® PRO License available at https://vectorbt.pro/terms/software-license/
+#
+# Unauthorized publishing, distribution, sublicensing, or sale of this software
+# or its parts is strictly prohibited.
+# ===================================================================================
 
 """Base class for working with mapped arrays.
 
@@ -406,8 +414,6 @@ To use scatterplots or any other plots that require index, convert to pandas fir
 `vectorbtpro.generic.accessors.GenericAccessor.plot`.
 """
 
-import warnings
-
 import numpy as np
 import pandas as pd
 
@@ -430,6 +436,7 @@ from vectorbtpro.utils.config import resolve_dict, merge_dicts, Config, HybridCo
 from vectorbtpro.utils.decorators import hybrid_method, cached_method
 from vectorbtpro.utils.magic_decorators import attach_binary_magic_methods, attach_unary_magic_methods
 from vectorbtpro.utils.mapping import to_value_mapping, apply_mapping
+from vectorbtpro.utils.warnings_ import warn
 
 __all__ = [
     "MappedArray",
@@ -663,15 +670,6 @@ class MappedArray(Analyzable):
         kwargs = cls.resolve_column_stack_kwargs(*objs, **kwargs)
         kwargs = cls.resolve_stack_kwargs(*objs, **kwargs)
         return cls(**kwargs)
-
-    _expected_keys: tp.ExpectedKeys = (Analyzable._expected_keys or set()) | {
-        "mapped_arr",
-        "col_arr",
-        "idx_arr",
-        "id_arr",
-        "mapping",
-        "col_mapper",
-    }
 
     def __init__(
         self,
@@ -1800,10 +1798,7 @@ class MappedArray(Analyzable):
                     idx_arr = self_.idx_arr
                 else:
                     if not silence_warnings:
-                        warnings.warn(
-                            "Multiple values are pointing to the same position. Only the latest value is used.",
-                            stacklevel=2,
-                        )
+                        warn("Multiple values are pointing to the same position. Only the latest value is used.")
                     self_ = self
             else:
                 self_ = self

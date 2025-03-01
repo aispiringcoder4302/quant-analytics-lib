@@ -1,4 +1,12 @@
-# Copyright (c) 2021-2024 Oleg Polakow. All rights reserved.
+# ==================================== VBTPROXYZ ====================================
+# Copyright (c) 2021-2025 Oleg Polakow. All rights reserved.
+#
+# This file is part of the proprietary VectorBT® PRO package and is licensed under
+# the VectorBT® PRO License available at https://vectorbt.pro/terms/software-license/
+#
+# Unauthorized publishing, distribution, sublicensing, or sale of this software
+# or its parts is strictly prohibited.
+# ===================================================================================
 
 """Module with `AlpacaData`."""
 
@@ -15,7 +23,7 @@ try:
         raise ImportError
     from alpaca.common.rest import RESTClient as AlpacaClientT
 except ImportError:
-    AlpacaClientT = tp.Any
+    AlpacaClientT = "AlpacaClient"
 
 __all__ = [
     "AlpacaData",
@@ -60,8 +68,7 @@ class AlpacaData(RemoteData):
 
         ```pycon
         >>> data = vbt.AlpacaData.pull(
-        ...     "BTCUSD",
-        ...     client_type="crypto",
+        ...     "BTC/USD",
         ...     start="2021-01-01",
         ...     end="2022-01-01",
         ...     timeframe="1 day"
@@ -198,6 +205,8 @@ class AlpacaData(RemoteData):
             client_type (str): Client type.
 
                 See `AlpacaData.resolve_client`.
+
+                Determined automatically based on the symbol. Crypto symbols contain "/".
             client_config (dict): Client config.
 
                 See `AlpacaData.resolve_client`.
@@ -231,6 +240,9 @@ class AlpacaData(RemoteData):
         from alpaca.data.historical import CryptoHistoricalDataClient, StockHistoricalDataClient
         from alpaca.data.requests import CryptoBarsRequest, StockBarsRequest
         from alpaca.data.timeframe import TimeFrame, TimeFrameUnit
+
+        if client_type is None:
+            client_type = "crypto" if "/" in symbol else "stocks"
 
         if client_config is None:
             client_config = {}

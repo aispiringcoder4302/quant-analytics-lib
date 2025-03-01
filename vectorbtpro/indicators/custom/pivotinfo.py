@@ -1,4 +1,12 @@
-# Copyright (c) 2021-2024 Oleg Polakow. All rights reserved.
+# ==================================== VBTPROXYZ ====================================
+# Copyright (c) 2021-2025 Oleg Polakow. All rights reserved.
+#
+# This file is part of the proprietary VectorBT® PRO package and is licensed under
+# the VectorBT® PRO License available at https://vectorbt.pro/terms/software-license/
+#
+# Unauthorized publishing, distribution, sublicensing, or sale of this software
+# or its parts is strictly prohibited.
+# ===================================================================================
 
 """Module with `PIVOTINFO`."""
 
@@ -73,14 +81,16 @@ PIVOTINFO = IndicatorFactory(
 class _PIVOTINFO(PIVOTINFO):
     """Indicator that returns various information on pivots identified based on thresholds.
 
-    * `conf_pivot`: the type of the latest confirmed pivot (running)
+    * `conf_pivot` (`vectorbtpro.indicators.enums.Pivot`): the type of the latest confirmed pivot (running)
     * `conf_idx`: the index of the latest confirmed pivot (running)
     * `conf_value`: the high/low value under the latest confirmed pivot (running)
-    * `last_pivot`: the type of the latest pivot (running)
+    * `last_pivot` (`vectorbtpro.indicators.enums.Pivot`): the type of the latest pivot (running)
     * `last_idx`: the index of the latest pivot (running)
     * `last_value`: the high/low value under the latest pivot (running)
-    * `pivots`: confirmed pivots stored under their indices (looking ahead - use only for plotting!)
-    * `modes`: modes between confirmed pivot points (looking ahead - use only for plotting!)
+    * `pivots` (`vectorbtpro.indicators.enums.Pivot`): confirmed pivots stored under their indices
+        (looking ahead - use only for plotting!)
+    * `modes` (`vectorbtpro.indicators.enums.TrendMode`): modes between confirmed pivot points
+        (looking ahead - use only for plotting!)
     """
 
     def plot(

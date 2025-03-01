@@ -1,4 +1,12 @@
-# Copyright (c) 2021-2024 Oleg Polakow. All rights reserved.
+# ==================================== VBTPROXYZ ====================================
+# Copyright (c) 2021-2025 Oleg Polakow. All rights reserved.
+#
+# This file is part of the proprietary VectorBT® PRO package and is licensed under
+# the VectorBT® PRO License available at https://vectorbt.pro/terms/software-license/
+#
+# Unauthorized publishing, distribution, sublicensing, or sale of this software
+# or its parts is strictly prohibited.
+# ===================================================================================
 
 """Module with `TVData`."""
 
@@ -167,12 +175,6 @@ USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36
 
 class TVClient(Configured):
     """Client for TradingView."""
-
-    _expected_keys: tp.ExpectedKeys = (Configured._expected_keys or set()) | {
-        "username",
-        "password",
-        "auth_token",
-    }
 
     def __init__(
         self,
@@ -676,17 +678,17 @@ class TVData(RemoteData):
             show_progress, "show_progress", sub_path="search", sub_path_only=True
         )
         pbar_kwargs = cls.resolve_custom_setting(
-            pbar_kwargs, "pbar_kwargs", merge=True, sub_path="search", sub_path_only=True
+            pbar_kwargs, "pbar_kwargs", sub_path="search", sub_path_only=True, merge=True
         )
         markets = cls.resolve_custom_setting(markets, "markets", sub_path="scanner", sub_path_only=True)
         fields = cls.resolve_custom_setting(fields, "fields", sub_path="scanner", sub_path_only=True)
         filter_by = cls.resolve_custom_setting(filter_by, "filter_by", sub_path="scanner", sub_path_only=True)
         groups = cls.resolve_custom_setting(groups, "groups", sub_path="scanner", sub_path_only=True)
         template_context = cls.resolve_custom_setting(
-            template_context, "template_context", merge=True, sub_path="scanner", sub_path_only=True
+            template_context, "template_context", sub_path="scanner", sub_path_only=True, merge=True
         )
         scanner_kwargs = cls.resolve_custom_setting(
-            scanner_kwargs, "scanner_kwargs", merge=True, sub_path="scanner", sub_path_only=True
+            scanner_kwargs, "scanner_kwargs", sub_path="scanner", sub_path_only=True, merge=True
         )
 
         if market is None and text is None and exchange is None:

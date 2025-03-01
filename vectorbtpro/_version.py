@@ -1,4 +1,12 @@
-# Copyright (c) 2021-2024 Oleg Polakow. All rights reserved.
+# ==================================== VBTPROXYZ ====================================
+# Copyright (c) 2021-2025 Oleg Polakow. All rights reserved.
+#
+# This file is part of the proprietary VectorBT® PRO package and is licensed under
+# the VectorBT® PRO License available at https://vectorbt.pro/terms/software-license/
+#
+# Unauthorized publishing, distribution, sublicensing, or sale of this software
+# or its parts is strictly prohibited.
+# ===================================================================================
 
 try:
     try:
@@ -16,6 +24,9 @@ except Exception as e:
 
     __version__ = importlib.metadata.version(__package__ or __name__)
 
+__release__ = "v" + __version__
+
 __all__ = [
     "__version__",
+    "__release__",
 ]

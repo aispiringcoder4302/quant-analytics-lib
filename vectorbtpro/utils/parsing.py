@@ -1,4 +1,12 @@
-# Copyright (c) 2021-2024 Oleg Polakow. All rights reserved.
+# ==================================== VBTPROXYZ ====================================
+# Copyright (c) 2021-2025 Oleg Polakow. All rights reserved.
+#
+# This file is part of the proprietary VectorBT® PRO package and is licensed under
+# the VectorBT® PRO License available at https://vectorbt.pro/terms/software-license/
+#
+# Unauthorized publishing, distribution, sublicensing, or sale of this software
+# or its parts is strictly prohibited.
+# ===================================================================================
 
 """Utilities for parsing."""
 
@@ -8,7 +16,6 @@ import inspect
 import io
 import re
 import sys
-import warnings
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.utils.annotations import get_annotations, VarArgs, VarKwargs
@@ -18,7 +25,6 @@ from vectorbtpro.utils.base import Base
 __all__ = [
     "Regex",
     "PrintsSuppressed",
-    "WarningsFiltered",
 ]
 
 
@@ -508,20 +514,6 @@ def suppress_stdout(func: tp.Callable) -> tp.Callable:
     return wrapper
 
 
-def warn_stdout(func: tp.Callable) -> tp.Callable:
-    """Supress and convert to a warning output from a function."""
-
-    def wrapper(*a, **ka):
-        with contextlib.redirect_stdout(io.StringIO()) as f:
-            out = func(*a, **ka)
-        s = f.getvalue()
-        if len(s) > 0:
-            warnings.warn(s, stacklevel=2)
-        return out
-
-    return wrapper
-
-
 PrintsSuppressedT = tp.TypeVar("PrintsSuppressedT", bound="PrintsSuppressed")
 
 
@@ -530,34 +522,3 @@ class PrintsSuppressed(contextlib.redirect_stdout, Base):
 
     def __new__(cls, *args, **kwargs) -> PrintsSuppressedT:
         return cls(io.StringIO(), *args, **kwargs)
-
-
-WarningsFilteredT = tp.TypeVar("WarningsFilteredT", bound="WarningsFiltered")
-
-
-class WarningsFiltered(warnings.catch_warnings, Base):
-    """Context manager to ignore warnings."""
-
-    def __init__(self, entries: tp.Optional[tp.MaybeSequence[tp.Union[str, tp.Kwargs]]] = "ignore", **kwargs) -> None:
-        warnings.catch_warnings.__init__(self, **kwargs)
-        self._entries = entries
-
-    @property
-    def entries(self) -> tp.Optional[tp.MaybeSequence[tp.Union[str, tp.Kwargs]]]:
-        """One or more simple entries to add into the list of warnings filters."""
-        return self._entries
-
-    def __enter__(self: WarningsFilteredT) -> WarningsFilteredT:
-        warnings.catch_warnings.__enter__(self)
-        if self.entries is not None:
-            if isinstance(self.entries, (str, dict)):
-                entry = self.entries
-                if isinstance(entry, str):
-                    entry = dict(action=entry)
-                warnings.simplefilter(**entry)
-            else:
-                for entry in self.entries:
-                    if isinstance(entry, str):
-                        entry = dict(action=entry)
-                    warnings.simplefilter(**entry)
-        return self

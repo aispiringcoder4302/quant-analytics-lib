@@ -1,4 +1,12 @@
-# Copyright (c) 2021-2024 Oleg Polakow. All rights reserved.
+# ==================================== VBTPROXYZ ====================================
+# Copyright (c) 2021-2025 Oleg Polakow. All rights reserved.
+#
+# This file is part of the proprietary VectorBT® PRO package and is licensed under
+# the VectorBT® PRO License available at https://vectorbt.pro/terms/software-license/
+#
+# Unauthorized publishing, distribution, sublicensing, or sale of this software
+# or its parts is strictly prohibited.
+# ===================================================================================
 
 """Utilities for working with knowledge.
 
@@ -22,5 +30,7 @@ if TYPE_CHECKING:
     from vectorbtpro.utils.knowledge.asset_pipelines import *
     from vectorbtpro.utils.knowledge.base_asset_funcs import *
     from vectorbtpro.utils.knowledge.base_assets import *
+    from vectorbtpro.utils.knowledge.chatting import *
     from vectorbtpro.utils.knowledge.custom_asset_funcs import *
     from vectorbtpro.utils.knowledge.custom_assets import *
+    from vectorbtpro.utils.knowledge.formatting import *

@@ -1,4 +1,12 @@
-# Copyright (c) 2021-2024 Oleg Polakow. All rights reserved.
+# ==================================== VBTPROXYZ ====================================
+# Copyright (c) 2021-2025 Oleg Polakow. All rights reserved.
+#
+# This file is part of the proprietary VectorBT® PRO package and is licensed under
+# the VectorBT® PRO License available at https://vectorbt.pro/terms/software-license/
+#
+# Unauthorized publishing, distribution, sublicensing, or sale of this software
+# or its parts is strictly prohibited.
+# ===================================================================================
 
 """Modules with utilities that are used throughout the package."""
 
@@ -42,11 +50,12 @@ if TYPE_CHECKING:
     from vectorbtpro.utils.random_ import *
     from vectorbtpro.utils.requests_ import *
     from vectorbtpro.utils.schedule_ import *
-    from vectorbtpro.utils.search import *
+    from vectorbtpro.utils.search_ import *
     from vectorbtpro.utils.selection import *
     from vectorbtpro.utils.tagging import *
     from vectorbtpro.utils.telegram import *
     from vectorbtpro.utils.template import *
+    from vectorbtpro.utils.warnings_ import *
 
 __import_if_installed__ = dict()
 __import_if_installed__["figure"] = "plotly"

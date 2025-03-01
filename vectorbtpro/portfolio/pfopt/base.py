@@ -1,9 +1,16 @@
-# Copyright (c) 2021-2024 Oleg Polakow. All rights reserved.
+# ==================================== VBTPROXYZ ====================================
+# Copyright (c) 2021-2025 Oleg Polakow. All rights reserved.
+#
+# This file is part of the proprietary VectorBT® PRO package and is licensed under
+# the VectorBT® PRO License available at https://vectorbt.pro/terms/software-license/
+#
+# Unauthorized publishing, distribution, sublicensing, or sale of this software
+# or its parts is strictly prohibited.
+# ===================================================================================
 
 """Base functions and classes for portfolio optimization."""
 
 import inspect
-import warnings
 
 import numpy as np
 import pandas as pd
@@ -37,12 +44,11 @@ from vectorbtpro.utils.parsing import (
     flatten_ann_args,
     unflatten_ann_args,
     ann_args_to_args,
-    warn_stdout,
-    WarningsFiltered,
 )
 from vectorbtpro.utils.pickling import pdict
 from vectorbtpro.utils.random_ import set_seed_nb
 from vectorbtpro.utils.template import substitute_templates, Rep, RepFunc, CustomTemplate
+from vectorbtpro.utils.warnings_ import warn, warn_stdout, WarningsFiltered
 
 if tp.TYPE_CHECKING:
     from vectorbtpro.portfolio.base import Portfolio as PortfolioT
@@ -54,7 +60,7 @@ try:
         raise ImportError
     from pypfopt.base_optimizer import BaseOptimizer as BaseOptimizerT
 except ImportError:
-    BaseOptimizerT = tp.Any
+    BaseOptimizerT = "BaseOptimizer"
 try:
     if not tp.TYPE_CHECKING:
         raise ImportError
@@ -62,7 +68,7 @@ try:
 
     RPortfolioT = tp.TypeVar("RPortfolioT", bound=tp.Union[RPortfolio, RHCPortfolio])
 except ImportError:
-    RPortfolioT = tp.Any
+    RPortfolioT = "RPortfolio"
 try:
     if not tp.TYPE_CHECKING:
         raise ImportError
@@ -72,8 +78,8 @@ try:
     AlgoT = tp.TypeVar("AlgoT", bound=Algo)
     AlgoResultT = tp.TypeVar("AlgoResultT", bound=AlgoResult)
 except ImportError:
-    AlgoT = tp.Any
-    AlgoResultT = tp.Any
+    AlgoT = "Algo"
+    AlgoResultT = "AlgoResult"
 
 __all__ = [
     "pfopt_func_dict",
@@ -754,7 +760,7 @@ def pypfopt_optimize(
                 if isinstance(e, ValueError) and "expected return exceeding the risk-free rate" not in str(e):
                     raise e
                 if ignore_opt_errors:
-                    warnings.warn(str(e), stacklevel=2)
+                    warn(str(e))
                     return {}
                 raise e
 
@@ -772,7 +778,7 @@ def pypfopt_optimize(
             passed_arg_names.remove("weights")
             unused_arg_names = passed_arg_names.difference(kwargs["used_arg_names"])
             if len(unused_arg_names) > 0:
-                warnings.warn(f"Some arguments were not used: {unused_arg_names}", stacklevel=2)
+                warn(f"Some arguments were not used: {unused_arg_names}")
 
             if not discrete_allocation:
                 weights = {k: 1 if v >= 1 else v for k, v in weights.items()}
@@ -1570,7 +1576,7 @@ def riskfolio_optimize(
                     if ann_factor is not None:
                         Q /= ann_factor
                     else:
-                        warnings.warn(f"Set frequency and year frequency to adjust expected returns", stacklevel=2)
+                        warn(f"Set frequency and year frequency to adjust expected returns")
                     kwargs["P"] = P
                     unused_arg_names.add("P")
                     kwargs["Q"] = Q
@@ -1607,7 +1613,7 @@ def riskfolio_optimize(
                     if ann_factor is not None:
                         Q_f /= ann_factor
                     else:
-                        warnings.warn(f"Set frequency and year frequency to adjust expected returns", stacklevel=2)
+                        warn(f"Set frequency and year frequency to adjust expected returns")
                     kwargs["P_f"] = P_f
                     unused_arg_names.add("P_f")
                     kwargs["Q_f"] = Q_f
@@ -1637,7 +1643,7 @@ def riskfolio_optimize(
 
             # Post-process weights
             if len(unused_arg_names) > 0:
-                warnings.warn(f"Some arguments were not used: {unused_arg_names}", stacklevel=2)
+                warn(f"Some arguments were not used: {unused_arg_names}")
             if weights is None:
                 weights = {}
             if isinstance(weights, pd.DataFrame):
@@ -1763,11 +1769,6 @@ class PortfolioOptimizer(Analyzable):
         kwargs = cls.resolve_column_stack_kwargs(*objs, **kwargs)
         kwargs = cls.resolve_stack_kwargs(*objs, **kwargs)
         return cls(**kwargs)
-
-    _expected_keys: tp.ExpectedKeys = (Analyzable._expected_keys or set()) | {
-        "alloc_records",
-        "allocations",
-    }
 
     def __init__(
         self,

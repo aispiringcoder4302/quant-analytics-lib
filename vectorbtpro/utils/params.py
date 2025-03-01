@@ -1,4 +1,12 @@
-# Copyright (c) 2021-2024 Oleg Polakow. All rights reserved.
+# ==================================== VBTPROXYZ ====================================
+# Copyright (c) 2021-2025 Oleg Polakow. All rights reserved.
+#
+# This file is part of the proprietary VectorBT® PRO package and is licensed under
+# the VectorBT® PRO License available at https://vectorbt.pro/terms/software-license/
+#
+# Unauthorized publishing, distribution, sublicensing, or sale of this software
+# or its parts is strictly prohibited.
+# ===================================================================================
 
 """Utilities for working with parameters."""
 
@@ -21,7 +29,7 @@ from vectorbtpro.utils.eval_ import Evaluable
 from vectorbtpro.utils.execution import NoResult, NoResultsException, filter_out_no_results, execute
 from vectorbtpro.utils.merging import MergeFunc, parse_merge_func
 from vectorbtpro.utils.parsing import annotate_args, flatten_ann_args, unflatten_ann_args, ann_args_to_args
-from vectorbtpro.utils.search import find_in_obj, replace_in_obj
+from vectorbtpro.utils.search_ import find_in_obj, replace_in_obj
 from vectorbtpro.utils.selection import PosSel, LabelSel
 from vectorbtpro.utils.template import CustomTemplate, substitute_templates
 
@@ -31,6 +39,7 @@ __all__ = [
     "Param",
     "Itemable",
     "Paramable",
+    "ItemParamable",
     "combine_params",
     "Parameterizer",
     "parameterized",
@@ -334,7 +343,7 @@ class Param(Evaluable, Annotatable, DefineMixin):
 class Itemable(Base):
     """Class representing an object that can be returned as items."""
 
-    def items(self, **kwargs) -> tp.ItemGenerator:
+    def items(self, **kwargs) -> tp.Items:
         """Return this instance as items."""
         raise NotImplementedError
 
@@ -345,6 +354,29 @@ class Paramable(Base):
     def as_param(self, **kwargs) -> Param:
         """Return this instance as a parameter."""
         raise NotImplementedError
+
+
+class ItemParamable(Itemable, Paramable):
+    """Class representing an object that can be returned as both items and parameters."""
+
+    def items(self, key_as_index: bool = False, **kwargs) -> tp.Items:
+        raise NotImplementedError
+
+    def as_param(self, **kwargs) -> Param:
+        param_values = []
+        index_values = []
+        first_index = None
+        keys = None
+        for k, v in self.items(key_as_index=True, **kwargs):
+            param_values.append(v)
+            index_values.append(k[0])
+            if first_index is None:
+                first_index = k
+        if isinstance(first_index, pd.MultiIndex):
+            keys = pd.MultiIndex.from_tuples(index_values, names=first_index.names)
+        elif isinstance(first_index, pd.Index):
+            keys = pd.Index(index_values, name=first_index.name)
+        return Param(param_values, keys=keys)
 
 
 def combine_params(
@@ -399,6 +431,22 @@ def combine_params(
     if clean_index_kwargs is None:
         clean_index_kwargs = {}
     rng = np.random.default_rng(seed=seed)
+
+    def _name_tuple_to_str(name_tuple):
+        return "_".join(map(lambda x: str(x).strip().lower(), name_tuple))
+
+    if isinstance(name_tuple_to_str, bool):
+        if name_tuple_to_str:
+            name_tuple_to_str = _name_tuple_to_str
+        else:
+            name_tuple_to_str = None
+
+    def _str_name(name):
+        if isinstance(name, tuple):
+            if name_tuple_to_str:
+                return name_tuple_to_str(name)
+            return _name_tuple_to_str(name)
+        return str(name)
 
     level_map = OrderedDict()
     param_level = {}
@@ -573,19 +621,20 @@ def combine_params(
             if isinstance(expr, str):
                 arg_names = (
                     {"x"}
-                    | set(map(lambda x: f"__{x}__", param_dct_keys))
-                    | set(map(lambda x: f"__{x}__", names.values()))
-                    | set(param_dct_keys)
-                    | set(names.values())
+                    | set(map(lambda x: f"__{_str_name(x)}__", param_dct_keys))
+                    | set(map(lambda x: f"__{_str_name(x)}__", names.values()))
+                    | set(map(_str_name, param_dct_keys))
+                    | set(map(_str_name, names.values()))
                     | set(contexts[k].keys())
                 )
                 for level_index in level_indexes:
                     if level_index is not None:
                         if isinstance(level_index, pd.MultiIndex):
                             for level_name in level_index.names:
-                                arg_names.add(f"__{level_name}__")
+                                arg_names.add(f"__{_str_name(level_name)}__")
                         elif isinstance(level_index, pd.Index):
-                            arg_names.add(f"__{level_index.name}__")
+                            arg_names.add(f"__{_str_name(level_index.name)}__")
+                print(f"lambda {'=None, '.join(arg_names)}=None: {expr}")
                 condition_funcs[k] = eval(f"lambda {'=None, '.join(arg_names)}=None: {expr}")
             else:
                 condition_funcs[k] = expr
@@ -668,20 +717,20 @@ def combine_params(
                     for j in range(len(params)):
                         p_keys = param_keys[param_dct_keys[k]]
                         if p_keys is not None:
-                            param_comb_keys[f"__{param_dct_keys[k]}__"] = p_keys[i]
+                            param_comb_keys[f"__{_str_name(param_dct_keys[k])}__"] = p_keys[i]
                             if param_dct_keys[k] in names:
-                                param_comb_keys[f"__{names[param_dct_keys[k]]}__"] = p_keys[i]
+                                param_comb_keys[f"__{_str_name(names[param_dct_keys[k]])}__"] = p_keys[i]
                             if isinstance(p_keys, pd.MultiIndex):
                                 for l, level_name in enumerate(p_keys.names):
                                     if level_name is not None:
-                                        param_comb_keys[f"__{level_name}__"] = p_keys[i][l]
+                                        param_comb_keys[f"__{_str_name(level_name)}__"] = p_keys[i][l]
                             elif isinstance(p_keys, pd.Index):
                                 if p_keys.name is not None:
-                                    param_comb_keys[f"__{p_keys.name}__"] = p_keys[i]
+                                    param_comb_keys[f"__{_str_name(p_keys.name)}__"] = p_keys[i]
                         picked_value = params[j][i]
-                        param_comb[param_dct_keys[k]] = picked_value
+                        param_comb[_str_name(param_dct_keys[k])] = picked_value
                         if param_dct_keys[k] in names:
-                            param_comb[names[param_dct_keys[k]]] = picked_value
+                            param_comb[_str_name(names[param_dct_keys[k]])] = picked_value
                         k += 1
                     picked_indices.append(i)
                 visited_indices_set.add(tuple(picked_indices))
@@ -689,7 +738,7 @@ def combine_params(
                     continue
                 conditions_met = True
                 for k, condition_func in condition_funcs.items():
-                    param_context = {"x": param_comb[k], **param_comb_keys, **param_comb, **contexts[k]}
+                    param_context = {"x": param_comb[_str_name(k)], **param_comb_keys, **param_comb, **contexts[k]}
                     if isinstance(condition_func, CustomTemplate):
                         condition_met = condition_func.substitute(param_context)
                     else:
@@ -802,25 +851,25 @@ def combine_params(
                     p_keys = param_keys[k]
                     if p_keys is not None:
                         p_keys_value = p_keys[level_indices[param_level[k]]]
-                        param_comb_keys[f"__{k}__"] = p_keys_value
+                        param_comb_keys[f"__{_str_name(k)}__"] = p_keys_value
                         if k in names:
-                            param_comb_keys[f"__{names[k]}__"] = p_keys_value
+                            param_comb_keys[f"__{_str_name(names[k])}__"] = p_keys_value
                 if param_index is not None:
                     if isinstance(param_index, pd.MultiIndex):
                         for l, level_name in enumerate(param_index.names):
                             if level_name is not None:
-                                param_comb_keys[f"__{level_name}__"] = param_index[i][l]
+                                param_comb_keys[f"__{_str_name(level_name)}__"] = param_index[i][l]
                     elif isinstance(param_index, pd.Index):
                         if param_index.name is not None:
-                            param_comb_keys[f"__{param_index.name}__"] = param_index[i]
+                            param_comb_keys[f"__{_str_name(param_index.name)}__"] = param_index[i]
                 param_comb = {}
                 for k in param_product:
-                    param_comb[k] = param_product[k][i]
+                    param_comb[_str_name(k)] = param_product[k][i]
                     if k in names:
-                        param_comb[names[k]] = param_product[k][i]
+                        param_comb[_str_name(names[k])] = param_product[k][i]
                 conditions_met = True
                 for k, condition_func in condition_funcs.items():
-                    param_context = {"x": param_comb[k], **param_comb_keys, **param_comb, **contexts[k]}
+                    param_context = {"x": param_comb[_str_name(k)], **param_comb_keys, **param_comb, **contexts[k]}
                     if isinstance(condition_func, CustomTemplate):
                         condition_met = condition_func.substitute(param_context)
                     else:
@@ -862,15 +911,6 @@ def combine_params(
                 param_index = param_index[random_indices]
 
     if build_index and len(shown_levels) > 0:
-        if isinstance(name_tuple_to_str, bool):
-            if name_tuple_to_str:
-
-                def _name_tuple_to_str(name_tuple):
-                    return "_".join(map(lambda x: str(x).strip().lower(), name_tuple))
-
-                name_tuple_to_str = _name_tuple_to_str
-            else:
-                name_tuple_to_str = None
         if name_tuple_to_str is not None:
             found_tuple = False
             new_names = []
@@ -937,38 +977,6 @@ class Parameterizer(Configured):
     For defaults, see `vectorbtpro._settings.params`."""
 
     _settings_path: tp.SettingsPath = "params"
-
-    _expected_keys: tp.ExpectedKeys = (Configured._expected_keys or set()) | {
-        "param_search_kwargs",
-        "skip_single_comb",
-        "template_context",
-        "build_grid",
-        "grid_indices",
-        "random_subset",
-        "random_replace",
-        "random_sort",
-        "max_guesses",
-        "max_misses",
-        "seed",
-        "clean_index_kwargs",
-        "name_tuple_to_str",
-        "selection",
-        "forward_kwargs_as",
-        "mono_min_size",
-        "mono_n_chunks",
-        "mono_chunk_len",
-        "mono_chunk_meta",
-        "mono_reduce",
-        "mono_merge_func",
-        "mono_merge_kwargs",
-        "filter_results",
-        "raise_no_results",
-        "merge_func",
-        "merge_kwargs",
-        "return_meta",
-        "return_param_index",
-        "execute_kwargs",
-    }
 
     def __init__(
         self,
@@ -1158,21 +1166,21 @@ class Parameterizer(Configured):
 
     @property
     def mono_min_size(self) -> tp.Optional[int]:
-        """See `vectorbtpro.utils.chunking.yield_chunk_meta`.
+        """See `vectorbtpro.utils.chunking.iter_chunk_meta`.
 
         Applied to generate chunk meta."""
         return self._mono_min_size
 
     @property
     def mono_n_chunks(self) -> tp.Optional[tp.Union[str, int]]:
-        """See `vectorbtpro.utils.chunking.yield_chunk_meta`.
+        """See `vectorbtpro.utils.chunking.iter_chunk_meta`.
 
         Applied to generate chunk meta."""
         return self._mono_n_chunks
 
     @property
     def mono_chunk_len(self) -> tp.Optional[tp.Union[str, int]]:
-        """See `vectorbtpro.utils.chunking.yield_chunk_meta`.
+        """See `vectorbtpro.utils.chunking.iter_chunk_meta`.
 
         Applied to generate chunk meta."""
         return self._mono_chunk_len
@@ -1255,14 +1263,14 @@ class Parameterizer(Configured):
     def find_params_in_obj(cls, obj: tp.Any, eval_id: tp.Optional[tp.Hashable] = None, **kwargs) -> dict:
         """Find values wrapped with `Param` in a recursive manner.
 
-        Uses `vectorbtpro.utils.search.find_in_obj`."""
+        Uses `vectorbtpro.utils.search_.find_in_obj`."""
         return find_in_obj(obj, lambda k, v: isinstance(v, Param) and v.meets_eval_id(eval_id), **kwargs)
 
     @classmethod
     def param_product_to_objs(cls, obj: tp.Any, param_product: dict) -> tp.List[dict]:
         """Resolve parameter product into a list of objects based on the original object.
 
-        Uses `vectorbtpro.utils.search.replace_in_obj`."""
+        Uses `vectorbtpro.utils.search_.replace_in_obj`."""
         if len(param_product) == 0:
             return []
         param_product_items = list(param_product.items())
@@ -1409,7 +1417,7 @@ class Parameterizer(Configured):
         return new_param_configs, param_index, single_comb
 
     @classmethod
-    def yield_tasks(
+    def iter_tasks(
         cls,
         func: tp.Callable,
         ann_args: tp.AnnArgs,
@@ -1441,9 +1449,9 @@ class Parameterizer(Configured):
     ) -> tp.List[tp.List[int]]:
         """Get the indices of each mono-chunk."""
         if mono_chunk_meta is None:
-            from vectorbtpro.utils.chunking import yield_chunk_meta
+            from vectorbtpro.utils.chunking import iter_chunk_meta
 
-            mono_chunk_meta = yield_chunk_meta(
+            mono_chunk_meta = iter_chunk_meta(
                 n_chunks=mono_n_chunks,
                 size=len(param_configs),
                 min_size=mono_min_size,
@@ -1750,7 +1758,7 @@ class Parameterizer(Configured):
 
         if skip_single_comb and template_context["single_comb"]:
             tasks = list(
-                self.yield_tasks(
+                self.iter_tasks(
                     func,
                     template_context["ann_args"],
                     template_context["param_configs"],
@@ -1796,7 +1804,7 @@ class Parameterizer(Configured):
         else:
             template_context["mono_chunk_indices"] = None
 
-        template_context["tasks"] = self.yield_tasks(
+        template_context["tasks"] = self.iter_tasks(
             func,
             template_context["ann_args"],
             template_context["param_configs"],

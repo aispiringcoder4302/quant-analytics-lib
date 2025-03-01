@@ -1,4 +1,12 @@
-# Copyright (c) 2021-2024 Oleg Polakow. All rights reserved.
+# ==================================== VBTPROXYZ ====================================
+# Copyright (c) 2021-2025 Oleg Polakow. All rights reserved.
+#
+# This file is part of the proprietary VectorBT® PRO package and is licensed under
+# the VectorBT® PRO License available at https://vectorbt.pro/terms/software-license/
+#
+# Unauthorized publishing, distribution, sublicensing, or sale of this software
+# or its parts is strictly prohibited.
+# ===================================================================================
 
 """Messaging using Python Telegram Bot."""
 
@@ -14,6 +22,7 @@ from vectorbtpro.utils.base import Base
 from vectorbtpro.utils.config import merge_dicts, Configured
 from vectorbtpro.utils.parsing import get_func_kwargs
 from vectorbtpro.utils.requests_ import text_to_giphy_url
+from vectorbtpro.utils.warnings_ import warn
 
 __all__ = [
     "TelegramBot",
@@ -152,6 +161,8 @@ if __version_info__ < (20, 0, 0, "alpha", 1):
                 bot.start()
             ```
         """
+
+        _expected_keys_mode: tp.ExpectedKeysMode = "disable"
 
         def __init__(self, giphy_kwargs: tp.KwargsLike = None, **kwargs) -> None:
             from vectorbtpro._settings import settings
@@ -384,7 +395,6 @@ else:
     import asyncio
     import platform
     import signal
-    import warnings
 
     from telegram import Update
     from telegram.ext import (
@@ -495,6 +505,8 @@ else:
                 bot.start()
             ```
         """
+
+        _expected_keys_mode: tp.ExpectedKeysMode = "disable"
 
         def __init__(self, giphy_kwargs: tp.KwargsLike = None, **kwargs) -> None:
             from vectorbtpro._settings import settings
@@ -756,11 +768,10 @@ else:
                     for sig in stop_signals or []:
                         self.loop.add_signal_handler(sig, _raise_system_exit)
             except NotImplementedError as exc:
-                warnings.warn(
+                warn(
                     f"Could not add signal handlers for the stop signals {stop_signals} due to "
                     f"exception `{exc!r}`. If your event loop does not implement `add_signal_handler`,"
-                    " please pass `stop_signals=None`.",
-                    stacklevel=3,
+                    " please pass `stop_signals=None`."
                 )
 
             try:

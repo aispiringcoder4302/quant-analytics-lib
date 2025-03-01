@@ -1,4 +1,12 @@
-# Copyright (c) 2021-2024 Oleg Polakow. All rights reserved.
+# ==================================== VBTPROXYZ ====================================
+# Copyright (c) 2021-2025 Oleg Polakow. All rights reserved.
+#
+# This file is part of the proprietary VectorBT® PRO package and is licensed under
+# the VectorBT® PRO License available at https://vectorbt.pro/terms/software-license/
+#
+# Unauthorized publishing, distribution, sublicensing, or sale of this software
+# or its parts is strictly prohibited.
+# ===================================================================================
 
 """Engines for executing functions."""
 
@@ -6,9 +14,9 @@ import concurrent.futures
 import enum
 import inspect
 import time
-import warnings
 from functools import partial, wraps
 from pathlib import Path
+from contextlib import nullcontext
 
 import pandas as pd
 from numba.core.registry import CPUDispatcher
@@ -29,6 +37,7 @@ from vectorbtpro.utils.path_ import remove_dir, file_exists
 from vectorbtpro.utils.pbar import ProgressBar, ProgressHidden
 from vectorbtpro.utils.pickling import load, save
 from vectorbtpro.utils.template import CustomTemplate, substitute_templates
+from vectorbtpro.utils.warnings_ import warn
 
 try:
     if not tp.TYPE_CHECKING:
@@ -36,8 +45,8 @@ try:
     from ray.remote_function import RemoteFunction as RemoteFunctionT
     from ray import ObjectRef as ObjectRefT
 except ImportError:
-    RemoteFunctionT = tp.Any
-    ObjectRefT = tp.Any
+    RemoteFunctionT = "RemoteFunction"
+    ObjectRefT = "ObjectRef"
 
 __all__ = [
     "Task",
@@ -102,7 +111,7 @@ class Task(DefineMixin):
 
 
 class _NoResult(enum.Enum):
-    """Sentinel that represents no result."""
+    """Sentinel class for no results."""
 
     NoResult = enum.auto()
 
@@ -174,14 +183,6 @@ class SerialEngine(ExecutionEngine):
     For defaults, see `engines.serial` in `vectorbtpro._settings.execution`."""
 
     _settings_path: tp.SettingsPath = "execution.engines.serial"
-
-    _expected_keys: tp.ExpectedKeys = (ExecutionEngine._expected_keys or set()) | {
-        "show_progress",
-        "pbar_kwargs",
-        "clear_cache",
-        "collect_garbage",
-        "delay",
-    }
 
     def __init__(
         self,
@@ -301,21 +302,24 @@ class ThreadPoolEngine(ExecutionEngine):
 
     _settings_path: tp.SettingsPath = "execution.engines.threadpool"
 
-    _expected_keys: tp.ExpectedKeys = (ExecutionEngine._expected_keys or set()) | {
-        "init_kwargs",
-        "timeout",
-    }
-
-    def __init__(self, init_kwargs: tp.KwargsLike = None, timeout: tp.Optional[int] = None, **kwargs) -> None:
+    def __init__(
+        self,
+        init_kwargs: tp.KwargsLike = None,
+        timeout: tp.Optional[int] = None,
+        hide_inner_progress: tp.Optional[bool] = None,
+        **kwargs,
+    ) -> None:
         ExecutionEngine.__init__(
             self,
             init_kwargs=init_kwargs,
             timeout=timeout,
+            hide_inner_progress=hide_inner_progress,
             **kwargs,
         )
 
         self._init_kwargs = self.resolve_setting(init_kwargs, "init_kwargs", merge=True)
         self._timeout = self.resolve_setting(timeout, "timeout")
+        self._hide_inner_progress = self.resolve_setting(hide_inner_progress, "hide_inner_progress")
 
     @property
     def init_kwargs(self) -> tp.Kwargs:
@@ -327,13 +331,22 @@ class ThreadPoolEngine(ExecutionEngine):
         """Timeout."""
         return self._timeout
 
+    @property
+    def hide_inner_progress(self) -> bool:
+        """Whether to hide progress bars within each thread."""
+        return self._hide_inner_progress
+
     def execute(
         self,
         tasks: tp.TasksLike,
         size: tp.Optional[int] = None,
         keys: tp.Optional[tp.IndexLike] = None,
     ) -> tp.ExecResults:
-        with ProgressHidden():
+        if self.hide_inner_progress:
+            inner_progress_context = ProgressHidden()
+        else:
+            inner_progress_context = nullcontext()
+        with inner_progress_context:
             with concurrent.futures.ThreadPoolExecutor(**self.init_kwargs) as executor:
                 futures = {}
                 for i, (func, args, kwargs) in enumerate(tasks):
@@ -352,21 +365,24 @@ class ProcessPoolEngine(ExecutionEngine):
 
     _settings_path: tp.SettingsPath = "execution.engines.processpool"
 
-    _expected_keys: tp.ExpectedKeys = (ExecutionEngine._expected_keys or set()) | {
-        "init_kwargs",
-        "timeout",
-    }
-
-    def __init__(self, init_kwargs: tp.KwargsLike = None, timeout: tp.Optional[int] = None, **kwargs) -> None:
+    def __init__(
+        self,
+        init_kwargs: tp.KwargsLike = None,
+        timeout: tp.Optional[int] = None,
+        hide_inner_progress: tp.Optional[bool] = None,
+        **kwargs,
+    ) -> None:
         ExecutionEngine.__init__(
             self,
             init_kwargs=init_kwargs,
             timeout=timeout,
+            hide_inner_progress=hide_inner_progress,
             **kwargs,
         )
 
         self._init_kwargs = self.resolve_setting(init_kwargs, "init_kwargs", merge=True)
         self._timeout = self.resolve_setting(timeout, "timeout")
+        self._hide_inner_progress = self.resolve_setting(hide_inner_progress, "hide_inner_progress")
 
     @property
     def init_kwargs(self) -> tp.Kwargs:
@@ -378,13 +394,22 @@ class ProcessPoolEngine(ExecutionEngine):
         """Timeout."""
         return self._timeout
 
+    @property
+    def hide_inner_progress(self) -> bool:
+        """Whether to hide progress bars within each thread."""
+        return self._hide_inner_progress
+
     def execute(
         self,
         tasks: tp.TasksLike,
         size: tp.Optional[int] = None,
         keys: tp.Optional[tp.IndexLike] = None,
     ) -> tp.ExecResults:
-        with ProgressHidden():
+        if self.hide_inner_progress:
+            inner_progress_context = ProgressHidden()
+        else:
+            inner_progress_context = nullcontext()
+        with inner_progress_context:
             with concurrent.futures.ProcessPoolExecutor(**self.init_kwargs) as executor:
                 futures = {}
                 for i, (func, args, kwargs) in enumerate(tasks):
@@ -408,16 +433,6 @@ class PathosEngine(ExecutionEngine):
 
     _settings_path: tp.SettingsPath = "execution.engines.pathos"
 
-    _expected_keys: tp.ExpectedKeys = (ExecutionEngine._expected_keys or set()) | {
-        "pool_type",
-        "init_kwargs",
-        "timeout",
-        "check_delay",
-        "show_progress",
-        "pbar_kwargs",
-        "join_pool",
-    }
-
     def __init__(
         self,
         pool_type: tp.Optional[str] = None,
@@ -426,6 +441,7 @@ class PathosEngine(ExecutionEngine):
         check_delay: tp.Optional[float] = None,
         show_progress: tp.Optional[bool] = None,
         pbar_kwargs: tp.KwargsLike = None,
+        hide_inner_progress: tp.Optional[bool] = None,
         join_pool: tp.Optional[bool] = None,
         **kwargs,
     ) -> None:
@@ -437,6 +453,7 @@ class PathosEngine(ExecutionEngine):
             check_delay=check_delay,
             show_progress=show_progress,
             pbar_kwargs=pbar_kwargs,
+            hide_inner_progress=hide_inner_progress,
             join_pool=join_pool,
             **kwargs,
         )
@@ -447,6 +464,7 @@ class PathosEngine(ExecutionEngine):
         self._check_delay = self.resolve_setting(check_delay, "check_delay")
         self._show_progress = self.resolve_setting(show_progress, "show_progress")
         self._pbar_kwargs = self.resolve_setting(pbar_kwargs, "pbar_kwargs", merge=True)
+        self._hide_inner_progress = self.resolve_setting(hide_inner_progress, "hide_inner_progress")
         self._join_pool = self.resolve_setting(join_pool, "join_pool")
 
     @property
@@ -478,6 +496,11 @@ class PathosEngine(ExecutionEngine):
     def pbar_kwargs(self) -> tp.Kwargs:
         """Keyword arguments passed to `vectorbtpro.utils.pbar.ProgressBar`."""
         return self._pbar_kwargs
+
+    @property
+    def hide_inner_progress(self) -> bool:
+        """Whether to hide progress bars within each thread."""
+        return self._hide_inner_progress
 
     @property
     def join_pool(self) -> bool:
@@ -517,7 +540,11 @@ class PathosEngine(ExecutionEngine):
                     pbar_kwargs["bar_id"] = keys.name
         pbar = ProgressBar(total=size, show_progress=self.show_progress, **pbar_kwargs)
 
-        with ProgressHidden():
+        if self.hide_inner_progress:
+            inner_progress_context = ProgressHidden()
+        else:
+            inner_progress_context = nullcontext()
+        with inner_progress_context:
             with Pool(**self.init_kwargs) as pool:
                 async_results = []
                 for func, args, kwargs in tasks:
@@ -553,27 +580,24 @@ class MpireEngine(ExecutionEngine):
 
     _settings_path: tp.SettingsPath = "execution.engines.mpire"
 
-    _expected_keys: tp.ExpectedKeys = (ExecutionEngine._expected_keys or set()) | {
-        "init_kwargs",
-        "apply_kwargs",
-        "timeout",
-    }
-
     def __init__(
         self,
         init_kwargs: tp.KwargsLike = None,
         apply_kwargs: tp.KwargsLike = None,
+        hide_inner_progress: tp.Optional[bool] = None,
         **kwargs,
     ) -> None:
         ExecutionEngine.__init__(
             self,
             init_kwargs=init_kwargs,
             apply_kwargs=apply_kwargs,
+            hide_inner_progress=hide_inner_progress,
             **kwargs,
         )
 
         self._init_kwargs = self.resolve_setting(init_kwargs, "init_kwargs", merge=True)
         self._apply_kwargs = self.resolve_setting(apply_kwargs, "apply_kwargs", merge=True)
+        self._hide_inner_progress = self.resolve_setting(hide_inner_progress, "hide_inner_progress")
 
     @property
     def init_kwargs(self) -> tp.Kwargs:
@@ -584,6 +608,11 @@ class MpireEngine(ExecutionEngine):
     def apply_kwargs(self) -> tp.Kwargs:
         """Keyword arguments passed to `WorkerPool.async_apply`."""
         return self._apply_kwargs
+
+    @property
+    def hide_inner_progress(self) -> bool:
+        """Whether to hide progress bars within each thread."""
+        return self._hide_inner_progress
 
     def execute(
         self,
@@ -596,7 +625,11 @@ class MpireEngine(ExecutionEngine):
         assert_can_import("mpire")
         from mpire import WorkerPool
 
-        with ProgressHidden():
+        if self.hide_inner_progress:
+            inner_progress_context = ProgressHidden()
+        else:
+            inner_progress_context = nullcontext()
+        with inner_progress_context:
             with WorkerPool(**self.init_kwargs) as pool:
                 async_results = []
                 for i, (func, args, kwargs) in enumerate(tasks):
@@ -617,23 +650,31 @@ class DaskEngine(ExecutionEngine):
 
     _settings_path: tp.SettingsPath = "execution.engines.dask"
 
-    _expected_keys: tp.ExpectedKeys = (ExecutionEngine._expected_keys or set()) | {
-        "compute_kwargs",
-    }
-
-    def __init__(self, compute_kwargs: tp.KwargsLike = None, **kwargs) -> None:
+    def __init__(
+        self,
+        compute_kwargs: tp.KwargsLike = None,
+        hide_inner_progress: tp.Optional[bool] = None,
+        **kwargs,
+    ) -> None:
         ExecutionEngine.__init__(
             self,
             compute_kwargs=compute_kwargs,
+            hide_inner_progress=hide_inner_progress,
             **kwargs,
         )
 
         self._compute_kwargs = self.resolve_setting(compute_kwargs, "compute_kwargs", merge=True)
+        self._hide_inner_progress = self.resolve_setting(hide_inner_progress, "hide_inner_progress")
 
     @property
     def compute_kwargs(self) -> tp.Kwargs:
         """Keyword arguments passed to `dask.compute`."""
         return self._compute_kwargs
+
+    @property
+    def hide_inner_progress(self) -> bool:
+        """Whether to hide progress bars within each thread."""
+        return self._hide_inner_progress
 
     def execute(
         self,
@@ -646,7 +687,11 @@ class DaskEngine(ExecutionEngine):
         assert_can_import("dask")
         import dask
 
-        with ProgressHidden():
+        if self.hide_inner_progress:
+            inner_progress_context = ProgressHidden()
+        else:
+            inner_progress_context = nullcontext()
+        with inner_progress_context:
             results_delayed = []
             for func, args, kwargs in tasks:
                 results_delayed.append(dask.delayed(func)(*args, **kwargs))
@@ -666,15 +711,6 @@ class RayEngine(ExecutionEngine):
 
     _settings_path: tp.SettingsPath = "execution.engines.ray"
 
-    _expected_keys: tp.ExpectedKeys = (ExecutionEngine._expected_keys or set()) | {
-        "restart",
-        "reuse_refs",
-        "del_refs",
-        "shutdown",
-        "init_kwargs",
-        "remote_kwargs",
-    }
-
     def __init__(
         self,
         restart: tp.Optional[bool] = None,
@@ -683,6 +719,7 @@ class RayEngine(ExecutionEngine):
         shutdown: tp.Optional[bool] = None,
         init_kwargs: tp.KwargsLike = None,
         remote_kwargs: tp.KwargsLike = None,
+        hide_inner_progress: tp.Optional[bool] = None,
         **kwargs,
     ) -> None:
         ExecutionEngine.__init__(
@@ -693,6 +730,7 @@ class RayEngine(ExecutionEngine):
             shutdown=shutdown,
             init_kwargs=init_kwargs,
             remote_kwargs=remote_kwargs,
+            hide_inner_progress=hide_inner_progress,
             **kwargs,
         )
 
@@ -702,6 +740,7 @@ class RayEngine(ExecutionEngine):
         self._shutdown = self.resolve_setting(shutdown, "shutdown")
         self._init_kwargs = self.resolve_setting(init_kwargs, "init_kwargs", merge=True)
         self._remote_kwargs = self.resolve_setting(remote_kwargs, "remote_kwargs", merge=True)
+        self._hide_inner_progress = self.resolve_setting(hide_inner_progress, "hide_inner_progress")
 
     @property
     def restart(self) -> bool:
@@ -733,6 +772,11 @@ class RayEngine(ExecutionEngine):
     def remote_kwargs(self) -> tp.Kwargs:
         """Keyword arguments passed to `ray.remote`."""
         return self._remote_kwargs
+
+    @property
+    def hide_inner_progress(self) -> bool:
+        """Whether to hide progress bars within each thread."""
+        return self._hide_inner_progress
 
     @classmethod
     def get_ray_refs(
@@ -818,7 +862,11 @@ class RayEngine(ExecutionEngine):
         assert_can_import("ray")
         import ray
 
-        with ProgressHidden():
+        if self.hide_inner_progress:
+            inner_progress_context = ProgressHidden()
+        else:
+            inner_progress_context = nullcontext()
+        with inner_progress_context:
             if self.restart:
                 if ray.is_initialized():
                     ray.shutdown()
@@ -840,7 +888,7 @@ class RayEngine(ExecutionEngine):
 
 
 class _Dummy(enum.Enum):
-    """Sentinel that represents a dummy value."""
+    """Sentinel class for dummy values."""
 
     DUMMY = enum.auto()
 
@@ -866,7 +914,7 @@ class Executor(Configured):
     * Callable - passes `tasks`, `size` (if not None), and `engine_config`
 
     Can execute per chunk if `chunk_meta` is provided. Otherwise, if any of `n_chunks` and `chunk_len`
-    are set, passes them to `vectorbtpro.utils.chunking.yield_chunk_meta` to generate `chunk_meta`.
+    are set, passes them to `vectorbtpro.utils.chunking.iter_chunk_meta` to generate `chunk_meta`.
     Arguments `n_chunks` and `chunk_len` can be set globally in the engine-specific settings.
     Set `n_chunks` and `chunk_len` to 'auto' to set them to the number of cores.
 
@@ -914,44 +962,6 @@ class Executor(Configured):
     For defaults, see `vectorbtpro._settings.execution`."""
 
     _settings_path: tp.SettingsPath = "execution"
-
-    _expected_keys: tp.ExpectedKeys = (Configured._expected_keys or set()) | {
-        "engine",
-        "engine_config",
-        "min_size",
-        "n_chunks",
-        "chunk_len",
-        "chunk_meta",
-        "distribute",
-        "warmup",
-        "in_chunk_order",
-        "cache_chunks",
-        "chunk_cache_dir",
-        "chunk_cache_save_kwargs",
-        "chunk_cache_load_kwargs",
-        "pre_clear_chunk_cache",
-        "post_clear_chunk_cache",
-        "release_chunk_cache",
-        "chunk_clear_cache",
-        "chunk_collect_garbage",
-        "chunk_delay",
-        "pre_execute_func",
-        "pre_execute_kwargs",
-        "pre_chunk_func",
-        "pre_chunk_kwargs",
-        "post_chunk_func",
-        "post_chunk_kwargs",
-        "post_execute_func",
-        "post_execute_kwargs",
-        "post_execute_on_sorted",
-        "filter_results",
-        "raise_no_results",
-        "merge_func",
-        "merge_kwargs",
-        "template_context",
-        "show_progress",
-        "pbar_kwargs",
-    }
 
     @classmethod
     def get_engine_settings(cls, *args, engine_name: tp.Optional[str] = None, **kwargs) -> dict:
@@ -1371,22 +1381,22 @@ class Executor(Configured):
 
     @property
     def min_size(self) -> tp.Optional[int]:
-        """See `vectorbtpro.utils.chunking.yield_chunk_meta`."""
+        """See `vectorbtpro.utils.chunking.iter_chunk_meta`."""
         return self._min_size
 
     @property
     def n_chunks(self) -> tp.Union[None, int, str]:
-        """See `vectorbtpro.utils.chunking.yield_chunk_meta`."""
+        """See `vectorbtpro.utils.chunking.iter_chunk_meta`."""
         return self._n_chunks
 
     @property
     def chunk_len(self) -> tp.Union[None, int, str]:
-        """See `vectorbtpro.utils.chunking.yield_chunk_meta`."""
+        """See `vectorbtpro.utils.chunking.iter_chunk_meta`."""
         return self._chunk_len
 
     @property
     def chunk_meta(self) -> tp.Optional[tp.ChunkMetaLike]:
-        """See `vectorbtpro.utils.chunking.yield_chunk_meta`."""
+        """See `vectorbtpro.utils.chunking.iter_chunk_meta`."""
         return self._chunk_meta
 
     @property
@@ -1929,7 +1939,7 @@ class Executor(Configured):
                 n_chunks = 1
             else:
                 if cache_chunks:
-                    warnings.warn("Cannot cache chunks without chunking", stacklevel=2)
+                    warn("Cannot cache chunks without chunking")
                     cache_chunks = False
                 self.call_pre_execute_func(
                     cache_chunks=cache_chunks,
@@ -1964,7 +1974,7 @@ class Executor(Configured):
                 )
 
         if chunk_meta is None:
-            from vectorbtpro.utils.chunking import yield_chunk_meta
+            from vectorbtpro.utils.chunking import iter_chunk_meta
 
             if not isinstance(tasks, CustomTemplate) and hasattr(tasks, "__len__"):
                 _size = len(tasks)
@@ -1977,7 +1987,7 @@ class Executor(Configured):
                     raise ValueError("When tasks is a template, must provide size")
                 tasks = list(tasks)
                 _size = len(tasks)
-            chunk_meta = yield_chunk_meta(
+            chunk_meta = iter_chunk_meta(
                 size=_size,
                 min_size=min_size,
                 n_chunks=n_chunks,
@@ -1988,7 +1998,7 @@ class Executor(Configured):
 
         if isinstance(tasks, CustomTemplate):
             if cache_chunks:
-                warnings.warn("Cannot cache chunks with custom chunking", stacklevel=2)
+                warn("Cannot cache chunks with custom chunking")
                 cache_chunks = False
             tasks = substitute_templates(tasks, template_context, eval_id="tasks")
             if hasattr(tasks, "__len__"):
@@ -2305,7 +2315,7 @@ class Executor(Configured):
 
         elif distribute.lower() == "chunks":
             if cache_chunks:
-                warnings.warn("Cannot cache chunks with chunk distribution", stacklevel=2)
+                warn("Cannot cache chunks with chunk distribution")
                 cache_chunks = False
             if indices_sorted and not hasattr(tasks, "__len__"):
                 chunk_idx = 0

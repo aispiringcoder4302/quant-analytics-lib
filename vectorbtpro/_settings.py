@@ -1,4 +1,12 @@
-# Copyright (c) 2021-2024 Oleg Polakow. All rights reserved.
+# ==================================== VBTPROXYZ ====================================
+# Copyright (c) 2021-2025 Oleg Polakow. All rights reserved.
+#
+# This file is part of the proprietary VectorBT® PRO package and is licensed under
+# the VectorBT® PRO License available at https://vectorbt.pro/terms/software-license/
+#
+# Unauthorized publishing, distribution, sublicensing, or sale of this software
+# or its parts is strictly prohibited.
+# ===================================================================================
 
 """Global settings of vectorbtpro.
 
@@ -130,6 +138,7 @@ import numpy as np
 from numba import config as nb_config
 
 from vectorbtpro import _typing as tp
+from vectorbtpro.utils.attr_ import MISSING
 from vectorbtpro.utils.checks import is_instance_of
 from vectorbtpro.utils.config import Config
 from vectorbtpro.utils.module_ import check_installed
@@ -267,7 +276,7 @@ jitting = frozen_cfg(
     allow_new=False,
     register_new=False,
     jitters=flex_cfg(
-        nb=frozen_cfg(
+        nb=flex_cfg(
             cls="NumbaJitter",
             aliases={"numba"},
             options=flex_cfg(),
@@ -275,7 +284,7 @@ jitting = frozen_cfg(
             resolve_kwargs=flex_cfg(),
             tasks=flex_cfg(),
         ),
-        np=frozen_cfg(
+        np=flex_cfg(
             cls="NumPyJitter",
             aliases={"numpy"},
             options=flex_cfg(),
@@ -375,9 +384,7 @@ execution = frozen_cfg(
     cache_chunks=False,
     chunk_cache_dir=None,
     chunk_cache_save_kwargs=flex_cfg(
-        mkdir_kwargs=dict(
-            mkdir=True,
-        ),
+        mkdir_kwargs=flex_cfg(),
     ),
     chunk_cache_load_kwargs=flex_cfg(),
     pre_clear_chunk_cache=False,
@@ -417,11 +424,13 @@ execution = frozen_cfg(
             cls="ThreadPoolEngine",
             init_kwargs=flex_cfg(),
             timeout=None,
+            hide_inner_progress=True,
         ),
         processpool=flex_cfg(
             cls="ProcessPoolEngine",
             init_kwargs=flex_cfg(),
             timeout=None,
+            hide_inner_progress=True,
         ),
         pathos=flex_cfg(
             cls="PathosEngine",
@@ -431,6 +440,7 @@ execution = frozen_cfg(
             check_delay=0.001,
             show_progress=False,
             pbar_kwargs=flex_cfg(),
+            hide_inner_progress=True,
             join_pool=False,
         ),
         mpire=flex_cfg(
@@ -439,10 +449,12 @@ execution = frozen_cfg(
                 use_dill=True,
             ),
             apply_kwargs=flex_cfg(),
+            hide_inner_progress=True,
         ),
         dask=flex_cfg(
             cls="DaskEngine",
             compute_kwargs=flex_cfg(),
+            hide_inner_progress=True,
         ),
         ray=flex_cfg(
             cls="RayEngine",
@@ -452,6 +464,7 @@ execution = frozen_cfg(
             shutdown=False,
             init_kwargs=flex_cfg(),
             remote_kwargs=flex_cfg(),
+            hide_inner_progress=True,
         ),
     ),
 )
@@ -622,7 +635,7 @@ _settings["config"] = config
 
 configured = frozen_cfg(
     check_expected_keys_=True,
-    config=frozen_cfg(
+    config=flex_cfg(
         options=flex_cfg(
             readonly=True,
             nested=False,
@@ -736,14 +749,14 @@ datetime = frozen_cfg(
     naive_tz="tzlocal()",
     to_fixed_offset=None,
     parse_with_dateparser=True,
-    index=frozen_cfg(
+    index=flex_cfg(
         parse_index=True,
         parse_with_dateparser=False,
     ),
     dateparser_kwargs=flex_cfg(),
     freq_from_n=20,
     tz_naive_ns=True,
-    readable=frozen_cfg(
+    readable=flex_cfg(
         drop_tz=True,
     ),
 )
@@ -942,7 +955,7 @@ data = frozen_cfg(
         ),
         alpaca=flex_cfg(
             client=None,
-            client_type="stocks",
+            client_type=None,
             client_config=flex_cfg(
                 api_key=None,
                 secret_key=None,
@@ -1125,7 +1138,7 @@ plotting = frozen_cfg(
         pink="#DD59AA",
     ),
     themes=flex_cfg(
-        light=frozen_cfg(
+        light=flex_cfg(
             color_schema=flex_cfg(
                 blue="#1f77b4",
                 orange="#ff7f0e",
@@ -1140,7 +1153,7 @@ plotting = frozen_cfg(
             ),
             path="__name__/templates/light.json",
         ),
-        dark=frozen_cfg(
+        dark=flex_cfg(
             color_schema=flex_cfg(
                 blue="#1f77b4",
                 orange="#ff7f0e",
@@ -1155,7 +1168,7 @@ plotting = frozen_cfg(
             ),
             path="__name__/templates/dark.json",
         ),
-        seaborn=frozen_cfg(
+        seaborn=flex_cfg(
             color_schema=flex_cfg(
                 blue="rgb(76,114,176)",
                 orange="rgb(221,132,82)",
@@ -1936,8 +1949,8 @@ ${config_doc}
 _settings["pbar"] = pbar
 
 path = frozen_cfg(
-    mkdir=frozen_cfg(
-        mkdir=False,
+    mkdir=flex_cfg(
+        mkdir=True,
         mode=0o777,
         parents=True,
         exist_ok=True,
@@ -1965,7 +1978,7 @@ search = frozen_cfg(
 """_"""
 
 __pdoc__["search"] = Sub(
-    """Sub-config with settings applied across `vectorbtpro.utils.search`.
+    """Sub-config with settings applied across `vectorbtpro.utils.search_`.
 
 ```python
 ${config_doc}
@@ -1978,9 +1991,12 @@ knowledge = frozen_cfg(
     options_=dict(override_keys={"chat"}),
     cache=True,
     cache_dir="./knowledge",
-    cache_mkdir_kwargs=dict(
-        mkdir=True,
-    ),
+    cache_mkdir_kwargs=flex_cfg(),
+    clear_cache=False,
+    asset_cache_dir=RepEval("Path(cache_dir) / 'asset_cache'"),
+    max_cache_count=5,
+    save_cache_kwargs=flex_cfg(),
+    load_cache_kwargs=flex_cfg(),
     per_path=True,
     find_all=False,
     keep_path=False,
@@ -1995,7 +2011,7 @@ knowledge = frozen_cfg(
     unique_fields=True,
     changed_only=False,
     code=flex_cfg(
-        require_language=False,
+        language=None,
         in_blocks=True,
     ),
     dump_all=False,
@@ -2023,6 +2039,9 @@ knowledge = frozen_cfg(
     ),
     in_dumps=False,
     dump_kwargs=flex_cfg(),
+    document_cls=None,
+    document_kwargs=flex_cfg(),
+    merge_chunks=True,
     sort_keys=False,
     ignore_empty=True,
     describe_kwargs=flex_cfg(
@@ -2038,164 +2057,483 @@ knowledge = frozen_cfg(
         filter_results=True,
         raise_no_results=False,
     ),
-    to_markdown_kwargs=flex_cfg(
-        remove_code_title=True,
-        even_indentation=True,
-    ),
-    to_html_kwargs=flex_cfg(
-        resolve_extensions=True,
-        make_links=True,
-        extensions=[
-            "fenced_code",
-            "codehilite",
-            "meta",
-            "admonition",
-            "def_list",
-            "attr_list",
-            "tables",
-            "footnotes",
-            "md_in_html",
-            "toc",
-            "abbr",
-            "pymdownx.tilde",
-            "pymdownx.keys",
-            "pymdownx.details",
-            "pymdownx.inlinehilite",
-            "pymdownx.snippets",
-            "pymdownx.superfences",
-            "pymdownx.tabbed",
-            "pymdownx.progressbar",
-            "pymdownx.magiclink",
-            "pymdownx.emoji",
-            "pymdownx.highlight",
-            "pymdownx.tasklist",
-        ],
-        extension_configs=flex_cfg(
-            {
-                "codehilite": flex_cfg(
-                    {
-                        "css_class": "highlight",
-                    }
-                ),
-                "pymdownx.superfences": flex_cfg(
-                    {
-                        "preserve_tabs": True,
-                        "custom_fences": [
-                            {
-                                "name": "mermaid",
-                                "class": "mermaid",
-                                "format": mermaid_format,
-                            }
-                        ],
-                    }
-                ),
-                "pymdownx.tabbed": flex_cfg(
-                    {
-                        "alternate_style": True,
-                    }
-                ),
-                "pymdownx.magiclink": flex_cfg(
-                    {
-                        "repo_url_shorthand": True,
-                        "user": "polakowo",
-                        "repo": "vectorbt.pro",
-                    }
-                ),
-                "pymdownx.emoji": flex_cfg(
-                    {
-                        "emoji_index": twemoji_index,
-                        "emoji_generator": twemoji_generator,
-                        "alt": "short",
-                        "options": {
-                            "attributes": {"align": "absmiddle", "height": "20px", "width": "20px"},
-                        },
-                    }
-                ),
-                "pymdownx.highlight": flex_cfg(
-                    {
-                        "css_class": "highlight",
-                        "guess_lang": True,
-                        "anchor_linenums": True,
-                        "line_spans": "__span",
-                        "pygments_lang_class": True,
-                        "extend_pygments_lang": [
-                            {
-                                "name": "pycon3",
-                                "lang": "pycon",
-                                "options": {"python3": True},
-                            }
-                        ],
-                    }
-                ),
-            }
+    open_browser=True,
+    to_markdown_kwargs=flex_cfg(),
+    to_html_kwargs=flex_cfg(),
+    format_html_kwargs=flex_cfg(),
+    minimal_format_config=flex_cfg(
+        to_html_kwargs=flex_cfg(
+            extensions=[
+                "fenced_code",
+                "codehilite",
+                "admonition",
+                "tables",
+                "footnotes",
+                "md_in_html",
+                "toc",
+                "pymdownx.tilde",
+                "pymdownx.superfences",
+                "pymdownx.magiclink",
+                "pymdownx.highlight",
+                "pymdownx.tasklist",
+                "pymdownx.arithmatex",
+            ],
         ),
     ),
-    format_html_kwargs=flex_cfg(
+    formatting=flex_cfg(
+        remove_code_title=True,
+        even_indentation=True,
+        newline_before_list=True,
+        resolve_extensions=True,
+        make_links=True,
+        markdown_kwargs=flex_cfg(
+            extensions=[
+                "fenced_code",
+                "codehilite",
+                "meta",
+                "admonition",
+                "def_list",
+                "attr_list",
+                "tables",
+                "footnotes",
+                "md_in_html",
+                "toc",
+                "abbr",
+                "pymdownx.tilde",
+                "pymdownx.keys",
+                "pymdownx.details",
+                "pymdownx.inlinehilite",
+                "pymdownx.snippets",
+                "pymdownx.superfences",
+                "pymdownx.tabbed",
+                "pymdownx.progressbar",
+                "pymdownx.magiclink",
+                "pymdownx.emoji",
+                "pymdownx.highlight",
+                "pymdownx.tasklist",
+                "pymdownx.arithmatex",
+            ],
+            extension_configs={
+                "codehilite": {
+                    "css_class": "highlight",
+                },
+                "pymdownx.superfences": {
+                    "preserve_tabs": True,
+                    "custom_fences": [
+                        {
+                            "name": "mermaid",
+                            "class": "mermaid",
+                            "format": mermaid_format,
+                        }
+                    ],
+                },
+                "pymdownx.tabbed": {
+                    "alternate_style": True,
+                },
+                "pymdownx.magiclink": {
+                    "repo_url_shorthand": True,
+                    "user": "polakowo",
+                    "repo": "vectorbt.pro",
+                },
+                "pymdownx.emoji": {
+                    "emoji_index": twemoji_index,
+                    "emoji_generator": twemoji_generator,
+                    "alt": "short",
+                    "options": {
+                        "attributes": {"align": "absmiddle", "height": "20px", "width": "20px"},
+                    },
+                },
+                "pymdownx.highlight": {
+                    "css_class": "highlight",
+                    "guess_lang": True,
+                    "anchor_linenums": True,
+                    "line_spans": "__span",
+                    "pygments_lang_class": True,
+                    "extend_pygments_lang": [
+                        {
+                            "name": "pycon3",
+                            "lang": "pycon",
+                            "options": {"python3": True},
+                        }
+                    ],
+                },
+                "pymdownx.arithmatex": {
+                    "inline_syntax": ["round"],
+                },
+            },
+        ),
         use_pygments=None,
         pygments_kwargs=flex_cfg(),
+        html_template=r"""<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="https://vectorbt.pro/assets/logo/favicon.png">
+    <title>$title</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 40px;
+            line-height: 1.6;
+            background-color: #fff;
+            color: #000;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            color: #333;
+        }
+        pre {
+            padding: 10px;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+        .admonition {
+            background-color: #f9f9f9;
+            margin: 20px 0;
+            padding: 10px 20px;
+            border-left: 5px solid #ccc;
+            border-radius: 4px;
+        }
+        .admonition > p:first-child {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .admonition.example {
+            background-color: #e7f5ff;
+            border-left-color: #339af0;
+        }
+        .admonition.hint {
+            background-color: #fff4e6;
+            border-left-color: #ffa940;
+        }
+        .admonition.important {
+            background-color: #ffe3e3;
+            border-left-color: #ff6b6b;
+        }
+        .admonition.info {
+            background-color: #e3f2fd;
+            border-left-color: #42a5f5;
+        }
+        .admonition.note {
+            background-color: #e8f5e9;
+            border-left-color: #66bb6a;
+        }
+        .admonition.question {
+            background-color: #f3e5f5;
+            border-left-color: #ab47bc;
+        }
+        .admonition.tip {
+            background-color: #fffde7;
+            border-left-color: #ffee58;
+        }
+        .admonition.warning {
+            background-color: #fff3cd;
+            border-left-color: #ffc107;
+        }
+        $style_extras
+    </style>
+    $head_extras
+</head>
+<body>
+    $html_metadata
+    $html_content
+    $body_extras
+</body>
+</html>""",
+        root_style_extras=[],
         style_extras=[],
         head_extras=[],
         body_extras=[
             r"""<script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>""",
             r"""<script>window.mermaidConfig={startOnLoad:!1,theme:"default",flowchart:{htmlLabels:!1},er:{useMaxWidth:!1},sequence:{useMaxWidth:!1,noteFontWeight:"14px",actorFontSize:"14px",messageFontSize:"16px"}};</script>""",
             r"""<script>const uml=async e=>{class t extends HTMLElement{constructor(){super();let e=this.attachShadow({mode:"open"}),t=document.createElement("style");t.textContent=`:host{display:block;line-height:initial;font-size:16px}div.diagram{margin:0;overflow:visible}`,e.appendChild(t)}}void 0===customElements.get("diagram-div")&&customElements.define("diagram-div",t);let i=e=>{let t="";for(let i=0;i<e.childNodes.length;i++){let a=e.childNodes[i];if("code"===a.tagName.toLowerCase())for(let d=0;d<a.childNodes.length;d++){let l=a.childNodes[d],o=/^\s*$/;if("#text"===l.nodeName&&!o.test(l.nodeValue)){t=l.nodeValue;break}}}return t},a={startOnLoad:!1,theme:"default",flowchart:{htmlLabels:!1},er:{useMaxWidth:!1},sequence:{useMaxWidth:!1,noteFontWeight:"14px",actorFontSize:"14px",messageFontSize:"16px"}};mermaid.mermaidAPI.globalReset();let d="undefined"==typeof mermaidConfig?a:mermaidConfig;mermaid.initialize(d);let l=document.querySelectorAll(`pre.${e}, diagram-div`),o=document.querySelector("html body");for(let n=0;n<l.length;n++){let r=l[n],s="diagram-div"===r.tagName.toLowerCase()?r.shadowRoot.querySelector(`pre.${e}`):r,h=document.createElement("div");h.style.visibility="hidden",h.style.display="display",h.style.padding="0",h.style.margin="0",h.style.lineHeight="initial",h.style.fontSize="16px",o.appendChild(h);try{let m=await mermaid.render(`_diagram_${n}`,i(s),h),c=m.svg,p=m.bindFunctions,g=document.createElement("div");g.className=e,g.innerHTML=c,p&&p(g);let y=document.createElement("diagram-div");y.shadowRoot.appendChild(g),r.parentNode.insertBefore(y,r),s.style.display="none",y.shadowRoot.appendChild(s),s!==r&&r.parentNode.removeChild(r)}catch(u){}o.contains(h)&&o.removeChild(h)}};document.addEventListener("DOMContentLoaded",()=>{uml("mermaid")});</script>""",
+            r"""<script src="https://cdn.jsdelivr.net/npm/mathjax/es5/tex-mml-chtml.min.js"></script>""",
+            r"""<script>window.MathJax={tex:{inlineMath:[["\\(","\\)"]],displayMath:[["\\[","\\]"]],processEscapes:!0,processEnvironments:!0},options:{ignoreHtmlClass:".*|",processHtmlClass:"arithmatex"}},document$.subscribe(()=>{MathJax.startup.output.clearCache(),MathJax.typesetClear(),MathJax.texReset(),MathJax.typesetPromise()});</script>""",
         ],
-    ),
-    open_browser=True,
-    chat=flex_cfg(
-        stream=True,
-        to_context_kwargs=flex_cfg(),
-        max_tokens=120_000,
-        tokenizer="model_or_o200k_base",
-        tokens_per_message=3,
-        tokens_per_name=1,
-        system_prompt="You are a helpful assistant. Given the context information and not prior knowledge, answer the query.",
-        system_as_user=False,
-        context_prompt=Sub(
-            f"""Context information is below.
----------------------
-$context
----------------------"""
-        ),
+        invert_colors=False,
+        invert_colors_style=""":root {
+    filter: invert(100%);
+}""",
+        auto_scroll=False,
+        auto_scroll_body="""<script>
+function scrollToBottom() {
+    window.scrollTo(0, document.body.scrollHeight);
+}
+function hasMetaRefresh() {
+    return document.querySelector('meta[http-equiv="refresh"]') !== null;
+}
+window.onload = function() {
+    if (hasMetaRefresh()) {
+        scrollToBottom();
+        setInterval(scrollToBottom, 100);
+    }
+};
+</script>""",
+        show_spinner=False,
+        spinner_style=""".loader {
+    width: 300px;
+    height: 5px;
+    margin: 0 auto;
+    display: block;
+    position: relative;
+    overflow: hidden;
+}
+.loader::after {
+    content: '';
+    width: 300px;
+    height: 5px;
+    background: blue;
+    position: absolute;
+    top: 0;
+    left: 0;
+    box-sizing: border-box;
+    animation: animloader 1s ease-in-out infinite;
+}
+@keyframes animloader {
+    0%, 5% {
+        left: 0;
+        transform: translateX(-100%);
+    }
+    95%, 100% {
+        left: 100%;
+        transform: translateX(0%);
+    }
+}
+    """,
+        spinner_body="""<span class="loader"></span>""",
         output_to=None,
         flush_output=True,
-        display_format="auto_ipython",
-        refresh_rate=None,
-        file_prefix_len=20,
-        file_suffix_len=6,
-        package=None,
-        openai_config=flex_cfg(
-            model="gpt-4o",
-        ),
-        litellm_config=flex_cfg(
-            model="gpt-4o",
-        ),
-        llama_index_config=flex_cfg(
-            llm="openai",
-            llm_configs=flex_cfg(
-                openai=flex_cfg(
-                    model="gpt-4o",
-                )
+        buffer_output=True,
+        close_output=None,
+        update_interval=None,
+        minimal_format=False,
+        formatter="ipython_auto",
+        formatter_config=flex_cfg(),
+        formatter_configs=flex_cfg(
+            plain=flex_cfg(),
+            ipython=flex_cfg(),
+            ipython_markdown=flex_cfg(),
+            ipython_html=flex_cfg(),
+            html=flex_cfg(
+                dir_path=RepEval("Path(cache_dir) / 'html'"),
+                mkdir_kwargs=flex_cfg(),
+                temp_files=False,
+                refresh_page=True,
+                file_prefix_len=20,
+                file_suffix_len=6,
+                auto_scroll=True,
+                show_spinner=True,
             ),
+        ),
+    ),
+    chat=flex_cfg(
+        chat_dir=RepEval("Path(cache_dir) / 'chat'"),
+        stream=True,
+        to_context_kwargs=flex_cfg(),
+        incl_past_queries=True,
+        rank=None,
+        rank_kwargs=flex_cfg(
+            top_k=None,
+            min_top_k=None,
+            max_top_k=None,
+            cutoff=None,
+            return_chunks=False,
+        ),
+        max_tokens=120_000,
+        system_prompt=r"You are a helpful assistant. Given the context information and not prior knowledge, answer the query.",
+        system_as_user=True,
+        context_prompt=r"""Context information is below.
+---------------------
+$context
+---------------------""",
+        minimal_format=True,
+        tokenizer="tiktoken",
+        tokenizer_config=flex_cfg(),
+        tokenizer_configs=flex_cfg(
+            tiktoken=flex_cfg(
+                encoding="model_or_o200k_base",
+                model=None,
+                tokens_per_message=3,
+                tokens_per_name=1,
+            ),
+        ),
+        embeddings="auto",
+        embeddings_config=flex_cfg(
+            batch_size=512,
+        ),
+        embeddings_configs=flex_cfg(
+            openai=flex_cfg(
+                model="text-embedding-3-large",
+                dimensions=256,
+            ),
+            litellm=flex_cfg(
+                model="text-embedding-3-large",
+                dimensions=256,
+            ),
+            llama_index=flex_cfg(
+                embedding="openai",
+                embedding_configs=flex_cfg(
+                    openai=flex_cfg(
+                        model="text-embedding-3-large",
+                        dimensions=256,
+                    )
+                ),
+            ),
+        ),
+        completions="auto",
+        completions_config=flex_cfg(),
+        completions_configs=flex_cfg(
+            openai=flex_cfg(
+                model="gpt-4o",
+            ),
+            litellm=flex_cfg(
+                model="gpt-4o",
+            ),
+            llama_index=flex_cfg(
+                llm="openai",
+                llm_configs=flex_cfg(
+                    openai=flex_cfg(
+                        model="gpt-4o",
+                    )
+                ),
+            ),
+        ),
+        text_splitter="segment",
+        text_splitter_config=flex_cfg(
+            chunk_template=r"""... (previous text omitted)
+            
+$chunk_text""",
+        ),
+        text_splitter_configs=flex_cfg(
+            token=flex_cfg(
+                chunk_size=800,
+                chunk_overlap=400,
+                tokenizer="tiktoken",
+                tokenizer_kwargs=flex_cfg(
+                    encoding="cl100k_base",
+                ),
+            ),
+            segment=flex_cfg(
+                separators=[[r"\n\s*\n", r"(?<=[^\s.?!])[.?!]+(?:\s+|$)"], r"\s+", None],
+                min_chunk_size=0.8,
+                fixed_overlap=False,
+            ),
+            llama_index=flex_cfg(
+                node_parser="sentence",
+                node_parser_configs=flex_cfg(),
+            ),
+        ),
+        obj_store="memory",
+        obj_store_config=flex_cfg(
+            store_id="default",
+            purge_on_open=False,
+        ),
+        obj_store_configs=flex_cfg(
+            memory=flex_cfg(),
+            file=flex_cfg(
+                dir_path=RepEval("Path(cache_dir) / 'file_store'"),
+                compression=None,
+                save_kwargs=flex_cfg(
+                    mkdir_kwargs=flex_cfg(),
+                ),
+                load_kwargs=flex_cfg(),
+                use_patching=True,
+                consolidate=False,
+                mirror=True,
+            ),
+            lmdb=flex_cfg(
+                dir_path=RepEval("Path(cache_dir) / 'lmdb_store'"),
+                mkdir_kwargs=flex_cfg(),
+                dumps_kwargs=flex_cfg(),
+                loads_kwargs=flex_cfg(),
+                mirror=True,
+                flag="c",
+            ),
+            cached=flex_cfg(
+                lazy_open=True,
+                mirror=False,
+            ),
+        ),
+        doc_ranker_config=flex_cfg(
+            dataset_id=None,
+            cache_doc_store=True,
+            cache_emb_store=True,
+            doc_store_configs=flex_cfg(
+                memory=flex_cfg(
+                    store_id="doc_default",
+                ),
+                file=flex_cfg(
+                    dir_path=RepEval("Path(cache_dir) / 'doc_file_store'"),
+                ),
+                lmdb=flex_cfg(
+                    dir_path=RepEval("Path(cache_dir) / 'doc_lmdb_store'"),
+                ),
+            ),
+            emb_store_configs=flex_cfg(
+                memory=flex_cfg(
+                    store_id="emb_default",
+                ),
+                file=flex_cfg(
+                    dir_path=RepEval("Path(cache_dir) / 'emb_file_store'"),
+                ),
+                lmdb=flex_cfg(
+                    dir_path=RepEval("Path(cache_dir) / 'emb_lmdb_store'"),
+                ),
+            ),
+            score_func="cosine",
+            score_agg_func="mean",
         ),
     ),
     assets=flex_cfg(
         vbt=flex_cfg(
-            asset_name=None,
+            cache_dir="./knowledge/vbt/",
+            release_dir=RepEval("(Path(cache_dir) / release_name) if release_name else cache_dir"),
+            assets_dir=RepEval("Path(release_dir) / 'assets'"),
+            markdown_dir=RepEval("Path(release_dir) / 'markdown'"),
+            html_dir=RepEval("Path(release_dir) / 'html'"),
             release_name=None,
+            asset_name=None,
             repo_owner="polakowo",
             repo_name="vectorbt.pro",
             token=None,
             token_required=False,
             use_pygithub=None,
             chunk_size=8192,
+            document_cls=None,
+            document_kwargs=flex_cfg(
+                text_path="content",
+                excl_metadata=RepEval("asset_cls.get_setting('minimize_keys')"),
+                excl_embed_metadata=True,
+                split_text_kwargs=flex_cfg(),
+            ),
+            minimize_metadata=False,
+            minimize_keys=[
+                "parent",
+                "children",
+                "type",
+                "icon",
+                "tags",
+                "block",
+                "thread",
+                "replies",
+                "mentions",
+                "reactions",
+            ],
             minimize_links=False,
+            minimize_link_rules=flex_cfg(
+                {
+                    r"(https://vectorbt\.pro/pvt_[a-zA-Z0-9]+)": "$pvt_site",
+                    r"(https://vectorbt\.pro)": "$pub_site",
+                    r"(https://discord\.com/channels/[0-9]+)": "$discord",
+                    r"(https://github\.com/polakowo/vectorbt\.pro)": "$github",
+                }
+            ),
             root_metadata_key=None,
             aggregate_fields=False,
             parent_links_only=True,
-            metadata_format="markdown",
-            clear_metadata=True,
-            clear_metadata_kwargs=flex_cfg(),
+            clean_metadata=True,
+            clean_metadata_kwargs=flex_cfg(),
             dump_metadata_kwargs=flex_cfg(),
             incl_base_attr=True,
             incl_shortcuts=True,
@@ -2209,13 +2547,123 @@ $context
             allow_prefix=False,
             allow_suffix=False,
             merge_targets=True,
+            display=flex_cfg(
+                html_template=r"""<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="https://vectorbt.pro/assets/logo/favicon.png">
+    <title>$title</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            padding: 40px;
+            line-height: 1.6;
+            background: #fff;
+            color: #000;
+            margin: 0;
+        }
+        .pagination {
+            text-align: center;
+            margin: 20px 0;
+            font-size: 14px;
+        }
+        .pagination ul {
+            display: inline-block;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+        .pagination li {
+            display: inline;
+            margin: 0 4px;
+        }
+        .nav-btn,
+        .page-link {
+            text-decoration: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+        }
+        .nav-btn {
+            background: transparent;
+            color: blue;
+            border: none;
+            cursor: pointer;
+        }
+        .nav-btn.disabled {
+            color: gray;
+            cursor: default;
+            pointer-events: none;
+        }
+        .nav-btn:hover:not(.disabled) {
+            background: rgba(0, 0, 255, 0.1);
+        }
+        .page-link {
+            color: #000;
+        }
+        .page-link:hover:not(.active) {
+            background: lightgray;
+        }
+        .page-link.active {
+            background: blue;
+            color: #fff;
+            cursor: default;
+        }
+        iframe {
+            width: 100%;
+            border: none;
+            display: block;
+        }
+        $style_extras
+    </style>
+    $head_extras
+</head>
+<body>
+    <div id="pagination-top" class="pagination"></div>
+    <iframe id="page-iframe" scrolling="no" onload="adjustIframeHeight(this)"></iframe>
+    <div id="pagination-bottom" class="pagination"></div>
+    <script>const pages=$pages;let currentPage=1,totalPages=pages.length;function base64DecodeUtf8(e){return decodeURIComponent(atob(e).split("").map(e=>"%"+("00"+e.charCodeAt(0).toString(16)).slice(-2)).join(""))}function showPage(e){e<1&&(e=1),e>totalPages&&(e=totalPages),currentPage=e,document.getElementById("page-iframe").srcdoc=base64DecodeUtf8(pages[e-1]),renderPagination(),adjustIframeHeight(document.getElementById("page-iframe"))}function prevPage(){showPage(currentPage-1)}function nextPage(){showPage(currentPage+1)}function renderPagination(){let e="<ul>";if(e+=1===currentPage?'<li><span class="nav-btn disabled">&lt; Previous</span></li>':'<li><a href="#" class="nav-btn" onclick="prevPage()">&lt; Previous</a></li>',totalPages<=7)for(let a=1;a<=totalPages;a++)e+=`<li><a href="#" data-page="${a}" class="page-link" onclick="showPage(${a})">${a}</a></li>`;else if(currentPage<=4){for(let t=1;t<=5;t++)e+=linkTpl(t);e+=" <li><span>…</span></li> "+linkTpl(totalPages)}else if(currentPage>=totalPages-3){e+=linkTpl(1)+" <li><span>…</span></li> ";for(let n=totalPages-4;n<=totalPages;n++)e+=linkTpl(n)}else e+=linkTpl(1)+" <li><span>…</span></li> "+linkTpl(currentPage-1)+linkTpl(currentPage)+linkTpl(currentPage+1)+" <li><span>…</span></li> "+linkTpl(totalPages);e+=currentPage===totalPages?'<li><span class="nav-btn disabled">Next &gt;</span></li>':'<li><a href="#" class="nav-btn" onclick="nextPage()">Next &gt;</a></li>',e+="</ul>",document.getElementById("pagination-top").innerHTML=e,document.getElementById("pagination-bottom").innerHTML=e,updateActiveLink()}function linkTpl(e){return`<li><a href="#" data-page="${e}" class="page-link" onclick="showPage(${e})">${e}</a></li>`}function updateActiveLink(){document.querySelectorAll(".page-link").forEach(e=>{e.classList.toggle("active",e.getAttribute("data-page")==currentPage)})}function adjustIframeHeight(e){try{let a=e.contentDocument||e.contentWindow.document;a.querySelectorAll('img[loading="lazy"]').forEach(a=>a.addEventListener("load",()=>setTimeout(()=>adjustIframeHeight(e),100))),e.style.height=a.body.scrollHeight+"px",[...a.getElementsByTagName("a")].forEach(e=>e.target="_blank")}catch(t){}}window.addEventListener("DOMContentLoaded",()=>{totalPages>0&&showPage(1)});</script>
+    $body_extras
+</body>
+</html>""",
+                style_extras=[],
+                head_extras=[],
+                body_extras=[],
+            ),
             chat=flex_cfg(
-                system_prompt="You are an assistant with access to the VectorBT PRO (VBT) Python library documentation and Discord history. VBT is a proprietary successor to the open-source vectorbt for financial backtesting. As an expert, provide clear and accurate answers using only these sources. If metadata with links is present, reference these links to support your answers. If information isn't found, inform the user accordingly. Note that VBT exclusively refers to VectorBT PRO, which significantly differs from the open-source version. Given the context information and not prior knowledge, answer the query.",
+                chat_dir=RepEval("Path(release_dir) / 'chat'"),
+                system_prompt=r"""You are a helpful assistant with access to VectorBT PRO (also called VBT or vectorbtpro) documentation and relevant Discord history. Use only this provided context to generate clear, accurate answers. Do not reference the open‑source vectorbt, as VectorBT PRO is a proprietary successor with significant differences.\n\nWhen coding in Python, use:\n```python\nimport vectorbtpro as vbt\n```\n\nIf metadata includes links, reference them to support your answer. Do not include external or fabricated links, and exclude any information not present in the given context.\n\nFor each query, follow this structure:\n1. Optionally restate the question in your own words.\n2. Answer using only the available context.\n3. Include any relevant links.""",
+                doc_ranker_config=flex_cfg(
+                    doc_store="lmdb",
+                    doc_store_configs=flex_cfg(
+                        file=flex_cfg(
+                            dir_path=RepEval("Path(release_dir) / 'doc_file_store'"),
+                        ),
+                        lmdb=flex_cfg(
+                            dir_path=RepEval("Path(release_dir) / 'doc_lmdb_store'"),
+                        ),
+                    ),
+                    emb_store="lmdb",
+                    emb_store_configs=flex_cfg(
+                        file=flex_cfg(
+                            dir_path=RepEval("Path(release_dir) / 'emb_file_store'"),
+                        ),
+                        lmdb=flex_cfg(
+                            dir_path=RepEval("Path(release_dir) / 'emb_lmdb_store'"),
+                        ),
+                    ),
+                ),
             ),
         ),
         pages=flex_cfg(
+            assets_dir=RepEval("Path(release_dir) / 'pages' / 'assets'"),
+            markdown_dir=RepEval("Path(release_dir) / 'pages' / 'markdown'"),
+            html_dir=RepEval("Path(release_dir) / 'pages' / 'html'"),
             asset_name="pages.json.zip",
-            cache_dir="./knowledge/pages/",
             token_required=True,
             append_obj_type=True,
             append_github_link=True,
@@ -2241,8 +2689,10 @@ $context
             up_aggregate_pages=True,
         ),
         messages=flex_cfg(
+            assets_dir=RepEval("Path(release_dir) / 'messages' / 'assets'"),
+            markdown_dir=RepEval("Path(release_dir) / 'messages' / 'markdown'"),
+            html_dir=RepEval("Path(release_dir) / 'messages' / 'html'"),
             asset_name="messages.json.zip",
-            cache_dir="./knowledge/messages/",
             token_required=True,
         ),
     ),
@@ -2327,6 +2777,48 @@ class SettingsConfig(Config):
                     context=dict(config_doc=config_doc),
                     eval_id="__pdoc__",
                 )
+
+    def get(self, key: tp.PathLikeKey, default: tp.Any = MISSING) -> tp.Any:
+        """Get setting(s) under a path.
+
+        See `vectorbtpro.utils.search_.get_pathlike_key` for path format."""
+        from vectorbtpro.utils.search_ import get_pathlike_key
+
+        try:
+            return get_pathlike_key(self, key)
+        except (KeyError, IndexError, AttributeError) as e:
+            if default is MISSING:
+                raise e
+            return default
+
+    def set(self, key: tp.PathLikeKey, value: tp.Any, default_config_type: tp.Type[Config] = flex_cfg) -> None:
+        """Set setting(s) under a path.
+
+        See `vectorbtpro.utils.search_.get_pathlike_key` for path format."""
+        from vectorbtpro.utils.search_ import resolve_pathlike_key
+
+        tokens = resolve_pathlike_key(key)
+        obj = self
+        for i, token in enumerate(tokens):
+            if isinstance(obj, Config):
+                if token not in obj:
+                    obj[token] = default_config_type()
+            if i < len(tokens) - 1:
+                if isinstance(obj, (set, frozenset)):
+                    obj = list(obj)[token]
+                elif hasattr(obj, "__getitem__"):
+                    obj = obj[token]
+                elif isinstance(token, str) and hasattr(obj, token):
+                    obj = getattr(obj, token)
+                else:
+                    raise TypeError(f"Cannot navigate object of type {type(obj).__name__}")
+            else:
+                if hasattr(obj, "__setitem__"):
+                    obj[token] = value
+                elif hasattr(obj, "__dict__"):
+                    setattr(obj, token, value)
+                else:
+                    raise TypeError(f"Cannot modify object of type {type(obj).__name__}")
 
 
 settings = SettingsConfig(_settings)

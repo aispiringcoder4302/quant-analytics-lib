@@ -1,4 +1,12 @@
-# Copyright (c) 2021-2024 Oleg Polakow. All rights reserved.
+# ==================================== VBTPROXYZ ====================================
+# Copyright (c) 2021-2025 Oleg Polakow. All rights reserved.
+#
+# This file is part of the proprietary VectorBT® PRO package and is licensed under
+# the VectorBT® PRO License available at https://vectorbt.pro/terms/software-license/
+#
+# Unauthorized publishing, distribution, sublicensing, or sale of this software
+# or its parts is strictly prohibited.
+# ===================================================================================
 
 """Utilities for formatting."""
 
@@ -449,3 +457,25 @@ def dump(obj: tp.Any, dump_engine: str = "prettify", **kwargs) -> str:
 
         return json.dumps(obj, **kwargs)
     raise ValueError(f"Invalid dump engine: '{dump_engine}'")
+
+
+def get_dump_language(dump_engine: str) -> str:
+    """Get language corresponding to the dump engine."""
+    if dump_engine.lower() == "repr":
+        return "python"
+    if dump_engine.lower() == "prettify":
+        return "python"
+    if dump_engine.lower() == "nestedtext":
+        return "text"
+    if dump_engine.lower() == "yaml":
+        return "yaml"
+    if dump_engine.lower() == "pyyaml":
+        return "yaml"
+    if dump_engine.lower() in ("ruamel", "ruamel.yaml"):
+        return "yaml"
+    if dump_engine.lower() == "toml":
+        return "toml"
+    if dump_engine.lower() == "json":
+        return "json"
+    return ""
+

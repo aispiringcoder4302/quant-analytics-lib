@@ -1,4 +1,12 @@
-# Copyright (c) 2021-2024 Oleg Polakow. All rights reserved.
+# ==================================== VBTPROXYZ ====================================
+# Copyright (c) 2021-2025 Oleg Polakow. All rights reserved.
+#
+# This file is part of the proprietary VectorBT® PRO package and is licensed under
+# the VectorBT® PRO License available at https://vectorbt.pro/terms/software-license/
+#
+# Unauthorized publishing, distribution, sublicensing, or sale of this software
+# or its parts is strictly prohibited.
+# ===================================================================================
 
 """Utilities for working with templates."""
 
@@ -10,11 +18,12 @@ from vectorbtpro.utils.attr_ import DefineMixin, define
 from vectorbtpro.utils.config import merge_dicts
 from vectorbtpro.utils.eval_ import evaluate, get_free_vars, Evaluable
 from vectorbtpro.utils.parsing import get_func_arg_names
-from vectorbtpro.utils.search import contains_in_obj, find_and_replace_in_obj
+from vectorbtpro.utils.search_ import contains_in_obj, find_and_replace_in_obj
 
 __all__ = [
     "CustomTemplate",
     "Sub",
+    "SafeSub",
     "Rep",
     "RepEval",
     "RepFunc",
@@ -107,7 +116,9 @@ class CustomTemplate(Evaluable, DefineMixin):
 
 
 class Sub(CustomTemplate):
-    """Template string to substitute parts with the respective values from `context`.
+    """Class for substituting parts of a template string with the respective values from `context`.
+
+    Uses `string.Template.substitute`.
 
     Always returns a string."""
 
@@ -143,8 +154,47 @@ class Sub(CustomTemplate):
         return self
 
 
+class SafeSub(CustomTemplate):
+    """Class for substituting parts of a template string with the respective values from `context`.
+
+    Uses `string.Template.safe_substitute`.
+
+    Always returns a string."""
+
+    def get_context_vars(self) -> tp.List[str]:
+        tmpl = Template(self.template)
+        variables = []
+        for match in tmpl.pattern.finditer(tmpl.template):
+            named = match.group("named")
+            braced = match.group("braced")
+            if named is not None and named not in variables:
+                variables.append(named)
+            elif braced is not None and braced not in variables:
+                variables.append(braced)
+        return variables
+
+    def substitute(
+        self,
+        context: tp.KwargsLike = None,
+        strict: tp.Optional[bool] = None,
+        eval_id: tp.Optional[tp.Hashable] = None,
+    ) -> tp.Any:
+        """Substitute parts of `Sub.template` as a regular template."""
+        if not self.meets_eval_id(eval_id):
+            return self
+        context = self.resolve_context(context=context, eval_id=eval_id)
+        strict = self.resolve_strict(strict=strict)
+
+        try:
+            return Template(self.template).safe_substitute(context)
+        except KeyError as e:
+            if strict:
+                raise e
+        return self
+
+
 class Rep(CustomTemplate):
-    """Template string to be replaced with the respective value from `context`."""
+    """Class for replacing a template with the respective value from `context`."""
 
     def get_context_vars(self) -> tp.List[str]:
         return [self.template]
@@ -170,7 +220,7 @@ class Rep(CustomTemplate):
 
 
 class RepEval(CustomTemplate):
-    """Template expression to be evaluated using `vectorbtpro.utils.eval_.evaluate`
+    """Class for evaluating a template expression using `vectorbtpro.utils.eval_.evaluate`
     with `context` used as locals."""
 
     def get_context_vars(self) -> tp.List[str]:
@@ -197,7 +247,7 @@ class RepEval(CustomTemplate):
 
 
 class RepFunc(CustomTemplate):
-    """Template function to be called with argument names from `context`."""
+    """Class for calling a template function with argument names from `context`."""
 
     def get_context_vars(self) -> tp.List[str]:
         return get_func_arg_names(self.template)
@@ -231,7 +281,7 @@ class RepFunc(CustomTemplate):
 def has_templates(obj: tp.Any, **kwargs) -> tp.Any:
     """Check if the object has any templates.
 
-    Uses `vectorbtpro.utils.search.contains_in_obj`.
+    Uses `vectorbtpro.utils.search_.contains_in_obj`.
 
     Default can be overridden with `search_kwargs` under `vectorbtpro._settings.template`."""
     from vectorbtpro._settings import settings
@@ -255,7 +305,7 @@ def substitute_templates(
 ) -> tp.Any:
     """Traverses the object recursively and, if any template found, substitutes it using a context.
 
-    Uses `vectorbtpro.utils.search.find_and_replace_in_obj`.
+    Uses `vectorbtpro.utils.search_.find_and_replace_in_obj`.
 
     If `strict` is True, raises an error if processing template fails. Otherwise, returns the original template.
 

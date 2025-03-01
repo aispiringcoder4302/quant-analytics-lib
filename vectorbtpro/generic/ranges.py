@@ -1,4 +1,12 @@
-# Copyright (c) 2021-2024 Oleg Polakow. All rights reserved.
+# ==================================== VBTPROXYZ ====================================
+# Copyright (c) 2021-2025 Oleg Polakow. All rights reserved.
+#
+# This file is part of the proprietary VectorBT® PRO package and is licensed under
+# the VectorBT® PRO License available at https://vectorbt.pro/terms/software-license/
+#
+# Unauthorized publishing, distribution, sublicensing, or sale of this software
+# or its parts is strictly prohibited.
+# ===================================================================================
 
 """Base class for working with range records.
 
@@ -111,8 +119,6 @@ Name: group, dtype: object
 ![](/assets/images/api/ranges_plots.dark.svg#only-dark){: .iimg loading=lazy }
 """
 
-import warnings
-
 import numpy as np
 import pandas as pd
 
@@ -137,6 +143,7 @@ from vectorbtpro.utils.params import combine_params, Param
 from vectorbtpro.utils.parsing import get_func_kwargs
 from vectorbtpro.utils.random_ import set_seed
 from vectorbtpro.utils.template import substitute_templates
+from vectorbtpro.utils.warnings_ import warn
 
 __all__ = [
     "Ranges",
@@ -886,7 +893,7 @@ class Ranges(PriceRecords):
         if random_n is not None:
             self_col = self_col.random_n(random_n, seed=seed)
         if self_col.count() == 0:
-            warnings.warn("No ranges to plot. Relax the requirements.")
+            warn("No ranges to plot. Relax the requirements.")
 
         if ohlc_trace_kwargs is None:
             ohlc_trace_kwargs = {}
@@ -961,7 +968,7 @@ class Ranges(PriceRecords):
 
         proj_period = _resolve_period(proj_period)
         if isinstance(proj_period, int) and proj_period == 0:
-            warnings.warn("Projection period is zero. Setting to maximum.")
+            warn("Projection period is zero. Setting to maximum.")
             proj_period = int(np.max(self_col.duration.values))
         if plot_past_period is not None and isinstance(plot_past_period, str):
             plot_past_period = plot_past_period.lower().replace(" ", "")
@@ -1819,7 +1826,8 @@ class PatternRanges(Ranges):
         arr_2d = to_2d_array(arr)
         arr_wrapper = ArrayWrapper.from_obj(arr)
         psc_keys = [a.name for a in PSC.fields if a.name != "name"]
-        method_locals = {k: v for k, v in locals().items() if k in psc_keys}
+        method_locals = locals()
+        method_locals = {k: v for k, v in method_locals.items() if k in psc_keys}
 
         # Flatten search configs
         flat_search_configs = []
@@ -2022,10 +2030,6 @@ class PatternRanges(Ranges):
                 raise TypeError("Each object to be merged must be an instance of PatternRanges")
         kwargs["search_configs"] = [search_config for obj in objs for search_config in obj.search_configs]
         return kwargs
-
-    _expected_keys: tp.ExpectedKeys = (Ranges._expected_keys or set()) | {
-        "search_configs",
-    }
 
     def __init__(
         self,

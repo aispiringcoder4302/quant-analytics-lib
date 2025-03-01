@@ -1,4 +1,12 @@
-# Copyright (c) 2021-2024 Oleg Polakow. All rights reserved.
+# ==================================== VBTPROXYZ ====================================
+# Copyright (c) 2021-2025 Oleg Polakow. All rights reserved.
+#
+# This file is part of the proprietary VectorBT® PRO package and is licensed under
+# the VectorBT® PRO License available at https://vectorbt.pro/terms/software-license/
+#
+# Unauthorized publishing, distribution, sublicensing, or sale of this software
+# or its parts is strictly prohibited.
+# ===================================================================================
 
 """Custom Pandas accessors for returns.
 
@@ -117,8 +125,6 @@ dtype: object
 ![](/assets/images/api/returns_plots.dark.svg#only-dark){: .iimg loading=lazy }
 """
 
-import warnings
-
 import numpy as np
 import pandas as pd
 from pandas.tseries.offsets import BaseOffset
@@ -136,6 +142,7 @@ from vectorbtpro.returns import nb
 from vectorbtpro.utils import checks, chunking as ch, datetime_ as dt
 from vectorbtpro.utils.config import resolve_dict, merge_dicts, HybridConfig, Config
 from vectorbtpro.utils.decorators import hybrid_property, hybrid_method
+from vectorbtpro.utils.warnings_ import warn
 
 __all__ = [
     "ReturnsAccessor",
@@ -278,15 +285,6 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         if "sim_end" not in kwargs:
             kwargs["sim_end"] = cls.column_stack_sim_end(kwargs["wrapper"], *objs)
         return kwargs
-
-    _expected_keys: tp.ExpectedKeys = (GenericAccessor._expected_keys or set()) | {
-        "bm_returns",
-        "log_returns",
-        "year_freq",
-        "defaults",
-        "sim_start",
-        "sim_end",
-    }
 
     def __init__(
         self,
@@ -668,7 +666,59 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
         return merge_dicts(returns_defaults_cfg, self._defaults)
 
-    # ############# Resampling ############# #
+    # ############# Transforming ############# #
+
+    def mirror(
+        self,
+        sim_start: tp.Optional[tp.ArrayLike] = None,
+        sim_end: tp.Optional[tp.ArrayLike] = None,
+        jitted: tp.JittedOption = None,
+        chunked: tp.ChunkedOption = None,
+        wrap_kwargs: tp.KwargsLike = None,
+    ) -> tp.SeriesFrame:
+        """Mirror returns.
+
+        See `vectorbtpro.returns.nb.mirror_returns_nb`."""
+        sim_start = self.resolve_sim_start(sim_start=sim_start, group_by=False)
+        sim_end = self.resolve_sim_end(sim_end=sim_end, group_by=False)
+
+        func = jit_reg.resolve_option(nb.mirror_returns_nb, jitted)
+        func = ch_reg.resolve_option(func, chunked)
+        mirrored_returns = func(
+            self.to_2d_array(),
+            log_returns=self.log_returns,
+            sim_start=sim_start,
+            sim_end=sim_end,
+        )
+        return self.wrapper.wrap(mirrored_returns, group_by=False, **resolve_dict(wrap_kwargs))
+
+    def cumulative(
+        self,
+        start_value: tp.Optional[float] = None,
+        sim_start: tp.Optional[tp.ArrayLike] = None,
+        sim_end: tp.Optional[tp.ArrayLike] = None,
+        jitted: tp.JittedOption = None,
+        chunked: tp.ChunkedOption = None,
+        wrap_kwargs: tp.KwargsLike = None,
+    ) -> tp.SeriesFrame:
+        """Cumulative returns.
+
+        See `vectorbtpro.returns.nb.cumulative_returns_nb`."""
+        if start_value is None:
+            start_value = self.defaults["start_value"]
+        sim_start = self.resolve_sim_start(sim_start=sim_start, group_by=False)
+        sim_end = self.resolve_sim_end(sim_end=sim_end, group_by=False)
+
+        func = jit_reg.resolve_option(nb.cumulative_returns_nb, jitted)
+        func = ch_reg.resolve_option(func, chunked)
+        cumulative = func(
+            self.to_2d_array(),
+            start_value=start_value,
+            log_returns=self.log_returns,
+            sim_start=sim_start,
+            sim_end=sim_end,
+        )
+        return self.wrapper.wrap(cumulative, group_by=False, **resolve_dict(wrap_kwargs))
 
     def resample(
         self: ReturnsAccessorT,
@@ -757,34 +807,6 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         return self.resample_returns(self.year_freq, jitted=jitted, chunked=chunked, **kwargs)
 
     # ############# Metrics ############# #
-
-    def cumulative(
-        self,
-        start_value: tp.Optional[float] = None,
-        sim_start: tp.Optional[tp.ArrayLike] = None,
-        sim_end: tp.Optional[tp.ArrayLike] = None,
-        jitted: tp.JittedOption = None,
-        chunked: tp.ChunkedOption = None,
-        wrap_kwargs: tp.KwargsLike = None,
-    ) -> tp.SeriesFrame:
-        """Cumulative returns.
-
-        See `vectorbtpro.returns.nb.cumulative_returns_nb`."""
-        if start_value is None:
-            start_value = self.defaults["start_value"]
-        sim_start = self.resolve_sim_start(sim_start=sim_start, group_by=False)
-        sim_end = self.resolve_sim_end(sim_end=sim_end, group_by=False)
-
-        func = jit_reg.resolve_option(nb.cumulative_returns_nb, jitted)
-        func = ch_reg.resolve_option(func, chunked)
-        cumulative = func(
-            self.to_2d_array(),
-            start_value=start_value,
-            log_returns=self.log_returns,
-            sim_start=sim_start,
-            sim_end=sim_end,
-        )
-        return self.wrapper.wrap(cumulative, group_by=False, **resolve_dict(wrap_kwargs))
 
     def final_value(
         self,
@@ -2392,12 +2414,9 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
             if self_copy.year_freq != reself.year_freq:
                 if not silence_warnings:
-                    warnings.warn(
-                        (
-                            f"Changing the year frequency will create a copy of this object. "
-                            f"Consider setting it upon object creation to re-use existing cache."
-                        ),
-                        stacklevel=2,
+                    warn(
+                        f"Changing the year frequency will create a copy of this object. "
+                        f"Consider setting it upon object creation to re-use existing cache."
                     )
                 for alias in reself.self_aliases:
                     if alias not in custom_arg_names:

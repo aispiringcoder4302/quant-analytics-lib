@@ -1,4 +1,12 @@
-# Copyright (c) 2021-2024 Oleg Polakow. All rights reserved.
+# ==================================== VBTPROXYZ ====================================
+# Copyright (c) 2021-2025 Oleg Polakow. All rights reserved.
+#
+# This file is part of the proprietary VectorBT® PRO package and is licensed under
+# the VectorBT® PRO License available at https://vectorbt.pro/terms/software-license/
+#
+# Unauthorized publishing, distribution, sublicensing, or sale of this software
+# or its parts is strictly prohibited.
+# ===================================================================================
 
 """Welcome to the Matrix."""
 
@@ -28,7 +36,7 @@ if typing.TYPE_CHECKING:
 
 from vectorbtpro import _typing as tp
 from vectorbtpro._settings import settings
-from vectorbtpro._version import __version__ as version
+from vectorbtpro._version import __version__ as version, __release__ as release
 
 # Silence warnings
 import warnings

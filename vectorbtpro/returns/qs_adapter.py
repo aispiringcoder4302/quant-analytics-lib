@@ -1,4 +1,12 @@
-# Copyright (c) 2021-2024 Oleg Polakow. All rights reserved.
+# ==================================== VBTPROXYZ ====================================
+# Copyright (c) 2021-2025 Oleg Polakow. All rights reserved.
+#
+# This file is part of the proprietary VectorBT® PRO package and is licensed under
+# the VectorBT® PRO License available at https://vectorbt.pro/terms/software-license/
+#
+# Unauthorized publishing, distribution, sublicensing, or sale of this software
+# or its parts is strictly prohibited.
+# ===================================================================================
 
 """Adapter class for QuantStats.
 
@@ -107,7 +115,7 @@ from vectorbtpro import _typing as tp
 from vectorbtpro.returns.accessors import ReturnsAccessor
 from vectorbtpro.utils import checks
 from vectorbtpro.utils.config import merge_dicts, Configured
-from vectorbtpro.utils.parsing import get_func_arg_names
+from vectorbtpro.utils.parsing import get_func_arg_names, has_variable_kwargs
 
 __all__ = [
     "QSAdapter",
@@ -138,9 +146,13 @@ def attach_qs_methods(cls: tp.Type[tp.T], replace_signature: bool = True) -> tp.
                     **kwargs,
                 ) -> tp.Any:
                     func_arg_names = get_func_arg_names(_func)
+                    has_var_kwargs = has_variable_kwargs(_func)
                     defaults = self.defaults
 
-                    pass_kwargs = dict()
+                    if has_var_kwargs:
+                        pass_kwargs = dict(kwargs)
+                    else:
+                        pass_kwargs = {}
                     for arg_name in func_arg_names:
                         if arg_name not in kwargs:
                             if arg_name in defaults:
@@ -152,7 +164,7 @@ def attach_qs_methods(cls: tp.Type[tp.T], replace_signature: bool = True) -> tp.
                                 pass_kwargs["periods"] = int(self.returns_acc.ann_factor)
                             elif arg_name == "periods_per_year":
                                 pass_kwargs["periods_per_year"] = int(self.returns_acc.ann_factor)
-                        else:
+                        elif not has_var_kwargs:
                             pass_kwargs[arg_name] = kwargs[arg_name]
 
                     returns = self.returns_acc.select_col_from_obj(
@@ -226,11 +238,6 @@ QSAdapterT = tp.TypeVar("QSAdapterT", bound="QSAdapter")
 @attach_qs_methods
 class QSAdapter(Configured):
     """Adapter class for quantstats."""
-
-    _expected_keys: tp.ExpectedKeys = (Configured._expected_keys or set()) | {
-        "returns_acc",
-        "defaults",
-    }
 
     def __init__(self, returns_acc: ReturnsAccessor, defaults: tp.KwargsLike = None, **kwargs) -> None:
         checks.assert_instance_of(returns_acc, ReturnsAccessor)

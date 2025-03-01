@@ -1,10 +1,18 @@
-# Copyright (c) 2021-2024 Oleg Polakow. All rights reserved.
+# ==================================== VBTPROXYZ ====================================
+# Copyright (c) 2021-2025 Oleg Polakow. All rights reserved.
+#
+# This file is part of the proprietary VectorBT® PRO package and is licensed under
+# the VectorBT® PRO License available at https://vectorbt.pro/terms/software-license/
+#
+# Unauthorized publishing, distribution, sublicensing, or sale of this software
+# or its parts is strictly prohibited.
+# ===================================================================================
 
 """Utilities for configuration."""
 
 import inspect
-import warnings
 from copy import copy, deepcopy
+import uuid
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.utils.attr_ import MISSING
@@ -14,7 +22,9 @@ from vectorbtpro.utils.chaining import Chainable
 from vectorbtpro.utils.checks import Comparable, is_deep_equal, assert_in, assert_instance_of
 from vectorbtpro.utils.decorators import hybrid_method
 from vectorbtpro.utils.formatting import Prettified, prettify_dict, prettify_inited
+from vectorbtpro.utils.parsing import get_func_arg_names
 from vectorbtpro.utils.pickling import RecState, Pickleable, pdict
+from vectorbtpro.utils.warnings_ import warn
 
 __all__ = [
     "hdict",
@@ -30,6 +40,8 @@ __all__ = [
     "Configured",
     "AtomicConfig",
 ]
+
+__pdoc__ = {}
 
 
 class hdict(dict, Base):
@@ -94,7 +106,7 @@ def get_dict_item(dct: dict, k: tp.PathLikeKey, populate: bool = False) -> tp.An
     The key can be nested using the dot notation, `pathlib.Path`, or a tuple, and must be hashable."""
     if k in dct:
         return dct[k]
-    from vectorbtpro.utils.search import resolve_pathlike_key
+    from vectorbtpro.utils.search_ import resolve_pathlike_key
 
     k = resolve_pathlike_key(k)
     if len(k) == 1:
@@ -296,7 +308,7 @@ def reorder_list(lst: list, keys: tp.Iterable[tp.Union[int, type(...)]], skip_mi
 
 
 class _unsetkey:
-    pass
+    """Sentinel class for unsetting keys."""
 
 
 unsetkey = _unsetkey()
@@ -416,11 +428,6 @@ def merge_dicts(
 def flat_merge_dicts(*dicts: InConfigLikeT, **kwargs) -> OutConfigLikeT:
     """Merge dicts with default arguments and `nested=False`."""
     return merge_dicts(*dicts, nested=False, **kwargs)
-
-
-def deep_merge_dicts(*dicts: InConfigLikeT, **kwargs) -> OutConfigLikeT:
-    """Merge dicts with default arguments and `nested=True`."""
-    return merge_dicts(*dicts, nested=True, **kwargs)
 
 
 class child_dict(pdict):
@@ -979,15 +986,103 @@ class SettingNotFoundError(KeyError):
 HasSettingsT = tp.TypeVar("HasSettingsT", bound="HasSettings")
 
 
+ext_settings_paths_config = HybridConfig()
+"""_"""
+
+__pdoc__[
+    "ext_settings_paths_config"
+] = f"""Config for (currently active) extensional settings paths.
+
+Stores tuples of class names and their settings paths by unique ids.
+
+```python
+{ext_settings_paths_config.prettify()}
+```
+"""
+
+
+class ExtSettingsPath(Base):
+    """Context manager to add extensional settings paths."""
+
+    def __init__(self, ext_settings_paths: tp.ExtSettingsPaths) -> None:
+        self._unique_id = str(uuid.uuid4())
+        self._ext_settings_paths = ext_settings_paths
+
+    @property
+    def unique_id(self) -> str:
+        """Unique id."""
+        return self._unique_id
+
+    @property
+    def ext_settings_paths(self) -> tp.ExtSettingsPaths:
+        """Dictionary with extensional settings paths."""
+        return self._ext_settings_paths
+
+    def __enter__(self) -> tp.Self:
+        ext_settings_paths_config[self.unique_id] = self.ext_settings_paths
+        return self
+
+    def __exit__(self, *args) -> None:
+        del ext_settings_paths_config[self.unique_id]
+
+
+spec_settings_paths_config = HybridConfig()
+"""_"""
+
+__pdoc__[
+    "spec_settings_paths_config"
+] = f"""Config for (currently active) specialized settings paths.
+
+Stores settings path dictionaries by unique ids. In a path dictionary, each key is a path that points 
+to one or more other paths. For instance, a relationship "knowledge" -> "pages" will also consider "pages" 
+settings whenever "knowledge" settings are requested.
+
+```python
+{spec_settings_paths_config.prettify()}
+```
+"""
+
+
+class SpecSettingsPath(Base):
+    """Context manager to add specialized settings paths."""
+
+    def __init__(self, spec_settings_paths: tp.SpecSettingsPaths) -> None:
+        self._unique_id = str(uuid.uuid4())
+        self._spec_settings_paths = spec_settings_paths
+
+    @property
+    def unique_id(self) -> str:
+        """Unique id."""
+        return self._unique_id
+
+    @property
+    def spec_settings_paths(self) -> tp.SpecSettingsPaths:
+        """Dictionary with specialized settings paths."""
+        return self._spec_settings_paths
+
+    def __enter__(self) -> tp.Self:
+        spec_settings_paths_config[self.unique_id] = self.spec_settings_paths
+        return self
+
+    def __exit__(self, *args) -> None:
+        del spec_settings_paths_config[self.unique_id]
+
+
 class HasSettings(Base):
     """Class that has settings in `vectorbtpro._settings`."""
 
     _settings_path: tp.SettingsPath = None
     """Path(s) corresponding to this class in `vectorbtpro._settings`.
 
-    Must be either string (one path) or a dictionary of path ids and paths.
+    Must be either a path, a list of paths (in order of specialization), or a dictionary of path ids and paths.
 
     Lookup is done using `get_dict_item`."""
+
+    _specializable: tp.ClassVar[bool] = True
+    """Whether settings of this class can be specialized."""
+
+    _extendable: tp.ClassVar[bool] = True
+    """Whether settings of this class can be extended."""
 
     @classmethod
     def get_path_settings(
@@ -1001,7 +1096,7 @@ class HasSettings(Base):
 
         sub_path_settings = None
         if sub_path is not None:
-            from vectorbtpro.utils.search import combine_pathlike_keys
+            from vectorbtpro.utils.search_ import combine_pathlike_keys
 
             sub_path = combine_pathlike_keys(path, sub_path)
             try:
@@ -1023,29 +1118,73 @@ class HasSettings(Base):
         path_id: tp.Optional[tp.Hashable] = None,
         inherit: bool = True,
         super_first: bool = True,
-    ) -> tp.List[tp.Tuple[tp.Type[HasSettingsT], str]]:
+        unique_only: bool = True,
+    ) -> tp.List[tp.Tuple[tp.Type[HasSettingsT], tp.PathLikeKey]]:
         """Resolve the settings paths associated with this class and its superclasses (if `inherit` is True)."""
+        from vectorbtpro.utils.search_ import resolve_pathlike_key, combine_pathlike_keys
+
         paths = []
+        unique_paths = set()
+
+        def _add_path(cls_, path):
+            if path not in unique_paths or not unique_only:
+                paths.append((cls_, path))
+                unique_paths.add(path)
+
+                if cls_._specializable and spec_settings_paths_config:
+                    path_ = resolve_pathlike_key(path)
+                    for spec_settings_paths in spec_settings_paths_config.values():
+                        for from_path, to_path in spec_settings_paths.items():
+                            from_path_ = resolve_pathlike_key(from_path)
+
+                            if path_ == from_path_:
+                                if not isinstance(to_path, list):
+                                    to_path = [to_path]
+                                for to_path_ in to_path:
+                                    if to_path_ not in unique_paths:
+                                        paths.append((cls_, to_path_))
+                                        unique_paths.add(to_path_)
+
+                            elif len(path_) > len(from_path_) and path_[:len(from_path_)] == from_path_:
+                                if not isinstance(to_path, list):
+                                    to_path = [to_path]
+                                for to_path_ in to_path:
+                                    to_path_ = combine_pathlike_keys(to_path_, path_[len(from_path_):])
+                                    if to_path_ not in unique_paths:
+                                        paths.append((cls_, to_path_))
+                                        unique_paths.add(to_path_)
+
+        def _process_path(cls_, path):
+            if path is not None:
+                if isinstance(path, dict):
+                    if path_id is None:
+                        raise ValueError("Must specify path id")
+                    if path_id not in path:
+                        return
+                    path = path[path_id]
+                    if path is None:
+                        return
+                    _add_path(cls_, path)
+                elif isinstance(path, list):
+                    for p in path:
+                        _add_path(cls_, p)
+                else:
+                    _add_path(cls_, path)
+
         if inherit:
-            if super_first:
-                classes = cls.__mro__[::-1]
-            else:
-                classes = cls.__mro__
+            classes = cls.__mro__[::-1]
         else:
             classes = [cls]
         for i, cls_ in enumerate(classes):
             if issubclass(cls_, HasSettings):
-                path = getattr(cls_, "_settings_path")
-                if path is not None:
-                    if isinstance(path, dict):
-                        if path_id is None:
-                            raise ValueError("Must specify path id")
-                        if path_id not in path:
-                            continue
-                        path = path[path_id]
-                        if path is None:
-                            continue
-                    paths.append((cls_, path))
+                _process_path(cls_, getattr(cls_, "_settings_path"))
+                if cls_._extendable and ext_settings_paths_config:
+                    for ext_settings_paths in ext_settings_paths_config.values():
+                        for ext_cls, ext_path in ext_settings_paths:
+                            if ext_cls is cls_:
+                                _process_path(ext_cls, ext_path)
+        if not super_first:
+            return paths[::-1]
         return paths
 
     @classmethod
@@ -1057,7 +1196,11 @@ class HasSettings(Base):
         sub_path_only: bool = False,
     ) -> dict:
         """Get the settings associated with this class and its superclasses (if `inherit` is True)."""
-        paths = cls.resolve_settings_paths(path_id=path_id, inherit=inherit)
+        paths = cls.resolve_settings_paths(
+            path_id=path_id,
+            inherit=inherit,
+            super_first=True,
+        )
         if len(paths) == 0:
             if path_id is not None:
                 raise SettingsNotFoundError(f"Found no settings associated with the path id '{path_id}'")
@@ -1065,8 +1208,16 @@ class HasSettings(Base):
                 raise SettingsNotFoundError(f"Found no settings associated with the class {cls.__name__}")
         setting_dicts = []
         for cls_, path in paths:
-            path_settings = cls_.get_path_settings(path, sub_path=sub_path, sub_path_only=sub_path_only)
-            setting_dicts.append(path_settings)
+            try:
+                path_settings = cls_.get_path_settings(path, sub_path=sub_path, sub_path_only=sub_path_only)
+                setting_dicts.append(path_settings)
+            except SettingsNotFoundError as e:
+                pass
+        if len(setting_dicts) == 0:
+            if path_id is not None:
+                raise SettingsNotFoundError(f"Found no settings associated with the path id '{path_id}'")
+            else:
+                raise SettingsNotFoundError(f"Found no settings associated with the class {cls.__name__}")
         if len(setting_dicts) == 1:
             return setting_dicts[0]
         return merge_dicts(*setting_dicts)
@@ -1096,7 +1247,12 @@ class HasSettings(Base):
         """Return whether there the settings associated with this class and its superclasses
         (if `inherit` is True) exist."""
         try:
-            cls.get_settings(path_id=path_id, inherit=inherit, sub_path=sub_path, sub_path_only=sub_path_only)
+            cls.get_settings(
+                path_id=path_id,
+                inherit=inherit,
+                sub_path=sub_path,
+                sub_path_only=sub_path_only,
+            )
             return True
         except SettingsNotFoundError as e:
             return False
@@ -1105,7 +1261,7 @@ class HasSettings(Base):
     def get_path_setting(
         cls,
         path: tp.PathLikeKey,
-        key: str,
+        key: tp.PathLikeKey,
         default: tp.Any = MISSING,
         sub_path: tp.Optional[tp.PathLikeKey] = None,
         sub_path_only: bool = False,
@@ -1114,7 +1270,7 @@ class HasSettings(Base):
         from vectorbtpro._settings import settings
 
         if sub_path is not None:
-            from vectorbtpro.utils.search import combine_pathlike_keys
+            from vectorbtpro.utils.search_ import combine_pathlike_keys
 
             sub_path = combine_pathlike_keys(path, sub_path)
             try:
@@ -1146,26 +1302,42 @@ class HasSettings(Base):
     @classmethod
     def get_setting(
         cls,
-        key: str,
+        key: tp.PathLikeKey,
         default: tp.Any = MISSING,
         path_id: tp.Optional[tp.Hashable] = None,
         inherit: bool = True,
         sub_path: tp.Optional[tp.PathLikeKey] = None,
         sub_path_only: bool = False,
+        merge: bool = False,
     ) -> tp.Any:
         """Get a value under the settings associated with this class and its superclasses
         (if `inherit` is True)."""
-        paths = cls.resolve_settings_paths(path_id=path_id, inherit=inherit, super_first=False)
+        paths = cls.resolve_settings_paths(
+            path_id=path_id,
+            inherit=inherit,
+            super_first=merge,
+        )
         if len(paths) == 0:
             if path_id is not None:
                 raise SettingsNotFoundError(f"Found no settings associated with the path id '{path_id}'")
             else:
                 raise SettingsNotFoundError(f"Found no settings associated with the class {cls.__name__}")
+        merged_setting = None
+        found_setting = False
         for cls_, path in paths:
             try:
-                return cls_.get_path_setting(path, key, sub_path=sub_path, sub_path_only=sub_path_only)
+                setting = cls_.get_path_setting(path, key, sub_path=sub_path, sub_path_only=sub_path_only)
+                if merge:
+                    if setting is None or isinstance(setting, dict):
+                        if merged_setting is None or isinstance(merged_setting, dict):
+                            merged_setting = merge_dicts(setting, merged_setting)
+                else:
+                    return setting
+                found_setting = True
             except (SettingsNotFoundError, SettingNotFoundError) as e:
                 continue
+        if found_setting:
+            return merged_setting
         if default is MISSING:
             if path_id is not None:
                 if sub_path is not None:
@@ -1193,7 +1365,7 @@ class HasSettings(Base):
     def has_path_setting(
         cls,
         path: tp.PathLikeKey,
-        key: str,
+        key: tp.PathLikeKey,
         sub_path: tp.Optional[tp.PathLikeKey] = None,
         sub_path_only: bool = False,
     ) -> bool:
@@ -1207,7 +1379,7 @@ class HasSettings(Base):
     @classmethod
     def has_setting(
         cls,
-        key: str,
+        key: tp.PathLikeKey,
         path_id: tp.Optional[tp.Hashable] = None,
         inherit: bool = True,
         sub_path: tp.Optional[tp.PathLikeKey] = None,
@@ -1216,7 +1388,13 @@ class HasSettings(Base):
         """Return whether the settings associated with this class and its superclasses
         (if `inherit` is True) exists."""
         try:
-            cls.get_setting(key, path_id=path_id, inherit=inherit, sub_path=sub_path, sub_path_only=sub_path_only)
+            cls.get_setting(
+                key,
+                path_id=path_id,
+                inherit=inherit,
+                sub_path=sub_path,
+                sub_path_only=sub_path_only,
+            )
             return True
         except (SettingsNotFoundError, SettingNotFoundError) as e:
             return False
@@ -1225,13 +1403,13 @@ class HasSettings(Base):
     def resolve_setting(
         cls,
         value: tp.Optional[tp.Any],
-        key: str,
-        merge: bool = False,
+        key: tp.PathLikeKey,
         default: tp.Any = MISSING,
         path_id: tp.Optional[tp.Hashable] = None,
         inherit: bool = True,
         sub_path: tp.Optional[tp.PathLikeKey] = None,
         sub_path_only: bool = False,
+        merge: bool = False,
     ) -> tp.Any:
         """Resolve a value that has a key under the settings in `vectorbtpro._settings`
         associated with this class.
@@ -1249,6 +1427,7 @@ class HasSettings(Base):
                 inherit=inherit,
                 sub_path=sub_path,
                 sub_path_only=sub_path_only,
+                merge=True,
             )
             if setting is None or isinstance(setting, dict):
                 if value is None or isinstance(value, dict):
@@ -1284,12 +1463,14 @@ class HasSettings(Base):
             if path_id not in cls._settings_path:
                 raise SettingsNotFoundError(f"Found no settings associated with the path id '{path_id}'")
             path = cls._settings_path[path_id]
+        elif isinstance(cls._settings_path, list):
+            path = cls._settings_path[-1]
         else:
             path = cls._settings_path
         if path is None:
             raise SettingsNotFoundError(f"Found no settings associated with the class {cls.__name__}")
         if sub_path is not None:
-            from vectorbtpro.utils.search import combine_pathlike_keys
+            from vectorbtpro.utils.search_ import combine_pathlike_keys
 
             path = combine_pathlike_keys(path, sub_path)
         cls_cfg = get_dict_item(settings, path, populate=populate_)
@@ -1319,12 +1500,14 @@ class HasSettings(Base):
             if path_id not in cls._settings_path:
                 raise SettingsNotFoundError(f"Found no settings associated with the path id '{path_id}'")
             path = cls._settings_path[path_id]
+        elif isinstance(cls._settings_path, list):
+            path = cls._settings_path[-1]
         else:
             path = cls._settings_path
         if path is None:
             raise SettingsNotFoundError(f"Found no settings associated with the class {cls.__name__}")
         if sub_path is not None:
-            from vectorbtpro.utils.search import combine_pathlike_keys
+            from vectorbtpro.utils.search_ import combine_pathlike_keys
 
             path = combine_pathlike_keys(path, sub_path)
         if not cls.has_path_settings(path):
@@ -1333,7 +1516,54 @@ class HasSettings(Base):
         cls_cfg.reset(force=True)
 
 
-class Configured(HasSettings, Cacheable, Comparable, Pickleable, Prettified, Chainable):
+class MetaConfigured(type):
+    """Metaclass for `Configured`."""
+
+    def __init__(cls, name: str, bases: tp.Tuple[tp.Type, ...], attrs: dict) -> None:
+        super().__init__(name, bases, attrs)
+
+        if hasattr(cls, "_expected_keys_mode"):
+            _expected_keys_mode = getattr(cls, "_expected_keys_mode")
+            if _expected_keys_mode.lower() == "auto":
+                _expected_keys = set()
+                for base in bases:
+                    if hasattr(base, "_expected_keys_mode"):
+                        base_expected_keys_mode = getattr(base, "_expected_keys_mode")
+                        if base_expected_keys_mode.lower() == "disable":
+                            _expected_keys = None
+                            break
+                        if hasattr(base, "_expected_keys"):
+                            _expected_keys |= getattr(base, "_expected_keys")
+                if _expected_keys is None:
+                    setattr(cls, "_expected_keys_mode", "disable")
+                    setattr(cls, "_expected_keys", None)
+                else:
+                    _expected_keys |= set(get_func_arg_names(cls.__init__)).difference({"self"})
+                    setattr(cls, "_expected_keys", _expected_keys)
+            elif _expected_keys_mode.lower() == "inherit":
+                _expected_keys_mode = getattr(cls, "_expected_keys_mode")
+                if _expected_keys_mode.lower() == "auto":
+                    _expected_keys = set()
+                    for base in bases:
+                        if hasattr(base, "_expected_keys_mode"):
+                            base_expected_keys_mode = getattr(base, "_expected_keys_mode")
+                            if base_expected_keys_mode.lower() == "disable":
+                                _expected_keys = None
+                                break
+                            if hasattr(base, "_expected_keys"):
+                                _expected_keys |= getattr(base, "_expected_keys")
+                    if _expected_keys is None:
+                        setattr(cls, "_expected_keys_mode", "disable")
+                        setattr(cls, "_expected_keys", None)
+                    else:
+                        setattr(cls, "_expected_keys", _expected_keys)
+            elif _expected_keys_mode.lower() == "disable":
+                setattr(cls, "_expected_keys", None)
+            elif not _expected_keys_mode.lower() == "custom":
+                raise ValueError(f"Invalid expected keys mode: '{_expected_keys_mode}'")
+
+
+class Configured(HasSettings, Cacheable, Comparable, Pickleable, Prettified, Chainable, metaclass=MetaConfigured):
     """Class with an initialization config.
 
     All subclasses of `Configured` are initialized using `Config`, which makes it easier to pickle.
@@ -1345,6 +1575,17 @@ class Configured(HasSettings, Cacheable, Comparable, Pickleable, Prettified, Cha
         or if any `Configured.__init__` argument depends upon global defaults,
         their values won't be copied over. Make sure to pass them explicitly to
         make that the saved & loaded / copied instance is resilient to any changes in globals."""
+
+    _expected_keys_mode: tp.ExpectedKeysMode = "auto"
+    """Mode of expected keys.
+    
+    Following options are accepted:
+    
+    * "auto": Combine keys from bases and signature. Becomes disabled if any bases are disabled.
+    * "inherit": Combine keys from bases only. Becomes disabled if any bases are disabled.
+    * "disable": Don't check keys
+    * "custom": Custom keys are provided
+    """
 
     _expected_keys: tp.ExpectedKeys = None
     """Set of expected keys."""
@@ -1369,7 +1610,7 @@ class Configured(HasSettings, Cacheable, Comparable, Pickleable, Prettified, Cha
             if len(keys_diff) > 0:
                 assert_in(check_expected_keys_, ("warn", "raise"))
                 if check_expected_keys_ == "warn":
-                    warnings.warn(f"{type(self).__name__} doesn't expect arguments {keys_diff}", stacklevel=2)
+                    warn(f"{type(self).__name__} doesn't expect arguments {keys_diff}")
                 else:
                     raise ValueError(f"{type(self).__name__} doesn't expect arguments {keys_diff}")
 

@@ -1,10 +1,17 @@
-# Copyright (c) 2021-2024 Oleg Polakow. All rights reserved.
+# ==================================== VBTPROXYZ ====================================
+# Copyright (c) 2021-2025 Oleg Polakow. All rights reserved.
+#
+# This file is part of the proprietary VectorBT® PRO package and is licensed under
+# the VectorBT® PRO License available at https://vectorbt.pro/terms/software-license/
+#
+# Unauthorized publishing, distribution, sublicensing, or sale of this software
+# or its parts is strictly prohibited.
+# ===================================================================================
 
 """Mixin for building statistics out of performance metrics."""
 
 import inspect
 import string
-import warnings
 from collections import Counter
 
 import numpy as np
@@ -19,12 +26,13 @@ from vectorbtpro.utils.config import merge_dicts, Config, HybridConfig
 from vectorbtpro.utils.parsing import get_func_arg_names, get_forward_args
 from vectorbtpro.utils.tagging import match_tags
 from vectorbtpro.utils.template import substitute_templates, CustomTemplate
+from vectorbtpro.utils.warnings_ import warn
 
 __all__ = []
 
 
 class MetaStatsBuilderMixin(type):
-    """Meta class that exposes a read-only class property `StatsBuilderMixin.metrics`."""
+    """Metaclass for `StatsBuilderMixin`."""
 
     @property
     def metrics(cls) -> Config:
@@ -486,9 +494,9 @@ class StatsBuilderMixin(Base, metaclass=MetaStatsBuilderMixin):
                     to_remove = (to_check and not whether_true) or (inv_to_check and whether_true)
                     if to_remove:
                         if to_check and warning_message is not None and not _silence_warnings:
-                            warnings.warn(warning_message)
+                            warn(warning_message)
                         if inv_to_check and inv_warning_message is not None and not _silence_warnings:
-                            warnings.warn(inv_warning_message)
+                            warn(inv_warning_message)
 
                         metrics_dct.pop(metric_name, None)
                         custom_arg_names_dct.pop(metric_name, None)
@@ -500,7 +508,7 @@ class StatsBuilderMixin(Base, metaclass=MetaStatsBuilderMixin):
         # Any metrics left?
         if len(metrics_dct) == 0:
             if not silence_warnings:
-                warnings.warn("No metrics to calculate", stacklevel=2)
+                warn("No metrics to calculate")
             return None
 
         # Compute stats
@@ -716,20 +724,19 @@ class StatsBuilderMixin(Base, metaclass=MetaStatsBuilderMixin):
                                 used_agg_func = True
                         elif _agg_func is None and agg_func is not None:
                             if not _silence_warnings:
-                                warnings.warn(
+                                warn(
                                     f"Metric '{metric_name}' returned multiple values "
                                     "despite having no aggregation function",
-                                    stacklevel=2,
                                 )
                             continue
 
                     # Store metric
                     if t in stats_dct:
                         if not _silence_warnings:
-                            warnings.warn(f"Duplicate metric title '{t}'", stacklevel=2)
+                            warn(f"Duplicate metric title '{t}'")
                     stats_dct[t] = v
             except Exception as e:
-                warnings.warn(f"Metric '{metric_name}' raised an exception", stacklevel=2)
+                warn(f"Metric '{metric_name}' raised an exception")
                 raise e
 
         # Return the stats
@@ -751,11 +758,10 @@ class StatsBuilderMixin(Base, metaclass=MetaStatsBuilderMixin):
             return sr
         if agg_func is not None:
             if used_agg_func and not silence_warnings:
-                warnings.warn(
+                warn(
                     f"Object has multiple columns. Aggregated some metrics using {agg_func}. "
                     "Pass either agg_func=None or per_column=True to return statistics per column. "
                     "Pass column to select a single column or group.",
-                    stacklevel=2,
                 )
             sr = pd.Series(stats_dct, name="agg_stats", dtype=object)
             if dropna:

@@ -1,4 +1,12 @@
-# Copyright (c) 2021-2024 Oleg Polakow. All rights reserved.
+# ==================================== VBTPROXYZ ====================================
+# Copyright (c) 2021-2025 Oleg Polakow. All rights reserved.
+#
+# This file is part of the proprietary VectorBT® PRO package and is licensed under
+# the VectorBT® PRO License available at https://vectorbt.pro/terms/software-license/
+#
+# Unauthorized publishing, distribution, sublicensing, or sale of this software
+# or its parts is strictly prohibited.
+# ===================================================================================
 
 """Utilities for working with class/instance attributes."""
 
@@ -28,7 +36,7 @@ __all__ = [
 
 
 class _Missing(enum.Enum):
-    """Sentinel that represents a missing value."""
+    """Sentinel class for missing values."""
 
     MISSING = enum.auto()
 
@@ -174,7 +182,9 @@ class DefineMixin(Hashable):
 
     def __repr__(self):
         dct = self.asdict(full=False)
-        new_cls = attr.make_class(type(self).__name__, list(dct.keys()), cmp=False)
+        fields_dict = self.fields_dict
+        attr_dct = {k: attr.field(repr=fields_dict[k].repr) for k, v in dct.items()}
+        new_cls = attr.make_class(type(self).__name__, attr_dct, cmp=False)
         new_obj = new_cls(**dct)
         return new_obj.__repr__()
 

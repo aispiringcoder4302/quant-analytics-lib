@@ -1,4 +1,12 @@
-# Copyright (c) 2021-2024 Oleg Polakow. All rights reserved.
+# ==================================== VBTPROXYZ ====================================
+# Copyright (c) 2021-2025 Oleg Polakow. All rights reserved.
+#
+# This file is part of the proprietary VectorBT® PRO package and is licensed under
+# the VectorBT® PRO License available at https://vectorbt.pro/terms/software-license/
+#
+# Unauthorized publishing, distribution, sublicensing, or sale of this software
+# or its parts is strictly prohibited.
+# ===================================================================================
 
 """Utilities for profiling time and memory."""
 
@@ -20,8 +28,6 @@ __all__ = [
     "MemTracer",
     "with_memtracer",
 ]
-
-TimerT = tp.TypeVar("TimerT", bound="Timer")
 
 
 class Timer(Base):
@@ -70,7 +76,7 @@ class Timer(Base):
             return humanize.precisedelta(elapsed_delta, **kwargs)
         return elapsed_delta
 
-    def __enter__(self: TimerT) -> TimerT:
+    def __enter__(self) -> tp.Self:
         self._start_time = default_timer()
         return self
 
@@ -192,9 +198,6 @@ def with_timeit(
     raise ValueError("Either function or keyword arguments must be passed")
 
 
-MemTracerT = tp.TypeVar("MemTracerT", bound="MemTracer")
-
-
 class MemTracer(Base):
     """Context manager to trace peak and final memory usage using `tracemalloc`.
 
@@ -241,7 +244,7 @@ class MemTracer(Base):
             return humanize.naturalsize(peak_usage, **kwargs)
         return peak_usage
 
-    def __enter__(self: MemTracerT) -> MemTracerT:
+    def __enter__(self) -> tp.Self:
         tracemalloc.start()
         tracemalloc.clear_traces()
         return self

@@ -1,4 +1,12 @@
-# Copyright (c) 2021-2024 Oleg Polakow. All rights reserved.
+# ==================================== VBTPROXYZ ====================================
+# Copyright (c) 2021-2025 Oleg Polakow. All rights reserved.
+#
+# This file is part of the proprietary VectorBT® PRO package and is licensed under
+# the VectorBT® PRO License available at https://vectorbt.pro/terms/software-license/
+#
+# Unauthorized publishing, distribution, sublicensing, or sale of this software
+# or its parts is strictly prohibited.
+# ===================================================================================
 
 """Numba-compiled functions for custom indicators.
 
@@ -33,7 +41,9 @@ def ma_1d_nb(
     minp: tp.Optional[int] = None,
     adjust: bool = False,
 ) -> tp.Array1d:
-    """Moving average."""
+    """Moving average.
+
+    For `wtype`, see `vectorbtpro.generic.enums.WType`."""
     return generic_nb.ma_1d_nb(close, window, wtype=wtype, minp=minp, adjust=adjust)
 
 
@@ -84,7 +94,9 @@ def msd_1d_nb(
     adjust: bool = False,
     ddof: int = 0,
 ) -> tp.Array1d:
-    """Moving standard deviation."""
+    """Moving standard deviation.
+
+    For `wtype`, see `vectorbtpro.generic.enums.WType`."""
     return generic_nb.msd_1d_nb(close, window, wtype=wtype, minp=minp, adjust=adjust, ddof=ddof)
 
 
@@ -141,7 +153,9 @@ def bbands_1d_nb(
 ) -> tp.Tuple[tp.Array1d, tp.Array1d, tp.Array1d]:
     """Bollinger Bands.
 
-    Returns the upper band, the middle band, and the lower band."""
+    Returns the upper band, the middle band, and the lower band.
+
+    For `wtype`, see `vectorbtpro.generic.enums.WType`."""
     ma = ma_1d_nb(close, window=window, wtype=wtype, minp=minp, adjust=adjust)
     msd = msd_1d_nb(close, window=window, wtype=wtype, minp=minp, adjust=adjust, ddof=ddof)
     upper = ma + alpha * msd
@@ -369,7 +383,9 @@ def rsi_1d_nb(
     minp: tp.Optional[int] = None,
     adjust: bool = False,
 ) -> tp.Array1d:
-    """RSI."""
+    """RSI.
+
+    For `wtype`, see `vectorbtpro.generic.enums.WType`."""
     avg_gain = avg_gain_1d_nb(close, window=window, wtype=wtype, minp=minp, adjust=adjust)
     avg_loss = avg_loss_1d_nb(close, window=window, wtype=wtype, minp=minp, adjust=adjust)
     return 100 * avg_gain / (avg_gain + avg_loss)
@@ -483,7 +499,9 @@ def stoch_1d_nb(
 ) -> tp.Tuple[tp.Array1d, tp.Array1d, tp.Array1d]:
     """Stochastic Oscillator.
 
-    Returns the fast %K, the slow %K, and the slow %D."""
+    Returns the fast %K, the slow %K, and the slow %D.
+
+    For `wtype`, see `vectorbtpro.generic.enums.WType`."""
     if slow_k_wtype is not None:
         slow_k_wtype_ = slow_k_wtype
     else:
@@ -619,7 +637,9 @@ def macd_1d_nb(
 ) -> tp.Tuple[tp.Array1d, tp.Array1d]:
     """MACD.
 
-    Returns the MACD and the signal."""
+    Returns the MACD and the signal.
+
+    For `wtype`, see `vectorbtpro.generic.enums.WType`."""
     if macd_wtype is not None:
         macd_wtype_ = macd_wtype
     else:
@@ -800,7 +820,9 @@ def atr_1d_nb(
 ) -> tp.Tuple[tp.Array1d, tp.Array1d]:
     """Average True Range (ATR).
 
-    Returns TR and ATR."""
+    Returns TR and ATR.
+
+    For `wtype`, see `vectorbtpro.generic.enums.WType`."""
     tr = tr_1d_nb(high, low, close)
     atr = ma_1d_nb(tr, window, wtype=wtype, minp=minp, adjust=adjust)
     return tr, atr
@@ -863,7 +885,9 @@ def adx_1d_nb(
 ) -> tp.Tuple[tp.Array1d, tp.Array1d, tp.Array1d, tp.Array1d]:
     """Average Directional Movement Index (ADX).
 
-    Returns +DI, -DI, DX, and ADX."""
+    Returns +DI, -DI, DX, and ADX.
+
+    For `wtype`, see `vectorbtpro.generic.enums.WType`."""
     _, atr = atr_1d_nb(
         high,
         low,
@@ -984,17 +1008,22 @@ def ols_1d_nb(
     x: tp.Array1d,
     y: tp.Array1d,
     window: int = 14,
+    norm_window: tp.Optional[int] = None,
     minp: tp.Optional[int] = None,
     ddof: int = 0,
     with_zscore: bool = True,
 ) -> tp.Tuple[tp.Array1d, tp.Array1d, tp.Array1d]:
     """Rolling Ordinary Least Squares (OLS)."""
+    if norm_window is not None:
+        norm_window_ = norm_window
+    else:
+        norm_window_ = window
     slope, intercept = generic_nb.rolling_ols_1d_nb(x, y, window, minp=minp)
     if with_zscore:
         pred = intercept + slope * x
         error = y - pred
-        error_mean = generic_nb.rolling_mean_1d_nb(error, window, minp=minp)
-        error_std = generic_nb.rolling_std_1d_nb(error, window, minp=minp, ddof=ddof)
+        error_mean = generic_nb.rolling_mean_1d_nb(error, norm_window_, minp=minp)
+        error_std = generic_nb.rolling_std_1d_nb(error, norm_window_, minp=minp, ddof=ddof)
         zscore = (error - error_mean) / error_std
     else:
         zscore = np.full(x.shape, np.nan, dtype=float_)
@@ -1007,6 +1036,7 @@ def ols_1d_nb(
         x=ch.ArraySlicer(axis=1),
         y=ch.ArraySlicer(axis=1),
         window=base_ch.FlexArraySlicer(),
+        norm_window=base_ch.FlexArraySlicer(),
         minp=None,
         ddof=None,
         with_zscore=None,
@@ -1018,12 +1048,17 @@ def ols_nb(
     x: tp.Array2d,
     y: tp.Array2d,
     window: tp.FlexArray1dLike = 14,
+    norm_window: tp.Optional[tp.FlexArray1dLike] = None,
     minp: tp.Optional[int] = None,
     ddof: int = 0,
     with_zscore: bool = True,
 ) -> tp.Tuple[tp.Array2d, tp.Array2d, tp.Array2d]:
     """2-dim version of `ols_1d_nb`."""
     window_ = to_1d_array_nb(np.asarray(window))
+    if norm_window is not None:
+        norm_window_ = to_1d_array_nb(np.asarray(norm_window))
+    else:
+        norm_window_ = window_
 
     slope = np.empty(x.shape, dtype=float_)
     intercept = np.empty(x.shape, dtype=float_)
@@ -1033,6 +1068,7 @@ def ols_nb(
             x[:, col],
             y[:, col],
             window=flex_select_1d_nb(window_, col),
+            norm_window=flex_select_1d_nb(norm_window_, col),
             minp=minp,
             ddof=ddof,
             with_zscore=with_zscore,
@@ -1996,7 +2032,9 @@ def rolling_hurst_1d_nb(
     minp: tp.Optional[int] = None,
     stabilize: bool = False,
 ) -> tp.Array1d:
-    """Rolling version of `get_hurst_nb`."""
+    """Rolling version of `get_hurst_nb`.
+
+    For `method`, see `vectorbtpro.indicators.enums.HurstMethod`."""
     if minp is None:
         minp = window
     if minp > window:

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "vectorbtpro"
-version = "2024.12.15"
+version = "2025.3.1"
 description = "Next-Generation Quantitative Analysis Tool"
 license = { file = "LICENSE" }
 authors = [{ name = "Oleg Polakow", email = "olegpolakow@vectorbt.pro" }]
@@ -150,7 +150,8 @@ knwl-base = [
     "markdown",
     "Pygments",
     "openai",
-    "tiktoken"
+    "tiktoken",
+    "lmdbm",
 ]
 knwl = [
     "vectorbtpro[knwl-base]",

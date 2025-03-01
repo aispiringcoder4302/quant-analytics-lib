@@ -1,8 +1,15 @@
-# Copyright (c) 2021-2024 Oleg Polakow. All rights reserved.
+# ==================================== VBTPROXYZ ====================================
+# Copyright (c) 2021-2025 Oleg Polakow. All rights reserved.
+#
+# This file is part of the proprietary VectorBT® PRO package and is licensed under
+# the VectorBT® PRO License available at https://vectorbt.pro/terms/software-license/
+#
+# Unauthorized publishing, distribution, sublicensing, or sale of this software
+# or its parts is strictly prohibited.
+# ===================================================================================
 
 """Classes for preparing portfolio simulations."""
 
-import warnings
 from collections import namedtuple
 from functools import cached_property as cachedproperty
 
@@ -29,6 +36,7 @@ from vectorbtpro.utils import checks, chunking as ch
 from vectorbtpro.utils.config import Configured, merge_dicts, ReadonlyConfig
 from vectorbtpro.utils.mapping import to_field_mapping
 from vectorbtpro.utils.template import CustomTemplate, substitute_templates, RepFunc
+from vectorbtpro.utils.warnings_ import warn
 
 __all__ = [
     "PFPrepResult",
@@ -68,8 +76,15 @@ class PFPrepResult(Configured):
         target_func: tp.Optional[tp.Callable] = None,
         target_args: tp.Optional[tp.Kwargs] = None,
         pf_args: tp.Optional[tp.Kwargs] = None,
+        **kwargs,
     ) -> None:
-        Configured.__init__(self, target_func=target_func, target_args=target_args, pf_args=pf_args)
+        Configured.__init__(
+            self,
+            target_func=target_func,
+            target_args=target_args,
+            pf_args=pf_args,
+            **kwargs,
+        )
 
     @cachedproperty
     def target_func(self) -> tp.Optional[tp.Callable]:
@@ -388,7 +403,7 @@ class BasePFPreparer(BasePreparer):
             arg_name="init_position",
         )
         if (((init_position > 0) | (init_position < 0)) & np.isnan(self.init_price)).any():
-            warnings.warn(f"Initial position has undefined price. Set init_price.", stacklevel=2)
+            warn(f"Initial position has undefined price. Set init_price.")
         return init_position
 
     @cachedproperty

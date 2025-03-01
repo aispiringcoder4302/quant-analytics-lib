@@ -1,10 +1,17 @@
-# Copyright (c) 2021-2024 Oleg Polakow. All rights reserved.
+# ==================================== VBTPROXYZ ====================================
+# Copyright (c) 2021-2025 Oleg Polakow. All rights reserved.
+#
+# This file is part of the proprietary VectorBT® PRO package and is licensed under
+# the VectorBT® PRO License available at https://vectorbt.pro/terms/software-license/
+#
+# Unauthorized publishing, distribution, sublicensing, or sale of this software
+# or its parts is strictly prohibited.
+# ===================================================================================
 
 """Base class for simulating a portfolio and measuring its performance."""
 
 import inspect
 import string
-import warnings
 from functools import partial
 
 import numpy as np
@@ -55,13 +62,14 @@ from vectorbtpro.utils.decorators import custom_property, cached_property, hybri
 from vectorbtpro.utils.enum_ import map_enum_fields
 from vectorbtpro.utils.parsing import get_func_kwargs
 from vectorbtpro.utils.template import Rep, RepEval, RepFunc
+from vectorbtpro.utils.warnings_ import warn
 
 try:
     if not tp.TYPE_CHECKING:
         raise ImportError
     from vectorbtpro.returns.qs_adapter import QSAdapter as QSAdapterT
 except ImportError:
-    QSAdapterT = tp.Any
+    QSAdapterT = "QSAdapter"
 
 __all__ = [
     "Portfolio",
@@ -425,8 +433,8 @@ PortfolioT = tp.TypeVar("PortfolioT", bound="Portfolio")
 PortfolioResultT = tp.Union[PortfolioT, BasePFPreparer, PFPrepResult, enums.SimulationOutput]
 
 
-class MetaInOutputs(type):
-    """Meta class that exposes a read-only class property `MetaFields.in_output_config`."""
+class MetaPortfolio(type(Analyzable)):
+    """Metaclass for `Portfolio`."""
 
     @property
     def in_output_config(cls) -> Config:
@@ -434,27 +442,9 @@ class MetaInOutputs(type):
         return cls._in_output_config
 
 
-class PortfolioWithInOutputs(Base, metaclass=MetaInOutputs):
-    """Class exposes a read-only class property `RecordsWithFields.field_config`."""
-
-    @property
-    def in_output_config(self) -> Config:
-        """In-output config of `${cls_name}`.
-
-        ```python
-        ${in_output_config}
-        ```
-        """
-        return self._in_output_config
-
-
-class MetaPortfolio(type(Analyzable), type(PortfolioWithInOutputs)):
-    pass
-
-
 @attach_shortcut_properties(shortcut_config)
 @attach_returns_acc_methods(returns_acc_config)
-class Portfolio(Analyzable, PortfolioWithInOutputs, SimRangeMixin, metaclass=MetaPortfolio):
+class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
     """Class for simulating a portfolio and measuring its performance.
 
     Args:
@@ -1294,40 +1284,6 @@ class Portfolio(Analyzable, PortfolioWithInOutputs, SimRangeMixin, metaclass=Met
         kwargs = cls.resolve_stack_kwargs(*objs, **kwargs)
         return cls(**kwargs)
 
-    _expected_keys: tp.ExpectedKeys = (Analyzable._expected_keys or set()) | {
-        "order_records",
-        "close",
-        "open",
-        "high",
-        "low",
-        "log_records",
-        "cash_sharing",
-        "init_cash",
-        "init_position",
-        "init_price",
-        "cash_deposits",
-        "cash_deposits_as_input",
-        "cash_earnings",
-        "sim_start",
-        "sim_end",
-        "call_seq",
-        "in_outputs",
-        "use_in_outputs",
-        "bm_close",
-        "fillna_close",
-        "year_freq",
-        "returns_acc_defaults",
-        "trades_type",
-        "orders_cls",
-        "logs_cls",
-        "trades_cls",
-        "entry_trades_cls",
-        "exit_trades_cls",
-        "positions_cls",
-        "drawdowns_cls",
-        "weights",
-    }
-
     def __init__(
         self,
         wrapper: ArrayWrapper,
@@ -1738,10 +1694,7 @@ class Portfolio(Analyzable, PortfolioWithInOutputs, SimRangeMixin, metaclass=Met
         if force_wrapping:
             raise NotImplementedError(f"Cannot wrap object '{obj_name}'")
         if not silence_warnings:
-            warnings.warn(
-                f"Cannot figure out how to wrap object '{obj_name}'",
-                stacklevel=2,
-            )
+            warn(f"Cannot figure out how to wrap object '{obj_name}'")
         return obj
 
     def get_in_output(
@@ -1968,10 +1921,7 @@ class Portfolio(Analyzable, PortfolioWithInOutputs, SimRangeMixin, metaclass=Met
         if force_indexing:
             raise NotImplementedError(f"Cannot index object '{obj_name}'")
         if not silence_warnings:
-            warnings.warn(
-                f"Cannot figure out how to index object '{obj_name}'",
-                stacklevel=2,
-            )
+            warn(f"Cannot figure out how to index object '{obj_name}'")
         return obj
 
     def in_outputs_indexing_func(self, wrapper_meta: dict, **kwargs) -> tp.Optional[tp.NamedTuple]:
@@ -2243,10 +2193,7 @@ class Portfolio(Analyzable, PortfolioWithInOutputs, SimRangeMixin, metaclass=Met
         if force_resampling:
             raise NotImplementedError(f"Cannot resample object '{obj_name}'")
         if not silence_warnings:
-            warnings.warn(
-                f"Cannot figure out how to resample object '{obj_name}'",
-                stacklevel=2,
-            )
+            warn(f"Cannot figure out how to resample object '{obj_name}'")
         return obj
 
     def resample_in_outputs(

@@ -1,4 +1,12 @@
-# Copyright (c) 2021-2024 Oleg Polakow. All rights reserved.
+# ==================================== VBTPROXYZ ====================================
+# Copyright (c) 2021-2025 Oleg Polakow. All rights reserved.
+#
+# This file is part of the proprietary VectorBT® PRO package and is licensed under
+# the VectorBT® PRO License available at https://vectorbt.pro/terms/software-license/
+#
+# Unauthorized publishing, distribution, sublicensing, or sale of this software
+# or its parts is strictly prohibited.
+# ===================================================================================
 
 """Classes and functions for indexing."""
 
@@ -461,6 +469,8 @@ def build_param_indexer(
     """
 
     class ParamIndexer(IndexingBase):
+        """Class with parameter indexing."""
+
         def __init__(
             self,
             param_mappers: tp.Sequence[tp.Series],
@@ -974,7 +984,7 @@ class DTCIdxr(UniIdxr, DefineMixin):
         if isinstance(self.value, (slice, hslice)):
             if self.value.step is not None:
                 raise ValueError("Step must be None")
-            if self.value.start is None and self.value.step is None:
+            if self.value.start is None and self.value.stop is None:
                 return slice(None, None, None)
             start_dtc = self.get_dtc_namedtuple(self.value.start, **parse_kwargs)
             end_dtc = self.get_dtc_namedtuple(self.value.stop, **parse_kwargs)
@@ -1262,13 +1272,14 @@ def get_index_points(
 
     if kind.lower() == "labels":
         on = dt.try_align_to_dt_index(on, index)
-        indexer_method = indexer_method.lower()
-        if indexer_method == "before":
-            on = on - pd.Timedelta(1, "ns")
-            indexer_method = "ffill"
-        elif indexer_method == "after":
-            on = on + pd.Timedelta(1, "ns")
-            indexer_method = "bfill"
+        if indexer_method is not None:
+            indexer_method = indexer_method.lower()
+            if indexer_method == "before":
+                on = on - pd.Timedelta(1, "ns")
+                indexer_method = "ffill"
+            elif indexer_method == "after":
+                on = on + pd.Timedelta(1, "ns")
+                indexer_method = "bfill"
         index_points = index.get_indexer(on, method=indexer_method, tolerance=indexer_tolerance)
     else:
         index_points = np.asarray(on)

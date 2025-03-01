@@ -1,10 +1,17 @@
-# Copyright (c) 2021-2024 Oleg Polakow. All rights reserved.
+# ==================================== VBTPROXYZ ====================================
+# Copyright (c) 2021-2025 Oleg Polakow. All rights reserved.
+#
+# This file is part of the proprietary VectorBT® PRO package and is licensed under
+# the VectorBT® PRO License available at https://vectorbt.pro/terms/software-license/
+#
+# Unauthorized publishing, distribution, sublicensing, or sale of this software
+# or its parts is strictly prohibited.
+# ===================================================================================
 
 """Module with `AVData`."""
 
 import re
 import urllib.parse
-import warnings
 from functools import lru_cache
 
 import numpy as np
@@ -17,13 +24,14 @@ from vectorbtpro.utils import datetime_ as dt
 from vectorbtpro.utils.config import merge_dicts
 from vectorbtpro.utils.module_ import check_installed
 from vectorbtpro.utils.parsing import get_func_arg_names
+from vectorbtpro.utils.warnings_ import warn
 
 try:
     if not tp.TYPE_CHECKING:
         raise ImportError
     from alpha_vantage.alphavantage import AlphaVantage as AlphaVantageT
 except ImportError:
-    AlphaVantageT = tp.Any
+    AlphaVantageT = "AlphaVantage"
 
 __all__ = [
     "AVData",
@@ -278,7 +286,7 @@ class AVData(RemoteData):
 
         if use_parser and api_meta is None and (function is None or match_params):
             if not silence_warnings and cls.parse_api_meta.cache_info().misses == 0:
-                warnings.warn("Parsing API documentation...", stacklevel=2)
+                warn("Parsing API documentation...")
             try:
                 api_meta = cls.parse_api_meta()
             except Exception as e:

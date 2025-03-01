@@ -1,10 +1,17 @@
-# Copyright (c) 2021-2024 Oleg Polakow. All rights reserved.
+# ==================================== VBTPROXYZ ====================================
+# Copyright (c) 2021-2025 Oleg Polakow. All rights reserved.
+#
+# This file is part of the proprietary VectorBT® PRO package and is licensed under
+# the VectorBT® PRO License available at https://vectorbt.pro/terms/software-license/
+#
+# Unauthorized publishing, distribution, sublicensing, or sale of this software
+# or its parts is strictly prohibited.
+# ===================================================================================
 
 """Utilities for validation during runtime."""
 
 import datetime
 import traceback
-import warnings
 from collections.abc import Collection, Iterable, Sequence, Hashable, Mapping
 from inspect import signature, getmro
 from keyword import iskeyword
@@ -18,6 +25,7 @@ from numba.core.registry import CPUDispatcher
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.utils.base import Base
+from vectorbtpro.utils.warnings_ import warn
 
 __all__ = [
     "is_numba_enabled",
@@ -438,20 +446,14 @@ def is_deep_equal(
             except:
                 pass
             if debug:
-                warnings.warn(
-                    f"\n############### {_key} ###############\nObjects do not match",
-                    stacklevel=2,
-                )
+                warn(f"\n############### {_key} ###############\nObjects do not match")
             return False
     except Exception as e:
         if debug:
             if _key is None:
-                warnings.warn(traceback.format_exc(), stacklevel=2)
+                warn(traceback.format_exc())
             else:
-                warnings.warn(
-                    f"\n############### {_key} ###############\n" + traceback.format_exc(),
-                    stacklevel=2,
-                )
+                warn(f"\n############### {_key} ###############\n" + traceback.format_exc())
         return False
     return True
 

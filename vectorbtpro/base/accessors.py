@@ -1,10 +1,17 @@
-# Copyright (c) 2021-2024 Oleg Polakow. All rights reserved.
+# ==================================== VBTPROXYZ ====================================
+# Copyright (c) 2021-2025 Oleg Polakow. All rights reserved.
+#
+# This file is part of the proprietary VectorBT® PRO package and is licensed under
+# the VectorBT® PRO License available at https://vectorbt.pro/terms/software-license/
+#
+# Unauthorized publishing, distribution, sublicensing, or sale of this software
+# or its parts is strictly prohibited.
+# ===================================================================================
 
 """Custom Pandas accessors for base operations with Pandas objects."""
 
 import ast
 import inspect
-import warnings
 
 import numpy as np
 import pandas as pd
@@ -25,17 +32,20 @@ from vectorbtpro.base.indexing import (
 from vectorbtpro.base.resampling.base import Resampler
 from vectorbtpro.base.wrapping import ArrayWrapper, Wrapping
 from vectorbtpro.utils import checks, datetime_ as dt
+from vectorbtpro.utils.chunking import ChunkMeta, iter_chunk_meta, get_chunk_meta_key, ArraySelector, ArraySlicer
 from vectorbtpro.utils.config import merge_dicts, resolve_dict, Configured
 from vectorbtpro.utils.decorators import hybrid_property, hybrid_method
+from vectorbtpro.utils.execution import Task, execute
 from vectorbtpro.utils.eval_ import evaluate
 from vectorbtpro.utils.magic_decorators import attach_binary_magic_methods, attach_unary_magic_methods
-from vectorbtpro.utils.parsing import get_context_vars
+from vectorbtpro.utils.parsing import get_context_vars, get_func_arg_names
 from vectorbtpro.utils.template import substitute_templates
+from vectorbtpro.utils.warnings_ import warn
 
 if tp.TYPE_CHECKING:
     from vectorbtpro.data.base import Data as DataT
 else:
-    DataT = tp.Any
+    DataT = "Data"
 if tp.TYPE_CHECKING:
     from vectorbtpro.generic.splitting.base import Splitter as SplitterT
 else:
@@ -50,11 +60,6 @@ class BaseIDXAccessor(Configured, IndexApplier):
     """Accessor on top of Index.
 
     Accessible via `pd.Index.vbt` and all child accessors."""
-
-    _expected_keys: tp.ExpectedKeys = (Configured._expected_keys or set()) | {
-        "obj",
-        "freq",
-    }
 
     def __init__(self, obj: tp.Index, freq: tp.Optional[tp.FrequencyLike] = None, **kwargs) -> None:
         checks.assert_instance_of(obj, pd.Index)
@@ -306,12 +311,9 @@ class BaseIDXAccessor(Configured, IndexApplier):
                     freq = dt.to_timedelta(freq, approximate=True)
                 return (index[-1] - index[0]) / freq + 1
             if not wrapping_cfg["silence_warnings"]:
-                warnings.warn(
-                    (
-                        "Couldn't parse the frequency of index. Pass it as `freq` or "
-                        "define it globally under `settings.wrapping`."
-                    ),
-                    stacklevel=2,
+                warn(
+                    "Couldn't parse the frequency of index. Pass it as `freq` or "
+                    "define it globally under `settings.wrapping`."
                 )
         if checks.is_number(index[0]) and checks.is_number(index[-1]):
             freq = cls_or_self.get_freq(index=index, freq=freq, allow_offset=False, allow_numeric=True)
@@ -319,7 +321,7 @@ class BaseIDXAccessor(Configured, IndexApplier):
                 return (index[-1] - index[0]) / freq + 1
             return index[-1] - index[0] + 1
         if not wrapping_cfg["silence_warnings"]:
-            warnings.warn("Index is neither datetime-like nor integer", stacklevel=2)
+            warn("Index is neither datetime-like nor integer")
         return cls_or_self.get_periods(index=index)
 
     @property
@@ -344,12 +346,9 @@ class BaseIDXAccessor(Configured, IndexApplier):
         freq = self.freq
         if freq is None:
             if not silence_warnings:
-                warnings.warn(
-                    (
-                        "Couldn't parse the frequency of index. Pass it as `freq` or "
-                        "define it globally under `settings.wrapping`."
-                    ),
-                    stacklevel=2,
+                warn(
+                    "Couldn't parse the frequency of index. Pass it as `freq` or "
+                    "define it globally under `settings.wrapping`."
                 )
             return a
         if not isinstance(freq, pd.Timedelta):
@@ -479,6 +478,77 @@ class BaseIDXAccessor(Configured, IndexApplier):
         if splitter_cls is None:
             splitter_cls = Splitter
         return splitter_cls.split_and_apply(self.obj, apply_func, Takeable(self.obj), *args, **kwargs)
+
+    # ############# Chunking ############# #
+
+    def chunk(
+        self: BaseIDXAccessorT,
+        min_size: tp.Optional[int] = None,
+        n_chunks: tp.Union[None, int, str] = None,
+        chunk_len: tp.Union[None, int, str] = None,
+        chunk_meta: tp.Optional[tp.Iterable[ChunkMeta]] = None,
+        select: bool = False,
+        return_chunk_meta: bool = False,
+    ) -> tp.Iterator[tp.Union[tp.Index, tp.Tuple[ChunkMeta, tp.Index]]]:
+        """Chunk this instance.
+
+        If `axis` is None, becomes 0 if the instance is one-dimensional and 1 otherwise.
+
+        For arguments related to chunking meta, see `vectorbtpro.utils.chunking.iter_chunk_meta`.
+
+        !!! note
+            Splits Pandas object, not accessor!"""
+        if chunk_meta is None:
+            chunk_meta = iter_chunk_meta(
+                size=len(self.obj),
+                min_size=min_size,
+                n_chunks=n_chunks,
+                chunk_len=chunk_len
+            )
+        for _chunk_meta in chunk_meta:
+            if select:
+                array_taker = ArraySelector()
+            else:
+                array_taker = ArraySlicer()
+            if return_chunk_meta:
+                yield _chunk_meta, array_taker.take(self.obj, _chunk_meta)
+            else:
+                yield array_taker.take(self.obj, _chunk_meta)
+
+    def chunk_apply(
+        self: BaseIDXAccessorT,
+        apply_func: tp.Union[str, tp.Callable],
+        *args,
+        chunk_kwargs: tp.KwargsLike = None,
+        execute_kwargs: tp.KwargsLike = None,
+        **kwargs,
+    ) -> tp.MergeableResults:
+        """Chunk this instance and apply a function to each chunk.
+
+        If `apply_func` is a string, becomes the method name.
+
+        For arguments related to chunking, see `Wrapping.chunk`.
+
+        !!! note
+            Splits Pandas object, not accessor!"""
+        if isinstance(apply_func, str):
+            apply_func = getattr(type(self), apply_func)
+        if chunk_kwargs is None:
+            chunk_arg_names = set(get_func_arg_names(self.chunk))
+            chunk_kwargs = {}
+            for k in list(kwargs.keys()):
+                if k in chunk_arg_names:
+                    chunk_kwargs[k] = kwargs.pop(k)
+        if execute_kwargs is None:
+            execute_kwargs = {}
+        chunks = self.chunk(return_chunk_meta=True, **chunk_kwargs)
+        tasks = []
+        keys = []
+        for _chunk_meta, chunk in chunks:
+            tasks.append(Task(apply_func, chunk, *args, **kwargs))
+            keys.append(get_chunk_meta_key(_chunk_meta))
+        keys = pd.Index(keys, name="chunk_indices")
+        return execute(tasks, size=len(tasks), keys=keys, **execute_kwargs)
 
 
 BaseAccessorT = tp.TypeVar("BaseAccessorT", bound="BaseAccessor")
@@ -714,10 +784,6 @@ class BaseAccessor(Wrapping):
         kwargs = cls.resolve_stack_kwargs(*objs, **kwargs)
         return cls.df_accessor_cls(**kwargs)
 
-    _expected_keys: tp.ExpectedKeys = (Wrapping._expected_keys or set()) | {
-        "obj",
-    }
-
     def __init__(
         self,
         wrapper: tp.Union[ArrayWrapper, tp.ArrayLike],
@@ -793,6 +859,14 @@ class BaseAccessor(Wrapping):
         if key is None:
             return self.obj
         return self.obj.get(key, default=default)
+
+    @property
+    def unwrapped(self) -> tp.SeriesFrame:
+        return self.obj
+
+    @hybrid_method
+    def should_wrap(cls_or_self) -> bool:
+        return False
 
     @hybrid_property
     def ndim(cls_or_self) -> tp.Optional[int]:
@@ -1769,69 +1843,6 @@ class BaseAccessor(Wrapping):
         else:
             out = evaluate(expr, context=objs)
         return wrapper.wrap(out, **wrap_kwargs)
-
-    def split(
-        self,
-        *args,
-        splitter_cls: tp.Optional[tp.Type[SplitterT]] = None,
-        wrap: bool = False,
-        **kwargs,
-    ) -> tp.Any:
-        """Split using `vectorbtpro.generic.splitting.base.Splitter.split_and_take`.
-
-        Uses the option `into="reset_stacked"` by default.
-
-        !!! note
-            Splits Pandas object, not accessor!
-        """
-        from vectorbtpro.generic.splitting.base import Splitter
-
-        if splitter_cls is None:
-            splitter_cls = Splitter
-        return splitter_cls.split_and_take(
-            self.wrapper.index,
-            self if wrap else self.obj,
-            *args,
-            _take_kwargs=dict(into="reset_stacked"),
-            **kwargs,
-        )
-
-    def split_apply(
-        self,
-        apply_func: tp.Callable,
-        *args,
-        splitter_cls: tp.Optional[tp.Type[SplitterT]] = None,
-        wrap: bool = False,
-        **kwargs,
-    ) -> tp.Any:
-        """Split using `vectorbtpro.generic.splitting.base.Splitter.split_and_apply`.
-
-        !!! note
-            Splits Pandas object, not accessor!"""
-        from vectorbtpro.generic.splitting.base import Splitter, Takeable
-
-        if splitter_cls is None:
-            splitter_cls = Splitter
-        return splitter_cls.split_and_apply(
-            self.wrapper.index,
-            apply_func,
-            Takeable(self) if wrap else Takeable(self.obj),
-            *args,
-            **kwargs,
-        )
-
-    # ############# Iteration ############# #
-
-    def items(self, *args, wrap: bool = False, **kwargs) -> tp.ItemGenerator:
-        """See `vectorbtpro.base.wrapping.Wrapping.items`.
-
-        !!! note
-            If `wrap` is False, splits Pandas object, not accessor!"""
-        for k, v in Wrapping.items(self, *args, **kwargs):
-            if wrap:
-                yield k, v
-            else:
-                yield k, v.obj
 
 
 class BaseSRAccessor(BaseAccessor):

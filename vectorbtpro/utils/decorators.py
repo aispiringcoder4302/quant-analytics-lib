@@ -1,13 +1,23 @@
-# Copyright (c) 2021-2024 Oleg Polakow. All rights reserved.
+# ==================================== VBTPROXYZ ====================================
+# Copyright (c) 2021-2025 Oleg Polakow. All rights reserved.
+#
+# This file is part of the proprietary VectorBT® PRO package and is licensed under
+# the VectorBT® PRO License available at https://vectorbt.pro/terms/software-license/
+#
+# Unauthorized publishing, distribution, sublicensing, or sale of this software
+# or its parts is strictly prohibited.
+# ===================================================================================
 
 """Class and function decorators."""
 
 from functools import wraps
+import threading
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.utils.base import Base
 
 __all__ = [
+    "memoized_method",
     "class_property",
     "hybrid_property",
     "hybrid_method",
@@ -23,6 +33,23 @@ __pdoc__ = {}
 
 
 # ############# Generic ############# #
+
+
+def memoized_method(function: tp.Callable) -> tp.Callable:
+    """Dead-simple memoization decorator for methods."""
+    lock = threading.Lock()
+    memo = {}
+
+    def wrapper(*args) -> tp.Any:
+        with lock:
+            if args[1:] in memo:
+                return memo[args[1:]]
+            else:
+                rv = function(*args)
+                memo[args[1:]] = rv
+                return rv
+
+    return wrapper
 
 
 class class_property(Base):

@@ -1,50 +1,195 @@
-# Copyright (c) 2021-2024 Oleg Polakow. All rights reserved.
+# ==================================== VBTPROXYZ ====================================
+# Copyright (c) 2021-2025 Oleg Polakow. All rights reserved.
+#
+# This file is part of the proprietary VectorBT® PRO package and is licensed under
+# the VectorBT® PRO License available at https://vectorbt.pro/terms/software-license/
+#
+# Unauthorized publishing, distribution, sublicensing, or sale of this software
+# or its parts is strictly prohibited.
+# ===================================================================================
 
 """Base asset classes.
 
 See `vectorbtpro.utils.knowledge` for the toy dataset."""
 
+import hashlib
 import json
 import re
-import warnings
 from collections.abc import MutableSequence
 from pathlib import Path
 
 import pandas as pd
 
 from vectorbtpro import _typing as tp
-from vectorbtpro.utils import checks, search
+from vectorbtpro.utils import checks
 from vectorbtpro.utils.config import Configured
-from vectorbtpro.utils.config import flat_merge_dicts, deep_merge_dicts
+from vectorbtpro.utils.config import merge_dicts, flat_merge_dicts
 from vectorbtpro.utils.decorators import hybrid_method
 from vectorbtpro.utils.execution import Task, execute, NoResult
+from vectorbtpro.utils.knowledge.chatting import RankContextable
 from vectorbtpro.utils.module_ import get_caller_qualname
-from vectorbtpro.utils.parsing import get_func_arg_names, get_func_kwargs
-from vectorbtpro.utils.path_ import check_mkdir, remove_dir, dir_tree_from_paths
+from vectorbtpro.utils.parsing import get_func_arg_names
+from vectorbtpro.utils.path_ import dir_tree_from_paths, remove_dir, check_mkdir
 from vectorbtpro.utils.pbar import ProgressBar
-from vectorbtpro.utils.pickling import decompress, load_bytes
-from vectorbtpro.utils.template import CustomTemplate, RepEval, RepFunc, Sub
-
-try:
-    if not tp.TYPE_CHECKING:
-        raise ImportError
-    from tiktoken import Encoding as EncodingT
-except ImportError:
-    EncodingT = tp.Any
+from vectorbtpro.utils.pickling import decompress, dumps, load_bytes, save, load
+from vectorbtpro.utils.search_ import flatten_obj, unflatten_obj
+from vectorbtpro.utils.template import CustomTemplate, RepEval, RepFunc
+from vectorbtpro.utils.warnings_ import warn
 
 __all__ = [
+    "AssetCacheManager",
     "KnowledgeAsset",
 ]
 
 
-# ############# Asset classes ############# #
+asset_cache: tp.Dict[tp.Hashable, "KnowledgeAsset"] = {}
+"""Asset cache."""
+
+
+class AssetCacheManager(Configured):
+    """Class for managing knowledge asset cache.
+
+    For defaults, see `vectorbtpro._settings.knowledge`."""
+
+    _settings_path: tp.SettingsPath = "knowledge"
+
+    _specializable: tp.ClassVar[bool] = False
+
+    _extendable: tp.ClassVar[bool] = False
+
+    def __init__(
+        self,
+        persist_cache: tp.Optional[bool] = None,
+        cache_dir: tp.Optional[tp.PathLike] = None,
+        cache_mkdir_kwargs: tp.KwargsLike = None,
+        clear_cache: tp.Optional[bool] = None,
+        max_cache_count: tp.Optional[int] = None,
+        save_cache_kwargs: tp.KwargsLike = None,
+        load_cache_kwargs: tp.KwargsLike = None,
+        template_context: tp.KwargsLike = None,
+        **kwargs,
+    ) -> None:
+        Configured.__init__(
+            self,
+            persist_cache=persist_cache,
+            cache_dir=cache_dir,
+            cache_mkdir_kwargs=cache_mkdir_kwargs,
+            clear_cache=clear_cache,
+            max_cache_count=max_cache_count,
+            save_cache_kwargs=save_cache_kwargs,
+            load_cache_kwargs=load_cache_kwargs,
+            template_context=template_context,
+            **kwargs,
+        )
+
+        persist_cache = self.resolve_setting(persist_cache, "cache")
+        cache_dir = self.resolve_setting(cache_dir, "asset_cache_dir")
+        cache_mkdir_kwargs = self.resolve_setting(cache_mkdir_kwargs, "cache_mkdir_kwargs", merge=True)
+        clear_cache = self.resolve_setting(clear_cache, "clear_cache")
+        max_cache_count = self.resolve_setting(max_cache_count, "max_cache_count")
+        save_cache_kwargs = self.resolve_setting(save_cache_kwargs, "save_cache_kwargs", merge=True)
+        load_cache_kwargs = self.resolve_setting(load_cache_kwargs, "load_cache_kwargs", merge=True)
+        template_context = self.resolve_setting(template_context, "template_context", merge=True)
+
+        if isinstance(cache_dir, CustomTemplate):
+            asset_cache_dir = cache_dir
+            cache_dir = self.get_setting("cache_dir")
+            if isinstance(cache_dir, CustomTemplate):
+                cache_dir = cache_dir.substitute(template_context, eval_id="cache_dir")
+            template_context = flat_merge_dicts(dict(cache_dir=cache_dir), template_context)
+            asset_cache_dir = asset_cache_dir.substitute(template_context, eval_id="asset_cache_dir")
+            cache_dir = asset_cache_dir
+        cache_dir = Path(cache_dir)
+        if cache_dir.exists():
+            if clear_cache:
+                remove_dir(cache_dir, missing_ok=True, with_contents=True)
+        check_mkdir(cache_dir, **cache_mkdir_kwargs)
+
+        self._persist_cache = persist_cache
+        self._cache_dir = cache_dir
+        self._max_cache_count = max_cache_count
+        self._save_cache_kwargs = save_cache_kwargs
+        self._load_cache_kwargs = load_cache_kwargs
+        self._template_context = template_context
+
+    @property
+    def persist_cache(self) -> bool:
+        """Whether to persist cache on disk."""
+        return self._persist_cache
+
+    @property
+    def cache_dir(self) -> tp.Path:
+        """Cache directory."""
+        return self._cache_dir
+
+    @property
+    def max_cache_count(self) -> tp.Optional[int]:
+        """Maximum number of assets to be cached.
+
+        Keeps only the most recent assets."""
+        return self._max_cache_count
+
+    @property
+    def save_cache_kwargs(self) -> tp.Kwargs:
+        """Keyword arguments passed to `vectorbtpro.utils.pickling.save`."""
+        return self._save_cache_kwargs
+
+    @property
+    def load_cache_kwargs(self) -> tp.Kwargs:
+        """Keyword arguments passed to `vectorbtpro.utils.pickling.load`."""
+        return self._load_cache_kwargs
+
+    @classmethod
+    def generate_cache_key(cls, **kwargs) -> str:
+        """Generate a cache key based on the current VBT version, settings, and keyword arguments."""
+        from vectorbtpro._version import __version__
+
+        bytes_ = b""
+        bytes_ += dumps(kwargs)
+        bytes_ += dumps(cls.get_settings())
+        bytes_ += dumps(__version__)
+        return hashlib.md5(bytes_).hexdigest()
+
+    def load_asset(self, cache_key: str) -> tp.Optional[tp.MaybeKnowledgeAsset]:
+        """Load the knowledge asset under a cache key."""
+        if cache_key in asset_cache:
+            return asset_cache[cache_key]
+        asset_cache_file = self.cache_dir / cache_key
+        if asset_cache_file.exists():
+            return load(asset_cache_file, **self.load_cache_kwargs)
+
+    def cleanup_cache_dir(self) -> None:
+        """Keep only the most recent assets."""
+        if not self.max_cache_count:
+            return
+        files = [f for f in self.cache_dir.iterdir() if f.is_file()]
+        if len(files) <= self.max_cache_count:
+            return
+        files.sort(key=lambda f: f.stat().st_mtime, reverse=True)
+        files_to_delete = files[self.max_cache_count:]
+        for file_path in files_to_delete:
+            file_path.unlink(missing_ok=True)
+
+    def save_asset(self, asset: tp.MaybeKnowledgeAsset, cache_key: str) -> tp.Optional[tp.Path]:
+        """Save a knowledge asset under a cache key."""
+        asset_cache[cache_key] = asset
+        if self.persist_cache:
+            asset_cache_file = self.cache_dir / cache_key
+            path = save(asset, path=asset_cache_file, **self.save_cache_kwargs)
+            self.cleanup_cache_dir()
+            return path
 
 
 KnowledgeAssetT = tp.TypeVar("KnowledgeAssetT", bound="KnowledgeAsset")
-MaybeKnowledgeAssetT = tp.Union[KnowledgeAssetT, list, dict]
 
 
-class KnowledgeAsset(Configured, MutableSequence):
+class MetaKnowledgeAsset(type(Configured), type(MutableSequence)):
+    """Metaclass for `KnowledgeAsset`."""
+
+    pass
+
+
+class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=MetaKnowledgeAsset):
     """Class for working with a knowledge asset.
 
     This class behaves like a mutable sequence.
@@ -52,11 +197,6 @@ class KnowledgeAsset(Configured, MutableSequence):
     For defaults, see `vectorbtpro._settings.knowledge`."""
 
     _settings_path: tp.SettingsPath = "knowledge"
-
-    _expected_keys: tp.ExpectedKeys = (Configured._expected_keys or set()) | {
-        "data",
-        "single_item",
-    }
 
     @hybrid_method
     def combine(
@@ -101,7 +241,13 @@ class KnowledgeAsset(Configured, MutableSequence):
             new_data.extend(obj.data)
             if not obj.single_item:
                 new_single_item = False
-        return cls(data=new_data, single_item=new_single_item, **kwargs)
+        kwargs = cls_or_self.resolve_merge_kwargs(
+            *[obj.config for obj in objs],
+            single_item=new_single_item,
+            data=new_data,
+            **kwargs,
+        )
+        return cls(**kwargs)
 
     @hybrid_method
     def merge(
@@ -164,13 +310,19 @@ class KnowledgeAsset(Configured, MutableSequence):
             obj_data = obj.data
             if len(obj_data) == 1:
                 obj_data = [obj_data] * max_items
-            flat_obj_data = list(map(lambda x: search.flatten_obj(x, **flatten_kwargs), obj_data))
+            flat_obj_data = list(map(lambda x: flatten_obj(x, **flatten_kwargs), obj_data))
             flat_data.append(flat_obj_data)
         new_data = []
         for flat_dcts in zip(*flat_data):
             merged_flat_dct = flat_merge_dicts(*flat_dcts)
-            new_data.append(search.unflatten_obj(merged_flat_dct))
-        return cls(data=new_data, single_item=new_single_item, **kwargs)
+            new_data.append(unflatten_obj(merged_flat_dct))
+        kwargs = cls_or_self.resolve_merge_kwargs(
+            *[obj.config for obj in objs],
+            single_item=new_single_item,
+            data=new_data,
+            **kwargs,
+        )
+        return cls(**kwargs)
 
     @classmethod
     def from_json_file(
@@ -200,7 +352,9 @@ class KnowledgeAsset(Configured, MutableSequence):
         json_str = bytes_.decode("utf-8")
         return cls(data=json.loads(json_str), **kwargs)
 
-    def __init__(self, data: tp.List[tp.Any], single_item: bool = True, **kwargs) -> None:
+    def __init__(self, data: tp.Optional[tp.List[tp.Any]] = None, single_item: bool = True, **kwargs) -> None:
+        if data is None:
+            data = []
         if not isinstance(data, list):
             data = [data]
         else:
@@ -547,8 +701,9 @@ class KnowledgeAsset(Configured, MutableSequence):
         execute_kwargs: tp.KwargsLike = None,
         wrap: tp.Optional[bool] = None,
         single_item: tp.Optional[bool] = None,
+        return_iterator: bool = False,
         **kwargs,
-    ) -> MaybeKnowledgeAssetT:
+    ) -> tp.MaybeKnowledgeAsset:
         """Apply a function to each data item.
 
         Function can be either a callable, a tuple of function and its arguments,
@@ -580,7 +735,7 @@ class KnowledgeAsset(Configured, MutableSequence):
                 BasicAssetPipeline(
                     func,
                     *args,
-                    cond_kwargs=dict(asset=self),
+                    cond_kwargs=dict(asset_cls=type(self)),
                     asset_func_meta=asset_func_meta,
                     **kwargs,
                 ),
@@ -594,7 +749,7 @@ class KnowledgeAsset(Configured, MutableSequence):
                 ComplexAssetPipeline(
                     func,
                     context=kwargs.get("template_context", None),
-                    cond_kwargs=dict(asset=self),
+                    cond_kwargs=dict(asset_cls=type(self)),
                     asset_func_meta=asset_func_meta,
                     **kwargs,
                 ),
@@ -605,7 +760,7 @@ class KnowledgeAsset(Configured, MutableSequence):
             func, args, kwargs = AssetPipeline.resolve_task(
                 func,
                 *args,
-                cond_kwargs=dict(asset=self),
+                cond_kwargs=dict(asset_cls=type(self)),
                 asset_func_meta=asset_func_meta,
                 **kwargs,
             )
@@ -621,7 +776,7 @@ class KnowledgeAsset(Configured, MutableSequence):
             prefix += f"[{func.__name__}]"
         else:
             prefix += f"[{type(func).__name__}]"
-        execute_kwargs = deep_merge_dicts(
+        execute_kwargs = merge_dicts(
             dict(
                 show_progress=False if self.single_item else None,
                 pbar_kwargs=dict(
@@ -640,9 +795,14 @@ class KnowledgeAsset(Configured, MutableSequence):
                         {"i": i},
                         _kwargs["template_context"],
                     )
-                yield Task(func, d, *args, **_kwargs)
+                if return_iterator:
+                    yield Task(func, d, *args, **_kwargs).execute()
+                else:
+                    yield Task(func, d, *args, **_kwargs)
 
         tasks = _get_task_generator()
+        if return_iterator:
+            return tasks
         new_data = execute(tasks, size=len(self.data), **execute_kwargs)
         if new_data is NoResult:
             new_data = []
@@ -666,10 +826,10 @@ class KnowledgeAsset(Configured, MutableSequence):
         path: tp.Optional[tp.MaybeList[tp.PathLikeKey]] = None,
         keep_path: tp.Optional[bool] = None,
         skip_missing: tp.Optional[bool] = None,
-        source: tp.Union[None, str, tp.Callable, tp.CustomTemplate] = None,
+        source: tp.Optional[tp.CustomTemplateLike] = None,
         template_context: tp.KwargsLike = None,
         **kwargs,
-    ) -> MaybeKnowledgeAssetT:
+    ) -> tp.MaybeKnowledgeAsset:
         """Get data items or parts of them.
 
         Uses `KnowledgeAsset.apply` on `vectorbtpro.utils.knowledge.base_asset_funcs.GetAssetFunc`.
@@ -748,7 +908,7 @@ class KnowledgeAsset(Configured, MutableSequence):
         changed_only: tp.Optional[bool] = None,
         template_context: tp.KwargsLike = None,
         **kwargs,
-    ) -> MaybeKnowledgeAssetT:
+    ) -> tp.MaybeKnowledgeAsset:
         """Set data items or parts of them.
 
         Uses `KnowledgeAsset.apply` on `vectorbtpro.utils.knowledge.base_asset_funcs.SetAssetFunc`.
@@ -764,8 +924,6 @@ class KnowledgeAsset(Configured, MutableSequence):
         Set `make_copy` to True to not modify original data.
 
         Set `changed_only` to True to keep only the data items that have been changed.
-
-        Keyword arguments are passed to template substitution in `value`.
 
         Usage:
             ```pycon
@@ -807,7 +965,7 @@ class KnowledgeAsset(Configured, MutableSequence):
         make_copy: tp.Optional[bool] = None,
         changed_only: tp.Optional[bool] = None,
         **kwargs,
-    ) -> MaybeKnowledgeAssetT:
+    ) -> tp.MaybeKnowledgeAsset:
         """Remove data items or parts of them.
 
         If `path` is an integer, removes the entire data item at that index.
@@ -856,7 +1014,7 @@ class KnowledgeAsset(Configured, MutableSequence):
         make_copy: tp.Optional[bool] = None,
         changed_only: tp.Optional[bool] = None,
         **kwargs,
-    ) -> MaybeKnowledgeAssetT:
+    ) -> tp.MaybeKnowledgeAsset:
         """Move data items or parts of them.
 
         Uses `KnowledgeAsset.apply` on `vectorbtpro.utils.knowledge.base_asset_funcs.MoveAssetFunc`.
@@ -908,7 +1066,7 @@ class KnowledgeAsset(Configured, MutableSequence):
         make_copy: tp.Optional[bool] = None,
         changed_only: tp.Optional[bool] = None,
         **kwargs,
-    ) -> MaybeKnowledgeAssetT:
+    ) -> tp.MaybeKnowledgeAsset:
         """Rename data items or parts of them.
 
         Uses `KnowledgeAsset.apply` on `vectorbtpro.utils.knowledge.base_asset_funcs.RenameAssetFunc`.
@@ -947,7 +1105,7 @@ class KnowledgeAsset(Configured, MutableSequence):
         changed_only: tp.Optional[bool] = None,
         template_context: tp.KwargsLike = None,
         **kwargs,
-    ) -> MaybeKnowledgeAssetT:
+    ) -> tp.MaybeKnowledgeAsset:
         """Reorder data items or parts of them.
 
         Uses `KnowledgeAsset.apply` on `vectorbtpro.utils.knowledge.base_asset_funcs.ReorderAssetFunc`.
@@ -970,8 +1128,6 @@ class KnowledgeAsset(Configured, MutableSequence):
         Set `make_copy` to True to not modify original data.
 
         Set `changed_only` to True to keep only the data items that have been changed.
-
-        Keyword arguments are passed to template substitution in `new_order`.
 
         Usage:
             ```pycon
@@ -1004,12 +1160,12 @@ class KnowledgeAsset(Configured, MutableSequence):
 
     def query(
         self: KnowledgeAssetT,
-        expression: tp.Union[str, tp.Callable, tp.CustomTemplate],
+        expression: tp.CustomTemplateLike,
         query_engine: tp.Optional[str] = None,
         template_context: tp.KwargsLike = None,
         return_type: tp.Optional[str] = None,
         **kwargs,
-    ) -> MaybeKnowledgeAssetT:
+    ) -> tp.MaybeKnowledgeAsset:
         """Query using an engine and return the queried data item(s).
 
         Following engines are supported:
@@ -1026,7 +1182,7 @@ class KnowledgeAsset(Configured, MutableSequence):
         If `return_type` is "item", returns the data item when matched. If `return_type` is "bool",
         returns True when matched.
 
-        Templates can also use the functions defined in `vectorbtpro.utils.search.search_config`.
+        Templates can also use the functions defined in `vectorbtpro.utils.search_.search_config`.
 
         They work on single values and sequences alike.
 
@@ -1153,7 +1309,7 @@ class KnowledgeAsset(Configured, MutableSequence):
         find_all: tp.Optional[bool] = None,
         keep_path: tp.Optional[bool] = None,
         skip_missing: tp.Optional[bool] = None,
-        source: tp.Union[None, str, tp.Callable, tp.CustomTemplate] = None,
+        source: tp.Optional[tp.CustomTemplateLike] = None,
         in_dumps: tp.Optional[bool] = None,
         dump_kwargs: tp.KwargsLike = None,
         template_context: tp.KwargsLike = None,
@@ -1164,15 +1320,15 @@ class KnowledgeAsset(Configured, MutableSequence):
         unique_matches: tp.Optional[bool] = None,
         unique_fields: tp.Optional[bool] = None,
         **kwargs,
-    ) -> MaybeKnowledgeAssetT:
+    ) -> tp.MaybeKnowledgeAsset:
         """Find occurrences and return a new `KnowledgeAsset` instance.
 
         Uses `KnowledgeAsset.apply` on `vectorbtpro.utils.knowledge.base_asset_funcs.FindAssetFunc`.
 
-        Uses `vectorbtpro.utils.search.contains_in_obj` (keyword arguments are passed here)
+        Uses `vectorbtpro.utils.search_.contains_in_obj` (keyword arguments are passed here)
         to find any occurrences in each data item if `return_type` is "item" (returns the data item when matched),
         `return_type` is "field" (returns the field), or `return_type` is "bool" (returns True when matched).
-        For all other return types, uses `vectorbtpro.utils.search.find_in_obj` and `vectorbtpro.utils.search.find`.
+        For all other return types, uses `vectorbtpro.utils.search_.find_in_obj` and `vectorbtpro.utils.search_.find`.
 
         Target can be one or multiple data items. If there are multiple targets and `find_all` is True,
         the match function will return True only if all targets have been found.
@@ -1190,7 +1346,7 @@ class KnowledgeAsset(Configured, MutableSequence):
         the data item under the path is represented by "x" while its fields are represented by their names.
 
         Set `in_dumps` to True to convert the entire data item to string and search in that string.
-        Will use `vectorbtpro.utils.formatting.dump` with `dump_kwargs`.
+        Will use `vectorbtpro.utils.formatting.dump` with `**dump_kwargs`.
 
         Disable `merge_matches` and `merge_fields` to keep empty lists when searching for matches and
         fields respectively. Disable `unique_matches` and `unique_fields` to keep duplicate matches
@@ -1295,19 +1451,18 @@ class KnowledgeAsset(Configured, MutableSequence):
     def find_code(
         self,
         target: tp.Optional[tp.MaybeIterable[tp.Any]] = None,
-        language: tp.Optional[tp.MaybeIterable[str]] = None,
-        require_language: tp.Optional[bool] = None,
+        language: tp.Union[None, bool, tp.MaybeIterable[str]] = None,
         in_blocks: tp.Optional[bool] = None,
         escape_target: bool = True,
         escape_language: bool = True,
         return_type: tp.Optional[str] = "match",
         flags: int = 0,
         **kwargs,
-    ) -> MaybeKnowledgeAssetT:
+    ) -> tp.MaybeKnowledgeAsset:
         """Find code using `KnowledgeAsset.find`.
 
         For defaults, see `code` in `vectorbtpro._settings.knowledge`."""
-        require_language = self.resolve_setting(require_language, "require_language", sub_path="code")
+        language = self.resolve_setting(language, "language", sub_path="code")
         in_blocks = self.resolve_setting(in_blocks, "in_blocks", sub_path="code")
 
         if target is not None:
@@ -1339,7 +1494,7 @@ class KnowledgeAsset(Configured, MutableSequence):
                 if escape_target:
                     t = re.escape(t)
                 if in_blocks:
-                    if language is not None:
+                    if language is not None and not isinstance(language, bool):
                         new_t = rf"""
                         ```{language}{opt_title}\n
                         (?:(?!```)[\s\S])*?
@@ -1347,7 +1502,7 @@ class KnowledgeAsset(Configured, MutableSequence):
                         (?:(?!```)[\s\S])*?
                         ```\s*$
                         """
-                    elif require_language:
+                    elif language is not None and isinstance(language, bool) and language:
                         new_t = rf"""
                         ```{opt_language}{opt_title}\n
                         (?:(?!```)[\s\S])*?
@@ -1370,9 +1525,9 @@ class KnowledgeAsset(Configured, MutableSequence):
                 new_target = new_target[0]
         else:
             if in_blocks:
-                if language is not None:
+                if language is not None and not isinstance(language, bool):
                     new_target = rf"```{language}{opt_title}\n([\s\S]*?)```\s*$"
-                elif require_language:
+                elif language is not None and isinstance(language, bool) and language:
                     new_target = rf"```{opt_language}{opt_title}\n([\s\S]*?)```\s*$"
                 else:
                     new_target = rf"```(?:{opt_language}{opt_title})?\n([\s\S]*?)```\s*$"
@@ -1394,13 +1549,13 @@ class KnowledgeAsset(Configured, MutableSequence):
         make_copy: tp.Optional[bool] = None,
         changed_only: tp.Optional[bool] = None,
         **kwargs,
-    ) -> MaybeKnowledgeAssetT:
+    ) -> tp.MaybeKnowledgeAsset:
         """Find and replace occurrences and return a new `KnowledgeAsset` instance.
 
         Uses `KnowledgeAsset.apply` on `vectorbtpro.utils.knowledge.base_asset_funcs.FindReplaceAssetFunc`.
 
-        Uses `vectorbtpro.utils.search.find_in_obj` (keyword arguments are passed here) to find
-        occurrences in each data item. Then, uses `vectorbtpro.utils.search.replace_in_obj` to replace them.
+        Uses `vectorbtpro.utils.search_.find_in_obj` (keyword arguments are passed here) to find
+        occurrences in each data item. Then, uses `vectorbtpro.utils.search_.replace_in_obj` to replace them.
 
         Target can be one or multiple of data items, either as a list or a dictionary. If there are multiple
         targets and `find_all` is True, the match function will return True only if all targets have been found.
@@ -1483,7 +1638,7 @@ class KnowledgeAsset(Configured, MutableSequence):
         make_copy: tp.Optional[bool] = None,
         changed_only: tp.Optional[bool] = None,
         **kwargs,
-    ) -> MaybeKnowledgeAssetT:
+    ) -> tp.MaybeKnowledgeAsset:
         """Find and remove occurrences and return a new `KnowledgeAsset` instance.
 
         Uses `KnowledgeAsset.apply` on `vectorbtpro.utils.knowledge.base_asset_funcs.FindRemoveAssetFunc`.
@@ -1502,7 +1657,7 @@ class KnowledgeAsset(Configured, MutableSequence):
             **kwargs,
         )
 
-    def find_remove_empty(self: KnowledgeAssetT, **kwargs) -> MaybeKnowledgeAssetT:
+    def find_remove_empty(self: KnowledgeAssetT, **kwargs) -> tp.MaybeKnowledgeAsset:
         """Find and remove empty objects."""
         from vectorbtpro.utils.knowledge.base_asset_funcs import FindRemoveAssetFunc
 
@@ -1515,7 +1670,7 @@ class KnowledgeAsset(Configured, MutableSequence):
         make_copy: tp.Optional[bool] = None,
         changed_only: tp.Optional[bool] = None,
         **kwargs,
-    ) -> MaybeKnowledgeAssetT:
+    ) -> tp.MaybeKnowledgeAsset:
         """Flatten data items or parts of them.
 
         Uses `KnowledgeAsset.apply` on `vectorbtpro.utils.knowledge.base_asset_funcs.FlattenAssetFunc`.
@@ -1528,7 +1683,7 @@ class KnowledgeAsset(Configured, MutableSequence):
 
         Set `changed_only` to True to keep only the data items that have been changed.
 
-        Keyword arguments are passed to `vectorbtpro.utils.search.flatten_obj`.
+        Keyword arguments are passed to `vectorbtpro.utils.search_.flatten_obj`.
 
         Usage:
             ```pycon
@@ -1563,7 +1718,7 @@ class KnowledgeAsset(Configured, MutableSequence):
         make_copy: tp.Optional[bool] = None,
         changed_only: tp.Optional[bool] = None,
         **kwargs,
-    ) -> MaybeKnowledgeAssetT:
+    ) -> tp.MaybeKnowledgeAsset:
         """Unflatten data items or parts of them.
 
         Uses `KnowledgeAsset.apply` on `vectorbtpro.utils.knowledge.base_asset_funcs.UnflattenAssetFunc`.
@@ -1576,7 +1731,7 @@ class KnowledgeAsset(Configured, MutableSequence):
 
         Set `changed_only` to True to keep only the data items that have been changed.
 
-        Keyword arguments are passed to `vectorbtpro.utils.search.unflatten_obj`.
+        Keyword arguments are passed to `vectorbtpro.utils.search_.unflatten_obj`.
 
         Usage:
             ```pycon
@@ -1599,11 +1754,11 @@ class KnowledgeAsset(Configured, MutableSequence):
 
     def dump(
         self: KnowledgeAssetT,
-        source: tp.Union[None, str, tp.Callable, tp.CustomTemplate] = None,
+        source: tp.Optional[tp.CustomTemplateLike] = None,
         dump_engine: tp.Optional[str] = None,
         template_context: tp.KwargsLike = None,
         **kwargs,
-    ) -> MaybeKnowledgeAssetT:
+    ) -> tp.MaybeKnowledgeAsset:
         """Dump data items.
 
         Uses `KnowledgeAsset.apply` on `vectorbtpro.utils.knowledge.base_asset_funcs.DumpAssetFunc`.
@@ -1644,7 +1799,7 @@ class KnowledgeAsset(Configured, MutableSequence):
 
     def dump_all(
         self,
-        source: tp.Union[None, str, tp.Callable, tp.CustomTemplate] = None,
+        source: tp.Optional[tp.CustomTemplateLike] = None,
         dump_engine: tp.Optional[str] = None,
         template_context: tp.KwargsLike = None,
         **kwargs,
@@ -1661,6 +1816,44 @@ class KnowledgeAsset(Configured, MutableSequence):
             template_context=template_context,
             **kwargs,
         )
+
+    def to_documents(self, **kwargs) -> tp.MaybeKnowledgeAsset:
+        """Convert to documents of type `vectorbtpro.utils.knowledge.chatting.TextDocument`.
+
+        Document-related keyword arguments may contain templates. In such templates,
+        the index of the data item is represented by "i", the data item itself is represented by "d",
+        the data item under the path is represented by "x" while its fields are represented by their names."""
+        return self.apply("to_docs", **kwargs)
+
+    def split_text(
+        self,
+        text_path: tp.Optional[tp.PathLikeKey] = None,
+        merge_chunks: tp.Optional[bool] = None,
+        **kwargs,
+    ) -> tp.MaybeKnowledgeAsset:
+        """Split text.
+
+        Uses `KnowledgeAsset.apply` on `vectorbtpro.utils.knowledge.base_asset_funcs.SplitTextAssetFunc`.
+
+        Use argument `text_path` to specify a path to the content.
+
+        If `merge_chunks` is True, merges all chunks into a single list.
+
+        Uses `vectorbtpro.utils.knowledge.chatting.split_text` with `**split_text_kwargs` for text splitting."""
+        split_asset = self.apply(
+            "split_text",
+            text_path=text_path,
+            **kwargs,
+        )
+        merge_chunks = self.resolve_setting(merge_chunks, "merge_chunks")
+        if (
+            merge_chunks
+            and isinstance(split_asset, KnowledgeAsset)
+            and len(split_asset) > 0
+            and isinstance(split_asset[0], list)
+        ):
+            split_asset = split_asset.merge()
+        return split_asset
 
     # ############# Reduce methods ############# #
 
@@ -1698,7 +1891,7 @@ class KnowledgeAsset(Configured, MutableSequence):
 
     def reduce(
         self: KnowledgeAssetT,
-        func: tp.Union[str, tp.Callable, tp.CustomTemplate],
+        func: tp.CustomTemplateLike,
         *args,
         initializer: tp.Optional[tp.Any] = None,
         by: tp.Optional[tp.PathLikeKey] = None,
@@ -1706,8 +1899,9 @@ class KnowledgeAsset(Configured, MutableSequence):
         show_progress: tp.Optional[bool] = None,
         pbar_kwargs: tp.KwargsLike = None,
         wrap: tp.Optional[bool] = None,
+        return_iterator: bool = False,
         **kwargs,
-    ) -> MaybeKnowledgeAssetT:
+    ) -> tp.MaybeKnowledgeAsset:
         """Reduce data items.
 
         Function can be a callable, a tuple of function and its arguments,
@@ -1722,9 +1916,6 @@ class KnowledgeAsset(Configured, MutableSequence):
         If `by` is provided, see `KnowledgeAsset.groupby_reduce`.
 
         If `wrap` is True, returns a new `KnowledgeAsset` instance, otherwise raw output.
-
-        Positional arguments are passed to the function in case the template returns another function,
-        and keyword arguments are passed as a context to template substitution.
 
         Usage:
             ```pycon
@@ -1764,7 +1955,7 @@ class KnowledgeAsset(Configured, MutableSequence):
             func, args, kwargs = AssetPipeline.resolve_task(
                 func,
                 *args,
-                cond_kwargs=dict(asset=self),
+                cond_kwargs=dict(asset_cls=type(self)),
                 asset_func_meta=asset_func_meta,
                 **kwargs,
             )
@@ -1780,23 +1971,8 @@ class KnowledgeAsset(Configured, MutableSequence):
         else:
             d1 = initializer
             total = len(self.data)
-        if show_progress is None:
-            show_progress = total > 1
-        prefix = get_caller_qualname().split(".")[-1]
-        if "_short_name" in asset_func_meta:
-            prefix += f"[{asset_func_meta['_short_name']}]"
-        elif isinstance(func, type):
-            prefix += f"[{func.__name__}]"
-        else:
-            prefix += f"[{type(func).__name__}]"
-        pbar_kwargs = flat_merge_dicts(
-            dict(
-                bar_id=get_caller_qualname(),
-                prefix=prefix,
-            ),
-            pbar_kwargs,
-        )
-        with ProgressBar(total=total, show_progress=show_progress, **pbar_kwargs) as pbar:
+
+        def _get_d1_generator(d1):
             for i, d2 in enumerate(it):
                 if isinstance(func, CustomTemplate):
                     _template_context = flat_merge_dicts(
@@ -1822,6 +1998,30 @@ class KnowledgeAsset(Configured, MutableSequence):
                             _kwargs["template_context"],
                         )
                     d1 = func(d1, d2, *args, **_kwargs)
+                yield d1
+
+        d1s = _get_d1_generator(d1)
+        if return_iterator:
+            return d1s
+
+        if show_progress is None:
+            show_progress = total > 1
+        prefix = get_caller_qualname().split(".")[-1]
+        if "_short_name" in asset_func_meta:
+            prefix += f"[{asset_func_meta['_short_name']}]"
+        elif isinstance(func, type):
+            prefix += f"[{func.__name__}]"
+        else:
+            prefix += f"[{type(func).__name__}]"
+        pbar_kwargs = flat_merge_dicts(
+            dict(
+                bar_id=get_caller_qualname(),
+                prefix=prefix,
+            ),
+            pbar_kwargs,
+        )
+        with ProgressBar(total=total, show_progress=show_progress, **pbar_kwargs) as pbar:
+            for d1 in d1s:
                 pbar.update()
         if wrap is None and asset_func_meta.get("_wrap", None) is not None:
             wrap = asset_func_meta["_wrap"]
@@ -1835,7 +2035,7 @@ class KnowledgeAsset(Configured, MutableSequence):
 
     def groupby_reduce(
         self: KnowledgeAssetT,
-        func: tp.Union[str, tp.Callable, tp.CustomTemplate],
+        func: tp.CustomTemplateLike,
         *args,
         by: tp.Optional[tp.PathLikeKey] = None,
         uniform_groups: tp.Optional[bool] = None,
@@ -1866,9 +2066,9 @@ class KnowledgeAsset(Configured, MutableSequence):
             group_instance = self.get_items(group)
             tasks.append(Task(group_instance.reduce, func, *args, **kwargs))
         prefix = get_caller_qualname().split(".")[-1]
-        execute_kwargs = deep_merge_dicts(
+        execute_kwargs = merge_dicts(
             dict(
-                show_progress=len(groups) > 1,
+                show_progress=False if len(groups) == 1 else None,
                 pbar_kwargs=dict(
                     bar_id=get_caller_qualname(),
                     prefix=prefix,
@@ -1883,13 +2083,13 @@ class KnowledgeAsset(Configured, MutableSequence):
             return type(self).combine(results)
         return results
 
-    def merge_dicts(self: KnowledgeAssetT, **kwargs) -> MaybeKnowledgeAssetT:
+    def merge_dicts(self: KnowledgeAssetT, **kwargs) -> tp.MaybeKnowledgeAsset:
         """Merge (dict) date items into a single dict.
 
         Final keyword arguments are passed to `vectorbtpro.utils.config.merge_dicts`."""
         return self.reduce("merge_dicts", **kwargs)
 
-    def merge_lists(self: KnowledgeAssetT, **kwargs) -> MaybeKnowledgeAssetT:
+    def merge_lists(self: KnowledgeAssetT, **kwargs) -> tp.MaybeKnowledgeAsset:
         """Merge (list) date items into a single list."""
         return self.reduce("merge_lists", **kwargs)
 
@@ -1897,7 +2097,7 @@ class KnowledgeAsset(Configured, MutableSequence):
         self: KnowledgeAssetT,
         sort_keys: tp.Optional[bool] = None,
         **kwargs,
-    ) -> MaybeKnowledgeAssetT:
+    ) -> tp.MaybeKnowledgeAsset:
         """Collect values of each key in each data item."""
         return self.reduce("collect", sort_keys=sort_keys, **kwargs)
 
@@ -1944,6 +2144,10 @@ class KnowledgeAsset(Configured, MutableSequence):
                 describe_dict = {"count": len(v)}
             else:
                 describe_dict = describe_sr.describe(**describe_kwargs).to_dict()
+                if "count" in describe_dict:
+                    describe_dict["count"] = int(describe_dict["count"])
+                if "unique" in describe_dict:
+                    describe_dict["unique"] = int(describe_dict["unique"])
             if pd.api.types.is_integer_dtype(describe_sr.dtype):
                 new_describe_dict = {}
                 for _k, _v in describe_dict.items():
@@ -2026,18 +2230,139 @@ class KnowledgeAsset(Configured, MutableSequence):
         if len(self.data) == 1:
             return self.data[0]
         if separator is None:
-            if not all(isinstance(d, str) for d in self.data):
-                raise TypeError("All data items must be strings")
-            if self.data[0].endswith(("\n", "\t", " ")):
+            use_empty_separator = True
+            use_comma_separator = True
+            for d in self.data:
+                if not d.endswith(("\n", "\t", " ")):
+                    use_empty_separator = False
+                if not d.endswith(("}", "]")):
+                    use_comma_separator = False
+                if not use_empty_separator and not use_comma_separator:
+                    break
+            if use_empty_separator:
                 separator = ""
-            elif self.data[0].endswith(("}", "]")):
+            elif use_comma_separator:
                 separator = ", "
             else:
-                separator = "\n"
+                separator = "\n\n"
         joined = separator.join(self.data)
         if joined.startswith("{") and joined.endswith("}"):
             return "[" + joined + "]"
         return joined
+
+    def embed(
+        self,
+        to_documents_kwargs: tp.KwargsLike = None,
+        wrap_documents: tp.Optional[bool] = None,
+        **kwargs,
+    ) -> tp.Optional[tp.MaybeKnowledgeAsset]:
+        """Embed documents.
+
+        First, converts to `vectorbtpro.utils.knowledge.chatting.TextDocument` format using
+        `KnowledgeAsset.to_documents` and `**to_documents_kwargs`. Then, uses
+        `vectorbtpro.utils.knowledge.chatting.embed_documents` with `**kwargs` for actual ranking."""
+        from vectorbtpro.utils.knowledge.chatting import StoreDocument, EmbeddedDocument, embed_documents
+
+        if self.data and not isinstance(self.data[0], StoreDocument):
+            if to_documents_kwargs is None:
+                to_documents_kwargs = {}
+            documents = self.to_documents(**to_documents_kwargs)
+            if wrap_documents is None:
+                wrap_documents = False
+        else:
+            documents = self.data
+            if wrap_documents is None:
+                wrap_documents = True
+        embedded_documents = embed_documents(documents, **kwargs)
+        if embedded_documents is None:
+            return None
+        if not wrap_documents:
+
+            def _unwrap(document):
+                if isinstance(document, EmbeddedDocument):
+                    return document.replace(
+                        document=_unwrap(document.document),
+                        child_documents=[_unwrap(d) for d in document.child_documents],
+                    )
+                if isinstance(document, StoreDocument):
+                    return document.data
+                return document
+
+            embedded_documents = list(map(_unwrap, embedded_documents))
+        return self.replace(data=embedded_documents)
+
+    def rank(
+        self,
+        query: str,
+        to_documents_kwargs: tp.KwargsLike = None,
+        wrap_documents: tp.Optional[bool] = None,
+        cache_documents: bool = False,
+        cache_key: tp.Optional[str] = None,
+        asset_cache_manager: tp.Optional[tp.MaybeType[AssetCacheManager]] = None,
+        asset_cache_manager_kwargs: tp.KwargsLike = None,
+        silence_warnings: bool = False,
+        **kwargs,
+    ) -> tp.MaybeKnowledgeAsset:
+        """Rank documents by their similarity to a query.
+
+        First, converts to `vectorbtpro.utils.knowledge.chatting.TextDocument` format using
+        `KnowledgeAsset.to_documents` and `**to_documents_kwargs`. Then, uses
+        `vectorbtpro.utils.knowledge.chatting.rank_documents` with `**kwargs` for actual ranking.
+
+        If `cache_documents` is True and `cache_key` is not None, will use an asset cache manager
+        to store the generated text documents in a local and/or disk cache after conversion.
+        Running the same method again will use the cached documents."""
+        from vectorbtpro.utils.knowledge.chatting import StoreDocument, ScoredDocument, rank_documents
+
+        if cache_documents:
+            if asset_cache_manager is None:
+                asset_cache_manager = AssetCacheManager
+            if asset_cache_manager_kwargs is None:
+                asset_cache_manager_kwargs = {}
+            if isinstance(asset_cache_manager, type):
+                checks.assert_subclass_of(asset_cache_manager, AssetCacheManager, "asset_cache_manager")
+                asset_cache_manager = asset_cache_manager(**asset_cache_manager_kwargs)
+            else:
+                checks.assert_instance_of(asset_cache_manager, AssetCacheManager, "asset_cache_manager")
+                if asset_cache_manager_kwargs:
+                    asset_cache_manager = asset_cache_manager.replace(**asset_cache_manager_kwargs)
+        documents = None
+        if cache_documents and cache_key is not None:
+            documents = asset_cache_manager.load_asset(cache_key)
+            if documents is not None:
+                if wrap_documents is None:
+                    wrap_documents = False
+            else:
+                if not silence_warnings:
+                    warn("Caching documents...")
+        if documents is None:
+            if self.data and not isinstance(self.data[0], StoreDocument):
+                if to_documents_kwargs is None:
+                    to_documents_kwargs = {}
+                documents = self.to_documents(**to_documents_kwargs)
+                if cache_documents and cache_key is not None and isinstance(documents, KnowledgeAsset):
+                    asset_cache_manager.save_asset(documents, cache_key)
+                if wrap_documents is None:
+                    wrap_documents = False
+            else:
+                documents = self.data
+                if wrap_documents is None:
+                    wrap_documents = True
+        ranked_documents = rank_documents(query=query, documents=documents, **kwargs)
+        if not wrap_documents:
+
+            def _unwrap(document):
+                if isinstance(document, ScoredDocument):
+                    return document.replace(
+                        document=_unwrap(document.document),
+                        child_documents=[_unwrap(d) for d in document.child_documents],
+                    )
+                if isinstance(document, StoreDocument):
+                    return document.data
+                return document
+
+            ranked_documents = list(map(_unwrap, ranked_documents))
+        return self.replace(data=ranked_documents)
 
     def to_context(
         self,
@@ -2046,689 +2371,32 @@ class KnowledgeAsset(Configured, MutableSequence):
         separator: tp.Optional[str] = None,
         **kwargs,
     ) -> str:
-        """Dump and join to context."""
+        """Convert to a context.
+
+        If `dump_all` is True, calls `KnowledgeAsset.dump_all` with `*args` and `**kwargs`.
+        Otherwise, calls `KnowledgeAsset.dump`.
+
+        Finally, calls `KnowledgeAsset.join` with `separator`."""
+        from vectorbtpro.utils.knowledge.chatting import StoreDocument, EmbeddedDocument, ScoredDocument
+
         if dump_all is None:
-            dump_all = len(self.data) > 1 and separator is None
+            dump_all = (
+                len(self.data) > 1
+                and not isinstance(self.data[0], (StoreDocument, EmbeddedDocument, ScoredDocument))
+                and separator is None
+            )
         if dump_all:
-            return self.dump_all(*args, **kwargs)
-        dumped = self.dump(*args, **kwargs)
-        if isinstance(dumped, KnowledgeAsset):
-            return dumped.join(separator=separator)
-        return dumped
+            dumped = self.dump_all(*args, **kwargs)
+        else:
+            dumped = self.dump(*args, **kwargs)
+        if isinstance(dumped, str):
+            return dumped
+        if not isinstance(dumped, KnowledgeAsset):
+            dumped = self.replace(data=dumped)
+        return dumped.join(separator=separator)
 
     def print(self, *args, **kwargs) -> None:
-        """Convert to context and print.
+        """Convert to a context and print.
 
         Uses `KnowledgeAsset.to_context`."""
         print(self.to_context(*args, **kwargs))
-
-    # ############# LLM methods ############# #
-
-    @classmethod
-    def resolve_encoding(
-        cls,
-        tokenizer: tp.Union[None, str, EncodingT] = None,
-        model: tp.Optional[str] = None,
-    ) -> EncodingT:
-        """Resolve the encoding."""
-        from vectorbtpro.utils.module_ import assert_can_import
-
-        assert_can_import("tiktoken")
-        from tiktoken import Encoding
-
-        tokenizer = cls.resolve_setting(tokenizer, "tokenizer", sub_path="chat")
-        if isinstance(tokenizer, str):
-            from tiktoken import get_encoding, encoding_for_model
-
-            if tokenizer.startswith("model_or_"):
-                try:
-                    if model is None:
-                        raise KeyError
-                    encoding = encoding_for_model(model)
-                except KeyError:
-                    tokenizer = tokenizer[len("model_or_") :]
-                    encoding = get_encoding(tokenizer) if "k_base" in tokenizer else encoding_for_model(tokenizer)
-            elif isinstance(tokenizer, str):
-                encoding = get_encoding(tokenizer) if "k_base" in tokenizer else encoding_for_model(tokenizer)
-            else:
-                encoding = tokenizer
-        else:
-            encoding = tokenizer
-        checks.assert_instance_of(encoding, Encoding, arg_name="tokenizer")
-        return encoding
-
-    @classmethod
-    def count_tokens_in_context(
-        cls,
-        context: str,
-        tokenizer: tp.Union[None, str, EncodingT] = None,
-        model: tp.Optional[str] = None,
-    ) -> int:
-        """Count the number of tokens in a context."""
-        encoding = cls.resolve_encoding(tokenizer=tokenizer, model=model)
-        return len(encoding.encode(context))
-
-    def count_tokens(
-        self,
-        to_context_kwargs: tp.KwargsLike = None,
-        tokenizer: tp.Union[None, str, EncodingT] = None,
-        model: tp.Optional[str] = None,
-    ) -> int:
-        """Count the number of tokens in the context."""
-        to_context_kwargs = self.resolve_setting(to_context_kwargs, "to_context_kwargs", merge=True, sub_path="chat")
-        context = self.to_context(**to_context_kwargs)
-        encoding = self.resolve_encoding(tokenizer=tokenizer, model=model)
-        return len(encoding.encode(context))
-
-    @classmethod
-    def count_tokens_in_messages(
-        cls,
-        messages: tp.List[dict],
-        tokenizer: tp.Union[None, str, EncodingT] = None,
-        tokens_per_message: tp.Optional[int] = None,
-        tokens_per_name: tp.Optional[int] = None,
-        model: tp.Optional[str] = None,
-    ) -> int:
-        """Count the number of tokens in messages."""
-        encoding = cls.resolve_encoding(tokenizer=tokenizer, model=model)
-        tokens_per_message = cls.resolve_setting(tokens_per_message, "tokens_per_message", sub_path="chat")
-        tokens_per_name = cls.resolve_setting(tokens_per_name, "tokens_per_name", sub_path="chat")
-        num_tokens = 0
-        for message in messages:
-            num_tokens += tokens_per_message
-            for key, value in message.items():
-                num_tokens += len(encoding.encode(value))
-                if key == "name":
-                    num_tokens += tokens_per_name
-        num_tokens += 3
-        return num_tokens
-
-    def build_messages(
-        self,
-        message: str,
-        chat_history: tp.ChatHistory = None,
-        to_context_kwargs: tp.KwargsLike = None,
-        max_tokens: tp.Optional[int] = None,
-        tokenizer: tp.Union[None, str, EncodingT] = None,
-        tokens_per_message: tp.Optional[int] = None,
-        tokens_per_name: tp.Optional[int] = None,
-        model: tp.Optional[str] = None,
-        system_prompt: tp.Optional[str] = None,
-        system_as_user: tp.Optional[bool] = None,
-        context_prompt: tp.Optional[str] = None,
-        template_context: tp.KwargsLike = None,
-        silence_warnings: tp.Optional[bool] = None,
-    ) -> tp.List[dict]:
-        """Build messages for chatting."""
-        if chat_history is None:
-            chat_history = []
-        to_context_kwargs = self.resolve_setting(to_context_kwargs, "to_context_kwargs", merge=True, sub_path="chat")
-        max_tokens = self.resolve_setting(max_tokens, "max_tokens", sub_path="chat")
-        system_prompt = self.resolve_setting(system_prompt, "system_prompt", sub_path="chat")
-        system_as_user = self.resolve_setting(system_as_user, "system_as_user", sub_path="chat")
-        context_prompt = self.resolve_setting(context_prompt, "context_prompt", sub_path="chat")
-        template_context = self.resolve_setting(template_context, "template_context", merge=True, sub_path="chat")
-        silence_warnings = self.resolve_setting(silence_warnings, "silence_warnings", sub_path="chat")
-
-        if isinstance(context_prompt, str):
-            context_prompt = Sub(context_prompt)
-        elif checks.is_function(context_prompt):
-            context_prompt = RepFunc(context_prompt)
-        elif not isinstance(context_prompt, CustomTemplate):
-            raise TypeError(f"Context prompt must be a string, function, or template")
-        context = self.to_context(**to_context_kwargs)
-        if max_tokens is not None:
-            empty_context_prompt = context_prompt.substitute(
-                flat_merge_dicts(dict(context=""), template_context),
-                eval_id="context_prompt",
-            )
-            empty_messages = [
-                dict(role="user" if system_as_user else "system", content=system_prompt),
-                dict(role="user", content=empty_context_prompt),
-                *chat_history,
-                dict(role="user", content=message),
-            ]
-            num_tokens = self.count_tokens_in_messages(
-                empty_messages,
-                tokenizer=tokenizer,
-                tokens_per_message=tokens_per_message,
-                tokens_per_name=tokens_per_name,
-                model=model,
-            )
-            max_context_tokens = max(0, max_tokens - num_tokens)
-            encoding = self.resolve_encoding(tokenizer=tokenizer, model=model)
-            encoded_context = encoding.encode(context)
-            if len(encoded_context) > max_context_tokens:
-                context = encoding.decode(encoded_context[:max_context_tokens])
-                if not silence_warnings:
-                    warnings.warn(
-                        f"Context is too long ({len(encoded_context)}). "
-                        f"Truncating to {max_context_tokens} tokens. "
-                        f"Pass silence_warnings=True to silence this warning.",
-                        stacklevel=2,
-                    )
-        template_context = flat_merge_dicts(dict(context=context), template_context)
-        context_prompt = context_prompt.substitute(template_context, eval_id="context_prompt")
-        return [
-            dict(role="user" if system_as_user else "system", content=system_prompt),
-            dict(role="user", content=context_prompt),
-            *chat_history,
-            dict(role="user", content=message),
-        ]
-
-    def get_openai_chat_meta(self, **openai_config) -> dict:
-        """Get the metadata for chatting with OpenAI.
-
-        Returns the model, lambda for chatting, lambda for streaming, lambda for getting chunk content,
-        and lambda for getting full content."""
-        from vectorbtpro.utils.module_ import assert_can_import
-
-        assert_can_import("openai")
-        from openai import OpenAI
-
-        kwargs = openai_config
-        openai_config = self.resolve_setting(kwargs, "openai_config", merge=True, sub_path="chat")
-        model = openai_config.pop("model", None)
-        if model is None:
-            raise ValueError("Must provide a model")
-        client_arg_names = set(get_func_arg_names(OpenAI.__init__))
-        client_kwargs = {}
-        chat_kwargs = {}
-        for k, v in openai_config.items():
-            if k in client_arg_names:
-                client_kwargs[k] = v
-            else:
-                chat_kwargs[k] = v
-        client = OpenAI(**client_kwargs)
-        chat_lambda = lambda messages: client.chat.completions.create(
-            messages=messages, model=model, stream=False, **chat_kwargs
-        )
-        stream_lambda = lambda messages: client.chat.completions.create(
-            messages=messages, model=model, stream=True, **chat_kwargs
-        )
-        chunk_content_lambda = lambda response_chunk: response_chunk.choices[0].delta.content
-        full_content_lambda = lambda response: response.choices[0].message.content
-        return dict(
-            model=model,
-            chat_lambda=chat_lambda,
-            stream_lambda=stream_lambda,
-            chunk_content_lambda=chunk_content_lambda,
-            full_content_lambda=full_content_lambda,
-        )
-
-    def get_litellm_chat_meta(self, **litellm_config) -> dict:
-        """Get the metadata for chatting with LiteLLM.
-
-        Returns the model, lambda for chatting, lambda for streaming, lambda for getting chunk content,
-        and lambda for getting full content."""
-        from vectorbtpro.utils.module_ import assert_can_import
-
-        assert_can_import("litellm")
-        from litellm import completion
-
-        kwargs = litellm_config
-        litellm_config = self.resolve_setting(kwargs, "litellm_config", merge=True, sub_path="chat")
-        model = litellm_config.pop("model", None)
-        if model is None:
-            raise ValueError("Must provide a model")
-        chat_lambda = lambda messages: completion(messages=messages, model=model, stream=False, **litellm_config)
-        stream_lambda = lambda messages: completion(messages=messages, model=model, stream=True, **litellm_config)
-        chunk_content_lambda = lambda response_chunk: response_chunk.choices[0].delta.content
-        full_content_lambda = lambda response: response.choices[0].message.content
-        return dict(
-            model=model,
-            chat_lambda=chat_lambda,
-            stream_lambda=stream_lambda,
-            chunk_content_lambda=chunk_content_lambda,
-            full_content_lambda=full_content_lambda,
-        )
-
-    def get_llama_index_chat_meta(self, **llama_index_config) -> dict:
-        """Get the metadata for chatting with LlamaIndex.
-
-        Returns the model, lambda for chatting, lambda for streaming, lambda for getting chunk content,
-        and lambda for getting full content."""
-        from vectorbtpro.utils.module_ import assert_can_import
-
-        assert_can_import("llama_index")
-        from llama_index.core.llms import LLM, ChatMessage
-
-        kwargs = llama_index_config
-        llama_index_config = self.resolve_setting(kwargs, "llama_index_config", merge=True, sub_path="chat")
-        llm = llama_index_config.pop("llm", None)
-        if llm is None:
-            raise ValueError("Must provide an LLM name or path")
-        if isinstance(llm, str):
-            from importlib import import_module
-            from vectorbtpro.utils.module_ import search_package
-
-            if "." in llm:
-                path_parts = llm.split(".")
-                llm = path_parts[-1]
-                if len(path_parts) == 2:
-                    module_name = "llama_index.llms." + path_parts[0]
-                else:
-                    module_name = ".".join(path_parts[:-1])
-                module = import_module(module_name)
-            else:
-                import llama_index.llms
-
-                module = llama_index.llms
-            match_func = lambda k, v: isinstance(v, type) and issubclass(v, LLM)
-            candidates = search_package(module, match_func)
-            class_found = False
-            for k, v in candidates.items():
-                if llm.lower().replace("_", "") == k.lower():
-                    llm = v
-                    class_found = True
-                    break
-            if not class_found:
-                raise ValueError(f"LLM '{llm}' not found")
-        if isinstance(llm, type):
-            llm_name = llm.__name__.lower()
-            module_name = llm.__module__
-        else:
-            checks.assert_instance_of(llm, LLM, arg_name="llm")
-            llm_name = type(llm).__name__.lower()
-            module_name = type(llm).__module__
-        llm_configs = llama_index_config.pop("llm_configs", {})
-        if llm_name in llm_configs:
-            llama_index_config = deep_merge_dicts(llama_index_config, llm_configs[llm_name])
-        elif module_name in llm_configs:
-            llama_index_config = deep_merge_dicts(llama_index_config, llm_configs[module_name])
-        if isinstance(llm, type):
-            llm = llm(**llama_index_config)
-        elif len(kwargs) > 0:
-            raise ValueError("Cannot apply config to already initialized LLM")
-        model = llama_index_config.get("model", None)
-        if model is None:
-            func_kwargs = get_func_kwargs(type(llm).__init__)
-            model = func_kwargs.get("model", None)
-        prepare_messages_lambda = lambda messages: list(map(lambda x: ChatMessage(**dict(x)), messages))
-        chat_lambda = lambda messages: llm.chat(prepare_messages_lambda(messages))
-        stream_lambda = lambda messages: llm.stream_chat(prepare_messages_lambda(messages))
-        chunk_content_lambda = lambda response_chunk: response_chunk.delta
-        full_content_lambda = lambda response: response.message.conten
-        return dict(
-            model=model,
-            chat_lambda=chat_lambda,
-            stream_lambda=stream_lambda,
-            chunk_content_lambda=chunk_content_lambda,
-            full_content_lambda=full_content_lambda,
-        )
-
-    @hybrid_method
-    def chat(
-        cls_or_self,
-        message: str,
-        chat_history: tp.Optional[tp.MutableSequence[str]] = None,
-        stream: tp.Optional[bool] = None,
-        to_context_kwargs: tp.KwargsLike = None,
-        max_tokens: tp.Optional[int] = None,
-        tokenizer: tp.Union[None, str, EncodingT] = None,
-        tokens_per_message: tp.Optional[int] = None,
-        tokens_per_name: tp.Optional[int] = None,
-        system_prompt: tp.Optional[str] = None,
-        system_as_user: tp.Optional[bool] = None,
-        context_prompt: tp.Optional[str] = None,
-        display_format: tp.Optional[str] = None,
-        refresh_rate: tp.Optional[float] = None,
-        to_markdown_kwargs: tp.KwargsLike = None,
-        to_html_kwargs: tp.KwargsLike = None,
-        format_html_kwargs: tp.KwargsLike = None,
-        open_browser: tp.Optional[bool] = None,
-        cache: tp.Optional[bool] = None,
-        cache_dir: tp.Optional[tp.PathLike] = None,
-        cache_mkdir_kwargs: tp.KwargsLike = None,
-        clear_cache: bool = False,
-        file_prefix_len: tp.Optional[int] = None,
-        file_suffix_len: tp.Optional[int] = None,
-        output_to: tp.Optional[tp.Union[str, tp.TextIO]] = None,
-        flush_output: tp.Optional[bool] = None,
-        template_context: tp.KwargsLike = None,
-        silence_warnings: tp.Optional[bool] = None,
-        package: tp.Optional[str] = None,
-        return_response: bool = False,
-        **kwargs,
-    ) -> tp.ChatOutput:
-        """Chat with an LLM using LlamaIndex and the dumped asset as a context.
-
-        The following packages are supported:
-
-        * "openai"
-        * "litellm"
-        * "llama_index"
-
-        For LlamaIndex, LLM can be provided via `llm`, which can be either the name of the class,
-        the path to the class (accepted are both "llama_index.xxx.yyy" and "xxx.yyy"), or a subclass
-        or an instance of `llama_index.core.llms.LLM`. Case of strings doesn't matter.
-
-        Uses `context_prompt` as a prompt template requiring the variable "context".
-        The prompt can be either a custom template, or string or function that will become one.
-        The context itself is generated by dumping and joining data items with `KnowledgeAsset.to_context`
-        with `to_context_kwargs` as keyword arguments. Once the prompt is evaluated, it becomes a system message.
-        Uses `system_prompt` as a system prompt preceding the context prompt. Enable `system_as_user`
-        to use the user role for the system message (for experimental models where the system role is not available).
-
-        Use `max_context_chars` to limit the number of characters in the context. Use `max_context_tokens`
-        to limit the number of tokens in the context (requires tiktoken). Use `tokenizer` to provide
-        a model name, an encoding name, or an encoding object for tokenization.
-
-        Pass `chat_history` as a mutable sequence (for example, list) to keep track of chat history.
-        After generating a response, the output will be appended to this sequence as an assistant message.
-
-        Argument `message` becomes a user message.
-
-        If the output is a stream (`stream=True`), appends chunks one by one and displays the
-        intermediate result. Otherwise, displays the entire message.
-
-        The following display formats are supported:
-
-        * "plain": Uses `print` to print the output in its raw format
-        * "ipython_markdown": Uses `IPython` to render the output as a Markdown in a notebook environment
-        * "ipython_html": Uses `IPython` to render the output as an HTML in a notebook environment
-        * "html": Renders the output as a static HTML page and displays it in the browser
-        * "auto_ipython": Decides between using "ipython_html" or "plain" depending on the environment
-
-        If `refresh_rate` is None, will refresh as soon as the next chunk arrives (apart from refreshing
-        HTML pages, here the minimum refresh rate is 1 second). Otherwise, will collect chunks and
-        refresh once in `refresh_rate` seconds.
-
-        To convert to Markdown, uses
-        `vectorbtpro.utils.knowledge.custom_asset_funcs.ToMarkdownAssetFunc.to_markdown`
-        along with `to_markdown_kwargs`. To convert to HTML, uses
-        `vectorbtpro.utils.knowledge.custom_asset_funcs.ToHTMLAssetFunc.to_html`
-        along with `to_html_kwargs`. To create and format the HTML page, uses
-        `vectorbtpro.utils.knowledge.custom_asset_funcs.ToHTMLAssetFunc.format_html`
-        along with `format_html_kwargs`.
-
-        The HTML file is stored either in the cache directory (`cache=True`)
-        under "chat" and with truncated title as prefix and random hash as suffix, or as a
-        temporary file (`cache=False`). If `clear_cache` is True, deletes any existing directory
-        before creating a new one. Returns the path of the directory where HTML file is stored.
-
-        The raw output can be also redirected to a file (or any IO) specified in `output_to`
-        and flushed with each chunk if `flush_output` is True.
-
-        Keyword arguments are distributed between the package client (if exists) and completion API.
-
-        For defaults, see `chat` in `vectorbtpro._settings.knowledge`.
-
-        Usage:
-            ```pycon
-            >>> asset.chat("What's the value under 'xyz'?")
-            The value under 'xyz' is 123.
-
-            >>> chat_history = []
-            >>> asset.chat("What's the value under 'xyz'?", chat_history=chat_history)
-            The value under 'xyz' is 123.
-
-            >>> asset.chat("Are you sure?", chat_history=chat_history)
-            Yes, I am sure. The value under 'xyz' is 123 for the entry where `s` is "EFG".
-            ```
-        """
-        if isinstance(cls_or_self, type):
-            from vectorbtpro.utils.parsing import get_forward_args
-
-            args, kwargs = get_forward_args(super().chat, locals())
-            return super().chat(*args, **kwargs)
-
-        stream = cls_or_self.resolve_setting(stream, "stream", sub_path="chat")
-        display_format = cls_or_self.resolve_setting(display_format, "display_format", sub_path="chat")
-        refresh_rate = cls_or_self.resolve_setting(refresh_rate, "refresh_rate", sub_path="chat")
-        to_markdown_kwargs = cls_or_self.resolve_setting(
-            to_markdown_kwargs, "to_markdown_kwargs", merge=True, sub_path="chat"
-        )
-        to_html_kwargs = cls_or_self.resolve_setting(to_html_kwargs, "to_html_kwargs", merge=True, sub_path="chat")
-        format_html_kwargs = cls_or_self.resolve_setting(
-            format_html_kwargs, "format_html_kwargs", merge=True, sub_path="chat"
-        )
-        open_browser = cls_or_self.resolve_setting(open_browser, "open_browser", sub_path="chat")
-        cache = cls_or_self.resolve_setting(cache, "cache", sub_path="chat")
-        cache_dir = cls_or_self.resolve_setting(cache_dir, "cache_dir", sub_path="chat")
-        cache_mkdir_kwargs = cls_or_self.resolve_setting(
-            cache_mkdir_kwargs, "cache_mkdir_kwargs", merge=True, sub_path="chat"
-        )
-        file_prefix_len = cls_or_self.resolve_setting(file_prefix_len, "file_prefix_len", sub_path="chat")
-        file_suffix_len = cls_or_self.resolve_setting(file_suffix_len, "file_suffix_len", sub_path="chat")
-        output_to = cls_or_self.resolve_setting(output_to, "output_to", sub_path="chat")
-        flush_output = cls_or_self.resolve_setting(flush_output, "flush_output", sub_path="chat")
-        template_context = cls_or_self.resolve_setting(
-            template_context, "template_context", merge=True, sub_path="chat"
-        )
-        silence_warnings = cls_or_self.resolve_setting(silence_warnings, "silence_warnings", sub_path="chat")
-        package = cls_or_self.resolve_setting(package, "package", sub_path="chat")
-
-        if chat_history is None:
-            chat_history = []
-        if isinstance(output_to, (str, Path)):
-            output_to = Path(output_to).open("w")
-            close_handle = True
-        else:
-            close_handle = False
-        if isinstance(display_format, str):
-            if display_format.lower() == "auto_ipython":
-                if checks.in_notebook():
-                    display_format = "ipython_html"
-                else:
-                    display_format = "plain"
-            elif display_format.lower() not in {"plain", "ipython_markdown", "ipython_html", "html"}:
-                raise ValueError(f"Invalid output format: '{display_format}'")
-
-        if package is None:
-            from vectorbtpro.utils.module_ import check_installed
-
-            if check_installed("openai"):
-                package = "openai"
-            elif check_installed("litellm"):
-                package = "litellm"
-            elif check_installed("llama_index"):
-                package = "llama_index"
-            else:
-                raise ValueError("No LLM packages installed")
-        if package.lower() == "openai":
-            meta = cls_or_self.get_openai_chat_meta(**kwargs)
-        elif package.lower() == "litellm":
-            meta = cls_or_self.get_litellm_chat_meta(**kwargs)
-        elif package.lower() == "llama_index":
-            meta = cls_or_self.get_llama_index_chat_meta(**kwargs)
-        else:
-            raise ValueError(f"Invalid package: '{package}'")
-        messages = cls_or_self.build_messages(
-            message,
-            chat_history=chat_history,
-            to_context_kwargs=to_context_kwargs,
-            max_tokens=max_tokens,
-            tokenizer=tokenizer,
-            tokens_per_message=tokens_per_message,
-            tokens_per_name=tokens_per_name,
-            model=meta["model"],
-            system_prompt=system_prompt,
-            system_as_user=system_as_user,
-            context_prompt=context_prompt,
-            template_context=template_context,
-            silence_warnings=silence_warnings,
-        )
-        if stream:
-            response = meta["stream_lambda"](messages)
-        else:
-            response = meta["chat_lambda"](messages)
-
-        markdown_output = None
-        html_output = None
-        file_path = None
-
-        def _display_ipython_markdown(output_content):
-            nonlocal markdown_output
-
-            from vectorbtpro.utils.module_ import assert_can_import
-            from vectorbtpro.utils.knowledge.custom_asset_funcs import ToMarkdownAssetFunc
-
-            assert_can_import("IPython")
-            from IPython.display import display, Markdown
-
-            if markdown_output is None:
-                markdown_output = display("", display_id=True)
-            markdown_content = ToMarkdownAssetFunc.to_markdown(output_content, **to_markdown_kwargs)
-            markdown_output.update(Markdown(markdown_content))
-
-        def _display_ipython_html(output_content):
-            nonlocal html_output
-
-            from vectorbtpro.utils.module_ import assert_can_import
-            from vectorbtpro.utils.knowledge.custom_asset_funcs import ToMarkdownAssetFunc, ToHTMLAssetFunc
-
-            assert_can_import("IPython")
-            from IPython.display import display, HTML
-
-            if html_output is None:
-                html_output = display("", display_id=True)
-
-            markdown_content = ToMarkdownAssetFunc.to_markdown(output_content, **to_markdown_kwargs)
-            html_content = ToHTMLAssetFunc.to_html(markdown_content, **to_html_kwargs)
-            html_output.update(HTML(html_content))
-
-        def _generate_html_filename(title):
-            import secrets
-            import string
-
-            title = title.lower().replace(" ", "-")
-            if len(title) > file_prefix_len:
-                words = title.split("-")
-                truncated_title = ""
-                for word in words:
-                    if len(truncated_title) + len(word) + 1 <= file_prefix_len:
-                        truncated_title += word + "-"
-                    else:
-                        break
-                truncated_title = truncated_title.rstrip("-")
-            else:
-                truncated_title = title
-            suffix_chars = string.ascii_lowercase + string.digits
-            random_suffix = "".join(secrets.choice(suffix_chars) for _ in range(file_suffix_len))
-            short_filename = f"{truncated_title}-{random_suffix}.html"
-            return short_filename
-
-        def _display_html(output_content, stream):
-            nonlocal file_path
-
-            from vectorbtpro.utils.knowledge.custom_asset_funcs import ToMarkdownAssetFunc, ToHTMLAssetFunc
-            import tempfile
-
-            markdown_content = ToMarkdownAssetFunc.to_markdown(output_content, **to_markdown_kwargs)
-            html_content = ToHTMLAssetFunc.to_html(markdown_content, **to_html_kwargs)
-            if stream:
-                refresh_content = max(1, int(refresh_rate)) if refresh_rate is not None else 1
-                _format_html_kwargs = dict(format_html_kwargs)
-                head_extras = _format_html_kwargs["head_extras"]
-                if head_extras is None:
-                    head_extras = []
-                if isinstance(head_extras, str):
-                    head_extras = [head_extras]
-                else:
-                    head_extras = list(head_extras)
-                head_extras.insert(0, f'<meta http-equiv="refresh" content="{refresh_content}">')
-                _format_html_kwargs["head_extras"] = head_extras
-                html_content = '<div id="overlay" class="overlay"></div>\n' + html_content
-            else:
-                _format_html_kwargs = format_html_kwargs
-            html = ToHTMLAssetFunc.format_html(
-                title=message,
-                html_content=html_content,
-                **_format_html_kwargs,
-            )
-            if file_path is None:
-                if cache:
-                    html_dir = Path(cache_dir) / "chat"
-                    if html_dir.exists():
-                        if clear_cache:
-                            remove_dir(html_dir, missing_ok=True, with_contents=True)
-                    check_mkdir(html_dir, **cache_mkdir_kwargs)
-                    file_name = _generate_html_filename(message)
-                    file_path = html_dir / file_name
-                    with open(str(file_path.resolve()), "w", encoding="utf-8") as f:
-                        f.write(html)
-                else:
-                    with tempfile.NamedTemporaryFile(
-                        "w",
-                        encoding="utf-8",
-                        prefix=get_caller_qualname() + "_",
-                        suffix=".html",
-                        delete=False,
-                    ) as f:
-                        f.write(html)
-                        file_path = Path(f.name)
-                if open_browser:
-                    import webbrowser
-
-                    webbrowser.open("file://" + str(file_path.resolve()))
-            else:
-                with open(str(file_path.resolve()), "w", encoding="utf-8") as f:
-                    f.write(html)
-
-        if stream:
-            buffer_contents = []
-            chunk_contents = []
-            in_code_block = False
-            for i, response_chunk in enumerate(response):
-                chunk_content = meta["chunk_content_lambda"](response_chunk)
-                if chunk_content is not None:
-                    buffer_contents.append(chunk_content)
-                    if refresh_rate is not None:
-                        import time
-
-                        if i == 0:
-                            t = time.time()
-                        if time.time() - t >= refresh_rate:
-                            t = time.time()
-                        else:
-                            continue
-
-                    if display_format.lower() == "plain" or output_to is not None:
-                        print(chunk_content, end="", file=output_to, flush=flush_output)
-                    else:
-                        buffer_content = "".join(buffer_contents)
-                        semi_full_content = "".join(chunk_contents[-2:] + buffer_contents)
-                        buffer_content = semi_full_content[-len(buffer_content) - 2 :]
-                        lines = buffer_content.split("\n")
-                        for line in lines:
-                            if line.strip().startswith("```"):
-                                in_code_block = not in_code_block
-                    if in_code_block:
-                        full_content = "".join(chunk_contents + buffer_contents + ["\n```\n"])
-                    else:
-                        full_content = "".join(chunk_contents + buffer_contents)
-                    if display_format.lower() == "ipython_markdown":
-                        _display_ipython_markdown(full_content)
-                    if display_format.lower() == "ipython_html":
-                        _display_ipython_html(full_content)
-                    if display_format.lower() == "html":
-                        _display_html(full_content, True)
-                    chunk_contents.extend(buffer_contents)
-                    buffer_contents = []
-
-            full_content = "".join(chunk_contents)
-            if display_format.lower() == "ipython_markdown":
-                _display_ipython_markdown(full_content)
-            if display_format.lower() == "ipython_html":
-                _display_ipython_html(full_content)
-            if display_format.lower() == "html":
-                _display_html(full_content, False)
-        else:
-            full_content = meta["full_content_lambda"](response)
-            if display_format.lower() == "plain" or output_to is not None:
-                print(full_content, file=output_to, flush=flush_output)
-            if display_format.lower() == "ipython_markdown":
-                _display_ipython_markdown(full_content)
-            if display_format.lower() == "ipython_html":
-                _display_ipython_html(full_content)
-            if display_format.lower() == "html":
-                _display_html(full_content, False)
-
-        chat_history.append(dict(role="user", content=message))
-        chat_history.append(dict(role="assistant", content=full_content))
-        if close_handle:
-            output_to.close()
-        if return_response:
-            return response, file_path
-        return file_path

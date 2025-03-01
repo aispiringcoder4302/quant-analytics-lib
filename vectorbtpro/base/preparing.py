@@ -1,4 +1,12 @@
-# Copyright (c) 2021-2024 Oleg Polakow. All rights reserved.
+# ==================================== VBTPROXYZ ====================================
+# Copyright (c) 2021-2025 Oleg Polakow. All rights reserved.
+#
+# This file is part of the proprietary VectorBT® PRO package and is licensed under
+# the VectorBT® PRO License available at https://vectorbt.pro/terms/software-license/
+#
+# Unauthorized publishing, distribution, sublicensing, or sale of this software
+# or its parts is strictly prohibited.
+# ===================================================================================
 
 """Classes for preparing arguments."""
 
@@ -63,8 +71,8 @@ __pdoc__[
 """
 
 
-class MetaArgs(type):
-    """Meta class that exposes a read-only class property `MetaArgs.arg_config`."""
+class MetaBasePreparer(type(Configured)):
+    """Metaclass for `BasePreparer`."""
 
     @property
     def arg_config(cls) -> Config:
@@ -74,11 +82,13 @@ class MetaArgs(type):
 
 @attach_arg_properties
 @override_arg_config(base_arg_config)
-class BasePreparer(Configured, metaclass=MetaArgs):
+class BasePreparer(Configured, metaclass=MetaBasePreparer):
     """Base class for preparing target functions and arguments.
 
     !!! warning
         Most properties are force-cached - create a new instance to override any attribute."""
+
+    _expected_keys_mode: tp.ExpectedKeysMode = "disable"
 
     _writeable_attrs: tp.WriteableAttrs = {"_arg_config"}
 

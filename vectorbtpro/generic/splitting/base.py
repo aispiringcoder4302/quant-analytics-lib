@@ -1,10 +1,17 @@
-# Copyright (c) 2021-2024 Oleg Polakow. All rights reserved.
+# ==================================== VBTPROXYZ ====================================
+# Copyright (c) 2021-2025 Oleg Polakow. All rights reserved.
+#
+# This file is part of the proprietary VectorBT® PRO package and is licensed under
+# the VectorBT® PRO License available at https://vectorbt.pro/terms/software-license/
+#
+# Unauthorized publishing, distribution, sublicensing, or sale of this software
+# or its parts is strictly prohibited.
+# ===================================================================================
 
 """Base class for splitting."""
 
 import inspect
 import math
-import warnings
 
 import numpy as np
 import pandas as pd
@@ -42,6 +49,7 @@ from vectorbtpro.utils.parsing import (
 )
 from vectorbtpro.utils.selection import PosSel, LabelSel
 from vectorbtpro.utils.template import CustomTemplate, Rep, RepFunc, substitute_templates
+from vectorbtpro.utils.warnings_ import warn
 
 if tp.TYPE_CHECKING:
     from sklearn.model_selection import BaseCrossValidator as BaseCrossValidatorT
@@ -282,7 +290,7 @@ class RelRange(DefineMixin):
             if self.out_of_bounds == "ignore":
                 start = 0
             elif self.out_of_bounds == "warn":
-                warnings.warn(f"Range start ({start}) is out of bounds", stacklevel=2)
+                warn(f"Range start ({start}) is out of bounds")
                 start = 0
             elif self.out_of_bounds == "raise":
                 raise ValueError(f"Range start ({start}) is out of bounds")
@@ -290,7 +298,7 @@ class RelRange(DefineMixin):
             if self.out_of_bounds == "ignore":
                 stop = total_len
             elif self.out_of_bounds == "warn":
-                warnings.warn(f"Range stop ({stop}) is out of bounds", stacklevel=2)
+                warn(f"Range stop ({stop}) is out of bounds")
                 stop = total_len
             elif self.out_of_bounds == "raise":
                 raise ValueError(f"Range stop ({stop}) is out of bounds")
@@ -2003,11 +2011,6 @@ class Splitter(Analyzable):
         kwargs = cls.resolve_column_stack_kwargs(*objs, **kwargs)
         kwargs = cls.resolve_stack_kwargs(*objs, **kwargs)
         return cls(**kwargs)
-
-    _expected_keys: tp.ExpectedKeys = (Analyzable._expected_keys or set()) | {
-        "index",
-        "splits_arr",
-    }
 
     def __init__(
         self,
@@ -4742,7 +4745,7 @@ class Splitter(Analyzable):
         set_group_by: tp.AnyGroupByLike = None,
         template_context: tp.KwargsLike = None,
         **kwargs,
-    ) -> tp.Generator[tp.Array2d, None, None]:
+    ) -> tp.Iterator[tp.Array2d]:
         """Generator of two-dimensional boolean arrays, one per split.
 
         First axis represents sets. Second axis represents index.
@@ -4766,7 +4769,7 @@ class Splitter(Analyzable):
             yield out
 
     @property
-    def iter_split_mask_arrs(self) -> tp.Generator[tp.Array2d, None, None]:
+    def iter_split_mask_arrs(self) -> tp.Iterator[tp.Array2d]:
         """`Splitter.get_iter_split_mask_arrs` with default arguments."""
         return self.get_iter_split_mask_arrs()
 
@@ -4776,7 +4779,7 @@ class Splitter(Analyzable):
         set_group_by: tp.AnyGroupByLike = None,
         template_context: tp.KwargsLike = None,
         **kwargs,
-    ) -> tp.Generator[tp.Array2d, None, None]:
+    ) -> tp.Iterator[tp.Array2d]:
         """Generator of two-dimensional boolean arrays, one per set.
 
         First axis represents splits. Second axis represents index.
@@ -4800,7 +4803,7 @@ class Splitter(Analyzable):
             yield out
 
     @property
-    def iter_set_mask_arrs(self) -> tp.Generator[tp.Array2d, None, None]:
+    def iter_set_mask_arrs(self) -> tp.Iterator[tp.Array2d]:
         """`Splitter.get_iter_set_mask_arrs` with default arguments."""
         return self.get_iter_set_mask_arrs()
 
@@ -4809,7 +4812,7 @@ class Splitter(Analyzable):
         split_group_by: tp.AnyGroupByLike = None,
         set_group_by: tp.AnyGroupByLike = None,
         **kwargs,
-    ) -> tp.Generator[tp.Frame, None, None]:
+    ) -> tp.Iterator[tp.Frame]:
         """Generator of boolean DataFrames, one per split.
 
         Keyword arguments `**kwargs` are passed to `Splitter.get_iter_split_mask_arrs`."""
@@ -4824,7 +4827,7 @@ class Splitter(Analyzable):
             yield pd.DataFrame(np.moveaxis(mask, -1, 0), index=self.index, columns=set_labels)
 
     @property
-    def iter_split_masks(self) -> tp.Generator[tp.Frame, None, None]:
+    def iter_split_masks(self) -> tp.Iterator[tp.Frame]:
         """`Splitter.get_iter_split_masks` with default arguments."""
         return self.get_iter_split_masks()
 
@@ -4833,7 +4836,7 @@ class Splitter(Analyzable):
         split_group_by: tp.AnyGroupByLike = None,
         set_group_by: tp.AnyGroupByLike = None,
         **kwargs,
-    ) -> tp.Generator[tp.Frame, None, None]:
+    ) -> tp.Iterator[tp.Frame]:
         """Generator of boolean DataFrames, one per set.
 
         Keyword arguments `**kwargs` are passed to `Splitter.get_iter_set_mask_arrs`."""
@@ -4848,7 +4851,7 @@ class Splitter(Analyzable):
             yield pd.DataFrame(np.moveaxis(mask, -1, 0), index=self.index, columns=split_labels)
 
     @property
-    def iter_set_masks(self) -> tp.Generator[tp.Frame, None, None]:
+    def iter_set_masks(self) -> tp.Iterator[tp.Frame]:
         """`Splitter.get_iter_set_masks` with default arguments."""
         return self.get_iter_set_masks()
 

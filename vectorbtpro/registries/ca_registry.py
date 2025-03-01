@@ -1,4 +1,12 @@
-# Copyright (c) 2021-2024 Oleg Polakow. All rights reserved.
+# ==================================== VBTPROXYZ ====================================
+# Copyright (c) 2021-2025 Oleg Polakow. All rights reserved.
+#
+# This file is part of the proprietary VectorBT® PRO package and is licensed under
+# the VectorBT® PRO License available at https://vectorbt.pro/terms/software-license/
+#
+# Unauthorized publishing, distribution, sublicensing, or sale of this software
+# or its parts is strictly prohibited.
+# ===================================================================================
 
 """Global registry for cacheables.
 
@@ -402,7 +410,6 @@ To remove all setups:
 
 import inspect
 import sys
-import warnings
 from collections.abc import ValuesView
 from datetime import datetime, timezone, timedelta
 from functools import wraps
@@ -421,6 +428,7 @@ from vectorbtpro.utils.decorators import cacheableT, cacheable_property
 from vectorbtpro.utils.formatting import ptable
 from vectorbtpro.utils.parsing import Regex, hash_args, UnhashableArgsError, get_func_arg_names
 from vectorbtpro.utils.profiling import Timer
+from vectorbtpro.utils.warnings_ import warn
 
 __all__ = [
     "CacheableRegistry",
@@ -445,7 +453,7 @@ __pdoc__ = {}
 
 
 class _GARBAGE:
-    pass
+    """Sentinel class for garbage."""
 
 
 def is_cacheable_function(cacheable: tp.Any) -> bool:
@@ -1244,15 +1252,9 @@ class CABaseSetup(CAMetrics, DefineMixin):
             object.__setattr__(self, "whitelist", True)
         else:
             if caching_cfg["disable"] and not caching_cfg["disable_whitelist"] and not silence_warnings:
-                warnings.warn(
-                    "This operation has no effect: caching is disabled globally and this setup is not whitelisted",
-                    stacklevel=2,
-                )
+                warn("This operation has no effect: caching is disabled globally and this setup is not whitelisted")
         if caching_cfg["disable"] and caching_cfg["disable_whitelist"] and not silence_warnings:
-            warnings.warn(
-                "This operation has no effect: caching and whitelisting are disabled globally",
-                stacklevel=2,
-            )
+            warn("This operation has no effect: caching and whitelisting are disabled globally")
         object.__setattr__(self, "_use_cache_lut", datetime.now(timezone.utc))
 
     def disable_caching(self, clear_cache: bool = True) -> None:
@@ -2572,9 +2574,6 @@ def enable_caching() -> None:
     caching_cfg["disable_machinery"] = False
 
 
-CachingDisabledT = tp.TypeVar("CachingDisabledT", bound="CachingDisabled")
-
-
 class CachingDisabled(Base):
     """Context manager to disable caching."""
 
@@ -2671,7 +2670,7 @@ class CachingDisabled(Base):
         """Initial setup settings."""
         return self._init_setup_settings
 
-    def __enter__(self: CachingDisabledT) -> CachingDisabledT:
+    def __enter__(self) -> tp.Self:
         if self.query_like is None:
             from vectorbtpro._settings import settings
 
@@ -2760,9 +2759,6 @@ def with_caching_disabled(*args, **caching_disabled_kwargs) -> tp.Callable:
     elif len(args) == 1:
         return decorator(args[0])
     raise ValueError("Either function or keyword arguments must be passed")
-
-
-CachingEnabledT = tp.TypeVar("CachingEnabledT", bound="CachingEnabled")
 
 
 class CachingEnabled(Base):
@@ -2861,7 +2857,7 @@ class CachingEnabled(Base):
         """Initial setup settings."""
         return self._init_setup_settings
 
-    def __enter__(self: CachingEnabledT) -> CachingEnabledT:
+    def __enter__(self) -> tp.Self:
         if self.query_like is None:
             from vectorbtpro._settings import settings
 

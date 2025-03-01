@@ -1,4 +1,12 @@
-# Copyright (c) 2021-2024 Oleg Polakow. All rights reserved.
+# ==================================== VBTPROXYZ ====================================
+# Copyright (c) 2021-2025 Oleg Polakow. All rights reserved.
+#
+# This file is part of the proprietary VectorBT® PRO package and is licensed under
+# the VectorBT® PRO License available at https://vectorbt.pro/terms/software-license/
+#
+# Unauthorized publishing, distribution, sublicensing, or sale of this software
+# or its parts is strictly prohibited.
+# ===================================================================================
 
 """Module with `VWAP`."""
 
@@ -47,7 +55,9 @@ class _VWAP(VWAP):
     VWAP is a technical analysis indicator used on intraday charts that resets at the start
     of every new trading session.
 
-    See [Volume-Weighted Average Price (VWAP)](https://www.investopedia.com/terms/v/vwap.asp)."""
+    See [Volume-Weighted Average Price (VWAP)](https://www.investopedia.com/terms/v/vwap.asp).
+
+    Anchor can be any index grouper."""
 
     def plot(
         self,

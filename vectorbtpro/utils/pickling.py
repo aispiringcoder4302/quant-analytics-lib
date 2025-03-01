@@ -1,4 +1,12 @@
-# Copyright (c) 2021-2024 Oleg Polakow. All rights reserved.
+# ==================================== VBTPROXYZ ====================================
+# Copyright (c) 2021-2025 Oleg Polakow. All rights reserved.
+#
+# This file is part of the proprietary VectorBT® PRO package and is licensed under
+# the VectorBT® PRO License available at https://vectorbt.pro/terms/software-license/
+#
+# Unauthorized publishing, distribution, sublicensing, or sale of this software
+# or its parts is strictly prohibited.
+# ===================================================================================
 
 """Utilities for pickling."""
 
@@ -62,7 +70,7 @@ def get_compression_extensions(cls_name: tp.Optional[str] = None) -> tp.Set[str]
 
 def compress(
     bytes_: bytes,
-    compression: tp.Union[None, bool, str] = None,
+    compression: tp.CompressionLike = None,
     file_name: tp.Optional[str] = None,
     **compress_kwargs,
 ) -> bytes:
@@ -124,6 +132,8 @@ def compress(
 
             import blosc2
 
+            if "_ignore_multiple_size" not in compress_kwargs:
+                compress_kwargs["_ignore_multiple_size"] = True
             bytes_ = blosc2.compress(bytes_, **compress_kwargs)
         elif compression.lower() in get_compression_extensions("blosc"):
             assert_can_import_any("blosc2", "blosc")
@@ -131,6 +141,8 @@ def compress(
             if check_installed("blosc2"):
                 import blosc2
 
+                if "_ignore_multiple_size" not in compress_kwargs:
+                    compress_kwargs["_ignore_multiple_size"] = True
                 bytes_ = blosc2.compress(bytes_, **compress_kwargs)
             else:
                 import blosc
@@ -143,7 +155,7 @@ def compress(
 
 def decompress(
     bytes_: bytes,
-    compression: tp.Union[None, bool, str] = None,
+    compression: tp.CompressionLike = None,
     file_name: tp.Optional[str] = None,
     **decompress_kwargs,
 ) -> bytes:
@@ -231,7 +243,7 @@ def decompress(
 
 def dumps(
     obj: tp.Any,
-    compression: tp.Union[None, bool, str] = None,
+    compression: tp.CompressionLike = None,
     compress_kwargs: tp.KwargsLike = None,
     **kwargs,
 ) -> bytes:
@@ -257,7 +269,7 @@ def dumps(
 
 def loads(
     bytes_: bytes,
-    compression: tp.Union[None, bool, str] = None,
+    compression: tp.CompressionLike = None,
     decompress_kwargs: tp.KwargsLike = None,
     **kwargs,
 ) -> tp.Any:
@@ -295,7 +307,7 @@ def save_bytes(
     bytes_: bytes,
     path: tp.PathLike,
     mkdir_kwargs: tp.KwargsLike = None,
-    compression: tp.Union[None, bool, str] = None,
+    compression: tp.CompressionLike = None,
     compress_kwargs: tp.KwargsLike = None,
 ) -> Path:
     """Write a byte stream to a file.
@@ -326,7 +338,7 @@ def save_bytes(
 
 def load_bytes(
     path: tp.PathLike,
-    compression: tp.Union[None, bool, str] = None,
+    compression: tp.CompressionLike = None,
     decompress_kwargs: tp.KwargsLike = None,
 ) -> bytes:
     """Read a byte stream from a file.
@@ -346,7 +358,7 @@ def save(
     obj: tp.Any,
     path: tp.Optional[tp.PathLike] = None,
     mkdir_kwargs: tp.KwargsLike = None,
-    compression: tp.Union[None, bool, str] = None,
+    compression: tp.CompressionLike = None,
     compress_kwargs: tp.KwargsLike = None,
     **kwargs,
 ) -> Path:
@@ -370,7 +382,7 @@ def save(
 
 def load(
     path: tp.PathLike,
-    compression: tp.Union[None, bool, str] = None,
+    compression: tp.CompressionLike = None,
     decompress_kwargs: tp.KwargsLike = None,
     **kwargs,
 ) -> tp.Any:
@@ -601,6 +613,11 @@ class Pickleable(Base):
                 return False
             return True
 
+        def _preprocess_key(k):
+            k = k.replace(":", "__COL__")
+            k = k.replace("=", "__EQ__")
+            return k
+
         # Flatten nested dicts
         if top_name is None:
             top_name = "top"
@@ -612,6 +629,7 @@ class Pickleable(Base):
             parent_k, k, v = stack.pop(0)
             if not isinstance(k, str):
                 raise TypeError("Dictionary keys must be strings")
+
             if parent_k is not None and use_refs and _is_referable(k):
                 if id(v) in id_paths:
                     v = "&" + id_paths[id(v)]
@@ -635,6 +653,7 @@ class Pickleable(Base):
                     v = {"_": "_"}
                 i = 0
                 for k2, v2 in v.items():
+                    k2 = _preprocess_key(k2)
                     stack.insert(i, (_k, k2, v2))
                     i += 1
             else:
@@ -654,6 +673,7 @@ class Pickleable(Base):
                         new_v = new_v["init_kwargs"]
                     else:
                         new_v = {k + "~": v for k, v in new_v.items()}
+                    k = _preprocess_key(k)
                     stack.insert(0, (parent_k, k + " @" + class_id, new_v))
                 else:
                     if parent_k is None:
@@ -690,7 +710,7 @@ class Pickleable(Base):
                             float(repr(v2))
                             v2 = repr(v2)
                         except Exception as e:
-                            v2 = "!loads(" + repr(dumps(v2)) + ")"
+                            v2 = "!vbt.loads(" + repr(dumps(v2)) + ")"
                 parser.set(k, k2, v2)
         with StringIO() as f:
             parser.write(f)
@@ -818,6 +838,11 @@ class Pickleable(Base):
         except configparser.MissingSectionHeaderError as e:
             parser.read_string("[top]\n" + str_)
 
+        def _preprocess_key(k):
+            k = k.replace("__COL__", ":")
+            k = k.replace("__EQ__", "=")
+            return k
+
         def _get_path(k):
             if "@" in k:
                 return k.split("@")[0].strip()
@@ -826,6 +851,7 @@ class Pickleable(Base):
         dct = {}
         has_top_section = False
         for k in parser.sections():
+            k = _preprocess_key(k)
             v = dict(parser.items(k))
             if _get_path(k) == "top":
                 has_top_section = True
@@ -833,6 +859,7 @@ class Pickleable(Base):
                 k = "top." + k
             new_v = {}
             for k2, v2 in v.items():
+                k2 = _preprocess_key(k2)
                 if use_refs and v2.startswith("&") and not v2[1:].startswith("top."):
                     new_v[k2] = "&top." + v2[1:]
                 else:
@@ -865,7 +892,14 @@ class Pickleable(Base):
         new_dct = dict()
         if code_context is None:
             code_context = {}
-        code_context = {"np": np, "pd": pd, "vbt": vbt, "loads": loads, **code_context}
+        else:
+            code_context = dict(code_context)
+        try:
+            for k, v in vbt.imported_stuff.items():
+                if k not in code_context:
+                    code_context[k] = v
+        except AttributeError:
+            pass
         ref_edges = set()
         for k, v in dct.items():
             new_dct[k] = {}
@@ -883,13 +917,11 @@ class Pickleable(Base):
                         v2 = get_class_from_id(v2[1:])
                     elif run_code and v2.startswith("!"):
                         if v2.startswith("!vbt.loads(") and v2.endswith(")"):
-                            v2 = evaluate(v2[5:], context=code_context)
+                            v2 = evaluate(v2[len("!vbt."):], context={**code_context, "loads": loads})
                         else:
                             v2 = evaluate(v2.lstrip("!"), context=code_context)
                     else:
-                        if (v2.startswith("'") and v2.endswith("'")) or (v2.startswith('"') and v2.endswith('"')):
-                            v2 = v2[1:-1]
-                        elif parse_literals:
+                        if parse_literals:
                             if v2 == "np.nan":
                                 v2 = np.nan
                             elif v2 == "np.inf":
@@ -982,7 +1014,7 @@ class Pickleable(Base):
         cls,
         path: tp.Optional[tp.PathLike] = None,
         file_format: tp.Optional[str] = None,
-        compression: tp.Union[None, bool, str] = None,
+        compression: tp.CompressionLike = None,
         for_save: bool = False,
     ) -> Path:
         """Resolve a file path.
@@ -1137,7 +1169,7 @@ class Pickleable(Base):
         self,
         path: tp.Optional[tp.PathLike] = None,
         file_format: tp.Optional[str] = None,
-        compression: tp.Union[None, bool, str] = None,
+        compression: tp.CompressionLike = None,
         mkdir_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> Path:
@@ -1172,7 +1204,7 @@ class Pickleable(Base):
         cls: tp.Type[PickleableT],
         path: tp.Optional[tp.PathLike] = None,
         file_format: tp.Optional[str] = None,
-        compression: tp.Union[None, bool, str] = None,
+        compression: tp.CompressionLike = None,
         **kwargs,
     ) -> PickleableT:
         """Unpickle/decode the instance from a file.

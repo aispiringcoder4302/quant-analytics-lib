@@ -1,4 +1,12 @@
-# Copyright (c) 2021-2024 Oleg Polakow. All rights reserved.
+# ==================================== VBTPROXYZ ====================================
+# Copyright (c) 2021-2025 Oleg Polakow. All rights reserved.
+#
+# This file is part of the proprietary VectorBT® PRO package and is licensed under
+# the VectorBT® PRO License available at https://vectorbt.pro/terms/software-license/
+#
+# Unauthorized publishing, distribution, sublicensing, or sale of this software
+# or its parts is strictly prohibited.
+# ===================================================================================
 
 """Base classes and functions for grouping.
 
@@ -125,7 +133,7 @@ class Grouper(Configured):
         return codes, new_index
 
     @classmethod
-    def iter_group_lens(cls, group_lens: tp.GroupLens) -> tp.Generator[tp.GroupIdxs, None, None]:
+    def iter_group_lens(cls, group_lens: tp.GroupLens) -> tp.Iterator[tp.GroupIdxs]:
         """Iterate over indices of each group in group lengths."""
         group_end_idxs = np.cumsum(group_lens)
         group_start_idxs = group_end_idxs - group_lens
@@ -135,7 +143,7 @@ class Grouper(Configured):
             yield np.arange(from_col, to_col)
 
     @classmethod
-    def iter_group_map(cls, group_map: tp.GroupMap) -> tp.Generator[tp.GroupIdxs, None, None]:
+    def iter_group_map(cls, group_map: tp.GroupMap) -> tp.Iterator[tp.GroupIdxs]:
         """Iterate over indices of each group in a group map."""
         group_idxs, group_lens = group_map
         group_start = 0
@@ -172,15 +180,6 @@ class Grouper(Configured):
             group_by=group_by,
             **kwargs,
         )
-
-    _expected_keys: tp.ExpectedKeys = (Configured._expected_keys or set()) | {
-        "index",
-        "group_by",
-        "def_lvl_name",
-        "allow_enable",
-        "allow_disable",
-        "allow_modify",
-    }
 
     def __init__(
         self,
@@ -409,7 +408,7 @@ class Grouper(Configured):
         func = jit_reg.resolve_option(nb.get_group_map_nb, jitted)
         return func(groups, len(new_index))
 
-    def iter_group_idxs(self, **kwargs) -> tp.Generator[tp.GroupIdxs, None, None]:
+    def iter_group_idxs(self, **kwargs) -> tp.Iterator[tp.GroupIdxs]:
         """Iterate over indices of each group."""
         group_map = self.get_group_map(**kwargs)
         return self.iter_group_map(group_map)
@@ -418,7 +417,7 @@ class Grouper(Configured):
         self,
         key_as_index: bool = False,
         **kwargs,
-    ) -> tp.Generator[tp.Tuple[tp.Union[tp.Hashable, pd.Index], tp.GroupIdxs], None, None]:
+    ) -> tp.Iterator[tp.Tuple[tp.Union[tp.Hashable, pd.Index], tp.GroupIdxs]]:
         """Iterate over groups and their indices."""
         index = self.get_index(**kwargs)
         for group, group_idxs in enumerate(self.iter_group_idxs(**kwargs)):

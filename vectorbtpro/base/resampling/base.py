@@ -1,8 +1,14 @@
-# Copyright (c) 2021-2024 Oleg Polakow. All rights reserved.
+# ==================================== VBTPROXYZ ====================================
+# Copyright (c) 2021-2025 Oleg Polakow. All rights reserved.
+#
+# This file is part of the proprietary VectorBT® PRO package and is licensed under
+# the VectorBT® PRO License available at https://vectorbt.pro/terms/software-license/
+#
+# Unauthorized publishing, distribution, sublicensing, or sale of this software
+# or its parts is strictly prohibited.
+# ===================================================================================
 
 """Base classes and functions for resampling."""
-
-import warnings
 
 import numpy as np
 import pandas as pd
@@ -14,6 +20,7 @@ from vectorbtpro.registries.jit_registry import jit_reg
 from vectorbtpro.utils import checks, datetime_ as dt
 from vectorbtpro.utils.config import Configured
 from vectorbtpro.utils.decorators import cached_property, hybrid_method
+from vectorbtpro.utils.warnings_ import warn
 
 __all__ = [
     "Resampler",
@@ -36,14 +43,6 @@ class Resampler(Configured):
             Set to False to force-set the frequency to None.
         silence_warnings (bool): Whether to silence all warnings."""
 
-    _expected_keys: tp.ExpectedKeys = (Configured._expected_keys or set()) | {
-        "source_index",
-        "target_index",
-        "source_freq",
-        "target_freq",
-        "silence_warnings",
-    }
-
     def __init__(
         self,
         source_index: tp.IndexLike,
@@ -51,6 +50,7 @@ class Resampler(Configured):
         source_freq: tp.Union[None, bool, tp.FrequencyLike] = None,
         target_freq: tp.Union[None, bool, tp.FrequencyLike] = None,
         silence_warnings: tp.Optional[bool] = None,
+        **kwargs,
     ) -> None:
         source_index = dt.prepare_dt_index(source_index)
         target_index = dt.prepare_dt_index(target_index)
@@ -82,6 +82,7 @@ class Resampler(Configured):
             source_freq=source_freq,
             target_freq=target_freq,
             silence_warnings=silence_warnings,
+            **kwargs,
         )
 
     @classmethod
@@ -182,14 +183,12 @@ class Resampler(Configured):
                     source_freq = dt.to_timedelta64(source_freq)
                 except ValueError as e:
                     if not silence_warnings:
-                        warnings.warn(f"Cannot convert {source_freq} to np.timedelta64. Setting to None.", stacklevel=2)
+                        warn(f"Cannot convert {source_freq} to np.timedelta64. Setting to None.")
                         warned = True
                     source_freq = None
         if source_freq is None:
             if not warned and not silence_warnings:
-                warnings.warn(
-                    "Using right bound of source index without frequency. Set source frequency.", stacklevel=2
-                )
+                warn("Using right bound of source index without frequency. Set source frequency.")
         return source_freq
 
     def get_np_target_freq(self, silence_warnings: tp.Optional[bool] = None) -> tp.AnyPandasFrequency:
@@ -205,14 +204,12 @@ class Resampler(Configured):
                     target_freq = dt.to_timedelta64(target_freq)
                 except ValueError as e:
                     if not silence_warnings:
-                        warnings.warn(f"Cannot convert {target_freq} to np.timedelta64. Setting to None.", stacklevel=2)
+                        warn(f"Cannot convert {target_freq} to np.timedelta64. Setting to None.")
                         warned = True
                     target_freq = None
         if target_freq is None:
             if not warned and not silence_warnings:
-                warnings.warn(
-                    "Using right bound of target index without frequency. Set target frequency.", stacklevel=2
-                )
+                warn("Using right bound of target index without frequency. Set target frequency.")
         return target_freq
 
     @classmethod

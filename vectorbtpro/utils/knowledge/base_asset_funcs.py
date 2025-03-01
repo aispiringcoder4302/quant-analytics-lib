@@ -1,16 +1,27 @@
-# Copyright (c) 2021-2024 Oleg Polakow. All rights reserved.
+# ==================================== VBTPROXYZ ====================================
+# Copyright (c) 2021-2025 Oleg Polakow. All rights reserved.
+#
+# This file is part of the proprietary VectorBT® PRO package and is licensed under
+# the VectorBT® PRO License available at https://vectorbt.pro/terms/software-license/
+#
+# Unauthorized publishing, distribution, sublicensing, or sale of this software
+# or its parts is strictly prohibited.
+# ===================================================================================
 
 """Base asset function classes."""
 
+import attr
+
 from vectorbtpro import _typing as tp
-from vectorbtpro.utils import checks, search
+from vectorbtpro.utils import checks, search_
+from vectorbtpro.utils.attr_ import MISSING
 from vectorbtpro.utils.base import Base
-from vectorbtpro.utils.config import merge_dicts, flat_merge_dicts, deep_merge_dicts
+from vectorbtpro.utils.config import merge_dicts, flat_merge_dicts
 from vectorbtpro.utils.config import reorder_dict, reorder_list
 from vectorbtpro.utils.execution import NoResult
 from vectorbtpro.utils.formatting import dump
 from vectorbtpro.utils.parsing import get_func_arg_names
-from vectorbtpro.utils.template import CustomTemplate, RepEval, RepFunc
+from vectorbtpro.utils.template import CustomTemplate, RepEval, RepFunc, substitute_templates
 
 __all__ = [
     "AssetFunc",
@@ -56,24 +67,25 @@ class GetAssetFunc(AssetFunc):
         path: tp.Optional[tp.MaybeList[tp.PathLikeKey]] = None,
         keep_path: tp.Optional[bool] = None,
         skip_missing: tp.Optional[bool] = None,
-        source: tp.Union[None, str, tp.Callable, tp.CustomTemplate] = None,
+        source: tp.Optional[tp.CustomTemplateLike] = None,
         template_context: tp.KwargsLike = None,
-        asset: tp.Optional[tp.MaybeType[tp.KnowledgeAsset]] = None,
+        asset_cls: tp.Optional[tp.Type[tp.KnowledgeAsset]] = None,
         **kwargs,
     ) -> tp.ArgsKwargs:
-        if asset is None:
+        if asset_cls is None:
             from vectorbtpro.utils.knowledge.base_assets import KnowledgeAsset
 
-            asset = KnowledgeAsset
-        keep_path = asset.resolve_setting(keep_path, "keep_path")
-        skip_missing = asset.resolve_setting(skip_missing, "skip_missing")
-        template_context = asset.resolve_setting(template_context, "template_context", merge=True)
+            asset_cls = KnowledgeAsset
+        keep_path = asset_cls.resolve_setting(keep_path, "keep_path")
+        skip_missing = asset_cls.resolve_setting(skip_missing, "skip_missing")
+        template_context = asset_cls.resolve_setting(template_context, "template_context", merge=True)
+        template_context = flat_merge_dicts({"asset_cls": asset_cls}, template_context)
 
         if path is not None:
             if isinstance(path, list):
-                path = [search.resolve_pathlike_key(p) for p in path]
+                path = [search_.resolve_pathlike_key(p) for p in path]
             else:
-                path = search.resolve_pathlike_key(path)
+                path = search_.resolve_pathlike_key(path)
         if source is not None:
             if isinstance(source, str):
                 source = RepEval(source)
@@ -83,7 +95,7 @@ class GetAssetFunc(AssetFunc):
                 else:
                     source = RepFunc(source)
             elif not isinstance(source, CustomTemplate):
-                raise TypeError(f"Source must be a string, function, or template")
+                raise TypeError(f"Source must be a string, function, or template, not {type(source)}")
         return (), {
             **dict(
                 path=path,
@@ -111,17 +123,17 @@ class GetAssetFunc(AssetFunc):
                 xs = []
                 for p in path:
                     try:
-                        xs.append(search.get_pathlike_key(x, p, keep_path=True))
+                        xs.append(search_.get_pathlike_key(x, p, keep_path=True))
                     except (KeyError, IndexError, AttributeError) as e:
                         if not skip_missing:
                             raise e
                         continue
                 if len(xs) == 0:
                     return NoResult
-                x = deep_merge_dicts(*xs)
+                x = merge_dicts(*xs)
             else:
                 try:
-                    x = search.get_pathlike_key(x, path, keep_path=keep_path)
+                    x = search_.get_pathlike_key(x, path, keep_path=keep_path)
                 except (KeyError, IndexError, AttributeError) as e:
                     if not skip_missing:
                         raise e
@@ -159,17 +171,18 @@ class SetAssetFunc(AssetFunc):
         make_copy: tp.Optional[bool] = None,
         changed_only: tp.Optional[bool] = None,
         template_context: tp.KwargsLike = None,
-        asset: tp.Optional[tp.MaybeType[tp.KnowledgeAsset]] = None,
+        asset_cls: tp.Optional[tp.Type[tp.KnowledgeAsset]] = None,
         **kwargs,
     ) -> tp.ArgsKwargs:
-        if asset is None:
+        if asset_cls is None:
             from vectorbtpro.utils.knowledge.base_assets import KnowledgeAsset
 
-            asset = KnowledgeAsset
-        skip_missing = asset.resolve_setting(skip_missing, "skip_missing")
-        make_copy = asset.resolve_setting(make_copy, "make_copy")
-        changed_only = asset.resolve_setting(changed_only, "changed_only")
-        template_context = asset.resolve_setting(template_context, "template_context", merge=True)
+            asset_cls = KnowledgeAsset
+        skip_missing = asset_cls.resolve_setting(skip_missing, "skip_missing")
+        make_copy = asset_cls.resolve_setting(make_copy, "make_copy")
+        changed_only = asset_cls.resolve_setting(changed_only, "changed_only")
+        template_context = asset_cls.resolve_setting(template_context, "template_context", merge=True)
+        template_context = flat_merge_dicts({"asset_cls": asset_cls}, template_context)
 
         if checks.is_function(value):
             if checks.is_builtin_func(value):
@@ -178,9 +191,9 @@ class SetAssetFunc(AssetFunc):
                 value = RepFunc(value)
         if path is not None:
             if isinstance(path, list):
-                paths = [search.resolve_pathlike_key(p) for p in path]
+                paths = [search_.resolve_pathlike_key(p) for p in path]
             else:
-                paths = [search.resolve_pathlike_key(path)]
+                paths = [search_.resolve_pathlike_key(path)]
         else:
             paths = [None]
         return (), {
@@ -205,14 +218,13 @@ class SetAssetFunc(AssetFunc):
         make_copy: bool = True,
         changed_only: bool = False,
         template_context: tp.KwargsLike = None,
-        **kwargs,
     ) -> tp.Any:
         prev_keys = []
         for p in paths:
             x = d
             if p is not None:
                 try:
-                    x = search.get_pathlike_key(x, p[:-1])
+                    x = search_.get_pathlike_key(x, p[:-1])
                 except (KeyError, IndexError, AttributeError) as e:
                     if not skip_missing:
                         raise e
@@ -225,10 +237,10 @@ class SetAssetFunc(AssetFunc):
                 },
                 template_context,
             )
-            v = value.substitute(_template_context, eval_id="value", **kwargs)
+            v = value.substitute(_template_context, eval_id="value")
             if checks.is_function(v):
                 v = v(x)
-            d = search.set_pathlike_key(d, p, v, make_copy=make_copy, prev_keys=prev_keys)
+            d = search_.set_pathlike_key(d, p, v, make_copy=make_copy, prev_keys=prev_keys)
         if not changed_only or len(prev_keys) > 0:
             return d
         return NoResult
@@ -248,21 +260,21 @@ class RemoveAssetFunc(AssetFunc):
         skip_missing: tp.Optional[bool] = None,
         make_copy: tp.Optional[bool] = None,
         changed_only: tp.Optional[bool] = None,
-        asset: tp.Optional[tp.MaybeType[tp.KnowledgeAsset]] = None,
+        asset_cls: tp.Optional[tp.Type[tp.KnowledgeAsset]] = None,
         **kwargs,
     ) -> tp.ArgsKwargs:
-        if asset is None:
+        if asset_cls is None:
             from vectorbtpro.utils.knowledge.base_assets import KnowledgeAsset
 
-            asset = KnowledgeAsset
-        skip_missing = asset.resolve_setting(skip_missing, "skip_missing")
-        make_copy = asset.resolve_setting(make_copy, "make_copy")
-        changed_only = asset.resolve_setting(changed_only, "changed_only")
+            asset_cls = KnowledgeAsset
+        skip_missing = asset_cls.resolve_setting(skip_missing, "skip_missing")
+        make_copy = asset_cls.resolve_setting(make_copy, "make_copy")
+        changed_only = asset_cls.resolve_setting(changed_only, "changed_only")
 
         if isinstance(path, list):
-            paths = [search.resolve_pathlike_key(p) for p in path]
+            paths = [search_.resolve_pathlike_key(p) for p in path]
         else:
-            paths = [search.resolve_pathlike_key(path)]
+            paths = [search_.resolve_pathlike_key(path)]
         return (), {
             **dict(
                 paths=paths,
@@ -285,7 +297,7 @@ class RemoveAssetFunc(AssetFunc):
         prev_keys = []
         for p in paths:
             try:
-                d = search.remove_pathlike_key(d, p, make_copy=make_copy, prev_keys=prev_keys)
+                d = search_.remove_pathlike_key(d, p, make_copy=make_copy, prev_keys=prev_keys)
             except (KeyError, IndexError, AttributeError) as e:
                 if not skip_missing:
                     raise e
@@ -310,29 +322,29 @@ class MoveAssetFunc(AssetFunc):
         skip_missing: tp.Optional[bool] = None,
         make_copy: tp.Optional[bool] = None,
         changed_only: tp.Optional[bool] = None,
-        asset: tp.Optional[tp.MaybeType[tp.KnowledgeAsset]] = None,
+        asset_cls: tp.Optional[tp.Type[tp.KnowledgeAsset]] = None,
         **kwargs,
     ) -> tp.ArgsKwargs:
-        if asset is None:
+        if asset_cls is None:
             from vectorbtpro.utils.knowledge.base_assets import KnowledgeAsset
 
-            asset = KnowledgeAsset
-        skip_missing = asset.resolve_setting(skip_missing, "skip_missing")
-        make_copy = asset.resolve_setting(make_copy, "make_copy")
-        changed_only = asset.resolve_setting(changed_only, "changed_only")
+            asset_cls = KnowledgeAsset
+        skip_missing = asset_cls.resolve_setting(skip_missing, "skip_missing")
+        make_copy = asset_cls.resolve_setting(make_copy, "make_copy")
+        changed_only = asset_cls.resolve_setting(changed_only, "changed_only")
 
         if new_path is None:
             checks.assert_instance_of(path, dict, arg_name="path")
             new_path = list(path.values())
             path = list(path.keys())
         if isinstance(path, list):
-            paths = [search.resolve_pathlike_key(p) for p in path]
+            paths = [search_.resolve_pathlike_key(p) for p in path]
         else:
-            paths = [search.resolve_pathlike_key(path)]
+            paths = [search_.resolve_pathlike_key(path)]
         if isinstance(new_path, list):
-            new_paths = [search.resolve_pathlike_key(p) for p in new_path]
+            new_paths = [search_.resolve_pathlike_key(p) for p in new_path]
         else:
-            new_paths = [search.resolve_pathlike_key(new_path)]
+            new_paths = [search_.resolve_pathlike_key(new_path)]
         if len(paths) != len(new_paths):
             raise ValueError("Number of new paths must match number of paths")
         return (), {
@@ -359,9 +371,9 @@ class MoveAssetFunc(AssetFunc):
         prev_keys = []
         for i, p in enumerate(paths):
             try:
-                x = search.get_pathlike_key(d, p)
-                d = search.remove_pathlike_key(d, p, make_copy=make_copy, prev_keys=prev_keys)
-                d = search.set_pathlike_key(d, new_paths[i], x, make_copy=make_copy, prev_keys=prev_keys)
+                x = search_.get_pathlike_key(d, p)
+                d = search_.remove_pathlike_key(d, p, make_copy=make_copy, prev_keys=prev_keys)
+                d = search_.set_pathlike_key(d, new_paths[i], x, make_copy=make_copy, prev_keys=prev_keys)
             except (KeyError, IndexError, AttributeError) as e:
                 if not skip_missing:
                     raise e
@@ -384,29 +396,29 @@ class RenameAssetFunc(MoveAssetFunc):
         skip_missing: tp.Optional[bool] = None,
         make_copy: tp.Optional[bool] = None,
         changed_only: tp.Optional[bool] = None,
-        asset: tp.Optional[tp.MaybeType[tp.KnowledgeAsset]] = None,
+        asset_cls: tp.Optional[tp.Type[tp.KnowledgeAsset]] = None,
         **kwargs,
     ) -> tp.ArgsKwargs:
-        if asset is None:
+        if asset_cls is None:
             from vectorbtpro.utils.knowledge.base_assets import KnowledgeAsset
 
-            asset = KnowledgeAsset
-        skip_missing = asset.resolve_setting(skip_missing, "skip_missing")
-        make_copy = asset.resolve_setting(make_copy, "make_copy")
-        changed_only = asset.resolve_setting(changed_only, "changed_only")
+            asset_cls = KnowledgeAsset
+        skip_missing = asset_cls.resolve_setting(skip_missing, "skip_missing")
+        make_copy = asset_cls.resolve_setting(make_copy, "make_copy")
+        changed_only = asset_cls.resolve_setting(changed_only, "changed_only")
 
         if new_token is None:
             checks.assert_instance_of(path, dict, arg_name="path")
             new_token = list(path.values())
             path = list(path.keys())
         if isinstance(path, list):
-            paths = [search.resolve_pathlike_key(p) for p in path]
+            paths = [search_.resolve_pathlike_key(p) for p in path]
         else:
-            paths = [search.resolve_pathlike_key(path)]
+            paths = [search_.resolve_pathlike_key(path)]
         if isinstance(new_token, list):
-            new_tokens = [search.resolve_pathlike_key(t) for t in new_token]
+            new_tokens = [search_.resolve_pathlike_key(t) for t in new_token]
         else:
-            new_tokens = [search.resolve_pathlike_key(new_token)]
+            new_tokens = [search_.resolve_pathlike_key(new_token)]
         if len(paths) != len(new_tokens):
             raise ValueError("Number of new tokens must match number of paths")
         new_paths = []
@@ -442,17 +454,18 @@ class ReorderAssetFunc(AssetFunc):
         make_copy: tp.Optional[bool] = None,
         changed_only: tp.Optional[bool] = None,
         template_context: tp.KwargsLike = None,
-        asset: tp.Optional[tp.MaybeType[tp.KnowledgeAsset]] = None,
+        asset_cls: tp.Optional[tp.Type[tp.KnowledgeAsset]] = None,
         **kwargs,
     ) -> tp.ArgsKwargs:
-        if asset is None:
+        if asset_cls is None:
             from vectorbtpro.utils.knowledge.base_assets import KnowledgeAsset
 
-            asset = KnowledgeAsset
-        skip_missing = asset.resolve_setting(skip_missing, "skip_missing")
-        make_copy = asset.resolve_setting(make_copy, "make_copy")
-        changed_only = asset.resolve_setting(changed_only, "changed_only")
-        template_context = asset.resolve_setting(template_context, "template_context", merge=True)
+            asset_cls = KnowledgeAsset
+        skip_missing = asset_cls.resolve_setting(skip_missing, "skip_missing")
+        make_copy = asset_cls.resolve_setting(make_copy, "make_copy")
+        changed_only = asset_cls.resolve_setting(changed_only, "changed_only")
+        template_context = asset_cls.resolve_setting(template_context, "template_context", merge=True)
+        template_context = flat_merge_dicts({"asset_cls": asset_cls}, template_context)
 
         if isinstance(new_order, str):
             if new_order.lower() in ("asc", "ascending"):
@@ -483,9 +496,9 @@ class ReorderAssetFunc(AssetFunc):
                 new_order = RepFunc(new_order)
         if path is not None:
             if isinstance(path, list):
-                paths = [search.resolve_pathlike_key(p) for p in path]
+                paths = [search_.resolve_pathlike_key(p) for p in path]
             else:
-                paths = [search.resolve_pathlike_key(path)]
+                paths = [search_.resolve_pathlike_key(path)]
         else:
             paths = [None]
         return (), {
@@ -510,14 +523,13 @@ class ReorderAssetFunc(AssetFunc):
         make_copy: bool = True,
         changed_only: bool = False,
         template_context: tp.KwargsLike = None,
-        **kwargs,
     ) -> tp.Any:
         prev_keys = []
         for p in paths:
             x = d
             if p is not None:
                 try:
-                    x = search.get_pathlike_key(x, p)
+                    x = search_.get_pathlike_key(x, p)
                 except (KeyError, IndexError, AttributeError) as e:
                     if not skip_missing:
                         raise e
@@ -531,7 +543,7 @@ class ReorderAssetFunc(AssetFunc):
                     },
                     template_context,
                 )
-                _new_order = new_order.substitute(_template_context, eval_id="new_order", **kwargs)
+                _new_order = new_order.substitute(_template_context, eval_id="new_order")
                 if checks.is_function(_new_order):
                     _new_order = _new_order(x)
             else:
@@ -543,7 +555,7 @@ class ReorderAssetFunc(AssetFunc):
                     x = type(x)(*reorder_list(x, _new_order, skip_missing=skip_missing))
                 else:
                     x = type(x)(reorder_list(x, _new_order, skip_missing=skip_missing))
-            d = search.set_pathlike_key(d, p, x, make_copy=make_copy, prev_keys=prev_keys)
+            d = search_.set_pathlike_key(d, p, x, make_copy=make_copy, prev_keys=prev_keys)
         if not changed_only or len(prev_keys) > 0:
             return d
         return NoResult
@@ -559,18 +571,19 @@ class QueryAssetFunc(AssetFunc):
     @classmethod
     def prepare(
         cls,
-        expression: tp.Union[str, tp.Callable, tp.CustomTemplate],
+        expression: tp.CustomTemplateLike,
         template_context: tp.KwargsLike = None,
         return_type: tp.Optional[str] = None,
-        asset: tp.Optional[tp.MaybeType[tp.KnowledgeAsset]] = None,
+        asset_cls: tp.Optional[tp.Type[tp.KnowledgeAsset]] = None,
         **kwargs,
     ) -> tp.ArgsKwargs:
-        if asset is None:
+        if asset_cls is None:
             from vectorbtpro.utils.knowledge.base_assets import KnowledgeAsset
 
-            asset = KnowledgeAsset
-        template_context = asset.resolve_setting(template_context, "template_context", merge=True)
-        return_type = asset.resolve_setting(return_type, "return_type")
+            asset_cls = KnowledgeAsset
+        template_context = asset_cls.resolve_setting(template_context, "template_context", merge=True)
+        template_context = flat_merge_dicts({"asset_cls": asset_cls}, template_context)
+        return_type = asset_cls.resolve_setting(return_type, "return_type")
 
         if isinstance(expression, str):
             expression = RepEval(expression)
@@ -580,7 +593,7 @@ class QueryAssetFunc(AssetFunc):
             else:
                 expression = RepFunc(expression)
         elif not isinstance(expression, CustomTemplate):
-            raise TypeError(f"Expression must be a string, function, or template")
+            raise TypeError(f"Expression must be a string, function, or template, not {type(expression)}")
         return (), {
             **dict(
                 expression=expression,
@@ -597,18 +610,17 @@ class QueryAssetFunc(AssetFunc):
         expression: tp.CustomTemplate,
         template_context: tp.KwargsLike = None,
         return_type: str = "item",
-        **kwargs,
     ) -> tp.Any:
         _template_context = flat_merge_dicts(
             {
                 "d": d,
                 "x": d,
-                **search.search_config,
+                **search_.search_config,
                 **(d if isinstance(d, dict) else {}),
             },
             template_context,
         )
-        new_d = expression.substitute(_template_context, eval_id="expression", **kwargs)
+        new_d = expression.substitute(_template_context, eval_id="expression")
         if checks.is_function(new_d):
             new_d = new_d(d)
         if return_type.lower() == "item":
@@ -640,34 +652,35 @@ class FindAssetFunc(AssetFunc):
         find_all: tp.Optional[bool] = None,
         keep_path: tp.Optional[bool] = None,
         skip_missing: tp.Optional[bool] = None,
-        source: tp.Union[None, str, tp.Callable, tp.CustomTemplate] = None,
+        source: tp.Optional[tp.CustomTemplateLike] = None,
         in_dumps: tp.Optional[bool] = None,
         dump_kwargs: tp.KwargsLike = None,
         template_context: tp.KwargsLike = None,
         return_type: tp.Optional[str] = None,
         return_path: tp.Optional[bool] = None,
-        asset: tp.Optional[tp.MaybeType[tp.KnowledgeAsset]] = None,
+        asset_cls: tp.Optional[tp.Type[tp.KnowledgeAsset]] = None,
         **kwargs,
     ) -> tp.ArgsKwargs:
-        if asset is None:
+        if asset_cls is None:
             from vectorbtpro.utils.knowledge.base_assets import KnowledgeAsset
 
-            asset = KnowledgeAsset
-        per_path = asset.resolve_setting(per_path, "per_path")
-        find_all = asset.resolve_setting(find_all, "find_all")
-        keep_path = asset.resolve_setting(keep_path, "keep_path")
-        skip_missing = asset.resolve_setting(skip_missing, "skip_missing")
-        in_dumps = asset.resolve_setting(in_dumps, "in_dumps")
-        dump_kwargs = asset.resolve_setting(dump_kwargs, "dump_kwargs", merge=True)
-        template_context = asset.resolve_setting(template_context, "template_context", merge=True)
-        return_type = asset.resolve_setting(return_type, "return_type")
-        return_path = asset.resolve_setting(return_path, "return_path")
+            asset_cls = KnowledgeAsset
+        per_path = asset_cls.resolve_setting(per_path, "per_path")
+        find_all = asset_cls.resolve_setting(find_all, "find_all")
+        keep_path = asset_cls.resolve_setting(keep_path, "keep_path")
+        skip_missing = asset_cls.resolve_setting(skip_missing, "skip_missing")
+        in_dumps = asset_cls.resolve_setting(in_dumps, "in_dumps")
+        dump_kwargs = asset_cls.resolve_setting(dump_kwargs, "dump_kwargs", merge=True)
+        template_context = asset_cls.resolve_setting(template_context, "template_context", merge=True)
+        template_context = flat_merge_dicts({"asset_cls": asset_cls}, template_context)
+        return_type = asset_cls.resolve_setting(return_type, "return_type")
+        return_path = asset_cls.resolve_setting(return_path, "return_path")
 
         if path is not None:
             if isinstance(path, list):
-                path = [search.resolve_pathlike_key(p) for p in path]
+                path = [search_.resolve_pathlike_key(p) for p in path]
             else:
-                path = search.resolve_pathlike_key(path)
+                path = search_.resolve_pathlike_key(path)
         if per_path:
             if not isinstance(target, list):
                 target = [target]
@@ -688,9 +701,9 @@ class FindAssetFunc(AssetFunc):
                 else:
                     source = RepFunc(source)
             elif not isinstance(source, CustomTemplate):
-                raise TypeError(f"Source must be a string, function, or template")
+                raise TypeError(f"Source must be a string, function, or template, not {type(source)}")
         dump_kwargs = DumpAssetFunc.resolve_dump_kwargs(**dump_kwargs)
-        contains_arg_names = set(get_func_arg_names(search.contains_in_obj))
+        contains_arg_names = set(get_func_arg_names(search_.contains_in_obj))
         search_kwargs = {k: kwargs.pop(k) for k in list(kwargs.keys()) if k in contains_arg_names}
         if "excl_types" not in search_kwargs:
             search_kwargs["excl_types"] = (tuple, set, frozenset)
@@ -724,17 +737,17 @@ class FindAssetFunc(AssetFunc):
     ) -> bool:
         """Match function for `FindAssetFunc.call`.
 
-        Uses `vectorbtpro.utils.search.find` with `return_type="bool"` for text,
+        Uses `vectorbtpro.utils.search_.find` with `return_type="bool"` for text,
         and equality checks for other types.
 
         Target can be a function taking the value and returning a boolean. Target can also be an
-        instance of `vectorbtpro.utils.search.Not` for negation."""
+        instance of `vectorbtpro.utils.search_.Not` for negation."""
         if not isinstance(target, list):
             targets = [target]
         else:
             targets = target
         for target in targets:
-            if isinstance(target, search.Not):
+            if isinstance(target, search_.Not):
                 target = target.value
                 negation = True
             else:
@@ -763,7 +776,7 @@ class FindAssetFunc(AssetFunc):
                         return not negation
                     continue
             elif isinstance(d, str) and isinstance(target, str):
-                if search.find(target, d, return_type="bool", **kwargs):
+                if search_.find(target, d, return_type="bool", **kwargs):
                     if (negation and find_all) or (not negation and not find_all):
                         return not negation
                     continue
@@ -810,7 +823,7 @@ class FindAssetFunc(AssetFunc):
             for i, p in enumerate(path):
                 x = d
                 try:
-                    x = search.get_pathlike_key(x, p, keep_path=keep_path)
+                    x = search_.get_pathlike_key(x, p, keep_path=keep_path)
                 except (KeyError, IndexError, AttributeError) as e:
                     if not skip_missing:
                         raise e
@@ -833,12 +846,12 @@ class FindAssetFunc(AssetFunc):
                     x = dump(x, **dump_kwargs)
                 t = target[i]
                 if return_type.lower() in ("item", "bool"):
-                    if isinstance(t, search.Not):
+                    if isinstance(t, search_.Not):
                         t = t.value
                         negation = True
                     else:
                         negation = False
-                    if search.contains_in_obj(
+                    if search_.contains_in_obj(
                         x,
                         cls.match_func,
                         target=t,
@@ -864,7 +877,7 @@ class FindAssetFunc(AssetFunc):
                                 return NoResult if return_type.lower() == "item" else False
                             continue
                 else:
-                    path_dct = search.find_in_obj(
+                    path_dct = search_.find_in_obj(
                         x,
                         cls.match_func,
                         target=t,
@@ -876,7 +889,7 @@ class FindAssetFunc(AssetFunc):
                         if find_all:
                             return {} if return_path else []
                         continue
-                    if isinstance(t, search.Not):
+                    if isinstance(t, search_.Not):
                         raise TypeError("Target cannot be negated here")
                     if not isinstance(t, str):
                         raise ValueError("Target must be string")
@@ -884,7 +897,7 @@ class FindAssetFunc(AssetFunc):
                         if not isinstance(v, str):
                             raise ValueError("Matched value must be string")
                         _return_type = "bool" if return_type.lower() == "field" else return_type
-                        matches = search.find(t, v, return_type=_return_type, **kwargs)
+                        matches = search_.find(t, v, return_type=_return_type, **kwargs)
                         if return_path:
                             if k not in new_path_dct:
                                 new_path_dct[k] = []
@@ -914,7 +927,7 @@ class FindAssetFunc(AssetFunc):
                     xs = []
                     for p in path:
                         try:
-                            xs.append(search.get_pathlike_key(x, p, keep_path=True))
+                            xs.append(search_.get_pathlike_key(x, p, keep_path=True))
                         except (KeyError, IndexError, AttributeError) as e:
                             if not skip_missing:
                                 raise e
@@ -925,10 +938,10 @@ class FindAssetFunc(AssetFunc):
                         if return_type.lower() == "bool":
                             return False
                         return {} if return_path else []
-                    x = deep_merge_dicts(*xs)
+                    x = merge_dicts(*xs)
                 else:
                     try:
-                        x = search.get_pathlike_key(x, path, keep_path=keep_path)
+                        x = search_.get_pathlike_key(x, path, keep_path=keep_path)
                     except (KeyError, IndexError, AttributeError) as e:
                         if not skip_missing:
                             raise e
@@ -954,7 +967,7 @@ class FindAssetFunc(AssetFunc):
             if not isinstance(x, str) and in_dumps:
                 x = dump(x, **dump_kwargs)
             if return_type.lower() == "item":
-                if search.contains_in_obj(
+                if search_.contains_in_obj(
                     x,
                     cls.match_func,
                     target=target,
@@ -965,7 +978,7 @@ class FindAssetFunc(AssetFunc):
                     return d
                 return NoResult
             elif return_type.lower() == "bool":
-                return search.contains_in_obj(
+                return search_.contains_in_obj(
                     x,
                     cls.match_func,
                     target=target,
@@ -974,7 +987,7 @@ class FindAssetFunc(AssetFunc):
                     **kwargs,
                 )
             else:
-                path_dct = search.find_in_obj(
+                path_dct = search_.find_in_obj(
                     x,
                     cls.match_func,
                     target=target,
@@ -991,7 +1004,7 @@ class FindAssetFunc(AssetFunc):
                 new_path_dct = {}
                 new_list = []
                 for target in targets:
-                    if isinstance(target, search.Not):
+                    if isinstance(target, search_.Not):
                         raise TypeError("Target cannot be negated here")
                     if not isinstance(target, str):
                         raise ValueError("Target must be string")
@@ -999,7 +1012,7 @@ class FindAssetFunc(AssetFunc):
                         if not isinstance(v, str):
                             raise ValueError("Matched value must be string")
                         _return_type = "bool" if return_type.lower() == "field" else return_type
-                        matches = search.find(target, v, return_type=_return_type, **kwargs)
+                        matches = search_.find(target, v, return_type=_return_type, **kwargs)
                         if return_path:
                             if k not in new_path_dct:
                                 new_path_dct[k] = []
@@ -1036,19 +1049,19 @@ class FindReplaceAssetFunc(FindAssetFunc):
         skip_missing: tp.Optional[bool] = None,
         make_copy: tp.Optional[bool] = None,
         changed_only: tp.Optional[bool] = None,
-        asset: tp.Optional[tp.MaybeType[tp.KnowledgeAsset]] = None,
+        asset_cls: tp.Optional[tp.Type[tp.KnowledgeAsset]] = None,
         **kwargs,
     ) -> tp.ArgsKwargs:
-        if asset is None:
+        if asset_cls is None:
             from vectorbtpro.utils.knowledge.base_assets import KnowledgeAsset
 
-            asset = KnowledgeAsset
-        per_path = asset.resolve_setting(per_path, "per_path")
-        find_all = asset.resolve_setting(find_all, "find_all")
-        keep_path = asset.resolve_setting(keep_path, "keep_path")
-        skip_missing = asset.resolve_setting(skip_missing, "skip_missing")
-        make_copy = asset.resolve_setting(make_copy, "make_copy")
-        changed_only = asset.resolve_setting(changed_only, "changed_only")
+            asset_cls = KnowledgeAsset
+        per_path = asset_cls.resolve_setting(per_path, "per_path")
+        find_all = asset_cls.resolve_setting(find_all, "find_all")
+        keep_path = asset_cls.resolve_setting(keep_path, "keep_path")
+        skip_missing = asset_cls.resolve_setting(skip_missing, "skip_missing")
+        make_copy = asset_cls.resolve_setting(make_copy, "make_copy")
+        changed_only = asset_cls.resolve_setting(changed_only, "changed_only")
 
         if replacement is None:
             checks.assert_instance_of(target, dict, arg_name="path")
@@ -1056,9 +1069,9 @@ class FindReplaceAssetFunc(FindAssetFunc):
             target = list(target.keys())
         if path is not None:
             if isinstance(path, list):
-                paths = [search.resolve_pathlike_key(p) for p in path]
+                paths = [search_.resolve_pathlike_key(p) for p in path]
             else:
-                paths = [search.resolve_pathlike_key(path)]
+                paths = [search_.resolve_pathlike_key(path)]
                 if isinstance(target, list):
                     paths *= len(target)
                 elif isinstance(replacement, list):
@@ -1076,7 +1089,7 @@ class FindReplaceAssetFunc(FindAssetFunc):
                 replacement = [replacement] * len(paths)
             if len(target) != len(replacement) != len(paths):
                 raise ValueError("Number of targets and replacements must match number of paths")
-        find_arg_names = set(get_func_arg_names(search.find_in_obj))
+        find_arg_names = set(get_func_arg_names(search_.find_in_obj))
         find_kwargs = {k: kwargs.pop(k) for k in list(kwargs.keys()) if k in find_arg_names}
         if "excl_types" not in find_kwargs:
             find_kwargs["excl_types"] = (tuple, set, frozenset)
@@ -1107,7 +1120,7 @@ class FindReplaceAssetFunc(FindAssetFunc):
     ) -> tp.Any:
         """Replace function for `FindReplaceAssetFunc.call`.
 
-        Uses `vectorbtpro.utils.search.replace` for text and returns replacement for other types.
+        Uses `vectorbtpro.utils.search_.replace` for text and returns replacement for other types.
 
         Target can be a function taking the value and returning a boolean.
         Replacement can also be a function taking the value and returning a new value."""
@@ -1124,7 +1137,7 @@ class FindReplaceAssetFunc(FindAssetFunc):
         if len(targets) != len(replacements):
             raise ValueError("Number of targets must match number of replacements")
         for i, target in enumerate(targets):
-            if isinstance(target, search.Not):
+            if isinstance(target, search_.Not):
                 raise TypeError("Target cannot be negated here")
             replacement = replacements[i]
             if checks.is_function(replacement):
@@ -1143,7 +1156,7 @@ class FindReplaceAssetFunc(FindAssetFunc):
                 if d == target:
                     return replacement
             elif isinstance(d, str) and isinstance(target, str):
-                d = search.replace(target, replacement, d, **kwargs)
+                d = search_.replace(target, replacement, d, **kwargs)
             elif type(d) is type(target):
                 try:
                     if d == target:
@@ -1177,12 +1190,12 @@ class FindReplaceAssetFunc(FindAssetFunc):
                 x = d
                 if p is not None:
                     try:
-                        x = search.get_pathlike_key(x, p, keep_path=keep_path)
+                        x = search_.get_pathlike_key(x, p, keep_path=keep_path)
                     except (KeyError, IndexError, AttributeError) as e:
                         if not skip_missing:
                             raise e
                         continue
-                path_dct = search.find_in_obj(
+                path_dct = search_.find_in_obj(
                     x,
                     cls.match_func,
                     target=target[i] if per_path else target,
@@ -1198,12 +1211,12 @@ class FindReplaceAssetFunc(FindAssetFunc):
                 x = d
                 if p is not None:
                     try:
-                        x = search.get_pathlike_key(x, p, keep_path=keep_path)
+                        x = search_.get_pathlike_key(x, p, keep_path=keep_path)
                     except (KeyError, IndexError, AttributeError) as e:
                         if not skip_missing:
                             raise e
                         continue
-                path_dct = search.find_in_obj(
+                path_dct = search_.find_in_obj(
                     x,
                     cls.match_func,
                     target=target[i] if per_path else target,
@@ -1213,7 +1226,7 @@ class FindReplaceAssetFunc(FindAssetFunc):
                 )
                 for k, v in path_dct.items():
                     if p is not None and not keep_path:
-                        new_p = search.combine_pathlike_keys(p, k, minimize=True)
+                        new_p = search_.combine_pathlike_keys(p, k, minimize=True)
                     else:
                         new_p = k
                     v = cls.replace_func(
@@ -1223,7 +1236,7 @@ class FindReplaceAssetFunc(FindAssetFunc):
                         replacement[i] if per_path else replacement,
                         **kwargs,
                     )
-                    d = search.set_pathlike_key(d, new_p, v, make_copy=make_copy, prev_keys=prev_keys)
+                    d = search_.set_pathlike_key(d, new_p, v, make_copy=make_copy, prev_keys=prev_keys)
         if not changed_only or len(prev_keys) > 0:
             return d
         return NoResult
@@ -1245,25 +1258,25 @@ class FindRemoveAssetFunc(FindAssetFunc):
         skip_missing: tp.Optional[bool] = None,
         make_copy: tp.Optional[bool] = None,
         changed_only: tp.Optional[bool] = None,
-        asset: tp.Optional[tp.MaybeType[tp.KnowledgeAsset]] = None,
+        asset_cls: tp.Optional[tp.Type[tp.KnowledgeAsset]] = None,
         **kwargs,
     ) -> tp.ArgsKwargs:
-        if asset is None:
+        if asset_cls is None:
             from vectorbtpro.utils.knowledge.base_assets import KnowledgeAsset
 
-            asset = KnowledgeAsset
-        per_path = asset.resolve_setting(per_path, "per_path")
-        find_all = asset.resolve_setting(find_all, "find_all")
-        keep_path = asset.resolve_setting(keep_path, "keep_path")
-        skip_missing = asset.resolve_setting(skip_missing, "skip_missing")
-        make_copy = asset.resolve_setting(make_copy, "make_copy")
-        changed_only = asset.resolve_setting(changed_only, "changed_only")
+            asset_cls = KnowledgeAsset
+        per_path = asset_cls.resolve_setting(per_path, "per_path")
+        find_all = asset_cls.resolve_setting(find_all, "find_all")
+        keep_path = asset_cls.resolve_setting(keep_path, "keep_path")
+        skip_missing = asset_cls.resolve_setting(skip_missing, "skip_missing")
+        make_copy = asset_cls.resolve_setting(make_copy, "make_copy")
+        changed_only = asset_cls.resolve_setting(changed_only, "changed_only")
 
         if path is not None:
             if isinstance(path, list):
-                paths = [search.resolve_pathlike_key(p) for p in path]
+                paths = [search_.resolve_pathlike_key(p) for p in path]
             else:
-                paths = [search.resolve_pathlike_key(path)]
+                paths = [search_.resolve_pathlike_key(path)]
                 if isinstance(target, list):
                     paths *= len(target)
         else:
@@ -1275,7 +1288,7 @@ class FindRemoveAssetFunc(FindAssetFunc):
                 target = [target] * len(paths)
             if len(target) != len(paths):
                 raise ValueError("Number of targets must match number of paths")
-        find_arg_names = set(get_func_arg_names(search.find_in_obj))
+        find_arg_names = set(get_func_arg_names(search_.find_in_obj))
         find_kwargs = {k: kwargs.pop(k) for k in list(kwargs.keys()) if k in find_arg_names}
         if "excl_types" not in find_kwargs:
             find_kwargs["excl_types"] = (tuple, set, frozenset)
@@ -1326,12 +1339,12 @@ class FindRemoveAssetFunc(FindAssetFunc):
             x = d
             if p is not None:
                 try:
-                    x = search.get_pathlike_key(x, p, keep_path=keep_path)
+                    x = search_.get_pathlike_key(x, p, keep_path=keep_path)
                 except (KeyError, IndexError, AttributeError) as e:
                     if not skip_missing:
                         raise e
                     continue
-            path_dct = search.find_in_obj(
+            path_dct = search_.find_in_obj(
                 x,
                 cls.match_func,
                 target=target[i] if per_path else target,
@@ -1344,12 +1357,12 @@ class FindRemoveAssetFunc(FindAssetFunc):
                 break
             for k, v in path_dct.items():
                 if p is not None and not keep_path:
-                    new_p = search.combine_pathlike_keys(p, k, minimize=True)
+                    new_p = search_.combine_pathlike_keys(p, k, minimize=True)
                 else:
                     new_p = k
                 new_p_v_map[new_p] = v
         for new_p, v in new_p_v_map.items():
-            d = search.remove_pathlike_key(d, new_p, make_copy=make_copy, prev_keys=prev_keys)
+            d = search_.remove_pathlike_key(d, new_p, make_copy=make_copy, prev_keys=prev_keys)
         if not changed_only or len(prev_keys) > 0:
             return d
         return NoResult
@@ -1369,22 +1382,22 @@ class FlattenAssetFunc(AssetFunc):
         skip_missing: tp.Optional[bool] = None,
         make_copy: tp.Optional[bool] = None,
         changed_only: tp.Optional[bool] = None,
-        asset: tp.Optional[tp.MaybeType[tp.KnowledgeAsset]] = None,
+        asset_cls: tp.Optional[tp.Type[tp.KnowledgeAsset]] = None,
         **kwargs,
     ) -> tp.ArgsKwargs:
-        if asset is None:
+        if asset_cls is None:
             from vectorbtpro.utils.knowledge.base_assets import KnowledgeAsset
 
-            asset = KnowledgeAsset
-        skip_missing = asset.resolve_setting(skip_missing, "skip_missing")
-        make_copy = asset.resolve_setting(make_copy, "make_copy")
-        changed_only = asset.resolve_setting(changed_only, "changed_only")
+            asset_cls = KnowledgeAsset
+        skip_missing = asset_cls.resolve_setting(skip_missing, "skip_missing")
+        make_copy = asset_cls.resolve_setting(make_copy, "make_copy")
+        changed_only = asset_cls.resolve_setting(changed_only, "changed_only")
 
         if path is not None:
             if isinstance(path, list):
-                paths = [search.resolve_pathlike_key(p) for p in path]
+                paths = [search_.resolve_pathlike_key(p) for p in path]
             else:
-                paths = [search.resolve_pathlike_key(path)]
+                paths = [search_.resolve_pathlike_key(path)]
         else:
             paths = [None]
         if "excl_types" not in kwargs:
@@ -1414,13 +1427,13 @@ class FlattenAssetFunc(AssetFunc):
             x = d
             if p is not None:
                 try:
-                    x = search.get_pathlike_key(x, p)
+                    x = search_.get_pathlike_key(x, p)
                 except (KeyError, IndexError, AttributeError) as e:
                     if not skip_missing:
                         raise e
                     continue
-            x = search.flatten_obj(x, **kwargs)
-            d = search.set_pathlike_key(d, p, x, make_copy=make_copy, prev_keys=prev_keys)
+            x = search_.flatten_obj(x, **kwargs)
+            d = search_.set_pathlike_key(d, p, x, make_copy=make_copy, prev_keys=prev_keys)
         if not changed_only or len(prev_keys) > 0:
             return d
         return NoResult
@@ -1440,22 +1453,22 @@ class UnflattenAssetFunc(AssetFunc):
         skip_missing: tp.Optional[bool] = None,
         make_copy: tp.Optional[bool] = None,
         changed_only: tp.Optional[bool] = None,
-        asset: tp.Optional[tp.MaybeType[tp.KnowledgeAsset]] = None,
+        asset_cls: tp.Optional[tp.Type[tp.KnowledgeAsset]] = None,
         **kwargs,
     ) -> tp.ArgsKwargs:
-        if asset is None:
+        if asset_cls is None:
             from vectorbtpro.utils.knowledge.base_assets import KnowledgeAsset
 
-            asset = KnowledgeAsset
-        skip_missing = asset.resolve_setting(skip_missing, "skip_missing")
-        make_copy = asset.resolve_setting(make_copy, "make_copy")
-        changed_only = asset.resolve_setting(changed_only, "changed_only")
+            asset_cls = KnowledgeAsset
+        skip_missing = asset_cls.resolve_setting(skip_missing, "skip_missing")
+        make_copy = asset_cls.resolve_setting(make_copy, "make_copy")
+        changed_only = asset_cls.resolve_setting(changed_only, "changed_only")
 
         if path is not None:
             if isinstance(path, list):
-                paths = [search.resolve_pathlike_key(p) for p in path]
+                paths = [search_.resolve_pathlike_key(p) for p in path]
             else:
-                paths = [search.resolve_pathlike_key(path)]
+                paths = [search_.resolve_pathlike_key(path)]
         else:
             paths = [None]
         return (), {
@@ -1483,13 +1496,13 @@ class UnflattenAssetFunc(AssetFunc):
             x = d
             if p is not None:
                 try:
-                    x = search.get_pathlike_key(x, p)
+                    x = search_.get_pathlike_key(x, p)
                 except (KeyError, IndexError, AttributeError) as e:
                     if not skip_missing:
                         raise e
                     continue
-            x = search.unflatten_obj(x, **kwargs)
-            d = search.set_pathlike_key(d, p, x, make_copy=make_copy, prev_keys=prev_keys)
+            x = search_.unflatten_obj(x, **kwargs)
+            d = search_.set_pathlike_key(d, p, x, make_copy=make_copy, prev_keys=prev_keys)
         if not changed_only or len(prev_keys) > 0:
             return d
         return NoResult
@@ -1506,32 +1519,33 @@ class DumpAssetFunc(AssetFunc):
     def resolve_dump_kwargs(
         cls,
         dump_engine: tp.Optional[str] = None,
-        asset: tp.Optional[tp.MaybeType[tp.KnowledgeAsset]] = None,
+        asset_cls: tp.Optional[tp.Type[tp.KnowledgeAsset]] = None,
         **kwargs,
     ) -> tp.Kwargs:
         """Resolve keyword arguments related to dumping."""
-        if asset is None:
+        if asset_cls is None:
             from vectorbtpro.utils.knowledge.base_assets import KnowledgeAsset
 
-            asset = KnowledgeAsset
-        dump_engine = asset.resolve_setting(dump_engine, "dump_engine")
-        kwargs = asset.resolve_setting(kwargs, f"dump_engine_kwargs.{dump_engine}", default={}, merge=True)
+            asset_cls = KnowledgeAsset
+        dump_engine = asset_cls.resolve_setting(dump_engine, "dump_engine")
+        kwargs = asset_cls.resolve_setting(kwargs, f"dump_engine_kwargs.{dump_engine}", default={}, merge=True)
         return {"dump_engine": dump_engine, **kwargs}
 
     @classmethod
     def prepare(
         cls,
-        source: tp.Union[None, str, tp.Callable, tp.CustomTemplate] = None,
+        source: tp.Optional[tp.CustomTemplateLike] = None,
         dump_engine: tp.Optional[str] = None,
         template_context: tp.KwargsLike = None,
-        asset: tp.Optional[tp.MaybeType[tp.KnowledgeAsset]] = None,
+        asset_cls: tp.Optional[tp.Type[tp.KnowledgeAsset]] = None,
         **kwargs,
     ) -> tp.ArgsKwargs:
-        if asset is None:
+        if asset_cls is None:
             from vectorbtpro.utils.knowledge.base_assets import KnowledgeAsset
 
-            asset = KnowledgeAsset
-        template_context = asset.resolve_setting(template_context, "template_context", merge=True)
+            asset_cls = KnowledgeAsset
+        template_context = asset_cls.resolve_setting(template_context, "template_context", merge=True)
+        template_context = flat_merge_dicts({"asset_cls": asset_cls}, template_context)
         dump_kwargs = cls.resolve_dump_kwargs(dump_engine=dump_engine, **kwargs)
 
         if source is not None:
@@ -1543,7 +1557,7 @@ class DumpAssetFunc(AssetFunc):
                 else:
                     source = RepFunc(source)
             elif not isinstance(source, CustomTemplate):
-                raise TypeError(f"Source must be a string, function, or template")
+                raise TypeError(f"Source must be a string, function, or template, not {type(source)}")
         return (), {
             **dict(
                 source=source,
@@ -1562,6 +1576,8 @@ class DumpAssetFunc(AssetFunc):
         template_context: tp.KwargsLike = None,
         **kwargs,
     ) -> tp.Any:
+        from vectorbtpro.utils.knowledge.chatting import StoreDocument, EmbeddedDocument, ScoredDocument
+
         if source is not None:
             _template_context = flat_merge_dicts(
                 {
@@ -1576,7 +1592,137 @@ class DumpAssetFunc(AssetFunc):
                 new_d = new_d(d)
         else:
             new_d = d
+        if isinstance(new_d, StoreDocument):
+            return new_d.get_content()
+        if isinstance(new_d, (EmbeddedDocument, ScoredDocument)):
+            return new_d.document.get_content()
         return dump(new_d, dump_engine=dump_engine, **kwargs)
+
+
+class ToDocsAssetFunc(AssetFunc):
+    """Asset function class for `vectorbtpro.utils.knowledge.base_assets.KnowledgeAsset.to_documents`."""
+
+    _short_name: tp.ClassVar[tp.Optional[str]] = "to_docs"
+
+    _wrap: tp.ClassVar[tp.Optional[str]] = True
+
+    @classmethod
+    def prepare(
+        cls,
+        asset_cls: tp.Optional[tp.Type[tp.KnowledgeAsset]] = None,
+        document_cls: tp.Optional[tp.Type[tp.StoreDocument]] = None,
+        template_context: tp.Union[tp.KwargsLike, tp.CustomTemplate] = None,
+        **document_kwargs,
+    ) -> tp.ArgsKwargs:
+        if asset_cls is None:
+            from vectorbtpro.utils.knowledge.base_assets import KnowledgeAsset
+
+            asset_cls = KnowledgeAsset
+
+        document_cls = asset_cls.resolve_setting(document_cls, "document_cls")
+        if document_cls is None:
+            from vectorbtpro.utils.knowledge.chatting import TextDocument
+
+            document_cls = TextDocument
+        template_context = asset_cls.resolve_setting(template_context, "template_context", merge=True)
+        template_context = flat_merge_dicts({"asset_cls": asset_cls}, template_context)
+
+        document_kwargs = {}
+        for k, v in document_cls.fields_dict.items():
+            if v.default is not MISSING:
+                if k in document_kwargs or asset_cls.has_setting(k, sub_path="document_kwargs"):
+                    document_kwargs[k] = asset_cls.resolve_setting(
+                        document_kwargs.get(k, None),
+                        k,
+                        sub_path="document_kwargs",
+                        merge=isinstance(v.default, attr.Factory) and v.default.factory is dict,
+                    )
+                    if k == "template_context":
+                        document_kwargs[k] = merge_dicts(template_context, document_kwargs[k])
+                    if k == "dump_kwargs":
+                        document_kwargs[k] = DumpAssetFunc.resolve_dump_kwargs(**document_kwargs[k])
+        document_kwargs = substitute_templates(
+            document_kwargs, template_context, eval_id="document_kwargs", strict=False
+        )
+        return (), {
+            **dict(document_cls=document_cls),
+            **document_kwargs,
+        }
+
+    @classmethod
+    def call(
+        cls,
+        d: tp.Any,
+        document_cls: tp.Optional[tp.Type[tp.StoreDocument]] = None,
+        template_context: tp.KwargsLike = None,
+        **document_kwargs,
+    ) -> tp.Any:
+        if document_cls is None:
+            from vectorbtpro.utils.knowledge.chatting import TextDocument
+
+            document_cls = TextDocument
+
+        _template_context = flat_merge_dicts(
+            {
+                "d": d,
+                "x": d,
+                **(d if isinstance(d, dict) else {}),
+            },
+            template_context,
+        )
+        document_kwargs = substitute_templates(document_kwargs, _template_context, eval_id="document_kwargs")
+        return document_cls.from_data(d, template_context=_template_context, **document_kwargs)
+
+
+class SplitTextAssetFunc(AssetFunc):
+    """Asset function class for `vectorbtpro.utils.knowledge.base_assets.KnowledgeAsset.split_text`."""
+
+    _short_name: tp.ClassVar[tp.Optional[str]] = "split_text"
+
+    _wrap: tp.ClassVar[tp.Optional[str]] = True
+
+    @classmethod
+    def prepare(
+        cls,
+        text_path: tp.Optional[tp.PathLikeKey] = None,
+        asset_cls: tp.Optional[tp.Type[tp.KnowledgeAsset]] = None,
+        **split_text_kwargs,
+    ) -> tp.ArgsKwargs:
+        if asset_cls is None:
+            from vectorbtpro.utils.knowledge.base_assets import KnowledgeAsset
+
+            asset_cls = KnowledgeAsset
+        from vectorbtpro.utils.knowledge.chatting import resolve_text_splitter
+
+        text_path = asset_cls.resolve_setting(text_path, "text_path", sub_path="document_kwargs")
+        split_text_kwargs = asset_cls.resolve_setting(
+            split_text_kwargs, "split_text_kwargs", sub_path="document_kwargs", merge=True
+        )
+
+        text_splitter = split_text_kwargs.pop("text_splitter", None)
+        text_splitter = resolve_text_splitter(text_splitter=text_splitter)
+        if isinstance(text_splitter, type):
+            text_splitter = text_splitter(**split_text_kwargs)
+        elif split_text_kwargs:
+            text_splitter = text_splitter.replace(**split_text_kwargs)
+        return (), {
+            **dict(
+                text_path=text_path,
+                text_splitter=text_splitter,
+            ),
+        }
+
+    @classmethod
+    def call(
+        cls,
+        d: tp.Any,
+        text_path: tp.Optional[tp.PathLikeKey] = None,
+        **split_text_kwargs,
+    ) -> tp.Any:
+        from vectorbtpro.utils.knowledge.chatting import TextDocument
+
+        document = TextDocument("", d, text_path=text_path, split_text_kwargs=split_text_kwargs)
+        return [document_chunk.data for document_chunk in document.split()]
 
 
 # ############# Reduce classes ############# #
@@ -1610,14 +1756,14 @@ class CollectAssetFunc(ReduceAssetFunc):
     def prepare(
         cls,
         sort_keys: tp.Optional[bool] = None,
-        asset: tp.Optional[tp.MaybeType[tp.KnowledgeAsset]] = None,
+        asset_cls: tp.Optional[tp.Type[tp.KnowledgeAsset]] = None,
         **kwargs,
     ) -> tp.ArgsKwargs:
-        if asset is None:
+        if asset_cls is None:
             from vectorbtpro.utils.knowledge.base_assets import KnowledgeAsset
 
-            asset = KnowledgeAsset
-        sort_keys = asset.resolve_setting(sort_keys, "sort_keys")
+            asset_cls = KnowledgeAsset
+        sort_keys = asset_cls.resolve_setting(sort_keys, "sort_keys")
 
         return (), {**dict(sort_keys=sort_keys), **kwargs}
 
@@ -1628,8 +1774,12 @@ class CollectAssetFunc(ReduceAssetFunc):
 
     @classmethod
     def call(cls, d1: tp.Any, d2: tp.Any, sort_keys: bool = False) -> tp.Any:
+        if isinstance(d1, list):
+            d1 = {i: v for i, v in enumerate(d1)}
+        if isinstance(d2, list):
+            d2 = {i: v for i, v in enumerate(d2)}
         if not isinstance(d1, dict) or not isinstance(d2, dict):
-            raise TypeError("Data items must be dicts")
+            raise TypeError(f"Data items must be either dicts or lists, not {type(d1)} and {type(d2)}")
         new_d1 = dict(d1)
         for k1 in d1:
             if k1 not in new_d1:
@@ -1656,7 +1806,7 @@ class MergeDictsAssetFunc(ReduceAssetFunc):
     @classmethod
     def call(cls, d1: tp.Any, d2: tp.Any, **kwargs) -> tp.Any:
         if not isinstance(d1, dict) or not isinstance(d2, dict):
-            raise TypeError("Data items must be dicts")
+            raise TypeError(f"Data items must be dicts, not {type(d1)} and {type(d2)}")
         return merge_dicts(d1, d2, **kwargs)
 
 
@@ -1672,5 +1822,5 @@ class MergeListsAssetFunc(ReduceAssetFunc):
     @classmethod
     def call(cls, d1: tp.Any, d2: tp.Any) -> tp.Any:
         if not isinstance(d1, list) or not isinstance(d2, list):
-            raise TypeError("Data items must be lists")
+            raise TypeError(f"Data items must be lists, not {type(d1)} and {type(d2)}")
         return d1 + d2

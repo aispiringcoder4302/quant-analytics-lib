@@ -1,4 +1,12 @@
-# Copyright (c) 2021-2024 Oleg Polakow. All rights reserved.
+# ==================================== VBTPROXYZ ====================================
+# Copyright (c) 2021-2025 Oleg Polakow. All rights reserved.
+#
+# This file is part of the proprietary VectorBT® PRO package and is licensed under
+# the VectorBT® PRO License available at https://vectorbt.pro/terms/software-license/
+#
+# Unauthorized publishing, distribution, sublicensing, or sale of this software
+# or its parts is strictly prohibited.
+# ===================================================================================
 
 """Module with `PATSIM`."""
 
@@ -139,11 +147,12 @@ class _PATSIM(PATSIM):
             fig=fig,
         )
 
-        yaxis = getattr(fig.data[-1], "yaxis", None)
-        if yaxis is None:
-            yaxis = "y"
+        xref = fig.data[-1]["xaxis"] if fig.data[-1]["xaxis"] is not None else "x"
+        yref = fig.data[-1]["yaxis"] if fig.data[-1]["yaxis"] is not None else "y"
+        xaxis = "xaxis" + xref[1:]
+        yaxis = "yaxis" + yref[1:]
         default_layout = dict()
-        default_layout[yaxis.replace("y", "yaxis")] = dict(tickformat=",.0%")
+        default_layout[yaxis] = dict(tickformat=",.0%")
         fig.update_layout(**default_layout)
         fig.update_layout(**layout_kwargs)
 

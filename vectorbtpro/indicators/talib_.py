@@ -1,9 +1,16 @@
-# Copyright (c) 2021-2024 Oleg Polakow. All rights reserved.
+# ==================================== VBTPROXYZ ====================================
+# Copyright (c) 2021-2025 Oleg Polakow. All rights reserved.
+#
+# This file is part of the proprietary VectorBT® PRO package and is licensed under
+# the VectorBT® PRO License available at https://vectorbt.pro/terms/software-license/
+#
+# Unauthorized publishing, distribution, sublicensing, or sale of this software
+# or its parts is strictly prohibited.
+# ===================================================================================
 
 """Helper functions for TA-Lib."""
 
 import inspect
-import warnings
 
 import numpy as np
 import pandas as pd
@@ -17,6 +24,7 @@ from vectorbtpro.generic.accessors import GenericAccessor
 from vectorbtpro.utils.array_ import build_nan_mask, squeeze_nan, unsqueeze_nan
 from vectorbtpro.utils.colors import adjust_opacity
 from vectorbtpro.utils.config import merge_dicts, resolve_dict
+from vectorbtpro.utils.warnings_ import warn
 
 __all__ = [
     "talib_func",
@@ -124,12 +132,9 @@ def talib_func(func_name: str) -> tp.Callable:
                     raise ValueError("Resampling requires a wrapper")
                 if wrapper.freq is None:
                     if not silence_warnings:
-                        warnings.warn(
-                            (
-                                "Couldn't parse the frequency of index. "
-                                "Set freq in wrapper_kwargs via broadcast_kwargs, or globally."
-                            ),
-                            stacklevel=2,
+                        warn(
+                            "Couldn't parse the frequency of index. "
+                            "Set freq in wrapper_kwargs via broadcast_kwargs, or globally."
                         )
                 new_inputs = ()
                 _resample_map = merge_dicts(
@@ -408,17 +413,15 @@ def talib_plot_func(func_name: str) -> tp.Callable:
             fig = plot_func(trace_kwargs=trace_kwargs, add_trace_kwargs=add_trace_kwargs, fig=fig, **kwargs)
 
         if limits is not None:
-            xaxis = getattr(fig.data[-1], "xaxis", None)
-            if xaxis is None:
-                xaxis = "x"
-            yaxis = getattr(fig.data[-1], "yaxis", None)
-            if yaxis is None:
-                yaxis = "y"
+            xref = fig.data[-1]["xaxis"] if fig.data[-1]["xaxis"] is not None else "x"
+            yref = fig.data[-1]["yaxis"] if fig.data[-1]["yaxis"] is not None else "y"
+            xaxis = "xaxis" + xref[1:]
+            yaxis = "yaxis" + yref[1:]
             add_shape_kwargs = merge_dicts(
                 dict(
                     type="rect",
-                    xref=xaxis,
-                    yref=yaxis,
+                    xref=xref,
+                    yref=yref,
                     x0=outputs[output_names[0]].index[0],
                     y0=limits[0],
                     x1=outputs[output_names[0]].index[-1],

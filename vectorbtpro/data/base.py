@@ -1,11 +1,18 @@
-# Copyright (c) 2021-2024 Oleg Polakow. All rights reserved.
+# ==================================== VBTPROXYZ ====================================
+# Copyright (c) 2021-2025 Oleg Polakow. All rights reserved.
+#
+# This file is part of the proprietary VectorBT® PRO package and is licensed under
+# the VectorBT® PRO License available at https://vectorbt.pro/terms/software-license/
+#
+# Unauthorized publishing, distribution, sublicensing, or sale of this software
+# or its parts is strictly prohibited.
+# ===================================================================================
 
 """Base class for working with data sources."""
 
 import inspect
 import string
 import traceback
-import warnings
 from pathlib import Path
 
 import numpy as np
@@ -14,37 +21,43 @@ import pandas as pd
 from vectorbtpro import _typing as tp
 from vectorbtpro.base.indexes import stack_indexes
 from vectorbtpro.base.merging import column_stack_arrays, is_merge_func_from_config
-from vectorbtpro.base.reshaping import to_any_array, to_pd_array, to_2d_array
+from vectorbtpro.base.reshaping import to_any_array, to_pd_array, to_1d_array, to_2d_array, broadcast_to
 from vectorbtpro.base.wrapping import ArrayWrapper
 from vectorbtpro.data.decorators import attach_symbol_dict_methods
 from vectorbtpro.generic import nb as generic_nb
 from vectorbtpro.generic.analyzable import Analyzable
 from vectorbtpro.generic.drawdowns import Drawdowns
+from vectorbtpro.ohlcv.nb import mirror_ohlc_nb
+from vectorbtpro.ohlcv.enums import PriceFeature
 from vectorbtpro.returns.accessors import ReturnsAccessor
 from vectorbtpro.utils import checks, datetime_ as dt
 from vectorbtpro.utils.attr_ import get_dict_attr
 from vectorbtpro.utils.base import Base
 from vectorbtpro.utils.config import merge_dicts, Config, HybridConfig, copy_dict
 from vectorbtpro.utils.decorators import cached_property, hybrid_method
+from vectorbtpro.utils.enum_ import map_enum_fields
 from vectorbtpro.utils.execution import Task, NoResult, NoResultsException, filter_out_no_results, execute
 from vectorbtpro.utils.merging import MergeFunc
 from vectorbtpro.utils.parsing import get_func_arg_names, extend_args
 from vectorbtpro.utils.path_ import check_mkdir
 from vectorbtpro.utils.pickling import pdict, RecState
-from vectorbtpro.utils.template import RepEval, CustomTemplate, substitute_templates
+from vectorbtpro.utils.template import Rep, RepEval, CustomTemplate, substitute_templates
+from vectorbtpro.utils.warnings_ import warn
+from vectorbtpro.registries.ch_registry import ch_reg
+from vectorbtpro.registries.jit_registry import jit_reg
 
 try:
     if not tp.TYPE_CHECKING:
         raise ImportError
     from sqlalchemy import Engine as EngineT
 except ImportError:
-    EngineT = tp.Any
+    EngineT = "Engine"
 try:
     if not tp.TYPE_CHECKING:
         raise ImportError
     from duckdb import DuckDBPyConnection as DuckDBPyConnectionT
 except ImportError:
-    DuckDBPyConnectionT = tp.Any
+    DuckDBPyConnectionT = "DuckDBPyConnection"
 
 __all__ = [
     "key_dict",
@@ -461,8 +474,8 @@ class OHLCDataMixin(BaseDataMixin):
 DataT = tp.TypeVar("DataT", bound="Data")
 
 
-class MetaFeatures(type):
-    """Meta class that exposes a read-only class property `MetaFeatures.feature_config`."""
+class MetaData(type(Analyzable)):
+    """Metaclass for `Data`."""
 
     @property
     def feature_config(cls) -> Config:
@@ -470,26 +483,8 @@ class MetaFeatures(type):
         return cls._feature_config
 
 
-class DataWithFeatures(Base, metaclass=MetaFeatures):
-    """Class exposes a read-only class property `DataWithFeatures.field_config`."""
-
-    @property
-    def feature_config(self) -> Config:
-        """Feature config of `${cls_name}`.
-
-        ```python
-        ${feature_config}
-        ```
-        """
-        return self._feature_config
-
-
-class MetaData(type(Analyzable), type(DataWithFeatures)):
-    pass
-
-
 @attach_symbol_dict_methods
-class Data(Analyzable, DataWithFeatures, OHLCDataMixin, metaclass=MetaData):
+class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
     """Class that downloads, updates, and manages data coming from a data source."""
 
     _settings_path: tp.SettingsPath = dict(base="data")
@@ -727,21 +722,6 @@ class Data(Analyzable, DataWithFeatures, OHLCDataMixin, metaclass=MetaData):
         kwargs = cls.resolve_stack_kwargs(*objs, **kwargs)
         kwargs = cls.fix_dict_types_in_kwargs(type(kwargs["data"]), **kwargs)
         return cls(**kwargs)
-
-    _expected_keys: tp.ExpectedKeys = (Analyzable._expected_keys or set()) | {
-        "data",
-        "single_key",
-        "classes",
-        "level_name",
-        "fetch_kwargs",
-        "returned_kwargs",
-        "last_index",
-        "delisted",
-        "tz_localize",
-        "tz_convert",
-        "missing_index",
-        "missing_columns",
-    }
 
     def __init__(
         self,
@@ -1111,7 +1091,7 @@ class Data(Analyzable, DataWithFeatures, OHLCDataMixin, metaclass=MetaData):
         apply_group_by: bool = False,
         keep_2d: bool = False,
         key_as_index: bool = False,
-    ) -> tp.ItemGenerator:
+    ) -> tp.Items:
         """Iterate over columns (or groups if grouped and `Wrapping.group_select` is True), keys,
         features, or symbols. The respective mode can be selected with `over`.
 
@@ -1324,6 +1304,32 @@ class Data(Analyzable, DataWithFeatures, OHLCDataMixin, metaclass=MetaData):
             return self.wrapper.columns.tolist()
         return self.keys
 
+    def resolve_feature(self, feature: tp.Feature, raise_error: bool = False) -> tp.Optional[tp.Feature]:
+        """Return the feature of this instance that matches the provided feature."""
+        feature_idx = self.get_feature_idx(feature, raise_error=raise_error)
+        if feature_idx == -1:
+            return None
+        return self.features[feature_idx]
+
+    def resolve_symbol(self, symbol: tp.Feature, raise_error: bool = False) -> tp.Optional[tp.Feature]:
+        """Return the symbol of this instance that matches the provided symbol."""
+        symbol_idx = self.get_symbol_idx(symbol, raise_error=raise_error)
+        if symbol_idx == -1:
+            return None
+        return self.symbols[symbol_idx]
+
+    def resolve_key(self, key: tp.Key, raise_error: bool = False) -> tp.Optional[tp.Key]:
+        """Return the key of this instance that matches the provided key."""
+        if self.feature_oriented:
+            return self.resolve_feature(key, raise_error=raise_error)
+        return self.resolve_symbol(key, raise_error=raise_error)
+
+    def resolve_column(self, column: tp.Column, raise_error: bool = False) -> tp.Optional[tp.Column]:
+        """Return the column of this instance that matches the provided column."""
+        if self.feature_oriented:
+            return self.resolve_symbol(column, raise_error=raise_error)
+        return self.resolve_feature(column, raise_error=raise_error)
+
     def resolve_features(self, features: tp.MaybeFeatures, raise_error: bool = True) -> tp.MaybeFeatures:
         """Return the features of this instance that match the provided features."""
         if not self.has_multiple_keys(features):
@@ -1333,11 +1339,7 @@ class Data(Analyzable, DataWithFeatures, OHLCDataMixin, metaclass=MetaData):
             single_feature = False
         new_features = []
         for feature in features:
-            feature_idx = self.get_feature_idx(feature, raise_error=raise_error)
-            if feature_idx == -1:
-                new_features.append(feature)
-            else:
-                new_features.append(self.features[feature_idx])
+            new_features.append(self.resolve_feature(feature, raise_error=raise_error))
         if single_feature:
             return new_features[0]
         return new_features
@@ -1351,11 +1353,7 @@ class Data(Analyzable, DataWithFeatures, OHLCDataMixin, metaclass=MetaData):
             single_symbol = False
         new_symbols = []
         for symbol in symbols:
-            symbol_idx = self.get_symbol_idx(symbol, raise_error=raise_error)
-            if symbol_idx == -1:
-                new_symbols.append(symbol)
-            else:
-                new_symbols.append(self.symbols[symbol_idx])
+            new_symbols.append(self.resolve_symbol(symbol, raise_error=raise_error))
         if single_symbol:
             return new_symbols[0]
         return new_symbols
@@ -1727,18 +1725,12 @@ class Data(Analyzable, DataWithFeatures, OHLCDataMixin, metaclass=MetaData):
                 if not checks.is_index_equal(index, obj.index, check_names=False):
                     if missing == "nan":
                         if not silence_warnings:
-                            warnings.warn(
-                                "Symbols have mismatching index. Setting missing data points to NaN.",
-                                stacklevel=2,
-                            )
+                            warn("Symbols have mismatching index. Setting missing data points to NaN.")
                         index = index.union(obj.index)
                         index_changed = True
                     elif missing == "drop":
                         if not silence_warnings:
-                            warnings.warn(
-                                "Symbols have mismatching index. Dropping missing data points.",
-                                stacklevel=2,
-                            )
+                            warn("Symbols have mismatching index. Dropping missing data points.")
                         index = index.intersection(obj.index)
                         index_changed = True
                     elif missing == "raise":
@@ -1785,18 +1777,12 @@ class Data(Analyzable, DataWithFeatures, OHLCDataMixin, metaclass=MetaData):
                 if not checks.is_index_equal(columns, obj_columns, check_names=False):
                     if missing == "nan":
                         if not silence_warnings:
-                            warnings.warn(
-                                "Symbols have mismatching columns. Setting missing data points to NaN.",
-                                stacklevel=2,
-                            )
+                            warn("Symbols have mismatching columns. Setting missing data points to NaN.")
                         columns = columns.union(obj_columns)
                         columns_changed = True
                     elif missing == "drop":
                         if not silence_warnings:
-                            warnings.warn(
-                                "Symbols have mismatching columns. Dropping missing data points.",
-                                stacklevel=2,
-                            )
+                            warn("Symbols have mismatching columns. Dropping missing data points.")
                         columns = columns.intersection(obj_columns)
                         columns_changed = True
                     elif missing == "raise":
@@ -2703,20 +2689,14 @@ class Data(Analyzable, DataWithFeatures, OHLCDataMixin, metaclass=MetaData):
             out = cls.fetch_feature(feature, **fetch_kwargs)
             if out is None:
                 if not silence_warnings:
-                    warnings.warn(
-                        f"Feature '{str(feature)}' returned None. Skipping.",
-                        stacklevel=2,
-                    )
+                    warn(f"Feature '{str(feature)}' returned None. Skipping.")
             return out
         except Exception as e:
             if not skip_on_error:
                 raise e
             if not silence_warnings:
-                warnings.warn(traceback.format_exc(), stacklevel=2)
-                warnings.warn(
-                    f"Feature '{str(feature)}' raised an exception. Skipping.",
-                    stacklevel=2,
-                )
+                warn(traceback.format_exc())
+                warn(f"Feature '{str(feature)}' raised an exception. Skipping.")
         return None
 
     @classmethod
@@ -2749,20 +2729,14 @@ class Data(Analyzable, DataWithFeatures, OHLCDataMixin, metaclass=MetaData):
             out = cls.fetch_symbol(symbol, **fetch_kwargs)
             if out is None:
                 if not silence_warnings:
-                    warnings.warn(
-                        f"Symbol '{str(symbol)}' returned None. Skipping.",
-                        stacklevel=2,
-                    )
+                    warn(f"Symbol '{str(symbol)}' returned None. Skipping.")
             return out
         except Exception as e:
             if not skip_on_error:
                 raise e
             if not silence_warnings:
-                warnings.warn(traceback.format_exc(), stacklevel=2)
-                warnings.warn(
-                    f"Symbol '{str(symbol)}' raised an exception. Skipping.",
-                    stacklevel=2,
-                )
+                warn(traceback.format_exc())
+                warn(f"Symbol '{str(symbol)}' raised an exception. Skipping.")
         return None
 
     @classmethod
@@ -3011,10 +2985,7 @@ class Data(Analyzable, DataWithFeatures, OHLCDataMixin, metaclass=MetaData):
                         common_tz_convert = _tz_convert
                     elif common_tz_convert != _tz_convert:
                         if not silence_warnings:
-                            warnings.warn(
-                                f"Returned objects have different timezones (tz_convert). Setting to UTC.",
-                                stacklevel=2,
-                            )
+                            warn(f"Returned objects have different timezones (tz_convert). Setting to UTC.")
                         common_tz_convert = "utc"
                 if _freq is not None:
                     if common_freq is None:
@@ -3024,15 +2995,9 @@ class Data(Analyzable, DataWithFeatures, OHLCDataMixin, metaclass=MetaData):
                 if _data.size == 0:
                     if not silence_warnings:
                         if keys_are_features:
-                            warnings.warn(
-                                f"Feature '{str(k)}' returned an empty array. Skipping.",
-                                stacklevel=2,
-                            )
+                            warn(f"Feature '{str(k)}' returned an empty array. Skipping.")
                         else:
-                            warnings.warn(
-                                f"Symbol '{str(k)}' returned an empty array. Skipping.",
-                                stacklevel=2,
-                            )
+                            warn(f"Symbol '{str(k)}' returned an empty array. Skipping.")
                 else:
                     data[k] = _data
                     returned_kwargs[k] = _returned_kwargs
@@ -3063,6 +3028,11 @@ class Data(Analyzable, DataWithFeatures, OHLCDataMixin, metaclass=MetaData):
             returned_kwargs=returned_kwargs,
             silence_warnings=silence_warnings,
         )
+
+    @classmethod
+    def download(cls: tp.Type[DataT], *args, **kwargs) -> tp.Union[DataT, tp.List[tp.Any]]:
+        """Exists for backward compatibility. Use `Data.pull` instead."""
+        return cls.pull(*args, **kwargs)
 
     @classmethod
     def fetch(cls: tp.Type[DataT], *args, **kwargs) -> tp.Union[DataT, tp.List[tp.Any]]:
@@ -3112,20 +3082,14 @@ class Data(Analyzable, DataWithFeatures, OHLCDataMixin, metaclass=MetaData):
             out = self.update_feature(feature, **update_kwargs)
             if out is None:
                 if not silence_warnings:
-                    warnings.warn(
-                        f"Feature '{str(feature)}' returned None. Skipping.",
-                        stacklevel=2,
-                    )
+                    warn(f"Feature '{str(feature)}' returned None. Skipping.")
             return out
         except Exception as e:
             if not skip_on_error:
                 raise e
             if not silence_warnings:
-                warnings.warn(traceback.format_exc(), stacklevel=2)
-                warnings.warn(
-                    f"Feature '{str(feature)}' raised an exception. Skipping.",
-                    stacklevel=2,
-                )
+                warn(traceback.format_exc())
+                warn(f"Feature '{str(feature)}' raised an exception. Skipping.")
         return None
 
     def update_symbol(
@@ -3154,20 +3118,14 @@ class Data(Analyzable, DataWithFeatures, OHLCDataMixin, metaclass=MetaData):
             out = self.update_symbol(symbol, **update_kwargs)
             if out is None:
                 if not silence_warnings:
-                    warnings.warn(
-                        f"Symbol '{str(symbol)}' returned None. Skipping.",
-                        stacklevel=2,
-                    )
+                    warn(f"Symbol '{str(symbol)}' returned None. Skipping.")
             return out
         except Exception as e:
             if not skip_on_error:
                 raise e
             if not silence_warnings:
-                warnings.warn(traceback.format_exc(), stacklevel=2)
-                warnings.warn(
-                    f"Symbol '{str(symbol)}' raised an exception. Skipping.",
-                    stacklevel=2,
-                )
+                warn(traceback.format_exc())
+                warn(f"Symbol '{str(symbol)}' raised an exception. Skipping.")
         return None
 
     def update(
@@ -3263,15 +3221,9 @@ class Data(Analyzable, DataWithFeatures, OHLCDataMixin, metaclass=MetaData):
                 if new_obj.size == 0:
                     if not silence_warnings:
                         if self.feature_oriented:
-                            warnings.warn(
-                                f"Feature '{str(k)}' returned an empty array. Skipping.",
-                                stacklevel=2,
-                            )
+                            warn(f"Feature '{str(k)}' returned an empty array. Skipping.")
                         else:
-                            warnings.warn(
-                                f"Symbol '{str(k)}' returned an empty array. Skipping.",
-                                stacklevel=2,
-                            )
+                            warn(f"Symbol '{str(k)}' returned an empty array. Skipping.")
                     skip_key = True
                 else:
                     if not isinstance(new_obj, (pd.Series, pd.DataFrame)):
@@ -3315,15 +3267,9 @@ class Data(Analyzable, DataWithFeatures, OHLCDataMixin, metaclass=MetaData):
         if from_index is None:
             if not silence_warnings:
                 if self.feature_oriented:
-                    warnings.warn(
-                        f"None of the features were updated",
-                        stacklevel=2,
-                    )
+                    warn(f"None of the features were updated")
                 else:
-                    warnings.warn(
-                        f"None of the symbols were updated",
-                        stacklevel=2,
-                    )
+                    warn(f"None of the symbols were updated")
             return self.copy()
 
         # Concatenate the updated old data and the new data
@@ -3368,9 +3314,9 @@ class Data(Analyzable, DataWithFeatures, OHLCDataMixin, metaclass=MetaData):
                 else:
                     new_obj = new_obj[0]
             if isinstance(obj, pd.DataFrame):
-                new_obj = new_obj.astype(obj.dtypes)
+                new_obj = new_obj.astype(obj.dtypes, errors="ignore")
             else:
-                new_obj = new_obj.astype(obj.dtype)
+                new_obj = new_obj.astype(obj.dtype, errors="ignore")
             new_data[k] = new_obj
 
         if not concat:
@@ -3416,6 +3362,7 @@ class Data(Analyzable, DataWithFeatures, OHLCDataMixin, metaclass=MetaData):
         per_symbol: bool = False,
         pass_frame: bool = False,
         key_wrapper_kwargs: tp.KwargsLike = None,
+        broadcast_kwargs: tp.KwargsLike = None,
         template_context: tp.KwargsLike = None,
         **kwargs,
     ) -> DataT:
@@ -3430,7 +3377,8 @@ class Data(Analyzable, DataWithFeatures, OHLCDataMixin, metaclass=MetaData):
         Keyword arguments `key_wrapper_kwargs` are passed to `Data.get_key_wrapper` to control,
         for example, attachment of classes.
 
-        After the transformation, the new data is aligned using `Data.align_data`.
+        After the transformation, the new data is aligned using `Data.align_data`. If the data is not
+        a Pandas object, it's broadcasted to the original data with `broadcast_kwargs`.
 
         !!! note
             The returned object must have the same type and dimensionality as the input object.
@@ -3442,6 +3390,8 @@ class Data(Analyzable, DataWithFeatures, OHLCDataMixin, metaclass=MetaData):
             Index, on the other hand, can be changed freely."""
         if key_wrapper_kwargs is None:
             key_wrapper_kwargs = {}
+        if broadcast_kwargs is None:
+            broadcast_kwargs = {}
         if template_context is None:
             template_context = {}
 
@@ -3449,7 +3399,10 @@ class Data(Analyzable, DataWithFeatures, OHLCDataMixin, metaclass=MetaData):
             _transform_func = substitute_templates(transform_func, _template_context, eval_id="transform_func")
             _args = substitute_templates(args, _template_context, eval_id="args")
             _kwargs = substitute_templates(kwargs, _template_context, eval_id="kwargs")
-            return _transform_func(data, *_args, **_kwargs)
+            out = _transform_func(data, *_args, **_kwargs)
+            if not isinstance(out, (pd.Series, pd.DataFrame)):
+                out = broadcast_to(out, data, **broadcast_kwargs)
+            return out
 
         if (self.feature_oriented and (per_feature and not per_symbol)) or (
             self.symbol_oriented and (per_symbol and not per_feature)
@@ -3583,6 +3536,47 @@ class Data(Analyzable, DataWithFeatures, OHLCDataMixin, metaclass=MetaData):
             return df.dropna(**_kwargs)
 
         return self.transform(_dropna, **kwargs)
+
+    def mirror_ohlc(
+        self: DataT,
+        jitted: tp.JittedOption = None,
+        chunked: tp.ChunkedOption = None,
+        start_value: tp.ArrayLike = np.nan,
+        ref_feature: tp.ArrayLike = -1,
+    ) -> DataT:
+        """Mirror OHLC features."""
+        if isinstance(ref_feature, str):
+            ref_feature = map_enum_fields(ref_feature, PriceFeature)
+
+        open_name = self.resolve_feature("Open")
+        high_name = self.resolve_feature("High")
+        low_name = self.resolve_feature("Low")
+        close_name = self.resolve_feature("Close")
+
+        func = jit_reg.resolve_option(mirror_ohlc_nb, jitted)
+        func = ch_reg.resolve_option(func, chunked)
+        new_open, new_high, new_low, new_close = func(
+            self.symbol_wrapper.shape_2d,
+            open=to_2d_array(self.get_feature(open_name)) if open_name is not None else None,
+            high=to_2d_array(self.get_feature(high_name)) if high_name is not None else None,
+            low=to_2d_array(self.get_feature(low_name)) if low_name is not None else None,
+            close=to_2d_array(self.get_feature(close_name)) if close_name is not None else None,
+            start_value=to_1d_array(start_value),
+            ref_feature=to_1d_array(ref_feature),
+        )
+
+        def _mirror_ohlc(df, feature, **_kwargs):
+            if open_name is not None and feature == open_name:
+                return new_open
+            if high_name is not None and feature == high_name:
+                return new_high
+            if low_name is not None and feature == low_name:
+                return new_low
+            if close_name is not None and feature == close_name:
+                return new_close
+            return df
+
+        return self.transform(_mirror_ohlc, Rep("feature"), per_feature=True)
 
     def resample(self: DataT, *args, wrapper_meta: tp.DictLike = None, **kwargs) -> DataT:
         """Perform resampling on `Data`.
@@ -3729,7 +3723,7 @@ class Data(Analyzable, DataWithFeatures, OHLCDataMixin, metaclass=MetaData):
             if raise_errors:
                 raise e
             if not silence_warnings:
-                warnings.warn(func_name + ": " + str(e), stacklevel=2)
+                warn(func_name + ": " + str(e))
         return NoResult
 
     @classmethod

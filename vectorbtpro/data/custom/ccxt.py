@@ -1,10 +1,17 @@
-# Copyright (c) 2021-2024 Oleg Polakow. All rights reserved.
+# ==================================== VBTPROXYZ ====================================
+# Copyright (c) 2021-2025 Oleg Polakow. All rights reserved.
+#
+# This file is part of the proprietary VectorBT® PRO package and is licensed under
+# the VectorBT® PRO License available at https://vectorbt.pro/terms/software-license/
+#
+# Unauthorized publishing, distribution, sublicensing, or sale of this software
+# or its parts is strictly prohibited.
+# ===================================================================================
 
 """Module with `CCXTData`."""
 
 import time
 import traceback
-import warnings
 from functools import wraps, partial
 
 import pandas as pd
@@ -14,13 +21,14 @@ from vectorbtpro.data.custom.remote import RemoteData
 from vectorbtpro.utils import datetime_ as dt
 from vectorbtpro.utils.config import merge_dicts
 from vectorbtpro.utils.pbar import ProgressBar
+from vectorbtpro.utils.warnings_ import warn
 
 try:
     if not tp.TYPE_CHECKING:
         raise ImportError
     from ccxt.base.exchange import Exchange as CCXTExchangeT
 except ImportError:
-    CCXTExchangeT = tp.Any
+    CCXTExchangeT = "CCXTExchange"
 
 __all__ = [
     "CCXTData",
@@ -342,7 +350,7 @@ class CCXTData(RemoteData):
             raise ValueError(f"Exchange {exchange} does not support OHLCV")
         if exchange.has["fetchOHLCV"] == "emulated":
             if not silence_warnings:
-                warnings.warn("Using emulated OHLCV candles", stacklevel=2)
+                warn("Using emulated OHLCV candles")
 
         freq = timeframe
         split = dt.split_freq_str(timeframe)
@@ -368,7 +376,7 @@ class CCXTData(RemoteData):
                         if i == retries - 1:
                             raise e
                         if not silence_warnings:
-                            warnings.warn(traceback.format_exc(), stacklevel=2)
+                            warn(traceback.format_exc())
                         if delay is not None:
                             time.sleep(delay)
 
@@ -442,13 +450,10 @@ class CCXTData(RemoteData):
                         time.sleep(delay)  # be kind to api
         except Exception as e:
             if not silence_warnings:
-                warnings.warn(traceback.format_exc(), stacklevel=2)
-                warnings.warn(
-                    (
-                        f"Symbol '{str(symbol)}' raised an exception. Returning incomplete data. "
-                        "Use update() method to fetch missing data."
-                    ),
-                    stacklevel=2,
+                warn(traceback.format_exc())
+                warn(
+                    f"Symbol '{str(symbol)}' raised an exception. Returning incomplete data. "
+                    "Use update() method to fetch missing data."
                 )
 
         # Convert data to a DataFrame

@@ -1,4 +1,12 @@
-# Copyright (c) 2021-2024 Oleg Polakow. All rights reserved.
+# ==================================== VBTPROXYZ ====================================
+# Copyright (c) 2021-2025 Oleg Polakow. All rights reserved.
+#
+# This file is part of the proprietary VectorBT® PRO package and is licensed under
+# the VectorBT® PRO License available at https://vectorbt.pro/terms/software-license/
+#
+# Unauthorized publishing, distribution, sublicensing, or sale of this software
+# or its parts is strictly prohibited.
+# ===================================================================================
 
 """Utilities for scheduling jobs."""
 
@@ -26,6 +34,8 @@ logger = logging.getLogger(__name__)
 
 
 class CustomScheduler(Scheduler, Base):
+    """Custom scheduler."""
+
     def __init__(self) -> None:
         super(CustomScheduler, self).__init__()
 
@@ -34,6 +44,8 @@ CustomJobT = tp.TypeVar("CustomJobT", bound="CustomJob")
 
 
 class CustomJob(Job, Base):
+    """Custom job."""
+
     def __init__(self, interval: int, scheduler: tp.Optional[Scheduler] = None) -> None:
         super(CustomJob, self).__init__(interval, scheduler)
         self._zero_offset = False

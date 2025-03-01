@@ -1,10 +1,24 @@
-# Copyright (c) 2021-2024 Oleg Polakow. All rights reserved.
+# ==================================== VBTPROXYZ ====================================
+# Copyright (c) 2021-2025 Oleg Polakow. All rights reserved.
+#
+# This file is part of the proprietary VectorBT® PRO package and is licensed under
+# the VectorBT® PRO License available at https://vectorbt.pro/terms/software-license/
+#
+# Unauthorized publishing, distribution, sublicensing, or sale of this software
+# or its parts is strictly prohibited.
+# ===================================================================================
 
 """General types used across vectorbtpro."""
 
 from datetime import datetime, timedelta, tzinfo, date, time
 from enum import EnumMeta
 from pathlib import Path
+import sys
+
+if sys.version_info < (3, 9):
+    import typing
+
+    typing.__all__.append("TextIO")
 from typing import *
 
 import numpy as np
@@ -26,7 +40,6 @@ except ImportError:
     FigureWidget = Any
     BaseFigure = Any
     BaseTraceType = Any
-
 try:
     from typing import Protocol
 except ImportError:
@@ -44,7 +57,18 @@ if TYPE_CHECKING:
     from vectorbtpro.utils.knowledge.base_asset_funcs import AssetFunc
     from vectorbtpro.utils.knowledge.asset_pipelines import AssetPipeline
     from vectorbtpro.utils.knowledge.base_assets import KnowledgeAsset
+    from vectorbtpro.utils.knowledge.chatting import (
+        Tokenizer,
+        Embeddings,
+        Completions,
+        TextSplitter,
+        StoreDocument,
+        ObjectStore,
+        EmbeddedDocument,
+        ScoredDocument,
+    )
     from vectorbtpro.utils.knowledge.custom_assets import VBTAsset, PagesAsset, MessagesAsset
+    from vectorbtpro.utils.knowledge.formatting import ContentFormatter
     from vectorbtpro.base.indexing import hslice
     from vectorbtpro.base.grouping.base import Grouper
     from vectorbtpro.base.resampling.base import Resampler
@@ -69,9 +93,18 @@ else:
     AssetFunc = "AssetFunc"
     AssetPipeline = "AssetPipeline"
     KnowledgeAsset = "KnowledgeAsset"
+    Tokenizer = "Tokenizer"
+    Embeddings = "Embeddings"
+    Completions = "Completions"
+    TextSplitter = "TextSplitter"
+    StoreDocument = "StoreDocument"
+    ObjectStore = "ObjectStore"
+    EmbeddedDocument = "EmbeddedDocument"
+    ScoredDocument = "ScoredDocument"
     VBTAsset = "VBTAsset"
     PagesAsset = "PagesAsset"
     MessagesAsset = "MessagesAsset"
+    ContentFormatter = "ContentFormatter"
     hslice = "hslice"
     Grouper = "Grouper"
     Resampler = "Resampler"
@@ -105,7 +138,7 @@ MaybeDict = Union[Dict[Hashable, T], T]
 MappingSequence = Union[Mapping[Hashable, T], Sequence[T]]
 MaybeMappingSequence = Union[T, Mapping[Hashable, T], Sequence[T]]
 SetLike = Union[None, Set[T]]
-ItemGenerator = Generator[Tuple[Hashable, Any], None, None]
+Items = Iterator[Tuple[Hashable, Any]]
 
 
 # Arrays
@@ -141,6 +174,9 @@ FlexArray1d = Array1d
 FlexArray2d = Array2d
 FlexArray1dLike = Union[Scalar, Array1d, Array2d]
 FlexArray2dLike = Union[Scalar, Array1d, Array2d]
+
+# Templates
+CustomTemplateLike = Union[str, Callable, CustomTemplate]
 
 # Labels
 Label = Hashable
@@ -179,6 +215,17 @@ GroupMap = Tuple[GroupIdxs, GroupLens]
 # Wrapping
 NameIndex = Union[None, Any, Index]
 
+# Search
+PathKeyToken = Hashable
+PathKeyTokens = Sequence[Hashable]
+PathKey = Tuple[PathKeyToken, ...]
+MaybePathKey = Union[None, PathKeyToken, PathKey]
+PathLikeKey = Union[MaybePathKey, Path]
+PathLikeKeys = Sequence[PathLikeKey]
+PathMoveDict = Dict[PathLikeKey, PathLikeKey]
+PathRenameDict = Dict[PathLikeKey, PathKeyToken]
+PathDict = Dict[PathLikeKey, Any]
+
 # Config
 DictLike = Union[None, dict]
 DictLikeSequence = MaybeSequence[DictLike]
@@ -189,8 +236,12 @@ KwargsLike = Union[None, Kwargs]
 KwargsLikeSequence = MaybeSequence[KwargsLike]
 ArgsKwargs = Tuple[Args, Kwargs]
 PathLike = Union[str, Path]
-SettingsPath = ClassVar[Union[None, Hashable, Dict[Hashable, Hashable]]]
+_SettingsPath = Union[None, MaybeList[PathLikeKey], Dict[Hashable, PathLikeKey]]
+SettingsPath = ClassVar[_SettingsPath]
+ExtSettingsPaths = List[Tuple[type, _SettingsPath]]
+SpecSettingsPaths = Dict[PathLikeKey, MaybeList[PathLikeKey]]
 WriteableAttrs = ClassVar[Optional[Set[str]]]
+ExpectedKeysMode = ClassVar[str]
 ExpectedKeys = ClassVar[Optional[Set[str]]]
 
 # Data
@@ -313,28 +364,40 @@ StaticizedOption = Union[None, bool, Kwargs, TaskId]
 # Selection
 Selection = Union[PosSel, LabelSel, MaybeIterable[Union[PosSel, LabelSel, Hashable]]]
 
-# Search
-PathKeyToken = Hashable
-PathKeyTokens = Sequence[Hashable]
-PathKey = Tuple[PathKeyToken, ...]
-MaybePathKey = Union[None, PathKeyToken, PathKey]
-PathLikeKey = Union[MaybePathKey, Path]
-PathLikeKeys = Sequence[PathLikeKey]
-PathMoveDict = Dict[PathLikeKey, PathLikeKey]
-PathRenameDict = Dict[PathLikeKey, PathKeyToken]
-PathDict = Dict[PathLikeKey, Any]
-
 # Knowledge
 AssetFuncLike = Union[str, Type[AssetFunc], FuncArgs, Task, Callable]
-MaybeAsset = Union[T, dict, list]
+MaybeAsset = Union[None, T, dict, list, Iterator[T]]
 MaybeKnowledgeAsset = MaybeAsset[KnowledgeAsset]
 MaybeVBTAsset = MaybeAsset[VBTAsset]
 MaybePagesAsset = MaybeAsset[PagesAsset]
 MaybeMessagesAsset = MaybeAsset[MessagesAsset]
-ChatHistory = Optional[MutableSequence[str]]
-ChatOutput = Union[Optional[Path], Tuple[Any, Optional[Path]]]
+ContentFormatterLike = Union[None, str, MaybeType[ContentFormatter]]
+TokenizerLike = Union[None, str, MaybeType[Tokenizer]]
+Token = int
+Tokens = List[Token]
+EmbeddingsLike = Union[None, str, MaybeType[Embeddings]]
+CompletionsLike = Union[None, str, MaybeType[Completions]]
+ChatMessage = dict
+ChatMessages = List[ChatMessage]
+ChatHistory = MutableSequence[ChatMessage]
+ChatOutput = Union[Optional[Path], Tuple[Optional[Path], Any]]
+MaybeChatOutput = Union[ChatOutput, Tuple[ChatOutput, Completions]]
+TextSplitterLike = Union[None, str, MaybeType[TextSplitter]]
+TSRange = Tuple[int, int]
+TSRangeChunks = Iterator[TSRange]
+TSSegment = Tuple[int, int, bool]
+TSSegmentChunks = Iterator[TSRange]
+TSTextChunks = Iterator[str]
+ObjectStoreLike = Union[None, str, MaybeType[ObjectStore]]
+EmbeddedDocuments = List[EmbeddedDocument]
+ScoredDocuments = List[Union[float, ScoredDocument]]
+RankedDocuments = List[Union[StoreDocument, ScoredDocument]]
+TopKLike = Union[None, int, float, str, Callable]
 
 # Chaining
 PipeFunc = Union[str, Callable, Tuple[Union[str, Callable], str]]
 PipeTask = Union[PipeFunc, Tuple[PipeFunc, Args, Kwargs], Task]
 PipeTasks = Iterable[PipeTask]
+
+# Pickling
+CompressionLike = Union[None, bool, str]

@@ -1,4 +1,12 @@
-# Copyright (c) 2021-2024 Oleg Polakow. All rights reserved.
+# ==================================== VBTPROXYZ ====================================
+# Copyright (c) 2021-2025 Oleg Polakow. All rights reserved.
+#
+# This file is part of the proprietary VectorBT® PRO package and is licensed under
+# the VectorBT® PRO License available at https://vectorbt.pro/terms/software-license/
+#
+# Unauthorized publishing, distribution, sublicensing, or sale of this software
+# or its parts is strictly prohibited.
+# ===================================================================================
 
 """Generic Numba-compiled functions for base operations."""
 
@@ -1030,8 +1038,8 @@ def nancorr_1d_nb(arr1: tp.Array1d, arr2: tp.Array1d) -> float:
         if not np.isnan(arr1[i]) and not np.isnan(arr2[i]):
             arr1_sum += arr1[i]
             arr2_sum += arr2[i]
-            arr1_sumsq += arr1[i] ** 2
-            arr2_sumsq += arr2[i] ** 2
+            arr1_sumsq += float(arr1[i]) ** 2
+            arr2_sumsq += float(arr2[i]) ** 2
             arr12_sumprod += arr1[i] * arr2[i]
             k += 1
     if k == 0:
@@ -1356,7 +1364,7 @@ def crossed_below_nb(arr1: tp.Array2d, arr2: tp.FlexArray2dLike, wait: int = 0, 
     return out
 
 
-# ############# Transformation ############# #
+# ############# Transforming ############# #
 
 
 @register_chunkable(

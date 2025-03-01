@@ -1,4 +1,12 @@
-# Copyright (c) 2021-2024 Oleg Polakow. All rights reserved.
+# ==================================== VBTPROXYZ ====================================
+# Copyright (c) 2021-2025 Oleg Polakow. All rights reserved.
+#
+# This file is part of the proprietary VectorBT® PRO package and is licensed under
+# the VectorBT® PRO License available at https://vectorbt.pro/terms/software-license/
+#
+# Unauthorized publishing, distribution, sublicensing, or sale of this software
+# or its parts is strictly prohibited.
+# ===================================================================================
 
 """Base class for working with records that can make use of OHLC data."""
 
@@ -153,13 +161,6 @@ class PriceRecords(Records):
                             new_price = new_price.vbt.ffill()
                     kwargs[price_name] = new_price.values
         return kwargs
-
-    _expected_keys: tp.ExpectedKeys = (Records._expected_keys or set()) | {
-        "open",
-        "high",
-        "low",
-        "close",
-    }
 
     def __init__(
         self,

@@ -1,4 +1,12 @@
-# Copyright (c) 2021-2024 Oleg Polakow. All rights reserved.
+# ==================================== VBTPROXYZ ====================================
+# Copyright (c) 2021-2025 Oleg Polakow. All rights reserved.
+#
+# This file is part of the proprietary VectorBT® PRO package and is licensed under
+# the VectorBT® PRO License available at https://vectorbt.pro/terms/software-license/
+#
+# Unauthorized publishing, distribution, sublicensing, or sale of this software
+# or its parts is strictly prohibited.
+# ===================================================================================
 
 """Numba-compiled functions for returns.
 
@@ -122,6 +130,62 @@ def returns_nb(
         out[_sim_start:_sim_end, col] = returns_1d_nb(
             arr[_sim_start:_sim_end, col],
             init_value=_init_value,
+            log_returns=log_returns,
+        )
+    return out
+
+
+@register_jitted(cache=True)
+def mirror_returns_1d_nb(returns: tp.Array1d, log_returns: bool = False) -> tp.Array1d:
+    """Calculate mirrored returns.
+
+    A mirrored return is an inverse, or negative return. For log returns, it negates each return.
+    For simple returns, it uses the formula $\frac{1}{1 + R_t} - 1$."""
+    out = np.empty(returns.shape, dtype=float_)
+    for i in range(returns.shape[0]):
+        if log_returns:
+            out[i] = -returns[i]
+        else:
+            if returns[i] <= -1:
+                out[i] = np.inf
+            else:
+                out[i] = (1 / (1 + returns[i])) - 1
+    return out
+
+
+@register_chunkable(
+    size=ch.ArraySizer(arg_query="returns", axis=1),
+    arg_take_spec=dict(
+        returns=ch.ArraySlicer(axis=1),
+        log_returns=None,
+        sim_start=base_ch.FlexArraySlicer(),
+        sim_end=base_ch.FlexArraySlicer(),
+    ),
+    merge_func="column_stack",
+)
+@register_jitted(cache=True, tags={"can_parallel"})
+def mirror_returns_nb(
+    returns: tp.Array2d,
+    log_returns: bool = False,
+    sim_start: tp.Optional[tp.FlexArray1dLike] = None,
+    sim_end: tp.Optional[tp.FlexArray1dLike] = None,
+) -> tp.Array2d:
+    """2-dim version of `mirror_returns_1d_nb`."""
+    out = np.full(returns.shape, np.nan, dtype=float_)
+
+    sim_start_, sim_end_ = generic_nb.prepare_sim_range_nb(
+        sim_shape=returns.shape,
+        sim_start=sim_start,
+        sim_end=sim_end,
+    )
+    for col in prange(returns.shape[1]):
+        _sim_start = sim_start_[col]
+        _sim_end = sim_end_[col]
+        if _sim_start >= _sim_end:
+            continue
+
+        out[_sim_start:_sim_end, col] = mirror_returns_1d_nb(
+            returns[_sim_start:_sim_end, col],
             log_returns=log_returns,
         )
     return out
