@@ -248,7 +248,12 @@ class FormatHTML(Configured):
         head_extras: tp.Optional[tp.MaybeList[str]] = None,
         body_extras: tp.Optional[tp.MaybeList[str]] = None,
         invert_colors: tp.Optional[bool] = None,
+        invert_colors_style: tp.Optional[str] = None,
         auto_scroll: tp.Optional[bool] = None,
+        auto_scroll_body: tp.Optional[str] = None,
+        show_spinner: tp.Optional[bool] = None,
+        spinner_style: tp.Optional[str] = None,
+        spinner_body: tp.Optional[str] = None,
         use_pygments: tp.Optional[bool] = None,
         pygments_kwargs: tp.KwargsLike = None,
         template_context: tp.KwargsLike = None,
@@ -263,7 +268,12 @@ class FormatHTML(Configured):
             head_extras=head_extras,
             body_extras=body_extras,
             invert_colors=invert_colors,
+            invert_colors_style=invert_colors_style,
             auto_scroll=auto_scroll,
+            auto_scroll_body=auto_scroll_body,
+            show_spinner=show_spinner,
+            spinner_style=spinner_style,
+            spinner_body=spinner_body,
             use_pygments=use_pygments,
             pygments_kwargs=pygments_kwargs,
             template_context=template_context,
@@ -272,7 +282,12 @@ class FormatHTML(Configured):
 
         html_template = self.resolve_setting(html_template, "html_template")
         invert_colors = self.resolve_setting(invert_colors, "invert_colors")
+        invert_colors_style = self.resolve_setting(invert_colors_style, "invert_colors_style")
         auto_scroll = self.resolve_setting(auto_scroll, "auto_scroll")
+        auto_scroll_body = self.resolve_setting(auto_scroll_body, "auto_scroll_body")
+        show_spinner = self.resolve_setting(show_spinner, "show_spinner")
+        spinner_style = self.resolve_setting(spinner_style, "spinner_style")
+        spinner_body = self.resolve_setting(spinner_body, "spinner_body")
         use_pygments = self.resolve_setting(use_pygments, "use_pygments")
         pygments_kwargs = self.resolve_setting(pygments_kwargs, "pygments_kwargs", merge=True)
         template_context = self.resolve_setting(template_context, "template_context", merge=True)
@@ -296,34 +311,12 @@ class FormatHTML(Configured):
         head_extras = _prepare_extras(self.get_setting("head_extras")) + _prepare_extras(head_extras)
         body_extras = _prepare_extras(self.get_setting("body_extras")) + _prepare_extras(body_extras)
         if invert_colors:
-            style_extras = "\n".join(
-                [
-                    """:root {
-        filter: invert(100%);
-    }""",
-                    style_extras,
-                ]
-            )
+            style_extras = "\n".join([style_extras, invert_colors_style])
         if auto_scroll:
-            body_extras = "\n".join(
-                [
-                    """<script>
-    function scrollToBottom() {
-        window.scrollTo(0, document.body.scrollHeight);
-    }
-    function hasMetaRefresh() {
-        return document.querySelector('meta[http-equiv="refresh"]') !== null;
-    }
-    window.onload = function() {
-        if (hasMetaRefresh()) {
-            scrollToBottom();
-            setInterval(scrollToBottom, 100); // Keep scrolling to the bottom
-        }
-    };
-    </script>""",
-                    body_extras,
-                ]
-            )
+            body_extras = "\n".join([body_extras, auto_scroll_body])
+        if show_spinner:
+            style_extras = "\n".join([style_extras, spinner_style])
+            body_extras = "\n".join([body_extras, spinner_body])
         if use_pygments is None:
             use_pygments = check_installed("pygments")
         if use_pygments:
@@ -802,6 +795,8 @@ class HTMLFileFormatter(ContentFormatter):
         temp_files: tp.Optional[bool] = None,
         file_prefix_len: tp.Optional[int] = None,
         file_suffix_len: tp.Optional[int] = None,
+        auto_scroll: tp.Optional[bool] = None,
+        show_spinner: tp.Optional[bool] = None,
         open_browser: tp.Optional[bool] = None,
         to_markdown_kwargs: tp.KwargsLike = None,
         to_html_kwargs: tp.KwargsLike = None,
@@ -818,6 +813,8 @@ class HTMLFileFormatter(ContentFormatter):
             temp_files=temp_files,
             file_prefix_len=file_prefix_len,
             file_suffix_len=file_suffix_len,
+            auto_scroll=auto_scroll,
+            show_spinner=show_spinner,
             open_browser=open_browser,
             to_markdown_kwargs=to_markdown_kwargs,
             to_html_kwargs=to_html_kwargs,
@@ -831,6 +828,8 @@ class HTMLFileFormatter(ContentFormatter):
         temp_files = self.resolve_setting(temp_files, "temp_files")
         file_prefix_len = self.resolve_setting(file_prefix_len, "file_prefix_len")
         file_suffix_len = self.resolve_setting(file_suffix_len, "file_suffix_len")
+        auto_scroll = self.resolve_setting(auto_scroll, "auto_scroll")
+        show_spinner = self.resolve_setting(show_spinner, "show_spinner")
         open_browser = self.resolve_setting(open_browser, "open_browser")
 
         if self.minimal_format:
@@ -870,6 +869,8 @@ class HTMLFileFormatter(ContentFormatter):
         self._temp_files = temp_files
         self._file_prefix_len = file_prefix_len
         self._file_suffix_len = file_suffix_len
+        self._auto_scroll = auto_scroll
+        self._show_spinner = show_spinner
         self._open_browser = open_browser
         self._to_markdown_kwargs = to_markdown_kwargs
         self._to_html_kwargs = to_html_kwargs
@@ -915,6 +916,16 @@ class HTMLFileFormatter(ContentFormatter):
         return self._file_suffix_len
 
     @property
+    def auto_scroll(self) -> bool:
+        """Whether to scroll automatically while refreshing."""
+        return self._auto_scroll
+
+    @property
+    def show_spinner(self) -> bool:
+        """Whether to show spinner while refreshing."""
+        return self._show_spinner
+
+    @property
     def open_browser(self) -> bool:
         """Whether to open the default browser."""
         return self._open_browser
@@ -938,6 +949,31 @@ class HTMLFileFormatter(ContentFormatter):
     def file_handle(self) -> tp.Optional[tp.TextIO]:
         """File handle."""
         return self._file_handle
+
+    def format_html_content(self, html_content: str, final: bool = False) -> str:
+        """Format HTML content."""
+        _format_html_kwargs = dict(self.format_html_kwargs)
+        if not final and self.refresh_page:
+            refresh_content = max(1, int(self.update_interval)) if self.update_interval is not None else 1
+            head_extras = list(_format_html_kwargs.get("head_extras", []))
+            if head_extras is None:
+                head_extras = []
+            if isinstance(head_extras, str):
+                head_extras = [head_extras]
+            else:
+                head_extras = list(head_extras)
+            head_extras.insert(0, f'<meta http-equiv="refresh" content="{refresh_content}">')
+            _format_html_kwargs["head_extras"] = head_extras
+            html_content = '<div id="overlay" class="overlay"></div>\n' + html_content
+            if self.auto_scroll and "auto_scroll" not in _format_html_kwargs:
+                _format_html_kwargs["auto_scroll"] = True
+            if self.show_spinner and "show_spinner" not in _format_html_kwargs:
+                _format_html_kwargs["show_spinner"] = True
+        return format_html(
+            title=self.page_title,
+            html_content=html_content,
+            **_format_html_kwargs,
+        )
 
     def initialize(self) -> None:
         ContentFormatter.initialize(self)
@@ -978,8 +1014,7 @@ class HTMLFileFormatter(ContentFormatter):
                 delete=False,
             )
         if self.refresh_page:
-            refresh_content = max(1, int(self.update_interval)) if self.update_interval is not None else 1
-            html = f'<!DOCTYPE html><html><head><meta http-equiv="refresh" content="{refresh_content}"></head></html>'
+            html = self.format_html_content("", final=False)
             self.file_handle.write(html)
             self.file_handle.flush()
         if self.open_browser:
@@ -993,26 +1028,7 @@ class HTMLFileFormatter(ContentFormatter):
 
         markdown_content = to_markdown(self.content, **self.to_markdown_kwargs)
         html_content = to_html(markdown_content, **self.to_html_kwargs)
-        if not final and self.refresh_page:
-            refresh_content = max(1, int(self.update_interval)) if self.update_interval is not None else 1
-            _format_html_kwargs = dict(self.format_html_kwargs)
-            head_extras = list(_format_html_kwargs.get("head_extras", []))
-            if head_extras is None:
-                head_extras = []
-            if isinstance(head_extras, str):
-                head_extras = [head_extras]
-            else:
-                head_extras = list(head_extras)
-            head_extras.insert(0, f'<meta http-equiv="refresh" content="{refresh_content}">')
-            _format_html_kwargs["head_extras"] = head_extras
-            html_content = '<div id="overlay" class="overlay"></div>\n' + html_content
-        else:
-            _format_html_kwargs = self.format_html_kwargs
-        html = format_html(
-            title=self.page_title,
-            html_content=html_content,
-            **_format_html_kwargs,
-        )
+        html = self.format_html_content(html_content, final=final)
         self.file_handle.seek(0)
         self.file_handle.write(html)
         self.file_handle.truncate()

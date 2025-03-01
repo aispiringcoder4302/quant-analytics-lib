@@ -2252,7 +2252,56 @@ knowledge = frozen_cfg(
             r"""<script>window.MathJax={tex:{inlineMath:[["\\(","\\)"]],displayMath:[["\\[","\\]"]],processEscapes:!0,processEnvironments:!0},options:{ignoreHtmlClass:".*|",processHtmlClass:"arithmatex"}},document$.subscribe(()=>{MathJax.startup.output.clearCache(),MathJax.typesetClear(),MathJax.texReset(),MathJax.typesetPromise()});</script>""",
         ],
         invert_colors=False,
+        invert_colors_style=""":root {
+    filter: invert(100%);
+}""",
         auto_scroll=False,
+        auto_scroll_body="""<script>
+function scrollToBottom() {
+    window.scrollTo(0, document.body.scrollHeight);
+}
+function hasMetaRefresh() {
+    return document.querySelector('meta[http-equiv="refresh"]') !== null;
+}
+window.onload = function() {
+    if (hasMetaRefresh()) {
+        scrollToBottom();
+        setInterval(scrollToBottom, 100);
+    }
+};
+</script>""",
+        show_spinner=False,
+        spinner_style=""".loader {
+    width: 300px;
+    height: 5px;
+    margin: 0 auto;
+    display: block;
+    position: relative;
+    overflow: hidden;
+}
+.loader::after {
+    content: '';
+    width: 300px;
+    height: 5px;
+    background: blue;
+    position: absolute;
+    top: 0;
+    left: 0;
+    box-sizing: border-box;
+    animation: animloader 1s ease-in-out infinite;
+}
+@keyframes animloader {
+    0%, 5% {
+        left: 0;
+        transform: translateX(-100%);
+    }
+    95%, 100% {
+        left: 100%;
+        transform: translateX(0%);
+    }
+}
+    """,
+        spinner_body="""<span class="loader"></span>""",
         output_to=None,
         flush_output=True,
         buffer_output=True,
@@ -2273,6 +2322,8 @@ knowledge = frozen_cfg(
                 refresh_page=True,
                 file_prefix_len=20,
                 file_suffix_len=6,
+                auto_scroll=True,
+                show_spinner=True,
             ),
         ),
     ),
@@ -2585,7 +2636,7 @@ $chunk_text""",
             ),
             chat=flex_cfg(
                 chat_dir=RepEval("Path(release_dir) / 'chat'"),
-                system_prompt=r"""You are a helpful assistant with access to VectorBT PRO (also called VBT or vectorbtpro) documentation and relevant Discord history. Use only this provided context to generate clear, accurate answers. Do not reference the open‑source vectorbt, as VectorBT PRO is a proprietary successor with significant differences.\n\nWhen coding in Python, use:\n```python\nimport vectorbtpro as vbt\n```\n\nIf the provided documentation or Discord logs do not answer the user's query, respond with:\n> I could not find an answer.\n\nIf metadata includes links, reference them to support your answer. Do not include external or fabricated links, and exclude any information not present in the given context.\n\nFor each query, follow this structure:\n1. Optionally restate the question in your own words.\n2. Answer using only the available context.\n3. Include any relevant links.""",
+                system_prompt=r"""You are a helpful assistant with access to VectorBT PRO (also called VBT or vectorbtpro) documentation and relevant Discord history. Use only this provided context to generate clear, accurate answers. Do not reference the open‑source vectorbt, as VectorBT PRO is a proprietary successor with significant differences.\n\nWhen coding in Python, use:\n```python\nimport vectorbtpro as vbt\n```\n\nIf metadata includes links, reference them to support your answer. Do not include external or fabricated links, and exclude any information not present in the given context.\n\nFor each query, follow this structure:\n1. Optionally restate the question in your own words.\n2. Answer using only the available context.\n3. Include any relevant links.""",
                 doc_ranker_config=flex_cfg(
                     doc_store="lmdb",
                     doc_store_configs=flex_cfg(

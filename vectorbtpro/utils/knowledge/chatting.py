@@ -27,7 +27,7 @@ from vectorbtpro.utils.attr_ import DefineMixin, define
 from vectorbtpro.utils.config import merge_dicts, flat_merge_dicts, Configured, HasSettings, ExtSettingsPath
 from vectorbtpro.utils.decorators import memoized_method, hybrid_method
 from vectorbtpro.utils.knowledge.formatting import ContentFormatter, HTMLFileFormatter, resolve_formatter
-from vectorbtpro.utils.parsing import get_func_arg_names, get_func_kwargs
+from vectorbtpro.utils.parsing import get_func_arg_names, get_func_kwargs, get_forward_args
 from vectorbtpro.utils.template import CustomTemplate, SafeSub, RepFunc
 from vectorbtpro.utils.warnings_ import warn
 
@@ -451,14 +451,15 @@ class OpenAIEmbeddings(Embeddings):
         from openai import OpenAI
 
         openai_config = merge_dicts(self.get_settings(inherit=False), kwargs)
-        openai_config.pop("batch_size", None)
-        openai_config.pop("show_progress", None)
-        openai_config.pop("pbar_kwargs", None)
         def_model = openai_config.pop("model", None)
         if model is None:
             model = def_model
         if model is None:
             raise ValueError("Must provide a model")
+        init_kwargs = get_func_kwargs(type(self).__init__)
+        for k in list(openai_config.keys()):
+            if k in init_kwargs:
+                openai_config.pop(k)
 
         client_arg_names = set(get_func_arg_names(OpenAI.__init__))
         client_kwargs = {}
@@ -530,14 +531,15 @@ class LiteLLMEmbeddings(Embeddings):
         assert_can_import("litellm")
 
         litellm_config = merge_dicts(self.get_settings(inherit=False), kwargs)
-        litellm_config.pop("batch_size", None)
-        litellm_config.pop("show_progress", None)
-        litellm_config.pop("pbar_kwargs", None)
         def_model = litellm_config.pop("model", None)
         if model is None:
             model = def_model
         if model is None:
             raise ValueError("Must provide a model")
+        init_kwargs = get_func_kwargs(type(self).__init__)
+        for k in list(litellm_config.keys()):
+            if k in init_kwargs:
+                litellm_config.pop(k)
 
         self._model = model
         self._embedding_kwargs = litellm_config
@@ -598,14 +600,16 @@ class LlamaIndexEmbeddings(Embeddings):
         from llama_index.core.embeddings import BaseEmbedding
 
         llama_index_config = merge_dicts(self.get_settings(inherit=False), kwargs)
-        llama_index_config.pop("batch_size", None)
-        llama_index_config.pop("show_progress", None)
-        llama_index_config.pop("pbar_kwargs", None)
         def_embedding = llama_index_config.pop("embedding", None)
         if embedding is None:
             embedding = def_embedding
         if embedding is None:
             raise ValueError("Must provide an embedding name or path")
+        init_kwargs = get_func_kwargs(type(self).__init__)
+        for k in list(llama_index_config.keys()):
+            if k in init_kwargs:
+                llama_index_config.pop(k)
+
         if isinstance(embedding, str):
             import llama_index.embeddings
             from vectorbtpro.utils.module_ import search_package
@@ -1141,6 +1145,11 @@ class OpenAICompletions(Completions):
             model = def_model
         if model is None:
             raise ValueError("Must provide a model")
+        init_kwargs = get_func_kwargs(type(self).__init__)
+        for k in list(openai_config.keys()):
+            if k in init_kwargs:
+                openai_config.pop(k)
+
         client_arg_names = set(get_func_arg_names(OpenAI.__init__))
         client_kwargs = {}
         completion_kwargs = {}
@@ -1353,6 +1362,11 @@ class LlamaIndexCompletions(Completions):
             llm = def_llm
         if llm is None:
             raise ValueError("Must provide an LLM name or path")
+        init_kwargs = get_func_kwargs(type(self).__init__)
+        for k in list(llama_index_config.keys()):
+            if k in init_kwargs:
+                llama_index_config.pop(k)
+
         if isinstance(llm, str):
             import llama_index.llms
             from vectorbtpro.utils.module_ import search_package
@@ -1365,7 +1379,7 @@ class LlamaIndexCompletions(Completions):
                     else:
                         if k.split(".")[-1].lower() == llm.lower():
                             return True
-                        if k.split(".")[-1].lower() == llm.lower().replace("_", ""):
+                        if k.split(".")[-1].replace("LLM", "").lower() == llm.lower().replace("_", ""):
                             return True
                 return False
 
@@ -1380,11 +1394,11 @@ class LlamaIndexCompletions(Completions):
             llm = found_llm
         if isinstance(llm, type):
             checks.assert_subclass_of(llm, LLM, arg_name="llm")
-            llm_name = llm.__name__.lower()
+            llm_name = llm.__name__.replace("LLM", "").lower()
             module_name = llm.__module__
         else:
             checks.assert_instance_of(llm, LLM, arg_name="llm")
-            llm_name = type(llm).__name__.lower()
+            llm_name = type(llm).__name__.replace("LLM", "").lower()
             module_name = type(llm).__module__
         llm_configs = llama_index_config.pop("llm_configs", {})
         if llm_name in llm_configs:
@@ -1962,6 +1976,10 @@ class LlamaIndexSplitter(TextSplitter):
         def_node_parser = llama_index_config.pop("node_parser", None)
         if node_parser is None:
             node_parser = def_node_parser
+        init_kwargs = get_func_kwargs(type(self).__init__)
+        for k in list(llama_index_config.keys()):
+            if k in init_kwargs:
+                llama_index_config.pop(k)
 
         if isinstance(node_parser, str):
             import llama_index.core.node_parser
@@ -3886,8 +3904,6 @@ class Contextable(HasSettings):
             ```
         """
         if isinstance(cls_or_self, type):
-            from vectorbtpro.utils.parsing import get_forward_args
-
             args, kwargs = get_forward_args(super().chat, locals())
             return super().chat(*args, **kwargs)
 
@@ -3921,8 +3937,6 @@ class RankContextable(Rankable, Contextable):
         If `rank` is True, or `rank` is None and any of `top_k`, `min_top_k`, `max_top_k`, `cutoff`, or
         `return_chunks` is set, will rank the documents with `Rankable.rank` first."""
         if isinstance(cls_or_self, type):
-            from vectorbtpro.utils.parsing import get_forward_args
-
             args, kwargs = get_forward_args(super().chat, locals())
             return super().chat(*args, **kwargs)
 
