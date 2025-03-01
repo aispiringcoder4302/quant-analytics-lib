@@ -16,6 +16,7 @@ import inspect
 import io
 import re
 import sys
+from functools import wraps
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.utils.annotations import get_annotations, VarArgs, VarKwargs
@@ -507,6 +508,7 @@ def get_context_vars(
 def suppress_stdout(func: tp.Callable) -> tp.Callable:
     """Suppress output from a function."""
 
+    @wraps(func)
     def wrapper(*a, **ka):
         with contextlib.redirect_stdout(io.StringIO()):
             return func(*a, **ka)
