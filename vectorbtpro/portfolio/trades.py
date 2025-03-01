@@ -2419,6 +2419,10 @@ EntryTradesT = tp.TypeVar("EntryTradesT", bound="EntryTrades")
 class EntryTrades(Trades):
     """Extends `Trades` for working with entry trade records."""
 
+    @property
+    def field_config(self) -> Config:
+        return self._field_config
+
     @classmethod
     def from_orders(
         cls: tp.Type[EntryTradesT],
@@ -2635,6 +2639,9 @@ class EntryTrades(Trades):
         return fig
 
 
+EntryTrades.override_field_config_doc(__pdoc__)
+
+
 # ############# ExitTrades ############# #
 
 exit_trades_field_config = ReadonlyConfig(dict(settings={"id": dict(title="Exit Trade Id")}))
@@ -2655,6 +2662,10 @@ ExitTradesT = tp.TypeVar("ExitTradesT", bound="ExitTrades")
 @override_field_config(exit_trades_field_config)
 class ExitTrades(Trades):
     """Extends `Trades` for working with exit trade records."""
+
+    @property
+    def field_config(self) -> Config:
+        return self._field_config
 
     @classmethod
     def from_orders(
@@ -2868,6 +2879,9 @@ class ExitTrades(Trades):
         return fig
 
 
+ExitTrades.override_field_config_doc(__pdoc__)
+
+
 # ############# Positions ############# #
 
 positions_field_config = ReadonlyConfig(
@@ -2928,3 +2942,6 @@ class Positions(Trades):
             close=close,
             **kwargs,
         )
+
+
+Positions.override_field_config_doc(__pdoc__)

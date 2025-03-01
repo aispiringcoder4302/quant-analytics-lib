@@ -35,17 +35,18 @@ __pdoc__ = {}
 # ############# Generic ############# #
 
 
-def memoized_method(function: tp.Callable) -> tp.Callable:
+def memoized_method(func: tp.Callable) -> tp.Callable:
     """Dead-simple memoization decorator for methods."""
     lock = threading.Lock()
     memo = {}
 
+    @wraps(func)
     def wrapper(*args) -> tp.Any:
         with lock:
             if args[1:] in memo:
                 return memo[args[1:]]
             else:
-                rv = function(*args)
+                rv = func(*args)
                 memo[args[1:]] = rv
                 return rv
 

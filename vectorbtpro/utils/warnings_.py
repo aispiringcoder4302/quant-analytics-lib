@@ -13,6 +13,7 @@
 import io
 import warnings
 from contextlib import contextmanager, redirect_stdout
+from functools import wraps
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.utils.base import Base
@@ -57,6 +58,7 @@ def warn(message: tp.Any, category: type = VBTWarning, stacklevel: int = 2) -> N
 def warn_stdout(func: tp.Callable) -> tp.Callable:
     """Supress and convert to a warning output from a function."""
 
+    @wraps(func)
     def wrapper(*a, **ka):
         with redirect_stdout(io.StringIO()) as f:
             out = func(*a, **ka)
