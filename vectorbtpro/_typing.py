@@ -44,6 +44,10 @@ try:
     from typing import Protocol
 except ImportError:
     from typing_extensions import Protocol
+try:
+    from typing import Self
+except ImportError:
+    from typing_extensions import Self
 
 if TYPE_CHECKING:
     from vectorbtpro.utils.parsing import Regex
