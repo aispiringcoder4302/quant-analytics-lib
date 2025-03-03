@@ -24,6 +24,7 @@ dependencies = [
     "python-dateutil",
     "dateparser",
     "imageio",
+    "typing_extensions",
     "mypy_extensions",
     "humanize",
     "attrs>=21.1.0",
