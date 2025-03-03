@@ -23,6 +23,7 @@ OHLCSTCX = SignalFactory(
     **ohlcstx_config.merge_with(
         dict(
             class_name="OHLCSTCX",
+            module_name=__name__,
             short_name="ohlcstcx",
             mode="chain",
         )
