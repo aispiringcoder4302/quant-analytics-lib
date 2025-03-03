@@ -23,6 +23,7 @@ STCX = SignalFactory(
     **stx_config.merge_with(
         dict(
             class_name="STCX",
+            module_name=__name__,
             short_name="stcx",
             mode="chain",
         )

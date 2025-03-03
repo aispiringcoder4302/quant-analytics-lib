@@ -23,6 +23,7 @@ RPROBCX = SignalFactory(
     **rprobx_config.merge_with(
         dict(
             class_name="RPROBCX",
+            module_name=__name__,
             short_name="rprobcx",
             mode="chain",
         )
