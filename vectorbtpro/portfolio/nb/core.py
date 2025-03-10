@@ -2587,7 +2587,7 @@ def is_time_stop_info_active_nb(time_stop_info: tp.Record) -> bool:
 @register_jitted(cache=True)
 def is_stop_info_ladder_active_nb(info: tp.Record) -> bool:
     """Check whether information record for a stop ladder is active."""
-    return info["step"] != -1
+    return info["ladder"] != -1 and info["ladder"] and info["step"] != -1
 
 
 @register_jitted(cache=True)
