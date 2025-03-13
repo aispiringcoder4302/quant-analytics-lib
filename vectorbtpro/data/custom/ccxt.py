@@ -23,12 +23,10 @@ from vectorbtpro.utils.config import merge_dicts
 from vectorbtpro.utils.pbar import ProgressBar
 from vectorbtpro.utils.warnings_ import warn
 
-try:
-    if not tp.TYPE_CHECKING:
-        raise ImportError
-    from ccxt.base.exchange import Exchange as CCXTExchangeT
-except ImportError:
-    CCXTExchangeT = "CCXTExchange"
+if tp.TYPE_CHECKING:
+    from ccxt.base.exchange import Exchange as ExchangeT
+else:
+    ExchangeT = "ccxt.base.exchange.Exchange"
 
 __all__ = [
     "CCXTData",
@@ -135,7 +133,7 @@ class CCXTData(RemoteData):
         pattern: tp.Optional[str] = None,
         use_regex: bool = False,
         sort: bool = True,
-        exchange: tp.Union[None, str, CCXTExchangeT] = None,
+        exchange: tp.Union[None, str, ExchangeT] = None,
         exchange_config: tp.Optional[tp.KwargsLike] = None,
     ) -> tp.List[str]:
         """List all symbols.
@@ -158,9 +156,9 @@ class CCXTData(RemoteData):
     @classmethod
     def resolve_exchange(
         cls,
-        exchange: tp.Union[None, str, CCXTExchangeT] = None,
+        exchange: tp.Union[None, str, ExchangeT] = None,
         **exchange_config,
-    ) -> CCXTExchangeT:
+    ) -> ExchangeT:
         """Resolve the exchange.
 
         If provided, must be of the type `ccxt.base.exchange.Exchange`.
@@ -257,7 +255,7 @@ class CCXTData(RemoteData):
     def fetch_symbol(
         cls,
         symbol: str,
-        exchange: tp.Union[None, str, CCXTExchangeT] = None,
+        exchange: tp.Union[None, str, ExchangeT] = None,
         exchange_config: tp.Optional[tp.KwargsLike] = None,
         start: tp.Optional[tp.DatetimeLike] = None,
         end: tp.Optional[tp.DatetimeLike] = None,

@@ -111,7 +111,7 @@ from vectorbtpro.registries.jit_registry import jit_reg
 if tp.TYPE_CHECKING:
     from vectorbtpro.data.base import Data as DataT
 else:
-    DataT = "Data"
+    DataT = "vectorbtpro.data.base.Data"
 
 __all__ = [
     "OHLCVDFAccessor",

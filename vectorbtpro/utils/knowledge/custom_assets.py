@@ -46,7 +46,9 @@ __all__ = [
     "find_assets",
     "chat_about",
     "search",
+    "quick_search",
     "chat",
+    "quick_chat",
 ]
 
 
@@ -3234,6 +3236,11 @@ def search(
     return found_asset
 
 
+def quick_search(*args, **kwargs) -> tp.Union[tp.MaybeVBTAsset, tp.Path]:
+    """Call `search` with `search_method="bm25"`."""
+    return search(*args, search_method="bm25", **kwargs)
+
+
 def chat(
     query: str,
     chat_history: tp.ChatHistory = None,
@@ -3337,3 +3344,13 @@ def chat(
         rank_kwargs=rank_kwargs,
         **chat_kwargs,
     )
+
+
+def quick_chat(*args, rank_kwargs: tp.KwargsLike = None, **kwargs) -> tp.MaybeChatOutput:
+    """Call `chat` with `search_method="bm25"` in `rank_kwargs` and `quick_mode=True`."""
+    if rank_kwargs is None:
+        rank_kwargs = {}
+    else:
+        rank_kwargs = dict(rank_kwargs)
+    rank_kwargs["search_method"] = "bm25"
+    return chat(*args, rank_kwargs=rank_kwargs, quick_mode=True, **kwargs)

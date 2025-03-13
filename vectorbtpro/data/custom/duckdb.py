@@ -21,13 +21,11 @@ from vectorbtpro.data.custom.file import FileData
 from vectorbtpro.utils import checks, datetime_ as dt
 from vectorbtpro.utils.config import merge_dicts
 
-try:
-    if not tp.TYPE_CHECKING:
-        raise ImportError
+if tp.TYPE_CHECKING:
     from duckdb import DuckDBPyConnection as DuckDBPyConnectionT, DuckDBPyRelation as DuckDBPyRelationT
-except ImportError:
-    DuckDBPyConnectionT = "DuckDBPyConnection"
-    DuckDBPyRelationT = "DuckDBPyRelation"
+else:
+    DuckDBPyConnectionT = "duckdb.DuckDBPyConnection"
+    DuckDBPyRelationT = "duckdb.DuckDBPyRelation"
 
 __all__ = [
     "DuckDBData",

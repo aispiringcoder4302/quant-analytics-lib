@@ -26,12 +26,10 @@ from vectorbtpro.utils.module_ import check_installed
 from vectorbtpro.utils.parsing import get_func_arg_names
 from vectorbtpro.utils.warnings_ import warn
 
-try:
-    if not tp.TYPE_CHECKING:
-        raise ImportError
+if tp.TYPE_CHECKING:
     from alpha_vantage.alphavantage import AlphaVantage as AlphaVantageT
-except ImportError:
-    AlphaVantageT = "AlphaVantage"
+else:
+    AlphaVantageT = "alpha_vantage.alphavantage.AlphaVantage"
 
 __all__ = [
     "AVData",

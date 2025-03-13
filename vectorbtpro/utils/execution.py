@@ -39,14 +39,12 @@ from vectorbtpro.utils.pickling import load, save
 from vectorbtpro.utils.template import CustomTemplate, substitute_templates
 from vectorbtpro.utils.warnings_ import warn
 
-try:
-    if not tp.TYPE_CHECKING:
-        raise ImportError
+if tp.TYPE_CHECKING:
     from ray.remote_function import RemoteFunction as RemoteFunctionT
     from ray import ObjectRef as ObjectRefT
-except ImportError:
-    RemoteFunctionT = "RemoteFunction"
-    ObjectRefT = "ObjectRef"
+else:
+    RemoteFunctionT = "ray.remote_function.RemoteFunction"
+    ObjectRefT = "ray.ObjectRef"
 
 __all__ = [
     "Task",

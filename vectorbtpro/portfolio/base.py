@@ -64,12 +64,10 @@ from vectorbtpro.utils.parsing import get_func_kwargs
 from vectorbtpro.utils.template import Rep, RepEval, RepFunc
 from vectorbtpro.utils.warnings_ import warn
 
-try:
-    if not tp.TYPE_CHECKING:
-        raise ImportError
+if tp.TYPE_CHECKING:
     from vectorbtpro.returns.qs_adapter import QSAdapter as QSAdapterT
-except ImportError:
-    QSAdapterT = "QSAdapter"
+else:
+    QSAdapterT = "vectorbtpro.returns.qs_adapter.QSAdapter"
 
 __all__ = [
     "Portfolio",
@@ -5687,7 +5685,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
     ) -> tp.Tuple[tp.SeriesFrame, tp.SeriesFrame, tp.SeriesFrame, tp.SeriesFrame]:
         """Get long entries, long exits, short entries, and short exits.
 
-        Returns per group is grouping is enabled. Pass `group_by=False` to disable."""
+        Returns per group if grouping is enabled. Pass `group_by=False` to disable."""
         if not isinstance(cls_or_self, type):
             if orders is None:
                 orders = cls_or_self.resolve_shortcut_attr(

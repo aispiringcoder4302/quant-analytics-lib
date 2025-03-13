@@ -24,12 +24,10 @@ from vectorbtpro.utils.config import merge_dicts
 from vectorbtpro.utils.pbar import ProgressBar
 from vectorbtpro.utils.warnings_ import warn
 
-try:
-    if not tp.TYPE_CHECKING:
-        raise ImportError
+if tp.TYPE_CHECKING:
     from polygon import RESTClient as PolygonClientT
-except ImportError:
-    PolygonClientT = "PolygonClient"
+else:
+    PolygonClientT = "polygon.RESTClient"
 
 __all__ = [
     "PolygonData",

@@ -25,12 +25,10 @@ from vectorbtpro.utils.module_ import get_caller_qualname
 from vectorbtpro.utils.path_ import check_mkdir
 from vectorbtpro.utils.template import CustomTemplate, SafeSub, RepFunc
 
-try:
-    if not tp.TYPE_CHECKING:
-        raise ImportError
+if tp.TYPE_CHECKING:
     from IPython.display import DisplayHandle as DisplayHandleT
-except ImportError:
-    DisplayHandleT = "DisplayHandle"
+else:
+    DisplayHandleT = "IPython.display.DisplayHandle"
 
 __all__ = [
     "ContentFormatter",

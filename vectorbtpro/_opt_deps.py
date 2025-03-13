@@ -60,7 +60,7 @@ opt_dep_config = HybridConfig(
         ),
         plotly=dict(
             link="https://pypi.org/project/plotly/",
-            version=">=5.0.0",
+            version=">=5.0.0, <6.0.0",
         ),
         ipywidgets=dict(
             link="https://pypi.org/project/ipywidgets/",
@@ -234,6 +234,12 @@ opt_dep_config = HybridConfig(
         ),
         lmdbm=dict(
             link="https://pypi.org/project/lmdbm/",
+        ),
+        bm25s=dict(
+            link="https://pypi.org/project/bm25s/",
+        ),
+        PyStemmer=dict(
+            link="https://pypi.org/project/PyStemmer/",
         )
     )
 )

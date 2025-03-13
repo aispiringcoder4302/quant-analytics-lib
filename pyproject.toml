@@ -153,6 +153,8 @@ knwl-base = [
     "openai",
     "tiktoken",
     "lmdbm",
+    "bm25s",
+    "PyStemmer",
 ]
 knwl = [
     "vectorbtpro[knwl-base]",

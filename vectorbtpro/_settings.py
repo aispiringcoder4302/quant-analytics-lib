@@ -2348,6 +2348,7 @@ window.onload = function() {
 $context
 ---------------------""",
         minimal_format=True,
+        quick_mode=False,
         tokenizer="tiktoken",
         tokenizer_config=flex_cfg(),
         tokenizer_configs=flex_cfg(
@@ -2386,15 +2387,18 @@ $context
         completions_configs=flex_cfg(
             openai=flex_cfg(
                 model="gpt-4o",
+                quick_model="gpt-4o-mini",
             ),
             litellm=flex_cfg(
                 model="gpt-4o",
+                quick_model="gpt-4o-mini",
             ),
             llama_index=flex_cfg(
                 llm="openai",
                 llm_configs=flex_cfg(
                     openai=flex_cfg(
                         model="gpt-4o",
+                        quick_model="gpt-4o-mini",
                     )
                 ),
             ),
@@ -2481,8 +2485,20 @@ $chunk_text""",
                     dir_path=RepEval("Path(cache_dir) / 'emb_lmdb_store'"),
                 ),
             ),
+            search_method="hybrid",
+            bm25_tokenizer=None,
+            bm25_tokenizer_kwargs=flex_cfg(
+                show_progress=False,
+            ),
+            bm25_retriever=None,
+            bm25_retriever_kwargs=flex_cfg(
+                show_progress=False,
+            ),
+            bm25_mirror_store_id=None,
+            bm25_score_weight=0.5,
             score_func="cosine",
             score_agg_func="mean",
+            normalize_scores=False,
         ),
     ),
     assets=flex_cfg(

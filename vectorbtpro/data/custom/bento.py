@@ -16,12 +16,10 @@ from vectorbtpro.utils import datetime_ as dt
 from vectorbtpro.utils.config import merge_dicts
 from vectorbtpro.utils.parsing import get_func_arg_names
 
-try:
-    if not tp.TYPE_CHECKING:
-        raise ImportError
+if tp.TYPE_CHECKING:
     from databento import Historical as HistoricalT
-except ImportError:
-    HistoricalT = "Historical"
+else:
+    HistoricalT = "databento.Historical"
 
 __all__ = [
     "BentoData",

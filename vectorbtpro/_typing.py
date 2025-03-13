@@ -30,16 +30,14 @@ from pandas.core.indexing import _IndexSlice as IndexSlice
 from pandas.core.resample import Resampler as PandasResampler
 from pandas.tseries.offsets import BaseOffset
 
-try:
-    if not TYPE_CHECKING:
-        raise ImportError
+if TYPE_CHECKING:
     from plotly.graph_objects import Figure, FigureWidget
     from plotly.basedatatypes import BaseFigure, BaseTraceType
-except ImportError:
-    Figure = Any
-    FigureWidget = Any
-    BaseFigure = Any
-    BaseTraceType = Any
+else:
+    Figure = "plotly.graph_objects.Figure"
+    FigureWidget = "plotly.graph_objects.FigureWidget"
+    BaseFigure = "plotly.basedatatypes.BaseFigure"
+    BaseTraceType = "plotly.basedatatypes.BaseTraceType"
 try:
     from typing import Protocol
 except ImportError:
@@ -393,6 +391,7 @@ TSSegment = Tuple[int, int, bool]
 TSSegmentChunks = Iterator[TSRange]
 TSTextChunks = Iterator[str]
 ObjectStoreLike = Union[None, str, MaybeType[ObjectStore]]
+SplitDocuments = List[List[StoreDocument]]
 EmbeddedDocuments = List[EmbeddedDocument]
 ScoredDocuments = List[Union[float, ScoredDocument]]
 RankedDocuments = List[Union[StoreDocument, ScoredDocument]]

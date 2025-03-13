@@ -53,33 +53,22 @@ from vectorbtpro.utils.warnings_ import warn, warn_stdout, WarningsFiltered
 if tp.TYPE_CHECKING:
     from vectorbtpro.portfolio.base import Portfolio as PortfolioT
 else:
-    PortfolioT = "Portfolio"
-
-try:
-    if not tp.TYPE_CHECKING:
-        raise ImportError
+    PortfolioT = "vectorbtpro.portfolio.base.Portfolio"
+if tp.TYPE_CHECKING:
     from pypfopt.base_optimizer import BaseOptimizer as BaseOptimizerT
-except ImportError:
-    BaseOptimizerT = "BaseOptimizer"
-try:
-    if not tp.TYPE_CHECKING:
-        raise ImportError
-    from riskfolio import Portfolio as RPortfolio, HCPortfolio as RHCPortfolio
-
-    RPortfolioT = tp.TypeVar("RPortfolioT", bound=tp.Union[RPortfolio, RHCPortfolio])
-except ImportError:
-    RPortfolioT = "RPortfolio"
-try:
-    if not tp.TYPE_CHECKING:
-        raise ImportError
-    from universal.algo import Algo
-    from universal.result import AlgoResult
-
-    AlgoT = tp.TypeVar("AlgoT", bound=Algo)
-    AlgoResultT = tp.TypeVar("AlgoResultT", bound=AlgoResult)
-except ImportError:
-    AlgoT = "Algo"
-    AlgoResultT = "AlgoResult"
+else:
+    BaseOptimizerT = "pypfopt.base_optimizer.BaseOptimizer"
+if tp.TYPE_CHECKING:
+    from riskfolio import Portfolio as RPortfolioT, HCPortfolio as RHCPortfolioT
+else:
+    RPortfolioT = "riskfolio.Portfolio"
+    RHCPortfolioT = "riskfolio.HCPortfolio"
+if tp.TYPE_CHECKING:
+    from universal.algo import Algo as AlgoT
+    from universal.result import AlgoResult as AlgoResultT
+else:
+    AlgoT = "universal.algo.Algo"
+    AlgoResultT = "universal.result.AlgoResult"
 
 __all__ = [
     "pfopt_func_dict",
@@ -1074,7 +1063,7 @@ def riskfolio_optimize(
     dropna_cols: tp.Optional[bool] = None,
     dropna_any: tp.Optional[bool] = None,
     factors: tp.Optional[tp.AnyArray2d] = None,
-    port: tp.Optional[RPortfolioT] = None,
+    port: tp.Optional[tp.Union[RPortfolioT, RHCPortfolioT]] = None,
     port_cls: tp.Union[None, str, tp.Type] = None,
     opt_method: tp.Union[None, str, tp.Callable] = None,
     stats_methods: tp.Optional[tp.Sequence[str]] = None,
@@ -1096,7 +1085,7 @@ def riskfolio_optimize(
     return_port: tp.Optional[bool] = None,
     ignore_errors: tp.Optional[bool] = None,
     **kwargs,
-) -> tp.Union[tp.Dict[str, float], tp.Tuple[tp.Dict[str, float], RPortfolioT]]:
+) -> tp.Union[tp.Dict[str, float], tp.Tuple[tp.Dict[str, float], tp.Union[RPortfolioT, RHCPortfolioT]]]:
     """Get allocation using Riskfolio-Lib.
 
     Args:

@@ -36,8 +36,8 @@ if tp.TYPE_CHECKING:
     from vectorbtpro.base.accessors import BaseIDXAccessor as BaseIDXAccessorT
     from vectorbtpro.generic.splitting.base import Splitter as SplitterT
 else:
-    BaseIDXAccessorT = "BaseIDXAccessor"
-    SplitterT = "Splitter"
+    BaseIDXAccessorT = "vectorbtpro.base.accessors.BaseIDXAccessor"
+    SplitterT = "vectorbtpro.generic.splitting.base.Splitter"
 
 __all__ = [
     "ArrayWrapper",
@@ -260,7 +260,9 @@ class HasWrapper(ExtPandasIndexer, ItemParamable):
         from vectorbtpro.generic.splitting.base import Splitter, Takeable
 
         if isinstance(apply_func, str):
-            apply_func = getattr(type(self), apply_func)
+            from vectorbtpro.utils.attr_ import deep_getattr
+
+            apply_func = deep_getattr(type(self), apply_func, call_last_attr=False)
         if splitter_cls is None:
             splitter_cls = Splitter
         if wrap is None:
@@ -325,8 +327,6 @@ class HasWrapper(ExtPandasIndexer, ItemParamable):
         If `apply_func` is a string, becomes the method name.
 
         For arguments related to chunking, see `Wrapping.chunk`."""
-        if isinstance(apply_func, str):
-            apply_func = getattr(type(self), apply_func)
         if chunk_kwargs is None:
             chunk_arg_names = set(get_func_arg_names(self.chunk))
             chunk_kwargs = {}
@@ -339,7 +339,12 @@ class HasWrapper(ExtPandasIndexer, ItemParamable):
         tasks = []
         keys = []
         for _chunk_meta, chunk in chunks:
-            tasks.append(Task(apply_func, chunk, *args, **kwargs))
+            if isinstance(apply_func, str):
+                from vectorbtpro.utils.attr_ import deep_getattr
+
+                tasks.append(Task(deep_getattr(chunk, apply_func, call_last_attr=False), *args, **kwargs))
+            else:
+                tasks.append(Task(apply_func, chunk, *args, **kwargs))
             keys.append(get_chunk_meta_key(_chunk_meta))
         keys = pd.Index(keys, name="chunk_indices")
         return execute(tasks, size=len(tasks), keys=keys, **execute_kwargs)

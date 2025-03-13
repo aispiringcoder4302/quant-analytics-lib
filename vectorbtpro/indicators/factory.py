@@ -92,18 +92,14 @@ __all__ = [
 
 __pdoc__ = {}
 
-try:
-    if not tp.TYPE_CHECKING:
-        raise ImportError
+if tp.TYPE_CHECKING:
     from ta.utils import IndicatorMixin as IndicatorMixinT
-except ImportError:
-    IndicatorMixinT = "IndicatorMixin"
-try:
-    if not tp.TYPE_CHECKING:
-        raise ImportError
+else:
+    IndicatorMixinT = "ta.utils.IndicatorMixin"
+if tp.TYPE_CHECKING:
     from technical.consensus import Consensus as ConsensusT
-except ImportError:
-    ConsensusT = "Consensus"
+else:
+    ConsensusT = "technical.consensus.Consensus"
 
 
 def prepare_params(

@@ -54,7 +54,7 @@ from vectorbtpro.utils.warnings_ import warn
 if tp.TYPE_CHECKING:
     from sklearn.model_selection import BaseCrossValidator as BaseCrossValidatorT
 else:
-    BaseCrossValidatorT = "BaseCrossValidator"
+    BaseCrossValidatorT = "sklearn.model_selection.BaseCrossValidator"
 
 __all__ = [
     "FixRange",
@@ -216,7 +216,7 @@ class RelRange(DefineMixin):
         else:
             if checks.is_float(offset):
                 if not offset.is_integer():
-                    raise TypeError(f"Floating number for offset ({offset}) must be between 0 and 1")
+                    raise ValueError(f"Floating number for offset ({offset}) must be between 0 and 1")
                 offset = offset_anchor + int(offset)
             elif not checks.is_int(offset):
                 offset = offset_anchor + dt.to_freq(offset)
@@ -255,7 +255,7 @@ class RelRange(DefineMixin):
         else:
             if checks.is_float(length):
                 if not length.is_integer():
-                    raise TypeError(f"Floating number for length ({length}) must be between 0 and 1")
+                    raise ValueError(f"Floating number for length ({length}) must be between 0 and 1")
                 length = int(length)
             elif not checks.is_int(length):
                 length = dt.to_freq(length)
@@ -785,11 +785,11 @@ class Splitter(Analyzable):
             if 0 <= abs(length) <= 1:
                 length = len(index) * length
             elif not length.is_integer():
-                raise TypeError("Floating number for length must be between 0 and 1")
+                raise ValueError("Floating number for length must be between 0 and 1")
             length = int(length)
         if checks.is_int(length):
             if length < 1 or length > len(index):
-                raise TypeError(f"Length must be within [{1}, {len(index)}]")
+                raise ValueError(f"Length must be within [{1}, {len(index)}]")
             offsets = np.arange(len(index))
             offsets = offsets[offsets + length <= len(index)]
         else:
@@ -797,7 +797,7 @@ class Splitter(Analyzable):
             if freq is None:
                 raise ValueError("Must provide freq")
             if length < freq or length > index[-1] + freq - index[0]:
-                raise TypeError(f"Length must be within [{freq}, {index[-1] + freq - index[0]}]")
+                raise ValueError(f"Length must be within [{freq}, {index[-1] + freq - index[0]}]")
             offsets = index[index + length <= index[-1] + freq] - index[0]
         if n > len(offsets):
             n = len(offsets)
@@ -986,11 +986,11 @@ class Splitter(Analyzable):
             if 0 <= abs(min_length) <= 1:
                 min_length = len(index) * min_length
             elif not min_length.is_integer():
-                raise TypeError("Floating number for minimum length must be between 0 and 1")
+                raise ValueError("Floating number for minimum length must be between 0 and 1")
         if checks.is_int(min_length):
             min_length = int(min_length)
             if min_length < 1 or min_length > len(index):
-                raise TypeError(f"Minimum length must be within [{1}, {len(index)}]")
+                raise ValueError(f"Minimum length must be within [{1}, {len(index)}]")
             lengths = np.arange(1, len(index) + 1)
             lengths = lengths[lengths >= min_length]
         else:
@@ -998,7 +998,7 @@ class Splitter(Analyzable):
             if freq is None:
                 raise ValueError("Must provide freq")
             if min_length < freq or min_length > index[-1] + freq - index[0]:
-                raise TypeError(f"Minimum length must be within [{freq}, {index[-1] + freq - index[0]}]")
+                raise ValueError(f"Minimum length must be within [{freq}, {index[-1] + freq - index[0]}]")
             lengths = index[1:].append(index[[-1]] + freq) - index[0]
             lengths = lengths[lengths >= min_length]
         if n > len(lengths):
@@ -1268,12 +1268,12 @@ class Splitter(Analyzable):
                 if 0 <= abs(min_start) <= 1:
                     min_start = len(index) * min_start
                 elif not min_start.is_integer():
-                    raise TypeError("Floating number for minimum start must be between 0 and 1")
+                    raise ValueError("Floating number for minimum start must be between 0 and 1")
             if checks.is_float(min_start):
                 min_start = int(min_start)
             if checks.is_int(min_start):
                 if min_start < 0 or min_start > len(index) - 1:
-                    raise TypeError(f"Minimum start must be within [{0}, {len(index) - 1}]")
+                    raise ValueError(f"Minimum start must be within [{0}, {len(index) - 1}]")
             else:
                 if not isinstance(index, pd.DatetimeIndex):
                     raise TypeError(f"Index must be of type pandas.DatetimeIndex, not {index.dtype}")
@@ -1281,7 +1281,7 @@ class Splitter(Analyzable):
                 if not isinstance(min_start, pd.Timestamp):
                     raise ValueError(f"Minimum start ({min_start}) could not be parsed")
                 if min_start < index[0] or min_start > index[-1]:
-                    raise TypeError(f"Minimum start must be within [{index[0]}, {index[-1]}]")
+                    raise ValueError(f"Minimum start must be within [{index[0]}, {index[-1]}]")
                 min_start = index.get_indexer([min_start], method="bfill")[0]
         if max_end is None:
             max_end = len(index)
@@ -1289,12 +1289,12 @@ class Splitter(Analyzable):
             if 0 <= abs(max_end) <= 1:
                 max_end = len(index) * max_end
             elif not max_end.is_integer():
-                raise TypeError("Floating number for maximum end must be between 0 and 1")
+                raise ValueError("Floating number for maximum end must be between 0 and 1")
         if checks.is_float(max_end):
             max_end = int(max_end)
         if checks.is_int(max_end):
             if max_end < 1 or max_end > len(index):
-                raise TypeError(f"Maximum end must be within [{1}, {len(index)}]")
+                raise ValueError(f"Maximum end must be within [{1}, {len(index)}]")
         else:
             if not isinstance(index, pd.DatetimeIndex):
                 raise TypeError(f"Index must be of type pandas.DatetimeIndex, not {index.dtype}")
@@ -1304,7 +1304,7 @@ class Splitter(Analyzable):
             if freq is None:
                 raise ValueError("Must provide freq")
             if max_end < index[0] + freq or max_end > index[-1] + freq:
-                raise TypeError(f"Maximum end must be within [{index[0] + freq}, {index[-1] + freq}]")
+                raise ValueError(f"Maximum end must be within [{index[0] + freq}, {index[-1] + freq}]")
             if max_end > index[-1]:
                 max_end = len(index)
             else:
@@ -1328,33 +1328,33 @@ class Splitter(Analyzable):
             if 0 <= abs(min_length) <= 1:
                 min_length = space_len * min_length
             elif not min_length.is_integer():
-                raise TypeError("Floating number for minimum length must be between 0 and 1")
+                raise ValueError("Floating number for minimum length must be between 0 and 1")
             min_length = int(min_length)
         if checks.is_int(min_length):
             if min_length < 1 or min_length > space_len:
-                raise TypeError(f"Minimum length must be within [{1}, {space_len}]")
+                raise ValueError(f"Minimum length must be within [{1}, {space_len}]")
         else:
             min_length = dt.to_freq(min_length)
             if freq is None:
                 raise ValueError("Must provide freq")
             if min_length < freq or min_length > index_space_len:
-                raise TypeError(f"Minimum length must be within [{freq}, {index_space_len}]")
+                raise ValueError(f"Minimum length must be within [{freq}, {index_space_len}]")
         if max_length is not None:
             if checks.is_float(max_length):
                 if 0 <= abs(max_length) <= 1:
                     max_length = space_len * max_length
                 elif not max_length.is_integer():
-                    raise TypeError("Floating number for maximum length must be between 0 and 1")
+                    raise ValueError("Floating number for maximum length must be between 0 and 1")
                 max_length = int(max_length)
             if checks.is_int(max_length):
                 if max_length < min_length or max_length > space_len:
-                    raise TypeError(f"Maximum length must be within [{min_length}, {space_len}]")
+                    raise ValueError(f"Maximum length must be within [{min_length}, {space_len}]")
             else:
                 max_length = dt.to_freq(max_length)
                 if freq is None:
                     raise ValueError("Must provide freq")
                 if max_length < min_length or max_length > index_space_len:
-                    raise TypeError(f"Maximum length must be within [{min_length}, {index_space_len}]")
+                    raise ValueError(f"Maximum length must be within [{min_length}, {index_space_len}]")
         else:
             max_length = min_length
 

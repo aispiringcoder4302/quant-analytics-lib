@@ -2348,6 +2348,8 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
                 documents = self.data
                 if wrap_documents is None:
                     wrap_documents = True
+        if "bm25_mirror_store_id" not in kwargs:
+            kwargs["bm25_mirror_store_id"] = cache_key
         ranked_documents = rank_documents(query=query, documents=documents, **kwargs)
         if not wrap_documents:
 

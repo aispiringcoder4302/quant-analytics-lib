@@ -46,18 +46,14 @@ from vectorbtpro.utils.warnings_ import warn
 from vectorbtpro.registries.ch_registry import ch_reg
 from vectorbtpro.registries.jit_registry import jit_reg
 
-try:
-    if not tp.TYPE_CHECKING:
-        raise ImportError
+if tp.TYPE_CHECKING:
     from sqlalchemy import Engine as EngineT
-except ImportError:
-    EngineT = "Engine"
-try:
-    if not tp.TYPE_CHECKING:
-        raise ImportError
+else:
+    EngineT = "sqlalchemy.Engine"
+if tp.TYPE_CHECKING:
     from duckdb import DuckDBPyConnection as DuckDBPyConnectionT
-except ImportError:
-    DuckDBPyConnectionT = "DuckDBPyConnection"
+else:
+    DuckDBPyConnectionT = "duckdb.DuckDBPyConnection"
 
 __all__ = [
     "key_dict",

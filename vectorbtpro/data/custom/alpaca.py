@@ -18,12 +18,10 @@ from vectorbtpro.utils import datetime_ as dt
 from vectorbtpro.utils.config import merge_dicts
 from vectorbtpro.utils.parsing import get_func_arg_names
 
-try:
-    if not tp.TYPE_CHECKING:
-        raise ImportError
-    from alpaca.common.rest import RESTClient as AlpacaClientT
-except ImportError:
-    AlpacaClientT = "AlpacaClient"
+if tp.TYPE_CHECKING:
+    from alpaca.common.rest import RESTClient as RESTClientT
+else:
+    RESTClientT = "alpaca.common.rest.RESTClient"
 
 __all__ = [
     "AlpacaData",
@@ -87,7 +85,7 @@ class AlpacaData(RemoteData):
         status: tp.Optional[str] = None,
         asset_class: tp.Optional[str] = None,
         exchange: tp.Optional[str] = None,
-        trading_client: tp.Optional[AlpacaClientT] = None,
+        trading_client: tp.Optional[RESTClientT] = None,
         client_config: tp.KwargsLike = None,
     ) -> tp.List[str]:
         """List all symbols.
@@ -145,10 +143,10 @@ class AlpacaData(RemoteData):
     @classmethod
     def resolve_client(
         cls,
-        client: tp.Optional[AlpacaClientT] = None,
+        client: tp.Optional[RESTClientT] = None,
         client_type: tp.Optional[str] = None,
         **client_config,
-    ) -> AlpacaClientT:
+    ) -> RESTClientT:
         """Resolve the client.
 
         If provided, must be of the type `alpaca.data.historical.CryptoHistoricalDataClient`
@@ -184,7 +182,7 @@ class AlpacaData(RemoteData):
     def fetch_symbol(
         cls,
         symbol: str,
-        client: tp.Optional[AlpacaClientT] = None,
+        client: tp.Optional[RESTClientT] = None,
         client_type: tp.Optional[str] = None,
         client_config: tp.KwargsLike = None,
         start: tp.Optional[tp.DatetimeLike] = None,

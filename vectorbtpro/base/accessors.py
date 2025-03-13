@@ -45,11 +45,11 @@ from vectorbtpro.utils.warnings_ import warn
 if tp.TYPE_CHECKING:
     from vectorbtpro.data.base import Data as DataT
 else:
-    DataT = "Data"
+    DataT = "vectorbtpro.data.base.Data"
 if tp.TYPE_CHECKING:
     from vectorbtpro.generic.splitting.base import Splitter as SplitterT
 else:
-    SplitterT = "Splitter"
+    SplitterT = "vectorbtpro.generic.splitting.base.Splitter"
 
 __all__ = ["BaseIDXAccessor", "BaseAccessor", "BaseSRAccessor", "BaseDFAccessor"]
 

@@ -19,14 +19,12 @@ from vectorbtpro.data.custom.db import DBData
 from vectorbtpro.utils import checks, datetime_ as dt
 from vectorbtpro.utils.config import merge_dicts
 
-try:
-    if not tp.TYPE_CHECKING:
-        raise ImportError
+if tp.TYPE_CHECKING:
     from sqlalchemy import Engine as EngineT, Selectable as SelectableT, Table as TableT
-except ImportError:
-    EngineT = "Engine"
-    SelectableT = "Selectable"
-    TableT = "Table"
+else:
+    EngineT = "sqlalchemy.Engine"
+    SelectableT = "sqlalchemy.Selectable"
+    TableT = "sqlalchemy.Table"
 
 __all__ = [
     "SQLData",

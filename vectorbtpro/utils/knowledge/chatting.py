@@ -31,54 +31,44 @@ from vectorbtpro.utils.parsing import get_func_arg_names, get_func_kwargs, get_f
 from vectorbtpro.utils.template import CustomTemplate, SafeSub, RepFunc
 from vectorbtpro.utils.warnings_ import warn
 
-try:
-    if not tp.TYPE_CHECKING:
-        raise ImportError
+if tp.TYPE_CHECKING:
     from tiktoken import Encoding as EncodingT
-except ImportError:
-    EncodingT = "Encoding"
-try:
-    if not tp.TYPE_CHECKING:
-        raise ImportError
+else:
+    EncodingT = "tiktoken.Encoding"
+if tp.TYPE_CHECKING:
     from openai import OpenAI as OpenAIT, Stream as StreamT
     from openai.types.chat.chat_completion import ChatCompletion as ChatCompletionT
     from openai.types.chat.chat_completion_chunk import ChatCompletionChunk as ChatCompletionChunkT
-except ImportError:
-    OpenAIT = "OpenAI"
-    StreamT = "Stream"
-    ChatCompletionT = "ChatCompletion"
-    ChatCompletionChunkT = "ChatCompletionChunk"
-try:
-    if not tp.TYPE_CHECKING:
-        raise ImportError
+else:
+    OpenAIT = "openai.OpenAI"
+    StreamT = "openai.Stream"
+    ChatCompletionT = "openai.types.chat.chat_completion.ChatCompletion"
+    ChatCompletionChunkT = "openai.types.chat.chat_completion_chunk.ChatCompletionChunk"
+if tp.TYPE_CHECKING:
     from litellm import ModelResponse as ModelResponseT, CustomStreamWrapper as CustomStreamWrapperT
-except ImportError:
-    ModelResponseT = "ModelResponse"
-    CustomStreamWrapperT = "CustomStreamWrapper"
-try:
-    if not tp.TYPE_CHECKING:
-        raise ImportError
+else:
+    ModelResponseT = "litellm.ModelResponse"
+    CustomStreamWrapperT = "litellm.CustomStreamWrapper"
+if tp.TYPE_CHECKING:
     from llama_index.core.embeddings import BaseEmbedding as BaseEmbeddingT
     from llama_index.core.llms import LLM as LLMT, ChatMessage as ChatMessageT, ChatResponse as ChatResponseT
     from llama_index.core.node_parser import NodeParser as NodeParserT
-except ImportError:
-    BaseEmbeddingT = "BaseEmbedding"
-    LLMT = "LLM"
-    ChatMessageT = "ChatMessage"
-    ChatResponseT = "ChatResponse"
-    NodeParserT = "NodeParser"
-try:
-    if not tp.TYPE_CHECKING:
-        raise ImportError
-    from IPython.display import DisplayHandle as DisplayHandleT
-except ImportError:
-    DisplayHandleT = "DisplayHandle"
-try:
-    if not tp.TYPE_CHECKING:
-        raise ImportError
+else:
+    BaseEmbeddingT = "llama_index.core.embeddings.BaseEmbedding"
+    LLMT = "llama_index.core.llms.LLM"
+    ChatMessageT = "llama_index.core.llms.ChatMessage"
+    ChatResponseT = "llama_index.core.llms.ChatResponse"
+    NodeParserT = "llama_index.core.node_parser.NodeParser"
+if tp.TYPE_CHECKING:
     from lmdbm import Lmdb as LmdbT
-except ImportError:
-    LmdbT = "Lmdb"
+else:
+    LmdbT = "lmdbm.Lmdb"
+if tp.TYPE_CHECKING:
+    from bm25s.tokenization import Tokenizer as BM25TokenizerT
+    from bm25s import BM25 as BM25T
+else:
+    BM25TokenizerT = "bm25s.tokenization.Tokenizer"
+    BM25T = "bm25s.BM25"
 
 __all__ = [
     "Tokenizer",
@@ -101,6 +91,7 @@ __all__ = [
     "LlamaIndexSplitter",
     "split_text",
     "StoreObject",
+    "StoreData",
     "StoreDocument",
     "TextDocument",
     "StoreEmbedding",
@@ -768,6 +759,7 @@ class Completions(Configured):
         formatter: tp.ContentFormatterLike = None,
         formatter_kwargs: tp.KwargsLike = None,
         minimal_format: tp.Optional[bool] = None,
+        quick_mode: tp.Optional[bool] = None,
         silence_warnings: tp.Optional[bool] = None,
         template_context: tp.KwargsLike = None,
         **kwargs,
@@ -786,6 +778,7 @@ class Completions(Configured):
             formatter=formatter,
             formatter_kwargs=formatter_kwargs,
             minimal_format=minimal_format,
+            quick_mode=quick_mode,
             silence_warnings=silence_warnings,
             template_context=template_context,
             **kwargs,
@@ -804,6 +797,7 @@ class Completions(Configured):
         formatter = self.resolve_setting(formatter, "formatter", default=None)
         formatter_kwargs = self.resolve_setting(formatter_kwargs, "formatter_kwargs", default=None, merge=True)
         minimal_format = self.resolve_setting(minimal_format, "minimal_format", default=None)
+        quick_mode = self.resolve_setting(quick_mode, "quick_mode")
         silence_warnings = self.resolve_setting(silence_warnings, "silence_warnings")
         template_context = self.resolve_setting(template_context, "template_context", merge=True)
 
@@ -823,6 +817,7 @@ class Completions(Configured):
         self._formatter = formatter
         self._formatter_kwargs = formatter_kwargs
         self._minimal_format = minimal_format
+        self._quick_mode = quick_mode
         self._silence_warnings = silence_warnings
         self._template_context = template_context
 
@@ -915,6 +910,11 @@ class Completions(Configured):
     def minimal_format(self) -> bool:
         """Whether input is minimally-formatted."""
         return self._minimal_format
+
+    @property
+    def quick_mode(self) -> bool:
+        """Quick mode."""
+        return self._quick_mode
 
     @property
     def silence_warnings(self) -> bool:
@@ -1110,6 +1110,8 @@ class OpenAICompletions(Completions):
         context_prompt: tp.Optional[str] = None,
         formatter: tp.ContentFormatterLike = None,
         formatter_kwargs: tp.KwargsLike = None,
+        minimal_format: tp.Optional[bool] = None,
+        quick_mode: tp.Optional[bool] = None,
         silence_warnings: tp.Optional[bool] = None,
         template_context: tp.KwargsLike = None,
         model: tp.Optional[str] = None,
@@ -1128,6 +1130,8 @@ class OpenAICompletions(Completions):
             context_prompt=context_prompt,
             formatter=formatter,
             formatter_kwargs=formatter_kwargs,
+            minimal_format=minimal_format,
+            quick_mode=quick_mode,
             silence_warnings=silence_warnings,
             template_context=template_context,
             model=model,
@@ -1141,8 +1145,9 @@ class OpenAICompletions(Completions):
 
         openai_config = merge_dicts(self.get_settings(inherit=False), kwargs)
         def_model = openai_config.pop("model", None)
+        def_quick_model = openai_config.pop("quick_model", None)
         if model is None:
-            model = def_model
+            model = def_quick_model if self.quick_mode else def_model
         if model is None:
             raise ValueError("Must provide a model")
         init_kwargs = get_func_kwargs(type(self).__init__)
@@ -1225,6 +1230,8 @@ class LiteLLMCompletions(Completions):
         context_prompt: tp.Optional[str] = None,
         formatter: tp.ContentFormatterLike = None,
         formatter_kwargs: tp.KwargsLike = None,
+        minimal_format: tp.Optional[bool] = None,
+        quick_mode: tp.Optional[bool] = None,
         silence_warnings: tp.Optional[bool] = None,
         template_context: tp.KwargsLike = None,
         model: tp.Optional[str] = None,
@@ -1243,6 +1250,8 @@ class LiteLLMCompletions(Completions):
             context_prompt=context_prompt,
             formatter=formatter,
             formatter_kwargs=formatter_kwargs,
+            minimal_format=minimal_format,
+            quick_mode=quick_mode,
             silence_warnings=silence_warnings,
             template_context=template_context,
             model=model,
@@ -1255,8 +1264,9 @@ class LiteLLMCompletions(Completions):
 
         completion_kwargs = merge_dicts(self.get_settings(inherit=False), kwargs)
         def_model = completion_kwargs.pop("model", None)
+        def_quick_model = completion_kwargs.pop("quick_model", None)
         if model is None:
-            model = def_model
+            model = def_quick_model if self.quick_mode else def_model
         if model is None:
             raise ValueError("Must provide a model")
 
@@ -1327,6 +1337,8 @@ class LlamaIndexCompletions(Completions):
         context_prompt: tp.Optional[str] = None,
         formatter: tp.ContentFormatterLike = None,
         formatter_kwargs: tp.KwargsLike = None,
+        minimal_format: tp.Optional[bool] = None,
+        quick_mode: tp.Optional[bool] = None,
         silence_warnings: tp.Optional[bool] = None,
         template_context: tp.KwargsLike = None,
         llm: tp.Union[None, str, tp.MaybeType[LLMT]] = None,
@@ -1345,6 +1357,8 @@ class LlamaIndexCompletions(Completions):
             context_prompt=context_prompt,
             formatter=formatter,
             formatter_kwargs=formatter_kwargs,
+            minimal_format=minimal_format,
+            quick_mode=quick_mode,
             silence_warnings=silence_warnings,
             template_context=template_context,
             llm=llm,
@@ -1409,10 +1423,14 @@ class LlamaIndexCompletions(Completions):
             llm = llm(**llama_index_config)
         elif len(kwargs) > 0:
             raise ValueError("Cannot apply config to already initialized LLM")
-        model = llama_index_config.get("model", None)
+        def_model = llama_index_config.pop("model", None)
+        quick_model = llama_index_config.pop("quick_model", None)
+        model = quick_model if self.quick_mode else def_model
         if model is None:
             func_kwargs = get_func_kwargs(type(llm).__init__)
             model = func_kwargs.get("model", None)
+        else:
+            llama_index_config["model"] = model
 
         self._model = model
         self._llm = llm
@@ -1618,7 +1636,7 @@ class TokenSplitter(TextSplitter):
             if 0 <= abs(chunk_overlap) <= 1:
                 chunk_overlap = chunk_overlap * chunk_size
             elif not chunk_overlap.is_integer():
-                raise TypeError("Floating number for chunk_overlap must be between 0 and 1")
+                raise ValueError("Floating number for chunk_overlap must be between 0 and 1")
             chunk_overlap = int(chunk_overlap)
         if chunk_overlap >= chunk_size:
             raise ValueError("Chunk overlap must be less than the chunk size")
@@ -1663,7 +1681,7 @@ class TokenSplitter(TextSplitter):
 
         token_count = 0
         while token_count < total_tokens:
-            chunk_tokens = tokens[token_count:token_count + self.chunk_size]
+            chunk_tokens = tokens[token_count : token_count + self.chunk_size]
             chunk_start = chunk_tokens[0][0]
             chunk_end = chunk_tokens[-1][1]
             yield chunk_start, chunk_end
@@ -1719,7 +1737,7 @@ class SegmentSplitter(TokenSplitter):
             if 0 <= abs(min_chunk_size) <= 1:
                 min_chunk_size = min_chunk_size * self.chunk_size
             elif not min_chunk_size.is_integer():
-                raise TypeError("Floating number for min_chunk_size must be between 0 and 1")
+                raise ValueError("Floating number for min_chunk_size must be between 0 and 1")
             min_chunk_size = int(min_chunk_size)
 
         self._separators = separators
@@ -1908,7 +1926,7 @@ class SegmentSplitter(TokenSplitter):
                                     fixed_overlap = False
                                     break
                     if fixed_overlap:
-                        chunk_tokens = curr_tokens[-self.chunk_overlap:]
+                        chunk_tokens = curr_tokens[-self.chunk_overlap :]
                         token_offset = len(curr_tokens) - len(chunk_tokens)
                         new_chunk_start = chunk_end - len(self.tokenizer.decode(chunk_tokens))
                         chunk_offset = new_chunk_start - chunk_start
@@ -2120,18 +2138,15 @@ class StoreObject(DefineMixin):
         return (self.id_,)
 
 
-StoreDocumentT = tp.TypeVar("StoreDocumentT", bound="StoreDocument")
+StoreDataT = tp.TypeVar("StoreDataT", bound="StoreData")
 
 
 @define
-class StoreDocument(StoreObject, DefineMixin):
-    """Abstract class for documents to be stored."""
+class StoreData(StoreObject, DefineMixin):
+    """Class for any data to be stored."""
 
     data: tp.Any = define.field()
     """Data."""
-
-    template_context: tp.KwargsLike = define.field(factory=dict)
-    """Context used to substitute templates."""
 
     @classmethod
     def id_from_data(cls, data: tp.Any) -> str:
@@ -2142,12 +2157,12 @@ class StoreDocument(StoreObject, DefineMixin):
 
     @classmethod
     def from_data(
-        cls: tp.Type[StoreDocumentT],
+        cls: tp.Type[StoreDataT],
         data: tp.Any,
         id_: tp.Optional[str] = None,
         **kwargs,
-    ) -> StoreDocumentT:
-        """Create an instance of `StoreDocument` from data."""
+    ) -> StoreDataT:
+        """Create an instance of `StoreData` from data."""
         if id_ is None:
             id_ = cls.id_from_data(data)
         return cls(id_, data, **kwargs)
@@ -2156,6 +2171,17 @@ class StoreDocument(StoreObject, DefineMixin):
         if self.id_ is None:
             new_id = self.id_from_data(self.data)
             object.__setattr__(self, "id_", new_id)
+
+
+StoreDocumentT = tp.TypeVar("StoreDocumentT", bound="StoreDocument")
+
+
+@define
+class StoreDocument(StoreData, DefineMixin):
+    """Abstract class for documents to be stored."""
+
+    template_context: tp.KwargsLike = define.field(factory=dict)
+    """Context used to substitute templates."""
 
     def get_content(self, for_embed: bool = False) -> tp.Optional[str]:
         """Get content.
@@ -2515,18 +2541,23 @@ class DictStore(ObjectStore):
         self.store.clear()
 
     def __getitem__(self, id_: str) -> StoreObjectT:
+        self.check_opened()
         return self.store[id_]
 
     def __setitem__(self, id_: str, obj: StoreObjectT) -> None:
+        self.check_opened()
         self.store[id_] = obj
 
     def __delitem__(self, id_: str) -> None:
+        self.check_opened()
         del self.store[id_]
 
     def __iter__(self) -> tp.Iterator[str]:
+        self.check_opened()
         return iter(self.store)
 
     def __len__(self) -> int:
+        self.check_opened()
         return len(self.store)
 
 
@@ -3173,8 +3204,16 @@ class DocumentRanker(Configured):
         emb_store: tp.TokenizerLike = None,
         emb_store_kwargs: tp.KwargsLike = None,
         cache_emb_store: tp.Optional[bool] = None,
+        search_method: tp.Optional[str] = None,
+        bm25_tokenizer: tp.Optional[BM25TokenizerT] = None,
+        bm25_tokenizer_kwargs: tp.KwargsLike = None,
+        bm25_retriever: tp.Optional[tp.MaybeType[BM25T]] = None,
+        bm25_retriever_kwargs: tp.KwargsLike = None,
+        bm25_mirror_store_id: tp.Optional[str] = None,
+        bm25_score_weight: tp.Optional[float] = None,
         score_func: tp.Union[None, str, tp.Callable] = None,
         score_agg_func: tp.Union[None, str, tp.Callable] = None,
+        normalize_scores: tp.Optional[bool] = None,
         show_progress: tp.Optional[bool] = None,
         pbar_kwargs: tp.KwargsLike = None,
         template_context: tp.KwargsLike = None,
@@ -3191,8 +3230,16 @@ class DocumentRanker(Configured):
             emb_store=emb_store,
             emb_store_kwargs=emb_store_kwargs,
             cache_emb_store=cache_emb_store,
+            search_method=search_method,
+            bm25_tokenizer=bm25_tokenizer,
+            bm25_tokenizer_kwargs=bm25_tokenizer_kwargs,
+            bm25_retriever=bm25_retriever,
+            bm25_retriever_kwargs=bm25_retriever_kwargs,
+            bm25_mirror_store_id=bm25_mirror_store_id,
+            bm25_score_weight=bm25_score_weight,
             score_func=score_func,
             score_agg_func=score_agg_func,
+            normalize_scores=normalize_scores,
             show_progress=show_progress,
             pbar_kwargs=pbar_kwargs,
             template_context=template_context,
@@ -3208,8 +3255,12 @@ class DocumentRanker(Configured):
         emb_store = self.resolve_setting(emb_store, "emb_store", default=None)
         emb_store_kwargs = self.resolve_setting(emb_store_kwargs, "emb_store_kwargs", default=None, merge=True)
         cache_emb_store = self.resolve_setting(cache_emb_store, "cache_emb_store")
+        search_method = self.resolve_setting(search_method, "search_method")
+        bm25_mirror_store_id = self.resolve_setting(bm25_mirror_store_id, "bm25_mirror_store_id")
+        bm25_score_weight = self.resolve_setting(bm25_score_weight, "bm25_score_weight")
         score_func = self.resolve_setting(score_func, "score_func")
         score_agg_func = self.resolve_setting(score_agg_func, "score_agg_func")
+        normalize_scores = self.resolve_setting(normalize_scores, "normalize_scores")
         show_progress = self.resolve_setting(show_progress, "show_progress")
         pbar_kwargs = self.resolve_setting(pbar_kwargs, "pbar_kwargs", merge=True)
         template_context = self.resolve_setting(template_context, "template_context", merge=True)
@@ -3284,14 +3335,52 @@ class DocumentRanker(Configured):
         if cache_emb_store and not isinstance(emb_store, CachedStore):
             emb_store = CachedStore(emb_store)
 
+        search_method = search_method.lower()
+        checks.assert_in(search_method, ("embeddings", "bm25", "hybrid"), arg_name="search_method")
+        if search_method in ("bm25", "hybrid"):
+            if bm25_tokenizer_kwargs is None:
+                bm25_tokenizer_kwargs = {}
+            if bm25_retriever_kwargs is None:
+                bm25_retriever_kwargs = {}
+            if bm25_mirror_store_id is not None:
+                with MemoryStore(store_id=bm25_mirror_store_id) as bm25_memory_store:
+                    if bm25_memory_store.store_exists():
+                        bm25_tokenizer = bm25_memory_store["bm25_tokenizer"].data
+                        bm25_retriever = bm25_memory_store["bm25_retriever"].data
+                bm25_tokenizer, bm25_tokenize_kwargs = self.resolve_bm25_tokenizer(
+                bm25_tokenizer=bm25_tokenizer, **bm25_tokenizer_kwargs
+            )
+            bm25_retriever, bm25_retrieve_kwargs = self.resolve_bm25_retriever(
+                bm25_retriever=bm25_retriever,
+                **bm25_retriever_kwargs,
+            )
+            if bm25_mirror_store_id is not None:
+                with MemoryStore(store_id=bm25_mirror_store_id) as bm25_memory_store:
+                    bm25_memory_store["bm25_tokenizer"] = StoreData("bm25_tokenizer", bm25_tokenizer)
+                    bm25_memory_store["bm25_retriever"] = StoreData("bm25_retriever", bm25_retriever)
+        else:
+            bm25_tokenizer = None
+            bm25_tokenize_kwargs = {}
+            bm25_retriever = None
+            bm25_retrieve_kwargs = {}
+        if bm25_score_weight < 0 or bm25_score_weight > 1:
+            raise ValueError(f"BM25 score weight ({bm25_score_weight}) must be between 0 and 1")
+
         if isinstance(score_agg_func, str):
             score_agg_func = getattr(np, score_agg_func)
 
         self._embeddings = embeddings
         self._doc_store = doc_store
         self._emb_store = emb_store
+        self._search_method = search_method
+        self._bm25_tokenizer = bm25_tokenizer
+        self._bm25_tokenize_kwargs = bm25_tokenize_kwargs
+        self._bm25_retriever = bm25_retriever
+        self._bm25_retrieve_kwargs = bm25_retrieve_kwargs
+        self._bm25_score_weight = bm25_score_weight
         self._score_func = score_func
         self._score_agg_func = score_agg_func
+        self._normalize_scores = normalize_scores
         self._show_progress = show_progress
         self._pbar_kwargs = pbar_kwargs
         self._template_context = template_context
@@ -3312,6 +3401,42 @@ class DocumentRanker(Configured):
         return self._emb_store
 
     @property
+    def search_method(self) -> bool:
+        """Search method.
+
+        Supported are "embeddings", "bm25", and "hybrid"."""
+        return self._search_method
+
+    @property
+    def bm25_tokenizer(self) -> tp.Optional[BM25TokenizerT]:
+        """Instance of `bm25s.tokenization.Tokenizer`."""
+        return self._bm25_tokenizer
+
+    @property
+    def bm25_tokenize_kwargs(self) -> tp.Kwargs:
+        """Keyword arguments passed to `bm25s.tokenization.Tokenizer.tokenize`."""
+        return self._bm25_tokenize_kwargs
+
+    @property
+    def bm25_retriever(self) -> tp.Optional[BM25T]:
+        """Instance of `bm25s.BM25`."""
+        return self._bm25_retriever
+
+    @property
+    def bm25_retrieve_kwargs(self) -> tp.Kwargs:
+        """Keyword arguments passed to `bm25s.BM25.retrieve`."""
+        return self._bm25_retrieve_kwargs
+
+    @property
+    def bm25_score_weight(self) -> float:
+        """BM25 score weight.
+
+        Embedding score weight becomes `1 - bm25_score_weight`.
+
+        Gets applied to scores prior normalized to [0, 1]."""
+        return self._bm25_score_weight
+
+    @property
     def score_func(self) -> tp.Union[str, tp.Callable]:
         """Score function.
 
@@ -3322,6 +3447,11 @@ class DocumentRanker(Configured):
     def score_agg_func(self) -> tp.Callable:
         """Score aggregation function."""
         return self._score_agg_func
+
+    @property
+    def normalize_scores(self) -> bool:
+        """Whether to normalize scores before filtering."""
+        return self._normalize_scores
 
     @property
     def show_progress(self) -> tp.Optional[bool]:
@@ -3337,6 +3467,80 @@ class DocumentRanker(Configured):
     def template_context(self) -> tp.Kwargs:
         """Context used to substitute templates."""
         return self._template_context
+
+    def resolve_bm25_tokenizer(
+        cls,
+        bm25_tokenizer: tp.Optional[BM25TokenizerT] = None,
+        **kwargs,
+    ) -> tp.Tuple[BM25TokenizerT, tp.Kwargs]:
+        """Resolve an instance of `bm25s.tokenization.Tokenizer` and tokenization-related keyword arguments"""
+        from vectorbtpro.utils.module_ import assert_can_import, check_installed
+
+        assert_can_import("bm25s")
+
+        from bm25s.tokenization import Tokenizer
+
+        bm25_tokenizer = cls.resolve_setting(bm25_tokenizer, "bm25_tokenizer")
+        kwargs = cls.resolve_setting(kwargs, "bm25_tokenizer_kwargs", merge=True)
+
+        if bm25_tokenizer is None:
+            bm25_tokenizer = Tokenizer
+        if isinstance(bm25_tokenizer, type):
+            checks.assert_subclass_of(bm25_tokenizer, Tokenizer, arg_name="bm25_tokenizer")
+            bm25_tokenizer_type = bm25_tokenizer
+        else:
+            checks.assert_instance_of(bm25_tokenizer, Tokenizer, arg_name="bm25_tokenizer")
+            bm25_tokenizer_type = type(bm25_tokenizer)
+        bm25_tokenize_kwargs = {}
+        if kwargs:
+            bm25_tokenize_arg_names = get_func_arg_names(bm25_tokenizer_type.tokenize)
+            for k in bm25_tokenize_arg_names:
+                if k in kwargs:
+                    bm25_tokenize_kwargs[k] = kwargs.pop(k)
+        if isinstance(bm25_tokenizer, type):
+            if "splitter" not in kwargs:
+                kwargs["splitter"] = cls.bm25_splitter
+                if "lower" not in kwargs:
+                    kwargs["lower"] = False
+            if "stemmer" not in kwargs and check_installed("Stemmer"):
+                import Stemmer
+
+                kwargs["stemmer"] = Stemmer.Stemmer("english")
+            bm25_tokenizer = bm25_tokenizer(**kwargs)
+        return bm25_tokenizer, bm25_tokenize_kwargs
+
+    def resolve_bm25_retriever(
+        cls,
+        bm25_retriever: tp.Optional[BM25T],
+        **kwargs,
+    ) -> tp.Tuple[BM25T, tp.Kwargs]:
+        """Resolve an instance of `bm25s.BM25` and retrieval-related keyword arguments."""
+        from vectorbtpro.utils.module_ import assert_can_import
+
+        assert_can_import("bm25s")
+
+        from bm25s import BM25
+
+        bm25_retriever = cls.resolve_setting(bm25_retriever, "bm25_retriever")
+        kwargs = cls.resolve_setting(kwargs, "bm25_retriever_kwargs", merge=True)
+
+        if bm25_retriever is None:
+            bm25_retriever = BM25
+        if isinstance(bm25_retriever, type):
+            checks.assert_subclass_of(bm25_retriever, BM25, arg_name="bm25_retriever")
+            bm25_retriever_type = bm25_retriever
+        else:
+            checks.assert_instance_of(bm25_retriever, BM25, arg_name="bm25_retriever")
+            bm25_retriever_type = type(bm25_retriever)
+        bm25_retrieve_kwargs = {}
+        if kwargs:
+            bm25_retrieve_arg_names = get_func_arg_names(bm25_retriever_type.retrieve)
+            for k in bm25_retrieve_arg_names:
+                if k in kwargs:
+                    bm25_retrieve_kwargs[k] = kwargs.pop(k)
+        if isinstance(bm25_retriever, type):
+            bm25_retriever = bm25_retriever(**kwargs)
+        return bm25_retriever, bm25_retrieve_kwargs
 
     def embed_documents(
         self,
@@ -3599,6 +3803,169 @@ class DocumentRanker(Configured):
                     scores.append(doc_score)
             return scores
 
+    SPLIT_PATTERN = re.compile(r"(?<=[a-z])(?=[A-Z])|_")
+    """Split pattern for `DocumentRanker.bm25_splitter`."""
+
+    TOKEN_PATTERN = re.compile(r"(?u)\b\w{2,}\b")
+    """Token pattern for `DocumentRanker.bm25_splitter`."""
+
+    @classmethod
+    def bm25_splitter(cls, text: str) -> tp.List[str]:
+        """Splitter for BM25."""
+        spaced_text = cls.SPLIT_PATTERN.sub(" ", text)
+        tokens = cls.TOKEN_PATTERN.findall(spaced_text)
+        return [token.lower() for token in tokens]
+
+    def bm25_score_documents(
+        self,
+        query: str,
+        documents: tp.Optional[tp.Iterable[StoreDocument]] = None,
+        refresh: bool = False,
+        refresh_documents: tp.Optional[bool] = None,
+        return_chunks: bool = False,
+        return_documents: bool = False,
+    ) -> tp.ScoredDocuments:
+        """Score documents by relevance to a query using BM25."""
+        with self.doc_store, self.emb_store:
+            if refresh_documents is None:
+                refresh_documents = refresh
+            if documents is None:
+                if self.doc_store is None:
+                    raise ValueError("Must provide at least documents or doc_store")
+                documents = self.doc_store.values()
+            documents = list(documents)
+
+            if return_chunks:
+                documents_to_split = []
+                document_splits = {}
+                for document in documents:
+                    if refresh_documents or document.id_ not in self.doc_store:
+                        documents_to_split.append(document)
+                if documents_to_split:
+                    from vectorbtpro.utils.pbar import ProgressBar
+
+                    pbar_kwargs = merge_dicts(dict(prefix="split_documents"), self.pbar_kwargs)
+                    with ProgressBar(
+                        total=len(documents_to_split),
+                        show_progress=self.show_progress,
+                        **pbar_kwargs,
+                    ) as pbar:
+                        for document in documents_to_split:
+                            document_splits[document.id_] = document.split()
+                            pbar.update()
+
+                for document in documents:
+                    if refresh_documents or document.id_ not in self.doc_store:
+                        self.doc_store[document.id_] = document
+                    if document.id_ in document_splits:
+                        document_chunks = document_splits[document.id_]
+                        obj = StoreEmbedding(document.id_)
+                        for document_chunk in document_chunks:
+                            if document_chunk.id_ != document.id_:
+                                if refresh_documents or document_chunk.id_ not in self.doc_store:
+                                    self.doc_store[document_chunk.id_] = document_chunk
+                                if document_chunk.id_ not in self.emb_store:
+                                    child_obj = StoreEmbedding(document_chunk.id_, parent_id=document.id_)
+                                    self.emb_store[child_obj.id_] = child_obj
+                                else:
+                                    child_obj = self.emb_store[document_chunk.id_]
+                                obj.child_ids.append(child_obj.id_)
+                        if document.id_ not in self.emb_store:
+                            self.emb_store[obj.id_] = obj
+
+                document_chunks = []
+                for document in documents:
+                    obj = self.emb_store[document.id_]
+                    if obj.child_ids:
+                        for child_id in obj.child_ids:
+                            document_chunk = self.doc_store[child_id]
+                            document_chunks.append(document_chunk)
+                    elif not obj.parent_id or obj.parent_id not in self.doc_store:
+                        document_chunk = self.doc_store[obj.id_]
+                        document_chunks.append(document_chunk)
+                documents = document_chunks
+
+            bm25_tokenizer = self.bm25_tokenizer
+            bm25_retriever = self.bm25_retriever
+            bm25_tokenize_kwargs = dict(self.bm25_tokenize_kwargs)
+            bm25_retrieve_kwargs = dict(self.bm25_retrieve_kwargs)
+            if (
+                refresh_documents
+                or not bm25_tokenizer.get_vocab_dict()
+                or not hasattr(bm25_retriever, "scores")
+                or not bm25_retriever.scores
+                or bm25_retriever.scores["num_docs"] != len(documents)
+            ):
+                texts = []
+                for document in documents:
+                    content = document.get_content(for_embed=True)
+                    if not content:
+                        content = ""
+                    texts.append(content)
+                tokenized_documents = bm25_tokenizer.tokenize(
+                    texts,
+                    return_as="ids",
+                    **bm25_tokenize_kwargs,
+                )
+                bm25_retriever.index(tokenized_documents, show_progress=False)
+            if "update_vocab" in bm25_tokenize_kwargs:
+                del bm25_tokenize_kwargs["update_vocab"]
+            if "show_progress" in bm25_tokenize_kwargs:
+                del bm25_tokenize_kwargs["show_progress"]
+            tokenized_queries = bm25_tokenizer.tokenize(
+                [query],
+                return_as="ids",
+                update_vocab=False,
+                **bm25_tokenize_kwargs,
+            )
+            _, scores = bm25_retriever.retrieve(
+                tokenized_queries,
+                k=len(documents),
+                sorted=False,
+                **bm25_retrieve_kwargs,
+            )
+            obj_scores = {}
+            for i in range(scores.shape[1]):
+                obj_scores[documents[i].id_] = scores[0, i]
+
+            scores = []
+            for document in documents:
+                if return_chunks:
+                    obj = self.emb_store[document.id_]
+                    child_scores = []
+                    if obj.child_ids:
+                        for child_id in obj.child_ids:
+                            if child_id in obj_scores:
+                                child_score = obj_scores[child_id]
+                                if return_documents:
+                                    child_document = self.doc_store[child_id]
+                                    child_scores.append(ScoredDocument(child_document, score=child_score))
+                                else:
+                                    child_scores.append(child_score)
+                        if child_scores:
+                            if return_documents:
+                                doc_score = self.score_agg_func([document.score for document in child_scores])
+                            else:
+                                doc_score = self.score_agg_func(child_scores)
+                        else:
+                            doc_score = float("nan")
+                    else:
+                        if obj.id_ in obj_scores:
+                            doc_score = obj_scores[obj.id_]
+                        else:
+                            doc_score = float("nan")
+                else:
+                    if document.id_ in obj_scores:
+                        doc_score = obj_scores[document.id_]
+                    else:
+                        doc_score = float("nan")
+                    child_scores = []
+                if return_documents:
+                    scores.append(ScoredDocument(document, score=doc_score, child_documents=child_scores))
+                else:
+                    scores.append(doc_score)
+            return scores
+
     @classmethod
     def resolve_top_k(cls, scores: tp.Iterable[float], top_k: tp.TopKLike = None) -> tp.Optional[int]:
         """Resolve `top_k` based on _sorted_ scores.
@@ -3641,6 +4008,110 @@ class DocumentRanker(Configured):
         scores = scores[~np.isnan(scores)]
         return len(scores[scores >= cutoff])
 
+    @classmethod
+    def extract_doc_scores(cls, scored_documents: tp.List[ScoredDocument]) -> tp.List[float]:
+        """Extract scores from scored documents."""
+        scores = []
+        for document in scored_documents:
+            scores.append(document.score)
+            if document.child_documents:
+                scores.extend(cls.extract_doc_scores(scored_documents))
+        return scores
+
+    @classmethod
+    def normalize_doc_scores(cls, scores: tp.Iterable[float]) -> np.ndarray:
+        """Normalize scores."""
+        scores = np.array(scores, dtype=float)
+        min_score, max_score = np.nanmin(scores), np.nanmax(scores)
+        return (scores - min_score) / (max_score - min_score) if max_score != min_score else scores - min_score
+
+    @classmethod
+    def replace_doc_scores(
+        cls,
+        scored_documents: tp.List[ScoredDocument],
+        new_scores: tp.List[float],
+    ) -> tp.List[ScoredDocument]:
+        """Replace scores by returning new scored documents."""
+        new_scored_documents = []
+        for i in range(len(scored_documents)):
+            doc = scored_documents[i]
+            document = doc.document
+            score = new_scores.pop(0)
+            if doc.child_documents:
+                child_documents = cls.replace_doc_scores(doc.child_documents, new_scores)
+            else:
+                child_documents = []
+            new_scored_documents.append(ScoredDocument(document, score=score, child_documents=child_documents))
+        return new_scored_documents
+
+    @classmethod
+    def normalize_scored_documents(cls, scored_documents: tp.List[ScoredDocument]) -> tp.List[ScoredDocument]:
+        """Normalize scored documents."""
+        scores = cls.extract_doc_scores(scored_documents)
+        new_scores = cls.normalize_doc_scores(scores).tolist()
+        return cls.replace_doc_scores(scored_documents, new_scores)
+
+    @classmethod
+    def extract_doc_pair_scores(
+        cls,
+        emb_scored_documents: tp.List[ScoredDocument],
+        bm25_scored_documents: tp.List[ScoredDocument],
+    ) -> tp.List[tp.Tuple[float, float]]:
+        """Extract scores from embedding- and BM25-scored documents."""
+        doc_pair_scores = []
+        n_documents = max(len(emb_scored_documents), len(bm25_scored_documents))
+        for i in range(n_documents):
+            emb_doc = emb_scored_documents[i]
+            bm25_doc = bm25_scored_documents[i]
+            doc_pair_scores.append((emb_doc.score, bm25_doc.score))
+            if emb_doc.child_documents and bm25_doc.child_documents:
+                child_doc_pair_scores = cls.extract_doc_pair_scores(emb_doc.child_documents, bm25_doc.child_documents)
+                doc_pair_scores.extend(child_doc_pair_scores)
+        return doc_pair_scores
+
+    def combine_doc_pair_scores(self, doc_pair_scores: tp.Iterable[tp.Tuple[float, float]]) -> np.ndarray:
+        """Combine scores of embedding- and BM25-scored documents."""
+        emb_scores, bm25_scores = zip(*doc_pair_scores)
+        norm_emb_scores = self.normalize_doc_scores(emb_scores)
+        norm_bm25_scores = self.normalize_doc_scores(bm25_scores)
+        return (1 - self.bm25_score_weight) * norm_emb_scores + self.bm25_score_weight * norm_bm25_scores
+
+    @classmethod
+    def replace_doc_pair_scores(
+        self,
+        emb_scored_documents: tp.List[ScoredDocument],
+        bm25_scored_documents: tp.List[ScoredDocument],
+        new_scores: tp.List[float],
+    ) -> tp.List[ScoredDocument]:
+        """Replace scores in embedding- and BM25-scored documents by returning new scored documents."""
+        scored_documents = []
+        n_documents = max(len(emb_scored_documents), len(bm25_scored_documents))
+        for i in range(n_documents):
+            emb_doc = emb_scored_documents[i]
+            bm25_doc = bm25_scored_documents[i]
+            document = emb_doc.document
+            score = new_scores.pop(0)
+            if emb_doc.child_documents and bm25_doc.child_documents:
+                child_documents = self.replace_doc_pair_scores(
+                    emb_doc.child_documents,
+                    bm25_doc.child_documents,
+                    new_scores,
+                )
+            else:
+                child_documents = []
+            scored_documents.append(ScoredDocument(document, score=score, child_documents=child_documents))
+        return scored_documents
+
+    def combine_scored_documents(
+        self,
+        emb_scored_documents: tp.List[ScoredDocument],
+        bm25_scored_documents: tp.List[ScoredDocument],
+    ) -> tp.List[ScoredDocument]:
+        """Combine embedding- and BM25-scored documents."""
+        doc_pair_scores = self.extract_doc_pair_scores(emb_scored_documents, bm25_scored_documents)
+        new_scores = self.combine_doc_pair_scores(doc_pair_scores).tolist()
+        return self.replace_doc_pair_scores(emb_scored_documents, bm25_scored_documents, new_scores)
+
     def rank_documents(
         self,
         query: str,
@@ -3661,15 +4132,41 @@ class DocumentRanker(Configured):
         Score cutoff is converted into top-k with `DocumentRanker.top_k_from_cutoff`.
         Minimum and maximum top-k are used to override non-integer top-k and cutoff; it has no effect on
         the integer top-k, which can be outside the top-k bounds and won't be overridden."""
-        scored_documents = self.score_documents(
-            query,
-            documents=documents,
-            refresh=refresh,
-            refresh_documents=refresh_documents,
-            refresh_embeddings=refresh_embeddings,
-            return_chunks=return_chunks,
-            return_documents=True,
-        )
+        if documents is not None:
+            documents = list(documents)
+        if self.search_method in ("embeddings", "hybrid"):
+            emb_scored_documents = self.score_documents(
+                query,
+                documents=documents,
+                refresh=refresh,
+                refresh_documents=refresh_documents,
+                refresh_embeddings=refresh_embeddings,
+                return_chunks=return_chunks,
+                return_documents=True,
+            )
+        else:
+            emb_scored_documents = None
+        if self.search_method in ("bm25", "hybrid"):
+            bm25_scored_documents = self.bm25_score_documents(
+                query,
+                documents=documents,
+                refresh=refresh,
+                refresh_documents=refresh_documents,
+                return_chunks=return_chunks,
+                return_documents=True,
+            )
+        else:
+            bm25_scored_documents = None
+        if emb_scored_documents is not None and bm25_scored_documents is not None:
+            scored_documents = self.combine_scored_documents(emb_scored_documents, bm25_scored_documents)
+        elif emb_scored_documents is not None:
+            scored_documents = emb_scored_documents
+        elif bm25_scored_documents is not None:
+            scored_documents = bm25_scored_documents
+        else:
+            raise NotImplementedError
+        if self.normalize_scores:
+            scored_documents = self.normalize_scored_documents(scored_documents)
         scored_documents = sorted(scored_documents, key=lambda x: (not np.isnan(x.score), x.score), reverse=True)
         scores = [document.score for document in scored_documents]
 

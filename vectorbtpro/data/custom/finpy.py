@@ -19,14 +19,12 @@ from vectorbtpro.data.custom.remote import RemoteData
 from vectorbtpro.utils import datetime_ as dt
 from vectorbtpro.utils.config import merge_dicts
 
-try:
-    if not tp.TYPE_CHECKING:
-        raise ImportError
+if tp.TYPE_CHECKING:
     from findatapy.market import Market as MarketT
     from findatapy.util import ConfigManager as ConfigManagerT
-except ImportError:
-    MarketT = "Market"
-    ConfigManagerT = "ConfigManager"
+else:
+    MarketT = "findatapy.market.Market"
+    ConfigManagerT = "findatapy.util.ConfigManager"
 
 __all__ = [
     "FinPyData",

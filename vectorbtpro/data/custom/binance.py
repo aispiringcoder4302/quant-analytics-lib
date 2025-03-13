@@ -25,12 +25,10 @@ from vectorbtpro.utils.enum_ import map_enum_fields
 from vectorbtpro.utils.pbar import ProgressBar
 from vectorbtpro.utils.warnings_ import warn
 
-try:
-    if not tp.TYPE_CHECKING:
-        raise ImportError
-    from binance.client import Client as BinanceClientT
-except ImportError:
-    BinanceClientT = "BinanceClient"
+if tp.TYPE_CHECKING:
+    from binance.client import Client as ClientT
+else:
+    ClientT = "binance.client.Client"
 
 __all__ = [
     "BinanceData",
@@ -108,7 +106,7 @@ class BinanceData(RemoteData):
         return self._feature_config
 
     @classmethod
-    def resolve_client(cls, client: tp.Optional[BinanceClientT] = None, **client_config) -> BinanceClientT:
+    def resolve_client(cls, client: tp.Optional[ClientT] = None, **client_config) -> ClientT:
         """Resolve the client.
 
         If provided, must be of the type `binance.client.Client`.
@@ -135,7 +133,7 @@ class BinanceData(RemoteData):
         pattern: tp.Optional[str] = None,
         use_regex: bool = False,
         sort: bool = True,
-        client: tp.Optional[BinanceClientT] = None,
+        client: tp.Optional[ClientT] = None,
         client_config: tp.KwargsLike = None,
     ) -> tp.List[str]:
         """List all symbols.
@@ -160,7 +158,7 @@ class BinanceData(RemoteData):
     def fetch_symbol(
         cls,
         symbol: str,
-        client: tp.Optional[BinanceClientT] = None,
+        client: tp.Optional[ClientT] = None,
         client_config: tp.KwargsLike = None,
         start: tp.Optional[tp.DatetimeLike] = None,
         end: tp.Optional[tp.DatetimeLike] = None,
