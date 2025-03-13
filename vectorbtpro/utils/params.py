@@ -391,8 +391,10 @@ def combine_params(
     seed: tp.Optional[int] = None,
     clean_index_kwargs: tp.KwargsLike = None,
     name_tuple_to_str: tp.Union[None, bool, tp.Callable] = None,
+    build_product: bool = True,
     build_index: bool = True,
     raise_empty_error: bool = False,
+    keep_single_value: bool = False,
 ) -> tp.Union[dict, tp.Tuple[dict, pd.Index]]:
     """Combine a dictionary with parameters of the type `Param`.
 
@@ -453,12 +455,15 @@ def combine_params(
     param_keys = {}
     param_visible_keys = {}
     level_seen = False
+    explicit_level_seen = False
+    implicit_level_seen = False
     curr_idx = 0
     max_idx = 0
     conditions = {}
     contexts = {}
     names = {}
-    for k, p in param_dct.items():
+    is_single_value = {}
+    for i, (k, p) in enumerate(param_dct.items()):
         if isinstance(p, Paramable):
             p = p.as_param()
         if not isinstance(p, Param):
@@ -475,14 +480,24 @@ def combine_params(
             else:
                 contexts[k] = {}
         if p.level is None:
-            if level_seen:
-                raise ValueError("Please provide level for all product parameters")
-            level = curr_idx
+            if not build_product:
+                level = -1
+                implicit_level_seen = True
+            else:
+                if explicit_level_seen:
+                    raise ValueError("Please provide level for all product parameters")
+                level = curr_idx
+                curr_idx += 1
+                level_seen = True
         else:
-            if curr_idx > 0 and not level_seen:
-                raise ValueError("Please provide level for all product parameters")
-            level_seen = True
             level = p.level
+            if level != -1:
+                if curr_idx > 0 and not explicit_level_seen:
+                    raise ValueError("Please provide level for all product parameters")
+                explicit_level_seen = True
+                level_seen = True
+            else:
+                implicit_level_seen = True
         if level > max_idx:
             max_idx = level
 
@@ -492,7 +507,7 @@ def combine_params(
         index_name = None
 
         keys = p.keys
-        if keys is not None:
+        if keys_name is None and keys is not None:
             if not isinstance(keys, pd.Index):
                 keys = pd.Index(keys)
             if isinstance(keys, pd.MultiIndex):
@@ -524,6 +539,7 @@ def combine_params(
                     index_name = value.index.name
             sr_name = value.name
             value = value.values.tolist()
+        is_single_value[k] = is_single_param_value(value, is_tuple=p.is_tuple, is_array_like=p.is_array_like)
         values = params_to_list(value, is_tuple=p.is_tuple, is_array_like=p.is_array_like)
 
         if keys_name is None:
@@ -549,7 +565,7 @@ def combine_params(
         else:
             random_indices = None
         if random_indices is not None:
-            values = [values[i] for i in random_indices]
+            values = [values[r] for r in random_indices]
             if keys is not None:
                 keys = keys[random_indices]
 
@@ -574,7 +590,22 @@ def combine_params(
             param_visible_keys[k] = keys
         if not isinstance(keys, pd.MultiIndex):
             names[k] = keys_name
-        curr_idx += 1
+
+    if implicit_level_seen:
+        if level_seen:
+            max_idx += 1
+        new_level_map = OrderedDict()
+        for k, v in level_map.items():
+            if k == -1:
+                k = max_idx
+            new_level_map[k] = v
+        level_map = new_level_map
+        new_param_level = {}
+        for k, v in param_level.items():
+            if v == -1:
+                v = max_idx
+            new_param_level[k] = v
+        param_level = new_param_level
 
     level_params = []
     level_lens = []
@@ -634,7 +665,6 @@ def combine_params(
                                 arg_names.add(f"__{_str_name(level_name)}__")
                         elif isinstance(level_index, pd.Index):
                             arg_names.add(f"__{_str_name(level_index.name)}__")
-                print(f"lambda {'=None, '.join(arg_names)}=None: {expr}")
                 condition_funcs[k] = eval(f"lambda {'=None, '.join(arg_names)}=None: {expr}")
             else:
                 condition_funcs[k] = expr
@@ -929,6 +959,8 @@ def combine_params(
     if raise_empty_error:
         if len(param_product[list(param_product.keys())[0]]) == 0:
             raise ValueError("Set of parameter combinations is empty")
+    if keep_single_value and all(is_single_value.values()):
+        param_product = {k: v[0] for k, v in param_product.items()}
     if build_index:
         return param_product, param_index
     return param_product

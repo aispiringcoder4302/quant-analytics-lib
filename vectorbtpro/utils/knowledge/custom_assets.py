@@ -3346,11 +3346,24 @@ def chat(
     )
 
 
-def quick_chat(*args, rank_kwargs: tp.KwargsLike = None, **kwargs) -> tp.MaybeChatOutput:
+def quick_chat(
+    *args,
+    min_top_k: tp.TopKLike = 10,
+    max_top_k: tp.TopKLike = 50,
+    rank_kwargs: tp.KwargsLike = None,
+    **kwargs,
+) -> tp.MaybeChatOutput:
     """Call `chat` with `search_method="bm25"` in `rank_kwargs` and `quick_mode=True`."""
     if rank_kwargs is None:
         rank_kwargs = {}
     else:
         rank_kwargs = dict(rank_kwargs)
     rank_kwargs["search_method"] = "bm25"
-    return chat(*args, rank_kwargs=rank_kwargs, quick_mode=True, **kwargs)
+    return chat(
+        *args,
+        min_top_k=min_top_k,
+        max_top_k=max_top_k,
+        rank_kwargs=rank_kwargs,
+        quick_mode=True,
+        **kwargs,
+    )

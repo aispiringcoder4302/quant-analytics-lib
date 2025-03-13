@@ -70,6 +70,8 @@ from vectorbtpro.utils.params import (
     create_param_product,
     is_single_param_value,
     params_to_list,
+    Param,
+    combine_params,
 )
 from vectorbtpro.utils.parsing import get_expr_var_names, get_func_arg_names, get_func_kwargs, suppress_stdout
 from vectorbtpro.utils.random_ import set_seed
@@ -115,7 +117,6 @@ def prepare_params(
     Resolves references and performs broadcasting to the input shape.
 
     Returns prepared parameters as well as whether the user provided a single parameter combination."""
-    # Resolve references
     if context is None:
         context = {}
     pool = dict(zip(param_names, params))
@@ -126,7 +127,6 @@ def prepare_params(
     new_params = []
     single_comb = True
     for i, param_values in enumerate(params):
-        # Resolve settings
         _param_settings = resolve_dict(param_settings[i])
         is_tuple = _param_settings.get("is_tuple", False)
         dtype = _param_settings.get("dtype", None)
@@ -162,7 +162,6 @@ def prepare_params(
                 else:
                     new_param_values = list(map(np.asarray, new_param_values))
         else:
-            # Broadcast to input or its axis
             if is_tuple:
                 raise ValueError("Cannot broadcast to input if tuple")
             if input_shape is None:
@@ -171,7 +170,6 @@ def prepare_params(
                 to_shape = input_shape
             else:
                 checks.assert_in(bc_to_input, (0, 1))
-                # Note that input_shape can be 1D
                 if bc_to_input == 0:
                     to_shape = (input_shape[0],)
                 else:
@@ -182,8 +180,6 @@ def prepare_params(
             else:
                 _new_param_values = list(_new_param_values)
             if to_2d and bc_to_input is True:
-                # If inputs are meant to reshape to 2D, do the same to parameters
-                # But only to those that fully resemble inputs (= not raw)
                 __new_param_values = _new_param_values.copy()
                 for j, param in enumerate(__new_param_values):
                     keep_flex = broadcast_kwargs.get("keep_flex", False)
@@ -456,6 +452,7 @@ class IndicatorBase(Analyzable):
         template_context: tp.KwargsLike = None,
         params: tp.Optional[tp.MaybeParams] = None,
         param_product: bool = False,
+        combine_kwargs: tp.KwargsLike = None,
         random_subset: tp.Optional[int] = None,
         param_settings: tp.Optional[tp.MappingSequence[tp.KwargsLike]] = None,
         run_unique: bool = False,
@@ -524,6 +521,7 @@ class IndicatorBase(Analyzable):
 
                 Each element is either an array-like object or a single value of any type.
             param_product (bool): Whether to build a Cartesian product out of all parameters.
+            combine_kwargs (dict): Keyword arguments passed to `vectorbtpro.utils.params.combine_params`.
             random_subset (int): Number of parameter combinations to pick randomly.
             param_settings (dict or sequence of dict): Settings corresponding to each parameter.
 
@@ -638,12 +636,23 @@ class IndicatorBase(Analyzable):
             broadcast_named_args = {}
         if broadcast_kwargs is None:
             broadcast_kwargs = {}
+        if combine_kwargs is None:
+            combine_kwargs = {}
         if template_context is None:
             template_context = {}
         if params is None:
             params = {}
         if not checks.is_mapping(params):
             params = {"param_" + str(i): param for i, param in enumerate(params)}
+        if any([isinstance(v, Param) for k, v in params.items()]):
+            params = combine_params(
+                params,
+                build_index=False,
+                keep_single_value=True,
+                build_product=param_product,
+                **combine_kwargs,
+            )
+            param_product = False
         param_names = list(params.keys())
         param_list = list(params.values())
         if param_settings is None:
@@ -677,15 +686,12 @@ class IndicatorBase(Analyzable):
         if keep_pd and checks.is_numba_func(custom_func):
             raise ValueError("Cannot pass pandas objects to a Numba-compiled custom_func. Set keep_pd to False.")
 
-        # Set seed
         if seed is not None:
             set_seed(seed)
 
         if input_shape is not None:
             input_shape = reshaping.to_tuple_shape(input_shape)
         if len(inputs) > 0 or len(in_outputs) > 0 or len(broadcast_named_args) > 0:
-            # Broadcast inputs, in-outputs, and named args
-            # If input_shape is provided, will broadcast all inputs to this shape
             broadcast_args = merge_dicts(inputs, in_outputs, broadcast_named_args)
             broadcast_kwargs = merge_dicts(
                 dict(
@@ -710,14 +716,13 @@ class IndicatorBase(Analyzable):
         else:
             wrapper = None
 
-        # Reshape input shape
         input_shape_ready = input_shape
         input_shape_2d = input_shape
         if input_shape is not None:
             input_shape_2d = input_shape if len(input_shape) > 1 else (input_shape[0], 1)
         if to_2d:
             if input_shape is not None:
-                input_shape_ready = input_shape_2d  # ready for custom_func
+                input_shape_ready = input_shape_2d
         if wrapper is not None:
             wrapper_ready = wrapper
         elif input_index is not None and input_columns is not None and input_shape_ready is not None:
@@ -725,20 +730,15 @@ class IndicatorBase(Analyzable):
         else:
             wrapper_ready = None
 
-        # Prepare inputs
         input_list_ready = []
         for input in input_list:
             new_input = input
             if to_2d:
                 new_input = reshaping.to_2d(input)
             if keep_pd and isinstance(new_input, np.ndarray):
-                # Keep as pandas object
                 new_input = ArrayWrapper(input_index, input_columns, new_input.ndim).wrap(new_input)
             input_list_ready.append(new_input)
 
-        # Prepare parameters
-        # NOTE: input_shape instead of input_shape_ready since parameters should
-        # broadcast by the same rules as inputs
         param_context = merge_dicts(
             broadcast_named_args,
             dict(
@@ -761,25 +761,19 @@ class IndicatorBase(Analyzable):
         single_value = list(map(lambda x: len(x) == 1, param_list))
         if len(param_list) > 1:
             if level_names is not None:
-                # Check level names
                 checks.assert_len_equal(param_list, level_names)
-                # Columns should be free of the specified level names
                 if input_columns is not None:
                     for level_name in level_names:
                         if level_name is not None:
                             checks.assert_level_not_exists(input_columns, level_name)
             if param_product:
-                # Make Cartesian product out of all params
                 param_list = create_param_product(param_list)
         if len(param_list) > 0:
-            # Broadcast such that each array has the same length
             if per_column:
-                # The number of parameters should match the number of columns before split
                 param_list = broadcast_params(param_list, to_n=input_shape_2d[1])
             else:
                 param_list = broadcast_params(param_list)
         if random_subset is not None:
-            # Pick combinations randomly
             if per_column:
                 raise ValueError("Cannot select random subset when per_column=True")
             random_indices = np.sort(np.random.permutation(np.arange(len(param_list[0])))[:random_subset])
@@ -789,7 +783,6 @@ class IndicatorBase(Analyzable):
         param_list_unique = param_list
         if not per_column and run_unique:
             try:
-                # Try to get all unique parameter combinations
                 param_tuples = list(zip(*param_list))
                 unique_param_tuples = list(OrderedDict.fromkeys(param_tuples).keys())
                 if len(unique_param_tuples) < len(param_tuples):
@@ -798,15 +791,12 @@ class IndicatorBase(Analyzable):
             except:
                 pass
         if checks.is_numba_func(custom_func):
-            # Numba can't stand untyped lists
             param_list_ready = [to_typed_list(params) for params in param_list_unique]
         else:
             param_list_ready = param_list_unique
         n_unique_param_values = len(param_list_unique[0]) if len(param_list_unique) > 0 else 1
 
-        # Build column hierarchy for execution
         if len(param_list) > 0 and input_columns is not None and (pass_param_index or pass_final_index):
-            # Build new column levels on top of input levels
             build_columns_meta = build_columns(
                 param_list,
                 input_columns,
@@ -821,26 +811,21 @@ class IndicatorBase(Analyzable):
             param_index = build_columns_meta["param_index"]
             final_index = build_columns_meta["final_index"]
         else:
-            # Some indicators don't have any params
             rep_param_indexes = None
             param_index = None
             final_index = None
 
-        # Prepare in-place outputs
         in_output_list_ready = []
         for i in range(len(in_output_list)):
             if input_shape_2d is None:
                 raise ValueError("input_shape is required when using in-place outputs")
             if in_output_list[i] is not None:
-                # This in-place output has been already broadcast with inputs
                 in_output_wide = in_output_list[i]
                 if isinstance(in_output_list[i], np.ndarray):
                     in_output_wide = np.require(in_output_wide, requirements="W")
                 if not per_column:
-                    # One per parameter combination
                     in_output_wide = reshaping.tile(in_output_wide, n_unique_param_values, axis=1)
             else:
-                # This in-place output hasn't been provided, so create empty
                 _in_output_settings = resolve_dict(in_output_settings[i])
                 dtype = _in_output_settings.get("dtype", None)
                 if per_column:
@@ -849,7 +834,6 @@ class IndicatorBase(Analyzable):
                     in_output_shape = (input_shape_2d[0], input_shape_2d[1] * n_unique_param_values)
                 in_output_wide = np.empty(in_output_shape, dtype=dtype)
             in_output_list[i] = in_output_wide
-            # Split each in-place output into chunks, each of input shape, and append to a list
             in_outputs = []
             if per_column:
                 in_outputs.append(in_output_wide)
@@ -868,11 +852,9 @@ class IndicatorBase(Analyzable):
                     in_outputs.append(in_output)
             in_output_list_ready.append(in_outputs)
         if checks.is_numba_func(custom_func):
-            # Numba can't stand untyped lists
             in_output_list_ready = [to_typed_list(in_outputs) for in_outputs in in_output_list_ready]
 
         def _use_raw(_raw):
-            # Use raw results of previous run to build outputs
             _output_list, _param_map, _n_input_cols, _other_list = _raw
             idxs = np.array([_param_map.index(param_tuple) for param_tuple in zip(*param_list)])
             _output_list = [
@@ -880,12 +862,9 @@ class IndicatorBase(Analyzable):
             ]
             return _output_list, _param_map, _n_input_cols, _other_list
 
-        # Get raw results
         if use_raw is not None:
-            # Use raw results of previous run to build outputs
             output_list, param_map, n_input_cols, other_list = _use_raw(use_raw)
         else:
-            # Prepare other arguments
             func_args = args
             func_kwargs = dict(kwargs)
             if pass_input_shape:
@@ -901,7 +880,6 @@ class IndicatorBase(Analyzable):
             if pass_per_column:
                 func_kwargs["per_column"] = per_column
 
-            # Substitute templates
             if has_templates(func_args) or has_templates(func_kwargs):
                 template_context = merge_dicts(
                     broadcast_named_args,
@@ -919,7 +897,6 @@ class IndicatorBase(Analyzable):
                 func_args = substitute_templates(func_args, template_context, eval_id="custom_func_args")
                 func_kwargs = substitute_templates(func_kwargs, template_context, eval_id="custom_func_kwargs")
 
-            # Run the custom function
             if checks.is_numba_func(custom_func):
                 func_args += tuple(func_kwargs.values())
                 func_kwargs = {}
@@ -936,7 +913,6 @@ class IndicatorBase(Analyzable):
                     *input_list_ready, *in_output_list_ready, *param_list_ready, *func_args, **func_kwargs
                 )
 
-            # Return outputs
             if isinstance(return_raw, str):
                 if return_raw.lower() == "outputs":
                     if use_run_unique and not silence_warnings:
@@ -945,13 +921,11 @@ class IndicatorBase(Analyzable):
                 else:
                     raise ValueError(f"Invalid return_raw: '{return_raw}'")
 
-            # Return cache
             if kwargs.get("return_cache", False):
                 if use_run_unique and not silence_warnings:
                     warn("Cache is produced by unique parameter combinations when run_unique=True")
                 return outputs
 
-            # Post-process results
             if outputs is None:
                 output_list = []
                 other_list = []
@@ -960,7 +934,6 @@ class IndicatorBase(Analyzable):
                     output_list = list(outputs)
                 else:
                     output_list = [outputs]
-                # Other outputs should be returned without post-processing (for example cache_dict)
                 if len(output_list) > num_ret_outputs:
                     other_list = output_list[num_ret_outputs:]
                     if use_run_unique and not silence_warnings:
@@ -970,17 +943,12 @@ class IndicatorBase(Analyzable):
                         )
                 else:
                     other_list = []
-                # Process only the num_ret_outputs outputs
                 output_list = output_list[:num_ret_outputs]
             if len(output_list) != num_ret_outputs:
                 raise ValueError("Number of returned outputs other than expected")
             output_list = list(map(lambda x: reshaping.to_2d_array(x), output_list))
-
-            # In-place outputs are treated as outputs from here
             output_list = in_output_list + output_list
-
-            # Prepare raw
-            param_map = list(zip(*param_list_unique))  # account for use_run_unique
+            param_map = list(zip(*param_list_unique))
             output_shape = output_list[0].shape
             for output in output_list:
                 if output.shape != output_shape:
@@ -1008,7 +976,6 @@ class IndicatorBase(Analyzable):
             if use_run_unique:
                 output_list, param_map, n_input_cols, other_list = _use_raw(raw)
 
-        # Update shape and other meta if no inputs
         if input_shape is None:
             if n_input_cols == 1:
                 input_shape = (output_list[0].shape[0],)
@@ -1019,10 +986,8 @@ class IndicatorBase(Analyzable):
         if input_columns is None:
             input_columns = pd.RangeIndex(start=0, step=1, stop=input_shape[1] if len(input_shape) > 1 else 1)
 
-        # Build column hierarchy for indicator instance
         if len(param_list) > 0:
             if final_index is None:
-                # Build new column levels on top of input levels
                 build_columns_meta = build_columns(
                     param_list,
                     input_columns,
@@ -1036,24 +1001,18 @@ class IndicatorBase(Analyzable):
                 rep_param_indexes = build_columns_meta["rep_param_indexes"]
                 final_index = build_columns_meta["final_index"]
 
-            # Build a mapper that maps old columns in inputs to new columns
-            # Instead of tiling all inputs to the shape of outputs and wasting memory,
-            # we just keep a mapper and perform the tiling when needed
             input_mapper = None
             if len(input_list) > 0:
                 if per_column:
                     input_mapper = np.arange(len(input_columns))
                 else:
                     input_mapper = np.tile(np.arange(len(input_columns)), n_param_values)
-            # Build mappers to easily map between parameters and columns
             mapper_list = [rep_param_indexes[i] for i in range(len(param_list))]
         else:
-            # Some indicators don't have any params
             final_index = input_columns
             input_mapper = None
             mapper_list = []
 
-        # Return artifacts: no pandas objects, just a wrapper and NumPy arrays
         new_ndim = len(input_shape) if output_list[0].shape[1] == 1 else output_list[0].ndim
         if new_ndim == 1 and not single_comb:
             new_ndim = 2
@@ -1239,7 +1198,7 @@ class IndicatorBase(Analyzable):
             checks.assert_equal(len(mapper), wrapper.shape_2d[1])
         checks.assert_instance_of(short_name, str)
         if "level_names" in kwargs:
-            del kwargs["level_names"]  # deprecated
+            del kwargs["level_names"]
 
         Analyzable.__init__(
             self,
@@ -1266,7 +1225,6 @@ class IndicatorBase(Analyzable):
             setattr(self, f"_{param_name}_list", param_list[i])
             setattr(self, f"_{param_name}_mapper", mapper_list[i])
 
-        # Initialize indexers
         mapper_sr_list = []
         for i, m in enumerate(mapper_list):
             mapper_sr_list.append(pd.Series(m, index=wrapper.columns))
@@ -1372,7 +1330,6 @@ class IndicatorBase(Analyzable):
             param_list.append(getattr(self, f"_{param_name}_list"))
         mapper_list = []
         for param_name in self.param_names:
-            # Tuple mapper is a list because of its complex data type
             mapper_list.append(getattr(self, f"_{param_name}_mapper")[col_idxs])
 
         return self.replace(
@@ -1674,7 +1631,6 @@ class IndicatorFactory(Configured):
             **kwargs,
         )
 
-        # Check parameters
         if class_name is None:
             class_name = "Indicator"
         checks.assert_instance_of(class_name, str)
@@ -1736,7 +1692,6 @@ class IndicatorFactory(Configured):
                 ],
             )
 
-        # Set up class
         ParamIndexer = build_param_indexer(
             param_names + (["tuple"] if len(param_names) > 1 else []),
             module_name=module_name,
@@ -1746,7 +1701,6 @@ class IndicatorFactory(Configured):
         if module_name is not None:
             Indicator.__module__ = module_name
 
-        # Create read-only properties
         setattr(Indicator, "_short_name", short_name)
         setattr(Indicator, "_input_names", tuple(input_names))
         setattr(Indicator, "_param_names", tuple(param_names))
@@ -1803,7 +1757,6 @@ class IndicatorFactory(Configured):
                 output_prop.__doc__ += "\n\n" + _output_flags
             setattr(Indicator, output_name, property(output_prop))
 
-        # Add user-defined outputs
         for prop_name, prop in lazy_outputs.items():
             prop.__name__ = prop_name
             prop.__module__ = Indicator.__module__
@@ -1814,7 +1767,6 @@ class IndicatorFactory(Configured):
                 prop = property(prop)
             setattr(Indicator, prop_name, prop)
 
-        # Add comparison & combination methods for all inputs, outputs, and user-defined properties
         def assign_combine_method(
             func_name: str,
             combine_func: tp.Callable,
@@ -1976,7 +1928,6 @@ class IndicatorFactory(Configured):
                 attr_stats.__doc__ = f"""Stats of `{attr_name}` as signals."""
                 setattr(Indicator, f"{attr_name}_stats", attr_stats)
 
-        # Prepare stats
         if metrics is not None:
             if not isinstance(metrics, Config):
                 metrics = Config(metrics, options_=dict(copy_kwargs=dict(copy_mode="deep")))
@@ -1998,7 +1949,6 @@ class IndicatorFactory(Configured):
             stats_defaults_prop.__qualname__ = f"{Indicator.__name__}.{stats_defaults_prop.__name__}"
             setattr(Indicator, "stats_defaults", property(stats_defaults_prop))
 
-        # Prepare plots
         if subplots is not None:
             if not isinstance(subplots, Config):
                 subplots = Config(subplots, options_=dict(copy_kwargs=dict(copy_mode="deep")))
@@ -2020,7 +1970,6 @@ class IndicatorFactory(Configured):
             plots_defaults_prop.__qualname__ = f"{Indicator.__name__}.{plots_defaults_prop.__name__}"
             setattr(Indicator, "plots_defaults", property(plots_defaults_prop))
 
-        # Store arguments
         self._class_name = class_name
         self._class_docstring = class_docstring
         self._module_name = module_name
@@ -2038,7 +1987,6 @@ class IndicatorFactory(Configured):
         self._subplots = subplots
         self._plots_defaults = plots_defaults
 
-        # Store indicator class
         self._Indicator = Indicator
 
     @property
@@ -2290,10 +2238,9 @@ class IndicatorFactory(Configured):
 
         for k, v in pipeline_kwargs.items():
             if k in param_names and not isinstance(v, Default):
-                pipeline_kwargs[k] = Default(v)  # track default params
+                pipeline_kwargs[k] = Default(v)
         pipeline_kwargs = merge_dicts({k: None for k in in_output_names}, pipeline_kwargs)
 
-        # Display default parameters and in-place outputs in the signature
         default_kwargs = {}
         for k in list(pipeline_kwargs.keys()):
             if k in input_names or k in param_names or k in in_output_names:
@@ -2302,7 +2249,6 @@ class IndicatorFactory(Configured):
         if var_args and keyword_only_args:
             raise ValueError("var_args and keyword_only_args cannot be used together")
 
-        # Add private run method
         def_run_kwargs = dict(
             short_name=short_name,
             hide_params=hide_params,
@@ -2324,13 +2270,8 @@ class IndicatorFactory(Configured):
                     _hide_params = param_names
             if _hide_params is None:
                 _hide_params = []
-
             args = list(args)
-
-            # Split arguments
             inputs, in_outputs, params, args = _split_args(args)
-
-            # Prepare column levels
             level_names = []
             hide_levels = []
             for pname in param_names:
@@ -2342,9 +2283,8 @@ class IndicatorFactory(Configured):
                 if isinstance(v, Default):
                     params[k] = v.value
 
-            # Run the pipeline
             results = Indicator.run_pipeline(
-                len(output_names),  # number of returned outputs
+                len(output_names),
                 custom_func,
                 *args,
                 require_input_shape=require_input_shape,
@@ -2357,12 +2297,8 @@ class IndicatorFactory(Configured):
                 in_output_settings=_in_output_settings,
                 **merge_dicts(pipeline_kwargs, kwargs),
             )
-
-            # Return the raw result if any of the flags are set
             if kwargs.get("return_raw", False) or kwargs.get("return_cache", False):
                 return results
-
-            # Unpack the result
             (
                 wrapper,
                 new_input_list,
@@ -2373,8 +2309,6 @@ class IndicatorFactory(Configured):
                 mapper_list,
                 other_list,
             ) = results
-
-            # Create a new instance
             obj = cls(
                 wrapper,
                 new_input_list,
@@ -2391,8 +2325,6 @@ class IndicatorFactory(Configured):
 
         setattr(Indicator, "_run", classmethod(_run))
 
-        # Add public run method
-        # Create function dynamically to provide user with a proper signature
         def compile_run_function(func_name: str, docstring: str, _default_kwargs: tp.KwargsLike = None) -> tp.Callable:
             pos_names = []
             main_kw_names = []
@@ -2404,7 +2336,7 @@ class IndicatorFactory(Configured):
                     main_kw_names.append(k)
                 else:
                     pos_names.append(k)
-            main_kw_names.extend(in_output_names)  # in_output_names are keyword-only
+            main_kw_names.extend(in_output_names)
             for k, v in _default_kwargs.items():
                 if k not in pos_names and k not in main_kw_names:
                     other_kw_names.append(k)
@@ -2473,7 +2405,6 @@ Other keyword arguments are passed to `{0}.run_pipeline`.""".format(
         setattr(Indicator, "run", run)
 
         if len(param_names) > 0:
-            # Add private run_combs method
             def_run_combs_kwargs = dict(
                 r=2,
                 param_product=False,
@@ -2504,26 +2435,17 @@ Other keyword arguments are passed to `{0}.run_pipeline`.""".format(
                     _hide_params = []
                 if _short_names is None:
                     _short_names = [f"{short_name}_{str(i + 1)}" for i in range(_r)]
-
                 args = list(args)
-
-                # Split arguments
                 inputs, in_outputs, params, args = _split_args(args)
-
-                # Hide params
                 for pname in param_names:
                     if _hide_default and isinstance(params[pname], Default):
                         params[pname] = params[pname].value
                         if pname not in _hide_params:
                             _hide_params.append(pname)
                 checks.assert_len_equal(params, param_names)
-
-                # Bring argument to list format
                 input_list = list(inputs.values())
                 in_output_list = list(in_outputs.values())
                 param_list = list(params.values())
-
-                # Prepare params
                 for i, pname in enumerate(param_names):
                     is_tuple = _param_settings.get(pname, {}).get("is_tuple", False)
                     is_array_like = _param_settings.get(pname, {}).get("is_array_like", False)
@@ -2532,8 +2454,6 @@ Other keyword arguments are passed to `{0}.run_pipeline`.""".format(
                     param_list = create_param_product(param_list)
                 else:
                     param_list = broadcast_params(param_list)
-
-                # Speed up by pre-calculating raw outputs
                 if _run_unique:
                     raw_results = cls._run(
                         *input_list,
@@ -2544,9 +2464,7 @@ Other keyword arguments are passed to `{0}.run_pipeline`.""".format(
                         run_unique=False,
                         **kwargs,
                     )
-                    kwargs["use_raw"] = raw_results  # use them next time
-
-                # Generate indicator instances
+                    kwargs["use_raw"] = raw_results
                 instances = []
                 if _comb_func == itertools.product:
                     param_lists = zip(*_comb_func(zip(*param_list), repeat=_r))
@@ -2570,7 +2488,6 @@ Other keyword arguments are passed to `{0}.run_pipeline`.""".format(
 
             setattr(Indicator, "_run_combs", classmethod(_run_combs))
 
-            # Add public run_combs method
             _0 = self.class_name
             _1 = ""
             if len(self.input_names) > 0:
@@ -2794,8 +2711,6 @@ Other keyword arguments are passed to `{0}.run`.
             kwargs_as_args = []
 
         if checks.is_numba_func(apply_func):
-            # Build a function that selects a parameter tuple
-            # Do it here to avoid compilation with Numba every time custom_func is run
             _0 = "i"
             _0 += ", args_before"
             if len(input_names) > 0:
@@ -2881,7 +2796,6 @@ Other keyword arguments are passed to `{0}.run`.
             _cache_pass_packed = cache_pass_packed
             _cache_pass_per_column = cache_pass_per_column
 
-            # Prepend positional arguments
             args_before = ()
             if input_shape is not None and "input_shape" not in kwargs_as_args:
                 if per_column or takes_1d:
@@ -2891,7 +2805,6 @@ Other keyword arguments are passed to `{0}.run`.
                 else:
                     args_before += (input_shape,)
 
-            # Append positional arguments
             more_args = ()
             for k in kwargs_as_args:
                 if k == "per_column":
@@ -2901,10 +2814,9 @@ Other keyword arguments are passed to `{0}.run`.
                 elif k == "split_columns":
                     value = per_column
                 else:
-                    value = _kwargs.pop(k)  # important: remove from kwargs
+                    value = _kwargs.pop(k)
                 more_args += (value,)
 
-            # Resolve the number of parameters
             if len(input_tuple) > 0:
                 if input_tuple[0].ndim == 1:
                     n_cols = 1
@@ -2922,7 +2834,6 @@ Other keyword arguments are passed to `{0}.run`.
             else:
                 n_params = len(param_tuple[0]) if len(param_tuple) > 0 else 1
 
-            # Caching
             cache = use_cache
             if isinstance(cache, bool):
                 if cache and cache_func is not None:
@@ -2986,7 +2897,6 @@ Other keyword arguments are passed to `{0}.run`.
             if not isinstance(cache, tuple):
                 cache = (cache,)
 
-            # Prepare inputs
             def _expand_input(input: tp.MaybeList[tp.AnyArray], multiple: bool = False) -> tp.List[tp.AnyArray]:
                 if jitted_loop:
                     _inputs = List()
@@ -3117,7 +3027,6 @@ Other keyword arguments are passed to `{0}.run`.
                     else:
                         _kwargs["per_column"] = per_column
 
-            # Apply function and concatenate outputs
             if jitted_loop:
                 return combining.apply_and_concat(
                     _n_params,
@@ -3753,7 +3662,6 @@ Other keyword arguments are passed to `{0}.run`.
         output_names = []
         defaults = {}
 
-        # Parse the function signature of the indicator to get input names
         sig = inspect.signature(func)
         for k, v in sig.parameters.items():
             if v.kind not in (v.VAR_POSITIONAL, v.VAR_KEYWORD):
@@ -3762,13 +3670,11 @@ Other keyword arguments are passed to `{0}.run`.
                 elif k in test_input_names:
                     input_names.append(k)
                 elif v.default == inspect.Parameter.empty:
-                    # Any positional argument is considered input
                     input_names.append(k)
                 else:
                     param_names.append(k)
                     defaults[k] = v.default
 
-        # To get output names, we need to run the indicator
         test_df = pd.DataFrame(
             {c: np.random.uniform(1, 10, size=(test_index_len,)) for c in input_names},
             index=pd.date_range("2020", periods=test_index_len),
@@ -3776,7 +3682,6 @@ Other keyword arguments are passed to `{0}.run`.
         new_args = merge_dicts({c: test_df[c] for c in input_names}, kwargs)
         result = suppress_stdout(func)(**new_args)
 
-        # Concatenate Series/DataFrames if the result is a tuple
         if isinstance(result, tuple):
             results = []
             for i, r in enumerate(result):
@@ -3791,12 +3696,8 @@ Other keyword arguments are passed to `{0}.run`.
                 result = results[0]
             else:
                 raise ValueError("Couldn't parse the output")
-
-        # Test if the produced array has the same index length
         if len(result.index) != len(test_df.index):
             raise ValueError("Couldn't parse the output: mismatching index")
-
-        # Standardize output names: remove numbers, remove hyphens, and bring to lower case
         output_cols = result.columns.tolist() if isinstance(result, pd.DataFrame) else [result.name]
         new_output_cols = []
         for i in range(len(output_cols)):
@@ -3810,7 +3711,6 @@ Other keyword arguments are passed to `{0}.run`.
             output_col = "_".join(name_parts)
             new_output_cols.append(output_col)
 
-        # Add numbers to duplicates
         for k, v in Counter(new_output_cols).items():
             if v == 1:
                 output_names.append(k)
@@ -3986,7 +3886,7 @@ Other keyword arguments are passed to `{0}.run`.
                 if isinstance(output, pd.DataFrame):
                     output = tuple([output.iloc[:, i] for i in range(len(output.columns))])
                 outputs.append(output)
-            if isinstance(outputs[0], tuple):  # multiple outputs
+            if isinstance(outputs[0], tuple):
                 outputs = list(zip(*outputs))
                 return tuple(map(column_stack_arrays, outputs))
             return column_stack_arrays(outputs)
@@ -4046,7 +3946,6 @@ Other keyword arguments are passed to `{0}.run`.
         defaults = {}
         output_names = []
 
-        # Parse the __init__ signature of the indicator class to get input names
         sig = inspect.signature(ind_cls)
         for k, v in sig.parameters.items():
             if v.kind not in (v.VAR_POSITIONAL, v.VAR_KEYWORD):
@@ -4059,7 +3958,6 @@ Other keyword arguments are passed to `{0}.run`.
                     if v.default != inspect.Parameter.empty:
                         defaults[k] = v.default
 
-        # Get output names by looking into instance methods
         for attr in dir(ind_cls):
             if not attr.startswith("_"):
                 if inspect.signature(getattr(ind_cls, attr)).return_annotation == pd.Series:
@@ -4175,7 +4073,7 @@ Other keyword arguments are passed to `{0}.run`.
                 else:
                     output = tuple(output)
                 outputs.append(output)
-            if isinstance(outputs[0], tuple):  # multiple outputs
+            if isinstance(outputs[0], tuple):
                 outputs = list(zip(*outputs))
                 return tuple(map(column_stack_arrays, outputs))
             return column_stack_arrays(outputs)
@@ -4948,7 +4846,6 @@ Other keyword arguments are passed to `{0}.run`.
         """
 
         def _clean_expr(expr: str) -> str:
-            # Clean the expression from redundant brackets and commas
             expr = inspect.cleandoc(expr).strip()
             if expr.endswith(","):
                 expr = expr[:-1]
@@ -4966,7 +4863,7 @@ Other keyword arguments are passed to `{0}.run`.
                 if remove_brackets:
                     expr = expr[1:-1]
             if expr.endswith(","):
-                expr = expr[:-1]  # again
+                expr = expr[:-1]
             return expr
 
         if isinstance(cls_or_self, type):
@@ -4980,7 +4877,6 @@ Other keyword arguments are passed to `{0}.run`.
                 )
             )
 
-            # Parse the class name
             match = re.match(r"^\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*(?:\[([a-zA-Z_][a-zA-Z0-9_]*)\])?\s*:\s*", expr)
             if match:
                 settings["factory_kwargs"]["class_name"] = match.group(1)
@@ -4988,7 +4884,6 @@ Other keyword arguments are passed to `{0}.run`.
                     settings["factory_kwargs"]["short_name"] = match.group(2)
                 expr = expr[len(match.group(0)) :]
 
-            # Parse the settings dictionary
             if "@settings" in expr:
                 remove_chars = set()
                 for m in re.finditer("@settings", expr):
@@ -5016,7 +4911,6 @@ Other keyword arguments are passed to `{0}.run`.
 
             expr = _clean_expr(expr)
 
-            # Merge info
             parsed_factory_kwargs = settings.pop("factory_kwargs")
             magnet_inputs = settings.pop("magnet_inputs", magnet_inputs)
             magnet_in_outputs = settings.pop("magnet_in_outputs", magnet_in_outputs)
@@ -5030,7 +4924,6 @@ Other keyword arguments are passed to `{0}.run`.
             use_pd_eval = settings.pop("use_pd_eval", use_pd_eval)
             pd_eval_kwargs = merge_dicts(settings.pop("pd_eval_kwargs", None), pd_eval_kwargs)
 
-            # Resolve defaults
             if use_pd_eval is None:
                 use_pd_eval = False
             if magnet_inputs is None:
@@ -5045,9 +4938,7 @@ Other keyword arguments are passed to `{0}.run`.
             found_defaults = {}
             remove_defaults = set()
 
-            # Parse annotated variables
             if parse_annotations:
-                # Parse input, in-output, parameter, and TA-Lib function names
                 for var_name in re.findall(r"@[a-z]+_[a-zA-Z_][a-zA-Z0-9_]*", expr):
                     var_name = var_name.replace("@", "")
                     if var_name.startswith("in_"):
@@ -5146,7 +5037,6 @@ Other keyword arguments are passed to `{0}.run`.
                 expr = expr.replace("@talib_", "__talib_")
                 expr = expr.replace("@res_", "__res_")
 
-                # Parse output names
                 to_replace = []
                 for var_name in re.findall(r"@out_[a-zA-Z_][a-zA-Z0-9_]*\s*:\s*", expr):
                     to_replace.append(var_name)
@@ -5181,7 +5071,6 @@ Other keyword arguments are passed to `{0}.run`.
                         if not found_not_valid:
                             parsed_factory_kwargs["output_names"] = valid_output_names
 
-            # Parse magnet names
             var_names = get_expr_var_names(expr)
 
             def _find_magnets(magnet_type, magnet_names, magnet_lst, found_magnet_lst):
@@ -5213,7 +5102,6 @@ Other keyword arguments are passed to `{0}.run`.
             )
             _find_magnets("magnet_params", parsed_factory_kwargs["param_names"], magnet_params, found_magnet_params)
 
-            # Prepare defaults
             for k in remove_defaults:
                 found_defaults.pop(k, None)
 
@@ -5231,7 +5119,6 @@ Other keyword arguments are passed to `{0}.run`.
             _sort_names("in_output_names")
             _sort_names("param_names")
 
-            # Parse the number of outputs
             if len(parsed_factory_kwargs["output_names"]) == 0:
                 lines = expr.split("\n")
                 last_line = _clean_expr(lines[-1])
@@ -5263,7 +5150,6 @@ Other keyword arguments are passed to `{0}.run`.
             factory = cls_or_self
 
         if return_clean_expr:
-            # For debugging purposes
             return expr
 
         input_names = factory.input_names
@@ -5288,7 +5174,6 @@ Other keyword arguments are passed to `{0}.run`.
             merged_context = merge_dicts(input_context, _kwargs)
             context = {}
 
-            # Resolve each variable in the expression
             for var_name in var_names:
                 if var_name in context:
                     continue
@@ -5329,7 +5214,6 @@ Other keyword arguments are passed to `{0}.run`.
                     var = var()
                 context[var_name] = var
 
-            # Evaluate the expression using resolved variables as a context
             if use_pd_eval:
                 return pd.eval(expr, local_dict=context, **resolve_dict(pd_eval_kwargs))
             return evaluate(expr, context=context)

@@ -3916,6 +3916,7 @@ class DocumentRanker(Configured):
                 [query],
                 return_as="ids",
                 update_vocab=False,
+                show_progress=False,
                 **bm25_tokenize_kwargs,
             )
             _, scores = bm25_retriever.retrieve(
