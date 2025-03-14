@@ -61,7 +61,7 @@ data-base = [
     "SQLAlchemy>=2.0.0",
     "duckdb",
     "pyarrow",
-    "yfinance>=0.2.20",
+    "yfinance>=0.2.54",
 ]
 data = [
     "vectorbtpro[data-base]",
@@ -73,7 +73,7 @@ data = [
     "polygon-api-client>=1.0.0",
     "beautifulsoup4",
     "nasdaq-data-link",
-    "alpha_vantage",
+    "alpha_vantage>=3.0.0",
     "databento",
     "findatapy",
 ]

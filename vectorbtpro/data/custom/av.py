@@ -365,12 +365,16 @@ class AVData(RemoteData):
                     if use_parser:
                         category = "commodities"
                     else:
-                        raise NotImplementedError(f"Category '{category}' not supported by alpha_vantage. Use parser.")
+                        from alpha_vantage.commodities import Commodities
+
+                        category = Commodities
                 elif category.lower() in ("economic-indicators",):
                     if use_parser:
                         category = "economic-indicators"
                     else:
-                        raise NotImplementedError(f"Category '{category}' not supported by alpha_vantage. Use parser.")
+                        from alpha_vantage.econindicators import EconIndicators
+
+                        category = EconIndicators
                 elif category.lower() in ("technical-indicators", "techindicators", "indicators"):
                     if use_parser:
                         category = "technical-indicators"
@@ -497,11 +501,17 @@ class AVData(RemoteData):
             from alpha_vantage.fundamentaldata import FundamentalData
             from alpha_vantage.foreignexchange import ForeignExchange
             from alpha_vantage.cryptocurrencies import CryptoCurrencies
+            from alpha_vantage.commodities import Commodities
+            from alpha_vantage.econindicators import EconIndicators
             from alpha_vantage.techindicators import TechIndicators
 
             if isinstance(category, type) and issubclass(category, AlphaVantage):
                 category = category(key=apikey, output_format="pandas")
 
+            if function is None:
+                if category is not None:
+                    if isinstance(category, (Commodities, EconIndicators)):
+                        function = symbol
             if function is None:
                 if category is None:
                     category = TimeSeries(key=apikey, output_format="pandas")
@@ -594,13 +604,16 @@ class AVData(RemoteData):
                 matched_params = dict(params)
 
             df, df_metadata = function(**matched_params)
-            for k, v in df_metadata.items():
-                if "Time Zone" in k:
-                    if tz is None:
-                        if v.endswith(" Time"):
-                            v = v[: -len(" Time")]
-                        tz = v
+            if df_metadata is not None:
+                for k, v in df_metadata.items():
+                    if "Time Zone" in k:
+                        if tz is None:
+                            if v.endswith(" Time"):
+                                v = v[: -len(" Time")]
+                            tz = v
 
+        if "date" in df.columns:
+            df.set_index("date", drop=True, inplace=True)
         df.index.name = None
         new_columns = []
         for c in df.columns:
@@ -614,7 +627,14 @@ class AVData(RemoteData):
         for c in df.columns:
             if df[c].dtype == "O":
                 df[c] = df[c].replace({".": np.nan})
-        df = df.apply(pd.to_numeric, errors="ignore")
+
+        def _to_numeric(sr):
+            try:
+                return pd.to_numeric(sr)
+            except ValueError:
+                return sr
+
+        df = df.apply(_to_numeric)
         if not df.empty and df.index[0] > df.index[1]:
             df = df.iloc[::-1]
         if isinstance(df.index, pd.DatetimeIndex) and df.index.tz is None and tz is not None:

@@ -20,7 +20,7 @@ opt_dep_config = HybridConfig(
     dict(
         yfinance=dict(
             link="https://pypi.org/project/yfinance/",
-            version=">=0.2.20",
+            version=">=0.2.54",
         ),
         binance=dict(
             dist_name="python-binance",
@@ -163,6 +163,7 @@ opt_dep_config = HybridConfig(
         ),
         alpha_vantage=dict(
             link="https://pypi.org/project/alpha_vantage/",
+            version=">=3.0.0",
         ),
         databento=dict(
             link="https://pypi.org/project/databento/",
