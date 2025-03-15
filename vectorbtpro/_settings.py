@@ -132,7 +132,6 @@ default_theme = dark
 
 import json
 import os
-import pkgutil
 
 import numpy as np
 from numba import config as nb_config
@@ -1151,7 +1150,21 @@ plotting = frozen_cfg(
                 yellow="#bcbd22",
                 cyan="#17becf",
             ),
-            path="__name__/templates/light.json",
+            template_name="plotly",
+            color_map=flex_cfg(
+                {
+                    "#FF97FF": "#bcbd22",
+                    "#00cc96": "#2ca02c",
+                    "#19d3f3": "#8c564b",
+                    "#FF6692": "#e377c2",
+                    "#636efa": "#1f77b4",
+                    "#EF553B": "#ff7f0e",
+                    "#B6E880": "#7f7f7f",
+                    "#ab63fa": "#dc3912",
+                    "#FECB52": "#17becf",
+                    "#FFA15A": "#9467bd",
+                }
+            ),
         ),
         dark=flex_cfg(
             color_schema=flex_cfg(
@@ -1166,7 +1179,26 @@ plotting = frozen_cfg(
                 yellow="#bcbd22",
                 cyan="#17becf",
             ),
-            path="__name__/templates/dark.json",
+            template_name="plotly_dark",
+            color_map=flex_cfg(
+                {
+                    "#283442": "#313439",
+                    "#f2f5fa": "#d6dfef",
+                    "#506784": "#313439",
+                    "#C8D4E3": "#aec0d6",
+                    "#FF97FF": "#bcbd22",
+                    "#00cc96": "#2ca02c",
+                    "#19d3f3": "#8c564b",
+                    "#FF6692": "#e377c2",
+                    "#636efa": "#1f77b4",
+                    "#EF553B": "#ff7f0e",
+                    "#B6E880": "#7f7f7f",
+                    "#ab63fa": "#dc3912",
+                    "#FECB52": "#17becf",
+                    "#FFA15A": "#9467bd",
+                    "rgb(17,17,17)": "#1c1e21",
+                }
+            ),
         ),
         seaborn=flex_cfg(
             color_schema=flex_cfg(
@@ -1181,7 +1213,8 @@ plotting = frozen_cfg(
                 yellow="rgb(204,185,116)",
                 cyan="rgb(100,181,205)",
             ),
-            path="__name__/templates/seaborn.json",
+            template_name="seaborn",
+            color_map=flex_cfg(),
         ),
     ),
     default_theme="light",
@@ -2755,15 +2788,16 @@ class SettingsConfig(Config):
             import plotly.io as pio
             import plotly.graph_objects as go
 
-            template_path = self["plotting"]["themes"][theme]["path"]
-            if template_path is None:
-                raise ValueError(f"Must provide template path for the theme '{theme}'")
-            if template_path.startswith("__name__/"):
-                template_path = template_path.replace("__name__/", "")
-                template = Config(json.loads(pkgutil.get_data(__name__, template_path)))
-            else:
-                with open(template_path, "r") as f:
-                    template = Config(json.load(f))
+            template_name = self["plotting"]["themes"][theme]["template_name"]
+            if template_name is None:
+                raise ValueError(f"Must provide template name for the theme '{theme}'")
+            color_map = self["plotting"]["themes"][theme]["color_map"]
+            template = pio.templates[template_name].to_plotly_json()
+            if len(color_map) > 0:
+                template_dumps = json.dumps(template)
+                for k, v in color_map.items():
+                    template_dumps = template_dumps.replace(k, v)
+                template = json.loads(template_dumps)
             pio.templates["vbt_" + theme] = go.layout.Template(template)
 
     def register_templates(self) -> None:

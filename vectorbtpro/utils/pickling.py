@@ -614,6 +614,7 @@ class Pickleable(Base):
             return True
 
         def _preprocess_key(k):
+            k = k.replace("#", "__HASH__")
             k = k.replace(":", "__COL__")
             k = k.replace("=", "__EQ__")
             return k
@@ -839,6 +840,7 @@ class Pickleable(Base):
             parser.read_string("[top]\n" + str_)
 
         def _preprocess_key(k):
+            k = k.replace("__HASH__", "#")
             k = k.replace("__COL__", ":")
             k = k.replace("__EQ__", "=")
             return k

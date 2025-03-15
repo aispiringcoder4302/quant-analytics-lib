@@ -60,7 +60,7 @@ opt_dep_config = HybridConfig(
         ),
         plotly=dict(
             link="https://pypi.org/project/plotly/",
-            version=">=5.0.0, <6.0.0",
+            version=">=5.0.0",
         ),
         ipywidgets=dict(
             link="https://pypi.org/project/ipywidgets/",

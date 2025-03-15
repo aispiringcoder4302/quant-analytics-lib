@@ -112,7 +112,7 @@ exec = [
 ]
 plot-base = [
     "matplotlib>=3.2.0",
-    "plotly>=5.0.0, <6.0.0",
+    "plotly>=5.0.0",
     "ipywidgets>=7.0.0",
     "kaleido",
 ]
@@ -185,6 +185,3 @@ include-package-data = true
 [tool.setuptools.packages.find]
 include = ["vectorbtpro", "vectorbtpro.*"]
 namespaces = false
-
-[tool.setuptools.package-data]
-vectorbtpro = ["templates/*.json"]
