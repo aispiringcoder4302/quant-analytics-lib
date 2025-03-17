@@ -1015,6 +1015,19 @@ class Completions(Configured):
                 dict(role="user", content=message),
             ]
 
+    def get_completion_content(self, message: str) -> str:
+        """Get the content of a completion for a message."""
+        chat_history = self.chat_history
+
+        messages = self.prepare_messages(message)
+        response = self.get_chat_response(messages)
+        content = self.get_message_content(response)
+        if content is None:
+            content = ""
+        chat_history.append(dict(role="user", content=message))
+        chat_history.append(dict(role="assistant", content=content))
+        return content
+
     def get_completion(
         self,
         message: str,
