@@ -85,6 +85,7 @@ __all__ = [
     "LiteLLMCompletions",
     "LlamaIndexCompletions",
     "complete",
+    "complete_content",
     "TextSplitter",
     "TokenSplitter",
     "SegmentSplitter",
@@ -424,6 +425,8 @@ class OpenAIEmbeddings(Embeddings):
         show_progress: tp.Optional[bool] = None,
         pbar_kwargs: tp.KwargsLike = None,
         template_context: tp.KwargsLike = None,
+        client_kwargs: tp.KwargsLike = None,
+        embeddings_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> None:
         Embeddings.__init__(
@@ -433,6 +436,8 @@ class OpenAIEmbeddings(Embeddings):
             show_progress=show_progress,
             pbar_kwargs=pbar_kwargs,
             template_context=template_context,
+            client_kwargs=client_kwargs,
+            embeddings_kwargs=embeddings_kwargs,
             **kwargs,
         )
 
@@ -443,6 +448,9 @@ class OpenAIEmbeddings(Embeddings):
 
         openai_config = merge_dicts(self.get_settings(inherit=False), kwargs)
         def_model = openai_config.pop("model", None)
+        def_client_kwargs = openai_config.pop("client_kwargs", None)
+        def_embeddings_kwargs = openai_config.pop("embeddings_kwargs", None)
+
         if model is None:
             model = def_model
         if model is None:
@@ -453,13 +461,15 @@ class OpenAIEmbeddings(Embeddings):
                 openai_config.pop(k)
 
         client_arg_names = set(get_func_arg_names(OpenAI.__init__))
-        client_kwargs = {}
-        embeddings_kwargs = {}
+        _client_kwargs = {}
+        _embeddings_kwargs = {}
         for k, v in openai_config.items():
             if k in client_arg_names:
-                client_kwargs[k] = v
+                _client_kwargs[k] = v
             else:
-                embeddings_kwargs[k] = v
+                _embeddings_kwargs[k] = v
+        client_kwargs = merge_dicts(_client_kwargs, def_client_kwargs, client_kwargs)
+        embeddings_kwargs = merge_dicts(_embeddings_kwargs, def_embeddings_kwargs, embeddings_kwargs)
         client = OpenAI(**client_kwargs)
 
         self._model = model
@@ -505,6 +515,7 @@ class LiteLLMEmbeddings(Embeddings):
         show_progress: tp.Optional[bool] = None,
         pbar_kwargs: tp.KwargsLike = None,
         template_context: tp.KwargsLike = None,
+        embedding_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> None:
         Embeddings.__init__(
@@ -514,6 +525,7 @@ class LiteLLMEmbeddings(Embeddings):
             show_progress=show_progress,
             pbar_kwargs=pbar_kwargs,
             template_context=template_context,
+            embedding_kwargs=embedding_kwargs,
             **kwargs,
         )
 
@@ -523,6 +535,8 @@ class LiteLLMEmbeddings(Embeddings):
 
         litellm_config = merge_dicts(self.get_settings(inherit=False), kwargs)
         def_model = litellm_config.pop("model", None)
+        def_embedding_kwargs = litellm_config.pop("embedding_kwargs", None)
+
         if model is None:
             model = def_model
         if model is None:
@@ -531,9 +545,10 @@ class LiteLLMEmbeddings(Embeddings):
         for k in list(litellm_config.keys()):
             if k in init_kwargs:
                 litellm_config.pop(k)
+        embedding_kwargs = merge_dicts(litellm_config, def_embedding_kwargs, embedding_kwargs)
 
         self._model = model
-        self._embedding_kwargs = litellm_config
+        self._embedding_kwargs = embedding_kwargs
 
     @property
     def model(self) -> str:
@@ -569,6 +584,7 @@ class LlamaIndexEmbeddings(Embeddings):
     def __init__(
         self,
         embedding: tp.Union[None, str, tp.MaybeType[BaseEmbeddingT]] = None,
+        embedding_kwargs: tp.KwargsLike = None,
         batch_size: tp.Optional[int] = None,
         show_progress: tp.Optional[bool] = None,
         pbar_kwargs: tp.KwargsLike = None,
@@ -578,6 +594,7 @@ class LlamaIndexEmbeddings(Embeddings):
         Embeddings.__init__(
             self,
             embedding=embedding,
+            embedding_kwargs=embedding_kwargs,
             batch_size=batch_size,
             show_progress=show_progress,
             pbar_kwargs=pbar_kwargs,
@@ -592,6 +609,8 @@ class LlamaIndexEmbeddings(Embeddings):
 
         llama_index_config = merge_dicts(self.get_settings(inherit=False), kwargs)
         def_embedding = llama_index_config.pop("embedding", None)
+        def_embedding_kwargs = llama_index_config.pop("embedding_kwargs", None)
+
         if embedding is None:
             embedding = def_embedding
         if embedding is None:
@@ -639,14 +658,15 @@ class LlamaIndexEmbeddings(Embeddings):
             llama_index_config = merge_dicts(llama_index_config, embedding_configs[embedding_name])
         elif module_name in embedding_configs:
             llama_index_config = merge_dicts(llama_index_config, embedding_configs[module_name])
-        if isinstance(embedding, type):
-            embedding = embedding(**llama_index_config)
-        elif len(kwargs) > 0:
-            raise ValueError("Cannot apply config to already initialized embedding")
-        model_name = llama_index_config.get("model_name", None)
+        embedding_kwargs = merge_dicts(llama_index_config, def_embedding_kwargs, embedding_kwargs)
+        model_name = embedding_kwargs.get("model_name", None)
         if model_name is None:
             func_kwargs = get_func_kwargs(type(embedding).__init__)
             model_name = func_kwargs.get("model_name", None)
+        if isinstance(embedding, type):
+            embedding = embedding(**embedding_kwargs)
+        elif len(kwargs) > 0:
+            raise ValueError("Cannot apply config to already initialized embedding")
 
         self._model = model_name
         self._embedding = embedding
@@ -1015,19 +1035,6 @@ class Completions(Configured):
                 dict(role="user", content=message),
             ]
 
-    def get_completion_content(self, message: str) -> str:
-        """Get the content of a completion for a message."""
-        chat_history = self.chat_history
-
-        messages = self.prepare_messages(message)
-        response = self.get_chat_response(messages)
-        content = self.get_message_content(response)
-        if content is None:
-            content = ""
-        chat_history.append(dict(role="user", content=message))
-        chat_history.append(dict(role="assistant", content=content))
-        return content
-
     def get_completion(
         self,
         message: str,
@@ -1098,6 +1105,19 @@ class Completions(Configured):
             return file_path, response
         return file_path
 
+    def get_completion_content(self, message: str) -> str:
+        """Get completion content for a message."""
+        chat_history = self.chat_history
+
+        messages = self.prepare_messages(message)
+        response = self.get_chat_response(messages)
+        content = self.get_message_content(response)
+        if content is None:
+            content = ""
+        chat_history.append(dict(role="user", content=message))
+        chat_history.append(dict(role="assistant", content=content))
+        return content
+
 
 class OpenAICompletions(Completions):
     """Completions class for OpenAI.
@@ -1128,6 +1148,8 @@ class OpenAICompletions(Completions):
         silence_warnings: tp.Optional[bool] = None,
         template_context: tp.KwargsLike = None,
         model: tp.Optional[str] = None,
+        client_kwargs: tp.KwargsLike = None,
+        completion_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> None:
         Completions.__init__(
@@ -1148,6 +1170,8 @@ class OpenAICompletions(Completions):
             silence_warnings=silence_warnings,
             template_context=template_context,
             model=model,
+            client_kwargs=client_kwargs,
+            completion_kwargs=completion_kwargs,
             **kwargs,
         )
 
@@ -1159,6 +1183,9 @@ class OpenAICompletions(Completions):
         openai_config = merge_dicts(self.get_settings(inherit=False), kwargs)
         def_model = openai_config.pop("model", None)
         def_quick_model = openai_config.pop("quick_model", None)
+        def_client_kwargs = openai_config.pop("client_kwargs", None)
+        def_completion_kwargs = openai_config.pop("completion_kwargs", None)
+
         if model is None:
             model = def_quick_model if self.quick_mode else def_model
         if model is None:
@@ -1169,13 +1196,15 @@ class OpenAICompletions(Completions):
                 openai_config.pop(k)
 
         client_arg_names = set(get_func_arg_names(OpenAI.__init__))
-        client_kwargs = {}
-        completion_kwargs = {}
+        _client_kwargs = {}
+        _completion_kwargs = {}
         for k, v in openai_config.items():
             if k in client_arg_names:
-                client_kwargs[k] = v
+                _client_kwargs[k] = v
             else:
-                completion_kwargs[k] = v
+                _completion_kwargs[k] = v
+        client_kwargs = merge_dicts(_client_kwargs, def_client_kwargs, client_kwargs)
+        completion_kwargs = merge_dicts(_completion_kwargs, def_completion_kwargs, completion_kwargs)
         client = OpenAI(**client_kwargs)
 
         self._model = model
@@ -1248,6 +1277,7 @@ class LiteLLMCompletions(Completions):
         silence_warnings: tp.Optional[bool] = None,
         template_context: tp.KwargsLike = None,
         model: tp.Optional[str] = None,
+        completion_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> None:
         Completions.__init__(
@@ -1268,6 +1298,7 @@ class LiteLLMCompletions(Completions):
             silence_warnings=silence_warnings,
             template_context=template_context,
             model=model,
+            completion_kwargs=completion_kwargs,
             **kwargs,
         )
 
@@ -1275,13 +1306,16 @@ class LiteLLMCompletions(Completions):
 
         assert_can_import("litellm")
 
-        completion_kwargs = merge_dicts(self.get_settings(inherit=False), kwargs)
-        def_model = completion_kwargs.pop("model", None)
-        def_quick_model = completion_kwargs.pop("quick_model", None)
+        litellm_config = merge_dicts(self.get_settings(inherit=False), kwargs)
+        def_model = litellm_config.pop("model", None)
+        def_quick_model = litellm_config.pop("quick_model", None)
+        def_completion_kwargs = litellm_config.pop("completion_kwargs", None)
+
         if model is None:
             model = def_quick_model if self.quick_mode else def_model
         if model is None:
             raise ValueError("Must provide a model")
+        completion_kwargs = merge_dicts(litellm_config, def_completion_kwargs, completion_kwargs)
 
         self._model = model
         self._completion_kwargs = completion_kwargs
@@ -1355,6 +1389,7 @@ class LlamaIndexCompletions(Completions):
         silence_warnings: tp.Optional[bool] = None,
         template_context: tp.KwargsLike = None,
         llm: tp.Union[None, str, tp.MaybeType[LLMT]] = None,
+        llm_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> None:
         Completions.__init__(
@@ -1375,6 +1410,7 @@ class LlamaIndexCompletions(Completions):
             silence_warnings=silence_warnings,
             template_context=template_context,
             llm=llm,
+            llm_kwargs=llm_kwargs,
             **kwargs,
         )
 
@@ -1385,6 +1421,8 @@ class LlamaIndexCompletions(Completions):
 
         llama_index_config = merge_dicts(self.get_settings(inherit=False), kwargs)
         def_llm = llama_index_config.pop("llm", None)
+        def_llm_kwargs = llama_index_config.pop("llm_kwargs", None)
+
         if llm is None:
             llm = def_llm
         if llm is None:
@@ -1432,18 +1470,19 @@ class LlamaIndexCompletions(Completions):
             llama_index_config = merge_dicts(llama_index_config, llm_configs[llm_name])
         elif module_name in llm_configs:
             llama_index_config = merge_dicts(llama_index_config, llm_configs[module_name])
-        if isinstance(llm, type):
-            llm = llm(**llama_index_config)
-        elif len(kwargs) > 0:
-            raise ValueError("Cannot apply config to already initialized LLM")
-        def_model = llama_index_config.pop("model", None)
-        quick_model = llama_index_config.pop("quick_model", None)
+        llm_kwargs = merge_dicts(llama_index_config, def_llm_kwargs, llm_kwargs)
+        def_model = llm_kwargs.pop("model", None)
+        quick_model = llm_kwargs.pop("quick_model", None)
         model = quick_model if self.quick_mode else def_model
         if model is None:
             func_kwargs = get_func_kwargs(type(llm).__init__)
             model = func_kwargs.get("model", None)
         else:
-            llama_index_config["model"] = model
+            llm_kwargs["model"] = model
+        if isinstance(llm, type):
+            llm = llm(**llm_kwargs)
+        elif len(kwargs) > 0:
+            raise ValueError("Cannot apply config to already initialized LLM")
 
         self._model = model
         self._llm = llm
@@ -1531,6 +1570,19 @@ def complete(message: str, completions: tp.CompletionsLike = None, **kwargs) -> 
     elif kwargs:
         completions = completions.replace(**kwargs)
     return completions.get_completion(message)
+
+
+def complete_content(message: str, completions: tp.CompletionsLike = None, **kwargs) -> str:
+    """Get completion content for a message.
+
+    Resolves `completions` with `resolve_completions`. Keyword arguments are passed to either
+    initialize a class or replace an instance of `Completions`."""
+    completions = resolve_completions(completions=completions)
+    if isinstance(completions, type):
+        completions = completions(**kwargs)
+    elif kwargs:
+        completions = completions.replace(**kwargs)
+    return completions.get_completion_content(message)
 
 
 # ############# Splitting ############# #
@@ -1993,6 +2045,7 @@ class LlamaIndexSplitter(TextSplitter):
     def __init__(
         self,
         node_parser: tp.Union[None, str, NodeParserT] = None,
+        node_parser_kwargs: tp.KwargsLike = None,
         template_context: tp.KwargsLike = None,
         **kwargs,
     ) -> None:
@@ -2005,6 +2058,8 @@ class LlamaIndexSplitter(TextSplitter):
 
         llama_index_config = merge_dicts(self.get_settings(inherit=False), kwargs)
         def_node_parser = llama_index_config.pop("node_parser", None)
+        def_node_parser_kwargs = llama_index_config.pop("node_parser_kwargs", None)
+
         if node_parser is None:
             node_parser = def_node_parser
         init_kwargs = get_func_kwargs(type(self).__init__)
@@ -2052,14 +2107,15 @@ class LlamaIndexSplitter(TextSplitter):
             llama_index_config = merge_dicts(llama_index_config, node_parser_configs[node_parser_name])
         elif module_name in node_parser_configs:
             llama_index_config = merge_dicts(llama_index_config, node_parser_configs[module_name])
-        if isinstance(node_parser, type):
-            node_parser = node_parser(**llama_index_config)
-        elif len(kwargs) > 0:
-            raise ValueError("Cannot apply config to already initialized node parser")
-        model_name = llama_index_config.get("model_name", None)
+        node_parser_kwargs = merge_dicts(llama_index_config, def_node_parser_kwargs, node_parser_kwargs)
+        model_name = node_parser_kwargs.get("model_name", None)
         if model_name is None:
             func_kwargs = get_func_kwargs(type(node_parser).__init__)
             model_name = func_kwargs.get("model_name", None)
+        if isinstance(node_parser, type):
+            node_parser = node_parser(**node_parser_kwargs)
+        elif len(kwargs) > 0:
+            raise ValueError("Cannot apply config to already initialized node parser")
 
         self._model = model_name
         self._node_parser = node_parser
@@ -2874,6 +2930,7 @@ class LMDBStore(ObjectStore):
         mkdir_kwargs: tp.KwargsLike = None,
         dumps_kwargs: tp.KwargsLike = None,
         loads_kwargs: tp.KwargsLike = None,
+        open_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> None:
         ObjectStore.__init__(
@@ -2882,6 +2939,7 @@ class LMDBStore(ObjectStore):
             mkdir_kwargs=mkdir_kwargs,
             dumps_kwargs=dumps_kwargs,
             loads_kwargs=loads_kwargs,
+            open_kwargs=open_kwargs,
             **kwargs,
         )
 
@@ -2906,12 +2964,14 @@ class LMDBStore(ObjectStore):
         mkdir_kwargs = self.resolve_setting(mkdir_kwargs, "mkdir_kwargs", merge=True)
         dumps_kwargs = self.resolve_setting(dumps_kwargs, "dumps_kwargs", merge=True)
         loads_kwargs = self.resolve_setting(loads_kwargs, "loads_kwargs", merge=True)
-        open_kwargs = merge_dicts(self.get_settings(inherit=False), kwargs)
+        lmdb_config = merge_dicts(self.get_settings(inherit=False), kwargs)
         for arg_name in get_func_arg_names(ObjectStore.__init__) + get_func_arg_names(type(self).__init__):
             if arg_name in open_kwargs:
-                del open_kwargs[arg_name]
-        if "mirror" in open_kwargs:
-            del open_kwargs["mirror"]
+                del lmdb_config[arg_name]
+        if "mirror" in lmdb_config:
+            del lmdb_config["mirror"]
+        def_open_kwargs = lmdb_config.pop("open_kwargs", None)
+        open_kwargs = merge_dicts(lmdb_config, def_open_kwargs, open_kwargs)
 
         self._dir_path = dir_path
         self._mkdir_kwargs = mkdir_kwargs
