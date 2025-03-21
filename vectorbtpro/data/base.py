@@ -5152,7 +5152,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
                     The feature must contain prices.
 
                 Applied only if lines are plotted.
-            kwargs (dict): Keyword arguments passed to `vectorbtpro.generic.accessors.GenericAccessor.plot`
+            **kwargs: Keyword arguments passed to `vectorbtpro.generic.accessors.GenericAccessor.plot`
                 for lines and to `vectorbtpro.ohlcv.accessors.OHLCVDFAccessor.plot` for OHLC(V).
 
         Usage:

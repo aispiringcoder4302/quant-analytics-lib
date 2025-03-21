@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Classes for chatting.
+"""Module providing classes and utilities for processing chat interactions.
 
 See `vectorbtpro.utils.knowledge` for the toy dataset."""
 
@@ -51,7 +51,7 @@ else:
     CustomStreamWrapperT = "litellm.CustomStreamWrapper"
 if tp.TYPE_CHECKING:
     from llama_index.core.embeddings import BaseEmbedding as BaseEmbeddingT
-    from llama_index.core.llms import LLM as LLMT, ChatMessage as ChatMessageT, ChatResponse as ChatResponseT
+    from llama_index.core.llms import LLM as LLMT, ChatResponse as ChatResponseT
     from llama_index.core.node_parser import NodeParser as NodeParserT
 else:
     BaseEmbeddingT = "llama_index.core.embeddings.BaseEmbedding"
@@ -118,7 +118,12 @@ __all__ = [
 class Tokenizer(Configured):
     """Abstract class for tokenizers.
 
-    For defaults, see `knowledge.chat.tokenizer_config` in `vectorbtpro._settings.knowledge`."""
+    Args:
+        template_context (KwargsLike): A mapping for template substitution and configuration.
+        **kwargs: Additional keyword arguments for configuration.
+
+    For defaults, see `knowledge.chat.tokenizer_config` in `vectorbtpro._settings.knowledge`.
+    """
 
     _short_name: tp.ClassVar[tp.Optional[str]] = None
     """Short name of the class."""
@@ -134,20 +139,43 @@ class Tokenizer(Configured):
 
     @property
     def template_context(self) -> tp.Kwargs:
-        """Context used to substitute templates."""
+        """Template context used for substituting templates."""
         return self._template_context
 
     def encode(self, text: str) -> tp.Tokens:
-        """Encode text into a list of tokens."""
+        """Return a list of tokens corresponding to the given text.
+
+        Args:
+            text (str): The text to encode.
+
+        Returns:
+            list: List of tokens representing the input text.
+        """
         raise NotImplementedError
 
     def decode(self, tokens: tp.Tokens) -> str:
-        """Decode a list of tokens into text."""
+        """Return the text obtained by decoding the given list of tokens.
+
+        Args:
+            tokens (list): The list of tokens to decode.
+
+        Returns:
+            str: The decoded text.
+        """
         raise NotImplementedError
 
     @memoized_method
     def encode_single(self, text: str) -> tp.Token:
-        """Encode text into a single token."""
+        """Return a single token encoded from the given text.
+
+        If encoding results in multiple tokens, a `ValueError` is raised.
+
+        Args:
+            text (str): The text to encode.
+
+        Returns:
+            Token: The single token representing the input text.
+        """
         tokens = self.encode(text)
         if len(tokens) > 1:
             raise ValueError("Text contains multiple tokens")
@@ -155,15 +183,36 @@ class Tokenizer(Configured):
 
     @memoized_method
     def decode_single(self, token: tp.Token) -> str:
-        """Decode a single token into text."""
+        """Return the text decoded from the provided single token.
+
+        Args:
+            token: The token to decode.
+
+        Returns:
+            str: The decoded text.
+        """
         return self.decode([token])
 
     def count_tokens(self, text: str) -> int:
-        """Count tokens in a text."""
+        """Return the total number of tokens in the provided text.
+
+        Args:
+            text (str): The text for token counting.
+
+        Returns:
+            int: The number of tokens.
+        """
         return len(self.encode(text))
 
     def count_tokens_in_messages(self, messages: tp.ChatMessages) -> int:
-        """Count tokens in messages."""
+        """Return the total number of tokens across the provided messages.
+
+        Args:
+            messages (ChatMessages): The collection of chat messages.
+
+        Returns:
+            int: The total token count.
+        """
         raise NotImplementedError
 
 
@@ -172,7 +221,16 @@ class TikTokenizer(Tokenizer):
 
     Encoding can be a model name, an encoding name, or an encoding object for tokenization.
 
-    For defaults, see `chat.tokenizer_configs.tiktoken` in `vectorbtpro._settings.knowledge`."""
+    Args:
+        encoding (Union[None, str, Encoding]): Encoding specification as a model name,
+            encoding name, or encoding object.
+        model (Optional[str]): The model identifier used to determine the encoding.
+        tokens_per_message (Optional[int]): Number of tokens charged per message.
+        tokens_per_name (Optional[int]): Additional token count for message names.
+        **kwargs: Additional keyword arguments passed to `Tokenizer`.
+
+    For defaults, see `chat.tokenizer_configs.tiktoken` in `vectorbtpro._settings.knowledge`.
+    """
 
     _short_name = "tiktoken"
 
@@ -224,17 +282,17 @@ class TikTokenizer(Tokenizer):
 
     @property
     def encoding(self) -> EncodingT:
-        """Encoding."""
+        """Token encoding object used for tokenization."""
         return self._encoding
 
     @property
     def tokens_per_message(self) -> int:
-        """Tokens per message."""
+        """Token count charged per message."""
         return self._tokens_per_message
 
     @property
     def tokens_per_name(self) -> int:
-        """Tokens per name."""
+        """Additional token count for message names."""
         return self._tokens_per_name
 
     def encode(self, text: str) -> tp.Tokens:
@@ -256,12 +314,18 @@ class TikTokenizer(Tokenizer):
 
 
 def resolve_tokenizer(tokenizer: tp.TokenizerLike = None) -> tp.MaybeType[Tokenizer]:
-    """Resolve a subclass or an instance of `Tokenizer`.
+    """Resolve a `Tokenizer` subclass or instance.
 
-    The following values are supported:
+    Supported values:
 
     * "tiktoken" (`TikTokenizer`)
-    * A subclass or an instance of `Tokenizer`
+    * A `Tokenizer` subclass or instance
+
+    Args:
+        tokenizer (TokenizerLike): A tokenizer identifier, subclass, or instance.
+
+    Returns:
+        Tokenizer: A resolved tokenizer type or instance.
     """
     if tokenizer is None:
         from vectorbtpro._settings import settings
@@ -288,10 +352,16 @@ def resolve_tokenizer(tokenizer: tp.TokenizerLike = None) -> tp.MaybeType[Tokeni
 
 
 def tokenize(text: str, tokenizer: tp.TokenizerLike = None, **kwargs) -> tp.Tokens:
-    """Tokenize text.
+    """Tokenize text using a resolved `Tokenizer`.
 
-    Resolves `tokenizer` with `resolve_tokenizer`. Keyword arguments are passed to either
-    initialize a class or replace an instance of `Tokenizer`."""
+    Args:
+        text (str): The text to tokenize.
+        tokenizer (TokenizerLike): A tokenizer identifier, subclass, or instance.
+        **kwargs: Additional keyword arguments for tokenizer initialization or replacement.
+
+    Returns:
+        Tokens: A list of tokens representing the input text.
+    """
     tokenizer = resolve_tokenizer(tokenizer=tokenizer)
     if isinstance(tokenizer, type):
         tokenizer = tokenizer(**kwargs)
@@ -301,10 +371,16 @@ def tokenize(text: str, tokenizer: tp.TokenizerLike = None, **kwargs) -> tp.Toke
 
 
 def detokenize(tokens: tp.Tokens, tokenizer: tp.TokenizerLike = None, **kwargs) -> str:
-    """Detokenize text.
+    """Detokenize tokens into text using a resolved `Tokenizer`.
 
-    Resolves `tokenizer` with `resolve_tokenizer`. Keyword arguments are passed to either
-    initialize a class or replace an instance of `Tokenizer`."""
+    Args:
+        tokens (Tokens): A list of tokens to decode.
+        tokenizer (TokenizerLike): A tokenizer identifier, subclass, or instance.
+        **kwargs: Additional keyword arguments for tokenizer initialization or replacement.
+
+    Returns:
+        str: The decoded text.
+    """
     tokenizer = resolve_tokenizer(tokenizer=tokenizer)
     if isinstance(tokenizer, type):
         tokenizer = tokenizer(**kwargs)
@@ -319,7 +395,15 @@ def detokenize(tokens: tp.Tokens, tokenizer: tp.TokenizerLike = None, **kwargs) 
 class Embeddings(Configured):
     """Abstract class for embedding providers.
 
-    For defaults, see `knowledge.chat.embeddings_config` in `vectorbtpro._settings.knowledge`."""
+    Args:
+        batch_size (Optional[int]): Batch size for processing queries. Use None to disable batching.
+        show_progress (Optional[bool]): Flag indicating whether to display a progress bar.
+        pbar_kwargs (Kwargs): Keyword arguments for configuring the progress bar.
+        template_context (Kwargs): Context for template substitution.
+        **kwargs: Additional keyword arguments for configuration.
+
+    For defaults, see `knowledge.chat.embeddings_config` in `vectorbtpro._settings.knowledge`.
+    """
 
     _short_name: tp.ClassVar[tp.Optional[str]] = None
     """Short name of the class."""
@@ -357,41 +441,60 @@ class Embeddings(Configured):
 
     @property
     def batch_size(self) -> tp.Optional[int]:
-        """Batch size.
-
-        Set to None to disable batching."""
+        """Batch size used for processing queries. Use None to disable batching."""
         return self._batch_size
 
     @property
     def show_progress(self) -> tp.Optional[bool]:
-        """Whether to show progress bar."""
+        """Whether to display a progress bar."""
         return self._show_progress
 
     @property
     def pbar_kwargs(self) -> tp.Kwargs:
-        """Keyword arguments passed to `vectorbtpro.utils.pbar.ProgressBar`."""
+        """Keyword arguments for configuring `vectorbtpro.utils.pbar.ProgressBar`."""
         return self._pbar_kwargs
 
     @property
     def template_context(self) -> tp.Kwargs:
-        """Context used to substitute templates."""
+        """Context used for template substitution."""
         return self._template_context
 
     @property
     def model(self) -> tp.Optional[str]:
-        """Model."""
+        """Model identifier; returns None by default."""
         return None
 
     def get_embedding(self, query: str) -> tp.List[float]:
-        """Get embedding for a query."""
+        """Return the embedding vector for the given query.
+
+        Args:
+            query (str): The query text.
+
+        Returns:
+            List[float]: The embedding vector.
+        """
         raise NotImplementedError
 
     def get_embedding_batch(self, batch: tp.List[str]) -> tp.List[tp.List[float]]:
-        """Get embeddings for one batch of queries."""
+        """Return a batch of embedding vectors for a list of queries.
+
+        Args:
+            batch (List[str]): A list of query texts.
+
+        Returns:
+            List[List[float]]: A list containing an embedding vector for each query.
+        """
         return [self.get_embedding(query) for query in batch]
 
     def iter_embedding_batches(self, queries: tp.List[str]) -> tp.Iterator[tp.List[tp.List[float]]]:
-        """Get iterator of embedding batches."""
+        """Return an iterator over batches of embeddings.
+
+        Args:
+            queries (List[str]): A list of query texts.
+
+        Returns:
+            Iterator[List[List[float]]]: An iterator yielding batches of embedding vectors.
+        """
         from vectorbtpro.utils.pbar import ProgressBar
 
         if self.batch_size is not None:
@@ -405,14 +508,29 @@ class Embeddings(Configured):
                 pbar.update(len(batch))
 
     def get_embeddings(self, queries: tp.List[str]) -> tp.List[tp.List[float]]:
-        """Get embeddings for multiple queries."""
+        """Return embeddings for multiple queries.
+
+        Args:
+            queries (List[str]): A list of query texts.
+
+        Returns:
+            List[List[float]]: A list containing an embedding vector for each query.
+        """
         return [embedding for batch in self.iter_embedding_batches(queries) for embedding in batch]
 
 
 class OpenAIEmbeddings(Embeddings):
     """Embeddings class for OpenAI.
 
-    For defaults, see `chat.embeddings_configs.openai` in `vectorbtpro._settings.knowledge`."""
+    Args:
+        model (Optional[str]): OpenAI model identifier.
+        client_kwargs (KwargsLike): Parameters for the OpenAI client.
+        embeddings_kwargs (KwargsLike): Parameters for creating embeddings.
+        **kwargs: Additional keyword arguments either passed to `Embeddings` or used as
+            `client_kwargs` or `embeddings_kwargs`.
+
+    For defaults, see `chat.embeddings_configs.openai` in `vectorbtpro._settings.knowledge`.
+    """
 
     _short_name = "openai"
 
@@ -421,10 +539,6 @@ class OpenAIEmbeddings(Embeddings):
     def __init__(
         self,
         model: tp.Optional[str] = None,
-        batch_size: tp.Optional[int] = None,
-        show_progress: tp.Optional[bool] = None,
-        pbar_kwargs: tp.KwargsLike = None,
-        template_context: tp.KwargsLike = None,
         client_kwargs: tp.KwargsLike = None,
         embeddings_kwargs: tp.KwargsLike = None,
         **kwargs,
@@ -432,10 +546,6 @@ class OpenAIEmbeddings(Embeddings):
         Embeddings.__init__(
             self,
             model=model,
-            batch_size=batch_size,
-            show_progress=show_progress,
-            pbar_kwargs=pbar_kwargs,
-            template_context=template_context,
             client_kwargs=client_kwargs,
             embeddings_kwargs=embeddings_kwargs,
             **kwargs,
@@ -446,6 +556,10 @@ class OpenAIEmbeddings(Embeddings):
         assert_can_import("openai")
         from openai import OpenAI
 
+        super_arg_names = set(get_func_arg_names(Embeddings.__init__))
+        for k in list(kwargs.keys()):
+            if k in super_arg_names:
+                kwargs.pop(k)
         openai_config = merge_dicts(self.get_settings(inherit=False), kwargs)
         def_model = openai_config.pop("model", None)
         def_client_kwargs = openai_config.pop("client_kwargs", None)
@@ -482,12 +596,12 @@ class OpenAIEmbeddings(Embeddings):
 
     @property
     def client(self) -> OpenAIT:
-        """Client."""
+        """OpenAI client instance."""
         return self._client
 
     @property
     def embeddings_kwargs(self) -> tp.Kwargs:
-        """Keyword arguments passed to `openai.resources.embeddings.Embeddings.create`."""
+        """Keyword arguments for `openai.resources.embeddings.Embeddings.create`."""
         return self._embeddings_kwargs
 
     def get_embedding(self, query: str) -> tp.List[float]:
@@ -502,7 +616,13 @@ class OpenAIEmbeddings(Embeddings):
 class LiteLLMEmbeddings(Embeddings):
     """Embeddings class for LiteLLM.
 
-    For defaults, see `chat.embeddings_configs.litellm` in `vectorbtpro._settings.knowledge`."""
+    Args:
+        model (Optional[str]): LiteLLM model identifier.
+        embedding_kwargs (KwargsLike): Parameters for creating embeddings.
+        **kwargs: Additional keyword arguments either passed to `Embeddings` or used as `embedding_kwargs`.
+
+    For defaults, see `chat.embeddings_configs.litellm` in `vectorbtpro._settings.knowledge`.
+    """
 
     _short_name = "litellm"
 
@@ -511,20 +631,12 @@ class LiteLLMEmbeddings(Embeddings):
     def __init__(
         self,
         model: tp.Optional[str] = None,
-        batch_size: tp.Optional[int] = None,
-        show_progress: tp.Optional[bool] = None,
-        pbar_kwargs: tp.KwargsLike = None,
-        template_context: tp.KwargsLike = None,
         embedding_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> None:
         Embeddings.__init__(
             self,
             model=model,
-            batch_size=batch_size,
-            show_progress=show_progress,
-            pbar_kwargs=pbar_kwargs,
-            template_context=template_context,
             embedding_kwargs=embedding_kwargs,
             **kwargs,
         )
@@ -533,6 +645,10 @@ class LiteLLMEmbeddings(Embeddings):
 
         assert_can_import("litellm")
 
+        super_arg_names = set(get_func_arg_names(Embeddings.__init__))
+        for k in list(kwargs.keys()):
+            if k in super_arg_names:
+                kwargs.pop(k)
         litellm_config = merge_dicts(self.get_settings(inherit=False), kwargs)
         def_model = litellm_config.pop("model", None)
         def_embedding_kwargs = litellm_config.pop("embedding_kwargs", None)
@@ -556,7 +672,7 @@ class LiteLLMEmbeddings(Embeddings):
 
     @property
     def embedding_kwargs(self) -> tp.Kwargs:
-        """Keyword arguments passed to `litellm.embedding`."""
+        """Keyword arguments for `litellm.embedding`."""
         return self._embedding_kwargs
 
     def get_embedding(self, query: str) -> tp.List[float]:
@@ -575,7 +691,18 @@ class LiteLLMEmbeddings(Embeddings):
 class LlamaIndexEmbeddings(Embeddings):
     """Embeddings class for LlamaIndex.
 
-    For defaults, see `chat.embeddings_configs.llama_index` in `vectorbtpro._settings.knowledge`."""
+    This class initializes embeddings for LlamaIndex using a specified identifier or instance.
+    It combines configuration from `vectorbtpro._settings.knowledge` with provided parameters.
+
+    Args:
+        embedding (Union[None, str, BaseEmbedding]): An embedding identifier or instance.
+
+            If None, a default from settings is used.
+        embedding_kwargs (KwargsLike): Additional arguments for embedding initialization.
+        **kwargs: Additional keyword arguments either passed to `Embeddings` or used as `embedding_kwargs`.
+
+    For defaults, see `chat.embeddings_configs.llama_index` in `vectorbtpro._settings.knowledge`.
+    """
 
     _short_name = "llama_index"
 
@@ -585,20 +712,12 @@ class LlamaIndexEmbeddings(Embeddings):
         self,
         embedding: tp.Union[None, str, tp.MaybeType[BaseEmbeddingT]] = None,
         embedding_kwargs: tp.KwargsLike = None,
-        batch_size: tp.Optional[int] = None,
-        show_progress: tp.Optional[bool] = None,
-        pbar_kwargs: tp.KwargsLike = None,
-        template_context: tp.KwargsLike = None,
         **kwargs,
     ) -> None:
         Embeddings.__init__(
             self,
             embedding=embedding,
             embedding_kwargs=embedding_kwargs,
-            batch_size=batch_size,
-            show_progress=show_progress,
-            pbar_kwargs=pbar_kwargs,
-            template_context=template_context,
             **kwargs,
         )
 
@@ -607,6 +726,10 @@ class LlamaIndexEmbeddings(Embeddings):
         assert_can_import("llama_index")
         from llama_index.core.embeddings import BaseEmbedding
 
+        super_arg_names = set(get_func_arg_names(Embeddings.__init__))
+        for k in list(kwargs.keys()):
+            if k in super_arg_names:
+                kwargs.pop(k)
         llama_index_config = merge_dicts(self.get_settings(inherit=False), kwargs)
         def_embedding = llama_index_config.pop("embedding", None)
         def_embedding_kwargs = llama_index_config.pop("embedding_kwargs", None)
@@ -677,7 +800,7 @@ class LlamaIndexEmbeddings(Embeddings):
 
     @property
     def embedding(self) -> BaseEmbeddingT:
-        """Embedding."""
+        """Underlying embedding instance."""
         return self._embedding
 
     def get_embedding(self, query: str) -> tp.List[float]:
@@ -688,15 +811,23 @@ class LlamaIndexEmbeddings(Embeddings):
 
 
 def resolve_embeddings(embeddings: tp.EmbeddingsLike = None) -> tp.MaybeType[Embeddings]:
-    """Resolve a subclass or an instance of `Embeddings`.
+    """Return a subclass or instance of `Embeddings` based on the provided identifier or object.
 
-    The following values are supported:
+    Supported values:
 
     * "openai" (`OpenAIEmbeddings`)
     * "litellm" (`LiteLLMEmbeddings`)
     * "llama_index" (`LlamaIndexEmbeddings`)
-    * "auto": Any installed from above, in the same order
-    * A subclass or an instance of `Embeddings`
+    * "auto": The first installed package from the above options.
+    * A subclass or instance of `Embeddings`.
+
+    Args:
+        embeddings (EmbeddingsLike): An identifier, subclass, or instance of `Embeddings`.
+
+            If None, configuration from `vectorbtpro._settings` is used.
+
+    Returns:
+        Embeddings: The resolved embeddings subclass or instance.
     """
     if embeddings is None:
         from vectorbtpro._settings import settings
@@ -734,10 +865,18 @@ def resolve_embeddings(embeddings: tp.EmbeddingsLike = None) -> tp.MaybeType[Emb
 
 
 def embed(query: tp.MaybeList[str], embeddings: tp.EmbeddingsLike = None, **kwargs) -> tp.MaybeList[tp.List[float]]:
-    """Get embedding(s) for one or more queries.
+    """Return embedding(s) for one or more queries.
 
-    Resolves `embeddings` with `resolve_embeddings`. Keyword arguments are passed to either
-    initialize a class or replace an instance of `Embeddings`."""
+    Args:
+        query (MaybeList[str]): A query string or a list of query strings to embed.
+        embeddings (EmbeddingsLike): An identifier, subclass, or instance of `Embeddings`.
+
+            If None, defaults are applied.
+        **kwargs: Additional arguments for initializing or modifying the embeddings instance.
+
+    Returns:
+        MaybeList[List[float]]: The embedding vector(s) corresponding to the input query or queries.
+    """
     embeddings = resolve_embeddings(embeddings=embeddings)
     if isinstance(embeddings, type):
         embeddings = embeddings(**kwargs)
@@ -754,9 +893,28 @@ def embed(query: tp.MaybeList[str], embeddings: tp.EmbeddingsLike = None, **kwar
 class Completions(Configured):
     """Abstract class for completion providers.
 
-    For argument descriptions, see their properties, like `Completions.chat_history`.
+    Args:
+        context (str): The text context provided for completion requests.
+        chat_history (Optional[ChatHistory]): History of chat messages.
+        stream (Optional[bool]): Indicates whether to stream the response.
+        max_tokens (Optional[int]): Maximum tokens allowed in a response.
+        tokenizer (TokenizerLike): A tokenizer class or instance.
+        tokenizer_kwargs (KwargsLike): Keyword arguments for configuring the tokenizer.
+        system_prompt (Optional[str]): A system-level prompt preceding the context prompt.
+        system_as_user (Optional[bool]): Flag to use the user role for system messages.
+        context_prompt (Optional[str]): A template requiring a 'context' variable; evaluated to a user message.
+        formatter (ContentFormatterLike): A content formatter class or instance.
+        formatter_kwargs (KwargsLike): Keyword arguments for configuring the content formatter.
+        minimal_format (Optional[bool]): Indicates if the input is minimally formatted.
+        quick_mode (Optional[bool]): Flag to enable quick mode processing.
+        silence_warnings (Optional[bool]): Indicates whether warnings are suppressed.
+        template_context (KwargsLike): Additional context for template substitution.
+        **kwargs: Additional keyword arguments for configuration.
 
-    For defaults, see `knowledge.chat.completions_config` in `vectorbtpro._settings.knowledge`."""
+    For argument descriptions, refer to corresponding properties such as `Completions.chat_history`.
+
+    For defaults, see `knowledge.chat.completions_config` in `vectorbtpro._settings.knowledge`.
+    """
 
     _short_name: tp.ClassVar[tp.Optional[str]] = None
     """Short name of the class."""
@@ -843,132 +1001,125 @@ class Completions(Configured):
 
     @property
     def context(self) -> str:
-        """Context.
-
-        Becomes a user message."""
+        """Context string to be used as a user message."""
         return self._context
 
     @property
     def chat_history(self) -> tp.ChatHistory:
-        """Chat history.
+        """Chat history, a list of dictionaries with defined roles.
 
-        Must be list of dictionaries with proper roles.
-
-        After generating a response, the output will be appended to this sequence as an assistant message."""
+        After a response is generated, the assistant message is appended to this history."""
         return self._chat_history
 
     @property
     def stream(self) -> bool:
-        """Whether to stream the response.
+        """Boolean indicating whether responses are streamed.
 
-        When streaming, appends chunks one by one and displays the intermediate result.
-        Otherwise, displays the entire message."""
+        In streaming mode, chunks are appended and displayed incrementally; otherwise,
+        the entire message is displayed."""
         return self._stream
 
     @property
     def max_tokens_set(self) -> tp.Optional[int]:
-        """Whether the user provided `max_tokens`."""
+        """Boolean indicating if `max_tokens` was explicitly provided by the user."""
         return self._max_tokens_set
 
     @property
     def max_tokens(self) -> tp.Optional[int]:
-        """Maximum number of tokens in messages."""
+        """Maximum token limit configured for messages."""
         return self._max_tokens
 
     @property
     def tokenizer(self) -> tp.MaybeType[Tokenizer]:
-        """A subclass or an instance of `Tokenizer`.
-
-        Resolved with `resolve_tokenizer`."""
+        """Tokenizer subclass or instance, resolved using `resolve_tokenizer`."""
         return self._tokenizer
 
     @property
     def tokenizer_kwargs(self) -> tp.Kwargs:
-        """Keyword arguments passed to `Completions.tokenizer`.
-
-        Used either to initialize a class or replace an instance of `Tokenizer`."""
+        """Keyword arguments for `Completions.tokenizer` used during tokenizer initialization or update."""
         return self._tokenizer_kwargs
 
     @property
     def system_prompt(self) -> str:
-        """System prompt.
-
-        Precedes the context prompt."""
+        """System prompt that precedes the context prompt."""
         return self._system_prompt
 
     @property
     def system_as_user(self) -> bool:
-        """Whether to use the user role for the system message.
+        """Boolean indicating whether to use the user role for the system message.
 
-        Mainly for experimental models where the system role is not available."""
+        This is mainly used for experimental models where a dedicated system role is not available."""
         return self._system_as_user
 
     @property
     def context_prompt(self) -> str:
-        """Context prompt.
+        """Context prompt template requiring a 'context' variable.
 
-        A prompt template requiring the variable "context". The prompt can be either a custom template,
-        or string or function that will become one. Once the prompt is evaluated, it becomes a user message."""
+        The template, which can be custom, a string, or a function, is evaluated to a user message."""
         return self._context_prompt
 
     @property
     def formatter(self) -> tp.MaybeType[ContentFormatter]:
-        """A subclass or an instance of `vectorbtpro.utils.knowledge.formatting.ContentFormatter`.
-
-        Resolved with `vectorbtpro.utils.knowledge.formatting.resolve_formatter`."""
+        """Content formatter subclass or instance, resolved using
+        `vectorbtpro.utils.knowledge.formatting.resolve_formatter`."""
         return self._formatter
 
     @property
     def formatter_kwargs(self) -> tp.Kwargs:
-        """Keyword arguments passed to `Completions.formatter`.
-
-        Used either to initialize a class or replace an instance of
-        `vectorbtpro.utils.knowledge.formatting.ContentFormatter`."""
+        """Keyword arguments for `Completions.formatter` used to initialize or update a
+        `vectorbtpro.utils.knowledge.formatting.ContentFormatter` instance."""
         return self._formatter_kwargs
 
     @property
     def minimal_format(self) -> bool:
-        """Whether input is minimally-formatted."""
+        """Boolean indicating if the input is minimally formatted."""
         return self._minimal_format
 
     @property
     def quick_mode(self) -> bool:
-        """Quick mode."""
+        """Boolean indicating whether quick mode is enabled."""
         return self._quick_mode
 
     @property
     def silence_warnings(self) -> bool:
-        """Whether to silence warnings."""
+        """Boolean indicating whether warnings are suppressed."""
         return self._silence_warnings
 
     @property
     def template_context(self) -> tp.Kwargs:
-        """Context used to substitute templates."""
+        """Context used for template substitution."""
         return self._template_context
 
     @property
     def model(self) -> tp.Optional[str]:
-        """Model."""
+        """Model name if specified; otherwise, None."""
         return None
 
     def get_chat_response(self, messages: tp.ChatMessages, **kwargs) -> tp.Any:
-        """Get chat response to messages."""
+        """Return a chat response based on the provided messages."""
         raise NotImplementedError
 
     def get_message_content(self, response: tp.Any) -> tp.Optional[str]:
-        """Get content from a chat response."""
+        """Return the content extracted from a chat response."""
         raise NotImplementedError
 
     def get_stream_response(self, messages: tp.ChatMessages, **kwargs) -> tp.Any:
-        """Get streaming response to messages."""
+        """Return a streaming response generated from the provided messages."""
         raise NotImplementedError
 
     def get_delta_content(self, response: tp.Any) -> tp.Optional[str]:
-        """Get content from a streaming response chunk."""
+        """Return the content extracted from a streaming response chunk."""
         raise NotImplementedError
 
     def prepare_messages(self, message: str) -> tp.ChatMessages:
-        """Prepare messages for a completion."""
+        """Return a list of chat messages formatted for a completion request.
+
+        Args:
+            message (str): The user message to process.
+
+        Returns:
+            ChatMessages: A list of dictionaries representing the conversation history.
+        """
         context = self.context
         chat_history = self.chat_history
         max_tokens_set = self.max_tokens_set
@@ -1040,7 +1191,16 @@ class Completions(Configured):
         message: str,
         return_response: bool = False,
     ) -> tp.ChatOutput:
-        """Get completion for a message."""
+        """Return the formatted completion output for a provided message.
+
+        Args:
+            message (str): The user message to generate a completion for.
+            return_response (bool): Flag to return the raw response along with the file path.
+
+        Returns:
+            ChatOutput: A file path for the formatted output; if return_response is True,
+                a tuple containing the file path and raw response.
+        """
         chat_history = self.chat_history
         stream = self.stream
         formatter = self.formatter
@@ -1106,7 +1266,14 @@ class Completions(Configured):
         return file_path
 
     def get_completion_content(self, message: str) -> str:
-        """Get completion content for a message."""
+        """Return the text content of a completion for a given message.
+
+        Args:
+            message (str): The user message to complete.
+
+        Returns:
+            str: The generated completion text.
+        """
         chat_history = self.chat_history
 
         messages = self.prepare_messages(message)
@@ -1122,9 +1289,15 @@ class Completions(Configured):
 class OpenAICompletions(Completions):
     """Completions class for OpenAI.
 
-    Keyword arguments are distributed between the client call and the completion call.
+    Args:
+        model (Optional[str]): Identifier for the model to use.
+        client_kwargs (KwargsLike): Arguments for initializing the OpenAI client.
+        completions_kwargs (KwargsLike): Arguments for the completion API call.
+        **kwargs: Additional keyword arguments either passed to `Completions` or used as
+            `client_kwargs` or `completions_kwargs`.
 
-    For defaults, see `chat.completions_configs.openai` in `vectorbtpro._settings.knowledge`."""
+    For defaults, see `chat.completions_configs.openai` in `vectorbtpro._settings.knowledge`.
+    """
 
     _short_name = "openai"
 
@@ -1132,46 +1305,16 @@ class OpenAICompletions(Completions):
 
     def __init__(
         self,
-        context: str = "",
-        chat_history: tp.Optional[tp.ChatHistory] = None,
-        stream: tp.Optional[bool] = None,
-        max_tokens: tp.Optional[int] = None,
-        tokenizer: tp.TokenizerLike = None,
-        tokenizer_kwargs: tp.KwargsLike = None,
-        system_prompt: tp.Optional[str] = None,
-        system_as_user: tp.Optional[bool] = None,
-        context_prompt: tp.Optional[str] = None,
-        formatter: tp.ContentFormatterLike = None,
-        formatter_kwargs: tp.KwargsLike = None,
-        minimal_format: tp.Optional[bool] = None,
-        quick_mode: tp.Optional[bool] = None,
-        silence_warnings: tp.Optional[bool] = None,
-        template_context: tp.KwargsLike = None,
         model: tp.Optional[str] = None,
         client_kwargs: tp.KwargsLike = None,
-        completion_kwargs: tp.KwargsLike = None,
+        completions_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> None:
         Completions.__init__(
             self,
-            context=context,
-            chat_history=chat_history,
-            stream=stream,
-            max_tokens=max_tokens,
-            tokenizer=tokenizer,
-            tokenizer_kwargs=tokenizer_kwargs,
-            system_prompt=system_prompt,
-            system_as_user=system_as_user,
-            context_prompt=context_prompt,
-            formatter=formatter,
-            formatter_kwargs=formatter_kwargs,
-            minimal_format=minimal_format,
-            quick_mode=quick_mode,
-            silence_warnings=silence_warnings,
-            template_context=template_context,
             model=model,
             client_kwargs=client_kwargs,
-            completion_kwargs=completion_kwargs,
+            completions_kwargs=completions_kwargs,
             **kwargs,
         )
 
@@ -1180,11 +1323,15 @@ class OpenAICompletions(Completions):
         assert_can_import("openai")
         from openai import OpenAI
 
+        super_arg_names = set(get_func_arg_names(Completions.__init__))
+        for k in list(kwargs.keys()):
+            if k in super_arg_names:
+                kwargs.pop(k)
         openai_config = merge_dicts(self.get_settings(inherit=False), kwargs)
         def_model = openai_config.pop("model", None)
         def_quick_model = openai_config.pop("quick_model", None)
         def_client_kwargs = openai_config.pop("client_kwargs", None)
-        def_completion_kwargs = openai_config.pop("completion_kwargs", None)
+        def_completions_kwargs = openai_config.pop("completions_kwargs", None)
 
         if model is None:
             model = def_quick_model if self.quick_mode else def_model
@@ -1197,19 +1344,19 @@ class OpenAICompletions(Completions):
 
         client_arg_names = set(get_func_arg_names(OpenAI.__init__))
         _client_kwargs = {}
-        _completion_kwargs = {}
+        _completions_kwargs = {}
         for k, v in openai_config.items():
             if k in client_arg_names:
                 _client_kwargs[k] = v
             else:
-                _completion_kwargs[k] = v
+                _completions_kwargs[k] = v
         client_kwargs = merge_dicts(_client_kwargs, def_client_kwargs, client_kwargs)
-        completion_kwargs = merge_dicts(_completion_kwargs, def_completion_kwargs, completion_kwargs)
+        completions_kwargs = merge_dicts(_completions_kwargs, def_completions_kwargs, completions_kwargs)
         client = OpenAI(**client_kwargs)
 
         self._model = model
         self._client = client
-        self._completion_kwargs = completion_kwargs
+        self._completions_kwargs = completions_kwargs
 
     @property
     def model(self) -> str:
@@ -1217,20 +1364,20 @@ class OpenAICompletions(Completions):
 
     @property
     def client(self) -> OpenAIT:
-        """Client."""
+        """OpenAI client instance used for API calls."""
         return self._client
 
     @property
-    def completion_kwargs(self) -> tp.Kwargs:
-        """Keyword arguments passed to `openai.resources.chat.completions_configs.Completions.create`."""
-        return self._completion_kwargs
+    def completions_kwargs(self) -> tp.Kwargs:
+        """Keyword arguments for the `openai.Completions.create` API call."""
+        return self._completions_kwargs
 
     def get_chat_response(self, messages: tp.ChatMessages) -> ChatCompletionT:
         return self.client.chat.completions.create(
             messages=messages,
             model=self.model,
             stream=False,
-            **self.completion_kwargs,
+            **self.completions_kwargs,
         )
 
     def get_message_content(self, response: ChatCompletionT) -> tp.Optional[str]:
@@ -1241,7 +1388,7 @@ class OpenAICompletions(Completions):
             messages=messages,
             model=self.model,
             stream=True,
-            **self.completion_kwargs,
+            **self.completions_kwargs,
         )
 
     def get_delta_content(self, response_chunk: ChatCompletionChunkT) -> tp.Optional[str]:
@@ -1251,9 +1398,13 @@ class OpenAICompletions(Completions):
 class LiteLLMCompletions(Completions):
     """Completions class for LiteLLM.
 
-    Keyword arguments are passed to the completion call.
+    Args:
+        model (Optional[str]): Identifier for the model to use.
+        completion_kwargs (KwargsLike): Arguments for the completion API call.
+        **kwargs: Additional keyword arguments either passed to `Completions` or used as `completion_kwargs`.
 
-    For defaults, see `chat.completions_configs.litellm` in `vectorbtpro._settings.knowledge`."""
+    For defaults, see `chat.completions_configs.litellm` in `vectorbtpro._settings.knowledge`.
+    """
 
     _short_name = "litellm"
 
@@ -1261,42 +1412,12 @@ class LiteLLMCompletions(Completions):
 
     def __init__(
         self,
-        context: str = "",
-        chat_history: tp.Optional[tp.ChatHistory] = None,
-        stream: tp.Optional[bool] = None,
-        max_tokens: tp.Optional[int] = None,
-        tokenizer: tp.TokenizerLike = None,
-        tokenizer_kwargs: tp.KwargsLike = None,
-        system_prompt: tp.Optional[str] = None,
-        system_as_user: tp.Optional[bool] = None,
-        context_prompt: tp.Optional[str] = None,
-        formatter: tp.ContentFormatterLike = None,
-        formatter_kwargs: tp.KwargsLike = None,
-        minimal_format: tp.Optional[bool] = None,
-        quick_mode: tp.Optional[bool] = None,
-        silence_warnings: tp.Optional[bool] = None,
-        template_context: tp.KwargsLike = None,
         model: tp.Optional[str] = None,
         completion_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> None:
         Completions.__init__(
             self,
-            context=context,
-            chat_history=chat_history,
-            stream=stream,
-            max_tokens=max_tokens,
-            tokenizer=tokenizer,
-            tokenizer_kwargs=tokenizer_kwargs,
-            system_prompt=system_prompt,
-            system_as_user=system_as_user,
-            context_prompt=context_prompt,
-            formatter=formatter,
-            formatter_kwargs=formatter_kwargs,
-            minimal_format=minimal_format,
-            quick_mode=quick_mode,
-            silence_warnings=silence_warnings,
-            template_context=template_context,
             model=model,
             completion_kwargs=completion_kwargs,
             **kwargs,
@@ -1306,6 +1427,10 @@ class LiteLLMCompletions(Completions):
 
         assert_can_import("litellm")
 
+        super_arg_names = set(get_func_arg_names(Completions.__init__))
+        for k in list(kwargs.keys()):
+            if k in super_arg_names:
+                kwargs.pop(k)
         litellm_config = merge_dicts(self.get_settings(inherit=False), kwargs)
         def_model = litellm_config.pop("model", None)
         def_quick_model = litellm_config.pop("quick_model", None)
@@ -1326,7 +1451,7 @@ class LiteLLMCompletions(Completions):
 
     @property
     def completion_kwargs(self) -> tp.Kwargs:
-        """Keyword arguments passed to `litellm.completion`."""
+        """Keyword arguments for the `litellm.completion` API call."""
         return self._completion_kwargs
 
     def get_chat_response(self, messages: tp.ChatMessages) -> ModelResponseT:
@@ -1363,9 +1488,14 @@ class LlamaIndexCompletions(Completions):
     the path or its suffix to the class (case matters), or a subclass or an instance of
     `llama_index.core.llms.LLM`.
 
-    Keyword arguments are passed to the resolved LLM.
+    Args:
+        llm (Union[None, str, MaybeType[LLM]]): Identifier, class path, subclass, or instance of
+            `llama_index.core.llms.LLM`.
+        llm_kwargs (KwargsLike): Additional parameters for initializing the LLM.
+        **kwargs: Additional keyword arguments either passed to `Completions` or used as `llm_kwargs`.
 
-    For defaults, see `chat.completions_configs.llama_index` in `vectorbtpro._settings.knowledge`."""
+    For defaults, see `chat.completions_configs.llama_index` in `vectorbtpro._settings.knowledge`.
+    """
 
     _short_name = "llama_index"
 
@@ -1373,42 +1503,12 @@ class LlamaIndexCompletions(Completions):
 
     def __init__(
         self,
-        context: str = "",
-        chat_history: tp.Optional[tp.ChatHistory] = None,
-        stream: tp.Optional[bool] = None,
-        max_tokens: tp.Optional[int] = None,
-        tokenizer: tp.TokenizerLike = None,
-        tokenizer_kwargs: tp.KwargsLike = None,
-        system_prompt: tp.Optional[str] = None,
-        system_as_user: tp.Optional[bool] = None,
-        context_prompt: tp.Optional[str] = None,
-        formatter: tp.ContentFormatterLike = None,
-        formatter_kwargs: tp.KwargsLike = None,
-        minimal_format: tp.Optional[bool] = None,
-        quick_mode: tp.Optional[bool] = None,
-        silence_warnings: tp.Optional[bool] = None,
-        template_context: tp.KwargsLike = None,
         llm: tp.Union[None, str, tp.MaybeType[LLMT]] = None,
         llm_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> None:
         Completions.__init__(
             self,
-            context=context,
-            chat_history=chat_history,
-            stream=stream,
-            max_tokens=max_tokens,
-            tokenizer=tokenizer,
-            tokenizer_kwargs=tokenizer_kwargs,
-            system_prompt=system_prompt,
-            system_as_user=system_as_user,
-            context_prompt=context_prompt,
-            formatter=formatter,
-            formatter_kwargs=formatter_kwargs,
-            minimal_format=minimal_format,
-            quick_mode=quick_mode,
-            silence_warnings=silence_warnings,
-            template_context=template_context,
             llm=llm,
             llm_kwargs=llm_kwargs,
             **kwargs,
@@ -1419,6 +1519,10 @@ class LlamaIndexCompletions(Completions):
         assert_can_import("llama_index")
         from llama_index.core.llms import LLM
 
+        super_arg_names = set(get_func_arg_names(Completions.__init__))
+        for k in list(kwargs.keys()):
+            if k in super_arg_names:
+                kwargs.pop(k)
         llama_index_config = merge_dicts(self.get_settings(inherit=False), kwargs)
         def_llm = llama_index_config.pop("llm", None)
         def_llm_kwargs = llama_index_config.pop("llm_kwargs", None)
@@ -1493,7 +1597,7 @@ class LlamaIndexCompletions(Completions):
 
     @property
     def llm(self) -> LLMT:
-        """LLM."""
+        """Initialized LLM instance used for generating completions."""
         return self._llm
 
     def get_chat_response(self, messages: tp.ChatMessages) -> ChatResponseT:
@@ -1514,15 +1618,21 @@ class LlamaIndexCompletions(Completions):
 
 
 def resolve_completions(completions: tp.CompletionsLike = None) -> tp.MaybeType[Completions]:
-    """Resolve a subclass or an instance of `Completions`.
+    """Resolve and return a `Completions` subclass or instance.
 
-    The following values are supported:
+    Supported values:
 
-    * "openai" (`OpenAICompletions`)
-    * "litellm" (`LiteLLMCompletions`)
-    * "llama_index" (`LlamaIndexCompletions`)
-    * "auto": Any installed from above, in the same order
+    * "openai" for `OpenAICompletions`
+    * "litellm" for `LiteLLMCompletions`
+    * "llama_index" for `LlamaIndexCompletions`
+    * "auto" to select the first available option
     * A subclass or an instance of `Completions`
+
+    Args:
+        completions (CompletionsLike): A string identifier, subclass, or instance of `Completions`.
+
+    Returns:
+        Completions: The resolved completions class or instance.
     """
     if completions is None:
         from vectorbtpro._settings import settings
@@ -1560,10 +1670,16 @@ def resolve_completions(completions: tp.CompletionsLike = None) -> tp.MaybeType[
 
 
 def complete(message: str, completions: tp.CompletionsLike = None, **kwargs) -> tp.ChatOutput:
-    """Get completion for a message.
+    """Get and return the chat completion for a provided message.
 
-    Resolves `completions` with `resolve_completions`. Keyword arguments are passed to either
-    initialize a class or replace an instance of `Completions`."""
+    Args:
+        message (str): The input message for which to generate a completion.
+        completions (CompletionsLike): A string identifier, subclass, or instance specifying the completions backend.
+        **kwargs: Additional keyword arguments to initialize or update the completions instance.
+
+    Returns:
+        ChatOutput: The completion output generated by the resolved completions.
+    """
     completions = resolve_completions(completions=completions)
     if isinstance(completions, type):
         completions = completions(**kwargs)
@@ -1573,10 +1689,16 @@ def complete(message: str, completions: tp.CompletionsLike = None, **kwargs) -> 
 
 
 def complete_content(message: str, completions: tp.CompletionsLike = None, **kwargs) -> str:
-    """Get completion content for a message.
+    """Return completion content for a given message using the provided completions configuration.
 
-    Resolves `completions` with `resolve_completions`. Keyword arguments are passed to either
-    initialize a class or replace an instance of `Completions`."""
+    Args:
+        message (str): The input message.
+        completions (CompletionsLike): A completions instance or class to be resolved.
+        **kwargs: Additional parameters for initializing or updating the completions instance.
+
+    Returns:
+        str: The completion content based on the input message.
+    """
     completions = resolve_completions(completions=completions)
     if isinstance(completions, type):
         completions = completions(**kwargs)
@@ -1591,10 +1713,16 @@ def complete_content(message: str, completions: tp.CompletionsLike = None, **kwa
 class TextSplitter(Configured):
     """Abstract class for text splitters.
 
-    For defaults, see `knowledge.chat.text_splitter_config` in `vectorbtpro._settings.knowledge`."""
+    Args:
+        chunk_template (Optional[CustomTemplateLike]): Template used to format each text chunk.
+        template_context (KwargsLike): Dictionary for substituting template values.
+        **kwargs: Additional keyword arguments for configuration.
+
+    For defaults, see `knowledge.chat.text_splitter_config` in `vectorbtpro._settings.knowledge`.
+    """
 
     _short_name: tp.ClassVar[tp.Optional[str]] = None
-    """Short name of the class."""
+    """Short name of the text splitter class."""
 
     _settings_path: tp.SettingsPath = ["knowledge", "knowledge.chat", "knowledge.chat.text_splitter_config"]
 
@@ -1619,22 +1747,39 @@ class TextSplitter(Configured):
 
     @property
     def chunk_template(self) -> tp.Kwargs:
-        """Chunk template.
+        """Template used for formatting text chunks.
 
-        Can use the following context: `chunk_idx`, `chunk_start`, `chunk_end`, `chunk_text`, and `text`."""
+        Can use the following context: `chunk_idx`, `chunk_start`, `chunk_end`, `chunk_text`, and `text`.
+        """
         return self._chunk_template
 
     @property
     def template_context(self) -> tp.Kwargs:
-        """Context used to substitute templates."""
+        """Context dictionary for template substitution."""
         return self._template_context
 
     def split(self, text: str) -> tp.TSRangeChunks:
-        """Split text and yield start character and end character position of each chunk."""
+        """Yield the start and end character indices for each text chunk in the given text.
+
+        Args:
+            text (str): The input text to split.
+
+        Yields:
+            Tuple[int, int]: A tuple representing the start and end indices of a text chunk.
+        """
         raise NotImplementedError
 
     def split_text(self, text: str) -> tp.TSTextChunks:
-        """Split text and return text chunks."""
+        """Yield formatted text chunks generated from the input text by applying the chunk template.
+
+        The method substitutes the chunk template with context derived from each chunk's position and text.
+
+        Args:
+            text (str): The text to split.
+
+        Yields:
+            str: A formatted text chunk.
+        """
         for chunk_idx, (chunk_start, chunk_end) in enumerate(self.split(text)):
             chunk_text = text[chunk_start:chunk_end]
             chunk_template = self.chunk_template
@@ -1660,7 +1805,15 @@ class TextSplitter(Configured):
 class TokenSplitter(TextSplitter):
     """Splitter class for tokens.
 
-    For defaults, see `chat.text_splitter_configs.token` in `vectorbtpro._settings.knowledge`."""
+    Args:
+        chunk_size (Optional[int]): Maximum number of tokens per chunk.
+        chunk_overlap (Union[None, int, float]): Number or fraction of tokens overlapping between consecutive chunks.
+        tokenizer (TokenizerLike): A tokenizer to encode and decode text.
+        tokenizer_kwargs (KwargsLike): Additional arguments for the tokenizer.
+        **kwargs: Additional keyword arguments passed to `TextSplitter`.
+
+    For defaults, see `chat.text_splitter_configs.token` in `vectorbtpro._settings.knowledge`.
+    """
 
     _short_name = "token"
 
@@ -1719,16 +1872,26 @@ class TokenSplitter(TextSplitter):
     def chunk_overlap(self) -> int:
         """Number of overlapping tokens between chunks.
 
-        Can also be provided as a floating number relative to `SegmentSplitter.chunk_size`."""
+        If specified as a float between 0 and 1, it is scaled by `TokenSplitter.chunk_size`.
+        """
         return self._chunk_overlap
 
     @property
     def tokenizer(self) -> Tokenizer:
-        """An instance of `Tokenizer`."""
+        """`Tokenizer` instance used to tokenize input text."""
         return self._tokenizer
 
     def split_into_tokens(self, text: str) -> tp.TSRangeChunks:
-        """Split text into tokens."""
+        """Yield start and end indices for each token in the given text.
+
+        The method encodes the text into tokens and decodes each token to determine its character span.
+
+        Args:
+            text (str): The text to tokenize.
+
+        Yields:
+            Tuple[int, int]: The start and end indices of each token.
+        """
         tokens = self.tokenizer.encode(text)
         last_end = 0
         for token in tokens:
@@ -1757,14 +1920,24 @@ class TokenSplitter(TextSplitter):
 
 
 class SegmentSplitter(TokenSplitter):
-    """Splitter class for segments based on separators.
+    """SegmentSplitter class for splitting text into segments based on specified separators.
 
-    If a segment is too big, the next separator within the same layer is taken to split the segment
-    into smaller segments. If a segment is too big and there are no segments previously added
-    to the chunk, or, if the number of tokens is less than the minimal count, the next layer is taken.
-    To split into tokens, set any separator to None. To split into characters, use an empty string.
+    This class iteratively splits text by applying nested layers of separators.
+    If a segment exceeds the allowed size and no valid previous chunk exists or the token
+    count falls below the minimum, the next layer of separators is used. To split into tokens,
+    set a separator to None; to split into individual characters, use an empty string.
 
-    For defaults, see `chat.text_splitter_configs.segment` in `vectorbtpro._settings.knowledge`."""
+    Args:
+        separators (List[List[Optional[str]]]): Nested list of separators grouped by layers used
+            for splitting text.
+        min_chunk_size (Union[int, float]): Minimum number of tokens required per chunk.
+
+            If provided as a float between 0 and 1, it is interpreted relative to the chunk size.
+        fixed_overlap (bool): Indicates whether fixed overlap is applied.
+        **kwargs: Additional keyword arguments passed to `TokenSplitter`.
+
+    For defaults, see `chat.text_splitter_configs.segment` in `vectorbtpro._settings.knowledge`.
+    """
 
     _short_name = "segment"
 
@@ -1811,23 +1984,35 @@ class SegmentSplitter(TokenSplitter):
 
     @property
     def separators(self) -> tp.List[tp.List[tp.Optional[str]]]:
-        """Nested list of separators grouped into layers."""
+        """Nested list of separators grouped by layers."""
         return self._separators
 
     @property
     def min_chunk_size(self) -> int:
-        """Minimum number of tokens per chunk.
-
-        Can also be provided as a floating number relative to `SegmentSplitter.chunk_size`."""
+        """Minimum number of tokens per chunk. If provided as a float, it is interpreted relative to
+        `SegmentSplitter.chunk_size`."""
         return self._min_chunk_size
 
     @property
     def fixed_overlap(self) -> bool:
-        """Whether overlap should be fixed."""
+        """Whether fixed overlap is applied."""
         return self._fixed_overlap
 
     def split_into_segments(self, text: str, separator: tp.Optional[str] = None) -> tp.TSSegmentChunks:
-        """Split text into segments."""
+        """Split text into segments using the provided separator.
+
+        If `separator` is None, split the text into tokens using `SegmentSplitter.split_into_tokens`.
+        If `separator` is an empty string, split the text into individual characters; otherwise,
+        split the text at each occurrence of `separator`.
+
+        Args:
+            text (str): The text to be split.
+            separator (Optional[str]): The separator used to divide the text.
+
+        Yields:
+            Tuple[int, int, bool]: A tuple containing the segment's start index, end index, and
+                a flag indicating if the segment is a separator.
+        """
         if not separator:
             if separator is None:
                 for start, end in self.split_into_tokens(text):
@@ -2034,9 +2219,16 @@ class SegmentSplitter(TokenSplitter):
 
 
 class LlamaIndexSplitter(TextSplitter):
-    """Splitter class based on a node parser from LlamaIndex.
+    """Splitter class based on a node parser from LlamaIndex that divides text into chunks using nodes.
 
-    For defaults, see `chat.text_splitter_configs.llama_index` in `vectorbtpro._settings.knowledge`."""
+    Args:
+        node_parser (Union[None, str, NodeParser]): The node parser to use, specified as a string key,
+            class, or instance.
+        node_parser_kwargs (KwargsLike): Additional configuration for initializing the node parser.
+        **kwargs: Additional keyword arguments either passed to `TextSplitter` or used as `node_parser_kwargs`.
+
+    For defaults, see `chat.text_splitter_configs.llama_index` in `vectorbtpro._settings.knowledge`.
+    """
 
     _short_name = "llama_index"
 
@@ -2046,16 +2238,19 @@ class LlamaIndexSplitter(TextSplitter):
         self,
         node_parser: tp.Union[None, str, NodeParserT] = None,
         node_parser_kwargs: tp.KwargsLike = None,
-        template_context: tp.KwargsLike = None,
         **kwargs,
     ) -> None:
-        TextSplitter.__init__(self, template_context=template_context, **kwargs)
+        TextSplitter.__init__(self, **kwargs)
 
         from vectorbtpro.utils.module_ import assert_can_import
 
         assert_can_import("llama_index")
         from llama_index.core.node_parser import NodeParser
 
+        super_arg_names = set(get_func_arg_names(TextSplitter.__init__))
+        for k in list(kwargs.keys()):
+            if k in super_arg_names:
+                kwargs.pop(k)
         llama_index_config = merge_dicts(self.get_settings(inherit=False), kwargs)
         def_node_parser = llama_index_config.pop("node_parser", None)
         def_node_parser_kwargs = llama_index_config.pop("node_parser_kwargs", None)
@@ -2122,7 +2317,7 @@ class LlamaIndexSplitter(TextSplitter):
 
     @property
     def node_parser(self) -> NodeParserT:
-        """An instance of `llama_index.core.node_parser.interface.NodeParser`."""
+        """LlamaIndex node parser instance used for splitting text."""
         return self._node_parser
 
     def split(self, text: str) -> tp.TSRangeChunks:
@@ -2143,14 +2338,20 @@ class LlamaIndexSplitter(TextSplitter):
 
 
 def resolve_text_splitter(text_splitter: tp.TextSplitterLike = None) -> tp.MaybeType[TextSplitter]:
-    """Resolve a subclass or an instance of `TextSplitter`.
+    """Resolve a `TextSplitter` subclass or instance.
 
-    The following values are supported:
+    Supported values:
 
-    * "token" (`TokenSplitter`)
-    * "segment" (`SegmentSplitter`)
-    * "llama_index" (`LlamaIndexSplitter`)
-    * A subclass or an instance of `TextSplitter`
+    * "token" for `TokenSplitter`
+    * "segment" for `SegmentSplitter`
+    * "llama_index" for `LlamaIndexSplitter`
+    * A subclass or instance of `TextSplitter`
+
+    Args:
+        text_splitter (TextSplitterLike): Identifier for the text splitter.
+
+    Returns:
+        TextSplitter: The resolved text splitter subclass or instance.
     """
     if text_splitter is None:
         from vectorbtpro._settings import settings
@@ -2177,10 +2378,16 @@ def resolve_text_splitter(text_splitter: tp.TextSplitterLike = None) -> tp.Maybe
 
 
 def split_text(text: str, text_splitter: tp.TextSplitterLike = None, **kwargs) -> tp.List[str]:
-    """Split text.
+    """Split text into chunks using a specified text splitter.
 
-    Resolves `text_splitter` with `resolve_text_splitter`. Keyword arguments are passed to either
-    initialize a class or replace an instance of `TextSplitter`."""
+    Args:
+        text (str): The input text to be split.
+        text_splitter (TextSplitterLike): Identifier for the text splitter to use.
+        **kwargs: Additional parameters for configuring the text splitter.
+
+    Returns:
+        List[str]: A list of text chunks.
+    """
     text_splitter = resolve_text_splitter(text_splitter=text_splitter)
     if isinstance(text_splitter, type):
         text_splitter = text_splitter(**kwargs)
@@ -2197,7 +2404,7 @@ StoreObjectT = tp.TypeVar("StoreObjectT", bound="StoreObject")
 
 @define
 class StoreObject(DefineMixin):
-    """Class for objects to be managed by a store."""
+    """Class representing an object managed by a store."""
 
     id_: str = define.field()
     """Object identifier."""
@@ -2212,14 +2419,25 @@ StoreDataT = tp.TypeVar("StoreDataT", bound="StoreData")
 
 @define
 class StoreData(StoreObject, DefineMixin):
-    """Class for any data to be stored."""
+    """Class for any data to be stored.
+
+    Args:
+        data (Any): The stored data.
+    """
 
     data: tp.Any = define.field()
-    """Data."""
+    """The stored data."""
 
     @classmethod
     def id_from_data(cls, data: tp.Any) -> str:
-        """Generate a unique identifier from data."""
+        """Return a unique identifier computed from the given data.
+
+        Args:
+            data (Any): The data from which to generate the identifier.
+
+        Returns:
+            str: The MD5 hash of the serialized data.
+        """
         from vectorbtpro.utils.pickling import dumps
 
         return hashlib.md5(dumps(data)).hexdigest()
@@ -2231,7 +2449,16 @@ class StoreData(StoreObject, DefineMixin):
         id_: tp.Optional[str] = None,
         **kwargs,
     ) -> StoreDataT:
-        """Create an instance of `StoreData` from data."""
+        """Return a new instance of `StoreData` derived from the provided data.
+
+        Args:
+            data (Any): The data to store.
+            id_ (Optional[str]): An optional identifier; if not provided, one is generated.
+            **kwargs: Additional keyword arguments passed to the initializer.
+
+        Returns:
+            StoreData: A new instance of `StoreData`.
+        """
         if id_ is None:
             id_ = cls.id_from_data(data)
         return cls(id_, data, **kwargs)
@@ -2247,19 +2474,30 @@ StoreDocumentT = tp.TypeVar("StoreDocumentT", bound="StoreDocument")
 
 @define
 class StoreDocument(StoreData, DefineMixin):
-    """Abstract class for documents to be stored."""
+    """Abstract class for documents to be stored.
+
+    Args:
+        data (Any): The stored data.
+        template_context (KwargsLike): Context for substituting template variables.
+    """
 
     template_context: tp.KwargsLike = define.field(factory=dict)
-    """Context used to substitute templates."""
+    """Context for substituting template variables."""
 
     def get_content(self, for_embed: bool = False) -> tp.Optional[str]:
-        """Get content.
+        """Return the document content.
 
-        Returns None if there's no content."""
+        Returns:
+            Optional[str]: The content if available, otherwise None.
+        """
         raise NotImplementedError
 
     def split(self: StoreDocumentT) -> tp.List[StoreDocumentT]:
-        """Split document into multiple documents."""
+        """Return a list of document instances resulting from splitting the current document.
+
+        Returns:
+            List[StoreDocument]: A list of document chunks.
+        """
         raise NotImplementedError
 
     def __str__(self) -> str:
@@ -2270,7 +2508,14 @@ TextDocumentT = tp.TypeVar("TextDocumentT", bound="TextDocument")
 
 
 def def_metadata_template(metadata_content: str) -> str:
-    """Default metadata template"""
+    """Return a formatted metadata template string.
+
+    Args:
+        metadata_content (str): The metadata content to include.
+
+    Returns:
+        str: The formatted metadata template string with front matter delimiters.
+    """
     if metadata_content.endswith("\n"):
         return "---\n{metadata_content}---\n\n".format(metadata_content=metadata_content)
     return "---\n{metadata_content}\n---\n\n".format(metadata_content=metadata_content)
@@ -2278,48 +2523,58 @@ def def_metadata_template(metadata_content: str) -> str:
 
 @define
 class TextDocument(StoreDocument, DefineMixin):
-    """Class for text documents."""
+    """Class for text documents.
+
+    Args:
+        data (Any): The document data.
+        text_path (Optional[PathLikeKey]): Path to the text field within the data.
+        split_text_kwargs (KwargsLike): Keyword arguments passed to `split_text`.
+        excl_metadata (Union[bool, MaybeList[PathLikeKey]]): Indicates whether to exclude metadata or
+            specify fields to exclude. If False, metadata includes all fields except text.
+        excl_embed_metadata (Union[None, bool, MaybeList[PathLikeKey]]): Indicates metadata exclusion
+            for embeddings; if None, defaults to `excl_metadata`.
+        skip_missing (bool): Determines whether missing text or metadata returns None instead of raising an error.
+        dump_kwargs (KwargsLike): Keyword arguments for the dump formatting function.
+        metadata_template (CustomTemplateLike): Template for formatting metadata via the `format()` method.
+        content_template (CustomTemplateLike): Template for formatting content via the `format()` method.
+    """
 
     text_path: tp.Optional[tp.PathLikeKey] = define.field(default=None)
-    """Path to the text field."""
+    """Path to the text field within the data."""
 
     split_text_kwargs: tp.KwargsLike = define.field(factory=dict)
     """Keyword arguments passed to `split_text`."""
 
     excl_metadata: tp.Union[bool, tp.MaybeList[tp.PathLikeKey]] = define.field(default=False)
-    """Whether to exclude metadata and which fields to exclude.
+    """Indicates whether to exclude metadata or specify fields to exclude. 
     
-    If False, metadata becomes everything except text."""
+    If False, metadata includes all fields except text."""
 
     excl_embed_metadata: tp.Union[None, bool, tp.MaybeList[tp.PathLikeKey]] = define.field(default=None)
-    """Whether to exclude metadata and which fields to exclude for embeddings.
-
-    If None, becomes `TextDocument.excl_metadata`."""
+    """Indicates whether to exclude metadata for embeddings; if None, defaults to `excl_metadata`."""
 
     skip_missing: bool = define.field(default=True)
-    """Set missing text or metadata to None rather than raise an error."""
+    """Determines whether missing text or metadata returns None instead of raising an error."""
 
     dump_kwargs: tp.KwargsLike = define.field(factory=dict)
-    """Keyword arguments passed to `vectorbtpro.utils.formatting.dump`."""
+    """Keyword arguments for the dump formatting function."""
 
     metadata_template: tp.CustomTemplateLike = define.field(
         default=RepFunc(def_metadata_template, eval_id="metadata_template")
     )
-    """Metadata template.
-    
-    Must be suitable for formatting via the `format()` method."""
+    """Template for formatting metadata via the `format()` method."""
 
     content_template: tp.CustomTemplateLike = define.field(
         default=SafeSub("${metadata_content}${text}", eval_id="content_template")
     )
-    """Content template.
-    
-    Must be suitable for formatting via the `format()` method."""
+    """Template for formatting content via the `format()` method."""
 
     def get_text(self) -> tp.Optional[str]:
-        """Get text.
+        """Return the text content of the document.
 
-        Returns None if no text."""
+        Returns:
+            Optional[str]: The document's text, or None if not available.
+        """
         from vectorbtpro.utils.search_ import get_pathlike_key
 
         if self.data is None:
@@ -2341,9 +2596,14 @@ class TextDocument(StoreDocument, DefineMixin):
         raise TypeError(f"If text path is not provided, data item must be a string, not {type(self.data)}")
 
     def get_metadata(self, for_embed: bool = False) -> tp.Optional[tp.Any]:
-        """Get metadata.
+        """Return the metadata extracted from the document's data.
 
-        Returns None if no metadata."""
+        Args:
+            for_embed (bool): Flag indicating if metadata for embeddings should be retrieved.
+
+        Returns:
+            Optional[Any]: The metadata if available, otherwise None.
+        """
         from vectorbtpro.utils.search_ import remove_pathlike_key
 
         if self.data is None or isinstance(self.data, str) or self.text_path is None:
@@ -2377,9 +2637,14 @@ class TextDocument(StoreDocument, DefineMixin):
         return data
 
     def get_metadata_content(self, for_embed: bool = False) -> tp.Optional[str]:
-        """Get metadata content.
+        """Return the metadata content as a formatted string.
 
-        Returns None if no metadata."""
+        Args:
+            for_embed (bool): Flag indicating if metadata for embeddings should be retrieved.
+
+        Returns:
+            Optional[str]: The formatted metadata content, or None if metadata is missing.
+        """
         from vectorbtpro.utils.formatting import dump
 
         metadata = self.get_metadata(for_embed=for_embed)
@@ -2423,6 +2688,11 @@ class TextDocument(StoreDocument, DefineMixin):
         return content_template.substitute(template_context, eval_id="content_template")
 
     def split(self: TextDocumentT) -> tp.List[TextDocumentT]:
+        """Return a list of document instances obtained by splitting the text content.
+
+        Returns:
+            List[TextDocument]: A list of document chunks.
+        """
         from vectorbtpro.utils.search_ import set_pathlike_key
 
         text = self.get_text()
@@ -2446,20 +2716,29 @@ class TextDocument(StoreDocument, DefineMixin):
 
 @define
 class StoreEmbedding(StoreObject, DefineMixin):
-    """Class for embeddings to be stored."""
+    """Class for embeddings to be stored.
+
+    Args:
+        parent_id (Optional[str]): Identifier of the parent object.
+        child_ids (List[str]): Identifiers of child objects.
+        embedding (Optional[List[int]]): The embedding vector.
+    """
 
     parent_id: tp.Optional[str] = define.field(default=None)
-    """Parent object identifier."""
+    """Identifier of the parent object."""
 
     child_ids: tp.List[str] = define.field(factory=list)
-    """Child object identifiers."""
+    """List of identifiers for the child objects."""
 
     embedding: tp.Optional[tp.List[int]] = define.field(default=None, repr=lambda x: f"List[{len(x)}]" if x else None)
-    """Embedding."""
+    """The embedding vector."""
 
 
 class MetaObjectStore(type(Configured), type(MutableMapping)):
-    """Metaclass for `ObjectStore`."""
+    """Metaclass for `ObjectStore`.
+
+    Serves as the metaclass combining configuration from `Configured` and mutable mapping behavior.
+    """
 
     pass
 
@@ -2467,10 +2746,16 @@ class MetaObjectStore(type(Configured), type(MutableMapping)):
 class ObjectStore(Configured, MutableMapping, metaclass=MetaObjectStore):
     """Abstract class for managing an object store.
 
+    Args:
+        store_id (Optional[str]): Identifier for the store.
+        purge_on_open (Optional[bool]): Indicates if the store should be purged upon opening.
+        template_context (KwargsLike): Context for template substitution.
+        **kwargs: Additional keyword arguments for configuration.
+
     For defaults, see `knowledge.chat.obj_store_config` in `vectorbtpro._settings.knowledge`."""
 
     _short_name: tp.ClassVar[tp.Optional[str]] = None
-    """Short name of the class."""
+    """Short name identifier for the store class."""
 
     _settings_path: tp.SettingsPath = ["knowledge", "knowledge.chat", "knowledge.chat.obj_store_config"]
 
@@ -2502,36 +2787,36 @@ class ObjectStore(Configured, MutableMapping, metaclass=MetaObjectStore):
 
     @property
     def store_id(self) -> str:
-        """Store id."""
+        """Store identifier."""
         return self._store_id
 
     @property
     def purge_on_open(self) -> bool:
-        """Whether to purge on open."""
+        """Whether the store should be purged upon opening."""
         return self._purge_on_open
 
     @property
     def template_context(self) -> tp.Kwargs:
-        """Context used to substitute templates."""
+        """Template context used for substitution."""
         return self._template_context
 
     @property
     def opened(self) -> bool:
-        """Whether the store has been opened."""
+        """Whether the store is currently open."""
         return self._opened
 
     @property
     def enter_calls(self) -> int:
-        """Number of enter calls."""
+        """Number of times the store has been entered."""
         return self._enter_calls
 
     @property
     def mirror_store_id(self) -> tp.Optional[str]:
-        """Mirror store id."""
+        """Mirror store identifier (None if not applicable)."""
         return None
 
     def open(self) -> None:
-        """Open the store."""
+        """Open the store. If already open, close it first; purge if `purge_on_open` is True."""
         if self.opened:
             self.close()
         if self.purge_on_open:
@@ -2539,21 +2824,21 @@ class ObjectStore(Configured, MutableMapping, metaclass=MetaObjectStore):
         self._opened = True
 
     def check_opened(self) -> None:
-        """Check the store is opened."""
+        """Ensure the store is open; raise an exception if it is not."""
         if not self.opened:
             raise Exception(f"{type(self)} must be opened first")
 
     def commit(self) -> None:
-        """Commit changes."""
+        """Commit any pending changes to the store."""
         pass
 
     def close(self) -> None:
-        """Close the store."""
+        """Close the store by committing changes and marking it as closed."""
         self.commit()
         self._opened = False
 
     def purge(self) -> None:
-        """Purge the store."""
+        """Purge the store by closing it."""
         self.close()
 
     def __getitem__(self, id_: str) -> StoreObjectT:
@@ -2587,9 +2872,9 @@ class ObjectStore(Configured, MutableMapping, metaclass=MetaObjectStore):
 
 
 class DictStore(ObjectStore):
-    """Store class based on a dictionary.
+    """Store class based on a dictionary that holds objects in memory.
 
-    For defaults, see `chat.obj_store_configs.memory` in `vectorbtpro._settings.knowledge`."""
+    For defaults, see `chat.obj_store_configs.dict` in `vectorbtpro._settings.knowledge`."""
 
     _short_name: tp.ClassVar[tp.Optional[str]] = "dict"
 
@@ -2602,7 +2887,7 @@ class DictStore(ObjectStore):
 
     @property
     def store(self) -> tp.Dict[str, StoreObjectT]:
-        """Store dictionary."""
+        """Underlying dictionary storing the objects."""
         return self._store
 
     def purge(self) -> None:
@@ -2631,13 +2916,11 @@ class DictStore(ObjectStore):
 
 
 memory_store: tp.Dict[str, tp.Dict[str, StoreObjectT]] = {}
-"""Object store by store id for `MemoryStore`."""
+"""Dictionary mapping store identifiers to their corresponding object dictionaries used by `MemoryStore`."""
 
 
 class MemoryStore(DictStore):
-    """Store class based in memory.
-
-    Commits changes to `memory_store`.
+    """Store class for in-memory object storage that commits changes to `memory_store`.
 
     For defaults, see `chat.obj_store_configs.memory` in `vectorbtpro._settings.knowledge`."""
 
@@ -2650,11 +2933,11 @@ class MemoryStore(DictStore):
 
     @property
     def store(self) -> tp.Dict[str, StoreObjectT]:
-        """Store dictionary."""
+        """In-memory dictionary storing the objects."""
         return self._store
 
     def store_exists(self) -> bool:
-        """Whether store exists."""
+        """Return whether a store exists for the current store identifier in `memory_store`."""
         return self.store_id in memory_store
 
     def open(self) -> None:
@@ -2675,10 +2958,21 @@ class MemoryStore(DictStore):
 class FileStore(DictStore):
     """Store class based on files.
 
-    Either commits changes to a single file (with index id being the file name), or commits the initial
-    changes to the base file and any other change to patch file(s) (with index id being the directory name).
+    This class manages file-based storage. It either commits all changes to a single file
+    (with the file name corresponding to the index id) or applies an initial commit to a base
+    file and subsequent modifications as patch files (with the directory name serving as the index id).
 
-    For defaults, see `chat.obj_store_configs.file` in `vectorbtpro._settings.knowledge`."""
+    Args:
+        dir_path (Optional[PathLike]): Directory path for file storage.
+        compression (Union[None, bool, str]): Compression setting applied to file operations.
+        save_kwargs (KwargsLike): Keyword arguments passed to `vectorbtpro.utils.pickling.save`.
+        load_kwargs (KwargsLike): Keyword arguments passed to `vectorbtpro.utils.pickling.load`.
+        use_patching (Optional[bool]): Flag indicating whether to use patch files.
+        consolidate (Optional[bool]): Flag indicating whether to consolidate patch files.
+        **kwargs: Additional keyword arguments passed to `DictStore`.
+
+    For defaults, see `chat.obj_store_configs.file` in `vectorbtpro._settings.knowledge`.
+    """
 
     _short_name = "file"
 
@@ -2737,53 +3031,57 @@ class FileStore(DictStore):
 
     @property
     def dir_path(self) -> tp.Optional[tp.Path]:
-        """Path to the directory."""
+        """Directory path used for file storage."""
         return self._dir_path
 
     @property
     def compression(self) -> tp.CompressionLike:
-        """Compression."""
+        """Compression setting used for file operations."""
         return self._compression
 
     @property
     def save_kwargs(self) -> tp.Kwargs:
-        """Keyword arguments passed to `vectorbtpro.utils.pickling.save`."""
+        """Keyword arguments for saving objects using `vectorbtpro.utils.pickling.save`."""
         return self._save_kwargs
 
     @property
     def load_kwargs(self) -> tp.Kwargs:
-        """Keyword arguments passed to `vectorbtpro.utils.pickling.load`."""
+        """Keyword arguments for loading objects using `vectorbtpro.utils.pickling.load`."""
         return self._load_kwargs
 
     @property
     def use_patching(self) -> bool:
-        """Whether to use directory with patch files or create a single file."""
+        """Whether patch files are used instead of a single file."""
         return self._use_patching
 
     @property
     def consolidate(self) -> bool:
-        """Whether to consolidate patch files."""
+        """Whether patch files should be consolidated."""
         return self._consolidate
 
     @property
     def store_changes(self) -> tp.Dict[str, StoreObjectT]:
-        """Store with new or modified objects only."""
+        """Dictionary of newly added or modified objects."""
         return self._store_changes
 
     @property
     def new_keys(self) -> tp.Set[str]:
-        """Keys that haven't been added to the store."""
+        """Set of keys representing objects not yet added to the main store."""
         return self._new_keys
 
     def reset_state(self) -> None:
-        """Reset state."""
+        """Reset the internal state tracking modifications and new keys."""
         self._consolidate = False
         self._store_changes = {}
         self._new_keys = set()
 
     @property
     def store_path(self) -> tp.Path:
-        """Path to the directory with patch files or a single file."""
+        """Filesystem path to the store.
+
+        If patching is used, this path points to the directory containing patch files; otherwise,
+        it points to a single file.
+        """
         dir_path = self.dir_path
         if dir_path is None:
             dir_path = "."
@@ -2795,7 +3093,7 @@ class FileStore(DictStore):
         return str(self.store_path.resolve())
 
     def get_next_patch_path(self) -> tp.Path:
-        """Get path to the next patch file to be saved."""
+        """Return the path for the next patch file to be saved, using an incremented index."""
         indices = []
         for file in self.store_path.glob("patch_*"):
             indices.append(int(file.stem.split("_")[1]))
@@ -2912,11 +3210,18 @@ class FileStore(DictStore):
 
 
 class LMDBStore(ObjectStore):
-    """Store class based on LMDB (Lightning Memory-Mapped Database).
+    """Store class based on LMDB (Lightning Memory-Mapped Database) using the `lmdbm` package.
 
-    Uses [lmdbm](https://pypi.org/project/lmdbm/) package.
+    Args:
+        dir_path (Optional[PathLike]): Directory path for the LMDB database.
+        mkdir_kwargs (KwargsLike): Keyword arguments for creating directories.
+        dumps_kwargs (KwargsLike): Keyword arguments for serializing objects.
+        loads_kwargs (KwargsLike): Keyword arguments for deserializing objects.
+        open_kwargs (KwargsLike): Keyword arguments for opening the LMDB database.
+        **kwargs: Additional keyword arguments passed to `ObjectStore`.
 
-    For defaults, see `chat.obj_store_configs.lmdb` in `vectorbtpro._settings.knowledge`."""
+    For defaults, see `chat.obj_store_configs.lmdb` in `vectorbtpro._settings.knowledge`.
+    """
 
     _short_name: tp.ClassVar[tp.Optional[str]] = "lmdb"
 
@@ -2983,32 +3288,35 @@ class LMDBStore(ObjectStore):
 
     @property
     def dir_path(self) -> tp.Optional[tp.Path]:
-        """Path to the directory."""
+        """Directory path used for the LMDB store."""
         return self._dir_path
 
     @property
     def mkdir_kwargs(self) -> tp.Kwargs:
-        """Keyword arguments passed to `vectorbtpro.utils.path_.check_mkdir`."""
+        """Keyword arguments used for directory creation via `vectorbtpro.utils.path_.check_mkdir`."""
         return self._mkdir_kwargs
 
     @property
     def dumps_kwargs(self) -> tp.Kwargs:
-        """Keyword arguments passed to `vectorbtpro.utils.pickling.dumps`."""
+        """Keyword arguments used for serializing objects via `vectorbtpro.utils.pickling.dumps`."""
         return self._dumps_kwargs
 
     @property
     def loads_kwargs(self) -> tp.Kwargs:
-        """Keyword arguments passed to `vectorbtpro.utils.pickling.loads`."""
+        """Keyword arguments used for deserializing objects via `vectorbtpro.utils.pickling.loads`."""
         return self._loads_kwargs
 
     @property
     def open_kwargs(self) -> tp.Kwargs:
-        """Keyword arguments passed to `lmdbm.lmdbm.Lmdb.open`."""
+        """Keyword arguments used when opening the LMDB database via `lmdbm.lmdbm.Lmdb.open`."""
         return self._open_kwargs
 
     @property
     def db_path(self) -> tp.Path:
-        """Path to the database."""
+        """File system path to the LMDB database.
+
+        Constructs the path by combining the directory (defaulting to "." if not set) with the store identifier.
+        """
         dir_path = self.dir_path
         if dir_path is None:
             dir_path = "."
@@ -3021,7 +3329,7 @@ class LMDBStore(ObjectStore):
 
     @property
     def db(self) -> tp.Optional[LmdbT]:
-        """Database."""
+        """LMDB database instance if opened; otherwise, None."""
         return self._db
 
     def open(self) -> None:
@@ -3045,13 +3353,27 @@ class LMDBStore(ObjectStore):
         remove_dir(self.db_path, missing_ok=True, with_contents=True)
 
     def encode(self, obj: StoreObjectT) -> bytes:
-        """Encode an object."""
+        """Encode the given object to a bytes representation using the configured serialization settings.
+
+        Args:
+            obj (StoreObject): The object to encode.
+
+        Returns:
+            bytes: The serialized bytes of the object.
+        """
         from vectorbtpro.utils.pickling import dumps
 
         return dumps(obj, **self.dumps_kwargs)
 
     def decode(self, bytes_: bytes) -> StoreObjectT:
-        """Decode an object."""
+        """Decode the given bytes into an object using the configured deserialization settings.
+
+        Args:
+            bytes_ (bytes): The bytes representation of the object.
+
+        Returns:
+            StoreObject: The deserialized object.
+        """
         from vectorbtpro.utils.pickling import loads
 
         return loads(bytes_, **self.loads_kwargs)
@@ -3078,9 +3400,16 @@ class LMDBStore(ObjectStore):
 
 
 class CachedStore(DictStore):
-    """Store class that acts as a (temporary) cache to another store.
+    """Store class acting as a temporary cache for another store.
 
-    For defaults, see `chat.obj_store_configs.cached` in `vectorbtpro._settings.knowledge`."""
+    Args:
+        obj_store (ObjectStore): The underlying object store to cache.
+        lazy_open (Optional[bool]): Flag indicating whether to open the store lazily.
+        mirror (Optional[bool]): Flag indicating whether to mirror the store in `memory_store`.
+        **kwargs: Additional keyword arguments passed to `DictStore`.
+
+    For defaults, see `chat.obj_store_configs.cached` in `vectorbtpro._settings.knowledge`.
+    """
 
     _short_name: tp.ClassVar[tp.Optional[str]] = "cached"
 
@@ -3115,22 +3444,22 @@ class CachedStore(DictStore):
 
     @property
     def obj_store(self) -> ObjectStore:
-        """Object store."""
+        """Underlying object store."""
         return self._obj_store
 
     @property
     def lazy_open(self) -> bool:
-        """Whether to open the store lazily."""
+        """Whether the store opens lazily."""
         return self._lazy_open
 
     @property
     def mirror(self) -> bool:
-        """Whether to mirror the store in `memory_store`."""
+        """Whether the store is mirrored in `memory_store`."""
         return self._mirror
 
     @property
     def force_open(self) -> bool:
-        """Whether to open the store forcefully."""
+        """Whether the store is forced open."""
         return self._force_open
 
     def open(self) -> None:
@@ -3195,14 +3524,20 @@ class CachedStore(DictStore):
 def resolve_obj_store(obj_store: tp.ObjectStoreLike = None) -> tp.MaybeType[ObjectStore]:
     """Resolve a subclass or an instance of `ObjectStore`.
 
-    The following values are supported:
+    Supported values:
 
-    * "dict" (`DictStore`)
-    * "memory" (`MemoryStore`)
-    * "file" (`FileStore`)
-    * "lmdb" (`LMDBStore`)
-    * "cached" (`CachedStore`)
-    * A subclass or an instance of `ObjectStore`
+    * "dict" for `DictStore`
+    * "memory" for `MemoryStore`
+    * "file" for `FileStore`
+    * "lmdb" for `LMDBStore`
+    * "cached" for `CachedStore`
+    * or an actual subclass or instance of `ObjectStore`.
+
+    Args:
+        obj_store (ObjectStoreLike): A subclass, instance, or string identifier for an object store.
+
+    Returns:
+        ObjectStore: The resolved object store.
     """
     if obj_store is None:
         from vectorbtpro._settings import settings
@@ -3233,36 +3568,62 @@ def resolve_obj_store(obj_store: tp.ObjectStoreLike = None) -> tp.MaybeType[Obje
 
 @define
 class EmbeddedDocument(DefineMixin):
-    """Abstract class for embedded documents."""
+    """Define an abstract class for embedded documents."""
 
     document: StoreDocument = define.field()
-    """Document."""
+    """Primary document content."""
 
     embedding: tp.Optional[tp.List[float]] = define.field(default=None)
-    """Embedding."""
+    """List of floats representing the document's embedding."""
 
     child_documents: tp.List["EmbeddedDocument"] = define.field(factory=list)
-    """Embedded child documents."""
+    """List of embedded child documents."""
 
 
 @define
 class ScoredDocument(DefineMixin):
-    """Abstract class for scored documents."""
+    """Define an abstract class for scored documents with an associated numerical score."""
 
     document: StoreDocument = define.field()
-    """Document."""
+    """Primary document content."""
 
     score: float = define.field(default=float("nan"))
-    """Score."""
+    """Numeric score assigned to the document."""
 
     child_documents: tp.List["ScoredDocument"] = define.field(factory=list)
-    """Scored child documents."""
+    """List of scored child documents."""
 
 
 class DocumentRanker(Configured):
     """Class for embedding, scoring, and ranking documents.
 
-    For defaults, see `knowledge.chat.doc_ranker_config` in `vectorbtpro._settings.knowledge`."""
+    Args:
+        dataset_id (Optional[str]): Identifier for the dataset.
+        embeddings (EmbeddingsLike): Embeddings engine or class for processing document embeddings.
+        embeddings_kwargs (KwargsLike): Keyword arguments for initializing or updating embeddings.
+        doc_store (TokenizerLike): Document store factory or instance for managing documents.
+        doc_store_kwargs (KwargsLike): Keyword arguments for initializing or updating the document store.
+        cache_doc_store (Optional[bool]): Flag to indicate if the document store should be cached.
+        emb_store (TokenizerLike): Embedding store factory or instance for managing embeddings.
+        emb_store_kwargs (KwargsLike): Keyword arguments for initializing or updating the embedding store.
+        cache_emb_store (Optional[bool]): Flag to indicate if the embedding store should be cached.
+        search_method (Optional[str]): Strategy for document search.
+        bm25_tokenizer (Optional[BM25Tokenizer]): BM25 tokenizer for processing text.
+        bm25_tokenizer_kwargs (KwargsLike): Keyword arguments for initializing the BM25 tokenizer.
+        bm25_retriever (Optional[MaybeType[BM25]]): BM25 retriever for document retrieval.
+        bm25_retriever_kwargs (KwargsLike): Keyword arguments for initializing the BM25 retriever.
+        bm25_mirror_store_id (Optional[str]): Identifier for the BM25 mirror store.
+        bm25_score_weight (Optional[float]): Weight applied to BM25 scoring.
+        score_func (Union[None, str, Callable]): Function or identifier for scoring documents.
+        score_agg_func (Union[None, str, Callable]): Function or identifier for aggregating scores.
+        normalize_scores (Optional[bool]): Flag to indicate whether to normalize scores.
+        show_progress (Optional[bool]): Flag to display progress during operations.
+        pbar_kwargs (KwargsLike): Keyword arguments for configuring the progress bar.
+        template_context (KwargsLike): Template context for dynamic configuration.
+        **kwargs: Additional keyword arguments for configuration.
+
+    For defaults, see `knowledge.chat.doc_ranker_config` in `vectorbtpro._settings.knowledge`.
+    """
 
     _settings_path: tp.SettingsPath = ["knowledge", "knowledge.chat", "knowledge.chat.doc_ranker_config"]
 
@@ -3421,8 +3782,8 @@ class DocumentRanker(Configured):
                         bm25_tokenizer = bm25_memory_store["bm25_tokenizer"].data
                         bm25_retriever = bm25_memory_store["bm25_retriever"].data
                 bm25_tokenizer, bm25_tokenize_kwargs = self.resolve_bm25_tokenizer(
-                bm25_tokenizer=bm25_tokenizer, **bm25_tokenizer_kwargs
-            )
+                    bm25_tokenizer=bm25_tokenizer, **bm25_tokenizer_kwargs
+                )
             bm25_retriever, bm25_retrieve_kwargs = self.resolve_bm25_retriever(
                 bm25_retriever=bm25_retriever,
                 **bm25_retriever_kwargs,
@@ -3460,85 +3821,84 @@ class DocumentRanker(Configured):
 
     @property
     def embeddings(self) -> Embeddings:
-        """An instance of `Embeddings`."""
+        """Instance of `Embeddings`."""
         return self._embeddings
 
     @property
     def doc_store(self) -> ObjectStore:
-        """An instance of `ObjectStore` for documents."""
+        """Instance of `ObjectStore` used for documents."""
         return self._doc_store
 
     @property
     def emb_store(self) -> ObjectStore:
-        """An instance of `ObjectStore` for embeddings."""
+        """Instance of `ObjectStore` used for embeddings."""
         return self._emb_store
 
     @property
     def search_method(self) -> bool:
-        """Search method.
+        """Search method used.
 
-        Supported are "embeddings", "bm25", and "hybrid"."""
+        Supported values: "embeddings", "bm25", and "hybrid"."""
         return self._search_method
 
     @property
     def bm25_tokenizer(self) -> tp.Optional[BM25TokenizerT]:
-        """Instance of `bm25s.tokenization.Tokenizer`."""
+        """BM25 tokenizer instance from `bm25s.tokenization.Tokenizer`."""
         return self._bm25_tokenizer
 
     @property
     def bm25_tokenize_kwargs(self) -> tp.Kwargs:
-        """Keyword arguments passed to `bm25s.tokenization.Tokenizer.tokenize`."""
+        """Keyword arguments for the `tokenize` method of `bm25s.tokenization.Tokenizer`."""
         return self._bm25_tokenize_kwargs
 
     @property
     def bm25_retriever(self) -> tp.Optional[BM25T]:
-        """Instance of `bm25s.BM25`."""
+        """BM25 retriever instance from `bm25s.BM25`."""
         return self._bm25_retriever
 
     @property
     def bm25_retrieve_kwargs(self) -> tp.Kwargs:
-        """Keyword arguments passed to `bm25s.BM25.retrieve`."""
+        """Keyword arguments for the `retrieve` method of `bm25s.BM25`."""
         return self._bm25_retrieve_kwargs
 
     @property
     def bm25_score_weight(self) -> float:
         """BM25 score weight.
 
-        Embedding score weight becomes `1 - bm25_score_weight`.
-
-        Gets applied to scores prior normalized to [0, 1]."""
+        The embedding score weight is computed as 1 minus this value and is applied to
+        scores normalized to [0, 1]."""
         return self._bm25_score_weight
 
     @property
     def score_func(self) -> tp.Union[str, tp.Callable]:
-        """Score function.
+        """Score function or its name used for computing document scores.
 
-        See `DocumentRanker.compute_score`."""
+        See `DocumentRanker.compute_score` for details."""
         return self._score_func
 
     @property
     def score_agg_func(self) -> tp.Callable:
-        """Score aggregation function."""
+        """Function used to aggregate scores."""
         return self._score_agg_func
 
     @property
     def normalize_scores(self) -> bool:
-        """Whether to normalize scores before filtering."""
+        """Whether scores should be normalized before filtering."""
         return self._normalize_scores
 
     @property
     def show_progress(self) -> tp.Optional[bool]:
-        """Whether to show progress bar."""
+        """Whether to display a progress bar."""
         return self._show_progress
 
     @property
     def pbar_kwargs(self) -> tp.Kwargs:
-        """Keyword arguments passed to `vectorbtpro.utils.pbar.ProgressBar`."""
+        """Keyword arguments used for initializing `vectorbtpro.utils.pbar.ProgressBar`."""
         return self._pbar_kwargs
 
     @property
     def template_context(self) -> tp.Kwargs:
-        """Context used to substitute templates."""
+        """Context dictionary used for template substitution."""
         return self._template_context
 
     def resolve_bm25_tokenizer(
@@ -3546,7 +3906,15 @@ class DocumentRanker(Configured):
         bm25_tokenizer: tp.Optional[BM25TokenizerT] = None,
         **kwargs,
     ) -> tp.Tuple[BM25TokenizerT, tp.Kwargs]:
-        """Resolve an instance of `bm25s.tokenization.Tokenizer` and tokenization-related keyword arguments"""
+        """Return a tuple containing a resolved instance of `bm25s.tokenization.Tokenizer` and
+        tokenization keyword arguments.
+
+        Args:
+            bm25_tokenizer (Optional[BM25Tokenizer]): A BM25 tokenizer instance or type.
+            **kwargs: Additional configuration arguments for tokenization.
+
+        Returns:
+            Tuple[BM25TokenizerT, Kwargs]: The resolved BM25 tokenizer and the tokenization keyword arguments."""
         from vectorbtpro.utils.module_ import assert_can_import, check_installed
 
         assert_can_import("bm25s")
@@ -3587,7 +3955,14 @@ class DocumentRanker(Configured):
         bm25_retriever: tp.Optional[BM25T],
         **kwargs,
     ) -> tp.Tuple[BM25T, tp.Kwargs]:
-        """Resolve an instance of `bm25s.BM25` and retrieval-related keyword arguments."""
+        """Return a tuple containing a resolved instance of `bm25s.BM25` and retrieval keyword arguments.
+
+        Args:
+            bm25_retriever (Optional[BM25]): A BM25 retriever instance or type.
+            **kwargs: Additional configuration arguments for retrieval.
+
+        Returns:
+            Tuple[BM25T, Kwargs]: The resolved BM25 retriever and the retrieval keyword arguments."""
         from vectorbtpro.utils.module_ import assert_can_import
 
         assert_can_import("bm25s")
@@ -3624,15 +3999,24 @@ class DocumentRanker(Configured):
         return_embeddings: bool = False,
         return_documents: bool = False,
     ) -> tp.Optional[tp.EmbeddedDocuments]:
-        """Embed documents.
+        """Embed documents by optionally refreshing stored documents and embeddings.
 
-        Enable `refresh` or its sub-arguments to refresh documents and/or embeddings in their
-        particular stores. Without refreshing, will rely on the persisted objects.
+        Without refreshing, persisted objects from the respective stores are used.
 
-        If `return_embeddings` and `return_documents` are both False, returns nothing.
-        If `return_embeddings` and `return_documents` are both True, for each document,
-        returns the document and either an embedding or a list of document chunks and their embeddings.
-        If `return_documents` is False, returns only embeddings."""
+        Args:
+            documents (Iterable[StoreDocument]): An iterable of documents to embed.
+            refresh (bool): Flag to refresh both documents and embeddings unless overridden.
+            refresh_documents (Optional[bool]): Flag to refresh documents; defaults to the value of
+                `refresh` if not specified.
+            refresh_embeddings (Optional[bool]): Flag to refresh embeddings; defaults to the value of
+                `refresh` if not specified.
+            return_embeddings (bool): If True, include embeddings in the returned result.
+            return_documents (bool): If True, include the original documents along with their embeddings.
+
+        Returns:
+            Optional[EmbeddedDocuments]: Embedded documents or embeddings based on the specified return flags.
+            Returns None if both return flags are False.
+        """
         if refresh_documents is None:
             refresh_documents = refresh
         if refresh_embeddings is None:
@@ -3742,10 +4126,19 @@ class DocumentRanker(Configured):
         emb1: tp.Union[tp.MaybeIterable[tp.List[float]], np.ndarray],
         emb2: tp.Union[tp.MaybeIterable[tp.List[float]], np.ndarray],
     ) -> tp.Union[float, np.ndarray]:
-        """Compute scores between embeddings, which can be either single or multiple.
+        """Compute similarity or distance scores between embeddings.
 
-        Supported distance functions are 'cosine', 'euclidean', and 'dot'. A metric can also be
-        a callable that should take two and return one 2-dim NumPy array."""
+        Compute scores between embedding vectors using the configured scoring function.
+        Supported functions include "cosine", "euclidean", and "dot". Alternatively, a callable
+        metric can be supplied that accepts two arrays and returns a 2-dimensional ndarray.
+
+        Args:
+            emb1 (Union[MaybeIterable[List[float]], ndarray]): The first embedding or collection of embeddings.
+            emb2 (Union[MaybeIterable[List[float]], ndarray]): The second embedding or collection of embeddings.
+
+        Returns:
+            Union[float, ndarray]: The computed score or score matrix between the embeddings.
+        """
         emb1 = np.asarray(emb1)
         emb2 = np.asarray(emb2)
         emb1_single = emb1.ndim == 1
@@ -3789,7 +4182,28 @@ class DocumentRanker(Configured):
         return_chunks: bool = False,
         return_documents: bool = False,
     ) -> tp.ScoredDocuments:
-        """Score documents by relevance to a query."""
+        """Score documents by relevance to a query.
+
+        Optionally refresh and embed documents before scoring their relevance to a query.
+        If no documents are provided, the document store is used. When `return_chunks` is True,
+        document chunks are scored instead of parent documents. The query is embedded and compared
+        against document embeddings to compute relevance scores.
+
+        Args:
+            query (str): The query string for scoring relevance.
+            documents (Optional[Iterable[StoreDocument]]): An iterable of documents to score. If None,
+                documents from the document store are used.
+            refresh (bool): Flag to refresh both documents and embeddings.
+            refresh_documents (Optional[bool]): Flag to refresh documents; defaults to the value of
+                `refresh` if not specified.
+            refresh_embeddings (Optional[bool]): Flag to refresh embeddings; defaults to the value of
+                `refresh` if not specified.
+            return_chunks (bool): If True, score and return document chunks.
+            return_documents (bool): If True, include original document objects in the output.
+
+        Returns:
+            ScoredDocuments: A collection of documents with their computed relevance scores.
+        """
         with self.doc_store, self.emb_store:
             if documents is None:
                 if self.doc_store is None:
@@ -3877,14 +4291,23 @@ class DocumentRanker(Configured):
             return scores
 
     SPLIT_PATTERN = re.compile(r"(?<=[a-z])(?=[A-Z])|_")
-    """Split pattern for `DocumentRanker.bm25_splitter`."""
+    """Regular expression pattern used by `DocumentRanker.bm25_splitter` to split text at 
+    transitions between lowercase and uppercase letters or underscores."""
 
     TOKEN_PATTERN = re.compile(r"(?u)\b\w{2,}\b")
-    """Token pattern for `DocumentRanker.bm25_splitter`."""
+    """Regular expression pattern used by `DocumentRanker.bm25_splitter` to extract tokens with 
+    at least two characters."""
 
     @classmethod
     def bm25_splitter(cls, text: str) -> tp.List[str]:
-        """Splitter for BM25."""
+        """Return a list of lowercase tokens extracted from the input text using BM25 tokenization.
+
+        Args:
+            text (str): The text to tokenize.
+
+        Returns:
+            list[str]: Lowercase tokens extracted from the input text.
+        """
         spaced_text = cls.SPLIT_PATTERN.sub(" ", text)
         tokens = cls.TOKEN_PATTERN.findall(spaced_text)
         return [token.lower() for token in tokens]
@@ -3898,7 +4321,22 @@ class DocumentRanker(Configured):
         return_chunks: bool = False,
         return_documents: bool = False,
     ) -> tp.ScoredDocuments:
-        """Score documents by relevance to a query using BM25."""
+        """Return BM25 relevance scores for documents matching a query.
+
+        Args:
+            query (str): The query string for relevance scoring.
+            documents (Optional[Iterable[StoreDocument]]): Collection of documents to score.
+
+                If None, uses documents from the store.
+            refresh (bool): Whether to refresh BM25 indexing.
+            refresh_documents (Optional[bool]): Whether to refresh document splits.
+            return_chunks (bool): Whether to process document chunks in scoring.
+            return_documents (bool): Whether to return full ScoredDocument objects.
+
+        Returns:
+            ScoredDocuments: The computed BM25 scores for each document, as either numeric scores or
+                ScoredDocument objects.
+        """
         with self.doc_store, self.emb_store:
             if refresh_documents is None:
                 refresh_documents = refresh
@@ -4042,11 +4480,16 @@ class DocumentRanker(Configured):
 
     @classmethod
     def resolve_top_k(cls, scores: tp.Iterable[float], top_k: tp.TopKLike = None) -> tp.Optional[int]:
-        """Resolve `top_k` based on _sorted_ scores.
+        """Resolve the top_k value from sorted scores.
 
-        Supported values are integers (top number), floats (top %), strings (supported methods are
-        'elbow' and 'kmeans'), as well as callables that should take a 1-dim NumPy array and return
-        an integer or a float. Filters out NaN before computation (requires them to be at the tail)."""
+        Args:
+            scores (Iterable[float]): The sorted document scores.
+            top_k (TopKLike): Parameter specifying the top_k selection method, which can be an integer,
+                a float percentage, a string ('elbow' or 'kmeans'), or a callable.
+
+        Returns:
+            Optional[int]: The resolved top_k value, or None if top_k is not provided.
+        """
         if top_k is None:
             return None
         scores = np.asarray(scores)
@@ -4075,7 +4518,15 @@ class DocumentRanker(Configured):
 
     @classmethod
     def top_k_from_cutoff(cls, scores: tp.Iterable[float], cutoff: tp.Optional[float] = None) -> tp.Optional[int]:
-        """Get `top_k` from `cutoff` based on _sorted_ scores."""
+        """Determine the number of top documents based on a cutoff threshold from sorted scores.
+
+        Args:
+            scores (Iterable[float]): The sorted document scores.
+            cutoff (Optional[float]): The score threshold for top documents.
+
+        Returns:
+            Optional[int]: The count of scores greater than or equal to the cutoff, or None if cutoff is None.
+        """
         if cutoff is None:
             return None
         scores = np.asarray(scores)
@@ -4084,7 +4535,14 @@ class DocumentRanker(Configured):
 
     @classmethod
     def extract_doc_scores(cls, scored_documents: tp.List[ScoredDocument]) -> tp.List[float]:
-        """Extract scores from scored documents."""
+        """Recursively extract scores from a list of scored documents.
+
+        Args:
+            scored_documents (List[ScoredDocument]): A list of documents containing scores.
+
+        Returns:
+            List[float]: Scores extracted from each document and its child documents.
+        """
         scores = []
         for document in scored_documents:
             scores.append(document.score)
@@ -4094,7 +4552,14 @@ class DocumentRanker(Configured):
 
     @classmethod
     def normalize_doc_scores(cls, scores: tp.Iterable[float]) -> np.ndarray:
-        """Normalize scores."""
+        """Normalize a collection of scores using min-max scaling.
+
+        Args:
+            scores (Iterable[float]): An iterable of scores to normalize.
+
+        Returns:
+            ndarray: An array of normalized scores.
+        """
         scores = np.array(scores, dtype=float)
         min_score, max_score = np.nanmin(scores), np.nanmax(scores)
         return (scores - min_score) / (max_score - min_score) if max_score != min_score else scores - min_score
@@ -4105,7 +4570,15 @@ class DocumentRanker(Configured):
         scored_documents: tp.List[ScoredDocument],
         new_scores: tp.List[float],
     ) -> tp.List[ScoredDocument]:
-        """Replace scores by returning new scored documents."""
+        """Recursively replace scores in documents with new scores.
+
+        Args:
+            scored_documents (List[ScoredDocument]): Documents with existing scores.
+            new_scores (List[float]): New scores to assign, consumed in order.
+
+        Returns:
+            List[ScoredDocument]: Updated documents with replaced scores.
+        """
         new_scored_documents = []
         for i in range(len(scored_documents)):
             doc = scored_documents[i]
@@ -4120,7 +4593,14 @@ class DocumentRanker(Configured):
 
     @classmethod
     def normalize_scored_documents(cls, scored_documents: tp.List[ScoredDocument]) -> tp.List[ScoredDocument]:
-        """Normalize scored documents."""
+        """Normalize the scores of scored documents using min-max scaling.
+
+        Args:
+            scored_documents (List[ScoredDocument]): Documents with existing scores.
+
+        Returns:
+            List[ScoredDocument]: Documents with normalized scores.
+        """
         scores = cls.extract_doc_scores(scored_documents)
         new_scores = cls.normalize_doc_scores(scores).tolist()
         return cls.replace_doc_scores(scored_documents, new_scores)
@@ -4131,7 +4611,15 @@ class DocumentRanker(Configured):
         emb_scored_documents: tp.List[ScoredDocument],
         bm25_scored_documents: tp.List[ScoredDocument],
     ) -> tp.List[tp.Tuple[float, float]]:
-        """Extract scores from embedding- and BM25-scored documents."""
+        """Recursively extract paired scores from embedding and BM25 scored documents.
+
+        Args:
+            emb_scored_documents (List[ScoredDocument]): Documents scored using embeddings.
+            bm25_scored_documents (List[ScoredDocument]): Documents scored using BM25.
+
+        Returns:
+            List[Tuple[float, float]]: Pairs of scores from corresponding documents and their child documents.
+        """
         doc_pair_scores = []
         n_documents = max(len(emb_scored_documents), len(bm25_scored_documents))
         for i in range(n_documents):
@@ -4144,7 +4632,14 @@ class DocumentRanker(Configured):
         return doc_pair_scores
 
     def combine_doc_pair_scores(self, doc_pair_scores: tp.Iterable[tp.Tuple[float, float]]) -> np.ndarray:
-        """Combine scores of embedding- and BM25-scored documents."""
+        """Combine paired embedding and BM25 scores into a single weighted score.
+
+        Args:
+            doc_pair_scores (Iterable[Tuple[float, float]]): Paired scores (embedding, BM25) to combine.
+
+        Returns:
+            ndarray: An array of combined scores.
+        """
         emb_scores, bm25_scores = zip(*doc_pair_scores)
         norm_emb_scores = self.normalize_doc_scores(emb_scores)
         norm_bm25_scores = self.normalize_doc_scores(bm25_scores)
@@ -4157,7 +4652,16 @@ class DocumentRanker(Configured):
         bm25_scored_documents: tp.List[ScoredDocument],
         new_scores: tp.List[float],
     ) -> tp.List[ScoredDocument]:
-        """Replace scores in embedding- and BM25-scored documents by returning new scored documents."""
+        """Recursively replace scores in paired embedding and BM25 documents with new scores.
+
+        Args:
+            emb_scored_documents (List[ScoredDocument]): Documents scored with embeddings.
+            bm25_scored_documents (List[ScoredDocument]): Documents scored with BM25.
+            new_scores (List[float]): New scores to assign, consumed in order.
+
+        Returns:
+            List[ScoredDocument]: Updated documents with replaced paired scores.
+        """
         scored_documents = []
         n_documents = max(len(emb_scored_documents), len(bm25_scored_documents))
         for i in range(n_documents):
@@ -4181,7 +4685,15 @@ class DocumentRanker(Configured):
         emb_scored_documents: tp.List[ScoredDocument],
         bm25_scored_documents: tp.List[ScoredDocument],
     ) -> tp.List[ScoredDocument]:
-        """Combine embedding- and BM25-scored documents."""
+        """Combine embedding and BM25 scored documents by merging and updating their scores.
+
+        Args:
+            emb_scored_documents (List[ScoredDocument]): Documents scored with embeddings.
+            bm25_scored_documents (List[ScoredDocument]): Documents scored with BM25.
+
+        Returns:
+            List[ScoredDocument]: Combined scored documents with updated scores.
+        """
         doc_pair_scores = self.extract_doc_pair_scores(emb_scored_documents, bm25_scored_documents)
         new_scores = self.combine_doc_pair_scores(doc_pair_scores).tolist()
         return self.replace_doc_pair_scores(emb_scored_documents, bm25_scored_documents, new_scores)
@@ -4200,12 +4712,29 @@ class DocumentRanker(Configured):
         return_chunks: bool = False,
         return_scores: bool = False,
     ) -> tp.RankedDocuments:
-        """Sort documents by relevance to a query.
+        """Rank documents based on their relevance to a query.
 
-        Top-k, minimum top-k, and maximum top-k are resolved with `DocumentRanker.resolve_top_k`.
-        Score cutoff is converted into top-k with `DocumentRanker.top_k_from_cutoff`.
-        Minimum and maximum top-k are used to override non-integer top-k and cutoff; it has no effect on
-        the integer top-k, which can be outside the top-k bounds and won't be overridden."""
+        The method retrieves scored documents using embedding and BM25 strategies (or both in hybrid mode),
+        combines and normalizes their scores, and then sorts them to identify the most relevant documents.
+        Top-k parameters and score cutoff are resolved using `DocumentRanker.resolve_top_k` and
+        `DocumentRanker.top_k_from_cutoff`.
+
+        Args:
+            query (str): The query string to evaluate document relevance.
+            documents (Optional[Iterable[StoreDocument]]): Documents to rank.
+            top_k (TopKLike): The number of top documents to return.
+            min_top_k (TopKLike): Minimum limit for determining top documents.
+            max_top_k (TopKLike): Maximum limit for determining top documents.
+            cutoff (Optional[float]): Score threshold to filter documents.
+            refresh (bool): Whether to refresh document data.
+            refresh_documents (Optional[bool]): Whether to refresh documents.
+            refresh_embeddings (Optional[bool]): Whether to refresh document embeddings.
+            return_chunks (bool): Whether to return document chunks.
+            return_scores (bool): Whether to return scored documents with their scores.
+
+        Returns:
+            RankedDocuments: Documents ranked by relevance to the query.
+        """
         if documents is not None:
             documents = list(documents)
         if self.search_method in ("embeddings", "hybrid"):
@@ -4280,10 +4809,21 @@ def embed_documents(
     doc_ranker: tp.Optional[tp.MaybeType[DocumentRanker]] = None,
     **kwargs,
 ) -> tp.Optional[tp.EmbeddedDocuments]:
-    """Embed documents.
+    """Embed the provided documents using a `DocumentRanker`.
 
-    Keyword arguments are passed to either initialize a class or replace an
-    instance of `DocumentRanker`."""
+    Args:
+        documents (Iterable[StoreDocument]): A collection of documents to embed.
+        refresh (bool): Flag indicating whether to refresh embeddings.
+        refresh_documents (Optional[bool]): Flag to refresh documents.
+        refresh_embeddings (Optional[bool]): Flag to refresh embeddings.
+        return_embeddings (bool): Flag indicating whether to return embeddings.
+        return_documents (bool): Flag indicating whether to return documents.
+        doc_ranker (Optional[MaybeType[DocumentRanker]]): A `DocumentRanker` class or instance.
+        **kwargs: Additional keyword arguments passed to initialize or update `DocumentRanker`.
+
+    Returns:
+        Optional[EmbeddedDocuments]: The embedded documents output.
+    """
     if doc_ranker is None:
         doc_ranker = DocumentRanker
     if isinstance(doc_ranker, type):
@@ -4318,10 +4858,26 @@ def rank_documents(
     doc_ranker: tp.Optional[tp.MaybeType[DocumentRanker]] = None,
     **kwargs,
 ) -> tp.RankedDocuments:
-    """Rank documents by their relevance to a query.
+    """Rank documents based on their relevance to a query using a `DocumentRanker`.
 
-    Keyword arguments are passed to either initialize a class or replace an
-    instance of `DocumentRanker`."""
+    Args:
+        query (str): The query string for ranking.
+        documents (Optional[Iterable[StoreDocument]]): A collection of documents to rank.
+        top_k (TopKLike): The number of top documents to return.
+        min_top_k (TopKLike): Minimum limit for determining top documents.
+        max_top_k (TopKLike): Maximum limit for determining top documents.
+        cutoff (Optional[float]): Score threshold to filter documents.
+        refresh (bool): Whether to refresh document data.
+        refresh_documents (Optional[bool]): Whether to refresh documents.
+        refresh_embeddings (Optional[bool]): Whether to refresh document embeddings.
+        return_chunks (bool): Whether to return document chunks.
+        return_scores (bool): Whether to return scored documents with their scores.
+        doc_ranker (Optional[MaybeType[DocumentRanker]]): A `DocumentRanker` class or instance.
+        **kwargs: Additional keyword arguments passed to initialize or update `DocumentRanker`.
+
+    Returns:
+        RankedDocuments: The ranked documents based on the query relevance.
+    """
     if doc_ranker is None:
         doc_ranker = DocumentRanker
     if isinstance(doc_ranker, type):
@@ -4350,7 +4906,7 @@ RankableT = tp.TypeVar("RankableT", bound="Rankable")
 
 
 class Rankable(HasSettings):
-    """Abstract class that can be ranked."""
+    """Abstract class representing an entity that supports embedding and ranking operations."""
 
     _settings_path: tp.SettingsPath = ["knowledge", "knowledge.chat"]
 
@@ -4363,7 +4919,19 @@ class Rankable(HasSettings):
         return_documents: bool = False,
         **kwargs,
     ) -> tp.Optional[RankableT]:
-        """Embed documents."""
+        """Embed the instance's documents.
+
+        Args:
+            refresh (bool): Flag indicating whether to refresh embeddings.
+            refresh_documents (Optional[bool]): Flag to refresh document processing.
+            refresh_embeddings (Optional[bool]): Flag to refresh embeddings.
+            return_embeddings (bool): Flag indicating whether embeddings should be returned.
+            return_documents (bool): Flag indicating whether documents should be returned.
+            **kwargs: Additional keyword arguments for the embedding process.
+
+        Returns:
+            Optional[Rankable]: An updated instance with embedded documents, if available.
+        """
         raise NotImplementedError
 
     def rank(
@@ -4380,7 +4948,24 @@ class Rankable(HasSettings):
         return_scores: bool = False,
         **kwargs,
     ) -> RankableT:
-        """Rank documents by their relevance to a query."""
+        """Rank documents based on their relevance to a provided query.
+
+        Args:
+            query (str): The query string to evaluate document relevance.
+            top_k (TopKLike): The number of top documents to return.
+            min_top_k (TopKLike): Minimum limit for determining top documents.
+            max_top_k (TopKLike): Maximum limit for determining top documents.
+            cutoff (Optional[float]): Score threshold to filter documents.
+            refresh (bool): Whether to refresh document data.
+            refresh_documents (Optional[bool]): Whether to refresh documents.
+            refresh_embeddings (Optional[bool]): Whether to refresh document embeddings.
+            return_chunks (bool): Whether to return document chunks.
+            return_scores (bool): Whether to return scored documents with their scores.
+            **kwargs: Additional keyword arguments for ranking.
+
+        Returns:
+            Rankable: The ranked document result.
+        """
         raise NotImplementedError
 
 
@@ -4388,12 +4973,20 @@ class Rankable(HasSettings):
 
 
 class Contextable(HasSettings):
-    """Abstract class that can be converted into a context."""
+    """Abstract class that provides functionality to generate a textual context."""
 
     _settings_path: tp.SettingsPath = ["knowledge", "knowledge.chat"]
 
     def to_context(self, *args, **kwargs) -> str:
-        """Convert to a context."""
+        """Convert the instance into a textual context.
+
+        Args:
+            *args: Additional positional arguments.
+            **kwargs: Additional keyword arguments for context generation.
+
+        Returns:
+            str: The textual context representation.
+        """
         raise NotImplementedError
 
     def count_tokens(
@@ -4402,7 +4995,16 @@ class Contextable(HasSettings):
         tokenizer: tp.TokenizerLike = None,
         tokenizer_kwargs: tp.KwargsLike = None,
     ) -> int:
-        """Count the number of tokens in the context."""
+        """Count the number of tokens in the generated context.
+
+        Args:
+            to_context_kwargs (KwargsLike): Keyword arguments passed to `to_context`.
+            tokenizer (TokenizerLike): A tokenizer class or instance.
+            tokenizer_kwargs (KwargsLike): Additional keyword arguments for the tokenizer.
+
+        Returns:
+            int: The number of tokens in the context.
+        """
         to_context_kwargs = self.resolve_setting(to_context_kwargs, "to_context_kwargs", merge=True)
         tokenizer = self.resolve_setting(tokenizer, "tokenizer", default=None)
         tokenizer_kwargs = self.resolve_setting(tokenizer_kwargs, "tokenizer_kwargs", default=None, merge=True)
@@ -4421,9 +5023,15 @@ class Contextable(HasSettings):
         completions: tp.CompletionsLike = None,
         **kwargs,
     ) -> tp.Completions:
-        """Create a chat by returning an instance of `Completions`.
+        """Create a chat interface using the generated context.
 
-        Uses `Contextable.to_context` to turn this instance to a context.
+        Args:
+            to_context_kwargs (KwargsLike): Keyword arguments for generating the context.
+            completions (CompletionsLike): A `Completions` class or instance.
+            **kwargs: Additional keyword arguments for initializing the chat interface.
+
+        Returns:
+            Completions: An instance of `Completions` configured with the generated context.
 
         Usage:
             ```pycon
@@ -4434,7 +5042,8 @@ class Contextable(HasSettings):
 
             >>> chat.get_completion("Are you sure?")
             Yes, I am sure. The value under 'xyz' is 123 for the entry where `s` is "EFG".
-            ```"""
+            ```
+        """
         to_context_kwargs = self.resolve_setting(to_context_kwargs, "to_context_kwargs", merge=True)
         context = self.to_context(**to_context_kwargs)
         completions = resolve_completions(completions=completions)
@@ -4453,9 +5062,16 @@ class Contextable(HasSettings):
         return_chat: bool = False,
         **kwargs,
     ) -> tp.MaybeChatOutput:
-        """Chat with an LLM while using the instance as a context.
+        """Chat with a language model using the instance as context.
 
-        Uses `Contextable.create_chat` and then `Completions.get_completion`.
+        Args:
+            message (str): The message to send to the language model.
+            chat_history (Optional[ChatHistory]): The conversation history.
+            return_chat (bool): Flag indicating whether to return both the completion and the chat instance.
+            **kwargs: Additional keyword arguments for chat configuration.
+
+        Returns:
+            MaybeChatOutput: The completion response or a tuple of the response and the chat instance.
 
         !!! note
             Context is recalculated each time this method is invoked. For multiple turns,
@@ -4485,7 +5101,10 @@ class Contextable(HasSettings):
 
 
 class RankContextable(Rankable, Contextable):
-    """Abstract class that combines both `Rankable` and `Contextable` to rank a context."""
+    """Abstract class combining `Rankable` and `Contextable` functionalities.
+
+    This abstract class integrates ranking with contextual chat processing by applying ranking methods to chat queries when ranking parameters are provided.
+    """
 
     @hybrid_method
     def chat(
@@ -4503,10 +5122,12 @@ class RankContextable(Rankable, Contextable):
         rank_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> tp.MaybeChatOutput:
-        """See `Contextable.chat`.
+        """Return the chat output with optional ranking applied.
 
-        If `rank` is True, or `rank` is None and any of `top_k`, `min_top_k`, `max_top_k`, `cutoff`, or
-        `return_chunks` is set, will rank the documents with `Rankable.rank` first."""
+        If `rank` is True, or if `rank` is None and any ranking parameter (`top_k`, `min_top_k`,
+        `max_top_k`, `cutoff`, or `return_chunks`) is specified, process the query using
+        `Rankable.rank` before delegating to `Contextable.chat`.
+        """
         if isinstance(cls_or_self, type):
             args, kwargs = get_forward_args(super().chat, locals())
             return super().chat(*args, **kwargs)

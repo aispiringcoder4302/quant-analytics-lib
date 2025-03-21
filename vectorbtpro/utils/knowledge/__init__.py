@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Utilities for working with knowledge.
+"""Module providing utility functions and classes for constructing and managing knowledge assets.
 
 Run for the examples:
 

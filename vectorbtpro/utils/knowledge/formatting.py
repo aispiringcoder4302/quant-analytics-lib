@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Classes for content formatting.
+"""Module providing content formatting classes.
 
 See `vectorbtpro.utils.knowledge` for the toy dataset."""
 
@@ -41,7 +41,14 @@ __all__ = [
 
 
 class ToMarkdown(Configured):
-    """Class to convert text to Markdown."""
+    """Class for converting text to Markdown.
+
+    Args:
+        remove_code_title (Optional[bool]): Whether to remove the code block title and display it above the block.
+        even_indentation (Optional[bool]): Whether to adjust leading spaces to even numbers.
+        newline_before_list (Optional[bool]): Whether to insert a newline before list items.
+        **kwargs: Additional keyword arguments for configuration.
+    """
 
     _settings_path: tp.SettingsPath = ["knowledge", "knowledge.formatting"]
 
@@ -70,23 +77,21 @@ class ToMarkdown(Configured):
 
     @property
     def remove_code_title(self) -> bool:
-        """Whether to remove `title` attribute from a code block and puts it above it."""
+        """Whether to remove the `title` attribute from a code block and display it above the block."""
         return self._remove_code_title
 
     @property
     def newline_before_list(self) -> bool:
-        """Whether to add a new line before a list."""
+        """Whether a newline should be inserted before list items."""
         return self._newline_before_list
 
     @property
     def even_indentation(self) -> bool:
-        """Whether to make leading spaces even.
-
-        For example, 3 leading spaces become 4."""
+        """Whether leading spaces should be adjusted to even numbers (e.g., converting 3 spaces to 4)."""
         return self._even_indentation
 
     def to_markdown(self, text: str) -> str:
-        """Convert text to Markdown."""
+        """Return the given text converted to Markdown format."""
         markdown = text
         if self.remove_code_title:
 
@@ -121,12 +126,20 @@ class ToMarkdown(Configured):
 
 
 def to_markdown(text: str, **kwargs) -> str:
-    """Convert text to Markdown using `ToMarkdown`."""
+    """Return the Markdown conversion of the given text using `ToMarkdown`."""
     return ToMarkdown(**kwargs).to_markdown(text)
 
 
 class ToHTML(Configured):
-    """Class to convert Markdown to HTML."""
+    """Class for converting Markdown text to HTML.
+
+    Args:
+        resolve_extensions (Optional[bool]): Whether to resolve Markdown extensions,
+            favoring `pymdownx` extensions when available.
+        make_links (Optional[bool]): Whether to convert raw URLs within HTML `p` and
+            `span` tags into hyperlinks.
+        **markdown_kwargs: Additional keyword arguments for Markdown conversion.
+    """
 
     _expected_keys_mode: tp.ExpectedKeysMode = "disable"
 
@@ -155,23 +168,21 @@ class ToHTML(Configured):
 
     @property
     def resolve_extensions(self) -> bool:
-        """Whether to resolve Markdown extensions.
-
-        Uses `pymdownx` extensions over native extensions if installed."""
+        """Whether Markdown extensions should be resolved, favoring `pymdownx` extensions when available."""
         return self._resolve_extensions
 
     @property
     def make_links(self) -> bool:
-        """Whether to detect raw URLs in HTML text (`p` and `span` elements only) and convert them to links."""
+        """Whether raw URLs in HTML `p` and `span` elements should be converted into clickable links."""
         return self._make_links
 
     @property
     def markdown_kwargs(self) -> tp.Kwargs:
-        """Keyword arguments passed to `markdown.markdown`."""
+        """Keyword arguments passed to `markdown.markdown` for conversion."""
         return self._markdown_kwargs
 
     def to_html(self, markdown: str) -> str:
-        """Convert Markdown to HTML."""
+        """Return the HTML conversion of the given Markdown text."""
         from vectorbtpro.utils.module_ import assert_can_import
 
         assert_can_import("markdown")
@@ -219,23 +230,34 @@ class ToHTML(Configured):
 
 
 def to_html(text: str, **kwargs) -> str:
-    """Convert Markdown to HTML using `ToHTML`."""
+    """Return the HTML conversion of the given Markdown text using `ToHTML`."""
     return ToHTML(**kwargs).to_html(text)
 
 
 class FormatHTML(Configured):
     """Class to format HTML.
 
-    If `use_pygments` is True, uses Pygments package for code highlighting. Arguments in
-    `pygments_kwargs` are then passed to `pygments.formatters.HtmlFormatter`.
+    This class formats HTML content using a customizable template. It supports code highlighting
+    via Pygments if enabled, and allows injection of additional CSS rules, extra HTML elements
+    in the `<head>`, and JavaScript or inline scripts in the `<body>`.
 
-    Use `style_extras` to inject additional CSS rules outside the predefined ones.
-    Use `head_extras` to inject additional HTML elements into the `<head>` section, such as meta tags,
-    links to external stylesheets, or scripts. Use `body_extras` to inject JavaScript files or inline
-    scripts at the end of the `<body>`. All of these arguments can be lists.
-
-    HTML template is a template that can use all the arguments except those related to pygments.
-    It can be either a custom template, or string or function that will become one."""
+    Args:
+        html_template (Optional[str]): Template for HTML formatting, as a string, function, or custom template.
+        style_extras (Optional[MaybeList[str]]): Additional CSS rules for the `<style>` element.
+        head_extras (Optional[MaybeList[str]]): Extra HTML elements to inject into the `<head>` section.
+        body_extras (Optional[MaybeList[str]]): Extra content to insert at the end of the `<body>` section.
+        invert_colors (Optional[bool]): Flag to enable color inversion.
+        invert_colors_style (Optional[str]): CSS styles applied when colors are inverted.
+        auto_scroll (Optional[bool]): Flag to enable automatic scrolling.
+        auto_scroll_body (Optional[str]): HTML or script to facilitate auto scrolling in the body.
+        show_spinner (Optional[bool]): Flag to display a loading spinner.
+        spinner_style (Optional[str]): CSS style for the spinner.
+        spinner_body (Optional[str]): HTML or script for spinner placement.
+        use_pygments (Optional[bool]): Flag to enable code highlighting with Pygments.
+        pygments_kwargs (KwargsLike): Arguments passed to `pygments.formatters.HtmlFormatter`.
+        template_context (KwargsLike): Additional context for template substitution.
+        **kwargs: Additional keyword arguments for configuration.
+    """
 
     _settings_path: tp.SettingsPath = ["knowledge", "knowledge.formatting"]
 
@@ -336,31 +358,41 @@ class FormatHTML(Configured):
 
     @property
     def html_template(self) -> CustomTemplate:
-        """HTML template."""
+        """HTML template used for formatting."""
         return self._html_template
 
     @property
     def style_extras(self) -> str:
-        """Extras for `<style>`."""
+        """Additional CSS rules for the `<style>` element."""
         return self._style_extras
 
     @property
     def head_extras(self) -> str:
-        """Extras for `<head>`."""
+        """HTML elements to inject into the `<head>` section."""
         return self._head_extras
 
     @property
     def body_extras(self) -> str:
-        """Extras for `<body>`."""
+        """Additional content for the `<body>` section."""
         return self._body_extras
 
     @property
     def template_context(self) -> tp.Kwargs:
-        """Context used to substitute templates."""
+        """Context dictionary used for template substitution."""
         return self._template_context
 
     def format_html(self, title: str = "", html_metadata: str = "", html_content: str = "", **kwargs) -> str:
-        """Format HTML."""
+        """Format HTML content using the configured template.
+
+        Args:
+            title (str): Title of the HTML document.
+            html_metadata (str): HTML metadata elements, such as meta tags.
+            html_content (str): Main HTML content.
+            **kwargs: Additional parameters to merge into the template context.
+
+        Returns:
+            str: The formatted HTML string.
+        """
         return self.html_template.substitute(
             flat_merge_dicts(
                 self.template_context,
@@ -379,7 +411,17 @@ class FormatHTML(Configured):
 
 
 def format_html(**kwargs) -> str:
-    """Convert Markdown to HTML using `ToHTML`."""
+    """Format HTML content using the `FormatHTML` class.
+
+    This function extracts configuration parameters from the provided keyword arguments,
+    instantiates a `FormatHTML` object, and returns the resulting formatted HTML.
+
+    Args:
+        **kwargs: Keyword arguments for `FormatHTML` initialization and HTML formatting.
+
+    Returns:
+        str: The resulting formatted HTML string.
+    """
     from vectorbtpro.utils.parsing import get_func_arg_names
 
     init_kwargs = {}
@@ -392,10 +434,22 @@ def format_html(**kwargs) -> str:
 class ContentFormatter(Configured):
     """Class for formatting content.
 
-    For defaults, see `knowledge.formatting.formatter_config` in `vectorbtpro._settings.knowledge`."""
+    This class formats content using various configurable settings.
+
+    Args:
+        output_to (Optional[Union[str, TextIO]]): Destination for output, which may be a file path or stream.
+        flush_output (Optional[bool]): Whether to flush the output immediately after writing.
+        buffer_output (Optional[bool]): Whether to buffer output before writing.
+        close_output (Optional[bool]): Whether to close the output stream after writing.
+        update_interval (Optional[float]): Time interval in seconds for updates.
+        minimal_format (Optional[bool]): Whether to apply minimal formatting to the content.
+        template_context (Optional[KwargsLike]): Context for template substitution.
+        **kwargs: Additional keyword arguments for configuration.
+
+    For defaults, see `formatting.formatter_config` in `vectorbtpro._settings.knowledge`."""
 
     _short_name: tp.ClassVar[tp.Optional[str]] = None
-    """Short name of the class."""
+    """Short alias for the class."""
 
     _settings_path: tp.SettingsPath = ["knowledge", "knowledge.formatting", "knowledge.formatting.formatter_config"]
 
@@ -456,80 +510,86 @@ class ContentFormatter(Configured):
 
     @property
     def output_to(self) -> tp.Optional[tp.Union[str, tp.TextIO]]:
-        """Redirect output to a file or stream."""
+        """Output destination, which may be a file path or stream."""
         return self._output_to
 
     @property
     def flush_output(self) -> bool:
-        """Whether to flush output."""
+        """Boolean indicating if the output should be flushed immediately."""
         return self._flush_output
 
     @property
     def buffer_output(self) -> bool:
-        """Whether to buffer output."""
+        """Boolean indicating if the output is buffered."""
         return self._buffer_output
 
     @property
     def close_output(self) -> bool:
-        """Whether to close output."""
+        """Boolean indicating if the output stream should be closed after writing."""
         return self._close_output
 
     @property
     def update_interval(self) -> tp.Optional[float]:
-        """Update interval (in seconds)."""
+        """Update interval in seconds."""
         return self._update_interval
 
     @property
     def minimal_format(self) -> bool:
-        """Whether input is minimally-formatted."""
+        """Whether minimal formatting is applied."""
         return self._minimal_format
 
     @property
     def template_context(self) -> tp.Kwargs:
-        """Context used to substitute templates."""
+        """Template substitution context."""
         return self._template_context
 
     @property
     def last_update(self) -> tp.Optional[int]:
-        """Last update time."""
+        """Timestamp of the last update."""
         return self._last_update
 
     @property
     def lines(self) -> tp.List[str]:
-        """List of lines."""
+        """List of formatted lines."""
         return self._lines
 
     @property
     def current_line(self) -> tp.List[str]:
-        """List of strings representing the current line."""
+        """List of string segments constituting the current line."""
         return self._current_line
 
     @property
     def in_code_block(self) -> bool:
-        """Whether currently in a code block."""
+        """Whether the formatter is currently inside a code block."""
         return self._in_code_block
 
     @property
     def code_block_indent(self) -> str:
-        """Indentation of the code block."""
+        """Indentation used for the current code block."""
         return self._code_block_indent
 
     @property
     def buffer(self) -> tp.List[str]:
-        """List of strings in the buffer."""
+        """List of buffered strings."""
         return self._buffer
 
     @property
     def content(self) -> str:
-        """Content."""
+        """Complete formatted content."""
         return self._content
 
     def initialize(self) -> None:
-        """Initialize."""
+        """Initialize the formatter by setting the last update time to the current time."""
         self._last_update = time.time()
 
     def format_line(self, line: str) -> str:
-        """Format line."""
+        """Format the provided line to process code block markers.
+
+        Args:
+            line (str): The line to format.
+
+        Returns:
+            str: The processed line with updated code block state."""
         start = 0
         while True:
             idx = line.find("```", start)
@@ -547,7 +607,13 @@ class ContentFormatter(Configured):
         return line
 
     def flush(self, final: bool = False) -> None:
-        """Flush buffer and final line."""
+        """Flush the buffered content and process complete and incomplete lines.
+
+        This method processes the current contents of the buffer, formatting complete lines and
+        appending them to the overall content.
+
+        Args:
+            final (bool): Whether to finalize the content."""
         new_content = "".join(self.buffer)
         self.buffer.clear()
 
@@ -582,12 +648,15 @@ class ContentFormatter(Configured):
             self._content = "".join(content)
 
     def buffer_update(self) -> None:
-        """Update based on buffer content."""
+        """If buffering is enabled and an output destination is set, print the buffered content immediately."""
         if self.buffer_output and self.output_to is not None:
             print("".join(self.buffer), end="", file=self.output_to, flush=self.flush_output)
 
     def update(self, final: bool = False) -> None:
-        """Update content."""
+        """Update the content by processing the buffer and flushing outputs if necessary.
+
+        Args:
+            final (bool): Whether this update finalizes the content."""
         self._last_update = time.time()
         if self.buffer:
             self.buffer_update()
@@ -595,7 +664,11 @@ class ContentFormatter(Configured):
             self.flush(final=final)
 
     def append(self, new_content: str, final: bool = False) -> None:
-        """Append new content to buffer and update."""
+        """Append new content to the buffer and perform an update if necessary.
+
+        Args:
+            new_content (str): The string content to append.
+            final (bool): Whether this append operation finalizes the content."""
         if not self.buffer_output and self.output_to is not None:
             print(new_content, end="", file=self.output_to, flush=self.flush_output)
         self.buffer.append(new_content)
@@ -608,14 +681,20 @@ class ContentFormatter(Configured):
             self.update(final=final)
 
     def append_once(self, content: str) -> None:
-        """Append final content and finalize."""
+        """Append final content to the buffer and finalize the formatting process.
+
+        Args:
+            content (str): The final content to append."""
         if self.last_update is None:
             self.initialize()
         self.append(content, final=True)
         self.finalize(update=False)
 
     def finalize(self, update: bool = True) -> None:
-        """Update for the last time and close the stream."""
+        """Perform a final content update and close the output stream if configured.
+
+        Args:
+            update (bool): Whether to update the content before finalizing."""
         if update:
             self.update(final=True)
         if self.close_output and self.output_to is not None:
@@ -658,7 +737,7 @@ class IPythonFormatter(ContentFormatter):
 
     @property
     def display_handle(self) -> tp.Optional[DisplayHandleT]:
-        """Display handle."""
+        """IPython display handle."""
         return self._display_handle
 
     def initialize(self) -> None:
@@ -672,7 +751,7 @@ class IPythonFormatter(ContentFormatter):
         self._display_handle = display("", display_id=True)
 
     def update_display(self) -> None:
-        """Update display with content."""
+        """Update the IPython display with the current content."""
         self.display_handle.update(self.content)
 
     def update(self, final: bool = False) -> None:
@@ -683,7 +762,13 @@ class IPythonFormatter(ContentFormatter):
 class IPythonMarkdownFormatter(IPythonFormatter):
     """Class for formatting Markdown content in IPython.
 
-    For defaults, see `formatting.formatter_configs.ipython_markdown` in `vectorbtpro._settings.knowledge`."""
+    Args:
+        *args: Additional arguments passed to `IPythonFormatter`.
+        to_markdown_kwargs (KwargsLike): Keyword arguments forwarded to `to_markdown`.
+        **kwargs: Additional keyword arguments passed to `IPythonFormatter`.
+
+    For defaults, see `formatting.formatter_configs.ipython_markdown` in `vectorbtpro._settings.knowledge`.
+    """
 
     _short_name = "ipython_markdown"
 
@@ -708,10 +793,11 @@ class IPythonMarkdownFormatter(IPythonFormatter):
 
     @property
     def to_markdown_kwargs(self) -> tp.Kwargs:
-        """Keyword arguments passed to `to_markdown`."""
+        """Keyword arguments forwarded to `to_markdown`."""
         return self._to_markdown_kwargs
 
     def update_display(self) -> None:
+        """Update the IPython display with Markdown-rendered content."""
         from IPython.display import Markdown
 
         markdown_content = to_markdown(self.content, **self.to_markdown_kwargs)
@@ -721,7 +807,14 @@ class IPythonMarkdownFormatter(IPythonFormatter):
 class IPythonHTMLFormatter(IPythonFormatter):
     """Class for formatting HTML content in IPython.
 
-    For defaults, see `formatting.formatter_configs.ipython_html` in `vectorbtpro._settings.knowledge`."""
+    Args:
+        *args: Additional arguments passed to `IPythonFormatter`.
+        to_markdown_kwargs (KwargsLike): Keyword arguments for converting content to Markdown.
+        to_html_kwargs (KwargsLike): Keyword arguments for converting Markdown content to HTML.
+        **kwargs: Additional keyword arguments passed to `IPythonFormatter`.
+
+    For defaults, see `formatting.formatter_configs.ipython_html` in `vectorbtpro._settings.knowledge`.
+    """
 
     _short_name = "ipython_html"
 
@@ -758,15 +851,16 @@ class IPythonHTMLFormatter(IPythonFormatter):
 
     @property
     def to_markdown_kwargs(self) -> tp.Kwargs:
-        """Keyword arguments passed to `to_markdown`."""
+        """Keyword arguments forwarded to `to_markdown`."""
         return self._to_markdown_kwargs
 
     @property
     def to_html_kwargs(self) -> tp.Kwargs:
-        """Keyword arguments passed to `to_html`."""
+        """Keyword arguments forwarded to `to_html`."""
         return self._to_html_kwargs
 
     def update_display(self) -> None:
+        """Update the IPython display with HTML-rendered content."""
         from IPython.display import HTML
 
         markdown_content = to_markdown(self.content, **self.to_markdown_kwargs)
@@ -776,6 +870,23 @@ class IPythonHTMLFormatter(IPythonFormatter):
 
 class HTMLFileFormatter(ContentFormatter):
     """Class for formatting static HTML files.
+
+    Args:
+        *args: Additional arguments passed to `ContentFormatter`.
+        page_title (str): Title of the HTML page.
+        refresh_page (Optional[bool]): Determines whether the HTML page should refresh.
+        dir_path (Optional[PathLike]): Directory path for saving HTML files.
+        mkdir_kwargs (KwargsLike): Keyword arguments for directory creation.
+        temp_files (Optional[bool]): Indicates if HTML content is saved as temporary files.
+        file_prefix_len (Optional[int]): Number of characters for the truncated title prefix.
+        file_suffix_len (Optional[int]): Number of characters for the random hash suffix.
+        auto_scroll (Optional[bool]): Enables automatic scrolling during refreshing.
+        show_spinner (Optional[bool]): Enables a spinner display during refreshing.
+        open_browser (Optional[bool]): Opens the default browser.
+        to_markdown_kwargs (KwargsLike): Keyword arguments for converting content to Markdown.
+        to_html_kwargs (KwargsLike): Keyword arguments for converting Markdown to HTML.
+        format_html_kwargs (KwargsLike): Keyword arguments for HTML formatting.
+        **kwargs: Additional keyword arguments passed to `ContentFormatter`.
 
     For defaults, see `formatting.formatter_configs.html` in `vectorbtpro._settings.knowledge`."""
 
@@ -878,17 +989,17 @@ class HTMLFileFormatter(ContentFormatter):
 
     @property
     def page_title(self) -> str:
-        """Page title."""
+        """HTML page title."""
         return self._page_title
 
     @property
     def refresh_page(self) -> bool:
-        """Whether to refresh the HTML page."""
+        """Whether the HTML page should refresh."""
         return self._refresh_page
 
     @property
     def dir_path(self) -> tp.Optional[tp.Path]:
-        """Path to the directory."""
+        """Directory path where HTML files are saved."""
         return self._dir_path
 
     @property
@@ -898,58 +1009,66 @@ class HTMLFileFormatter(ContentFormatter):
 
     @property
     def temp_files(self) -> bool:
-        """Whether to save as temporary files
+        """Boolean indicating if HTML content is saved as temporary files.
 
-        Otherwise, will save under `HTMLFileFormatter.dir_path`."""
+        If false, files are saved under `HTMLFileFormatter.dir_path`."""
         return self._temp_files
 
     @property
     def file_prefix_len(self) -> int:
-        """Number of chars of a truncated title as a prefix."""
+        """Number of characters used as the prefix from a truncated title."""
         return self._file_prefix_len
 
     @property
     def file_suffix_len(self) -> int:
-        """Number of chars of a random hash as a suffix."""
+        """Number of characters used as the suffix from a random hash."""
         return self._file_suffix_len
 
     @property
     def auto_scroll(self) -> bool:
-        """Whether to scroll automatically while refreshing."""
+        """Whether automatic scrolling is enabled during page refresh."""
         return self._auto_scroll
 
     @property
     def show_spinner(self) -> bool:
-        """Whether to show spinner while refreshing."""
+        """Whether a spinner is displayed during page refresh."""
         return self._show_spinner
 
     @property
     def open_browser(self) -> bool:
-        """Whether to open the default browser."""
+        """Whether the default browser should be opened."""
         return self._open_browser
 
     @property
     def to_markdown_kwargs(self) -> tp.Kwargs:
-        """Keyword arguments passed to `to_markdown`."""
+        """Keyword arguments passed to the `to_markdown` function."""
         return self._to_markdown_kwargs
 
     @property
     def to_html_kwargs(self) -> tp.Kwargs:
-        """Keyword arguments passed to `to_html`."""
+        """Keyword arguments passed to the `to_html` function."""
         return self._to_html_kwargs
 
     @property
     def format_html_kwargs(self) -> tp.Kwargs:
-        """Keyword arguments passed to `format_html`."""
+        """Keyword arguments passed to the `format_html` function."""
         return self._format_html_kwargs
 
     @property
     def file_handle(self) -> tp.Optional[tp.TextIO]:
-        """File handle."""
+        """File handle associated with the HTML output."""
         return self._file_handle
 
     def format_html_content(self, html_content: str, final: bool = False) -> str:
-        """Format HTML content."""
+        """Return formatted HTML content.
+
+        Args:
+            html_content (str): HTML content to format.
+            final (bool): Indicates if the formatting is final, preventing refresh modifications.
+
+        Returns:
+            str: The formatted HTML content.
+        """
         _format_html_kwargs = dict(self.format_html_kwargs)
         if not final and self.refresh_page:
             refresh_content = max(1, int(self.update_interval)) if self.update_interval is not None else 1
@@ -1021,7 +1140,11 @@ class HTMLFileFormatter(ContentFormatter):
             webbrowser.open("file://" + str(Path(self.file_handle.name).resolve()))
 
     def update(self, final: bool = False) -> None:
-        """Update the HTML file with newly-updated content."""
+        """Update the HTML file with new content.
+
+        Args:
+            final (bool): Whether the update finalizes the content.
+        """
         ContentFormatter.update(self, final=final)
 
         markdown_content = to_markdown(self.content, **self.to_markdown_kwargs)
@@ -1034,17 +1157,23 @@ class HTMLFileFormatter(ContentFormatter):
 
 
 def resolve_formatter(formatter: tp.ContentFormatterLike) -> tp.MaybeType[ContentFormatter]:
-    """Resolve a subclass or an instance of `ContentFormatter`.
+    """Resolve a subclass or instance of `ContentFormatter`.
 
-    The following values are supported:
+    This function interprets `formatter` as either a shorthand string, a subclass,
+    or an instance of `ContentFormatter`. Supported string values include:
 
     * "plain" (`PlainFormatter`): Prints the raw output
-    * "ipython" (`IPythonFormatter`): Renders an unformatted text in a notebook environment
-    * "ipython_markdown" (`IPythonMarkdownFormatter`): Renders a Markdown in a notebook environment
-    * "ipython_html" (`IPythonHTMLFormatter`): Renders an HTML in a notebook environment
-    * "ipython_auto": Decides between using "ipython_html" or "plain" depending on the environment
-    * "html" (`HTMLFileFormatter`): Writes a static HTML page and displays it in the browser
-    * A subclass or an instance of `ContentFormatter`
+    * "ipython" (`IPythonFormatter`): Renders unformatted text in a notebook environment
+    * "ipython_markdown" (`IPythonMarkdownFormatter`): Renders Markdown in a notebook environment
+    * "ipython_html" (`IPythonHTMLFormatter`): Renders HTML in a notebook environment
+    * "ipython_auto": Chooses between "ipython_html" or "plain" based on the environment
+    * "html" (`HTMLFileFormatter`): Writes a static HTML page and displays it in a browser
+
+    Args:
+        formatter (ContentFormatterLike): A shorthand string, subclass, or instance of `ContentFormatter`.
+
+    Returns:
+        ContentFormatter: The resolved formatter.
     """
     if formatter is None:
         from vectorbtpro._settings import settings

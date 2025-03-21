@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Asset pipeline classes.
+"""Module providing classes for creating and executing asset pipelines.
 
 See `vectorbtpro.utils.knowledge` for the toy dataset."""
 
@@ -29,7 +29,9 @@ __all__ = [
 
 
 class AssetPipeline(Base):
-    """Abstract class representing an asset pipeline."""
+    """Abstract asset pipeline base class.
+
+    Provides functionality to resolve and execute tasks in an asset pipeline."""
 
     @classmethod
     def resolve_task(
@@ -42,7 +44,20 @@ class AssetPipeline(Base):
         asset_func_meta: tp.Union[None, dict, list] = None,
         **kwargs,
     ) -> tp.Task:
-        """Resolve a task."""
+        """Return a `Task` by resolving the provided asset function and its arguments.
+
+        Args:
+            func (AssetFuncLike): An asset function identifier, which may be a tuple, `Task`, string,
+                or subclass of `AssetFunc`.
+            *args: Positional arguments used during task resolution.
+            prepare (bool): Flag indicating whether to prepare the function before execution.
+            prepare_once (bool): Flag specifying if the function should be prepared only once.
+            cond_kwargs (KwargsLike): Additional keyword arguments for conditional preparation.
+            asset_func_meta (Union[None, dict, list]): Metadata for the asset function.
+            **kwargs: Additional keyword arguments used during task resolution.
+
+        Returns:
+            Task: A callable task resolved from the provided definition."""
         if isinstance(func, tuple):
             func = Task.from_tuple(func)
         if isinstance(func, Task):
@@ -109,7 +124,7 @@ class AssetPipeline(Base):
         return Task(func, *args, **kwargs)
 
     def run(self, d: tp.Any) -> tp.Any:
-        """Run the pipeline on a data item."""
+        """Execute the asset pipeline on the provided data by applying all tasks sequentially."""
         raise NotImplementedError
 
     def __call__(self, d: tp.Any) -> tp.Any:
@@ -117,9 +132,14 @@ class AssetPipeline(Base):
 
 
 class BasicAssetPipeline(AssetPipeline):
-    """Class representing a basic asset pipeline.
+    """Basic asset pipeline class.
 
-    Builds a composite function out of all functions.
+    Creates a composite function by resolving and chaining individual asset tasks.
+
+    Args:
+        args (Any): The first positional argument can be a task or list of tasks;
+            subsequent positional arguments are used in task resolution.
+        kwargs (Any): Additional keyword arguments for task resolution.
 
     Usage:
         ```pycon
@@ -130,8 +150,7 @@ class BasicAssetPipeline(AssetPipeline):
 
         >>> asset_pipeline(dataset[0])
         5
-        ```
-    """
+        ```"""
 
     def __init__(self, *args, **kwargs) -> None:
         if len(args) == 0:
@@ -145,16 +164,16 @@ class BasicAssetPipeline(AssetPipeline):
 
     @property
     def tasks(self) -> tp.List[tp.Task]:
-        """Tasks."""
+        """Tasks that have been added to the pipeline."""
         return self._tasks
 
     def append(self, func: tp.AssetFuncLike, *args, **kwargs) -> None:
-        """Append a task to the pipeline."""
+        """Append a task to the pipeline using the provided asset function and arguments."""
         self.tasks.append(self.resolve_task(func, *args, **kwargs))
 
     @classmethod
     def compose_tasks(cls, tasks: tp.List[tp.Task]) -> tp.Callable:
-        """Compose multiple tasks into one."""
+        """Compose multiple tasks into a single callable that applies them sequentially."""
 
         def composed(d):
             result = d
@@ -171,13 +190,19 @@ class BasicAssetPipeline(AssetPipeline):
 class ComplexAssetPipeline(AssetPipeline):
     """Class representing a complex asset pipeline.
 
-    Takes an expression string and a context. Resolves functions inside the expression.
-    Expression is evaluated with `vectorbtpro.utils.eval_.evaluate`.
+    This pipeline takes an expression string that may contain nested function calls and
+    a context mapping. It resolves functions within the expression and evaluates the expression
+    using `vectorbtpro.utils.eval_.evaluate`.
+
+    Args:
+        expression (str): The expression string to evaluate.
+        context (KwargsLike): A mapping of variables for expression evaluation.
+        prepare_once (bool): Flag to indicate when functions should be prepared once.
+        **resolve_task_kwargs: Additional keyword arguments for task resolution.
 
     Usage:
         ```pycon
         >>> asset_pipeline = vbt.ComplexAssetPipeline("query(flatten(d), len)")
-
         >>> asset_pipeline(dataset[0])
         5
         ```
@@ -192,10 +217,22 @@ class ComplexAssetPipeline(AssetPipeline):
         prepare_once: bool = True,
         **resolve_task_kwargs,
     ) -> tp.Tuple[str, tp.Kwargs]:
-        """Resolve an expression and a context.
+        """Resolve an expression and update its context.
 
-        Parses an expression string, extracts function calls with their arguments,
-        removing the first positional argument from each function, and creates a new context."""
+        Parses the expression string to extract function calls and their arguments,
+        then removes the first positional argument from each function call.
+        It also builds a new context by merging resolved functions with the existing context.
+
+        Args:
+            expression (str): The expression string to process.
+            context (KwargsLike): A mapping of context variables.
+            prepare (bool): Flag to indicate whether to prepare function calls.
+            prepare_once (bool): Flag to indicate if functions should be prepared once.
+            **resolve_task_kwargs: Additional keyword arguments for resolving tasks.
+
+        Returns:
+            Tuple[str, Kwargs]: A tuple containing the modified expression and the updated context.
+        """
         import importlib
         import builtins
         import ast
@@ -366,15 +403,22 @@ class ComplexAssetPipeline(AssetPipeline):
 
     @property
     def expression(self) -> str:
-        """Expression."""
+        """Processed expression string for the pipeline."""
         return self._expression
 
     @property
     def context(self) -> tp.Kwargs:
-        """Context."""
+        """Updated context mapping for the pipeline."""
         return self._context
 
     def run(self, d: tp.Any) -> tp.Any:
-        """Run the pipeline on a data item."""
+        """Run the pipeline on a data item.
+
+        Args:
+            d (Any): The data item to be processed.
+
+        Returns:
+            Any: The result of evaluating the expression with the given data.
+        """
         context = merge_dicts({"d": d, "x": d}, self.context)
         return evaluate(self.expression, context=context)

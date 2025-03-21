@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Custom asset function classes."""
+"""Module providing custom asset function classes."""
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.utils.config import flat_merge_dicts
@@ -19,7 +19,8 @@ __all__ = []
 
 
 class ToMarkdownAssetFunc(AssetFunc):
-    """Asset function class for `vectorbtpro.utils.knowledge.custom_assets.VBTAsset.to_markdown`."""
+    """Asset function class for formatting asset metadata and content as Markdown with
+    `vectorbtpro.utils.knowledge.custom_assets.VBTAsset.to_markdown`."""
 
     _short_name: tp.ClassVar[tp.Optional[str]] = "to_markdown"
 
@@ -79,7 +80,21 @@ class ToMarkdownAssetFunc(AssetFunc):
         dump_metadata_kwargs: tp.KwargsLike = None,
         **to_markdown_kwargs,
     ) -> str:
-        """Get metadata in Markdown format."""
+        """Return metadata in Markdown format from asset data.
+
+        Args:
+            d (dict): Asset data dictionary.
+            root_metadata_key (Optional[Key]): Key under which to nest metadata.
+            allow_empty (Optional[bool]): Whether empty metadata is permitted.
+            minimize_metadata (bool): If True, remove specified keys to minimize metadata.
+            minimize_keys (Optional[Union[PathLikeKey, list]]): Key or list of keys to remove during minimization.
+            clean_metadata (bool): If True, clean the metadata to remove empty or irrelevant values.
+            clean_metadata_kwargs (KwargsLike): Keyword arguments for cleaning metadata.
+            dump_metadata_kwargs (KwargsLike): Keyword arguments for dumping metadata.
+            **to_markdown_kwargs: Additional arguments for Markdown conversion.
+
+        Returns:
+            str: Markdown formatted metadata string."""
         from vectorbtpro.utils.formatting import get_dump_language
         from vectorbtpro.utils.knowledge.base_asset_funcs import FindRemoveAssetFunc, DumpAssetFunc
 
@@ -110,7 +125,14 @@ class ToMarkdownAssetFunc(AssetFunc):
 
     @classmethod
     def get_markdown_content(cls, d: dict, **kwargs) -> str:
-        """Get content in Markdown format."""
+        """Return content in Markdown format from asset data.
+
+        Args:
+            d (dict): Asset data dictionary containing the 'content' key.
+            **kwargs: Additional keyword arguments for Markdown conversion.
+
+        Returns:
+            str: Markdown formatted content string."""
         if d["content"] is None:
             return ""
         return to_markdown(d["content"], **kwargs)
@@ -150,7 +172,8 @@ class ToMarkdownAssetFunc(AssetFunc):
 
 
 class ToHTMLAssetFunc(ToMarkdownAssetFunc):
-    """Asset function class for `vectorbtpro.utils.knowledge.custom_assets.VBTAsset.to_html`."""
+    """Asset function class for converting asset data to HTML with
+    `vectorbtpro.utils.knowledge.custom_assets.VBTAsset.to_html`."""
 
     _short_name: tp.ClassVar[tp.Optional[str]] = "to_html"
 
@@ -215,7 +238,25 @@ class ToHTMLAssetFunc(ToMarkdownAssetFunc):
         to_markdown_kwargs: tp.KwargsLike = None,
         **to_html_kwargs,
     ) -> str:
-        """Get metadata in HTML format."""
+        """Return HTML formatted metadata by converting data to markdown using
+        `ToHTMLAssetFunc.get_markdown_metadata` and then to HTML using
+        `vectorbtpro.utils.knowledge.formatting.to_html`.
+
+        Args:
+            d (dict): Data dictionary containing asset metadata.
+            root_metadata_key (Optional[Key]): Key specifying the root metadata.
+            allow_empty (Optional[bool]): Whether to allow empty metadata.
+            minimize_metadata (bool): Flag to minimize the metadata.
+            minimize_keys (Optional[List[PathLikeKey]]): Keys to minimize in the metadata.
+            clean_metadata (bool): Flag indicating whether to clean metadata.
+            clean_metadata_kwargs (KwargsLike): Additional keyword arguments for cleaning metadata.
+            dump_metadata_kwargs (KwargsLike): Additional keyword arguments for dumping metadata.
+            to_markdown_kwargs (KwargsLike): Additional keyword arguments for markdown conversion.
+            **to_html_kwargs: Additional keyword arguments for HTML conversion.
+
+        Returns:
+            str: HTML formatted metadata.
+        """
         if to_markdown_kwargs is None:
             to_markdown_kwargs = {}
         metadata = cls.get_markdown_metadata(
@@ -235,7 +276,18 @@ class ToHTMLAssetFunc(ToMarkdownAssetFunc):
 
     @classmethod
     def get_html_content(cls, d: dict, to_markdown_kwargs: tp.KwargsLike = None, **kwargs) -> str:
-        """Get content in HTML format."""
+        """Return HTML formatted content by converting data to markdown using
+        `ToHTMLAssetFunc.get_markdown_content` and then to HTML using
+        `vectorbtpro.utils.knowledge.formatting.to_html`.
+
+        Args:
+            d (dict): Data dictionary containing content information.
+            to_markdown_kwargs (KwargsLike): Additional keyword arguments for markdown conversion.
+            **kwargs: Additional keyword arguments for HTML conversion.
+
+        Returns:
+            str: HTML formatted content.
+        """
         if to_markdown_kwargs is None:
             to_markdown_kwargs = {}
         content = cls.get_markdown_content(d, **to_markdown_kwargs)
@@ -311,7 +363,8 @@ class ToHTMLAssetFunc(ToMarkdownAssetFunc):
 
 
 class AggMessageAssetFunc(AssetFunc):
-    """Asset function class for `vectorbtpro.utils.knowledge.custom_assets.MessagesAsset.aggregate_messages`."""
+    """Asset function class for aggregating messages with
+    `vectorbtpro.utils.knowledge.custom_assets.MessagesAsset.aggregate_messages`."""
 
     _short_name: tp.ClassVar[tp.Optional[str]] = "agg_message"
 
@@ -402,7 +455,17 @@ class AggMessageAssetFunc(AssetFunc):
 
 
 class AggBlockAssetFunc(AssetFunc):
-    """Asset function class for `vectorbtpro.utils.knowledge.custom_assets.MessagesAsset.aggregate_blocks`."""
+    """Asset function class for aggregating block messages with
+    `vectorbtpro.utils.knowledge.custom_assets.MessagesAsset.aggregate_blocks`.
+
+    This class implements the logic for merging and reformatting message data used by
+    `vectorbtpro.utils.knowledge.custom_assets.MessagesAsset.aggregate_blocks`. It consolidates
+    various fields and metadata from input message blocks and converts them into a cohesive
+    markdown-formatted output.
+
+    Usage:
+        See `vectorbtpro.utils.knowledge.custom_assets.MessagesAsset.aggregate_blocks` for an example.
+    """
 
     _short_name: tp.ClassVar[tp.Optional[str]] = "agg_block"
 
@@ -570,7 +633,8 @@ class AggBlockAssetFunc(AssetFunc):
 
 
 class AggThreadAssetFunc(AggBlockAssetFunc):
-    """Asset function class for `vectorbtpro.utils.knowledge.custom_assets.MessagesAsset.aggregate_threads`."""
+    """Asset function class for aggregating thread messages with
+    `vectorbtpro.utils.knowledge.custom_assets.MessagesAsset.aggregate_threads`."""
 
     _short_name: tp.ClassVar[tp.Optional[str]] = "agg_thread"
 
@@ -663,13 +727,20 @@ class AggThreadAssetFunc(AggBlockAssetFunc):
 
 
 class AggChannelAssetFunc(AggThreadAssetFunc):
-    """Asset function class for `vectorbtpro.utils.knowledge.custom_assets.MessagesAsset.aggregate_channels`."""
+    """Asset function class for aggregating channel messages with
+    `vectorbtpro.utils.knowledge.custom_assets.MessagesAsset.aggregate_channels`."""
 
     _short_name: tp.ClassVar[tp.Optional[str]] = "agg_channel"
 
     @classmethod
     def get_channel_link(cls, link: str) -> str:
-        """Get channel link from a message link."""
+        """Return the channel link extracted from a message link.
+
+        Args:
+            link (str): A message link to process.
+
+        Returns:
+            str: The extracted channel link."""
         if link.startswith("$discord/"):
             link = link[len("$discord/") :]
             link_parts = link.split("/")
