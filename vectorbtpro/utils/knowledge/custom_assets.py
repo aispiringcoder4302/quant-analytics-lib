@@ -1137,10 +1137,10 @@ class VBTAsset(KnowledgeAsset):
         This method constructs a list of targets representing a module, class, attribute, or callable.
         It optionally includes:
 
-        - Shortcuts from `vectorbtpro as vbt`.
-        - Attribute access versions for classes or modules.
-        - Callable versions for callables.
-        - Common class abbreviation forms via mapped name parts from `class_abbr_config`.
+        * Shortcuts from `vectorbtpro as vbt`.
+        * Attribute access versions for classes or modules.
+        * Callable versions for callables.
+        * Common class abbreviation forms via mapped name parts from `class_abbr_config`.
 
         Each target is formatted using `VBTAsset.prepare_mention_target`.
 
@@ -3009,10 +3009,10 @@ class MessagesAsset(VBTAsset):
 
         Checks the following fields in order:
 
-        - If `attachments` is present, returns "message".
-        - If all messages share the same `block`, returns "block".
-        - If all messages share the same `thread`, returns "thread".
-        - If all messages share the same `channel`, returns "channel".
+        * If `attachments` is present, returns "message".
+        * If all messages share the same `block`, returns "block".
+        * If all messages share the same `thread`, returns "thread".
+        * If all messages share the same `channel`, returns "channel".
 
         Returns:
             Optional[str]: The lowest level by which messages are aggregated,
@@ -3608,11 +3608,11 @@ def find_assets(
 
             May include ellipsis (`...`) to adjust ordering. Allowed asset names are:
 
-            - `api`: Retrieved via `find_api` with `api_kwargs`.
-            - `docs`: Retrieved via `find_docs` with `docs_kwargs`.
-            - `messages`: Retrieved via `find_messages` with `messages_kwargs`.
-            - `examples`: Retrieved via `find_examples` with `examples_kwargs`.
-            - `all`: Includes all supported asset types.
+            * `api`: Retrieved via `find_api` with `api_kwargs`.
+            * `docs`: Retrieved via `find_docs` with `docs_kwargs`.
+            * `messages`: Retrieved via `find_messages` with `messages_kwargs`.
+            * `examples`: Retrieved via `find_examples` with `examples_kwargs`.
+            * `all`: Includes all supported asset types.
 
             For example, `["messages", ...]` puts "messages" at the beginning and all other assets
             in their usual order at the end.

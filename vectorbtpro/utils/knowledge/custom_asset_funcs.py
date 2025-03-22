@@ -458,11 +458,6 @@ class AggBlockAssetFunc(AssetFunc):
     """Asset function class for aggregating block messages with
     `vectorbtpro.utils.knowledge.custom_assets.MessagesAsset.aggregate_blocks`.
 
-    This class implements the logic for merging and reformatting message data used by
-    `vectorbtpro.utils.knowledge.custom_assets.MessagesAsset.aggregate_blocks`. It consolidates
-    various fields and metadata from input message blocks and converts them into a cohesive
-    markdown-formatted output.
-
     Usage:
         See `vectorbtpro.utils.knowledge.custom_assets.MessagesAsset.aggregate_blocks` for an example.
     """

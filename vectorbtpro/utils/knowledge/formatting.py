@@ -1159,18 +1159,17 @@ class HTMLFileFormatter(ContentFormatter):
 def resolve_formatter(formatter: tp.ContentFormatterLike) -> tp.MaybeType[ContentFormatter]:
     """Resolve a subclass or instance of `ContentFormatter`.
 
-    This function interprets `formatter` as either a shorthand string, a subclass,
-    or an instance of `ContentFormatter`. Supported string values include:
-
-    * "plain" (`PlainFormatter`): Prints the raw output
-    * "ipython" (`IPythonFormatter`): Renders unformatted text in a notebook environment
-    * "ipython_markdown" (`IPythonMarkdownFormatter`): Renders Markdown in a notebook environment
-    * "ipython_html" (`IPythonHTMLFormatter`): Renders HTML in a notebook environment
-    * "ipython_auto": Chooses between "ipython_html" or "plain" based on the environment
-    * "html" (`HTMLFileFormatter`): Writes a static HTML page and displays it in a browser
-
     Args:
-        formatter (ContentFormatterLike): A shorthand string, subclass, or instance of `ContentFormatter`.
+        formatter (ContentFormatterLike): An option, subclass, or instance of `ContentFormatter`.
+
+            Supported options:
+
+            * "plain" (`PlainFormatter`): Prints the raw output
+            * "ipython" (`IPythonFormatter`): Renders unformatted text in a notebook environment
+            * "ipython_markdown" (`IPythonMarkdownFormatter`): Renders Markdown in a notebook environment
+            * "ipython_html" (`IPythonHTMLFormatter`): Renders HTML in a notebook environment
+            * "ipython_auto": Chooses between "ipython_html" or "plain" based on the environment
+            * "html" (`HTMLFileFormatter`): Writes a static HTML page and displays it in a browser
 
     Returns:
         ContentFormatter: The resolved formatter.

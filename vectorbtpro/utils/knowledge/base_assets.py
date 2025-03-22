@@ -873,11 +873,11 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
 
         The `func` parameter accepts various types:
 
-        - A callable or a tuple containing a callable and its arguments.
-        - An instance of `vectorbtpro.utils.execution.Task`.
-        - A subclass of `vectorbtpro.utils.knowledge.base_asset_funcs.AssetFunc` or its prefix/full name.
-        - A list of any of the above, which will use `BasicAssetPipeline`.
-        - A valid expression, which will use `ComplexAssetPipeline`.
+        * A callable or a tuple containing a callable and its arguments.
+        * An instance of `vectorbtpro.utils.execution.Task`.
+        * A subclass of `vectorbtpro.utils.knowledge.base_asset_funcs.AssetFunc` or its prefix/full name.
+        * A list of any of the above, which will use `BasicAssetPipeline`.
+        * A valid expression, which will use `ComplexAssetPipeline`.
 
         Execution is handled by `vectorbtpro.utils.execution.execute`.
 
@@ -1101,8 +1101,9 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         via `KnowledgeAsset.apply`.
 
         Args:
-            value (Any): The value, function, or template to set. In templates, "i" represents the index,
-                "d" the full data item, and "x" the targeted part.
+            value (Any): The value, function, or template to set.
+
+                In templates, "i" represents the index, "d" the full data item, and "x" the targeted part.
             path (Optional[MaybeList[PathLikeKey]]): A string or list of strings indicating the nested keys
                 (e.g. "x.y[0].z") identifying the part to modify.
             skip_missing (Optional[bool]): If True, skips data items where the specified path is missing.
@@ -1319,9 +1320,9 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         Args:
             new_order (Union[str, PathKeyTokens]): New order specification, which can be:
 
-                - A sequence with tokens and an ellipsis (`...`) to preserve segments (e.g. ["a", ..., "z"]).
-                - A string "asc", "ascending", "desc", or "descending" indicating the sort order.
-                - A function or template that generates an order using variables: `i` for the item index,
+                * A sequence with tokens and an ellipsis (`...`) to preserve segments (e.g. ["a", ..., "z"]).
+                * A string "asc", "ascending", "desc", or "descending" indicating the sort order.
+                * A function or template that generates an order using variables: `i` for the item index,
                     `d` for the data item, `x` for the value at the specified path, and field names for
                     individual fields.
             path (Optional[MaybeList[PathLikeKey]]): Path(s) within the data item to reorder.
@@ -1372,15 +1373,15 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
 
         Evaluates an expression or template over data items using one of the following engines:
 
-        * `jmespath`: Evaluates expressions with the `jmespath` package.
-        * `jsonpath`, `jsonpath-ng`, `jsonpath_ng`: Evaluates expressions with the `jsonpath_ng` package.
-        * `jsonpath.ext`, `jsonpath-ng.ext`, `jsonpath_ng.ext`: Evaluates expressions with the extended
+        * "jmespath": Evaluates expressions with the `jmespath` package.
+        * "jsonpath", "jsonpath-ng", "jsonpath_ng": Evaluates expressions with the `jsonpath_ng` package.
+        * "jsonpath.ext", "jsonpath-ng.ext", "jsonpath_ng.ext": Evaluates expressions with the extended
             `jsonpath_ng` package.
         * None or "template": Evaluates each data item as a template using `KnowledgeAsset.apply` with
             `vectorbtpro.utils.knowledge.base_asset_funcs.QueryAssetFunc`. In the template, use `i`
             for the item index, `d` for the data item, `x` for the value at a specified path, and
             field names for individual fields.
-        * `pandas`: Evaluates the expression treating data items as rows with their fields as columns.
+        * "pandas": Evaluates the expression treating data items as rows with their fields as columns.
 
         Templates can also utilize functions from `vectorbtpro.utils.search_.search_config` and operate
         on both single values and sequences.
@@ -2026,12 +2027,12 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
 
         Supported dump engines:
 
-        - "repr": Uses Python's `repr`.
-        - "prettify": Uses `vectorbtpro.utils.formatting.prettify`.
-        - "nestedtext": Uses NestedText (https://pypi.org/project/nestedtext/).
-        - "yaml": Uses YAML formatting.
-        - "toml": Uses TOML (https://pypi.org/project/toml/).
-        - "json": Uses JSON formatting.
+        * "repr": Uses Python's `repr`.
+        * "prettify": Uses `vectorbtpro.utils.formatting.prettify`.
+        * "nestedtext": Uses NestedText (https://pypi.org/project/nestedtext/).
+        * "yaml": Uses YAML formatting.
+        * "toml": Uses TOML (https://pypi.org/project/toml/).
+        * "json": Uses JSON formatting.
 
         The `source` argument can be a string, callable, or custom template to preprocess the data.
         In the template, "i" represents the index, "d" represents the data item, and its fields are
@@ -2099,10 +2100,11 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         """Convert asset data items to text documents of type `vectorbtpro.utils.knowledge.chatting.TextDocument`.
 
         Templates provided via keyword arguments can reference:
-          - "i": the index of the data item,
-          - "d": the data item,
-          - "x": the data item at a specified path, and
-          - field names for respective data item fields.
+
+        * "i": the index of the data item,
+        * "d": the data item,
+        * "x": the data item at a specified path, and
+        * field names for respective data item fields.
 
         Args:
             **kwargs: Additional keyword arguments for document conversion.
@@ -2600,9 +2602,9 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
 
         If no separator is provided, the method infers one based on the trailing characters of each string:
 
-        - Uses an empty string if all items end with a newline, tab, or space.
-        - Uses ', ' if all items end with '}' or ']'.
-        - Otherwise, uses two newlines.
+        * Uses an empty string if all items end with a newline, tab, or space.
+        * Uses ', ' if all items end with '}' or ']'.
+        * Otherwise, uses two newlines.
 
         If the resulting string starts with '{' and ends with '}', it is converted to use square brackets.
 
@@ -2717,7 +2719,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
             asset_cache_manager (Optional[MaybeType[AssetCacheManager]]): Asset cache manager class or instance.
             asset_cache_manager_kwargs (KwargsLike): Keyword arguments for initializing or updating the cache manager.
             silence_warnings (bool): If True, caching warnings are suppressed.
-            **kwargs: Additional keyword arguments for `rank_documents`.
+            **kwargs: Additional keyword arguments for `vectorbtpro.utils.knowledge.chatting.rank_documents`.
 
         Returns:
             MaybeKnowledgeAsset: A new asset with documents ranked based on similarity to the query.

@@ -834,8 +834,8 @@ class FindAssetFunc(AssetFunc):
 
         This function evaluates `target` against the provided data `d` using different strategies:
 
-        - For strings, it utilizes `vectorbtpro.utils.search_.find` with `return_type="bool"`.
-        - For other types, it performs equality comparisons.
+        * For strings, it utilizes `vectorbtpro.utils.search_.find` with `return_type="bool"`.
+        * For other types, it performs equality comparisons.
 
         A `target` may be a callable that returns a boolean or an instance of
         `vectorbtpro.utils.search_.Not` to indicate negation.

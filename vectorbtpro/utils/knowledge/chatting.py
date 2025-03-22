@@ -316,13 +316,12 @@ class TikTokenizer(Tokenizer):
 def resolve_tokenizer(tokenizer: tp.TokenizerLike = None) -> tp.MaybeType[Tokenizer]:
     """Resolve a `Tokenizer` subclass or instance.
 
-    Supported values:
-
-    * "tiktoken" (`TikTokenizer`)
-    * A `Tokenizer` subclass or instance
-
     Args:
-        tokenizer (TokenizerLike): A tokenizer identifier, subclass, or instance.
+        tokenizer (TokenizerLike): An option, subclass, or instance of `Tokenizer`.
+
+            Supported options:
+
+            * "tiktoken" for `TikTokenizer`
 
     Returns:
         Tokenizer: A resolved tokenizer type or instance.
@@ -813,16 +812,15 @@ class LlamaIndexEmbeddings(Embeddings):
 def resolve_embeddings(embeddings: tp.EmbeddingsLike = None) -> tp.MaybeType[Embeddings]:
     """Return a subclass or instance of `Embeddings` based on the provided identifier or object.
 
-    Supported values:
-
-    * "openai" (`OpenAIEmbeddings`)
-    * "litellm" (`LiteLLMEmbeddings`)
-    * "llama_index" (`LlamaIndexEmbeddings`)
-    * "auto": The first installed package from the above options.
-    * A subclass or instance of `Embeddings`.
-
     Args:
-        embeddings (EmbeddingsLike): An identifier, subclass, or instance of `Embeddings`.
+        embeddings (EmbeddingsLike): An option, subclass, or instance of `Embeddings`.
+
+            Supported options:
+
+            * "openai" for `OpenAIEmbeddings`
+            * "litellm" for `LiteLLMEmbeddings`
+            * "llama_index" for `LlamaIndexEmbeddings`
+            * "auto" to select the first available option
 
             If None, configuration from `vectorbtpro._settings` is used.
 
@@ -1620,16 +1618,15 @@ class LlamaIndexCompletions(Completions):
 def resolve_completions(completions: tp.CompletionsLike = None) -> tp.MaybeType[Completions]:
     """Resolve and return a `Completions` subclass or instance.
 
-    Supported values:
-
-    * "openai" for `OpenAICompletions`
-    * "litellm" for `LiteLLMCompletions`
-    * "llama_index" for `LlamaIndexCompletions`
-    * "auto" to select the first available option
-    * A subclass or an instance of `Completions`
-
     Args:
-        completions (CompletionsLike): A string identifier, subclass, or instance of `Completions`.
+        completions (CompletionsLike): An option, subclass, or instance of `Completions`.
+
+            Supported options:
+
+            * "openai" for `OpenAICompletions`
+            * "litellm" for `LiteLLMCompletions`
+            * "llama_index" for `LlamaIndexCompletions`
+            * "auto" to select the first available option
 
     Returns:
         Completions: The resolved completions class or instance.
@@ -2340,15 +2337,14 @@ class LlamaIndexSplitter(TextSplitter):
 def resolve_text_splitter(text_splitter: tp.TextSplitterLike = None) -> tp.MaybeType[TextSplitter]:
     """Resolve a `TextSplitter` subclass or instance.
 
-    Supported values:
-
-    * "token" for `TokenSplitter`
-    * "segment" for `SegmentSplitter`
-    * "llama_index" for `LlamaIndexSplitter`
-    * A subclass or instance of `TextSplitter`
-
     Args:
-        text_splitter (TextSplitterLike): Identifier for the text splitter.
+        text_splitter (TextSplitterLike): An option, subclass, or instance of `TextSplitter`.
+
+            Supported options:
+
+            * "token" for `TokenSplitter`
+            * "segment" for `SegmentSplitter`
+            * "llama_index" for `LlamaIndexSplitter`
 
     Returns:
         TextSplitter: The resolved text splitter subclass or instance.
@@ -3524,17 +3520,16 @@ class CachedStore(DictStore):
 def resolve_obj_store(obj_store: tp.ObjectStoreLike = None) -> tp.MaybeType[ObjectStore]:
     """Resolve a subclass or an instance of `ObjectStore`.
 
-    Supported values:
-
-    * "dict" for `DictStore`
-    * "memory" for `MemoryStore`
-    * "file" for `FileStore`
-    * "lmdb" for `LMDBStore`
-    * "cached" for `CachedStore`
-    * or an actual subclass or instance of `ObjectStore`.
-
     Args:
-        obj_store (ObjectStoreLike): A subclass, instance, or string identifier for an object store.
+        obj_store (ObjectStoreLike): An option, subclass, or instance of `ObjectStore`.
+
+            Supported options:
+
+            * "dict" for `DictStore`
+            * "memory" for `MemoryStore`
+            * "file" for `FileStore`
+            * "lmdb" for `LMDBStore`
+            * "cached" for `CachedStore`
 
     Returns:
         ObjectStore: The resolved object store.
@@ -4964,7 +4959,7 @@ class Rankable(HasSettings):
             **kwargs: Additional keyword arguments for ranking.
 
         Returns:
-            Rankable: The ranked document result.
+            Rankable: An updated instance with ranked documents.
         """
         raise NotImplementedError
 
