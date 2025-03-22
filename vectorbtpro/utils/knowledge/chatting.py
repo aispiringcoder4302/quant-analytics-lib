@@ -2400,7 +2400,11 @@ StoreObjectT = tp.TypeVar("StoreObjectT", bound="StoreObject")
 
 @define
 class StoreObject(DefineMixin):
-    """Class representing an object managed by a store."""
+    """Class representing an object managed by a store.
+
+    Args:
+        id_ (str): Object identifier.
+    """
 
     id_: str = define.field()
     """Object identifier."""
@@ -2417,7 +2421,10 @@ StoreDataT = tp.TypeVar("StoreDataT", bound="StoreData")
 class StoreData(StoreObject, DefineMixin):
     """Class for any data to be stored.
 
+    Accepts the same arguments as in `StoreObject` + the ones listed below.
+
     Args:
+        id_ (str): Object identifier.
         data (Any): The stored data.
     """
 
@@ -2473,6 +2480,7 @@ class StoreDocument(StoreData, DefineMixin):
     """Abstract class for documents to be stored.
 
     Args:
+        id_ (str): Object identifier.
         data (Any): The stored data.
         template_context (KwargsLike): Context for substituting template variables.
     """
@@ -2522,7 +2530,9 @@ class TextDocument(StoreDocument, DefineMixin):
     """Class for text documents.
 
     Args:
-        data (Any): The document data.
+        id_ (str): Object identifier.
+        data (Any): The stored data.
+        template_context (KwargsLike): Context for substituting template variables.
         text_path (Optional[PathLikeKey]): Path to the text field within the data.
         split_text_kwargs (KwargsLike): Keyword arguments passed to `split_text`.
         excl_metadata (Union[bool, MaybeList[PathLikeKey]]): Indicates whether to exclude metadata or
@@ -2715,6 +2725,7 @@ class StoreEmbedding(StoreObject, DefineMixin):
     """Class for embeddings to be stored.
 
     Args:
+        id_ (str): Object identifier.
         parent_id (Optional[str]): Identifier of the parent object.
         child_ids (List[str]): Identifiers of child objects.
         embedding (Optional[List[int]]): The embedding vector.
