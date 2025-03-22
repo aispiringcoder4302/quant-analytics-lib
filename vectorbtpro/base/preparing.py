@@ -196,8 +196,11 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
             def _to_time(wrapper, _dt_obj=dt_obj, _last_before=last_before):
                 if _last_before is None:
                     _last_before = False
-                floor_index = wrapper.index.floor("1d") + dt.time_to_timedelta(_dt_obj)
-                target_index = floor_index.where(wrapper.index < floor_index, floor_index + pd.Timedelta(days=1))
+                index = wrapper.index.tz_localize(None)
+                floor_index = index.floor("1d") + dt.time_to_timedelta(_dt_obj)
+                target_index = floor_index.where(index < floor_index, floor_index + pd.Timedelta(days=1))
+                if wrapper.index.tz is not None:
+                    target_index = target_index.tz_localize(wrapper.index.tz)
                 if _last_before:
                     return _apply_last_before(wrapper.index, target_index, wrapper.freq)
                 return target_index.vbt.to_ns()
