@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Utilities for images."""
+"""Module providing utility functions for image processing."""
 
 import numpy as np
 
@@ -21,7 +21,15 @@ __all__ = [
 
 
 def hstack_image_arrays(a: tp.Array3d, b: tp.Array3d) -> tp.Array3d:
-    """Stack NumPy images horizontally."""
+    """Horizontally stack two 3D NumPy image arrays with a white background fill.
+
+    Args:
+        a (Array3d): Left image array.
+        b (Array3d): Right image array.
+
+    Returns:
+        Array3d: Combined image with `a` on the left and `b` on the right.
+    """
     h1, w1, d = a.shape
     h2, w2, _ = b.shape
     c = np.full((max(h1, h2), w1 + w2, d), 255, np.uint8)
@@ -31,7 +39,15 @@ def hstack_image_arrays(a: tp.Array3d, b: tp.Array3d) -> tp.Array3d:
 
 
 def vstack_image_arrays(a: tp.Array3d, b: tp.Array3d) -> tp.Array3d:
-    """Stack NumPy images vertically."""
+    """Vertically stack two 3D NumPy image arrays with a white background fill.
+
+    Args:
+        a (Array3d): Top image array.
+        b (Array3d): Bottom image array.
+
+    Returns:
+        Array3d: Combined image with `a` at the top and `b` at the bottom.
+    """
     h1, w1, d = a.shape
     h2, w2, _ = b.shape
     c = np.full((h1 + h2, max(w1, w2), d), 255, np.uint8)
@@ -54,34 +70,35 @@ def save_animation(
     to_image_kwargs: tp.KwargsLike = None,
     **kwargs,
 ) -> None:
-    """Save animation to a file.
+    """Save an animation to a file by iterating over a provided index.
 
     Args:
-        fname (str): File name.
-        index (sequence): Index to iterate over.
-        plot_func (callable): Plotting function.
+        fname (str): File name to save the animation.
+        index (Sequence): Iterable index for generating frames.
+        plot_func (Callable): Plotting function that accepts a slice of `index`, additional
+            positional arguments, and keyword arguments, and returns either a Plotly figure, an image file
+            path (readable by `imageio.imread`), or a NumPy array representing an image.
+        *args: Additional arguments passed to `plot_func`.
+        delta (Optional[int]): Window size for each iteration.
 
-            Must take subset of `index`, `*args`, and `**kwargs`, and return either a Plotly figure,
-            image that can be read by `imageio.imread`, or a NumPy array.
-        *args: Positional arguments passed to `plot_func`.
-        delta (int): Window size of each iteration.
-        step (int): Step of each iteration.
-        fps (int): Frames per second.
+            Defaults to half the length of `index` if None.
+        step (int): Step size between iterations.
+        fps (int): Frames per second for the animation.
 
-            Will be translated to `duration` by `1000 / fps`.
-        writer_kwargs (dict): Keyword arguments passed to `imageio.get_writer`.
-        show_progress (bool): Whether to show the progress bar.
-        pbar_kwargs (dict): Keyword arguments passed to `vectorbtpro.utils.pbar.ProgressBar`.
-        to_image_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Figure.to_image`.
-        **kwargs: Keyword arguments passed to `plot_func`.
+            Internally converted to a frame duration using `1000 / fps`.
+        writer_kwargs (dict): Additional keyword arguments for `imageio.get_writer`.
+        show_progress (bool): Whether to display the progress bar.
+        pbar_kwargs (dict): Additional keyword arguments for `vectorbtpro.utils.pbar.ProgressBar`.
+        to_image_kwargs (dict): Additional keyword arguments for `plotly.graph_objects.Figure.to_image`.
+        **kwargs: Additional keyword arguments passed to `plot_func`.
 
     Usage:
         ```pycon
         >>> from vectorbtpro import *
-
+    
         >>> def plot_data_window(index, data):
         ...     return data.loc[index].plot()
-
+    
         >>> data = vbt.YFData.pull("BTC-USD", start="2020", end="2021")
         >>> vbt.save_animation(
         ...     "plot_data_window.gif",
