@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Utilities for configuration."""
+"""Module providing utility functions for configuration management."""
 
 import inspect
 from copy import copy, deepcopy
@@ -45,14 +45,23 @@ __pdoc__ = {}
 
 
 class hdict(dict, Base):
-    """Hashable dict."""
+    """Hashable dictionary subclass that computes its hash based on its items,
+    enabling its use in sets or as dictionary keys."""
 
     def __hash__(self):
         return hash(frozenset(self.items()))
 
 
 def resolve_dict(dct: tp.DictLikeSequence, i: tp.Optional[int] = None) -> dict:
-    """Select keyword arguments."""
+    """Resolve and return a dictionary from a dictionary-like input.
+
+    Args:
+        dct (Union[dict, Sequence[dict]]): A dictionary or sequence of dictionaries.
+        i (Optional[int]): Index to select a dictionary from the sequence, if applicable.
+
+    Returns:
+        dict: A shallow copy of the resolved dictionary.
+    """
     if dct is None:
         dct = {}
     if isinstance(dct, dict):
@@ -66,7 +75,7 @@ def resolve_dict(dct: tp.DictLikeSequence, i: tp.Optional[int] = None) -> dict:
 
 
 class atomic_dict(pdict):
-    """Dict that behaves like a single value when merging."""
+    """Dictionary subclass that is treated as a single atomic value during merge operations."""
 
     pass
 
@@ -76,11 +85,18 @@ OutConfigLikeT = tp.Union[dict, "ConfigT"]
 
 
 def convert_to_dict(dct: InConfigLikeT, nested: bool = True) -> dict:
-    """Convert any config to `dict`.
+    """Convert a configuration object to a dictionary.
 
-    Set `nested` to True to convert all child dicts in recursive manner.
+    Args:
+        dct (Union[None, dict, Config]): A configuration input to convert.
+        nested (bool): If True, recursively convert nested dictionaries.
 
-    If a config is an instance of `AtomicConfig`, will convert it to `atomic_dict`."""
+    Returns:
+        dict: A dictionary representing the configuration.
+
+    !!! note
+        When the input is an instance of `AtomicConfig`, it is converted to an `atomic_dict`.
+    """
     if dct is None:
         dct = {}
     if isinstance(dct, Config):
@@ -101,9 +117,16 @@ def convert_to_dict(dct: InConfigLikeT, nested: bool = True) -> dict:
 
 
 def get_dict_item(dct: dict, k: tp.PathLikeKey, populate: bool = False) -> tp.Any:
-    """Get dict item under the key `k`.
+    """Retrieve an item from a dictionary using a nested key.
 
-    The key can be nested using the dot notation, `pathlib.Path`, or a tuple, and must be hashable."""
+    Args:
+        dct (dict): The dictionary from which to retrieve the item.
+        k (PathLikeKey): A key that may use dot notation, a `pathlib.Path`, or a tuple for nested access.
+        populate (bool): If True, create an empty dictionary for missing keys.
+
+    Returns:
+        Any: The value corresponding to the resolved key.
+    """
     if k in dct:
         return dct[k]
     from vectorbtpro.utils.search_ import resolve_pathlike_key
@@ -119,9 +142,14 @@ def get_dict_item(dct: dict, k: tp.PathLikeKey, populate: bool = False) -> tp.An
 
 
 def set_dict_item(dct: dict, k: tp.Any, v: tp.Any, force: bool = False) -> None:
-    """Set dict item.
+    """Set an item in a dictionary with an optional force flag.
 
-    If the dict is of the type `Config`, also passes `force` keyword to override blocking flags."""
+    Args:
+        dct (dict): The dictionary to update.
+        k (Any): The key to set.
+        v (Any): The value to assign.
+        force (bool): If True, and if `dct` is an instance of `Config`, override blocking flags.
+    """
     if isinstance(dct, Config):
         dct.__setitem__(k, v, force=force)
     else:
@@ -129,9 +157,13 @@ def set_dict_item(dct: dict, k: tp.Any, v: tp.Any, force: bool = False) -> None:
 
 
 def del_dict_item(dct: dict, k: tp.Any, force: bool = False) -> None:
-    """Delete dict item.
+    """Delete an item from a dictionary with an optional force flag.
 
-    If the dict is of the type `Config`, also passes `force` keyword to override blocking flags."""
+    Args:
+        dct (dict): The dictionary from which to delete the item.
+        k (Any): The key of the item to delete.
+        force (bool): If True, and if `dct` is an instance of `Config`, override blocking flags.
+    """
     if isinstance(dct, Config):
         dct.__delitem__(k, force=force)
     else:
@@ -139,16 +171,21 @@ def del_dict_item(dct: dict, k: tp.Any, force: bool = False) -> None:
 
 
 def copy_dict(dct: InConfigLikeT, copy_mode: str = "shallow", nested: bool = True) -> OutConfigLikeT:
-    """Copy dict based on a copy mode.
+    """Copy a dictionary based on the specified copy mode.
 
-    The following modes are supported:
+    Args:
+        dct (Union[None, dict, Config]): The input configuration dictionary.
+        copy_mode (str): Copying mode. Supported modes are:
 
-    * 'none': Does not copy
-    * 'shallow': Copies keys only
-    * 'hybrid': Copies keys and values using `copy.copy`
-    * 'deep': Copies the whole thing using `copy.deepcopy`
+            * 'none': No copy is performed.
+            * 'shallow': Only the dictionary structure is copied.
+            * 'hybrid': Keys are copied and values are shallow copied using `copy.copy`.
+            * 'deep': A deep copy is performed using `copy.deepcopy`.
+        nested (bool): If True, recursively copy nested dictionaries.
 
-    Set `nested` to True to copy all child dicts in recursive manner."""
+    Returns:
+        Union[dict, Config]: A copy of the input dictionary according to the specified mode.
+    """
     if dct is None:
         return {}
     copy_mode = copy_mode.lower()
@@ -181,19 +218,20 @@ def update_dict(
     force: bool = False,
     same_keys: bool = False,
 ) -> None:
-    """Update dict with keys and values from other dict.
+    """Update a dictionary with keys and values from another dictionary.
 
-    Set `nested` to True to update all child dicts in recursive manner.
-
-    For `force`, see `set_dict_item`.
-
-    If you want to treat any dict as a single value, wrap it with `atomic_dict`.
-
-    If `nested` is True, a value in `x` is an instance of `Configured`, and the corresponding
-    value in `y` is a dictionary, calls `Configured.replace`.
+    Args:
+        x (Union[None, dict, Config]): The target dictionary to update.
+        y (Union[dict, Config]): The source dictionary with values to update.
+        nested (bool): If True, recursively update nested dictionaries.
+        force (bool): If True, override blocking flags when updating.
+        same_keys (bool): If True, only update keys that already exist in the target dictionary.
 
     !!! note
-        If the child dict is not atomic, it will copy only its values, not its meta."""
+        When updating a nested configuration (an instance of `Configured`), if the corresponding
+        value in `y` is a dictionary, the method `Configured.replace` is invoked. Additionally,
+        if the child dictionary is not atomic, only its values are copied, not its metadata.
+    """
     if x is None:
         return
     if y is None:
@@ -220,10 +258,17 @@ def update_dict(
 
 
 def reorder_dict(dct: dict, keys: tp.Iterable[tp.Union[tp.Hashable, type(...)]], skip_missing: bool = False) -> dict:
-    """Reorder a dict based on a list of keys.
+    """Reorder a dictionary based on a list of keys.
+    
+    Args:
+        dct (dict): The dictionary to reorder.
+        keys (Iterable[Union[Hashable, Ellipsis]]): List of keys specifying the new order.
 
-    The keys list can include all keys, or a subset of keys with a single Ellipsis (...)
-    representing all other keys."""
+            A single Ellipsis (`...`) can be used to indicate remaining keys.
+        skip_missing (bool): If True, ignore keys missing from `dct`.
+
+    Returns:
+        dict: A new dictionary with items reordered."""
     if not isinstance(dct, dict):
         dct = dict(dct)
     if not isinstance(keys, list):
@@ -254,9 +299,16 @@ def reorder_dict(dct: dict, keys: tp.Iterable[tp.Union[tp.Hashable, type(...)]],
 
 def reorder_list(lst: list, keys: tp.Iterable[tp.Union[int, type(...)]], skip_missing: bool = False) -> list:
     """Reorder a list based on a list of integer indices.
+    
+    Args:
+        lst (list): The list to reorder.
+        keys (Iterable[Union[int, Ellipsis]]): List of indices specifying the new order.
 
-    The keys list can include all indices, or a subset of indices with a single Ellipsis (...)
-    representing all other indices. When skip_missing is True, missing indices are ignored."""
+            A single Ellipsis (`...`) can be used to indicate positions for any remaining elements.
+        skip_missing (bool): If True, ignore indices not present in `lst`.
+
+    Returns:
+        list: A new list with elements reordered."""
     if not isinstance(lst, list):
         lst = list(lst)
     if not isinstance(keys, list):
@@ -308,13 +360,13 @@ def reorder_list(lst: list, keys: tp.Iterable[tp.Union[int, type(...)]], skip_mi
 
 
 class _unsetkey:
-    """Sentinel class for unsetting keys."""
+    """Sentinel class for unsetting dictionary keys."""
 
 
 unsetkey = _unsetkey()
-"""When passed as a value, the corresponding key will be unset.
+"""Sentinel value indicating that a key should be removed.
 
-It can still be overridden by another dict."""
+It can still be overridden by another dictionary."""
 
 
 def unset_keys(
@@ -322,7 +374,12 @@ def unset_keys(
     nested: bool = True,
     force: bool = False,
 ) -> None:
-    """Unset the keys that have the value `unsetkey`."""
+    """Unset keys in a dictionary that have the value `unsetkey`.
+
+    Args:
+        dct (dict): The dictionary in which keys may be unset.
+        nested (bool): If True, unset keys in nested dictionaries recursively.
+        force (bool): If True, force the removal of keys."""
     if dct is None:
         return
     assert_instance_of(dct, dict)
@@ -341,20 +398,25 @@ def merge_dicts(
     nested: tp.Optional[bool] = None,
     same_keys: bool = False,
 ) -> OutConfigLikeT:
-    """Merge dicts.
+    """Merge multiple dictionaries into one.
+    
+	Merge provided dictionaries with optional conversion and copying, and optionally perform
+	recursive merging of nested dictionaries.
 
     Args:
-        *dicts (dict): Dicts.
-        to_dict (bool): Whether to call `convert_to_dict` on each dict prior to copying.
-        copy_mode (str): Mode for `copy_dict` to copy each dict prior to merging.
-        nested (bool): Whether to merge all child dicts in recursive manner.
+        *dicts (dict): Dictionaries to merge.
+        to_dict (bool): Whether to convert each dictionary using `convert_to_dict` before merging.
+        copy_mode (str): The copy mode used by `copy_dict` to duplicate each dictionary.
+        nested (Optional[bool]): Whether to recursively merge nested dictionaries.
 
-            If None, checks whether any dict is nested.
-        same_keys (bool): Whether to merge on the overlapping keys only."""
+            If None, the function determines automatically if any dictionary is nested.
+        same_keys (bool): Whether to merge only overlapping keys.
+
+    Returns:
+        dict: The merged dictionary."""
     if len(dicts) == 1:
         dicts = (None, dicts[0])
 
-    # Shortcut when both dicts are None
     if dicts[0] is None and dicts[1] is None:
         if len(dicts) > 2:
             return merge_dicts(
@@ -367,7 +429,6 @@ def merge_dicts(
             )
         return {}
 
-    # Check whether any dict is nested
     if nested is None:
         for dct in dicts:
             if dct is not None:
@@ -378,9 +439,7 @@ def merge_dicts(
             if nested:
                 break
 
-    # Convert dict-like objects to regular dicts
     if to_dict:
-        # Shortcut when all dicts are already regular
         if not nested and not same_keys and copy_mode in {"none", "shallow"}:
             out = {}
             for dct in dicts:
@@ -392,12 +451,9 @@ def merge_dicts(
             return out
         dicts = tuple([convert_to_dict(dct, nested=True) for dct in dicts])
 
-    # Copy all dicts
     if not to_dict or copy_mode not in {"none", "shallow"}:
-        # to_dict already does a shallow copy
         dicts = tuple([copy_dict(dct, copy_mode=copy_mode, nested=nested) for dct in dicts])
 
-    # Merge both dicts
     x, y = dicts[0], dicts[1]
     should_update = True
     if type(x) is dict and type(y) is dict and len(x) == 0:
@@ -409,10 +465,8 @@ def merge_dicts(
     if should_update:
         update_dict(x, y, nested=nested, force=True, same_keys=same_keys)
 
-    # Unset keys
     unset_keys(x, nested=nested, force=True)
 
-    # Merge resulting dict with remaining dicts
     if len(dicts) > 2:
         return merge_dicts(
             x,
@@ -426,13 +480,23 @@ def merge_dicts(
 
 
 def flat_merge_dicts(*dicts: InConfigLikeT, **kwargs) -> OutConfigLikeT:
-    """Merge dicts with default arguments and `nested=False`."""
+    """Merge multiple dictionaries with flat (non-recursive) merging.
+    
+	Wrapper around `merge_dicts` that forces `nested` to False while applying default arguments.
+
+    Args:
+        *dicts (dict): Dictionaries to merge.
+        **kwargs: Additional keyword arguments passed to `merge_dicts`.
+
+    Returns:
+        dict: The merged dictionary."""
     return merge_dicts(*dicts, nested=False, **kwargs)
 
 
 class child_dict(pdict):
-    """Subclass of `dict` acting as a child dict."""
-
+    """Child dictionary class.
+    
+	Subclass of `dict` representing a nested child dictionary."""
     pass
 
 
@@ -440,58 +504,65 @@ ConfigT = tp.TypeVar("ConfigT", bound="Config")
 
 
 class Config(pdict):
-    """Extends pickleable dict with config features such as nested updates, freezing, and resetting.
+    """Configuration class that extends a pickleable dictionary with enhanced configuration features
+    including nested updates, freezing, and resetting.
 
     Args:
-        *args: Arguments to construct the dict from.
-        options_ (dict): Config options (see below).
-        **kwargs: Keyword arguments to construct the dict from.
+        *args: Positional arguments to initialize the dictionary.
+        options_ (dict): Configuration options. See details below.
+        **kwargs: Keyword arguments to initialize the dictionary.
 
     Options can have the following keys:
 
-    Attributes:
-        copy_kwargs (dict): Keyword arguments passed to `copy_dict` for copying main dict and `reset_dct`.
+    * copy_kwargs (dict): Keyword arguments used by `copy_dict` when copying the main dictionary and `reset_dct`.
 
-            Copy mode defaults to 'none'.
-        reset_dct (dict): Dict to fall back to in case of resetting.
+        Copy mode defaults to 'none'.
+    * reset_dct (dict): Fallback dictionary used for resetting.
 
-            Defaults to None. If None, copies main dict using `reset_dct_copy_kwargs`.
+        If None, the main dictionary is copied using `reset_dct_copy_kwargs`.
 
-            !!! note
-                Defaults to main dict in case it's None and `readonly` is True.
-        reset_dct_copy_kwargs (dict): Keyword arguments that override `copy_kwargs` for `reset_dct`.
+        Defaults to None.
 
-            Copy mode defaults to 'none' if `readonly` is True, else to 'hybrid'.
-        pickle_reset_dct (bool): Whether to pickle `reset_dct`.
-        frozen_keys (bool): Whether to deny updates to the keys of the config.
+        !!! note
+            When `readonly` is True, defaults to the main dictionary if set to None.
+    * reset_dct_copy_kwargs (dict): Keyword arguments that override those in `copy_kwargs` for creating `reset_dct`.
 
-            Defaults to False.
-        readonly (bool): Whether to deny updates to the keys and values of the config.
+        Copy mode defaults to 'none' if `readonly` is True, otherwise 'hybrid'.
+    * pickle_reset_dct (bool): Determines whether `reset_dct` is pickled.
 
-            Defaults to False.
-        nested (bool): Whether to do operations recursively on each child dict.
+        Defaults to False.
+    * frozen_keys (bool): Denies updates to configuration keys when True.
 
-            Such operations include copy, update, and merge.
-            Disable to treat each child dict as a single value. Defaults to True.
-        convert_children (bool or type): Whether to convert child dicts of type `child_dict` to configs
-            with the same configuration.
+        Defaults to False.
+    * readonly (bool): Denies updates to both keys and values when True.
 
-            This will trigger a waterfall reaction across all child dicts. Won't convert dicts that
-            are already configs. Apart from boolean, you can set it to any subclass of `Config` to use
-            it for construction. Requires `nested` to be True. Defaults to False.
-        as_attrs (bool): Whether to enable accessing dict keys via the dot notation.
+        Defaults to False.
+    * nested (bool): Applies operations such as copying, updating, and merging recursively to
+        each child dictionary when True.
 
-            Enables autocompletion (but only during runtime!). Raises error in case of naming conflicts.
-            Defaults to True if `frozen_keys` or `readonly`, otherwise False.
+        Disable this to treat each child dictionary as a single value.
 
-            To make nested dictionaries also accessible via the dot notation, wrap
-            them with `child_dict` and set `convert_children` and `nested` to True.
-        override_keys (set of str): Keys to override if `as_attrs` is True.
+        Defaults to True.
+    * convert_children (bool or type): Converts child dictionaries of type `child_dict` to
+        configurations with the same settings if True or if set to a `Config` subclass.
 
-    Defaults can be overridden with settings under `vectorbtpro._settings.config`.
+        This triggers a waterfall conversion across all child dictionaries.
+        Existing configurations are not converted. Requires `nested` to be True.
 
-    If another config is passed, its properties are copied over, but they can still be overridden
-    with the arguments passed to the initializer.
+        Defaults to False.
+    * as_attrs (bool): Enables accessing dictionary keys via dot notation when True.
+
+        This provides autocompletion at runtime but raises an error in the event of naming conflicts.
+        To allow nested dictionaries to be accessed via dot notation, wrap them with `child_dict`
+        and ensure both `convert_children` and `nested` are True.
+
+        Defaults to True if `frozen_keys` or `readonly` is True, otherwise False.
+    * override_keys (set of str): Specifies keys that can override attribute names when `as_attrs` is True.
+
+    Defaults can be overridden using settings from `vectorbtpro._settings.config`.
+
+    If another configuration is provided, its properties will be copied, but they can be overridden
+    by arguments passed during initialization.
 
     !!! note
         All arguments are applied only once during initialization.
@@ -505,7 +576,6 @@ class Config(pdict):
         except ImportError:
             options_cfg = {}
 
-        # Build dict
         if len(args) > 0 and isinstance(args[0], Config):
             cfg = args[0]
         else:
@@ -518,7 +588,6 @@ class Config(pdict):
         else:
             options_ = dict(options_)
 
-        # Resolve settings
         def _resolve_setting(pname: str, default: tp.Any, merge: bool = False) -> tp.Any:
             cfg_default = options_cfg.get(pname, None)
             if cfg is None:
@@ -562,10 +631,8 @@ class Config(pdict):
         if len(options_) > 0:
             raise ValueError(f"Unexpected config options: {options_}")
 
-        # Copy dict
         dct = copy_dict(dict(dct), **copy_kwargs)
 
-        # Convert child dicts
         if convert_children and nested:
             for k, v in dct.items():
                 if isinstance(v, child_dict):
@@ -591,7 +658,6 @@ class Config(pdict):
                         ),
                     )
 
-        # Copy initial config
         if reset_dct is None:
             reset_dct = dct
         reset_dct = copy_dict(dict(reset_dct), **reset_dct_copy_kwargs)
@@ -611,7 +677,6 @@ class Config(pdict):
             override_keys=override_keys,
         )
 
-        # Set keys as attributes for autocomplete
         if as_attrs:
             self_dir = set(self.__dir__())
             for k, v in dct.items():
@@ -623,15 +688,27 @@ class Config(pdict):
 
     @property
     def options_(self) -> dict:
-        """Config options."""
+        """Configuration options dictionary."""
         return self._options_
 
     def get_option(self, k: str) -> tp.Any:
-        """Get an option."""
+        """Return the configuration option associated with the provided key.
+
+        Args:
+            k (str): The key of the option.
+
+        Returns:
+            Any: The value of the configuration option.
+        """
         return self._options_[k]
 
     def set_option(self, k: str, v: tp.Any) -> None:
-        """Set an option."""
+        """Set the configuration option associated with the provided key.
+
+        Args:
+            k (str): The key of the option.
+            v (Any): The value to set for the option.
+        """
         self._options_[k] = v
 
     def __getattribute__(self, k: str) -> tp.Any:
@@ -682,7 +759,16 @@ class Config(pdict):
         dict.__delitem__(self, k)
 
     def pop(self, k: str, v: tp.Any = MISSING, force: bool = False) -> tp.Any:
-        """Remove and return the pair by the key."""
+        """Remove and return the key-value pair associated with a specified key.
+
+        Args:
+            k (str): The key of the item to remove.
+            v (Any): Default value if the key is not found.
+            force (bool): Bypass configuration restrictions if True.
+
+        Returns:
+            Any: The removed value.
+        """
         if not force and self.get_option("readonly"):
             raise TypeError("Config is read-only")
         if not force and self.get_option("frozen_keys"):
@@ -693,8 +779,15 @@ class Config(pdict):
             result = dict.pop(self, k, v)
         return result
 
-    def popitem(self, force: bool = False) -> tp.Tuple[tp.Any, tp.Any]:
-        """Remove and return some pair."""
+    def popitem(self, force: bool = False) -> tp.Tuple[str, tp.Any]:
+        """Remove and return an arbitrary key-value pair from the config.
+
+        Args:
+            force (bool): Bypass configuration restrictions if True.
+
+        Returns:
+            Tuple[str, Any]: The removed key-value pair.
+        """
         if not force and self.get_option("readonly"):
             raise TypeError("Config is read-only")
         if not force and self.get_option("frozen_keys"):
@@ -703,7 +796,11 @@ class Config(pdict):
         return result
 
     def clear(self, force: bool = False) -> None:
-        """Remove all items."""
+        """Remove all items from the config.
+
+        Args:
+            force (bool): Bypass configuration restrictions if True.
+        """
         if not force and self.get_option("readonly"):
             raise TypeError("Config is read-only")
         if not force and self.get_option("frozen_keys"):
@@ -711,18 +808,27 @@ class Config(pdict):
         dict.clear(self)
 
     def update(self, *args, nested: tp.Optional[bool] = None, force: bool = False, **kwargs) -> None:
-        """Update the config.
+        """Update the config with the provided key-value pairs using `update_dict`.
 
-        See `update_dict`."""
+        Args:
+            *args: Additional positional arguments to form a dictionary.
+            nested (Optional[bool]): Whether to perform a nested update.
+            force (bool): Bypass configuration restrictions if True.
+            **kwargs: Additional keyword arguments.
+        """
         other = dict(*args, **kwargs)
         if nested is None:
             nested = self.get_option("nested")
         update_dict(self, other, nested=nested, force=force)
 
     def __copy__(self: ConfigT) -> ConfigT:
-        """Shallow operation, primarily used by `copy.copy`.
+        """Make a shallow copy of the config instance.
 
-        Does not take into account copy settings."""
+        This copy does not apply custom copy settings.
+
+        Returns:
+            Config: The shallow copied config instance.
+        """
         cls = type(self)
         self_copy = cls.__new__(cls)
         for k, v in self.__dict__.items():
@@ -733,9 +839,16 @@ class Config(pdict):
         return self_copy
 
     def __deepcopy__(self: ConfigT, memo: tp.DictLike = None) -> ConfigT:
-        """Deep operation, primarily used by `copy.deepcopy`.
+        """Make a deep copy of the config instance.
 
-        Does not take into account copy settings."""
+        This copy does not incorporate custom copy settings.
+
+        Args:
+            memo (DictLike): A memo dictionary for tracking copied objects.
+
+        Returns:
+            Config: The deep copied config instance.
+        """
         if memo is None:
             memo = {}
         cls = type(self)
@@ -754,9 +867,18 @@ class Config(pdict):
         copy_mode: tp.Optional[str] = None,
         nested: tp.Optional[bool] = None,
     ) -> ConfigT:
-        """Copy the instance.
+        """Create a copy of the config instance.
 
-        By default, copies in the same way as during the initialization."""
+        By default, the copy is performed using the initialization copy settings.
+
+        Args:
+            reset_dct_copy_kwargs (KwargsLike): Additional parameters for copying the reset dictionary.
+            copy_mode (Optional[str]): The copy mode to use.
+            nested (Optional[bool]): Whether to perform a nested copy.
+
+        Returns:
+            Config: The copied config instance.
+        """
         if copy_mode is None:
             copy_mode = self.get_option("copy_kwargs")["copy_mode"]
             reset_dct_copy_mode = self.get_option("reset_dct_copy_kwargs")["copy_mode"]
@@ -793,9 +915,17 @@ class Config(pdict):
         nested: tp.Optional[bool] = None,
         **kwargs,
     ) -> OutConfigLikeT:
-        """Merge with another dict into one single dict.
+        """Merge the current config with another dictionary, combining entries into one dictionary.
 
-        See `merge_dicts`."""
+        Args:
+            other (Union[None, dict, Config]): A dictionary or config-like object to merge.
+            copy_mode (Optional[str]): The copy mode for merging.
+            nested (Optional[bool]): Whether to perform a nested merge.
+            **kwargs: Additional keyword arguments for merging.
+
+        Returns:
+            Union[dict, Config]: The merged configuration.
+        """
         if copy_mode is None:
             copy_mode = "shallow"
         if nested is None:
@@ -803,13 +933,23 @@ class Config(pdict):
         return merge_dicts(self, other, copy_mode=copy_mode, nested=nested, **kwargs)
 
     def to_dict(self, nested: tp.Optional[bool] = None) -> dict:
-        """Convert to dict."""
+        """Convert the config instance to a Python dictionary.
+
+        Args:
+            nested (Optional[bool]): Whether to apply nested conversion.
+
+        Returns:
+            dict: The configuration dictionary.
+        """
         return convert_to_dict(self, nested=nested)
 
     def reset(self, force: bool = False, **reset_dct_copy_kwargs) -> None:
-        """Clears the config and updates it with the initial config.
+        """Clear the config and restore it to its initial state.
 
-        `reset_dct_copy_kwargs` override `reset_dct_copy_kwargs`."""
+        Args:
+            force (bool): Bypass configuration restrictions if True.
+            **reset_dct_copy_kwargs: Additional keyword arguments for copying the reset dictionary.
+        """
         if not force and self.get_option("readonly"):
             raise TypeError("Config is read-only")
         reset_dct_copy_kwargs = merge_dicts(self.get_option("reset_dct_copy_kwargs"), reset_dct_copy_kwargs)
@@ -819,9 +959,12 @@ class Config(pdict):
         self.set_option("reset_dct", reset_dct)
 
     def make_checkpoint(self, force: bool = False, **reset_dct_copy_kwargs) -> None:
-        """Replace `reset_dct` by the current state.
+        """Update the reset dictionary to reflect the current config state.
 
-        `reset_dct_copy_kwargs` override `reset_dct_copy_kwargs`."""
+        Args:
+            force (bool): Bypass configuration restrictions if True.
+            **reset_dct_copy_kwargs: Additional keyword arguments for copying the current state.
+        """
         if not force and self.get_option("readonly"):
             raise TypeError("Config is read-only")
         reset_dct_copy_kwargs = merge_dicts(self.get_option("reset_dct_copy_kwargs"), reset_dct_copy_kwargs)
@@ -836,7 +979,15 @@ class Config(pdict):
         nested: tp.Optional[bool] = None,
         **kwargs,
     ) -> None:
-        """Load dumps from a file and update this instance in-place."""
+        """Load configuration data from a file and update the instance in-place.
+
+        Args:
+            path (Optional[PathLike]): The file path to load the configuration.
+            clear (bool): Clear the current config before updating if True.
+            update_options (bool): Update configuration options if True.
+            nested (Optional[bool]): Whether to apply a nested update.
+            **kwargs: Additional keyword arguments for loading.
+        """
         loaded = self.load(path=path, **kwargs)
         if clear:
             self.clear(force=True)
@@ -914,13 +1065,13 @@ class Config(pdict):
 
 
 class AtomicConfig(Config, atomic_dict):
-    """Config that behaves like a single value when merging."""
+    """Configuration class that behaves like a single value during merge operations."""
 
     pass
 
 
 class FrozenConfig(Config):
-    """`Config` with `frozen_keys` flag set to True."""
+    """Configuration class with the `frozen_keys` flag enabled."""
 
     def __init__(
         self,
@@ -935,7 +1086,7 @@ class FrozenConfig(Config):
 
 
 class ReadonlyConfig(Config):
-    """`Config` with `readonly` flag set to True."""
+    """Configuration class with the `readonly` flag enabled."""
 
     def __init__(
         self,
@@ -950,7 +1101,7 @@ class ReadonlyConfig(Config):
 
 
 class HybridConfig(Config):
-    """`Config` with `copy_kwargs` set to `copy_mode='hybrid'`."""
+    """Configuration class with `copy_kwargs` configured to use `copy_mode='hybrid'`."""
 
     def __init__(
         self,
@@ -972,13 +1123,13 @@ ConfiguredT = tp.TypeVar("ConfiguredT", bound="Configured")
 
 
 class SettingsNotFoundError(KeyError):
-    """Gets raised if settings could not be found."""
+    """Exception raised when settings are not found."""
 
     pass
 
 
 class SettingNotFoundError(KeyError):
-    """Gets raised if a setting could not be found."""
+    """Exception raised when a setting is not found."""
 
     pass
 
@@ -991,9 +1142,9 @@ ext_settings_paths_config = HybridConfig()
 
 __pdoc__[
     "ext_settings_paths_config"
-] = f"""Config for (currently active) extensional settings paths.
+] = f"""Configuration for currently active extensional settings paths.
 
-Stores tuples of class names and their settings paths by unique ids.
+Stores tuples of class names and their associated settings paths by unique identifiers.
 
 ```python
 {ext_settings_paths_config.prettify()}
@@ -1002,7 +1153,7 @@ Stores tuples of class names and their settings paths by unique ids.
 
 
 class ExtSettingsPath(Base):
-    """Context manager to add extensional settings paths."""
+    """Context manager to temporarily add extensional settings paths."""
 
     def __init__(self, ext_settings_paths: tp.ExtSettingsPaths) -> None:
         self._unique_id = str(uuid.uuid4())
@@ -1010,12 +1161,12 @@ class ExtSettingsPath(Base):
 
     @property
     def unique_id(self) -> str:
-        """Unique id."""
+        """Unique identifier for this extensional settings path instance."""
         return self._unique_id
 
     @property
     def ext_settings_paths(self) -> tp.ExtSettingsPaths:
-        """Dictionary with extensional settings paths."""
+        """Dictionary containing extensional settings paths."""
         return self._ext_settings_paths
 
     def __enter__(self) -> tp.Self:
@@ -1031,11 +1182,13 @@ spec_settings_paths_config = HybridConfig()
 
 __pdoc__[
     "spec_settings_paths_config"
-] = f"""Config for (currently active) specialized settings paths.
+] = f"""Configuration for currently active specialized settings paths.
 
-Stores settings path dictionaries by unique ids. In a path dictionary, each key is a path that points 
-to one or more other paths. For instance, a relationship "knowledge" -> "pages" will also consider "pages" 
-settings whenever "knowledge" settings are requested.
+Stores dictionaries of settings paths keyed by unique identifiers. 
+
+In each dictionary, each key represents a path that may point to one or more other paths. 
+For instance, a relationship `knowledge` -> `pages` will also consider `pages` settings when 
+`knowledge` settings are requested.
 
 ```python
 {spec_settings_paths_config.prettify()}
@@ -1044,7 +1197,7 @@ settings whenever "knowledge" settings are requested.
 
 
 class SpecSettingsPath(Base):
-    """Context manager to add specialized settings paths."""
+    """Context manager to temporarily add specialized settings paths."""
 
     def __init__(self, spec_settings_paths: tp.SpecSettingsPaths) -> None:
         self._unique_id = str(uuid.uuid4())
@@ -1052,12 +1205,12 @@ class SpecSettingsPath(Base):
 
     @property
     def unique_id(self) -> str:
-        """Unique id."""
+        """Unique identifier for this specialized settings path instance."""
         return self._unique_id
 
     @property
     def spec_settings_paths(self) -> tp.SpecSettingsPaths:
-        """Dictionary with specialized settings paths."""
+        """Dictionary containing specialized settings paths."""
         return self._spec_settings_paths
 
     def __enter__(self) -> tp.Self:
@@ -1069,20 +1222,21 @@ class SpecSettingsPath(Base):
 
 
 class HasSettings(Base):
-    """Class that has settings in `vectorbtpro._settings`."""
+    """Class for managing settings from `vectorbtpro._settings`."""
 
     _settings_path: tp.SettingsPath = None
-    """Path(s) corresponding to this class in `vectorbtpro._settings`.
+    """Path(s) that locate settings for this class in `vectorbtpro._settings`.
 
-    Must be either a path, a list of paths (in order of specialization), or a dictionary of path ids and paths.
+Must be provided as a single path, a list of paths ordered by specialization, 
+or a dictionary mapping path IDs to paths.
 
-    Lookup is done using `get_dict_item`."""
+Lookup is performed using `get_dict_item`."""
 
     _specializable: tp.ClassVar[bool] = True
-    """Whether settings of this class can be specialized."""
+    """Boolean flag indicating if the settings for this class can be specialized."""
 
     _extendable: tp.ClassVar[bool] = True
-    """Whether settings of this class can be extended."""
+    """Boolean flag indicating if the settings for this class can be extended."""
 
     @classmethod
     def get_path_settings(
@@ -1091,7 +1245,16 @@ class HasSettings(Base):
         sub_path: tp.Optional[tp.PathLikeKey] = None,
         sub_path_only: bool = False,
     ) -> dict:
-        """Get the settings under a path."""
+        """Return the settings dictionary located under a specified path.
+
+        Args:
+            path (PathLikeKey): The primary settings path.
+            sub_path (Optional[PathLikeKey]): A sub-path to combine with the primary path.
+            sub_path_only (bool): If True, enforce that the settings exist only under the combined sub-path.
+
+        Returns:
+            dict: The settings associated with the given path, optionally merged with sub-path settings.
+        """
         from vectorbtpro._settings import settings
 
         sub_path_settings = None
@@ -1120,7 +1283,19 @@ class HasSettings(Base):
         super_first: bool = True,
         unique_only: bool = True,
     ) -> tp.List[tp.Tuple[tp.Type[HasSettingsT], tp.PathLikeKey]]:
-        """Resolve the settings paths associated with this class and its superclasses (if `inherit` is True)."""
+        """Return a list of tuples associating classes with their resolved settings paths from this
+        class and its superclasses.
+
+        Args:
+            path_id (Optional[Hashable]): A unique identifier to select a specific settings path from a dictionary.
+            inherit (bool): Whether to include settings paths from superclasses.
+            super_first (bool): If True, resolve superclass settings first.
+            unique_only (bool): Whether to return only unique settings paths.
+
+        Returns:
+            List[Tuple[Type[HasSettings], PathLikeKey]]: A list of tuples with classes and their
+                resolved settings paths.
+        """
         from vectorbtpro.utils.search_ import resolve_pathlike_key, combine_pathlike_keys
 
         paths = []
@@ -1195,7 +1370,17 @@ class HasSettings(Base):
         sub_path: tp.Optional[tp.PathLikeKey] = None,
         sub_path_only: bool = False,
     ) -> dict:
-        """Get the settings associated with this class and its superclasses (if `inherit` is True)."""
+        """Return the merged settings dictionary associated with this class and its superclasses.
+
+        Args:
+            path_id (Optional[Hashable]): A unique identifier to select a settings path from a dictionary.
+            inherit (bool): Whether to include settings from superclasses.
+            sub_path (Optional[PathLikeKey]): A sub-path to combine with the main settings path.
+            sub_path_only (bool): If True, enforce that the settings exist only under the combined sub-path.
+
+        Returns:
+            dict: The merged settings dictionary.
+        """
         paths = cls.resolve_settings_paths(
             path_id=path_id,
             inherit=inherit,
@@ -1229,7 +1414,13 @@ class HasSettings(Base):
         sub_path: tp.Optional[tp.PathLikeKey] = None,
         sub_path_only: bool = False,
     ) -> bool:
-        """Return whether the settings under a path exist."""
+        """Return True if the settings exist under the specified path; otherwise, False.
+
+        Args:
+            path (PathLikeKey): The primary settings path.
+            sub_path (Optional[PathLikeKey]): A sub-path to combine with the primary path.
+            sub_path_only (bool): If True, enforce lookup solely in the combined sub-path.
+        """
         try:
             cls.get_path_settings(path, sub_path=sub_path, sub_path_only=sub_path_only)
             return True
@@ -1244,8 +1435,14 @@ class HasSettings(Base):
         sub_path: tp.Optional[tp.PathLikeKey] = None,
         sub_path_only: bool = False,
     ) -> bool:
-        """Return whether there the settings associated with this class and its superclasses
-        (if `inherit` is True) exist."""
+        """Return True if settings exist for this class and its superclasses; otherwise, False.
+
+        Args:
+            path_id (Optional[Hashable]): A unique identifier to select a settings path from a dictionary.
+            inherit (bool): Whether to include settings from superclasses.
+            sub_path (Optional[PathLikeKey]): A sub-path to combine with the main settings path.
+            sub_path_only (bool): If True, enforce lookup solely in the combined sub-path.
+        """
         try:
             cls.get_settings(
                 path_id=path_id,
@@ -1266,7 +1463,18 @@ class HasSettings(Base):
         sub_path: tp.Optional[tp.PathLikeKey] = None,
         sub_path_only: bool = False,
     ) -> tp.Any:
-        """Get a value from the settings under a path."""
+        """Return the value associated with a specified key from the settings located at a given path.
+
+        Args:
+            path (PathLikeKey): The primary settings path.
+            key (PathLikeKey): The key for which to retrieve the setting value.
+            default (Any): The default value to return if the key is not found.
+            sub_path (Optional[PathLikeKey]): A sub-path to combine with the primary path.
+            sub_path_only (bool): If True, enforce retrieval only from the combined sub-path.
+
+        Returns:
+            Any: The value corresponding to the specified key, or the default value if not found.
+        """
         from vectorbtpro._settings import settings
 
         if sub_path is not None:
@@ -1310,8 +1518,21 @@ class HasSettings(Base):
         sub_path_only: bool = False,
         merge: bool = False,
     ) -> tp.Any:
-        """Get a value under the settings associated with this class and its superclasses
-        (if `inherit` is True)."""
+        """Return the setting value from the settings associated with this class and
+        its superclasses (if `inherit` is True).
+
+        Args:
+            key (PathLikeKey): The key identifying the setting.
+            default (Any): The value to return if the setting is not found.
+            path_id (Optional[Hashable]): Identifier for the settings path.
+            inherit (bool): Whether to include superclasses in the lookup.
+            sub_path (Optional[PathLikeKey]): A sub-key for nested settings.
+            sub_path_only (bool): Whether to consider only the sub-path.
+            merge (bool): Whether to merge settings from multiple sources.
+
+        Returns:
+            Any: The resolved setting value.
+        """
         paths = cls.resolve_settings_paths(
             path_id=path_id,
             inherit=inherit,
@@ -1369,7 +1590,14 @@ class HasSettings(Base):
         sub_path: tp.Optional[tp.PathLikeKey] = None,
         sub_path_only: bool = False,
     ) -> bool:
-        """Return whether the setting under a path exists."""
+        """Return whether a setting exists under the specified path.
+
+        Args:
+            path (PathLikeKey): The path to check for a setting.
+            key (PathLikeKey): The key identifying the setting.
+            sub_path (Optional[PathLikeKey]): A sub-key for nested settings.
+            sub_path_only (bool): Whether to consider only the sub-path.
+        """
         try:
             cls.get_path_setting(path, key, sub_path=sub_path, sub_path_only=sub_path_only)
             return True
@@ -1385,8 +1613,16 @@ class HasSettings(Base):
         sub_path: tp.Optional[tp.PathLikeKey] = None,
         sub_path_only: bool = False,
     ) -> bool:
-        """Return whether the settings associated with this class and its superclasses
-        (if `inherit` is True) exists."""
+        """Return whether the setting exists in the settings for this class and
+        its superclasses (if `inherit` is True).
+
+        Args:
+            key (PathLikeKey): The key identifying the setting.
+            path_id (Optional[Hashable]): Identifier for the settings path.
+            inherit (bool): Whether to include superclasses in the lookup.
+            sub_path (Optional[PathLikeKey]): A sub-key for nested settings.
+            sub_path_only (bool): Whether to consider only the sub-path.
+        """
         try:
             cls.get_setting(
                 key,
@@ -1411,14 +1647,26 @@ class HasSettings(Base):
         sub_path_only: bool = False,
         merge: bool = False,
     ) -> tp.Any:
-        """Resolve a value that has a key under the settings in `vectorbtpro._settings`
-        associated with this class.
+        """Return the resolved setting value for the provided key from
+        `vectorbtpro._settings` associated with this class.
 
-        If the provided value is None, returns the setting, otherwise the value.
-        If the value is a dict and `merge` is True, merges it over the corresponding dict in the settings.
+        Args:
+            value (Any): The input value to resolve or override the setting.
 
-        If `sub_path` is provided, appends it to the resolved path and gives it more priority.
-        If only the `sub_path` should be considered, set `sub_path_only` to True."""
+                If the provided value is None, fetch the setting.
+            key (PathLikeKey): The key identifying the setting.
+            default (Any): The value to return if the setting is not found.
+            path_id (Optional[Hashable]): Identifier for the settings path.
+            inherit (bool): Whether to include settings from superclasses.
+            sub_path (Optional[PathLikeKey]): A sub-key to extend the settings path.
+
+                The sub-key is appended to the resolved path to give it higher priority.
+            sub_path_only (bool): Whether to consider only the sub-path.
+            merge (bool): Whether to merge dictionaries if applicable.
+
+        Returns:
+            Any: The resolved setting value.
+        """
         if merge:
             setting = cls.get_setting(
                 key,
@@ -1452,9 +1700,16 @@ class HasSettings(Base):
         populate_: bool = False,
         **kwargs,
     ) -> None:
-        """Set the settings in `vectorbtpro._settings` associated with this class.
+        """Update the settings in `vectorbtpro._settings` associated with this class.
 
-        If the settings do not exist yet, pass `populate_=True`."""
+        Args:
+            path_id (Optional[Hashable]): Identifier for the settings path.
+            sub_path (Optional[PathLikeKey]): A sub-key for nested settings.
+            populate_ (bool): Indicates if the settings should be populated.
+
+                If the settings do not exist, pass `populate_=True` to initialize them.
+            **kwargs: Additional key-value pairs to update the settings.
+        """
         from vectorbtpro._settings import settings
 
         if isinstance(cls._settings_path, dict):
@@ -1491,7 +1746,12 @@ class HasSettings(Base):
         path_id: tp.Optional[tp.Hashable] = None,
         sub_path: tp.Optional[tp.PathLikeKey] = None,
     ) -> None:
-        """Reset the settings in `vectorbtpro._settings` associated with this class."""
+        """Reset the settings in `vectorbtpro._settings` associated with this class.
+
+        Args:
+            path_id (Optional[Hashable]): Identifier for the settings path.
+            sub_path (Optional[PathLikeKey]): A sub-key for nested settings.
+        """
         from vectorbtpro._settings import settings
 
         if isinstance(cls._settings_path, dict):
@@ -1517,7 +1777,17 @@ class HasSettings(Base):
 
 
 class MetaConfigured(type):
-    """Metaclass for `Configured`."""
+    """Metaclass for `Configured` classes.
+
+    This metaclass automatically configures expected keys based on the `_expected_keys_mode`
+    attribute. It aggregates expected keys from inherited classes and from the class's `__init__`
+    parameters.
+
+    Args:
+        name (str): The name of the class being created.
+        bases (Tuple[Type, ...]): The base classes of the class being created.
+        attrs (dict): The attribute dictionary defined in the class body.
+    """
 
     def __init__(cls, name: str, bases: tp.Tuple[tp.Type, ...], attrs: dict) -> None:
         super().__init__(name, bases, attrs)
@@ -1564,34 +1834,39 @@ class MetaConfigured(type):
 
 
 class Configured(HasSettings, Cacheable, Comparable, Pickleable, Prettified, Chainable, metaclass=MetaConfigured):
-    """Class with an initialization config.
+    """Class for a configured object.
 
-    All subclasses of `Configured` are initialized using `Config`, which makes it easier to pickle.
+    All subclasses of `Configured` are initialized using `Config`, which facilitates
+    pickling and configuration merging.
 
     Settings are defined under `vectorbtpro._settings.configured`.
 
-    !!! warning
-        If any attribute has been overwritten that isn't listed in `Configured._writeable_attrs`,
-        or if any `Configured.__init__` argument depends upon global defaults,
-        their values won't be copied over. Make sure to pass them explicitly to
-        make that the saved & loaded / copied instance is resilient to any changes in globals."""
+    Args:
+        config: Keyword arguments for initialization configuration.
 
+    !!! warning
+        If any attribute is overwritten that is not listed in `Configured._writeable_attrs`,
+        or if any `Configured.__init__` argument depends on global defaults, those values will
+        not be copied. Pass them explicitly to ensure the saved, loaded, or copied instance
+        remains resilient to changes in globals.
+    """
+    
     _expected_keys_mode: tp.ExpectedKeysMode = "auto"
     """Mode of expected keys.
+
+    Accepted values are:
     
-    Following options are accepted:
-    
-    * "auto": Combine keys from bases and signature. Becomes disabled if any bases are disabled.
-    * "inherit": Combine keys from bases only. Becomes disabled if any bases are disabled.
-    * "disable": Don't check keys
-    * "custom": Custom keys are provided
+    * "auto": Combines keys from bases and signature. Disabled if any base is disabled.
+    * "inherit": Combines keys from bases only. Disabled if any base is disabled.
+    * "disable": Disables key checking.
+    * "custom": Expects custom provided keys.
     """
 
     _expected_keys: tp.ExpectedKeys = None
-    """Set of expected keys."""
+    """Set of expected configuration keys."""
 
     _writeable_attrs: tp.WriteableAttrs = None
-    """Set of writeable attributes that will be saved/copied along with the config."""
+    """Set of writable attribute names to be saved or copied with the configuration."""
 
     def __init__(self, **config) -> None:
         from vectorbtpro._settings import settings
@@ -1620,12 +1895,16 @@ class Configured(HasSettings, Cacheable, Comparable, Pickleable, Prettified, Cha
 
     @property
     def config(self) -> Config:
-        """Initialization config."""
+        """Configuration instance set during initialization."""
         return self._config
 
     @hybrid_method
     def get_writeable_attrs(cls_or_self) -> tp.Optional[tp.Set[str]]:
-        """Get set of attributes that are writeable by this class or by any of its base classes."""
+        """Return the writable attribute names for this class and its base classes.
+
+        Returns:
+            Optional[Set[str]]: A set of writable attribute names if defined, otherwise None.
+        """
         if isinstance(cls_or_self, type):
             cls = cls_or_self
         else:
@@ -1643,7 +1922,16 @@ class Configured(HasSettings, Cacheable, Comparable, Pickleable, Prettified, Cha
         on_merge_conflict: tp.Union[str, dict] = "error",
         **kwargs,
     ) -> tp.Kwargs:
-        """Resolve keyword arguments for initializing `Configured` after merging."""
+        """Resolve keyword arguments for initializing a `Configured` instance after merging configurations.
+
+        Args:
+            *configs (MaybeTuple[ConfigT]): Configuration objects to merge.
+            on_merge_conflict (Union[str, dict]): Strategy for handling merge conflicts.
+            **kwargs: Additional keyword arguments for resolving merge.
+
+        Returns:
+            Kwargs: Resolved keyword arguments for initialization.
+        """
         if len(configs) == 1:
             configs = configs[0]
         configs = list(configs)
@@ -1702,11 +1990,23 @@ class Configured(HasSettings, Cacheable, Comparable, Pickleable, Prettified, Cha
         copy_writeable_attrs_: tp.Optional[bool] = None,
         **new_config,
     ) -> ConfiguredT:
-        """Create a new instance by copying and (optionally) changing the config.
+        """Create a new instance with a modified configuration.
+
+        Args:
+            copy_mode_ (str): Copy mode for copying the configuration and attributes.
+            nested_ (bool): Whether to copy nested objects.
+            cls_ (type): Class to instantiate for the new instance.
+            copy_writeable_attrs_ (bool): Whether to copy writable attributes.
+            **new_config: Additional configuration parameters to update the instance.
+
+        Returns:
+            Configured: A new instance with the updated configuration.
 
         !!! warning
-            This operation won't return a copy of the instance but a new instance
-            initialized with the same config and writeable attributes (or their copy, depending on `copy_mode`)."""
+            This method returns a new instance initialized with the same configuration and
+            writable attributes (or their copies, depending on `copy_mode_`) rather than a direct
+            copy of the current instance.
+        """
         if cls_ is None:
             cls_ = type(self)
         if copy_writeable_attrs_ is None:
@@ -1733,9 +2033,18 @@ class Configured(HasSettings, Cacheable, Comparable, Pickleable, Prettified, Cha
         nested: tp.Optional[bool] = None,
         cls: tp.Optional[type] = None,
     ) -> ConfiguredT:
-        """Create a new instance by copying the config.
+        """Create a new instance by copying the configuration.
 
-        See `Configured.replace`."""
+        Delegates to `Configured.replace`.
+
+        Args:
+            copy_mode (str): Copy mode for configuration copying.
+            nested (bool): Whether nested objects should be copied.
+            cls (type): Class to instantiate for the new instance.
+
+        Returns:
+            Configured: A new instance with a copied configuration.
+        """
         return self.replace(copy_mode_=copy_mode, nested_=nested, cls_=cls)
 
     def equals(
@@ -1747,7 +2056,16 @@ class Configured(HasSettings, Cacheable, Comparable, Pickleable, Prettified, Cha
         _key: tp.Optional[str] = None,
         **kwargs,
     ) -> bool:
-        """Check two objects for equality."""
+        """Check if the current object equals another object.
+
+        Args:
+            other (Any): Object to compare against.
+            check_types (bool): Whether to compare types.
+            check_attrs (bool): Whether to compare writable attributes.
+            check_options (bool): Whether to compare configuration options.
+            _key (str): Identifier key used for comparison context.
+            **kwargs: Additional keyword arguments for comparison.
+        """
         if _key is None:
             _key = type(self).__name__
         if check_types and not is_deep_equal(
@@ -1783,7 +2101,12 @@ class Configured(HasSettings, Cacheable, Comparable, Pickleable, Prettified, Cha
         )
 
     def update_config(self, *args, **kwargs) -> None:
-        """Force-update the config."""
+        """Force-update the configuration.
+
+        Args:
+            *args: Additional arguments passed to `Config.update`.
+            **kwargs: Additional keyword arguments passed to `Config.update`.
+        """
         self.config.update(*args, **kwargs, force=True)
 
     def prettify(self, **kwargs) -> str:
