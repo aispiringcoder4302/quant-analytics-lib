@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Utilities for warnings."""
+"""Module providing utilities for managing and formatting warnings."""
 
 import io
 import warnings
@@ -25,7 +25,11 @@ __all__ = [
 
 @contextmanager
 def use_formatwarning(formatwarning: tp.Any) -> tp.Generator[None, None, None]:
-    """Context manager to temporarily set a custom warning formatter."""
+    """Temporarily set a custom warning formatter during the context.
+
+    Args:
+        formatwarning (Any): Custom function to format warning messages.
+    """
     old_formatter = warnings.formatwarning
     warnings.formatwarning = formatwarning
     try:
@@ -41,22 +45,46 @@ def custom_formatwarning(
     lineno: int,
     line: tp.Optional[str] = None,
 ) -> str:
-    """Custom warning formatter."""
+    """Format warning messages using a custom structure.
+
+    Args:
+        message (Any): The warning message.
+        category (Type[Warning]): The warning category.
+        filename (str): The filename where the warning occurred.
+        lineno (int): The line number in the file.
+        line (Optional[str]): The source code line triggering the warning.
+
+    Returns:
+        str: A formatted warning message.
+    """
     return f"{filename}:{lineno}: {category.__name__}: {message}\n"
 
 
 class VBTWarning(Warning):
-    """Base class for warnings raised by VBT."""
+    """Base warning class for warnings raised by VectorBT® PRO."""
 
 
 def warn(message: tp.Any, category: type = VBTWarning, stacklevel: int = 2) -> None:
-    """Emit a warning with a custom formatter."""
+    """Emit a warning using a custom formatter.
+
+    Args:
+        message (Any): The warning message to emit.
+        category (type): The warning category to use.
+        stacklevel (int): The stack level for the warning; defaults to 2.
+    """
     with use_formatwarning(custom_formatwarning):
         warnings.warn(message, category, stacklevel=stacklevel)
 
 
 def warn_stdout(func: tp.Callable) -> tp.Callable:
-    """Supress and convert to a warning output from a function."""
+    """Suppress standard output from the decorated function and emit it as a warning.
+
+    Args:
+        func (Callable): The function whose standard output is to be captured.
+
+    Returns:
+        Callable: The wrapped function that emits captured output as a warning.
+    """
 
     @wraps(func)
     def wrapper(*a, **ka):
@@ -71,7 +99,12 @@ def warn_stdout(func: tp.Callable) -> tp.Callable:
 
 
 class WarningsFiltered(warnings.catch_warnings, Base):
-    """Context manager to ignore warnings."""
+    """Context manager for ignoring warnings.
+
+    Args:
+        entries (Optional[MaybeSequence[Union[str, Kwargs]]]): Simple entries to add to the warnings filters.
+        **kwargs (dict): Additional keyword arguments to pass to warnings.catch_warnings.
+    """
 
     def __init__(self, entries: tp.Optional[tp.MaybeSequence[tp.Union[str, tp.Kwargs]]] = "ignore", **kwargs) -> None:
         warnings.catch_warnings.__init__(self, **kwargs)
@@ -79,7 +112,7 @@ class WarningsFiltered(warnings.catch_warnings, Base):
 
     @property
     def entries(self) -> tp.Optional[tp.MaybeSequence[tp.Union[str, tp.Kwargs]]]:
-        """One or more simple entries to add into the list of warnings filters."""
+        """Simple entries to add to the warnings filters."""
         return self._entries
 
     def __enter__(self) -> tp.Self:
