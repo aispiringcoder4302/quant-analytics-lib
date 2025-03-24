@@ -122,7 +122,7 @@ class Tokenizer(Configured):
         template_context (KwargsLike): A mapping for template substitution and configuration.
         **kwargs: Additional keyword arguments for configuration.
 
-    For defaults, see `knowledge.chat.tokenizer_config` in `vectorbtpro._settings.knowledge`.
+    For defaults, see `chat.tokenizer_config` in `vectorbtpro._settings.knowledge`.
     """
 
     _short_name: tp.ClassVar[tp.Optional[str]] = None
@@ -401,7 +401,7 @@ class Embeddings(Configured):
         template_context (Kwargs): Context for template substitution.
         **kwargs: Additional keyword arguments for configuration.
 
-    For defaults, see `knowledge.chat.embeddings_config` in `vectorbtpro._settings.knowledge`.
+    For defaults, see `chat.embeddings_config` in `vectorbtpro._settings.knowledge`.
     """
 
     _short_name: tp.ClassVar[tp.Optional[str]] = None
@@ -911,7 +911,7 @@ class Completions(Configured):
 
     For argument descriptions, refer to corresponding properties such as `Completions.chat_history`.
 
-    For defaults, see `knowledge.chat.completions_config` in `vectorbtpro._settings.knowledge`.
+    For defaults, see `chat.completions_config` in `vectorbtpro._settings.knowledge`.
     """
 
     _short_name: tp.ClassVar[tp.Optional[str]] = None
@@ -1715,7 +1715,7 @@ class TextSplitter(Configured):
         template_context (KwargsLike): Dictionary for substituting template values.
         **kwargs: Additional keyword arguments for configuration.
 
-    For defaults, see `knowledge.chat.text_splitter_config` in `vectorbtpro._settings.knowledge`.
+    For defaults, see `chat.text_splitter_config` in `vectorbtpro._settings.knowledge`.
     """
 
     _short_name: tp.ClassVar[tp.Optional[str]] = None
@@ -2759,7 +2759,7 @@ class ObjectStore(Configured, MutableMapping, metaclass=MetaObjectStore):
         template_context (KwargsLike): Context for template substitution.
         **kwargs: Additional keyword arguments for configuration.
 
-    For defaults, see `knowledge.chat.obj_store_config` in `vectorbtpro._settings.knowledge`."""
+    For defaults, see `chat.obj_store_config` in `vectorbtpro._settings.knowledge`."""
 
     _short_name: tp.ClassVar[tp.Optional[str]] = None
     """Short name identifier for the store class."""
@@ -3628,7 +3628,7 @@ class DocumentRanker(Configured):
         template_context (KwargsLike): Template context for dynamic configuration.
         **kwargs: Additional keyword arguments for configuration.
 
-    For defaults, see `knowledge.chat.doc_ranker_config` in `vectorbtpro._settings.knowledge`.
+    For defaults, see `chat.doc_ranker_config` in `vectorbtpro._settings.knowledge`.
     """
 
     _settings_path: tp.SettingsPath = ["knowledge", "knowledge.chat", "knowledge.chat.doc_ranker_config"]

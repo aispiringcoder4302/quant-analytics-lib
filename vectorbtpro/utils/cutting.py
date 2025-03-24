@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Utilities for cutting code."""
+"""Module providing utilities for extracting annotated code sections from code and saving them to files."""
 
 import importlib
 import inspect
@@ -26,7 +26,14 @@ __all__ = [
 
 
 def collect_blocks(lines: tp.Iterable[str]) -> tp.Dict[str, tp.List[str]]:
-    """Collect blocks in the lines."""
+    """Collect block sections from lines.
+
+    Args:
+        lines (Iterable[str]): An iterable of strings representing lines of code.
+
+    Returns:
+        Dict[str, List[str]]: A dictionary mapping block names to lists of lines contained within each block.
+    """
     blocks = {}
     block_name = None
 
@@ -55,27 +62,41 @@ def cut_from_code(
     return_lines: bool = False,
     **kwargs,
 ) -> tp.Union[str, tp.List[str]]:
-    """Parse and cut an annotated section from the code.
+    """Extract an annotated code section from the source code.
 
-    The section should start with `# % <section section_name>` and end with `# % </section>`.
+    This function processes a code string to extract a specific section defined by markers.
+    The section must begin with `# % <section section_name>` and end with `# % </section>`.
 
-    You can also define blocks. Each block should start with `# % <block block_name>` and end with `# % </block>`.
-    Blocks will be collected into the dictionary `blocks` before cutting and can be then inserted using
-    Python expressions (see below).
+    Within the section, blocks can be defined using markers `# % <block block_name>` and `# % </block>`,
+    and these blocks are collected for use within expressions.
 
-    To skip multiple lines of code, place them between `# % <skip [expression]>` and `# % </skip>`,
-    where expression is optional.
+    Lines placed between `# % <skip [expression]>` and `# % </skip>` are skipped, while lines between
+    `# % <uncomment [expression]>` and `# % </uncomment>` are uncommented.
 
-    To uncomment multiple lines of code, place them between `# % <uncomment [expression]>` and
-    `# % </uncomment>`, where expression is optional.
+    Any line containing `# %` outside these blocks is treated as a Python expression.
+    The evaluation result dictates the output:
 
-    Everything else after `# %` will be evaluated as a Python expression and should return
-    either None (= skip), a string (= insert one line of code) or an iterable of strings
-    (= insert multiple lines of code). The latter will be appended to the queue and parsed.
+    * None: The line is skipped.
+    * str: A single line to insert.
+    * Iterable[str]: Multiple lines to insert into the processing queue.
 
-    Every expression is evaluated strictly, that is, any evaluation error will raise an error
-    and stop the program. To evaluate softly without raising any errors, prepend `?`.
-    The context includes `lines`, `blocks`, `section_name`, `line`, `out_lines`, and `**kwargs`."""
+    Expressions are evaluated in strict mode, raising errors on failure, unless prefixed
+    with `?` to evaluate softly.
+
+    Args:
+        code (str): The source code to process.
+        section_name (str): The name of the section to extract.
+        prepend_lines (Optional[Iterable[str]]): Lines to prepend to the output.
+        append_lines (Optional[Iterable[str]]): Lines to append to the output.
+        out_lines_callback (Union[None, Callable, CustomTemplate]): A callback or template
+            to transform the output lines.
+        return_lines (bool): If True, returns the output as a list of lines.
+        **kwargs: Additional context variables for expression evaluation.
+
+    Returns:
+        Union[str, List[str]]: The extracted and processed code section as a cleaned string,
+            or as a list of lines if 'return_lines' is True.
+    """
     lines = code.split("\n")
     blocks = collect_blocks(lines)
 
@@ -191,7 +212,20 @@ def suggest_module_path(
     path: tp.Optional[tp.PathLike] = None,
     mkdir_kwargs: tp.KwargsLike = None,
 ) -> Path:
-    """Suggest a path to the target file."""
+    """Suggest a file path for the target module.
+
+    Determines a suitable file path based on the provided section name and optional path.
+    If the supplied path is a directory or lacks a file extension, the section name is used to
+    form the file name with a `.py` extension. This function also ensures that the target directory exists.
+
+    Args:
+        section_name (str): The name of the code section.
+        path (Optional[PathLike]): The base path or file path.
+        mkdir_kwargs (KwargsLike): Additional keyword arguments for directory creation.
+
+    Returns:
+        Path: The suggested file path.
+    """
     if path is None:
         path = Path(".")
     else:
@@ -211,9 +245,21 @@ def cut_and_save(
     mkdir_kwargs: tp.KwargsLike = None,
     **kwargs,
 ) -> Path:
-    """Cut an annotated section from the code and save to a file.
+    """Extract an annotated section from the code and save it to a file.
 
-    For arguments see `cut_from_code`."""
+    This function cuts a specified section from the provided source code using `cut_from_code`
+    and then saves the processed code to a file determined by `suggest_module_path`.
+
+    Args:
+        code (str): The source code containing the annotated section.
+        section_name (str): The name of the section to extract.
+        path (Optional[PathLike]): The file path or directory for saving the extracted code.
+        mkdir_kwargs (KwargsLike): Additional keyword arguments for directory creation.
+        **kwargs: Additional keyword arguments passed to `cut_from_code`.
+
+    Returns:
+        Path: The file path where the extracted code section was saved.
+    """
     parsed_code = cut_from_code(code, section_name, **kwargs)
     path = suggest_module_path(section_name, path=path, mkdir_kwargs=mkdir_kwargs)
     with open(path, "w") as f:
@@ -222,9 +268,20 @@ def cut_and_save(
 
 
 def cut_and_save_module(module: tp.Union[str, ModuleType], *args, **kwargs) -> Path:
-    """Cut an annotated section from a module and save to a file.
+    """Extract an annotated section from a module's source code and save it to a file.
 
-    For arguments see `cut_and_save`."""
+    If the module is provided as a string representing its import path, it is first imported
+    before processing. The source code is then retrieved using `inspect.getsource`, after which
+    the annotated section is extracted and saved via `cut_and_save`.
+
+    Args:
+        module (Union[str, ModuleType]): The target module or its import path.
+        *args: Additional positional arguments for `cut_and_save`.
+        **kwargs: Additional keyword arguments for `cut_and_save`.
+
+    Returns:
+        Path: The file path where the extracted module section was saved.
+    """
     if isinstance(module, str):
         module = importlib.import_module(module)
     code = inspect.getsource(module)
@@ -232,9 +289,18 @@ def cut_and_save_module(module: tp.Union[str, ModuleType], *args, **kwargs) -> P
 
 
 def cut_and_save_func(func: tp.Union[str, FunctionType], *args, **kwargs) -> Path:
-    """Cut an annotated function section from a module and save to a file.
+    """Cut a function's annotated code section from its module and save it to a file.
 
-    For arguments see `cut_and_save`."""
+    Args:
+        func (Union[str, FunctionType]): A function reference or its fully qualified name as a string.
+
+            If a string is provided, the module is imported and the function is retrieved.
+        *args: Additional arguments passed to `cut_and_save`.
+        **kwargs: Additional keyword arguments passed to `cut_and_save`.
+
+    Returns:
+        Path: The file path where the extracted code section is saved.
+    """
     if isinstance(func, str):
         module = importlib.import_module(".".join(func.split(".")[:-1]))
         func = getattr(module, func.split(".")[-1])
