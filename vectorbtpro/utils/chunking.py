@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Utilities for chunking."""
+"""Module providing utilities for chunking."""
 
 import inspect
 import multiprocessing
@@ -74,13 +74,24 @@ __pdoc__ = {}
 
 @define
 class ArgGetter(DefineMixin):
-    """Class for getting an argument from annotated arguments."""
+    """Class for retrieving an argument from annotated arguments using a specified query.
+
+    Args:
+        arg_query (Optional[tp.AnnArgQuery]): Query for the annotated argument from which to derive size.
+    """
 
     arg_query: tp.Optional[tp.AnnArgQuery] = define.field(default=None)
-    """Query for annotated argument to derive the size from."""
+    """Query for the annotated argument from which to derive size."""
 
     def get_arg(self, ann_args: tp.AnnArgs) -> tp.Any:
-        """Get argument using `vectorbtpro.utils.parsing.match_ann_arg`."""
+        """Retrieve argument using `vectorbtpro.utils.parsing.match_ann_arg`.
+
+        Args:
+            ann_args (AnnArgs): Annotated arguments from `vectorbtpro.utils.parsing.annotate_args`.
+
+        Returns:
+            Any: The argument value.
+        """
         if self.arg_query is None:
             raise ValueError("Please provide arg_query")
         return match_ann_arg(ann_args, self.arg_query)
@@ -88,47 +99,81 @@ class ArgGetter(DefineMixin):
 
 @define
 class AxisSpecifier(DefineMixin):
-    """Class with an attribute for specifying an axis."""
+    """Class for specifying an axis.
+
+    Args:
+        axis (Optional[int]): Specifies the axis from which to extract data.
+    """
 
     axis: tp.Optional[int] = define.field(default=None)
-    """Axis of the argument to take from."""
+    """Specifies the axis from which to extract data."""
 
 
 @define
 class DimRetainer(DefineMixin):
-    """Class with an attribute for retaining dimensions."""
+    """Class for retaining dimensions in an output.
+
+    Args:
+        keep_dims (bool): Flag indicating whether to retain dimensions.
+    """
 
     keep_dims: bool = define.field(default=False)
-    """Whether to retain dimensions."""
+    """Flag indicating whether to retain dimensions."""
 
 
 # ############# Chunk sizing ############# #
 
 
-class Sizer(Evaluable, Annotatable):
-    """Abstract class for getting the size from annotated arguments.
+@define
+class Sizer(Evaluable, Annotatable, DefineMixin):
+    """Abstract base class for determining size from annotated arguments.
+
+    Args:
+        eval_id (Optional[MaybeSequence[Hashable]]): Identifier or sequence of identifiers
+            used for evaluating this instance.
 
     !!! note
-        Use `Sizer.apply` instead of `Sizer.get_size`."""
+        Use `Sizer.apply` instead of calling `Sizer.get_size` directly."""
 
     eval_id: tp.Optional[tp.MaybeSequence[tp.Hashable]] = define.field(default=None)
-    """One or more identifiers at which to evaluate this instance."""
+    """Identifier or sequence of identifiers used for evaluating this instance."""
 
     def get_size(self, ann_args: tp.AnnArgs, **kwargs) -> int:
-        """Get the size given the annotated arguments."""
+        """Retrieve the size based on the provided annotated arguments.
+
+        Args:
+            ann_args (AnnArgs): Annotated arguments from `vectorbtpro.utils.parsing.annotate_args`.
+
+        Returns:
+            int: Retrieved size.
+        """
         raise NotImplementedError
 
     def apply(self, ann_args: tp.AnnArgs, **kwargs) -> int:
-        """Apply the sizer."""
+        """Apply the sizer to compute the size from annotated arguments.
+
+        Args:
+            ann_args (AnnArgs): Annotated arguments from `vectorbtpro.utils.parsing.annotate_args`.
+
+        Returns:
+            int: Retrieved size.
+        """
         return self.get_size(ann_args, **kwargs)
 
 
 @define
 class ArgSizer(Sizer, ArgGetter, DefineMixin):
-    """Class for getting the size from an argument."""
+    """Class for determining size based on an argument extracted from annotated arguments.
+
+    Args:
+        arg_query (Optional[tp.AnnArgQuery]): Query for the annotated argument from which to derive size.
+        eval_id (Optional[MaybeSequence[Hashable]]): Identifier or sequence of identifiers
+            used for evaluating this instance.
+        single_type (Optional[TypeLike]): Type or tuple of types considered as representing a single value.
+    """
 
     single_type: tp.Optional[tp.TypeLike] = define.field(default=None)
-    """One or multiple types to consider as a single value."""
+    """Type or tuple of types considered as representing a single value."""
 
     def get_size(self, ann_args: tp.AnnArgs, **kwargs) -> int:
         return self.get_arg(ann_args)
@@ -142,11 +187,22 @@ class ArgSizer(Sizer, ArgGetter, DefineMixin):
 
 
 class CountSizer(ArgSizer):
-    """Class for getting the size from a count."""
+    """Class for determining size based on a count value."""
 
     @classmethod
     def get_obj_size(cls, obj: int, single_type: tp.Optional[type] = None) -> int:
-        """Get size of an object."""
+        """Compute size from a count.
+
+        If `single_type` is provided and the object matches it, returns 1;
+        otherwise, returns the count itself.
+
+        Args:
+            obj (int): Object.
+            single_type (Optional[type]): Type of value that is considered single.
+
+        Returns:
+            int: Computed size of the object.
+        """
         if single_type is not None:
             if checks.is_instance_of(obj, single_type):
                 return 1
@@ -157,11 +213,20 @@ class CountSizer(ArgSizer):
 
 
 class LenSizer(ArgSizer):
-    """Class for getting the size from the length of an argument."""
+    """Class for determining size based on the length of an argument."""
 
     @classmethod
     def get_obj_size(cls, obj: tp.Sequence, single_type: tp.Optional[type] = None) -> int:
-        """Get size of an object."""
+        """Compute size as the length of a sequence, returning 1 if the object matches
+        `single_type`; otherwise, return its length.
+
+        Args:
+            obj (int): Object.
+            single_type (Optional[type]): Type of value that is considered single.
+
+        Returns:
+            int: Computed size of the object.
+        """
         if single_type is not None:
             if checks.is_instance_of(obj, single_type):
                 return 1
@@ -173,11 +238,32 @@ class LenSizer(ArgSizer):
 
 @define
 class ShapeSizer(ArgSizer, AxisSpecifier, DefineMixin):
-    """Class for getting the size from the length of an axis in a shape."""
+    """Class for determining size from a specified axis in a shape-like object.
+
+    Args:
+        axis (Optional[int]): Specifies the axis from which to extract data.
+        arg_query (Optional[tp.AnnArgQuery]): Query for the annotated argument from which to derive size.
+        eval_id (Optional[MaybeSequence[Hashable]]): Identifier or sequence of identifiers
+            used for evaluating this instance.
+        single_type (Optional[TypeLike]): Type or tuple of types considered as representing a single value.
+    """
 
     @classmethod
     def get_obj_size(cls, obj: tp.ShapeLike, axis: int, single_type: tp.Optional[type] = None) -> int:
-        """Get size of an object."""
+        """Compute size along a given axis from a shape-like object.
+
+        If `single_type` is provided and the object matches it, returns 1.
+        Converts an integer input to a tuple, defaults to axis 0 if unspecified for
+        single-dimensional objects, and returns 0 if the axis is out of bounds.
+
+        Args:
+            obj (int): Object.
+            axis (int): Axis of the object.
+            single_type (Optional[type]): Type of value that is considered single.
+
+        Returns:
+            int: Computed size of the object's axis.
+        """
         if single_type is not None:
             if checks.is_instance_of(obj, single_type):
                 return 1
@@ -198,11 +284,10 @@ class ShapeSizer(ArgSizer, AxisSpecifier, DefineMixin):
 
 
 class ArraySizer(ShapeSizer):
-    """Class for getting the size from the length of an axis in an array."""
+    """Class for determining size along a specified axis in an array."""
 
     @classmethod
     def get_obj_size(cls, obj: tp.AnyArray, axis: int, single_type: tp.Optional[type] = None) -> int:
-        """Get size of an object."""
         from vectorbtpro.base.wrapping import Wrapping
 
         if isinstance(obj, Wrapping):
@@ -231,45 +316,58 @@ class ArraySizer(ShapeSizer):
 
 @define
 class ChunkMeta(DefineMixin):
-    """Class that represents a chunk metadata."""
+    """Class representing metadata for a chunk.
+
+    Args:
+        uuid (str): Unique identifier for the chunk, used for caching.
+        idx (int): Index of the chunk.
+        start (Optional[int]): Starting index of the chunk range (inclusive); may be None.
+        end (Optional[int]): Ending index of the chunk range (exclusive); may be None.
+        indices (Optional[Sequence[int]]): Sequence of indices included in the chunk;
+            takes precedence over `start` and `end` if provided, and may be None.
+    """
 
     uuid: str = define.field()
-    """Unique identifier of the chunk.
-
-    Used for caching."""
+    """Unique identifier for the chunk, used for caching."""
 
     idx: int = define.field()
-    """Chunk index."""
+    """Index of the chunk."""
 
     start: tp.Optional[int] = define.field()
-    """Start of the chunk range (including). Can be None."""
+    """Starting index of the chunk range (inclusive); may be None."""
 
     end: tp.Optional[int] = define.field()
-    """End of the chunk range (excluding). Can be None."""
+    """Ending index of the chunk range (exclusive); may be None."""
 
     indices: tp.Optional[tp.Sequence[int]] = define.field()
-    """Indices included in the chunk range. Can be None.
-
-    Has priority over `ChunkMeta.start` and `ChunkMeta.end`."""
+    """Sequence of indices included in the chunk; takes precedence over `start` and `end` 
+    if provided, and may be None."""
 
 
 class ChunkMetaGenerator(Base):
-    """Abstract class for generating chunk metadata from annotated arguments."""
+    """Abstract base class for generating chunk metadata based on annotated arguments."""
 
     def get_chunk_meta(self, ann_args: tp.AnnArgs, **kwargs) -> tp.Iterable[ChunkMeta]:
-        """Get chunk metadata."""
+        """Generate an iterable of chunk metadata from the provided annotated arguments.
+
+        Args:
+            ann_args (AnnArgs): Annotated arguments from `vectorbtpro.utils.parsing.annotate_args`.
+
+        Returns:
+            Iterable[ChunkMeta]: The argument value.
+        """
         raise NotImplementedError
 
 
 class ArgChunkMeta(ChunkMetaGenerator, ArgGetter):
-    """Class for generating chunk metadata from an argument."""
+    """Class for generating chunk metadata directly from an argument extracted from annotated arguments."""
 
     def get_chunk_meta(self, ann_args: tp.AnnArgs, **kwargs) -> tp.Iterable[ChunkMeta]:
         return self.get_arg(ann_args)
 
 
 class LenChunkMeta(ArgChunkMeta):
-    """Class for generating chunk metadata from a sequence of chunk lengths."""
+    """Class for generating chunk metadata based on a sequence of chunk lengths."""
 
     def get_chunk_meta(self, ann_args: tp.AnnArgs, **kwargs) -> tp.Iterable[ChunkMeta]:
         arg = self.get_arg(ann_args)
@@ -287,22 +385,26 @@ def iter_chunk_meta(
     n_chunks: tp.Union[None, int, str] = None,
     chunk_len: tp.Union[None, int, str] = None,
 ) -> tp.Iterator[ChunkMeta]:
-    """Yield meta of each successive chunk from a sequence with a number of elements.
+    """Yield chunk metadata for successive chunks from a sequence of elements.
+
+    If `size`, `n_chunks`, and `chunk_len` are all None after resolving settings,
+    a single chunk is returned. If only `n_chunks` and `chunk_len` are None, `n_chunks` is set to "auto".
 
     Args:
-        size (int): Size of the space to split.
-        min_size (int): Minimum size.
+        size (Optional[int]): Total number of elements to split.
+        min_size (Optional[int]): Minimum allowable size.
 
-            If `size` is lower than this number, returns a single chunk.
-        n_chunks (int or str): Number of chunks.
+            If `size` is less than this value, a single chunk is returned.
+        n_chunks (Union[None, int, str]): Number of chunks.
 
-            If "auto", becomes the number of cores.
-        chunk_len (int or str): Length of each chunk.
+            If "auto", the number of CPU cores is used.
+        chunk_len (Union[None, int, str]): Length of each chunk.
 
-            If "auto", becomes the number of cores.
+            If "auto", the number of CPU cores is used.
 
-    If `size`, `n_chunks`, and `chunk_len` are None (after resolving them from settings),
-    returns a single chunk. If only `n_chunks` and `chunk_len` are None, sets `n_chunks` to "auto"."""
+    Yields:
+        ChunkMeta: Chunk metadata.
+    """
     if size is not None and min_size is not None and size < min_size:
         yield ChunkMeta(uuid=str(uuid.uuid4()), idx=0, start=0, end=size, indices=None)
     else:
@@ -356,7 +458,19 @@ def iter_chunk_meta(
 
 
 def get_chunk_meta_key(chunk_meta: ChunkMeta) -> tp.Any:
-    """Get key corresponding to chunk meta."""
+    """Return a key representing the given `ChunkMeta`.
+
+    If `chunk_meta.indices` is provided, returns a string in the format "first..last".
+    If `chunk_meta.start` and `chunk_meta.end` are provided and indicate a single element,
+    returns the start value; otherwise, returns a range string in the format "start..(end - 1)".
+    Returns `MISSING` if no valid key can be determined.
+
+    Args:
+        chunk_meta (ChunkMeta): Chunk metadata.
+
+    Returns:
+        Any: The key representing the chunk metadata.
+    """
     if chunk_meta.indices is not None:
         return "{}..{}".format(chunk_meta.indices[0], chunk_meta.indices[-1])
     if chunk_meta.start is not None and chunk_meta.end is not None:
@@ -373,21 +487,33 @@ def get_chunk_meta_key(chunk_meta: ChunkMeta) -> tp.Any:
 class ChunkMapper(DefineMixin):
     """Abstract class for mapping chunk metadata.
 
-    Implements the abstract `ChunkMapper.map` method.
+    Implements the abstract `ChunkMapper.map` method and supports caching of mapped
+    `ChunkMeta` instances.
 
-    Supports caching of each pair of incoming and outgoing `ChunkMeta` instances.
+    Args:
+        should_cache (bool): Indicates whether to cache mapped `ChunkMeta` results.
+        chunk_meta_cache (Dict[str, ChunkMeta]): Cache for mapped `ChunkMeta` instances,
+            keyed by the UUID of the input metadata.
 
     !!! note
         Use `ChunkMapper.apply` instead of `ChunkMapper.map`."""
 
     should_cache: bool = define.field(default=True)
-    """Whether should cache."""
+    """Indicates whether to cache mapped `ChunkMeta` results."""
 
     chunk_meta_cache: tp.Dict[str, ChunkMeta] = define.field(factory=dict)
-    """Cache for outgoing `ChunkMeta` instances keyed by UUID of the incoming ones."""
+    """Cache for mapped `ChunkMeta` instances, keyed by the UUID of the input metadata."""
 
     def apply(self, chunk_meta: ChunkMeta, **kwargs) -> ChunkMeta:
-        """Apply the mapper."""
+        """Apply the chunk mapper to the given `ChunkMeta`.
+
+        Args:
+            chunk_meta (ChunkMeta): Input chunk metadata.
+            **kwargs: Additional keyword arguments for mapping.
+
+        Returns:
+            ChunkMeta: Mapped chunk metadata, possibly retrieved from cache.
+        """
         if not self.should_cache:
             return self.map(chunk_meta, **kwargs)
         if chunk_meta.uuid not in self.chunk_meta_cache:
@@ -397,9 +523,15 @@ class ChunkMapper(DefineMixin):
         return self.chunk_meta_cache[chunk_meta.uuid]
 
     def map(self, chunk_meta: ChunkMeta, **kwargs) -> ChunkMeta:
-        """Abstract method for mapping chunk metadata.
+        """Map the input `ChunkMeta` to a new `ChunkMeta`.
 
-        Takes the chunk metadata of type `ChunkMeta` and returns a new chunk metadata of the same type."""
+        Args:
+            chunk_meta (ChunkMeta): The input chunk metadata to map.
+            **kwargs: Additional keyword arguments for mapping.
+
+        Returns:
+            ChunkMeta: The mapped chunk metadata.
+        """
         raise NotImplementedError
 
 
@@ -408,43 +540,62 @@ class ChunkMapper(DefineMixin):
 
 @define
 class NotChunked(Evaluable, Annotatable, DefineMixin):
-    """Class that represents an argument that shouldn't be chunked."""
+    """Class representing an argument that should not be chunked.
+
+    Args:
+        eval_id (Optional[MaybeSequence[Hashable]]): Identifier(s) at which to evaluate this instance.
+    """
 
     eval_id: tp.Optional[tp.MaybeSequence[tp.Hashable]] = define.field(default=None)
-    """One or more identifiers at which to evaluate this instance."""
+    """Identifier(s) at which to evaluate this instance."""
 
 
 @define
 class ChunkTaker(Evaluable, Annotatable, DefineMixin):
-    """Abstract class for taking one or more elements based on the chunk index or range.
+    """Abstract class for extracting elements from a collection based on chunk index or range.
+
+    Args:
+        single_type (Optional[TypeLike]): Type or tuple of types that should be treated as a single value.
+        ignore_none (bool): Indicates whether None values should be ignored.
+        mapper (Optional[ChunkMapper]): Optional chunk mapper (`ChunkMapper`) to process chunk metadata.
+        eval_id (Optional[MaybeSequence[Hashable]]): Identifier(s) at which to evaluate this instance.
 
     !!! note
-        Use `ChunkTaker.apply` instead of `ChunkTaker.take`."""
+        Use `ChunkTaker.apply` instead of `ChunkTaker.take`.
+    """
 
     single_type: tp.Optional[tp.TypeLike] = define.field(default=None)
-    """One or multiple types to consider as a single value."""
+    """Type or tuple of types that should be treated as a single value."""
 
     ignore_none: bool = define.field(default=True)
-    """Whether to ignore None."""
+    """Indicates whether None values should be ignored."""
 
     mapper: tp.Optional[ChunkMapper] = define.field(default=None)
-    """Chunk mapper of type `ChunkMapper`."""
+    """Optional chunk mapper (`ChunkMapper`) to process chunk metadata."""
 
     eval_id: tp.Optional[tp.MaybeSequence[tp.Hashable]] = define.field(default=None)
-    """One or more identifiers at which to evaluate this instance."""
+    """Identifier(s) at which to evaluate this instance."""
 
     def get_size(self, obj: tp.Any, **kwargs) -> int:
-        """Get the actual size of the argument."""
+        """Return the actual size of the given object."""
         raise NotImplementedError
 
     def suggest_size(self, obj: tp.Any, **kwargs) -> tp.Optional[int]:
-        """Suggest a global size based on the argument's size."""
+        """Return a suggested global size derived from the given object.
+
+        If a mapper is configured, returns None.
+        """
         if self.mapper is not None:
             return None
         return self.get_size(obj, **kwargs)
 
     def should_take(self, obj: tp.Any, chunk_meta: ChunkMeta, **kwargs) -> bool:
-        """Check whether to take a chunk or leave the argument as it is."""
+        """Determine whether to extract a chunk from the given object based on the chunk metadata.
+
+        * Returns False if the object is None and `ignore_none` is True.
+        * Returns False if the object is an instance of `single_type`.
+        * Otherwise, returns True.
+        """
         if self.ignore_none and obj is None:
             return False
         if self.single_type is not None:
@@ -453,7 +604,20 @@ class ChunkTaker(Evaluable, Annotatable, DefineMixin):
         return True
 
     def apply(self, obj: tp.Any, chunk_meta: ChunkMeta, **kwargs) -> tp.Any:
-        """Apply the taker."""
+        """Apply the chunk taker to the given object using the specified chunk metadata.
+
+        If a mapper is configured, the chunk metadata is first processed by the mapper.
+        If criteria in `should_take` are not met, returns the original object;
+        otherwise, extracts the chunk using `take`.
+
+        Args:
+            obj (Any): The input object.
+            chunk_meta (ChunkMeta): Metadata specifying the chunk boundaries.
+            **kwargs: Additional keyword arguments.
+
+        Returns:
+            Any: The resulting object after chunk extraction.
+        """
         if self.mapper is not None:
             chunk_meta = self.mapper.apply(chunk_meta, **kwargs)
         if not self.should_take(obj, chunk_meta, **kwargs):
@@ -461,17 +625,30 @@ class ChunkTaker(Evaluable, Annotatable, DefineMixin):
         return self.take(obj, chunk_meta, **kwargs)
 
     def take(self, obj: tp.Any, chunk_meta: ChunkMeta, **kwargs) -> tp.Any:
-        """Abstract method for taking subset of data.
+        """Extract a subset of data from the given object using the provided chunk metadata.
 
-        Takes the argument object, the chunk meta (tuple out of the index, start index,
-        and end index of the chunk), and other keyword arguments passed down the stack,
-        such as `chunker` and `silence_warnings`."""
+        Args:
+            obj (Any): The input object from which to extract data.
+            chunk_meta (ChunkMeta): Metadata detailing the chunk boundaries (index, start, and end).
+            **kwargs: Additional keyword arguments.
+
+        Returns:
+            Any: The extracted subset of data.
+        """
         raise NotImplementedError
 
 
 @define
 class ChunkSelector(ChunkTaker, DimRetainer, DefineMixin):
-    """Class for selecting one element based on the chunk index."""
+    """Class for selecting a single element from a sequence based on the chunk index.
+
+    Args:
+        keep_dims (bool): Flag indicating whether to retain dimensions.
+        single_type (Optional[TypeLike]): Type or tuple of types that should be treated as a single value.
+        ignore_none (bool): Indicates whether None values should be ignored.
+        mapper (Optional[ChunkMapper]): Optional chunk mapper (`ChunkMapper`) to process chunk metadata.
+        eval_id (Optional[MaybeSequence[Hashable]]): Identifier(s) at which to evaluate this instance.
+    """
 
     def get_size(self, obj: tp.Sequence, **kwargs) -> int:
         return LenSizer.get_obj_size(obj, single_type=self.single_type)
@@ -486,7 +663,7 @@ class ChunkSelector(ChunkTaker, DimRetainer, DefineMixin):
 
 
 class ChunkSlicer(ChunkTaker):
-    """Class for slicing multiple elements based on the chunk range."""
+    """Class for slicing multiple elements based on a specified chunk range."""
 
     def get_size(self, obj: tp.Sequence, **kwargs) -> int:
         return LenSizer.get_obj_size(obj, single_type=self.single_type)
@@ -498,7 +675,7 @@ class ChunkSlicer(ChunkTaker):
 
 
 class CountAdapter(ChunkSlicer):
-    """Class for adapting a count based on the chunk range."""
+    """Class for adapting a count using a specified chunk range."""
 
     def get_size(self, obj: int, **kwargs) -> int:
         return CountSizer.get_obj_size(obj, single_type=self.single_type)
@@ -517,7 +694,16 @@ class CountAdapter(ChunkSlicer):
 
 @define
 class ShapeSelector(ChunkSelector, AxisSpecifier, DefineMixin):
-    """Class for selecting one element from a shape's axis based on the chunk index."""
+    """Class for selecting a single element from a shape's axis based on a chunk index.
+
+    Args:
+        axis (Optional[int]): Specifies the axis from which to extract data.
+        keep_dims (bool): Flag indicating whether to retain dimensions.
+        single_type (Optional[TypeLike]): Type or tuple of types that should be treated as a single value.
+        ignore_none (bool): Indicates whether None values should be ignored.
+        mapper (Optional[ChunkMapper]): Optional chunk mapper (`ChunkMapper`) to process chunk metadata.
+        eval_id (Optional[MaybeSequence[Hashable]]): Identifier(s) at which to evaluate this instance.
+    """
 
     def get_size(self, obj: tp.ShapeLike, **kwargs) -> int:
         return ShapeSizer.get_obj_size(obj, self.axis, single_type=self.single_type)
@@ -547,7 +733,15 @@ class ShapeSelector(ChunkSelector, AxisSpecifier, DefineMixin):
 
 @define
 class ShapeSlicer(ChunkSlicer, AxisSpecifier, DefineMixin):
-    """Class for slicing multiple elements from a shape's axis based on the chunk range."""
+    """Class for slicing multiple elements from a shape's axis using a specified chunk range.
+
+    Args:
+        axis (Optional[int]): Specifies the axis from which to extract data.
+        single_type (Optional[TypeLike]): Type or tuple of types that should be treated as a single value.
+        ignore_none (bool): Indicates whether None values should be ignored.
+        mapper (Optional[ChunkMapper]): Optional chunk mapper (`ChunkMapper`) to process chunk metadata.
+        eval_id (Optional[MaybeSequence[Hashable]]): Identifier(s) at which to evaluate this instance.
+    """
 
     def get_size(self, obj: tp.ShapeLike, **kwargs) -> int:
         return ShapeSizer.get_obj_size(obj, self.axis, single_type=self.single_type)
@@ -580,7 +774,7 @@ class ShapeSlicer(ChunkSlicer, AxisSpecifier, DefineMixin):
 
 
 class ArraySelector(ShapeSelector):
-    """Class for selecting one element from an array's axis based on the chunk index."""
+    """Class for selecting a single element from a specified axis of an array based on a chunk index."""
 
     def get_size(self, obj: tp.AnyArray, **kwargs) -> int:
         return ArraySizer.get_obj_size(obj, self.axis, single_type=self.single_type)
@@ -613,7 +807,7 @@ class ArraySelector(ShapeSelector):
 
 
 class ArraySlicer(ShapeSlicer):
-    """Class for slicing multiple elements from an array's axis based on the chunk range."""
+    """Class for slicing multiple elements from a specified axis of an array using a chunk range."""
 
     def get_size(self, obj: tp.AnyArray, **kwargs) -> int:
         return ArraySizer.get_obj_size(obj, self.axis, single_type=self.single_type)
@@ -647,9 +841,17 @@ class ArraySlicer(ShapeSlicer):
 
 @define
 class ContainerTaker(ChunkTaker, DefineMixin):
-    """Class for taking from a container with other chunk takers.
+    """Class for taking elements from a container using other chunk takers.
 
-    Accepts the specification of the container."""
+    Accepts a container take specification.
+
+    Args:
+        cont_take_spec (Optional[ContainerTakeSpec]): Specification for taking elements from the container.
+        single_type (Optional[TypeLike]): Type or tuple of types that should be treated as a single value.
+        ignore_none (bool): Indicates whether None values should be ignored.
+        mapper (Optional[ChunkMapper]): Optional chunk mapper (`ChunkMapper`) to process chunk metadata.
+        eval_id (Optional[MaybeSequence[Hashable]]): Identifier(s) at which to evaluate this instance.
+"""
 
     cont_take_spec: tp.Optional[tp.ContainerTakeSpec] = define.field(default=None)
     """Specification of the container."""
@@ -660,12 +862,14 @@ class ContainerTaker(ChunkTaker, DefineMixin):
         single_type: tp.Optional[tp.TypeLike] = None,
         ignore_none: bool = True,
         mapper: tp.Optional[ChunkMapper] = None,
+        eval_id: tp.Optional[tp.MaybeSequence[tp.Hashable]] = None,
     ) -> None:
         ChunkTaker.__init__(
             self,
             single_type=single_type,
             ignore_none=ignore_none,
             mapper=mapper,
+            eval_id=eval_id,
             cont_take_spec=cont_take_spec,
         )
 
@@ -673,7 +877,7 @@ class ContainerTaker(ChunkTaker, DefineMixin):
         raise NotImplementedError
 
     def check_cont_take_spec(self) -> None:
-        """Check that `ContainerTaker.cont_take_spec` is not None."""
+        """Check that `ContainerTaker.cont_take_spec` is provided."""
         if self.cont_take_spec is None:
             raise ValueError("Please provide cont_take_spec")
 
@@ -682,12 +886,15 @@ class ContainerTaker(ChunkTaker, DefineMixin):
 
 
 class SequenceTaker(ContainerTaker):
-    """Class for taking from a sequence container.
+    """Class for taking items from a sequence container.
 
     Calls `Chunker.take_from_arg` on each element."""
-
+    
     def adapt_cont_take_spec(self, obj: tp.Sequence) -> tp.ContainerTakeSpec:
-        """Prepare the specification of the container to the object."""
+        """Adapt the container take specification for the given sequence.
+
+        If the last element is an ellipsis, replace it by repeating the preceding specification
+        to match the sequence length."""
         cont_take_spec = list(self.cont_take_spec)
         if len(cont_take_spec) >= 2:
             if isinstance(cont_take_spec[-1], type(...)):
@@ -764,12 +971,14 @@ class SequenceTaker(ContainerTaker):
 
 
 class MappingTaker(ContainerTaker):
-    """Class for taking from a mapping container.
+    """Class for taking items from a mapping container.
 
     Calls `Chunker.take_from_arg` on each element."""
-
+    
     def adapt_cont_take_spec(self, obj: tp.Mapping) -> tp.ContainerTakeSpec:
-        """Prepare the specification of the container to the object."""
+        """Adapt the container take specification for the given mapping.
+
+        If an ellipsis key is present, assign its corresponding specification to any missing keys."""
         cont_take_spec = dict(self.cont_take_spec)
         ellipsis_take_spec = None
         ellipsis_found = False
@@ -847,8 +1056,8 @@ class MappingTaker(ContainerTaker):
 
 
 class ArgsTaker(SequenceTaker):
-    """Class for taking from a variable arguments container."""
-
+    """Class for taking items from a variable-length positional arguments container."""
+    
     def __init__(
         self,
         *args,
@@ -866,8 +1075,8 @@ class ArgsTaker(SequenceTaker):
 
 
 class KwargsTaker(MappingTaker):
-    """Class for taking from a variable keyword arguments container."""
-
+    """Class for taking items from a variable-length keyword arguments container."""
+    
     def __init__(
         self,
         single_type: tp.Optional[tp.TypeLike] = None,
@@ -888,14 +1097,14 @@ class KwargsTaker(MappingTaker):
 
 
 class Chunkable(Evaluable, Annotatable):
-    """Abstract class representing a value and a chunk taking specification."""
-
+    """Abstract class representing a value with an associated chunk-taking specification."""
+    
     def get_value(self) -> tp.Any:
-        """Get the value."""
+        """Return the encapsulated value."""
         raise NotImplementedError
-
+    
     def get_take_spec(self) -> tp.TakeSpec:
-        """Get the chunk taking specification."""
+        """Return the associated chunk-taking specification."""
         raise NotImplementedError
 
 
@@ -903,24 +1112,36 @@ class Chunkable(Evaluable, Annotatable):
 class Chunked(Chunkable, DefineMixin):
     """Class representing a chunkable value.
 
-    Can take a variable number of keyword arguments, which will be used as `Chunked.take_spec_kwargs`."""
+    This class encapsulates a value and associated chunking behavior.
+    It accepts additional keyword arguments that configure the chunk-taking specification.
+
+    Args:
+        value (Any): The value to be chunked.
+        take_spec (TakeSpec): The specification for taking chunks.
+        take_spec_kwargs (KwargsLike): Additional keyword arguments for the `ChunkTaker` subclass.
+
+            If `take_spec` is an instance rather than a class, these arguments update its configuration.
+        select (bool): Indicates whether chunking is performed by selection.
+        eval_id (Optional[MaybeSequence[Hashable]]): Identifier(s) used for evaluation.
+    """
 
     value: tp.Any = define.required_field()
-    """Value."""
+    """The value to be chunked."""
 
     take_spec: tp.TakeSpec = define.optional_field()
-    """Chunk taking specification."""
+    """Specification for taking chunks."""
 
     take_spec_kwargs: tp.KwargsLike = define.field(default=None)
-    """Keyword arguments passed to the respective `ChunkTaker` subclass.
+    """Additional keyword arguments for the `ChunkTaker` subclass.
 
-    If `Chunked.take_spec` is an instance rather than a class, will "evolve" it."""
+    If `take_spec` is an instance rather than a class, these arguments update its configuration.
+    """
 
     select: bool = define.field(default=False)
-    """Whether to chunk by selection."""
+    """Indicates whether chunking is performed by selection."""
 
     eval_id: tp.Optional[tp.MaybeSequence[tp.Hashable]] = define.field(default=None)
-    """One or more identifiers at which to evaluate this instance."""
+    """Identifier(s) used for evaluation."""
 
     def __init__(self, *args, **kwargs) -> None:
         attr_names = [a.name for a in self.fields]
@@ -951,11 +1172,19 @@ class Chunked(Chunkable, DefineMixin):
 
     @property
     def take_spec_missing(self) -> bool:
-        """Check whether `Chunked.take_spec` is missing."""
+        """Boolean flag indicating whether `take_spec` is missing."""
         return self.take_spec is MISSING
 
     def resolve_take_spec(self) -> tp.TakeSpec:
-        """Resolve `take_spec`."""
+        """Return the resolved chunk-taking specification.
+
+        Returns:
+            TakeSpec: The chunk-taking strategy determined by the instance configuration.
+
+        !!! note
+            If `take_spec` is missing, returns `ChunkSelector` when `select` is True,
+            otherwise returns `ChunkSlicer`.
+        """
         if self.take_spec_missing:
             if self.select:
                 return ChunkSelector
@@ -979,7 +1208,10 @@ class Chunked(Chunkable, DefineMixin):
 
 
 class ChunkedCount(Chunked):
-    """Class representing a chunkable count."""
+    """Class representing a chunkable count value.
+
+    Inherits all initialization parameters from `Chunked`.
+    """
 
     def resolve_take_spec(self) -> tp.TakeSpec:
         if self.take_spec_missing:
@@ -988,7 +1220,10 @@ class ChunkedCount(Chunked):
 
 
 class ChunkedShape(Chunked):
-    """Class representing a chunkable shape."""
+    """Class representing a chunkable shape value.
+
+    Inherits all initialization parameters from `Chunked`.
+    """
 
     def resolve_take_spec(self) -> tp.TakeSpec:
         if self.take_spec_missing:
@@ -1000,10 +1235,23 @@ class ChunkedShape(Chunked):
 
 @define
 class ChunkedArray(Chunked, DefineMixin):
-    """Class representing a chunkable array."""
+    """Class representing a chunkable array.
+
+    Inherits all initialization parameters from `Chunked` and adds array flexibility configuration.
+
+    Args:
+        value (Any): The value to be chunked.
+        take_spec (TakeSpec): The specification for taking chunks.
+        take_spec_kwargs (KwargsLike): Additional keyword arguments for the `ChunkTaker` subclass.
+
+            If `take_spec` is an instance rather than a class, these arguments update its configuration.
+        select (bool): Indicates whether chunking is performed by selection.
+        eval_id (Optional[MaybeSequence[Hashable]]): Identifier(s) used for evaluation.
+        flex (bool): Indicates whether the array is flexible.
+    """
 
     flex: bool = define.field(default=False)
-    """Whether the array is flexible."""
+    """Indicates whether the array is flexible."""
 
     def resolve_take_spec(self) -> tp.TakeSpec:
         if self.take_spec_missing:
@@ -1027,17 +1275,43 @@ class ChunkedArray(Chunked, DefineMixin):
 class Chunker(Configured):
     """Class responsible for chunking arguments of a function and running the function.
 
-    Does the following:
+    Generates chunk metadata, splits function arguments into chunks, executes chunks,
+    and optionally merges results.
 
-    1. Generates chunk metadata by passing `n_chunks`, `size`, `min_size`, `chunk_len`,
-        and `chunk_meta` to `Chunker.get_chunk_meta_from_args`.
+    It performs the following steps:
+
+    1. Generates chunk metadata by passing `n_chunks`, `size`, `min_size`, `chunk_len`, and
+        `chunk_meta` to `Chunker.get_chunk_meta_from_args`.
     2. Splits arguments and keyword arguments by passing chunk metadata, `arg_take_spec`,
         and `template_context` to `Chunker.iter_tasks`, which yields one chunk at a time.
     3. Executes all chunks by passing `**execute_kwargs` to `vectorbtpro.utils.execution.execute`.
-    4. Optionally, post-processes and merges the results by passing them and
-        `**merge_kwargs` to `merge_func`.
+    4. Optionally, post-processes and merges the results by passing them and `**merge_kwargs` to `merge_func`.
 
-    For defaults, see `vectorbtpro._settings.chunking`."""
+    For defaults, see `vectorbtpro._settings.chunking`.
+
+    Args:
+        size (Optional[int]): Chunk size for splitting function arguments.
+        min_size (Optional[int]): Minimum allowed chunk size.
+        n_chunks (Optional[SizeLike]): Desired number of chunks.
+        chunk_len (Optional[SizeLike]): Length of each chunk.
+        chunk_meta (Optional[ChunkMetaLike]): Custom chunk metadata overriding default generation.
+        prepend_chunk_meta (Optional[bool]): Determines whether to prepend a `ChunkMeta` instance to the arguments.
+            
+            If set to None, prepending occurs automatically when the first argument is named 'chunk_meta'.
+        skip_single_chunk (Optional[bool]): Indicates whether to bypass chunking when only one chunk is present.
+        arg_take_spec (Optional[ArgTakeSpecLike]): Specification for selecting arguments during chunking.
+        template_context (KwargsLike): Context for template substitution in `execute_kwargs` and `merge_kwargs`.
+        merge_func (Optional[MergeFuncLike]): Function used to merge results from multiple chunks.
+        merge_kwargs (KwargsLike): Keyword arguments passed to the merging function.
+        return_raw_chunks (Optional[bool]): Determines whether to return raw chunk data.
+        silence_warnings (Optional[bool]): Indicates whether to suppress warnings.
+        forward_kwargs_as (KwargsLike): Mapping for renaming keyword arguments, including variables
+            from the scope of `Chunker.run`.
+        execute_kwargs (KwargsLike): Keyword arguments passed to `vectorbtpro.utils.execution.execute`
+            for executing chunks.
+        disable (Optional[bool]): Specifies whether chunking is disabled.
+        **kwargs: Additional keyword arguments passed to `Configured.__init__`.
+    """
 
     _settings_path: tp.SettingsPath = "chunking"
 
@@ -1101,60 +1375,75 @@ class Chunker(Configured):
 
     @property
     def size(self) -> tp.Optional[int]:
-        """See `Chunker.get_chunk_meta_from_args`."""
+        """Chunk size used for metadata generation.
+
+        See `Chunker.get_chunk_meta_from_args` for details."""
         return self._size
 
     @property
     def min_size(self) -> tp.Optional[int]:
-        """See `Chunker.get_chunk_meta_from_args`."""
+        """Minimum chunk size used in metadata generation.
+
+        See `Chunker.get_chunk_meta_from_args` for details."""
         return self._min_size
 
     @property
     def n_chunks(self) -> tp.Optional[tp.SizeLike]:
-        """See `Chunker.get_chunk_meta_from_args`."""
+        """Desired number of chunks used in metadata generation.
+
+        See `Chunker.get_chunk_meta_from_args` for details."""
         return self._n_chunks
 
     @property
     def chunk_len(self) -> tp.Optional[tp.SizeLike]:
-        """See `Chunker.get_chunk_meta_from_args`."""
+        """Length of each chunk used in metadata generation.
+
+        See `Chunker.get_chunk_meta_from_args` for details."""
         return self._chunk_len
 
     @property
     def chunk_meta(self) -> tp.Optional[tp.ChunkMetaLike]:
-        """See `Chunker.get_chunk_meta_from_args`."""
+        """Custom chunk metadata for argument chunking.
+
+        See `Chunker.get_chunk_meta_from_args` for details."""
         return self._chunk_meta
 
     @property
     def prepend_chunk_meta(self) -> tp.Optional[bool]:
-        """Whether to prepend an instance of `ChunkMeta` to the arguments.
+        """Determines whether to prepend a `ChunkMeta` instance to the function arguments.
 
-        If None, prepends automatically if the first argument is named 'chunk_meta'."""
+        If set to None, prepending occurs automatically when the first argument is named 'chunk_meta'."""
         return self._prepend_chunk_meta
 
     @property
     def skip_single_chunk(self) -> bool:
-        """Whether to execute the function directly if there's only one chunk."""
+        """Specifies whether to bypass chunking and execute the function directly when only one chunk is present."""
         return self._skip_single_chunk
 
     @property
     def arg_take_spec(self) -> tp.Optional[tp.ArgTakeSpecLike]:
-        """See `iter_tasks`."""
+        """Specification for selecting function arguments during chunking.
+
+        See `Chunker.iter_tasks` for usage."""
         return self._arg_take_spec
 
     @property
     def template_context(self) -> tp.Kwargs:
-        """Template context.
+        """Template context for substituting templates in `execute_kwargs` and `merge_kwargs`.
 
-        Any template in both `execute_kwargs` and `merge_kwargs` will be substituted. You can use
-        the keys `ann_args`, `chunk_meta`, `arg_take_spec`, and `tasks` to be replaced by
-        the actual objects."""
+        Available keys:
+
+        * `ann_args`
+        * `chunk_meta`
+        * `arg_take_spec`
+        * `tasks`
+        """
         return self._template_context
 
     @property
     def merge_func(self) -> tp.Optional[tp.MergeFuncLike]:
-        """Merging function.
-
-        Resolved using `vectorbtpro.base.merging.resolve_merge_func`."""
+        """Function used to merge results from multiple chunks. Resolved via
+        `vectorbtpro.base.merging.resolve_merge_func`."""
         return self._merge_func
 
     @property
@@ -1164,29 +1453,29 @@ class Chunker(Configured):
 
     @property
     def return_raw_chunks(self) -> bool:
-        """Whether to return chunks in a raw format."""
+        """Determines whether to return raw chunk data instead of post-processed results."""
         return self._return_raw_chunks
 
     @property
     def silence_warnings(self) -> bool:
-        """Whether to silence any warnings."""
+        """Indicates whether to suppress warnings during chunk processing."""
         return self._silence_warnings
 
     @property
     def forward_kwargs_as(self) -> tp.Kwargs:
-        """Map to rename keyword arguments.
+        """Mapping for renaming keyword arguments.
 
-        Can also pass any variable from the scope of `Chunker.run`"""
+        Variables from the context of `Chunker.run` may be included."""
         return self._forward_kwargs_as
 
     @property
     def execute_kwargs(self) -> tp.Kwargs:
-        """Keyword arguments passed to `vectorbtpro.utils.execution.execute`."""
+        """Keyword arguments provided to `vectorbtpro.utils.execution.execute` for executing chunks."""
         return self._execute_kwargs
 
     @property
     def disable(self) -> bool:
-        """Whether to disable chunking."""
+        """Specifies whether chunking is disabled."""
         return self._disable
 
     @classmethod
@@ -1200,28 +1489,31 @@ class Chunker(Configured):
         chunk_meta: tp.Optional[tp.ChunkMetaLike] = None,
         **kwargs,
     ) -> tp.Iterable[ChunkMeta]:
-        """Get chunk metadata from annotated arguments.
+        """Generate chunk metadata from annotated arguments.
 
         Args:
-            ann_args (dict): Arguments annotated with `vectorbtpro.utils.parsing.annotate_args`.
-            size (int, Sizer, or callable): See `iter_chunk_meta`.
+            ann_args (AnnArgs): Function arguments annotated by `vectorbtpro.utils.parsing.annotate_args`.
+            size (Optional[SizeLike]): Chunk size used for metadata generation.
+                
+                It can be an integer, an instance of `Sizer`, or a callable that receives the annotated
+                arguments and returns a value.
+            min_size (Optional[int]): Minimum allowed chunk size.
+            n_chunks (Optional[SizeLike]): Desired number of chunks.
+                
+                It can be provided as an integer, a string, an instance of `Sizer`, or a callable that
+                accepts annotated arguments and keyword arguments.
+            chunk_len (Optional[SizeLike]): Length of each chunk.
+                
+                It can be provided as an integer, a string, an instance of `Sizer`, or a callable that
+                receives the annotated arguments and returns a value.
+            chunk_meta (Optional[ChunkMetaLike]): Custom chunk metadata.
+                
+                It can be an iterable of `ChunkMeta` instances, a `ChunkMeta` generator, or a callable
+                returning chunk metadata.
+            **kwargs: Additional keyword arguments passed to the metadata generation process.
 
-                Can be an integer, an instance of `Sizer`, or a callable taking
-                the annotated arguments and returning a value.
-            min_size (int): See `iter_chunk_meta`.
-            n_chunks (int, str, Sizer, or callable): See `iter_chunk_meta`.
-
-                Can be an integer, a string, an instance of `Sizer`, or a callable taking
-                the annotated arguments and other keyword arguments and returning a value.
-            chunk_len (int, str, Sizer, or callable): See `iter_chunk_meta`.
-
-                Can be an integer, a string, an instance of `Sizer`, or a callable taking
-                the annotated arguments and returning a value.
-            chunk_meta (iterable of ChunkMeta, ChunkMetaGenerator, or callable): Chunk meta.
-
-                Can be an iterable of `ChunkMeta`, an instance of `ChunkMetaGenerator`, or
-                a callable taking the annotated arguments and other arguments and returning an iterable.
-            **kwargs: Other keyword arguments passed to any callable.
+        Returns:
+            Iterable[ChunkMeta]: An iterable of chunk metadata.
         """
         if chunk_meta is None:
             if size is not None:
@@ -1254,7 +1546,14 @@ class Chunker(Configured):
 
     @classmethod
     def resolve_take_spec(cls, take_spec: tp.TakeSpec) -> tp.TakeSpec:
-        """Resolve the chunk taking specification."""
+        """Resolve the chunk-taking specification.
+
+        Args:
+            take_spec (TakeSpec): The specification for chunk-taking.
+
+        Returns:
+            TakeSpec: The resolved chunk-taking specification.
+        """
         if isinstance(take_spec, type) and issubclass(take_spec, Chunked):
             take_spec = take_spec()
         if isinstance(take_spec, Chunkable):
@@ -1272,12 +1571,20 @@ class Chunker(Configured):
         eval_id: tp.Optional[tp.Hashable] = None,
         **kwargs,
     ) -> tp.Any:
-        """Take from the argument given the specification `take_spec`.
+        """Extract a chunk from the given argument based on the provided specification.
 
-        If `take_spec` is None or it's an instance of `NotChunked`, returns the original object.
-        Otherwise, must be an instance of `ChunkTaker`.
+        Args:
+            arg (Any): The input argument.
+            take_spec (TakeSpec): The chunk-taking specification.
 
-        `**kwargs` are passed to `ChunkTaker.apply`."""
+                If None or a `NotChunked` instance, the original argument is returned.
+            chunk_meta (ChunkMeta): Metadata for chunking.
+            eval_id (Optional[Hashable]): Evaluation identifier.
+            **kwargs: Additional keyword arguments passed to `ChunkTaker.apply`.
+
+        Returns:
+            Any: The result after applying the chunk-taking specification.
+        """
         if take_spec is None:
             return arg
         take_spec = cls.resolve_take_spec(take_spec)
@@ -1297,7 +1604,17 @@ class Chunker(Configured):
         ann_arg: tp.Kwargs,
         arg_take_spec: tp.ArgTakeSpec,
     ) -> tp.TakeSpec:
-        """Resolve the specification for an argument."""
+        """Resolve the chunk-taking specification for a given argument.
+
+        Args:
+            i (int): The index of the argument.
+            ann_arg_name (str): The name of the annotated argument.
+            ann_arg (dict): Details of the annotated argument.
+            arg_take_spec (ArgTakeSpec): The specification mapping for chunk-taking.
+
+        Returns:
+            TakeSpec: The resolved specification for the argument, or `MISSING` if not found.
+        """
         take_spec_found = False
         found_take_spec = None
         for k, v in arg_take_spec.items():
@@ -1348,15 +1665,20 @@ class Chunker(Configured):
         eval_id: tp.Optional[tp.Hashable] = None,
         **kwargs,
     ) -> tp.Tuple[tp.Args, tp.Kwargs]:
-        """Take from each in the annotated arguments given the specification using `Chunker.take_from_arg`.
+        """Extract chunks from the annotated arguments based on the provided taking specification.
 
-        Additionally, passes to `Chunker.take_from_arg` as keyword arguments `ann_args` and `arg_take_spec`.
+        Args:
+            ann_args (AnnArgs): Annotated arguments from `vectorbtpro.utils.parsing.annotate_args`.
+            arg_take_spec (ArgTakeSpec): Mapping specifying the extraction rules for each argument.
+            chunk_meta (ChunkMeta): Metadata for chunking.
+            silence_warnings (bool): Indicator to suppress warnings when a specification is missing.
+            eval_id (Optional[Hashable]): Evaluation identifier.
+            **kwargs: Additional keyword arguments passed to `Chunker.take_from_arg`.
 
-        `arg_take_spec` must be a dictionary, with keys being argument positions or names as generated by
-        `vectorbtpro.utils.parsing.annotate_args`. For values, see `Chunker.take_from_arg`.
-
-        Returns arguments and keyword arguments that can be directly passed to the function
-        using `func(*args, **kwargs)`."""
+        Returns:
+            Tuple[tuple, dict]: A tuple containing the new positional arguments and keyword
+                arguments for function execution.
+        """
         new_args = ()
         new_kwargs = dict()
         for i, (k, v) in enumerate(ann_args.items()):
@@ -1397,20 +1719,27 @@ class Chunker(Configured):
         template_context: tp.KwargsLike = None,
         **kwargs,
     ) -> tp.Iterator[Task]:
-        """Split annotated arguments into chunks using `Chunker.take_from_args` and yield each chunk as a task.
+        """Split annotated arguments into chunks and yield each chunk as a task.
 
         Args:
-            func (callable): Callable.
-            ann_args (dict): Arguments annotated with `vectorbtpro.utils.parsing.annotate_args`.
-            chunk_meta (iterable of ChunkMeta): Chunk metadata.
-            arg_take_spec (mapping, sequence, callable, or CustomTemplate): Chunk taking specification.
+            func (Callable): The callable to execute as a task.
+            ann_args (AnnArgs): Arguments annotated with `vectorbtpro.utils.parsing.annotate_args`.
+            chunk_meta (Iterable[ChunkMeta]): An iterable of chunk metadata.
+            arg_take_spec (Optional[tp.ArgTakeSpecLike]): The specification for chunk-taking.
 
-                Can be a dictionary (see `Chunker.take_from_args`), or a sequence that will be
-                converted into a dictionary. If a callable, will be called instead of `Chunker.take_from_args`,
-                thus it must have the same arguments apart from `arg_take_spec`.
-            template_context (mapping): Context used to substitute templates in arguments and specification.
-            **kwargs: Keyword arguments passed to `Chunker.take_from_args` or to `arg_take_spec`
-                if it's a callable.
+                It can be a mapping, a sequence (which will be converted into a mapping),
+                a callable, or a `CustomTemplate`.
+
+                !!! note
+                    If a callable, it must accept the same arguments as `Chunker.take_from_args`
+                    except for `arg_take_spec`.
+            template_context (KwargsLike): Context for substituting templates in
+                arguments and specifications.
+            **kwargs: Additional keyword arguments passed to `Chunker.take_from_args` or to
+                `arg_take_spec` if it is callable.
+
+        Yields:
+            Task: Each task containing a chunk of arguments.
         """
         if arg_take_spec is None:
             arg_take_spec = {}
@@ -1451,7 +1780,15 @@ class Chunker(Configured):
         func: tp.Callable,
         eval_id: tp.Optional[tp.Hashable] = None,
     ) -> tp.Optional[Sizer]:
-        """Parse the sizer from a function."""
+        """Parse and return the sizer extracted from a function's annotations.
+
+        Args:
+            func (Callable): The function to parse for sizer annotations.
+            eval_id (Optional[Hashable]): The evaluation identifier to filter sizer annotations.
+
+        Returns:
+            Optional[Sizer]: The sizer instance that meets the evaluation criteria, or None if not found.
+        """
         annotations = flatten_annotations(get_annotations(func))
         sizer = None
         for k, v in annotations.items():
@@ -1475,7 +1812,15 @@ class Chunker(Configured):
         annotations: tp.Annotations,
         eval_id: tp.Optional[tp.Hashable] = None,
     ) -> tp.ArgTakeSpec:
-        """Parse the chunk taking specification from annotations."""
+        """Parse and return the chunk-taking specification extracted from provided annotations.
+
+        Args:
+            annotations (Annotations): A mapping of parameter names to their annotations.
+            eval_id (Optional[Hashable]): The evaluation identifier to filter the annotations.
+
+        Returns:
+            ArgTakeSpec: A dictionary mapping parameter names to their chunk-taking specifications.
+        """
         arg_take_spec = {}
         for k, v in annotations.items():
             if not isinstance(v, Union):
@@ -1500,7 +1845,16 @@ class Chunker(Configured):
         func: tp.Callable,
         eval_id: tp.Optional[tp.Hashable] = None,
     ) -> tp.ArgTakeSpec:
-        """Parse the chunk taking specification from a function."""
+        """Parse and return the chunk-taking specification extracted from a function's annotations,
+        including handling for variable arguments.
+
+        Args:
+            func (Callable): The function to parse.
+            eval_id (Optional[Hashable]): The evaluation identifier for filtering annotations.
+
+        Returns:
+            ArgTakeSpec: A dictionary mapping parameter names to chunk-taking specifications.
+        """
         annotations = get_annotations(func)
         arg_take_spec = cls.parse_spec_from_annotations(annotations, eval_id=eval_id)
         flat_annotations, var_args_map, var_kwargs_map = flatten_annotations(
@@ -1553,7 +1907,15 @@ class Chunker(Configured):
         ann_args: tp.AnnArgs,
         eval_id: tp.Optional[tp.Hashable] = None,
     ) -> tp.ArgTakeSpec:
-        """Parse the chunk taking specification from (annotated) arguments."""
+        """Parse and return the chunk-taking specification derived from annotated arguments.
+
+        Args:
+            ann_args (AnnArgs): A mapping of argument names to annotation details.
+            eval_id (Optional[Hashable]): The evaluation identifier to filter Chunkable instances.
+
+        Returns:
+            ArgTakeSpec: A dictionary mapping argument names to chunk-taking specifications.
+        """
         arg_take_spec = {}
         for k, v in ann_args.items():
             if isinstance(v["value"], Chunkable) and v["value"].meets_eval_id(eval_id):
@@ -1590,7 +1952,15 @@ class Chunker(Configured):
 
     @classmethod
     def fill_arg_take_spec(cls, arg_take_spec: tp.ArgTakeSpec, ann_args: tp.AnnArgs) -> tp.ArgTakeSpec:
-        """Fill the chunk taking specification with None to avoid warnings."""
+        """Fill and return the chunk-taking specification with missing keys set to None to avoid warnings.
+
+        Args:
+            arg_take_spec (ArgTakeSpec): The initial chunk-taking specification.
+            ann_args (AnnArgs): A mapping of annotated arguments.
+
+        Returns:
+            ArgTakeSpec: The updated chunk-taking specification with missing keys filled with None.
+        """
         arg_take_spec = dict(arg_take_spec)
         for k, v in ann_args.items():
             if k not in arg_take_spec:
@@ -1599,7 +1969,15 @@ class Chunker(Configured):
 
     @classmethod
     def adapt_ann_args(cls, ann_args: tp.AnnArgs, eval_id: tp.Optional[tp.Hashable] = None) -> tp.AnnArgs:
-        """Adapt annotated arguments."""
+        """Adapt and return annotated arguments by replacing Chunkable objects with their evaluated values.
+
+        Args:
+            ann_args (AnnArgs): A mapping of argument names to their annotations.
+            eval_id (Optional[Hashable]): The evaluation identifier used to filter Chunkable objects.
+
+        Returns:
+            AnnArgs: A new dictionary of annotated arguments with updated values.
+        """
         new_ann_args = {}
         for k, v in ann_args.items():
             new_ann_args[k] = v = dict(v)
@@ -1631,7 +2009,18 @@ class Chunker(Configured):
         eval_id: tp.Optional[tp.Hashable] = None,
         **kwargs,
     ) -> tp.Optional[int]:
-        """Suggest a global size given the annotated arguments and the chunk taking specification."""
+        """Suggest a global size based on annotated arguments and a chunk-taking specification.
+
+        Args:
+            cls: The class reference.
+            ann_args (AnnArgs): Mapping of annotated arguments with metadata.
+            arg_take_spec (ArgTakeSpec): Specification for extracting chunk-taking parameters.
+            eval_id (Optional[Hashable]): Evaluation identifier for filtering chunk takers.
+            **kwargs: Additional keyword arguments passed to the chunk taker's size suggestion.
+
+        Returns:
+            Optional[int]: The determined global size if found; otherwise, None.
+        """
         size_k = None
         size = None
         for i, (k, v) in enumerate(ann_args.items()):
@@ -1654,7 +2043,17 @@ class Chunker(Configured):
         return size
 
     def run(self, func: tp.Callable, *args, eval_id: tp.Optional[tp.Hashable] = None, **kwargs) -> tp.Any:
-        """Chunk arguments and run the function."""
+        """Chunk the arguments and execute the function.
+
+        Args:
+            func (Callable): The function to execute.
+            *args: Additional positional arguments for `func`.
+            eval_id (Optional[Hashable]): Evaluation identifier used for filtering chunk takers and sizers.
+            **kwargs: Additional keyword arguments for `func`.
+
+        Returns:
+            Any: The result of executing `func`, either directly or after processing chunks.
+        """
         size = self.size
         min_size = self.min_size
         n_chunks = self.n_chunks
@@ -1825,21 +2224,33 @@ def chunked(
     prepend_chunk_meta: tp.Optional[bool] = None,
     **kwargs,
 ) -> tp.Callable:
-    """Decorator that chunks the inputs of a function using `Chunker`.
+    """Decorate a function to process its inputs in chunks using `Chunker`.
 
-    Returns a new function with the same signature as the passed one.
+    This decorator splits the input arguments of a function into chunks, dispatches each chunk
+    for processing via an engine, and optionally merges the results. The returned function
+    preserves the signature of the original function.
 
-    Each option can be modified in the `options` attribute of the wrapper function or
-    directly passed as a keyword argument with a leading underscore.
+    Each option can be updated at any time by modifying the `options` attribute of the wrapper
+    or by passing a keyword argument prefixed with an underscore.
 
-    Chunking can be disabled using `disable` argument. Additionally, the entire wrapping mechanism
-    can be disabled by using the global setting `disable_wrapping` (=> returns the wrapped function).
+    Chunking can be disabled by using the `disable` argument, and the entire wrapping mechanism
+    can be bypassed with the global setting `disable_wrapping` (which returns the original function).
 
-    Keyword arguments not listed in `Chunker` and `execute_kwargs` are merged into `execute_kwargs`
-    if `merge_to_execute_kwargs` is True, otherwise, they are passed directly to `Chunker`.
+    If keyword arguments are not recognized by `Chunker` or `execute_kwargs`, they are merged into
+    `execute_kwargs` when `merge_to_execute_kwargs` is True; otherwise, they are passed directly to
+    `Chunker`. Additionally, if a chunker instance is provided and `replace_chunker` is True, a new
+    `Chunker` instance is created by replacing any arguments that are not None.
 
-    If a chunker instance is provided and `replace_chunker` is True, will create a new
-    `Chunker` instance by replacing any arguments that are not None.
+    Args:
+        args (tuple): Additional positional arguments for the wrapped function.
+        chunker (Optional[Chunker]): A `Chunker` type used for splitting the inputs.
+        replace_chunker (Optional[bool]): If True, create a new `Chunker` instance by replacing provided attributes.
+        merge_to_execute_kwargs (Optional[bool]): If True, merge extra keyword arguments into `execute_kwargs`.
+        prepend_chunk_meta (Optional[bool]): If True, prepend chunk metadata to the function arguments.
+        kwargs (dict): Additional keyword arguments for configuring chunking behavior.
+
+    Returns:
+        Callable: The decorated function with chunking capability.
 
     Usage:
         For testing purposes, let's divide the input array into 2 chunks and compute
@@ -1892,7 +2303,7 @@ def chunked(
         >>> f(np.arange(10))
         ```
 
-        Also, instead of specifying the chunk taking specification beforehand, it can be passed
+        Also, instead of specifying the chunk-taking specification beforehand, it can be passed
         dynamically by wrapping each value to be chunked with `Chunked` or any of its subclasses:
 
         ```pycon
@@ -1946,12 +2357,12 @@ def chunked(
         ```
 
         If we know the size of the space in advance, we can pass it as an integer constant.
-        Otherwise, we need to tell `chunked` to derive the size from the inputs dynamically
-        by passing any subclass of `Sizer`. In the example above, we instruct the wrapped function
-        to derive the size from the length of the input array `a`.
+        Otherwise, we need to instruct `chunked` to derive the size from the inputs dynamically
+        by passing any subclass of `Sizer`. In the example above, the wrapped function derives
+        the size from the length of the input array `a`.
 
         Once all chunks are generated, the wrapped function attempts to split inputs into chunks.
-        The specification for this operation can be provided by the `arg_take_spec` argument, which
+        The specification for this operation can be provided via the `arg_take_spec` argument, which
         in most cases is a dictionary of `ChunkTaker` instances keyed by the input name.
         Here's an example of a complex specification:
 
@@ -1985,9 +2396,9 @@ def chunked(
         [1114, 1118, 1122]
         ```
 
-        After splitting all inputs into chunks, the wrapped function forwards them to the engine function.
-        The engine argument can be either the name of a supported engine, or a callable. Once the engine
-        has finished all tasks and returned a list of results, we can merge them back using `merge_func`:
+        After splitting all inputs into chunks, the wrapped function forwards them to an engine.
+        The engine can be specified either as the name of a supported engine or as a callable.
+        Once the engine completes its tasks and returns a list of results, they can be merged back using `merge_func`:
 
         ```pycon
         >>> @vbt.chunked(
@@ -2014,9 +2425,9 @@ def chunked(
         array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
         ```
 
-        Instead of (or in addition to) specifying `arg_take_spec`, we can define our function with the
-        first argument being `chunk_meta` to be able to split the arguments during the execution.
-        The `chunked` decorator will automatically recognize and replace it with the actual `ChunkMeta` object:
+        Instead of (or in addition to) specifying `arg_take_spec`, define the function with the first argument
+        as `chunk_meta` to manage input splitting during execution. The `chunked` decorator will recognize
+        and replace it with the actual `ChunkMeta` object:
 
         ```pycon
         >>> @vbt.chunked(
@@ -2052,9 +2463,9 @@ def chunked(
         array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
         ```
 
-        Templates in arguments are substituted right before taking a chunk from them.
+        Templates in arguments are substituted just before processing each chunk.
 
-        Keyword arguments to the engine can be provided using `execute_kwargs`:
+        Keyword arguments for the engine can be provided using `execute_kwargs`:
 
         ```pycon
         >>> @vbt.chunked(
@@ -2168,16 +2579,18 @@ def chunked(
 
 
 def resolve_chunked_option(option: tp.ChunkedOption = None) -> tp.KwargsLike:
-    """Return keyword arguments for `chunked`.
+    """Return keyword arguments for `chunked` based on a given option.
 
-    `option` can be:
+    Args:
+        option (ChunkedOption): Determines the chunking behavior.
 
-    * True: Chunk using default settings
-    * None or False: Do not chunk
-    * string: Use `option` as the name of an execution engine (see `vectorbtpro.utils.execution.execute`)
-    * dict: Use `option` as keyword arguments passed to `chunked`
+            * True: Use default chunking settings.
+            * None or False: Disable chunking.
+            * str: Specify the name of an execution engine (see `vectorbtpro.utils.execution.execute`).
+            * dict: Provide keyword arguments to be passed to `chunked`.
 
-    For defaults, see `option` in `vectorbtpro._settings.chunking`."""
+    For defaults, see `option` in `vectorbtpro._settings.chunking`.
+    """
     from vectorbtpro._settings import settings
 
     chunking_cfg = settings["chunking"]
@@ -2197,8 +2610,15 @@ def resolve_chunked_option(option: tp.ChunkedOption = None) -> tp.KwargsLike:
 
 
 def specialize_chunked_option(option: tp.ChunkedOption = None, **kwargs) -> tp.KwargsLike:
-    """Resolve `option` and merge it with `kwargs` if it's not None so the dict can be passed
-    as an option to other functions."""
+    """Resolve the provided chunking option and merge it with additional keyword arguments.
+
+    Args:
+        option (ChunkedOption): A chunking option to resolve.
+        **kwargs: Additional keyword arguments for merging.
+
+    Returns:
+        KwargsLike: A dictionary of merged chunking configuration options, or None if chunking is disabled.
+    """
     chunked_kwargs = resolve_chunked_option(option)
     if chunked_kwargs is not None:
         return merge_dicts(kwargs, chunked_kwargs)
@@ -2206,7 +2626,17 @@ def specialize_chunked_option(option: tp.ChunkedOption = None, **kwargs) -> tp.K
 
 
 def resolve_chunked(func: tp.Callable, option: tp.ChunkedOption = None, **kwargs) -> tp.Callable:
-    """Decorate with `chunked` based on an option."""
+    """Decorate a function with chunked processing according to a given option.
+
+    Args:
+        func (Callable): The function to decorate.
+        option (ChunkedOption): A chunking option determining whether to apply chunked processing.
+        **kwargs: Additional keyword arguments for configuring chunked processing.
+
+    Returns:
+        Callable: The decorated function with chunked processing applied if enabled;
+            otherwise, the original function.
+    """
     from vectorbtpro._settings import settings
 
     chunking_cfg = settings["chunking"]
