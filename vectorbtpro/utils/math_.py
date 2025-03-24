@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Math utilities."""
+"""Module providing math utility functions."""
 
 import numpy as np
 
@@ -32,7 +32,15 @@ def is_close_nb(
     rel_tol: float = _rel_tol,
     abs_tol: float = _abs_tol,
 ) -> bool:
-    """Tell whether two values are approximately equal."""
+    """Determine whether two float values are approximately equal, considering tolerance settings.
+
+    Args:
+        a (float): First float value.
+        b (float): Second float value.
+        use_tol (bool): Flag to enable tolerance-based comparison.
+        rel_tol (float): Relative tolerance used for comparing values.
+        abs_tol (float): Absolute tolerance used for comparing values.
+    """
     if np.isnan(a) or np.isnan(b):
         return False
     if np.isinf(a) or np.isinf(b):
@@ -50,7 +58,15 @@ def is_less_nb(
     rel_tol: float = _rel_tol,
     abs_tol: float = _abs_tol,
 ) -> bool:
-    """Tell whether the first value is approximately less than the second value."""
+    """Determine whether the first float value is approximately less than the second value.
+
+    Args:
+        a (float): First float value.
+        b (float): Second float value.
+        use_tol (bool): Flag to enable tolerance-based comparison.
+        rel_tol (float): Relative tolerance used for comparing values.
+        abs_tol (float): Absolute tolerance used for comparing values.
+    """
     if use_tol and is_close_nb(a, b, rel_tol=rel_tol, abs_tol=abs_tol):
         return False
     return a < b
@@ -64,7 +80,15 @@ def is_close_or_less_nb(
     rel_tol: float = _rel_tol,
     abs_tol: float = _abs_tol,
 ) -> bool:
-    """Tell whether the first value is approximately equal to or less than the second value."""
+    """Determine whether the first float value is approximately equal to or less than the second value.
+
+    Args:
+        a (float): First float value.
+        b (float): Second float value.
+        use_tol (bool): Flag to enable tolerance-based comparison.
+        rel_tol (float): Relative tolerance used for comparing values.
+        abs_tol (float): Absolute tolerance used for comparing values.
+    """
     if use_tol and is_close_nb(a, b, rel_tol=rel_tol, abs_tol=abs_tol):
         return True
     return a < b
@@ -78,7 +102,15 @@ def is_close_or_greater_nb(
     rel_tol: float = _rel_tol,
     abs_tol: float = _abs_tol,
 ) -> bool:
-    """Tell whether the first value is approximately equal to or greater than the second value."""
+    """Determine whether the first float value is approximately equal to or greater than the second value.
+
+    Args:
+        a (float): First float value.
+        b (float): Second float value.
+        use_tol (bool): Flag to enable tolerance-based comparison.
+        rel_tol (float): Relative tolerance used for comparing values.
+        abs_tol (float): Absolute tolerance used for comparing values.
+    """
     if use_tol and is_close_nb(a, b, rel_tol=rel_tol, abs_tol=abs_tol):
         return True
     return a > b
@@ -92,7 +124,15 @@ def is_greater_nb(
     rel_tol: float = _rel_tol,
     abs_tol: float = _abs_tol,
 ) -> bool:
-    """Tell whether the first value is approximately greater than the second value."""
+    """Determine whether the first float value is approximately greater than the second value.
+
+    Args:
+        a (float): First float value.
+        b (float): Second float value.
+        use_tol (bool): Flag to enable tolerance-based comparison.
+        rel_tol (float): Relative tolerance used for comparing values.
+        abs_tol (float): Absolute tolerance used for comparing values.
+    """
     if use_tol and is_close_nb(a, b, rel_tol=rel_tol, abs_tol=abs_tol):
         return False
     return a > b
@@ -106,7 +146,15 @@ def is_addition_zero_nb(
     rel_tol: float = _rel_tol,
     abs_tol: float = _abs_tol,
 ) -> bool:
-    """Tell whether addition of two values yields zero."""
+    """Determine whether the sum of two float values is approximately zero, considering tolerance settings.
+
+    Args:
+        a (float): First operand.
+        b (float): Second operand.
+        use_tol (bool): Flag to enable tolerance-based approximation.
+        rel_tol (float): Relative tolerance used for approximation.
+        abs_tol (float): Absolute tolerance used for approximation.
+    """
     if use_tol:
         if np.sign(a) != np.sign(b):
             return is_close_nb(abs(a), abs(b), rel_tol=rel_tol, abs_tol=abs_tol)
@@ -115,8 +163,25 @@ def is_addition_zero_nb(
 
 
 @register_jitted(cache=True)
-def add_nb(a: float, b: float, use_tol: bool = _use_tol, rel_tol: float = _rel_tol, abs_tol: float = _abs_tol) -> float:
-    """Add two floats."""
+def add_nb(
+    a: float,
+    b: float,
+    use_tol: bool = _use_tol,
+    rel_tol: float = _rel_tol,
+    abs_tol: float = _abs_tol,
+) -> float:
+    """Add two float values.
+
+    Args:
+        a (float): First addend.
+        b (float): Second addend.
+        use_tol (bool): Flag to enable tolerance-based operation.
+        rel_tol (float): Relative tolerance used for approximation.
+        abs_tol (float): Absolute tolerance used for approximation.
+
+    Returns:
+        float: The sum of a and b, or 0.0 if the sum is approximately zero based on tolerance.
+    """
     if use_tol and is_addition_zero_nb(a, b, rel_tol=rel_tol, abs_tol=abs_tol):
         return 0.0
     return a + b
@@ -124,7 +189,16 @@ def add_nb(a: float, b: float, use_tol: bool = _use_tol, rel_tol: float = _rel_t
 
 @register_jitted(cache=True)
 def round_nb(a: float, use_round: bool = _use_round, decimals: int = _decimals) -> float:
-    """Round a float to a number of decimals."""
+    """Round a float value to a specified number of decimals.
+
+    Args:
+        a (float): The float value to round.
+        use_round (bool): Flag that specifies whether rounding should be applied.
+        decimals (int): The number of decimals to round to.
+
+    Returns:
+        float: The rounded float value.
+    """
     if use_round:
         return round(a, decimals)
     return a

@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Modules with utilities that are used throughout the package."""
+"""Module providing utilities used throughout the VectorBT® PRO package."""
 
 from typing import TYPE_CHECKING
 

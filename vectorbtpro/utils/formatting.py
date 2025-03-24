@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Utilities for formatting."""
+"""Module providing utilities for formatting."""
 
 import inspect
 import io
@@ -33,7 +33,14 @@ __all__ = [
 
 
 def camel_to_snake_case(camel_str: str) -> str:
-    """Convert a camel case string to a snake case string."""
+    """Convert a camel case string to a snake case string.
+
+    Args:
+        camel_str (str): A string formatted in camel case.
+
+    Returns:
+        str: The string converted to snake case.
+    """
     snake_str = re.sub(r"(?<!^)(?<![A-Z_])([A-Z])", r"_\1", camel_str).lower()
     if snake_str.startswith("_"):
         snake_str = snake_str[1:]
@@ -41,18 +48,26 @@ def camel_to_snake_case(camel_str: str) -> str:
 
 
 class Prettified(Base):
-    """Abstract class that can be prettified."""
+    """Abstract class for objects that can be prettified."""
 
     def prettify(self, **kwargs) -> str:
         """Prettify the object.
 
         !!! warning
             Calling `prettify` can lead to an infinite recursion.
-            Make sure to pre-process this object."""
+            Make sure to pre-process this object.
+
+        Returns:
+            str: A prettified representation of the object.
+        """
         raise NotImplementedError
 
     def pprint(self, **kwargs) -> None:
-        """Pretty-print the object."""
+        """Pretty-print the object.
+
+        Args:
+            **kwargs: Additional keyword arguments passed to `prettify`.
+        """
         print(self.prettify(**kwargs))
 
     def __str__(self) -> str:
@@ -71,7 +86,20 @@ def prettify_inited(
     lfchar: str = "\n",
     indent: int = 0,
 ) -> tp.Any:
-    """Prettify an instance initialized with keyword arguments."""
+    """Prettify an instance initialized with keyword arguments.
+
+    Args:
+        cls (type): The class of the instance.
+        kwargs (Any): A dictionary of keyword arguments used for initialization.
+        replace (DictLike): A mapping for value replacement.
+        path (str): The current path in the object hierarchy.
+        htchar (str): The string used for horizontal indentation.
+        lfchar (str): The line feed character.
+        indent (int): The current indentation level.
+
+    Returns:
+        Any: A prettified string representation of the initialized instance.
+    """
     items = []
     for k, v in kwargs.items():
         if replace is None:
@@ -101,7 +129,19 @@ def prettify_dict(
     lfchar: str = "\n",
     indent: int = 0,
 ) -> tp.Any:
-    """Prettify a dictionary."""
+    """Prettify a dictionary.
+
+    Args:
+        obj (Any): The dictionary to prettify.
+        replace (DictLike): A mapping for value replacement.
+        path (str): The current path in the object hierarchy.
+        htchar (str): The string used for horizontal indentation.
+        lfchar (str): The line feed character.
+        indent (int): The current indentation level.
+
+    Returns:
+        Any: A prettified string representation of the dictionary.
+    """
     if all([isinstance(k, str) and k.isidentifier() for k in obj]):
         return prettify_inited(
             type(obj),
@@ -144,9 +184,21 @@ def prettify(
 ) -> tp.Any:
     """Prettify an object.
 
-    Unfolds regular Python data structures such as lists and tuples.
+    Unfolds regular Python data structures such as lists, tuples, and dictionaries.
 
-    If `obj` is an instance of `Prettified`, calls `Prettified.prettify`."""
+    If `obj` is an instance of `Prettified`, calls its `prettify` method.
+
+    Args:
+        obj (Any): The object to prettify.
+        replace (DictLike): A mapping for value replacement.
+        path (str): The current path in the object hierarchy.
+        htchar (str): The string used for horizontal indentation.
+        lfchar (str): The line feed character.
+        indent (int): The current indentation level.
+
+    Returns:
+        Any: A prettified string representation of the object.
+    """
     if isinstance(obj, Prettified):
         return obj.prettify(replace=replace, path=path, htchar=htchar, lfchar=lfchar, indent=indent)
     if attr.has(type(obj)):
@@ -211,16 +263,30 @@ def prettify(
 
 
 def pprint(*args, **kwargs) -> None:
-    """Print the output of `prettify`."""
+    """Print the prettified representation of the given arguments.
+
+    Args:
+        *args: Additional positional arguments passed to `prettify`.
+        **kwargs: Additional keyword arguments passed to `prettify`.
+    """
     print(prettify(*args, **kwargs))
 
 
 def format_array(array: tp.ArrayLike, tabulate: tp.Optional[bool] = None, html: bool = False, **kwargs) -> str:
-    """Format an array.
+    """Format an array for display.
 
-    Arguments are passed to `pd.DataFrame.to_string` or `pd.DataFrame.to_html` if `tabulate` is False,
-    otherwise to `tabulate.tabulate`. If `tabulate` is None, will be set to True if the `tabulate`
-    library is installed and `html` is disabled."""
+    Args:
+        array (ArrayLike): An array-like object to be formatted.
+        tabulate (Optional[bool]): If True, use `tabulate.tabulate` for formatting;
+            if False, use pandas formatting functions (`DataFrame.to_string` or `DataFrame.to_html`).
+
+            If None, auto-detect based on the availability of the `tabulate` library and the `html` parameter.
+        html (bool): Format the output in HTML if True.
+        **kwargs: Additional keyword arguments for the formatting function.
+
+    Returns:
+        str: The formatted array as a string.
+    """
     from vectorbtpro.base.reshaping import to_pd_array
 
     pd_array = to_pd_array(array)
@@ -247,10 +313,15 @@ def format_array(array: tp.ArrayLike, tabulate: tp.Optional[bool] = None, html: 
 
 
 def ptable(*args, display_html: tp.Optional[bool] = None, **kwargs) -> None:
-    """Print the output of `format_array`.
+    """Print the formatted array.
 
-    If `display_html` is None, checks whether the code runs in a IPython notebook, and if so, becomes True.
-    If `display_html` is True, displays the table in HTML format."""
+    Args:
+        *args: Additional arguments for `format_array`.
+        display_html (Optional[bool]): Display output in HTML if True.
+
+            If None, auto-detect if running in an IPython notebook.
+        **kwargs: Additional keyword arguments for `format_array`.
+    """
     from vectorbtpro.utils.checks import in_notebook
 
     if display_html is None:
@@ -264,7 +335,15 @@ def ptable(*args, display_html: tp.Optional[bool] = None, **kwargs) -> None:
 
 
 def format_parameter(param: inspect.Parameter, annotate: bool = False) -> str:
-    """Format a parameter of a signature."""
+    """Format a function parameter into a string representation.
+
+    Args:
+        param (inspect.Parameter): The parameter to format.
+        annotate (bool): Include type annotation in the formatted string if True.
+
+    Returns:
+        str: The formatted parameter.
+    """
     kind = param.kind
     formatted = param.name
 
@@ -292,7 +371,18 @@ def format_signature(
     separator: str = ",\n    ",
     end: str = "\n",
 ) -> str:
-    """Format a signature."""
+    """Format a function signature.
+
+    Args:
+        signature (Signature): The function signature to format.
+        annotate (bool): Include type annotations if True.
+        start (str): String inserted at the beginning of the parameter list.
+        separator (str): String used to separate parameters.
+        end (str): String appended after the parameter list.
+
+    Returns:
+        str: The formatted signature.
+    """
     result = []
     render_pos_only_separator = False
     render_kw_only_separator = True
@@ -332,7 +422,16 @@ def format_signature(
 
 
 def format_func(func: tp.Callable, incl_doc: bool = True, **kwargs) -> str:
-    """Format a function."""
+    """Format a function or class constructor.
+
+    Args:
+        func (Callable): The function or class to format. If a class, its `__init__` method is used.
+        incl_doc (bool): If True, include the function's docstring in the output if available.
+        **kwargs: Additional keyword arguments for `format_signature`.
+
+    Returns:
+        str: The formatted function description, including its signature and docstring if available.
+    """
     if inspect.isclass(func):
         func_name = func.__name__ + ".__init__"
         func = func.__init__
@@ -356,19 +455,49 @@ def format_func(func: tp.Callable, incl_doc: bool = True, **kwargs) -> str:
 
 
 def phelp(*args, **kwargs) -> None:
-    """Print the output of `format_func`."""
+    """Print the formatted representation of a function.
+
+    Args:
+        *args: Additional arguments for `format_func`.
+        **kwargs: Additional keyword arguments for `format_func`.
+    """
     print(format_func(*args, **kwargs))
 
 
 def pdir(*args, **kwargs) -> None:
-    """Print the output of `vectorbtpro.utils.attr_.parse_attrs`."""
+    """Print parsed attributes of an object.
+
+    Args:
+        *args: Additional arguments for `parse_attrs`.
+        **kwargs: Additional keyword arguments for `parse_attrs`.
+    """
     from vectorbtpro.utils.attr_ import parse_attrs
 
     ptable(parse_attrs(*args, **kwargs))
 
 
 def dump(obj: tp.Any, dump_engine: str = "prettify", **kwargs) -> str:
-    """Dump an object to a string."""
+    """Dump an object to a string using the specified dump engine.
+
+    Args:
+        obj (Any): The object to dump.
+        dump_engine (str): The dump engine to use.
+
+            Options include:
+
+            * "repr"
+            * "prettify"
+            * "nestedtext"
+            * "yaml"
+            * "pyyaml
+            * "ruamel" or "ruamel.yaml"
+            * "toml"
+            * "json"
+        **kwargs: Additional keyword arguments for the dump engine.
+
+    Returns:
+        str: The dumped object as a string.
+    """
     if isinstance(obj, str):
         return obj
     if dump_engine.lower() == "repr":
@@ -460,7 +589,14 @@ def dump(obj: tp.Any, dump_engine: str = "prettify", **kwargs) -> str:
 
 
 def get_dump_language(dump_engine: str) -> str:
-    """Get language corresponding to the dump engine."""
+    """Return the language corresponding to the provided dump engine.
+
+    Args:
+        dump_engine (str): The name of the dump engine.
+
+    Returns:
+        str: The corresponding language name, or an empty string if the dump engine is unknown.
+    """
     if dump_engine.lower() == "repr":
         return "python"
     if dump_engine.lower() == "prettify":
