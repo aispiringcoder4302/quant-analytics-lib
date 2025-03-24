@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Utilities for validation during runtime."""
+"""Module providing utilities for validation during runtime."""
 
 import datetime
 import traceback
@@ -34,12 +34,18 @@ __all__ = [
 
 
 class Comparable(Base):
-    """Class representing an object that can be compared to another object."""
+    """Class for objects that support deep equality comparison."""
 
     def equals(self, other: tp.Any, *args, **kwargs) -> bool:
-        """Check two objects for (deep) equality.
+        """Return whether the current object is deeply equal to another object.
 
-        Should accept the keyword arguments accepted by `is_deep_equal`."""
+        Args:
+            other (Any): The object to compare against.
+            *args: Additional arguments passed to `is_deep_equal`.
+            **kwargs: Additional keyword arguments passed to `is_deep_equal`.
+
+        !!! note
+            This method should accept all keyword arguments supported by `is_deep_equal`."""
         raise NotImplementedError
 
     def __eq__(self, other: tp.Any) -> bool:
@@ -50,27 +56,39 @@ class Comparable(Base):
 
 
 def is_classic_func(arg: tp.Any) -> bool:
-    """Check whether the argument is a classic function."""
+    """Return whether the provided argument is a classic Python function.
+
+    Args:
+        arg (Any): The object to check."""
     return isinstance(arg, FunctionType)
 
 
 def is_builtin_func(arg: tp.Any) -> bool:
-    """Check whether the argument is a built-in function."""
+    """Return whether the provided argument is a built-in function.
+
+    Args:
+        arg (Any): The object to check."""
     return isinstance(arg, BuiltinFunctionType)
 
 
 def is_method(arg: tp.Any) -> bool:
-    """Check whether the argument is a method."""
+    """Return whether the provided argument is a method.
+
+    Args:
+        arg (Any): The object to check."""
     return isinstance(arg, MethodType)
 
 
 def is_numba_enabled() -> bool:
-    """Check whether Numba is enabled globally."""
+    """Return whether Numba is globally enabled."""
     return numba.config.DISABLE_JIT != 1
 
 
 def is_numba_func(arg: tp.Any) -> bool:
-    """Check whether the argument is a Numba-compiled function."""
+    """Return whether the provided argument is identified as a Numba-compiled function based on configuration.
+
+    Args:
+        arg (Any): The object to check."""
     from vectorbtpro._settings import settings
 
     numba_cfg = settings["numba"]
@@ -87,112 +105,178 @@ def is_numba_func(arg: tp.Any) -> bool:
 
 
 def is_function(arg: tp.Any) -> bool:
-    """Check whether the argument is a lamdba, (built-in or Numba) function, or method."""
+    """Return whether the provided argument is a lambda function, built-in function, method, or Numba-compiled function.
+
+    Args:
+        arg (Any): The object to check."""
     return is_classic_func(arg) or is_builtin_func(arg) or is_method(arg) or is_numba_func(arg)
 
 
 def is_bool(arg: tp.Any) -> bool:
-    """Check whether the argument is a bool."""
+    """Return whether the provided argument is a boolean value.
+
+    Args:
+        arg (Any): The object to check."""
     return isinstance(arg, (bool, np.bool_))
 
 
 def is_int(arg: tp.Any) -> bool:
-    """Check whether the argument is an integer (and not a timedelta, for example)."""
+    """Return whether the provided argument is an integer (excluding booleans and timedelta values).
+
+    Args:
+        arg (Any): The object to check."""
     return isinstance(arg, (int, np.integer)) and not isinstance(arg, np.timedelta64) and not is_bool(arg)
 
 
 def is_float(arg: tp.Any) -> bool:
-    """Check whether the argument is a float."""
+    """Return whether the provided argument is a float.
+
+    Args:
+        arg (Any): The object to check."""
     return isinstance(arg, (float, np.floating))
 
 
 def is_number(arg: tp.Any) -> bool:
-    """Check whether the argument is a number."""
+    """Return whether the provided argument is a number (integer or float).
+
+    Args:
+        arg (Any): The object to check."""
     return is_int(arg) or is_float(arg)
 
 
 def is_np_scalar(arg: tp.Any) -> bool:
-    """Check whether the argument is a NumPy scalar."""
+    """Return whether the provided argument is a NumPy scalar.
+
+    Args:
+        arg (Any): The object to check."""
     return isinstance(arg, np.generic)
 
 
 def is_td(arg: tp.Any) -> bool:
-    """Check whether the argument is a timedelta object."""
+    """Return whether the provided argument is a timedelta object (from pandas, datetime, or NumPy).
+
+    Args:
+        arg (Any): The object to check."""
     return isinstance(arg, (pd.Timedelta, datetime.timedelta, np.timedelta64))
 
 
 def is_td_like(arg: tp.Any) -> bool:
-    """Check whether the argument is a timedelta-like object."""
+    """Return whether the provided argument is timedelta-like (i.e., a timedelta object, a number, or a string).
+
+    Args:
+        arg (Any): The object to check."""
     return is_td(arg) or is_number(arg) or isinstance(arg, str)
 
 
 def is_frequency(arg: tp.Any) -> bool:
-    """Check whether the argument is a frequency object."""
+    """Return whether the provided argument is a frequency object (a timedelta or a pandas DateOffset).
+
+    Args:
+        arg (Any): The object to check."""
     return is_td(arg) or isinstance(arg, pd.DateOffset)
 
 
 def is_frequency_like(arg: tp.Any) -> bool:
-    """Check whether the argument is a frequency-like object."""
+    """Return whether the provided argument is frequency-like (i.e., a frequency object, a number, or a string).
+
+    Args:
+        arg (Any): The object to check."""
     return is_frequency(arg) or is_number(arg) or isinstance(arg, str)
 
 
 def is_dt(arg: tp.Any) -> bool:
-    """Check whether the argument is a datetime object."""
+    """Return whether the provided argument is a datetime object (from pandas, datetime, or NumPy).
+
+    Args:
+        arg (Any): The object to check."""
     return isinstance(arg, (pd.Timestamp, datetime.datetime, np.datetime64))
 
 
 def is_dt_like(arg: tp.Any) -> bool:
-    """Check whether the argument is a datetime-like object."""
+    """Return whether the provided argument is datetime-like (i.e., a datetime object, a number, or a string).
+
+    Args:
+        arg (Any): The object to check."""
     return is_dt(arg) or is_number(arg) or isinstance(arg, str)
 
 
 def is_time(arg: tp.Any) -> bool:
-    """Check whether the argument is a time object."""
+    """Return whether the provided argument is a time object.
+
+    Args:
+        arg (Any): The object to check."""
     return isinstance(arg, datetime.time)
 
 
 def is_time_like(arg: tp.Any) -> bool:
-    """Check whether the argument is a time-like object."""
+    """Return whether the provided argument is time-like (i.e., a time object or a string).
+
+    Args:
+        arg (Any): The object to check."""
     return is_time(arg) or isinstance(arg, str)
 
 
 def is_np_array(arg: tp.Any) -> bool:
-    """Check whether the argument is a NumPy array."""
+    """Return whether the provided argument is a NumPy array.
+
+    Args:
+        arg (Any): The object to check."""
     return isinstance(arg, np.ndarray)
 
 
 def is_record_array(arg: tp.Any) -> bool:
-    """Check whether the argument is a structured NumPy array."""
+    """Return whether the provided argument is a structured NumPy array.
+
+    Args:
+        arg (Any): The object to check."""
     return is_np_array(arg) and arg.dtype.fields is not None
 
 
 def is_series(arg: tp.Any) -> bool:
-    """Check whether the argument is `pd.Series`."""
+    """Return whether the provided argument is a pandas Series.
+
+    Args:
+        arg (Any): The object to check."""
     return isinstance(arg, pd.Series)
 
 
 def is_index(arg: tp.Any) -> bool:
-    """Check whether the argument is `pd.Index`."""
+    """Return whether the provided argument is a pandas Index.
+
+    Args:
+        arg (Any): The object to check."""
     return isinstance(arg, pd.Index)
 
 
 def is_multi_index(arg: tp.Any) -> bool:
-    """Check whether the argument is `pd.MultiIndex`."""
+    """Return whether the provided argument is a pandas MultiIndex.
+
+    Args:
+        arg (Any): The object to check."""
     return isinstance(arg, pd.MultiIndex)
 
 
 def is_frame(arg: tp.Any) -> bool:
-    """Check whether the argument is `pd.DataFrame`."""
+    """Return whether the provided argument is a pandas DataFrame.
+
+    Args:
+        arg (Any): The object to check."""
     return isinstance(arg, pd.DataFrame)
 
 
 def is_pandas(arg: tp.Any) -> bool:
-    """Check whether the argument is `pd.Series`, `pd.Index`, or `pd.DataFrame`."""
+    """Return whether the provided argument is a pandas object (Series, Index, or DataFrame).
+
+    Args:
+        arg (Any): The object to check."""
     return is_series(arg) or is_index(arg) or is_frame(arg)
 
 
 def is_any_array(arg: tp.Any) -> bool:
-    """Check whether the argument is a NumPy array or a Pandas object."""
+    """Return whether the provided argument is any array-like object (a NumPy array or a pandas object).
+
+    Args:
+        arg (Any): The object to check."""
     return is_pandas(arg) or isinstance(arg, np.ndarray)
 
 
@@ -206,7 +290,10 @@ def _to_any_array(arg: tp.ArrayLike) -> tp.AnyArray:
 
 
 def is_collection(arg: tp.Any) -> bool:
-    """Check whether the argument is a collection."""
+    """Return whether the provided argument is considered a collection.
+
+    Args:
+        arg (Any): The object to check."""
     if isinstance(arg, Collection):
         return True
     try:
@@ -217,14 +304,21 @@ def is_collection(arg: tp.Any) -> bool:
 
 
 def is_complex_collection(arg: tp.Any) -> bool:
-    """Check whether the argument is a collection but not a string or bytes object."""
+    """Return whether the provided argument is a complex collection
+    (i.e., a collection that is not a string, bytes, or bytearray).
+
+    Args:
+        arg (Any): The object to check."""
     if isinstance(arg, (str, bytes, bytearray)):
         return False
     return is_collection(arg)
 
 
 def is_iterable(arg: tp.Any) -> bool:
-    """Check whether the argument is iterable."""
+    """Return whether the provided argument is iterable.
+
+    Args:
+        arg (Any): The object to check."""
     if isinstance(arg, Iterable):
         return True
     try:
@@ -235,14 +329,21 @@ def is_iterable(arg: tp.Any) -> bool:
 
 
 def is_complex_iterable(arg: tp.Any) -> bool:
-    """Check whether the argument is iterable but not a string or bytes object."""
+    """Return whether the provided argument is a complex iterable
+    (i.e., iterable but not a string, bytes, or bytearray).
+
+    Args:
+        arg (Any): The object to check."""
     if isinstance(arg, (str, bytes, bytearray)):
         return False
     return is_iterable(arg)
 
 
 def is_sequence(arg: tp.Any) -> bool:
-    """Check whether the argument is a sequence."""
+    """Return whether the provided argument is a sequence.
+
+Args:
+    arg (Any): The object to check."""
     if isinstance(arg, Sequence):
         return True
     try:
@@ -254,14 +355,24 @@ def is_sequence(arg: tp.Any) -> bool:
 
 
 def is_complex_sequence(arg: tp.Any) -> bool:
-    """Check whether the argument is a sequence but not a string or bytes object."""
+    """Return whether the provided argument is a complex sequence
+    (i.e., a sequence that is not a string, bytes, or bytearray).
+
+    Args:
+        arg (Any): The object to check."""
     if isinstance(arg, (str, bytes, bytearray)):
         return False
     return is_sequence(arg)
 
 
 def is_hashable(arg: tp.Any) -> bool:
-    """Check whether the argument can be hashed."""
+    """Return whether the provided argument can be hashed.
+
+    Args:
+        arg (Any): The object to check.
+
+    !!! note
+        An object with a `__hash__` method might still be unhashable if invoking `hash` raises a TypeError."""
     if not isinstance(arg, Hashable):
         return False
     # Having __hash__() method does not mean that it's hashable
@@ -273,9 +384,13 @@ def is_hashable(arg: tp.Any) -> bool:
 
 
 def is_index_equal(arg1: tp.Any, arg2: tp.Any, check_names: bool = True) -> bool:
-    """Check whether indexes are equal.
+    """Return whether two indexes are equal.
 
-    If `check_names` is True, checks whether names are equal on top of `pd.Index.equals`."""
+    Args:
+        arg1 (Any): The first index to compare.
+        arg2 (Any): The second index to compare.
+        check_names (bool): If True, compare the index names in addition to the index values.
+    """
     if not check_names:
         return pd.Index.equals(arg1, arg2)
     if isinstance(arg1, pd.MultiIndex) and isinstance(arg2, pd.MultiIndex):
@@ -290,12 +405,21 @@ def is_index_equal(arg1: tp.Any, arg2: tp.Any, check_names: bool = True) -> bool
 
 
 def is_default_index(arg: tp.Any, check_names: bool = True) -> bool:
-    """Check whether index is a basic range."""
+    """Return whether the provided index is a basic range index.
+
+    Args:
+        arg (Any): The index to check.
+        check_names (bool): If True, compare the index names in addition to the index range.
+    """
     return is_index_equal(arg, pd.RangeIndex(start=0, stop=len(arg), step=1), check_names=check_names)
 
 
 def is_namedtuple(arg: tp.Any) -> bool:
-    """Check whether object is an instance of namedtuple."""
+    """Return whether the given object is an instance of a namedtuple.
+
+    Args:
+        arg (Any): The object to check.
+    """
     if not isinstance(arg, type):
         arg = type(arg)
     bases = arg.__bases__
@@ -308,12 +432,22 @@ def is_namedtuple(arg: tp.Any) -> bool:
 
 
 def is_record(arg: tp.Any) -> bool:
-    """Check whether object is a NumPy record."""
+    """Return whether the given object is a NumPy record.
+
+    Args:
+        arg (Any): The object to check.
+    """
     return isinstance(arg, (np.void, np.record)) and hasattr(arg.dtype, "names") and arg.dtype.names is not None
 
 
 def func_accepts_arg(func: tp.Callable, arg_name: str, arg_kind: tp.Optional[tp.MaybeTuple[int]] = None) -> bool:
-    """Check whether `func` accepts a positional or keyword argument with name `arg_name`."""
+    """Return whether the function accepts an argument with the specified name.
+
+    Args:
+        func (Callable): The function to inspect.
+        arg_name (str): The name of the argument to verify.
+        arg_kind (Optional[MaybeTuple[int]]): The kind or kinds of argument to check.
+    """
     sig = signature(func)
     if arg_kind is not None and isinstance(arg_kind, int):
         arg_kind = (arg_kind,)
@@ -333,7 +467,13 @@ def is_equal(
     arg2: tp.Any,
     equality_func: tp.Callable[[tp.Any, tp.Any], bool] = lambda x, y: x == y,
 ) -> bool:
-    """Check whether two objects are equal."""
+    """Return whether two objects are equal using the provided equality function.
+
+    Args:
+        arg1 (Any): The first object for comparison.
+        arg2 (Any): The second object for comparison.
+        equality_func (Callable[[Any, Any], bool]): A function to evaluate equality.
+    """
     try:
         return equality_func(arg1, arg2)
     except:
@@ -346,12 +486,21 @@ def is_deep_equal(
     arg2: tp.Any,
     check_exact: bool = False,
     debug: bool = False,
-    _key: tp.Optional[str] = None,
     only_types: bool = False,
+    _key: tp.Optional[str] = None,
     **kwargs,
 ) -> bool:
-    """Check whether two objects are equal (deep check)."""
+    """Return whether two objects are deeply equal by performing a recursive comparison.
 
+    Args:
+        arg1 (Any): The first object for deep comparison.
+        arg2 (Any): The second object for deep comparison.
+        check_exact (bool): If True, enforce exact matching in comparisons.
+        debug (bool): If True, output warning messages on mismatches.
+        only_types (bool): If True, only compare the types of the objects.
+        _key (Optional[str]): A key path identifier for nested comparisons.
+        **kwargs: Additional keyword arguments passed to underlying comparison functions.
+    """
     def _select_kwargs(_method, _kwargs):
         __kwargs = dict()
         if len(kwargs) > 0:
@@ -381,7 +530,14 @@ def is_deep_equal(
         if id(arg1) == id(arg2):
             return True
         if isinstance(arg1, Comparable):
-            return arg1.equals(arg2, check_exact=check_exact, debug=debug, _key=_key, **kwargs)
+            return arg1.equals(
+                arg2,
+                check_exact=check_exact,
+                debug=debug,
+                only_types=only_types,
+                _key=_key,
+                **kwargs,
+            )
         if type(arg1) != type(arg2):
             raise AssertionError(f"Types {type(arg1)} and {type(arg2)} do not match")
         if attr.has(type(arg1)):
@@ -390,6 +546,7 @@ def is_deep_equal(
                 attr.asdict(arg2),
                 check_exact=check_exact,
                 debug=debug,
+                only_types=only_types,
                 _key=_key,
                 **kwargs,
             )
@@ -416,6 +573,7 @@ def is_deep_equal(
                     arg2[i],
                     check_exact=check_exact,
                     debug=debug,
+                    only_types=only_types,
                     _key=f"[{i}]" if _key is None else _key + f"[{i}]",
                     **kwargs,
                 ):
@@ -427,6 +585,7 @@ def is_deep_equal(
                     arg2[k],
                     check_exact=check_exact,
                     debug=debug,
+                    only_types=only_types,
                     _key=f"['{k}']" if _key is None else _key + f"['{k}']",
                     **kwargs,
                 ):
@@ -459,9 +618,13 @@ def is_deep_equal(
 
 
 def is_class(arg: type, types: tp.TypeLike) -> bool:
-    """Check whether the argument is `types`.
+    """Return whether the given class matches the specified type descriptor.
 
-    `types` can be one or multiple types, strings, or patterns of type `vectorbtpro.utils.parsing.Regex`."""
+    Args:
+        arg (type): The class to check.
+        types (TypeLike): A type, string, or `vectorbtpro.utils.parsing.Regex`
+            pattern (or tuple of such) to compare against.
+    """
     from vectorbtpro.utils.parsing import Regex
 
     if isinstance(types, str):
@@ -477,9 +640,13 @@ def is_class(arg: type, types: tp.TypeLike) -> bool:
 
 
 def is_subclass_of(arg: tp.Any, types: tp.TypeLike) -> bool:
-    """Check whether the argument is a subclass of `types`.
+    """Return whether the given argument is a subclass of the specified type descriptor.
 
-    `types` can be one or multiple types, strings, or patterns of type `vectorbtpro.utils.parsing.Regex`."""
+    Args:
+        arg (Any): The class to verify for subclassing.
+        types (TypeLike): A type, string, or `vectorbtpro.utils.parsing.Regex` pattern
+            (or tuple of such) representing the superclass.
+    """
     try:
         return issubclass(arg, types)
     except TypeError:
@@ -506,29 +673,49 @@ def is_subclass_of(arg: tp.Any, types: tp.TypeLike) -> bool:
 
 
 def is_instance_of(arg: tp.Any, types: tp.TypeLike) -> bool:
-    """Check whether the argument is an instance of `types`.
+    """Return True if arg is an instance of the specified type(s).
 
-    `types` can be one or multiple types or strings."""
+    Args:
+        arg (Any): The object to check.
+        types (TypeLike): A type, a tuple of types, or type name(s).
+    """
     return is_subclass_of(type(arg), types)
 
 
 def is_mapping(arg: tp.Any) -> bool:
-    """Check whether the arguments is a mapping."""
+    """Return True if arg is a mapping.
+
+    Args:
+        arg (Any): The object to check.
+    """
     return isinstance(arg, Mapping)
 
 
 def is_mapping_like(arg: tp.Any) -> bool:
-    """Check whether the arguments is a mapping-like object."""
+    """Return True if arg is mapping-like.
+
+    An object is considered mapping-like if it is a mapping, a Series, an Index, or a NamedTuple.
+
+    Args:
+        arg (Any): The object to check.
+    """
     return is_mapping(arg) or is_series(arg) or is_index(arg) or is_namedtuple(arg)
 
 
 def is_valid_variable_name(arg: str) -> bool:
-    """Check whether the argument is a valid variable name."""
+    """Return True if arg is a valid variable name.
+
+    Args:
+        arg (str): The string representing the variable name.
+    """
     return arg.isidentifier() and not iskeyword(arg)
 
 
 def in_notebook() -> bool:
-    """Check whether the code runs in a notebook."""
+    """Return True if executing in a Jupyter notebook environment.
+
+    This function checks the IPython configuration to determine if the code is running in a notebook.
+    """
     try:
         from IPython import get_ipython
 
@@ -547,13 +734,28 @@ def in_notebook() -> bool:
 
 
 def safe_assert(arg: bool, msg: tp.Optional[str] = None) -> None:
-    """Assert a condition in a safe way."""
+    """Assert that a condition is True.
+
+    Raises an `AssertionError` with the provided message if the condition is False.
+
+    Args:
+        arg (bool): The condition to evaluate.
+        msg (Optional[str]): The error message to use if the assertion fails.
+    """
     if not arg:
         raise AssertionError(msg)
 
 
 def assert_in(arg1: tp.Any, arg2: tp.Sequence, arg_name: tp.Optional[str] = None) -> None:
-    """Raise exception if the first argument is not in the second argument."""
+    """Assert that arg1 is present in arg2.
+
+    Raises an `AssertionError` if arg1 is not found in arg2.
+
+    Args:
+        arg1 (Any): The element to search for.
+        arg2 (Sequence): The sequence in which to search.
+        arg_name (Optional[str]): The variable name for error messaging.
+    """
     if arg_name is None:
         x = ""
     else:
@@ -563,13 +765,26 @@ def assert_in(arg1: tp.Any, arg2: tp.Sequence, arg_name: tp.Optional[str] = None
 
 
 def assert_numba_func(func: tp.Callable) -> None:
-    """Raise exception if `func` is not Numba-compiled."""
+    """Assert that the function is Numba-compiled.
+
+    Raises an `AssertionError` if func is not compiled with Numba.
+
+    Args:
+        func (Callable): The function to check for Numba compilation.
+    """
     if not is_numba_func(func):
         raise AssertionError(f"Function {func} must be Numba compiled")
 
 
 def assert_not_none(arg: tp.Any, arg_name: tp.Optional[str] = None) -> None:
-    """Raise exception if the argument is None."""
+    """Assert that the argument is not None.
+
+    Raises an `AssertionError` if arg is None.
+
+    Args:
+        arg (Any): The value to check.
+        arg_name (Optional[str]): The variable name for error messaging.
+    """
     if arg_name is None:
         x = "Argument"
     else:
@@ -579,7 +794,15 @@ def assert_not_none(arg: tp.Any, arg_name: tp.Optional[str] = None) -> None:
 
 
 def assert_instance_of(arg: tp.Any, types: tp.TypeLike, arg_name: tp.Optional[str] = None) -> None:
-    """Raise exception if the argument is none of types `types`."""
+    """Assert that arg is an instance of the specified type(s).
+
+    Raises an `AssertionError` if arg is not an instance of types.
+
+    Args:
+        arg (Any): The object to validate.
+        types (TypeLike): A type, tuple of types, or type name(s) to check against.
+        arg_name (Optional[str]): The variable name for error messaging.
+    """
     if arg_name is None:
         x = "Argument"
     else:
@@ -592,7 +815,15 @@ def assert_instance_of(arg: tp.Any, types: tp.TypeLike, arg_name: tp.Optional[st
 
 
 def assert_not_instance_of(arg: tp.Any, types: tp.TypeLike, arg_name: tp.Optional[str] = None) -> None:
-    """Raise exception if the argument is one of types `types`."""
+    """Assert that arg is not an instance of the specified type(s).
+
+    Raises an `AssertionError` if arg is an instance of types.
+
+    Args:
+        arg (Any): The object to validate.
+        types (TypeLike): A type, tuple of types, or type name(s) that are disallowed.
+        arg_name (Optional[str]): The variable name for error messaging.
+    """
     if arg_name is None:
         x = "Argument"
     else:
@@ -605,7 +836,15 @@ def assert_not_instance_of(arg: tp.Any, types: tp.TypeLike, arg_name: tp.Optiona
 
 
 def assert_subclass_of(arg: tp.Type, classes: tp.TypeLike, arg_name: tp.Optional[str] = None) -> None:
-    """Raise exception if the argument is not a subclass of classes `classes`."""
+    """Assert that arg is a subclass of the specified class(es).
+
+    Raises an `AssertionError` if arg is not a subclass of classes.
+
+    Args:
+        arg (Type): The type to check.
+        classes (TypeLike): A class or tuple of classes for validation.
+        arg_name (Optional[str]): The variable name for error messaging.
+    """
     if arg_name is None:
         x = "Argument"
     else:
@@ -618,7 +857,15 @@ def assert_subclass_of(arg: tp.Type, classes: tp.TypeLike, arg_name: tp.Optional
 
 
 def assert_not_subclass_of(arg: tp.Type, classes: tp.TypeLike, arg_name: tp.Optional[str] = None) -> None:
-    """Raise exception if the argument is a subclass of classes `classes`."""
+    """Assert that arg is not a subclass of the specified class(es).
+
+    Raises an `AssertionError` if arg is a subclass of classes.
+
+    Args:
+        arg (Type): The type to check.
+        classes (TypeLike): A class or tuple of classes that are disallowed.
+        arg_name (Optional[str]): The variable name for error messaging.
+    """
     if arg_name is None:
         x = "Argument"
     else:
@@ -631,13 +878,30 @@ def assert_not_subclass_of(arg: tp.Type, classes: tp.TypeLike, arg_name: tp.Opti
 
 
 def assert_type_equal(arg1: tp.Any, arg2: tp.Any) -> None:
-    """Raise exception if the first argument and the second argument have different types."""
+    """Assert that arg1 and arg2 have the same type.
+
+    Raises an `AssertionError` if the types of arg1 and arg2 do not match.
+
+    Args:
+        arg1 (Any): The first object to compare.
+        arg2 (Any): The second object to compare.
+    """
     if type(arg1) != type(arg2):
         raise AssertionError(f"Types {type(arg1)} and {type(arg2)} do not match")
 
 
 def assert_dtype(arg: tp.ArrayLike, dtype: tp.MaybeTuple[tp.DTypeLike], arg_name: tp.Optional[str] = None) -> None:
-    """Raise exception if the argument is not of data type `dtype`."""
+    """Assert that the data type of arg matches the specified dtype.
+
+    For a DataFrame, each column's data type is validated.
+
+    Raises an `AssertionError` if argument's data type does not match dtype.
+
+    Args:
+        arg (ArrayLike): The array or DataFrame to validate.
+        dtype (MaybeTuple[DTypeLike]): The expected data type or a tuple of possible data types.
+        arg_name (Optional[str]): The variable name for error messaging.
+    """
     if arg_name is None:
         x = "Data type"
     else:
@@ -662,7 +926,17 @@ def assert_dtype(arg: tp.ArrayLike, dtype: tp.MaybeTuple[tp.DTypeLike], arg_name
 
 
 def assert_subdtype(arg: tp.ArrayLike, dtype: tp.MaybeTuple[tp.DTypeLike], arg_name: tp.Optional[str] = None) -> None:
-    """Raise exception if the argument is not a sub data type of `dtype`."""
+    """Assert that the data type of arg is a subtype of the specified dtype.
+
+    For a DataFrame, each column's data type is validated.
+
+    Raises an `AssertionError` if argument's data type is not a subdata type of dtype.
+
+    Args:
+        arg (ArrayLike): The array or DataFrame to validate.
+        dtype (MaybeTuple[DTypeLike]): The expected data type or a tuple of data types.
+        arg_name (Optional[str]): The variable name for error messaging.
+    """
     if arg_name is None:
         x = "Data type"
     else:
@@ -687,7 +961,14 @@ def assert_subdtype(arg: tp.ArrayLike, dtype: tp.MaybeTuple[tp.DTypeLike], arg_n
 
 
 def assert_dtype_equal(arg1: tp.ArrayLike, arg2: tp.ArrayLike) -> None:
-    """Raise exception if the first argument and the second argument have different data types."""
+    """Assert that the data types of arg1 and arg2 are equal.
+
+    Raises an `AssertionError` if the data types of arg1 and arg2 do not match.
+
+    Args:
+        arg1 (ArrayLike): The first array or DataFrame to compare.
+        arg2 (ArrayLike): The second array or DataFrame to compare.
+    """
     arg1 = _to_any_array(arg1)
     arg2 = _to_any_array(arg2)
     if isinstance(arg1, pd.DataFrame):
@@ -708,7 +989,12 @@ def assert_dtype_equal(arg1: tp.ArrayLike, arg2: tp.ArrayLike) -> None:
 
 
 def assert_ndim(arg: tp.ArrayLike, ndims: tp.MaybeTuple[int]) -> None:
-    """Raise exception if the argument has a different number of dimensions than `ndims`."""
+    """Raise an `AssertionError` if `arg` does not have the expected number of dimensions.
+
+    Args:
+        arg (ArrayLike): Array-like object to be checked.
+        ndims (MaybeTuple[int]): Expected number of dimensions or acceptable dimension values.
+    """
     arg = _to_any_array(arg)
     if isinstance(ndims, tuple):
         if arg.ndim not in ndims:
@@ -719,9 +1005,15 @@ def assert_ndim(arg: tp.ArrayLike, ndims: tp.MaybeTuple[int]) -> None:
 
 
 def assert_len_equal(arg1: tp.Sized, arg2: tp.Sized) -> None:
-    """Raise exception if the first argument and the second argument have different length.
+    """Raise an `AssertionError` if `arg1` and `arg2` do not have the same length.
 
-    Does not transform arguments to NumPy arrays."""
+    Args:
+        arg1 (Sized): The first object whose length is compared.
+        arg2 (Sized): The second object whose length is compared.
+
+    !!! note
+        The arguments are not converted to NumPy arrays.
+    """
     if len(arg1) != len(arg2):
         raise AssertionError(f"Lengths of {arg1} and {arg2} do not match")
 
@@ -731,7 +1023,17 @@ def assert_shape_equal(
     arg2: tp.ArrayLike,
     axis: tp.Optional[tp.Union[int, tp.Tuple[int, int]]] = None,
 ) -> None:
-    """Raise exception if the first argument and the second argument have different shapes along `axis`."""
+    """Raise an `AssertionError` if the shapes of `arg1` and `arg2` do not match along the specified axis.
+
+    If `axis` is None, the entire shapes are compared.
+    If `axis` is a tuple, the first element corresponds to `arg1` and the second to `arg2`.
+    If `axis` is an integer, that axis index is compared for both arrays.
+
+    Args:
+        arg1 (ArrayLike): The first array-like object.
+        arg2 (ArrayLike): The second array-like object.
+        axis (Optional[Union[int, Tuple[int, int]]): The axis or axes along which to compare shapes.
+    """
     arg1 = _to_any_array(arg1)
     arg2 = _to_any_array(arg2)
     if axis is None:
@@ -751,19 +1053,40 @@ def assert_shape_equal(
 
 
 def assert_index_equal(arg1: tp.Index, arg2: tp.Index, check_names: bool = True) -> None:
-    """Raise exception if the first argument and the second argument have different index."""
+    """Raise an `AssertionError` if the indexes of `arg1` and `arg2` do not match.
+
+    Args:
+        arg1 (Index): The first index to compare.
+        arg2 (Index): The second index to compare.
+        check_names (bool): Whether to check the names of the indexes.
+    """
     if not is_index_equal(arg1, arg2, check_names=check_names):
         raise AssertionError(f"Indexes {arg1} and {arg2} do not match")
 
 
 def assert_columns_equal(arg1: tp.Index, arg2: tp.Index, check_names: bool = True) -> None:
-    """Raise exception if the first argument and the second argument have different columns."""
+    """Raise an `AssertionError` if the columns of `arg1` and `arg2` do not match.
+
+    Args:
+        arg1 (Index): The first columns index to compare.
+        arg2 (Index): The second columns index to compare.
+        check_names (bool): Whether to check the names of the columns.
+    """
     if not is_index_equal(arg1, arg2, check_names=check_names):
         raise AssertionError(f"Columns {arg1} and {arg2} do not match")
 
 
 def assert_meta_equal(arg1: tp.ArrayLike, arg2: tp.ArrayLike, axis: tp.Optional[int] = None) -> None:
-    """Raise exception if the first argument and the second argument have different metadata."""
+    """Raise an `AssertionError` if `arg1` and `arg2` have incompatible metadata.
+
+    The function validates type and shape equality. For pandas objects, it additionally compares
+    indexes and, when applicable, columns or series names.
+
+    Args:
+        arg1 (ArrayLike): The first array-like object.
+        arg2 (ArrayLike): The second array-like object.
+        axis (Optional[int]): Axis along which to compare metadata.
+    """
     arg1 = _to_any_array(arg1)
     arg2 = _to_any_array(arg2)
     assert_type_equal(arg1, arg2)
@@ -782,7 +1105,17 @@ def assert_meta_equal(arg1: tp.ArrayLike, arg2: tp.ArrayLike, axis: tp.Optional[
 
 
 def assert_array_equal(arg1: tp.ArrayLike, arg2: tp.ArrayLike) -> None:
-    """Raise exception if the first argument and the second argument have different metadata or values."""
+    """Raise an `AssertionError` if `arg1` and `arg2` differ in metadata or values.
+
+    The function first compares metadata using `assert_meta_equal`, then checks actual data equality using:
+
+    * A pandas equality check if both objects are pandas.
+    * A NumPy array equality check otherwise.
+
+    Args:
+        arg1 (ArrayLike): The first array-like object.
+        arg2 (ArrayLike): The second array-like object.
+    """
     arg1 = _to_any_array(arg1)
     arg2 = _to_any_array(arg2)
     assert_meta_equal(arg1, arg2)
@@ -796,7 +1129,12 @@ def assert_array_equal(arg1: tp.ArrayLike, arg2: tp.ArrayLike) -> None:
 
 
 def assert_level_not_exists(arg: tp.Index, level_name: str) -> None:
-    """Raise exception if index the argument has level `level_name`."""
+    """Raise an `AssertionError` if `arg` contains a level named `level_name`.
+
+    Args:
+        arg (Index): The index to check.
+        level_name (str): The name of the level that must not exist.
+    """
     if isinstance(arg, pd.MultiIndex):
         names = arg.names
     else:
@@ -806,7 +1144,15 @@ def assert_level_not_exists(arg: tp.Index, level_name: str) -> None:
 
 
 def assert_equal(arg1: tp.Any, arg2: tp.Any, deep: bool = False) -> None:
-    """Raise exception if the first argument and the second argument are different."""
+    """Raise an `AssertionError` if `arg1` and `arg2` are not equal.
+
+    If `deep` is True, a deep equality check is performed.
+
+    Args:
+        arg1 (Any): The first object to compare.
+        arg2 (Any): The second object to compare.
+        deep (bool): If True, perform a deep equality check.
+    """
     if deep:
         if not is_deep_equal(arg1, arg2):
             raise AssertionError(f"{arg1} and {arg2} do not match (deep check)")
@@ -816,9 +1162,15 @@ def assert_equal(arg1: tp.Any, arg2: tp.Any, deep: bool = False) -> None:
 
 
 def assert_dict_valid(arg: tp.DictLike, lvl_keys: tp.Sequence[tp.MaybeSequence[str]]) -> None:
-    """Raise exception if dict the argument has keys that are not in `lvl_keys`.
+    """Raise an `AssertionError` if `arg` contains keys not present in `lvl_keys`.
 
-    `lvl_keys` must be a list of lists, each corresponding to a level in the dict."""
+    `lvl_keys` should be a sequence of sequences, each corresponding to the valid keys
+    for a level of the dictionary.
+
+    Args:
+        arg (DictLike): The dictionary to validate.
+        lvl_keys (Sequence[MaybeSequence[str]]): A sequence of valid key sequences for each level.
+    """
     if arg is None:
         arg = {}
     if len(lvl_keys) == 0:
@@ -835,7 +1187,13 @@ def assert_dict_valid(arg: tp.DictLike, lvl_keys: tp.Sequence[tp.MaybeSequence[s
 
 
 def assert_dict_sequence_valid(arg: tp.DictLikeSequence, lvl_keys: tp.Sequence[tp.MaybeSequence[str]]) -> None:
-    """Raise exception if a dict or any dict in a sequence of dicts has keys that are not in `lvl_keys`."""
+    """Raise an `AssertionError` if a dictionary or any dictionary within a sequence
+    contains keys not present in `lvl_keys`.
+
+    Args:
+        arg (DictLikeSequence): A dictionary or a sequence of dictionaries to validate.
+        lvl_keys (Sequence[MaybeSequence[str]]): A sequence of valid key sequences for each level.
+    """
     if arg is None:
         arg = {}
     if isinstance(arg, dict):
@@ -846,12 +1204,20 @@ def assert_dict_sequence_valid(arg: tp.DictLikeSequence, lvl_keys: tp.Sequence[t
 
 
 def assert_sequence(arg: tp.Any) -> None:
-    """Raise exception if the argument is not a sequence."""
+    """Raise a ValueError if `arg` is not a sequence.
+
+    Args:
+        arg (Any): Object to test for sequence behavior.
+    """
     if not is_sequence(arg):
         raise ValueError(f"{arg} must be a sequence")
 
 
 def assert_iterable(arg: tp.Any) -> None:
-    """Raise exception if the argument is not an iterable."""
+    """Raise a ValueError if `arg` is not an iterable.
+
+    Args:
+        arg (Any): Object to test for iterability.
+    """
     if not is_iterable(arg):
         raise ValueError(f"{arg} must be an iterable")
