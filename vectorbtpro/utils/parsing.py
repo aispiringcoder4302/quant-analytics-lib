@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Utilities for parsing."""
+"""Module providing utilities for parsing."""
 
 import ast
 import contextlib
@@ -31,7 +31,12 @@ __all__ = [
 
 @define
 class Regex(DefineMixin):
-    """Class for matching a regular expression."""
+    """Class for matching a regular expression pattern.
+
+    Args:
+        pattern (str): Regex pattern to match.
+        flags (int): Flags for regex operations.
+    """
 
     pattern: str = define.field()
     """Pattern."""
@@ -40,12 +45,23 @@ class Regex(DefineMixin):
     """Flags."""
 
     def matches(self, string: str) -> bool:
-        """Return whether the string matches the regular expression pattern."""
+        """Return whether the given string matches the regular expression pattern.
+
+        Args:
+            string (str): The string to test.
+        """
         return re.match(self.pattern, string, self.flags) is not None
 
 
-def get_func_kwargs(func: tp.Callable) -> dict:
-    """Get keyword arguments with defaults of a function."""
+def get_func_kwargs(func: tp.Callable) -> tp.Kwargs:
+    """Return a dictionary mapping parameter names to their default values for the given function.
+
+    Args:
+        func (Callable): Function to inspect.
+
+    Returns:
+        Kwargs: Mapping of parameter names to default values.
+    """
     signature = inspect.signature(func)
     return {k: v.default for k, v in signature.parameters.items() if v.default is not inspect.Parameter.empty}
 
@@ -56,7 +72,19 @@ def get_func_arg_names(
     req_only: bool = False,
     opt_only: bool = False,
 ) -> tp.List[str]:
-    """Get argument names of a function."""
+    """Return a list of parameter names from a function signature with optional filtering.
+
+    Args:
+        func (Callable): Function to inspect.
+        arg_kind (Optional[Tuple[int]]): Tuple of parameter kinds to include.
+
+            If None, variable arguments are excluded.
+        req_only (bool): If True, include only parameters without defaults.
+        opt_only (bool): If True, include only parameters with defaults.
+
+    Returns:
+        List[str]: Filtered list of parameter names.
+    """
     signature = inspect.signature(func)
     if arg_kind is not None and isinstance(arg_kind, int):
         arg_kind = (arg_kind,)
@@ -77,7 +105,14 @@ def get_func_arg_names(
 
 
 def get_variable_args_name(func: tp.Callable) -> tp.Optional[str]:
-    """Get the name of variable positional arguments."""
+    """Return the name of the variable positional arguments of the given function.
+
+    Args:
+        func (Callable): Function whose signature is inspected.
+
+    Returns:
+        Optional[str]: The variable positional argument name if present, otherwise None.
+    """
     signature = inspect.signature(func)
     for p in signature.parameters.values():
         if p.kind == p.VAR_POSITIONAL:
@@ -86,12 +121,23 @@ def get_variable_args_name(func: tp.Callable) -> tp.Optional[str]:
 
 
 def has_variable_args(func: tp.Callable) -> bool:
-    """Return whether function accepts variable positions arguments."""
+    """Return whether the given function accepts variable positional arguments.
+
+    Args:
+        func (Callable): Function to check.
+    """
     return get_variable_args_name(func) is not None
 
 
 def get_variable_kwargs_name(func: tp.Callable) -> tp.Optional[str]:
-    """Get the name of variable keyword arguments."""
+    """Return the name of the variable keyword arguments of the given function.
+
+    Args:
+        func (Callable): Function whose signature is inspected.
+
+    Returns:
+        Optional[str]: The variable keyword argument name if present, otherwise None.
+    """
     signature = inspect.signature(func)
     for p in signature.parameters.values():
         if p.kind == p.VAR_KEYWORD:
@@ -100,12 +146,26 @@ def get_variable_kwargs_name(func: tp.Callable) -> tp.Optional[str]:
 
 
 def has_variable_kwargs(func: tp.Callable) -> bool:
-    """Return whether function accepts variable keyword arguments."""
+    """Return whether the given function accepts variable keyword arguments.
+
+    Args:
+        func (Callable): Function to check.
+    """
     return get_variable_kwargs_name(func) is not None
 
 
 def get_forward_args(func: tp.Callable, local_dict: tp.Kwargs, **kwargs) -> tp.ArgsKwargs:
-    """Get positional and keyword arguments to forward."""
+    """Return a tuple containing positional and keyword arguments to forward to the given function.
+
+    Args:
+        func (Callable): Target function to inspect.
+        local_dict (Kwargs): Dictionary of local variables to consider.
+        **kwargs: Additional keyword arguments to match against the function's parameters.
+
+    Returns:
+        ArgsKwargs: A tuple where the first element is a tuple of positional arguments
+            and the second is a dictionary of keyword arguments.
+    """
     new_args = ()
     new_kwargs = {}
     signature = inspect.signature(func)
@@ -129,8 +189,19 @@ def get_forward_args(func: tp.Callable, local_dict: tp.Kwargs, **kwargs) -> tp.A
     return new_args, new_kwargs
 
 
-def extend_args(func: tp.Callable, args: tp.Args, kwargs: tp.Kwargs, **with_kwargs) -> tp.Tuple[tp.Args, tp.Kwargs]:
-    """Extend arguments and keyword arguments with other arguments."""
+def extend_args(func: tp.Callable, args: tp.Args, kwargs: tp.Kwargs, **with_kwargs) -> tp.ArgsKwargs:
+    """Extend given positional and keyword arguments with additional keyword arguments
+    based on the function's signature.
+
+    Args:
+        func (Callable): Target function whose signature is used.
+        args (Args): Original positional arguments.
+        kwargs (Kwargs): Original keyword arguments.
+        **with_kwargs: Additional keyword arguments to include.
+
+    Returns:
+        ArgsKwargs: Extended positional and keyword arguments.
+    """
     kwargs = dict(kwargs)
     new_args = ()
     new_kwargs = dict()
@@ -174,10 +245,25 @@ def annotate_args(
     attach_annotations: bool = False,
     flatten: bool = False,
 ) -> tp.AnnArgs:
-    """Annotate arguments and keyword arguments using the function's signature.
+    """Annotate a function's arguments based on its signature.
 
-    If `allow_partial` is True, required arguments that weren't provided won't raise an error.
-    But regardless of `allow_partial`, arguments that aren't in the signature will still raise an error."""
+    This function binds positional and keyword arguments according to the signature of the given
+    function and annotates them with type hints if available. If `allow_partial` is True,
+    missing required arguments do not raise an error, but extra arguments not in the signature
+    will still trigger an error.
+
+    Args:
+        func (Callable): Function whose signature is used for annotation.
+        args (Args): Positional arguments to annotate.
+        kwargs (Kwargs): Keyword arguments to annotate.
+        only_passed (bool): If True, annotate only the arguments that were explicitly passed.
+        allow_partial (bool): If True, do not raise errors for missing required arguments.
+        attach_annotations (bool): If True, attach type annotations from the function's signature.
+        flatten (bool): If True, flatten the annotation dictionary before returning.
+
+    Returns:
+        AnnArgs: A dictionary of annotated arguments.
+    """
     kwargs = dict(kwargs)
     signature = inspect.signature(func)
     if not allow_partial:
@@ -250,8 +336,15 @@ def annotate_args(
     return ann_args
 
 
-def ann_args_to_args(ann_args: tp.AnnArgs) -> tp.Tuple[tp.Args, tp.Kwargs]:
-    """Convert annotated arguments back to positional and keyword arguments."""
+def ann_args_to_args(ann_args: tp.AnnArgs) -> tp.ArgsKwargs:
+    """Convert annotated arguments to positional and keyword arguments.
+
+    Args:
+        ann_args (AnnArgs): Annotated arguments mapping.
+
+    Returns:
+        ArgsKwargs: A tuple containing positional arguments and keyword arguments.
+    """
     args = ()
     kwargs = {}
     p = inspect.Parameter
@@ -268,13 +361,27 @@ def ann_args_to_args(ann_args: tp.AnnArgs) -> tp.Tuple[tp.Args, tp.Kwargs]:
     return args, kwargs
 
 
-def flat_ann_args_to_args(ann_args: tp.AnnArgs) -> tp.Tuple[tp.Args, tp.Kwargs]:
-    """Convert flattened annotated arguments back to positional and keyword arguments."""
+def flat_ann_args_to_args(ann_args: tp.AnnArgs) -> tp.ArgsKwargs:
+    """Convert annotated arguments to positional and keyword arguments after flattening them.
+
+    Args:
+        ann_args (AnnArgs): Annotated arguments mapping.
+
+    Returns:
+        ArgsKwargs: A tuple containing positional arguments and keyword arguments.
+    """
     return ann_args_to_args(flatten_ann_args(ann_args))
 
 
 def flatten_ann_args(ann_args: tp.AnnArgs) -> tp.FlatAnnArgs:
-    """Flatten annotated arguments."""
+    """Flatten annotated arguments into a dictionary of flattened argument entries.
+
+    Args:
+        ann_args (AnnArgs): Annotated arguments mapping.
+
+    Returns:
+        FlatAnnArgs: A flattened dictionary representation of the annotated arguments.
+    """
     flat_ann_args = {}
     for arg_name, ann_arg in ann_args.items():
         if ann_arg["kind"] == inspect.Parameter.VAR_POSITIONAL:
@@ -317,7 +424,15 @@ def flatten_ann_args(ann_args: tp.AnnArgs) -> tp.FlatAnnArgs:
 
 
 def unflatten_ann_args(flat_ann_args: tp.FlatAnnArgs, partial_ann_args: tp.Optional[tp.AnnArgs] = None) -> tp.AnnArgs:
-    """Unflatten annotated arguments."""
+    """Reconstruct original annotated arguments from flattened entries.
+
+    Args:
+        flat_ann_args (FlatAnnArgs): Flattened annotated arguments.
+        partial_ann_args (Optional[AnnArgs]): Partial annotated arguments to integrate, if provided.
+
+    Returns:
+        AnnArgs: Reconstructed annotated arguments.
+    """
     ann_args = dict()
     for arg_name, ann_arg in flat_ann_args.items():
         ann_arg = dict(ann_arg)
@@ -364,12 +479,18 @@ def match_flat_ann_arg(
 ) -> tp.Any:
     """Match an argument from flattened annotated arguments.
 
-    A query can be an integer indicating the position of the argument, or a string containing the name
-    of the argument, or a regular expression for matching the name of the argument.
+    Args:
+        flat_ann_args (FlatAnnArgs): Flattened annotated arguments.
+        query (AnnArgQuery): An integer index, string name, or regular expression to match an argument.
+        return_name (bool): If True, return the argument's name.
+        return_index (bool): If True, return the argument's positional index.
 
-    If multiple arguments were matched, returns the first one.
+    Returns:
+        Any: The matched argument value, or its name/index if specified.
 
-    The position can stretch over any variable argument."""
+    !!! note
+        Only the first matching argument is returned.
+    """
     if return_name and return_index:
         raise ValueError("Either return_name or return_index can be provided, not both")
     for i, (arg_name, ann_arg) in enumerate(flat_ann_args.items()):
@@ -392,9 +513,20 @@ def match_ann_arg(
     return_name: bool = False,
     return_index: bool = False,
 ) -> tp.Any:
-    """Match an argument from annotated arguments.
+    """Match an argument from annotated arguments by flattening them.
 
-    See `match_flat_ann_arg` for matching logic."""
+    Args:
+        ann_args (AnnArgs): Annotated arguments.
+        query (AnnArgQuery): Query to identify the argument.
+        return_name (bool): If True, return the argument's name.
+        return_index (bool): If True, return the argument's positional index.
+
+    Returns:
+        Any: The matched argument value, or its name/index if specified.
+
+    !!! note
+        Matching logic is equivalent to that of `match_flat_ann_arg`.
+    """
     return match_flat_ann_arg(
         flatten_ann_args(ann_args),
         query,
@@ -408,9 +540,16 @@ def match_and_set_flat_ann_arg(
     query: tp.AnnArgQuery,
     new_value: tp.Any,
 ) -> None:
-    """Match an argument from flattened annotated arguments and set it to a new value.
+    """Match an argument in flattened annotated arguments and update its value.
 
-    See `match_flat_ann_arg` for matching logic."""
+    Args:
+        flat_ann_args (FlatAnnArgs): Flattened annotated arguments.
+        query (AnnArgQuery): Query to identify the argument by index, name, or regular expression.
+        new_value (Any): New value to assign to the matched argument(s).
+
+    !!! note
+        All matching arguments are updated.
+    """
     matched = False
     for i, (arg_name, ann_arg) in enumerate(flat_ann_args.items()):
         if (
@@ -425,7 +564,15 @@ def match_and_set_flat_ann_arg(
 
 
 def ignore_flat_ann_args(flat_ann_args: tp.FlatAnnArgs, ignore_args: tp.Iterable[tp.AnnArgQuery]) -> tp.FlatAnnArgs:
-    """Ignore flattened annotated arguments."""
+    """Return flattened annotated arguments excluding those that match specified queries.
+
+    Args:
+        flat_ann_args (FlatAnnArgs): Flattened annotated arguments.
+        ignore_args (Iterable[AnnArgQuery]): Queries indicating which arguments to ignore.
+
+    Returns:
+        FlatAnnArgs: A dictionary of flattened annotated arguments after ignoring specified entries.
+    """
     new_flat_ann_args = {}
     for i, (arg_name, arg) in enumerate(flat_ann_args.items()):
         arg_matched = False
@@ -443,7 +590,7 @@ def ignore_flat_ann_args(flat_ann_args: tp.FlatAnnArgs, ignore_args: tp.Iterable
 
 
 class UnhashableArgsError(Exception):
-    """Unhashable arguments error."""
+    """Exception raised for unhashable arguments."""
 
     pass
 
@@ -454,9 +601,17 @@ def hash_args(
     kwargs: tp.Kwargs,
     ignore_args: tp.Optional[tp.Iterable[tp.AnnArgQuery]] = None,
 ) -> int:
-    """Get hash of arguments.
+    """Compute a hash based on the annotated arguments of `func`.
 
-    Use `ignore_args` to provide a sequence of queries for arguments that should be ignored."""
+    Args:
+        func (Callable): The function whose arguments are processed.
+        args (Args): Positional arguments passed to `func`.
+        kwargs (Kwargs): Keyword arguments passed to `func`.
+        ignore_args (Optional[Iterable[AnnArgQuery]]): A sequence of queries for arguments to ignore.
+
+    Returns:
+        int: The computed hash value.
+    """
     if ignore_args is None:
         ignore_args = []
     ann_args = annotate_args(func, args, kwargs, only_passed=True)
@@ -470,7 +625,14 @@ def hash_args(
 
 
 def get_expr_var_names(expression: str) -> tp.List[str]:
-    """Get variable names listed in the expression."""
+    """Extract variable names from a Python expression.
+
+    Args:
+        expression (str): A Python expression as a string.
+
+    Returns:
+        List[str]: A list of variable names found in the expression.
+    """
     return [node.id for node in ast.walk(ast.parse(expression)) if type(node) is ast.Name]
 
 
@@ -480,7 +642,21 @@ def get_context_vars(
     local_dict: tp.Optional[tp.Mapping] = None,
     global_dict: tp.Optional[tp.Mapping] = None,
 ) -> tp.List[tp.Any]:
-    """Get variables from the local/global context."""
+    """Retrieve variables from the calling context.
+
+    Args:
+        var_names (Iterable[str]): An iterable of variable names to retrieve.
+        frames_back (int): Number of frames to go back from the current frame.
+        local_dict (Optional[Mapping]): A dictionary of local variables.
+
+            If not provided, uses the calling frame's local variables.
+        global_dict (Optional[Mapping]): A dictionary of global variables.
+
+            If not provided, uses the calling frame's global variables.
+
+    Returns:
+        List[Any]: A list of variable values corresponding to `var_names`.
+    """
     call_frame = sys._getframe(frames_back + 1)
     clear_local_dict = False
     if local_dict is None:
@@ -506,7 +682,14 @@ def get_context_vars(
 
 
 def suppress_stdout(func: tp.Callable) -> tp.Callable:
-    """Suppress output from a function."""
+    """Suppress stdout output when executing the decorated function.
+
+    Args:
+        func (Callable): The function whose printed output will be suppressed.
+
+    Returns:
+        Callable: The wrapped function with stdout redirection.
+    """
 
     @wraps(func)
     def wrapper(*a, **ka):
@@ -520,7 +703,12 @@ PrintsSuppressedT = tp.TypeVar("PrintsSuppressedT", bound="PrintsSuppressed")
 
 
 class PrintsSuppressed(contextlib.redirect_stdout, Base):
-    """Context manager to ignore print statements."""
+    """Context manager for suppressing printed output.
+
+    Args:
+        *args: Additional positional arguments passed to the context manager.
+        **kwargs: Additional keyword arguments passed to the context manager.
+    """
 
     def __new__(cls, *args, **kwargs) -> PrintsSuppressedT:
         return cls(io.StringIO(), *args, **kwargs)
