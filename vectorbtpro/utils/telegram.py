@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Messaging using Python Telegram Bot."""
+"""Module providing messaging functionality using Python Telegram Bot."""
 
 from vectorbtpro.utils.module_ import assert_can_import
 
@@ -32,10 +32,17 @@ logger = logging.getLogger(__name__)
 
 
 def send_action(action: str) -> tp.Callable:
-    """Sends `action` while processing func command.
+    """Decorator factory that sends a specified Telegram chat action during command execution.
 
-    Suitable only for bound callbacks taking arguments `self`, `update`, `context` and optionally other."""
+    This decorator is intended for bound callback methods that accept `self`, `update`, `context`,
+    and optionally additional arguments.
 
+    Args:
+        action (str): Telegram chat action to send (e.g., 'typing', 'upload_photo').
+
+    Returns:
+        Callable: A decorator that wraps the target command function.
+    """
     def decorator(func: tp.Callable) -> tp.Callable:
         @wraps(func)
         def command_func(self, update: Update, context: CallbackContext, *args, **kwargs) -> tp.Callable:
@@ -49,8 +56,15 @@ def send_action(action: str) -> tp.Callable:
 
 
 def self_decorator(self, func: tp.Callable) -> tp.Callable:
-    """Pass bot object to func command."""
+    """Decorator that injects the bot instance as the first argument to a command function.
 
+    Args:
+        self: The bot instance to pass to the command.
+        func (Callable): The command function to wrap.
+
+    Returns:
+        Callable: The decorated command function with the bot instance provided.
+    """
     def command_func(update, context, *args, **kwargs):
         return func(self, update, context, *args, **kwargs)
 
@@ -79,7 +93,11 @@ if __version_info__ < (20, 0, 0, "alpha", 1):
     from telegram.utils.helpers import effective_message_type
 
     class LogHandler(Handler, Base):
-        """Handler to log user updates."""
+        """Telegram update handler that logs user messages.
+
+        If an update contains an effective message, logs its text content for text messages
+        or the message type for non-text messages.
+        """
 
         def check_update(self, update: object) -> tp.Optional[tp.Union[bool, object]]:
             if isinstance(update, Update) and update.effective_message:
@@ -94,12 +112,20 @@ if __version_info__ < (20, 0, 0, "alpha", 1):
             return None
 
     class TelegramBot(Configured):
-        """Telegram bot.
+        """Telegram bot class integrating with the python-telegram-bot library.
+
+        This bot loads its configuration from `vectorbtpro._settings.telegram` and uses keyword
+        arguments to override settings for `telegram.ext.updater.Updater`.
+
+        Args:
+            giphy_kwargs (KwargsLike): Configuration options for Giphy, merged with default Giphy settings.
+
+                These settings are merged with the default configuration obtained from
+                `vectorbtpro._settings.telegram` under the giphy key.
+            **kwargs: Additional keyword arguments for configuring the updater;
+                they override settings for the bot.
 
         See [Extensions – Your first Bot](https://github.com/python-telegram-bot/python-telegram-bot/wiki/Extensions-%E2%80%93-Your-first-Bot).
-
-        `**kwargs` are passed to `telegram.ext.updater.Updater` and override
-        settings under `bot` in `vectorbtpro._settings.telegram`.
 
         Usage:
             Let's extend `TelegramBot` to track cryptocurrency prices:
@@ -172,7 +198,6 @@ if __version_info__ < (20, 0, 0, "alpha", 1):
 
             Configured.__init__(self, giphy_kwargs=giphy_kwargs, **kwargs)
 
-            # Resolve kwargs
             giphy_kwargs = merge_dicts(giphy_cfg, giphy_kwargs)
             self.giphy_kwargs = giphy_kwargs
             default_kwargs = dict()
@@ -198,14 +223,11 @@ if __version_info__ < (20, 0, 0, "alpha", 1):
                 if isinstance(defaults, dict):
                     defaults = Defaults(**defaults)
 
-            # Create the (persistent) Updater and pass it your bot's token.
             logger.info("Initializing bot")
             self._updater = Updater(persistence=persistence, defaults=defaults, **updater_kwargs)
 
-            # Get the dispatcher to register handlers
             self._dispatcher = self.updater.dispatcher
 
-            # Register handlers
             self.dispatcher.add_handler(self.log_handler)
             self.dispatcher.add_handler(CommandHandler("start", self.start_callback))
             self.dispatcher.add_handler(CommandHandler("help", self.help_callback))
@@ -215,7 +237,6 @@ if __version_info__ < (20, 0, 0, "alpha", 1):
             self.dispatcher.add_handler(MessageHandler(Filters.command, self.unknown_callback))
             self.dispatcher.add_error_handler(self_decorator(self, type(self).error_callback))
 
-            # Set up data
             if "chat_ids" not in self.dispatcher.bot_data:
                 self.dispatcher.bot_data["chat_ids"] = []
             else:
@@ -223,40 +244,50 @@ if __version_info__ < (20, 0, 0, "alpha", 1):
 
         @property
         def updater(self) -> Updater:
-            """Updater."""
+            """Telegram updater instance used to poll messages and handle updates."""
             return self._updater
 
         @property
         def dispatcher(self) -> Dispatcher:
-            """Dispatcher."""
+            """Telegram dispatcher instance for registering handlers."""
             return self._dispatcher
 
         @property
         def log_handler(self) -> LogHandler:
-            """Log handler."""
+            """Telegram log handler instance for logging incoming user updates."""
             return LogHandler(lambda update, context: None)
 
         @property
         def custom_handlers(self) -> tp.Iterable[Handler]:
-            """Custom handlers to add.
-            Override to add custom handlers. Order counts."""
+            """Custom command handlers.
+
+            Override this property to provide additional command handlers.
+            The order of handlers is significant.
+            """
             return ()
 
         @property
         def chat_ids(self) -> tp.List[int]:
-            """Chat ids that ever interacted with this bot.
-            A chat id is added upon receiving the "/start" command."""
+            """List of chat IDs that have interacted with the bot.
+
+            A chat ID is added when the `/start` command is received.
+            """
             return self.dispatcher.bot_data["chat_ids"]
 
         def start(self, in_background: bool = False, **kwargs) -> None:
-            """Start the bot.
-            `**kwargs` are passed to `telegram.ext.updater.Updater.start_polling`
-            and override settings under `bot` in `vectorbtpro._settings.telegram`."""
+            """Start the Telegram bot.
+
+            Additional keyword arguments are passed to `telegram.ext.updater.Updater.start_polling`
+            to override the default bot settings from `vectorbtpro._settings.telegram`.
+
+            Args:
+                in_background (bool): Run the bot in the background if True; otherwise, block the main thread.
+                **kwargs: Additional keyword arguments for `Updater.start_polling`.
+            """
             from vectorbtpro._settings import settings
 
             bot_cfg = settings["telegram"]["bot"]
 
-            # Resolve kwargs
             default_kwargs = dict()
             passed_kwargs = dict()
             for k in get_func_kwargs(self.updater.start_polling):
@@ -266,57 +297,86 @@ if __version_info__ < (20, 0, 0, "alpha", 1):
                     passed_kwargs[k] = kwargs.pop(k)
             polling_kwargs = merge_dicts(default_kwargs, passed_kwargs)
 
-            # Start the Bot
             logger.info("Running bot %s", str(self.updater.bot.get_me().username))
             self.updater.start_polling(**polling_kwargs)
             self.started_callback()
 
             if not in_background:
-                # Run the bot until you press Ctrl-C or the process receives SIGINT,
-                # SIGTERM or SIGABRT. This should be used most of the time, since
-                # start_polling() is non-blocking and will stop the bot gracefully.
                 self.updater.idle()
 
         def started_callback(self) -> None:
-            """Callback once the bot has been started.
-            Override to execute custom commands upon starting the bot."""
+            """Callback executed after the bot has started.
+
+            Override this method to execute custom commands once the bot is online.
+            """
             self.send_message_to_all("I'm back online!")
 
         def send(self, kind: str, chat_id: int, *args, log_msg: tp.Optional[str] = None, **kwargs) -> None:
-            """Send message of any kind to `chat_id`."""
+            """Send a message of a specified kind to a target chat ID.
+
+            Args:
+                kind (str): The type of message to send.
+                chat_id (int): The target chat ID.
+                *args: Additional arguments for the bot's send method.
+                log_msg (Optional[str]): Message description for logging; if not provided,
+                    defaults to the value of `kind`.
+                **kwargs: Additional keyword arguments for sending the message.
+            """
             try:
                 getattr(self.updater.bot, "send_" + kind)(chat_id, *args, **kwargs)
                 if log_msg is None:
                     log_msg = kind
                 logger.info(f"{chat_id} - Bot: %s", log_msg)
             except ChatMigrated as e:
-                # transfer data, if old data is still present
                 new_id = e.new_chat_id
                 if chat_id in self.chat_ids:
                     self.chat_ids.remove(chat_id)
                 self.chat_ids.append(new_id)
-                # Resend to new chat id
                 self.send(kind, new_id, *args, log_msg=log_msg, **kwargs)
             except Unauthorized as e:
                 logger.info(f"{chat_id} - Unauthorized to send the %s", kind)
 
         def send_to_all(self, kind: str, *args, **kwargs) -> None:
-            """Send message of any kind to all in `TelegramBot.chat_ids`."""
+            """Send a message of a specified kind to all chat IDs in `TelegramBot.chat_ids`.
+
+            Args:
+                kind (str): The type of message to send.
+                *args: Additional positional arguments for sending the message.
+                **kwargs: Additional keyword arguments for sending the message.
+            """
             for chat_id in self.chat_ids:
                 self.send(kind, chat_id, *args, **kwargs)
 
         def send_message(self, chat_id: int, text: str, *args, **kwargs) -> None:
-            """Send text message to `chat_id`."""
+            """Send a text message to the specified chat.
+
+            Args:
+                chat_id (int): The unique identifier of the target chat.
+                text (str): The content of the message to send.
+                *args: Additional arguments passed to `TelegramBot.send`.
+                **kwargs: Additional keyword arguments passed to `TelegramBot.send`."""
             log_msg = '"%s"' % text
             self.send("message", chat_id, text, *args, log_msg=log_msg, **kwargs)
 
         def send_message_to_all(self, text: str, *args, **kwargs) -> None:
-            """Send text message to all in `TelegramBot.chat_ids`."""
+            """Send a text message to all chats in `TelegramBot.chat_ids`.
+
+            Args:
+                text (str): The content of the message to send.
+                *args: Additional arguments passed to `TelegramBot.send_to_all`.
+                **kwargs: Additional keyword arguments passed to `TelegramBot.send_to_all`."""
             log_msg = '"%s"' % text
             self.send_to_all("message", text, *args, log_msg=log_msg, **kwargs)
 
         def send_giphy(self, chat_id: int, text: str, *args, giphy_kwargs: tp.KwargsLike = None, **kwargs) -> None:
-            """Send GIPHY from text to `chat_id`."""
+            """Send a GIPHY animation generated from the provided text to the specified chat.
+
+            Args:
+                chat_id (int): The unique identifier of the target chat.
+                text (str): The text from which to generate a GIPHY URL.
+                *args: Additional arguments passed to `TelegramBot.send`.
+                giphy_kwargs (KwargsLike): Additional keyword arguments for generating the GIPHY URL.
+                **kwargs: Additional keyword arguments passed to `TelegramBot.send`."""
             if giphy_kwargs is None:
                 giphy_kwargs = self.giphy_kwargs
             gif_url = text_to_giphy_url(text, **giphy_kwargs)
@@ -324,7 +384,13 @@ if __version_info__ < (20, 0, 0, "alpha", 1):
             self.send("animation", chat_id, gif_url, *args, log_msg=log_msg, **kwargs)
 
         def send_giphy_to_all(self, text: str, *args, giphy_kwargs: tp.KwargsLike = None, **kwargs) -> None:
-            """Send GIPHY from text to all in `TelegramBot.chat_ids`."""
+            """Send a GIPHY animation generated from the provided text to all chats in `TelegramBot.chat_ids`.
+
+            Args:
+                text (str): The text from which to generate a GIPHY URL.
+                *args: Additional arguments passed to `TelegramBot.send_to_all`.
+                giphy_kwargs (KwargsLike): Additional keyword arguments for generating the GIPHY URL.
+                **kwargs: Additional keyword arguments passed to `TelegramBot.send_to_all`."""
             if giphy_kwargs is None:
                 giphy_kwargs = self.giphy_kwargs
             gif_url = text_to_giphy_url(text, **giphy_kwargs)
@@ -333,12 +399,17 @@ if __version_info__ < (20, 0, 0, "alpha", 1):
 
         @property
         def start_message(self) -> str:
-            """Message to be sent upon "/start" command.
-            Override to define your own message."""
+            """Message to be sent in response to the `/start` command.
+
+            Override this property to define a custom start message."""
             return "Hello!"
 
         def start_callback(self, update: object, context: CallbackContext) -> None:
-            """Start command callback."""
+            """Handle the `/start` command callback.
+
+            Args:
+                update (object): The incoming update.
+                context (CallbackContext): The callback context containing additional data."""
             if isinstance(update, Update) and update.effective_chat:
                 chat_id = update.effective_chat.id
                 if chat_id not in self.chat_ids:
@@ -347,18 +418,27 @@ if __version_info__ < (20, 0, 0, "alpha", 1):
 
         @property
         def help_message(self) -> str:
-            """Message to be sent upon "/help" command.
-            Override to define your own message."""
+            """Message to be sent in response to the `/help` command.
+
+            Override this property to define a custom help message."""
             return "Can't help you here, buddy."
 
         def help_callback(self, update: object, context: CallbackContext) -> None:
-            """Help command callback."""
+            """Handle the `/help` command callback.
+
+            Args:
+                update (object): The incoming update.
+                context (CallbackContext): The callback context containing additional data."""
             if isinstance(update, Update) and update.effective_chat:
                 chat_id = update.effective_chat.id
                 self.send_message(chat_id, self.help_message)
 
         def chat_migration_callback(self, update: object, context: CallbackContext) -> None:
-            """Chat migration callback."""
+            """Handle chat migration events by updating the internal chat IDs.
+
+            Args:
+                update (object): The incoming update.
+                context (CallbackContext): The callback context containing additional data."""
             if isinstance(update, Update) and update.message:
                 old_id = update.message.migrate_from_chat_id or update.message.chat_id
                 new_id = update.message.migrate_to_chat_id or update.message.chat_id
@@ -368,27 +448,38 @@ if __version_info__ < (20, 0, 0, "alpha", 1):
                 logger.info(f"{old_id} - Chat migrated to {new_id}")
 
         def unknown_callback(self, update: object, context: CallbackContext) -> None:
-            """Unknown command callback."""
+            """Handle unknown commands by notifying the user.
+
+            Args:
+                update (object): The incoming update.
+                context (CallbackContext): The callback context containing additional data."""
             if isinstance(update, Update) and update.effective_chat:
                 chat_id = update.effective_chat.id
                 logger.info(f'{chat_id} - Unknown command "{update.message}"')
                 self.send_message(chat_id, "Sorry, I didn't understand that command.")
 
         def error_callback(self, update: object, context: CallbackContext, *args) -> None:
-            """Error callback."""
+            """Handle errors that occur during update processing.
+
+            Args:
+                update (object): The update that triggered the error.
+                context (CallbackContext): The callback context containing error information.
+                *args: Additional arguments passed to the error handler."""
             logger.error('Exception while handling an update "%s": ', update, exc_info=context.error)
             if isinstance(update, Update) and update.effective_chat:
                 chat_id = update.effective_chat.id
                 self.send_message(chat_id, "Sorry, an error happened.")
 
         def stop(self) -> None:
-            """Stop the bot."""
+            """Stop the bot.
+
+            Logs an informational message and stops the updater."""
             logger.info("Stopping bot")
             self.updater.stop()
 
         @property
         def running(self) -> bool:
-            """Whether the bot is running."""
+            """Indicate whether the bot is currently running."""
             return self.updater.running
 
 else:
@@ -413,7 +504,7 @@ else:
     from telegram.request import BaseRequest
 
     class LogHandler(BaseHandler, Base):
-        """Handler to log user updates."""
+        """Log user updates by recording message content and type."""
 
         def check_update(self, update: object) -> tp.Optional[tp.Union[bool, object]]:
             if isinstance(update, Update) and update.effective_message:
@@ -430,9 +521,13 @@ else:
     class TelegramBot(Configured):
         """Telegram bot.
 
-        See [Extensions – Your first Bot](https://github.com/python-telegram-bot/python-telegram-bot/wiki/Extensions-%E2%80%93-Your-first-Bot).
+        Implements a Telegram bot that handles commands, updates, and GIPHY configurations.
 
-        Keyword arguments are passed to `TelegramBot.build_application`.
+        Args:
+            giphy_kwargs (KwargsLike): Additional keyword arguments for GIPHY configuration.
+            **kwargs: Additional configuration options passed to `TelegramBot.build_application`.
+
+        See [Extensions – Your first Bot](https://github.com/python-telegram-bot/python-telegram-bot/wiki/Extensions-%E2%80%93-Your-first-Bot).
 
         !!! note
             If you get "RuntimeError: Cannot close a running event loop" when running in Jupyter,
@@ -503,9 +598,7 @@ else:
             if __name__ == "__main__":
                 bot = MyTelegramBot(token='YOUR_TOKEN')
                 bot.start()
-            ```
-        """
-
+            ```"""
         _expected_keys_mode: tp.ExpectedKeysMode = "disable"
 
         def __init__(self, giphy_kwargs: tp.KwargsLike = None, **kwargs) -> None:
@@ -522,12 +615,17 @@ else:
             self._loop = None
 
         def build_application(self, **kwargs) -> Application:
-            """Build application.
+            """Build the application.
 
-            `**kwargs` override settings under `bot` in `vectorbtpro._settings.telegram`
-            and those keys that can be found as attributes of `telegram.ext._applicationbuilder.ApplicationBuilder`
-            will be called on the builder. If any value is a dict, it will be unpacked to be able to
-            provide multiple keyword arguments to any method (apart from `defaults`, which is just one argument)."""
+            Override bot settings from `vectorbtpro._settings.telegram` using additional
+            keyword arguments. For each key in `**kwargs` that matches an attribute of
+            `telegram.ext._applicationbuilder.ApplicationBuilder`, call the corresponding
+            builder method. If a value is a dict, it is unpacked to provide multiple keyword
+            arguments (except for `defaults`, which is passed as a single argument).
+
+            Returns:
+                Application: The constructed application instance.
+            """
             from vectorbtpro._settings import settings
 
             bot_cfg = dict(settings["telegram"]["bot"])
@@ -564,11 +662,20 @@ else:
         def custom_handlers(self) -> tp.Iterable[BaseHandler]:
             """Custom handlers to add.
 
-            Override to add custom handlers. Order counts."""
+            Override this property to provide additional custom handlers.
+            The order of the handlers determines the registration sequence.
+
+            Returns:
+                Iterable[BaseHandler]: An iterable of custom handlers.
+            """
             return ()
 
         def register_handlers(self) -> None:
-            """Register handlers."""
+            """Register bot handlers.
+
+            Register the log handler, start command, help command, custom handlers, migration handler,
+            unknown command handler, and error handler with the application.
+            """
             self.application.add_handler(self.log_handler)
             self.application.add_handler(CommandHandler("start", self.start_callback))
             self.application.add_handler(CommandHandler("help", self.help_callback))
@@ -580,67 +687,125 @@ else:
 
         @property
         def giphy_kwargs(self) -> tp.Kwargs:
-            """Keyword arguments for GIPHY."""
+            """Keyword arguments for GIPHY.
+
+            Returns:
+                Kwargs: A dictionary of keyword arguments for configuring GIPHY.
+            """
             return self._giphy_kwargs
 
         @property
         def application(self) -> Application:
-            """Application."""
+            """Application instance.
+
+            Returns:
+                Application: The current application instance.
+            """
             return self._application
 
         @property
         def chat_ids(self) -> tp.Set[int]:
-            """Chat ids that ever interacted with this bot.
+            """Chat IDs that have interacted with the bot.
 
-            A chat id is added upon receiving the "/start" command."""
+            Chat IDs are added upon receiving the `/start` command.
+
+            Returns:
+                Set[int]: A set of chat IDs.
+            """
             return self.application.bot_data.setdefault("chat_ids", set())
 
         async def log_callback(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-            """Callback for logging."""
+            """Log callback.
+
+            Args:
+                update (Update): Update from Telegram.
+                context (ContextTypes.DEFAULT_TYPE): Context associated with the update.
+            """
             pass
 
         @property
         def log_handler(self) -> LogHandler:
-            """Log handler."""
+            """Log handler instance.
+
+            Returns:
+                LogHandler: An instance of the log handler.
+            """
             return LogHandler(self.log_callback)
 
         async def send(self, kind: str, chat_id: int, *args, log_msg: tp.Optional[str] = None, **kwargs) -> None:
-            """Send message of any kind to `chat_id`."""
+            """Send a message of a specified kind to a chat.
+
+            Args:
+                kind (str): The type of message to send (e.g., "message", "animation").
+                chat_id (int): The target chat ID.
+                *args: Additional arguments passed for sending the message.
+                log_msg (Optional[str]): Log message for tracking the message.
+
+                    Defaults to the message kind if not provided.
+                **kwargs: Additional keyword arguments passed for sending the message.
+            """
             try:
                 await getattr(self.application.bot, "send_" + kind)(chat_id, *args, **kwargs)
                 if log_msg is None:
                     log_msg = kind
                 logger.info(f"{chat_id} - Bot: %s", log_msg)
             except ChatMigrated as e:
-                # transfer data, if old data is still present
                 new_id = e.new_chat_id
                 if chat_id in self.chat_ids:
                     self.chat_ids.remove(chat_id)
                 self.chat_ids.add(new_id)
-                # Resend to new chat id
                 await self.send(kind, new_id, *args, log_msg=log_msg, **kwargs)
             except Forbidden as e:
                 logger.info(f"{chat_id} - Forbidden to send the %s", kind)
 
         async def send_to_all(self, kind: str, *args, **kwargs) -> None:
-            """Send message of any kind to all in `TelegramBot.chat_ids`."""
+            """Send a message of a specified kind to all chats.
+
+            Args:
+                kind (str): The type of message to send (e.g., "message", "animation").
+                *args: Additional arguments for sending the message.
+                **kwargs: Additional keyword arguments for sending the message.
+            """
             for chat_id in self.chat_ids:
                 await self.send(kind, chat_id, *args, **kwargs)
 
         async def send_message(self, chat_id: int, text: str, *args, **kwargs) -> None:
-            """Send text message to `chat_id`."""
+            """Send a text message to a chat.
+
+            Args:
+                chat_id (int): The target chat ID.
+                text (str): The text message to send.
+                *args: Additional arguments for sending the message.
+                **kwargs: Additional keyword arguments for sending the message.
+            """
             log_msg = '"%s"' % text
             await self.send("message", chat_id, text, *args, log_msg=log_msg, **kwargs)
 
         async def send_message_to_all(self, text: str, *args, **kwargs) -> None:
-            """Send text message to all in `TelegramBot.chat_ids`."""
+            """Send a text message to all chats.
+
+            Args:
+                text (str): The text message to send.
+                *args: Additional arguments for sending the message.
+                **kwargs: Additional keyword arguments for sending the message.
+            """
             log_msg = '"%s"' % text
             await self.send_to_all("message", text, *args, log_msg=log_msg, **kwargs)
 
         async def send_giphy(
             self, chat_id: int, text: str, *args, giphy_kwargs: tp.KwargsLike = None, **kwargs
         ) -> None:
-            """Send GIPHY from text to `chat_id`."""
+            """Send a GIPHY animation generated from text to a chat.
+
+            Args:
+                chat_id (int): The target chat ID.
+                text (str): Text to convert into a GIPHY URL.
+                *args: Additional arguments for sending the message.
+                giphy_kwargs (KwargsLike): Keyword arguments for configuring the GIPHY request.
+
+                    If not provided, defaults to the `giphy_kwargs` property.
+                **kwargs: Additional keyword arguments for sending the message.
+            """
             if giphy_kwargs is None:
                 giphy_kwargs = self.giphy_kwargs
             gif_url = text_to_giphy_url(text, **giphy_kwargs)
@@ -648,7 +813,16 @@ else:
             await self.send("animation", chat_id, gif_url, *args, log_msg=log_msg, **kwargs)
 
         async def send_giphy_to_all(self, text: str, *args, giphy_kwargs: tp.KwargsLike = None, **kwargs) -> None:
-            """Send GIPHY from text to all in `TelegramBot.chat_ids`."""
+            """Send a GIPHY animation generated from text to all chats.
+
+            Args:
+                text (str): Text to convert into a GIPHY URL.
+                *args: Additional arguments for sending the message.
+                giphy_kwargs (KwargsLike): Keyword arguments for configuring the GIPHY request.
+
+                    If not provided, defaults to the `giphy_kwargs` property.
+                **kwargs: Additional keyword arguments for sending the message.
+            """
             if giphy_kwargs is None:
                 giphy_kwargs = self.giphy_kwargs
             gif_url = text_to_giphy_url(text, **giphy_kwargs)
@@ -656,22 +830,39 @@ else:
             await self.send_to_all("animation", gif_url, *args, log_msg=log_msg, **kwargs)
 
         async def post_start_callback(self) -> None:
-            """Callback after the application is started."""
+            """Execute post-start actions.
+
+            Send a message to all chats indicating that the bot is active.
+            """
             await self.send_message_to_all("I'm back to life!")
 
         async def pre_stop_callback(self) -> None:
-            """Callback before the application is shutdown."""
+            """Execute pre-stop actions.
+
+            Send a message to all chats indicating that the bot is shutting down.
+            """
             await self.send_message_to_all("Bye!")
 
         @property
         def start_message(self) -> str:
-            """Message to be sent upon "/start" command.
+            """Start command message.
 
-            Override to define your own message."""
+            Message sent to a chat when the `/start` command is received.
+
+            Returns:
+                str: The start message.
+            """
             return "Hello!"
 
         async def start_callback(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-            """Start command callback."""
+            """Handle the `/start` command.
+
+            Adds the chat ID to the chat IDs set and sends the start message.
+
+            Args:
+                update (Update): The update triggered by the `/start` command.
+                context (ContextTypes.DEFAULT_TYPE): The context associated with the update.
+            """
             if isinstance(update, Update) and update.effective_chat:
                 chat_id = update.effective_chat.id
                 if chat_id not in self.chat_ids:
@@ -680,19 +871,37 @@ else:
 
         @property
         def help_message(self) -> str:
-            """Message to be sent upon "/help" command.
+            """Help command message.
 
-            Override to define your own message."""
+            Message sent to a chat when the `/help` command is received.
+
+            Returns:
+                str: The help message.
+            """
             return "Can't help you here, buddy."
 
         async def help_callback(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-            """Help command callback."""
+            """Handle the `/help` command.
+
+            Sends the help message to the chat.
+
+            Args:
+                update (Update): The update triggered by the `/help` command.
+                context (ContextTypes.DEFAULT_TYPE): The context associated with the update.
+            """
             if isinstance(update, Update) and update.effective_chat:
                 chat_id = update.effective_chat.id
                 await self.send_message(chat_id, self.help_message)
 
         async def chat_migration_callback(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-            """Chat migration callback."""
+            """Handle chat migration updates.
+
+            Updates the chat IDs set when a chat migrates and logs the migration event.
+
+            Args:
+                update (Update): The update containing migration information.
+                context (ContextTypes.DEFAULT_TYPE): The context associated with the update.
+            """
             if isinstance(update, Update) and update.message:
                 old_id = update.message.migrate_from_chat_id or update.message.chat_id
                 new_id = update.message.migrate_to_chat_id or update.message.chat_id
@@ -702,14 +911,30 @@ else:
                 logger.info(f"{old_id} - Chat migrated to {new_id}")
 
         async def unknown_callback(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-            """Unknown command callback."""
+            """Handle unknown commands.
+
+            Logs an unknown command event and informs the user that the command was not understood.
+
+            Args:
+                update (Update): The update containing the unknown command.
+                context (ContextTypes.DEFAULT_TYPE): The context associated with the update.
+            """
             if isinstance(update, Update) and update.effective_chat:
                 chat_id = update.effective_chat.id
                 logger.info(f'{chat_id} - Unknown command "{update.message}"')
                 await self.send_message(chat_id, "Sorry, I didn't understand that command.")
 
         async def error_callback(self, update: Update, context: ContextTypes.DEFAULT_TYPE, *args, **kwargs) -> None:
-            """Error callback."""
+            """Handle errors during update processing.
+
+            Logs the error and sends an error message to the user.
+
+            Args:
+                update (Update): The update that caused the error.
+                context (ContextTypes.DEFAULT_TYPE): The context associated with the error.
+                *args: Additional positional arguments.
+                **kwargs: Additional keyword arguments.
+            """
             logger.error('Exception while handling an update "%s": ', update, exc_info=context.error)
             if isinstance(update, Update) and update.effective_chat:
                 chat_id = update.effective_chat.id
@@ -717,7 +942,11 @@ else:
 
         @property
         def loop(self) -> tp.Optional[asyncio.BaseEventLoop]:
-            """Event loop."""
+            """Current event loop.
+
+            Returns:
+                Optional[BaseEventLoop]: The event loop instance, if available.
+            """
             return self._loop
 
         def start(
@@ -728,8 +957,14 @@ else:
         ) -> None:
             """Start the bot.
 
-            `**kwargs` override settings under `bot` in `vectorbtpro._settings.telegram` and only those
-            keys that can be found in `telegram.ext._updater.Updater.start_polling` are passed."""
+            Args:
+                close_loop (bool): Whether to close the event loop after stopping the bot.
+                stop_signals (Sequence[int]): Signals used to stop the event loop.
+                **kwargs: Additional keyword arguments that override the `bot` settings from
+                    `vectorbtpro._settings.telegram`.
+
+                    Only keys accepted by `telegram.ext._updater.Updater.start_polling` are passed.
+            """
             from vectorbtpro._settings import settings
 
             bot_cfg = settings["telegram"]["bot"]
@@ -740,7 +975,6 @@ else:
             def error_callback(exc: TelegramError) -> None:
                 self.application.create_task(self.application.process_error(error=exc, update=None))
 
-            # Prepare arguments
             default_kwargs = dict()
             passed_kwargs = dict()
             for k in get_func_kwargs(self.application.updater.start_polling):
@@ -750,11 +984,7 @@ else:
                     passed_kwargs[k] = kwargs.pop(k)
             polling_kwargs = merge_dicts(default_kwargs, passed_kwargs)
 
-            # Run the Bot
             updater_coroutine = self.application.updater.start_polling(**polling_kwargs)
-            # Calling get_event_loop() should still be okay even in py3.10+ as long as there is a
-            # running event loop or we are in the main thread, which are the intended use cases.
-            # See the docs of get_event_loop() and get_running_loop() for more info
             self._loop = asyncio.get_event_loop()
 
             if stop_signals is BaseRequest.DEFAULT_NONE and platform.system() != "Windows":
@@ -785,15 +1015,17 @@ else:
             except (KeyboardInterrupt, SystemExit):
                 pass
             except Exception as exc:
-                # In case the coroutine wasn't awaited, we don't need to bother the user with a warning
                 updater_coroutine.close()
                 raise exc
             finally:
-                # We arrive here either by catching the exceptions above or if the loop gets stopped
                 self.stop(close_loop=close_loop)
 
         def stop(self, close_loop: bool = True) -> None:
-            """Stop the bot."""
+            """Stop the bot.
+
+            Args:
+                close_loop (bool): Whether to close the event loop if it is not running after stopping.
+            """
             if self.loop is None:
                 raise RuntimeError("There is no event loop running this Application")
             try:
@@ -811,5 +1043,5 @@ else:
 
         @property
         def running(self) -> bool:
-            """Whether the bot is running."""
+            """Bot running state."""
             return self.application.running
