@@ -248,7 +248,6 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         """Combine multiple `KnowledgeAsset` instances into one.
 
         Args:
-            cls_or_self (KnowledgeAsset): A `KnowledgeAsset` instance or class.
             *objs (KnowledgeAsset): Additional `KnowledgeAsset` instances to combine.
             **kwargs: Additional options for merging configuration.
 
@@ -311,7 +310,6 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         merge the data items within the instance.
 
         Args:
-            cls_or_self (KnowledgeAsset): A `KnowledgeAsset` instance or class.
             *objs (KnowledgeAsset): Additional `KnowledgeAsset` instances to merge.
             flatten_kwargs (KwargsLike): Keyword arguments for flattening data items.
             **kwargs: Additional options for merging configuration.

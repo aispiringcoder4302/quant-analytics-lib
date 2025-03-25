@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Utilities for progress bars."""
+"""Module providing utilities for progress bars."""
 
 from functools import wraps
 from numbers import Number
@@ -33,16 +33,31 @@ __all__ = [
 
 
 class ProgressBar(Base):
-    """Context manager to manage a progress bar.
+    """Context manager class for managing a progress bar.
 
-    Supported types:
+    Args:
+        iterable (Optional[Iterable]): Iterable for tracking progress.
+        bar_id (Optional[Hashable]): Identifier for the progress bar.
+        bar_type (Optional[str]): Type of progress bar to use.
 
-    * 'tqdm_auto'
-    * 'tqdm_notebook'
-    * 'tqdm_gui'
-    * 'tqdm'
+            * `tqdm_auto`
+            * `tqdm_notebook`
+            * `tqdm_gui`
+            * `tqdm`
+        force_open_bar (Optional[bool]): Flag to force the progress bar to open.
+        reuse (Optional[bool]): Flag indicating whether the progress bar can be reused.
+        disable (Optional[bool]): Flag to disable the progress bar.
+        show_progress (Optional[bool]): Flag indicating if the progress bar is displayed.
+        show_progress_desc (Optional[bool]): Flag indicating if the description is shown.
+        prefix (Union[None, str, dict]): Prefix for the progress bar description.
+        postfix (Union[None, str, dict]): Postfix for the progress bar description.
+        desc_kwargs (KwargsLike): Keyword arguments for customizing the description.
+        registry (Optional[PBarRegistry]): Registry for managing progress bar instances.
+        silence_warnings (Optional[bool]): Flag to suppress warnings.
+        **kwargs: Additional keyword arguments for progress bar initialization.
 
-    For defaults, see `vectorbtpro._settings.pbar`."""
+    For default configurations, see `vectorbtpro._settings.pbar`.
+    """
 
     def __init__(
         self,
@@ -131,98 +146,105 @@ class ProgressBar(Base):
 
     @property
     def bar_id(self) -> tp.Optional[tp.Hashable]:
-        """Bar id."""
+        """Identifier of the progress bar."""
         return self._bar_id
 
     @property
     def bar_type(self) -> tp.Type[tqdm]:
-        """Bar type."""
+        """Type of the progress bar."""
         return self._bar_type
 
     @property
     def force_open_bar(self) -> bool:
-        """Whether to force-open a bar even if progress is not shown."""
+        """Indicates whether the progress bar is forced open even if progress is not shown."""
         return self._force_open_bar
 
     @property
     def reuse(self) -> bool:
-        """Whether the bar can be reused."""
+        """Indicates whether the progress bar can be reused."""
         return self._reuse
 
     @property
     def show_progress(self) -> bool:
-        """Whether to show the bar."""
+        """Indicates whether the progress bar is shown."""
         return self._show_progress
 
     @property
     def iterable(self) -> tp.Optional[tp.Iterable]:
-        """Iterable."""
+        """Iterable used to track progress."""
         return self._iterable
 
     @property
     def kwargs(self) -> tp.Kwargs:
-        """Keyword arguments passed to initialize the bar."""
+        """Keyword arguments for progress bar initialization."""
         return self._kwargs
 
     @property
     def show_progress_desc(self) -> bool:
-        """Whether show the bar description."""
+        """Indicates whether the progress bar description is shown."""
         return self._show_progress_desc
 
     @property
     def desc_kwargs(self) -> tp.Kwargs:
-        """Keyword arguments passed to `ProgressBar.set_description`."""
+        """Keyword arguments for setting the progress bar's description."""
         return self._desc_kwargs
 
     @property
     def registry(self) -> tp.Optional[PBarRegistry]:
-        """Registry of type `vectorbtpro.registries.pbar_registry.PBarRegistry`.
+        """Progress bar registry managing progress bar instances.
 
-        If None, registry is disabled."""
+        If None, the registry is disabled.
+        """
         return self._registry
 
     @property
     def silence_warnings(self) -> bool:
-        """Whether to silence warnings."""
+        """Indicates whether warnings are silenced."""
         return self._silence_warnings
 
     @property
     def bar(self) -> tp.Optional[tqdm]:
-        """Bar."""
+        """Current progress bar instance."""
         return self._bar
 
     @property
     def open_time(self) -> tp.Optional[int]:
-        """Time the bar was opened."""
+        """Timestamp indicating when the progress bar was opened."""
         return self._open_time
 
     @property
     def update_time(self) -> tp.Optional[int]:
-        """Time the bar was updated."""
+        """Timestamp indicating when the progress bar was last updated."""
         return self._update_time
 
     @property
     def refresh_time(self) -> tp.Optional[int]:
-        """Time the bar was refreshed."""
+        """Timestamp indicating when the progress bar was last refreshed."""
         return self._refresh_time
 
     @property
     def close_time(self) -> tp.Optional[int]:
-        """Time the bar was closed."""
+        """Timestamp indicating when the progress bar was closed."""
         return self._close_time
 
     def set_bar(self, bar: tp.Optional[tqdm] = None) -> None:
-        """Set the bar."""
+        """Initialize the progress bar instance.
+
+        Args:
+            bar (Optional[tqdm]): Alternative progress bar instance to set.
+
+                If not provided, a new progress bar is created.
+        """
         if bar is None:
             bar = self.bar_type(self.iterable, disable=not self.show_progress, **self.kwargs)
         self._bar = bar
 
     def remove_bar(self) -> None:
-        """Remove the bar."""
+        """Remove the current progress bar instance."""
         self._bar = None
 
     def reset(self) -> None:
-        """Reset the bar."""
+        """Reset the progress bar instance by updating its configuration and refreshing parent progress bars."""
         for pbar in self.registry.get_parent_instances(self):
             if not pbar.disabled and not pbar.displayed:
                 pbar.refresh()  # refresh parents first
@@ -231,7 +253,11 @@ class ProgressBar(Base):
         self.bar.reset(total=self.kwargs.get("total", None))  # tqdm-forced refresh
 
     def open(self, reuse: tp.Optional[bool] = None) -> None:
-        """Open the bar."""
+        """Open the progress bar instance.
+
+        Args:
+            reuse (Optional[bool]): Flag to determine whether to reuse an existing progress bar if conflicts arise.
+        """
         if self.bar is None:
             self._open_time = utc_time()
             if self.registry is None:
@@ -264,7 +290,12 @@ class ProgressBar(Base):
                 self.registry.register_instance(self)
 
     def close(self, reuse: tp.Optional[bool] = None, close_children: bool = True) -> None:
-        """Close the bar."""
+        """Close the progress bar instance.
+
+        Args:
+            reuse (Optional[bool]): Flag specifying whether to reuse the progress bar if possible.
+            close_children (bool): Whether to close child progress bar instances.
+        """
         if self.bar is not None:
             self._close_time = utc_time()
             if self.registry is None:
@@ -289,17 +320,17 @@ class ProgressBar(Base):
 
     @property
     def active(self) -> bool:
-        """Whether the bar is active."""
+        """Indicates whether the progress bar is active (i.e., created but not closed)."""
         return self.bar is not None and self.close_time is None
 
     @property
     def pending(self) -> bool:
-        """Whether the bar is pending."""
+        """Return True if the bar is pending; otherwise, return False."""
         return self.bar is not None and self.close_time is not None
 
     @property
     def disabled(self) -> bool:
-        """Whether the bar is disabled."""
+        """Indicates whether the progress bar is disabled."""
         if not self.show_progress:
             return True
         if self.bar is None:
@@ -317,7 +348,7 @@ class ProgressBar(Base):
 
     @property
     def displayed(self) -> bool:
-        """Whether the bar is displayed."""
+        """Indicates whether the progress bar is displayed."""
         if self.disabled:
             return False
         if self.refresh_time is not None:
@@ -329,7 +360,7 @@ class ProgressBar(Base):
 
     @property
     def should_display(self) -> bool:
-        """Whether the bar should be displayed."""
+        """Indicates whether the progress bar should be displayed."""
         if self.disabled:
             return False
         if self.bar.delay == 0:
@@ -340,12 +371,12 @@ class ProgressBar(Base):
         return False
 
     def refresh(self) -> None:
-        """Refresh the bar."""
+        """Refresh the progress bar."""
         self.bar.refresh()
         self._refresh_time = utc_time()
 
     def before_update(self) -> None:
-        """Do something before an update."""
+        """Execute necessary actions before updating the progress bar."""
         if self.disabled:
             return
         if self.registry is not None:
@@ -357,7 +388,11 @@ class ProgressBar(Base):
                         pbar.refresh()
 
     def update(self, n: int = 1) -> None:
-        """Update with one or more iterations."""
+        """Update the progress bar by the specified number of iterations.
+        
+        Args:
+            n (int): The number of iterations to update.
+        """
         if self.disabled:
             return
         self.before_update()
@@ -366,26 +401,49 @@ class ProgressBar(Base):
         self.after_update()
 
     def update_to(self, n: int) -> None:
-        """Update to a specific number."""
+        """Update the progress bar to the given iteration count.
+        
+        Args:
+            n (int): The target iteration count.
+        """
         if self.disabled:
             return
         self.update(n=n - self.bar.n)
 
     def after_update(self) -> None:
-        """Do something after an update."""
+        """Execute necessary actions after updating the progress bar."""
         if self.disabled:
             return
 
     @classmethod
     def format_num(cls, n: float) -> str:
-        """Format a number."""
+        """Format the given number using up to three significant digits.
+        
+        Args:
+            n (float): The number to format.
+        
+        Returns:
+            str: A formatted string representation of the number.
+                If the formatted string is shorter than the original, it is returned;
+                otherwise, the original string is returned.
+        """
         f = "{0:.3g}".format(n).replace("+0", "+").replace("-0", "-")
         n = str(n)
         return f if len(f) < len(n) else n
 
     @classmethod
     def prepare_desc(cls, desc: tp.Union[None, str, dict]) -> str:
-        """Prepare description."""
+        """Prepare and format the description.
+        
+        If `desc` is a dictionary, its key-value pairs are concatenated into a comma-separated string.
+        If `desc` is None or missing, an empty string is returned.
+        
+        Args:
+            desc (Union[None, str, dict]): The description to prepare.
+        
+        Returns:
+            str: A formatted description string.
+        """
         if desc is None or desc is MISSING:
             return ""
         if isinstance(desc, dict):
@@ -414,9 +472,14 @@ class ProgressBar(Base):
         return str(desc)
 
     def set_prefix(self, desc: tp.Union[None, str, dict], refresh: tp.Optional[bool] = None) -> None:
-        """Set prefix.
-
-        Prepares it with `ProgressBar.prepare_desc`."""
+        """Set the progress bar's prefix.
+        
+        The description is prepared using `ProgressBar.prepare_desc` before being set.
+        
+        Args:
+            desc (Union[None, str, dict]): The description to set as prefix.
+            refresh (Optional[bool]): Determines whether to refresh the bar after setting the prefix.
+        """
         if self.disabled or not self.show_progress_desc:
             return
         desc = self.prepare_desc(desc)
@@ -427,7 +490,12 @@ class ProgressBar(Base):
             self.refresh()
 
     def set_prefix_str(self, desc: str, refresh: tp.Optional[bool] = None) -> None:
-        """Set prefix without preparation."""
+        """Set the progress bar's prefix without preparing the description.
+        
+        Args:
+            desc (str): The prefix string to set.
+            refresh (Optional[bool]): Determines whether to refresh the bar after setting the prefix.
+        """
         if self.disabled or not self.show_progress_desc:
             return
         self.bar.set_description_str(desc, refresh=False)
@@ -437,9 +505,14 @@ class ProgressBar(Base):
             self.refresh()
 
     def set_postfix(self, desc: tp.Union[None, str, dict], refresh: tp.Optional[bool] = None) -> None:
-        """Set postfix.
-
-        Prepares it with `ProgressBar.prepare_desc`."""
+        """Set the progress bar's postfix.
+        
+        The description is prepared using `ProgressBar.prepare_desc` before being set.
+        
+        Args:
+            desc (Union[None, str, dict]): The description to set as postfix.
+            refresh (Optional[bool]): Determines whether to refresh the bar after setting the postfix.
+        """
         if self.disabled or not self.show_progress_desc:
             return
         desc = self.prepare_desc(desc)
@@ -450,7 +523,12 @@ class ProgressBar(Base):
             self.refresh()
 
     def set_postfix_str(self, desc: str, refresh: tp.Optional[bool] = None) -> None:
-        """Set postfix without preparation."""
+        """Set the progress bar's postfix without preparing the description.
+        
+        Args:
+            desc (str): The postfix string to set.
+            refresh (Optional[bool]): Determines whether to refresh the bar after setting the postfix.
+        """
         if self.disabled or not self.show_progress_desc:
             return
         self.bar.set_postfix_str(desc, refresh=False)
@@ -465,12 +543,16 @@ class ProgressBar(Base):
         as_postfix: tp.Optional[bool] = None,
         refresh: tp.Optional[bool] = None,
     ) -> None:
-        """Set description.
-
-        Uses the method `ProgressBar.set_prefix` if `as_postfix=True` in `ProgressBar.desc_kwargs`.
-        Otherwise, uses the method `ProgressBar.set_postfix`.
-
-        Uses `ProgressBar.desc_kwargs` as keyword arguments."""
+        """Set the progress bar's description.
+        
+        Depending on the `as_postfix` setting in `ProgressBar.desc_kwargs`, this method calls either
+        `ProgressBar.set_postfix` (if True) or `ProgressBar.set_prefix` (if False).
+        
+        Args:
+            desc (Union[None, str, dict]): The description to set.
+            as_postfix (Optional[bool]): Determines whether to set the description as postfix.
+            refresh (Optional[bool]): Determines whether to refresh the bar after setting the description.
+        """
         if self.disabled or not self.show_progress_desc:
             return
         if as_postfix is None:
@@ -486,12 +568,16 @@ class ProgressBar(Base):
         as_postfix: tp.Optional[bool] = None,
         refresh: tp.Optional[bool] = None,
     ) -> None:
-        """Set description without preparation.
-
-        Uses the method `ProgressBar.set_prefix_str` if `as_postfix=True` in `ProgressBar.desc_kwargs`.
-        Otherwise, uses the method `ProgressBar.set_postfix_str`.
-
-        Uses `ProgressBar.desc_kwargs` as keyword arguments."""
+        """Set the progress bar's description without preparing the provided string.
+        
+        Depending on the `as_postfix` setting in `ProgressBar.desc_kwargs`, this method calls either
+        `ProgressBar.set_postfix_str` (if True) or `ProgressBar.set_prefix_str` (if False).
+        
+        Args:
+            desc (str): The description string to set.
+            as_postfix (Optional[bool]): Determines whether to set the description as postfix.
+            refresh (Optional[bool]): Determines whether to refresh the bar after setting the description.
+        """
         if self.disabled or not self.show_progress_desc:
             return
         if as_postfix is None:
@@ -502,7 +588,17 @@ class ProgressBar(Base):
             self.set_prefix_str(desc, refresh=refresh)
 
     def enter(self, **kwargs) -> tp.Self:
-        """Enter the bar."""
+        """Enter the progress bar context.
+        
+        If configured to show progress or forced to open, the progress bar is opened with
+        the provided keyword arguments.
+        
+        Args:
+            **kwargs: Additional keyword arguments passed to `ProgressBar.open`.
+        
+        Returns:
+            Self: The progress bar instance.
+        """
         if self.show_progress or self.force_open_bar:
             self.open(**kwargs)
         return self
@@ -511,7 +607,11 @@ class ProgressBar(Base):
         return self.enter()
 
     def exit(self, **kwargs) -> None:
-        """Exit the bar."""
+        """Exit the progress bar.
+        
+        Args:
+            **kwargs: Additional keyword arguments passed to `ProgressBar.close`.
+        """
         self.close(**kwargs)
 
     def __exit__(self, *args) -> None:
@@ -524,7 +624,7 @@ class ProgressBar(Base):
         return self.bar.__contains__(item)
 
     def iter(self) -> tp.Iterator:
-        """Get iterator over `ProgressBar.iterable`."""
+        """Return an iterator over the progress bar's iterable."""
         for obj in self.iterable:
             yield obj
 
@@ -549,7 +649,12 @@ class ProgressBar(Base):
 
 
 class ProgressHidden(Base):
-    """Context manager to hide progress."""
+    """Context manager to hide progress.
+
+    Args:
+        disable_registry (bool): Flag to disable registry operations.
+        disable_machinery (bool): Flag to disable progress machinery.
+    """
 
     def __init__(self, disable_registry: bool = True, disable_machinery: bool = True) -> None:
         self._disable_registry = disable_registry
@@ -558,17 +663,17 @@ class ProgressHidden(Base):
 
     @property
     def disable_registry(self) -> bool:
-        """Whether to disable registry."""
+        """Indicates whether registry operations are disabled."""
         return self._disable_registry
 
     @property
     def disable_machinery(self) -> bool:
-        """Whether to disable machinery."""
+        """Indicates whether progress machinery is disabled."""
         return self._disable_machinery
 
     @property
     def init_settings(self) -> tp.Kwargs:
-        """Initial settings."""
+        """Dictionary containing the initial progress settings captured upon entering the context."""
         return self._init_settings
 
     def __enter__(self) -> tp.Self:
@@ -599,7 +704,14 @@ class ProgressHidden(Base):
 
 
 def with_progress_hidden(*args) -> tp.Callable:
-    """Decorator to run a function with `ProgressHidden`."""
+    """Return a decorator that runs a function within a `ProgressHidden` context.
+
+    Args:
+        *args: Additional positional arguments passed to the decorator.
+
+    Returns:
+        Callable: A decorated function that executes with progress hidden.
+    """
 
     def decorator(func: tp.Callable) -> tp.Callable:
         @wraps(func)
@@ -617,7 +729,12 @@ def with_progress_hidden(*args) -> tp.Callable:
 
 
 class ProgressShown(Base):
-    """Context manager to show progress."""
+    """Context manager to show progress.
+
+    Args:
+        enable_registry (bool): Flag to enable registry operations.
+        enable_machinery (bool): Flag to enable progress machinery.
+    """
 
     def __init__(self, enable_registry: bool = True, enable_machinery: bool = True) -> None:
         self._enable_registry = enable_registry
@@ -626,17 +743,17 @@ class ProgressShown(Base):
 
     @property
     def enable_registry(self) -> bool:
-        """Whether to enable registry."""
+        """Indicates whether registry operations are enabled."""
         return self._enable_registry
 
     @property
     def enable_machinery(self) -> bool:
-        """Whether to enable machinery."""
+        """Indicates whether progress machinery is enabled."""
         return self._enable_machinery
 
     @property
     def init_settings(self) -> tp.Kwargs:
-        """Initial settings."""
+        """Dictionary containing the initial progress settings captured upon entering the context."""
         return self._init_settings
 
     def __enter__(self) -> tp.Self:
@@ -667,7 +784,14 @@ class ProgressShown(Base):
 
 
 def with_progress_shown(*args) -> tp.Callable:
-    """Decorator to run a function with `ProgressShown`."""
+    """Return a decorator that runs a function within a `ProgressShown` context.
+
+    Args:
+        *args: Additional positional arguments passed to the decorator.
+
+    Returns:
+        Callable: A decorated function that executes with progress shown.
+    """
 
     def decorator(func: tp.Callable) -> tp.Callable:
         @wraps(func)

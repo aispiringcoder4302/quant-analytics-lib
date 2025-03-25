@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Utilities for searching."""
+"""Module providing utilities for searching nested objects using path-like keys."""
 
 import re
 from collections import deque
@@ -29,10 +29,10 @@ __pdoc__ = {}
 
 @define
 class Not(DefineMixin):
-    """Class representing a negation when searching."""
+    """Class representing a negation operator used during search queries."""
 
     value: tp.Any = define.field()
-    """Value."""
+    """Negation value."""
 
 
 PATH_TOKEN_REGEX = re.compile(
@@ -44,9 +44,15 @@ PATH_TOKEN_REGEX = re.compile(
     """,
     re.VERBOSE,
 )
-"""Path token regex for `parse_path_str`.
+"""Regex pattern for matching tokens in a path string for `parse_path_str`.
 
-Matches `.key`, `['key']`, `["key"]`, `[0]`, `.0`, etc."""
+Matches tokens such as:
+
+* `.key`
+* `['key']`
+* `["key"]`
+* `[0]`
+* `.0`"""
 
 FIRST_TOKEN_REGEX = re.compile(
     r"""
@@ -57,13 +63,26 @@ FIRST_TOKEN_REGEX = re.compile(
     """,
     re.VERBOSE,
 )
-"""First token regex for `parse_path_str`.
+"""Regex pattern for matching the first token in a path string for `parse_path_str`.
 
-Matches the same as `PATH_TOKEN_REGEX` but at the start."""
+Matches tokens at the beginning of the string, such as:
+
+* an identifier (e.g., `key`)
+* a quoted key (e.g., `['key']` or `["key"]`)
+* a numeric token (e.g., `0` or `[0]`)"""
 
 
 def parse_path_str(path_str: str) -> tp.PathKey:
-    """Parse the path string into a list of tokens."""
+    """Parse a path string into a tuple of tokens.
+
+    Args:
+        path_str (str): A string representing a path.
+
+            May include dot notation or brackets.
+
+    Returns:
+        tuple: A tuple of tokens extracted from the path string.
+    """
     if path_str == "":
         return ()
     if "'" not in path_str and '"' not in path_str and "[" not in path_str:
@@ -98,7 +117,15 @@ def parse_path_str(path_str: str) -> tp.PathKey:
 
 
 def combine_path_str(path_str1: str, path_str2: str) -> str:
-    """Combine two path strings into one."""
+    """Combine two path strings into a single path.
+
+    Args:
+        path_str1 (str): The first path string.
+        path_str2 (str): The second path string.
+
+    Returns:
+        str: The combined path string.
+    """
     if path_str1 == "":
         return path_str2
     if path_str2 == "":
@@ -123,7 +150,14 @@ def combine_path_str(path_str1: str, path_str2: str) -> str:
 
 
 def minimize_pathlike_key(key: tp.PathLikeKey) -> tp.MaybePathKey:
-    """Minimize a path-like key."""
+    """Minimize a path-like key by reducing it when possible.
+
+    Args:
+        key (PathLikeKey): A key represented as a sequence of tokens or other formats.
+
+    Returns:
+        MaybePathKey: The minimized key, which may be a single token or None if empty.
+    """
     key = resolve_pathlike_key(key)
     if len(key) == 0:
         return None
@@ -133,7 +167,15 @@ def minimize_pathlike_key(key: tp.PathLikeKey) -> tp.MaybePathKey:
 
 
 def resolve_pathlike_key(key: tp.PathLikeKey, minimize: bool = False) -> tp.PathKey:
-    """Convert a path-like key into a path key."""
+    """Convert a path-like key into a tuple of tokens.
+
+    Args:
+        key (PathLikeKey): A key in either string, Path, or sequence format.
+        minimize (bool): Whether to minimize the key after conversion.
+
+    Returns:
+        tuple: A tuple of tokens representing the path.
+    """
     if key is None:
         key = ()
     if isinstance(key, Path):
@@ -148,7 +190,14 @@ def resolve_pathlike_key(key: tp.PathLikeKey, minimize: bool = False) -> tp.Path
 
 
 def stringify_pathlike_key(key: tp.PathLikeKey) -> str:
-    """Convert a path-like key into a string."""
+    """Convert a path-like key into its string representation.
+
+    Args:
+        key (PathLikeKey): The key to convert.
+
+    Returns:
+        str: A string representation of the path.
+    """
     tokens = resolve_pathlike_key(key)
     parts = []
     for token in tokens:
@@ -168,7 +217,17 @@ def combine_pathlike_keys(
     resolve: bool = False,
     minimize: bool = False,
 ) -> tp.PathLikeKey:
-    """Combine two path-like keys."""
+    """Combine two path-like keys into one.
+
+    Args:
+        key1 (PathLikeKey): The first key.
+        key2 (PathLikeKey): The second key.
+        resolve (bool): Whether to resolve the keys before combining.
+        minimize (bool): Whether to minimize the resulting key.
+
+    Returns:
+        PathLikeKey: The combined key.
+    """
     if not resolve:
         if isinstance(key1, Path) and isinstance(key2, Path):
             new_k = key1 / key2
@@ -189,10 +248,19 @@ def combine_pathlike_keys(
 
 
 def get_pathlike_key(obj: tp.Any, key: tp.PathLikeKey, keep_path: bool = False) -> tp.Any:
-    """Get the value under a path-like key in an object.
+    """Retrieve the value located at a specified path-like key from an object.
 
-    Paths can be tuples out of individual tokens, or a string with tokens.
-    Each token can be either a key in a mapping, a position in a sequence, or an attribute.
+    Paths can be provided as a tuple of tokens or as a string. Each token represents a key for a mapping,
+    an index for a sequence, or an attribute name.
+
+    Args:
+        obj (Any): The object to search.
+        key (PathLikeKey): The path-like key indicating the location of the desired value.
+        keep_path (bool): If True, returns a nested dictionary representing the path;
+            otherwise, returns the value.
+
+    Returns:
+        Any: The value found at the specified path, or the nested path dictionary if `keep_path` is True.
 
     Usage:
         ```pycon
@@ -240,7 +308,18 @@ def set_pathlike_key(
     make_copy: bool = True,
     prev_keys: tp.Optional[tp.PathLikeKeys] = None,
 ) -> tp.Any:
-    """Set the value under a path-like key in an object."""
+    """Set the value at the specified path-like key in the provided object.
+
+    Args:
+        obj (Any): The object to modify.
+        key (PathLikeKey): The path-like key defining where to set the value.
+        value (Any): The value to assign at the specified key.
+        make_copy (bool): Flag to indicate whether to modify a copy of the object.
+        prev_keys (Optional[PathLikeKeys]): Previously processed keys to optimize copying.
+
+    Returns:
+        Any: The modified object with the updated value.
+    """
     tokens = resolve_pathlike_key(key)
     parents = []
     new_obj = obj
@@ -309,7 +388,17 @@ def remove_pathlike_key(
     make_copy: bool = True,
     prev_keys: tp.Optional[tp.PathLikeKeys] = None,
 ) -> tp.Any:
-    """Remove the value under a path-like key in an object."""
+    """Remove the value at the specified path-like key in the provided object.
+
+    Args:
+        obj (Any): The object to modify.
+        key (PathLikeKey): The path-like key defining the location of the value to remove.
+        make_copy (bool): Flag to indicate whether to modify a copy of the object.
+        prev_keys (Optional[PathLikeKeys]): Previously processed keys to optimize copying.
+
+    Returns:
+        Any: The modified object with the specified value removed.
+    """
     tokens = resolve_pathlike_key(key)
     parents = []
     new_obj = obj
@@ -392,11 +481,24 @@ def contains_in_obj(
     max_depth: tp.Optional[int] = None,
     **kwargs,
 ) -> bool:
-    """Return whether there is any match in an object in an iterative manner.
+    """Return whether any element in the given object satisfies the match function using an iterative search.
 
-    Argument `traversal` can be "DFS" for depth-first search or "BFS" for breadth-first search.
+    Args:
+        obj (Any): The object to search.
+        match_func (Callable): A function to test each key and associated value.
+        traversal (Optional[str]): The search strategy.
 
-    See `find_in_obj` for arguments."""
+            * "DFS" for depth-first search.
+            * "BFS" for breadth-first search.
+        excl_types (Union[None, bool, MaybeSequence[type]]): Types to exclude from the search.
+        incl_types (Union[None, bool, MaybeSequence[type]]): Types to include in the search.
+        max_len (Optional[int]): Maximum number of elements allowed in a container.
+        max_depth (Optional[int]): Maximum search depth.
+        **kwargs: Additional keyword arguments passed to `match_func`.
+
+    !!! note
+        Refer to `find_in_obj` for additional argument details.
+    """
     from vectorbtpro._settings import settings
 
     search_cfg = settings["search"]
@@ -470,24 +572,39 @@ def find_in_obj(
     max_depth: tp.Optional[int] = None,
     **kwargs,
 ) -> tp.PathDict:
-    """Find matches in an object in an iterative manner.
+    """Return a dictionary mapping path-like keys to matching values in a nested object.
 
-    Traverses dicts, tuples, lists and (frozen-)sets. Does not look for matches in keys.
+    Traverse iteratively through `obj`, searching in dictionaries, tuples, lists, sets, and frozensets.
+    Apply `match_func` to each element (with its current path key) to determine if it is a match.
+    The search does not evaluate dictionary keys.
 
-    Argument `traversal` can be "DFS" for depth-first search or "BFS" for breadth-first search.
+    Args:
+        obj (Any): The object to search within.
+        match_func (Callable): A function that accepts a key and a value and returns True
+            if the element is a match.
+        traversal (Optional[str]): The traversal strategy.
 
-    If `excl_types` is not None, uses `vectorbtpro.utils.checks.is_instance_of` to check whether
-    the object is one of the types that are blacklisted. If so, the object is simply returned.
-    Same for `incl_types` for whitelisting, but it has a priority over `excl_types`.
+            * "DFS" for depth-first search.
+            * "BFS" for breadth-first search.
+        excl_types (Union[None, bool, MaybeSequence[type]]): Type(s) to exclude from traversal.
 
-    If `max_len` is not None, processes any object only if it's shorter than the specified length.
+            If an element matches, it is not processed further unless overridden by `incl_types`.
+            Uses `vectorbtpro.utils.checks.is_instance_of` to check.
+        incl_types (Union[None, bool, MaybeSequence[type]]): Type(s) to explicitly include in traversal,
+            taking precedence over `excl_types`.
 
-    If `max_depth` is not None, processes any object only up to a certain recursion level.
-    Level of 0 means dicts and other iterables are not processed, only matches are expected.
+            Uses `vectorbtpro.utils.checks.is_instance_of` to check.
+        stringify_keys (bool): If True, convert path keys to a string representation.
+        max_len (Optional[int]): Limit processing to objects with a length not exceeding this value.
+        max_depth (Optional[int]): Limit recursion to the specified depth (0 disables traversal of iterables).
+        **kwargs: Additional keyword arguments passed to `match_func`.
 
-    Returns a map of keys (multiple levels get represented by a tuple) to their respective values.
+    Returns:
+        PathDict: A mapping of path-like keys (using tuples for nested levels) to their corresponding values.
 
-    For defaults, see `vectorbtpro._settings.search`."""
+    Usage:
+        Refer to `vectorbtpro._settings.search` for default configuration.
+    """
     from vectorbtpro._settings import settings
 
     search_cfg = settings["search"]
@@ -559,9 +676,19 @@ def find_in_obj(
 
 
 def replace_in_obj(obj: tp.Any, path_dct: tp.PathDict, _key: tp.Optional[tp.Hashable] = None) -> tp.Any:
-    """Replace matches in an object in a recursive manner using a path dictionary.
+    """Replace matching elements in a nested object using a path dictionary.
 
-    Keys in the path dictionary can be path-like keys."""
+    Recursively traverse the provided object and substitute elements with values from `path_dct`
+    based on their path. Keys in `path_dct` may be path-like, representing nested structures.
+
+    Args:
+        obj (Any): The object in which to perform replacements.
+        path_dct (PathDict): A mapping of path-like keys to replacement values.
+        _key (Optional[Hashable]): The current path key used internally during recursion.
+
+    Returns:
+        Any: The updated object with replacements applied.
+    """
     if len(path_dct) == 0:
         return obj
     path_dct = {minimize_pathlike_key(k): v for k, v in path_dct.items()}
@@ -625,14 +752,14 @@ def find_and_replace_in_obj(
     _depth: int = 0,
     **kwargs,
 ) -> tp.Any:
-    """Find and replace matches in an object in a recursive manner.
+    """Recursively find and replace matching elements within an object.
 
-    See `find_in_obj` for arguments.
+    Refer to `find_in_obj` for details on arguments.
 
     !!! note
-        If the object is deep (such as a dict or a list), creates a copy of it if any match found inside,
-        thus losing the reference to the original. Make sure to do a deep or hybrid copy of the object
-        before proceeding for consistent behavior, or disable `make_copy` to override the original in place.
+        When processing nested structures (e.g., dictionaries or lists), finding a match triggers the creation
+        of a copy of the object, which loses the original reference. To ensure consistent behavior, either
+        operate on a deep or hybrid copy or disable `make_copy` to modify in place.
     """
     from vectorbtpro._settings import settings
 
@@ -760,11 +887,15 @@ def flatten_obj(
     max_len: tp.Optional[int] = None,
     max_depth: tp.Optional[int] = None,
 ) -> tp.PathDict:
-    """Flatten object.
+    """Recursively flatten a nested object into a dictionary mapping path keys to corresponding values.
 
-    Argument `traversal` can be "DFS" for depth-first search or "BFS" for breadth-first search.
+    The `traversal` argument determines the order of traversal:
 
-    See `find_in_obj` for arguments."""
+    * "DFS" for depth-first search.
+    * "BFS" for breadth-first search.
+
+    Refer to `find_in_obj` for details on additional arguments.
+    """
     from vectorbtpro._settings import settings
 
     search_cfg = settings["search"]
@@ -843,9 +974,14 @@ def flatten_obj(
 
 
 def unflatten_obj(path_dct: tp.PathDict) -> tp.Any:
-    """Unflatten object in a recursive manner using a path dictionary.
+    """Recursively reconstruct an object from a path dictionary.
 
-    Keys in the path dictionary can be path-like keys."""
+    Args:
+        path_dct (PathDict): A dictionary mapping path-like keys to corresponding values.
+
+    Returns:
+        Any: The reconstructed object.
+    """
     path_dct = {resolve_pathlike_key(k): v for k, v in path_dct.items()}
 
     class _Leaf:
@@ -921,7 +1057,22 @@ def find_exact(
     ignore_case: bool = False,
     return_type: str = "bool",
 ) -> tp.Union[bool, tp.List[tp.Union[int, str]], tp.List[tp.Tuple[int, int]]]:
-    """Find a string."""
+    """Return information about an exact match between the target and the string.
+
+    Args:
+        target (str): The target string to match.
+        string (str): The string to check for an exact match.
+        ignore_case (bool): If True, perform a case-insensitive comparison.
+        return_type (str): Return result format. Accepted values:
+
+            * "bool": Returns a boolean indicating if the strings are exactly equal.
+            * "start": Returns a list with the starting index of the match.
+            * "range": Returns a list with a tuple representing the match range.
+            * "match": Returns a list containing the matched string.
+
+    Returns:
+        Union[bool, List[Union[int, str]], List[Tuple[int, int]]]: The match result in the specified format.
+    """
     if ignore_case:
         string_cmp = string.casefold()
         target_cmp = target.casefold()
@@ -947,7 +1098,21 @@ def find_start(
     ignore_case: bool = False,
     return_type: str = "bool",
 ) -> tp.Union[bool, tp.List[tp.Union[int, str]], tp.List[tp.Tuple[int, int]]]:
-    """Find at the start of a string."""
+    """Return match details when checking if a string starts with the target substring.
+
+    Args:
+        target (str): The substring expected at the beginning of the string.
+        string (str): The string to check.
+        ignore_case (bool): If True, perform a case-insensitive comparison.
+        return_type (str): Return result format. Accepted values:
+
+            * "bool": Returns a boolean indicating if the strings are exactly equal.
+            * "start": Returns a list with the starting index of the match.
+            * "range": Returns a list with a tuple representing the match range.
+            * "match": Returns a list containing the matched string.
+    Returns:
+        Union[bool, List[Union[int, str]], List[Tuple[int, int]]]: The match result in the specified format.
+    """
     if ignore_case:
         string_cmp = string.casefold()
         target_cmp = target.casefold()
@@ -973,7 +1138,22 @@ def find_end(
     ignore_case: bool = False,
     return_type: str = "bool",
 ) -> tp.Union[bool, tp.List[tp.Union[int, str]], tp.List[tp.Tuple[int, int]]]:
-    """Find at the end of a string."""
+    """Return match details when checking if a string ends with the target substring.
+
+    Args:
+        target (str): The substring expected at the end of the string.
+        string (str): The string to check.
+        ignore_case (bool): If True, perform a case-insensitive comparison.
+        return_type (str): Return result format. Accepted values:
+
+            * "bool": Returns a boolean indicating if the strings are exactly equal.
+            * "start": Returns a list with the starting index of the match.
+            * "range": Returns a list with a tuple representing the match range.
+            * "match": Returns a list containing the matched string.
+
+    Returns:
+        Union[bool, List[Union[int, str]], List[Tuple[int, int]]]: The match result in the specified format.
+    """
     if ignore_case:
         string_cmp = string.casefold()
         target_cmp = target.casefold()
@@ -999,7 +1179,22 @@ def find_substring(
     ignore_case: bool = False,
     return_type: str = "bool",
 ) -> tp.Union[bool, tp.List[tp.Union[int, str]], tp.List[tp.Tuple[int, int]]]:
-    """Find a substring in a string."""
+    """Return details about all occurrences of a target substring within a string.
+
+    Args:
+        target (str): The substring to search for.
+        string (str): The string in which to search.
+        ignore_case (bool): If True, perform a case-insensitive search.
+        return_type (str): Return result format. Accepted values:
+
+            * "bool": Returns a boolean indicating if the strings are exactly equal.
+            * "start": Returns a list with the starting index of the match.
+            * "range": Returns a list with a tuple representing the match range.
+            * "match": Returns a list containing the matched string.
+
+    Returns:
+        Union[bool, List[Union[int, str]], List[Tuple[int, int]]]: The match result in the specified format.
+    """
     if ignore_case:
         string_cmp = string.casefold()
         target_cmp = target.casefold()
@@ -1035,7 +1230,27 @@ def find_regex(
     group: tp.Optional[tp.Union[int, str]] = None,
     return_type: str = "bool",
 ) -> tp.Union[bool, tp.List[tp.Union[int, str]], tp.List[tp.Tuple[int, int]]]:
-    """Find a RegEx pattern in a string."""
+    """Return details about regex pattern matches within a string.
+
+    Args:
+        pattern (str): The regular expression pattern to search for.
+        string (str): The string in which to search.
+        ignore_case (bool): If True, perform a case-insensitive search.
+        flags (int): Additional flags for compiling the regular expression.
+        group (Union[int, str, None]): Specific regex group to extract.
+        return_type (str): Return result format. Accepted values:
+
+            * "bool": Returns a boolean indicating if the strings are exactly equal.
+            * "start": Returns a list with the starting index of the match.
+            * "range": Returns a list with a tuple representing the match range.
+            * "match": Returns a list containing the matched string.
+
+    Returns:
+        Union[bool, List[Union[int, str]], List[Tuple[int, int]]]: The match result in the specified format.
+
+    !!! note
+        If `group` is None and the pattern contains exactly one group, that group is automatically selected.
+    """
     if ignore_case:
         flags |= re.IGNORECASE
     regex = re.compile(pattern, flags=flags)
@@ -1078,7 +1293,27 @@ def find_fuzzy(
     max_l_dist: tp.Optional[int] = None,
     return_type: str = "bool",
 ) -> tp.Union[bool, tp.List[tp.Union[int, str]], tp.List[tp.Tuple[int, int]]]:
-    """Find a substring in a string using fuzzysearch."""
+    """Find near matches of a target string in a given string using fuzzy search.
+
+    Args:
+        target (str): Target substring to search for.
+        string (str): String in which to search.
+        ignore_case (bool): Whether to ignore case during matching.
+        threshold (Optional[float]): Similarity threshold percentage.
+        max_insertions (Optional[int]): Maximum number of allowed insertions.
+        max_substitutions (Optional[int]): Maximum number of allowed substitutions.
+        max_deletions (Optional[int]): Maximum number of allowed deletions.
+        max_l_dist (Optional[int]): Maximum allowed Levenshtein distance.
+        return_type (str): Return result format. Accepted values:
+
+            * "bool": Returns a boolean indicating if the strings are exactly equal.
+            * "start": Returns a list with the starting index of the match.
+            * "range": Returns a list with a tuple representing the match range.
+            * "match": Returns a list containing the matched string.
+
+    Returns:
+        Union[bool, List[Union[int, str]], List[Tuple[int, int]]]: The match result in the specified format.
+    """
     from vectorbtpro.utils.module_ import assert_can_import
 
     assert_can_import("fuzzysearch")
@@ -1119,7 +1354,21 @@ def find_rapidfuzz(
     threshold: float = 70,
     return_type: str = "bool",
 ) -> tp.Union[bool, tp.List[tp.Union[int, str]], tp.List[tp.Tuple[int, int]]]:
-    """Find a substring in a string using RapidFuzz."""
+    """Find a target substring in a string using RapidFuzz.
+
+    Args:
+        target (str): Target substring to search for.
+        string (str): String in which to search.
+        ignore_case (bool): Whether to perform case-insensitive matching.
+        processor (Optional[Callable]): Function to preprocess strings before matching.
+        threshold (float): Similarity threshold percentage.
+        return_type (str): Return result format.
+
+            Currently, only "bool" is supported.
+
+    Returns:
+        Union[bool, List[Union[int, str]], List[Tuple[int, int]]]: The match result in the specified format.
+    """
     from vectorbtpro.utils.module_ import assert_can_import
 
     assert_can_import("rapidfuzz")
@@ -1145,14 +1394,31 @@ def find(
     return_type: str = "bool",
     **kwargs,
 ) -> tp.Union[bool, tp.List[tp.Union[int, str]], tp.List[tp.Tuple[int, int]]]:
-    """Find a target within a string using the specified mode and return type.
+    """Find a target substring within a string using a specified search mode and return format.
 
-    The following return types are supported:
+    Args:
+        target (str): Target substring or pattern.
+        string (str): String in which to search.
+        mode (str): Search mode. Accepted values:
 
-    * "bool": True for match, False for no match
-    * "start": List of start indices of matches
-    * "range": List of (start, end) tuples of matches
-    * "match": List of matched strings
+            * "exact": Use `find_exact`
+            * "start": Use `find_start`
+            * "end": Use `find_end`
+            * "substring": Use `find_substring`
+            * "regex": Use `find_regex`
+            * "fuzzy": Use `find_fuzzy`
+            * "rapidfuzz": Use `find_rapidfuzz`
+        ignore_case (bool): Whether to perform case-insensitive matching.
+        return_type (str): Return result format. Accepted values:
+
+            * "bool": Returns a boolean indicating if the strings are exactly equal.
+            * "start": Returns a list with the starting index of the match.
+            * "range": Returns a list with a tuple representing the match range.
+            * "match": Returns a list containing the matched string.
+        **kwargs: Additional keyword arguments for search modes.
+
+    Returns:
+        Union[bool, List[Union[int, str]], List[Tuple[int, int]]]: The match result in the specified format.
     """
     if mode.lower() == "exact":
         return find_exact(target, string, ignore_case=ignore_case, return_type=return_type, **kwargs)
@@ -1177,7 +1443,17 @@ def replace_exact(
     string: str,
     ignore_case: bool = False,
 ) -> str:
-    """Replace a string."""
+    """Replace the entire string if it exactly matches the target.
+
+    Args:
+        target (str): Target string to match exactly.
+        replacement (str): String to replace the target.
+        string (str): Original string.
+        ignore_case (bool): Whether to perform case-insensitive comparison.
+
+    Returns:
+        str: Replacement string if the entire string matches the target, otherwise the original string.
+    """
     if ignore_case:
         string = string.casefold()
         target = target.casefold()
@@ -1192,7 +1468,17 @@ def replace_start(
     string: str,
     ignore_case: bool = False,
 ) -> str:
-    """Replace at the start of a string."""
+    """Replace the starting segment of a string if it matches the target.
+
+    Args:
+        target (str): Target substring expected at the beginning.
+        replacement (str): String to replace the matching starting segment.
+        string (str): Original string.
+        ignore_case (bool): Whether to perform case-insensitive matching.
+
+    Returns:
+        str: Modified string with the start replaced if a match is found, otherwise the original string.
+    """
     if ignore_case:
         string_cmp = string.casefold()
         target_cmp = target.casefold()
@@ -1210,7 +1496,17 @@ def replace_end(
     string: str,
     ignore_case: bool = False,
 ) -> str:
-    """Replace at the end of a string."""
+    """Replace the ending segment of a string if it matches the target.
+
+    Args:
+        target (str): Target substring expected at the end.
+        replacement (str): String to replace the matching ending segment.
+        string (str): Original string.
+        ignore_case (bool): Whether to perform case-insensitive matching.
+
+    Returns:
+        str: Modified string with the end replaced if a match is found, otherwise the original string.
+    """
     if ignore_case:
         string_cmp = string.casefold()
         target_cmp = target.casefold()
@@ -1228,7 +1524,17 @@ def replace_substring(
     string: str,
     ignore_case: bool = False,
 ) -> str:
-    """Replace a substring in a string."""
+    """Replace occurrences of a substring within a string.
+
+    Args:
+        target (str): Substring to be replaced.
+        replacement (str): Replacement string.
+        string (str): Original string.
+        ignore_case (bool): Whether to perform case-insensitive matching.
+
+    Returns:
+        str: Modified string after replacing the target substring.
+    """
     if ignore_case:
         pattern = re.compile(re.escape(target), re.IGNORECASE)
         return pattern.sub(replacement, string)
@@ -1243,7 +1549,18 @@ def replace_regex(
     ignore_case: bool = False,
     flags: int = 0,
 ) -> str:
-    """Replace a target in a string using RegEx."""
+    """Replace substrings matching a regular expression with a replacement string.
+
+    Args:
+        target (str): Regular expression pattern to match.
+        replacement (str): Replacement string.
+        string (str): Original string.
+        ignore_case (bool): Whether to perform case-insensitive matching.
+        flags (int): Additional flags for compiling the regular expression.
+
+    Returns:
+        str: String with matching patterns replaced by the replacement.
+    """
     if ignore_case:
         flags = flags | re.IGNORECASE
     regex = re.compile(target, flags=flags)
@@ -1261,7 +1578,22 @@ def replace_fuzzy(
     max_deletions: tp.Optional[int] = None,
     max_l_dist: tp.Optional[int] = None,
 ) -> str:
-    """Replace a substring in a string using fuzzysearch."""
+    """Replace near-matching occurrences of a target substring within a string using fuzzy search.
+
+    Args:
+        target (str): Target substring for fuzzy matching.
+        replacement (str): Replacement string.
+        string (str): Original string.
+        ignore_case (bool): Whether to perform case-insensitive matching.
+        threshold (Optional[float]): Similarity threshold percentage for fuzzy matching.
+        max_insertions (Optional[int]): Maximum number of allowed insertions.
+        max_substitutions (Optional[int]): Maximum number of allowed substitutions.
+        max_deletions (Optional[int]): Maximum number of allowed deletions.
+        max_l_dist (Optional[int]): Maximum allowed Levenshtein distance.
+
+    Returns:
+        str: The string after performing fuzzy replacement; returns the original string if no match is found.
+    """
     from vectorbtpro.utils.module_ import assert_can_import
 
     assert_can_import("fuzzysearch")
@@ -1305,7 +1637,26 @@ def replace(
     ignore_case: bool = False,
     **kwargs,
 ) -> str:
-    """Replace a target string within a source string using the specified mode."""
+    """Replace occurrences of a target substring in a string using a specified matching mode.
+
+    Args:
+        target (str): The substring to locate in the source string.
+        replacement (str): The string to substitute for the target.
+        string (str): The source string in which to perform the replacement.
+        mode (str): Search and replacement mode. Accepted values:
+
+            * "exact": Use `replace_exact`
+            * "start": Use `replace_start`
+            * "end": Use `replace_end`
+            * "substring": Use `replace_substring`
+            * "regex": Use `replace_regex`
+            * "fuzzy": Use `replace_fuzzy`
+        ignore_case (bool): Whether to ignore case when matching.
+        **kwargs: Additional keyword arguments passed to the underlying replacement functions.
+
+    Returns:
+        str: A new string with the specified replacements applied.
+    """
     if mode.lower() == "exact":
         return replace_exact(target, replacement, string, ignore_case=ignore_case, **kwargs)
     if mode.lower() == "start":
@@ -1346,7 +1697,7 @@ search_config = ReadonlyConfig(
 
 __pdoc__[
     "search_config"
-] = f"""Config of functions that can be used in searching and replacement.
+] = f"""Configuration mapping of functions for searching and replacing text.
 
 ```python
 {search_config.prettify()}

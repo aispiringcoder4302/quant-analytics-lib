@@ -3387,17 +3387,17 @@ def find_messages(
     """Find messages associated with an object or query.
 
     Args:
-        obj_or_query (MaybeList, optional): An object reference or query used to filter messages.
+        obj_or_query (Optional[MaybeList]): An object reference or query used to filter messages.
 
             If None, all messages are returned.
-        as_query (bool, optional): Treats `obj_or_query` as a query if True.
-        attr (str, optional): Attribute name to filter messages linked to an object.
+        as_query (Optional[bool]): Treats `obj_or_query` as a query if True.
+        attr (Optional[str]): Attribute name to filter messages linked to an object.
         module (Union[str, ModuleType, None]): Module context to constrain the message lookup.
         resolve (bool): Whether to resolve object references in messages.
-        messages_asset (MaybeType[MessagesAsset], optional): The source asset to retrieve messages from.
-        pull_kwargs (KwargsLike, optional): Additional keyword arguments for `MessagesAsset.pull`.
+        messages_asset (Optional[MaybeType[MessagesAsset]]): The source asset to retrieve messages from.
+        pull_kwargs (KwargsLike): Additional keyword arguments for `MessagesAsset.pull`.
         aggregate (Union[bool, str]): Option to aggregate messages; if a string, it specifies the aggregation key.
-        aggregate_kwargs (KwargsLike, optional): Additional keyword arguments for message aggregation.
+        aggregate_kwargs (KwargsLike): Additional keyword arguments for message aggregation.
         latest_first (bool): If True, sorts messages in reverse chronological order.
         shuffle (bool): If True, shuffles the order of messages.
         **kwargs: Extra keyword arguments for underlying methods.
@@ -3462,26 +3462,26 @@ def find_examples(
     """Find code examples relevant to an object or query.
 
     Args:
-        obj_or_query (MaybeList, optional): An object reference or query used to filter code examples.
+        obj_or_query (Optional[MaybeList]): An object reference or query used to filter code examples.
 
             If None, all examples are returned.
-        as_query (bool, optional): Treats `obj_or_query` as a query if True.
-        attr (str, optional): Attribute name to filter examples associated with an object.
+        as_query (Optional[bool]): Treats `obj_or_query` as a query if True.
+        attr (Optional[str]): Attribute name to filter examples associated with an object.
         module (Union[str, ModuleType, None]): Module context to constrain the search for examples.
         resolve (bool): Whether to resolve object references within examples.
         as_code (bool): Determines if examples are returned as code including textual content.
-        return_type (str, optional): Specifies the format of returned content; e.g., "field", "match", or "item".
-        pages_asset (MaybeType[PagesAsset], optional): The asset for retrieving page-based content.
-        messages_asset (MaybeType[MessagesAsset], optional): The asset for retrieving message-based content.
-        pull_kwargs (KwargsLike, optional): Additional keyword arguments for pulling data from assets.
+        return_type (Optional[str]): Specifies the format of returned content; e.g., "field", "match", or "item".
+        pages_asset (Optional[MaybeType[PagesAsset]]): The asset for retrieving page-based content.
+        messages_asset (Optional[MaybeType[MessagesAsset]]): The asset for retrieving message-based content.
+        pull_kwargs (KwargsLike): Additional keyword arguments for pulling data from assets.
         aggregate_pages (bool): Indicates whether to aggregate the pages asset.
-        aggregate_pages_kwargs (KwargsLike, optional): Additional keyword arguments for pages aggregation.
+        aggregate_pages_kwargs (KwargsLike): Additional keyword arguments for pages aggregation.
         aggregate_messages (Union[bool, str]): Option to aggregate messages;
             if a string, it specifies the aggregation key.
-        aggregate_messages_kwargs (KwargsLike, optional): Additional keyword arguments for messages aggregation.
+        aggregate_messages_kwargs (KwargsLike): Additional keyword arguments for messages aggregation.
         latest_messages_first (bool): If True, orders messages from most recent to oldest.
         shuffle_messages (bool): If True, shuffles the order of messages.
-        find_kwargs (KwargsLike, optional): Keyword arguments specifically for the find method.
+        find_kwargs (KwargsLike): Keyword arguments specifically for the find method.
         **kwargs: Extra keyword arguments distributed between the find and rank methods.
 
     Returns:

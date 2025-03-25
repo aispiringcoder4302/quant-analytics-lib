@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Utilities for selecting."""
+"""Module providing utilities for selection."""
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.utils.attr_ import DefineMixin, define
@@ -21,7 +21,11 @@ __all__ = [
 
 @define
 class PosSel(DefineMixin):
-    """Class that represents a selection by position."""
+    """Class representing a positional selection.
+
+    Args:
+        value (MaybeIterable[Hashable]): Selection of one or more positions.
+    """
 
     value: tp.MaybeIterable[tp.Hashable] = define.field()
     """Selection of one or more positions."""
@@ -29,7 +33,11 @@ class PosSel(DefineMixin):
 
 @define
 class LabelSel(DefineMixin):
-    """Class that represents a selection by label."""
+    """Class representing a label-based selection.
+
+    Args:
+        value (MaybeIterable[Hashable]): Selection of one or more labels.
+    """
 
     value: tp.MaybeIterable[tp.Hashable] = define.field()
     """Selection of one or more labels."""

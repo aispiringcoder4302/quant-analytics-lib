@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Utilities for pickling."""
+"""Module providing functions to compress, decompress, and manage pickling configurations."""
 
 import ast
 import io
@@ -47,7 +47,15 @@ __all__ = [
 
 
 def get_serialization_extensions(cls_name: tp.Optional[str] = None) -> tp.Set[str]:
-    """Get all supported serialization extensions from `vectorbtpro._settings`."""
+    """Return all supported serialization extensions from `vectorbtpro._settings.pickling`.
+
+    Args:
+        cls_name (Optional[str]): Class name to retrieve specific serialization extensions.
+            If omitted, returns a union of all serialization extensions.
+
+    Returns:
+        Set[str]: A set of serialization file extensions.
+    """
     from vectorbtpro._settings import settings
 
     pickling_cfg = settings["pickling"]
@@ -58,7 +66,15 @@ def get_serialization_extensions(cls_name: tp.Optional[str] = None) -> tp.Set[st
 
 
 def get_compression_extensions(cls_name: tp.Optional[str] = None) -> tp.Set[str]:
-    """Get all supported compression extensions from `vectorbtpro._settings`."""
+    """Return all supported compression extensions from `vectorbtpro._settings.pickling`.
+
+    Args:
+        cls_name (Optional[str]): Class name to retrieve specific compression extensions.
+            If omitted, returns a union of all compression extensions.
+
+    Returns:
+        Set[str]: A set of compression file extensions.
+    """
     from vectorbtpro._settings import settings
 
     pickling_cfg = settings["pickling"]
@@ -74,11 +90,23 @@ def compress(
     file_name: tp.Optional[str] = None,
     **compress_kwargs,
 ) -> bytes:
-    """Compress bytes.
+    """Compress given bytes using the specified compression format.
 
-    For compression options, see `extensions.compression` under `vectorbtpro._settings.pickling`.
+    Args:
+        bytes_ (bytes): Data to be compressed.
+        compression (CompressionLike): Compression algorithm identifier.
+            If set to True, the default compression from settings is used.
+        file_name (Optional[str]): File name for the compressed data when using archive-based compression.
+        **compress_kwargs: Additional keyword arguments passed to the compression function
+            of the compression package.
 
-    Keyword arguments `compress_kwargs` are passed to the `compress` method of the compressing package."""
+    Returns:
+        bytes: Compressed data.
+
+    !!! note
+        For available compression options, refer to `vectorbtpro._settings.pickling`
+        under "extensions.compression".
+    """
     from vectorbtpro.utils.module_ import (
         assert_can_import,
         assert_can_import_any,
@@ -159,11 +187,23 @@ def decompress(
     file_name: tp.Optional[str] = None,
     **decompress_kwargs,
 ) -> bytes:
-    """Decompress bytes.
+    """Decompress given bytes using the specified compression format.
 
-    For compression options, see `extensions.compression` under `vectorbtpro._settings.pickling`.
+    Args:
+        bytes_ (bytes): Compressed data to be decompressed.
+        compression (CompressionLike): Compression algorithm identifier.
+            If set to True, the default compression from settings is used.
+        file_name (Optional[str]): File name to extract from the archive when using archive-based compression.
+        **decompress_kwargs: Additional keyword arguments passed to the decompression function
+            of the compression package.
 
-    Keyword arguments `decompress_kwargs` are passed to the `decompress` method of the decompressing package."""
+    Returns:
+        bytes: Decompressed data.
+
+    !!! note
+        For available compression options, refer to `vectorbtpro._settings.pickling`
+        under "extensions.compression".
+    """
     from vectorbtpro.utils.module_ import (
         assert_can_import,
         assert_can_import_any,
@@ -247,13 +287,20 @@ def dumps(
     compress_kwargs: tp.KwargsLike = None,
     **kwargs,
 ) -> bytes:
-    """Pickle an object to a byte stream.
+    """Serialize an object to a byte stream, optionally compressing the result.
 
-    Uses `dill` when available.
+    Uses `dill` for pickling if available and otherwise falls back to the standard library `pickle`.
+    Compression is applied using `compress`.
 
-    Compression is done with `compress`.
+    Args:
+        obj (Any): The object to serialize.
+        compression (CompressionLike): The compression algorithm to use.
+        compress_kwargs (KwargsLike): Additional keyword arguments for compression.
+        **kwargs: Additional keyword arguments passed to the pickling library's `dumps` method.
 
-    Other keyword arguments are passed to the `dumps` method of the pickling package."""
+    Returns:
+        bytes: The serialized and optionally compressed byte stream.
+    """
     from vectorbtpro.utils.module_ import warn_cannot_import
 
     if warn_cannot_import("dill"):
@@ -273,13 +320,20 @@ def loads(
     decompress_kwargs: tp.KwargsLike = None,
     **kwargs,
 ) -> tp.Any:
-    """Unpickle an object from a byte stream.
+    """Deserialize an object from a byte stream, decompressing it if necessary.
 
-    Uses `dill` when available.
+    Uses `dill` for unpickling when available, otherwise falls back to the standard library `pickle`.
+    Decompression is applied using `decompress`.
 
-    Decompression is done with `decompress`.
+    Args:
+        bytes_ (bytes): The byte stream containing the serialized object.
+        compression (CompressionLike): The compression algorithm used.
+        decompress_kwargs (KwargsLike): Additional keyword arguments for decompression.
+        **kwargs: Additional keyword arguments passed to the pickling library's `loads` method.
 
-    Other keyword arguments are passed to the `loads` method of the pickling package."""
+    Returns:
+        Any: The deserialized object.
+    """
     from vectorbtpro.utils.module_ import warn_cannot_import
 
     if warn_cannot_import("dill"):
@@ -294,7 +348,14 @@ def loads(
 
 
 def suggest_compression(file_name: str) -> tp.Optional[str]:
-    """Suggest compression based on the file name."""
+    """Suggest a compression algorithm based on the file name extension.
+
+    Args:
+        file_name (str): The name of the file.
+
+    Returns:
+        Optional[str]: The suggested compression algorithm if recognized; otherwise, None.
+    """
     suffixes = [suffix.lower() for suffix in file_name.split(".")[1:]]
     if len(suffixes) > 0 and suffixes[-1] in get_compression_extensions():
         compression = suffixes[-1]
@@ -310,9 +371,21 @@ def save_bytes(
     compression: tp.CompressionLike = None,
     compress_kwargs: tp.KwargsLike = None,
 ) -> Path:
-    """Write a byte stream to a file.
+    """Write a byte stream to a file with optional compression.
 
-    Can recognize the compression algorithm based on the extension."""
+    This function compresses the byte stream using `compress` if a compression algorithm is determined,
+    either explicitly or based on the file's extension.
+
+    Args:
+        bytes_ (bytes): The byte stream to write.
+        path (PathLike): The destination file path.
+        mkdir_kwargs (KwargsLike): Additional keyword arguments for directory creation.
+        compression (CompressionLike): The compression algorithm to use.
+        compress_kwargs (KwargsLike): Additional keyword arguments for compression.
+
+    Returns:
+        Path: The path to the written file.
+    """
     path = Path(path)
     file_name = None
     if compression is None:
@@ -341,9 +414,19 @@ def load_bytes(
     compression: tp.CompressionLike = None,
     decompress_kwargs: tp.KwargsLike = None,
 ) -> bytes:
-    """Read a byte stream from a file.
+    """Read a byte stream from a file with optional decompression.
 
-    Can recognize the compression algorithm based on the extension."""
+    This function reads the file and applies decompression using `decompress` if a
+    compression algorithm is determined, either explicitly or based on the file's extension.
+
+    Args:
+        path (PathLike): The file path to read.
+        compression (CompressionLike): The compression algorithm used.
+        decompress_kwargs (KwargsLike): Additional keyword arguments for decompression.
+
+    Returns:
+        bytes: The read and optionally decompressed byte stream.
+    """
     path = Path(path)
     with open(path, "rb") as f:
         bytes_ = f.read()
@@ -362,9 +445,24 @@ def save(
     compress_kwargs: tp.KwargsLike = None,
     **kwargs,
 ) -> Path:
-    """Pickle an object to a byte stream and write to a file.
+    """Serialize an object and write it to a file with optional compression.
 
-    Uses `dumps` for serialization and `save_bytes` for compression and writing."""
+    This function serializes the object using `dumps` and writes the resulting byte stream
+    to a file via `save_bytes`.
+
+    Args:
+        obj (Any): The object to serialize.
+        path (Optional[PathLike]): The file path where the object will be saved.
+
+            If a directory is provided, the file name is derived from the object's class name.
+        mkdir_kwargs (KwargsLike): Additional keyword arguments for directory creation.
+        compression (CompressionLike): The compression algorithm to use.
+        compress_kwargs (KwargsLike): Additional keyword arguments for compression.
+        **kwargs: Additional keyword arguments passed to `dumps`.
+
+    Returns:
+        Path: The path to the saved file.
+    """
     bytes_ = dumps(obj, **kwargs)
     if path is None:
         path = type(obj).__name__
@@ -386,9 +484,20 @@ def load(
     decompress_kwargs: tp.KwargsLike = None,
     **kwargs,
 ) -> tp.Any:
-    """Read a byte stream from a file and unpickle.
+    """Read a byte stream from a file and deserialize the contained object.
 
-    Uses `load_bytes` for reading and decompression and `loads` for deserialization."""
+    This function uses `load_bytes` to read and decompress the byte stream,
+    then deserializes the object using `loads`.
+
+    Args:
+        path (PathLike): The file path from which to load the object.
+        compression (CompressionLike): The compression algorithm used.
+        decompress_kwargs (KwargsLike): Additional keyword arguments for decompression.
+        **kwargs: Additional keyword arguments passed to `loads`.
+
+    Returns:
+        Any: The deserialized object.
+    """
     bytes_ = load_bytes(
         path,
         compression=compression,
@@ -399,48 +508,66 @@ def load(
 
 @define
 class RecState(DefineMixin):
-    """Class that represents a state used to reconstruct an instance."""
+    """Class representing the reconstruction state for an instance.
+
+    Args:
+        init_args (tuple): Positional arguments for instance initialization.
+        init_kwargs (dict): Keyword arguments for instance initialization.
+        attr_dct (dict): Mapping of attribute names to their writable values.
+    """
 
     init_args: tp.Args = define.field(factory=tuple)
-    """Positional arguments used in initialization."""
+    """Positional arguments for instance initialization."""
 
     init_kwargs: tp.Kwargs = define.field(factory=dict)
-    """Keyword arguments used in initialization."""
+    """Keyword arguments for instance initialization."""
 
     attr_dct: tp.Kwargs = define.field(factory=dict)
-    """Dictionary with names and values of writeable attributes."""
+    """Mapping of attribute names to their writable values."""
 
 
 @define
 class RecInfo(DefineMixin):
-    """Class that represents information needed to reconstruct an instance."""
+    """Class for encapsulating information required to reconstruct an instance.
+
+    Args:
+        id_ (str): The unique reconstruction identifier.
+        cls (Type): The associated class type for reconstruction.
+        modify_state (Optional[Callable[[RecState], RecState]]): A callback to modify the reconstruction state.
+    """
 
     id_: str = define.field()
-    """Identifier."""
+    """Unique reconstruction identifier."""
 
     cls: tp.Type = define.field()
-    """Class."""
+    """The class associated with reconstruction."""
 
     modify_state: tp.Optional[tp.Callable[[RecState], RecState]] = define.field(default=None)
-    """Callback to modify the reconstruction state."""
+    """Optional callback that modifies the reconstruction state."""
 
     def register(self) -> None:
-        """Register self in `rec_info_registry`."""
+        """Register this instance in `rec_info_registry` using its identifier."""
         rec_info_registry[self.id_] = self
 
 
 rec_info_registry = {}
-"""Registry with instances of `RecInfo` keyed by `RecInfo.id_`.
+"""Registry of `RecInfo` instances keyed by their `id_`.
 
-Populate with the required information if any instance cannot be unpickled."""
+This registry is used during unpickling to reconstruct instances when needed."""
 
 
 def get_id_from_class(obj: tp.Any) -> tp.Optional[str]:
-    """Get the class id from a class.
+    """Obtain the reconstruction identifier for a class or instance.
 
-    If the object is an instance or a subclass of `Pickleable` and `Pickleable._rec_id` is not None,
-    uses the reconstruction id. Otherwise, returns the path to the class definition
-    with `vectorbtpro.utils.module_.find_class`."""
+    If the object is an instance or subclass of `Pickleable` with a defined `_rec_id`, that value is returned.
+    Otherwise, returns the fully qualified class path derived using `vectorbtpro.utils.module_.find_class`.
+
+    Args:
+        obj (Any): The class or instance to evaluate.
+
+    Returns:
+        Optional[str]: The reconstruction identifier or class path, or None if not found.
+    """
     from vectorbtpro.utils.module_ import find_class
 
     if isinstance(obj, type):
@@ -459,7 +586,14 @@ def get_id_from_class(obj: tp.Any) -> tp.Optional[str]:
 
 
 def get_class_from_id(class_id: str) -> tp.Optional[tp.Type]:
-    """Get the class from a class id."""
+    """Retrieve a class object from its reconstruction identifier.
+
+    Args:
+        class_id (str): The reconstruction identifier of the class.
+
+    Returns:
+        Type: The class associated with the provided identifier.
+    """
     from vectorbtpro.utils.module_ import find_class
 
     if class_id in rec_info_registry:
@@ -471,7 +605,20 @@ def get_class_from_id(class_id: str) -> tp.Optional[tp.Type]:
 
 
 def reconstruct(cls: tp.Union[tp.Hashable, tp.Type], rec_state: RecState) -> tp.Any:
-    """Reconstruct an instance using a class and a reconstruction state."""
+    """Reconstruct an instance from a given class (or identifier) and reconstruction state.
+
+    The function uses the reconstruction state to initialize a new instance, setting initialization
+    arguments and updating attributes. If the provided class is not directly a type, it attempts to
+    resolve the class using `rec_info_registry` or `vectorbtpro.utils.module_.find_class`.
+
+    Args:
+        cls (Union[Hashable, Type]): The class or its reconstruction identifier.
+        rec_state (RecState): The state used for reconstruction, including initialization
+            arguments and attribute values.
+
+    Returns:
+        Any: The reconstructed instance.
+    """
     from vectorbtpro.utils.module_ import find_class
 
     found_rec = False
@@ -508,22 +655,28 @@ def reconstruct(cls: tp.Union[tp.Hashable, tp.Type], rec_state: RecState) -> tp.
 
 
 class Pickleable(Base):
-    """Superclass that defines abstract properties and methods for pickle-able classes.
+    """Class for pickle-able objects.
 
-    If any subclass cannot be pickled, override the `Pickleable.rec_state` property
-    to return an instance of `RecState` to be used in reconstruction. If the class definition cannot
-    be pickled (e.g., created dynamically), override its `_rec_id` with an arbitrary id string,
-    dump/save the class, and before loading, map this id to the class in `rec_id_map`. This will use the
-    mapped class to construct a new instance."""
+    If a subclass's instance cannot be pickled, override its `rec_state` property to return
+    a `RecState` instance for reconstruction. If the class definition itself cannot be pickled
+    (e.g., created dynamically), override its `_rec_id` with an arbitrary identifier, dump/save the class,
+    and map this identifier to the class in `rec_id_map` for reconstruction.
+    """
 
     _rec_id: tp.ClassVar[tp.Optional[str]] = None
-    """Reconstruction id."""
+    """Reconstruction identifier."""
 
     def dumps(self, rec_state_only: bool = False, **kwargs) -> bytes:
-        """Pickle the instance to a byte stream.
+        """Serialize the instance to a pickle byte stream.
 
-        Optionally, you can set `rec_state_only` to True if the instance will be later unpickled
-        directly by the class."""
+        Args:
+            rec_state_only (bool): If True, serialize only the instance's reconstruction state
+                for direct unpickling.
+            **kwargs: Additional keyword arguments passed to `dumps`.
+
+        Returns:
+            bytes: The serialized byte stream.
+        """
         if rec_state_only:
             rec_state = self.rec_state
             if rec_state is None:
@@ -533,7 +686,18 @@ class Pickleable(Base):
 
     @classmethod
     def loads(cls: tp.Type[PickleableT], bytes_: bytes, check_type: bool = True, **kwargs) -> PickleableT:
-        """Unpickle an instance from a byte stream."""
+        """Reconstruct an instance from a pickle byte stream.
+
+        If the unpickled object is an instance of `RecState`, it is transformed via `reconstruct`.
+
+        Args:
+            bytes_ (bytes): The byte stream containing the pickled data.
+            check_type (bool): If True, validates that the unpickled object is an instance of the class.
+            **kwargs: Additional keyword arguments passed to `loads`.
+
+        Returns:
+            Pickleable: The unpickled instance.
+        """
         obj = loads(bytes_, **kwargs)
         if isinstance(obj, RecState):
             obj = reconstruct(cls, obj)
@@ -542,12 +706,30 @@ class Pickleable(Base):
         return obj
 
     def encode_config_node(self, key: str, value: tp.Any, **kwargs) -> tp.Any:
-        """Encode a config node."""
+        """Encode a configuration node.
+
+        Args:
+            key (str): The key for the configuration node.
+            value (Any): The value to encode.
+            **kwargs: Additional keyword arguments passed for encoding.
+
+        Returns:
+            Any: The encoded configuration node.
+        """
         return value
 
     @classmethod
     def decode_config_node(cls, key: str, value: tp.Any, **kwargs) -> tp.Any:
-        """Decode a config node."""
+        """Decode a configuration node.
+
+        Args:
+            key (str): The key for the configuration node.
+            value (Any): The value to decode.
+            **kwargs: Additional keyword arguments passed for decoding.
+
+        Returns:
+            Any: The decoded configuration node.
+        """
         return value
 
     def encode_config(
@@ -562,32 +744,39 @@ class Pickleable(Base):
         parser_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> str:
-        """Encode the instance to a config string.
+        """Encode the instance to a configuration string based on its reconstruction state.
 
-        Based on `Pickleable.rec_state`. Raises an error if None.
-
-        Encodes to a format that is guaranteed to be parsed using `Pickleable.decode_config`.
-        Otherwise, an error will be thrown. If any object cannot be represented using a string,
-        uses `dumps` to convert it to a byte stream.
-
-        When `unpack_objects` is True and an object is an instance of `Pickleable`, saves its
-        reconstruction state to a separate section rather than the byte stream. Appends `@` and
-        class name to the section name. If `compress_unpacked` is True, will hide keys in
-        `RecState` that have empty values. Keys in `RecState` will be appended with `~` to avoid
-        collision with user-defined keys having the same name.
-
-        If `use_refs` is True, out of unhashable objects sharing the same id, only the first one
-        will be defined while others will store the reference (`&` + key path) to the first one.
+        This method encodes the instance in a format that can be decoded using `Pickleable.decode_config`.
+        It uses the instance's `rec_state` property and raises an error if it is None. If an object cannot be
+        represented as a string, it is serialized using `dumps`.
 
         !!! note
             The initial order of keys can be preserved only by using references.
 
-        If `use_class_ids` is True, substitutes any class defined as a value by its id instead of
-        pickling its definition. If `get_id_from_class` returns None, will pickle the definition.
+        Args:
+            top_name (Optional[str]): The top-level section name.
+            unpack_objects (bool): Flag to store a `Pickleable` object's reconstruction state in a separate section.
 
-        If the instance is nested, set `nested` to True to represent each sub-dict as a section.
+                 Appends `@` and class name to the section name.
+            compress_unpacked (bool): Flag to compress empty values in the reconstruction state.
 
-        Other keyword arguments are forwarded to `Pickleable.encode_config_node`."""
+                Keys in the reconstruction state will be appended with `~` to avoid collision with
+                user-defined keys having the same name.
+            use_refs (bool): Flag to create references for duplicate unhashable objects.
+
+                Out of unhashable objects sharing the same id, only the first one will be defined
+                while others will store the reference (`&` + key path) to the first one.
+            use_class_ids (bool): Flag to substitute class objects with their identifiers.
+
+                If `get_id_from_class` returns None, will pickle the definition.
+            nested (bool): Flag indicating whether to represent sub-dictionaries as individual sections.
+            to_dict (bool): Flag to treat objects as dictionaries during encoding.
+            parser_kwargs (KwargsLike): Keyword arguments for initializing the configuration parser.
+            **kwargs: Additional keyword arguments forwarded to `Pickleable.encode_config_node`.
+
+        Returns:
+            str: The encoded configuration string.
+        """
         import configparser
         from io import StringIO
 
@@ -732,36 +921,42 @@ class Pickleable(Base):
         check_type: bool = True,
         **kwargs,
     ) -> PickleableT:
-        """Decode an instance from a config string.
+        """Decode an instance from a configuration string.
 
-        Can parse configs without sections. Sections can also become sub-dicts if their names use
-        the dot notation. For example, section `a.b` will become a sub-dict of the section `a`
-        and section `a.b.c` will become a sub-dict of the section `a.b`. You don't have to define
+        This function parses configuration strings and supports dot notation for nesting sections.
+        It can parse configs without sections. Sections can also become sub-dictionaries if their names use
+        dot notation. For example, the section `a.b` will become a sub-dictionary of the section `a`
+        and the section `a.b.c` will become a sub-dictionary of the section `a.b`. You don't have to define
         the section `a` explicitly, it will automatically become the outermost key.
-
-        If a section contains only one pair `_ = _`, it will become an empty dict.
-
-        If `parse_literals` is True, will detect any Python literals and containers such as `True` and `[]`.
-        Will also understand `np.nan`, `np.inf`, and `-np.inf`.
-
-        If `run_code` is True, will run any Python code prepended with `!`. Will use the context
-        `code_context` together with already defined `np` (NumPy), `pd` (Pandas), and `vbt` (vectorbtpro).
+        Sections containing only a single pair (`_ = _`) are treated as empty dictionaries.
 
         !!! warning
             Unpickling byte streams and running code has important security implications. Don't attempt
             to parse configs coming from untrusted sources as those can contain malicious code!
 
-        If `pack_objects` is True, will look for class paths prepended with `@` in section names,
-        construct an instance of `RecState` (any other keyword arguments will be included to `init_kwargs`),
-        and finally use `reconstruct` to reconstruct the unpacked object.
+        Args:
+            cls (Type[Pickleable]): The class to use for decoding the configuration.
+            str_ (str): The configuration string to decode.
+            parse_literals (bool): Detect Python literals and container types (e.g., `True`, `[]`),
+                including special values like `np.nan`, `np.inf`, and `-np.inf`.
+            run_code (bool): Execute Python code prefixed with `!`.
 
-        If `use_refs` is True, will substitute references prepended with `&` for actual objects.
-        Constructs a DAG using [graphlib](https://docs.python.org/3/library/graphlib.html).
+                Uses a context that includes all from `vectorbtpro.imported_stuff`
+                along with any provided in `code_context`.
+            pack_objects (bool): Instantiate and reconstruct objects specified by section class paths.
 
-        If `use_class_ids` is True, will substitute any class ids prepended with `@` with the
-        corresponding class.
+                Section names prefixed with `@` trigger the instantiation of a `RecState` object
+                and reconstruction through `reconstruct`.
+            use_refs (bool): Substitute reference strings prefixed with `&` with actual objects
+                using a DAG constructed with `graphlib`.
+            use_class_ids (bool): Replace class identifiers prefixed with `@` with corresponding classes.
+            code_context (KwargsLike): A context dictionary used during execution of Python code.
+            parser_kwargs (KwargsLike): Additional keyword arguments for configuring the parser.
+            check_type (bool): Check types during decoding.
+            **kwargs: Additional keyword arguments passed to `Pickleable.decode_config_node`.
 
-        Other keyword arguments are forwarded to `Pickleable.decode_config_node`.
+        Returns:
+            Pickleable: The decoded instance.
 
         Usage:
             * File `types.ini`:
@@ -1019,17 +1214,30 @@ class Pickleable(Base):
         compression: tp.CompressionLike = None,
         for_save: bool = False,
     ) -> Path:
-        """Resolve a file path.
+        """Resolve a file path ensuring valid file format and optional compression.
 
-        A file must have either one or two extensions: file format (required) and compression (optional).
-        For file format options, see `pickle_extensions` and `config_extensions`.
-        For compression options, see `compression_extensions`. Each can be provided either
-        via a suffix in `path`, or via the argument `file_format` and `compression` respectively.
+        File format and compression can be provided either via a suffix in `path`,
+         or via the argument `file_format` and `compression` respectively.
 
-        When saving, uses `file_format` and `compression` from `vectorbtpro._settings.pickling`
-        as default options. When loading, searches for matching files in the current directory.
+        Args:
+            path (Optional[PathLike]): A file path, directory, or None.
 
-        Path can be also None or directory, in such a case the file name will be set to the class name."""
+                If None or a directory, the file name defaults to the class name.
+            file_format (Optional[str]): The file format extension.
+
+                For options, see `pickle_extensions` and `config_extensions`.
+            compression (CompressionLike): The compression extension.
+
+                For options, see `compression_extensions`.
+            for_save (bool): Resolve the file path for saving if True; otherwise, for loading.
+
+        !!! note
+            When saving, default `file_format` and `compression` values are taken from
+            `vectorbtpro._settings.pickling`. When loading, the function searches for matching
+            files in the current directory.
+
+        Returns:
+            Path: The resolved file path with the appropriate extensions."""
         from vectorbtpro._settings import settings
 
         pickling_cfg = settings["pickling"]
@@ -1158,9 +1366,12 @@ class Pickleable(Base):
 
     @classmethod
     def file_exists(cls, *args, **kwargs) -> bool:
-        """Return whether a file already exists.
+        """Return whether a file exists.
 
-        Resolves the file path using `Pickleable.resolve_file_path`."""
+        Args:
+            *args: Additional arguments passed to `Pickleable.resolve_file_path`.
+            **kwargs: Additional keyword arguments passed to `Pickleable.resolve_file_path`.
+        """
         try:
             cls.resolve_file_path(*args, **kwargs)
             return True
@@ -1175,9 +1386,19 @@ class Pickleable(Base):
         mkdir_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> Path:
-        """Pickle/encode the instance and save to a file.
+        """Serialize and save the instance to a file.
 
-        Resolves the file path using `Pickleable.resolve_file_path`."""
+        File path resolution is performed using `Pickleable.resolve_file_path`.
+
+        Args:
+            path (Optional[PathLike]): File path to save the instance.
+            file_format (Optional[str]): Format used for serialization.
+            compression (CompressionLike): Compression method if applicable.
+            mkdir_kwargs (KwargsLike): Additional keyword arguments for directory creation.
+            **kwargs: Additional keyword arguments passed for serialization.
+
+        Returns:
+            Path: The file path where the instance was saved."""
         if mkdir_kwargs is None:
             mkdir_kwargs = {}
 
@@ -1209,9 +1430,19 @@ class Pickleable(Base):
         compression: tp.CompressionLike = None,
         **kwargs,
     ) -> PickleableT:
-        """Unpickle/decode the instance from a file.
+        """Deserialize and return an instance from a file.
 
-        Resolves the file path using `Pickleable.resolve_file_path`."""
+        File path resolution is performed using `Pickleable.resolve_file_path`.
+
+        Args:
+            cls (Type[Pickleable]): The class of the instance.
+            path (Optional[PathLike]): Path of the file to load.
+            file_format (Optional[str]): Format specifier for determining the file extension.
+            compression (CompressionLike): Compression method if applicable.
+            **kwargs: Additional keyword arguments passed for deserialization.
+
+        Returns:
+            Pickleable: The deserialized instance."""
         path = cls.resolve_file_path(path=path, file_format=file_format, compression=compression)
         suffixes = [suffix[1:].lower() for suffix in path.suffixes]
         if suffixes[0] in get_serialization_extensions("pickle"):
@@ -1233,19 +1464,36 @@ class Pickleable(Base):
         return len(self.dumps())
 
     def getsize(self, readable: bool = True, **kwargs) -> tp.Union[str, int]:
-        """Get size of this object."""
+        """Return the size of this object.
+
+        Args:
+            readable (bool): If True, return a human-readable size string.
+            **kwargs: Additional keyword arguments for size formatting.
+
+        Returns:
+            Union[str, int]: The object's size as a human-readable string if `readable` is True,
+                otherwise as an integer in bytes."""
         if readable:
             return humanize.naturalsize(self.__sizeof__(), **kwargs)
         return self.__sizeof__()
 
     @property
     def rec_state(self) -> tp.Optional[RecState]:
-        """Reconstruction state of the type `RecState`."""
+        """Reconstruction state for recreating the object.
+
+        Returns:
+            Optional[RecState]: The reconstruction state used for object reconstruction."""
         return None
 
     @classmethod
     def modify_state(cls, rec_state: RecState) -> RecState:
-        """Modify the reconstruction state before reconstruction."""
+        """Modify the reconstruction state prior to object reconstruction.
+
+        Args:
+            rec_state (RecState): The original reconstruction state.
+
+        Returns:
+            RecState: The modified reconstruction state."""
         return rec_state
 
     def __reduce__(self) -> tp.Union[str, tp.Tuple]:
@@ -1264,16 +1512,26 @@ pdictT = tp.TypeVar("pdictT", bound="pdict")
 
 
 class pdict(Comparable, Pickleable, Prettified, dict):
-    """Pickleable dict."""
+    """Class for a pickleable dictionary that supports comparison, serialization, and prettification."""
 
     def load_update(self, path: tp.Optional[tp.PathLike] = None, clear: bool = False, **kwargs) -> None:
-        """Load dumps from a file and update this instance in-place."""
+        """Load serialized data from a file and update this dictionary instance in place.
+
+        Args:
+            path (Optional[PathLike]): File path to load data from.
+            clear (bool): If True, clear the existing dictionary before updating.
+            **kwargs: Additional keyword arguments passed for loading."""
         if clear:
             self.clear()
         self.update(self.load(path=path, **kwargs))
 
     @property
     def rec_state(self) -> tp.Optional[RecState]:
+        """Reconstruction state for recreating this dictionary instance.
+
+        Returns:
+            RecState: The reconstruction state with initialization arguments and keyword arguments
+                derived from the dictionary contents."""
         init_args = ()
         init_kwargs = dict(self)
         for k in list(init_kwargs):
@@ -1290,7 +1548,16 @@ class pdict(Comparable, Pickleable, Prettified, dict):
         _key: tp.Optional[str] = None,
         **kwargs,
     ) -> bool:
-        """Check two objects for equality."""
+        """Perform a deep equality check between this dictionary and another object.
+
+        Args:
+            other (Any): The object to compare against.
+            check_types (bool): Whether to verify types during comparison.
+            _key (Optional[str]): Internal key to use for comparison; defaults to the class name if not provided.
+            **kwargs: Additional keyword arguments for deep comparison.
+
+        Returns:
+            bool: True if the objects are deeply equal, otherwise False."""
         if _key is None:
             _key = type(self).__name__
         if check_types and not is_deep_equal(

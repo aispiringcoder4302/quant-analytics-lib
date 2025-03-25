@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Class decorators for attaching magic methods."""
+"""Module providing class decorators for attaching magic methods."""
 
 import numpy as np
 
@@ -56,7 +56,7 @@ binary_magic_config = ReadonlyConfig(
 
 __pdoc__[
     "binary_magic_config"
-] = f"""Config of binary magic methods to be attached to a class.
+] = f"""Configuration of binary magic methods for attaching to a class.
 
 ```python
 {binary_magic_config.prettify()}
@@ -70,18 +70,17 @@ def attach_binary_magic_methods(
     translate_func: BinaryTranslateFuncT,
     config: tp.Optional[Config] = None,
 ) -> tp.ClassWrapper:
-    """Class decorator to attach binary magic methods to a class.
+    """Attach binary magic methods to a class.
 
-    `translate_func` must
+    Args:
+        translate_func (Callable[[Any, Any, Callable], Any]): A function that takes the instance,
+            another operand, and a binary operator function, performs the operation, and returns the result.
+        config (Optional[Config]): A configuration mapping of magic method names to settings.
 
-    * take `self`, `other`, and unary function,
-    * perform computation, and
-    * return the result.
+            If not provided, defaults to `binary_magic_config`.
 
-    `config` defaults to `binary_magic_config` and must contain target method names (keys)
-    and dictionaries (values) with the following keys:
-
-    * `func`: Function that combines two array-like objects.
+    Returns:
+        ClassWrapper: The decorated class with attached binary magic methods.
     """
     if config is None:
         config = binary_magic_config
@@ -119,7 +118,7 @@ unary_magic_config = ReadonlyConfig(
 
 __pdoc__[
     "unary_magic_config"
-] = f"""Config of unary magic methods to be attached to a class.
+] = f"""Configuration of unary magic methods for attaching to a class.
 
 ```python
 {unary_magic_config.prettify()}
@@ -133,18 +132,17 @@ def attach_unary_magic_methods(
     translate_func: UnaryTranslateFuncT,
     config: tp.Optional[Config] = None,
 ) -> tp.ClassWrapper:
-    """Class decorator to attach unary magic methods to a class.
+    """Attach unary magic methods to a class.
 
-    `translate_func` must
+    Args:
+        translate_func (Callable[[Any, Callable], Any]): A function that takes the instance and a unary
+            operator function, performs the operation, and returns the result.
+        config (Optional[Config]): A configuration mapping of magic method names to settings.
 
-    * take `self` and unary function,
-    * perform computation, and
-    * return the result.
+            If not provided, defaults to `unary_magic_config`.
 
-    `config` defaults to `unary_magic_config` and must contain target method names (keys)
-    and dictionaries (values) with the following keys:
-
-    * `func`: Function that transforms one array-like object.
+    Returns:
+        ClassWrapper: The decorated class with attached unary magic methods.
     """
     if config is None:
         config = unary_magic_config

@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Utilities for profiling time and memory."""
+"""Module providing utilities for profiling time and memory usage."""
 
 import tracemalloc
 from datetime import timedelta
@@ -31,18 +31,18 @@ __all__ = [
 
 
 class Timer(Base):
-    """Context manager to measure execution time using `timeit`.
+    """Class for measuring execution time using `timeit`.
 
     Usage:
         ```pycon
         >>> from vectorbtpro import *
-
+        
         >>> with vbt.Timer() as timer:
         >>>     sleep(1)
-
+        
         >>> print(timer.elapsed())
         1.01 seconds
-
+        
         >>> timer.elapsed(readable=False)
         datetime.timedelta(seconds=1, microseconds=5110)
         ```
@@ -54,20 +54,26 @@ class Timer(Base):
 
     @property
     def start_time(self) -> float:
-        """Start time."""
+        """Start time of the timer."""
         return self._start_time
 
     @property
     def end_time(self) -> float:
-        """End time."""
+        """End time of the timer. If the timer is still running, returns the current time."""
         if self._end_time is None:
             return default_timer()
         return self._end_time
 
     def elapsed(self, readable: bool = True, **kwargs) -> tp.Union[str, timedelta]:
-        """Get elapsed time.
+        """Return the elapsed time since the timer started.
 
-        `**kwargs` are passed to `humanize.precisedelta`."""
+        Args:
+            readable (bool): Whether to format the elapsed time as a human-readable string.
+            **kwargs: Additional keyword arguments passed to `humanize.precisedelta`.
+
+        Returns:
+            Union[str, timedelta]: The elapsed time as a human-readable string or a timedelta.
+        """
         elapsed = self.end_time - self.start_time
         elapsed_delta = timedelta(seconds=elapsed)
         if readable:
@@ -92,7 +98,22 @@ def with_timer(
     print_format: tp.Optional[str] = None,
     print_kwargs: tp.KwargsLike = None,
 ) -> tp.Callable:
-    """Decorator to run a function with `Timer`."""
+    """Decorator to measure the execution time of a function using `Timer`.
+
+    This decorator wraps the function execution with a `Timer` to calculate its execution time,
+    prints the formatted elapsed time, and returns the function's output.
+
+    Args:
+        *args: Additional arguments passed to the decorator.
+        timer_kwargs (KwargsLike): Additional keyword arguments for the `Timer` constructor.
+        elapsed_kwargs (KwargsLike): Additional keyword arguments for the `Timer.elapsed` method.
+        print_func (Optional[Callable]): Function used to print the formatted elapsed time.
+        print_format (Optional[str]): Format string using `{func_name}` and `{elapsed}`.
+        print_kwargs (KwargsLike): Additional keyword arguments for `print_func`.
+
+    Returns:
+        Callable: The decorated function.
+    """
 
     if timer_kwargs is None:
         timer_kwargs = {}
@@ -130,19 +151,30 @@ def with_timer(
 
 
 def timeit(func: tp.Callable, readable: bool = True, **kwargs) -> tp.Union[str, timedelta]:
-    """Run `timeit` on a function.
+    """Run timeit on a function to measure its average execution time.
+
+    This function runs the given function using the `timeit` module to compute the average elapsed time
+    over a suitable number of iterations.
+
+    Args:
+        func (Callable): The function to be timed.
+        readable (bool): Whether to format the elapsed time as a human-readable string.
+        **kwargs: Additional keyword arguments passed to `humanize.precisedelta`.
+
+    Returns:
+        Union[str, timedelta]: The average execution time as a human-readable string or a timedelta.
 
     Usage:
         ```pycon
         >>> from vectorbtpro import *
-
+        
         >>> def my_func():
         ...     sleep(1)
-
+        
         >>> elapsed = vbt.timeit(my_func)
         >>> print(elapsed)
         1.01 seconds
-
+        
         >>> vbt.timeit(my_func, readable=False)
         datetime.timedelta(seconds=1, microseconds=1870)
         ```
@@ -165,7 +197,21 @@ def with_timeit(
     print_format: tp.Optional[str] = None,
     print_kwargs: tp.KwargsLike = None,
 ) -> tp.Callable:
-    """Decorator to run a function with `timeit`."""
+    """Decorator to measure the average execution time of a function using `timeit`.
+
+    This decorator computes the average execution time of the function using `timeit`, prints the formatted result,
+    and returns the function's output.
+
+    Args:
+        *args: Additional arguments passed to the decorator.
+        timeit_kwargs (KwargsLike): Additional keyword arguments for the `timeit` function.
+        print_func (Optional[Callable]): Function used to print the formatted execution time.
+        print_format (Optional[str]): Format string using `{func_name}` and `{elapsed}`.
+        print_kwargs (KwargsLike): Additional keyword arguments for `print_func`.
+
+    Returns:
+        Callable: The decorated function.
+    """
 
     if timeit_kwargs is None:
         timeit_kwargs = {}
@@ -199,18 +245,20 @@ def with_timeit(
 
 
 class MemTracer(Base):
-    """Context manager to trace peak and final memory usage using `tracemalloc`.
+    """Class for tracing memory usage using `tracemalloc`.
+
+    This context manager starts tracing memory on entry and stops on exit, capturing the final and peak memory usage.
 
     Usage:
         ```pycon
         >>> from vectorbtpro import *
-
+        
         >>> with vbt.MemTracer() as tracer:
         >>>     np.random.uniform(size=1000000)
-
+        
         >>> print(tracer.peak_usage())
         8.0 MB
-
+        
         >>> tracer.peak_usage(readable=False)
         8005360
         ```
@@ -221,9 +269,15 @@ class MemTracer(Base):
         self._peak_usage = None
 
     def final_usage(self, readable: bool = True, **kwargs) -> tp.Union[str, int]:
-        """Get final memory usage.
+        """Return the final memory usage recorded by `tracemalloc`.
 
-        `**kwargs` are passed to `humanize.naturalsize`."""
+        Args:
+            readable (bool): Whether to format the memory usage as a human-readable string.
+            **kwargs: Additional keyword arguments passed to `humanize.naturalsize`.
+
+        Returns:
+            Union[str, int]: The final memory usage as a human-readable string or as an integer in bytes.
+        """
         if self._final_usage is None:
             final_usage = tracemalloc.get_traced_memory()[0]
         else:
@@ -233,9 +287,15 @@ class MemTracer(Base):
         return final_usage
 
     def peak_usage(self, readable: bool = True, **kwargs) -> tp.Union[str, int]:
-        """Get peak memory usage.
+        """Return the peak memory usage recorded by `tracemalloc`.
 
-        `**kwargs` are passed to `humanize.naturalsize`."""
+        Args:
+            readable (bool): Whether to format the memory usage as a human-readable string.
+            **kwargs: Additional keyword arguments passed to `humanize.naturalsize`.
+
+        Returns:
+            Union[str, int]: The peak memory usage as a human-readable string or as an integer in bytes.
+        """
         if self._peak_usage is None:
             peak_usage = tracemalloc.get_traced_memory()[1]
         else:
@@ -262,7 +322,23 @@ def with_memtracer(
     print_format: tp.Optional[str] = None,
     print_kwargs: tp.KwargsLike = None,
 ) -> tp.Callable:
-    """Decorator to run a function with `MemTracer`."""
+    """Run a function with `MemTracer`.
+
+    This decorator wraps a function to monitor its memory usage using `MemTracer`.
+    It executes the function within a memory tracking context and then prints the
+    peak and final memory usage.
+
+    Args:
+        *args: Additional arguments passed to the decorator.
+        memtracer_kwargs (KwargsLike): Keyword arguments for initializing `MemTracer`.
+        usage_kwargs (KwargsLike): Keyword arguments for computing memory usage.
+        print_func (Optional[Callable]): Function used to print the memory report.
+        print_format (Optional[str]): Format string for displaying memory usage.
+        print_kwargs (KwargsLike): Additional keyword arguments passed to `print_func`.
+
+    Returns:
+        Callable: The decorated function.
+    """
 
     if memtracer_kwargs is None:
         memtracer_kwargs = {}

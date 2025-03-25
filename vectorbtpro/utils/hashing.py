@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Utilities for hashing."""
+"""Module providing utilities for hashing."""
 
 from functools import cached_property as cachedproperty
 
@@ -19,21 +19,26 @@ __all__ = []
 
 
 class Hashable(Base):
-    """Hashable class."""
+    """Class for representing hashable objects using a custom hash key."""
 
     @staticmethod
     def get_hash(*args, **kwargs) -> int:
-        """Static method to get the hash of the instance based on its arguments."""
+        """Compute a hash value based on the provided arguments.
+
+        Args:
+            *args: Additional arguments passed for hash computation.
+            **kwargs: Additional keyword arguments passed for hash computation.
+        """
         raise NotImplementedError
 
     @property
     def hash_key(self) -> tuple:
-        """Key that can be used for hashing the instance."""
+        """Unique key used for computing the instance's hash."""
         raise NotImplementedError
 
     @cachedproperty
     def hash(self) -> int:
-        """Hash of the instance."""
+        """Computed hash value of the instance based on its hash key."""
         return hash(self.hash_key)
 
     def __hash__(self) -> int:
