@@ -38,6 +38,7 @@ class Chainable(Base):
 
         Args:
             func (PipeFunc): The function to apply. It can be:
+
                 * A callable function.
                 * A string representing an attribute path to resolve via `vectorbtpro.utils.attr_.deep_getattr`.
                 * A tuple where the first element is a callable or attribute path and the second element indicates
@@ -86,8 +87,9 @@ class Chainable(Base):
                 Each task can be:
 
                 * An instance of `vectorbtpro.utils.execution.Task`.
-                * A tuple convertible to a `Task` via `Task.from_tuple`.
-                * A callable function to be wrapped as a `Task`.
+                * A tuple convertible to a `vectorbtpro.utils.execution.Task` via
+                    `vectorbtpro.utils.execution.Task.from_tuple`.
+                * A callable function to be wrapped as a `vectorbtpro.utils.execution.Task`.
 
         Returns:
             Any: The final result after applying all tasks sequentially.

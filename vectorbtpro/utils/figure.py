@@ -410,6 +410,14 @@ class Figure(_Figure, FigureMixin):
         _Figure.show(self, *args, **kwargs)
 
 
+Figure.__init__.__doc__ = f"""```text
+{Figure.__init__.__doc__}
+```"""
+Figure.show.__doc__ = f"""```text
+{Figure.show.__doc__}
+```"""
+
+
 class FigureWidget(_FigureWidget, FigureMixin):
     """Class for Plotly figure widgets.
 
@@ -436,6 +444,14 @@ class FigureWidget(_FigureWidget, FigureMixin):
     def show(self, *args, **kwargs) -> None:
         args, kwargs = self.resolve_show_args(*args, **kwargs)
         _FigureWidget.show(self, *args, **kwargs)
+
+
+FigureWidget.__init__.__doc__ = f"""```text
+{FigureWidget.__init__.__doc__}
+```"""
+FigureWidget.show.__doc__ = f"""```text
+{FigureWidget.show.__doc__}
+```"""
 
 
 try:
@@ -468,6 +484,13 @@ try:
             args, kwargs = self.resolve_show_args(*args, **kwargs)
             _FigureResampler.show(self, *args, **kwargs)
 
+    FigureResampler.__init__.__doc__ = f"""```text
+{FigureResampler.__init__.__doc__}
+```"""
+    FigureResampler.show.__doc__ = f"""```text
+{FigureResampler.show.__doc__}
+```"""
+
     class FigureWidgetResampler(_FigureWidgetResampler, FigureMixin):
         """Class for resampling Plotly figure widgets.
 
@@ -494,6 +517,14 @@ try:
         def show(self, *args, **kwargs) -> None:
             args, kwargs = self.resolve_show_args(*args, **kwargs)
             _FigureWidgetResampler.show(self, *args, **kwargs)
+
+    FigureWidgetResampler.__init__.__doc__ = f"""```text
+{FigureWidgetResampler.__init__.__doc__}
+```"""
+    FigureWidgetResampler.show.__doc__ = f"""```text
+{FigureWidgetResampler.show.__doc__}
+```"""
+
 
 except ImportError:
     FigureResampler = Figure

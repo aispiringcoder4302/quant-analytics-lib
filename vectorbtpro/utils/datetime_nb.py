@@ -625,18 +625,17 @@ class DTCST(tp.NamedTuple):
 
 
 DTCS = DTCST()
-"""Status codes for datetime component matches."""
+"""_"""
 
 __pdoc__[
     "DTCS"
 ] = f"""Status codes returned by `within_fixed_dtc_nb` and `within_periodic_dtc_nb`.
 
-Usage:
 ```python
 {prettify(DTCS)}
 ```
 
-Attributes:
+Fields:
     SU (int): Start matched; remaining components are unspecified.
     EU (int): End matched; remaining components are unspecified.
     U (int): Unknown status.

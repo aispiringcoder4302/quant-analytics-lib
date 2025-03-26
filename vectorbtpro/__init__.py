@@ -136,22 +136,25 @@ def _import_more_stuff():
     return locals()
 
 
+imported_stuff = {}
+"""_"""
+
+
 star_import = settings["importing"]["star_import"]
 if star_import.lower() == "all":
     globals().update(_import_more_stuff())
-    imported_stuff = globals()
+    imported_stuff.update(globals())
 elif star_import.lower() == "vbt":
-    imported_stuff = globals()
+    imported_stuff.update(globals())
 elif star_import.lower() == "minimal":
     import sys
 
     vbt = sys.modules[__name__]
     more_stuff = _import_more_stuff()
     globals().update(more_stuff)
-    imported_stuff = {"vbt": vbt, "tp": tp, **more_stuff}
+    imported_stuff.update({"vbt": vbt, "tp": tp, **more_stuff})
     __all__ = ["vbt", "tp", *more_stuff.keys()]
 elif star_import.lower() == "none":
-    imported_stuff = dict()
     __all__ = []
 else:
     raise ValueError(f"Invalid star import: '{star_import}'")

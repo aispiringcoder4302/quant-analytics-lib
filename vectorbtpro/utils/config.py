@@ -400,8 +400,8 @@ def merge_dicts(
 ) -> OutConfigLikeT:
     """Merge multiple dictionaries into one.
 
-        Merge provided dictionaries with optional conversion and copying, and optionally perform
-        recursive merging of nested dictionaries.
+    Merge provided dictionaries with optional conversion and copying, and optionally perform
+    recursive merging of nested dictionaries.
 
     Args:
         *dicts (dict): Dictionaries to merge.
@@ -482,7 +482,7 @@ def merge_dicts(
 def flat_merge_dicts(*dicts: InConfigLikeT, **kwargs) -> OutConfigLikeT:
     """Merge multiple dictionaries with flat (non-recursive) merging.
 
-        Wrapper around `merge_dicts` that forces `nested` to False while applying default arguments.
+    Wrapper around `merge_dicts` that forces `nested` to False while applying default arguments.
 
     Args:
         *dicts (dict): Dictionaries to merge.
@@ -513,52 +513,53 @@ class Config(pdict):
         options_ (dict): Configuration options. See details below.
         **kwargs: Keyword arguments to initialize the dictionary.
 
-    Options can have the following keys:
+    Options:
+        copy_kwargs (dict): Keyword arguments used by `copy_dict` when copying the main
+            dictionary and `reset_dct`.
 
-    * copy_kwargs (dict): Keyword arguments used by `copy_dict` when copying the main dictionary and `reset_dct`.
+            Copy mode defaults to 'none'.
+        reset_dct (dict): Fallback dictionary used for resetting.
 
-        Copy mode defaults to 'none'.
-    * reset_dct (dict): Fallback dictionary used for resetting.
+            If None, the main dictionary is copied using `reset_dct_copy_kwargs`.
 
-        If None, the main dictionary is copied using `reset_dct_copy_kwargs`.
+            Defaults to None.
 
-        Defaults to None.
+            !!! note
+                When `readonly` is True, defaults to the main dictionary if set to None.
+        reset_dct_copy_kwargs (dict): Keyword arguments that override those in `copy_kwargs`
+            for creating `reset_dct`.
 
-        !!! note
-            When `readonly` is True, defaults to the main dictionary if set to None.
-    * reset_dct_copy_kwargs (dict): Keyword arguments that override those in `copy_kwargs` for creating `reset_dct`.
+            Copy mode defaults to 'none' if `readonly` is True, otherwise 'hybrid'.
+        pickle_reset_dct (bool): Determines whether `reset_dct` is pickled.
 
-        Copy mode defaults to 'none' if `readonly` is True, otherwise 'hybrid'.
-    * pickle_reset_dct (bool): Determines whether `reset_dct` is pickled.
+            Defaults to False.
+        frozen_keys (bool): Denies updates to configuration keys when True.
 
-        Defaults to False.
-    * frozen_keys (bool): Denies updates to configuration keys when True.
+            Defaults to False.
+        readonly (bool): Denies updates to both keys and values when True.
 
-        Defaults to False.
-    * readonly (bool): Denies updates to both keys and values when True.
+            Defaults to False.
+        nested (bool): Applies operations such as copying, updating, and merging recursively to
+            each child dictionary when True.
 
-        Defaults to False.
-    * nested (bool): Applies operations such as copying, updating, and merging recursively to
-        each child dictionary when True.
+            Disable this to treat each child dictionary as a single value.
 
-        Disable this to treat each child dictionary as a single value.
+            Defaults to True.
+        convert_children (bool or type): Converts child dictionaries of type `child_dict` to
+            configurations with the same settings if True or if set to a `Config` subclass.
 
-        Defaults to True.
-    * convert_children (bool or type): Converts child dictionaries of type `child_dict` to
-        configurations with the same settings if True or if set to a `Config` subclass.
+            This triggers a waterfall conversion across all child dictionaries.
+            Existing configurations are not converted. Requires `nested` to be True.
 
-        This triggers a waterfall conversion across all child dictionaries.
-        Existing configurations are not converted. Requires `nested` to be True.
+            Defaults to False.
+        as_attrs (bool): Enables accessing dictionary keys via dot notation when True.
 
-        Defaults to False.
-    * as_attrs (bool): Enables accessing dictionary keys via dot notation when True.
+            This provides autocompletion at runtime but raises an error in the event of naming conflicts.
+            To allow nested dictionaries to be accessed via dot notation, wrap them with `child_dict`
+            and ensure both `convert_children` and `nested` are True.
 
-        This provides autocompletion at runtime but raises an error in the event of naming conflicts.
-        To allow nested dictionaries to be accessed via dot notation, wrap them with `child_dict`
-        and ensure both `convert_children` and `nested` are True.
-
-        Defaults to True if `frozen_keys` or `readonly` is True, otherwise False.
-    * override_keys (set of str): Specifies keys that can override attribute names when `as_attrs` is True.
+            Defaults to True if `frozen_keys` or `readonly` is True, otherwise False.
+        override_keys (set of str): Specifies keys that can override attribute names when `as_attrs` is True.
 
     Defaults can be overridden using settings from `vectorbtpro._settings.config`.
 
