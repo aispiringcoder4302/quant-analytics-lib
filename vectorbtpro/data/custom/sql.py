@@ -580,6 +580,7 @@ class SQLData(DBData):
             engine = engine_meta["engine"]
             engine_name = engine_meta["engine_name"]
             should_dispose = engine_meta["should_dispose"]
+            engine_config = {}
             if dispose_engine is None:
                 dispose_engine = should_dispose
         else:
