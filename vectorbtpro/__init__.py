@@ -37,6 +37,7 @@ if typing.TYPE_CHECKING:
 from vectorbtpro import _typing as tp
 from vectorbtpro._settings import settings
 from vectorbtpro._version import __version__ as version, __release__ as release
+from vectorbtpro.utils.formatting import prettify_doc
 
 # Silence warnings
 import warnings
@@ -186,8 +187,10 @@ __pdoc__ = dict()
 __pdoc__["_dtypes"] = True
 __pdoc__["_opt_deps"] = True
 __pdoc__["_settings"] = True
-__pdoc__["imported_stuff"] = f"""Modules and objects imported by default when using `from vectorbtpro import *`.
+__pdoc__[
+    "imported_stuff"
+] = f"""Modules and objects imported by default when using `from vectorbtpro import *`.
 
 ```python
-{prettify(imported_stuff)}
+{prettify_doc(imported_stuff)}
 ```"""

@@ -411,10 +411,10 @@ class Figure(_Figure, FigureMixin):
 
 
 Figure.__init__.__doc__ = f"""```text
-{Figure.__init__.__doc__}
+{_Figure.__init__.__doc__}
 ```"""
 Figure.show.__doc__ = f"""```text
-{Figure.show.__doc__}
+{_Figure.show.__doc__}
 ```"""
 
 
@@ -447,10 +447,10 @@ class FigureWidget(_FigureWidget, FigureMixin):
 
 
 FigureWidget.__init__.__doc__ = f"""```text
-{FigureWidget.__init__.__doc__}
+{_FigureWidget.__init__.__doc__}
 ```"""
 FigureWidget.show.__doc__ = f"""```text
-{FigureWidget.show.__doc__}
+{_FigureWidget.show.__doc__}
 ```"""
 
 
@@ -485,10 +485,10 @@ try:
             _FigureResampler.show(self, *args, **kwargs)
 
     FigureResampler.__init__.__doc__ = f"""```text
-{FigureResampler.__init__.__doc__}
+{_FigureResampler.__init__.__doc__}
 ```"""
     FigureResampler.show.__doc__ = f"""```text
-{FigureResampler.show.__doc__}
+{_FigureResampler.show.__doc__}
 ```"""
 
     class FigureWidgetResampler(_FigureWidgetResampler, FigureMixin):
@@ -519,10 +519,10 @@ try:
             _FigureWidgetResampler.show(self, *args, **kwargs)
 
     FigureWidgetResampler.__init__.__doc__ = f"""```text
-{FigureWidgetResampler.__init__.__doc__}
+{_FigureWidgetResampler.__init__.__doc__}
 ```"""
     FigureWidgetResampler.show.__doc__ = f"""```text
-{FigureWidgetResampler.show.__doc__}
+{_FigureWidgetResampler.show.__doc__}
 ```"""
 
 

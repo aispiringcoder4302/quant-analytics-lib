@@ -15,7 +15,7 @@ import numpy as np
 from vectorbtpro import _typing as tp
 from vectorbtpro.registries.jit_registry import register_jitted
 from vectorbtpro.utils.datetime_ import DTCNT
-from vectorbtpro.utils.formatting import prettify
+from vectorbtpro.utils.formatting import prettify_doc
 
 __all__ = []
 
@@ -632,7 +632,7 @@ __pdoc__[
 ] = f"""Status codes returned by `within_fixed_dtc_nb` and `within_periodic_dtc_nb`.
 
 ```python
-{prettify(DTCS)}
+{prettify_doc(DTCS)}
 ```
 
 Fields:

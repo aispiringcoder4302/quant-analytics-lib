@@ -157,7 +157,7 @@ __pdoc__[
 ] = f"""Argument config for `BasePFPreparer`.
 
 ```python
-{base_arg_config.prettify()}
+{base_arg_config.prettify_doc()}
 ```
 """
 
@@ -680,7 +680,7 @@ __pdoc__[
 ] = f"""Argument config for order-related information.
 
 ```python
-{order_arg_config.prettify()}
+{order_arg_config.prettify_doc()}
 ```
 """
 
@@ -719,7 +719,7 @@ __pdoc__[
 ] = f"""Argument config for `FOPreparer`.
 
 ```python
-{fo_arg_config.prettify()}
+{fo_arg_config.prettify_doc()}
 ```
 """
 
@@ -1168,7 +1168,7 @@ __pdoc__[
 ] = f"""Argument config for `FSPreparer`.
 
 ```python
-{fs_arg_config.prettify()}
+{fs_arg_config.prettify_doc()}
 ```
 """
 
@@ -1855,7 +1855,7 @@ __pdoc__[
 ] = f"""Argument config for `FOFPreparer`.
 
 ```python
-{fof_arg_config.prettify()}
+{fof_arg_config.prettify_doc()}
 ```
 """
 
@@ -2173,7 +2173,7 @@ __pdoc__[
 ] = f"""Argument config for `FDOFPreparer`.
 
 ```python
-{fdof_arg_config.prettify()}
+{fdof_arg_config.prettify_doc()}
 ```
 """
 

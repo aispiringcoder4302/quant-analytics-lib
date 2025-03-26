@@ -174,7 +174,7 @@ __pdoc__[
 ] = f"""Field config for `Ranges`.
 
 ```python
-{ranges_field_config.prettify()}
+{ranges_field_config.prettify_doc()}
 ```
 """
 
@@ -186,7 +186,7 @@ __pdoc__[
 ] = f"""Config of fields to be attached to `Ranges`.
 
 ```python
-{ranges_attach_field_config.prettify()}
+{ranges_attach_field_config.prettify_doc()}
 ```
 """
 
@@ -215,7 +215,7 @@ __pdoc__[
 ] = f"""Config of shortcut properties to be attached to `Ranges`.
 
 ```python
-{ranges_shortcut_config.prettify()}
+{ranges_shortcut_config.prettify_doc()}
 ```
 """
 
@@ -1701,7 +1701,7 @@ __pdoc__[
 ] = f"""Field config for `PatternRanges`.
 
 ```python
-{pattern_ranges_field_config.prettify()}
+{pattern_ranges_field_config.prettify_doc()}
 ```
 """
 

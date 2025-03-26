@@ -44,7 +44,7 @@ __pdoc__[
 ] = f"""Config of shortcut properties to be attached to `PriceRecords`.
 
 ```python
-{price_records_shortcut_config.prettify()}
+{price_records_shortcut_config.prettify_doc()}
 ```
 """
 

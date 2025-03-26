@@ -16,7 +16,7 @@ import numpy as np
 
 from vectorbtpro import _typing as tp
 from vectorbtpro._dtypes import *
-from vectorbtpro.utils.formatting import prettify
+from vectorbtpro.utils.formatting import prettify_doc
 
 __pdoc__all__ = __all__ = [
     "BarZone",
@@ -77,7 +77,7 @@ __pdoc__[
 ] = f"""Bar zone.
 
 ```python
-{prettify(BarZone)}
+{prettify_doc(BarZone)}
 ```
 """
 
@@ -98,7 +98,7 @@ __pdoc__[
 ] = f"""Rolling window type.
 
 ```python
-{prettify(WType)}
+{prettify_doc(WType)}
 ```
 """
 
@@ -116,7 +116,7 @@ __pdoc__[
 ] = f"""Range status.
 
 ```python
-{prettify(RangeStatus)}
+{prettify_doc(RangeStatus)}
 ```
 """
 
@@ -136,7 +136,7 @@ __pdoc__[
 ] = f"""Interpolation mode.
 
 ```python
-{prettify(InterpMode)}
+{prettify_doc(InterpMode)}
 ```
 
 Attributes:
@@ -169,7 +169,7 @@ __pdoc__[
 ] = f"""Rescaling mode.
 
 ```python
-{prettify(RescaleMode)}
+{prettify_doc(RescaleMode)}
 ```
 
 Attributes:
@@ -204,7 +204,7 @@ __pdoc__[
 ] = f"""Error type.
 
 ```python
-{prettify(ErrorType)}
+{prettify_doc(ErrorType)}
 ```
 
 Attributes:
@@ -227,7 +227,7 @@ __pdoc__[
 ] = f"""Distance measure.
 
 ```python
-{prettify(DistanceMeasure)}
+{prettify_doc(DistanceMeasure)}
 ```
 
 Attributes:
@@ -251,7 +251,7 @@ __pdoc__[
 ] = f"""Overlapping mode.
 
 ```python
-{prettify(OverlapMode)}
+{prettify_doc(OverlapMode)}
 ```
 
 Attributes:
@@ -277,7 +277,7 @@ __pdoc__[
 ] = f"""Drawdown status.
 
 ```python
-{prettify(DrawdownStatus)}
+{prettify_doc(DrawdownStatus)}
 ```
 """
 
@@ -300,7 +300,7 @@ __pdoc__[
 ] = f"""`np.dtype` of range records.
 
 ```python
-{prettify(range_dt)}
+{prettify_doc(range_dt)}
 ```
 """
 
@@ -322,7 +322,7 @@ __pdoc__[
 ] = f"""`np.dtype` of pattern range records.
 
 ```python
-{prettify(pattern_range_dt)}
+{prettify_doc(pattern_range_dt)}
 ```
 """
 
@@ -347,7 +347,7 @@ __pdoc__[
 ] = f"""`np.dtype` of drawdown records.
 
 ```python
-{prettify(drawdown_dt)}
+{prettify_doc(drawdown_dt)}
 ```
 """
 

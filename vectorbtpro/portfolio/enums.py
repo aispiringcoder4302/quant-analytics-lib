@@ -16,7 +16,7 @@ import numpy as np
 
 from vectorbtpro import _typing as tp
 from vectorbtpro._dtypes import *
-from vectorbtpro.utils.formatting import prettify
+from vectorbtpro.utils.formatting import prettify_doc
 
 __pdoc__all__ = __all__ = [
     "RejectedOrderError",
@@ -129,7 +129,7 @@ __pdoc__[
 ] = f"""Price type.
 
 ```python
-{prettify(PriceType)}
+{prettify_doc(PriceType)}
 ```
 
 Attributes:
@@ -167,7 +167,7 @@ __pdoc__[
 ] = f"""Asset valuation price type.
 
 ```python
-{prettify(ValPriceType)}
+{prettify_doc(ValPriceType)}
 ```
 
 Attributes:
@@ -189,7 +189,7 @@ __pdoc__[
 ] = f"""Initial cash mode.
 
 ```python
-{prettify(InitCashMode)}
+{prettify_doc(InitCashMode)}
 ```
 
 Attributes:
@@ -213,7 +213,7 @@ __pdoc__[
 ] = f"""Call sequence type.
 
 ```python
-{prettify(CallSeqType)}
+{prettify_doc(CallSeqType)}
 ```
 
 Attributes:
@@ -239,7 +239,7 @@ __pdoc__[
 ] = f"""Conflict mode for pending signals.
 
 ```python
-{prettify(PendingConflictMode)}
+{prettify_doc(PendingConflictMode)}
 ```
 
 What should happen if an executable signal occurs during a pending signal?
@@ -267,7 +267,7 @@ __pdoc__[
 ] = f"""Accumulation mode.
 
 ```python
-{prettify(AccumulationMode)}
+{prettify_doc(AccumulationMode)}
 ```
 
 Accumulation allows gradually increasing and decreasing positions by a size.
@@ -307,7 +307,7 @@ __pdoc__[
 ] = f"""Conflict mode.
 
 ```python
-{prettify(ConflictMode)}
+{prettify_doc(ConflictMode)}
 ```
 
 What should happen if both an entry signal and an exit signal occur simultaneously?
@@ -341,7 +341,7 @@ __pdoc__[
 ] = f"""Direction conflict mode.
 
 ```python
-{prettify(DirectionConflictMode)}
+{prettify_doc(DirectionConflictMode)}
 ```
 
 What should happen if both a long entry signal and a short entry signals occur simultaneously?
@@ -375,7 +375,7 @@ __pdoc__[
 ] = f"""Opposite entry mode.
 
 ```python
-{prettify(OppositeEntryMode)}
+{prettify_doc(OppositeEntryMode)}
 ```
 
 What should happen if an entry signal of opposite direction occurs before an exit signal?
@@ -404,7 +404,7 @@ __pdoc__[
 ] = f"""Delta format.
 
 ```python
-{prettify(DeltaFormat)}
+{prettify_doc(DeltaFormat)}
 ```
 
 In which format a delta is provided?
@@ -430,7 +430,7 @@ __pdoc__[
 ] = f"""Time delta format.
 
 ```python
-{prettify(TimeDeltaFormat)}
+{prettify_doc(TimeDeltaFormat)}
 ```
 
 In which format a time delta is provided?
@@ -464,7 +464,7 @@ __pdoc__[
 ] = f"""Stop ladder mode.
 
 ```python
-{prettify(StopLadderMode)}
+{prettify_doc(StopLadderMode)}
 ```
 
 Attributes:
@@ -502,7 +502,7 @@ __pdoc__[
 ] = f"""Stop entry price.
 
 ```python
-{prettify(StopEntryPrice)}
+{prettify_doc(StopEntryPrice)}
 ```
 
 Which price to use as an initial stop price?
@@ -533,7 +533,7 @@ __pdoc__[
 ] = f"""Stop exit price.
 
 ```python
-{prettify(StopExitPrice)}
+{prettify_doc(StopExitPrice)}
 ```
 
 Which price to use when exiting a position upon a stop signal?
@@ -567,7 +567,7 @@ __pdoc__[
 ] = f"""Stop exit type.
 
 ```python
-{prettify(StopExitType)}
+{prettify_doc(StopExitType)}
 ```
 
 How to exit the current position upon a stop signal?
@@ -594,7 +594,7 @@ __pdoc__[
 ] = f"""Stop update mode.
 
 ```python
-{prettify(StopUpdateMode)}
+{prettify_doc(StopUpdateMode)}
 ```
 
 What to do with the old stop upon a new entry/accumulation? 
@@ -627,7 +627,7 @@ __pdoc__[
 ] = f"""Size type.
 
 ```python
-{prettify(SizeType)}
+{prettify_doc(SizeType)}
 ```
 
 Attributes:
@@ -679,7 +679,7 @@ __pdoc__[
 ] = f"""Position direction.
 
 ```python
-{prettify(Direction)}
+{prettify_doc(Direction)}
 ```
 
 Attributes:
@@ -702,7 +702,7 @@ __pdoc__[
 ] = f"""Leverage mode.
 
 ```python
-{prettify(LeverageMode)}
+{prettify_doc(LeverageMode)}
 ```
 
 Attributes:
@@ -725,7 +725,7 @@ __pdoc__[
 ] = f"""Price are violation mode.
 
 ```python
-{prettify(PriceAreaVioMode)}
+{prettify_doc(PriceAreaVioMode)}
 ```
 
 Attributes:
@@ -749,7 +749,7 @@ __pdoc__[
 ] = f"""Order status.
 
 ```python
-{prettify(OrderStatus)}
+{prettify_doc(OrderStatus)}
 ```
 
 Attributes:
@@ -783,7 +783,7 @@ __pdoc__[
 ] = f"""Order status information.
 
 ```python
-{prettify(OrderStatusInfo)}
+{prettify_doc(OrderStatusInfo)}
 ```
 """
 
@@ -809,7 +809,7 @@ __pdoc__[
 ] = f"""Order status description.
 
 ```python
-{prettify(status_info_desc)}
+{prettify_doc(status_info_desc)}
 ```
 """
 
@@ -827,7 +827,7 @@ __pdoc__[
 ] = f"""Order side.
 
 ```python
-{prettify(OrderSide)}
+{prettify_doc(OrderSide)}
 ```
 """
 
@@ -845,7 +845,7 @@ __pdoc__[
 ] = f"""Order type.
 
 ```python
-{prettify(OrderType)}
+{prettify_doc(OrderType)}
 ```
 """
 
@@ -864,7 +864,7 @@ __pdoc__[
 ] = f"""Limit order price.
 
 ```python
-{prettify(LimitOrderPrice)}
+{prettify_doc(LimitOrderPrice)}
 ```
 
 Which price to use when executing a limit order?
@@ -896,7 +896,7 @@ __pdoc__[
 ] = f"""Trade direction.
 
 ```python
-{prettify(TradeDirection)}
+{prettify_doc(TradeDirection)}
 ```
 """
 
@@ -914,7 +914,7 @@ __pdoc__[
 ] = f"""Event status.
 
 ```python
-{prettify(TradeStatus)}
+{prettify_doc(TradeStatus)}
 ```
 """
 
@@ -934,7 +934,7 @@ __pdoc__[
 ] = f"""Trades type.
 
 ```python
-{prettify(TradesType)}
+{prettify_doc(TradesType)}
 ```
 """
 
@@ -954,7 +954,7 @@ __pdoc__[
 ] = f"""Order price error.
 
 ```python
-{prettify(OrderPriceStatus)}
+{prettify_doc(OrderPriceStatus)}
 ```
 
 Attributes:
@@ -978,7 +978,7 @@ __pdoc__[
 ] = f"""Position feature.
 
 ```python
-{prettify(PositionFeature)}
+{prettify_doc(PositionFeature)}
 ```
 """
 
@@ -2732,7 +2732,7 @@ __pdoc__[
 ] = f"""`np.dtype` of order records.
 
 ```python
-{prettify(order_dt)}
+{prettify_doc(order_dt)}
 ```
 """
 
@@ -2759,7 +2759,7 @@ __pdoc__[
 ] = f"""`np.dtype` of order records generated from signals.
 
 ```python
-{prettify(fs_order_dt)}
+{prettify_doc(fs_order_dt)}
 ```
 """
 
@@ -2791,7 +2791,7 @@ __pdoc__[
 ] = f"""`np.dtype` of trade records.
 
 ```python
-{prettify(trade_dt)}
+{prettify_doc(trade_dt)}
 ```
 """
 
@@ -2853,7 +2853,7 @@ __pdoc__[
 ] = f"""`np.dtype` of log records.
 
 ```python
-{prettify(log_dt)}
+{prettify_doc(log_dt)}
 ```
 """
 
@@ -2875,7 +2875,7 @@ __pdoc__[
 ] = f"""`np.dtype` of allocation range records.
 
 ```python
-{prettify(alloc_range_dt)}
+{prettify_doc(alloc_range_dt)}
 ```
 """
 
@@ -2894,7 +2894,7 @@ __pdoc__[
 ] = f"""`np.dtype` of allocation point records.
 
 ```python
-{prettify(alloc_point_dt)}
+{prettify_doc(alloc_point_dt)}
 ```
 """
 
@@ -2923,7 +2923,7 @@ __pdoc__[
 ] = f"""`np.dtype` of main information records.
 
 ```python
-{prettify(main_info_dt)}
+{prettify_doc(main_info_dt)}
 ```
 
 Attributes:
@@ -2967,7 +2967,7 @@ __pdoc__[
 ] = f"""`np.dtype` of limit information records.
 
 ```python
-{prettify(limit_info_dt)}
+{prettify_doc(limit_info_dt)}
 ```
 
 Attributes:
@@ -3014,7 +3014,7 @@ __pdoc__[
 ] = f"""`np.dtype` of SL information records.
 
 ```python
-{prettify(sl_info_dt)}
+{prettify_doc(sl_info_dt)}
 ```
 
 Attributes:
@@ -3063,7 +3063,7 @@ __pdoc__[
 ] = f"""`np.dtype` of TSL information records.
 
 ```python
-{prettify(tsl_info_dt)}
+{prettify_doc(tsl_info_dt)}
 ```
 
 Attributes:
@@ -3112,7 +3112,7 @@ __pdoc__[
 ] = f"""`np.dtype` of TP information records.
 
 ```python
-{prettify(tp_info_dt)}
+{prettify_doc(tp_info_dt)}
 ```
 
 Attributes:
@@ -3158,7 +3158,7 @@ __pdoc__[
 ] = f"""`np.dtype` of time information records.
 
 ```python
-{prettify(time_info_dt)}
+{prettify_doc(time_info_dt)}
 ```
 
 Attributes:

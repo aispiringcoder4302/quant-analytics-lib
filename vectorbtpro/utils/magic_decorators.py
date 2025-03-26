@@ -59,7 +59,7 @@ __pdoc__[
 ] = f"""Configuration of binary magic methods for attaching to a class.
 
 ```python
-{binary_magic_config.prettify()}
+{binary_magic_config.prettify_doc()}
 ```
 """
 
@@ -121,7 +121,7 @@ __pdoc__[
 ] = f"""Configuration of unary magic methods for attaching to a class.
 
 ```python
-{unary_magic_config.prettify()}
+{unary_magic_config.prettify_doc()}
 ```
 """
 

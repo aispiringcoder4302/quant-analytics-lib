@@ -306,7 +306,7 @@ __pdoc__[
 ] = f"""Config of Numba methods to be attached to `GenericAccessor`.
 
 ```python
-{nb_config.prettify()}
+{nb_config.prettify_doc()}
 ```
 """
 
@@ -5125,7 +5125,7 @@ if settings["importing"]["sklearn"]:
     ] = f"""Config of transform methods to be attached to `GenericAccessor`.
 
     ```python
-    {transform_config.prettify()}
+    {transform_config.prettify_doc()}
     ```
     """
 

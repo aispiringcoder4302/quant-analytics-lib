@@ -8,8 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module providing utility functions for HTTP requests, including session retry configuration
-and translation of text to GIF URLs using the Giphy API."""
+"""Module providing utility functions for HTTP requests."""
 
 from urllib.parse import urlencode
 

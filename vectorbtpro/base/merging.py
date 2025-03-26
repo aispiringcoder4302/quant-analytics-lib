@@ -723,7 +723,7 @@ __pdoc__[
 ] = f"""Config for merging functions.
 
 ```python
-{merge_func_config.prettify()}
+{merge_func_config.prettify_doc()}
 ```
 """
 

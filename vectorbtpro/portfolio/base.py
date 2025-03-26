@@ -175,7 +175,7 @@ __pdoc__[
 ] = f"""Config of returns accessor methods to be attached to `Portfolio`.
 
 ```python
-{returns_acc_config.prettify()}
+{returns_acc_config.prettify_doc()}
 ```
 """
 
@@ -423,7 +423,7 @@ __pdoc__[
 ] = f"""Config of shortcut properties to be attached to `Portfolio`.
 
 ```python
-{shortcut_config.prettify()}
+{shortcut_config.prettify_doc()}
 ```
 """
 
@@ -10030,7 +10030,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         if source_cls is None:
             source_cls = Portfolio
         return string.Template(inspect.cleandoc(get_dict_attr(source_cls, "in_output_config").__doc__)).substitute(
-            {"in_output_config": cls.in_output_config.prettify(), "cls_name": cls.__name__},
+            {"in_output_config": cls.in_output_config.prettify_doc(), "cls_name": cls.__name__},
         )
 
     @classmethod

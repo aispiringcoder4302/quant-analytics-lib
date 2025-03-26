@@ -86,7 +86,7 @@ __pdoc__[
 ] = f"""Configuration for class name abbreviations.
  
 ```python
-{class_abbr_config.prettify()}
+{class_abbr_config.prettify_doc()}
 ```"""
 
 

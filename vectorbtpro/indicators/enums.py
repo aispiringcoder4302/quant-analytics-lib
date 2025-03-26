@@ -11,7 +11,7 @@
 """Named tuples and enumerated types for indicators."""
 
 from vectorbtpro import _typing as tp
-from vectorbtpro.utils.formatting import prettify
+from vectorbtpro.utils.formatting import prettify_doc
 
 __pdoc__all__ = __all__ = [
     "Pivot",
@@ -40,7 +40,7 @@ __pdoc__[
 ] = f"""Pivot.
 
 ```python
-{prettify(Pivot)}
+{prettify_doc(Pivot)}
 ```
 """
 
@@ -58,7 +58,7 @@ __pdoc__[
 ] = f"""Trend mode.
 
 ```python
-{prettify(TrendMode)}
+{prettify_doc(TrendMode)}
 ```
 """
 
@@ -79,7 +79,7 @@ __pdoc__[
 ] = f"""Hurst method.
 
 ```python
-{prettify(HurstMethod)}
+{prettify_doc(HurstMethod)}
 ```
 """
 

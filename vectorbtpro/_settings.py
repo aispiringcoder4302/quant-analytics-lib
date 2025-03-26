@@ -2821,7 +2821,7 @@ class SettingsConfig(Config):
             prettify_kwargs = {}
         for k, v in __pdoc__.items():
             if k in self:
-                config_doc = self[k].prettify(**prettify_kwargs.get(k, {}))
+                config_doc = self[k].prettify_doc(**prettify_kwargs.get(k, {}))
                 __pdoc__[k] = substitute_templates(
                     v,
                     context=dict(config_doc=config_doc),

@@ -51,7 +51,7 @@ __pdoc__[
 ] = f"""Config for package shortcuts.
 
 ```python
-{package_shortcut_config.prettify()}
+{package_shortcut_config.prettify_doc()}
 ```"""
 
 

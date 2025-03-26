@@ -1009,6 +1009,7 @@ class Config(pdict):
         htchar: str = "    ",
         lfchar: str = "\n",
         indent: int = 0,
+        repr_: tp.Optional[tp.Callable] = None,
     ) -> str:
         dct = dict(self)
         if with_options:
@@ -1022,8 +1023,17 @@ class Config(pdict):
                 htchar=htchar,
                 lfchar=lfchar,
                 indent=indent,
+                repr_=repr_,
             )
-        return prettify_dict(self, replace=replace, path=path, htchar=htchar, lfchar=lfchar, indent=indent)
+        return prettify_dict(
+            self,
+            replace=replace,
+            path=path,
+            htchar=htchar,
+            lfchar=lfchar,
+            indent=indent,
+            repr_=repr_,
+        )
 
     def equals(
         self,
@@ -1151,7 +1161,7 @@ __pdoc__[
 Stores tuples of class names and their associated settings paths by unique identifiers.
 
 ```python
-{ext_settings_paths_config.prettify()}
+{ext_settings_paths_config.prettify_doc()}
 ```
 """
 
@@ -1195,7 +1205,7 @@ For instance, a relationship `knowledge` -> `pages` will also consider `pages` s
 `knowledge` settings are requested.
 
 ```python
-{spec_settings_paths_config.prettify()}
+{spec_settings_paths_config.prettify_doc()}
 ```
 """
 

@@ -13,7 +13,7 @@
 Defines enums and other schemas for `vectorbtpro.labels`."""
 
 from vectorbtpro import _typing as tp
-from vectorbtpro.utils.formatting import prettify
+from vectorbtpro.utils.formatting import prettify_doc
 
 __pdoc__all__ = __all__ = ["TrendLabelMode"]
 
@@ -36,7 +36,7 @@ __pdoc__[
 ] = f"""Trend label mode.
 
 ```python
-{prettify(TrendLabelMode)}
+{prettify_doc(TrendLabelMode)}
 ```
 
 Attributes:

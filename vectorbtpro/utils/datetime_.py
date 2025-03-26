@@ -51,7 +51,7 @@ __pdoc__[
 ] = f"""Configuration for sharp (case-sensitive) frequency mappings used to resolve ambiguous frequency units.
 
 ```python
-{sharp_freq_str_config.prettify()}
+{sharp_freq_str_config.prettify_doc()}
 ```
 """
 
@@ -122,7 +122,7 @@ __pdoc__[
 ] = f"""Configuration for fuzzy (case-insensitive) frequency mappings used to standardize various time unit strings.
 
 ```python
-{fuzzy_freq_str_config.prettify()}
+{fuzzy_freq_str_config.prettify_doc()}
 ```
 """
 

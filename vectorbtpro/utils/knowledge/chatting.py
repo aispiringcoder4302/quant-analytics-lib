@@ -3574,7 +3574,13 @@ def resolve_obj_store(obj_store: tp.ObjectStoreLike = None) -> tp.MaybeType[Obje
 
 @define
 class EmbeddedDocument(DefineMixin):
-    """Define an abstract class for embedded documents."""
+    """Define an abstract class for embedded documents.
+
+    Args:
+        document (StoreDocument): Primary document content.
+        embedding (Optional[List[float]]): List of floats representing the document's embedding.
+        child_documents (List[EmbeddedDocument]): List of embedded child documents.
+    """
 
     document: StoreDocument = define.field()
     """Primary document content."""
@@ -3588,7 +3594,13 @@ class EmbeddedDocument(DefineMixin):
 
 @define
 class ScoredDocument(DefineMixin):
-    """Define an abstract class for scored documents with an associated numerical score."""
+    """Define an abstract class for scored documents with an associated numerical score.
+
+    Args:
+        document (StoreDocument): Primary document content.
+        score (float): Numeric score assigned to the document.
+        child_documents (List[ScoredDocument]): List of scored child documents.
+    """
 
     document: StoreDocument = define.field()
     """Primary document content."""

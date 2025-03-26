@@ -5252,7 +5252,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         if source_cls is None:
             source_cls = Data
         return string.Template(inspect.cleandoc(get_dict_attr(source_cls, "feature_config").__doc__)).substitute(
-            {"feature_config": cls.feature_config.prettify(), "cls_name": cls.__name__},
+            {"feature_config": cls.feature_config.prettify_doc(), "cls_name": cls.__name__},
         )
 
     @classmethod

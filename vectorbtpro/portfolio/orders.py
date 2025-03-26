@@ -151,7 +151,7 @@ __pdoc__[
 ] = f"""Field config for `Orders`.
 
 ```python
-{orders_field_config.prettify()}
+{orders_field_config.prettify_doc()}
 ```
 """
 
@@ -163,7 +163,7 @@ __pdoc__[
 ] = f"""Config of fields to be attached to `Orders`.
 
 ```python
-{orders_attach_field_config.prettify()}
+{orders_attach_field_config.prettify_doc()}
 ```
 """
 
@@ -184,7 +184,7 @@ __pdoc__[
 ] = f"""Config of shortcut properties to be attached to `Orders`.
 
 ```python
-{orders_shortcut_config.prettify()}
+{orders_shortcut_config.prettify_doc()}
 ```
 """
 
@@ -593,7 +593,7 @@ __pdoc__[
 ] = f"""Field config for `FSOrders`.
 
 ```python
-{fs_orders_field_config.prettify()}
+{fs_orders_field_config.prettify_doc()}
 ```
 """
 
@@ -610,7 +610,7 @@ __pdoc__[
 ] = f"""Config of fields to be attached to `FSOrders`.
 
 ```python
-{fs_orders_attach_field_config.prettify()}
+{fs_orders_attach_field_config.prettify_doc()}
 ```
 """
 
@@ -632,7 +632,7 @@ __pdoc__[
 ] = f"""Config of shortcut properties to be attached to `FSOrders`.
 
 ```python
-{fs_orders_shortcut_config.prettify()}
+{fs_orders_shortcut_config.prettify_doc()}
 ```
 """
 

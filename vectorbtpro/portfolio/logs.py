@@ -173,7 +173,7 @@ __pdoc__[
 ] = f"""Field config for `Logs`.
 
 ```python
-{logs_field_config.prettify()}
+{logs_field_config.prettify_doc()}
 ```
 """
 
@@ -191,7 +191,7 @@ __pdoc__[
 ] = f"""Config of fields to be attached to `Logs`.
 
 ```python
-{logs_attach_field_config.prettify()}
+{logs_attach_field_config.prettify_doc()}
 ```
 """
 

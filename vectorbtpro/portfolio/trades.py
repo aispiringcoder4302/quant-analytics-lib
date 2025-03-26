@@ -557,7 +557,7 @@ __pdoc__[
 ] = f"""Field config for `Trades`.
 
 ```python
-{trades_field_config.prettify()}
+{trades_field_config.prettify_doc()}
 ```
 """
 
@@ -575,7 +575,7 @@ __pdoc__[
 ] = f"""Config of fields to be attached to `Trades`.
 
 ```python
-{trades_attach_field_config.prettify()}
+{trades_attach_field_config.prettify_doc()}
 ```
 """
 
@@ -648,7 +648,7 @@ __pdoc__[
 ] = f"""Config of shortcut properties to be attached to `Trades`.
 
 ```python
-{trades_shortcut_config.prettify()}
+{trades_shortcut_config.prettify_doc()}
 ```
 """
 
@@ -2408,7 +2408,7 @@ __pdoc__[
 ] = f"""Field config for `EntryTrades`.
 
 ```python
-{entry_trades_field_config.prettify()}
+{entry_trades_field_config.prettify_doc()}
 ```
 """
 
@@ -2652,7 +2652,7 @@ __pdoc__[
 ] = f"""Field config for `ExitTrades`.
 
 ```python
-{exit_trades_field_config.prettify()}
+{exit_trades_field_config.prettify_doc()}
 ```
 """
 
@@ -2894,7 +2894,7 @@ __pdoc__[
 ] = f"""Field config for `Positions`.
 
 ```python
-{positions_field_config.prettify()}
+{positions_field_config.prettify_doc()}
 ```
 """
 

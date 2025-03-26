@@ -62,6 +62,11 @@ class Prettified(Base):
         """
         raise NotImplementedError
 
+    def prettify_doc(self, **kwargs) -> str:
+        """Prettify the object for documentation, equivalent to using
+        `Prettified.prettify` with `repr_doc` as `repr_`."""
+        return self.prettify(repr_=repr_doc, **kwargs)
+
     def pprint(self, **kwargs) -> None:
         """Pretty-print the object.
 
@@ -85,6 +90,7 @@ def prettify_inited(
     htchar: str = "    ",
     lfchar: str = "\n",
     indent: int = 0,
+    repr_: tp.Optional[tp.Callable] = None,
 ) -> tp.Any:
     """Prettify an instance initialized with keyword arguments.
 
@@ -96,10 +102,15 @@ def prettify_inited(
         htchar (str): The string used for horizontal indentation.
         lfchar (str): The line feed character.
         indent (int): The current indentation level.
+        repr_ (Optional[Callable]): A function to get the representation of an object.
+
+            Defaults to `repr`.
 
     Returns:
         Any: A prettified string representation of the initialized instance.
     """
+    if repr_ is None:
+        repr_ = repr
     items = []
     for k, v in kwargs.items():
         if replace is None:
@@ -111,7 +122,15 @@ def prettify_inited(
         if new_path in replace:
             new_v = replace[new_path]
         else:
-            new_v = prettify(v, replace=replace, path=new_path, htchar=htchar, lfchar=lfchar, indent=indent + 1)
+            new_v = prettify(
+                v,
+                replace=replace,
+                path=new_path,
+                htchar=htchar,
+                lfchar=lfchar,
+                indent=indent + 1,
+                repr_=repr_,
+            )
         k_repr = repr(k)
         if isinstance(k, str):
             k_repr = k_repr[1:-1]
@@ -128,6 +147,7 @@ def prettify_dict(
     htchar: str = "    ",
     lfchar: str = "\n",
     indent: int = 0,
+    repr_: tp.Optional[tp.Callable] = None,
 ) -> tp.Any:
     """Prettify a dictionary.
 
@@ -138,10 +158,15 @@ def prettify_dict(
         htchar (str): The string used for horizontal indentation.
         lfchar (str): The line feed character.
         indent (int): The current indentation level.
+        repr_ (Optional[Callable]): A function to get the representation of an object.
+
+            Defaults to `repr`.
 
     Returns:
         Any: A prettified string representation of the dictionary.
     """
+    if repr_ is None:
+        repr_ = repr
     if all([isinstance(k, str) and k.isidentifier() for k in obj]):
         return prettify_inited(
             type(obj),
@@ -151,6 +176,7 @@ def prettify_dict(
             htchar=htchar,
             lfchar=lfchar,
             indent=indent,
+            repr_=repr_,
         )
     items = []
     for k, v in obj.items():
@@ -163,7 +189,15 @@ def prettify_dict(
         if new_path in replace:
             new_v = replace[new_path]
         else:
-            new_v = prettify(v, replace=replace, path=new_path, htchar=htchar, lfchar=lfchar, indent=indent + 1)
+            new_v = prettify(
+                v,
+                replace=replace,
+                path=new_path,
+                htchar=htchar,
+                lfchar=lfchar,
+                indent=indent + 1,
+                repr_=repr_,
+            )
         items.append(lfchar + htchar * (indent + 1) + repr(k) + ": " + new_v)
     if type(obj) is dict:
         if len(items) == 0:
@@ -181,6 +215,7 @@ def prettify(
     htchar: str = "    ",
     lfchar: str = "\n",
     indent: int = 0,
+    repr_: tp.Optional[tp.Callable] = None,
 ) -> tp.Any:
     """Prettify an object.
 
@@ -195,12 +230,24 @@ def prettify(
         htchar (str): The string used for horizontal indentation.
         lfchar (str): The line feed character.
         indent (int): The current indentation level.
+        repr_ (Optional[Callable]): A function to get the representation of an object.
+
+            Defaults to `repr`.
 
     Returns:
         Any: A prettified string representation of the object.
     """
+    if repr_ is None:
+        repr_ = repr
     if isinstance(obj, Prettified):
-        return obj.prettify(replace=replace, path=path, htchar=htchar, lfchar=lfchar, indent=indent)
+        return obj.prettify(
+            replace=replace,
+            path=path,
+            htchar=htchar,
+            lfchar=lfchar,
+            indent=indent,
+            repr_=repr_,
+        )
     if attr.has(type(obj)):
         return prettify_inited(
             type(obj),
@@ -210,9 +257,18 @@ def prettify(
             htchar=htchar,
             lfchar=lfchar,
             indent=indent,
+            repr_=repr_,
         )
     if isinstance(obj, dict):
-        return prettify_dict(obj, replace=replace, path=path, htchar=htchar, lfchar=lfchar, indent=indent)
+        return prettify_dict(
+            obj,
+            replace=replace,
+            path=path,
+            htchar=htchar,
+            lfchar=lfchar,
+            indent=indent,
+            repr_=repr_,
+        )
     if isinstance(obj, tuple) and hasattr(obj, "_asdict"):
         return prettify_inited(
             type(obj),
@@ -222,11 +278,20 @@ def prettify(
             htchar=htchar,
             lfchar=lfchar,
             indent=indent,
+            repr_=repr_,
         )
     if isinstance(obj, (tuple, list, set, frozenset)):
         items = []
         for v in obj:
-            new_v = prettify(v, replace=replace, path=path, htchar=htchar, lfchar=lfchar, indent=indent + 1)
+            new_v = prettify(
+                v,
+                replace=replace,
+                path=path,
+                htchar=htchar,
+                lfchar=lfchar,
+                indent=indent + 1,
+                repr_=repr_,
+            )
             items.append(lfchar + htchar * (indent + 1) + new_v)
         if type(obj) is tuple:
             if len(items) == 0:
@@ -246,7 +311,7 @@ def prettify(
     if isinstance(obj, np.dtype) and hasattr(obj, "fields"):
         items = []
         for k, v in dict(obj.fields).items():
-            items.append(lfchar + htchar * (indent + 1) + repr((k, str(v[0]))))
+            items.append(lfchar + htchar * (indent + 1) + repr_((k, str(v[0]))))
         return "np.dtype([%s])" % (",".join(items) + lfchar + htchar * indent)
     if hasattr(obj, "shape") and isinstance(obj.shape, tuple) and len(obj.shape) > 0:
         module = type(obj).__module__
@@ -259,7 +324,31 @@ def prettify(
             return "np.inf"
         if np.isneginf(obj):
             return "-np.inf"
-    return repr(obj)
+    return repr_(obj)
+
+
+def repr_doc(obj: tp.Any) -> str:
+    """Representation function suited for documentation.
+
+    Args:
+        obj (Any): Object.
+
+    Returns:
+        str: Representation.
+    """
+    import re
+
+    obj_repr = repr(obj)
+    if obj_repr.startswith("environ({") and obj_repr.endswith("})"):
+        return "os.environ"
+    obj_repr = re.sub(r"\s+from\s+'[^']+'", "", obj_repr)
+    obj_repr = re.sub(r"\s+at\s+0x[0-9a-fA-F]+", "", obj_repr)
+    return obj_repr
+
+
+def prettify_doc(*args, **kwargs):
+    """Prettify for documentation, equivalent to using `prettify` with `repr_doc` as `repr_`."""
+    return prettify(*args, repr_=repr_doc, **kwargs)
 
 
 def pprint(*args, **kwargs) -> None:
@@ -468,8 +557,8 @@ def pdir(*args, **kwargs) -> None:
     """Print parsed attributes of an object.
 
     Args:
-        *args: Additional arguments for `parse_attrs`.
-        **kwargs: Additional keyword arguments for `parse_attrs`.
+        *args: Additional arguments for `vectorbtpro.utils.attr_.parse_attrs`.
+        **kwargs: Additional keyword arguments for `vectorbtpro.utils.attr_.parse_attrs`.
     """
     from vectorbtpro.utils.attr_ import parse_attrs
 

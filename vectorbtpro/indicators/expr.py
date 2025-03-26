@@ -205,7 +205,7 @@ __pdoc__[
 Can be modified.
 
 ```python
-{expr_func_config.prettify()}
+{expr_func_config.prettify_doc()}
 ```
 """
 
@@ -225,7 +225,7 @@ __pdoc__[
 Can be modified.
 
 ```python
-{expr_res_func_config.prettify()}
+{expr_res_func_config.prettify_doc()}
 ```
 """
 
@@ -521,6 +521,6 @@ See [101 Formulaic Alphas](https://arxiv.org/abs/1601.00991).
 Can be modified.
 
 ```python
-{wqa101_expr_config.prettify()}
+{wqa101_expr_config.prettify_doc()}
 ```
 """

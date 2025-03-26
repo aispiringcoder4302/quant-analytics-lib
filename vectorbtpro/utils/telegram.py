@@ -113,6 +113,10 @@ if __version_info__ < (20, 0, 0, "alpha", 1):
                 return False
             return None
 
+    LogHandler.check_update.__doc__ = f"""```text
+{LogHandler.check_update.__doc__}
+```"""
+
     class TelegramBot(Configured):
         """Telegram bot class integrating with the python-telegram-bot library.
 

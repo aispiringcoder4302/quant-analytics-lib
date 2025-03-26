@@ -1431,7 +1431,7 @@ class Records(Analyzable, metaclass=MetaRecords):
         if source_cls is None:
             source_cls = Records
         return string.Template(inspect.cleandoc(get_dict_attr(source_cls, "field_config").__doc__)).substitute(
-            {"field_config": cls.field_config.prettify(), "cls_name": cls.__name__},
+            {"field_config": cls.field_config.prettify_doc(), "cls_name": cls.__name__},
         )
 
     @classmethod

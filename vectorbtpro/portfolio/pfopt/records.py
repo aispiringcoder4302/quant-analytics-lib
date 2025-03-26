@@ -43,7 +43,7 @@ __pdoc__[
 ] = f"""Field config for `AllocRanges`.
 
 ```python
-{alloc_ranges_field_config.prettify()}
+{alloc_ranges_field_config.prettify_doc()}
 ```
 """
 
@@ -80,7 +80,7 @@ __pdoc__[
 ] = f"""Field config for `AllocRanges`.
 
 ```python
-{alloc_points_field_config.prettify()}
+{alloc_points_field_config.prettify_doc()}
 ```
 """
 

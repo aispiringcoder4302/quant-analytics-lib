@@ -221,7 +221,7 @@ __pdoc__[
 ] = f"""Field config for `Drawdowns`.
 
 ```python
-{dd_field_config.prettify()}
+{dd_field_config.prettify_doc()}
 ```
 """
 
@@ -233,7 +233,7 @@ __pdoc__[
 ] = f"""Config of fields to be attached to `Drawdowns`.
 
 ```python
-{dd_attach_field_config.prettify()}
+{dd_attach_field_config.prettify_doc()}
 ```
 """
 
@@ -265,7 +265,7 @@ __pdoc__[
 ] = f"""Config of shortcut properties to be attached to `Drawdowns`.
 
 ```python
-{dd_shortcut_config.prettify()}
+{dd_shortcut_config.prettify_doc()}
 ```
 """
 

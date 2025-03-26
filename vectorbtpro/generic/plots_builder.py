@@ -891,7 +891,7 @@ class PlotsBuilderMixin(Base, metaclass=MetaPlotsBuilderMixin):
         return string.Template(
             inspect.cleandoc(get_dict_attr(source_cls, "subplots").__doc__),
         ).substitute(
-            {"subplots": cls.subplots.prettify(), "cls_name": cls.__name__},
+            {"subplots": cls.subplots.prettify_doc(), "cls_name": cls.__name__},
         )
 
     @classmethod

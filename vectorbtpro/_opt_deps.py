@@ -251,6 +251,6 @@ __pdoc__[
 ] = f"""Config for optional packages.
 
 ```python
-{opt_dep_config.prettify()}
+{opt_dep_config.prettify_doc()}
 ```
 """

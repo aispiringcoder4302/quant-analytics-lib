@@ -66,7 +66,7 @@ __pdoc__[
 ] = f"""Argument config for `BasePreparer`.
 
 ```python
-{base_arg_config.prettify()}
+{base_arg_config.prettify_doc()}
 ```
 """
 
@@ -650,7 +650,7 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
         if source_cls is None:
             source_cls = BasePreparer
         return string.Template(inspect.cleandoc(get_dict_attr(source_cls, "arg_config").__doc__)).substitute(
-            {"arg_config": cls.arg_config.prettify(), "cls_name": cls.__name__},
+            {"arg_config": cls.arg_config.prettify_doc(), "cls_name": cls.__name__},
         )
 
     @classmethod
