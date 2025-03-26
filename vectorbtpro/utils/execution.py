@@ -92,7 +92,7 @@ class Task(DefineMixin):
             tuple_ (Tuple[Any, ...]): A tuple representing a task.
 
                 The tuple can be:
-                
+
                 * Two elements: if the second element is a tuple, it is treated as positional arguments.
                     If it is a dict, it is treated as keyword arguments.
                 * Three elements: the second element is a tuple of positional arguments and the third
@@ -279,14 +279,14 @@ class SerialEngine(ExecutionEngine):
     @property
     def clear_cache(self) -> tp.Union[bool, int]:
         """Indicates whether to clear vectorbt's cache after each iteration.
-        
+
         If provided as an integer, clears the cache every specified number of tasks."""
         return self._clear_cache
 
     @property
     def collect_garbage(self) -> tp.Union[bool, int]:
         """Indicates whether to perform garbage collection after each iteration.
-        
+
         If provided as an integer, collects garbage every specified number of tasks."""
         return self._collect_garbage
 
@@ -494,7 +494,7 @@ class ProcessPoolEngine(ExecutionEngine):
 
 def pass_kwargs_as_args(func, args, kwargs):
     """Return the result of calling `func` with the supplied arguments and keyword arguments.
-    
+
     Used for compatibility with `pathos.pools.ParallelPool`."""
     return func(*args, **kwargs)
 
@@ -1083,7 +1083,7 @@ class Executor(Configured):
         Chunks are processed sequentially, while functions within each chunk may be processed in parallel.
 
     For default settings, refer to `vectorbtpro._settings.execution`."""
-    
+
     _settings_path: tp.SettingsPath = "execution"
 
     @classmethod
@@ -1685,7 +1685,7 @@ class Executor(Configured):
     @property
     def pre_chunk_func(self) -> tp.Optional[tp.Callable]:
         """Callable executed before processing each chunk.
-        
+
         If the callable returns a value other than None, its return value is appended to
         the results and the chunk is skipped."""
         return self._pre_chunk_func
@@ -1698,7 +1698,7 @@ class Executor(Configured):
     @property
     def post_chunk_func(self) -> tp.Optional[tp.Callable]:
         """Callable executed after processing each chunk.
-        
+
         If it returns None, the existing chunk results are retained; otherwise, its return
         value replaces them."""
         return self._post_chunk_func
@@ -1711,7 +1711,7 @@ class Executor(Configured):
     @property
     def post_execute_func(self) -> tp.Optional[tp.Callable]:
         """Callable executed after processing all tasks.
-        
+
         If it returns None, the default results are preserved; otherwise, its return value replaces them."""
         return self._post_execute_func
 
@@ -1734,7 +1734,7 @@ class Executor(Configured):
     @property
     def raise_no_results(self) -> bool:
         """Boolean flag indicating if a `NoResultsException` should be raised when no results are obtained.
-        
+
         This flag applies only when `Executor.filter_results` is True and is forwarded to the merging
         function if pre-configured."""
         return self._raise_no_results
@@ -1757,7 +1757,7 @@ class Executor(Configured):
     @property
     def show_progress(self) -> bool:
         """Boolean flag that determines whether to display a progress bar when iterating over chunks.
-        
+
         If `Executor.engine` accepts `show_progress` and the key is absent in `engine_config`,
         it is forwarded to the engine."""
         return self._show_progress
@@ -1770,7 +1770,7 @@ class Executor(Configured):
     @staticmethod
     def execute_serially(tasks: tp.TasksLike, id_objs: tp.Dict[int, tp.Any]) -> tp.ExecResults:
         """Execute tasks sequentially.
-        
+
         Iterates over each task, resolves functions and their arguments using `id_objs`,
         and returns a list of results."""
         results = []

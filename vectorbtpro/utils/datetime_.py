@@ -656,7 +656,9 @@ DTCNT = namedtuple(
         nanosecond=-1,
     ),
 )
-__pdoc__["DTCNT"] = """A named tuple representing date-time components for `DTC`.
+__pdoc__[
+    "DTCNT"
+] = """A named tuple representing date-time components for `DTC`.
 
 Attributes:
     year (int): The year component.
@@ -871,7 +873,7 @@ class DTC(DefineMixin):
 
     def has_full_time(self) -> bool:
         """Return True if all time components (hour, minute, second, and nanosecond) are set;
-         otherwise, return False."""
+        otherwise, return False."""
         return (
             self.hour is not None
             and self.minute is not None
@@ -1063,7 +1065,7 @@ def to_timezone(
 ) -> tzinfo:
     """Parse and return a timezone object from the given input.
 
-    If `tz` is None, returns the local timezone. When `tz` is a string, parsing is attempted with Pandas 
+    If `tz` is None, returns the local timezone. When `tz` is a string, parsing is attempted with Pandas
     and optionally with dateparser if `parse_with_dateparser` is True.
 
     If `to_fixed_offset` is True, converts the timezone to a fixed offset.
@@ -1129,7 +1131,7 @@ def to_timestamp(
 ) -> tp.Optional[pd.Timestamp]:
     """Parse the given datetime input as a `pd.Timestamp`.
 
-    If `dt` is a string, parsing is attempted with Pandas and with dateparser if 
+    If `dt` is a string, parsing is attempted with Pandas and with dateparser if
     `parse_with_dateparser` is True. For numerical inputs, `dt` is interpreted using the specified `unit`.
 
     Args:
@@ -1237,8 +1239,8 @@ def to_tzaware_timestamp(
 ) -> pd.Timestamp:
     """Convert the given datetime input to a timezone-aware `pd.Timestamp`.
 
-    If `dt` is a raw timestamp, it is first localized to UTC. If `dt` is naive, it is localized using `naive_tz` 
-    (or the default setting). To explicitly convert the timestamp to a different timezone, provide `tz`, which 
+    If `dt` is a raw timestamp, it is first localized to UTC. If `dt` is naive, it is localized using `naive_tz`
+    (or the default setting). To explicitly convert the timestamp to a different timezone, provide `tz`, which
     is processed by `to_timezone`.
 
     Args:
@@ -1885,10 +1887,10 @@ def get_dt_index_gaps(
     """Identifies gaps in a datetime index.
 
     The function determines gaps in a datetime index and returns two indexes:
-    
+
     * The start indexes (inclusive) where gaps begin.
     * The end indexes (exclusive) where gaps end.
-    
+
     Additional keyword arguments are passed to `prepare_dt_index`.
 
     Args:

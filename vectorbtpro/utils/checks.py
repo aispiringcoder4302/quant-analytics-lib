@@ -342,8 +342,8 @@ def is_complex_iterable(arg: tp.Any) -> bool:
 def is_sequence(arg: tp.Any) -> bool:
     """Return whether the provided argument is a sequence.
 
-Args:
-    arg (Any): The object to check."""
+    Args:
+        arg (Any): The object to check."""
     if isinstance(arg, Sequence):
         return True
     try:
@@ -501,6 +501,7 @@ def is_deep_equal(
         _key (Optional[str]): A key path identifier for nested comparisons.
         **kwargs: Additional keyword arguments passed to underlying comparison functions.
     """
+
     def _select_kwargs(_method, _kwargs):
         __kwargs = dict()
         if len(kwargs) > 0:

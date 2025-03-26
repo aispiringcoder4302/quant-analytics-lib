@@ -371,25 +371,25 @@ class Param(Evaluable, Annotatable, DefineMixin):
     """Indicates whether `Param.value` is interpreted as a tuple.
 
     When True, a tuple is considered a single parameter value."""
-    
+
     is_array_like: bool = define.optional_field(default=False)
     """Indicates whether `Param.value` should be treated as array-like.
 
     When True, a NumPy array is considered a single parameter value."""
-    
+
     map_template: tp.Optional[CustomTemplate] = define.optional_field(default=None)
     """A mapping template applied to `Param.value` prior to constructing parameter combinations."""
-    
+
     random_subset: tp.Union[None, int, float] = define.optional_field(default=None)
     """Specifies a random subset of parameter values to select."""
-    
+
     level: tp.Optional[int] = define.optional_field(default=None)
     """Specifies the level for the parameter in the product combination.
 
     Parameters sharing the same level are grouped together.
     Lower-level parameters are processed before higher-level ones.
     Levels must be consecutive starting from 0 without gaps."""
-    
+
     condition: tp.Union[None, str, CustomTemplate] = define.optional_field(default=None)
     """Specifies a condition to filter parameter combinations.
 
@@ -397,38 +397,38 @@ class Param(Evaluable, Annotatable, DefineMixin):
     represents this parameter. If provided as an expression, it is pre-compiled for efficiency.
     To reference a parameter index value, enclose the level name with double underscores 
     (e.g., `__fast_sma_timeperiod__`)."""
-    
+
     context: tp.KwargsLike = define.optional_field(default=None)
     """Context for evaluating `Param.condition` and applying `Param.map_template`."""
-    
+
     keys: tp.Optional[tp.IndexLike] = define.optional_field(default=None)
     """Specifies keys to serve as the index level.
 
     If not provided, `Param.value` is converted to an index via `vectorbtpro.base.indexes.index_from_values`."""
-    
+
     hide: bool = define.optional_field(default=False)
     """Indicates whether the parameter should be hidden from the parameter index."""
-    
+
     name: tp.Optional[tp.Hashable] = define.optional_field(default=None)
     """Specifies the name of the parameter.
 
     If not provided, it defaults to the index name from `Param.keys` or the key from `param_dct` 
     in `combine_params`."""
-    
+
     mono_reduce: bool = define.optional_field(default=False)
     """Indicates if a mono-chunk of identical values should be reduced to a single value."""
-    
+
     mono_merge_func: tp.MergeFuncLike = define.optional_field(default=None)
     """Specifies the merge function used for reducing a mono-chunk.
 
     It is resolved via `vectorbtpro.base.merging.resolve_merge_func`."""
-    
+
     mono_merge_kwargs: tp.KwargsLike = define.optional_field(default=None)
     """Additional keyword arguments for `Param.mono_merge_func`."""
-    
+
     eval_id: tp.Optional[tp.MaybeSequence[tp.Hashable]] = define.optional_field(default=None)
     """Identifier(s) indicating where to evaluate this instance."""
-    
+
     def map_value(self: ParamT, func: tp.Callable, old_as_keys: bool = False) -> ParamT:
         """Apply a function to each element of `Param.value` and return a new `Param` instance.
 
@@ -1001,7 +1001,7 @@ def combine_params(
             param_product = dict(zip(param_dct_keys, generate_param_combs(op_tree_operands[0])))
         else:
             param_product = dict(zip(param_dct_keys, op_tree_operands))
-    
+
         if build_index and len(shown_levels) > 0:
             if len(level_indexes) > 1:
                 param_index = indexes.combine_indexes(level_indexes, **clean_index_kwargs)
@@ -1014,15 +1014,15 @@ def combine_params(
                 param_index = level_indexes[0]
         else:
             param_index = None
-    
+
         if grid_indices is not None:
             n_combs = len(grid_indices)
             param_product = {k: [v[i] for i in grid_indices] for k, v in param_product.items()}
             if build_index and len(shown_levels) > 0:
                 param_index = param_index[grid_indices]
-    
+
         params_ready = False
-    
+
     if not params_ready:
         if len(conditions) > 0:
             indices = np.arange(n_combs)
@@ -1089,7 +1089,7 @@ def combine_params(
                         param_index = param_index[0:0]
         else:
             pre_random_subset = False
-    
+
         if random_subset is not None and not pre_random_subset and n_combs > 0:
             if checks.is_float(random_subset):
                 random_subset = int(random_subset * n_combs)
@@ -1099,7 +1099,7 @@ def combine_params(
             param_product = {k: [v[i] for i in random_indices] for k, v in param_product.items()}
             if build_index and len(shown_levels) > 0:
                 param_index = param_index[random_indices]
-    
+
     if build_index and len(shown_levels) > 0:
         if name_tuple_to_str is not None:
             found_tuple = False
@@ -1115,7 +1115,7 @@ def combine_params(
                 else:
                     param_index.rename(new_names[0], inplace=True)
         param_index = indexes.clean_index(param_index, **clean_index_kwargs)
-    
+
     if raise_empty_error:
         if len(param_product[list(param_product.keys())[0]]) == 0:
             raise ValueError("Set of parameter combinations is empty")
@@ -1130,7 +1130,7 @@ class Parameterizer(Configured):
     """Class responsible for parameterizing and running a function.
 
     Does the following:
-    
+
     1. Search for values wrapped with the class `Param` in any nested dicts and tuples
        using `Parameterizer.find_params_in_obj`
     2. Use `combine_params` to build parameter combinations

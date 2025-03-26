@@ -340,8 +340,7 @@ class RepEval(CustomTemplate):
 
 
 class RepFunc(CustomTemplate):
-    """Class for executing a function provided as a template using parameters extracted from a context mapping.
-    """
+    """Class for executing a function provided as a template using parameters extracted from a context mapping."""
 
     def get_context_vars(self) -> tp.List[str]:
         """Return a list of argument names for the function defined in `RepFunc.template`.

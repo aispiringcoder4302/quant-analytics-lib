@@ -36,13 +36,13 @@ class Timer(Base):
     Usage:
         ```pycon
         >>> from vectorbtpro import *
-        
+
         >>> with vbt.Timer() as timer:
         >>>     sleep(1)
-        
+
         >>> print(timer.elapsed())
         1.01 seconds
-        
+
         >>> timer.elapsed(readable=False)
         datetime.timedelta(seconds=1, microseconds=5110)
         ```
@@ -167,14 +167,14 @@ def timeit(func: tp.Callable, readable: bool = True, **kwargs) -> tp.Union[str, 
     Usage:
         ```pycon
         >>> from vectorbtpro import *
-        
+
         >>> def my_func():
         ...     sleep(1)
-        
+
         >>> elapsed = vbt.timeit(my_func)
         >>> print(elapsed)
         1.01 seconds
-        
+
         >>> vbt.timeit(my_func, readable=False)
         datetime.timedelta(seconds=1, microseconds=1870)
         ```
@@ -252,13 +252,13 @@ class MemTracer(Base):
     Usage:
         ```pycon
         >>> from vectorbtpro import *
-        
+
         >>> with vbt.MemTracer() as tracer:
         >>>     np.random.uniform(size=1000000)
-        
+
         >>> print(tracer.peak_usage())
         8.0 MB
-        
+
         >>> tracer.peak_usage(readable=False)
         8005360
         ```

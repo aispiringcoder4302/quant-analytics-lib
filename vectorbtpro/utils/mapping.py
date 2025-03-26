@@ -114,11 +114,11 @@ def apply_mapping(
 
             Can be a scalar, tuple, list, set, frozenset, NumPy array, Index, Series, or DataFrame.
         mapping_like (Optional[MappingLike]): An object convertible to a mapping.
-            
+
             See `to_value_mapping`.
         enum_unkval (Any): Value for unknown enumeration items.
         reverse (bool): Whether to reverse the mapping's keys and values.
-            
+
             See `to_value_mapping`.
         ignore_case (bool): Whether to ignore case in string keys.
         ignore_underscores (bool): Whether to ignore underscores in string keys.

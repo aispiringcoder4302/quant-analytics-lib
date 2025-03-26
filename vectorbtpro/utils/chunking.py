@@ -851,7 +851,7 @@ class ContainerTaker(ChunkTaker, DefineMixin):
         ignore_none (bool): Indicates whether None values should be ignored.
         mapper (Optional[ChunkMapper]): Optional chunk mapper (`ChunkMapper`) to process chunk metadata.
         eval_id (Optional[MaybeSequence[Hashable]]): Identifier(s) at which to evaluate this instance.
-"""
+    """
 
     cont_take_spec: tp.Optional[tp.ContainerTakeSpec] = define.field(default=None)
     """Specification of the container."""
@@ -889,7 +889,7 @@ class SequenceTaker(ContainerTaker):
     """Class for taking items from a sequence container.
 
     Calls `Chunker.take_from_arg` on each element."""
-    
+
     def adapt_cont_take_spec(self, obj: tp.Sequence) -> tp.ContainerTakeSpec:
         """Adapt the container take specification for the given sequence.
 
@@ -974,7 +974,7 @@ class MappingTaker(ContainerTaker):
     """Class for taking items from a mapping container.
 
     Calls `Chunker.take_from_arg` on each element."""
-    
+
     def adapt_cont_take_spec(self, obj: tp.Mapping) -> tp.ContainerTakeSpec:
         """Adapt the container take specification for the given mapping.
 
@@ -1057,7 +1057,7 @@ class MappingTaker(ContainerTaker):
 
 class ArgsTaker(SequenceTaker):
     """Class for taking items from a variable-length positional arguments container."""
-    
+
     def __init__(
         self,
         *args,
@@ -1076,7 +1076,7 @@ class ArgsTaker(SequenceTaker):
 
 class KwargsTaker(MappingTaker):
     """Class for taking items from a variable-length keyword arguments container."""
-    
+
     def __init__(
         self,
         single_type: tp.Optional[tp.TypeLike] = None,
@@ -1098,11 +1098,11 @@ class KwargsTaker(MappingTaker):
 
 class Chunkable(Evaluable, Annotatable):
     """Abstract class representing a value with an associated chunk-taking specification."""
-    
+
     def get_value(self) -> tp.Any:
         """Return the encapsulated value."""
         raise NotImplementedError
-    
+
     def get_take_spec(self) -> tp.TakeSpec:
         """Return the associated chunk-taking specification."""
         raise NotImplementedError
@@ -1296,7 +1296,7 @@ class Chunker(Configured):
         chunk_len (Optional[SizeLike]): Length of each chunk.
         chunk_meta (Optional[ChunkMetaLike]): Custom chunk metadata overriding default generation.
         prepend_chunk_meta (Optional[bool]): Determines whether to prepend a `ChunkMeta` instance to the arguments.
-            
+
             If set to None, prepending occurs automatically when the first argument is named 'chunk_meta'.
         skip_single_chunk (Optional[bool]): Indicates whether to bypass chunking when only one chunk is present.
         arg_take_spec (Optional[ArgTakeSpecLike]): Specification for selecting arguments during chunking.
@@ -1494,20 +1494,20 @@ class Chunker(Configured):
         Args:
             ann_args (AnnArgs): Function arguments annotated by `vectorbtpro.utils.parsing.annotate_args`.
             size (Optional[SizeLike]): Chunk size used for metadata generation.
-                
+
                 It can be an integer, an instance of `Sizer`, or a callable that receives the annotated
                 arguments and returns a value.
             min_size (Optional[int]): Minimum allowed chunk size.
             n_chunks (Optional[SizeLike]): Desired number of chunks.
-                
+
                 It can be provided as an integer, a string, an instance of `Sizer`, or a callable that
                 accepts annotated arguments and keyword arguments.
             chunk_len (Optional[SizeLike]): Length of each chunk.
-                
+
                 It can be provided as an integer, a string, an instance of `Sizer`, or a callable that
                 receives the annotated arguments and returns a value.
             chunk_meta (Optional[ChunkMetaLike]): Custom chunk metadata.
-                
+
                 It can be an iterable of `ChunkMeta` instances, a `ChunkMeta` generator, or a callable
                 returning chunk metadata.
             **kwargs: Additional keyword arguments passed to the metadata generation process.

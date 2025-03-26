@@ -43,6 +43,7 @@ def send_action(action: str) -> tp.Callable:
     Returns:
         Callable: A decorator that wraps the target command function.
     """
+
     def decorator(func: tp.Callable) -> tp.Callable:
         @wraps(func)
         def command_func(self, update: Update, context: CallbackContext, *args, **kwargs) -> tp.Callable:
@@ -65,6 +66,7 @@ def self_decorator(self, func: tp.Callable) -> tp.Callable:
     Returns:
         Callable: The decorated command function with the bot instance provided.
     """
+
     def command_func(update, context, *args, **kwargs):
         return func(self, update, context, *args, **kwargs)
 
@@ -599,6 +601,7 @@ else:
                 bot = MyTelegramBot(token='YOUR_TOKEN')
                 bot.start()
             ```"""
+
         _expected_keys_mode: tp.ExpectedKeysMode = "disable"
 
         def __init__(self, giphy_kwargs: tp.KwargsLike = None, **kwargs) -> None:

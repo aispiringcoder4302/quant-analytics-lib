@@ -8,7 +8,8 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Utilities for requests."""
+"""Module providing utility functions for HTTP requests, including session retry configuration
+and translation of text to GIF URLs using the Giphy API."""
 
 from urllib.parse import urlencode
 
@@ -27,7 +28,18 @@ def requests_retry_session(
     status_forcelist: tp.Tuple[int, ...] = (500, 502, 504),
     session: tp.Optional[requests.Session] = None,
 ) -> requests.Session:
-    """Retry `retries` times if unsuccessful."""
+    """Return a `requests.Session` instance with a configured retry strategy.
+
+    Args:
+        retries (int): Maximum number of retry attempts.
+        backoff_factor (float): Factor to compute delay between retries.
+        status_forcelist (Tuple[int, ...]): HTTP status codes that trigger a retry.
+        session (Optional[requests.Session]): Existing session to modify; if not provided,
+            a new session is created.
+
+    Returns:
+        requests.Session: A session with mounted adapters that implement the retry strategy.
+    """
     session = session or requests.Session()
     retry = Retry(
         total=retries,
@@ -43,9 +55,18 @@ def requests_retry_session(
 
 
 def text_to_giphy_url(text: str, api_key: tp.Optional[str] = None, weirdness: tp.Optional[int] = None) -> str:
-    """Translate text to GIF.
+    """Return the URL for a GIF corresponding to the provided text using the Giphy translate API.
 
-    See https://engineering.giphy.com/contextually-aware-search-giphy-gets-work-specific/"""
+    Args:
+        text (str): The text to translate into a GIF search query.
+        api_key (Optional[str]): API key for accessing the Giphy service.
+        weirdness (Optional[int]): Parameter influencing the uniqueness of the GIF selection.
+
+    Returns:
+        str: The URL of the translated GIF.
+
+    See https://engineering.giphy.com/contextually-aware-search-giphy-gets-work-specific/
+    """
     from vectorbtpro._settings import settings
 
     giphy_cfg = settings["telegram"]["giphy"]

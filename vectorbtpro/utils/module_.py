@@ -680,6 +680,7 @@ def prepare_refname(
             or a tuple of (refname, module, qualified name) if `return_parts` is True; or None
             if the reference name cannot be determined.
     """
+
     def _raise_error():
         raise ValueError(
             "Couldn't find the reference name, or the object is external. "

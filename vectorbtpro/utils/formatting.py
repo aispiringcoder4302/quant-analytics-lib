@@ -614,4 +614,3 @@ def get_dump_language(dump_engine: str) -> str:
     if dump_engine.lower() == "json":
         return "json"
     return ""
-

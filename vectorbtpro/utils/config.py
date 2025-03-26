@@ -259,7 +259,7 @@ def update_dict(
 
 def reorder_dict(dct: dict, keys: tp.Iterable[tp.Union[tp.Hashable, type(...)]], skip_missing: bool = False) -> dict:
     """Reorder a dictionary based on a list of keys.
-    
+
     Args:
         dct (dict): The dictionary to reorder.
         keys (Iterable[Union[Hashable, Ellipsis]]): List of keys specifying the new order.
@@ -299,7 +299,7 @@ def reorder_dict(dct: dict, keys: tp.Iterable[tp.Union[tp.Hashable, type(...)]],
 
 def reorder_list(lst: list, keys: tp.Iterable[tp.Union[int, type(...)]], skip_missing: bool = False) -> list:
     """Reorder a list based on a list of integer indices.
-    
+
     Args:
         lst (list): The list to reorder.
         keys (Iterable[Union[int, Ellipsis]]): List of indices specifying the new order.
@@ -399,9 +399,9 @@ def merge_dicts(
     same_keys: bool = False,
 ) -> OutConfigLikeT:
     """Merge multiple dictionaries into one.
-    
-	Merge provided dictionaries with optional conversion and copying, and optionally perform
-	recursive merging of nested dictionaries.
+
+        Merge provided dictionaries with optional conversion and copying, and optionally perform
+        recursive merging of nested dictionaries.
 
     Args:
         *dicts (dict): Dictionaries to merge.
@@ -481,8 +481,8 @@ def merge_dicts(
 
 def flat_merge_dicts(*dicts: InConfigLikeT, **kwargs) -> OutConfigLikeT:
     """Merge multiple dictionaries with flat (non-recursive) merging.
-    
-	Wrapper around `merge_dicts` that forces `nested` to False while applying default arguments.
+
+        Wrapper around `merge_dicts` that forces `nested` to False while applying default arguments.
 
     Args:
         *dicts (dict): Dictionaries to merge.
@@ -495,8 +495,9 @@ def flat_merge_dicts(*dicts: InConfigLikeT, **kwargs) -> OutConfigLikeT:
 
 class child_dict(pdict):
     """Child dictionary class.
-    
-	Subclass of `dict` representing a nested child dictionary."""
+
+    Subclass of `dict` representing a nested child dictionary."""
+
     pass
 
 
@@ -1033,6 +1034,8 @@ class Config(pdict):
     ) -> bool:
         if _key is None:
             _key = type(self).__name__
+        if "only_types" in kwargs:
+            del kwargs["only_types"]
         if check_types and not is_deep_equal(
             self,
             other,
@@ -1320,11 +1323,11 @@ Lookup is performed using `get_dict_item`."""
                                         paths.append((cls_, to_path_))
                                         unique_paths.add(to_path_)
 
-                            elif len(path_) > len(from_path_) and path_[:len(from_path_)] == from_path_:
+                            elif len(path_) > len(from_path_) and path_[: len(from_path_)] == from_path_:
                                 if not isinstance(to_path, list):
                                     to_path = [to_path]
                                 for to_path_ in to_path:
-                                    to_path_ = combine_pathlike_keys(to_path_, path_[len(from_path_):])
+                                    to_path_ = combine_pathlike_keys(to_path_, path_[len(from_path_) :])
                                     if to_path_ not in unique_paths:
                                         paths.append((cls_, to_path_))
                                         unique_paths.add(to_path_)
@@ -1850,7 +1853,7 @@ class Configured(HasSettings, Cacheable, Comparable, Pickleable, Prettified, Cha
         not be copied. Pass them explicitly to ensure the saved, loaded, or copied instance
         remains resilient to changes in globals.
     """
-    
+
     _expected_keys_mode: tp.ExpectedKeysMode = "auto"
     """Mode of expected keys.
 
@@ -2068,6 +2071,8 @@ class Configured(HasSettings, Cacheable, Comparable, Pickleable, Prettified, Cha
         """
         if _key is None:
             _key = type(self).__name__
+        if "only_types" in kwargs:
+            del kwargs["only_types"]
         if check_types and not is_deep_equal(
             self,
             other,

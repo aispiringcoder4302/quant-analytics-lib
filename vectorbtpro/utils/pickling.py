@@ -1114,7 +1114,7 @@ class Pickleable(Base):
                         v2 = get_class_from_id(v2[1:])
                     elif run_code and v2.startswith("!"):
                         if v2.startswith("!vbt.loads(") and v2.endswith(")"):
-                            v2 = evaluate(v2[len("!vbt."):], context={**code_context, "loads": loads})
+                            v2 = evaluate(v2[len("!vbt.") :], context={**code_context, "loads": loads})
                         else:
                             v2 = evaluate(v2.lstrip("!"), context=code_context)
                     else:
@@ -1560,6 +1560,8 @@ class pdict(Comparable, Pickleable, Prettified, dict):
             bool: True if the objects are deeply equal, otherwise False."""
         if _key is None:
             _key = type(self).__name__
+        if "only_types" in kwargs:
+            del kwargs["only_types"]
         if check_types and not is_deep_equal(
             self,
             other,

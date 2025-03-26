@@ -180,7 +180,6 @@ def flatten_annotations(
     return flat_annotations
 
 
-
 class MetaAnnotatable(type):
     """Metaclass for `Annotatable` supporting union operator overloads."""
 

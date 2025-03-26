@@ -419,7 +419,7 @@ def deep_getattr(
         attr_chain (Union[str, tuple, Iterable]): The chain of attributes to access.
 
             It can be specified as one of the following forms:
-            
+
             * string: Retrieve a property or method without arguments.
             * tuple of string: Call a method without arguments.
             * tuple of string and tuple: Call a method with positional arguments.

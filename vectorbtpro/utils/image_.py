@@ -95,10 +95,10 @@ def save_animation(
     Usage:
         ```pycon
         >>> from vectorbtpro import *
-    
+
         >>> def plot_data_window(index, data):
         ...     return data.loc[index].plot()
-    
+
         >>> data = vbt.YFData.pull("BTC-USD", start="2020", end="2021")
         >>> vbt.save_animation(
         ...     "plot_data_window.gif",

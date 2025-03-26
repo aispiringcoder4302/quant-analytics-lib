@@ -389,7 +389,7 @@ class ProgressBar(Base):
 
     def update(self, n: int = 1) -> None:
         """Update the progress bar by the specified number of iterations.
-        
+
         Args:
             n (int): The number of iterations to update.
         """
@@ -402,7 +402,7 @@ class ProgressBar(Base):
 
     def update_to(self, n: int) -> None:
         """Update the progress bar to the given iteration count.
-        
+
         Args:
             n (int): The target iteration count.
         """
@@ -418,10 +418,10 @@ class ProgressBar(Base):
     @classmethod
     def format_num(cls, n: float) -> str:
         """Format the given number using up to three significant digits.
-        
+
         Args:
             n (float): The number to format.
-        
+
         Returns:
             str: A formatted string representation of the number.
                 If the formatted string is shorter than the original, it is returned;
@@ -434,13 +434,13 @@ class ProgressBar(Base):
     @classmethod
     def prepare_desc(cls, desc: tp.Union[None, str, dict]) -> str:
         """Prepare and format the description.
-        
+
         If `desc` is a dictionary, its key-value pairs are concatenated into a comma-separated string.
         If `desc` is None or missing, an empty string is returned.
-        
+
         Args:
             desc (Union[None, str, dict]): The description to prepare.
-        
+
         Returns:
             str: A formatted description string.
         """
@@ -473,9 +473,9 @@ class ProgressBar(Base):
 
     def set_prefix(self, desc: tp.Union[None, str, dict], refresh: tp.Optional[bool] = None) -> None:
         """Set the progress bar's prefix.
-        
+
         The description is prepared using `ProgressBar.prepare_desc` before being set.
-        
+
         Args:
             desc (Union[None, str, dict]): The description to set as prefix.
             refresh (Optional[bool]): Determines whether to refresh the bar after setting the prefix.
@@ -491,7 +491,7 @@ class ProgressBar(Base):
 
     def set_prefix_str(self, desc: str, refresh: tp.Optional[bool] = None) -> None:
         """Set the progress bar's prefix without preparing the description.
-        
+
         Args:
             desc (str): The prefix string to set.
             refresh (Optional[bool]): Determines whether to refresh the bar after setting the prefix.
@@ -506,9 +506,9 @@ class ProgressBar(Base):
 
     def set_postfix(self, desc: tp.Union[None, str, dict], refresh: tp.Optional[bool] = None) -> None:
         """Set the progress bar's postfix.
-        
+
         The description is prepared using `ProgressBar.prepare_desc` before being set.
-        
+
         Args:
             desc (Union[None, str, dict]): The description to set as postfix.
             refresh (Optional[bool]): Determines whether to refresh the bar after setting the postfix.
@@ -524,7 +524,7 @@ class ProgressBar(Base):
 
     def set_postfix_str(self, desc: str, refresh: tp.Optional[bool] = None) -> None:
         """Set the progress bar's postfix without preparing the description.
-        
+
         Args:
             desc (str): The postfix string to set.
             refresh (Optional[bool]): Determines whether to refresh the bar after setting the postfix.
@@ -544,10 +544,10 @@ class ProgressBar(Base):
         refresh: tp.Optional[bool] = None,
     ) -> None:
         """Set the progress bar's description.
-        
+
         Depending on the `as_postfix` setting in `ProgressBar.desc_kwargs`, this method calls either
         `ProgressBar.set_postfix` (if True) or `ProgressBar.set_prefix` (if False).
-        
+
         Args:
             desc (Union[None, str, dict]): The description to set.
             as_postfix (Optional[bool]): Determines whether to set the description as postfix.
@@ -569,10 +569,10 @@ class ProgressBar(Base):
         refresh: tp.Optional[bool] = None,
     ) -> None:
         """Set the progress bar's description without preparing the provided string.
-        
+
         Depending on the `as_postfix` setting in `ProgressBar.desc_kwargs`, this method calls either
         `ProgressBar.set_postfix_str` (if True) or `ProgressBar.set_prefix_str` (if False).
-        
+
         Args:
             desc (str): The description string to set.
             as_postfix (Optional[bool]): Determines whether to set the description as postfix.
@@ -589,13 +589,13 @@ class ProgressBar(Base):
 
     def enter(self, **kwargs) -> tp.Self:
         """Enter the progress bar context.
-        
+
         If configured to show progress or forced to open, the progress bar is opened with
         the provided keyword arguments.
-        
+
         Args:
             **kwargs: Additional keyword arguments passed to `ProgressBar.open`.
-        
+
         Returns:
             Self: The progress bar instance.
         """
@@ -608,7 +608,7 @@ class ProgressBar(Base):
 
     def exit(self, **kwargs) -> None:
         """Exit the progress bar.
-        
+
         Args:
             **kwargs: Additional keyword arguments passed to `ProgressBar.close`.
         """

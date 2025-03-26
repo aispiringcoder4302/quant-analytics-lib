@@ -39,7 +39,7 @@ class Cacheable(Base):
     `vectorbtpro.utils.decorators.cacheable_method`.
 
     See `vectorbtpro.registries.ca_registry` for details on the caching procedure."""
-    
+
     def __init__(self) -> None:
         from vectorbtpro._settings import settings
 
