@@ -316,6 +316,20 @@ class FigureMixin(Base):
         """
         raise NotImplementedError
 
+    def write_image(self, *args, **kwargs) -> None:
+        """Write the figure to disk.
+
+        This method should be overridden by subclasses.
+        """
+        raise NotImplementedError
+
+    def update_layout(self, *args, **kwargs) -> None:
+        """Update layout of the figure.
+
+        This method should be overridden by subclasses.
+        """
+        raise NotImplementedError
+
     def show_png(self, **kwargs) -> None:
         """Display the figure in PNG format.
 

@@ -158,7 +158,7 @@ else:
 
 
 def whats_imported():
-    """Print references and their values that got imported when running `from vectorbtpro import *`."""
+    """Print the names and values of all references imported via `from vectorbtpro import *`."""
     import pandas as pd
 
     from vectorbtpro.utils.formatting import ptable
@@ -183,3 +183,8 @@ __pdoc__ = dict()
 __pdoc__["_dtypes"] = True
 __pdoc__["_opt_deps"] = True
 __pdoc__["_settings"] = True
+__pdoc__["imported_stuff"] = f"""Modules and objects imported by default when using `from vectorbtpro import *`.
+
+```python
+{prettify(imported_stuff)}
+```"""

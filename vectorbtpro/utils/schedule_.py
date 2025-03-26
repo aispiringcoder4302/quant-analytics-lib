@@ -113,8 +113,6 @@ class AsyncJob(CustomJob):
     async def async_run(self) -> tp.Any:
         """Asynchronously execute the job function.
 
-        Async version of `CustomJob.run`.
-
         Runs the job function, updates the last run timestamp, and schedules the next run.
 
         Returns:
@@ -135,16 +133,12 @@ class AsyncScheduler(CustomScheduler):
     async def async_run_pending(self) -> None:
         """Asynchronously run all pending jobs.
 
-        Asynchronous version of `CustomScheduler.run_pending`.
-
         Identifies jobs that are ready to run and concurrently executes them."""
         runnable_jobs = (job for job in self.jobs if job.should_run)
         await asyncio.gather(*[self._async_run_job(job) for job in runnable_jobs])
 
     async def async_run_all(self, delay_seconds: int = 0) -> None:
         """Asynchronously execute all scheduled jobs with an optional delay between jobs.
-
-        Asynchronous version of `CustomScheduler.run_all`.
 
         Args:
             delay_seconds (int): The delay in seconds between consecutive job executions.
