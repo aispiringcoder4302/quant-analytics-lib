@@ -398,9 +398,9 @@ class SQLData(DBData):
             **engine_config,
         )
         if not cls.has_schema(schema, engine=engine, engine_name=engine_name):
-            with engine.connect() as connection:
-                connection.execute(CreateSchema(schema))
-                connection.commit()
+            with engine.connect() as conn:
+                conn.execute(CreateSchema(schema))
+                conn.commit()
 
     @classmethod
     def has_table(
@@ -493,10 +493,10 @@ class SQLData(DBData):
             .order_by(table_relation.columns.get(row_number_column).desc())
             .limit(1)
         )
-        with engine.connect() as connection:
-            results = connection.execute(query)
+        with engine.connect() as conn:
+            results = conn.execute(query)
             last_row_number = results.first()[0]
-            connection.commit()
+            conn.commit()
         return last_row_number
 
     @classmethod
@@ -878,15 +878,16 @@ class SQLData(DBData):
                 if index_col is None:
                     raise ValueError("Must provide index column for filtering by start and end")
                 if align_dates:
-                    first_obj = pd.read_sql_query(
-                        query.limit(1),
-                        engine.connect(),
-                        index_col=index_col,
-                        parse_dates=None if isinstance(parse_dates, bool) else parse_dates,  # bool not accepted
-                        dtype=dtype,
-                        chunksize=None,
-                        **read_sql_kwargs,
-                    )
+                    with engine.connect() as conn:
+                        first_obj = pd.read_sql_query(
+                            query.limit(1),
+                            conn,
+                            index_col=index_col,
+                            parse_dates=None if isinstance(parse_dates, bool) else parse_dates,  # bool not accepted
+                            dtype=dtype,
+                            chunksize=None,
+                            **read_sql_kwargs,
+                        )
                     first_obj = cls.prepare_dt(
                         first_obj,
                         parse_dates=list(parse_dates) if isinstance(parse_dates, dict) else parse_dates,
@@ -987,15 +988,16 @@ class SQLData(DBData):
 
         if isinstance(query, str):
             query = text(query)
-        obj = pd.read_sql_query(
-            query,
-            engine.connect(),
-            index_col=index_col,
-            parse_dates=None if isinstance(parse_dates, bool) else parse_dates,  # bool not accepted
-            dtype=dtype,
-            chunksize=chunksize,
-            **read_sql_kwargs,
-        )
+        with engine.connect() as conn:
+            obj = pd.read_sql_query(
+                query,
+                conn,
+                index_col=index_col,
+                parse_dates=None if isinstance(parse_dates, bool) else parse_dates,  # bool not accepted
+                dtype=dtype,
+                chunksize=chunksize,
+                **read_sql_kwargs,
+            )
         if isinstance(obj, Iterator):
             if chunk_func is None:
                 obj = pd.concat(list(obj), axis=0)
