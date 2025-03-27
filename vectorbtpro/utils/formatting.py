@@ -29,6 +29,7 @@ __all__ = [
     "phelp",
     "pdir",
     "dump",
+    "refine_source",
 ]
 
 
@@ -724,3 +725,293 @@ def get_dump_language(dump_engine: str) -> str:
     if dump_engine.lower() == "json":
         return "json"
     return ""
+
+
+REFINE_PROMPT = """You are a code-refinement assistant. 
+        
+Present the refactored version of the given chunk of Python code to address 
+any detected code smells or issues. You must:
+
+1. **Return the entire code block** in your output.
+2. **Do not enclose your output in triple backticks**, and return no other text or explanation."""
+"""Default prompt for `refine_source`."""
+
+
+def refine_source(
+    source: tp.Any,
+    prompt: tp.Optional[str] = None,
+    chunk_size: int = 2000,
+    split_text_kwargs: tp.KwargsLike = None,
+    tokenize_kwargs: tp.KwargsLike = None,
+    complete_kwargs: tp.KwargsLike = None,
+    show_progress: tp.Optional[bool] = True,
+    pbar_kwargs: tp.KwargsLike = None,
+    show_diffs: bool = True,
+    open_browser: bool = True,
+) -> tp.Union[str, tp.Tuple[str, tp.Path]]:
+    """Refine source code using chunking and completions.
+
+    Args:
+        source (Any): Source code or object to extract the source code from.
+        prompt (Optional[str]): System prompt.
+        chunk_size (int): The maximum number of tokens in each chunk.
+        split_text_kwargs (KwargsLike): Keyword arguments passed to
+            `vectorbtpro.utils.knowledge.chatting.split_text`.
+        tokenize_kwargs (KwargsLike): Keyword arguments passed to
+            `vectorbtpro.utils.knowledge.chatting.tokenize`.
+        complete_kwargs (KwargsLike): Keyword arguments passed to
+            `vectorbtpro.utils.knowledge.chatting.complete_content`.
+        show_progress (Optional[bool]): Whether to show the progress bar iterating over chunks.
+        pbar_kwargs (KwargsLike): Keyword arguments passed to `vectorbtpro.utils.pbar.ProgressBar`.
+        show_diffs (bool): Whether to show changes in a temporary HTML file using `difflib`.
+        open_browser (bool): Whether to open the browser.
+
+    Returns:
+        Union[str, Tuple[str, Path]]: Refined source code, and path to the HTML file if `show_diffs` is True.
+    """
+    import ast
+    import difflib
+    import tempfile
+    import webbrowser
+    import inspect
+    from pathlib import Path
+
+    from vectorbtpro.utils.config import merge_dicts
+    from vectorbtpro.utils.pbar import ProgressBar
+    from vectorbtpro.utils.knowledge.chatting import split_text, tokenize, complete_content
+
+    if not isinstance(source, str):
+        source_name = repr_doc(source)
+        source = inspect.getsource(source)
+    else:
+        source_name = "<string>"
+    if prompt is None:
+        prompt = REFINE_PROMPT
+    split_text_kwargs = merge_dicts(
+        dict(
+            text_splitter="segment",
+            chunk_size=chunk_size,
+            chunk_overlap=0,
+            separators=[[r"(?=\n\s*(?:@[^\n]+\n\s*)*def\s)"], [r"\n\s*\n"], None],
+            chunk_template="$chunk_text",
+        ),
+        split_text_kwargs,
+    )
+    tokenize_kwargs = merge_dicts(
+        dict(),
+        tokenize_kwargs,
+    )
+    complete_kwargs = merge_dicts(
+        dict(
+            model="o3-mini",
+            reasoning_effort="high",
+            system_as_user=True,
+            system_prompt=prompt,
+        ),
+        complete_kwargs,
+    )
+    pbar_kwargs = merge_dicts(
+        dict(desc_kwargs=dict(refresh=True)),
+        pbar_kwargs,
+    )
+
+    lines = source.splitlines(True)
+    try:
+        tree = ast.parse(source)
+    except SyntaxError:
+        tree = None
+    spans = []
+    if tree is not None and hasattr(tree, "body"):
+        for node in tree.body:
+            if hasattr(node, "lineno") and hasattr(node, "end_lineno"):
+                spans.append((node.lineno - 1, node.end_lineno))
+    spans.sort(key=lambda x: x[0])
+
+    blocks = []
+    prev = 0
+    for start, end in spans:
+        if prev < start:
+            blocks.append("".join(lines[prev:start]))
+        blocks.append("".join(lines[start:end]))
+        prev = end
+    if prev < len(lines):
+        blocks.append("".join(lines[prev:]))
+
+    final_chunks = []
+    buf = []
+    buf_tokens = 0
+    for block in blocks:
+        sub_blocks = split_text(block, **split_text_kwargs)
+        for sb in sub_blocks:
+            sb_tokens = len(tokenize(sb, **tokenize_kwargs))
+            if buf_tokens + sb_tokens > chunk_size:
+                if buf:
+                    final_chunks.append("".join(buf))
+                buf = [sb]
+                buf_tokens = sb_tokens
+            else:
+                buf.append(sb)
+                buf_tokens += sb_tokens
+    if buf:
+        final_chunks.append("".join(buf))
+
+    processed = []
+    total_lines = 0
+    with ProgressBar(total=len(final_chunks), show_progress=show_progress, **pbar_kwargs) as pbar:
+        for i in range(len(final_chunks)):
+            chunk = final_chunks[i]
+            chunk_lines = len(chunk.split("\n"))
+            pbar.set_description(dict(lines="{}..{}".format(total_lines, total_lines + chunk_lines - 1)))
+            leading_len = len(chunk) - len(chunk.lstrip())
+            leading = chunk[:leading_len]
+            trailing_len = len(chunk) - len(chunk.rstrip())
+            trailing = chunk[-trailing_len:] if trailing_len > 0 else ""
+            middle = chunk[leading_len : len(chunk) - trailing_len]
+            processed_middle = complete_content(leading + middle + trailing, **complete_kwargs).strip()
+            processed.append(leading + processed_middle + trailing)
+            total_lines += chunk_lines
+            pbar.update()
+    new_source = "".join(processed)
+
+    if show_diffs:
+        a = source.splitlines()
+        b = new_source.splitlines()
+        differ = difflib.HtmlDiff()
+        html = differ.make_file(a, b, fromdesc="Original", todesc="Modified")
+        with tempfile.NamedTemporaryFile("w", delete=False, prefix=source_name, suffix=".html") as f:
+            f.write(html)
+            file_path = Path(f.name)
+        if open_browser:
+            webbrowser.open("file://" + str(file_path.resolve()))
+        return new_source, file_path
+    return new_source
+
+
+REFINE_VBT_DOC_PROMPT = """You are a code-refinement assistant. 
+
+Your goal is to refine (rewrite for clarity, correctness, consistent format and wording) 
+**only** the docstrings of the given chunk of Python code. You must:
+
+1. **Modify only existing docstrings**.
+2. **Return the entire code block** in your output.
+3. **Do not enclose your output in triple backticks**, and return no other text or explanation.
+4. **Retain all non-docstring parts of the code** exactly as they are.
+
+### 1. Scope of Edits
+
+- **Identify existing docstrings** in functions, classes, and methods.
+- **Edit only those docstrings**; do not create new ones.
+- **Do not document** functions or methods whose names begin with one or two underscores 
+    (e.g., `_preprocess`, `__eq__`).
+- **Keep the `__init__` docstring empty**. Instead, document its parameters in the class 
+    docstring inside the "Args" section.
+- **Keep the license text**.
+
+### 2. Content Requirements
+
+- **Use relevant details from the code** to make each docstring clear and self-explanatory 
+    for someone who cannot see the source code.
+- **Keep docstrings concise and correct** in grammar and content, but do not remove any 
+    valuable information unless it's duplicate.
+- **Omit sections** such as "Raises," "Attributes," "Methods," or default values.
+- **Do not extra mention the default value of an argument**.
+- **Do not extra mention that an argument is optional**.
+    - For example, `x: tp.Optional[int] = None` becomes `x (Optional[int]): ...` and 
+        not `x (int, optional): ...`.
+    - Do not omit the `Optional[...]` type hint.
+- **Retain any admonitions** like `"!!! note"` or `"!!! warning"` exactly as they are, for example:
+    ```
+    !!! note
+      Here comes the note.
+    ```
+- Instead of adding the section "Note", use the admonition "!!! note".
+- **Preserve indentation, whitespace, and formatting** in lists or multi-line text 
+    unless it is incorrect.
+- **Do not change code examples** in the "Usage" section. Use only the name "Usage", 
+    not "Examples" or any other name.
+- If a function returns `None` or bool, **do not add a "Returns" section**.
+- **Do not add your own "Usage" section**.
+- **Make sure to list all arguments, their types, and descriptions**, apart from `self`, `cls`, and `cls_or_self`
+
+### 3. Style and Format
+
+- **Use Markdown format**.
+- **Follow PEP 257 guidelines**.
+- **Use Google-style docstrings** for arguments and return values, for example:
+    ```
+    Args:
+        arg_name (type): Description of the argument.
+    
+    Returns:
+        return_type: Description of the returned value.
+    ```
+- If the description of an argument has multiple sentences, **separate them by an empty line**. 
+    For example:
+    ```
+    x (Optional[int]): First integer.
+      
+        Refer to `prepare_x` for further details.
+    y (Optional[int]): Second integer.
+  
+        If not provided, uses `x`.
+  
+        Refer to `prepare_y` for further details.
+    ```
+    instead of
+    ```
+    x (Optional[int]): First integer. Refer to `prepare_x` for further details.
+    y (Optional[int]): Second integer. If not provided, uses `x`. Refer to `prepare_y` for further details.
+    ```
+- **Preserve type hints** but remove module prefixes such as "tp." and the suffix "T".
+    - For example, `x: tp.Union[None, int, tp.DatetimeLike] = ...` becomes 
+        `x (Union[None, int, DatetimeLike]): ...`.
+    - Also, `x: tp.MaybeType[KnowledgeAssetT] = ...` becomes `x (MaybeType[KnowledgeAsset]): ...`.
+- Treat classes decorated with `@define` **as if they were decorated with `@attr.s`**, adjusting 
+    docstrings accordingly.
+- For module docstrings, retain the phrasing that **identifies them as a module**, 
+    such as "Module providing X".
+- For class docstrings, retain the phrasing that **identifies them as a class**, 
+    such as "Class for X".
+- **Begin method docstrings with imperative verbs** (e.g., "Return," "Fetch," "Create") 
+    rather than "Does X...".
+- **Properties should describe the object rather than the action**, for example "Context." 
+    instead of "Return the context."
+- Bullet points must be at the **same indentation level as the parent sentence** and should 
+    have **one empty line before the list**.
+- **Use a consistent style for bullet points**, such as "*"
+- For `*args` begin the description with `Additional arguments passed to/for`.
+- For `**kwargs` begin the description with `Additional keyword arguments passed to/for`.
+- When dealing with named tuples and enums, replace "Attributes:" by "Fields:" in their docstrings
+- Make sure that docstrings have three double quotes (\""") at the start and the end
+- Make sure that **docstrings are properly indented** relative to the first three double quotes (\""")
+
+### 4. Referencing and Usage
+
+- ***Refer to Python objects** (classes, functions, methods, or any code reference) **with backticks** and, 
+    if relevant, fully qualified names.
+    - For example, `Data.get` (if in the same module) or `vectorbtpro.data.base.Data.get`.
+    - Do not shorten fully qualified names, such as from `vectorbtpro.utils.datetime_.get_rangebreaks` 
+        to `dt.get_rangebreaks`.
+- If the reference is known to belong to the same class (for instance, when in the code the object 
+    is being accessed from `cls`, `self`, or `cls_or_self`), prepend the class to the reference if known.
+    - For example, `FigureMixin.show` instead of `show`.
+- **Always use backticks around code references**, e.g., "Keyword arguments for `make_subplots`" 
+    instead of "Keyword arguments for make_subplots".
+- **If a "Usage" section exists**, place it **at the end** of the docstring.
+
+### 5. Special Arguments
+
+- **Document the function(s)** that will receive `*args` or `**kwargs`, if known.
+
+### 6. Miscellaneous
+
+- **Do not start any docstring with a blank line**.
+- **Do not end a docstring with a blank line** unless it contains multiple lines.
+- **Only fix indentation or whitespace if it is incorrect**.
+"""
+"""Prompt for `refine_vbt_docstrings`."""
+
+
+def refine_vbt_docstrings(source: tp.Any, **kwargs) -> str:
+    """Call `refine_source` with `prompt=REFINE_VBT_DOC_PROMPT`."""
+    return refine_source(source, prompt=REFINE_VBT_DOC_PROMPT, **kwargs)

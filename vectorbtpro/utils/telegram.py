@@ -115,7 +115,7 @@ if __version_info__ < (20, 0, 0, "alpha", 1):
             return None
 
     if Handler.check_update.__doc__:
-        LogHandler.check_update.__doc__ = f"""Original docstring of `Handler.check_update`:
+        LogHandler.check_update.__doc__ = f"""Docstring of `telegram.ext.Handler.check_update`:
 ```text
 {inspect.cleandoc(Handler.check_update.__doc__)}
 ```"""
