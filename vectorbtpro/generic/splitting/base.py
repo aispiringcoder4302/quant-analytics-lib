@@ -302,8 +302,10 @@ class RelRange(DefineMixin):
                 stop = total_len
             elif self.out_of_bounds == "raise":
                 raise ValueError(f"Range stop ({stop}) is out of bounds")
-        if stop - start <= 0:
-            raise ValueError("Range length is negative or zero")
+        if stop - start == 0:
+            raise ZeroLengthError("Range has zero length")
+        if stop - start < 0:
+            raise ValueError("Range length is negative")
         return slice(start, stop)
 
 
