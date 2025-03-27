@@ -58,9 +58,22 @@ def clean_labels(labels: tp.Labels) -> tp.Labels:
         labels = labels.to_flat_index()
     if isinstance(labels, pd.PeriodIndex):
         labels = labels.map(str)
+    if isinstance(labels, pd.Index):
+        labels = labels.tolist()
     if len(labels) > 0 and isinstance(labels[0], tuple):
         labels = list(map(str, labels))
     return labels
+
+
+def clean_data(data: tp.Any) -> tp.Any:
+    """Clean data.
+
+    Plotly doesn't support NaNs."""
+    if isinstance(data, np.ndarray) and np.issubdtype(data.dtype, np.floating):
+        mask = np.isnan(data)
+        if mask.any():
+            return np.where(mask, None, data.astype(object))
+    return data
 
 
 class TraceType(Configured):
@@ -322,14 +335,14 @@ class Bar(TraceType, TraceUpdater):
 
     @classmethod
     def update_trace(cls, trace: BaseTraceType, data: tp.ArrayLike, i: int) -> None:
-        data = reshaping.to_2d_array(data)
+        data = clean_data(reshaping.to_2d_array(data))
 
         trace.y = data[:, i]
         if trace.marker.colorscale is not None:
             trace.marker.color = data[:, i]
 
     def update(self, data: tp.ArrayLike) -> None:
-        data = reshaping.to_2d_array(data)
+        data = clean_data(reshaping.to_2d_array(data))
 
         with self.fig.batch_update():
             for i, trace in enumerate(self.traces):
@@ -469,12 +482,12 @@ class Scatter(TraceType, TraceUpdater):
 
     @classmethod
     def update_trace(cls, trace: BaseTraceType, data: tp.ArrayLike, i: int) -> None:
-        data = reshaping.to_2d_array(data)
+        data = clean_data(reshaping.to_2d_array(data))
 
         trace.y = data[:, i]
 
     def update(self, data: tp.ArrayLike) -> None:
-        data = reshaping.to_2d_array(data)
+        data = clean_data(reshaping.to_2d_array(data))
 
         with self.fig.batch_update():
             for i, trace in enumerate(self.traces):
@@ -633,7 +646,7 @@ class Histogram(TraceType, TraceUpdater):
         from_quantile: tp.Optional[float] = None,
         to_quantile: tp.Optional[float] = None,
     ) -> None:
-        data = reshaping.to_2d_array(data)
+        data = clean_data(reshaping.to_2d_array(data))
 
         d = data[:, i]
         if remove_nan:
@@ -652,7 +665,7 @@ class Histogram(TraceType, TraceUpdater):
             trace.y = None
 
     def update(self, data: tp.ArrayLike) -> None:
-        data = reshaping.to_2d_array(data)
+        data = clean_data(reshaping.to_2d_array(data))
 
         with self.fig.batch_update():
             for i, trace in enumerate(self.traces):
@@ -795,7 +808,7 @@ class Box(TraceType, TraceUpdater):
         from_quantile: tp.Optional[float] = None,
         to_quantile: tp.Optional[float] = None,
     ) -> None:
-        data = reshaping.to_2d_array(data)
+        data = clean_data(reshaping.to_2d_array(data))
 
         d = data[:, i]
         if remove_nan:
@@ -814,7 +827,7 @@ class Box(TraceType, TraceUpdater):
             trace.y = d
 
     def update(self, data: tp.ArrayLike) -> None:
-        data = reshaping.to_2d_array(data)
+        data = clean_data(reshaping.to_2d_array(data))
 
         with self.fig.batch_update():
             for i, trace in enumerate(self.traces):
@@ -951,7 +964,7 @@ class Heatmap(TraceType, TraceUpdater):
 
     @classmethod
     def update_trace(cls, trace: BaseTraceType, data: tp.ArrayLike, *args, **kwargs) -> None:
-        trace.z = reshaping.to_2d_array(data)
+        trace.z = clean_data(reshaping.to_2d_array(data))
 
     def update(self, data: tp.ArrayLike) -> None:
         with self.fig.batch_update():
@@ -1106,7 +1119,7 @@ class Volume(TraceType, TraceUpdater):
 
     @classmethod
     def update_trace(cls, trace: BaseTraceType, data: tp.ArrayLike, *args, **kwargs) -> None:
-        trace.value = np.asarray(data).flatten()
+        trace.value = clean_data(np.asarray(data).flatten())
 
     def update(self, data: tp.ArrayLike) -> None:
         with self.fig.batch_update():

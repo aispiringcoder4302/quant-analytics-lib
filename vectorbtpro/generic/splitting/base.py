@@ -302,10 +302,10 @@ class RelRange(DefineMixin):
                 stop = total_len
             elif self.out_of_bounds == "raise":
                 raise ValueError(f"Range stop ({stop}) is out of bounds")
-        if stop - start == 0:
-            raise ZeroLengthError("Range has zero length")
         if stop - start < 0:
             raise ValueError("Range length is negative")
+        if stop - start == 0:
+            raise ZeroLengthError("Range has zero length")
         return slice(start, stop)
 
 
@@ -5340,38 +5340,37 @@ class Splitter(Analyzable):
         if len(set_labels) > len(colorway):
             colorway = px.colors.qualitative.Alphabet
 
-        if self.get_n_splits(split_group_by=split_group_by) > 0:
-            if self.get_n_sets(set_group_by=set_group_by) > 0:
-                if mask_kwargs is None:
-                    mask_kwargs = {}
-                for i, mask in enumerate(
-                    self.get_iter_set_masks(
-                        split_group_by=split_group_by,
-                        set_group_by=set_group_by,
-                        **mask_kwargs,
-                    )
-                ):
-                    df = mask.vbt.wrapper.fill()
-                    df[mask] = i
-                    color = adjust_opacity(colorway[i % len(colorway)], 0.8)
-                    trace_name = str(set_labels[i])
-                    _trace_kwargs = merge_dicts(
-                        dict(
-                            showscale=False,
-                            showlegend=True,
-                            legendgroup=str(set_labels[i]),
-                            name=trace_name,
-                            colorscale=[color, color],
-                            hovertemplate="%{x}<br>Split: %{y}<br>Set: " + trace_name,
-                        ),
-                        resolve_dict(trace_kwargs, i=i),
-                    )
-                    fig = df.vbt.ts_heatmap(
-                        trace_kwargs=_trace_kwargs,
-                        add_trace_kwargs=add_trace_kwargs,
-                        is_y_category=True,
-                        fig=fig,
-                    )
+        if self.get_n_splits(split_group_by=split_group_by) and self.get_n_sets(set_group_by=set_group_by):
+            if mask_kwargs is None:
+                mask_kwargs = {}
+            for i, mask in enumerate(
+                self.get_iter_set_masks(
+                    split_group_by=split_group_by,
+                    set_group_by=set_group_by,
+                    **mask_kwargs,
+                )
+            ):
+                df = mask.vbt.wrapper.fill()
+                df[mask] = i
+                color = adjust_opacity(colorway[i % len(colorway)], 0.8)
+                trace_name = str(set_labels[i])
+                _trace_kwargs = merge_dicts(
+                    dict(
+                        showscale=False,
+                        showlegend=True,
+                        legendgroup=str(set_labels[i]),
+                        name=trace_name,
+                        colorscale=[color, color],
+                        hovertemplate="%{x}<br>Split: %{y}<br>Set: " + trace_name,
+                    ),
+                    resolve_dict(trace_kwargs, i=i),
+                )
+                fig = df.vbt.ts_heatmap(
+                    trace_kwargs=_trace_kwargs,
+                    add_trace_kwargs=add_trace_kwargs,
+                    is_y_category=True,
+                    fig=fig,
+                )
         return fig
 
     def plot_coverage(
