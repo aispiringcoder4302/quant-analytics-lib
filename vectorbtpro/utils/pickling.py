@@ -941,7 +941,7 @@ class Pickleable(Base):
                 including special values like `np.nan`, `np.inf`, and `-np.inf`.
             run_code (bool): Execute Python code prefixed with `!`.
 
-                Uses a context that includes all from `vectorbtpro.imported_stuff`
+                Uses a context that includes all from `vectorbtpro.imported_star`
                 along with any provided in `code_context`.
             pack_objects (bool): Instantiate and reconstruct objects specified by section class paths.
 
@@ -1092,7 +1092,7 @@ class Pickleable(Base):
         else:
             code_context = dict(code_context)
         try:
-            for k, v in vbt.imported_stuff.items():
+            for k, v in vbt.imported_star.items():
                 if k not in code_context:
                     code_context[k] = v
         except AttributeError:

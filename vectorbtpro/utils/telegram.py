@@ -15,6 +15,7 @@ from vectorbtpro.utils.module_ import assert_can_import
 assert_can_import("telegram")
 
 import logging
+import inspect
 from functools import wraps
 
 from vectorbtpro import _typing as tp
@@ -113,8 +114,10 @@ if __version_info__ < (20, 0, 0, "alpha", 1):
                 return False
             return None
 
-    LogHandler.check_update.__doc__ = f"""```text
-{LogHandler.check_update.__doc__}
+    if Handler.check_update.__doc__:
+        LogHandler.check_update.__doc__ = f"""Original docstring of `Handler.check_update`:
+```text
+{inspect.cleandoc(Handler.check_update.__doc__)}
 ```"""
 
     class TelegramBot(Configured):

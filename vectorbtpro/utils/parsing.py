@@ -71,6 +71,7 @@ def get_func_arg_names(
     arg_kind: tp.Optional[tp.MaybeTuple[int]] = None,
     req_only: bool = False,
     opt_only: bool = False,
+    incl_var: bool = False,
 ) -> tp.List[str]:
     """Return a list of parameter names from a function signature with optional filtering.
 
@@ -81,6 +82,7 @@ def get_func_arg_names(
             If None, variable arguments are excluded.
         req_only (bool): If True, include only parameters without defaults.
         opt_only (bool): If True, include only parameters with defaults.
+        incl_var (bool): If True, include variable parameters.
 
     Returns:
         List[str]: Filtered list of parameter names.
@@ -91,7 +93,7 @@ def get_func_arg_names(
     arg_names = []
     for p in signature.parameters.values():
         if arg_kind is None:
-            if p.kind == p.VAR_POSITIONAL or p.kind == p.VAR_KEYWORD:
+            if not incl_var and (p.kind == p.VAR_POSITIONAL or p.kind == p.VAR_KEYWORD):
                 continue
         else:
             if p.kind not in arg_kind:

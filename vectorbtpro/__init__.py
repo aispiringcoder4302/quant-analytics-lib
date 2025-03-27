@@ -137,23 +137,23 @@ def _import_more_stuff():
     return locals()
 
 
-imported_stuff = {}
+imported_star = {}
 """_"""
 
 
 star_import = settings["importing"]["star_import"]
 if star_import.lower() == "all":
     globals().update(_import_more_stuff())
-    imported_stuff.update(globals())
+    imported_star.update(globals())
 elif star_import.lower() == "vbt":
-    imported_stuff.update(globals())
+    imported_star.update(globals())
 elif star_import.lower() == "minimal":
     import sys
 
     vbt = sys.modules[__name__]
     more_stuff = _import_more_stuff()
     globals().update(more_stuff)
-    imported_stuff.update({"vbt": vbt, "tp": tp, **more_stuff})
+    imported_star.update({"vbt": vbt, "tp": tp, **more_stuff})
     __all__ = ["vbt", "tp", *more_stuff.keys()]
 elif star_import.lower() == "none":
     __all__ = []
@@ -169,7 +169,7 @@ def whats_imported():
     from vectorbtpro.utils.module_ import get_refname
 
     values = {}
-    for k, v in imported_stuff.items():
+    for k, v in imported_star.items():
         refname = get_refname(v)
         if refname is not None and str(v).startswith("<"):
             values[k] = refname
@@ -188,9 +188,9 @@ __pdoc__["_dtypes"] = True
 __pdoc__["_opt_deps"] = True
 __pdoc__["_settings"] = True
 __pdoc__[
-    "imported_stuff"
+    "imported_star"
 ] = f"""Modules and objects imported by default when using `from vectorbtpro import *`.
 
 ```python
-{prettify_doc(imported_stuff)}
+{prettify_doc(imported_star)}
 ```"""

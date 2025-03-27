@@ -14,6 +14,7 @@ from vectorbtpro.utils.module_ import assert_can_import
 
 assert_can_import("plotly")
 
+import inspect
 from pathlib import Path
 
 import numpy as np
@@ -410,11 +411,15 @@ class Figure(_Figure, FigureMixin):
         _Figure.show(self, *args, **kwargs)
 
 
-Figure.__init__.__doc__ = f"""```text
-{_Figure.__init__.__doc__}
+if _Figure.__init__.__doc__:
+    Figure.__init__.__doc__ = f"""Original docstring of `Figure.__init__`:
+```text
+{inspect.cleandoc(_Figure.__init__.__doc__)}
 ```"""
-Figure.show.__doc__ = f"""```text
-{_Figure.show.__doc__}
+if _Figure.show.__doc__:
+    Figure.show.__doc__ = f"""Original docstring of `Figure.show`:
+```text
+{inspect.cleandoc(_Figure.show.__doc__)}
 ```"""
 
 
@@ -446,11 +451,15 @@ class FigureWidget(_FigureWidget, FigureMixin):
         _FigureWidget.show(self, *args, **kwargs)
 
 
-FigureWidget.__init__.__doc__ = f"""```text
-{_FigureWidget.__init__.__doc__}
+if _FigureWidget.__init__.__doc__:
+    FigureWidget.__init__.__doc__ = f"""Original docstring of `FigureWidget.__init__`:
+```text
+{inspect.cleandoc(_FigureWidget.__init__.__doc__)}
 ```"""
-FigureWidget.show.__doc__ = f"""```text
-{_FigureWidget.show.__doc__}
+if _FigureWidget.show.__doc__:
+    FigureWidget.show.__doc__ = f"""Original docstring of `FigureWidget.show`:
+```text
+{inspect.cleandoc(_FigureWidget.show.__doc__)}
 ```"""
 
 
@@ -484,11 +493,15 @@ try:
             args, kwargs = self.resolve_show_args(*args, **kwargs)
             _FigureResampler.show(self, *args, **kwargs)
 
-    FigureResampler.__init__.__doc__ = f"""```text
-{_FigureResampler.__init__.__doc__}
+    if _FigureResampler.__init__.__doc__:
+        FigureResampler.__init__.__doc__ = f"""Original docstring of `FigureResampler.__init__`:
+```text
+{inspect.cleandoc(_FigureResampler.__init__.__doc__)}
 ```"""
-    FigureResampler.show.__doc__ = f"""```text
-{_FigureResampler.show.__doc__}
+    if _FigureResampler.show.__doc__:
+        FigureResampler.show.__doc__ = f"""Original docstring of `FigureResampler.show`:
+```text
+{inspect.cleandoc(_FigureResampler.show.__doc__)}
 ```"""
 
     class FigureWidgetResampler(_FigureWidgetResampler, FigureMixin):
@@ -518,11 +531,15 @@ try:
             args, kwargs = self.resolve_show_args(*args, **kwargs)
             _FigureWidgetResampler.show(self, *args, **kwargs)
 
-    FigureWidgetResampler.__init__.__doc__ = f"""```text
-{_FigureWidgetResampler.__init__.__doc__}
+    if _FigureWidgetResampler.__init__.__doc__:
+        FigureWidgetResampler.__init__.__doc__ = f"""Original docstring of `FigureWidgetResampler.__init__`:
+```text
+{inspect.cleandoc(_FigureWidgetResampler.__init__.__doc__)}
 ```"""
-    FigureWidgetResampler.show.__doc__ = f"""```text
-{_FigureWidgetResampler.show.__doc__}
+    if _FigureWidgetResampler.show.__doc__:
+        FigureWidgetResampler.show.__doc__ = f"""Original docstring of `FigureWidgetResampler.show`:
+```text
+{inspect.cleandoc(_FigureWidgetResampler.show.__doc__)}
 ```"""
 
 

@@ -70,7 +70,7 @@ class CustomTemplate(Evaluable, DefineMixin):
         """Return a merged context dictionary by combining the default context from
         `vectorbtpro._settings.template`, the instance context, and the provided `context`.
 
-        Also, append `eval_id` and import entries from `vectorbtpro.imported_stuff` if available.
+        Also, append `eval_id` and import entries from `vectorbtpro.imported_star` if available.
 
         Args:
             context (KwargsLike): Additional context to merge.
@@ -97,7 +97,7 @@ class CustomTemplate(Evaluable, DefineMixin):
         if "eval_id" not in new_context:
             new_context["eval_id"] = eval_id
         try:
-            for k, v in vbt.imported_stuff.items():
+            for k, v in vbt.imported_star.items():
                 if k not in new_context:
                     new_context[k] = v
         except AttributeError:
