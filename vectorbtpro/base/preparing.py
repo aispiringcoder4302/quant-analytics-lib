@@ -32,7 +32,7 @@ from vectorbtpro.utils import checks, datetime_ as dt
 from vectorbtpro.utils.attr_ import get_dict_attr
 from vectorbtpro.utils.config import Configured
 from vectorbtpro.utils.config import merge_dicts, Config, ReadonlyConfig, HybridConfig
-from vectorbtpro.utils.cutting import suggest_module_path, cut_and_save_func
+from vectorbtpro.utils.source import suggest_module_path, cut_and_save_func
 from vectorbtpro.utils.enum_ import map_enum_fields
 from vectorbtpro.utils.module_ import import_module_from_path
 from vectorbtpro.utils.params import Param

@@ -85,7 +85,7 @@ __all__ = [
     "LiteLLMCompletions",
     "LlamaIndexCompletions",
     "complete",
-    "complete_content",
+    "completed",
     "TextSplitter",
     "TokenSplitter",
     "SegmentSplitter",
@@ -1685,7 +1685,7 @@ def complete(message: str, completions: tp.CompletionsLike = None, **kwargs) -> 
     return completions.get_completion(message)
 
 
-def complete_content(message: str, completions: tp.CompletionsLike = None, **kwargs) -> str:
+def completed(message: str, completions: tp.CompletionsLike = None, **kwargs) -> str:
     """Return completion content for a given message using the provided completions configuration.
 
     Args:

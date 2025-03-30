@@ -23,7 +23,6 @@ if TYPE_CHECKING:
     from vectorbtpro.utils.chunking import *
     from vectorbtpro.utils.colors import *
     from vectorbtpro.utils.config import *
-    from vectorbtpro.utils.cutting import *
     from vectorbtpro.utils.datetime_ import *
     from vectorbtpro.utils.datetime_nb import *
     from vectorbtpro.utils.decorators import *
@@ -52,6 +51,7 @@ if TYPE_CHECKING:
     from vectorbtpro.utils.schedule_ import *
     from vectorbtpro.utils.search_ import *
     from vectorbtpro.utils.selection import *
+    from vectorbtpro.utils.source import *
     from vectorbtpro.utils.tagging import *
     from vectorbtpro.utils.telegram import *
     from vectorbtpro.utils.template import *
