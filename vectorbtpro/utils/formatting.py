@@ -934,22 +934,25 @@ def refine_source(
         if not source_path or not source_path.is_file():
             raise ValueError(f"Cannot determine a valid source file for object {source}")
         source_lines, source_start_line = inspect.getsourcelines(source)
+        if source_start_line == 0:
+            source_start_line = 1
         if source_name is None:
             source_name = source_path.name
 
     if start_line is None:
-        start_line = source_start_line
-    else:
-        start_line = source_start_line + start_line - 1
+        start_line = 1
     if end_line is None:
-        end_line = source_start_line + len(source_lines) - 1
-    else:
-        end_line = source_start_line + end_line - 1
+        end_line = len(source_lines)
     start_index = start_line - 1
     end_index = end_line
     source_lines = source_lines[start_index:end_index]
+
+    source_end_line = source_start_line + end_line - 1
+    source_start_line = source_start_line + start_line - 1
+    source_start_index = source_start_line - 1
+    source_end_index = source_end_line
     source = "".join(source_lines)
-    source_name = f"{source_name}#L{start_line}-L{end_line}"
+    source_name = f"{source_name}#L{source_start_line}-L{source_end_line}"
 
     if prompt is None:
         prompt = REFINE_SRC_PROMPT
@@ -1025,7 +1028,7 @@ def refine_source(
         final_chunks = [source]
 
     processed = []
-    chunk_start_line = start_line
+    chunk_start_line = source_start_line
     with ProgressBar(total=len(final_chunks), show_progress=show_progress, **pbar_kwargs) as pbar:
         for i in range(len(final_chunks)):
             chunk = final_chunks[i]
@@ -1048,7 +1051,7 @@ def refine_source(
         new_source_lines = new_source.splitlines(keepends=True)
         if not new_source_lines or not new_source_lines[-1].endswith("\n"):
             new_source_lines.append("\n")
-        file_contents[start_index:end_index] = new_source_lines
+        file_contents[source_start_index:source_end_index] = new_source_lines
         with source_path.open("w", encoding="utf-8") as f:
             f.writelines(file_contents)
 
