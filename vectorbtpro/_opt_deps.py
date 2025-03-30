@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Optional dependencies."""
+"""Optional dependencies for internal use."""
 
 from vectorbtpro.utils.config import HybridConfig
 
@@ -241,6 +241,9 @@ opt_dep_config = HybridConfig(
         ),
         PyStemmer=dict(
             link="https://pypi.org/project/PyStemmer/",
+        ),
+        pyperclip=dict(
+            link="https://pypi.org/project/pyperclip/",
         )
     )
 )

@@ -404,3 +404,7 @@ PipeTasks = Iterable[PipeTask]
 
 # Pickling
 CompressionLike = Union[None, bool, str]
+
+# Formatting
+RefineSourceOutput = Union[None, str, Path, Tuple[str, Path], Tuple[Path, Path]]
+RefineSourceOutputs = List[Tuple[Any, RefineSourceOutput]]

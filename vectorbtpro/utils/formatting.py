@@ -13,6 +13,12 @@
 import inspect
 import io
 import re
+import ast
+import difflib
+import tempfile
+import webbrowser
+from pathlib import Path
+from types import ModuleType
 
 import attr
 import numpy as np
@@ -30,6 +36,7 @@ __all__ = [
     "pdir",
     "dump",
     "refine_source",
+    "refine_docstrings",
 ]
 
 
@@ -727,7 +734,7 @@ def get_dump_language(dump_engine: str) -> str:
     return ""
 
 
-REFINE_PROMPT = """You are a code-refinement assistant. 
+REFINE_SRC_PROMPT = """You are a code-refinement assistant. 
         
 Present the refactored version of the given chunk of Python code to address 
 any detected code smells or issues. You must:
@@ -739,22 +746,54 @@ any detected code smells or issues. You must:
 
 def refine_source(
     source: tp.Any,
+    *,
+    source_name: tp.Optional[str] = None,
+    as_package: bool = True,
+    start_line: tp.Optional[int] = None,
+    end_line: tp.Optional[int] = None,
     prompt: tp.Optional[str] = None,
-    chunk_size: int = 2000,
+    chunk_size: tp.Optional[int] = 2000,
+    split_nodes: bool = True,
     split_text_kwargs: tp.KwargsLike = None,
     tokenize_kwargs: tp.KwargsLike = None,
     complete_kwargs: tp.KwargsLike = None,
     show_progress: tp.Optional[bool] = True,
     pbar_kwargs: tp.KwargsLike = None,
-    show_diffs: bool = True,
+    mult_show_progress: tp.Optional[bool] = None,
+    mult_pbar_kwargs: tp.KwargsLike = None,
+    modify: bool = False,
+    copy_to_clipboard: bool = False,
+    show_diff: bool = True,
     open_browser: bool = True,
-) -> tp.Union[str, tp.Tuple[str, tp.Path]]:
-    """Refine source code using chunking and completions.
+) -> tp.Union[tp.RefineSourceOutput, tp.RefineSourceOutputs]:
+    """Refine source using chunking and completions.
 
     Args:
-        source (Any): Source code or object to extract the source code from.
+        source (Any): Source(s) or object(s) to extract the source from.
+
+            A source can be:
+
+            * a string (such as "import vectorbtpro as vbt ..."),
+            * a path to a source file (such as "strategies/sma_crossover.py"),
+            * any Python object (such as `pipeline_nb`), or
+            * an iterable of such.
+
+            If a path to a directory or (sub-)package is passed, it will be considered as multiple sources.
+        source_name (Optional[str]): Name of the source to be displayed in the progress bar.
+        as_package (bool): Whether to treat a (sub-)package as multiple sources.
+        start_line (Optional[int]): Inclusive start line in the source.
+
+            !!! note
+                Counting starts with 1.
+        end_line (Optional[int]): Inclusive end line in the source.
+
+            !!! note
+                Counting starts with 1.
         prompt (Optional[str]): System prompt.
-        chunk_size (int): The maximum number of tokens in each chunk.
+        chunk_size (Optional[int]): The maximum number of tokens in each chunk.
+
+            If None, feeds the entire source.
+        split_nodes (bool): Whether to split nodes that exceed the maximum chunk size.
         split_text_kwargs (KwargsLike): Keyword arguments passed to
             `vectorbtpro.utils.knowledge.chatting.split_text`.
         tokenize_kwargs (KwargsLike): Keyword arguments passed to
@@ -763,30 +802,157 @@ def refine_source(
             `vectorbtpro.utils.knowledge.chatting.complete_content`.
         show_progress (Optional[bool]): Whether to show the progress bar iterating over chunks.
         pbar_kwargs (KwargsLike): Keyword arguments passed to `vectorbtpro.utils.pbar.ProgressBar`.
-        show_diffs (bool): Whether to show changes in a temporary HTML file using `difflib`.
+        mult_show_progress (Optional[bool]): The same as `show_progress` but for iterating over multiple sources.
+
+            If None, defaults to `show_progress`.
+        mult_pbar_kwargs (KwargsLike): The same as `pbar_kwargs` but for iterating over multiple sources.
+
+            Gets merged over `pbar_kwargs`.
+        modify (bool): Whether to modify the source file.
+        copy_to_clipboard (bool): Whether to copy the refined source to clipboard.
+
+            Doesn't work for multiple sources.
+        show_diff (bool): Whether to show the delta HTML file using `difflib`.
+
+            Doesn't work for multiple sources.
         open_browser (bool): Whether to open the browser.
 
-    Returns:
-        Union[str, Tuple[str, Path]]: Refined source code, and path to the HTML file if `show_diffs` is True.
-    """
-    import ast
-    import difflib
-    import tempfile
-    import webbrowser
-    import inspect
-    from pathlib import Path
+            Doesn't work for multiple sources.
 
+    Returns:
+        Union[RefineSourceOutput, RefineSourceOutputs]:
+
+            * The refined source if `modify` and `copy_to_clipboard` are False.
+            * The path to the source file if `modify` is True.
+            * The path to the delta HTML file if `show_diff` is True.
+            * Zipped list of sources and outputs if there are multiple sources.
+    """
+    from vectorbtpro.utils.checks import is_numba_func, is_complex_iterable
     from vectorbtpro.utils.config import merge_dicts
+    from vectorbtpro.utils.module_ import assert_can_import
+    from vectorbtpro.utils.path_ import get_common_prefix
     from vectorbtpro.utils.pbar import ProgressBar
     from vectorbtpro.utils.knowledge.chatting import split_text, tokenize, complete_content
 
-    if not isinstance(source, str):
-        source_name = repr_doc(source)
-        source = inspect.getsource(source)
+    pbar_kwargs = merge_dicts(
+        dict(desc_kwargs=dict(refresh=True)),
+        pbar_kwargs,
+    )
+
+    if isinstance(source, str):
+        try:
+            if Path(source).exists():
+                source = Path(source)
+        except Exception as e:
+            pass
+    if isinstance(source, ModuleType) and hasattr(source, "__path__") and as_package:
+        source = Path(getattr(source, "__path__"))
+    if isinstance(source, Path) and source.is_dir():
+        source = list(source.rglob("*.py"))
+    if is_complex_iterable(source):
+        sources = source
+        source_names = []
+        paths = []
+        all_paths = True
+        for i, source in enumerate(sources):
+            if isinstance(source, str):
+                try:
+                    if Path(source).exists():
+                        source = Path(source)
+                except Exception as e:
+                    pass
+            if isinstance(source, str):
+                source_name = f"<string>"
+                all_paths = False
+            elif isinstance(source, Path):
+                source_name = source.name
+                paths.append(source.resolve())
+            else:
+                if is_numba_func(source):
+                    source = source.py_func
+                source_path = inspect.getsourcefile(source)
+                if source_path:
+                    source_path = Path(source_path)
+                if not source_path or not source_path.is_file():
+                    raise ValueError(f"Cannot determine a valid source file for object {source}")
+                source_name = source_path.name
+                paths.append(source.resolve())
+            source_names.append(source_name)
+        if all_paths:
+            common_path = Path(get_common_prefix(paths)).resolve()
+            source_names = [str(path.relative_to(common_path)) for path in paths]
+
+        outputs = []
+        if mult_show_progress is None:
+            mult_show_progress = show_progress
+        mult_pbar_kwargs = merge_dicts(pbar_kwargs, mult_pbar_kwargs)
+        with ProgressBar(total=len(source_names), show_progress=mult_show_progress, **mult_pbar_kwargs) as pbar:
+            for i, source in enumerate(sources):
+                pbar.set_description(dict(source=source_names[i]))
+                output = refine_source(
+                    source=source,
+                    source_name=source_names[i],
+                    as_package=False,
+                    start_line=start_line,
+                    end_line=end_line,
+                    prompt=prompt,
+                    chunk_size=chunk_size,
+                    split_nodes=split_nodes,
+                    split_text_kwargs=split_text_kwargs,
+                    tokenize_kwargs=tokenize_kwargs,
+                    complete_kwargs=complete_kwargs,
+                    show_progress=show_progress,
+                    pbar_kwargs=pbar_kwargs,
+                    modify=modify,
+                    copy_to_clipboard=False,
+                    show_diff=False,
+                    open_browser=False,
+                )
+                outputs.append(output)
+                pbar.update()
+        return list(zip(sources, outputs))
+
+    if isinstance(source, str):
+        source_path = None
+        source_lines = source.splitlines(keepends=True)
+        source_start_line = 1
+        if source_name is None:
+            source_name = "<string>"
+    elif isinstance(source, Path):
+        source_path = source
+        with source_path.open("r", encoding="utf-8") as f:
+            source_lines = f.readlines()
+        source_start_line = 1
+        if source_name is None:
+            source_name = source_path.name
     else:
-        source_name = "<string>"
+        if is_numba_func(source):
+            source = source.py_func
+        source_path = inspect.getsourcefile(source)
+        if source_path:
+            source_path = Path(source_path)
+        if not source_path or not source_path.is_file():
+            raise ValueError(f"Cannot determine a valid source file for object {source}")
+        source_lines, source_start_line = inspect.getsourcelines(source)
+        if source_name is None:
+            source_name = source_path.name
+
+    if start_line is None:
+        start_line = source_start_line
+    else:
+        start_line = source_start_line + start_line - 1
+    if end_line is None:
+        end_line = source_start_line + len(source_lines) - 1
+    else:
+        end_line = source_start_line + end_line - 1
+    start_index = start_line - 1
+    end_index = end_line
+    source_lines = source_lines[start_index:end_index]
+    source = "".join(source_lines)
+    source_name = f"{source_name}#L{start_line}-L{end_line}"
+
     if prompt is None:
-        prompt = REFINE_PROMPT
+        prompt = REFINE_SRC_PROMPT
     split_text_kwargs = merge_dicts(
         dict(
             text_splitter="segment",
@@ -810,58 +976,61 @@ def refine_source(
         ),
         complete_kwargs,
     )
-    pbar_kwargs = merge_dicts(
-        dict(desc_kwargs=dict(refresh=True)),
-        pbar_kwargs,
-    )
+    if copy_to_clipboard:
+        assert_can_import("pyperclip")
 
-    lines = source.splitlines(True)
-    try:
-        tree = ast.parse(source)
-    except SyntaxError:
-        tree = None
-    spans = []
-    if tree is not None and hasattr(tree, "body"):
-        for node in tree.body:
-            if hasattr(node, "lineno") and hasattr(node, "end_lineno"):
-                spans.append((node.lineno - 1, node.end_lineno))
-    spans.sort(key=lambda x: x[0])
+    if chunk_size is not None:
+        try:
+            tree = ast.parse(source)
+        except SyntaxError:
+            tree = None
+        spans = []
+        if tree is not None and hasattr(tree, "body"):
+            for node in tree.body:
+                if hasattr(node, "lineno") and hasattr(node, "end_lineno"):
+                    spans.append((node.lineno - 1, node.end_lineno))
+        spans.sort(key=lambda x: x[0])
 
-    blocks = []
-    prev = 0
-    for start, end in spans:
-        if prev < start:
-            blocks.append("".join(lines[prev:start]))
-        blocks.append("".join(lines[start:end]))
-        prev = end
-    if prev < len(lines):
-        blocks.append("".join(lines[prev:]))
+        blocks = []
+        prev = 0
+        for start, end in spans:
+            if prev < start:
+                blocks.append("".join(source_lines[prev:start]))
+            blocks.append("".join(source_lines[start:end]))
+            prev = end
+        if prev < len(source_lines):
+            blocks.append("".join(source_lines[prev:]))
 
-    final_chunks = []
-    buf = []
-    buf_tokens = 0
-    for block in blocks:
-        sub_blocks = split_text(block, **split_text_kwargs)
-        for sb in sub_blocks:
-            sb_tokens = len(tokenize(sb, **tokenize_kwargs))
-            if buf_tokens + sb_tokens > chunk_size:
-                if buf:
-                    final_chunks.append("".join(buf))
-                buf = [sb]
-                buf_tokens = sb_tokens
-            else:
-                buf.append(sb)
-                buf_tokens += sb_tokens
-    if buf:
-        final_chunks.append("".join(buf))
+        if split_nodes:
+            final_chunks = []
+            buf = []
+            buf_tokens = 0
+            for block in blocks:
+                sub_blocks = split_text(block, **split_text_kwargs)
+                for sb in sub_blocks:
+                    sb_tokens = len(tokenize(sb, **tokenize_kwargs))
+                    if buf_tokens + sb_tokens > chunk_size:
+                        if buf:
+                            final_chunks.append("".join(buf))
+                        buf = [sb]
+                        buf_tokens = sb_tokens
+                    else:
+                        buf.append(sb)
+                        buf_tokens += sb_tokens
+            if buf:
+                final_chunks.append("".join(buf))
+        else:
+            final_chunks = blocks
+    else:
+        final_chunks = [source]
 
     processed = []
-    total_lines = 0
+    chunk_start_line = start_line
     with ProgressBar(total=len(final_chunks), show_progress=show_progress, **pbar_kwargs) as pbar:
         for i in range(len(final_chunks)):
             chunk = final_chunks[i]
-            chunk_lines = len(chunk.split("\n"))
-            pbar.set_description(dict(lines="{}..{}".format(total_lines, total_lines + chunk_lines - 1)))
+            chunk_lines = len(chunk.splitlines(keepends=True))
+            pbar.set_description(dict(lines="{}..{}".format(chunk_start_line, chunk_start_line + chunk_lines - 1)))
             leading_len = len(chunk) - len(chunk.lstrip())
             leading = chunk[:leading_len]
             trailing_len = len(chunk) - len(chunk.rstrip())
@@ -869,25 +1038,59 @@ def refine_source(
             middle = chunk[leading_len : len(chunk) - trailing_len]
             processed_middle = complete_content(leading + middle + trailing, **complete_kwargs).strip()
             processed.append(leading + processed_middle + trailing)
-            total_lines += chunk_lines
+            chunk_start_line += chunk_lines
             pbar.update()
     new_source = "".join(processed)
 
-    if show_diffs:
-        a = source.splitlines()
-        b = new_source.splitlines()
+    if modify and source_path:
+        with source_path.open("r", encoding="utf-8") as f:
+            file_contents = f.readlines()
+        new_source_lines = new_source.splitlines(keepends=True)
+        if not new_source_lines or not new_source_lines[-1].endswith("\n"):
+            new_source_lines.append("\n")
+        file_contents[start_index:end_index] = new_source_lines
+        with source_path.open("w", encoding="utf-8") as f:
+            f.writelines(file_contents)
+
+    if copy_to_clipboard:
+        import pyperclip
+
+        pyperclip.copy(new_source)
+
+    if show_diff:
         differ = difflib.HtmlDiff()
-        html = differ.make_file(a, b, fromdesc="Original", todesc="Modified")
-        with tempfile.NamedTemporaryFile("w", delete=False, prefix=source_name, suffix=".html") as f:
-            f.write(html)
+        html_diff = differ.make_file(
+            source.splitlines(),
+            new_source.splitlines(),
+            fromdesc="Original",
+            todesc="Modified",
+        )
+        with tempfile.NamedTemporaryFile(
+            "w",
+            encoding="utf-8",
+            delete=False,
+            prefix=re.sub(r"[\W_]+", "_", source_name).strip("_"),
+            suffix=".html",
+        ) as f:
+            f.write(html_diff)
             file_path = Path(f.name)
         if open_browser:
             webbrowser.open("file://" + str(file_path.resolve()))
+        if modify and source_path:
+            return source_path, file_path
+        if copy_to_clipboard:
+            return file_path
         return new_source, file_path
+
+    if modify and source_path:
+        return source_path
+    if copy_to_clipboard:
+        return None
     return new_source
 
 
-REFINE_VBT_DOC_PROMPT = """You are a code-refinement assistant. 
+
+REFINE_DOCSTR_PROMPT = """You are a code-refinement assistant. 
 
 Your goal is to refine (rewrite for clarity, correctness, consistent format and wording) 
 **only** the docstrings of the given chunk of Python code. You must:
@@ -1009,9 +1212,9 @@ Your goal is to refine (rewrite for clarity, correctness, consistent format and 
 - **Do not end a docstring with a blank line** unless it contains multiple lines.
 - **Only fix indentation or whitespace if it is incorrect**.
 """
-"""Prompt for `refine_vbt_docstrings`."""
+"""Prompt for `refine_docstrings`."""
 
 
-def refine_vbt_docstrings(source: tp.Any, **kwargs) -> str:
-    """Call `refine_source` with `prompt=REFINE_VBT_DOC_PROMPT`."""
-    return refine_source(source, prompt=REFINE_VBT_DOC_PROMPT, **kwargs)
+def refine_docstrings(source: tp.Any, **kwargs) -> tp.RefineSourceOutput:
+    """Call `refine_source` with `prompt=REFINE_DOCSTR_PROMPT`."""
+    return refine_source(source, prompt=REFINE_DOCSTR_PROMPT, **kwargs)

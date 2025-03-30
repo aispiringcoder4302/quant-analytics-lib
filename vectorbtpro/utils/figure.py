@@ -567,7 +567,7 @@ def make_subplots(
 
 
 if _Figure.__init__.__doc__:
-    Figure.__init__.__doc__ = f"""Docstring of `plotly.graph_objects.Figure.__init__`:
+    Figure.__init__.__doc__ = f"""Docstring of `plotly.graph_objects.Figure`:
 ```text
 {inspect.cleandoc(_Figure.__init__.__doc__)}
 ```"""
@@ -577,7 +577,7 @@ if _Figure.show.__doc__:
 {inspect.cleandoc(_Figure.show.__doc__)}
 ```"""
 if _FigureWidget.__init__.__doc__:
-    FigureWidget.__init__.__doc__ = f"""Docstring of `plotly.graph_objects.FigureWidget.__init__`:
+    FigureWidget.__init__.__doc__ = f"""Docstring of `plotly.graph_objects.FigureWidget`:
 ```text
 {inspect.cleandoc(_FigureWidget.__init__.__doc__)}
 ```"""
@@ -587,7 +587,7 @@ if _FigureWidget.show.__doc__:
 {inspect.cleandoc(_FigureWidget.show.__doc__)}
 ```"""
 if _FigureResampler.__init__.__doc__:
-    FigureResampler.__init__.__doc__ = f"""Docstring of `plotly_resampler.FigureResampler.__init__`:
+    FigureResampler.__init__.__doc__ = f"""Docstring of `plotly_resampler.FigureResampler`:
 ```text
 {inspect.cleandoc(_FigureResampler.__init__.__doc__)}
 ```"""
@@ -597,7 +597,7 @@ if _FigureResampler.show.__doc__:
 {inspect.cleandoc(_FigureResampler.show.__doc__)}
 ```"""
 if _FigureWidgetResampler.__init__.__doc__:
-    FigureWidgetResampler.__init__.__doc__ = f"""Docstring of `plotly_resampler.FigureWidgetResampler.__init__`:
+    FigureWidgetResampler.__init__.__doc__ = f"""Docstring of `plotly_resampler.FigureWidgetResampler`:
 ```text
 {inspect.cleandoc(_FigureWidgetResampler.__init__.__doc__)}
 ```"""

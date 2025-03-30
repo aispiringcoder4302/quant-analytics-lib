@@ -8,6 +8,8 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
+"""Version of vectorbtpro."""
+
 try:
     try:
         import tomllib
