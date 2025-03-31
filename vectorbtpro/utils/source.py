@@ -455,7 +455,7 @@ def get_source_indent(source: str) -> int:
     lines in the given source code.
 
     Tabs are considered as 4 spaces."""
-    lines = source.splitlines()
+    lines = source.splitlines(keepends=True)
     indentations = []
     for line in lines:
         if line.strip():
@@ -469,12 +469,13 @@ def get_source_indent(source: str) -> int:
 def remove_source_indent(source: str, indent: int) -> str:
     """Remove the indentation from all non-empty lines of the given source code."""
     dedented_lines = []
-    for line in source.splitlines():
+    for line in source.splitlines(keepends=True):
+        line_expanded = line.replace("\t", " " * 4)
         if line.strip():
-            dedented_lines.append(line[indent:])
+            dedented_lines.append(line_expanded[indent:])
         else:
-            dedented_lines.append("")
-    return "\n".join(dedented_lines)
+            dedented_lines.append(line_expanded)
+    return "".join(dedented_lines)
 
 
 def add_source_indent(source: str, indent: int) -> str:
@@ -510,7 +511,7 @@ def refine_source(
     end_line: tp.Optional[int] = None,
     prompt: tp.Optional[str] = None,
     chunk_size: tp.Optional[int] = 2000,
-    split_source: bool = True,
+    split: bool = True,
     split_classes: bool = True,
     split_functions: bool = False,
     tokenize_kwargs: tp.KwargsLike = None,
@@ -551,7 +552,7 @@ def refine_source(
         chunk_size (Optional[int]): The maximum number of tokens in each chunk.
 
             If None, feeds the entire source code.
-        split_source (bool): Whether to split the source code.
+        split (bool): Whether to split the source code.
         split_classes (bool): Whether to split classes that exceed the maximum chunk size.
         split_functions (bool): Whether to split functions that exceed the maximum chunk size.
         tokenize_kwargs (KwargsLike): Keyword arguments passed to
@@ -661,7 +662,7 @@ def refine_source(
                     end_line=end_line,
                     prompt=prompt,
                     chunk_size=chunk_size,
-                    split_source=split_source,
+                    split=split,
                     split_classes=split_classes,
                     split_functions=split_functions,
                     tokenize_kwargs=tokenize_kwargs,
@@ -735,7 +736,7 @@ def refine_source(
     if copy_to_clipboard:
         assert_can_import("pyperclip")
 
-    if split_source:
+    if split:
 
         def _should_split(node, start, end):
             if (split_classes and isinstance(node, ast.ClassDef)) or (
@@ -789,7 +790,8 @@ def refine_source(
             middle = chunk[leading_len : len(chunk) - trailing_len]
             new_middle = completed(middle, **complete_kwargs)
             new_middle = add_source_indent(new_middle, indent)
-            processed.append(leading + new_middle + trailing)
+            new_chunk = leading + new_middle + trailing
+            processed.append(new_chunk)
             chunk_start_line += len(chunk_lines)
             pbar.update()
     new_source = "".join(processed)
@@ -920,6 +922,7 @@ Your goal is to refine (rewrite for clarity, correctness, consistent format and 
     - For example, `x: tp.Union[None, int, tp.DatetimeLike] = ...` becomes 
         `x (Union[None, int, DatetimeLike]): ...`.
     - Also, `x: tp.MaybeType[KnowledgeAssetT] = ...` becomes `x (MaybeType[KnowledgeAsset]): ...`.
+    - Change type hints in docstring only, **do not change type hints in function signatures**.
 - Treat classes decorated with `@define` **as if they were decorated with `@attr.s`**, adjusting 
     docstrings accordingly.
 - For module docstrings, retain the phrasing that **identifies them as a module**, 
@@ -961,7 +964,8 @@ Your goal is to refine (rewrite for clarity, correctness, consistent format and 
 
 - **Do not start any docstring with a blank line**.
 - **Do not end a docstring with a blank line** unless it contains multiple lines.
-- **Do not change any existing indentation or whitespace**.
+- **Do not change any existing indentation or spacing**.
+- **Do not change usage examples or their formatting**.
 """
 """Prompt for `refine_docstrings`."""
 
