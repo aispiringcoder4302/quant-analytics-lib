@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Modules with classes and utilities for resampling."""
+"""Module providing classes and utilities for resampling."""
 
 from typing import TYPE_CHECKING
 

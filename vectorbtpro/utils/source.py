@@ -33,13 +33,16 @@ __all__ = [
 
 
 def collect_blocks(lines: tp.Iterable[str]) -> tp.Dict[str, tp.List[str]]:
-    """Collect block sections from lines.
+    """Collect block sections from source code lines.
+
+    Scans through the provided lines and groups lines into blocks defined by
+    markers starting with `# % <block block_name>` and ending with `# % </block>`.
 
     Args:
-        lines (Iterable[str]): An iterable of strings representing lines of source code.
+        lines (Iterable[str]): Lines of source code.
 
     Returns:
-        Dict[str, List[str]]: A dictionary mapping block names to lists of lines contained within each block.
+        Dict[str, List[str]]: A mapping from block names to lists of lines for each block.
     """
     blocks = {}
     block_name = None
@@ -71,38 +74,35 @@ def cut_from_source(
 ) -> tp.Union[str, tp.List[str]]:
     """Extract an annotated section from the source code.
 
-    This function processes a source code string to extract a specific section defined by markers.
-    The section must begin with `# % <section section_name>` and end with `# % </section>`.
-
-    Within the section, blocks can be defined using markers `# % <block block_name>` and `# % </block>`,
-    and these blocks are collected for use within expressions.
-
-    Lines placed between `# % <skip [expression]>` and `# % </skip>` are skipped, while lines between
-    `# % <uncomment [expression]>` and `# % </uncomment>` are uncommented.
-
-    Any line containing `# %` outside these blocks is treated as a Python expression.
-    The evaluation result dictates the output:
-
-    * None: The line is skipped.
-    * str: A single line to insert.
-    * Iterable[str]: Multiple lines to insert into the processing queue.
-
-    Expressions are evaluated in strict mode, raising errors on failure, unless prefixed
-    with `?` to evaluate softly.
-
+    Processes the source code string to extract a section defined by markers. The section is delimited
+    by a starting marker `# % <section section_name>` and an ending marker `# % </section>`. Within the
+    section, block subsections can be defined using markers `# % <block block_name>` and `# % </block>`.
+    
+    The function also handles skip and uncomment operations:
+    
+    * Lines between `# % <skip [expression]>` and `# % </skip>` are omitted.
+    * Lines between `# % <uncomment [expression]>` and `# % </uncomment>` have their comment prefix removed.
+    
+    Any line containing `# %` outside these blocks is interpreted as a Python expression. The evaluation
+    result of the expression directs the output as follows:
+    
+    * `None`: Skip the line.
+    * `str`: Insert a single line.
+    * `Iterable[str]`: Insert multiple lines into the output.
+    
     Args:
         source (str): The source code to process.
         section_name (str): The name of the section to extract.
-        prepend_lines (Optional[Iterable[str]]): Lines to prepend to the output.
-        append_lines (Optional[Iterable[str]]): Lines to append to the output.
+        prepend_lines (Optional[Iterable[str]]): Lines to prepend to the extracted section.
+        append_lines (Optional[Iterable[str]]): Lines to append to the extracted section.
         out_lines_callback (Union[None, Callable, CustomTemplate]): A callback or template
-            to transform the output lines.
-        return_lines (bool): If True, returns the output as a list of lines.
+            to process the output lines.
+        return_lines (bool): If True, return the output as a list of lines.
         **kwargs: Additional context variables for expression evaluation.
 
     Returns:
-        Union[str, List[str]]: The extracted and processed section as a cleaned string,
-            or as a list of lines if 'return_lines' is True.
+        Union[str, List[str]]: The processed section as a cleaned string, or as a list
+            of lines if `return_lines` is True.
     """
     lines = source.split("\n")
     blocks = collect_blocks(lines)
@@ -221,17 +221,17 @@ def suggest_module_path(
 ) -> Path:
     """Suggest a file path for the target module.
 
-    Determines a suitable file path based on the provided section name and optional path.
-    If the supplied path is a directory or lacks a file extension, the section name is used to
-    form the file name with a `.py` extension. This function also ensures that the target directory exists.
+    Determines a suitable file path using the given section name and an optional base path.
+    If the provided path is a directory or lacks a file extension, uses the section name to form a filename
+    with a `.py` extension. This function also ensures that the target directory exists.
 
     Args:
         section_name (str): The name of the section.
-        path (Optional[PathLike]): The base path or file path.
+        path (Optional[PathLike]): A base directory or file path.
         mkdir_kwargs (KwargsLike): Additional keyword arguments for directory creation.
 
     Returns:
-        Path: The suggested file path.
+        Path: The determined file path.
     """
     if path is None:
         path = Path(".")
@@ -254,18 +254,18 @@ def cut_and_save(
 ) -> Path:
     """Extract an annotated section from the source code and save it to a file.
 
-    This function cuts a specified section from the provided source code using `cut_from_source`
-    and then saves the processed source code to a file determined by `suggest_module_path`.
+    Extracts a section, identified by an annotation, from the given source code using `cut_from_source`
+    and saves it to a file determined by `suggest_module_path`.
 
     Args:
         source (str): The source code containing the annotated section.
         section_name (str): The name of the section to extract.
-        path (Optional[PathLike]): The file path or directory for saving the extracted source code.
-        mkdir_kwargs (KwargsLike): Additional keyword arguments for directory creation.
+        path (Optional[PathLike]): File path or directory in which to save the extracted section.
+        mkdir_kwargs (KwargsLike): Keyword arguments for directory creation.
         **kwargs: Additional keyword arguments passed to `cut_from_source`.
 
     Returns:
-        Path: The file path where the extracted section was saved.
+        Path: The file path where the extracted section is saved.
     """
     parsed_source = cut_from_source(source, section_name, **kwargs)
     path = suggest_module_path(section_name, path=path, mkdir_kwargs=mkdir_kwargs)
@@ -277,17 +277,17 @@ def cut_and_save(
 def cut_and_save_module(module: tp.Union[str, ModuleType], *args, **kwargs) -> Path:
     """Extract an annotated section from a module's source code and save it to a file.
 
-    If the module is provided as a string representing its import path, it is first imported
-    before processing. The source code is then retrieved using `inspect.getsource`, after which
-    the annotated section is extracted and saved via `cut_and_save`.
+    If a module is provided as an import path string, it is imported prior to processing.
+    The source code is retrieved using `inspect.getsource`, after which the specified section
+    is extracted and saved using `cut_and_save`.
 
     Args:
         module (Union[str, ModuleType]): The target module or its import path.
-        *args: Additional positional arguments for `cut_and_save`.
-        **kwargs: Additional keyword arguments for `cut_and_save`.
+        *args: Additional positional arguments passed to `cut_and_save`.
+        **kwargs: Additional keyword arguments passed to `cut_and_save`.
 
     Returns:
-        Path: The file path where the extracted module section was saved.
+        Path: The file path where the extracted module section is saved.
     """
     if isinstance(module, str):
         module = importlib.import_module(module)
@@ -296,17 +296,21 @@ def cut_and_save_module(module: tp.Union[str, ModuleType], *args, **kwargs) -> P
 
 
 def cut_and_save_func(func: tp.Union[str, FunctionType], *args, **kwargs) -> Path:
-    """Cut a function's annotated section from its module and save it to a file.
+    """Extract a function's annotated section from its module and save it to a file.
+
+    If `func` is provided as a fully qualified name string, the containing module is imported and
+    the function is retrieved before extraction. The source code is then obtained and processed
+    using `cut_and_save`.
 
     Args:
-        func (Union[str, FunctionType]): A function reference or its fully qualified name as a string.
-
-            If a string is provided, the module is imported and the function is retrieved.
-        *args: Additional arguments passed to `cut_and_save`.
+        func (Union[str, FunctionType]): A function or its fully qualified name.
+            
+            If provided as a string, the module will be imported and the function will be retrieved.
+        *args: Additional positional arguments passed to `cut_and_save`.
         **kwargs: Additional keyword arguments passed to `cut_and_save`.
 
     Returns:
-        Path: The file path where the extracted section is saved.
+        Path: The file path where the extracted function section is saved.
     """
     if isinstance(func, str):
         module = importlib.import_module(".".join(func.split(".")[:-1]))
@@ -318,24 +322,24 @@ def cut_and_save_func(func: tp.Union[str, FunctionType], *args, **kwargs) -> Pat
 
 
 def split_source(source: str, should_split: tp.Optional[tp.Callable] = None) -> tp.List[str]:
-    """Split the given `source` into definition-based chunks.
+    """Split the source code into definition-based chunks.
 
-    When joined, the chunks reconstruct the original source code, with each chunk corresponding
-    to a consecutive set of lines, and no line duplicated or lost.
+    The source code is divided into chunks based on code definitions such that the concatenation
+    of the chunks reconstructs the original source code exactly, with no lines duplicated or lost.
 
     Args:
+        source (str): The source code to split.
         should_split (Optional[Callable]): A callback `should_split(node, start: int, end: int) -> bool`
-            to dynamically decide whether a given node should be split into (header+docstring) plus body.
+            to determine whether a node should be split into a header (with docstring) and body.
 
-            By default, doesn't split individual nodes.
+            By default, nodes are not split.
 
             !!! note
-                Start and end values are 1-based line numbers.
+                `start` and `end` are 1-based line numbers.
 
     Returns:
-        List[str]: List of source code chunks.
+        List[str]: A list of source code chunks.
     """
-
     if should_split is None:
 
         def _should_split(node, start, end):
@@ -451,10 +455,16 @@ def split_source(source: str, should_split: tp.Optional[tp.Callable] = None) -> 
 
 
 def get_source_indent(source: str) -> int:
-    """Return the indentation (in spaces) of all non-empty, non-whitespace-only
-    lines in the given source code.
+    """Return the minimum indentation, in spaces, of all non-empty lines in the source code.
 
-    Tabs are considered as 4 spaces."""
+    Tabs are treated as 4 spaces.
+
+    Args:
+        source (str): The source code to analyze.
+
+    Returns:
+        int: The minimum indentation in spaces.
+    """
     lines = source.splitlines(keepends=True)
     indentations = []
     for line in lines:
@@ -467,7 +477,17 @@ def get_source_indent(source: str) -> int:
 
 
 def remove_source_indent(source: str, indent: int) -> str:
-    """Remove the indentation from all non-empty lines of the given source code."""
+    """Remove a fixed number of leading spaces from all non-empty lines in the source code.
+
+    Tabs are treated as 4 spaces.
+
+    Args:
+        source (str): The source code to process.
+        indent (int): The number of leading spaces to remove from each non-empty line.
+
+    Returns:
+        str: The source code with the specified indentation removed.
+    """
     dedented_lines = []
     for line in source.splitlines(keepends=True):
         line_expanded = line.replace("\t", " " * 4)
@@ -479,9 +499,15 @@ def remove_source_indent(source: str, indent: int) -> str:
 
 
 def add_source_indent(source: str, indent: int) -> str:
-    """Add a fixed number of spaces to the beginning of each non-empty line in the source code.
+    """Add spaces to each non-empty line in a source string.
 
-    Preserves original line endings and blank lines."""
+    Args:
+        source (str): The source code to modify.
+        indent (int): The number of spaces to add as indentation to each non-empty line.
+
+    Returns:
+        str: The resulting source code with added indentation.
+    """
     indent_str = " " * indent
     indented_lines = []
     for line in source.splitlines(keepends=True):
@@ -525,66 +551,65 @@ def refine_source(
     show_diff: bool = True,
     open_browser: bool = True,
 ) -> tp.Union[tp.RefineSourceOutput, tp.RefineSourceOutputs]:
-    """Refine the source code using chunking and completions.
+    """Refine the source code by splitting it into manageable chunks and applying completion methods.
 
     Args:
-        source (Any): Source(s) or object(s) to extract the source code from.
+        source (Any): Source(s) or object(s) from which to extract the source code. A source may be:
 
-            A source can be:
+            * a string containing code (e.g. "import vectorbtpro as vbt ..."),
+            * a file path (e.g. "strategies/sma_crossover.py"),
+            * a Python object (e.g. `pipeline_nb`), or
+            * an iterable of the above.
 
-            * a string (such as "import vectorbtpro as vbt ..."),
-            * a path to the source code file (such as "strategies/sma_crossover.py"),
-            * any Python object (such as `pipeline_nb`), or
-            * an iterable of such.
-
-            If a path to a directory or (sub-)package is passed, it will be considered as multiple sources.
-        source_name (Optional[str]): Name of the source to be displayed in the progress bar.
-        as_package (bool): Whether to treat a (sub-)package as multiple sources.
-        start_line (Optional[int]): Inclusive start line in the source code.
+            When a directory or package is provided, all contained Python files are processed.
+        source_name (Optional[str]): Name displayed in the progress bar and/or HTML file name.
+        as_package (bool): Whether to process a package as multiple sources.
+        start_line (Optional[int]): Inclusive starting line number in the source code.
 
             !!! note
-                Counting starts with 1.
-        end_line (Optional[int]): Inclusive end line in the source code.
+                Counting starts at 1.
+        end_line (Optional[int]): Inclusive ending line number in the source code.
 
             !!! note
-                Counting starts with 1.
-        prompt (Optional[str]): System prompt.
-        chunk_size (Optional[int]): The maximum number of tokens in each chunk.
+                Counting starts at 1.
+        prompt (Optional[str]): System prompt used for generating completions.
+        chunk_size (Optional[int]): Maximum token count for each chunk.
 
-            If None, feeds the entire source code.
-        split (bool): Whether to split the source code.
-        split_classes (bool): Whether to split classes that exceed the maximum chunk size.
-        split_functions (bool): Whether to split functions that exceed the maximum chunk size.
-        tokenize_kwargs (KwargsLike): Keyword arguments passed to
+            If None, processes the entire source as a single chunk.
+        split (bool): Whether to split the source code into chunks.
+        split_classes (bool): Whether to split class definitions that exceed the chunk size.
+        split_functions (bool): Whether to split function definitions that exceed the chunk size.
+        tokenize_kwargs (KwargsLike): Additional keyword arguments for
             `vectorbtpro.utils.knowledge.chatting.tokenize`.
-        complete_kwargs (KwargsLike): Keyword arguments passed to
+        complete_kwargs (KwargsLike): Additional keyword arguments for
             `vectorbtpro.utils.knowledge.chatting.completed`.
-        show_progress (Optional[bool]): Whether to show the progress bar iterating over chunks.
-        pbar_kwargs (KwargsLike): Keyword arguments passed to `vectorbtpro.utils.pbar.ProgressBar`.
-        mult_show_progress (Optional[bool]): The same as `show_progress` but for iterating over multiple sources.
+        show_progress (Optional[bool]): Whether to display progress during chunk processing.
+        pbar_kwargs (KwargsLike): Additional keyword arguments for `vectorbtpro.utils.pbar.ProgressBar`.
+        mult_show_progress (Optional[bool]): Whether to display progress when processing multiple sources.
 
-            If None, defaults to `show_progress`.
-        mult_pbar_kwargs (KwargsLike): The same as `pbar_kwargs` but for iterating over multiple sources.
+            If not provided, defaults to `show_progress`.
+        mult_pbar_kwargs (KwargsLike): Additional keyword arguments for the progress bar
+            when processing multiple sources.
 
-            Gets merged over `pbar_kwargs`.
-        modify (bool): Whether to modify the source code file.
-        copy_to_clipboard (bool): Whether to copy the refined source code to clipboard.
+            These are merged with `pbar_kwargs`.
+        modify (bool): Whether to update the source file with the refined code.
+        copy_to_clipboard (bool): Whether to copy the refined source code to the clipboard.
 
-            Doesn't work for multiple sources.
-        show_diff (bool): Whether to show the delta HTML file using `difflib`.
+            Does not apply when processing multiple sources.
+        show_diff (bool): Whether to generate and display an HTML diff file using `difflib`.
 
-            Doesn't work for multiple sources.
-        open_browser (bool): Whether to open the browser.
+            Does not apply when processing multiple sources.
+        open_browser (bool): Whether to open the HTML diff in a web browser.
 
-            Doesn't work for multiple sources.
+            Does not apply when processing multiple sources.
 
     Returns:
-        Union[RefineSourceOutput, RefineSourceOutputs]:
+        Union[RefineSourceOutput, RefineSourceOutputs]: Result of the refinement process.
 
-            * The refined source code if `modify` and `copy_to_clipboard` are False.
-            * The path to the source code file if `modify` is True.
-            * The path to the delta HTML file if `show_diff` is True.
-            * Zipped list of sources and outputs if there are multiple sources.
+            * Returns the refined source code if neither `modify` nor `copy_to_clipboard` is True.
+            * Returns the path to the updated source file if `modify` is True.
+            * Returns the path to the HTML diff file if `show_diff` is True.
+            * For multiple sources, returns a zipped list of sources and their corresponding outputs.
     """
     from vectorbtpro.utils.checks import is_numba_func, is_complex_iterable
     from vectorbtpro.utils.config import merge_dicts
@@ -605,11 +630,22 @@ def refine_source(
         except Exception as e:
             pass
     if isinstance(source, ModuleType) and hasattr(source, "__path__") and as_package:
-        source = Path(getattr(source, "__path__"))
+        package_path = getattr(source, "__path__")
+        if isinstance(package_path, list):
+            source = [Path(path) for path in package_path]
+        else:
+            source = Path(package_path)
     if isinstance(source, Path) and source.is_dir():
         source = list(source.rglob("*.py"))
     if is_complex_iterable(source):
         sources = source
+        new_sources = []
+        for source in sources:
+            if isinstance(source, Path) and source.is_dir():
+                new_sources.extend(list(source.rglob("*.py")))
+            else:
+                new_sources.append(source)
+        sources = new_sources
         source_names = []
         paths = []
         all_paths = True
@@ -939,8 +975,8 @@ Your goal is to refine (rewrite for clarity, correctness, consistent format and 
 - For `*args` begin the description with `Additional arguments passed to/for`.
 - For `**kwargs` begin the description with `Additional keyword arguments passed to/for`.
 - When dealing with named tuples and enums, replace "Attributes:" by "Fields:" in their docstrings
-- Make sure that docstrings have three double quotes (\""") at the start and the end
-- Make sure that **docstrings are properly indented** relative to the first three double quotes (\""")
+- Make sure that docstrings have three double quotes (\"\"\") at the start and the end
+- Make sure that **docstrings are properly indented** relative to the first three double quotes (\"\"\")
 
 ### 4. Referencing and Usage
 
@@ -971,5 +1007,14 @@ Your goal is to refine (rewrite for clarity, correctness, consistent format and 
 
 
 def refine_docstrings(source: tp.Any, **kwargs) -> tp.RefineSourceOutput:
-    """Call `refine_source` with `prompt=REFINE_DOCSTR_PROMPT`."""
+    """Call `refine_source` with the prompt from `REFINE_DOCSTR_PROMPT` to refine
+    docstrings in the given source code.
+
+    Args:
+        source (Any): The source code to be refined.
+        **kwargs: Additional keyword arguments passed to `refine_source`.
+
+    Returns:
+        RefineSourceOutput: The result of the refinement process.
+    """
     return refine_source(source, prompt=REFINE_DOCSTR_PROMPT, **kwargs)

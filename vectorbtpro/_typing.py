@@ -209,6 +209,7 @@ PandasIndexingFunc = Callable[[SeriesFrame], MaybeSeriesFrame]
 PandasGroupByLike = Union[PandasGroupBy, PandasResampler, FrequencyLike]
 GroupByLike = Union[None, bool, MaybeLevelSequence, IndexLike, CustomTemplate]
 AnyGroupByLike = Union[Grouper, PandasGroupByLike, GroupByLike]
+GroupBy = Union[None, bool, Index]
 AnyRuleLike = Union[Resampler, PandasResampler, FrequencyLike, IndexLike]
 GroupIdxs = Array1d
 GroupLens = Array1d
