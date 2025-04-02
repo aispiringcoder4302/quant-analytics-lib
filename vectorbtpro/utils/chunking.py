@@ -74,11 +74,7 @@ __pdoc__ = {}
 
 @define
 class ArgGetter(DefineMixin):
-    """Class for retrieving an argument from annotated arguments using a specified query.
-
-    Args:
-        arg_query (Optional[tp.AnnArgQuery]): Query for the annotated argument from which to derive size.
-    """
+    """Class for retrieving an argument from annotated arguments using a specified query."""
 
     arg_query: tp.Optional[tp.AnnArgQuery] = define.field(default=None)
     """Query for the annotated argument from which to derive size."""
@@ -99,11 +95,7 @@ class ArgGetter(DefineMixin):
 
 @define
 class AxisSpecifier(DefineMixin):
-    """Class for specifying an axis.
-
-    Args:
-        axis (Optional[int]): Specifies the axis from which to extract data.
-    """
+    """Class for specifying an axis."""
 
     axis: tp.Optional[int] = define.field(default=None)
     """Specifies the axis from which to extract data."""
@@ -111,11 +103,7 @@ class AxisSpecifier(DefineMixin):
 
 @define
 class DimRetainer(DefineMixin):
-    """Class for retaining dimensions in an output.
-
-    Args:
-        keep_dims (bool): Flag indicating whether to retain dimensions.
-    """
+    """Class for retaining dimensions in an output."""
 
     keep_dims: bool = define.field(default=False)
     """Flag indicating whether to retain dimensions."""
@@ -127,10 +115,6 @@ class DimRetainer(DefineMixin):
 @define
 class Sizer(Evaluable, Annotatable, DefineMixin):
     """Abstract base class for determining size from annotated arguments.
-
-    Args:
-        eval_id (Optional[MaybeSequence[Hashable]]): Identifier or sequence of identifiers
-            used for evaluating this instance.
 
     !!! note
         Use `Sizer.apply` instead of calling `Sizer.get_size` directly."""
@@ -163,14 +147,7 @@ class Sizer(Evaluable, Annotatable, DefineMixin):
 
 @define
 class ArgSizer(Sizer, ArgGetter, DefineMixin):
-    """Class for determining size based on an argument extracted from annotated arguments.
-
-    Args:
-        arg_query (Optional[tp.AnnArgQuery]): Query for the annotated argument from which to derive size.
-        eval_id (Optional[MaybeSequence[Hashable]]): Identifier or sequence of identifiers
-            used for evaluating this instance.
-        single_type (Optional[TypeLike]): Type or tuple of types considered as representing a single value.
-    """
+    """Class for determining size based on an argument extracted from annotated arguments."""
 
     single_type: tp.Optional[tp.TypeLike] = define.field(default=None)
     """Type or tuple of types considered as representing a single value."""
@@ -238,15 +215,7 @@ class LenSizer(ArgSizer):
 
 @define
 class ShapeSizer(ArgSizer, AxisSpecifier, DefineMixin):
-    """Class for determining size from a specified axis in a shape-like object.
-
-    Args:
-        axis (Optional[int]): Specifies the axis from which to extract data.
-        arg_query (Optional[tp.AnnArgQuery]): Query for the annotated argument from which to derive size.
-        eval_id (Optional[MaybeSequence[Hashable]]): Identifier or sequence of identifiers
-            used for evaluating this instance.
-        single_type (Optional[TypeLike]): Type or tuple of types considered as representing a single value.
-    """
+    """Class for determining size from a specified axis in a shape-like object."""
 
     @classmethod
     def get_obj_size(cls, obj: tp.ShapeLike, axis: int, single_type: tp.Optional[type] = None) -> int:
@@ -316,16 +285,7 @@ class ArraySizer(ShapeSizer):
 
 @define
 class ChunkMeta(DefineMixin):
-    """Class representing metadata for a chunk.
-
-    Args:
-        uuid (str): Unique identifier for the chunk, used for caching.
-        idx (int): Index of the chunk.
-        start (Optional[int]): Starting index of the chunk range (inclusive); may be None.
-        end (Optional[int]): Ending index of the chunk range (exclusive); may be None.
-        indices (Optional[Sequence[int]]): Sequence of indices included in the chunk;
-            takes precedence over `start` and `end` if provided, and may be None.
-    """
+    """Class representing metadata for a chunk."""
 
     uuid: str = define.field()
     """Unique identifier for the chunk, used for caching."""
@@ -490,11 +450,6 @@ class ChunkMapper(DefineMixin):
     Implements the abstract `ChunkMapper.map` method and supports caching of mapped
     `ChunkMeta` instances.
 
-    Args:
-        should_cache (bool): Indicates whether to cache mapped `ChunkMeta` results.
-        chunk_meta_cache (Dict[str, ChunkMeta]): Cache for mapped `ChunkMeta` instances,
-            keyed by the UUID of the input metadata.
-
     !!! note
         Use `ChunkMapper.apply` instead of `ChunkMapper.map`."""
 
@@ -540,11 +495,7 @@ class ChunkMapper(DefineMixin):
 
 @define
 class NotChunked(Evaluable, Annotatable, DefineMixin):
-    """Class representing an argument that should not be chunked.
-
-    Args:
-        eval_id (Optional[MaybeSequence[Hashable]]): Identifier(s) at which to evaluate this instance.
-    """
+    """Class representing an argument that should not be chunked."""
 
     eval_id: tp.Optional[tp.MaybeSequence[tp.Hashable]] = define.field(default=None)
     """Identifier(s) at which to evaluate this instance."""
@@ -553,12 +504,6 @@ class NotChunked(Evaluable, Annotatable, DefineMixin):
 @define
 class ChunkTaker(Evaluable, Annotatable, DefineMixin):
     """Abstract class for extracting elements from a collection based on chunk index or range.
-
-    Args:
-        single_type (Optional[TypeLike]): Type or tuple of types that should be treated as a single value.
-        ignore_none (bool): Indicates whether None values should be ignored.
-        mapper (Optional[ChunkMapper]): Optional chunk mapper (`ChunkMapper`) to process chunk metadata.
-        eval_id (Optional[MaybeSequence[Hashable]]): Identifier(s) at which to evaluate this instance.
 
     !!! note
         Use `ChunkTaker.apply` instead of `ChunkTaker.take`.
@@ -640,15 +585,7 @@ class ChunkTaker(Evaluable, Annotatable, DefineMixin):
 
 @define
 class ChunkSelector(ChunkTaker, DimRetainer, DefineMixin):
-    """Class for selecting a single element from a sequence based on the chunk index.
-
-    Args:
-        keep_dims (bool): Flag indicating whether to retain dimensions.
-        single_type (Optional[TypeLike]): Type or tuple of types that should be treated as a single value.
-        ignore_none (bool): Indicates whether None values should be ignored.
-        mapper (Optional[ChunkMapper]): Optional chunk mapper (`ChunkMapper`) to process chunk metadata.
-        eval_id (Optional[MaybeSequence[Hashable]]): Identifier(s) at which to evaluate this instance.
-    """
+    """Class for selecting a single element from a sequence based on the chunk index."""
 
     def get_size(self, obj: tp.Sequence, **kwargs) -> int:
         return LenSizer.get_obj_size(obj, single_type=self.single_type)
@@ -694,16 +631,7 @@ class CountAdapter(ChunkSlicer):
 
 @define
 class ShapeSelector(ChunkSelector, AxisSpecifier, DefineMixin):
-    """Class for selecting a single element from a shape's axis based on a chunk index.
-
-    Args:
-        axis (Optional[int]): Specifies the axis from which to extract data.
-        keep_dims (bool): Flag indicating whether to retain dimensions.
-        single_type (Optional[TypeLike]): Type or tuple of types that should be treated as a single value.
-        ignore_none (bool): Indicates whether None values should be ignored.
-        mapper (Optional[ChunkMapper]): Optional chunk mapper (`ChunkMapper`) to process chunk metadata.
-        eval_id (Optional[MaybeSequence[Hashable]]): Identifier(s) at which to evaluate this instance.
-    """
+    """Class for selecting a single element from a shape's axis based on a chunk index."""
 
     def get_size(self, obj: tp.ShapeLike, **kwargs) -> int:
         return ShapeSizer.get_obj_size(obj, self.axis, single_type=self.single_type)
@@ -733,15 +661,7 @@ class ShapeSelector(ChunkSelector, AxisSpecifier, DefineMixin):
 
 @define
 class ShapeSlicer(ChunkSlicer, AxisSpecifier, DefineMixin):
-    """Class for slicing multiple elements from a shape's axis using a specified chunk range.
-
-    Args:
-        axis (Optional[int]): Specifies the axis from which to extract data.
-        single_type (Optional[TypeLike]): Type or tuple of types that should be treated as a single value.
-        ignore_none (bool): Indicates whether None values should be ignored.
-        mapper (Optional[ChunkMapper]): Optional chunk mapper (`ChunkMapper`) to process chunk metadata.
-        eval_id (Optional[MaybeSequence[Hashable]]): Identifier(s) at which to evaluate this instance.
-    """
+    """Class for slicing multiple elements from a shape's axis using a specified chunk range."""
 
     def get_size(self, obj: tp.ShapeLike, **kwargs) -> int:
         return ShapeSizer.get_obj_size(obj, self.axis, single_type=self.single_type)
@@ -1123,6 +1043,7 @@ class Chunked(Chunkable, DefineMixin):
             If `take_spec` is an instance rather than a class, these arguments update its configuration.
         select (bool): Indicates whether chunking is performed by selection.
         eval_id (Optional[MaybeSequence[Hashable]]): Identifier(s) used for evaluation.
+        **kwargs: Additional keyword arguments acting as `take_spec_kwargs`.
     """
 
     value: tp.Any = define.required_field()
@@ -1238,16 +1159,6 @@ class ChunkedArray(Chunked, DefineMixin):
     """Class representing a chunkable array.
 
     Inherits all initialization parameters from `Chunked` and adds array flexibility configuration.
-
-    Args:
-        value (Any): The value to be chunked.
-        take_spec (TakeSpec): The specification for taking chunks.
-        take_spec_kwargs (KwargsLike): Additional keyword arguments for the `ChunkTaker` subclass.
-
-            If `take_spec` is an instance rather than a class, these arguments update its configuration.
-        select (bool): Indicates whether chunking is performed by selection.
-        eval_id (Optional[MaybeSequence[Hashable]]): Identifier(s) used for evaluation.
-        flex (bool): Indicates whether the array is flexible.
     """
 
     flex: bool = define.field(default=False)

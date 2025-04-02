@@ -21,11 +21,7 @@ __all__ = [
 
 @define
 class PosSel(DefineMixin):
-    """Class representing a positional selection.
-
-    Args:
-        value (MaybeIterable[Hashable]): Selection of one or more positions.
-    """
+    """Class representing a positional selection."""
 
     value: tp.MaybeIterable[tp.Hashable] = define.field()
     """Selection of one or more positions."""
@@ -33,11 +29,7 @@ class PosSel(DefineMixin):
 
 @define
 class LabelSel(DefineMixin):
-    """Class representing a label-based selection.
-
-    Args:
-        value (MaybeIterable[Hashable]): Selection of one or more labels.
-    """
+    """Class representing a label-based selection."""
 
     value: tp.MaybeIterable[tp.Hashable] = define.field()
     """Selection of one or more labels."""

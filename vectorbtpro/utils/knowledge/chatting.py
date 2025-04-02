@@ -2400,11 +2400,7 @@ StoreObjectT = tp.TypeVar("StoreObjectT", bound="StoreObject")
 
 @define
 class StoreObject(DefineMixin):
-    """Class representing an object managed by a store.
-
-    Args:
-        id_ (str): Object identifier.
-    """
+    """Class representing an object managed by a store."""
 
     id_: str = define.field()
     """Object identifier."""
@@ -2422,10 +2418,6 @@ class StoreData(StoreObject, DefineMixin):
     """Class for any data to be stored.
 
     Accepts the same arguments as in `StoreObject` + the ones listed below.
-
-    Args:
-        id_ (str): Object identifier.
-        data (Any): The stored data.
     """
 
     data: tp.Any = define.field()
@@ -2477,13 +2469,7 @@ StoreDocumentT = tp.TypeVar("StoreDocumentT", bound="StoreDocument")
 
 @define
 class StoreDocument(StoreData, DefineMixin):
-    """Abstract class for documents to be stored.
-
-    Args:
-        id_ (str): Object identifier.
-        data (Any): The stored data.
-        template_context (KwargsLike): Context for substituting template variables.
-    """
+    """Abstract class for documents to be stored."""
 
     template_context: tp.KwargsLike = define.field(factory=dict)
     """Context for substituting template variables."""
@@ -2527,23 +2513,7 @@ def def_metadata_template(metadata_content: str) -> str:
 
 @define
 class TextDocument(StoreDocument, DefineMixin):
-    """Class for text documents.
-
-    Args:
-        id_ (str): Object identifier.
-        data (Any): The stored data.
-        template_context (KwargsLike): Context for substituting template variables.
-        text_path (Optional[PathLikeKey]): Path to the text field within the data.
-        split_text_kwargs (KwargsLike): Keyword arguments passed to `split_text`.
-        excl_metadata (Union[bool, MaybeList[PathLikeKey]]): Indicates whether to exclude metadata or
-            specify fields to exclude. If False, metadata includes all fields except text.
-        excl_embed_metadata (Union[None, bool, MaybeList[PathLikeKey]]): Indicates metadata exclusion
-            for embeddings; if None, defaults to `excl_metadata`.
-        skip_missing (bool): Determines whether missing text or metadata returns None instead of raising an error.
-        dump_kwargs (KwargsLike): Keyword arguments for the dump formatting function.
-        metadata_template (CustomTemplateLike): Template for formatting metadata via the `format()` method.
-        content_template (CustomTemplateLike): Template for formatting content via the `format()` method.
-    """
+    """Class for text documents."""
 
     text_path: tp.Optional[tp.PathLikeKey] = define.field(default=None)
     """Path to the text field within the data."""
@@ -2722,14 +2692,7 @@ class TextDocument(StoreDocument, DefineMixin):
 
 @define
 class StoreEmbedding(StoreObject, DefineMixin):
-    """Class for embeddings to be stored.
-
-    Args:
-        id_ (str): Object identifier.
-        parent_id (Optional[str]): Identifier of the parent object.
-        child_ids (List[str]): Identifiers of child objects.
-        embedding (Optional[List[int]]): The embedding vector.
-    """
+    """Class for embeddings to be stored."""
 
     parent_id: tp.Optional[str] = define.field(default=None)
     """Identifier of the parent object."""
@@ -3574,13 +3537,7 @@ def resolve_obj_store(obj_store: tp.ObjectStoreLike = None) -> tp.MaybeType[Obje
 
 @define
 class EmbeddedDocument(DefineMixin):
-    """Define an abstract class for embedded documents.
-
-    Args:
-        document (StoreDocument): Primary document content.
-        embedding (Optional[List[float]]): List of floats representing the document's embedding.
-        child_documents (List[EmbeddedDocument]): List of embedded child documents.
-    """
+    """Define an abstract class for embedded documents."""
 
     document: StoreDocument = define.field()
     """Primary document content."""
@@ -3594,13 +3551,7 @@ class EmbeddedDocument(DefineMixin):
 
 @define
 class ScoredDocument(DefineMixin):
-    """Define an abstract class for scored documents with an associated numerical score.
-
-    Args:
-        document (StoreDocument): Primary document content.
-        score (float): Numeric score assigned to the document.
-        child_documents (List[ScoredDocument]): List of scored child documents.
-    """
+    """Define an abstract class for scored documents with an associated numerical score."""
 
     document: StoreDocument = define.field()
     """Primary document content."""

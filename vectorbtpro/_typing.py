@@ -176,6 +176,7 @@ FlexArray1d = Array1d
 FlexArray2d = Array2d
 FlexArray1dLike = Union[Scalar, Array1d, Array2d]
 FlexArray2dLike = Union[Scalar, Array1d, Array2d]
+IndexFromLike = Union[None, str, int, Any]
 
 # Templates
 CustomTemplateLike = Union[str, Callable, CustomTemplate]
@@ -407,5 +408,7 @@ PipeTasks = Iterable[PipeTask]
 CompressionLike = Union[None, bool, str]
 
 # Formatting
+SourceChunk = Union[str, Tuple[str, int, int], Tuple[str, int], Tuple[str, int, int, int]]
+SourceChunks = List[SourceChunk]
 RefineSourceOutput = Union[None, str, Path, Tuple[str, Path], Tuple[Path, Path]]
 RefineSourceOutputs = List[Tuple[Any, RefineSourceOutput]]

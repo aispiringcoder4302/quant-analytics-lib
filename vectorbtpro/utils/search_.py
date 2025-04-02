@@ -29,11 +29,7 @@ __pdoc__ = {}
 
 @define
 class Not(DefineMixin):
-    """Class representing a negation operator used during search queries.
-
-    Args:
-        value (Any): Negation value.
-    """
+    """Class representing a negation operator used during search queries."""
 
     value: tp.Any = define.field()
     """Negation value."""

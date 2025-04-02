@@ -10,7 +10,8 @@
 
 """Functions for reshaping arrays.
 
-Reshape functions transform a Pandas object/NumPy array in some way."""
+Reshape functions transform a Pandas object/NumPy array in some way.
+"""
 
 import functools
 import itertools
@@ -56,14 +57,28 @@ __all__ = [
 
 
 def to_tuple_shape(shape: tp.ShapeLike) -> tp.Shape:
-    """Convert a shape-like object to a tuple."""
+    """Convert a shape-like object to a tuple.
+
+    Args:
+        shape (ShapeLike): A shape-like object that can be an integer or iterable.
+
+    Returns:
+        Shape: A tuple representation of the input shape.
+    """
     if checks.is_int(shape):
         return (int(shape),)
     return tuple(shape)
 
 
 def to_1d_shape(shape: tp.ShapeLike) -> tp.Shape:
-    """Convert a shape-like object to a 1-dim shape."""
+    """Convert a shape-like object to a one-dimensional shape tuple.
+
+    Args:
+        shape (ShapeLike): A shape-like object; can be an integer or iterable.
+
+    Returns:
+        Shape: A one-dimensional shape tuple.
+    """
     shape = to_tuple_shape(shape)
     if len(shape) == 0:
         return (1,)
@@ -75,7 +90,15 @@ def to_1d_shape(shape: tp.ShapeLike) -> tp.Shape:
 
 
 def to_2d_shape(shape: tp.ShapeLike, expand_axis: int = 1) -> tp.Shape:
-    """Convert a shape-like object to a 2-dim shape."""
+    """Convert a shape-like object to a two-dimensional shape tuple.
+
+    Args:
+        shape (ShapeLike): A shape-like object to convert.
+        expand_axis (int): The axis along which a one-dimensional shape is expanded into two dimensions.
+
+    Returns:
+        Shape: A two-dimensional shape tuple.
+    """
     shape = to_tuple_shape(shape)
     if len(shape) == 0:
         return 1, 1
@@ -90,7 +113,16 @@ def to_2d_shape(shape: tp.ShapeLike, expand_axis: int = 1) -> tp.Shape:
 
 
 def repeat_shape(shape: tp.ShapeLike, n: int, axis: int = 1) -> tp.Shape:
-    """Repeat shape `n` times along the specified axis."""
+    """Repeat a shape along a specified axis.
+
+    Args:
+        shape (ShapeLike): A shape-like object representing the original shape.
+        n (int): The number of repetitions along the specified axis.
+        axis (int): The axis along which the shape is repeated.
+
+    Returns:
+        Shape: The resulting shape after repetition.
+    """
     shape = to_tuple_shape(shape)
     if len(shape) <= axis:
         shape = tuple([shape[i] if i < len(shape) else 1 for i in range(axis + 1)])
@@ -98,28 +130,62 @@ def repeat_shape(shape: tp.ShapeLike, n: int, axis: int = 1) -> tp.Shape:
 
 
 def tile_shape(shape: tp.ShapeLike, n: int, axis: int = 1) -> tp.Shape:
-    """Tile shape `n` times along the specified axis.
+    """Tile a shape along a specified axis.
 
-    Identical to `repeat_shape`. Exists purely for naming consistency."""
+    This function is identical to `repeat_shape` and exists solely for naming consistency.
+
+    Args:
+        shape (ShapeLike): A shape-like object representing the original shape.
+        n (int): The number of tiles along the specified axis.
+        axis (int): The axis along which the shape is tiled.
+
+    Returns:
+        Shape: The resulting tiled shape.
+    """
     return repeat_shape(shape, n, axis=axis)
 
 
 def index_to_series(obj: tp.Index, reset_index: bool = False) -> tp.Series:
-    """Convert Index to Series."""
+    """Convert an Index to a Series.
+
+    Args:
+        obj (Index): The index to convert.
+        reset_index (bool): Whether to reset the index in the resulting Series.
+
+    Returns:
+        Series: A Pandas Series created from the index.
+    """
     if reset_index:
         return obj.to_series(index=pd.RangeIndex(stop=len(obj)))
     return obj.to_series()
 
 
 def index_to_frame(obj: tp.Index, reset_index: bool = False) -> tp.Frame:
-    """Convert Index to DataFrame."""
+    """Convert an Index to a DataFrame.
+
+    Args:
+        obj (Index): The index to convert.
+        reset_index (bool): Determines whether to reset the index when converting non-MultiIndex objects.
+
+    Returns:
+        DataFrame: A Pandas DataFrame representation of the index.
+    """
     if not isinstance(obj, pd.MultiIndex):
         return index_to_series(obj, reset_index=reset_index).to_frame()
     return obj.to_frame(index=not reset_index)
 
 
 def mapping_to_series(obj: tp.MappingLike) -> tp.Series:
-    """Convert a mapping-like object to Series."""
+    """Convert a mapping-like object to a Series.
+
+    If the input is a namedtuple, it is first converted to a dictionary.
+
+    Args:
+        obj (MappingLike): A mapping-like object to convert.
+
+    Returns:
+        Series: A Pandas Series constructed from the mapping.
+    """
     if checks.is_namedtuple(obj):
         obj = obj._asdict()
     return pd.Series(obj)
@@ -128,7 +194,18 @@ def mapping_to_series(obj: tp.MappingLike) -> tp.Series:
 def to_any_array(obj: tp.ArrayLike, raw: bool = False, convert_index: bool = True) -> tp.AnyArray:
     """Convert any array-like object to an array.
 
-    Pandas objects are kept as-is unless `raw` is True."""
+    For Pandas objects, the original object is returned unless `raw` is True.
+    Mapping-like objects are converted to a Series, and index objects may be converted
+    if `convert_index` is True.
+
+    Args:
+        obj (ArrayLike): The array-like object to convert.
+        raw (bool): If True, return a raw NumPy array.
+        convert_index (bool): If True, convert index objects to a Series.
+
+    Returns:
+        AnyArray: The converted array.
+    """
     from vectorbtpro.indicators.factory import IndicatorBase
 
     if isinstance(obj, IndicatorBase):
@@ -144,7 +221,19 @@ def to_any_array(obj: tp.ArrayLike, raw: bool = False, convert_index: bool = Tru
 
 
 def to_pd_array(obj: tp.ArrayLike, convert_index: bool = True) -> tp.PandasArray:
-    """Convert any array-like object to a Pandas object."""
+    """Convert an array-like object to a Pandas object.
+
+    Pandas objects are returned as-is or converted to a Series based on the index conversion.
+    Mapping-like objects are converted to a Series. If the object is a NumPy array, it is
+    converted to a Series or DataFrame based on its dimensions.
+
+    Args:
+        obj (ArrayLike): The array-like object to convert.
+        convert_index (bool): If True, convert index objects to a Series.
+
+    Returns:
+        PandasArray: A Pandas Series or DataFrame representing the array.
+    """
     from vectorbtpro.indicators.factory import IndicatorBase
 
     if isinstance(obj, IndicatorBase):
@@ -167,7 +256,19 @@ def to_pd_array(obj: tp.ArrayLike, convert_index: bool = True) -> tp.PandasArray
 
 
 def soft_to_ndim(obj: tp.ArrayLike, ndim: int, raw: bool = False) -> tp.AnyArray:
-    """Try to softly bring `obj` to the specified number of dimensions `ndim` (max 2)."""
+    """Adjust the dimensions of an array-like object to the specified number of dimensions (up to 2).
+
+    If `ndim` is 1 and the object is two-dimensional with a single column, the object is collapsed
+    to one dimension. If `ndim` is 2 and the object is one-dimensional, it is expanded to two dimensions.
+
+    Args:
+        obj (ArrayLike): The array-like object to reshape.
+        ndim (int): The target number of dimensions (maximum 2).
+        raw (bool): If True, convert to a raw NumPy array before reshaping.
+
+    Returns:
+        AnyArray: The reshaped array.
+    """
     obj = to_any_array(obj, raw=raw)
     if ndim == 1:
         if obj.ndim == 2:
@@ -184,10 +285,18 @@ def soft_to_ndim(obj: tp.ArrayLike, ndim: int, raw: bool = False) -> tp.AnyArray
 
 
 def to_1d(obj: tp.ArrayLike, raw: bool = False) -> tp.AnyArray1d:
-    """Reshape argument to one dimension.
+    """Reshape an array-like object to one dimension.
 
-    If `raw` is True, returns NumPy array.
-    If 2-dim, will collapse along axis 1 (i.e., DataFrame with one column to Series)."""
+    If `raw` is True, the output is a raw NumPy array. For two-dimensional inputs with a single column,
+    the column is collapsed into a one-dimensional array.
+
+    Args:
+        obj (ArrayLike): The array-like object to reshape.
+        raw (bool): If True, return a raw NumPy array.
+
+    Returns:
+        AnyArray1d: The reshaped one-dimensional array.
+    """
     obj = to_any_array(obj, raw=raw)
     if obj.ndim == 2:
         if obj.shape[1] == 1:
@@ -202,14 +311,23 @@ def to_1d(obj: tp.ArrayLike, raw: bool = False) -> tp.AnyArray1d:
 
 
 to_1d_array = functools.partial(to_1d, raw=True)
-"""`to_1d` with `raw` enabled."""
+"""Partial version of `to_1d` with `raw` set to True."""
 
 
 def to_2d(obj: tp.ArrayLike, raw: bool = False, expand_axis: int = 1) -> tp.AnyArray2d:
-    """Reshape argument to two dimensions.
+    """Reshape an array-like object to two dimensions.
 
-    If `raw` is True, returns NumPy array.
-    If 1-dim, will expand along axis 1 (i.e., Series to DataFrame with one column)."""
+    If `raw` is True, the output is a raw NumPy array. For one-dimensional inputs,
+    the array is expanded along the specified axis.
+
+    Args:
+        obj (ArrayLike): The array-like object to reshape.
+        raw (bool): If True, return a raw NumPy array.
+        expand_axis (int): The axis along which to expand one-dimensional input.
+
+    Returns:
+        AnyArray2d: The reshaped two-dimensional array.
+    """
     obj = to_any_array(obj, raw=raw)
     if obj.ndim == 2:
         return obj
@@ -226,18 +344,25 @@ def to_2d(obj: tp.ArrayLike, raw: bool = False, expand_axis: int = 1) -> tp.AnyA
 
 
 to_2d_array = functools.partial(to_2d, raw=True)
-"""`to_2d` with `raw` enabled."""
+"""Partial version of `to_2d` with `raw` set to True."""
 
 to_2d_pr_array = functools.partial(to_2d_array, expand_axis=1)
-"""`to_2d_array` with `expand_axis=1`."""
+"""Partial version of `to_2d_array` with `expand_axis` set to 1."""
 
 to_2d_pc_array = functools.partial(to_2d_array, expand_axis=0)
-"""`to_2d_array` with `expand_axis=0`."""
+"""A partial version of `to_2d_array` with `expand_axis` set to 0."""
 
 
 @register_jitted(cache=True)
 def to_1d_array_nb(obj: tp.Array) -> tp.Array1d:
-    """Resize array to one dimension."""
+    """Resize an array to one dimension.
+
+    Args:
+        obj (Array): The input array to reshape.
+
+    Returns:
+        Array1d: A one-dimensional array.
+    """
     if obj.ndim == 0:
         return np.expand_dims(obj, axis=0)
     if obj.ndim == 1:
@@ -249,7 +374,18 @@ def to_1d_array_nb(obj: tp.Array) -> tp.Array1d:
 
 @register_jitted(cache=True)
 def to_2d_array_nb(obj: tp.Array, expand_axis: int = 1) -> tp.Array2d:
-    """Resize array to two dimensions."""
+    """Resize an array to two dimensions.
+
+    If the input array is scalar (0-D) or one-dimensional, a new dimension is added
+    according to the specified axis.
+
+    Args:
+        obj (Array): The input array.
+        expand_axis (int): The axis along which to expand the array if necessary.
+
+    Returns:
+        Array2d: A two-dimensional array.
+    """
     if obj.ndim == 0:
         return np.expand_dims(np.expand_dims(obj, axis=0), axis=0)
     if obj.ndim == 1:
@@ -261,18 +397,42 @@ def to_2d_array_nb(obj: tp.Array, expand_axis: int = 1) -> tp.Array2d:
 
 @register_jitted(cache=True)
 def to_2d_pr_array_nb(obj: tp.Array) -> tp.Array2d:
-    """`to_2d_array_nb` with `expand_axis=1`."""
+    """Return a two-dimensional array by applying `to_2d_array_nb` with `expand_axis` set to 1.
+
+    Args:
+        obj (Array): The input array.
+
+    Returns:
+        Array2d: A two-dimensional array.
+    """
     return to_2d_array_nb(obj, expand_axis=1)
 
 
 @register_jitted(cache=True)
 def to_2d_pc_array_nb(obj: tp.Array) -> tp.Array2d:
-    """`to_2d_array_nb` with `expand_axis=0`."""
+    """Return a two-dimensional array by applying `to_2d_array_nb` with `expand_axis` set to 0.
+
+    Args:
+        obj (Array): The input array.
+
+    Returns:
+        Array2d: A two-dimensional array.
+    """
     return to_2d_array_nb(obj, expand_axis=0)
 
 
 def to_dict(obj: tp.ArrayLike, orient: str = "dict") -> dict:
-    """Convert object to dict."""
+    """Convert an array-like object to a dictionary.
+
+    Args:
+        obj (ArrayLike): An array-like object.
+        orient (str): Orientation for conversion.
+
+            Use "index_series" to create a dictionary mapping index to series.
+
+    Returns:
+        dict: The converted dictionary.
+    """
     obj = to_pd_array(obj)
     if orient == "index_series":
         return {obj.index[i]: obj.iloc[i] for i in range(len(obj.index))}
@@ -286,7 +446,18 @@ def repeat(
     raw: bool = False,
     ignore_ranges: tp.Optional[bool] = None,
 ) -> tp.AnyArray:
-    """Repeat `obj` `n` times along the specified axis."""
+    """Repeat an array-like object multiple times along a specified axis.
+
+    Args:
+        obj (ArrayLike): The input array-like object.
+        n (int): The number of repetitions.
+        axis (int): The axis along which to repeat.
+        raw (bool): Whether to treat the input as raw array data.
+        ignore_ranges (Optional[bool]): Whether to ignore range constraints.
+
+    Returns:
+        AnyArray: The array repeated along the specified axis.
+    """
     obj = to_any_array(obj, raw=raw)
     if axis == 0:
         if checks.is_pandas(obj):
@@ -310,7 +481,18 @@ def tile(
     raw: bool = False,
     ignore_ranges: tp.Optional[bool] = None,
 ) -> tp.AnyArray:
-    """Tile `obj` `n` times along the specified axis."""
+    """Tile an array-like object by repeating its elements along a specified axis.
+
+    Args:
+        obj (ArrayLike): The input array-like object.
+        n (int): The number of times to tile the array.
+        axis (int): The axis along which to tile.
+        raw (bool): Whether to treat the input as raw array data.
+        ignore_ranges (Optional[bool]): Whether to ignore range constraints.
+
+    Returns:
+        AnyArray: The tiled array.
+    """
     obj = to_any_array(obj, raw=raw)
     if axis == 0:
         if obj.ndim == 2:
@@ -337,7 +519,16 @@ def broadcast_shapes(
     axis: tp.Optional[tp.MaybeSequence[int]] = None,
     expand_axis: tp.Optional[tp.MaybeSequence[int]] = None,
 ) -> tp.Tuple[tp.Shape, ...]:
-    """Broadcast shape-like objects using vectorbt's broadcasting rules."""
+    """Broadcast shape-like objects following vectorbtpro's broadcasting rules.
+
+    Args:
+        *shapes (ArrayLike): One or more shape-like objects.
+        axis (Optional[MaybeSequence[int]]): Axis specification to adjust the resulting shape.
+        expand_axis (Optional[MaybeSequence[int]]): Axis used for expanding dimensions during broadcasting.
+
+    Returns:
+        Tuple[Shape, ...]: A tuple of broadcasted shapes.
+    """
     from vectorbtpro._settings import settings
 
     broadcasting_cfg = settings["broadcasting"]
@@ -391,7 +582,18 @@ def broadcast_array_to(
     axis: tp.Optional[int] = None,
     expand_axis: tp.Optional[int] = None,
 ) -> tp.Array:
-    """Broadcast an array-like object to a target shape using vectorbt's broadcasting rules."""
+    """Broadcast an array-like object to a specified target shape following
+    vectorbtpro's broadcasting rules.
+
+    Args:
+        arr (ArrayLike): The input array-like object.
+        target_shape (ShapeLike): The desired target shape, which must have one or two dimensions.
+        axis (Optional[int]): An axis index for adjusting the target shape.
+        expand_axis (Optional[int]): The axis used for array expansion.
+
+    Returns:
+        Array: The broadcasted array.
+    """
     from vectorbtpro._settings import settings
 
     broadcasting_cfg = settings["broadcasting"]
@@ -426,9 +628,17 @@ def broadcast_arrays(
     axis: tp.Optional[tp.MaybeSequence[int]] = None,
     expand_axis: tp.Optional[tp.MaybeSequence[int]] = None,
 ) -> tp.Tuple[tp.Array, ...]:
-    """Broadcast array-like objects using vectorbt's broadcasting rules.
+    """Broadcast multiple array-like objects following vectorbtpro's broadcasting rules.
 
-    Optionally to a target shape."""
+    Args:
+        *arrs (ArrayLike): Two or more array-like objects.
+        target_shape (Optional[ShapeLike]): The target shape to which arrays should be broadcasted.
+        axis (Optional[MaybeSequence[int]]): Axis specification for broadcasting.
+        expand_axis (Optional[MaybeSequence[int]]): Axis used for expanding dimensions if necessary.
+
+    Returns:
+        Tuple[Array, ...]: A tuple containing the broadcasted arrays.
+    """
     if target_shape is None:
         shapes = []
         for arr in arrs:
@@ -455,50 +665,49 @@ def broadcast_arrays(
     return tuple(new_arrs)
 
 
-IndexFromLike = tp.Union[None, str, int, tp.Any]
-"""Any object that can be coerced into a `index_from` argument."""
-
-
 def broadcast_index(
     objs: tp.Sequence[tp.AnyArray],
     to_shape: tp.Shape,
-    index_from: IndexFromLike = None,
+    index_from: tp.IndexFromLike = None,
     axis: int = 0,
     ignore_sr_names: tp.Optional[bool] = None,
     ignore_ranges: tp.Optional[bool] = None,
     check_index_names: tp.Optional[bool] = None,
     **clean_index_kwargs,
 ) -> tp.Optional[tp.Index]:
-    """Produce a broadcast index/columns.
+    """Return a broadcasted index or columns based on the provided array-like objects.
 
     Args:
-        objs (iterable of array_like): Array-like objects.
-        to_shape (tuple of int): Target shape.
-        index_from (any): Broadcasting rule for this index/these columns.
+        objs (Sequence[AnyArray]): Array-like objects.
+        to_shape (tuple[int]): Target shape.
+        index_from (Union[None, str, int, Any]): Broadcasting strategy for the index or columns.
 
             Accepts the following values:
 
-            * 'keep' or None - keep the original index/columns of the objects in `objs`
-            * 'stack' - stack different indexes/columns using `vectorbtpro.base.indexes.stack_indexes`
-            * 'strict' - ensure that all Pandas objects have the same index/columns
-            * 'reset' - reset any index/columns (they become a simple range)
-            * integer - use the index/columns of the i-th object in `objs`
-            * everything else will be converted to `pd.Index`
-        axis (int): Set to 0 for index and 1 for columns.
-        ignore_sr_names (bool): Whether to ignore Series names if they are in conflict.
+            * "keep" or None: Retain the original index/columns of `objs`.
+            * "stack": Stack indexes/columns using `vectorbtpro.base.indexes.stack_indexes`.
+            * "strict": Require identical indexes/columns across all Pandas objects.
+            * "reset": Reset to a default range index.
+            * integer: Use the index/columns from the i-th object in `objs`.
+            * Any other value will be converted to a `pd.Index`.
+        axis (int): Axis along which to broadcast, where 0 indicates index and 1 indicates columns.
+        ignore_sr_names (Optional[bool]): Whether to ignore conflicting Series names.
 
-            Conflicting Series names are those that are different but not None.
-        ignore_ranges (bool): Whether to ignore indexes of type `pd.RangeIndex`.
-        check_index_names (bool): See `vectorbtpro.utils.checks.is_index_equal`.
-        **clean_index_kwargs: Keyword arguments passed to `vectorbtpro.base.indexes.clean_index`.
+            Conflicting Series names are those that differ and are not None.
+        ignore_ranges (Optional[bool]): Whether to disregard indexes of type `pd.RangeIndex`.
+        check_index_names (Optional[bool]): Whether to validate index/columns names equality
+            (see `vectorbtpro.utils.checks.is_index_equal`).
+        **clean_index_kwargs: Additional keyword arguments for `vectorbtpro.base.indexes.clean_index`.
+
+    Returns:
+        Optional[Index]: Broadcasted index/columns, or None if original index/columns should be retained.
 
     For defaults, see `vectorbtpro._settings.broadcasting`.
 
     !!! note
-        Series names are treated as columns with a single element but without a name.
-        If a column level without a name loses its meaning, better to convert Series to DataFrames
-        with one column prior to broadcasting. If the name of a Series is not that important,
-        better to drop it altogether by setting it to None.
+        Series names are interpreted as columns with a single element but without a name.
+        If a column level without a name loses its meaning, consider converting Series to DataFrames
+        with a single column.Alternatively, if the Series name is insignificant, set it to None.
     """
     from vectorbtpro._settings import settings
 
@@ -590,8 +799,23 @@ def wrap_broadcasted(
     new_columns: tp.Optional[tp.Index] = None,
     ignore_ranges: tp.Optional[bool] = None,
 ) -> tp.AnyArray:
-    """If the newly brodcasted array was originally a Pandas object, make it Pandas object again
-    and assign it the newly broadcast index/columns."""
+    """Return a Pandas object with updated index and columns if the broadcasted array
+    originated from a Pandas object.
+
+    Args:
+        new_obj (AnyArray): The broadcasted array.
+        old_obj (Optional[AnyArray]): The original object from which broadcasting
+            parameters may be inferred.
+        axis (Optional[int]): The axis along which broadcasting was performed.
+        is_pd (bool): Indicates whether the original object was a Pandas object.
+        new_index (Optional[Index]): The new index derived from broadcasting.
+        new_columns (Optional[Index]): The new columns derived from broadcasting.
+        ignore_ranges (Optional[bool]): Whether to ignore RangeIndex types during index repetition.
+
+    Returns:
+        AnyArray: A Pandas DataFrame or Series if `is_pd` is True;
+            otherwise, the unmodified broadcasted array.
+    """
     if is_pd:
         if axis == 0:
             new_columns = None
@@ -632,8 +856,21 @@ def align_pd_arrays(
     axis: tp.Optional[tp.MaybeSequence[int]] = None,
     reindex_kwargs: tp.KwargsLikeSequence = None,
 ) -> tp.MaybeTuple[tp.ArrayLike]:
-    """Align Pandas arrays against common index and/or column levels using reindexing
-    and `vectorbtpro.base.indexes.align_indexes` respectively."""
+    """Align Pandas arrays by reindexing their index and/or columns to a common level.
+
+    Args:
+        *objs (AnyArray): Additional arrays to be aligned.
+        align_index (bool): Whether to align array indices.
+        align_columns (bool): Whether to align DataFrame columns.
+        to_index (Optional[Index]): Target index for alignment.
+        to_columns (Optional[Index]): Target columns for alignment.
+        axis (Optional[MaybeSequence[int]]): Axis or sequence of axes specifying alignment.
+        reindex_kwargs (KwargsLikeSequence): Keyword arguments for `pd.DataFrame.reindex`.
+
+    Returns:
+        MaybeTuple[ArrayLike]: The aligned array if a single input is provided,
+            otherwise a tuple of aligned arrays.
+    """
     objs = list(objs)
     if align_index:
         indexes_to_align = []
@@ -712,68 +949,93 @@ def align_pd_arrays(
 
 @define
 class BCO(DefineMixin):
-    """Class that represents an object passed to `broadcast`.
+    """Class representing a broadcast configuration object for `broadcast`.
 
-    If any value is None, mostly defaults to the global value passed to `broadcast`."""
+    If any attribute value is None, it defaults to the corresponding global value provided to `broadcast`.
+    """
 
     value: tp.Any = define.field()
-    """Value of the object."""
+    """The value to be broadcast."""
 
     axis: tp.Optional[int] = define.field(default=None)
-    """Axis to broadcast.
-    
-    Set to None to broadcast all axes."""
+    """Axis used for broadcasting.
+
+    Set to None to broadcast across all axes.
+    """
 
     to_pd: tp.Optional[bool] = define.field(default=None)
-    """Whether to convert the output array to a Pandas object."""
+    """Determines whether the output array should be converted to a Pandas object.
+    """
 
     keep_flex: tp.Optional[bool] = define.field(default=None)
-    """Whether to keep the raw version of the output for flexible indexing.
-    
-    Only makes sure that the array can broadcast to the target shape."""
+    """Indicates whether to retain the raw output array for flexible indexing.
+
+    This ensures the array can be broadcast to the target shape.
+    """
 
     min_ndim: tp.Optional[int] = define.field(default=None)
-    """Minimum number of dimensions."""
+    """Specifies the minimum number of dimensions required.
+    """
 
     expand_axis: tp.Optional[int] = define.field(default=None)
-    """Axis to expand if the array is 1-dim but the target shape is 2-dim."""
+    """Specifies the axis along which to expand a 1-dimensional array when a 2-dimensional shape is expected.
+    """
 
     post_func: tp.Optional[tp.Callable] = define.field(default=None)
-    """Function to post-process the output array."""
+    """A function to post-process the output array.
+    """
 
     require_kwargs: tp.Optional[tp.Kwargs] = define.field(default=None)
-    """Keyword arguments passed to `np.require`."""
+    """Keyword arguments for `np.require`.
+    """
 
     reindex_kwargs: tp.Optional[tp.Kwargs] = define.field(default=None)
-    """Keyword arguments passed to `pd.DataFrame.reindex`."""
+    """Keyword arguments for `pd.DataFrame.reindex`.
+    """
 
     merge_kwargs: tp.Optional[tp.Kwargs] = define.field(default=None)
-    """Keyword arguments passed to `vectorbtpro.base.merging.column_stack_merge`."""
+    """Keyword arguments for `vectorbtpro.base.merging.column_stack_merge`.
+    """
 
     context: tp.KwargsLike = define.field(default=None)
-    """Context used in evaluation of templates.
-    
-    Will be merged over `template_context`."""
+    """Context for evaluating templates.
+
+    Will be merged with `template_context`.
+    """
 
 
 @define
 class Default(DefineMixin):
-    """Class for wrapping default values."""
+    """Class representing a wrapped default value."""
 
     value: tp.Any = define.field()
-    """Default value."""
+    """The default value."""
 
 
 @define
 class Ref(DefineMixin):
-    """Class for wrapping references to other values."""
+    """Class representing a reference to another value."""
 
     key: tp.Hashable = define.field()
-    """Reference to another key."""
+    """A hashable key that references another value."""
 
 
 def resolve_ref(dct: dict, k: tp.Hashable, inside_bco: bool = False, keep_wrap_default: bool = False) -> tp.Any:
-    """Resolve a potential reference."""
+    """Recursively resolve a reference in a dictionary.
+
+    If the value associated with the given key is an instance of `Default` or `Ref`,
+    its underlying value is returned. When `inside_bco` is True, nested references within
+    `BCO` instances are also resolved.
+
+    Args:
+        dct (dict): Dictionary containing values and reference wrappers.
+        k (Hashable): Key whose value is to be resolved.
+        inside_bco (bool): Whether to resolve nested references within a `BCO` context.
+        keep_wrap_default (bool): Whether to wrap the resolved default value with a `Default` instance.
+
+    Returns:
+        Any: The fully resolved value.
+    """
     v = dct[k]
     is_default = False
     if isinstance(v, Default):
@@ -803,8 +1065,8 @@ def broadcast(
     to_shape: tp.Optional[tp.ShapeLike] = None,
     align_index: tp.Optional[bool] = None,
     align_columns: tp.Optional[bool] = None,
-    index_from: tp.Optional[IndexFromLike] = None,
-    columns_from: tp.Optional[IndexFromLike] = None,
+    index_from: tp.Optional[tp.IndexFromLike] = None,
+    columns_from: tp.Optional[tp.IndexFromLike] = None,
     to_frame: tp.Optional[bool] = None,
     axis: tp.Optional[tp.MaybeMappingSequence[int]] = None,
     to_pd: tp.Optional[tp.MaybeMappingSequence[bool]] = None,
@@ -827,86 +1089,92 @@ def broadcast(
     clean_index_kwargs: tp.KwargsLike = None,
     template_context: tp.KwargsLike = None,
 ) -> tp.Any:
-    """Bring any array-like object in `objs` to the same shape by using NumPy-like broadcasting.
+    """Broadcast any array-like object to a common shape using NumPy-like broadcasting.
 
     See [Broadcasting](https://docs.scipy.org/doc/numpy/user/basics.broadcasting.html).
 
     !!! important
-        The major difference to NumPy is that one-dimensional arrays will always broadcast against the row axis!
+        The major difference to NumPy is that one-dimensional arrays always broadcast against the row axis!
 
-    Can broadcast Pandas objects by broadcasting their index/columns with `broadcast_index`.
+    Supports broadcasting of Pandas objects by aligning their index and columns using `broadcast_index`.
 
     Args:
-        *objs: Objects to broadcast.
+        *objs (Any): Objects to broadcast.
 
-            If the first and only argument is a mapping, will return a dict.
+            If a single mapping is provided, the function returns a dict.
 
-            Allows using `BCO`, `Ref`, `Default`, `vectorbtpro.utils.params.Param`,
+            Supported types include `BCO`, `Ref`, `Default`, `vectorbtpro.utils.params.Param`,
             `vectorbtpro.base.indexing.index_dict`, `vectorbtpro.base.indexing.IdxSetter`,
             `vectorbtpro.base.indexing.IdxSetterFactory`, and templates.
-            If an index dictionary, fills using `vectorbtpro.base.wrapping.ArrayWrapper.fill_and_set`.
-        to_shape (tuple of int): Target shape. If set, will broadcast every object in `objs` to `to_shape`.
-        align_index (bool): Whether to align index of Pandas objects using union.
+            For an index dictionary, broadcasting fills using `vectorbtpro.base.wrapping.ArrayWrapper.fill_and_set`.
+        to_shape (Optional[ShapeLike]): Target shape.
+
+            When provided, each object in `objs` is broadcast to this shape.
+        align_index (Optional[bool]): Whether to align the index of Pandas objects using the union of indexes.
 
             Pass None to use the default.
-        align_columns (bool): Whether to align columns of Pandas objects using multi-index.
+        align_columns (Optional[bool]): Whether to align the columns of Pandas objects using multi-index alignment.
 
             Pass None to use the default.
-        index_from (any): Broadcasting rule for index.
+        index_from (Optional[IndexFromLike]): Rule for selecting the index during broadcasting.
 
             Pass None to use the default.
-        columns_from (any): Broadcasting rule for columns.
+        columns_from (Optional[IndexFromLike]): Rule for selecting columns during broadcasting.
 
             Pass None to use the default.
-        to_frame (bool): Whether to convert all Series to DataFrames.
-        axis (int, sequence or mapping): See `BCO.axis`.
-        to_pd (bool, sequence or mapping): See `BCO.to_pd`.
+        to_frame (Optional[bool]): Whether to convert all Series to DataFrames.
+        axis (Optional[MaybeMappingSequence[int]]): See `BCO.axis`.
+        to_pd (Optional[MaybeMappingSequence[bool]]): See `BCO.to_pd`.
 
-            If None, converts only if there is at least one Pandas object among them.
-        keep_flex (bool, sequence or mapping): See `BCO.keep_flex`.
-        min_ndim (int, sequence or mapping): See `BCO.min_ndim`.
+            If not provided, conversion is performed only if at least one object is a Pandas object.
+        keep_flex (MaybeMappingSequence[Optional[bool]]): See `BCO.keep_flex`.
+        min_ndim (MaybeMappingSequence[Optional[int]]): See `BCO.min_ndim`.
 
-            If None, becomes 2 if `keep_flex` is True, otherwise 1.
-        expand_axis (int, sequence or mapping): See `BCO.expand_axis`.
-        post_func (callable, sequence or mapping): See `BCO.post_func`.
+            If not provided, becomes 2 when `keep_flex` is True, otherwise 1.
+        expand_axis (MaybeMappingSequence[Optional[int]]): See `BCO.expand_axis`.
+        post_func (MaybeMappingSequence[Optional[Callable]]): See `BCO.post_func`.
 
             Applied only when `keep_flex` is False.
-        require_kwargs (dict, sequence or mapping): See `BCO.require_kwargs`.
+        require_kwargs (MaybeMappingSequence[Optional[Kwargs]]): See `BCO.require_kwargs`.
 
-            This key will be merged with any argument-specific dict. If the mapping contains all keys in
-            `np.require`, it will be applied to all objects.
-        reindex_kwargs (dict, sequence or mapping): See `BCO.reindex_kwargs`.
+            The provided values are merged with any argument-specific configuration.
 
-            This key will be merged with any argument-specific dict. If the mapping contains all keys in
-            `pd.DataFrame.reindex`, it will be applied to all objects.
-        merge_kwargs (dict, sequence or mapping): See `BCO.merge_kwargs`.
+            If the mapping contains all keys in `np.require`, it applies to all objects.
+        reindex_kwargs (MaybeMappingSequence[Optional[Kwargs]]): See `BCO.reindex_kwargs`.
 
-            This key will be merged with any argument-specific dict. If the mapping contains all keys in
-            `pd.DataFrame.merge`, it will be applied to all objects.
-        tile (int or index_like): Tile the final object by the number of times or index.
-        random_subset (int): Select a random subset of parameter values.
+            The provided values are merged with any argument-specific configuration.
 
-            Seed can be set using NumPy before calling this function.
-        seed (int): Seed to make output deterministic.
-        keep_wrap_default (bool): Whether to keep wrapping with `vectorbtpro.base.reshaping.Default`.
-        return_wrapper (bool): Whether to also return the wrapper associated with the operation.
-        wrapper_kwargs (dict): Keyword arguments passed to `vectorbtpro.base.wrapping.ArrayWrapper`.
-        ignore_sr_names (bool): See `broadcast_index`.
-        ignore_ranges (bool): See `broadcast_index`.
-        check_index_names (bool): See `broadcast_index`.
-        clean_index_kwargs (dict): Keyword arguments passed to `vectorbtpro.base.indexes.clean_index`.
-        template_context (dict): Context used to substitute templates.
+            If the mapping contains all keys in `pd.DataFrame.reindex`, it applies to all objects.
+        merge_kwargs (MaybeMappingSequence[Optional[Kwargs]]): See `BCO.merge_kwargs`.
+
+            The provided values are merged with any argument-specific configuration.
+
+            If the mapping contains all keys in `pd.DataFrame.merge`, it applies to all objects.
+        tile (Union[None, int, IndexLike]): Tile the final object by the specified number or index.
+        random_subset (Optional[int]): Select a random subset of parameter values.
+
+            Set the seed via NumPy before calling this function for reproducibility.
+        seed (Optional[int]): Seed for deterministic output.
+        keep_wrap_default (Optional[bool]): Whether to retain wrapping with
+            `vectorbtpro.base.reshaping.Default` for default values.
+        return_wrapper (bool): Whether to also return the associated wrapper.
+        wrapper_kwargs (KwargsLike): Keyword arguments for `vectorbtpro.base.wrapping.ArrayWrapper`.
+        ignore_sr_names (Optional[bool]): Whether to ignore Series names during broadcasting via `broadcast_index`.
+        ignore_ranges (Optional[bool]): Whether to ignore range attributes during broadcasting via `broadcast_index`.
+        check_index_names (Optional[bool]): Whether to check index names during broadcasting via `broadcast_index`.
+        clean_index_kwargs (KwargsLike): Keyword arguments for `vectorbtpro.base.indexes.clean_index`.
+        template_context (KwargsLike): Context used for template substitution.
 
     For defaults, see `vectorbtpro._settings.broadcasting`.
 
-    Any keyword argument that can be associated with an object can be passed as
+    Additional keyword arguments for object-specific parameters can be provided as follows:
 
-    * a const that is applied to all objects,
-    * a sequence with value per object, and
-    * a mapping with value per object name and the special key `_def` denoting the default value.
+    * A constant applied to all objects.
+    * A sequence with a value for each object.
+    * A mapping with values for each object and a special key `_def` for the default.
 
-    Additionally, any object can be passed wrapped with `BCO`, which ibutes will override
-    any of the above arguments if not None.
+    Additionally, any object can be wrapped with `BCO` to override the corresponding
+    global arguments if its attributes are not None.
 
     Usage:
         * Without broadcasting index and columns:
@@ -1064,8 +1332,10 @@ def broadcast(
         ...     require_kwargs=dict(df=dict(dtype=float)),
         ...     align_index=False
         ... )
-        {'v': array([0]),
-         'a': array([1, 2, 3]),
+        {'v': array([[0]]),
+         'a': array([[1],
+                     [2],
+                     [3]]),
          'sr': array([[1],
                       [2],
                       [3]]),
@@ -1085,8 +1355,10 @@ def broadcast(
         ...     keep_flex=True,
         ...     align_index=False
         ... )
-        {'v': array([0]),
-         'a': array([1, 2, 3]),
+        {'v': array([[0]]),
+         'a': array([[1],
+                     [2],
+                     [3]]),
          'sr': array([[1],
                       [2],
                       [3]]),
@@ -1100,26 +1372,26 @@ def broadcast(
 
         ```pycon
         >>> df_bco = vbt.BCO(df, keep_flex=False, require_kwargs=dict(dtype=float))
-        >>> p_bco = vbt.BCO(pd.Param([1, 2, 3], name='my_p'))
+        >>> p_bco = vbt.BCO(vbt.Param([1, 2, 3], name='my_p'))
         >>> vbt.broadcast(
         ...     dict(v=v, a=a, sr=sr, df=df_bco, p=p_bco),
         ...     index_from='stack',
         ...     keep_flex=True,
         ...     align_index=False
         ... )
-        {'v': array([0]),
-         'a': array([1, 2, 3, 1, 2, 3, 1, 2, 3]),
+        {'v': array([[0]]),
+         'a': array([[1],
+                     [2],
+                     [3]]),
          'sr': array([[1],
-                [2],
-                [3]]),
-         'df': my_p        1              2              3
-                a2   b2   c2   a2   b2   c2   a2   b2   c2
-         x x2  1.0  2.0  3.0  1.0  2.0  3.0  1.0  2.0  3.0
-         y y2  4.0  5.0  6.0  4.0  5.0  6.0  4.0  5.0  6.0
-         z z2  7.0  8.0  9.0  7.0  8.0  9.0  7.0  8.0  9.0,
-         'p': array([[1, 1, 1, 2, 2, 2, 3, 3, 3],
-                [1, 1, 1, 2, 2, 2, 3, 3, 3],
-                [1, 1, 1, 2, 2, 2, 3, 3, 3]])}
+                      [2],
+                      [3]]),
+         'df': my_p             1              2              3
+                      a2   b2   c2   a2   b2   c2   a2   b2   c2
+               x x2  1.0  2.0  3.0  1.0  2.0  3.0  1.0  2.0  3.0
+               y y2  4.0  5.0  6.0  4.0  5.0  6.0  4.0  5.0  6.0
+               z z2  7.0  8.0  9.0  7.0  8.0  9.0  7.0  8.0  9.0,
+         'p': array([[1, 1, 1, 2, 2, 2, 3, 3, 3]])}
         ```
 
         * Build a Cartesian product of all parameters:
@@ -1728,18 +2000,25 @@ def broadcast_to(
     arg1: tp.ArrayLike,
     arg2: tp.Union[tp.ArrayLike, tp.ShapeLike, wrapping.ArrayWrapper],
     to_pd: tp.Optional[bool] = None,
-    index_from: tp.Optional[IndexFromLike] = None,
-    columns_from: tp.Optional[IndexFromLike] = None,
+    index_from: tp.Optional[tp.IndexFromLike] = None,
+    columns_from: tp.Optional[tp.IndexFromLike] = None,
     **kwargs,
 ) -> tp.Any:
-    """Broadcast `arg1` to `arg2`.
+    """Broadcast `arg1` to the shape of `arg2`.
 
-    Argument `arg2` can be a shape, an instance of `vectorbtpro.base.wrapping.ArrayWrapper`,
-    or any array-like object.
+    Args:
+        arg1 (ArrayLike): Input array or scalar to broadcast.
+        arg2 (Union[ArrayLike, ShapeLike, ArrayWrapper]): Target shape, array-like object,
+            or instance of `vectorbtpro.base.wrapping.ArrayWrapper`.
+        to_pd (Optional[bool]): Convert result to a pandas object if True.
+        index_from (Optional[IndexFromLike]): Index to use for the output;
+            if None, uses the index of `arg2`.
+        columns_from (Optional[IndexFromLike]): Columns to use for the output;
+            if None, uses the columns of `arg2`.
+        **kwargs: Additional keyword arguments passed to `broadcast`.
 
-    Pass None to `index_from`/`columns_from` to use index/columns of the second argument.
-
-    Keyword arguments `**kwargs` are passed to `broadcast`.
+    Returns:
+        Any: Broadcasted structure, either as an array or a pandas object depending on `to_pd`.
 
     Usage:
         ```pycon
@@ -1792,9 +2071,14 @@ def broadcast_to(
 
 
 def broadcast_to_array_of(arg1: tp.ArrayLike, arg2: tp.ArrayLike) -> tp.Array:
-    """Broadcast `arg1` to the shape `(1, *arg2.shape)`.
+    """Broadcast `arg1` to an array with shape `(1, *arg2.shape)`.
 
-    `arg1` must be either a scalar, a 1-dim array, or have 1 dimension more than `arg2`.
+    Args:
+        arg1 (ArrayLike): A scalar, 1-dimensional array, or an array with one extra dimension compared to `arg2`.
+        arg2 (ArrayLike): An array whose shape is used as the base for broadcasting.
+
+    Returns:
+        Array: Broadcasted array with shape `(1, *arg2.shape)`.
 
     Usage:
         ```pycon
@@ -1832,11 +2116,22 @@ def broadcast_to_axis_of(
     axis: int,
     require_kwargs: tp.KwargsLike = None,
 ) -> tp.Array:
-    """Broadcast `arg1` to an axis of `arg2`.
+    """Broadcast `arg1` to match the length of a specified axis in `arg2`.
 
-    If `arg2` has less dimensions than requested, will broadcast `arg1` to a single number.
+    Args:
+        arg1 (ArrayLike): Input value or array to be broadcast.
+        arg2 (ArrayLike): Array whose specified axis determines the target length.
+        axis (int): Axis index along which to broadcast `arg1`.
+        require_kwargs (KwargsLike): Additional keyword arguments for array requirements.
 
-    For other keyword arguments, see `broadcast`."""
+    Returns:
+        Array: The broadcasted array.
+
+    !!! note
+        If `arg2` has fewer dimensions than `axis + 1`, `arg1` is broadcast to a single number.
+
+        For additional keyword arguments, refer to the behavior of `broadcast`.
+    """
     if require_kwargs is None:
         require_kwargs = {}
     arg2 = to_any_array(arg2)
@@ -1853,7 +2148,16 @@ def broadcast_combs(
     comb_func: tp.Callable = itertools.product,
     **broadcast_kwargs,
 ) -> tp.Any:
-    """Align an axis of each array using a combinatoric function and broadcast their indexes.
+    """Align the given arrays along a specified axis using a combinatorial function and broadcast their indexes.
+
+    Args:
+        *objs (ArrayLike): Array-like objects to combine; at least two are required.
+        axis (int): Axis along which to align and broadcast the arrays.
+        comb_func (Callable): Combinatorial function applied to indices (e.g., `itertools.product`).
+        **broadcast_kwargs: Additional keyword arguments passed to `broadcast`.
+
+    Returns:
+        Any: Tuple of broadcasted arrays aligned based on the combinatorial indices.
 
     Usage:
         ```pycon
@@ -1920,9 +2224,19 @@ def broadcast_combs(
 
 
 def get_multiindex_series(obj: tp.SeriesFrame) -> tp.Series:
-    """Get Series with a multi-index.
+    """Return a Series with a MultiIndex.
 
-    If DataFrame has been passed, must at maximum have one row or column."""
+    Args:
+        obj (SeriesFrame): A pandas Series or DataFrame.
+
+            If a DataFrame is provided, it must have at most one row or one column.
+
+    Returns:
+        Series: The resulting Series with a MultiIndex.
+
+    !!! note
+        If a DataFrame with more than one row and more than one column is provided, a ValueError is raised.
+    """
     checks.assert_instance_of(obj, (pd.Series, pd.DataFrame))
     if checks.is_frame(obj):
         if obj.shape[0] == 1:
@@ -1941,9 +2255,17 @@ def unstack_to_array(
     sort: bool = True,
     return_indexes: bool = False,
 ) -> tp.Union[tp.Array, tp.Tuple[tp.Array, tp.List[tp.Index]]]:
-    """Reshape `obj` based on its multi-index into a multi-dimensional array.
+    """Reshape a multi-indexed Series or DataFrame into a multi-dimensional NumPy array.
 
-    Use `levels` to specify what index levels to unstack and in which order.
+    Args:
+        obj (SeriesFrame): A Series or DataFrame with a MultiIndex.
+        levels (Optional[MaybeLevelSequence]): The index level(s) to unstack and their desired order.
+        sort (bool): Whether to sort the new index values.
+        return_indexes (bool): If True, also return the list of new index values corresponding to each level.
+
+    Returns:
+        Union[Array, Tuple[Array, List[Index]]]: A multi-dimensional array of unstacked data, or a tuple containing
+            the array and the list of new index values if `return_indexes` is True.
 
     Usage:
         ```pycon
@@ -1999,14 +2321,18 @@ def unstack_to_array(
 
 
 def make_symmetric(obj: tp.SeriesFrame, sort: bool = True) -> tp.Frame:
-    """Make `obj` symmetric.
+    """Make the DataFrame symmetric so that its index and columns are identical.
 
-    The index and columns of the resulting DataFrame will be identical.
+    This operation requires that the index and columns have the same number of levels.
 
-    Requires the index and columns to have the same number of levels.
+    Args:
+        obj (SeriesFrame): A Series or DataFrame.
+        sort (bool): Whether to sort the combined index and columns.
 
-    Pass `sort=False` if index and columns should not be sorted, but concatenated
-    and get duplicates removed.
+            If False, the indexes are concatenated in their original order with duplicates removed.
+
+    Returns:
+        Frame: A symmetric DataFrame with matching index and columns.
 
     Usage:
         ```pycon
@@ -2073,10 +2399,17 @@ def unstack_to_df(
     symmetric: bool = False,
     sort: bool = True,
 ) -> tp.Frame:
-    """Reshape `obj` based on its multi-index into a DataFrame.
+    """Reshape a multi-indexed Series or DataFrame into a DataFrame by unstacking specified levels.
 
-    Use `index_levels` to specify what index levels will form new index, and `column_levels`
-    for new columns. Set `symmetric` to True to make DataFrame symmetric.
+    Args:
+        obj (SeriesFrame): A Series or DataFrame with a MultiIndex.
+        index_levels (Optional[MaybeLevelSequence]): The index level(s) to unstack for the new DataFrame's index.
+        column_levels (Optional[MaybeLevelSequence]): The index level(s) to unstack for the new DataFrame's columns.
+        symmetric (bool): If True, return a symmetric DataFrame with identical index and columns.
+        sort (bool): Whether to sort the level values before reshaping.
+
+    Returns:
+        Frame: A DataFrame resulting from unstacking the specified index levels.
 
     Usage:
         ```pycon

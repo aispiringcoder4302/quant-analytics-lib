@@ -675,18 +675,7 @@ DTCT = tp.TypeVar("DTCT", bound="DTC")
 
 @define
 class DTC(DefineMixin):
-    """Class representing one or more datetime components.
-
-    Args:
-        year (Optional[int]): The year component.
-        month (Optional[int]): The month component.
-        day (Optional[int]): The day of the month.
-        weekday (Optional[int]): The day of the week.
-        hour (Optional[int]): The hour component.
-        minute (Optional[int]): The minute component.
-        second (Optional[int]): The second component.
-        nanosecond (Optional[int]): The nanosecond component.
-    """
+    """Class representing one or more datetime components."""
 
     year: tp.Optional[int] = define.field(default=None)
     """Year component."""

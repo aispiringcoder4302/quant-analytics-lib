@@ -42,6 +42,7 @@ class MergeFunc(Evaluable, Annotatable, DefineMixin):
             and `MergeFunc.merge_kwargs`.
         eval_id_prefix (str): Prefix for the substitution identifier.
         eval_id (Optional[MaybeSequence[Hashable]]): Identifier(s) for evaluating this instance.
+        **kwargs: Additional keyword arguments acting as `merge_kwargs`.
     """
 
     merge_func: tp.MergeFuncLike = define.field()

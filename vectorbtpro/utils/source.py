@@ -77,19 +77,19 @@ def cut_from_source(
     Processes the source code string to extract a section defined by markers. The section is delimited
     by a starting marker `# % <section section_name>` and an ending marker `# % </section>`. Within the
     section, block subsections can be defined using markers `# % <block block_name>` and `# % </block>`.
-    
+
     The function also handles skip and uncomment operations:
-    
+
     * Lines between `# % <skip [expression]>` and `# % </skip>` are omitted.
     * Lines between `# % <uncomment [expression]>` and `# % </uncomment>` have their comment prefix removed.
-    
+
     Any line containing `# %` outside these blocks is interpreted as a Python expression. The evaluation
     result of the expression directs the output as follows:
-    
+
     * `None`: Skip the line.
     * `str`: Insert a single line.
     * `Iterable[str]`: Insert multiple lines into the output.
-    
+
     Args:
         source (str): The source code to process.
         section_name (str): The name of the section to extract.
@@ -304,7 +304,7 @@ def cut_and_save_func(func: tp.Union[str, FunctionType], *args, **kwargs) -> Pat
 
     Args:
         func (Union[str, FunctionType]): A function or its fully qualified name.
-            
+
             If provided as a string, the module will be imported and the function will be retrieved.
         *args: Additional positional arguments passed to `cut_and_save`.
         **kwargs: Additional keyword arguments passed to `cut_and_save`.
@@ -321,81 +321,62 @@ def cut_and_save_func(func: tp.Union[str, FunctionType], *args, **kwargs) -> Pat
     return cut_and_save(source, section_name=func.__name__, *args, **kwargs)
 
 
-def split_source(source: str, should_split: tp.Optional[tp.Callable] = None) -> tp.List[str]:
-    """Split the source code into definition-based chunks.
+def split_source(
+    source: str,
+    should_split: tp.Optional[tp.Callable[[ast.AST, int, int, int], bool]] = None,
+    return_span: bool = False,
+    return_level: bool = False,
+) -> tp.SourceChunks:
+    """Split the source code into definition-based chunks, optionally returning spans and nesting levels.
 
     The source code is divided into chunks based on code definitions such that the concatenation
     of the chunks reconstructs the original source code exactly, with no lines duplicated or lost.
 
     Args:
         source (str): The source code to split.
-        should_split (Optional[Callable]): A callback `should_split(node, start: int, end: int) -> bool`
+        should_split (Optional[Callable]): A callback `should_split(node, start: int, end: int, level: int) -> bool`
             to determine whether a node should be split into a header (with docstring) and body.
 
             By default, nodes are not split.
 
             !!! note
                 `start` and `end` are 1-based line numbers.
+        return_span (bool): Whether to also return the start and end line of each chunk.
+        return_level (bool): Whether to also return the nesting level of each chunk.
 
     Returns:
-        List[str]: A list of source code chunks.
+        SourceChunks: A list of chunk source codes or tuples of chunk source codes and
+            their start line, end line, and/or nesting level.
+
     """
     if should_split is None:
 
-        def _should_split(node, start, end):
+        def _should_split(node, start, end, level):
             return False
 
         should_split = _should_split
 
-    def _split_body_into_chunks(parent_start, parent_end, body, lines):
-        stmts_sorted = sorted(body, key=lambda st: st.lineno)
-        chunks = []
-        current_line = parent_start
+    lines = source.splitlines(keepends=True)
+    tree = ast.parse(source, type_comments=True)
 
-        for stmt in stmts_sorted:
-            stmt_start, stmt_end = _get_stmt_range(stmt)
-            if stmt_start > current_line:
-                chunks.append((current_line, stmt_start - 1))
-            if isinstance(stmt, (ast.ClassDef, ast.FunctionDef, ast.AsyncFunctionDef)):
-                if should_split(stmt, stmt_start, stmt_end):
-                    def_chunks = _split_def_node(
-                        node=stmt,
-                        start=stmt_start,
-                        end=stmt_end,
-                        lines=lines,
-                    )
-                else:
-                    def_chunks = [(stmt_start, stmt_end)]
-                chunks.extend(def_chunks)
-            else:
-                chunks.append((stmt_start, stmt_end))
-            current_line = stmt_end + 1
-        if current_line <= parent_end:
-            chunks.append((current_line, parent_end))
+    def _compute_end_lineno(node):
+        max_lineno = getattr(node, "lineno", 0)
+        for child in ast.iter_child_nodes(node):
+            child_end = _compute_end_lineno(child)
+            if child_end > max_lineno:
+                max_lineno = child_end
+        return max_lineno
 
-        return chunks
-
-    def _split_def_node(node, start, end, lines):
-        if not node.body:
-            return [(start, end)]
-
-        doc_info = _extract_docstring_chunk(node, start, lines)
-        if doc_info is not None:
-            header_chunk, body_start, remaining_stmts = doc_info
-        else:
-            header_end = _find_header_end(start, lines)
-            header_chunk = (start, header_end)
-            body_start = header_end + 1
-            remaining_stmts = sorted(node.body, key=lambda s: s.lineno)
-        chunks = [header_chunk]
-        subchunks = _split_body_into_chunks(
-            parent_start=body_start,
-            parent_end=end,
-            body=remaining_stmts,
-            lines=lines,
-        )
-        chunks.extend(subchunks)
-        return chunks
+    def _get_stmt_range(stmt):
+        start = stmt.lineno
+        end = getattr(stmt, "end_lineno", _compute_end_lineno(stmt))
+        if isinstance(stmt, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)) and getattr(
+            stmt, "decorator_list", None
+        ):
+            dec_starts = [getattr(d, "lineno", start) for d in stmt.decorator_list]
+            if dec_starts:
+                start = min(start, min(dec_starts))
+        return start, end
 
     def _find_header_end(def_start, lines):
         header_end = def_start
@@ -409,7 +390,7 @@ def split_source(source: str, should_split: tp.Optional[tp.Callable] = None) -> 
                 break
         return header_end
 
-    def _extract_docstring_chunk(node, start, lines):
+    def _extract_docstring_chunk(node, start, lines: tp.List[str]):
         if (
             node.body
             and isinstance(node.body[0], ast.Expr)
@@ -421,37 +402,71 @@ def split_source(source: str, should_split: tp.Optional[tp.Callable] = None) -> 
             return (start, chunk_end), chunk_end + 1, sorted(node.body[1:], key=lambda s: s.lineno)
         return None
 
-    def _get_stmt_range(stmt):
-        start = stmt.lineno
-        end = getattr(stmt, "end_lineno", _compute_end_lineno(stmt))
-        if isinstance(stmt, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)) and getattr(
-            stmt, "decorator_list", None
-        ):
-            dec_starts = [getattr(d, "lineno", start) for d in stmt.decorator_list]
-            if dec_starts:
-                start = min(start, min(dec_starts))
-        return start, end
+    def _split_def_node(node, start, end, level, lines):
+        if not node.body:
+            return [(start, end, level)]
 
-    def _compute_end_lineno(node):
-        max_lineno = getattr(node, "lineno", 0)
-        for child in ast.iter_child_nodes(node):
-            child_end = _compute_end_lineno(child)
-            if child_end > max_lineno:
-                max_lineno = child_end
-        return max_lineno
+        doc_info = _extract_docstring_chunk(node, start, lines)
+        if doc_info is not None:
+            (header_start, header_end), body_start, remaining_stmts = doc_info
+            header_chunk = (header_start, header_end, level)
+        else:
+            header_end = _find_header_end(start, lines)
+            header_chunk = (start, header_end, level)
+            body_start = header_end + 1
+            remaining_stmts = sorted(node.body, key=lambda s: s.lineno)
+        chunks = [header_chunk]
+        subchunks = _split_body_into_chunks(
+            parent_start=body_start,
+            parent_end=end,
+            level=level,
+            body=remaining_stmts,
+            lines=lines,
+        )
+        chunks.extend(subchunks)
+        return chunks
 
-    lines = source.splitlines(keepends=True)
-    tree = ast.parse(source, type_comments=True)
+    def _split_body_into_chunks(parent_start, parent_end, level, body, lines):
+        stmts_sorted = sorted(body, key=lambda st: st.lineno)
+        chunks: tp.List[tp.Tuple[int, int, int]] = []
+        current_line = parent_start
+
+        for stmt in stmts_sorted:
+            stmt_start, stmt_end = _get_stmt_range(stmt)
+            if stmt_start > current_line:
+                chunks.append((current_line, stmt_start - 1, level))
+            if should_split(stmt, stmt_start, stmt_end, level):
+                def_chunks = _split_def_node(
+                    node=stmt,
+                    start=stmt_start,
+                    end=stmt_end,
+                    level=level + 1,
+                    lines=lines,
+                )
+                chunks.extend(def_chunks)
+            else:
+                chunks.append((stmt_start, stmt_end, level))
+            current_line = stmt_end + 1
+        if current_line <= parent_end:
+            chunks.append((current_line, parent_end, level))
+
+        return chunks
+
     top_chunks = _split_body_into_chunks(
         parent_start=1,
         parent_end=len(lines),
+        level=0,
         body=tree.body,
         lines=lines,
     )
-    source_chunks = ["".join(lines[start - 1 : end]) for start, end in top_chunks]
-    if "".join(source_chunks) != source:
-        raise ValueError("Chunks don't reconstruct the original source code")
-    return source_chunks
+    if return_span and return_level:
+        return [("".join(lines[start - 1 : end]), start, end, lvl) for (start, end, lvl) in top_chunks]
+    if return_span:
+        return [("".join(lines[start - 1 : end]), start, end) for (start, end, lvl) in top_chunks]
+    if return_level:
+        return [("".join(lines[start - 1 : end]), lvl) for (start, end, lvl) in top_chunks]
+    else:
+        return ["".join(lines[start - 1 : end]) for (start, end, lvl) in top_chunks]
 
 
 def get_source_indent(source: str) -> int:
@@ -540,6 +555,8 @@ def refine_source(
     split: bool = True,
     split_classes: bool = True,
     split_functions: bool = False,
+    max_split_level: tp.Optional[int] = None,
+    uniform_chunks: bool = True,
     tokenize_kwargs: tp.KwargsLike = None,
     complete_kwargs: tp.KwargsLike = None,
     show_progress: tp.Optional[bool] = True,
@@ -579,6 +596,10 @@ def refine_source(
         split (bool): Whether to split the source code into chunks.
         split_classes (bool): Whether to split class definitions that exceed the chunk size.
         split_functions (bool): Whether to split function definitions that exceed the chunk size.
+        max_split_level (Optional[int]): Maximum nesting level when splitting.
+        uniform_chunks (bool): Whether to each chunk should start and end at the same base level.
+
+            If nested chunks (with level > base) are present, includes them only if they fit as a whole.
         tokenize_kwargs (KwargsLike): Additional keyword arguments for
             `vectorbtpro.utils.knowledge.chatting.tokenize`.
         complete_kwargs (KwargsLike): Additional keyword arguments for
@@ -701,6 +722,8 @@ def refine_source(
                     split=split,
                     split_classes=split_classes,
                     split_functions=split_functions,
+                    max_split_level=max_split_level,
+                    uniform_chunks=uniform_chunks,
                     tokenize_kwargs=tokenize_kwargs,
                     complete_kwargs=complete_kwargs,
                     show_progress=show_progress,
@@ -774,32 +797,86 @@ def refine_source(
 
     if split:
 
-        def _should_split(node, start, end):
-            if (split_classes and isinstance(node, ast.ClassDef)) or (
-                split_functions and isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
-            ):
-                node_source = "".join(source_lines[start - 1 : end])
-                if len(tokenize(node_source, **tokenize_kwargs)) > chunk_size:
-                    return True
+        def _should_split(node, start, end, level):
+            if max_split_level is None or level <= max_split_level:
+                if (isinstance(node, ast.ClassDef) and split_classes) or (
+                    isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)) and split_functions
+                ):
+                    node_source = "".join(source_lines[start - 1 : end])
+                    if len(tokenize(node_source, **tokenize_kwargs)) > chunk_size:
+                        return True
             return False
 
-        source_chunks = split_source(source, should_split=_should_split)
-        new_source_chunks = []
-        buffer = []
-        buffer_tokens = 0
-        for chunk in source_chunks:
-            chunk_tokens = len(tokenize(chunk, **tokenize_kwargs))
-            if buffer_tokens + chunk_tokens > chunk_size:
+        chunks_with_level = split_source(source, should_split=_should_split, return_level=True)
+        if uniform_chunks:
+            source_chunks = []
+            buffer = []
+            buffer_tokens = 0
+            buffer_level = None
+            i = 0
+
+            def _flush():
+                nonlocal buffer, buffer_tokens, buffer_level
                 if buffer:
-                    new_source_chunks.append("".join(buffer))
-                buffer = [chunk]
-                buffer_tokens = chunk_tokens
-            else:
-                buffer.append(chunk)
-                buffer_tokens += chunk_tokens
-        if buffer:
-            new_source_chunks.append("".join(buffer))
-        source_chunks = new_source_chunks
+                    source_chunks.append("".join(chunk for chunk, _ in buffer))
+                    buffer = []
+                    buffer_tokens = 0
+                    buffer_level = None
+
+            while i < len(chunks_with_level):
+                chunk, level = chunks_with_level[i]
+                chunk_tokens = len(tokenize(chunk, **tokenize_kwargs))
+                if buffer_level is None:
+                    if chunk_tokens > chunk_size:
+                        source_chunks.append(chunk)
+                        i += 1
+                        continue
+                    buffer_level = level
+                if level < buffer_level:
+                    _flush()
+                    continue
+                if level > buffer_level:
+                    nested_group = []
+                    nested_tokens = 0
+                    j = i
+                    while j < len(chunks_with_level) and chunks_with_level[j][1] > buffer_level:
+                        nested_chunk, _ = chunks_with_level[j]
+                        tks = len(tokenize(nested_chunk, **tokenize_kwargs))
+                        nested_group.append((nested_chunk, level))
+                        nested_tokens += tks
+                        j += 1
+                    if buffer_tokens + nested_tokens <= chunk_size:
+                        buffer.extend(nested_group)
+                        buffer_tokens += nested_tokens
+                        i = j
+                        continue
+                    else:
+                        _flush()
+                        continue
+                if buffer_tokens + chunk_tokens > chunk_size:
+                    _flush()
+                    continue
+                else:
+                    buffer.append((chunk, level))
+                    buffer_tokens += chunk_tokens
+                    i += 1
+            _flush()
+        else:
+            source_chunks = []
+            buffer = []
+            buffer_tokens = 0
+            for chunk, level in chunks_with_level:
+                chunk_tokens = len(tokenize(chunk, **tokenize_kwargs))
+                if buffer_tokens + chunk_tokens > chunk_size:
+                    if buffer:
+                        source_chunks.append("".join(buffer))
+                    buffer = [chunk]
+                    buffer_tokens = chunk_tokens
+                else:
+                    buffer.append(chunk)
+                    buffer_tokens += chunk_tokens
+            if buffer:
+                source_chunks.append("".join(buffer))
     else:
         source_chunks = [source]
 
@@ -924,6 +1001,7 @@ Your goal is to refine (rewrite for clarity, correctness, consistent format and 
 - If a function returns `None` or bool, **do not add a "Returns" section**.
 - **Do not add your own "Usage" section**.
 - **Make sure to list all arguments, their types, and descriptions**, apart from `self`, `cls`, and `cls_or_self`
+- Do not mention type `dict` when describing variable keyword arguments.
 
 ### 3. Style and Format
 
@@ -958,9 +1036,12 @@ Your goal is to refine (rewrite for clarity, correctness, consistent format and 
     - For example, `x: tp.Union[None, int, tp.DatetimeLike] = ...` becomes 
         `x (Union[None, int, DatetimeLike]): ...`.
     - Also, `x: tp.MaybeType[KnowledgeAssetT] = ...` becomes `x (MaybeType[KnowledgeAsset]): ...`.
+    - Do not unfold type hints prefixed with `Maybe` into a union. Keep them as they are.
     - Change type hints in docstring only, **do not change type hints in function signatures**.
 - Treat classes decorated with `@define` **as if they were decorated with `@attr.s`**, adjusting 
     docstrings accordingly.
+    - **Do not duplicate fields and their descriptions** in the "Args" section.
+    - Create an "Args" section only if the class defines its own `__init__` method.
 - For module docstrings, retain the phrasing that **identifies them as a module**, 
     such as "Module providing X".
 - For class docstrings, retain the phrasing that **identifies them as a class**, 
@@ -1002,6 +1083,7 @@ Your goal is to refine (rewrite for clarity, correctness, consistent format and 
 - **Do not end a docstring with a blank line** unless it contains multiple lines.
 - **Do not change any existing indentation or spacing**.
 - **Do not change usage examples or their formatting**.
+- **Use the name "vectorbtpro" instead of "VectorBT® PRO"** in docstrings.
 """
 """Prompt for `refine_docstrings`."""
 

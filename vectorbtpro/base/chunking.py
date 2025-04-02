@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Extensions for chunking of base operations."""
+"""Module providing extensions for chunking of base operations."""
 
 import uuid
 
@@ -51,13 +51,23 @@ __all__ = [
 
 
 class GroupLensSizer(ArgSizer):
-    """Class for getting the size from group lengths.
+    """Class for determining the size of group lengths.
 
-    Argument can be either a group map tuple or a group lengths array."""
+    The input argument may be a group map tuple or a group lengths array.
+    """
 
     @classmethod
     def get_obj_size(cls, obj: tp.Union[tp.GroupLens, tp.GroupMap], single_type: tp.Optional[type] = None) -> int:
-        """Get size of an object."""
+        """Get the size of the provided object based on group lengths.
+
+        Args:
+            obj (Union[GroupLens, GroupMap]): An array of group lengths or a group map tuple.
+            single_type (Optional[type]): A type to check for a single element;
+                if the object is an instance of this type, returns 1.
+
+        Returns:
+            int: The size computed from the object.
+        """
         if single_type is not None:
             if checks.is_instance_of(obj, single_type):
                 return 1
@@ -66,23 +76,51 @@ class GroupLensSizer(ArgSizer):
         return len(obj)
 
     def get_size(self, ann_args: tp.AnnArgs, **kwargs) -> int:
+        """Get the size based on the annotated arguments.
+
+        Args:
+            ann_args (AnnArgs): Annotated arguments containing the group lengths or group map.
+            **kwargs: Additional keyword arguments.
+
+        Returns:
+            int: The computed size.
+        """
         return self.get_obj_size(self.get_arg(ann_args), single_type=self.single_type)
 
 
 class GroupLensSlicer(ChunkSlicer):
-    """Class for slicing multiple elements from group lengths based on the chunk range."""
+    """Class for slicing a subset of group lengths or a group map based on chunk metadata."""
 
     def get_size(self, obj: tp.Union[tp.GroupLens, tp.GroupMap], **kwargs) -> int:
+        """Get the size of the provided object representing group lengths or a group map.
+
+        Args:
+            obj (Union[GroupLens, GroupMap]): Group lengths array or a group map tuple.
+            **kwargs: Additional keyword arguments.
+
+        Returns:
+            int: The size computed from the object.
+        """
         return GroupLensSizer.get_obj_size(obj, single_type=self.single_type)
 
     def take(self, obj: tp.Union[tp.GroupLens, tp.GroupMap], chunk_meta: ChunkMeta, **kwargs) -> tp.GroupMap:
+        """Return a slice of group lengths based on the given chunk metadata.
+
+        Args:
+            obj (Union[GroupLens, GroupMap]): Group lengths array or a group map tuple.
+            chunk_meta (ChunkMeta): Metadata specifying the start and end indices.
+            **kwargs: Additional keyword arguments.
+
+        Returns:
+            GroupMap: Sliced group lengths.
+        """
         if isinstance(obj, tuple):
             return obj[1][chunk_meta.start : chunk_meta.end]
         return obj[chunk_meta.start : chunk_meta.end]
 
 
 class ChunkedGroupLens(Chunked):
-    """Class representing chunkable group lengths."""
+    """Class representing group lengths that support chunking operations."""
 
     def resolve_take_spec(self) -> tp.TakeSpec:
         if self.take_spec_missing:
@@ -93,7 +131,15 @@ class ChunkedGroupLens(Chunked):
 
 
 def get_group_lens_slice(group_lens: tp.GroupLens, chunk_meta: ChunkMeta) -> slice:
-    """Get slice of each chunk in group lengths."""
+    """Compute a slice object for group lengths using the provided chunk metadata.
+
+    Args:
+        group_lens (GroupLens): Array of group lengths.
+        chunk_meta (ChunkMeta): Metadata specifying the segment boundaries.
+
+    Returns:
+        slice: A slice object representing the group lengths segment.
+    """
     group_lens_cumsum = np.cumsum(group_lens[: chunk_meta.end])
     start = group_lens_cumsum[chunk_meta.start] - group_lens[chunk_meta.start]
     end = group_lens_cumsum[-1]
@@ -102,11 +148,22 @@ def get_group_lens_slice(group_lens: tp.GroupLens, chunk_meta: ChunkMeta) -> sli
 
 @define
 class GroupLensMapper(ChunkMapper, ArgGetter, DefineMixin):
-    """Class for mapping chunk metadata to per-group column lengths.
+    """Class for mapping chunk metadata to corresponding per-group column lengths.
 
-    Argument can be either a group map tuple or a group lengths array."""
+    The provided argument may be a group map tuple or an array of group lengths.
+    """
 
     def map(self, chunk_meta: ChunkMeta, ann_args: tp.Optional[tp.AnnArgs] = None, **kwargs) -> ChunkMeta:
+        """Map chunk metadata to corresponding per-group column lengths using group lengths data.
+
+        Args:
+            chunk_meta (ChunkMeta): Metadata specifying the chunk parameters.
+            ann_args (Optional[AnnArgs]): Annotated arguments from which group lengths are extracted.
+            **kwargs: Additional keyword arguments.
+
+        Returns:
+            ChunkMeta: Updated chunk metadata with recalculated start, end, and indices.
+        """
         group_lens = self.get_arg(ann_args)
         if isinstance(group_lens, tuple):
             group_lens = group_lens[1]
@@ -125,19 +182,38 @@ group_lens_mapper = GroupLensMapper(arg_query=Regex(r"(group_lens|group_map)"))
 
 
 class GroupMapSlicer(ChunkSlicer):
-    """Class for slicing multiple elements from a group map based on the chunk range."""
+    """Class for slicing a subset of a group map based on provided chunk metadata."""
 
     def get_size(self, obj: tp.GroupMap, **kwargs) -> int:
+        """Get the size of the provided group map based on its group lengths.
+
+        Args:
+            obj (GroupMap): Tuple containing group indices and group lengths.
+            **kwargs: Additional keyword arguments.
+
+        Returns:
+            int: Calculated size derived from the group map.
+        """
         return GroupLensSizer.get_obj_size(obj, single_type=self.single_type)
 
     def take(self, obj: tp.GroupMap, chunk_meta: ChunkMeta, **kwargs) -> tp.GroupMap:
+        """Return a sliced group map based on the given chunk metadata.
+
+        Args:
+            obj (GroupMap): Tuple containing group indices and group lengths.
+            chunk_meta (ChunkMeta): Metadata specifying the slice boundaries.
+            **kwargs: Additional keyword arguments.
+
+        Returns:
+            GroupMap: Tuple containing new group indices and the sliced group lengths.
+        """
         group_idxs, group_lens = obj
         group_lens = group_lens[chunk_meta.start : chunk_meta.end]
         return np.arange(np.sum(group_lens)), group_lens
 
 
 class ChunkedGroupMap(Chunked):
-    """Class representing a chunkable group map."""
+    """Class representing a group map that supports chunking operations."""
 
     def resolve_take_spec(self) -> tp.TakeSpec:
         if self.take_spec_missing:
@@ -149,11 +225,19 @@ class ChunkedGroupMap(Chunked):
 
 @define
 class GroupIdxsMapper(ChunkMapper, ArgGetter, DefineMixin):
-    """Class for mapping chunk metadata to per-group column indices.
-
-    Argument must be a group map tuple."""
+    """Class for mapping chunk metadata to per-group column indices using a group map tuple."""
 
     def map(self, chunk_meta: ChunkMeta, ann_args: tp.Optional[tp.AnnArgs] = None, **kwargs) -> ChunkMeta:
+        """Map chunk metadata to per-group column indices based on the provided group map.
+
+        Args:
+            chunk_meta (ChunkMeta): Metadata specifying the chunk boundaries.
+            ann_args (Optional[AnnArgs]): Annotated arguments containing the group map tuple.
+            **kwargs: Additional keyword arguments.
+
+        Returns:
+            ChunkMeta: Updated chunk metadata with computed column indices.
+        """
         group_map = self.get_arg(ann_args)
         group_idxs, group_lens = group_map
         group_lens_slice = get_group_lens_slice(group_lens, chunk_meta)
@@ -171,11 +255,21 @@ group_idxs_mapper = GroupIdxsMapper(arg_query="group_map")
 
 
 class FlexArraySizer(ArraySizer):
-    """Class for getting the size from the length of an axis in a flexible array."""
+    """Class for determining the size of a flexible array along a specified axis."""
 
     @classmethod
     def get_obj_size(cls, obj: tp.AnyArray, axis: int, single_type: tp.Optional[type] = None) -> int:
-        """Get size of an object."""
+        """Get the size of a flexible array along the specified axis.
+
+        Args:
+            obj (AnyArray): The array-like object from which to calculate the size.
+            axis (int): The axis along which to determine the size.
+            single_type (Optional[type]): A type for single element check;
+                if the object is an instance of this type, returns 1.
+
+        Returns:
+            int: The computed size along the specified axis.
+        """
         if single_type is not None:
             if checks.is_instance_of(obj, single_type):
                 return 1
@@ -200,10 +294,12 @@ class FlexArraySizer(ArraySizer):
 
 @define
 class FlexArraySelector(ArraySelector, DefineMixin):
-    """Class for selecting one element from a NumPy array's axis flexibly based on the chunk index.
+    """Class for flexibly selecting a single element from a NumPy array along a specified axis
+    based on a chunk index.
 
-    The result is intended to be used together with `vectorbtpro.base.flex_indexing.flex_select_1d_nb`
-    and `vectorbtpro.base.flex_indexing.flex_select_nb`."""
+    This selector is intended for use with `vectorbtpro.base.flex_indexing.flex_select_1d_nb` and
+    `vectorbtpro.base.flex_indexing.flex_select_nb`.
+    """
 
     def get_size(self, obj: tp.ArrayLike, **kwargs) -> int:
         return FlexArraySizer.get_obj_size(obj, self.axis, single_type=self.single_type)
@@ -252,10 +348,11 @@ class FlexArraySelector(ArraySelector, DefineMixin):
 
 @define
 class FlexArraySlicer(ArraySlicer, DefineMixin):
-    """Class for selecting one element from a NumPy array's axis flexibly based on the chunk index.
+    """Class for flexibly slicing a NumPy array along a specified axis using chunk indices.
 
-    The result is intended to be used together with `vectorbtpro.base.flex_indexing.flex_select_1d_nb`
-    and `vectorbtpro.base.flex_indexing.flex_select_nb`."""
+    This slicer is intended for use with `vectorbtpro.base.flex_indexing.flex_select_1d_nb` and
+    `vectorbtpro.base.flex_indexing.flex_select_nb`.
+    """
 
     def get_size(self, obj: tp.ArrayLike, **kwargs) -> int:
         return FlexArraySizer.get_obj_size(obj, self.axis, single_type=self.single_type)
@@ -297,7 +394,10 @@ class FlexArraySlicer(ArraySlicer, DefineMixin):
 
 
 class ChunkedFlexArray(Chunked):
-    """Class representing a chunkable flexible array."""
+    """Class for a chunkable flexible array that dynamically resolves its take specification.
+
+    This class determines the appropriate take specification based on its configuration.
+    """
 
     def resolve_take_spec(self) -> tp.TakeSpec:
         if self.take_spec_missing:
@@ -308,13 +408,13 @@ class ChunkedFlexArray(Chunked):
 
 
 shape_gl_slicer = ShapeSlicer(axis=1, mapper=group_lens_mapper)
-"""Flexible 2-dim shape slicer along the column axis based on group lengths."""
+"""Flexible 2-dimensional shape slicer along the column axis based on group lengths."""
 
 flex_1d_array_gl_slicer = FlexArraySlicer(mapper=group_lens_mapper)
-"""Flexible 1-dim array slicer along the column axis based on group lengths."""
+"""Flexible 1-dimensional array slicer along the column axis based on group lengths."""
 
 flex_array_gl_slicer = FlexArraySlicer(axis=1, mapper=group_lens_mapper)
-"""Flexible 2-dim array slicer along the column axis based on group lengths."""
+"""Flexible 2-dimensional array slicer along the column axis based on group lengths."""
 
 array_gl_slicer = ArraySlicer(axis=1, mapper=group_lens_mapper)
-"""2-dim array slicer along the column axis based on group lengths."""
+"""2-dimensional array slicer along the column axis based on group lengths."""

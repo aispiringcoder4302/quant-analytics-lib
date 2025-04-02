@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Classes for preparing arguments."""
+"""Module providing classes for preparing arguments."""
 
 import inspect
 import string
@@ -63,7 +63,7 @@ base_arg_config = ReadonlyConfig(
 
 __pdoc__[
     "base_arg_config"
-] = f"""Argument config for `BasePreparer`.
+] = f"""Argument configuration for `BasePreparer`.
 
 ```python
 {base_arg_config.prettify_doc()}
@@ -72,11 +72,11 @@ __pdoc__[
 
 
 class MetaBasePreparer(type(Configured)):
-    """Metaclass for `BasePreparer`."""
+    """Metaclass for `BasePreparer` that provides class-level argument configuration."""
 
     @property
     def arg_config(cls) -> Config:
-        """Argument config."""
+        """Class-level argument configuration."""
         return cls._arg_config
 
 
@@ -84,6 +84,10 @@ class MetaBasePreparer(type(Configured)):
 @override_arg_config(base_arg_config)
 class BasePreparer(Configured, metaclass=MetaBasePreparer):
     """Base class for preparing target functions and arguments.
+
+    Args:
+        arg_config (KwargsLike): Optional configuration for target function arguments.
+        **kwargs: Additional keyword arguments passed for configuration.
 
     !!! warning
         Most properties are force-cached - create a new instance to override any attribute."""
@@ -106,7 +110,7 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
 
     @property
     def arg_config(self) -> Config:
-        """Argument config of `${cls_name}`.
+        """Argument configuration of `BasePreparer`.
 
         ```python
         ${arg_config}
@@ -116,7 +120,16 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
 
     @classmethod
     def map_enum_value(cls, value: tp.ArrayLike, look_for_type: tp.Optional[type] = None, **kwargs) -> tp.ArrayLike:
-        """Map enumerated value(s)."""
+        """Map enumerated value(s) from the input.
+
+        Args:
+            value (ArrayLike): The input value or container of values to map.
+            look_for_type (Optional[type]): Type to search for within value to apply mapping.
+            **kwargs: Additional keyword arguments for enumeration mapping.
+
+        Returns:
+            ArrayLike: The mapped value(s).
+        """
         if look_for_type is not None:
             if isinstance(value, look_for_type):
                 return map_enum_fields(value, **kwargs)
@@ -142,7 +155,16 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
 
     @classmethod
     def prepare_td_obj(cls, td_obj: object, old_as_keys: bool = True) -> object:
-        """Prepare a timedelta object for broadcasting."""
+        """Prepare a timedelta-like object for broadcasting.
+
+        Args:
+            td_obj (object): The input timedelta-like object, which can be a string,
+                timedelta, DateOffset, or Timedelta.
+            old_as_keys (bool): Flag indicating whether old keys should be preserved.
+
+        Returns:
+            object: The processed timedelta object for broadcasting.
+        """
         if isinstance(td_obj, Param):
             return td_obj.map_value(cls.prepare_td_obj, old_as_keys=old_as_keys)
 
@@ -159,7 +181,17 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
         old_as_keys: bool = True,
         last_before: tp.Optional[bool] = None,
     ) -> object:
-        """Prepare a datetime object for broadcasting."""
+        """Prepare a datetime-like object for broadcasting.
+
+        Args:
+            dt_obj (object): The input datetime-like object, which can be a string, time,
+                timedelta, DateOffset, or Timedelta.
+            old_as_keys (bool): Flag indicating whether old keys should be preserved during processing.
+            last_before (Optional[bool]): Flag indicating if the last valid index before the target should be used.
+
+        Returns:
+            object: The processed datetime object for broadcasting.
+        """
         if isinstance(dt_obj, Param):
             return dt_obj.map_value(cls.prepare_dt_obj, old_as_keys=old_as_keys)
 
@@ -227,7 +259,16 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
         return dt_obj
 
     def get_raw_arg_default(self, arg_name: str, is_dict: bool = False) -> tp.Any:
-        """Get raw argument default."""
+        """Get the raw default value of an argument from settings.
+
+        Args:
+            arg_name (str): The name of the argument.
+            is_dict (bool): Flag indicating if the default value should be treated as a dictionary.
+
+        Returns:
+            Any: The default value for the argument, or an empty dictionary
+                if `is_dict` is True and no default is set.
+        """
         if self._settings_path is None:
             if is_dict:
                 return {}
@@ -238,7 +279,16 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
         return value
 
     def get_raw_arg(self, arg_name: str, is_dict: bool = False, has_default: bool = True) -> tp.Any:
-        """Get raw argument."""
+        """Retrieve the raw value of an argument from the configuration.
+
+        Args:
+            arg_name (str): The name of the argument.
+            is_dict (bool): Flag indicating if the argument is expected to be a dictionary.
+            has_default (bool): Flag indicating if a default value should be used when the argument is not present.
+
+        Returns:
+            Any: The raw value of the argument, merged with defaults if applicable.
+        """
         value = self.config.get(arg_name, None)
         if is_dict:
             if has_default:
@@ -252,7 +302,12 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
 
     @cachedproperty
     def idx_setters(self) -> tp.Optional[tp.Dict[tp.Label, IdxSetter]]:
-        """Index setters from resolving the argument `records`."""
+        """Index setters resolved from the `records` argument.
+
+        Returns:
+            Optional[Dict[Label, IdxSetter]]: A mapping of record keys to their corresponding
+                index setters, or None if records are not provided.
+        """
         arg_config = self.arg_config["records"]
         records = self.get_raw_arg(
             "records",
@@ -276,7 +331,14 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
         return new_idx_setters
 
     def get_arg_default(self, arg_name: str) -> tp.Any:
-        """Get argument default according to the argument config."""
+        """Return the default value for the specified argument based on its configuration.
+
+        Args:
+            arg_name (str): The name of the argument.
+
+        Returns:
+            Any: The processed default value for the argument.
+        """
         arg_config = self.arg_config[arg_name]
         arg = self.get_raw_arg_default(
             arg_name,
@@ -299,7 +361,17 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
         return arg
 
     def get_arg(self, arg_name: str, use_idx_setter: bool = True, use_default: bool = True) -> tp.Any:
-        """Get mapped argument according to the argument config."""
+        """Return the mapped argument value based on its configuration.
+
+        Args:
+            arg_name (str): The name of the argument.
+            use_idx_setter (bool): Whether to use the index setter if available.
+            use_default (bool): Whether to use the default value from the configuration
+                if the argument is missing.
+
+        Returns:
+            Any: The processed argument value.
+        """
         arg_config = self.arg_config[arg_name]
         if use_idx_setter and self.idx_setters is not None and arg_name in self.idx_setters:
             arg = self.idx_setters[arg_name]
@@ -326,7 +398,14 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
 
     @classmethod
     def prepare_td_arr(cls, td_arr: tp.ArrayLike) -> tp.ArrayLike:
-        """Prepare a timedelta array."""
+        """Return a prepared timedelta array.
+
+        Args:
+            td_arr (ArrayLike): An input array of timedelta-like elements.
+
+        Returns:
+            ArrayLike: The processed timedelta array.
+        """
         if td_arr.dtype == object:
             if td_arr.ndim in (0, 1):
                 td_arr = pd.to_timedelta(td_arr)
@@ -344,7 +423,14 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
 
     @classmethod
     def prepare_dt_arr(cls, dt_arr: tp.ArrayLike) -> tp.ArrayLike:
-        """Prepare a datetime array."""
+        """Return a prepared datetime array.
+
+        Args:
+            dt_arr (ArrayLike): An input array of datetime-like elements.
+
+        Returns:
+            ArrayLike: The processed datetime array.
+        """
         if dt_arr.dtype == object:
             if dt_arr.ndim in (0, 1):
                 dt_arr = pd.to_datetime(dt_arr).tz_localize(None)
@@ -362,16 +448,39 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
 
     @classmethod
     def td_arr_to_ns(cls, td_arr: tp.ArrayLike) -> tp.ArrayLike:
-        """Prepare a timedelta array and convert it to nanoseconds."""
+        """Convert a prepared timedelta array to its nanoseconds representation.
+
+        Args:
+            td_arr (ArrayLike): An input timedelta array.
+
+        Returns:
+            ArrayLike: The array of nanoseconds.
+        """
         return dt.to_ns(cls.prepare_td_arr(td_arr))
 
     @classmethod
     def dt_arr_to_ns(cls, dt_arr: tp.ArrayLike) -> tp.ArrayLike:
-        """Prepare a datetime array and convert it to nanoseconds."""
+        """Convert a prepared datetime array to its nanoseconds representation.
+
+        Args:
+            dt_arr (ArrayLike): An input datetime array.
+
+        Returns:
+            ArrayLike: The array of nanoseconds.
+        """
         return dt.to_ns(cls.prepare_dt_arr(dt_arr))
 
     def prepare_post_arg(self, arg_name: str, value: tp.Optional[tp.ArrayLike] = None) -> object:
-        """Prepare an argument after broadcasting and/or template substitution."""
+        """Return the processed argument after broadcasting and template substitution.
+
+        Args:
+            arg_name (str): The name of the argument.
+            value (Optional[ArrayLike]): The raw value to prepare; if None,
+                the default post-argument is used.
+
+        Returns:
+            object: The processed argument.
+        """
         if value is None:
             if arg_name in self.post_args:
                 arg = self.post_args[arg_name]
@@ -397,7 +506,13 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
 
     @classmethod
     def adapt_staticized_to_udf(cls, staticized: tp.Kwargs, func: tp.Union[str, tp.Callable], func_name: str) -> None:
-        """Adapt `staticized` dictionary to a UDF."""
+        """Adapt a staticized dictionary to a user-defined function (UDF) by updating its import lines.
+
+        Args:
+            staticized (Kwargs): A dictionary containing function configuration.
+            func (Union[str, Callable]): A function reference, name, or path.
+            func_name (str): The target function name.
+        """
         target_func_module = inspect.getmodule(staticized["func"])
         if isinstance(func, tuple):
             func, actual_func_name = func
@@ -435,12 +550,24 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
 
     @classmethod
     def find_target_func(cls, target_func_name: str) -> tp.Callable:
-        """Find target function by its name."""
+        """Find the target function by its name.
+
+        Args:
+            target_func_name (str): The name of the target function.
+        """
         raise NotImplementedError
 
     @classmethod
     def resolve_dynamic_target_func(cls, target_func_name: str, staticized: tp.KwargsLike) -> tp.Callable:
-        """Resolve a dynamic target function."""
+        """Return the dynamic target function based on the provided configuration.
+
+        Args:
+            target_func_name (str): The name of the target function.
+            staticized (KwargsLike): A dictionary with function configuration or a function reference.
+
+        Returns:
+            Callable: The resolved target function.
+        """
         if staticized is None:
             func = cls.find_target_func(target_func_name)
         else:
@@ -473,7 +600,7 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
         return func
 
     def set_seed(self) -> None:
-        """Set seed."""
+        """Set the random seed using the object's seed attribute."""
         seed = self.seed
         if seed is not None:
             set_seed(seed)
@@ -489,7 +616,11 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
 
     @cachedproperty
     def pre_args(self) -> tp.Kwargs:
-        """Arguments before broadcasting."""
+        """Return a dictionary of pre-broadcast arguments.
+
+        Iterates over `self.arg_config` and retrieves each corresponding `_pre_` attribute
+        for keys with broadcasting enabled.
+        """
         pre_args = dict()
         for k, v in self.arg_config.items():
             if v.get("broadcast", False):
@@ -498,12 +629,19 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
 
     @cachedproperty
     def args_to_broadcast(self) -> dict:
-        """Arguments to broadcast."""
+        """Return a merged dictionary of arguments to broadcast.
+
+        Combines `idx_setters`, pre-broadcast arguments, and broadcast named arguments.
+        """
         return merge_dicts(self.idx_setters, self.pre_args, self.broadcast_named_args)
 
     @cachedproperty
     def def_broadcast_kwargs(self) -> tp.Kwargs:
-        """Default keyword arguments for broadcasting."""
+        """Return a dictionary of default keyword arguments for broadcasting.
+
+        Includes flags for conversion, flexible settings, wrapper configuration,
+        and the pre-template context.
+        """
         return dict(
             to_pd=False,
             keep_flex=dict(cash_earnings=self.keep_inout_flex, _def=True),
@@ -517,7 +655,11 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
 
     @cachedproperty
     def broadcast_kwargs(self) -> tp.Kwargs:
-        """Argument `broadcast_kwargs`."""
+        """Return a dictionary of keyword arguments for broadcasting.
+
+        Merges default broadcast kwargs, argument-specific broadcast configurations,
+        and additional user-provided overrides.
+        """
         arg_broadcast_kwargs = defaultdict(dict)
         for k, v in self.arg_config.items():
             if v.get("broadcast", False):
@@ -554,17 +696,28 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
 
     @cachedproperty
     def broadcast_result(self) -> tp.Any:
-        """Result of broadcasting."""
+        """Return the result of the broadcasting process.
+
+        The result is typically a tuple where the first element contains
+        the post-broadcast arguments and the second element is the array wrapper.
+        """
         return broadcast(self.args_to_broadcast, **self.broadcast_kwargs)
 
     @cachedproperty
     def post_args(self) -> tp.Kwargs:
-        """Arguments after broadcasting."""
+        """Return the dictionary of arguments after broadcasting.
+
+        Extracts the first element from the broadcasting result.
+        """
         return self.broadcast_result[0]
 
     @cachedproperty
     def post_broadcast_named_args(self) -> tp.Kwargs:
-        """Custom arguments after broadcasting."""
+        """Return a dictionary of custom broadcast arguments.
+
+        Filters the post-broadcast arguments to include only those specified as named broadcast arguments,
+        or those from index setters not present in the pre-broadcast arguments.
+        """
         if self.broadcast_named_args is None:
             return dict()
         post_broadcast_named_args = dict()
@@ -577,29 +730,40 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
 
     @cachedproperty
     def wrapper(self) -> ArrayWrapper:
-        """Array wrapper."""
+        """Return the array wrapper from the broadcasting process.
+
+        Extracts the second element of the broadcasting result.
+        """
         return self.broadcast_result[1]
 
     @cachedproperty
     def target_shape(self) -> tp.Shape:
-        """Target shape."""
+        """Return the target shape from the array wrapper.
+
+        Uses the 2D shape attribute of the wrapper.
+        """
         return self.wrapper.shape_2d
 
     @cachedproperty
     def index(self) -> tp.Array1d:
-        """Index in nanosecond format."""
+        """Return the index in nanosecond format from the array wrapper."""
         return self.wrapper.ns_index
 
     @cachedproperty
     def freq(self) -> int:
-        """Frequency in nanosecond format."""
+        """Return the frequency in nanosecond format from the array wrapper."""
         return self.wrapper.ns_freq
 
     # ############# Template substitution ############# #
 
     @cachedproperty
     def template_context(self) -> tp.Kwargs:
-        """Argument `template_context`."""
+        """Return the complete template context.
+
+        Merges details from the array wrapper (`wrapper`, `target_shape`, `index`, `freq`),
+        broadcast arguments from `self.arg_config`, post-broadcast named arguments,
+        and the pre-template context.
+        """
         builtin_args = {}
         for k, v in self.arg_config.items():
             if v.get("broadcast", False):
@@ -620,17 +784,27 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
 
     @cachedproperty
     def target_func(self) -> tp.Optional[tp.Callable]:
-        """Target function."""
+        """Return the target function to be invoked with broadcasted arguments.
+
+        Returns `None` if no target function is defined.
+        """
         return None
 
     @cachedproperty
     def target_arg_map(self) -> tp.Kwargs:
-        """Map of the target arguments to the preparer attributes."""
+        """Return a mapping of target function parameters to preparer attribute names.
+
+        This mapping aligns broadcasted arguments with the target function's parameters.
+        """
         return dict()
 
     @cachedproperty
     def target_args(self) -> tp.Optional[tp.Kwargs]:
-        """Arguments to be passed to the target function."""
+        """Return a dictionary of arguments to pass to the target function.
+
+        Maps parameter names of `target_func` to corresponding preparer attributes using `target_arg_map`.
+        Returns `None` if no target function is defined.
+        """
         if self.target_func is not None:
             target_arg_map = self.target_arg_map
             func_arg_names = get_func_arg_names(self.target_func)
@@ -646,7 +820,17 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
 
     @classmethod
     def build_arg_config_doc(cls, source_cls: tp.Optional[type] = None) -> str:
-        """Build argument config documentation."""
+        """Build and return documentation for the argument configuration.
+
+        Uses the docstring from the `arg_config` attribute of the given source class (defaulting to `BasePreparer`)
+        and substitutes placeholders with the current class's argument configuration details.
+
+        Args:
+            source_cls (Optional[type]): Base class to source the `arg_config` documentation from.
+
+        Returns:
+            str: Generated documentation for the argument configuration.
+        """
         if source_cls is None:
             source_cls = BasePreparer
         return string.Template(inspect.cleandoc(get_dict_attr(source_cls, "arg_config").__doc__)).substitute(
@@ -655,7 +839,14 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
 
     @classmethod
     def override_arg_config_doc(cls, __pdoc__: dict, source_cls: tp.Optional[type] = None) -> None:
-        """Call this method on each subclass that overrides `BasePreparer.arg_config`."""
+        """Override the class's argument configuration documentation.
+
+        Updates the provided documentation dictionary with generated documentation from `build_arg_config_doc`.
+
+        Args:
+            __pdoc__ (dict): Documentation dictionary to update.
+            source_cls (Optional[type]): Base class to source the `arg_config` documentation from.
+        """
         __pdoc__[cls.__name__ + ".arg_config"] = cls.build_arg_config_doc(source_cls=source_cls)
 
 

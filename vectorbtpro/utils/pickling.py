@@ -508,13 +508,7 @@ def load(
 
 @define
 class RecState(DefineMixin):
-    """Class representing the reconstruction state for an instance.
-
-    Args:
-        init_args (tuple): Positional arguments for instance initialization.
-        init_kwargs (dict): Keyword arguments for instance initialization.
-        attr_dct (dict): Mapping of attribute names to their writable values.
-    """
+    """Class representing the reconstruction state for an instance."""
 
     init_args: tp.Args = define.field(factory=tuple)
     """Positional arguments for instance initialization."""
@@ -528,13 +522,7 @@ class RecState(DefineMixin):
 
 @define
 class RecInfo(DefineMixin):
-    """Class for encapsulating information required to reconstruct an instance.
-
-    Args:
-        id_ (str): The unique reconstruction identifier.
-        cls (Type): The associated class type for reconstruction.
-        modify_state (Optional[Callable[[RecState], RecState]]): A callback to modify the reconstruction state.
-    """
+    """Class for encapsulating information required to reconstruct an instance."""
 
     id_: str = define.field()
     """Unique reconstruction identifier."""

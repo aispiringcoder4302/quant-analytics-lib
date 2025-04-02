@@ -31,12 +31,7 @@ __all__ = [
 
 @define
 class Regex(DefineMixin):
-    """Class for matching a regular expression pattern.
-
-    Args:
-        pattern (str): Regex pattern to match.
-        flags (int): Flags for regex operations.
-    """
+    """Class for matching a regular expression pattern."""
 
     pattern: str = define.field()
     """Pattern."""

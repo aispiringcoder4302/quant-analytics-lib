@@ -33,17 +33,7 @@ __all__ = [
 
 @define
 class CustomTemplate(Evaluable, DefineMixin):
-    """Class for substituting templates.
-
-    Args:
-        template (Any): Template to be processed.
-        context (KwargsLike): Context mapping for substitution.
-        strict (Optional[bool]): Flag indicating whether to raise an error on substitution failure.
-
-            Overrides global settings if provided.
-        context_merge_kwargs (KwargsLike): Additional keyword arguments for merging contexts.
-        eval_id (Optional[Union[Hashable, Sequence[Hashable]]]): Identifier(s) for evaluation.
-    """
+    """Class for substituting templates."""
 
     template: tp.Any = define.field()
     """Template to be processed."""

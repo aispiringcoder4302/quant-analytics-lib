@@ -61,7 +61,7 @@ def custom_formatwarning(
 
 
 class VBTWarning(Warning):
-    """Base warning class for warnings raised by VectorBT® PRO."""
+    """Base warning class for warnings raised by vectorbtpro."""
 
 
 def warn(message: tp.Any, category: type = VBTWarning, stacklevel: int = 2) -> None:
@@ -103,7 +103,7 @@ class WarningsFiltered(warnings.catch_warnings, Base):
 
     Args:
         entries (Optional[MaybeSequence[Union[str, Kwargs]]]): Simple entries to add to the warnings filters.
-        **kwargs (dict): Additional keyword arguments to pass to warnings.catch_warnings.
+        **kwargs: Additional keyword arguments to pass to `warnings.catch_warnings`.
     """
 
     def __init__(self, entries: tp.Optional[tp.MaybeSequence[tp.Union[str, tp.Kwargs]]] = "ignore", **kwargs) -> None:

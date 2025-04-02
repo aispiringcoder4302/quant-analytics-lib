@@ -322,47 +322,7 @@ ParamT = tp.TypeVar("ParamT", bound="Param")
 
 @define
 class Param(Evaluable, Annotatable, DefineMixin):
-    """Class that represents a parameter.
-
-    Args:
-        value (Union[MaybeParamValues, Dict[Hashable, ParamValue]]): One or more parameter values
-            for the parameter.
-        is_tuple (bool): Indicates whether `Param.value` is interpreted as a tuple.
-
-            When True, a tuple is considered a single parameter value.
-        is_array_like (bool): Indicates whether `Param.value` should be treated as array-like.
-
-            When True, a NumPy array is considered a single parameter value.
-        map_template (Optional[CustomTemplate]): A mapping template applied to `Param.value` prior
-            to constructing parameter combinations.
-        random_subset (Union[None, int, float]): Specifies a random subset of parameter values to select.
-        level (Optional[int]): Specifies the level for the parameter in the product combination.
-
-            Parameters sharing the same level are grouped together.
-            Lower-level parameters are processed before higher-level ones.
-            Levels must be consecutive starting from 0 without gaps.
-        condition (Union[None, str, CustomTemplate]): Specifies a condition to filter parameter combinations.
-
-            The condition can be provided as a template or an expression where `x` (or the parameter's name)
-            represents this parameter. If provided as an expression, it is pre-compiled for efficiency.
-            To reference a parameter index value, enclose the level name with double underscores
-            (e.g., `__fast_sma_timeperiod__`).
-        context (KwargsLike): Context for evaluating `Param.condition` and applying `Param.map_template`.
-        keys (Optional[IndexLike]): Specifies keys to serve as the index level.
-
-            If not provided, `Param.value` is converted to an index via `vectorbtpro.base.indexes.index_from_values`.
-        hide (bool): Indicates whether the parameter should be hidden from the parameter index.
-        name (Optional[Hashable]): Specifies the name of the parameter.
-
-            If not provided, it defaults to the index name from `Param.keys` or the key from
-            `param_dct` in `combine_params`.
-        mono_reduce (bool): Indicates if a mono-chunk of identical values should be reduced to a single value.
-        mono_merge_func (MergeFuncLike): Specifies the merge function used for reducing a mono-chunk.
-
-            It is resolved via `vectorbtpro.base.merging.resolve_merge_func`.
-        mono_merge_kwargs (KwargsLike): Additional keyword arguments for `Param.mono_merge_func`.
-        eval_id (Optional[MaybeSequence[Hashable]]): Identifier(s) indicating where to evaluate this instance.
-    """
+    """Class that represents a parameter."""
 
     value: tp.Union[tp.MaybeParamValues, tp.Dict[tp.Hashable, tp.ParamValue]] = define.required_field()
     """One or more parameter values for the parameter."""
