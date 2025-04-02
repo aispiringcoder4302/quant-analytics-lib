@@ -222,7 +222,6 @@ def apply_and_concat_each(
 
     Returns:
         Union[None, Array2d, List[Array2d]]:
-
             * None if no outputs are produced.
             * A 2D array if a single output is produced.
             * A list of 2D arrays if multiple outputs are produced.
