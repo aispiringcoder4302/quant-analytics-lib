@@ -273,7 +273,7 @@ class HasWrapper(ExtPandasIndexer, ItemParamable):
 
         Args:
             *args: Additional arguments passed for splitting.
-            splitter_cls (Optional[Type[SplitterT]]): The splitter class to use.
+            splitter_cls (Optional[Type[Splitter]]): The splitter class to use.
             wrap (Optional[bool]): Flag indicating whether the instance should be wrapped.
             **kwargs: Additional keyword arguments passed for splitting.
 
@@ -304,7 +304,7 @@ class HasWrapper(ExtPandasIndexer, ItemParamable):
         Args:
             apply_func (Union[str, Callable]): Function or attribute name to apply to each split.
             *args: Additional arguments passed for the split and apply operation.
-            splitter_cls (Optional[Type[SplitterT]]): The splitter class to use.
+            splitter_cls (Optional[Type[Splitter]]): The splitter class to use.
             wrap (Optional[bool]): Flag indicating whether the instance should be wrapped.
             **kwargs: Additional keyword arguments passed for splitting.
 

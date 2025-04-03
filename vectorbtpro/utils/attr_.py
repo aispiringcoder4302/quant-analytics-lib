@@ -515,7 +515,7 @@ class AttrResolverMixin(Base):
             `cond_kwargs` can be modified in-place.
 
         Returns:
-            AttrResolverMixinT: The resolved self.
+            AttrResolverMixin: The resolved self.
         """
         return self
 

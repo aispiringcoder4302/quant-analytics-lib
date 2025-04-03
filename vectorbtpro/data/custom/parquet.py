@@ -8,7 +8,8 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module with `ParquetData`."""
+"""Module providing the ParquetData class for fetching and processing Parquet files
+using PyArrow or FastParquet."""
 
 import re
 from pathlib import Path
@@ -29,13 +30,17 @@ ParquetDataT = tp.TypeVar("ParquetDataT", bound="ParquetData")
 
 
 class ParquetData(FileData):
-    """Data class for fetching Parquet data using PyArrow or FastParquet."""
+    """Class for fetching and processing Parquet files using PyArrow or FastParquet."""
 
     _settings_path: tp.SettingsPath = dict(custom="data.custom.parquet")
 
     @classmethod
     def is_parquet_file(cls, path: tp.PathLike) -> bool:
-        """Return whether the path is a Parquet file."""
+        """Return True if the provided path is a valid Parquet file, otherwise False.
+
+        Args:
+            path (PathLike): File path to be evaluated.
+        """
         if not isinstance(path, Path):
             path = Path(path)
         if path.exists() and path.is_file() and ".parquet" in path.suffixes:
@@ -44,10 +49,15 @@ class ParquetData(FileData):
 
     @classmethod
     def is_parquet_group_dir(cls, path: tp.PathLike) -> bool:
-        """Return whether the path is a directory that is a group of Parquet partitions.
+        """Return True if the provided path is a directory representing a Hive-style partition
+        group of Parquet partitions, otherwise False.
+
+        Args:
+            path (PathLike): Directory path to check.
 
         !!! note
-            Assumes the Hive partitioning scheme."""
+            Assumes the Hive partitioning scheme.
+        """
         if not isinstance(path, Path):
             path = Path(path)
         if path.exists() and path.is_dir():
@@ -60,8 +70,12 @@ class ParquetData(FileData):
 
     @classmethod
     def is_parquet_dir(cls, path: tp.PathLike) -> bool:
-        """Return whether the path is a directory that is a group itself or
-        contains groups of Parquet partitions."""
+        """Return True if the provided path is a directory representing a Parquet partition
+        group or contains such groups, otherwise False.
+
+        Args:
+            path (PathLike): Directory path to check.
+        """
         if cls.is_parquet_group_dir(path):
             return True
         if not isinstance(path, Path):
@@ -82,10 +96,17 @@ class ParquetData(FileData):
 
     @classmethod
     def list_partition_cols(cls, path: tp.PathLike) -> tp.List[str]:
-        """List partitioning columns under a path.
+        """List partitioning columns derived from directory names in a Hive-partitioned structure.
+
+        Args:
+            path (PathLike): Directory path containing partition directories.
+
+        Returns:
+            List[str]: A list of partition column names extracted from the directory structure.
 
         !!! note
-            Assumes the Hive partitioning scheme."""
+            Assumes the Hive partitioning scheme.
+        """
         if not isinstance(path, Path):
             path = Path(path)
         partition_cols = []
@@ -104,7 +125,12 @@ class ParquetData(FileData):
 
     @classmethod
     def is_default_partition_col(cls, level: str) -> bool:
-        """Return whether a partitioning column is a default partitioning column."""
+        """Return True if the provided partition column name is considered a default
+        partition column, otherwise False.
+
+        Args:
+            level (str): The partition column name.
+        """
         return re.match(r"^(\bgroup\b)|(group_\d+)", level) is not None
 
     @classmethod
@@ -137,28 +163,30 @@ class ParquetData(FileData):
         engine: tp.Optional[str] = None,
         **read_kwargs,
     ) -> tp.KeyData:
-        """Fetch the Parquet file of a feature or symbol.
+        """Fetch the Parquet file corresponding to a feature or symbol.
 
         Args:
-            key (hashable): Feature or symbol.
-            path (str): Path.
-
-                If `path` is None, uses `key` as the path to the Parquet file.
-            tz (any): Target timezone.
+            key (hashable): Feature or symbol identifier.
+            path (Any): File path. If None, uses `key` as the path to the Parquet file.
+            tz (TimezoneLike): Target timezone.
 
                 See `vectorbtpro.utils.datetime_.to_timezone`.
-            squeeze (int): Whether to squeeze a DataFrame with one column into a Series.
-            keep_partition_cols (bool): Whether to return partitioning columns (if any).
+            squeeze (Optional[bool]): Flag indicating whether to convert a single-column DataFrame to a Series.
+            keep_partition_cols (Optional[bool]): Flag to retain partition columns.
 
-                If None, will remove any partitioning column that is "group" or "group_{index}".
+                When None, default partition columns will be removed using `ParquetData.list_partition_cols`.
+            engine (Optional[str]): Parquet engine to use.
 
-                Retrieves the list of partitioning columns with `ParquetData.list_partition_cols`.
-            engine (str): See `pd.read_parquet`.
-            **read_kwargs: Other keyword arguments passed to `pd.read_parquet`.
+                Refer to `pd.read_parquet` for details.
+            **read_kwargs: Additional keyword arguments passed to `pd.read_parquet`.
 
-        See https://pandas.pydata.org/docs/reference/api/pandas.read_parquet.html for other arguments.
+        Returns:
+            KeyData: The fetched data and a metadata dictionary.
 
-        For defaults, see `custom.parquet` in `vectorbtpro._settings.data`."""
+        See https://pandas.pydata.org/docs/reference/api/pandas.read_parquet.html for additional arguments.
+
+        For defaults, see `custom.parquet` in `vectorbtpro._settings.data`.
+        """
         from vectorbtpro.utils.module_ import assert_can_import, assert_can_import_any
 
         tz = cls.resolve_custom_setting(tz, "tz")
@@ -199,20 +227,41 @@ class ParquetData(FileData):
 
     @classmethod
     def fetch_feature(cls, feature: tp.Feature, **kwargs) -> tp.FeatureData:
-        """Fetch the Parquet file of a feature.
+        """Fetch the Parquet file corresponding to the given feature.
 
-        Uses `ParquetData.fetch_key`."""
+        Args:
+            feature (hashable): The feature identifier.
+            **kwargs: Additional keyword arguments for `ParquetData.fetch_key`.
+
+        Returns:
+            FeatureData: The fetched data and a metadata dictionary.
+        """
         return cls.fetch_key(feature, **kwargs)
 
     @classmethod
     def fetch_symbol(cls, symbol: tp.Symbol, **kwargs) -> tp.SymbolData:
-        """Fetch the Parquet file of a symbol.
+        """Fetch the Parquet file corresponding to the given symbol.
 
-        Uses `ParquetData.fetch_key`."""
+        Args:
+            symbol (hashable): The symbol identifier.
+            **kwargs: Additional keyword arguments for `ParquetData.fetch_key`.
+
+        Returns:
+            SymbolData: The fetched data and a metadata dictionary.
+        """
         return cls.fetch_key(symbol, **kwargs)
 
     def update_key(self, key: tp.Key, key_is_feature: bool = False, **kwargs) -> tp.KeyData:
-        """Update data of a feature or symbol."""
+        """Update and return the data for a given feature or symbol.
+
+        Args:
+            key (hashable): The feature or symbol identifier.
+            key_is_feature (bool): Indicator whether the key represents a feature.
+            **kwargs: Additional keyword arguments passed to the fetch methods.
+
+        Returns:
+            KeyData: The updated data and a metadata dictionary.
+        """
         fetch_kwargs = self.select_fetch_kwargs(key)
         kwargs = merge_dicts(fetch_kwargs, kwargs)
         if key_is_feature:
@@ -220,13 +269,25 @@ class ParquetData(FileData):
         return self.fetch_symbol(key, **kwargs)
 
     def update_feature(self, feature: tp.Feature, **kwargs) -> tp.FeatureData:
-        """Update data of a feature.
+        """Update and return the data for the specified feature.
 
-        Uses `ParquetData.update_key` with `key_is_feature=True`."""
+        Args:
+            feature (hashable): The feature identifier.
+            **kwargs: Additional keyword arguments passed to `ParquetData.update_key`.
+
+        Returns:
+            FeatureData: The updated data and a metadata dictionary.
+        """
         return self.update_key(feature, key_is_feature=True, **kwargs)
 
     def update_symbol(self, symbol: tp.Symbol, **kwargs) -> tp.SymbolData:
-        """Update data for a symbol.
+        """Update and return the data for the specified symbol.
 
-        Uses `ParquetData.update_key` with `key_is_feature=False`."""
+        Args:
+            symbol (hashable): The symbol identifier.
+            **kwargs: Additional keyword arguments passed to `ParquetData.update_key`.
+
+        Returns:
+            SymbolData: The updated data and a metadata dictionary.
+        """
         return self.update_key(symbol, key_is_feature=False, **kwargs)

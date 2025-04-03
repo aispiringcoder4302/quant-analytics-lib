@@ -1939,7 +1939,7 @@ class Configured(HasSettings, Cacheable, Comparable, Pickleable, Prettified, Cha
         """Resolve keyword arguments for initializing a `Configured` instance after merging configurations.
 
         Args:
-            *configs (MaybeTuple[ConfigT]): Configuration objects to merge.
+            *configs (MaybeTuple[Config]): Configuration objects to merge.
             on_merge_conflict (Union[str, dict]): Strategy for handling merge conflicts.
             **kwargs: Additional keyword arguments for resolving merge.
 

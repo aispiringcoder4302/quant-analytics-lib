@@ -8,7 +8,8 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module with `AlpacaData`."""
+"""Module providing the `AlpacaData` class for retrieving and processing market data
+via the Alpaca REST API."""
 
 import pandas as pd
 
@@ -31,11 +32,11 @@ AlpacaDataT = tp.TypeVar("AlpacaDataT", bound="AlpacaData")
 
 
 class AlpacaData(RemoteData):
-    """Data class for fetching from Alpaca.
+    """Data class for fetching data from Alpaca.
 
-    See https://github.com/alpacahq/alpaca-py for API.
+    API documentation is available at https://github.com/alpacahq/alpaca-py.
 
-    See `AlpacaData.fetch_symbol` for arguments.
+    Refer to `AlpacaData.fetch_symbol` for detailed argument descriptions.
 
     Usage:
         * Set up the API key globally (optional for crypto):
@@ -88,17 +89,34 @@ class AlpacaData(RemoteData):
         trading_client: tp.Optional[RESTClientT] = None,
         client_config: tp.KwargsLike = None,
     ) -> tp.List[str]:
-        """List all symbols.
+        """Return a list of symbols that match the specified criteria.
 
-        Uses `vectorbtpro.data.custom.custom.CustomData.key_match` to check each symbol against `pattern`.
+        This method filters symbols using `vectorbtpro.data.custom.custom.CustomData.key_match`
+        based on the provided pattern.
 
-        Arguments `status`, `asset_class`, and `exchange` can be strings, such as `asset_class="crypto"`.
-        For possible values, take a look into `alpaca.trading.enums`.
+        Args:
+            pattern (Optional[str]): Pattern to filter symbols.
+            use_regex (bool): Determines whether to treat `pattern` as a regular expression.
+            sort (bool): Specifies whether to return the symbols in sorted order.
+            status (Optional[str]): Filter for asset status.
+
+                For possible values, refer to `alpaca.trading.enums`.
+            asset_class (Optional[str]): Filter for asset class.
+
+                For possible values, refer to `alpaca.trading.enums`.
+            exchange (Optional[str]): Filter for the exchange.
+
+                For possible values, refer to `alpaca.trading.enums`.
+            trading_client (Optional[RESTClient]): An existing trading client instance.
+            client_config (KwargsLike): Configuration parameters for initializing the trading client.
+
+        Returns:
+            List[str]: A list of symbol strings.
 
         !!! note
-            If you get an authorization error, make sure that you either enable or disable
-            the `paper` flag in `client_config` depending upon the account whose credentials you used.
-            By default, the credentials are assumed to be of a live trading account (`paper=False`)."""
+            If encountering an authorization error, verify that the `paper` flag in `client_config` is set
+            appropriately based on the account credentials used (paper trading or live).
+        """
         from vectorbtpro.utils.module_ import assert_can_import
 
         assert_can_import("alpaca")
@@ -147,11 +165,22 @@ class AlpacaData(RemoteData):
         client_type: tp.Optional[str] = None,
         **client_config,
     ) -> RESTClientT:
-        """Resolve the client.
+        """Resolve and return a trading client instance based on the provided parameters.
 
-        If provided, must be of the type `alpaca.data.historical.CryptoHistoricalDataClient`
-        for `client_type="crypto"` and `alpaca.data.historical.StockHistoricalDataClient` for
-        `client_type="stocks"`. Otherwise, will be created using `client_config`."""
+        If a client is provided, it must be of the type corresponding to `client_type`:
+        `alpaca.data.historical.CryptoHistoricalDataClient` for `client_type="crypto"` and
+        `alpaca.data.historical.StockHistoricalDataClient` for `client_type="stocks"`.
+        If no client is provided, a new instance is created using the supplied `client_config`.
+
+        Args:
+            client (Optional[RESTClient]): An existing client instance to use.
+            client_type (Optional[str]): Specifies the type of client to create;
+                expected values are "crypto" or "stocks".
+            **client_config: Additional keyword arguments for client initialization.
+
+        Returns:
+            RESTClient: An instance of the trading client.
+        """
         from vectorbtpro.utils.module_ import assert_can_import
 
         assert_can_import("alpaca")
@@ -193,43 +222,45 @@ class AlpacaData(RemoteData):
         feed: tp.Optional[str] = None,
         limit: tp.Optional[int] = None,
     ) -> tp.SymbolData:
-        """Override `vectorbtpro.data.base.Data.fetch_symbol` to fetch a symbol from Alpaca.
+        """Fetch a symbol from Alpaca via overriding `vectorbtpro.data.base.Data.fetch_symbol`.
 
         Args:
-            symbol (str): Symbol.
-            client (alpaca.common.rest.RESTClient): Client.
+            symbol (str): The symbol to fetch.
+            client (Optional[RESTClient]): Alpaca REST client instance.
 
                 See `AlpacaData.resolve_client`.
-            client_type (str): Client type.
+            client_type (Optional[str]): Type of Alpaca client.
+
+                Automatically determined based on the symbol, as crypto symbols contain "/".
+                Also see `AlpacaData.resolve_client`.
+            client_config (dict): Configuration for the Alpaca client.
 
                 See `AlpacaData.resolve_client`.
-
-                Determined automatically based on the symbol. Crypto symbols contain "/".
-            client_config (dict): Client config.
-
-                See `AlpacaData.resolve_client`.
-            start (any): Start datetime.
+            start (Optional[DatetimeLike]): Start datetime.
 
                 See `vectorbtpro.utils.datetime_.to_tzaware_datetime`.
-            end (any): End datetime.
+            end (Optional[DatetimeLike]): End datetime.
 
                 See `vectorbtpro.utils.datetime_.to_tzaware_datetime`.
-            timeframe (str): Timeframe.
+            timeframe (Optional[str]): Data timeframe.
 
-                Allows human-readable strings such as "15 minutes".
-            tz (any): Timezone.
+                Accepts human-readable strings such as "15 minutes".
+            tz (TimezoneLike): Timezone.
 
                 See `vectorbtpro.utils.datetime_.to_timezone`.
-            adjustment (str): Specifies the corporate action adjustment for the returned bars.
+            adjustment (Optional[str]): Corporate action adjustment for returned bars.
 
-                Options are: "raw", "split", "dividend" or "all". Default is "raw".
-            feed (str): The feed to pull market data from.
+                Options: "raw", "split", "dividend", or "all".
+            feed (Optional[str]): Market data feed.
 
-                This is either "iex", "otc", or "sip". Feeds "sip" and "otc" are only available to
-                those with a subscription. Default is "iex" for free plans and "sip" for paid.
-            limit (int): The maximum number of returned items.
+                Options: "iex", "otc", or "sip". Feeds "sip" and "otc" require a subscription.
+            limit (Optional[int]): Maximum number of items to return.
+
+        Returns:
+            SymbolData: The fetched data and a metadata dictionary.
 
         For defaults, see `custom.alpaca` in `vectorbtpro._settings.data`.
+
         Global settings can be provided per exchange id using the `exchanges` dictionary.
         """
         from vectorbtpro.utils.module_ import assert_can_import

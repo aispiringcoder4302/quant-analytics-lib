@@ -272,9 +272,8 @@ def row_stack_merge(
 ) -> tp.MaybeTuple[tp.AnyArray]:
     """Merge multiple array-like or `vectorbtpro.base.wrapping.Wrapping` objects via row stacking.
 
-    This function merges objects by stacking their rows. It supports passing a sequence of tuples,
-    where each element in the tuple is merged separately. If wrapping is disabled, arrays remain unmodified
-    and are merged using `row_stack_arrays`.
+    This function supports passing a sequence of tuples, where each element in the tuple is merged
+    separately. If wrapping is disabled, arrays remain unmodified and are merged using `row_stack_arrays`.
 
     Args:
         *objs: Array-like objects or wrappers to merge.
@@ -432,7 +431,6 @@ def column_stack_merge(
 ) -> tp.MaybeTuple[tp.AnyArray]:
     """Merge multiple array-like or `vectorbtpro.base.wrapping.Wrapping` objects via column stacking.
 
-    Merge multiple array-like or `vectorbtpro.base.wrapping.Wrapping` objects by stacking them as columns.
     This function supports merging sequences of tuples and offers options for wrapping and index resetting.
     If wrapping is disabled (`wrap` is False), the arrays are merged using `column_stack_arrays`.
 

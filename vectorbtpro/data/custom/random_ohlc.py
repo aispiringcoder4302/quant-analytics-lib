@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module with `RandomOHLCData`."""
+"""Module providing `RandomOHLCData`."""
 
 import numpy as np
 import pandas as pd
@@ -31,8 +31,11 @@ __pdoc__ = {}
 
 
 class RandomOHLCData(SyntheticData):
-    """`SyntheticData` for data generated using `vectorbtpro.data.nb.generate_random_data_1d_nb`
-    and then resampled using `vectorbtpro.ohlcv.nb.ohlc_every_1d_nb`."""
+    """Class for synthetic OHLC data.
+
+    Data is generated using `vectorbtpro.data.nb.generate_random_data_1d_nb`
+    and then resampled using `vectorbtpro.ohlcv.nb.ohlc_every_1d_nb`.
+    """
 
     _settings_path: tp.SettingsPath = dict(custom="data.custom.random_ohlc")
 
@@ -51,28 +54,37 @@ class RandomOHLCData(SyntheticData):
         template_context: tp.KwargsLike = None,
         **kwargs,
     ) -> tp.SymbolData:
-        """Generate a symbol.
+        """Generate data for a symbol.
 
         Args:
-            symbol (hashable): Symbol.
-            index (pd.Index): Pandas index.
-            n_ticks (int or array_like): Number of ticks per bar.
+            symbol (hashable): Unique identifier for the symbol.
+            index (pd.Index): Pandas index representing the time stamps.
+            n_ticks (Optional[ArrayLike]): Number of ticks per bar.
 
-                Flexible argument. Can be a template with a context containing `symbol` and `index`.
-            start_value (float): Value at time 0.
+                Flexible argument that can be provided as a template with a context
+                containing `symbol` and `index`.
+            start_value (Optional[float]): Initial value at time zero.
 
-                Does not appear as the first value in the output data.
-            mean (float): Drift, or mean of the percentage change.
-            std (float): Standard deviation of the percentage change.
-            symmetric (bool): Whether to diminish negative returns and make them symmetric to positive ones.
-            seed (int): Seed to make output deterministic.
-            jitted (any): See `vectorbtpro.utils.jitting.resolve_jitted_option`.
-            template_context (dict): Template context.
+                Note that this value does not appear as the first data point in the output.
+            mean (Optional[float]): Drift or average percentage change.
+            std (Optional[float]): Standard deviation of the percentage change.
+            symmetric (Optional[bool]): If True, adjust negative returns to be symmetric with positive ones.
+            seed (Optional[int]): Random seed for deterministic output.
+
+                !!! note
+                    When using a seed, pass a unique seed per feature or symbol via
+                    `vectorbtpro.data.base.feature_dict`, `vectorbtpro.data.base.symbol_dict`,
+                    or generally `vectorbtpro.data.base.key_dict`.
+            jitted (Optional[JittedOption]): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
+            template_context (Optional[KwargsLike]): Context for template substitution.
+            **kwargs: Additional keyword arguments passed to the function.
+
+        Returns:
+            KeyData: The generated data and a metadata dictionary.
 
         For defaults, see `custom.random_ohlc` in `vectorbtpro._settings.data`.
-
-        !!! note
-            When setting a seed, remember to pass a seed per symbol using `vectorbtpro.data.base.symbol_dict`.
         """
         n_ticks = cls.resolve_custom_setting(n_ticks, "n_ticks")
         template_context = merge_dicts(dict(symbol=symbol, index=index), template_context)

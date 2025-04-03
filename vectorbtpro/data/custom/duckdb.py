@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module with `DuckDBData`."""
+"""Module providing the `DuckDBData` class for interacting with DuckDB databases."""
 
 from pathlib import Path
 
@@ -37,9 +37,11 @@ DuckDBDataT = tp.TypeVar("DuckDBDataT", bound="DuckDBData")
 
 
 class DuckDBData(DBData):
-    """Data class for fetching data using DuckDB.
+    """Data class for fetching data from a DuckDB database.
 
-    See `DuckDBData.pull` and `DuckDBData.fetch_key` for arguments.
+    This class provides methods to pull tables, execute queries, and read Parquet files.
+
+    See `DuckDBData.pull` and `DuckDBData.fetch_key` for details on parameters.
 
     Usage:
         * Set up the connection settings globally (optional):
@@ -103,7 +105,21 @@ class DuckDBData(DBData):
         return_meta: bool = False,
         **connection_config,
     ) -> tp.Union[DuckDBPyConnectionT, dict]:
-        """Resolve the connection."""
+        """Resolve and return a DuckDB connection based on provided parameters.
+
+        Args:
+            connection (Union[None, str, PathLike, DuckDBPyConnection]): A connection instance,
+                file path, or connection string.
+
+                If None, a default connection is used.
+            read_only (bool): Flag indicating whether the connection should be opened in read-only mode.
+            return_meta (bool): If True, return a dictionary with connection metadata.
+            **connection_config: Additional keyword arguments for connection configuration.
+
+        Returns:
+            Union[DuckDBPyConnection, dict]: A DuckDB connection or a metadata dictionary
+                containing the connection and a flag indicating if it should be closed.
+        """
         from vectorbtpro.utils.module_ import assert_can_import
 
         assert_can_import("duckdb")
@@ -153,11 +169,22 @@ class DuckDBData(DBData):
         connection: tp.Union[None, str, DuckDBPyConnectionT] = None,
         connection_config: tp.KwargsLike = None,
     ) -> tp.List[str]:
-        """List all catalogs.
+        """List available catalogs from the DuckDB database.
 
-        Catalogs "system" and "temp" are skipped if `incl_system` is False.
+        Catalogs "system" and "temp" are omitted if incl_system is False.
 
-        Uses `vectorbtpro.data.custom.custom.CustomData.key_match` to check each symbol against `pattern`."""
+        Args:
+            pattern (Optional[str]): Pattern to filter catalog names.
+            use_regex (bool): Flag indicating whether the pattern is a regular expression.
+            sort (bool): Flag indicating whether to sort the resulting catalog names.
+            incl_system (bool): Flag indicating whether to include system catalogs.
+            connection (Union[None, str, DuckDBPyConnection]): A connection instance,
+                file path, or connection string.
+            connection_config (KwargsLike): Additional keyword arguments for connection configuration.
+
+        Returns:
+            List[str]: A list of catalog names.
+        """
         if connection_config is None:
             connection_config = {}
         connection_meta = cls.resolve_connection(connection, return_meta=True, **connection_config)
@@ -193,14 +220,28 @@ class DuckDBData(DBData):
         connection: tp.Union[None, str, DuckDBPyConnectionT] = None,
         connection_config: tp.KwargsLike = None,
     ) -> tp.List[str]:
-        """List all schemas.
+        """List available schemas from the DuckDB database.
 
-        If `catalog` is None, searches for all catalog names in the database and prefixes each schema
-        with the respective catalog name. If `catalog` is provided, returns the schemas corresponding
-        to this catalog without a prefix. Schemas "information_schema" and "pg_catalog" are skipped
-        if `incl_system` is False.
+        If catalog is None, the method searches all catalogs and prefixes each schema with
+        the catalog name if multiple catalogs are found. Schemas "information_schema" and
+        "pg_catalog" are omitted if incl_system is False.
 
-        Uses `vectorbtpro.data.custom.custom.CustomData.key_match` to check each symbol against `pattern`."""
+        Args:
+            catalog_pattern (Optional[str]): Pattern to filter catalog names.
+            schema_pattern (Optional[str]): Pattern to filter schema names.
+            use_regex (bool): Flag indicating whether to treat patterns as regular expressions.
+            sort (bool): Flag indicating whether to sort the resulting schema names.
+            catalog (Optional[str]): Specific catalog to search for schemas.
+
+                If provided, schemas are not prefixed.
+            incl_system (bool): Flag indicating whether to include system schemas.
+            connection (Union[None, str, DuckDBPyConnection]): A connection instance,
+                file path, or connection string.
+            connection_config (KwargsLike): Additional keyword arguments for connection configuration.
+
+        Returns:
+            List[str]: A list of schema names.
+        """
         if connection_config is None:
             connection_config = {}
         connection_meta = cls.resolve_connection(connection, return_meta=True, **connection_config)
@@ -250,7 +291,16 @@ class DuckDBData(DBData):
         connection: tp.Union[None, str, DuckDBPyConnectionT] = None,
         connection_config: tp.KwargsLike = None,
     ) -> str:
-        """Get the current schema."""
+        """Return the current schema in use by the DuckDB connection.
+
+        Args:
+            connection (Union[None, str, DuckDBPyConnection]): A connection instance,
+                file path, or connection string.
+            connection_config (KwargsLike): Additional keyword arguments for connection configuration.
+
+        Returns:
+            str: The current schema name.
+        """
         if connection_config is None:
             connection_config = {}
         connection_meta = cls.resolve_connection(connection, return_meta=True, **connection_config)
@@ -279,15 +329,36 @@ class DuckDBData(DBData):
         connection: tp.Union[None, str, DuckDBPyConnectionT] = None,
         connection_config: tp.KwargsLike = None,
     ) -> tp.List[str]:
-        """List all tables and views.
+        """List tables and views from the database.
 
-        If `schema` is None, searches for all schema names in the database and prefixes each table
-        with the respective catalog and schema name (unless there's only one schema which is the current
-        schema or `schema` is `current_schema`). If `schema` is provided, returns the tables corresponding
-        to this schema without a prefix.
+        This method queries the database's information schema to retrieve a list of tables
+        and views. When `schema` is not provided, it searches across all available schemas
+        and prefixes each table name with its corresponding catalog and schema names
+        (unless only a single current schema is detected). If a specific `schema` is provided,
+        the returned table names are not prefixed.
 
-        Uses `vectorbtpro.data.custom.custom.CustomData.key_match` to check each schema against
-        `schema_pattern` and each table against `table_pattern`."""
+        Uses `vectorbtpro.data.custom.custom.CustomData.key_match` to perform pattern matching
+        on schema and table names.
+
+        Args:
+            catalog_pattern (Optional[str]): Pattern to filter catalogs.
+            schema_pattern (Optional[str]): Pattern to filter schemas.
+            table_pattern (Optional[str]): Pattern to filter table names.
+            use_regex (bool): Determines whether to use regular expressions for matching.
+            sort (bool): Indicates whether to sort the resulting list.
+            catalog (Optional[str]): Filter results to the specified catalog.
+            schema (Optional[str]): Filter results to the specified schema.
+
+                Use `"current_schema"` to refer to the current schema.
+            incl_system (bool): Include system tables and views.
+            incl_temporary (bool): Include temporary tables.
+            incl_views (bool): Include view objects.
+            connection (Union[None, str, DuckDBPyConnection]): Database connection identifier or object.
+            connection_config (KwargsLike): Additional keyword arguments for database connection configuration.
+
+        Returns:
+            List[str]: List of table names, optionally prefixed with catalog and schema names.
+        """
         if connection_config is None:
             connection_config = {}
         connection_meta = cls.resolve_connection(connection, return_meta=True, **connection_config)
@@ -454,8 +525,29 @@ class DuckDBData(DBData):
         share_connection: tp.Optional[bool] = None,
         **kwargs,
     ) -> DuckDBDataT:
-        """Override `vectorbtpro.data.base.Data.pull` to resolve and share the connection among the keys
-        and use the table names available in the database in case no keys were provided."""
+        """Override `vectorbtpro.data.base.Data.pull` to resolve and share the database
+        connection among provided keys.
+
+        Args:
+            keys (MaybeKeys): Keys for which to pull data.
+
+                If not provided, available table names are used.
+            keys_are_features (Optional[bool]): Indicates whether the keys represent features.
+            features (MaybeFeatures): Features used to filter or structure the data.
+            symbols (MaybeSymbols): Symbols used for filtering the data.
+            catalog (Optional[str]): Catalog name for database lookup.
+            schema (Optional[str]): Schema name for database lookup.
+            list_tables_kwargs: Additional keyword arguments for listing database tables.
+            read_path (Optional[PathLike]): File or directory path for reading data.
+            read_format (Optional[str]): Format to use when reading data.
+            connection (Union[None, str, DuckDBPyConnection]): Database connection instance or identifier.
+            connection_config: Additional keyword arguments for configuring the connection.
+            share_connection (Optional[bool]): If True, uses a shared connection among keys.
+            **kwargs: Additional keyword arguments passed to the parent method.
+
+        Returns:
+            DuckDBData: An instance containing the pulled data with resolved keys and connection.
+        """
         if share_connection is None:
             if not cls.has_key_dict(connection) and not cls.has_key_dict(connection_config):
                 share_connection = True
@@ -531,7 +623,14 @@ class DuckDBData(DBData):
 
     @classmethod
     def format_write_option(cls, option: tp.Any) -> str:
-        """Format a write option."""
+        """Format the given write option into a string representation.
+
+        Args:
+            option (Any): The write option to format.
+
+        Returns:
+            str: The formatted write option.
+        """
         if isinstance(option, str):
             return f"'{option}'"
         if isinstance(option, (tuple, list)):
@@ -542,7 +641,14 @@ class DuckDBData(DBData):
 
     @classmethod
     def format_write_options(cls, options: tp.Union[str, dict]) -> str:
-        """Format write options."""
+        """Format the given write options into a single string.
+
+        Args:
+            options (Union[str, dict]): The write options to format.
+
+        Returns:
+            str: A comma-separated string of formatted write options.
+        """
         if isinstance(options, str):
             return options
         new_options = []
@@ -552,7 +658,14 @@ class DuckDBData(DBData):
 
     @classmethod
     def format_read_option(cls, option: tp.Any) -> str:
-        """Format a read option."""
+        """Format the given read option into a string representation.
+
+        Args:
+            option (Any): The read option to format.
+
+        Returns:
+            str: The formatted read option.
+        """
         if isinstance(option, str):
             return f"'{option}'"
         if isinstance(option, (tuple, list)):
@@ -563,7 +676,14 @@ class DuckDBData(DBData):
 
     @classmethod
     def format_read_options(cls, options: tp.Union[str, dict]) -> str:
-        """Format read options."""
+        """Format the given read options into a single string.
+
+        Args:
+            options (Union[str, dict]): The read options to format.
+
+        Returns:
+            str: A comma-separated string of formatted read options.
+        """
         if isinstance(options, str):
             return options
         new_options = []
@@ -597,67 +717,74 @@ class DuckDBData(DBData):
     ) -> tp.KeyData:
         """Fetch a feature or symbol from a DuckDB database.
 
-        Can use a table name (which defaults to the key) or a custom query.
+        Can use a table name (defaulting to the key) or a custom SQL query.
 
         Args:
             key (str): Feature or symbol.
 
-                If `table` and `query` are both None, becomes the table name.
-
-                Key can be in the `SCHEMA:TABLE` format, in this case `schema` argument will be ignored.
+                If both `table` and `query` are None, the key becomes the table name.
+                The key can be provided in either `SCHEMA:TABLE` or `CATALOG:SCHEMA:TABLE` format,
+                in which case the `schema` argument is ignored.
             table (str): Table name.
 
-                Cannot be used together with `file` or `query`.
+                Cannot be used together with `read_path` or `query`.
             schema (str): Schema name.
 
-                Cannot be used together with `file` or `query`.
+                Cannot be used together with `read_path` or `query`.
             catalog (str): Catalog name.
 
-                Cannot be used together with ``file` or query`.
-            read_path (path_like): Path to a file to read.
+                Cannot be used together with `read_path` or `query`.
+            read_path (PathLike): Path to a file to read.
 
                 Cannot be used together with `table`, `schema`, `catalog`, or `query`.
-            read_format (str): Format of the file to read.
+            read_format (str): File format.
 
                 Allowed values are "csv", "parquet", and "json".
-
                 Requires `read_path` to be set.
             read_options (str or dict): Options used to read the file.
 
-                Requires `read_path` and `read_format` to be set.
+                Requires both `read_path` and `read_format` to be set.
+                Uses `DuckDBData.format_read_options` to transform options into a string.
+            query (str or DuckDBPyRelation): Custom SQL query.
 
-                Uses `DuckDBData.format_read_options` to transform a dictionary to a string.
-            query (str or DuckDBPyRelation): Custom query.
+                Cannot be used together with `catalog`, `schema`, or `table`.
+            connection (str or DuckDBPyConnection): Connection reference.
 
-                Cannot be used together with `catalog`, `schema`, and `table`.
-            connection (str or object): See `DuckDBData.resolve_connection`.
-            connection_config (dict): See `DuckDBData.resolve_connection`.
-            start (any): Start datetime (if datetime index) or any other start value.
+                See `DuckDBData.resolve_connection` for details.
+            connection_config (dict): Additional configuration for the connection;
 
-                Will parse with `vectorbtpro.utils.datetime_.to_timestamp` if `align_dates` is True
-                and the index is a datetime index. Otherwise, you must ensure the correct type is provided.
+                See `DuckDBData.resolve_connection` for details.
+            start (any): Start value for filtering.
 
-                Cannot be used together with `query`. Include the condition into the query.
-            end (any): End datetime (if datetime index) or any other end value.
+                Interpreted as a datetime when the index is of datetime type and `align_dates` is True.
+                Cannot be used together with `query`; include the condition in the query.
+            end (any): End value for filtering.
 
-                Will parse with `vectorbtpro.utils.datetime_.to_timestamp` if `align_dates` is True
-                and the index is a datetime index. Otherwise, you must ensure the correct type is provided.
+                Interpreted as a datetime when the index is of datetime type and `align_dates` is True.
+                Cannot be used together with `query`; include the condition in the query.
+            align_dates (bool): Whether to align `start` and `end` to the index timezone.
 
-                Cannot be used together with `query`. Include the condition into the query.
-            align_dates (bool): Whether to align `start` and `end` to the timezone of the index.
+                Pulls one row using `LIMIT 1` and applies `SQLData.prepare_dt` to
+                determine the index configuration.
+            parse_dates (bool or Sequence[str]): Parameter for date parsing;
 
-                Will pull one row (using `LIMIT 1`) and use `SQLData.prepare_dt` to get the index.
-            parse_dates (bool or sequence of str): See `DuckDBData.prepare_dt`.
-            to_utc (bool, str, or sequence of str): See `DuckDBData.prepare_dt`.
-            tz (any): Timezone.
+                See `DuckDBData.prepare_dt`.
+            to_utc (bool, str, or Sequence[str]): Parameter for converting dates to UTC;
+
+                See `DuckDBData.prepare_dt`.
+            tz (TimezoneLike): Timezone to apply;
 
                 See `vectorbtpro.utils.datetime_.to_timezone`.
-            index_col (int, str, or list): One or more columns that should become the index.
-            squeeze (int): Whether to squeeze a DataFrame with one column into a Series.
-            df_kwargs (dict): Keyword arguments passed to `relation.df` to convert a relation to a DataFrame.
-            **sql_kwargs: Other keyword arguments passed to `connection.execute` to run a SQL query.
+            index_col (int, str, or list): Column(s) to use as the index.
+            squeeze (bool): Whether to squeeze a DataFrame with a single column into a Series.
+            df_kwargs (dict): Keyword arguments for `relation.df` to convert a relation to a DataFrame.
+            **sql_kwargs: Additional keyword arguments for `connection.execute` to run the SQL query.
 
-        For defaults, see `custom.duckdb` in `vectorbtpro._settings.data`."""
+        Returns:
+            KeyData: The fetched data and a metadata dictionary.
+
+        For defaults, see `custom.duckdb` in `vectorbtpro._settings.data`.
+        """
         from vectorbtpro.utils.module_ import assert_can_import
 
         assert_can_import("duckdb")
@@ -869,20 +996,48 @@ class DuckDBData(DBData):
 
     @classmethod
     def fetch_feature(cls, feature: str, **kwargs) -> tp.FeatureData:
-        """Fetch the table of a feature.
+        """Fetch the data table for a feature using the underlying `DuckDBData.fetch_key` method.
 
-        Uses `DuckDBData.fetch_key`."""
+        Args:
+            feature (str): The identifier for the feature whose data table is to be fetched.
+            **kwargs: Additional keyword arguments passed to `DuckDBData.fetch_key`.
+
+        Returns:
+            FeatureData: The fetched data and a metadata dictionary.
+        """
         return cls.fetch_key(feature, **kwargs)
 
     @classmethod
     def fetch_symbol(cls, symbol: str, **kwargs) -> tp.SymbolData:
-        """Fetch the table for a symbol.
+        """Fetch the data table for a symbol using the underlying `DuckDBData.fetch_key` method.
 
-        Uses `DuckDBData.fetch_key`."""
+        Args:
+            symbol (str): The identifier for the symbol whose data table is to be fetched.
+            **kwargs: Additional keyword arguments passed to `DuckDBData.fetch_key`.
+
+        Returns:
+            SymbolData: The fetched data and a metadata dictionary.
+        """
         return cls.fetch_key(symbol, **kwargs)
 
     def update_key(self, key: str, from_last_index: tp.Optional[bool] = None, **kwargs) -> tp.KeyData:
-        """Update data of a feature or symbol."""
+        """Update the data table for a specified feature or symbol.
+
+        This method selects fetch parameters via `self.select_fetch_kwargs` and determines
+        whether to start from the last index based on the `from_last_index` flag or the presence
+        of a "query" in the keyword arguments. It then updates and fetches the data table by
+        invoking either `fetch_feature` or `fetch_symbol` depending on the object's orientation.
+
+        Args:
+            key (str): The identifier for the feature or symbol to update.
+            from_last_index (Optional[bool]): Flag indicating whether to update data starting from the last index.
+
+                If not provided, it is inferred from the presence of a "query" in the merged keyword arguments.
+            **kwargs: Additional keyword arguments used for fetching the updated data.
+
+        Returns:
+            KeyData: The updated data and a metadata dictionary.
+        """
         fetch_kwargs = self.select_fetch_kwargs(key)
         pre_kwargs = merge_dicts(fetch_kwargs, kwargs)
         if from_last_index is None:
@@ -898,13 +1053,25 @@ class DuckDBData(DBData):
         return self.fetch_symbol(key, **kwargs)
 
     def update_feature(self, feature: str, **kwargs) -> tp.FeatureData:
-        """Update data of a feature.
+        """Update the data table for a feature using the underlying `DuckDBData.update_key` method.
 
-        Uses `DuckDBData.update_key`."""
+        Args:
+            feature (str): The identifier for the feature to update.
+            **kwargs: Additional keyword arguments passed to `DuckDBData.update_key`.
+
+        Returns:
+            FeatureData: The updated data and a metadata dictionary.
+        """
         return self.update_key(feature, **kwargs)
 
     def update_symbol(self, symbol: str, **kwargs) -> tp.SymbolData:
-        """Update data for a symbol.
+        """Update the data table for a symbol using the underlying `DuckDBData.update_key` method.
 
-        Uses `DuckDBData.update_key`."""
+        Args:
+            symbol (str): The identifier for the symbol to update.
+            **kwargs: Additional keyword arguments passed to `DuckDBData.update_key`.
+
+        Returns:
+            SymbolData: The updated data and a metadata dictionary.
+        """
         return self.update_key(symbol, **kwargs)

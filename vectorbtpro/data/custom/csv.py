@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module with `CSVData`."""
+"""Module providing the `CSVData` class."""
 
 from pathlib import Path
 
@@ -30,13 +30,21 @@ CSVDataT = tp.TypeVar("CSVDataT", bound="CSVData")
 
 
 class CSVData(FileData):
-    """Data class for fetching CSV data."""
+    """Class for fetching CSV and TSV data files.
+
+    This class extends `FileData` and provides methods for verifying file types,
+    resolving metadata keys, and reading CSV files using pandas.
+    """
 
     _settings_path: tp.SettingsPath = dict(custom="data.custom.csv")
 
     @classmethod
     def is_csv_file(cls, path: tp.PathLike) -> bool:
-        """Return whether the path is a CSV/TSV file."""
+        """Return whether the given path is a CSV or TSV file.
+
+        Args:
+            path (PathLike): File path to check.
+        """
         if not isinstance(path, Path):
             path = Path(path)
         if path.exists() and path.is_file() and ".csv" in path.suffixes:
@@ -85,46 +93,50 @@ class CSVData(FileData):
         squeeze: tp.Optional[bool] = None,
         **read_kwargs,
     ) -> tp.KeyData:
-        """Fetch the CSV file of a feature or symbol.
+        """Fetch the CSV file for a given feature or symbol.
+
+        Arguments `skiprows` and `nrows` are automatically determined based on `start_row` and `end_row`.
+
+        If either `start` or `end` is provided, the entire CSV file is read before applying date filtering.
+
+        For additional parameters, refer to `pd.read_csv` documentation.
 
         Args:
-            key (hashable): Feature or symbol.
-            path (str): Path.
+            key (hashable): The identifier for a feature or symbol.
+            path (Any): File path to the CSV file.
 
-                If `path` is None, uses `key` as the path to the CSV file.
-            start (any): Start datetime.
+                If not provided, `key` is used as the file path.
+            start (Optional[DatetimeLike]): The starting datetime for filtering data.
 
-                Will use the timezone of the object. See `vectorbtpro.utils.datetime_.to_timestamp`.
-            end (any): End datetime.
+                The object's timezone will be used. See `vectorbtpro.utils.datetime_.to_timestamp`.
+            end (Optional[DatetimeLike]): The ending datetime for filtering data.
 
-                Will use the timezone of the object. See `vectorbtpro.utils.datetime_.to_timestamp`.
-            tz (any): Target timezone.
+                The object's timezone will be used. See `vectorbtpro.utils.datetime_.to_timestamp`.
+            tz (TimezoneLike): The target timezone for conversion.
 
                 See `vectorbtpro.utils.datetime_.to_timezone`.
-            start_row (int): Start row (inclusive).
+            start_row (Optional[int]): The starting row index (inclusive), excluding header rows.
+            end_row (Optional[int]): The ending row index (exclusive), excluding header rows.
+            header (Optional[Union[int, Sequence[int]]]): Row number(s) to use as the header.
 
-                Must exclude header rows.
-            end_row (int): End row (exclusive).
+                See `pd.read_csv` for details.
+            index_col (Optional[int]): Column to use as the index.
 
-                Must exclude header rows.
-            header (int or sequence of int): See `pd.read_csv`.
-            index_col (int): See `pd.read_csv`.
+                If set to False, it is treated as None. See `pd.read_csv`.
+            parse_dates (Optional[bool]): Whether to parse dates.
 
-                 If False, will pass None.
-            parse_dates (bool): See `pd.read_csv`.
-            chunk_func (callable): Function to select and concatenate chunks from `TextFileReader`.
+                See `pd.read_csv`.
+            chunk_func (Optional[Callable]): Function for processing chunks from a `TextFileReader`.
 
-                Gets called only if `iterator` or `chunksize` are set.
-            squeeze (int): Whether to squeeze a DataFrame with one column into a Series.
-            **read_kwargs: Other keyword arguments passed to `pd.read_csv`.
+                This function is invoked when `iterator` or `chunksize` is specified.
+            squeeze (Optional[bool]): If True, a DataFrame with a single column is squeezed into a Series.
+            **read_kwargs: Additional keyword arguments passed to `pd.read_csv`.
 
-        `skiprows` and `nrows` will be automatically calculated based on `start_row` and `end_row`.
+        Returns:
+            SymbolData: The fetched data and a metadata dictionary.
 
-        When either `start` or `end` is provided, will fetch the entire data first and filter it thereafter.
-
-        See https://pandas.pydata.org/docs/reference/api/pandas.read_csv.html for other arguments.
-
-        For defaults, see `custom.csv` in `vectorbtpro._settings.data`."""
+        Defaults are specified in `custom.csv` within `vectorbtpro._settings.data`.
+        """
         from pandas.io.parsers import TextFileReader
         from pandas.api.types import is_object_dtype
 
@@ -225,20 +237,41 @@ class CSVData(FileData):
 
     @classmethod
     def fetch_feature(cls, feature: tp.Feature, **kwargs) -> tp.FeatureData:
-        """Fetch the CSV file of a feature.
+        """Fetch the CSV file for a feature.
 
-        Uses `CSVData.fetch_key`."""
+        Args:
+            feature (hashable): The feature identifier.
+            **kwargs: Additional keyword arguments to pass to `CSVData.fetch_key`.
+
+        Returns:
+            FeatureData: The fetched data and a metadata dictionary.
+        """
         return cls.fetch_key(feature, **kwargs)
 
     @classmethod
     def fetch_symbol(cls, symbol: tp.Symbol, **kwargs) -> tp.SymbolData:
-        """Fetch the CSV file of a symbol.
+        """Fetch the CSV file for a symbol.
 
-        Uses `CSVData.fetch_key`."""
+        Args:
+            symbol (hashable): The symbol identifier.
+            **kwargs: Additional keyword arguments to pass to `CSVData.fetch_key`.
+
+        Returns:
+            SymbolData: The fetched data and a metadata dictionary.
+        """
         return cls.fetch_key(symbol, **kwargs)
 
     def update_key(self, key: tp.Key, key_is_feature: bool = False, **kwargs) -> tp.KeyData:
-        """Update data of a feature or symbol."""
+        """Update the CSV data for a feature or symbol.
+
+        Args:
+            key (hashable): The identifier for the feature or symbol.
+            key_is_feature (bool): Indicates whether `key` represents a feature.
+            **kwargs: Additional keyword arguments for data fetching operations.
+
+        Returns:
+            KeyData: The updated data and a metadata dictionary.
+        """
         fetch_kwargs = self.select_fetch_kwargs(key)
         returned_kwargs = self.select_returned_kwargs(key)
         fetch_kwargs["start_row"] = returned_kwargs["last_row"]
@@ -250,11 +283,28 @@ class CSVData(FileData):
     def update_feature(self, feature: tp.Feature, **kwargs) -> tp.FeatureData:
         """Update data of a feature.
 
-        Uses `CSVData.update_key` with `key_is_feature=True`."""
+        Args:
+            feature (Feature): The feature key to update.
+            **kwargs: Additional keyword arguments passed to `CSVData.update_key`.
+
+        Returns:
+            FeatureData: The updated data and a metadata dictionary.
+
+        !!! note
+            Invokes `CSVData.update_key` with `key_is_feature=True`.
+        """
         return self.update_key(feature, key_is_feature=True, **kwargs)
 
     def update_symbol(self, symbol: tp.Symbol, **kwargs) -> tp.SymbolData:
         """Update data for a symbol.
 
-        Uses `CSVData.update_key` with `key_is_feature=False`."""
+        Invokes `CSVData.update_key` with `key_is_feature=False`.
+
+        Args:
+            symbol (Symbol): The symbol key whose data will be updated.
+            **kwargs: Additional keyword arguments passed to `CSVData.update_key`.
+
+        Returns:
+            SymbolData: The updated data and a metadata dictionary.
+        """
         return self.update_key(symbol, key_is_feature=False, **kwargs)

@@ -74,6 +74,7 @@ if TYPE_CHECKING:
     from vectorbtpro.base.indexing import hslice
     from vectorbtpro.base.grouping.base import Grouper
     from vectorbtpro.base.resampling.base import Resampler
+    from vectorbtpro.data.base import Data
     from vectorbtpro.generic.splitting.base import FixRange, RelRange
 else:
     Regex = "Regex"
@@ -110,6 +111,7 @@ else:
     hslice = "hslice"
     Grouper = "Grouper"
     Resampler = "Resampler"
+    Data = "Data"
     FixRange = "FixRange"
     RelRange = "RelRange"
 
@@ -253,6 +255,7 @@ Column = Key = Feature = Symbol = Hashable
 Columns = Keys = Features = Symbols = Sequence[Hashable]
 MaybeColumns = MaybeKeys = MaybeFeatures = MaybeSymbols = Union[Hashable, Sequence[Hashable]]
 KeyData = FeatureData = SymbolData = Union[None, SeriesFrame, Tuple[SeriesFrame, Kwargs]]
+PullOutput = Union[Data, List[Any]]
 
 # Plotting
 TraceName = Union[str, None]

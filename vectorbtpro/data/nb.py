@@ -8,10 +8,13 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Numba-compiled functions for generating data.
+"""Module providing Numba-compiled functions for generating data.
 
-Provides an arsenal of Numba-compiled functions that are used to generate data.
-These only accept NumPy arrays and other Numba-compatible types."""
+This module offers a collection of functions compiled with Numba to efficiently
+simulate data using statistical models such as cumulative return processes and
+Geometric Brownian Motion. All functions are designed to work with NumPy arrays
+and other Numba-compatible types.
+"""
 
 import numpy as np
 from numba import prange
@@ -33,10 +36,20 @@ def generate_random_data_1d_nb(
     std: float = 0.01,
     symmetric: bool = False,
 ) -> tp.Array1d:
-    """Generate data using cumulative product of returns drawn from normal (Gaussian) distribution.
+    """Generate a one-dimensional array of data using cumulative product of returns drawn
+    from a Gaussian distribution.
 
-    Turn on `symmetric` to diminish negative returns and make them symmetric to positive ones.
-    Otherwise, the majority of generated paths will go downward."""
+    Args:
+        n_rows (int): Number of data points to generate.
+        start_value (float): Initial value at the start of the series.
+        mean (float): Mean of the Gaussian distribution for sampling returns.
+        std (float): Standard deviation of the Gaussian distribution for sampling returns.
+        symmetric (bool): If True, converts negative returns to be symmetric to positive ones,
+            reducing their negative impact.
+
+    Returns:
+        Array1d: An array of generated data.
+    """
     out = np.empty(n_rows, dtype=float_)
 
     for i in range(n_rows):
@@ -60,9 +73,20 @@ def generate_random_data_nb(
     std: tp.FlexArray1dLike = 0.01,
     symmetric: tp.FlexArray1dLike = False,
 ) -> tp.Array2d:
-    """2-dim version of `generate_random_data_1d_nb`.
+    """Generate a two-dimensional array of data using cumulative product of returns drawn
+    from a Gaussian distribution, applied column-wise.
 
-    Each argument can be provided per column thanks to flexible indexing."""
+    Args:
+        shape (Shape): Tuple specifying the dimensions of the output array.
+        start_value (FlexArray1dLike): Initial value(s) for each column.
+        mean (FlexArray1dLike): Mean value(s) of the Gaussian distribution for each column.
+        std (FlexArray1dLike): Standard deviation(s) of the Gaussian distribution for each column.
+        symmetric (FlexArray1dLike): Boolean flag(s) indicating whether to adjust negative returns to be symmetric
+            to positive returns for each column.
+
+    Returns:
+        Array2d: A two-dimensional array of generated data.
+    """
     start_value_ = to_1d_array_nb(np.asarray(start_value))
     mean_ = to_1d_array_nb(np.asarray(mean))
     std_ = to_1d_array_nb(np.asarray(std))
@@ -90,7 +114,18 @@ def generate_gbm_data_1d_nb(
     std: float = 0.01,
     dt: float = 1.0,
 ) -> tp.Array2d:
-    """Generate data using Geometric Brownian Motion (GBM)."""
+    """Generate a one-dimensional array of data using Geometric Brownian Motion (GBM).
+
+    Args:
+        n_rows (int): Number of data points to generate.
+        start_value (float): Initial value of the series.
+        mean (float): Drift factor in the GBM process.
+        std (float): Volatility factor in the GBM process.
+        dt (float): Time increment used in the simulation.
+
+    Returns:
+        Array2d: An array containing the simulated GBM data.
+    """
     out = np.empty(n_rows, dtype=float_)
 
     for i in range(n_rows):
@@ -112,9 +147,18 @@ def generate_gbm_data_nb(
     std: tp.FlexArray1dLike = 0.01,
     dt: tp.FlexArray1dLike = 1.0,
 ) -> tp.Array2d:
-    """2-dim version of `generate_gbm_data_1d_nb`.
+    """Generate a two-dimensional array of data using Geometric Brownian Motion (GBM), computed column-wise.
 
-    Each argument can be provided per column thanks to flexible indexing."""
+    Args:
+        shape (Shape): Tuple specifying the dimensions of the output array.
+        start_value (FlexArray1dLike): Initial value(s) for each column.
+        mean (FlexArray1dLike): Drift factor(s) for the GBM process in each column.
+        std (FlexArray1dLike): Volatility factor(s) for the GBM process in each column.
+        dt (FlexArray1dLike): Time increment(s) used for the simulation in each column.
+
+    Returns:
+        Array2d: A two-dimensional array containing the simulated GBM data.
+    """
     start_value_ = to_1d_array_nb(np.asarray(start_value))
     mean_ = to_1d_array_nb(np.asarray(mean))
     std_ = to_1d_array_nb(np.asarray(std))

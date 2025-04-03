@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Classes for scheduling data updates."""
+"""Module providing classes for scheduling data updates."""
 
 import logging
 
@@ -25,12 +25,12 @@ logger = logging.getLogger(__name__)
 
 
 class DataUpdater(Configured):
-    """Base class for scheduling data updates.
+    """Class for scheduling data updates.
 
     Args:
         data (Data): Data instance.
-        update_kwargs (dict): Default keyword arguments for `DataSaver.update`.
-        **kwargs: Keyword arguments passed to the constructor of `Configured`.
+        update_kwargs (KwargsLike): Default keyword arguments for `DataSaver.update`.
+        **kwargs: Additional keyword arguments for the `Configured` base class.
     """
 
     def __init__(
@@ -56,29 +56,32 @@ class DataUpdater(Configured):
 
     @property
     def data(self) -> Data:
-        """Data instance.
+        """Data instance associated with the updater.
 
-        See `vectorbtpro.data.base.Data`."""
+        See `vectorbtpro.data.base.Data`.
+        """
         return self._data
 
     @property
     def schedule_manager(self) -> ScheduleManager:
-        """Schedule manager instance.
-
-        See `vectorbtpro.utils.schedule_.ScheduleManager`."""
+        """`vectorbtpro.utils.schedule_.ScheduleManager` instance used for scheduling update jobs."""
         return self._schedule_manager
 
     @property
     def update_kwargs(self) -> tp.KwargsLike:
-        """Keyword arguments passed to `DataSaver.update`."""
+        """Default keyword arguments for `DataSaver.update`.
+
+        These arguments are merged with those provided during scheduled updates.
+        """
         return self._update_kwargs
 
     def update(self, **kwargs) -> None:
-        """Method that updates data.
+        """Update the data instance.
 
-        Override to do pre- and postprocessing.
+        Override this method to incorporate any pre- or post-processing steps during the update.
 
-        To stop this method from running again, raise `vectorbtpro.utils.schedule_.CancelledError`."""
+        To cancel further scheduled updates, raise `vectorbtpro.utils.schedule_.CancelledError`.
+        """
         # In case the method was called by the user
         kwargs = merge_dicts(self.update_kwargs, kwargs)
 
@@ -98,18 +101,21 @@ class DataUpdater(Configured):
         start_kwargs: tp.KwargsLike = None,
         **update_kwargs,
     ) -> None:
-        """Schedule `DataUpdater.update` as a job.
+        """Schedule `DataUpdater.update` as a periodic job.
 
-        For `*args`, `to` and `tags`, see `vectorbtpro.utils.schedule_.ScheduleManager.every`.
+        For details on `*args`, `to`, and `tags`, refer to `vectorbtpro.utils.schedule_.ScheduleManager.every`.
 
-        If `in_background` is set to True, starts in the background as an `asyncio` task.
-        The task can be stopped with `vectorbtpro.utils.schedule_.ScheduleManager.stop`.
-
-        If `replace` is True, will delete scheduled jobs with the same tags, or all jobs if tags are omitted.
-
-        If `start` is False, will add the job to the scheduler without starting.
-
-        `**update_kwargs` are merged over `DataUpdater.update_kwargs` and passed to `DataUpdater.update`."""
+        Args:
+            *args: Additional positional arguments passed to `vectorbtpro.utils.schedule_.ScheduleManager.every`.
+            to (int): The upper time boundary for scheduling updates.
+            tags (Optional[Iterable[Hashable]]): Tags used to identify the scheduled job.
+            in_background (bool): If True, the job runs as an asyncio task and
+                can be stopped using `vectorbtpro.utils.schedule_.ScheduleManager.stop`
+            replace (bool): If True, remove existing jobs with matching tags.
+            start (bool): If True, start the job immediately after scheduling.
+            start_kwargs (KwargsLike): Additional keyword arguments for starting the scheduler.
+            **update_kwargs: Additional keyword arguments passed to `DataUpdater.update`.
+        """
         if replace:
             self.schedule_manager.clear_jobs(tags)
         update_kwargs = merge_dicts(self.update_kwargs, update_kwargs)

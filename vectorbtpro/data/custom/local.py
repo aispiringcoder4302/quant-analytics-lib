@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module with `LocalData`."""
+"""Module providing the `LocalData` class."""
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.data.custom.custom import CustomData
@@ -21,6 +21,6 @@ __pdoc__ = {}
 
 
 class LocalData(CustomData):
-    """Data class for fetching local data."""
+    """Class for fetching local data."""
 
     _settings_path: tp.SettingsPath = dict(custom="data.custom.local")

@@ -330,7 +330,7 @@ def cv_split(
     (available as `grid_results`) and return the best parameter combination. This parameter combination
     is then executed by each set (including training).
 
-    Argument `selection` also accepts "min" for `np.argmin` and "max" for `np.argmax`.
+    Argument `selection` also accepts "min" for `np.nanargmin` and "max" for `np.nanargmax`.
 
     Keyword arguments `parameterized_kwargs` will be passed to `vectorbtpro.utils.params.parameterized`
     and will have their templates substituted with a context that will also include the split-related context

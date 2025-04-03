@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module with `GBMData`."""
+"""Module providing `GBMData` for generating synthetic geometric Brownian motion data."""
 
 import pandas as pd
 
@@ -29,7 +29,8 @@ __pdoc__ = {}
 
 
 class GBMData(SyntheticData):
-    """`SyntheticData` for data generated using `vectorbtpro.data.nb.generate_gbm_data_nb`."""
+    """Class for synthetic data generated via geometric Brownian motion using
+    `vectorbtpro.data.nb.generate_gbm_data_nb`."""
 
     _settings_path: tp.SettingsPath = dict(custom="data.custom.gbm")
 
@@ -47,28 +48,31 @@ class GBMData(SyntheticData):
         jitted: tp.JittedOption = None,
         **kwargs,
     ) -> tp.KeyData:
-        """Generate a feature or symbol.
+        """Generate synthetic data for a feature or symbol using geometric Brownian motion.
 
         Args:
-            key (hashable): Feature or symbol.
-            index (pd.Index): Pandas index.
-            columns (hashable or index_like): Column names.
+            key (Hashable): Feature or symbol identifier.
+            index (pd.Index): Pandas index representing time.
+            columns (Hashable or IndexLike): Column names.
 
-                Provide a single value (hashable) to make a Series.
-            start_value (float): Value at time 0.
+                Provide a single hashable value to create a Series.
+            start_value (float): Initial value at time 0.
 
-                Does not appear as the first value in the output data.
-            mean (float): Drift, or mean of the percentage change.
+                Note that this value does not appear as the first data point.
+            mean (float): Drift or mean of the percentage change.
             std (float): Standard deviation of the percentage change.
-            dt (float): Time change (one period of time).
-            seed (int): Seed to make output deterministic.
-            jitted (any): See `vectorbtpro.utils.jitting.resolve_jitted_option`.
+            dt (float): Time increment for one period.
+            seed (int): Seed to ensure deterministic output.
+            jitted (JittedOption): See `vectorbtpro.utils.jitting.resolve_jitted_option`.
 
-        For defaults, see `custom.gbm` in `vectorbtpro._settings.data`.
+        Returns:
+            KeyData: The generated data and a metadata dictionary.
+
+        For defaults, refer to `custom.gbm` in `vectorbtpro._settings.data`.
 
         !!! note
-            When setting a seed, remember to pass a seed per feature/symbol using
-            `vectorbtpro.data.base.feature_dict`/`vectorbtpro.data.base.symbol_dict` or generally
+            When setting a seed, pass a seed per feature or symbol using
+            `vectorbtpro.data.base.feature_dict`/`vectorbtpro.data.base.symbol_dict` or, more generally,
             `vectorbtpro.data.base.key_dict`.
         """
         if checks.is_hashable(columns):

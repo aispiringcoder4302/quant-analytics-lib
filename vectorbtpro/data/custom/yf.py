@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module with `YFData`."""
+"""Module providing `YFData` for fetching financial data from Yahoo Finance."""
 
 import pandas as pd
 
@@ -27,11 +27,11 @@ __pdoc__ = {}
 
 
 class YFData(RemoteData):
-    """Data class for fetching from Yahoo Finance.
+    """Class for fetching financial data from Yahoo Finance.
 
-    See https://github.com/ranaroussi/yfinance for API.
+    See `https://github.com/ranaroussi/yfinance` for API details.
 
-    See `YFData.fetch_symbol` for arguments.
+    See `YFData.fetch_symbol` for argument details.
 
     Usage:
         ```pycon
@@ -89,28 +89,28 @@ class YFData(RemoteData):
         """Override `vectorbtpro.data.base.Data.fetch_symbol` to fetch a symbol from Yahoo Finance.
 
         Args:
-            symbol (str): Symbol.
-            period (str): Period.
-            start (any): Start datetime.
+            symbol (str): Financial symbol identifier.
+            period (Optional[str]): Period string.
+            start (Optional[DatetimeLike]): Start datetime.
 
-                See `vectorbtpro.utils.datetime_.to_tzaware_datetime`.
-            end (any): End datetime.
+                See `vectorbtpro.utils.datetime_.to_tzaware_datetime` for conversion details.
+            end (Optional[DatetimeLike]): End datetime.
 
-                See `vectorbtpro.utils.datetime_.to_tzaware_datetime`.
-            timeframe (str): Timeframe.
+                See `vectorbtpro.utils.datetime_.to_tzaware_datetime` for conversion details.
+            timeframe (Optional[str]): Human-readable timeframe (e.g., "15 minutes").
+            tz (TimezoneLike): Time zone for datetime conversion.
 
-                Allows human-readable strings such as "15 minutes".
-            tz (any): Timezone.
+                See `vectorbtpro.utils.datetime_.to_timezone` for conversion details.
+            **history_kwargs: Additional keyword arguments passed to `yfinance.base.TickerBase.history`.
 
-                See `vectorbtpro.utils.datetime_.to_timezone`.
-            **history_kwargs: Keyword arguments passed to `yfinance.base.TickerBase.history`.
+        Returns:
+            SymbolData: The fetched data and a metadata dictionary.
 
-        For defaults, see `custom.yf` in `vectorbtpro._settings.data`.
+        For default settings, see `custom.yf` in `vectorbtpro._settings.data`.
 
         !!! warning
-            Data coming from Yahoo is not the most stable data out there. Yahoo may manipulate data
-            how they want, add noise, return missing data points (see volume in the example below), etc.
-            It's only used in vectorbt for demonstration purposes.
+            Data from Yahoo Finance may be unstable. Yahoo may modify data, introduce noise, or omit data points
+            (e.g., volume in the example). It is primarily intended for demonstration purposes.
         """
         from vectorbtpro.utils.module_ import assert_can_import
 

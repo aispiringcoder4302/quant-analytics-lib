@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module with `CCXTData`."""
+"""Module providing the `CCXTData` class."""
 
 import time
 import traceback
@@ -36,11 +36,12 @@ __pdoc__ = {}
 
 
 class CCXTData(RemoteData):
-    """Data class for fetching using CCXT.
+    """Data class for fetching data using CCXT.
 
-    See https://github.com/ccxt/ccxt for API.
+    This class provides functionality to retrieve market data via the CCXT API.
+    See https://github.com/ccxt/ccxt for further API details.
 
-    See `CCXTData.fetch_symbol` for arguments.
+    For specific parameter details, refer to `CCXTData.fetch_symbol`.
 
     Usage:
         * Set up the API key globally (optional):
@@ -75,7 +76,16 @@ class CCXTData(RemoteData):
 
     @classmethod
     def get_exchange_settings(cls, *args, exchange_name: tp.Optional[str] = None, **kwargs) -> dict:
-        """`CCXTData.get_custom_settings` with `sub_path=exchange_name`."""
+        """Return custom exchange settings using a sub-path based on the exchange name.
+
+        Args:
+            *args: Additional arguments passed to `CCXTData.get_custom_settings`.
+            exchange_name (Optional[str]): Name of the exchange used to form the sub-path.
+            **kwargs: Additional keyword arguments passed to `CCXTData.get_custom_settings`.
+
+        Returns:
+            dict: The custom exchange settings.
+        """
         if exchange_name is not None:
             sub_path = "exchanges." + exchange_name
         else:
@@ -84,7 +94,13 @@ class CCXTData(RemoteData):
 
     @classmethod
     def has_exchange_settings(cls, *args, exchange_name: tp.Optional[str] = None, **kwargs) -> bool:
-        """`CCXTData.has_custom_settings` with `sub_path=exchange_name`."""
+        """Return whether custom exchange settings exist using a sub-path derived from the exchange name.
+
+        Args:
+            *args: Additional arguments passed to `CCXTData.has_custom_settings`.
+            exchange_name (Optional[str]): Name of the exchange used to form the sub-path.
+            **kwargs: Additional keyword arguments passed to `CCXTData.has_custom_settings`.
+        """
         if exchange_name is not None:
             sub_path = "exchanges." + exchange_name
         else:
@@ -93,7 +109,16 @@ class CCXTData(RemoteData):
 
     @classmethod
     def get_exchange_setting(cls, *args, exchange_name: tp.Optional[str] = None, **kwargs) -> tp.Any:
-        """`CCXTData.get_custom_setting` with `sub_path=exchange_name`."""
+        """Return a custom exchange setting using a sub-path determined by the exchange name.
+
+        Args:
+            *args: Additional arguments passed to `CCXTData.get_custom_setting`.
+            exchange_name (Optional[str]): Name of the exchange used to specify the sub-path.
+            **kwargs: Additional keyword arguments passed to `CCXTData.get_custom_setting`.
+
+        Returns:
+            Any: The retrieved custom exchange setting.
+        """
         if exchange_name is not None:
             sub_path = "exchanges." + exchange_name
         else:
@@ -102,7 +127,13 @@ class CCXTData(RemoteData):
 
     @classmethod
     def has_exchange_setting(cls, *args, exchange_name: tp.Optional[str] = None, **kwargs) -> bool:
-        """`CCXTData.has_custom_setting` with `sub_path=exchange_name`."""
+        """Return whether a custom exchange setting exists for the specified exchange name via a sub-path.
+
+        Args:
+            *args: Additional arguments passed to `CCXTData.has_custom_setting`.
+            exchange_name (Optional[str]): Name of the exchange used to form the sub-path.
+            **kwargs: Additional keyword arguments passed to `CCXTData.has_custom_setting`.
+        """
         if exchange_name is not None:
             sub_path = "exchanges." + exchange_name
         else:
@@ -111,7 +142,16 @@ class CCXTData(RemoteData):
 
     @classmethod
     def resolve_exchange_setting(cls, *args, exchange_name: tp.Optional[str] = None, **kwargs) -> tp.Any:
-        """`CCXTData.resolve_custom_setting` with `sub_path=exchange_name`."""
+        """Resolve a custom exchange setting using a sub-path determined by the exchange name.
+
+        Args:
+            *args: Additional arguments passed to `CCXTData.resolve_custom_setting`.
+            exchange_name (Optional[str]): Name of the exchange used to define the sub-path.
+            **kwargs: Additional keyword arguments passed to `CCXTData.resolve_custom_setting`.
+
+        Returns:
+            Any: The resolved custom exchange setting.
+        """
         if exchange_name is not None:
             sub_path = "exchanges." + exchange_name
         else:
@@ -120,7 +160,13 @@ class CCXTData(RemoteData):
 
     @classmethod
     def set_exchange_settings(cls, *args, exchange_name: tp.Optional[str] = None, **kwargs) -> None:
-        """`CCXTData.set_custom_settings` with `sub_path=exchange_name`."""
+        """Set custom exchange settings using a sub-path based on the provided exchange name.
+
+        Args:
+            *args: Additional arguments passed to `CCXTData.set_custom_settings`.
+            exchange_name (Optional[str]): Name of the exchange used to determine the sub-path.
+            **kwargs: Additional keyword arguments passed to `CCXTData.set_custom_settings`.
+        """
         if exchange_name is not None:
             sub_path = "exchanges." + exchange_name
         else:
@@ -136,9 +182,20 @@ class CCXTData(RemoteData):
         exchange: tp.Union[None, str, ExchangeT] = None,
         exchange_config: tp.Optional[tp.KwargsLike] = None,
     ) -> tp.List[str]:
-        """List all symbols.
+        """List all symbols matching an optional pattern.
 
-        Uses `vectorbtpro.data.custom.custom.CustomData.key_match` to check each symbol against `pattern`."""
+        Uses `vectorbtpro.data.custom.custom.CustomData.key_match` to filter symbols by the specified pattern.
+
+        Args:
+            pattern (Optional[str]): Pattern to filter symbols.
+            use_regex (bool): Whether to treat the pattern as a regular expression.
+            sort (bool): Whether to return the symbols in sorted order.
+            exchange (Union[None, str, Exchange]): Identifier or instance of the exchange.
+            exchange_config (Optional[KwargsLike]): Additional configurations for the exchange.
+
+        Returns:
+            List[str]: A list of matching symbols.
+        """
         if exchange_config is None:
             exchange_config = {}
         exchange = cls.resolve_exchange(exchange=exchange, **exchange_config)
@@ -159,10 +216,18 @@ class CCXTData(RemoteData):
         exchange: tp.Union[None, str, ExchangeT] = None,
         **exchange_config,
     ) -> ExchangeT:
-        """Resolve the exchange.
+        """Resolve the exchange instance.
 
-        If provided, must be of the type `ccxt.base.exchange.Exchange`.
-        Otherwise, will be created using `exchange_config`."""
+        If an exchange instance is provided, it must be of type `ccxt.base.exchange.Exchange`.
+        Otherwise, an instance is created using the provided exchange configuration.
+
+        Args:
+            exchange (Union[None, str, Exchange]): Identifier or instance of the exchange.
+            **exchange_config: Additional parameters for configuring the exchange.
+
+        Returns:
+            Exchange: The resolved exchange instance.
+        """
         from vectorbtpro.utils.module_ import assert_can_import
 
         assert_can_import("ccxt")
@@ -243,9 +308,19 @@ class CCXTData(RemoteData):
 
     @classmethod
     def find_earliest_date(cls, symbol: str, for_internal_use: bool = False, **kwargs) -> tp.Optional[pd.Timestamp]:
-        """Find the earliest date using binary search.
+        """Find the earliest timestamp for a symbol using binary search.
 
-        See `CCXTData.fetch_symbol` for arguments."""
+        This method calls `CCXTData.fetch_symbol` to retrieve data for the specified symbol,
+        then performs a binary search to determine the earliest available date.
+
+        Args:
+            symbol (str): The symbol for which to find the earliest date.
+            for_internal_use (bool): Flag indicating whether the search is for internal processing.
+            **kwargs: Additional keyword arguments passed to `CCXTData.fetch_symbol`.
+
+        Returns:
+            Optional[pd.Timestamp]: The earliest timestamp if data is available, otherwise None.
+        """
         return cls._find_earliest_date(
             **cls.fetch_symbol(symbol, return_fetch_method=True, **kwargs),
             for_internal_use=for_internal_use,
@@ -271,45 +346,52 @@ class CCXTData(RemoteData):
         silence_warnings: tp.Optional[bool] = None,
         return_fetch_method: bool = False,
     ) -> tp.Union[dict, tp.SymbolData]:
-        """Override `vectorbtpro.data.base.Data.fetch_symbol` to fetch a symbol from CCXT.
+        """Override `vectorbtpro.data.base.Data.fetch_symbol` to fetch symbol data from a CCXT exchange.
 
         Args:
-            symbol (str): Symbol.
+            symbol (str): Symbol to fetch.
 
-                Symbol can be in the `EXCHANGE:SYMBOL` format, in this case `exchange` argument will be ignored.
-            exchange (str or object): Exchange identifier or an exchange object.
+                Symbol may be provided in the `EXCHANGE:SYMBOL` format.
+                In this case, the `exchange` parameter is ignored.
+            exchange (Union[None, str, Exchange]): Exchange identifier or instance.
 
-                See `CCXTData.resolve_exchange`.
-            exchange_config (dict): Exchange config.
+                Refer to `CCXTData.resolve_exchange` for details.
+            exchange_config (Optional[KwargsLike]): Exchange configuration.
 
-                See `CCXTData.resolve_exchange`.
-            start (any): Start datetime.
+                See `CCXTData.resolve_exchange` for details.
+            start (Optional[DatetimeLike]): Starting datetime for fetching data.
 
-                See `vectorbtpro.utils.datetime_.to_tzaware_datetime`.
-            end (any): End datetime.
+                See `vectorbtpro.utils.datetime_.to_tzaware_datetime` for conversion details.
+            end (Optional[DatetimeLike]): Ending datetime for fetching data.
 
-                See `vectorbtpro.utils.datetime_.to_tzaware_datetime`.
-            timeframe (str): Timeframe.
+                See `vectorbtpro.utils.datetime_.to_tzaware_datetime` for conversion details.
+            timeframe (Optional[str]): Timeframe specification.
 
-                Allows human-readable strings such as "15 minutes".
-            tz (any): Timezone.
+                Accepts human-readable strings such as "15 minutes".
+            tz (TimezoneLike): Timezone for conversion.
 
-                See `vectorbtpro.utils.datetime_.to_timezone`.
-            find_earliest_date (bool): Whether to find the earliest date using `CCXTData.find_earliest_date`.
-            limit (int): The maximum number of returned items.
-            delay (float): Time to sleep after each request (in seconds).
+                See `vectorbtpro.utils.datetime_.to_timezone` for conversion details.
+            find_earliest_date (Optional[bool]): Flag to determine the earliest available date.
+
+                Uses `CCXTData.find_earliest_date` when enabled.
+            limit (Optional[int]): Maximum number of data items to return.
+            delay (Optional[float]): Delay after each request in seconds.
 
                 !!! note
                     Use only if `enableRateLimit` is not set.
-            retries (int): The number of retries on failure to fetch data.
-            fetch_params (dict): Exchange-specific keyword arguments passed to `fetch_ohlcv`.
-            show_progress (bool): Whether to show the progress bar.
-            pbar_kwargs (dict): Keyword arguments passed to `vectorbtpro.utils.pbar.ProgressBar`.
-            silence_warnings (bool): Whether to silence all warnings.
-            return_fetch_method (bool): Required by `CCXTData.find_earliest_date`.
+            retries (Optional[int]): Number of retries on fetch failure.
+            fetch_params (Optional[KwargsLike]): Exchange-specific parameters for `fetch_ohlcv`.
+            show_progress (Optional[bool]): Flag to display the progress bar.
+            pbar_kwargs (KwargsLike): Additional keyword arguments for `vectorbtpro.utils.pbar.ProgressBar`.
+            silence_warnings (Optional[bool]): Flag to suppress warnings.
+            return_fetch_method (bool): If True, returns the fetch method and settings instead of fetched data.
+
+        Returns:
+            Union[dict, SymbolData]: If `return_params` is True, returns the metadata around the fetching function.
+                Otherwise, returns the fetched Series/DataFrame and a metadata dictionary.
 
         For defaults, see `custom.ccxt` in `vectorbtpro._settings.data`.
-        Global settings can be provided per exchange id using the `exchanges` dictionary.
+        Global settings can be configured per exchange identifier using the `exchanges` dictionary.
         """
         from vectorbtpro.utils.module_ import assert_can_import
 

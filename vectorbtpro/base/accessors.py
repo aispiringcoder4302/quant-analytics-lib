@@ -663,7 +663,7 @@ class BaseIDXAccessor(Configured, IndexApplier):
         Args:
             *args: Additional arguments passed to
                 `vectorbtpro.generic.splitting.base.Splitter.split_and_take`.
-            splitter_cls (Optional[Type[SplitterT]]): The splitter class to use.
+            splitter_cls (Optional[Type[Splitter]]): The splitter class to use.
             **kwargs: Additional keyword arguments passed to
                 `vectorbtpro.generic.splitting.base.Splitter.split_and_take`.
 
@@ -693,7 +693,7 @@ class BaseIDXAccessor(Configured, IndexApplier):
             apply_func (Callable): The function to apply to each split.
             *args: Additional arguments passed to
                 `vectorbtpro.generic.splitting.base.Splitter.split_and_apply`.
-            splitter_cls (Optional[Type[SplitterT]]): The splitter class to use.
+            splitter_cls (Optional[Type[Splitter]]): The splitter class to use.
             **kwargs: Additional keyword arguments passed to
                 `vectorbtpro.generic.splitting.base.Splitter.split_and_apply`.
 

@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module with `RemoteData`."""
+"""Module providing `RemoteData`."""
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.data.custom.custom import CustomData
@@ -21,6 +21,6 @@ __pdoc__ = {}
 
 
 class RemoteData(CustomData):
-    """Data class for fetching remote data."""
+    """Class for fetching remote data."""
 
     _settings_path: tp.SettingsPath = dict(custom="data.custom.remote")

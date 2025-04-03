@@ -881,7 +881,6 @@ def align_indexes(
 
     Returns:
         Union[Tuple[IndexSlice, ...], Tuple[Tuple[IndexSlice, ...], Index]]:
-
             * If `return_new_index` is False, a tuple of index slices is returned.
             * If `return_new_index` is True, a tuple is returned where the first element
                 is a tuple of index slices and the second element is the new stacked index.
@@ -976,7 +975,6 @@ def cross_index_with(
 
     Returns:
         Union[Tuple[IndexSlice, IndexSlice], Tuple[Tuple[IndexSlice, IndexSlice], Index]]:
-
             * If `return_new_index` is False, a tuple of index slices for alignment is returned.
             * If `return_new_index` is True, a tuple containing the index slices and the
                 new combined index is returned.
@@ -1068,7 +1066,6 @@ def cross_indexes(
 
     Returns:
         Union[Tuple[IndexSlice, ...], Tuple[Tuple[IndexSlice, ...], Index]]:
-
             * If `return_new_index` is False, a tuple of index slices representing
                 the aligned indexes is returned.
             * If `return_new_index` is True, a tuple containing the index slices and

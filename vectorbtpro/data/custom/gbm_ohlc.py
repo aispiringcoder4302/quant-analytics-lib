@@ -8,7 +8,8 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module with `GBMOHLCData`."""
+"""Module providing the `GBMOHLCData` class for synthetic OHLC data generation using
+geometric Brownian motion simulation."""
 
 import numpy as np
 import pandas as pd
@@ -31,8 +32,11 @@ __pdoc__ = {}
 
 
 class GBMOHLCData(SyntheticData):
-    """`SyntheticData` for data generated using `vectorbtpro.data.nb.generate_gbm_data_1d_nb`
-    and then resampled using `vectorbtpro.ohlcv.nb.ohlc_every_1d_nb`."""
+    """Class for generating synthetic OHLC data using geometric Brownian motion.
+
+    Uses `vectorbtpro.data.nb.generate_gbm_data_1d_nb` to simulate price ticks and
+    `vectorbtpro.ohlcv.nb.ohlc_every_1d_nb` to aggregate ticks into OHLC bars.
+    """
 
     _settings_path: tp.SettingsPath = dict(custom="data.custom.gbm_ohlc")
 
@@ -51,28 +55,31 @@ class GBMOHLCData(SyntheticData):
         template_context: tp.KwargsLike = None,
         **kwargs,
     ) -> tp.SymbolData:
-        """Generate a symbol.
+        """Generate synthetic OHLC data for a given symbol using geometric Brownian motion.
 
         Args:
-            symbol (hashable): Symbol.
-            index (pd.Index): Pandas index.
-            n_ticks (int or array_like): Number of ticks per bar.
+            symbol (hashable): The symbol identifier.
+            index (pd.Index): The Pandas index representing time periods.
+            n_ticks (int or array_like): The number of ticks per bar.
 
-                Flexible argument. Can be a template with a context containing `symbol` and `index`.
-            start_value (float): Value at time 0.
+                Can be substituted using a template with a context containing `symbol` and `index`.
+            start_value (float): The initial value at time 0.
 
-                Does not appear as the first value in the output data.
-            mean (float): Drift, or mean of the percentage change.
-            std (float): Standard deviation of the percentage change.
-            dt (float): Time change (one period of time).
-            seed (int): Seed to make output deterministic.
-            jitted (any): See `vectorbtpro.utils.jitting.resolve_jitted_option`.
-            template_context (dict): Context used to substitute templates.
+                Note that this value does not appear as the first value in the resulting data.
+            mean (float): The drift representing the mean percentage change.
+            std (float): The standard deviation of the percentage change.
+            dt (float): The time increment per period.
+            seed (int): A seed for deterministic output.
+            jitted (any): Jitting option; refer to `vectorbtpro.utils.jitting.resolve_jitted_option`.
+            template_context (dict): A context for template substitution.
+
+        Returns:
+            SymbolData: The generated data and a metadata dictionary.
 
         For defaults, see `custom.gbm` in `vectorbtpro._settings.data`.
 
         !!! note
-            When setting a seed, remember to pass a seed per symbol using `vectorbtpro.data.base.symbol_dict`.
+            When setting a seed, provide a seed per symbol using `vectorbtpro.data.base.symbol_dict`.
         """
         n_ticks = cls.resolve_custom_setting(n_ticks, "n_ticks")
         template_context = merge_dicts(dict(symbol=symbol, index=index), template_context)

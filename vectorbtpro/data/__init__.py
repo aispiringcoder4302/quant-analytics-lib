@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Modules for working with data sources."""
+"""Module providing interfaces for working with various data sources."""
 
 from typing import TYPE_CHECKING
 

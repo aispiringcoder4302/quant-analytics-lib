@@ -998,7 +998,7 @@ Your goal is to refine (rewrite for clarity, correctness, consistent format and 
     unless it is incorrect.
 - **Do not change code examples** in the "Usage" section. Use only the name "Usage", 
     not "Examples" or any other name.
-- If a function returns `None` or bool, **do not add a "Returns" section**.
+- If a function returns `None`, **do not add a "Returns" section**.
 - **Do not add your own "Usage" section**.
 - **Make sure to list all arguments, their types, and descriptions**, apart from `self`, `cls`, and `cls_or_self`
 - Do not mention type `dict` when describing variable keyword arguments.

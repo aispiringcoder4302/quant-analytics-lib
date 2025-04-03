@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module with `HDFData`."""
+"""Module providing the `HDFData` class."""
 
 import re
 from glob import glob
@@ -31,13 +31,13 @@ __pdoc__ = {}
 
 
 class HDFPathNotFoundError(Exception):
-    """Gets raised if the path to an HDF file could not be found."""
+    """Exception raised when the path to an HDF file cannot be found."""
 
     pass
 
 
 class HDFKeyNotFoundError(Exception):
-    """Gets raised if the key to an HDF object could not be found."""
+    """Exception raised when the key to an HDF object cannot be found."""
 
     pass
 
@@ -52,7 +52,14 @@ class HDFData(FileData):
 
     @classmethod
     def is_hdf_file(cls, path: tp.PathLike) -> bool:
-        """Return whether the path is an HDF file."""
+        """Return whether the provided path is an HDF file.
+
+        Args:
+            path (PathLike): The file path to validate.
+
+        !!! note
+            Checks for file suffixes `.hdf`, `.hdf5`, and `.h5`.
+        """
         if not isinstance(path, Path):
             path = Path(path)
         if path.exists() and path.is_file() and ".hdf" in path.suffixes:
@@ -74,7 +81,24 @@ class HDFData(FileData):
         key: tp.Optional[str] = None,
         _full_path: tp.Optional[Path] = None,
     ) -> tp.Tuple[Path, tp.Optional[str]]:
-        """Split the path to an HDF object into the path to the file and the key."""
+        """Split the provided HDF path into its file and key components.
+
+        If the given path does not immediately correspond to an existing file,
+        the method recursively inspects parent directories to locate the HDF file
+        and constructs the key from intermediate path segments.
+
+        Args:
+            path (PathLike): The path to the HDF object.
+            key (Optional[str]): The key to identify the object within the HDF file.
+
+                Defaults to None. When provided, it is combined with portions of the path during recursion.
+            _full_path (Optional[Path]): The original complete path used for error reporting.
+
+                Defaults to the initial path.
+
+        Returns:
+            Tuple[Path, Optional[str]]: A tuple containing the HDF file path and the associated key.
+        """
         path = Path(path)
         if _full_path is None:
             _full_path = path
@@ -98,8 +122,20 @@ class HDFData(FileData):
         recursive: bool = True,
         **kwargs,
     ) -> tp.List[Path]:
-        """Override `FileData.match_path` to return a list of HDF paths
-        (path to file + key) matching a path."""
+        """Return a list of HDF paths matching the provided path.
+
+        Overrides `FileData.match_path` to locate HDF files and extract HDF keys.
+
+        Args:
+            path (PathLike): The base path to search for HDF files.
+            match_regex (Optional[str]): A regular expression to filter matching paths.
+            sort_paths (bool): Flag indicating whether to sort the resulting paths.
+            recursive (bool): Flag indicating whether to search directories recursively.
+            **kwargs: Additional keyword arguments for the matching process.
+
+        Returns:
+            List[Path]: A list of HDF paths, where each path represents a file with its HDF key appended.
+        """
         path = Path(path)
         if path.exists():
             if path.is_dir() and not cls.is_dir_match(path):
@@ -200,43 +236,44 @@ class HDFData(FileData):
         """Fetch the HDF object of a feature or symbol.
 
         Args:
-            key (hashable): Feature or symbol.
-            path (str): Path.
+            key (Key): Feature or symbol identifier.
+            path (Any): File path to the HDF file.
 
-                Will be resolved with `HDFData.split_hdf_path`.
+                Will be resolved using `HDFData.split_hdf_path`.
 
-                If `path` is None, uses `key` as the path to the HDF file.
-            start (any): Start datetime.
+                If None, `key` is used as the file path.
+            start (Optional[DatetimeLike]): Start datetime for filtering.
 
-                Will extract the object's index and compare the index to the date.
-                Will use the timezone of the object. See `vectorbtpro.utils.datetime_.to_timestamp`.
-
-                !!! note
-                    Can only be used if the object was saved in the table format!
-            end (any): End datetime.
-
-                Will extract the object's index and compare the index to the date.
-                Will use the timezone of the object. See `vectorbtpro.utils.datetime_.to_timestamp`.
+                Extracts the object's index and compares it to this date using the object's timezone.
 
                 !!! note
-                    Can only be used if the object was saved in the table format!
-            tz (any): Target timezone.
+                    Applicable only if the object was saved in table format.
+            end (Optional[DatetimeLike]): End datetime for filtering.
+
+                Extracts the object's index and compares it to this date using the object's timezone.
+
+                !!! note
+                    Applicable only if the object was saved in table format.
+            tz (TimezoneLike): Target timezone.
 
                 See `vectorbtpro.utils.datetime_.to_timezone`.
-            start_row (int): Start row (inclusive).
+            start_row (Optional[int]): Index of the starting row (inclusive).
 
-                Will use it when querying index as well.
-            end_row (int): End row (exclusive).
+                Also used for querying the index.
+            end_row (Optional[int]): Index of the ending row (exclusive).
 
-                Will use it when querying index as well.
-            chunk_func (callable): Function to select and concatenate chunks from `TableIterator`.
+                Also used for querying the index.
+            chunk_func (Optional[Callable]): Function to process and concatenate chunks from `TableIterator`.
 
-                Gets called only if `iterator` or `chunksize` are set.
-            **read_kwargs: Other keyword arguments passed to `pd.read_hdf`.
+                Called only if the iterator or chunksize is set.
+            **read_kwargs: Additional keyword arguments passed to `pd.read_hdf`.
 
-        See https://pandas.pydata.org/docs/reference/api/pandas.read_hdf.html for other arguments.
+        Returns:
+            KeyData: The fetched data and a metadata dictionary.
 
-        For defaults, see `custom.hdf` in `vectorbtpro._settings.data`."""
+        See https://pandas.pydata.org/docs/reference/api/pandas.read_hdf.html for additional arguments.
+        For defaults, see `custom.hdf` in `vectorbtpro._settings.data`.
+        """
         from vectorbtpro.utils.module_ import assert_can_import
 
         assert_can_import("tables")
@@ -306,20 +343,45 @@ class HDFData(FileData):
 
     @classmethod
     def fetch_feature(cls, feature: tp.Feature, **kwargs) -> tp.FeatureData:
-        """Fetch the HDF object of a feature.
+        """Fetch the HDF object for a feature.
 
-        Uses `HDFData.fetch_key`."""
+        Uses `HDFData.fetch_key`.
+
+        Args:
+            feature (Feature): Feature identifier.
+            **kwargs: Additional keyword arguments for `HDFData.fetch_key`.
+
+        Returns:
+            FeatureData: The fetched data and a metadata dictionary.
+        """
         return cls.fetch_key(feature, **kwargs)
 
     @classmethod
     def fetch_symbol(cls, symbol: tp.Symbol, **kwargs) -> tp.SymbolData:
-        """Load the HDF object for a symbol.
+        """Fetch the HDF object for a symbol.
 
-        Uses `HDFData.fetch_key`."""
+        Uses `HDFData.fetch_key`.
+
+        Args:
+            symbol (Symbol): Symbol identifier.
+            **kwargs: Additional keyword arguments for `HDFData.fetch_key`.
+
+        Returns:
+            SymbolData: The fetched data and a metadata dictionary.
+        """
         return cls.fetch_key(symbol, **kwargs)
 
     def update_key(self, key: tp.Key, key_is_feature: bool = False, **kwargs) -> tp.KeyData:
-        """Update data of a feature or symbol."""
+        """Update the HDF data for a feature or symbol.
+
+        Args:
+            key (Key): Feature or symbol identifier.
+            key_is_feature (bool): Indicator whether the key represents a feature.
+            **kwargs: Additional keyword arguments for fetching data.
+
+        Returns:
+            KeyData: The updated data and a metadata dictionary.
+        """
         fetch_kwargs = self.select_fetch_kwargs(key)
         returned_kwargs = self.select_returned_kwargs(key)
         fetch_kwargs["start_row"] = returned_kwargs["last_row"]
@@ -329,13 +391,29 @@ class HDFData(FileData):
         return self.fetch_symbol(key, **kwargs)
 
     def update_feature(self, feature: tp.Feature, **kwargs) -> tp.FeatureData:
-        """Update data of a feature.
+        """Update the HDF data for a feature.
 
-        Uses `HDFData.update_key` with `key_is_feature=True`."""
+        Uses `HDFData.update_key` with `key_is_feature=True`.
+
+        Args:
+            feature (Feature): Feature identifier.
+            **kwargs: Additional keyword arguments for `HDFData.update_key`.
+
+        Returns:
+            FeatureData: The updated data and a metadata dictionary.
+        """
         return self.update_key(feature, key_is_feature=True, **kwargs)
 
     def update_symbol(self, symbol: tp.Symbol, **kwargs) -> tp.SymbolData:
-        """Update data for a symbol.
+        """Update the HDF data for a symbol.
 
-        Uses `HDFData.update_key` with `key_is_feature=False`."""
+        Uses `HDFData.update_key` with `key_is_feature=False`.
+
+        Args:
+            symbol (Symbol): Symbol identifier.
+            **kwargs: Additional keyword arguments for `HDFData.update_key`.
+
+        Returns:
+            SymbolData: The updated data and a metadata dictionary.
+        """
         return self.update_key(symbol, key_is_feature=False, **kwargs)

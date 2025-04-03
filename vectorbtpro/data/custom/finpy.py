@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module with `FinPyData`."""
+"""Module providing the `FinPyData` class."""
 
 from itertools import product
 
@@ -34,11 +34,10 @@ FinPyDataT = tp.TypeVar("FinPyDataT", bound="FinPyData")
 
 
 class FinPyData(RemoteData):
-    """Data class for fetching using findatapy.
+    """Class for fetching financial data using the findatapy API.
 
-    See https://github.com/cuemacro/findatapy for API.
-
-    See `FinPyData.fetch_symbol` for arguments.
+    See https://github.com/cuemacro/findatapy for API documentation.
+    See `FinPyData.fetch_symbol` for argument details.
 
     Usage:
         * Pull data (keyword argument format):
@@ -74,9 +73,15 @@ class FinPyData(RemoteData):
         market: tp.Optional[MarketT] = None,
         **market_config,
     ) -> MarketT:
-        """Resolve the market.
+        """Resolve and return a Market instance.
 
-        If provided, must be of the type `findatapy.market.market.Market`."""
+        Args:
+            market (Optional[Market]): An optional market instance.
+            **market_config: Additional configuration options for the market.
+
+        Returns:
+            Market: The resolved market instance.
+        """
         from vectorbtpro.utils.module_ import assert_can_import
 
         assert_can_import("findatapy")
@@ -101,9 +106,15 @@ class FinPyData(RemoteData):
         config_manager: tp.Optional[ConfigManagerT] = None,
         **config_manager_config,
     ) -> MarketT:
-        """Resolve the config manager.
+        """Resolve and return a ConfigManager instance.
 
-        If provided, must be of the type `findatapy.util.ConfigManager`."""
+        Args:
+            config_manager (Optional[ConfigManager]): An optional configuration manager instance.
+            **config_manager_config: Additional configuration options for the configuration manager.
+
+        Returns:
+            ConfigManager: The resolved configuration manager instance.
+        """
         from vectorbtpro.utils.module_ import assert_can_import
 
         assert_can_import("findatapy")
@@ -138,11 +149,30 @@ class FinPyData(RemoteData):
         return_fields: tp.Optional[tp.MaybeList[str]] = None,
         combine_parts: bool = True,
     ) -> tp.List[str]:
-        """List all symbols.
+        """List symbols matching the specified filters.
 
-        Passes most arguments to `findatapy.util.ConfigManager.free_form_tickers_regex_query`.
+        This method passes most parameters to `findatapy.util.ConfigManager.free_form_tickers_regex_query`
+        and uses `vectorbtpro.data.custom.custom.CustomData.key_match` to filter symbols based on `pattern`.
 
-        Uses `vectorbtpro.data.custom.custom.CustomData.key_match` to check each symbol against `pattern`."""
+        Args:
+            pattern (Optional[str]): A pattern to filter symbols.
+            use_regex (bool): Whether the pattern should be interpreted as a regular expression.
+            sort (bool): Whether to return the symbols in sorted order.
+            config_manager (Optional[ConfigManager]): An optional configuration manager instance.
+            config_manager_config (KwargsLike): Additional keyword arguments for configuring the configuration manager.
+            category (Optional[MaybeList[str]]): A filter for the symbol category.
+            data_source (Optional[MaybeList[str]]): A filter for the data source.
+            freq (Optional[MaybeList[str]]): A filter for the frequency.
+            cut (Optional[MaybeList[str]]): A filter for cut information.
+            tickers (Optional[MaybeList[str]]): A filter for tickers.
+            dict_filter (DictLike): A dictionary of additional filters.
+            smart_group (bool): Whether to apply smart grouping to symbols.
+            return_fields (Optional[MaybeList[str]]): Fields to include in the query output.
+            combine_parts (bool): Whether to combine parts of symbol components into a single string.
+
+        Returns:
+            List[str]: A list of symbols that match the specified filters.
+        """
         if config_manager_config is None:
             config_manager_config = {}
         config_manager = cls.resolve_config_manager(config_manager=config_manager, **config_manager_config)
@@ -211,32 +241,40 @@ class FinPyData(RemoteData):
         tz: tp.TimezoneLike = None,
         **request_kwargs,
     ) -> tp.SymbolData:
-        """Override `vectorbtpro.data.base.Data.fetch_symbol` to fetch a symbol from findatapy.
+        """Fetch symbol data using findatapy.
+
+        Overrides `vectorbtpro.data.base.Data.fetch_symbol` to retrieve and process symbol data
+        from findatapy.
 
         Args:
-            symbol (str): Symbol.
+            symbol (str): The symbol identifier.
 
-                Also accepts the format such as "fx.bloomberg.daily.NYC.EURUSD.close".
-                The fields `freq`, `cut`, `tickers`, and `fields` here are optional.
-            market (findatapy.market.market.Market): Market.
+                Accepts formats such as "fx.bloomberg.daily.NYC.EURUSD.close".
 
-                See `FinPyData.resolve_market`.
-            market_config (dict): Client config.
+                The fields `freq`, `cut`, `tickers`, and `fields` are optional.
+            market (Market, optional): The market instance.
 
                 See `FinPyData.resolve_market`.
-            start (any): Start datetime.
+            market_config (dict, optional): The client configuration.
+
+                See `FinPyData.resolve_market`.
+            start (DatetimeLike, optional): The start datetime.
 
                 See `vectorbtpro.utils.datetime_.to_tzaware_datetime`.
-            end (any): End datetime.
+            end (DatetimeLike, optional): The end datetime.
 
                 See `vectorbtpro.utils.datetime_.to_tzaware_datetime`.
-            timeframe (str): Timeframe.
+            timeframe (str, optional): The timeframe string.
 
-                Allows human-readable strings such as "15 minutes".
-            tz (any): Timezone.
+                Accepts human-readable formats such as "15 minutes".
+            tz (TimezoneLike, optional): The timezone.
 
                 See `vectorbtpro.utils.datetime_.to_timezone`.
-            **request_kwargs: Other keyword arguments passed to `findatapy.market.marketdatarequest.MarketDataRequest`.
+            **request_kwargs: Additional keyword arguments passed to
+                `findatapy.market.marketdatarequest.MarketDataRequest`.
+
+        Returns:
+            SymbolData: The fetched data and a metadata dictionary.
 
         For defaults, see `custom.finpy` in `vectorbtpro._settings.data`.
         Global settings can be provided per exchange id using the `exchanges` dictionary.

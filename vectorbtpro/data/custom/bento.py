@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module with `BentoData`."""
+"""Module providing the `BentoData` class."""
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.data.custom.remote import RemoteData
@@ -27,11 +27,11 @@ __all__ = [
 
 
 class BentoData(RemoteData):
-    """Data class for fetching from Databento.
+    """Class for fetching data from Databento.
 
-    See https://github.com/databento/databento-python for API.
+    See https://github.com/databento/databento-python for the API.
 
-    See `BentoData.fetch_symbol` for arguments.
+    See `BentoData.fetch_symbol` for argument details.
 
     Usage:
         * Set up the API key globally (optional):
@@ -83,8 +83,15 @@ class BentoData(RemoteData):
     def resolve_client(cls, client: tp.Optional[HistoricalT] = None, **client_config) -> HistoricalT:
         """Resolve the client.
 
-        If provided, must be of the type `databento.historical.client.Historical`.
-        Otherwise, will be created using `client_config`."""
+        Args:
+            client (Optional[databento.historical.client.Historical]): Client instance.
+
+                If provided, must be of type `databento.historical.client.Historical`.
+            **client_config: Additional keyword arguments for client configuration.
+
+        Returns:
+            databento.historical.client.Historical: The resolved client instance.
+        """
         from vectorbtpro.utils.module_ import assert_can_import
 
         assert_can_import("databento")
@@ -103,7 +110,15 @@ class BentoData(RemoteData):
 
     @classmethod
     def get_cost(cls, symbols: tp.MaybeSymbols, **kwargs) -> float:
-        """Get the cost of calling `BentoData.fetch_symbol` on one or more symbols."""
+        """Get the total cost for fetching symbol data.
+
+        Args:
+            symbols (MaybeSymbols): A symbol or a list of symbols.
+            **kwargs: Additional keyword arguments for `BentoData.fetch_symbol`.
+
+        Returns:
+            float: The aggregated cost.
+        """
         if isinstance(symbols, str):
             symbols = [symbols]
         costs = []
@@ -133,42 +148,51 @@ class BentoData(RemoteData):
         df_kwargs: tp.KwargsLike = None,
         **params,
     ) -> tp.Union[float, tp.SymbolData]:
-        """Override `vectorbtpro.data.base.Data.fetch_symbol` to fetch a symbol from Databento.
+        """Fetch a symbol from Databento by overriding `vectorbtpro.data.base.Data.fetch_symbol`.
 
         Args:
-            symbol (str): Symbol.
+            symbol (str): Symbol identifier.
 
-                Symbol can be in the `DATASET:SYMBOL` format if `dataset` is None.
-            client (binance.client.Client): Client.
-
-                See `BentoData.resolve_client`.
-            client_config (dict): Client config.
+                Can be provided in the `DATASET:SYMBOL` format if `dataset` is not specified.
+            client (Optional[databento.historical.client.Historical]): Client instance.
 
                 See `BentoData.resolve_client`.
-            start (any): Start datetime.
+            client_config (dict): Client configuration.
+
+                See `BentoData.resolve_client`.
+            start (Optional[DatetimeLike]): Start datetime.
 
                 See `vectorbtpro.utils.datetime_.to_tzaware_datetime`.
-            end (any): End datetime.
+            end (Optional[DatetimeLike]): End datetime.
 
                 See `vectorbtpro.utils.datetime_.to_tzaware_datetime`.
-            resolve_dates (bool): Whether to resolve `start` and `end`, or pass them as they are.
-            timeframe (str): Timeframe to create `schema` from.
+            resolve_dates (Optional[bool]): Whether to resolve `start` and `end` to UTC timestamps.
+            timeframe (Optional[str]): Timeframe to generate a schema from.
 
                 Allows human-readable strings such as "1 minute".
 
-                If `timeframe` and `schema` are both not None, will raise an error.
-            tz (any): Timezone.
+                If both `timeframe` and `schema` are provided, an error is raised.
+            tz (TimezoneLike): Timezone.
 
                 See `vectorbtpro.utils.datetime_.to_timezone`.
-            dataset (str): See `databento.historical.client.Historical.get_range`.
-            schema (str): See `databento.historical.client.Historical.get_range`.
-            return_params (bool): Whether to return the client and (final) parameters instead of data.
+            dataset (Optional[str]): Dataset identifier.
+
+                Refer to `databento.historical.client.Historical.get_range` for details.
+            schema (Optional[str]): Schema identifier.
+
+                Refer to `databento.historical.client.Historical.get_range` for details.
+            return_params (bool): If True, return the client and resolved parameters instead of fetched data.
 
                 Used by `BentoData.get_cost`.
             df_kwargs (dict): Keyword arguments passed to `databento.common.dbnstore.DBNStore.to_df`.
-            **params: Keyword arguments passed to `databento.historical.client.Historical.get_range`.
+            **params: Additional keyword arguments for `databento.historical.client.Historical.get_range`.
 
-        For defaults, see `custom.bento` in `vectorbtpro._settings.data`.
+        !!! note
+            For defaults, see `custom.bento` in `vectorbtpro._settings.data`.
+
+        Returns:
+            Union[float, SymbolData]: If `return_params` is True, returns the client and final parameters.
+                Otherwise, returns the fetched Series/DataFrame and a metadata dictionary.
         """
         from vectorbtpro.utils.module_ import assert_can_import
 

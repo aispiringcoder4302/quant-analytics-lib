@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module with `TVData`."""
+"""Module providing TradingView data integration functionality through classes such as `TVClient` and `TVData`."""
 
 import datetime
 import json
@@ -35,7 +35,7 @@ __all__ = [
 ]
 
 SIGNIN_URL = "https://www.tradingview.com/accounts/signin/"
-"""Sign-in URL."""
+"""URL endpoint for signing in to TradingView."""
 
 SEARCH_URL = (
     "https://symbol-search.tradingview.com/symbol_search/v3/?"
@@ -48,25 +48,25 @@ SEARCH_URL = (
     "domain=production&"
     "sort_by_country=US"
 )
-"""Symbol search URL."""
+"""URL template for symbol search queries on TradingView."""
 
 SCAN_URL = "https://scanner.tradingview.com/{market}/scan"
-"""Market scanner URL."""
+"""URL template for accessing the TradingView market scanner."""
 
 ORIGIN_URL = "https://data.tradingview.com"
-"""Origin URL."""
+"""Base URL for TradingView data source."""
 
 REFERER_URL = "https://www.tradingview.com"
-"""Referer URL."""
+"""TradingView referer URL used in web requests."""
 
 WS_URL = "wss://data.tradingview.com/socket.io/websocket"
-"""Websocket URL."""
+"""URL for establishing a websocket connection to TradingView data."""
 
 PRO_WS_URL = "wss://prodata.tradingview.com/socket.io/websocket"
-"""Websocket URL (Pro)."""
+"""URL for establishing a websocket connection to TradingView Pro data."""
 
 WS_TIMEOUT = 5
-"""Websocket timeout."""
+"""Timeout (in seconds) for websocket connections."""
 
 MARKET_LIST = [
     "america",
@@ -138,7 +138,7 @@ MARKET_LIST = [
     "venezuela",
     "vietnam",
 ]
-"""List of markets supported by the market scanner (list may be incomplete)."""
+"""List of markets available for the TradingView scanner (may be incomplete)."""
 
 FIELD_LIST = [
     "name",
@@ -167,14 +167,21 @@ FIELD_LIST = [
     "sector",
     "market",
 ]
-"""List of fields supported by the market scanner (list may be incomplete)."""
+"""List of data fields provided by the TradingView market scanner (may be incomplete)."""
 
 USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36"
-"""User agent."""
+"""User agent string used for web requests to TradingView."""
 
 
 class TVClient(Configured):
-    """Client for TradingView."""
+    """Client for TradingView.
+
+    Args:
+        username (Optional[str]): Username for authentication.
+        password (Optional[str]): Password for authentication.
+        auth_token (Optional[str]): Authentication token; if provided, username and password should not be used.
+        **kwargs: Additional keyword arguments passed for configuration.
+    """
 
     def __init__(
         self,
@@ -183,7 +190,7 @@ class TVClient(Configured):
         auth_token: tp.Optional[str] = None,
         **kwargs,
     ) -> None:
-        """Client for TradingView."""
+        """"""
         Configured.__init__(
             self,
             username=username,
@@ -204,22 +211,22 @@ class TVClient(Configured):
 
     @property
     def auth_token(self) -> str:
-        """Authentication token."""
+        """Authentication token used for client authentication."""
         return self._auth_token
 
     @property
     def ws(self) -> WebSocket:
-        """Instance of `websocket.Websocket`."""
+        """WebSocket connection instance used for real-time communication."""
         return self._ws
 
     @property
     def session(self) -> str:
-        """Session."""
+        """Unique session identifier for quote sessions."""
         return self._session
 
     @property
     def chart_session(self) -> str:
-        """Chart session."""
+        """Unique session identifier for chart data."""
         return self._chart_session
 
     @classmethod
@@ -228,7 +235,15 @@ class TVClient(Configured):
         username: tp.Optional[str] = None,
         password: tp.Optional[str] = None,
     ) -> str:
-        """Authenticate."""
+        """Authenticate user credentials and return an authentication token.
+
+        Args:
+            username (Optional[str]): Username for authentication.
+            password (Optional[str]): Password for authentication.
+
+        Returns:
+            str: Authentication token.
+        """
         if username is not None and password is not None:
             data = {"username": username, "password": password, "remember": "on"}
             headers = {"Referer": REFERER_URL, "User-Agent": USER_AGENT}
@@ -244,7 +259,11 @@ class TVClient(Configured):
 
     @classmethod
     def generate_session(cls) -> str:
-        """Generate session."""
+        """Generate a unique session identifier for quote sessions.
+
+        Returns:
+            str: The generated session identifier.
+        """
         stringLength = 12
         letters = string.ascii_lowercase
         random_string = "".join(random.choice(letters) for _ in range(stringLength))
@@ -252,14 +271,22 @@ class TVClient(Configured):
 
     @classmethod
     def generate_chart_session(cls) -> str:
-        """Generate chart session."""
+        """Generate a unique chart session identifier for chart data.
+
+        Returns:
+            str: The generated chart session identifier.
+        """
         stringLength = 12
         letters = string.ascii_lowercase
         random_string = "".join(random.choice(letters) for _ in range(stringLength))
         return "cs_" + random_string
 
     def create_connection(self, pro_data: bool = True) -> None:
-        """Create a websocket connection."""
+        """Establish a WebSocket connection.
+
+        Args:
+            pro_data (bool): Indicates whether to use the professional data connection.
+        """
         from websocket import create_connection
 
         if pro_data:
@@ -277,33 +304,77 @@ class TVClient(Configured):
 
     @classmethod
     def filter_raw_message(cls, text) -> tp.Tuple[str, str]:
-        """Filter raw message."""
+        """Extract message components from a raw message string.
+
+        Args:
+            text (str): The raw message text.
+
+        Returns:
+            Tuple[str, str]: A tuple containing the message type and the parameter string.
+        """
         found = re.search('"m":"(.+?)",', text).group(1)
         found2 = re.search('"p":(.+?"}"])}', text).group(1)
         return found, found2
 
     @classmethod
     def prepend_header(cls, st: str) -> str:
-        """Prepend a header."""
+        """Add a header prefix to a message string.
+
+        Args:
+            st (str): The message string.
+
+        Returns:
+            str: The message string prefixed with its header.
+        """
         return "~m~" + str(len(st)) + "~m~" + st
 
     @classmethod
     def construct_message(cls, func: str, param_list: tp.List[str]) -> str:
-        """Construct a message."""
+        """Construct a JSON-formatted message.
+
+        Args:
+            func (str): The function name associated with the message.
+            param_list (List[str]): A list of parameter strings.
+
+        Returns:
+            str: A JSON string representing the constructed message.
+        """
         return json.dumps({"m": func, "p": param_list}, separators=(",", ":"))
 
     def create_message(self, func: str, param_list: tp.List[str]) -> str:
-        """Create a message."""
+        """Generate a complete message by constructing the JSON message and adding a header.
+
+        Args:
+            func (str): The function name for the message.
+            param_list (List[str]): A list of parameter strings.
+
+        Returns:
+            str: The fully formatted message string.
+        """
         return self.prepend_header(self.construct_message(func, param_list))
 
     def send_message(self, func: str, param_list: tp.List[str]) -> None:
-        """Send a message."""
+        """Send a message through the WebSocket connection using `ws.send`.
+
+        Args:
+            func (str): The function name for the message.
+            param_list (List[str]): A list of parameter strings.
+        """
         m = self.create_message(func, param_list)
         self.ws.send(m)
 
     @classmethod
     def convert_raw_data(cls, raw_data: str, symbol: str) -> pd.DataFrame:
-        """Process raw data into a DataFrame."""
+        """Convert a raw data string into a pandas DataFrame containing historical trading data.
+
+        Args:
+            raw_data (str): The raw data string returned by TradingView.
+            symbol (str): The trading symbol.
+
+        Returns:
+            DataFrame: A DataFrame with columns ['datetime', 'open', 'high', 'low', 'close', 'volume']
+                and an added 'symbol' column, indexed by datetime.
+        """
         search_result = re.search(r'"s":\[(.+?)\}\]', raw_data)
         if search_result is None:
             raise ValueError("Couldn't parse data returned by TradingView: {}".format(raw_data))
@@ -333,7 +404,16 @@ class TVClient(Configured):
 
     @classmethod
     def format_symbol(cls, symbol: str, exchange: str, fut_contract: tp.Optional[int] = None) -> str:
-        """Format a symbol."""
+        """Format a trading symbol based on the exchange and future contract details.
+
+        Args:
+            symbol (str): The base trading symbol.
+            exchange (str): The exchange code.
+            fut_contract (Optional[int]): Future contract number.
+
+        Returns:
+            str: The formatted trading symbol.
+        """
         if ":" in symbol:
             pass
         elif fut_contract is None:
@@ -356,7 +436,23 @@ class TVClient(Configured):
         limit: int = 20000,
         return_raw: bool = False,
     ) -> tp.Union[str, tp.Frame]:
-        """Get historical data."""
+        """Retrieve historical trading data for a specified symbol.
+
+        Args:
+            symbol (str): The trading symbol.
+            exchange (str): The exchange code.
+            interval (str): The time interval for historical data.
+            fut_contract (Optional[int]): Future contract number.
+            adjustment (str): The price adjustment type.
+            extended_session (bool): If True, retrieves extended session data.
+            pro_data (bool): If True, uses the professional data WebSocket connection.
+            limit (int): The maximum number of data points to retrieve.
+            return_raw (bool): If True, returns the raw data string instead of a processed DataFrame.
+
+        Returns:
+            Union[str, DataFrame]: The raw data string if `return_raw` is True;
+                otherwise, a DataFrame containing the historical trading data.
+        """
         symbol = self.format_symbol(symbol=symbol, exchange=exchange, fut_contract=fut_contract)
 
         backadjustment = False
@@ -441,7 +537,24 @@ class TVClient(Configured):
         show_progress: bool = True,
         pbar_kwargs: tp.KwargsLike = None,
     ) -> tp.List[dict]:
-        """Search for a symbol."""
+        """Search for symbols matching specified criteria.
+
+        Args:
+            text (Optional[str]): Text query used to filter symbols.
+            exchange (Optional[str]): Exchange code to filter symbols.
+
+                Converted to uppercase.
+            pages (Optional[int]): Maximum number of pages to fetch.
+
+                If not specified, all available pages are fetched.
+            delay (Optional[int]): Delay in seconds between retry attempts and between fetching pages.
+            retries (int): Number of retries allowed for each API request in case of JSON decoding errors.
+            show_progress (bool): Flag indicating whether to display a progress bar during symbol fetching.
+            pbar_kwargs (KwargsLike): Additional keyword arguments for configuring the progress bar.
+
+        Returns:
+            List[dict]: A list of dictionaries representing the fetched symbols.
+        """
         if text is None:
             text = ""
         if exchange is None:
@@ -505,7 +618,17 @@ class TVClient(Configured):
 
     @classmethod
     def scan_symbols(cls, market: tp.Optional[str] = None, **kwargs) -> tp.List[dict]:
-        """Scan symbols in a region/market."""
+        """Scan for symbols in a specified market region.
+
+        Args:
+            market (Optional[str]): Market or region in which to scan for symbols.
+
+                Defaults to "global" if not provided.
+            **kwargs: Additional keyword arguments passed to the POST request payload.
+
+        Returns:
+            List[dict]: A list of dictionaries representing the scanned symbols.
+        """
         if market is None:
             market = "global"
         url = SCAN_URL.format(market=market.lower())
@@ -519,15 +642,15 @@ TVDataT = tp.TypeVar("TVDataT", bound="TVData")
 
 
 class TVData(RemoteData):
-    """Data class for fetching from TradingView.
+    """Data class for fetching data from TradingView.
 
-    See `TVData.fetch_symbol` for arguments.
+    Refer to `TVData.fetch_symbol` for details on available arguments.
 
     !!! note
-        If you're getting the error "Please confirm that you are not a robot by clicking the captcha box."
-        when attempting to authenticate, use `auth_token` instead of `username` and `password`.
-        To get the authentication token, go to TradingView, log in, visit any chart, open your console's
-        developer tools, and search for "auth_token".
+        If you encounter the error "Please confirm that you are not a robot by clicking the captcha box."
+        during authentication, use the `auth_token` parameter instead of `username` and `password`.
+        To obtain your authentication token, log in to TradingView, open any chart, access your
+        browser's developer tools, and search for "auth_token".
 
     Usage:
         * Set up the credentials globally (optional):
@@ -539,7 +662,7 @@ class TVData(RemoteData):
         ...     client_config=dict(
         ...         username="YOUR_USERNAME",
         ...         password="YOUR_PASSWORD",
-        ...         auth_token="YOUR_AUTH_TOKEN",  # optional, instead of username and password
+        ...         auth_token="YOUR_AUTH_TOKEN",  # optional, used in place of username and password
         ...     )
         ... )
         ```
@@ -584,27 +707,56 @@ class TVData(RemoteData):
     ) -> tp.Union[tp.List[str], tp.List[tp.Kwargs]]:
         """List all symbols.
 
-        Uses symbol search when either `text` or `exchange` is provided (returns a subset of symbols).
-        Otherwise, uses the market scanner (returns all symbols, big payload).
+        List symbols using either a server-side symbol search or a market scanner.
+        If either `text` or `exchange` is provided, a symbol search is performed that
+        returns a subset of symbols. Otherwise, a market scan is executed that returns all symbols,
+        possibly with additional field data.
 
-        When using the market scanner, use `market` to filter by one or multiple markets. For the list
-        of available markets, see `MARKET_LIST`.
+        When using the market scanner:
 
-        Use `fields` to make the market scanner return additional information that can be used for
-        filtering with `filter_by`. Such information is passed to the function as a dictionary where
-        fields are keys. The function can also be a template that can use the same information provided
-        as a context, or a list of values that should be matched against the values corresponding to their fields.
-        For the list of available fields, see `FIELD_LIST`. Argument `fields` can also be "all".
-        Set `return_field_data` to True to return a list with (filtered) field data.
+        * Use `market` to filter by one or multiple markets (see `MARKET_LIST`).
+        * Use `fields` to retrieve extra information for filtering with `filter_by` (see `FIELD_LIST`).
+        * Use `groups` to specify group filters, providing each group as a dictionary in compressed or full format.
+        * Additional keyword arguments provided via `scanner_kwargs` are passed directly to the market scanner.
 
-        Use `groups` to provide a single dictionary or a list of dictionaries with groups.
-        Each dictionary can be provided either in a compressed format, such as `dict(index=index)`,
-        or in a full format, such as `dict(type="index", values=[index])`.
+        Filter results further by:
 
-        Keyword arguments `scanner_kwargs` are encoded and passed directly to the market scanner.
+        * Matching the exchange part against `exchange_pattern` using
+            `vectorbtpro.data.custom.custom.CustomData.key_match`.
+        * Matching the symbol part against `symbol_pattern` with the same method.
+        * Optionally enabling regular expression matching with `use_regex`.
 
-        Uses `vectorbtpro.data.custom.custom.CustomData.key_match` to check each exchange against
-        `exchange_pattern` and each symbol against `symbol_pattern`.
+        Args:
+            exchange_pattern (Optional[str]): Pattern to match the exchange name.
+            symbol_pattern (Optional[str]): Pattern to match the symbol name.
+            use_regex (bool): Whether to use regular expressions for matching exchange and symbol names.
+            sort (bool): Whether to sort the final list of symbols.
+            client (Optional[TVClient]): Client instance for API requests.
+            client_config (DictLike): Configuration parameters for the client.
+            text (Optional[str]): Text for performing a server-side symbol search.
+            exchange (Optional[str]): Exchange for performing a server-side symbol search.
+            pages (Optional[int]): Number of pages to retrieve during symbol search.
+            delay (Optional[int]): Delay between requests during symbol search.
+            retries (Optional[int]): Number of retry attempts for symbol search requests.
+            show_progress (Optional[bool]): Whether to display a progress bar during symbol search.
+            pbar_kwargs (KwargsLike): Additional keyword arguments for the progress bar.
+            market (Optional[str]): Market to filter symbols in the market scanner.
+
+                Defaults to "global" if no search-specific parameters are provided.
+            markets (Optional[List[str]]): Markets to restrict the market scanner results.
+            fields (Optional[MaybeIterable[str]]): Field names to request additional information
+                from the market scanner, or "all" to retrieve all available fields.
+            filter_by (Union[None, Callable, CustomTemplate]): Function, template, or list for
+                filtering symbols based on field data.
+            groups (Optional[MaybeIterable[Dict[str, MaybeIterable[str]]]]): Single dictionary
+                or list of dictionaries defining groups for filtering symbols.
+            template_context (KwargsLike): Additional context to pass when using a template in `filter_by`.
+            return_field_data (bool): If True, return additional field data instead of only symbol codes.
+            **scanner_kwargs: Additional keyword arguments passed to the market scanner.
+
+        Returns:
+            Union[List[str], List[Kwargs]]: List of symbols or list of dictionaries
+                with additional field data if `return_field_data` is True.
 
         Usage:
             * List all symbols (market scanner):
@@ -805,9 +957,20 @@ class TVData(RemoteData):
 
     @classmethod
     def resolve_client(cls, client: tp.Optional[TVClient] = None, **client_config) -> TVClient:
-        """Resolve the client.
+        """Resolve and return a `TVClient` instance.
 
-        If provided, must be of the type `TVClient`. Otherwise, will be created using `client_config`."""
+        Args:
+            client (Optional[TVClient]): An instance of `TVClient`.
+
+                If provided, it is used directly.
+            **client_config: Additional configuration parameters for creating a new client.
+
+        Returns:
+            TVClient: The resolved client instance.
+
+        !!! note
+            If a client is provided along with `client_config` parameters, a `ValueError` is raised.
+        """
         client = cls.resolve_custom_setting(client, "client")
         if client_config is None:
             client_config = {}
@@ -836,37 +999,39 @@ class TVData(RemoteData):
         delay: tp.Optional[int] = None,
         retries: tp.Optional[int] = None,
     ) -> tp.SymbolData:
-        """Override `vectorbtpro.data.base.Data.fetch_symbol` to fetch a symbol from TradingView.
+        """Fetch symbol data from TradingView.
+
+        Overrides `vectorbtpro.data.base.Data.fetch_symbol`.
 
         Args:
-            symbol (str): Symbol.
-
-                Symbol must be in the `EXCHANGE:SYMBOL` format if `exchange` is None.
-            client (TVClient): Client.
-
-                See `TVData.resolve_client`.
-            client_config (dict): Client config.
+            symbol (str): The symbol identifier. Must be in the `EXCHANGE:SYMBOL`
+                format if `exchange` is not provided.
+            client (Optional[TVClient]): A client instance.
 
                 See `TVData.resolve_client`.
-            exchange (str): Exchange.
+            client_config (KwargsLike): Configuration parameters for creating a client.
 
-                Can be omitted if already provided via `symbol`.
-            timeframe (str): Timeframe.
+                See `TVData.resolve_client`.
+            exchange (Optional[str]): The market exchange.
 
-                Allows human-readable strings such as "15 minutes".
-            tz (any): Timezone.
+                Can be omitted if specified within `symbol`.
+            timeframe (Optional[str]): The timeframe, allowing human-readable values such as "15 minutes".
+            tz (TimezoneLike): The timezone setting.
 
-                See `vectorbtpro.utils.datetime_.to_timezone`.
-            fut_contract (int): None for cash, 1 for continuous current contract in front,
-                2 for continuous next contract in front.
-            adjustment (str): Adjustment.
+                Refer to `vectorbtpro.utils.datetime_.to_timezone`.
+            fut_contract (Optional[int]): Futures contract type: None for cash,
+                1 for the current continuous contract front, or 2 for the following contract.
+            adjustment (Optional[str]): The adjustment type, either "splits" or "dividends".
+            extended_session (Optional[bool]): Whether to fetch extended session data.
 
-                Either "splits" (default) or "dividends".
-            extended_session (bool): Regular session if False, extended session if True.
-            pro_data (bool): Whether to use pro data.
-            limit (int): The maximum number of returned items.
-            delay (float): Time to sleep after each request (in seconds).
-            retries (int): The number of retries on failure to fetch data.
+                False indicates a regular session.
+            pro_data (Optional[bool]): Flag indicating whether to use pro data.
+            limit (Optional[int]): Maximum number of items to return.
+            delay (Optional[int]): Time (in seconds) to wait between consecutive requests.
+            retries (Optional[int]): Number of retries on failure to fetch data.
+
+        Returns:
+            SymbolData: The fetched data and a metadata dictionary.
 
         For defaults, see `custom.tv` in `vectorbtpro._settings.data`.
         """

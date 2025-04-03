@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module with `NDLData`."""
+"""Module providing the `NDLData` class for accessing data from Nasdaq Data Link."""
 
 import pandas as pd
 
@@ -27,11 +27,12 @@ NDLDataT = tp.TypeVar("NDLDataT", bound="NDLData")
 
 
 class NDLData(RemoteData):
-    """Data class for fetching from Nasdaq Data Link.
+    """Class for fetching data from Nasdaq Data Link.
 
-    See https://github.com/Nasdaq/data-link-python for API.
+    This class provides methods to pull data from Nasdaq Data Link using its API.
+    For API details, see https://github.com/Nasdaq/data-link-python.
 
-    See `NDLData.fetch_symbol` for arguments.
+    See `NDLData.fetch_symbol` for details on available arguments.
 
     Usage:
         * Set up the API key globally (optional):
@@ -80,29 +81,32 @@ class NDLData(RemoteData):
         column_indices: tp.Optional[tp.MaybeIterable[int]] = None,
         **params,
     ) -> tp.SymbolData:
-        """Override `vectorbtpro.data.base.Data.fetch_symbol` to fetch a symbol from Nasdaq Data Link.
+        """Fetch a symbol's data from Nasdaq Data Link.
 
         Args:
-            symbol (str): Symbol.
-            api_key (str): API key.
-            data_format (str): Data format.
+            symbol (str): Symbol for the dataset.
+            api_key (Optional[str]): API key.
+            data_format (Optional[str]): Data format.
 
-                Supported are "dataset" and "datatable".
-            start (any): Retrieve data rows on and after the specified start date.
-
-                See `vectorbtpro.utils.datetime_.to_tzaware_datetime`.
-            end (any): Retrieve data rows up to and including the specified end date.
+                Supported formats: "dataset" and "datatable".
+            start (Optional[DatetimeLike]): Starting date to retrieve data from this date onwards.
 
                 See `vectorbtpro.utils.datetime_.to_tzaware_datetime`.
-            tz (any): Timezone.
+            end (Optional[DatetimeLike]): Ending date to retrieve data up to and including this date.
+
+                See `vectorbtpro.utils.datetime_.to_tzaware_datetime`.
+            tz (TimezoneLike): Timezone for date conversion.
 
                 See `vectorbtpro.utils.datetime_.to_timezone`.
-            column_indices (int or iterable): Request one or more specific columns.
+            column_indices (Optional[MaybeIterable[int]]): Specific column(s) to retrieve.
 
-                Column 0 is the date column and is always returned. Data begins at column 1.
-            **params: Keyword arguments sent as field/value params to Nasdaq Data Link with no interference.
+                Column 0 (date) is always returned, with data columns starting at index 1.
+            **params: Additional keyword arguments passed to Nasdaq Data Link as field/value parameters.
 
-        For defaults, see `custom.ndl` in `vectorbtpro._settings.data`.
+        Returns:
+            SymbolData: The fetched data and a metadata dictionary.
+
+        For defaults, refer to `vectorbtpro._settings.data.custom.ndl`.
         """
         from vectorbtpro.utils.module_ import assert_can_import
 
@@ -180,6 +184,15 @@ class NDLData(RemoteData):
         return df, dict(tz=tz)
 
     def update_symbol(self, symbol: str, **kwargs) -> tp.SymbolData:
+        """Update a symbol's data using Nasdaq Data Link.
+
+        Args:
+            symbol (str): Symbol identifier.
+            **kwargs: Additional keyword arguments passed to `NDLData.fetch_symbol`.
+
+        Returns:
+            SymbolData: The fetched data and a metadata dictionary.
+        """
         fetch_kwargs = self.select_fetch_kwargs(symbol)
         fetch_kwargs["start"] = self.select_last_index(symbol)
         kwargs = merge_dicts(fetch_kwargs, kwargs)

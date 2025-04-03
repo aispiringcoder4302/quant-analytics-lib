@@ -605,7 +605,13 @@ hsliceT = tp.TypeVar("hsliceT", bound="hslice")
 
 @define
 class hslice(DefineMixin):
-    """Class for a hashable slice."""
+    """Class for a hashable slice.
+
+    Args:
+        start (object): Start value for the slice.
+        stop (object): Stop value for the slice.
+        step (object): Step value for the slice.
+    """
 
     start: object = define.field()
     """Start value for the slice."""

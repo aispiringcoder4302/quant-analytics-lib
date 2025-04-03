@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Modules with custom data classes."""
+"""Module providing custom data classes."""
 
 from typing import TYPE_CHECKING
 
