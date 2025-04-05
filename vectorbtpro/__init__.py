@@ -148,9 +148,8 @@ if star_import.lower() == "all":
 elif star_import.lower() == "vbt":
     imported_star.update(globals())
 elif star_import.lower() == "minimal":
-    import sys
+    import vectorbtpro as vbt
 
-    vbt = sys.modules[__name__]
     more_stuff = _import_more_stuff()
     globals().update(more_stuff)
     imported_star.update({"vbt": vbt, "tp": tp, **more_stuff})
