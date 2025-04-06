@@ -494,7 +494,7 @@ def contains_in_obj(
         incl_types (Union[None, bool, MaybeSequence[type]]): Types to include in the search.
         max_len (Optional[int]): Maximum number of elements allowed in a container.
         max_depth (Optional[int]): Maximum search depth.
-        **kwargs: Additional keyword arguments passed to `match_func`.
+        **kwargs: Keyword arguments passed to `match_func`.
 
     !!! note
         Refer to `find_in_obj` for additional argument details.
@@ -597,7 +597,7 @@ def find_in_obj(
         stringify_keys (bool): If True, convert path keys to a string representation.
         max_len (Optional[int]): Limit processing to objects with a length not exceeding this value.
         max_depth (Optional[int]): Limit recursion to the specified depth (0 disables traversal of iterables).
-        **kwargs: Additional keyword arguments passed to `match_func`.
+        **kwargs: Keyword arguments passed to `match_func`.
 
     Returns:
         PathDict: A mapping of path-like keys (using tuples for nested levels) to their corresponding values.
@@ -1415,7 +1415,7 @@ def find(
             * "start": Returns a list with the starting index of the match.
             * "range": Returns a list with a tuple representing the match range.
             * "match": Returns a list containing the matched string.
-        **kwargs: Additional keyword arguments for search modes.
+        **kwargs: Keyword arguments for search modes.
 
     Returns:
         Union[bool, List[Union[int, str]], List[Tuple[int, int]]]: The match result in the specified format.
@@ -1652,7 +1652,7 @@ def replace(
             * "regex": Use `replace_regex`
             * "fuzzy": Use `replace_fuzzy`
         ignore_case (bool): Whether to ignore case when matching.
-        **kwargs: Additional keyword arguments passed to the underlying replacement functions.
+        **kwargs: Keyword arguments passed to the underlying replacement functions.
 
     Returns:
         str: A new string with the specified replacements applied.

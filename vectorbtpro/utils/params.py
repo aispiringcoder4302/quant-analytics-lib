@@ -384,7 +384,7 @@ class Param(Evaluable, Annotatable, DefineMixin):
     It is resolved via `vectorbtpro.base.merging.resolve_merge_func`."""
 
     mono_merge_kwargs: tp.KwargsLike = define.optional_field(default=None)
-    """Additional keyword arguments for `Param.mono_merge_func`."""
+    """Keyword arguments for `Param.mono_merge_func`."""
 
     eval_id: tp.Optional[tp.MaybeSequence[tp.Hashable]] = define.optional_field(default=None)
     """Identifier(s) indicating where to evaluate this instance."""
@@ -433,7 +433,7 @@ class Itemable(Base):
         """Return this instance as items.
 
         Args:
-            **kwargs: Additional keyword arguments passed to the underlying implementation.
+            **kwargs: Keyword arguments passed to the underlying implementation.
 
         Returns:
             Items: The items representation of the instance.
@@ -448,7 +448,7 @@ class Paramable(Base):
         """Return this instance as a parameter.
 
         Args:
-            **kwargs: Additional keyword arguments passed to the underlying implementation.
+            **kwargs: Keyword arguments passed to the underlying implementation.
 
         Returns:
             Param: The parameter representation of the instance.
@@ -531,7 +531,7 @@ def combine_params(
         max_misses (Union[None, int, float]): Maximum number of misses allowed in the search for a valid
             combination (applies when not building the full grid).
         seed (Optional[int]): Seed for random number generation.
-        clean_index_kwargs (KwargsLike): Additional keyword arguments for `vectorbtpro.base.indexes.clean_index`.
+        clean_index_kwargs (KwargsLike): Keyword arguments for `vectorbtpro.base.indexes.clean_index`.
         name_tuple_to_str (Union[None, bool, Callable]): If True or a callable, converts tuple
             parameter names to strings.
         build_product (bool): If True, compute the Cartesian product of parameter values.
@@ -1460,7 +1460,7 @@ class Parameterizer(Configured):
 
         Only parameters meeting the specified evaluation identifier are included.
 
-        Additional keyword arguments are passed to `vectorbtpro.utils.search_.find_in_obj`."""
+        Keyword arguments are passed to `vectorbtpro.utils.search_.find_in_obj`."""
         return find_in_obj(obj, lambda k, v: isinstance(v, Param) and v.meets_eval_id(eval_id), **kwargs)
 
     @classmethod
@@ -1760,7 +1760,7 @@ class Parameterizer(Configured):
             mono_reduce (Union[bool, Kwargs]): Configuration for reducing parameters.
             mono_merge_func (Union[MergeFuncLike, Dict[str, MergeFuncLike]]): Function or mapping to
                 merge parameter values.
-            mono_merge_kwargs (KwargsLike): Additional keyword arguments for the merge function.
+            mono_merge_kwargs (KwargsLike): Keyword arguments for the merge function.
             template_context (KwargsLike): Dictionary for template substitution context.
 
         Returns:
@@ -1858,10 +1858,10 @@ class Parameterizer(Configured):
 
         Args:
             func (Callable): The target function to execute.
-            *args: Additional positional arguments passed to `func`.
+            *args: Positional arguments passed to `func`.
             param_configs (Optional[MaybeSequence[dict]]): Configuration(s) used to parameterize `func`'s arguments.
             eval_id (Optional[Hashable]): Identifier for evaluation in the parameterization process.
-            **kwargs: Additional keyword arguments passed to `func`.
+            **kwargs: Keyword arguments passed to `func`.
 
         Returns:
             Union[dict, MergeableResults, Tuple[MergeableResults, Optional[Index]]]: The result of
@@ -2188,14 +2188,14 @@ def parameterized(
     `Parameterizer` instance by replacing any arguments that are not None.
 
     Args:
-        *args: Additional positional arguments passed to the wrapped function.
+        *args: Positional arguments passed to the wrapped function.
         parameterizer (Optional[Type[Parameterizer]]): The `Parameterizer` class or instance for
             parameterizing inputs.
         replace_parameterizer (Optional[bool]): Flag to create a new `Parameterizer` instance with
             non-None arguments replaced.
         merge_to_execute_kwargs (Optional[bool]): Flag that determines whether to merge unspecified
             keyword arguments into `execute_kwargs`.
-        **kwargs: Additional keyword arguments passed to `Parameterizer`.
+        **kwargs: Keyword arguments passed to `Parameterizer`.
 
     Returns:
         Callable: A new function with the same signature as the provided function.

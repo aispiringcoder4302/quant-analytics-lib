@@ -64,7 +64,7 @@ class BaseIDXAccessor(Configured, IndexApplier):
     Args:
         obj (Index): The Pandas Index object to be wrapped by the accessor.
         freq (Optional[FrequencyLike]): Optional frequency for the index.
-        **kwargs: Additional keyword arguments for configuration.
+        **kwargs: Keyword arguments for configuration.
     """
 
     def __init__(self, obj: tp.Index, freq: tp.Optional[tp.FrequencyLike] = None, **kwargs) -> None:
@@ -118,8 +118,8 @@ class BaseIDXAccessor(Configured, IndexApplier):
         The index is first converted to a PeriodIndex and then to timestamps.
 
         Args:
-            *args: Additional positional arguments passed to `BaseIDXAccessor.to_period`.
-            **kwargs: Additional keyword arguments passed to `BaseIDXAccessor.to_period`.
+            *args: Positional arguments passed to `BaseIDXAccessor.to_period`.
+            **kwargs: Keyword arguments passed to `BaseIDXAccessor.to_period`.
 
         Returns:
             DatetimeIndex: The resulting timestamp index.
@@ -136,8 +136,8 @@ class BaseIDXAccessor(Configured, IndexApplier):
         and finally to nanoseconds.
 
         Args:
-            *args: Additional positional arguments passed to `BaseIDXAccessor.to_period_ts`.
-            **kwargs: Additional keyword arguments passed to `BaseIDXAccessor.to_period_ts`.
+            *args: Positional arguments passed to `BaseIDXAccessor.to_period_ts`.
+            **kwargs: Keyword arguments passed to `BaseIDXAccessor.to_period_ts`.
 
         Returns:
             Array1d: The resulting 64-bit integer array.
@@ -149,8 +149,8 @@ class BaseIDXAccessor(Configured, IndexApplier):
         """Return an index created from values using `vectorbtpro.base.indexes.index_from_values`.
 
         Args:
-            *args: Additional positional arguments passed to `vectorbtpro.base.indexes.index_from_values`.
-            **kwargs: Additional keyword arguments passed to `vectorbtpro.base.indexes.index_from_values`.
+            *args: Positional arguments passed to `vectorbtpro.base.indexes.index_from_values`.
+            **kwargs: Keyword arguments passed to `vectorbtpro.base.indexes.index_from_values`.
 
         Returns:
             Index: The generated index.
@@ -161,8 +161,8 @@ class BaseIDXAccessor(Configured, IndexApplier):
         """Return an index with repeated values using `vectorbtpro.base.indexes.repeat_index`.
 
         Args:
-            *args: Additional positional arguments passed to `vectorbtpro.base.indexes.repeat_index`.
-            **kwargs: Additional keyword arguments passed to `vectorbtpro.base.indexes.repeat_index`.
+            *args: Positional arguments passed to `vectorbtpro.base.indexes.repeat_index`.
+            **kwargs: Keyword arguments passed to `vectorbtpro.base.indexes.repeat_index`.
 
         Returns:
             Index: The index with repeated values.
@@ -173,8 +173,8 @@ class BaseIDXAccessor(Configured, IndexApplier):
         """Return an index tiled using `vectorbtpro.base.indexes.tile_index`.
 
         Args:
-            *args: Additional positional arguments passed to `vectorbtpro.base.indexes.tile_index`.
-            **kwargs: Additional keyword arguments passed to `vectorbtpro.base.indexes.tile_index`.
+            *args: Positional arguments passed to `vectorbtpro.base.indexes.tile_index`.
+            **kwargs: Keyword arguments passed to `vectorbtpro.base.indexes.tile_index`.
 
         Returns:
             Index: The tiled index.
@@ -193,7 +193,7 @@ class BaseIDXAccessor(Configured, IndexApplier):
         Args:
             *others (Union[IndexLike, BaseIDXAccessor]): Additional indexes or accessors to stack.
             on_top (bool): If True, append the current index after the others; otherwise, prepend it.
-            **kwargs: Additional keyword arguments passed to `vectorbtpro.base.indexes.stack_indexes`.
+            **kwargs: Keyword arguments passed to `vectorbtpro.base.indexes.stack_indexes`.
 
         Returns:
             Index: The resulting stacked index.
@@ -220,7 +220,7 @@ class BaseIDXAccessor(Configured, IndexApplier):
         Args:
             *others (Union[IndexLike, BaseIDXAccessor]): Additional indexes or accessors to combine.
             on_top (bool): If True, append the current index after the others; otherwise, prepend it.
-            **kwargs: Additional keyword arguments passed to `vectorbtpro.base.indexes.combine_indexes`.
+            **kwargs: Keyword arguments passed to `vectorbtpro.base.indexes.combine_indexes`.
 
         Returns:
             Index: The resulting combined index.
@@ -241,7 +241,7 @@ class BaseIDXAccessor(Configured, IndexApplier):
 
         Args:
             *others (Union[IndexLike, BaseIDXAccessor]): Indexes or accessors to concatenate.
-            **kwargs: Additional keyword arguments passed to `vectorbtpro.base.indexes.concat_indexes`.
+            **kwargs: Keyword arguments passed to `vectorbtpro.base.indexes.concat_indexes`.
 
         Returns:
             Index: The concatenated index.
@@ -265,8 +265,8 @@ class BaseIDXAccessor(Configured, IndexApplier):
         """Align the index to a target index using `vectorbtpro.base.indexes.align_index_to`.
 
         Args:
-            *args: Additional positional arguments passed to `vectorbtpro.base.indexes.align_index_to`.
-            **kwargs: Additional keyword arguments passed to `vectorbtpro.base.indexes.align_index_to`.
+            *args: Positional arguments passed to `vectorbtpro.base.indexes.align_index_to`.
+            **kwargs: Keyword arguments passed to `vectorbtpro.base.indexes.align_index_to`.
 
         Returns:
             IndexSlice: The aligned index slice.
@@ -283,7 +283,7 @@ class BaseIDXAccessor(Configured, IndexApplier):
 
         Args:
             *others (Union[IndexLike, BaseIDXAccessor]): Additional indexes or accessors to align.
-            **kwargs: Additional keyword arguments passed to `vectorbtpro.base.indexes.align_indexes`.
+            **kwargs: Keyword arguments passed to `vectorbtpro.base.indexes.align_indexes`.
 
         Returns:
             Tuple[IndexSlice, ...]: A tuple of aligned index slices.
@@ -299,8 +299,8 @@ class BaseIDXAccessor(Configured, IndexApplier):
         """Cross the current index with another index using `vectorbtpro.base.indexes.cross_index_with`.
 
         Args:
-            *args: Additional positional arguments passed to `vectorbtpro.base.indexes.cross_index_with`.
-            **kwargs: Additional keyword arguments passed to `vectorbtpro.base.indexes.cross_index_with`.
+            *args: Positional arguments passed to `vectorbtpro.base.indexes.cross_index_with`.
+            **kwargs: Keyword arguments passed to `vectorbtpro.base.indexes.cross_index_with`.
 
         Returns:
             Tuple[IndexSlice, IndexSlice]: The resulting pair of index slices.
@@ -317,7 +317,7 @@ class BaseIDXAccessor(Configured, IndexApplier):
 
         Args:
             *others (Union[IndexLike, BaseIDXAccessor]): Additional indexes or accessors to cross.
-            **kwargs: Additional keyword arguments passed to `vectorbtpro.base.indexes.cross_indexes`.
+            **kwargs: Keyword arguments passed to `vectorbtpro.base.indexes.cross_indexes`.
 
         Returns:
             Tuple[IndexSlice, ...]: The resulting crossed indexes.
@@ -335,8 +335,8 @@ class BaseIDXAccessor(Configured, IndexApplier):
         """Find the first occurrence of a value in the index using `vectorbtpro.base.indexes.find_first_occurrence`.
 
         Args:
-            *args: Additional positional arguments passed to `vectorbtpro.base.indexes.find_first_occurrence`.
-            **kwargs: Additional keyword arguments passed to `vectorbtpro.base.indexes.find_first_occurrence`.
+            *args: Positional arguments passed to `vectorbtpro.base.indexes.find_first_occurrence`.
+            **kwargs: Keyword arguments passed to `vectorbtpro.base.indexes.find_first_occurrence`.
 
         Returns:
             int: The index of the first occurrence.
@@ -359,7 +359,7 @@ class BaseIDXAccessor(Configured, IndexApplier):
 
                 If None, the accessor's index is used.
             freq (Optional[FrequencyLike]): A frequency to utilize if not already set.
-            **kwargs: Additional keyword arguments passed to `dt.infer_index_freq`.
+            **kwargs: Keyword arguments passed to `dt.infer_index_freq`.
 
         Returns:
             Union[None, float, PandasFrequency]: The inferred frequency, or None if conversion fails.
@@ -540,7 +540,7 @@ class BaseIDXAccessor(Configured, IndexApplier):
                 * A Pandas `GroupBy` or `Resampler` instance.
                 * A supported input such as a frequency or an array of indices.
             groupby_kwargs (KwargsLike): Keyword arguments passed to Pandas `groupby` and `resample` methods.
-            **kwargs: Additional keyword arguments for initializing `vectorbtpro.base.grouping.base.Grouper`.
+            **kwargs: Keyword arguments for initializing `vectorbtpro.base.grouping.base.Grouper`.
 
         Returns:
             Grouper: The constructed index grouper.
@@ -583,7 +583,7 @@ class BaseIDXAccessor(Configured, IndexApplier):
         Args:
             rule (AnyRuleLike): The resampling rule, which may be frequency-like or a resampler.
             freq (Optional[FrequencyLike]): The target frequency for the resampler.
-            resample_kwargs (KwargsLike): Additional keyword arguments for the pandas resample method.
+            resample_kwargs (KwargsLike): Keyword arguments for the pandas resample method.
             return_pd_resampler (bool): Flag indicating whether to return a Pandas resampler.
             silence_warnings (Optional[bool]): If set, suppresses warning messages.
 
@@ -631,8 +631,8 @@ class BaseIDXAccessor(Configured, IndexApplier):
         """Return index points using `vectorbtpro.base.indexing.get_index_points`.
 
         Args:
-            *args: Additional arguments passed to `vectorbtpro.base.indexing.get_index_points`.
-            **kwargs: Additional keyword arguments passed to `vectorbtpro.base.indexing.get_index_points`.
+            *args: Positional arguments passed to `vectorbtpro.base.indexing.get_index_points`.
+            **kwargs: Keyword arguments passed to `vectorbtpro.base.indexing.get_index_points`.
 
         Returns:
             Array1d: An array of index points.
@@ -643,8 +643,8 @@ class BaseIDXAccessor(Configured, IndexApplier):
         """Return index ranges using `vectorbtpro.base.indexing.get_index_ranges`.
 
         Args:
-            *args: Additional arguments passed to `vectorbtpro.base.indexing.get_index_ranges`.
-            **kwargs: Additional keyword arguments passed to `vectorbtpro.base.indexing.get_index_ranges`.
+            *args: Positional arguments passed to `vectorbtpro.base.indexing.get_index_ranges`.
+            **kwargs: Keyword arguments passed to `vectorbtpro.base.indexing.get_index_ranges`.
 
         Returns:
             Tuple[Array1d, Array1d]: A tuple of arrays representing the index ranges.
@@ -661,10 +661,10 @@ class BaseIDXAccessor(Configured, IndexApplier):
             Splits the Pandas object itself, not the accessor.
 
         Args:
-            *args: Additional arguments passed to
+            *args: Positional arguments passed to
                 `vectorbtpro.generic.splitting.base.Splitter.split_and_take`.
             splitter_cls (Optional[Type[Splitter]]): The splitter class to use.
-            **kwargs: Additional keyword arguments passed to
+            **kwargs: Keyword arguments passed to
                 `vectorbtpro.generic.splitting.base.Splitter.split_and_take`.
 
         Returns:
@@ -691,10 +691,10 @@ class BaseIDXAccessor(Configured, IndexApplier):
 
         Args:
             apply_func (Callable): The function to apply to each split.
-            *args: Additional arguments passed to
+            *args: Positional arguments passed to
                 `vectorbtpro.generic.splitting.base.Splitter.split_and_apply`.
             splitter_cls (Optional[Type[Splitter]]): The splitter class to use.
-            **kwargs: Additional keyword arguments passed to
+            **kwargs: Keyword arguments passed to
                 `vectorbtpro.generic.splitting.base.Splitter.split_and_apply`.
 
         Returns:
@@ -768,10 +768,10 @@ class BaseIDXAccessor(Configured, IndexApplier):
 
         Args:
             apply_func (Union[str, Callable]): Function or method name to apply to each chunk.
-            *args: Additional positional arguments passed to `apply_func`.
-            chunk_kwargs (KwargsLike): Additional keyword arguments for the chunking process.
-            execute_kwargs (KwargsLike): Additional keyword arguments for the execution process.
-            **kwargs: Additional keyword arguments passed to `apply_func`.
+            *args: Positional arguments passed to `apply_func`.
+            chunk_kwargs (KwargsLike): Keyword arguments for the chunking process.
+            execute_kwargs (KwargsLike): Keyword arguments for the execution process.
+            **kwargs: Keyword arguments passed to `apply_func`.
 
         Returns:
             MergeableResults: The merged results from applying the function on all chunks.
@@ -816,7 +816,7 @@ class BaseAccessor(Wrapping):
     Args:
         wrapper (Union[ArrayWrapper, tp.ArrayLike]): Array wrapper or array if `obj` is not provided.
         obj (Optional[tp.ArrayLike]): Array if `wrapper` is an array wrapper.
-        **kwargs: Additional keyword arguments distributed between
+        **kwargs: Keyword arguments distributed between
             `vectorbtpro.base.wrapping.ArrayWrapper` and `vectorbtpro.base.wrapping.Wrapping`.
 
     !!! note
@@ -959,7 +959,7 @@ class BaseAccessor(Wrapping):
         """Pass additional keyword arguments to the initializer and return a new accessor instance.
 
         Args:
-            **kwargs (Any): Additional keyword arguments passed to the initializer.
+            **kwargs (Any): Keyword arguments passed to the initializer.
 
         Returns:
             BaseAccessor: A new accessor instance with updated parameters.
@@ -976,7 +976,7 @@ class BaseAccessor(Wrapping):
 
         Args:
             objs (MaybeTuple[BaseAccessor]): Additional accessor instances to stack.
-            kwargs (dict): Additional keyword arguments.
+            **kwargs: Additional keyword arguments.
 
         Returns:
             dict: Resolved keyword arguments for initializing `BaseAccessor`.
@@ -999,9 +999,9 @@ class BaseAccessor(Wrapping):
         """Resolve keyword arguments for initializing `BaseAccessor` after stacking along columns.
 
         Args:
-            objs (MaybeTuple[BaseAccessor]): Additional accessor instances to stack.
-            reindex_kwargs (dict): Keyword arguments for reindexing.
-            kwargs (dict): Additional keyword arguments.
+            *objs (MaybeTuple[BaseAccessor]): Additional accessor instances to stack.
+            reindex_kwargs (KwargsLike): Keyword arguments for reindexing.
+            **kwargs: Additional keyword arguments.
 
         Returns:
             dict: Resolved keyword arguments for initializing `BaseAccessor`.
@@ -1028,9 +1028,9 @@ class BaseAccessor(Wrapping):
         `vectorbtpro.base.wrapping.ArrayWrapper.row_stack` and configures a new accessor.
 
         Args:
-            objs (MaybeTuple[BaseAccessor]): Additional accessor instances to stack.
-            wrapper_kwargs (dict): Keyword arguments for configuring the wrapper.
-            kwargs (dict): Additional keyword arguments for initialization.
+            *objs (MaybeTuple[BaseAccessor]): Additional accessor instances to stack.
+            wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
+            **kwargs: Keyword arguments for initialization.
 
         Returns:
             BaseAccessor: A new accessor instance with row-stacked data.
@@ -1076,10 +1076,10 @@ class BaseAccessor(Wrapping):
         `vectorbtpro.base.wrapping.ArrayWrapper.column_stack` and configures a new accessor.
 
         Args:
-            objs (MaybeTuple[BaseAccessor]): Additional accessor instances to stack.
-            wrapper_kwargs (dict): Keyword arguments for configuring the wrapper.
-            reindex_kwargs (dict): Keyword arguments for reindexing columns.
-            kwargs (dict): Additional keyword arguments for initialization.
+            *objs (MaybeTuple[BaseAccessor]): Additional accessor instances to stack.
+            wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
+            reindex_kwargs (KwargsLike): Keyword arguments for reindexing columns.
+            **kwargs: Keyword arguments for initialization.
 
         Returns:
             BaseAccessor: A new accessor instance with column-stacked data.
@@ -1123,9 +1123,9 @@ class BaseAccessor(Wrapping):
         """Perform indexing on the accessor instance and return a new accessor with the selected data.
 
         Args:
-            *args (Any): Additional arguments passed to the indexing operation.
+            *args (Any): Positional arguments passed to the indexing operation.
             wrapper_meta (DictLike): Metadata for indexing. If not provided, it is computed.
-            **kwargs (Any): Additional keyword arguments passed to the indexing operation.
+            **kwargs (Any): Keyword arguments passed to the indexing operation.
 
         Returns:
             BaseAccessor: A new accessor instance with the selected subset of data.
@@ -1148,7 +1148,7 @@ class BaseAccessor(Wrapping):
 
         Args:
             pd_indexing_setter_func (Callable): The Pandas indexing setter function.
-            **kwargs (Any): Additional keyword arguments passed to the setter function.
+            **kwargs (Any): Keyword arguments passed to the setter function.
         """
         pd_indexing_setter_func(self._obj)
 
@@ -1246,7 +1246,7 @@ class BaseAccessor(Wrapping):
         Args:
             shape (Shape): The desired shape.
             fill_value (Scalar): The value to fill the object.
-            **kwargs (Any): Additional keyword arguments for the Pandas constructor.
+            **kwargs (Any): Keyword arguments for the Pandas constructor.
 
         Returns:
             SeriesFrame: An empty Series or DataFrame with the specified shape.
@@ -1262,7 +1262,7 @@ class BaseAccessor(Wrapping):
         Args:
             other (SeriesFrame): A reference Pandas object to mimic.
             fill_value (Scalar): The value to fill the new object.
-            **kwargs (Any): Additional keyword arguments for the Pandas constructor.
+            **kwargs (Any): Keyword arguments for the Pandas constructor.
 
         Returns:
             SeriesFrame: An empty Series or DataFrame matching the structure of `other`.
@@ -1282,9 +1282,9 @@ class BaseAccessor(Wrapping):
         """Apply an indexing operation to the accessor.
 
         Args:
-            *args (Any): Additional arguments passed to the indexing operation.
+            *args (Any): Positional arguments passed to the indexing operation.
             wrap (bool): If False, return the underlying Pandas object; if True, return an accessor.
-            **kwargs (Any): Additional keyword arguments passed to the indexing operation.
+            **kwargs (Any): Keyword arguments passed to the indexing operation.
 
         Returns:
             Union[BaseAccessor, SeriesFrame]: An accessor instance with the applied indexing,
@@ -1319,13 +1319,13 @@ class BaseAccessor(Wrapping):
         * `wrapper`: the associated data wrapper.
         * `obj`: the underlying data object.
 
-        Additional keyword arguments not used by `get_index_points` are filtered, template-substituted,
+        Keyword arguments not used by `get_index_points` are filtered, template-substituted,
         and passed to the callable.
 
         Args:
             value_or_func (Union[MaybeArray, Callable]): The value to assign or a function that
                 computes the value based on context.
-            *args: Additional arguments passed to `value_or_func` if it is callable.
+            *args: Positional arguments passed to `value_or_func` if it is callable.
             inplace (bool): If True, modify the data object in place.
             columns (Optional[MaybeSequence[Hashable]]): Column(s) where the value should be set.
             template_context (KwargsLike): Additional context for template substitution.
@@ -1410,13 +1410,13 @@ class BaseAccessor(Wrapping):
         * `wrapper`: the associated data wrapper.
         * `obj`: the underlying data object.
 
-        Additional keyword arguments not used by `get_index_ranges` are filtered, template-substituted,
+        Keyword arguments not used by `get_index_ranges` are filtered, template-substituted,
         and passed to the callable.
 
         Args:
             value_or_func (Union[MaybeArray, Callable]): The value to assign or a function that
                 computes the value for each range.
-            *args: Additional arguments passed to `value_or_func` if it is callable.
+            *args: Positional arguments passed to `value_or_func` if it is callable.
             inplace (bool): If True, modify the data object in place.
             columns (Optional[MaybeSequence[Hashable]]): Column(s) where the value should be set.
             template_context (KwargsLike): Additional context for template substitution.
@@ -1508,7 +1508,7 @@ class BaseAccessor(Wrapping):
             n (int): Number of times to tile the data.
             keys (Optional[IndexLike]): Outer-level keys used to combine indexes.
             axis (int): Axis along which to tile the data (1 for columns, 0 for index).
-            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping the tiled data.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the tiled data.
 
         Returns:
             SeriesFrame: The tiled data, with updated index or columns if `keys` is provided.
@@ -1546,7 +1546,7 @@ class BaseAccessor(Wrapping):
             n (int): Number of times to repeat the data.
             keys (Optional[IndexLike]): Outer-level keys used to combine indexes.
             axis (int): Axis along which to repeat the data (1 for columns, 0 for index).
-            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping the repeated data.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the repeated data.
 
         Returns:
             SeriesFrame: The repeated data, with updated index or columns if `keys` is provided.
@@ -1574,8 +1574,8 @@ class BaseAccessor(Wrapping):
             other (SeriesFrame): Object to align to.
 
                 Must be a `pd.Series` or `pd.DataFrame`.
-            wrap_kwargs (KwargsLike, optional): Additional keyword arguments for the wrapper.
-            **kwargs: Additional keyword arguments passed to `vectorbtpro.base.indexes.align_index_to`.
+            wrap_kwargs (KwargsLike): Keyword arguments for the wrapper.
+            **kwargs: Keyword arguments passed to `vectorbtpro.base.indexes.align_index_to`.
 
         Returns:
             SeriesFrame: The aligned object.
@@ -1633,7 +1633,7 @@ class BaseAccessor(Wrapping):
 
         Args:
             *others (Union[SeriesFrame, BaseAccessor]): Additional objects to align.
-            **kwargs: Additional keyword arguments passed to `vectorbtpro.base.indexes.align_indexes`.
+            **kwargs: Keyword arguments passed to `vectorbtpro.base.indexes.align_indexes`.
 
         Returns:
             Tuple[SeriesFrame, ...]: The aligned objects.
@@ -1669,7 +1669,7 @@ class BaseAccessor(Wrapping):
 
         Args:
             other (SeriesFrame): Object to cross align with. Must be a `pd.Series` or `pd.DataFrame`.
-            wrap_kwargs (KwargsLike, optional): Additional keyword arguments for the wrapper.
+            wrap_kwargs (KwargsLike): Keyword arguments for the wrapper.
 
         Returns:
             SeriesFrame: The cross aligned object.
@@ -1770,7 +1770,7 @@ class BaseAccessor(Wrapping):
         Args:
             *others (Union[ArrayLike, BaseAccessor]): Additional arrays to broadcast.
 
-            **kwargs: Additional keyword arguments passed to `vectorbtpro.base.reshaping.broadcast`.
+            **kwargs: Keyword arguments passed to `vectorbtpro.base.reshaping.broadcast`.
 
         Returns:
             Any: The broadcasted result.
@@ -1787,7 +1787,7 @@ class BaseAccessor(Wrapping):
 
         Args:
             other (Union[ArrayLike, BaseAccessor]): Array to broadcast to.
-            **kwargs: Additional keyword arguments passed to `vectorbtpro.base.reshaping.broadcast_to`.
+            **kwargs: Keyword arguments passed to `vectorbtpro.base.reshaping.broadcast_to`.
 
         Returns:
             Any: The broadcasted result.
@@ -1803,7 +1803,7 @@ class BaseAccessor(Wrapping):
         Args:
             *others (Union[ArrayLike, BaseAccessor]): Additional arrays for broadcasting combinations.
 
-            **kwargs: Additional keyword arguments passed to `vectorbtpro.base.reshaping.broadcast_combs`.
+            **kwargs: Keyword arguments passed to `vectorbtpro.base.reshaping.broadcast_combs`.
 
         Returns:
             Any: The result of broadcast combinations.
@@ -1819,8 +1819,8 @@ class BaseAccessor(Wrapping):
         """Return a symmetric version of the frame using `vectorbtpro.base.reshaping.make_symmetric`.
 
         Args:
-            *args: Additional positional arguments passed to `vectorbtpro.base.reshaping.make_symmetric`.
-            **kwargs: Additional keyword arguments passed to `vectorbtpro.base.reshaping.make_symmetric`.
+            *args: Positional arguments passed to `vectorbtpro.base.reshaping.make_symmetric`.
+            **kwargs: Keyword arguments passed to `vectorbtpro.base.reshaping.make_symmetric`.
 
         Returns:
             Frame: The symmetric reshaped frame.
@@ -1831,8 +1831,8 @@ class BaseAccessor(Wrapping):
         """Return an array by unstacking data using `vectorbtpro.base.reshaping.unstack_to_array`.
 
         Args:
-            *args: Additional positional arguments passed to `vectorbtpro.base.reshaping.unstack_to_array`.
-            **kwargs: Additional keyword arguments passed to `vectorbtpro.base.reshaping.unstack_to_array`.
+            *args: Positional arguments passed to `vectorbtpro.base.reshaping.unstack_to_array`.
+            **kwargs: Keyword arguments passed to `vectorbtpro.base.reshaping.unstack_to_array`.
 
         Returns:
             Array: The resulting unstacked array.
@@ -1843,8 +1843,8 @@ class BaseAccessor(Wrapping):
         """Return a DataFrame by unstacking data using `vectorbtpro.base.reshaping.unstack_to_df`.
 
         Args:
-            *args: Additional positional arguments passed to `vectorbtpro.base.reshaping.unstack_to_df`.
-            **kwargs: Additional keyword arguments passed to `vectorbtpro.base.reshaping.unstack_to_df`.
+            *args: Positional arguments passed to `vectorbtpro.base.reshaping.unstack_to_df`.
+            **kwargs: Keyword arguments passed to `vectorbtpro.base.reshaping.unstack_to_df`.
 
         Returns:
             Frame: The resulting unstacked DataFrame.
@@ -1855,8 +1855,8 @@ class BaseAccessor(Wrapping):
         """Convert the object to a dictionary using `vectorbtpro.base.reshaping.to_dict`.
 
         Args:
-            *args: Additional positional arguments passed to `vectorbtpro.base.reshaping.to_dict`.
-            **kwargs: Additional keyword arguments passed to `vectorbtpro.base.reshaping.to_dict`.
+            *args: Positional arguments passed to `vectorbtpro.base.reshaping.to_dict`.
+            **kwargs: Keyword arguments passed to `vectorbtpro.base.reshaping.to_dict`.
 
         Returns:
             Mapping: A dictionary representation of the data.
@@ -1876,7 +1876,7 @@ class BaseAccessor(Wrapping):
         Args:
             data_cls (Optional[Type[Data]]): The data class to use for conversion.
             columns_are_symbols (bool): Indicates whether columns represent symbols.
-            **kwargs: Additional keyword arguments passed to `Data.from_data`.
+            **kwargs: Keyword arguments passed to `Data.from_data`.
 
         Returns:
             Data: A `vectorbtpro.data.base.Data` instance representing the converted data.
@@ -1906,14 +1906,14 @@ class BaseAccessor(Wrapping):
 
         Args:
             apply_func (Callable): The function to apply.
-            *args: Additional positional arguments passed to `apply_func`.
+            *args: Positional arguments passed to `apply_func`.
             keep_pd (bool): If True, maintain inputs as pandas objects; otherwise, convert them to NumPy arrays.
             to_2d (bool): If True, reshape inputs to 2-dimensional arrays; otherwise, retain their original shape.
             broadcast_named_args (KwargsLike): Additional named arguments for broadcasting.
-            broadcast_kwargs (KwargsLike): Additional keyword arguments for broadcasting.
+            broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
             template_context (KwargsLike): A template context for substituting values.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping the result.
-            **kwargs: Additional keyword arguments passed to `apply_func`.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            **kwargs: Keyword arguments passed to `apply_func`.
 
         Returns:
             SeriesFrame: The result after applying the function.
@@ -1985,7 +1985,7 @@ class BaseAccessor(Wrapping):
         Args:
             *others (ArrayLike): Additional arrays or objects to concatenate.
                 If an element is an instance of `BaseAccessor`, its `.obj` attribute is used.
-            broadcast_kwargs (KwargsLike): Additional keyword arguments for broadcasting.
+            broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
             keys (Optional[IndexLike]): Keys to label the columns in the resulting frame.
 
         Returns:
@@ -2043,7 +2043,7 @@ class BaseAccessor(Wrapping):
         Args:
             ntimes (int): The number of times to apply `apply_func`.
             apply_func (Callable): The function to execute, with the iteration index as its first parameter.
-            *args: Additional positional arguments passed to `apply_func`.
+            *args: Positional arguments passed to `apply_func`.
             keep_pd (bool): If True, retain inputs as pandas objects; otherwise, convert inputs to arrays.
             to_2d (bool): If True, convert input arrays to a two-dimensional format.
             keys (Optional[IndexLike]): Labels for the concatenated results along columns.
@@ -2051,7 +2051,7 @@ class BaseAccessor(Wrapping):
             broadcast_kwargs (Optional[dict]): Keyword arguments for controlling the broadcasting.
             template_context (Optional[dict]): Additional context for template substitutions.
             wrap_kwargs (Optional[dict]): Keyword arguments for wrapping the final output.
-            **kwargs: Additional keyword arguments passed to `apply_func`.
+            **kwargs: Keyword arguments passed to `apply_func`.
 
         Returns:
             MaybeTuple[Frame]: The wrapped result as a single frame or a tuple of frames,
@@ -2174,7 +2174,7 @@ class BaseAccessor(Wrapping):
             combine_func (callable): Function used to combine two arrays.
 
                 The function may be Numba-compiled.
-            *args: Additional arguments passed to `combine_func`.
+            *args: Positional arguments passed to `combine_func`.
             allow_multiple (bool): Determines if a tuple, list, or Index is interpreted as multiple objects.
 
                 Applicable only when using the instance method.
@@ -2190,11 +2190,11 @@ class BaseAccessor(Wrapping):
 
                 Can only be used with the instance method.
             keys (index_like): Label(s) for the outermost column level.
-            broadcast_named_args (dict): Additional arguments for broadcasting among arrays.
-            broadcast_kwargs (dict): Keyword arguments passed to `vectorbtpro.base.reshaping.broadcast`.
-            template_context (dict): Context used for substituting templates in `args` and `kwargs`.
-            wrap_kwargs (dict): Keyword arguments passed to `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
-            **kwargs: Additional keyword arguments passed to `combine_func`.
+            broadcast_named_args (KwargsLike): Positional arguments for broadcasting among arrays.
+            broadcast_kwargs (KwargsLike): Keyword arguments passed to `vectorbtpro.base.reshaping.broadcast`.
+            template_context (KwargsLike): Context used for substituting templates in `args` and `kwargs`.
+            wrap_kwargs (KwargsLike): Keyword arguments passed to `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
+            **kwargs: Keyword arguments passed to `combine_func`.
 
         Returns:
             SeriesFrame: The result after combining the objects.
@@ -2372,11 +2372,11 @@ class BaseAccessor(Wrapping):
             expr (str): Array expression to evaluate element-wise.
             frames_back (int): Number of frames to traverse for retrieving context variables.
             use_numexpr (bool): Flag indicating whether to use NumExpr for evaluation.
-            numexpr_kwargs (KwargsLike): Additional keyword arguments passed to `numexpr.evaluate`.
+            numexpr_kwargs (KwargsLike): Keyword arguments passed to `numexpr.evaluate`.
             local_dict (Optional[Mapping]): Local variables mapping for resolving names in the expression.
             global_dict (Optional[Mapping]): Global variables mapping for resolving names in the expression.
-            broadcast_kwargs (KwargsLike): Additional keyword arguments for broadcasting variables prior to evaluation.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping the evaluation output.
+            broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting variables prior to evaluation.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the evaluation output.
 
         Returns:
             Any: Evaluated expression wrapped using the broadcast wrapper.

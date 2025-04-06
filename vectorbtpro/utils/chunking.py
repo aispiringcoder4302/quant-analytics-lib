@@ -464,7 +464,7 @@ class ChunkMapper(DefineMixin):
 
         Args:
             chunk_meta (ChunkMeta): Input chunk metadata.
-            **kwargs: Additional keyword arguments for mapping.
+            **kwargs: Keyword arguments for mapping.
 
         Returns:
             ChunkMeta: Mapped chunk metadata, possibly retrieved from cache.
@@ -482,7 +482,7 @@ class ChunkMapper(DefineMixin):
 
         Args:
             chunk_meta (ChunkMeta): The input chunk metadata to map.
-            **kwargs: Additional keyword arguments for mapping.
+            **kwargs: Keyword arguments for mapping.
 
         Returns:
             ChunkMeta: The mapped chunk metadata.
@@ -1038,12 +1038,12 @@ class Chunked(Chunkable, DefineMixin):
     Args:
         value (Any): The value to be chunked.
         take_spec (TakeSpec): The specification for taking chunks.
-        take_spec_kwargs (KwargsLike): Additional keyword arguments for the `ChunkTaker` subclass.
+        take_spec_kwargs (KwargsLike): Keyword arguments for the `ChunkTaker` subclass.
 
             If `take_spec` is an instance rather than a class, these arguments update its configuration.
         select (bool): Indicates whether chunking is performed by selection.
         eval_id (Optional[MaybeSequence[Hashable]]): Identifier(s) used for evaluation.
-        **kwargs: Additional keyword arguments acting as `take_spec_kwargs`.
+        **kwargs: Keyword arguments acting as `take_spec_kwargs`.
     """
 
     value: tp.Any = define.required_field()
@@ -1053,7 +1053,7 @@ class Chunked(Chunkable, DefineMixin):
     """Specification for taking chunks."""
 
     take_spec_kwargs: tp.KwargsLike = define.field(default=None)
-    """Additional keyword arguments for the `ChunkTaker` subclass.
+    """Keyword arguments for the `ChunkTaker` subclass.
 
     If `take_spec` is an instance rather than a class, these arguments update its configuration.
     """
@@ -1221,7 +1221,7 @@ class Chunker(Configured):
         execute_kwargs (KwargsLike): Keyword arguments passed to `vectorbtpro.utils.execution.execute`
             for executing chunks.
         disable (Optional[bool]): Specifies whether chunking is disabled.
-        **kwargs: Additional keyword arguments passed to `Configured.__init__`.
+        **kwargs: Keyword arguments passed for configuration.
     """
 
     _settings_path: tp.SettingsPath = "chunking"
@@ -1421,7 +1421,7 @@ class Chunker(Configured):
 
                 It can be an iterable of `ChunkMeta` instances, a `ChunkMeta` generator, or a callable
                 returning chunk metadata.
-            **kwargs: Additional keyword arguments passed to the metadata generation process.
+            **kwargs: Keyword arguments passed to the metadata generation process.
 
         Returns:
             Iterable[ChunkMeta]: An iterable of chunk metadata.
@@ -1491,7 +1491,7 @@ class Chunker(Configured):
                 If None or a `NotChunked` instance, the original argument is returned.
             chunk_meta (ChunkMeta): Metadata for chunking.
             eval_id (Optional[Hashable]): Evaluation identifier.
-            **kwargs: Additional keyword arguments passed to `ChunkTaker.apply`.
+            **kwargs: Keyword arguments passed to `ChunkTaker.apply`.
 
         Returns:
             Any: The result after applying the chunk-taking specification.
@@ -1584,7 +1584,7 @@ class Chunker(Configured):
             chunk_meta (ChunkMeta): Metadata for chunking.
             silence_warnings (bool): Indicator to suppress warnings when a specification is missing.
             eval_id (Optional[Hashable]): Evaluation identifier.
-            **kwargs: Additional keyword arguments passed to `Chunker.take_from_arg`.
+            **kwargs: Keyword arguments passed to `Chunker.take_from_arg`.
 
         Returns:
             Tuple[tuple, dict]: A tuple containing the new positional arguments and keyword
@@ -1646,7 +1646,7 @@ class Chunker(Configured):
                     except for `arg_take_spec`.
             template_context (KwargsLike): Context for substituting templates in
                 arguments and specifications.
-            **kwargs: Additional keyword arguments passed to `Chunker.take_from_args` or to
+            **kwargs: Keyword arguments passed to `Chunker.take_from_args` or to
                 `arg_take_spec` if it is callable.
 
         Yields:
@@ -1927,7 +1927,7 @@ class Chunker(Configured):
             ann_args (AnnArgs): Mapping of annotated arguments with metadata.
             arg_take_spec (ArgTakeSpec): Specification for extracting chunk-taking parameters.
             eval_id (Optional[Hashable]): Evaluation identifier for filtering chunk takers.
-            **kwargs: Additional keyword arguments passed to the chunk taker's size suggestion.
+            **kwargs: Keyword arguments passed to the chunk taker's size suggestion.
 
         Returns:
             Optional[int]: The determined global size if found; otherwise, None.
@@ -1958,9 +1958,9 @@ class Chunker(Configured):
 
         Args:
             func (Callable): The function to execute.
-            *args: Additional positional arguments for `func`.
+            *args: Positional arguments for `func`.
             eval_id (Optional[Hashable]): Evaluation identifier used for filtering chunk takers and sizers.
-            **kwargs: Additional keyword arguments for `func`.
+            **kwargs: Keyword arguments for `func`.
 
         Returns:
             Any: The result of executing `func`, either directly or after processing chunks.
@@ -2153,12 +2153,12 @@ def chunked(
     `Chunker` instance is created by replacing any arguments that are not None.
 
     Args:
-        args (tuple): Additional positional arguments for the wrapped function.
+        *args: Positional arguments for the wrapped function.
         chunker (Optional[Chunker]): A `Chunker` type used for splitting the inputs.
         replace_chunker (Optional[bool]): If True, create a new `Chunker` instance by replacing provided attributes.
         merge_to_execute_kwargs (Optional[bool]): If True, merge extra keyword arguments into `execute_kwargs`.
         prepend_chunk_meta (Optional[bool]): If True, prepend chunk metadata to the function arguments.
-        kwargs (dict): Additional keyword arguments for configuring chunking behavior.
+        **kwargs: Keyword arguments for configuring chunking behavior.
 
     Returns:
         Callable: The decorated function with chunking capability.
@@ -2525,7 +2525,7 @@ def specialize_chunked_option(option: tp.ChunkedOption = None, **kwargs) -> tp.K
 
     Args:
         option (ChunkedOption): A chunking option to resolve.
-        **kwargs: Additional keyword arguments for merging.
+        **kwargs: Keyword arguments for merging.
 
     Returns:
         KwargsLike: A dictionary of merged chunking configuration options, or None if chunking is disabled.
@@ -2542,7 +2542,7 @@ def resolve_chunked(func: tp.Callable, option: tp.ChunkedOption = None, **kwargs
     Args:
         func (Callable): The function to decorate.
         option (ChunkedOption): A chunking option determining whether to apply chunked processing.
-        **kwargs: Additional keyword arguments for configuring chunked processing.
+        **kwargs: Keyword arguments for configuring chunked processing.
 
     Returns:
         Callable: The decorated function with chunked processing applied if enabled;

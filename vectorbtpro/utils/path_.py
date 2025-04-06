@@ -121,7 +121,7 @@ def file_size(file_path: tp.PathLike, readable: bool = True, **kwargs) -> tp.Uni
     Args:
         file_path (PathLike): The path of the file.
         readable (bool): Whether to return a human-readable size.
-        **kwargs: Additional keyword arguments passed to `humanize.naturalsize`.
+        **kwargs: Keyword arguments passed to `humanize.naturalsize`.
 
     Returns:
         Union[str, int]: The file size in bytes or as a human-readable string.
@@ -142,7 +142,7 @@ def dir_size(dir_path: tp.PathLike, readable: bool = True, **kwargs) -> tp.Union
     Args:
         dir_path (PathLike): The path of the directory.
         readable (bool): Whether to return a human-readable size.
-        **kwargs: Additional keyword arguments passed to `humanize.naturalsize`.
+        **kwargs: Keyword arguments passed to `humanize.naturalsize`.
 
     Returns:
         Union[str, int]: The cumulative size of the directory in bytes or as a human-readable string.
@@ -210,7 +210,7 @@ def make_file(file_path: tp.PathLike, mode: int = 0o666, exist_ok: bool = True, 
         file_path (PathLike): The path of the file to create.
         mode (int): The permission mode for the file.
         exist_ok (bool): Whether to do nothing if the file already exists.
-        **kwargs: Additional keyword arguments passed to `check_mkdir`.
+        **kwargs: Keyword arguments passed to `check_mkdir`.
 
     Returns:
         Path: The path of the created file.
@@ -226,7 +226,7 @@ def make_dir(dir_path: tp.PathLike, **kwargs) -> Path:
 
     Args:
         dir_path (PathLike): The path of the directory to create.
-        **kwargs: Additional keyword arguments passed to `check_mkdir`.
+        **kwargs: Keyword arguments passed to `check_mkdir`.
 
     Returns:
         Path: The path of the created directory.
@@ -453,7 +453,7 @@ def dir_tree(dir_path: Path, **kwargs) -> str:
 
     Args:
         dir_path (Path): The directory path for which to generate the tree.
-        **kwargs: Additional keyword arguments for `dir_tree_from_paths`.
+        **kwargs: Keyword arguments for `dir_tree_from_paths`.
 
     Returns:
         str: A string representing the visual tree structure.
@@ -474,7 +474,7 @@ def print_dir_tree(*args, **kwargs) -> None:
     and prints it to the standard output.
 
     Args:
-        *args: Additional arguments passed to `dir_tree`.
-        **kwargs: Additional keyword arguments passed to `dir_tree`.
+        *args: Positional arguments passed to `dir_tree`.
+        **kwargs: Keyword arguments passed to `dir_tree`.
     """
     print(dir_tree(*args, **kwargs))

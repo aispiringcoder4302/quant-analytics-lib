@@ -47,7 +47,7 @@ class ToMarkdown(Configured):
         remove_code_title (Optional[bool]): Whether to remove the code block title and display it above the block.
         even_indentation (Optional[bool]): Whether to adjust leading spaces to even numbers.
         newline_before_list (Optional[bool]): Whether to insert a newline before list items.
-        **kwargs: Additional keyword arguments for configuration.
+        **kwargs: Keyword arguments for configuration.
     """
 
     _settings_path: tp.SettingsPath = ["knowledge", "knowledge.formatting"]
@@ -138,7 +138,7 @@ class ToHTML(Configured):
             favoring `pymdownx` extensions when available.
         make_links (Optional[bool]): Whether to convert raw URLs within HTML `p` and
             `span` tags into hyperlinks.
-        **markdown_kwargs: Additional keyword arguments for Markdown conversion.
+        **markdown_kwargs: Keyword arguments for Markdown conversion.
     """
 
     _expected_keys_mode: tp.ExpectedKeysMode = "disable"
@@ -256,7 +256,7 @@ class FormatHTML(Configured):
         use_pygments (Optional[bool]): Flag to enable code highlighting with Pygments.
         pygments_kwargs (KwargsLike): Arguments passed to `pygments.formatters.HtmlFormatter`.
         template_context (KwargsLike): Additional context for template substitution.
-        **kwargs: Additional keyword arguments for configuration.
+        **kwargs: Keyword arguments for configuration.
     """
 
     _settings_path: tp.SettingsPath = ["knowledge", "knowledge.formatting"]
@@ -443,8 +443,8 @@ class ContentFormatter(Configured):
         close_output (Optional[bool]): Whether to close the output stream after writing.
         update_interval (Optional[float]): Time interval in seconds for updates.
         minimal_format (Optional[bool]): Whether to apply minimal formatting to the content.
-        template_context (Optional[KwargsLike]): Context for template substitution.
-        **kwargs: Additional keyword arguments for configuration.
+        template_context (KwargsLike): Context for template substitution.
+        **kwargs: Keyword arguments for configuration.
 
     For defaults, see `formatting.formatter_config` in `vectorbtpro._settings.knowledge`."""
 
@@ -763,9 +763,9 @@ class IPythonMarkdownFormatter(IPythonFormatter):
     """Class for formatting Markdown content in IPython.
 
     Args:
-        *args: Additional arguments passed to `IPythonFormatter`.
+        *args: Positional arguments passed to `IPythonFormatter`.
         to_markdown_kwargs (KwargsLike): Keyword arguments forwarded to `to_markdown`.
-        **kwargs: Additional keyword arguments passed to `IPythonFormatter`.
+        **kwargs: Keyword arguments passed to `IPythonFormatter`.
 
     For defaults, see `formatting.formatter_configs.ipython_markdown` in `vectorbtpro._settings.knowledge`.
     """
@@ -808,10 +808,10 @@ class IPythonHTMLFormatter(IPythonFormatter):
     """Class for formatting HTML content in IPython.
 
     Args:
-        *args: Additional arguments passed to `IPythonFormatter`.
+        *args: Positional arguments passed to `IPythonFormatter`.
         to_markdown_kwargs (KwargsLike): Keyword arguments for converting content to Markdown.
         to_html_kwargs (KwargsLike): Keyword arguments for converting Markdown content to HTML.
-        **kwargs: Additional keyword arguments passed to `IPythonFormatter`.
+        **kwargs: Keyword arguments passed to `IPythonFormatter`.
 
     For defaults, see `formatting.formatter_configs.ipython_html` in `vectorbtpro._settings.knowledge`.
     """
@@ -872,7 +872,7 @@ class HTMLFileFormatter(ContentFormatter):
     """Class for formatting static HTML files.
 
     Args:
-        *args: Additional arguments passed to `ContentFormatter`.
+        *args: Positional arguments passed to `ContentFormatter`.
         page_title (str): Title of the HTML page.
         refresh_page (Optional[bool]): Determines whether the HTML page should refresh.
         dir_path (Optional[PathLike]): Directory path for saving HTML files.
@@ -886,7 +886,7 @@ class HTMLFileFormatter(ContentFormatter):
         to_markdown_kwargs (KwargsLike): Keyword arguments for converting content to Markdown.
         to_html_kwargs (KwargsLike): Keyword arguments for converting Markdown to HTML.
         format_html_kwargs (KwargsLike): Keyword arguments for HTML formatting.
-        **kwargs: Additional keyword arguments passed to `ContentFormatter`.
+        **kwargs: Keyword arguments passed to `ContentFormatter`.
 
     For defaults, see `formatting.formatter_configs.html` in `vectorbtpro._settings.knowledge`."""
 

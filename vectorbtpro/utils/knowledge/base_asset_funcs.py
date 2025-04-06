@@ -846,7 +846,7 @@ class FindAssetFunc(AssetFunc):
             target (MaybeList[Any]): The matching criterion, either a function or a
                 `vectorbtpro.utils.search_.Not` instance.
             find_all (bool): Flag specifying if all targets should be evaluated.
-            **kwargs: Additional keyword arguments for the matching process.
+            **kwargs: Keyword arguments for the matching process.
         """
         if not isinstance(target, list):
             targets = [target]
@@ -1238,7 +1238,7 @@ class FindReplaceAssetFunc(FindAssetFunc):
             d (Any): The original value to evaluate for a match.
             target (MaybeList[Any]): The target value or callable to determine if a match occurs.
             replacement (MaybeList[Any]): The replacement value or callable to apply when a match is found.
-            kwargs: Additional keyword arguments for text replacement processing.
+            kwargs: Keyword arguments for text replacement processing.
 
         Returns:
             Any: The resulting value after replacement if a match is found; otherwise, the original value.

@@ -52,9 +52,9 @@ class AssetPipeline(Base):
             *args: Positional arguments used during task resolution.
             prepare (bool): Flag indicating whether to prepare the function before execution.
             prepare_once (bool): Flag specifying if the function should be prepared only once.
-            cond_kwargs (KwargsLike): Additional keyword arguments for conditional preparation.
+            cond_kwargs (KwargsLike): Keyword arguments for conditional preparation.
             asset_func_meta (Union[None, dict, list]): Metadata for the asset function.
-            **kwargs: Additional keyword arguments used during task resolution.
+            **kwargs: Keyword arguments used during task resolution.
 
         Returns:
             Task: A callable task resolved from the provided definition."""
@@ -139,7 +139,7 @@ class BasicAssetPipeline(AssetPipeline):
     Args:
         args (Any): The first positional argument can be a task or list of tasks;
             subsequent positional arguments are used in task resolution.
-        kwargs (Any): Additional keyword arguments for task resolution.
+        kwargs (Any): Keyword arguments for task resolution.
 
     Usage:
         ```pycon
@@ -198,7 +198,7 @@ class ComplexAssetPipeline(AssetPipeline):
         expression (str): The expression string to evaluate.
         context (KwargsLike): A mapping of variables for expression evaluation.
         prepare_once (bool): Flag to indicate when functions should be prepared once.
-        **resolve_task_kwargs: Additional keyword arguments for task resolution.
+        **resolve_task_kwargs: Keyword arguments for task resolution.
 
     Usage:
         ```pycon
@@ -228,7 +228,7 @@ class ComplexAssetPipeline(AssetPipeline):
             context (KwargsLike): A mapping of context variables.
             prepare (bool): Flag to indicate whether to prepare function calls.
             prepare_once (bool): Flag to indicate if functions should be prepared once.
-            **resolve_task_kwargs: Additional keyword arguments for resolving tasks.
+            **resolve_task_kwargs: Keyword arguments for resolving tasks.
 
         Returns:
             Tuple[str, Kwargs]: A tuple containing the modified expression and the updated context.

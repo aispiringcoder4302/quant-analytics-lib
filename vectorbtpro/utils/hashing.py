@@ -26,8 +26,8 @@ class Hashable(Base):
         """Compute a hash value based on the provided arguments.
 
         Args:
-            *args: Additional arguments passed for hash computation.
-            **kwargs: Additional keyword arguments passed for hash computation.
+            *args: Positional arguments passed for hash computation.
+            **kwargs: Keyword arguments passed for hash computation.
         """
         raise NotImplementedError
 

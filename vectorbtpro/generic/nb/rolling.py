@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Generic Numba-compiled functions for rolling and expanding windows."""
+"""Module providing generic Numba-compiled functions for rolling and expanding windows."""
 
 import numpy as np
 from numba import prange
@@ -29,10 +29,16 @@ from vectorbtpro.utils import chunking as ch
 
 @register_jitted(cache=True)
 def rolling_sum_acc_nb(in_state: RollSumAIS) -> RollSumAOS:
-    """Accumulator of `rolling_sum_1d_nb`.
+    """Accumulate the rolling sum state for one iteration of `rolling_sum_1d_nb`.
 
-    Takes a state of type `vectorbtpro.generic.enums.RollSumAIS` and returns
-    a state of type `vectorbtpro.generic.enums.RollSumAOS`."""
+    Args:
+        in_state (RollSumAIS): The current rolling sum accumulator input state
+            of type `vectorbtpro.generic.enums.RollSumAOS`.
+
+    Returns:
+        RollSumAOS: The updated rolling sum accumulator output state
+            of type `vectorbtpro.generic.enums.RollSumAOS`.
+    """
     i = in_state.i
     value = in_state.value
     pre_window_value = in_state.pre_window_value
@@ -65,11 +71,19 @@ def rolling_sum_acc_nb(in_state: RollSumAIS) -> RollSumAOS:
 
 @register_jitted(cache=True)
 def rolling_sum_1d_nb(arr: tp.Array1d, window: int, minp: tp.Optional[int] = None) -> tp.Array1d:
-    """Compute rolling sum.
+    """Compute rolling sum for a one-dimensional array.
 
-    Uses `rolling_sum_acc_nb` at each iteration.
+    Uses `rolling_sum_acc_nb` to update the accumulation state for each iteration,
+    emulating the behavior of `pd.Series(arr).rolling(window, min_periods=minp).sum()`.
 
-    Numba equivalent to `pd.Series(arr).rolling(window, min_periods=minp).sum()`."""
+    Args:
+        arr (Array1d): Array of numerical values.
+        window (int): Size of the rolling window.
+        minp (Optional[int]): Minimum required observations within a window.
+
+    Returns:
+        Array1d: Array containing the rolling sum values.
+    """
     if minp is None:
         minp = window
     if minp > window:
@@ -103,7 +117,21 @@ def rolling_sum_1d_nb(arr: tp.Array1d, window: int, minp: tp.Optional[int] = Non
 )
 @register_jitted(cache=True, tags={"can_parallel"})
 def rolling_sum_nb(arr: tp.Array2d, window: int, minp: tp.Optional[int] = None) -> tp.Array2d:
-    """2-dim version of `rolling_sum_1d_nb`."""
+    """Apply a rolling sum computation column-wise to a two-dimensional array.
+
+    Uses `rolling_sum_1d_nb` to compute the rolling sum for each column.
+
+    Args:
+        arr (Array2d): Two-dimensional array of numerical values, with each column processed independently.
+        window (int): Size of the rolling window.
+        minp (Optional[int]): Minimum required observations within a window.
+
+    Returns:
+        Array2d: Two-dimensional array with the rolling sum computed column-wise.
+
+    !!! tip
+        This function is parallelizable.
+    """
     out = np.empty_like(arr, dtype=float_)
     for col in prange(arr.shape[1]):
         out[:, col] = rolling_sum_1d_nb(arr[:, col], window, minp=minp)
@@ -112,10 +140,16 @@ def rolling_sum_nb(arr: tp.Array2d, window: int, minp: tp.Optional[int] = None) 
 
 @register_jitted(cache=True)
 def rolling_prod_acc_nb(in_state: RollProdAIS) -> RollProdAOS:
-    """Accumulator of `rolling_prod_1d_nb`.
+    """Accumulate the rolling product state for one iteration of `rolling_prod_1d_nb`.
 
-    Takes a state of type `vectorbtpro.generic.enums.RollProdAIS` and returns
-    a state of type `vectorbtpro.generic.enums.RollProdAOS`."""
+    Args:
+        in_state (RollProdAIS): The current rolling product accumulator input state
+            of type `vectorbtpro.generic.enums.RollProdAIS`.
+
+    Returns:
+        RollProdAOS: The updated rolling product accumulator output state
+            of type `vectorbtpro.generic.enums.RollProdAOS`.
+    """
     i = in_state.i
     value = in_state.value
     pre_window_value = in_state.pre_window_value
@@ -148,11 +182,19 @@ def rolling_prod_acc_nb(in_state: RollProdAIS) -> RollProdAOS:
 
 @register_jitted(cache=True)
 def rolling_prod_1d_nb(arr: tp.Array1d, window: int, minp: tp.Optional[int] = None) -> tp.Array1d:
-    """Compute rolling product.
+    """Compute rolling product for a one-dimensional array.
 
-    Uses `rolling_prod_acc_nb` at each iteration.
+    Uses `rolling_prod_acc_nb` to update the accumulation state for each iteration,
+    replicating the behavior of `pd.Series(arr).rolling(window, min_periods=minp).apply(np.prod)`.
 
-    Numba equivalent to `pd.Series(arr).rolling(window, min_periods=minp).apply(np.prod)`."""
+    Args:
+        arr (Array1d): Array of numerical values.
+        window (int): Size of the rolling window.
+        minp (Optional[int]): Minimum required observations within a window.
+
+    Returns:
+        Array1d: Array containing the rolling product values.
+    """
     if minp is None:
         minp = window
     if minp > window:
@@ -186,7 +228,21 @@ def rolling_prod_1d_nb(arr: tp.Array1d, window: int, minp: tp.Optional[int] = No
 )
 @register_jitted(cache=True, tags={"can_parallel"})
 def rolling_prod_nb(arr: tp.Array2d, window: int, minp: tp.Optional[int] = None) -> tp.Array2d:
-    """2-dim version of `rolling_prod_1d_nb`."""
+    """Apply a rolling product computation column-wise to a two-dimensional array.
+
+    Uses `rolling_prod_1d_nb` to compute the rolling product for each column independently.
+
+    Args:
+        arr (Array2d): Two-dimensional array of numerical values, with each column processed separately.
+        window (int): Size of the rolling window.
+        minp (Optional[int]): Minimum required observations within a window.
+
+    Returns:
+        Array2d: Two-dimensional array with the rolling product computed column-wise.
+
+    !!! tip
+        This function is parallelizable.
+    """
     out = np.empty_like(arr, dtype=float_)
     for col in prange(arr.shape[1]):
         out[:, col] = rolling_prod_1d_nb(arr[:, col], window, minp=minp)
@@ -195,10 +251,16 @@ def rolling_prod_nb(arr: tp.Array2d, window: int, minp: tp.Optional[int] = None)
 
 @register_jitted(cache=True)
 def rolling_mean_acc_nb(in_state: RollMeanAIS) -> RollMeanAOS:
-    """Accumulator of `rolling_mean_1d_nb`.
+    """Accumulate the rolling mean state for one iteration of `rolling_mean_1d_nb`.
 
-    Takes a state of type `vectorbtpro.generic.enums.RollMeanAIS` and returns
-    a state of type `vectorbtpro.generic.enums.RollMeanAOS`."""
+    Args:
+        in_state (RollMeanAIS): The current rolling mean accumulator input state
+            of type `vectorbtpro.generic.enums.RollMeanAIS`.
+
+    Returns:
+        RollMeanAOS: The updated rolling mean accumulator output state
+            of type `vectorbtpro.generic.enums.RollMeanAOS`.
+    """
     i = in_state.i
     value = in_state.value
     pre_window_value = in_state.pre_window_value
@@ -231,11 +293,20 @@ def rolling_mean_acc_nb(in_state: RollMeanAIS) -> RollMeanAOS:
 
 @register_jitted(cache=True)
 def rolling_mean_1d_nb(arr: tp.Array1d, window: int, minp: tp.Optional[int] = None) -> tp.Array1d:
-    """Compute rolling mean.
+    """Compute the rolling mean of a one-dimensional array.
 
     Uses `rolling_mean_acc_nb` at each iteration.
 
-    Numba equivalent to `pd.Series(arr).rolling(window, min_periods=minp).mean()`."""
+    Numba equivalent to `pd.Series(arr).rolling(window, min_periods=minp).mean()`.
+
+    Args:
+        arr (Array1d): One-dimensional array of numeric data.
+        window (int): Size of the rolling window.
+        minp (Optional[int]): Minimum number of observations required for a valid calculation.
+
+    Returns:
+        Array1d: Array containing the rolling means.
+    """
     if minp is None:
         minp = window
     if minp > window:
@@ -269,7 +340,21 @@ def rolling_mean_1d_nb(arr: tp.Array1d, window: int, minp: tp.Optional[int] = No
 )
 @register_jitted(cache=True, tags={"can_parallel"})
 def rolling_mean_nb(arr: tp.Array2d, window: int, minp: tp.Optional[int] = None) -> tp.Array2d:
-    """2-dim version of `rolling_mean_1d_nb`."""
+    """Compute the rolling mean for a two-dimensional array column-wise.
+
+    Applies `rolling_mean_1d_nb` to each column.
+
+    Args:
+        arr (Array2d): Two-dimensional array of numeric data.
+        window (int): Window size for the rolling computation.
+        minp (Optional[int]): Minimum number of observations required per window.
+
+    Returns:
+        Array2d: Array containing column-wise rolling mean values.
+
+    !!! tip
+        This function is parallelizable.
+    """
     out = np.empty_like(arr, dtype=float_)
     for col in prange(arr.shape[1]):
         out[:, col] = rolling_mean_1d_nb(arr[:, col], window, minp=minp)
@@ -278,10 +363,17 @@ def rolling_mean_nb(arr: tp.Array2d, window: int, minp: tp.Optional[int] = None)
 
 @register_jitted(cache=True)
 def rolling_std_acc_nb(in_state: RollStdAIS) -> RollStdAOS:
-    """Accumulator of `rolling_std_1d_nb`.
+    """Accumulate values for computing the rolling standard deviation.
 
-    Takes a state of type `vectorbtpro.generic.enums.RollStdAIS` and returns
-    a state of type `vectorbtpro.generic.enums.RollStdAOS`."""
+    Processes a state of type `vectorbtpro.generic.enums.RollStdAIS` and returns
+    an updated state of type `vectorbtpro.generic.enums.RollStdAOS`.
+
+    Args:
+        in_state (RollStdAIS): Input state for the rolling standard deviation calculation.
+
+    Returns:
+        RollStdAOS: Updated state after processing the current value.
+    """
     i = in_state.i
     value = in_state.value
     pre_window_value = in_state.pre_window_value
@@ -317,11 +409,21 @@ def rolling_std_acc_nb(in_state: RollStdAIS) -> RollStdAOS:
 
 @register_jitted(cache=True)
 def rolling_std_1d_nb(arr: tp.Array1d, window: int, minp: tp.Optional[int] = None, ddof: int = 0) -> tp.Array1d:
-    """Compute rolling standard deviation.
+    """Compute the rolling standard deviation of a one-dimensional array.
 
     Uses `rolling_std_acc_nb` at each iteration.
 
-    Numba equivalent to `pd.Series(arr).rolling(window, min_periods=minp).std(ddof=ddof)`."""
+    Numba equivalent to `pd.Series(arr).rolling(window, min_periods=minp).std(ddof=ddof)`.
+
+    Args:
+        arr (Array1d): One-dimensional array of numeric data.
+        window (int): Window size for the rolling computation.
+        minp (Optional[int]): Minimum number of observations required for a valid computation.
+        ddof (int): Delta degrees of freedom for the standard deviation calculation.
+
+    Returns:
+        Array1d: Array containing rolling standard deviation values.
+    """
     if minp is None:
         minp = window
     if minp > window:
@@ -359,7 +461,22 @@ def rolling_std_1d_nb(arr: tp.Array1d, window: int, minp: tp.Optional[int] = Non
 )
 @register_jitted(cache=True, tags={"can_parallel"})
 def rolling_std_nb(arr: tp.Array2d, window: int, minp: tp.Optional[int] = None, ddof: int = 0) -> tp.Array2d:
-    """2-dim version of `rolling_std_1d_nb`."""
+    """Compute the rolling standard deviation for a two-dimensional array column-wise.
+
+    Applies `rolling_std_1d_nb` to each column.
+
+    Args:
+        arr (Array2d): Two-dimensional array of numeric data.
+        window (int): Window size for the rolling computation.
+        minp (Optional[int]): Minimum number of observations required per window.
+        ddof (int): Delta degrees of freedom used in the standard deviation calculation.
+
+    Returns:
+        Array2d: Array containing column-wise rolling standard deviation values.
+
+    !!! tip
+        This function is parallelizable.
+    """
     out = np.empty_like(arr, dtype=float_)
     for col in prange(arr.shape[1]):
         out[:, col] = rolling_std_1d_nb(arr[:, col], window, minp=minp, ddof=ddof)
@@ -368,10 +485,17 @@ def rolling_std_nb(arr: tp.Array2d, window: int, minp: tp.Optional[int] = None, 
 
 @register_jitted(cache=True)
 def rolling_zscore_acc_nb(in_state: RollZScoreAIS) -> RollZScoreAOS:
-    """Accumulator of `rolling_zscore_1d_nb`.
+    """Accumulate values for computing a rolling z-score.
 
-    Takes a state of type `vectorbtpro.generic.enums.RollZScoreAIS` and returns
-    a state of type `vectorbtpro.generic.enums.RollZScoreAOS`."""
+    Processes a state of type `vectorbtpro.generic.enums.RollZScoreAIS` and
+    returns an updated state of type `vectorbtpro.generic.enums.RollZScoreAOS`.
+
+    Args:
+        in_state (RollZScoreAIS): Input state for the rolling z-score computation.
+
+    Returns:
+        RollZScoreAOS: Updated state after processing the current value.
+    """
     mean_in_state = RollMeanAIS(
         i=in_state.i,
         value=in_state.value,
@@ -410,9 +534,19 @@ def rolling_zscore_acc_nb(in_state: RollZScoreAIS) -> RollZScoreAOS:
 
 @register_jitted(cache=True)
 def rolling_zscore_1d_nb(arr: tp.Array1d, window: int, minp: tp.Optional[int] = None, ddof: int = 0) -> tp.Array1d:
-    """Compute rolling z-score.
+    """Compute the rolling z-score of a one-dimensional array.
 
-    Uses `rolling_zscore_acc_nb` at each iteration."""
+    Iteratively applies `rolling_zscore_acc_nb` to compute z-scores.
+
+    Args:
+        arr (Array1d): One-dimensional array of numeric data.
+        window (int): Window size for the rolling calculation.
+        minp (Optional[int]): Minimum number of observations required per window.
+        ddof (int): Delta degrees of freedom used in the rolling standard deviation computation.
+
+    Returns:
+        Array1d: Array containing rolling z-score values.
+    """
     if minp is None:
         minp = window
     if minp > window:
@@ -450,7 +584,20 @@ def rolling_zscore_1d_nb(arr: tp.Array1d, window: int, minp: tp.Optional[int] = 
 )
 @register_jitted(cache=True, tags={"can_parallel"})
 def rolling_zscore_nb(arr: tp.Array2d, window: int, minp: tp.Optional[int] = None, ddof: int = 0) -> tp.Array2d:
-    """2-dim version of `rolling_zscore_1d_nb`."""
+    """Compute rolling z-score for each column of a 2D array using `rolling_zscore_1d_nb`.
+
+    Args:
+        arr (Array2d): Input 2D array.
+        window (int): Window size for the rolling computation.
+        minp (Optional[int]): Minimum number of valid observations required.
+        ddof (int): Delta degrees of freedom.
+
+    Returns:
+        Array2d: A 2D array of computed z-scores.
+
+    !!! tip
+        This function is parallelizable.
+    """
     out = np.empty_like(arr, dtype=float_)
     for col in prange(arr.shape[1]):
         out[:, col] = rolling_zscore_1d_nb(arr[:, col], window, minp=minp, ddof=ddof)
@@ -459,10 +606,15 @@ def rolling_zscore_nb(arr: tp.Array2d, window: int, minp: tp.Optional[int] = Non
 
 @register_jitted(cache=True)
 def wm_mean_acc_nb(in_state: WMMeanAIS) -> WMMeanAOS:
-    """Accumulator of `wm_mean_1d_nb`.
+    """Update the accumulator state for the weighted moving average computation.
 
-    Takes a state of type `vectorbtpro.generic.enums.WMMeanAIS` and returns
-    a state of type `vectorbtpro.generic.enums.WMMeanAOS`."""
+    Args:
+        in_state (WMMeanAIS): A state object from `vectorbtpro.generic.enums.WMMeanAIS`
+            representing the current accumulator state.
+
+    Returns:
+        WMMeanAOS: Updated accumulator state from `vectorbtpro.generic.enums.WMMeanAOS`.
+    """
     i = in_state.i
     value = in_state.value
     pre_window_value = in_state.pre_window_value
@@ -498,9 +650,16 @@ def wm_mean_acc_nb(in_state: WMMeanAIS) -> WMMeanAOS:
 
 @register_jitted(cache=True)
 def wm_mean_1d_nb(arr: tp.Array1d, window: int, minp: tp.Optional[int] = None) -> tp.Array1d:
-    """Compute weighted moving average.
+    """Compute the weighted moving average for a 1D array using `wm_mean_acc_nb`.
 
-    Uses `wm_mean_acc_nb` at each iteration."""
+    Args:
+        arr (Array1d): Input 1D array.
+        window (int): Window size for the moving average.
+        minp (Optional[int]): Minimum number of valid observations required.
+
+    Returns:
+        Array1d: Array of weighted moving averages.
+    """
     if minp is None:
         minp = window
     if minp > window:
@@ -537,7 +696,19 @@ def wm_mean_1d_nb(arr: tp.Array1d, window: int, minp: tp.Optional[int] = None) -
 )
 @register_jitted(cache=True, tags={"can_parallel"})
 def wm_mean_nb(arr: tp.Array2d, window: int, minp: tp.Optional[int] = None) -> tp.Array2d:
-    """2-dim version of `wm_mean_1d_nb`."""
+    """Compute the weighted moving average for each column of a 2D array using `wm_mean_1d_nb`.
+
+    Args:
+        arr (Array2d): Input 2D array.
+        window (int): Window size for the moving average.
+        minp (Optional[int]): Minimum number of valid observations required.
+
+    Returns:
+        Array2d: A 2D array of weighted moving averages computed column-wise.
+
+    !!! tip
+        This function is parallelizable.
+    """
     out = np.empty_like(arr, dtype=float_)
     for col in prange(arr.shape[1]):
         out[:, col] = wm_mean_1d_nb(arr[:, col], window, minp=minp)
@@ -546,35 +717,68 @@ def wm_mean_nb(arr: tp.Array2d, window: int, minp: tp.Optional[int] = None) -> t
 
 @register_jitted(cache=True)
 def alpha_from_com_nb(com: float) -> float:
-    """Get the smoothing factor `alpha` from a center of mass."""
+    """Compute the smoothing factor `alpha` from the center of mass.
+
+    Args:
+        com (float): Center of mass value.
+
+    Returns:
+        float: Computed smoothing factor `alpha`.
+    """
     return 1.0 / (1.0 + com)
 
 
 @register_jitted(cache=True)
 def alpha_from_span_nb(span: float) -> float:
-    """Get the smoothing factor `alpha` from a span."""
+    """Compute the smoothing factor `alpha` from a span value.
+
+    Args:
+        span (float): Span value.
+
+    Returns:
+        float: Computed smoothing factor `alpha`.
+    """
     com = (span - 1) / 2.0
     return alpha_from_com_nb(com)
 
 
 @register_jitted(cache=True)
 def alpha_from_halflife_nb(halflife: float) -> float:
-    """Get the smoothing factor `alpha` from a half-life."""
+    """Compute the smoothing factor `alpha` from a half-life value.
+
+    Args:
+        halflife (float): Half-life value.
+
+    Returns:
+        float: Computed smoothing factor `alpha`.
+    """
     return 1 - np.exp(-np.log(2) / halflife)
 
 
 @register_jitted(cache=True)
 def alpha_from_wilder_nb(period: int) -> float:
-    """Get the smoothing factor `alpha` from a Wilder's period."""
+    """Compute the smoothing factor `alpha` using Wilder's period.
+
+    Args:
+        period (int): Wilder's period.
+
+    Returns:
+        float: Computed smoothing factor `alpha`.
+    """
     return 1 / period
 
 
 @register_jitted(cache=True)
 def ewm_mean_acc_nb(in_state: EWMMeanAIS) -> EWMMeanAOS:
-    """Accumulator of `ewm_mean_1d_nb`.
+    """Update the accumulator state for the exponential weighted moving average computation.
 
-    Takes a state of type `vectorbtpro.generic.enums.EWMMeanAIS` and returns
-    a state of type `vectorbtpro.generic.enums.EWMMeanAOS`."""
+    Args:
+        in_state (EWMMeanAIS): A state object from `vectorbtpro.generic.enums.EWMMeanAIS`
+            representing the current accumulator state.
+
+    Returns:
+        EWMMeanAOS: Updated accumulator state from `vectorbtpro.generic.enums.EWMMeanAOS`.
+    """
     i = in_state.i
     value = in_state.value
     old_wt = in_state.old_wt
@@ -612,16 +816,24 @@ def ewm_mean_acc_nb(in_state: EWMMeanAIS) -> EWMMeanAOS:
 
 @register_jitted(cache=True)
 def ewm_mean_1d_nb(arr: tp.Array1d, span: int, minp: tp.Optional[int] = None, adjust: bool = False) -> tp.Array1d:
-    """Compute exponential weighted moving average.
+    """Compute the exponential weighted moving average for a 1D array using `ewm_mean_acc_nb`.
 
-    Uses `ewm_mean_acc_nb` at each iteration.
+    This function serves as a Numba equivalent to:
+    `pd.Series(arr).ewm(span=span, min_periods=minp, adjust=adjust).mean()`, and is adapted from 
+    `pd._libs.window.aggregations.window_aggregations.ewma` with default arguments.
 
-    Numba equivalent to `pd.Series(arr).ewm(span=span, min_periods=minp, adjust=adjust).mean()`.
+    Args:
+        arr (Array1d): Input 1D array.
+        span (int): Span used to define the decay for the exponential moving average.
+        minp (Optional[int]): Minimum number of observations required.
+        adjust (bool): Flag to determine if the weights should be adjusted.
 
-    Adaptation of `pd._libs.window.aggregations.window_aggregations.ewma` with default arguments.
+    Returns:
+        Array1d: Array of computed exponential weighted moving averages.
 
     !!! note
-        In contrast to the Pandas implementation, `minp` is effective within `span`."""
+        In contrast to the Pandas implementation, `minp` is applied within `span`.
+    """
     if minp is None:
         minp = span
     if minp > span:
@@ -666,7 +878,21 @@ def ewm_mean_1d_nb(arr: tp.Array1d, span: int, minp: tp.Optional[int] = None, ad
 )
 @register_jitted(cache=True, tags={"can_parallel"})
 def ewm_mean_nb(arr: tp.Array2d, span: int, minp: tp.Optional[int] = None, adjust: bool = False) -> tp.Array2d:
-    """2-dim version of `ewm_mean_1d_nb`."""
+    """Compute the 2-dimensional exponential weighted moving average for each column
+    independently using `ewm_mean_1d_nb`.
+
+    Args:
+        arr (Array2d): Input 2-dimensional data array.
+        span (int): Span for the exponential weighting.
+        minp (Optional[int]): Minimum number of observations required.
+        adjust (bool): Whether to adjust weights.
+
+    Returns:
+        Array2d: Computed 2-dimensional exponential weighted moving average.
+
+    !!! tip
+        This function is parallelizable.
+    """
     out = np.empty_like(arr, dtype=float_)
     for col in prange(arr.shape[1]):
         out[:, col] = ewm_mean_1d_nb(arr[:, col], span, minp=minp, adjust=adjust)
@@ -675,10 +901,17 @@ def ewm_mean_nb(arr: tp.Array2d, span: int, minp: tp.Optional[int] = None, adjus
 
 @register_jitted(cache=True)
 def ewm_std_acc_nb(in_state: EWMStdAIS) -> EWMStdAOS:
-    """Accumulator of `ewm_std_1d_nb`.
+    """Accumulate and update the state for computing the 1-dimensional exponential
+    weighted moving standard deviation.
 
-    Takes a state of type `vectorbtpro.generic.enums.EWMStdAIS` and returns
-    a state of type `vectorbtpro.generic.enums.EWMStdAOS`."""
+    Args:
+        in_state (EWMStdAIS): Current accumulator state of type `vectorbtpro.generic.enums.EWMStdAIS`
+            containing the observation index, value, means, covariance, and weights.
+
+    Returns:
+        EWMStdAOS: Updated accumulator state of type `vectorbtpro.generic.enums.EWMStdAOS` with
+            recalculated means, covariance, weights, and computed value.
+    """
     i = in_state.i
     value = in_state.value
     mean_x = in_state.mean_x
@@ -758,16 +991,25 @@ def ewm_std_acc_nb(in_state: EWMStdAIS) -> EWMStdAOS:
 
 @register_jitted(cache=True)
 def ewm_std_1d_nb(arr: tp.Array1d, span: int, minp: tp.Optional[int] = None, adjust: bool = False) -> tp.Array1d:
-    """Compute exponential weighted moving standard deviation.
+    """Compute the exponential weighted moving standard deviation for a 1-dimensional array.
 
-    Uses `ewm_std_acc_nb` at each iteration.
+    Updates the accumulator state with `ewm_std_acc_nb` at each iteration.
 
-    Numba equivalent to `pd.Series(arr).ewm(span=span, min_periods=minp).std()`.
+    Numba equivalent to `pd.Series(arr).ewm(span=span, min_periods=minp).std()`
+    and adapted from `pd._libs.window.aggregations.window_aggregations.ewmcov`.
 
-    Adaptation of `pd._libs.window.aggregations.window_aggregations.ewmcov` with default arguments.
+    Args:
+        arr (Array1d): Input data array.
+        span (int): Window span for the exponential weighting.
+        minp (Optional[int]): Minimum number of observations required.
+        adjust (bool): Whether to adjust weights.
+
+    Returns:
+        Array1d: Computed exponential weighted moving standard deviation.
 
     !!! note
-        In contrast to the Pandas implementation, `minp` is effective within `span`."""
+        In contrast to Pandas, the parameter `minp` is applied within the span.
+    """
     if minp is None:
         minp = span
     if minp > span:
@@ -824,7 +1066,21 @@ def ewm_std_1d_nb(arr: tp.Array1d, span: int, minp: tp.Optional[int] = None, adj
 )
 @register_jitted(cache=True, tags={"can_parallel"})
 def ewm_std_nb(arr: tp.Array2d, span: int, minp: tp.Optional[int] = None, adjust: bool = False) -> tp.Array2d:
-    """2-dim version of `ewm_std_1d_nb`."""
+    """Compute the 2-dimensional exponential weighted moving standard deviation for each
+    column independently using `ewm_std_1d_nb`.
+
+    Args:
+        arr (Array2d): Input 2-dimensional data array.
+        span (int): Span for the exponential weighting.
+        minp (Optional[int]): Minimum number of observations required.
+        adjust (bool): Whether to adjust weights.
+
+    Returns:
+        Array2d: Computed 2-dimensional exponential weighted moving standard deviation.
+
+    !!! tip
+        This function is parallelizable.
+    """
     out = np.empty_like(arr, dtype=float_)
     for col in prange(arr.shape[1]):
         out[:, col] = ewm_std_1d_nb(arr[:, col], span, minp=minp, adjust=adjust)
@@ -833,7 +1089,20 @@ def ewm_std_nb(arr: tp.Array2d, span: int, minp: tp.Optional[int] = None, adjust
 
 @register_jitted(cache=True)
 def wwm_mean_1d_nb(arr: tp.Array1d, period: int, minp: tp.Optional[int] = None, adjust: bool = False) -> tp.Array1d:
-    """Compute Wilder's exponential weighted moving average."""
+    """Compute Wilder's exponential weighted moving average for a 1-dimensional array.
+
+    Args:
+        arr (Array1d): Input data array.
+        period (int): Period used for the moving average computation.
+        minp (Optional[int]): Minimum number of observations required.
+        adjust (bool): Whether to adjust weights.
+
+    Uses:
+        Applies `ewm_mean_1d_nb` internally with a span calculated as 2 * period - 1.
+
+    Returns:
+        Array1d: Wilder's exponential weighted moving average.
+    """
     if minp is None:
         minp = period
     return ewm_mean_1d_nb(arr, 2 * period - 1, minp=minp, adjust=adjust)
@@ -846,7 +1115,21 @@ def wwm_mean_1d_nb(arr: tp.Array1d, period: int, minp: tp.Optional[int] = None, 
 )
 @register_jitted(cache=True, tags={"can_parallel"})
 def wwm_mean_nb(arr: tp.Array2d, period: int, minp: tp.Optional[int] = None, adjust: bool = False) -> tp.Array2d:
-    """2-dim version of `wwm_mean_1d_nb`."""
+    """Compute the 2-dimensional Wilder's exponential weighted moving average for each column
+    independently using `wwm_mean_1d_nb`.
+
+    Args:
+        arr (Array2d): Input 2-dimensional data array.
+        period (int): Period used for the moving average computation.
+        minp (Optional[int]): Minimum number of observations required.
+        adjust (bool): Whether to adjust weights.
+
+    Returns:
+        Array2d: Computed 2-dimensional Wilder's exponential weighted moving average.
+
+    !!! tip
+        This function is parallelizable.
+    """
     out = np.empty_like(arr, dtype=float_)
     for col in prange(arr.shape[1]):
         out[:, col] = wwm_mean_1d_nb(arr[:, col], period, minp=minp, adjust=adjust)
@@ -855,7 +1138,17 @@ def wwm_mean_nb(arr: tp.Array2d, period: int, minp: tp.Optional[int] = None, adj
 
 @register_jitted(cache=True)
 def wwm_std_1d_nb(arr: tp.Array1d, period: int, minp: tp.Optional[int] = None, adjust: bool = False) -> tp.Array1d:
-    """Compute Wilder's exponential weighted moving standard deviation."""
+    """Compute Wilder's exponential weighted moving standard deviation.
+
+    Args:
+        arr (Array1d): 1-dimensional input array.
+        period (int): The period used for computing the standard deviation.
+        minp (Optional[int]): Minimum number of observations required in the computation.
+        adjust (bool): Flag to adjust the calculation method.
+
+    Returns:
+        Array1d: An array containing the computed standard deviations.
+    """
     if minp is None:
         minp = period
     return ewm_std_1d_nb(arr, 2 * period - 1, minp=minp, adjust=adjust)
@@ -868,7 +1161,20 @@ def wwm_std_1d_nb(arr: tp.Array1d, period: int, minp: tp.Optional[int] = None, a
 )
 @register_jitted(cache=True, tags={"can_parallel"})
 def wwm_std_nb(arr: tp.Array2d, period: int, minp: tp.Optional[int] = None, adjust: bool = False) -> tp.Array2d:
-    """2-dim version of `wwm_std_1d_nb`."""
+    """Compute a 2-dimensional version of Wilder's exponential weighted moving standard deviation.
+
+    Args:
+        arr (Array2d): 2-dimensional input array.
+        period (int): The period used for computing the standard deviation.
+        minp (Optional[int]): Minimum number of observations required in the computation.
+        adjust (bool): Flag to adjust the calculation method.
+
+    Returns:
+        Array2d: A 2-dimensional array containing the computed standard deviations.
+
+    !!! tip
+        This function is parallelizable.
+    """
     out = np.empty_like(arr, dtype=float_)
     for col in prange(arr.shape[1]):
         out[:, col] = wwm_std_1d_nb(arr[:, col], period, minp=minp, adjust=adjust)
@@ -877,10 +1183,15 @@ def wwm_std_nb(arr: tp.Array2d, period: int, minp: tp.Optional[int] = None, adju
 
 @register_jitted(cache=True)
 def vidya_acc_nb(in_state: VidyaAIS) -> VidyaAOS:
-    """Accumulator of `vidya_1d_nb`.
+    """Accumulate and update the VIDYA state from a given input state.
 
-    Takes a state of type `vectorbtpro.generic.enums.VidyaAIS` and returns
-    a state of type `vectorbtpro.generic.enums.VidyaAOS`."""
+    Args:
+        in_state (VidyaAIS): Input state of type `vectorbtpro.generic.enums.VidyaAIS`
+            containing parameters for VIDYA calculation.
+
+    Returns:
+        VidyaAOS: Updated state of type `vectorbtpro.generic.enums.VidyaAOS` with computed VIDYA values.
+    """
     i = in_state.i
     prev_value = in_state.prev_value
     value = in_state.value
@@ -950,9 +1261,16 @@ def vidya_acc_nb(in_state: VidyaAIS) -> VidyaAOS:
 
 @register_jitted(cache=True)
 def vidya_1d_nb(arr: tp.Array1d, window: int, minp: tp.Optional[int] = None) -> tp.Array1d:
-    """Compute VIDYA.
+    """Compute the Variable Index Dynamic Average (VIDYA) for a 1-dimensional array.
 
-    Uses `vidya_acc_nb` at each iteration."""
+    Args:
+        arr (Array1d): 1-dimensional input array.
+        window (int): Number of periods to use for the VIDYA calculation.
+        minp (Optional[int]): Minimum number of observations required in the computation.
+
+    Returns:
+        Array1d: An array containing the computed VIDYA values.
+    """
     if minp is None:
         minp = window
     if minp > window:
@@ -992,7 +1310,19 @@ def vidya_1d_nb(arr: tp.Array1d, window: int, minp: tp.Optional[int] = None) -> 
 )
 @register_jitted(cache=True, tags={"can_parallel"})
 def vidya_nb(arr: tp.Array2d, window: int, minp: tp.Optional[int] = None) -> tp.Array2d:
-    """2-dim version of `vidya_1d_nb`."""
+    """Compute a 2-dimensional VIDYA by applying the 1-dimensional VIDYA calculation to each column.
+
+    Args:
+        arr (Array2d): 2-dimensional input array.
+        window (int): Number of periods to use for the VIDYA calculation.
+        minp (Optional[int]): Minimum number of observations required in the computation.
+
+    Returns:
+        Array2d: A 2-dimensional array containing the computed VIDYA values.
+
+    !!! tip
+        This function is parallelizable.
+    """
     out = np.empty_like(arr, dtype=float_)
     for col in prange(arr.shape[1]):
         out[:, col] = vidya_1d_nb(arr[:, col], window, minp=minp)
@@ -1007,7 +1337,20 @@ def ma_1d_nb(
     minp: tp.Optional[int] = None,
     adjust: bool = False,
 ) -> tp.Array1d:
-    """Compute a moving average based on the mode of the type `vectorbtpro.generic.enums.WType`."""
+    """Compute a moving average for a 1-dimensional array based on the specified mode.
+
+    Args:
+        arr (Array1d): 1-dimensional input array.
+        window (int): The window size for the moving average calculation.
+        wtype (int): Mode for the moving average.
+
+            Expected values are defined in `vectorbtpro.generic.enums.WType`.
+        minp (Optional[int]): Minimum number of observations required for the calculation.
+        adjust (bool): Flag to specify whether to adjust the calculation.
+
+    Returns:
+        Array1d: An array containing the computed moving average values.
+    """
     if wtype == WType.Simple:
         return rolling_mean_1d_nb(arr, window, minp=minp)
     if wtype == WType.Weighted:
@@ -1034,7 +1377,23 @@ def ma_nb(
     minp: tp.Optional[int] = None,
     adjust: bool = False,
 ) -> tp.Array2d:
-    """2-dim version of `ma_1d_nb`."""
+    """Compute a 2-dimensional moving average by applying the 1-dimensional calculation column-wise.
+
+    Args:
+        arr (Array2d): 2-dimensional input array.
+        window (int): The window size for the moving average calculation.
+        wtype (int): Mode for the moving average.
+
+            Expected values are defined in `vectorbtpro.generic.enums.WType`.
+        minp (Optional[int]): Minimum number of observations required for the calculation.
+        adjust (bool): Flag to specify whether to adjust the calculation.
+
+    Returns:
+        Array2d: A 2-dimensional array containing the computed moving average values.
+
+    !!! tip
+        This function is parallelizable.
+    """
     out = np.empty_like(arr, dtype=float_)
     for col in prange(arr.shape[1]):
         out[:, col] = ma_1d_nb(arr[:, col], window, wtype=wtype, minp=minp, adjust=adjust)
@@ -1050,7 +1409,19 @@ def msd_1d_nb(
     adjust: bool = False,
     ddof: int = 0,
 ) -> tp.Array1d:
-    """Compute a moving standard deviation based on the mode of the type `vectorbtpro.generic.enums.WType`."""
+    """Compute a moving standard deviation on a 1-dimensional array using a specified window type.
+
+    Args:
+        arr (Array1d): Input array of numerical values.
+        window (int): Window size for computation.
+        wtype (int): Type of moving window from `vectorbtpro.generic.enums.WType`.
+        minp (Optional[int]): Minimum number of observations required in the window.
+        adjust (bool): Whether to apply bias adjustment.
+        ddof (int): Delta degrees of freedom for standard deviation calculation.
+
+    Returns:
+        Array1d: Array containing the computed moving standard deviation.
+    """
     if wtype == WType.Simple:
         return rolling_std_1d_nb(arr, window, minp=minp, ddof=ddof)
     if wtype == WType.Weighted:
@@ -1076,7 +1447,22 @@ def msd_nb(
     adjust: bool = False,
     ddof: int = 0,
 ) -> tp.Array2d:
-    """2-dim version of `msd_1d_nb`."""
+    """Compute moving standard deviation for each column in a 2-dimensional array.
+
+    Args:
+        arr (Array2d): 2-dimensional input array of numerical values.
+        window (int): Window size for computation.
+        wtype (int): Type of moving window from `vectorbtpro.generic.enums.WType`.
+        minp (Optional[int]): Minimum number of observations required in the window.
+        adjust (bool): Whether to apply bias adjustment.
+        ddof (int): Delta degrees of freedom for standard deviation calculation.
+
+    Returns:
+        Array2d: Array with computed moving standard deviation for each column.
+
+    !!! tip
+        This function is parallelizable.
+    """
     out = np.empty_like(arr, dtype=float_)
     for col in prange(arr.shape[1]):
         out[:, col] = msd_1d_nb(arr[:, col], window, wtype=wtype, minp=minp, adjust=adjust, ddof=ddof)
@@ -1085,10 +1471,16 @@ def msd_nb(
 
 @register_jitted(cache=True)
 def rolling_cov_acc_nb(in_state: RollCovAIS) -> RollCovAOS:
-    """Accumulator of `rolling_cov_1d_nb`.
+    """Accumulate rolling covariance statistics.
 
-    Takes a state of type `vectorbtpro.generic.enums.RollCovAIS` and returns
-    a state of type `vectorbtpro.generic.enums.RollCovAOS`."""
+    Args:
+        in_state (RollCovAIS): Current state of type `vectorbtpro.generic.enums.RollCovAIS`
+            containing intermediate sums, counts, and covariance parameters.
+
+    Returns:
+        RollCovAOS: Updated state of type `vectorbtpro.generic.enums.RollCovAOS`
+            with computed rolling covariance and intermediate values.
+    """
     i = in_state.i
     value1 = in_state.value1
     value2 = in_state.value2
@@ -1145,9 +1537,20 @@ def rolling_cov_1d_nb(
     minp: tp.Optional[int] = None,
     ddof: int = 0,
 ) -> tp.Array1d:
-    """Compute rolling covariance.
+    """Compute rolling covariance between two 1-dimensional arrays.
 
-    Numba equivalent to `pd.Series(arr1).rolling(window, min_periods=minp).cov(arr2)`."""
+    Equivalent to `pd.Series(arr1).rolling(window, min_periods=minp).cov(arr2)`.
+
+    Args:
+        arr1 (Array1d): First input array.
+        arr2 (Array1d): Second input array.
+        window (int): Rolling window size.
+        minp (Optional[int]): Minimum number of observations required in the window.
+        ddof (int): Delta degrees of freedom for the covariance calculation.
+
+    Returns:
+        Array1d: Array containing the computed rolling covariance values.
+    """
     if minp is None:
         minp = window
     if minp > window:
@@ -1196,7 +1599,21 @@ def rolling_cov_nb(
     minp: tp.Optional[int] = None,
     ddof: int = 0,
 ) -> tp.Array2d:
-    """2-dim version of `rolling_cov_1d_nb`."""
+    """Compute rolling covariance column-wise between two 2-dimensional arrays.
+
+    Args:
+        arr1 (Array2d): First 2-dimensional input array.
+        arr2 (Array2d): Second 2-dimensional input array.
+        window (int): Rolling window size.
+        minp (Optional[int]): Minimum number of observations required in the window.
+        ddof (int): Delta degrees of freedom for the covariance calculation.
+
+    Returns:
+        Array2d: Array with computed rolling covariance for each column.
+
+    !!! tip
+        This function is parallelizable.
+    """
     out = np.empty_like(arr1, dtype=float_)
     for col in prange(arr1.shape[1]):
         out[:, col] = rolling_cov_1d_nb(arr1[:, col], arr2[:, col], window, minp=minp, ddof=ddof)
@@ -1205,10 +1622,16 @@ def rolling_cov_nb(
 
 @register_jitted(cache=True)
 def rolling_corr_acc_nb(in_state: RollCorrAIS) -> RollCorrAOS:
-    """Accumulator of `rolling_corr_1d_nb`.
+    """Accumulator for rolling correlation computation.
 
-    Takes a state of type `vectorbtpro.generic.enums.RollCorrAIS` and returns
-    a state of type `vectorbtpro.generic.enums.RollCorrAOS`."""
+    Args:
+        in_state (RollCorrAIS): Input state of type `vectorbtpro.generic.enums.RollCorrAIS`
+            containing rolling correlation accumulation fields.
+
+    Returns:
+        RollCorrAOS: Updated state of type `vectorbtpro.generic.enums.RollCorrAOS`
+            with accumulated rolling correlation and related metrics.
+    """
     i = in_state.i
     value1 = in_state.value1
     value2 = in_state.value2
@@ -1269,9 +1692,19 @@ def rolling_corr_acc_nb(in_state: RollCorrAIS) -> RollCorrAOS:
 
 @register_jitted(cache=True)
 def rolling_corr_1d_nb(arr1: tp.Array1d, arr2: tp.Array1d, window: int, minp: tp.Optional[int] = None) -> tp.Array1d:
-    """Compute rolling correlation coefficient.
+    """Compute rolling correlation coefficient for one-dimensional arrays.
 
-    Numba equivalent to `pd.Series(arr1).rolling(window, min_periods=minp).corr(arr2)`."""
+    Numba equivalent to `pd.Series(arr1).rolling(window, min_periods=minp).corr(arr2)`.
+
+    Args:
+        arr1 (Array1d): First input array.
+        arr2 (Array1d): Second input array.
+        window (int): Window size for rolling correlation computation.
+        minp (Optional[int]): Minimum number of valid observations required.
+
+    Returns:
+        Array1d: Array of rolling correlation coefficients.
+    """
     if minp is None:
         minp = window
     if minp > window:
@@ -1319,7 +1752,20 @@ def rolling_corr_1d_nb(arr1: tp.Array1d, arr2: tp.Array1d, window: int, minp: tp
 )
 @register_jitted(cache=True, tags={"can_parallel"})
 def rolling_corr_nb(arr1: tp.Array2d, arr2: tp.Array2d, window: int, minp: tp.Optional[int] = None) -> tp.Array2d:
-    """2-dim version of `rolling_corr_1d_nb`."""
+    """Compute rolling correlation coefficient for each column in two-dimensional arrays.
+
+    Args:
+        arr1 (Array2d): First input two-dimensional array.
+        arr2 (Array2d): Second input two-dimensional array.
+        window (int): Window size for correlation computation.
+        minp (Optional[int]): Minimum number of valid observations per window.
+
+    Returns:
+        Array2d: Two-dimensional array of rolling correlation coefficients computed column-wise.
+
+    !!! tip
+        This function is parallelizable.
+    """
     out = np.empty_like(arr1, dtype=float_)
     for col in prange(arr1.shape[1]):
         out[:, col] = rolling_corr_1d_nb(arr1[:, col], arr2[:, col], window, minp=minp)
@@ -1328,10 +1774,14 @@ def rolling_corr_nb(arr1: tp.Array2d, arr2: tp.Array2d, window: int, minp: tp.Op
 
 @register_jitted(cache=True)
 def rolling_ols_acc_nb(in_state: RollOLSAIS) -> RollOLSAOS:
-    """Accumulator of `rolling_ols_1d_nb`.
+    """Accumulator for rolling ordinary least squares (OLS) regression.
 
-    Takes a state of type `vectorbtpro.generic.enums.RollOLSAIS` and returns
-    a state of type `vectorbtpro.generic.enums.RollOLSAOS`."""
+    Args:
+        in_state (RollOLSAIS): Input state containing rolling OLS accumulation fields.
+
+    Returns:
+        RollOLSAOS: Updated state with accumulated values and computed OLS slope and intercept.
+    """
     i = in_state.i
     value1 = in_state.value1
     value2 = in_state.value2
@@ -1403,7 +1853,17 @@ def rolling_ols_1d_nb(
     window: int,
     minp: tp.Optional[int] = None,
 ) -> tp.Tuple[tp.Array1d, tp.Array1d]:
-    """Compute rolling linear regression."""
+    """Compute rolling linear regression.
+
+    Args:
+        arr1 (Array1d): 1-dimensional array of independent variable values.
+        arr2 (Array1d): 1-dimensional array of dependent variable values.
+        window (int): Window size for the rolling regression calculation.
+        minp (Optional[int]): Minimum number of valid observations required per window.
+
+    Returns:
+        Tuple[Array1d, Array1d]: Tuple containing the slope and intercept arrays.
+    """
     if minp is None:
         minp = window
     if minp > window:
@@ -1458,7 +1918,20 @@ def rolling_ols_nb(
     window: int,
     minp: tp.Optional[int] = None,
 ) -> tp.Tuple[tp.Array1d, tp.Array1d]:
-    """2-dim version of `rolling_ols_1d_nb`."""
+    """2-dim version of `rolling_ols_1d_nb`.
+
+    Args:
+        arr1 (Array2d): 2-dimensional array of independent variable values.
+        arr2 (Array2d): 2-dimensional array of dependent variable values.
+        window (int): Window size for the rolling regression calculation.
+        minp (Optional[int]): Minimum number of valid observations required per window.
+
+    Returns:
+        Tuple[Array2d, Array2d]: Tuple containing the slope and intercept arrays.
+
+    !!! tip
+        This function is parallelizable.
+    """
     slope_out = np.empty_like(arr1, dtype=float_)
     intercept_out = np.empty_like(arr1, dtype=float_)
     for col in prange(arr1.shape[1]):
@@ -1468,7 +1941,17 @@ def rolling_ols_nb(
 
 @register_jitted(cache=True)
 def rolling_rank_1d_nb(arr: tp.Array1d, window: int, minp: tp.Optional[int] = None, pct: bool = False) -> tp.Array1d:
-    """Rolling version of `rank_1d_nb`."""
+    """Rolling version of `rank_1d_nb`.
+
+    Args:
+        arr (Array1d): 1-dimensional array of values.
+        window (int): Window size for ranking.
+        minp (Optional[int]): Minimum number of valid observations required in the window.
+        pct (bool): If True, compute the rank as a percentile.
+
+    Returns:
+        Array1d: An array of rolling ranks.
+    """
     if minp is None:
         minp = window
     if minp > window:
@@ -1501,7 +1984,20 @@ def rolling_rank_1d_nb(arr: tp.Array1d, window: int, minp: tp.Optional[int] = No
 )
 @register_jitted(cache=True, tags={"can_parallel"})
 def rolling_rank_nb(arr: tp.Array2d, window: int, minp: tp.Optional[int] = None, pct: bool = False) -> tp.Array2d:
-    """2-dim version of `rolling_rank_1d_nb`."""
+    """2-dim version of `rolling_rank_1d_nb`.
+
+    Args:
+        arr (Array2d): 2-dimensional array of values.
+        window (int): Rolling window size for ranking.
+        minp (Optional[int]): Minimum number of valid observations required in the window.
+        pct (bool): If True, compute the rank as a percentile.
+
+    Returns:
+        Array2d: An array of rolling ranks.
+
+    !!! tip
+        This function is parallelizable.
+    """
     out = np.empty_like(arr, dtype=float_)
     for col in prange(arr.shape[1]):
         out[:, col] = rolling_rank_1d_nb(arr[:, col], window, minp=minp, pct=pct)
@@ -1510,9 +2006,18 @@ def rolling_rank_nb(arr: tp.Array2d, window: int, minp: tp.Optional[int] = None,
 
 @register_jitted(cache=True)
 def rolling_min_1d_nb(arr: tp.Array1d, window: int, minp: tp.Optional[int] = None) -> tp.Array1d:
-    """Compute rolling min.
+    """Compute rolling minimum value.
 
-    Numba equivalent to `pd.Series(arr).rolling(window, min_periods=minp).min()`."""
+    Equivalent to `pd.Series(arr).rolling(window, min_periods=minp).min()` in pandas.
+
+    Args:
+        arr (Array1d): 1-dimensional array of values.
+        window (int): Window size for computing the minimum.
+        minp (Optional[int]): Minimum number of valid observations required in the window.
+
+    Returns:
+        Array1d: An array of rolling minimum values.
+    """
     if minp is None:
         minp = window
     if minp > window:
@@ -1543,7 +2048,19 @@ def rolling_min_1d_nb(arr: tp.Array1d, window: int, minp: tp.Optional[int] = Non
 )
 @register_jitted(cache=True, tags={"can_parallel"})
 def rolling_min_nb(arr: tp.Array2d, window: int, minp: tp.Optional[int] = None) -> tp.Array2d:
-    """2-dim version of `rolling_min_1d_nb`."""
+    """2-dim version of `rolling_min_1d_nb`.
+
+    Args:
+        arr (Array2d): 2-dimensional array of values.
+        window (int): Rolling window size for computing the minimum.
+        minp (Optional[int]): Minimum number of valid observations required in the window.
+
+    Returns:
+        Array2d: An array of rolling minimum values.
+
+    !!! tip
+        This function is parallelizable.
+    """
     out = np.empty_like(arr, dtype=float_)
     for col in prange(arr.shape[1]):
         out[:, col] = rolling_min_1d_nb(arr[:, col], window, minp=minp)
@@ -1552,9 +2069,18 @@ def rolling_min_nb(arr: tp.Array2d, window: int, minp: tp.Optional[int] = None) 
 
 @register_jitted(cache=True)
 def rolling_max_1d_nb(arr: tp.Array1d, window: int, minp: tp.Optional[int] = None) -> tp.Array1d:
-    """Compute rolling max.
+    """Compute rolling maximum value.
 
-    Numba equivalent to `pd.Series(arr).rolling(window, min_periods=minp).max()`."""
+    Equivalent to `pd.Series(arr).rolling(window, min_periods=minp).max()` in pandas.
+
+    Args:
+        arr (Array1d): 1-dimensional array of values.
+        window (int): Window size for computing the maximum.
+        minp (Optional[int]): Minimum number of valid observations required in the window.
+
+    Returns:
+        Array1d: An array of rolling maximum values.
+    """
     if minp is None:
         minp = window
     if minp > window:
@@ -1585,7 +2111,19 @@ def rolling_max_1d_nb(arr: tp.Array1d, window: int, minp: tp.Optional[int] = Non
 )
 @register_jitted(cache=True, tags={"can_parallel"})
 def rolling_max_nb(arr: tp.Array2d, window: int, minp: tp.Optional[int] = None) -> tp.Array2d:
-    """2-dim version of `rolling_max_1d_nb`."""
+    """2-dim version of `rolling_max_1d_nb`.
+
+    Args:
+        arr (Array2d): 2-dimensional array of values.
+        window (int): Rolling window size for computing the maximum.
+        minp (Optional[int]): Minimum number of valid observations required in the window.
+
+    Returns:
+        Array2d: An array of rolling maximum values.
+
+    !!! tip
+        This function is parallelizable.
+    """
     out = np.empty_like(arr, dtype=float_)
     for col in prange(arr.shape[1]):
         out[:, col] = rolling_max_1d_nb(arr[:, col], window, minp=minp)
@@ -1599,7 +2137,21 @@ def rolling_argmin_1d_nb(
     minp: tp.Optional[int] = None,
     local: bool = False,
 ) -> tp.Array1d:
-    """Compute rolling min index."""
+    """Return the index of the minimum value within each rolling window of a 1D array.
+
+    Args:
+        arr (Array1d): 1D array of numerical values.
+        window (int): Size of the rolling window.
+        minp (Optional[int]): Minimum number of non-NaN values required within the window.
+        local (bool): If True, return the index relative to the window;
+            otherwise, return the index in the original array.
+
+    Returns:
+        Array1d: Array of indices where each position corresponds to the location of
+            the minimum value in the rolling window.
+
+            Returns -1 if the count of non-NaN values is less than minp.
+    """
     if minp is None:
         minp = window
     if minp > window:
@@ -1638,7 +2190,24 @@ def rolling_argmin_1d_nb(
 )
 @register_jitted(cache=True, tags={"can_parallel"})
 def rolling_argmin_nb(arr: tp.Array2d, window: int, minp: tp.Optional[int] = None, local: bool = False) -> tp.Array2d:
-    """2-dim version of `rolling_argmin_1d_nb`."""
+    """Return a 2D array of rolling minimum indices computed column-wise.
+
+    Args:
+        arr (Array2d): 2D array of numerical values.
+        window (int): Size of the rolling window.
+        minp (Optional[int]): Minimum number of non-NaN values required within the window.
+        local (bool): If True, return the index relative to the window;
+            otherwise, return the index in the original array.
+
+    Returns:
+        Array2d: 2D array where each column contains indices corresponding to
+            the minimum value in its rolling window.
+
+            Positions with fewer than the required non-NaN values are set to -1.
+
+    !!! tip
+        This function is parallelizable.
+    """
     out = np.empty_like(arr, dtype=int_)
     for col in prange(arr.shape[1]):
         out[:, col] = rolling_argmin_1d_nb(arr[:, col], window, minp=minp, local=local)
@@ -1652,7 +2221,21 @@ def rolling_argmax_1d_nb(
     minp: tp.Optional[int] = None,
     local: bool = False,
 ) -> tp.Array1d:
-    """Compute rolling max index."""
+    """Return the index of the maximum value within each rolling window of a 1D array.
+
+    Args:
+        arr (Array1d): 1D array of numerical values.
+        window (int): Size of the rolling window.
+        minp (Optional[int]): Minimum number of non-NaN values required within the window.
+        local (bool): If True, return the index relative to the window;
+            otherwise, return the index in the original array.
+
+    Returns:
+        Array1d: Array of indices where each position corresponds to the location of
+            the maximum value in the rolling window.
+
+            Returns -1 if the count of non-NaN values is less than minp.
+    """
     if minp is None:
         minp = window
     if minp > window:
@@ -1691,7 +2274,24 @@ def rolling_argmax_1d_nb(
 )
 @register_jitted(cache=True, tags={"can_parallel"})
 def rolling_argmax_nb(arr: tp.Array2d, window: int, minp: tp.Optional[int] = None, local: bool = False) -> tp.Array2d:
-    """2-dim version of `rolling_argmax_1d_nb`."""
+    """Return a 2D array of rolling maximum indices computed column-wise.
+
+    Args:
+        arr (Array2d): 2D array of numerical values.
+        window (int): Size of the rolling window.
+        minp (Optional[int]): Minimum number of non-NaN values required within the window.
+        local (bool): If True, return the index relative to the window;
+            otherwise, return the index in the original array.
+
+    Returns:
+        Array2d: 2D array where each column contains indices corresponding to
+            the maximum value in its rolling window.
+
+            Positions with fewer than the required non-NaN values are set to -1.
+
+    !!! tip
+        This function is parallelizable.
+    """
     out = np.empty_like(arr, dtype=int_)
     for col in prange(arr.shape[1]):
         out[:, col] = rolling_argmax_1d_nb(arr[:, col], window, minp=minp, local=local)
@@ -1700,7 +2300,16 @@ def rolling_argmax_nb(arr: tp.Array2d, window: int, minp: tp.Optional[int] = Non
 
 @register_jitted(cache=True)
 def rolling_any_1d_nb(arr: tp.Array1d, window: int) -> tp.Array1d:
-    """Compute rolling any."""
+    """Return a boolean array indicating whether any element in each rolling window is True.
+
+    Args:
+        arr (Array1d): 1D array of boolean or numerical values.
+        window (int): Size of the rolling window.
+
+    Returns:
+        Array1d: Boolean array where each element is True if at least one True value is
+            present in the corresponding rolling window, otherwise False.
+    """
     out = np.empty_like(arr, dtype=np.bool_)
     last_true_i = -1
     for i in range(arr.shape[0]):
@@ -1721,7 +2330,20 @@ def rolling_any_1d_nb(arr: tp.Array1d, window: int) -> tp.Array1d:
 )
 @register_jitted(cache=True, tags={"can_parallel"})
 def rolling_any_nb(arr: tp.Array2d, window: int) -> tp.Array2d:
-    """2-dim version of `rolling_any_1d_nb`."""
+    """Return a 2D boolean array computed column-wise, indicating the presence
+    of any True value in each rolling window.
+
+    Args:
+        arr (Array2d): 2D array of boolean or numerical values.
+        window (int): Size of the rolling window.
+
+    Returns:
+        Array2d: 2D boolean array where each column contains True if any True value is
+            detected in the corresponding rolling window, otherwise False.
+
+    !!! tip
+        This function is parallelizable.
+    """
     out = np.empty_like(arr, dtype=np.bool_)
     for col in prange(arr.shape[1]):
         out[:, col] = rolling_any_1d_nb(arr[:, col], window)
@@ -1730,7 +2352,16 @@ def rolling_any_nb(arr: tp.Array2d, window: int) -> tp.Array2d:
 
 @register_jitted(cache=True)
 def rolling_all_1d_nb(arr: tp.Array1d, window: int) -> tp.Array1d:
-    """Compute rolling all."""
+    """Return a boolean array indicating whether all elements in each rolling window are True.
+
+    Args:
+        arr (Array1d): 1D array of boolean or numerical values.
+        window (int): Size of the rolling window.
+
+    Returns:
+        Array1d: Boolean array where each element is True if all values in
+            the corresponding rolling window are True, otherwise False.
+    """
     out = np.empty_like(arr, dtype=np.bool_)
     last_false_i = -1
     for i in range(arr.shape[0]):
@@ -1751,7 +2382,20 @@ def rolling_all_1d_nb(arr: tp.Array1d, window: int) -> tp.Array1d:
 )
 @register_jitted(cache=True, tags={"can_parallel"})
 def rolling_all_nb(arr: tp.Array2d, window: int) -> tp.Array2d:
-    """2-dim version of `rolling_all_1d_nb`."""
+    """Return a 2D boolean array computed column-wise, indicating whether
+    all elements in each rolling window are True.
+
+    Args:
+        arr (Array2d): 2D array of boolean or numerical values.
+        window (int): Size of the rolling window.
+
+    Returns:
+        Array2d: 2D boolean array where each column contains True if all values in
+            the corresponding rolling window are True, otherwise False.
+
+    !!! tip
+        This function is parallelizable.
+    """
     out = np.empty_like(arr, dtype=np.bool_)
     for col in prange(arr.shape[1]):
         out[:, col] = rolling_all_1d_nb(arr[:, col], window)
@@ -1784,9 +2428,89 @@ def rolling_pattern_similarity_1d_nb(
     min_similarity: float = 0.85,
     minp: tp.Optional[int] = None,
 ) -> tp.Array1d:
-    """Compute rolling pattern similarity.
+    """Compute rolling pattern similarity on a 1D array.
 
-    Uses `vectorbtpro.generic.nb.patterns.pattern_similarity_nb`."""
+    Uses `vectorbtpro.generic.nb.patterns.pattern_similarity_nb`.
+
+    Args:
+        arr (Array1d): 1-dimensional array to compare with the pattern.
+        pattern (Array1d): 1D array representing the pattern to locate.
+
+            Can be smaller or larger than the source array. In such cases,
+            the smaller array is stretched using the interpolation mode specified by `interp_mode`.
+        window (Optional[int]): Base length of the rolling window for matching.
+
+            If None, defaults to the length of `pattern`.
+        max_window (Optional[int]): Maximum length of the rolling window for matching.
+
+            If None, defaults to `window`.
+        row_select_prob (float): Probability of selecting a row.
+        window_select_prob (float): Probability of selecting a window size.
+        interp_mode (int): Interpolation mode.
+
+            See `vectorbtpro.generic.enums.InterpMode` for options.
+        rescale_mode (int): Rescaling mode for adjusting the ranges of `arr` and `pattern`.
+
+            See `vectorbtpro.generic.enums.RescaleMode` for options.
+        vmin (float): Minimum value used for rescaling `arr`.
+
+            Use only when the array has fixed bounds. Used in rescaling with `RescaleMode.MinMax`
+            and for verifying `min_pct_change` and `max_pct_change`.
+
+            If set to NaN, it is calculated dynamically.
+        vmax (float): Maximum value used for rescaling `arr`.
+
+            Use only when the array has fixed bounds. Used in rescaling with `RescaleMode.MinMax`
+            and for verifying `min_pct_change` and `max_pct_change`.
+
+            If set to NaN, it is calculated dynamically.
+        pmin (float): Minimum value used for rescaling `pattern`.
+
+            Used in rescaling with `RescaleMode.MinMax` and for computing the maximum distance
+            at each point when `max_error_as_maxdist` is disabled.
+
+            If set to NaN, it is calculated dynamically.
+        pmax (float): Maximum value used for rescaling `pattern`.
+
+            Used in rescaling with `RescaleMode.MinMax` and for computing the maximum distance
+            at each point when `max_error_as_maxdist` is disabled.
+
+            If set to NaN, it is calculated dynamically.
+        invert (bool): Invert the pattern by reflecting its values.
+        error_type (int): Error computation mode.
+
+            See `vectorbtpro.generic.enums.ErrorType` for options.
+        distance_measure (int): Method for measuring distance (e.g., MAE, MSE, RMSE).
+
+            See `vectorbtpro.generic.enums.DistanceMeasure` for options.
+        max_error (FlexArray1dLike): Maximum error threshold for normalization.
+
+            If provided as an array, it must match the size of the pattern and be on the same scale.
+        max_error_interp_mode (Optional[int]): Interpolation mode for `max_error`.
+
+            If None, defaults to `interp_mode`.
+
+            See `vectorbtpro.generic.enums.InterpMode` for options.
+        max_error_as_maxdist (bool): Indicates whether `max_error` represents the maximum distance at each point.
+
+            If False, exceeding `max_error` sets the distance to the maximum derived from
+            `pmin`, `pmax`, and the pattern value at that point. If True and any point
+            in a window is NaN, that point is skipped.
+        max_error_strict (bool): If True, any instance of exceeding `max_error` results in a similarity of NaN.
+        min_pct_change (float): Minimum percentage change required for a window to remain a search candidate.
+
+            Window similarity is set to NaN if this threshold is not met.
+        max_pct_change (float): Maximum percentage change allowed for a window to remain a search candidate.
+
+            Window similarity is set to NaN if this threshold is exceeded.
+        min_similarity (float): Minimum similarity threshold.
+
+            If the computed similarity falls below this, returns NaN.
+        minp (Optional[int]): Minimum number of observations in the price window required to yield a value.
+
+    Returns:
+        Array1d: An array containing the computed pattern similarity values.
+    """
     max_error_ = to_1d_array_nb(np.asarray(max_error))
 
     if window is None:
@@ -1926,7 +2650,92 @@ def rolling_pattern_similarity_nb(
     min_similarity: float = 0.85,
     minp: tp.Optional[int] = None,
 ) -> tp.Array2d:
-    """2-dim version of `rolling_pattern_similarity_1d_nb`."""
+    """Compute rolling pattern similarity on a 2D array column-wise.
+
+    Each column of the input array is processed using `rolling_pattern_similarity_1d_nb`.
+
+    Args:
+        arr (Array2d): 2D input array where similarity is computed for each column.
+        pattern (Array1d): 1D array representing the pattern to locate.
+
+            Can be smaller or larger than the source array. In such cases,
+            the smaller array is stretched using the interpolation mode specified by `interp_mode`.
+        window (Optional[int]): Base length of the rolling window for matching.
+
+            If None, defaults to the length of `pattern`.
+        max_window (Optional[int]): Maximum length of the rolling window for matching.
+
+            If None, defaults to `window`.
+        row_select_prob (float): Probability of selecting a row.
+        window_select_prob (float): Probability of selecting a window size.
+        interp_mode (int): Interpolation mode.
+
+            See `vectorbtpro.generic.enums.InterpMode` for options.
+        rescale_mode (int): Rescaling mode for adjusting the ranges of `arr` and `pattern`.
+
+            See `vectorbtpro.generic.enums.RescaleMode` for options.
+        vmin (float): Minimum value used for rescaling `arr`.
+
+            Use only when the array has fixed bounds. Used in rescaling with `RescaleMode.MinMax`
+            and for verifying `min_pct_change` and `max_pct_change`.
+
+            If set to NaN, it is calculated dynamically.
+        vmax (float): Maximum value used for rescaling `arr`.
+
+            Use only when the array has fixed bounds. Used in rescaling with `RescaleMode.MinMax`
+            and for verifying `min_pct_change` and `max_pct_change`.
+
+            If set to NaN, it is calculated dynamically.
+        pmin (float): Minimum value used for rescaling `pattern`.
+
+            Used in rescaling with `RescaleMode.MinMax` and for computing the maximum distance
+            at each point when `max_error_as_maxdist` is disabled.
+
+            If set to NaN, it is calculated dynamically.
+        pmax (float): Maximum value used for rescaling `pattern`.
+
+            Used in rescaling with `RescaleMode.MinMax` and for computing the maximum distance
+            at each point when `max_error_as_maxdist` is disabled.
+
+            If set to NaN, it is calculated dynamically.
+        invert (bool): Invert the pattern by reflecting its values.
+        error_type (int): Error computation mode.
+
+            See `vectorbtpro.generic.enums.ErrorType` for options.
+        distance_measure (int): Method for measuring distance (e.g., MAE, MSE, RMSE).
+
+            See `vectorbtpro.generic.enums.DistanceMeasure` for options.
+        max_error (FlexArray1dLike): Maximum error threshold for normalization.
+
+            If provided as an array, it must match the size of the pattern and be on the same scale.
+        max_error_interp_mode (Optional[int]): Interpolation mode for `max_error`.
+
+            If None, defaults to `interp_mode`.
+
+            See `vectorbtpro.generic.enums.InterpMode` for options.
+        max_error_as_maxdist (bool): Indicates whether `max_error` represents the maximum distance at each point.
+
+            If False, exceeding `max_error` sets the distance to the maximum derived from
+            `pmin`, `pmax`, and the pattern value at that point. If True and any point
+            in a window is NaN, that point is skipped.
+        max_error_strict (bool): If True, any instance of exceeding `max_error` results in a similarity of NaN.
+        min_pct_change (float): Minimum percentage change required for a window to remain a search candidate.
+
+            Window similarity is set to NaN if this threshold is not met.
+        max_pct_change (float): Maximum percentage change allowed for a window to remain a search candidate.
+
+            Window similarity is set to NaN if this threshold is exceeded.
+        min_similarity (float): Minimum similarity threshold.
+
+            If the computed similarity falls below this, returns NaN.
+        minp (Optional[int]): Minimum number of observations in the price window required to yield a value.
+
+    Returns:
+        Array2d: A 2D array where each column contains the computed similarity values.
+
+    !!! tip
+        This function is parallelizable.
+    """
     max_error_ = to_1d_array_nb(np.asarray(max_error))
 
     if window is None:
@@ -1968,9 +2777,17 @@ def rolling_pattern_similarity_nb(
 
 @register_jitted(cache=True)
 def expanding_min_1d_nb(arr: tp.Array1d, minp: int = 1) -> tp.Array1d:
-    """Compute expanding min.
+    """Compute the expanding minimum of a 1D array.
 
-    Numba equivalent to `pd.Series(arr).expanding(min_periods=minp).min()`."""
+    Equivalent to using `pd.Series(arr).expanding(min_periods=minp).min()`.
+
+    Args:
+        arr (Array1d): Input array for which the expanding minimum is calculated.
+        minp (int): Minimum number of valid observations required before computing the minimum.
+
+    Returns:
+        Array1d: An array containing the expanding minimum values.
+    """
     out = np.empty_like(arr, dtype=float_)
     minv = arr[0]
     cnt = 0
@@ -1993,7 +2810,20 @@ def expanding_min_1d_nb(arr: tp.Array1d, minp: int = 1) -> tp.Array1d:
 )
 @register_jitted(cache=True, tags={"can_parallel"})
 def expanding_min_nb(arr: tp.Array2d, minp: int = 1) -> tp.Array2d:
-    """2-dim version of `expanding_min_1d_nb`."""
+    """Compute the expanding minimum for each column of a 2D array.
+
+    Applies `expanding_min_1d_nb` column-wise to compute the expanding minimum.
+
+    Args:
+        arr (Array2d): 2D input array.
+        minp (int): Minimum number of valid observations required before computing the expanding minimum.
+
+    Returns:
+        Array2d: A 2D array where each column contains the expanding minimum values.
+
+    !!! tip
+        This function is parallelizable.
+    """
     out = np.empty_like(arr, dtype=float_)
     for col in prange(arr.shape[1]):
         out[:, col] = expanding_min_1d_nb(arr[:, col], minp=minp)
@@ -2002,9 +2832,17 @@ def expanding_min_nb(arr: tp.Array2d, minp: int = 1) -> tp.Array2d:
 
 @register_jitted(cache=True)
 def expanding_max_1d_nb(arr: tp.Array1d, minp: int = 1) -> tp.Array1d:
-    """Compute expanding max.
+    """Compute the expanding maximum of a one-dimensional array.
 
-    Numba equivalent to `pd.Series(arr).expanding(min_periods=minp).max()`."""
+    Numba equivalent to `pd.Series(arr).expanding(min_periods=minp).max()`.
+
+    Args:
+        arr (Array1d): The input one-dimensional array.
+        minp (int): Minimum number of valid (non-NaN) values required before computing the maximum.
+
+    Returns:
+        Array1d: An array containing the expanding maximum values computed from `arr`.
+    """
     out = np.empty_like(arr, dtype=float_)
     maxv = arr[0]
     cnt = 0
@@ -2027,7 +2865,21 @@ def expanding_max_1d_nb(arr: tp.Array1d, minp: int = 1) -> tp.Array1d:
 )
 @register_jitted(cache=True, tags={"can_parallel"})
 def expanding_max_nb(arr: tp.Array2d, minp: int = 1) -> tp.Array2d:
-    """2-dim version of `expanding_max_1d_nb`."""
+    """Compute the expanding maximum for each column in a two-dimensional array.
+
+    Column-wise computation is parallelized using `prange` and leverages `expanding_max_1d_nb` for each column.
+
+    Args:
+        arr (Array2d): The input two-dimensional array.
+        minp (int): Minimum number of valid (non-NaN) values required in each column
+            before computing the maximum.
+
+    Returns:
+        Array2d: A two-dimensional array containing the expanding maximum computed column-wise.
+
+    !!! tip
+        This function is parallelizable.
+    """
     out = np.empty_like(arr, dtype=float_)
     for col in prange(arr.shape[1]):
         out[:, col] = expanding_max_1d_nb(arr[:, col], minp=minp)

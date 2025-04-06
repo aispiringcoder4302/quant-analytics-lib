@@ -134,9 +134,9 @@ def concat_merge(
 
             If None, the value is inferred from the presence of `wrapper`, `keys`, or `wrap_kwargs`.
         wrapper (Optional[ArrayWrapper]): An object with a `wrap_reduced` method to wrap arrays.
-        wrap_kwargs (KwargsLikeSequence): Additional keyword arguments for wrapping arrays.
-        clean_index_kwargs (KwargsLike): Additional keyword arguments for cleaning the merged index.
-        **kwargs: Additional keyword arguments passed to `pd.concat`.
+        wrap_kwargs (KwargsLikeSequence): Keyword arguments for wrapping arrays.
+        clean_index_kwargs (KwargsLike): Keyword arguments for cleaning the merged index.
+        **kwargs: Keyword arguments passed to `pd.concat`.
 
     Returns:
         MaybeTuple[AnyArray]: The merged array-like object, which may be a Pandas Series,
@@ -290,11 +290,11 @@ def row_stack_merge(
             Without wrapping, arrays will be kept as-is and merged using `row_stack_arrays`.
         wrapper (Optional[ArrayWrapper]): An array wrapper instance used via
             `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
-        wrap_kwargs (KwargsLikeSequence): Additional keyword arguments for wrapping each array;
+        wrap_kwargs (KwargsLikeSequence): Keyword arguments for wrapping each array;
             can be a dictionary or a list of dictionaries.
-        clean_index_kwargs (KwargsLikeSequence): Additional keyword arguments for cleaning
+        clean_index_kwargs (KwargsLikeSequence): Keyword arguments for cleaning
             the concatenated index.
-        **kwargs: Additional keyword arguments passed to `pd.concat` and
+        **kwargs: Keyword arguments passed to `pd.concat` and
             `vectorbtpro.base.wrapping.Wrapping.row_stack`.
 
     Returns:
@@ -455,11 +455,11 @@ def column_stack_merge(
             * "sr" or "series": Wrap each array as a Pandas Series.
             * "df", "frame", or "dataframe": Wrap each array as a Pandas DataFrame.
         wrapper (Optional[ArrayWrapper]): A custom wrapper instance to wrap arrays via `ArrayWrapper.wrap`.
-        wrap_kwargs (KwargsLikeSequence): Additional arguments for wrapping, provided as a
+        wrap_kwargs (KwargsLikeSequence): Positional arguments for wrapping, provided as a
             mapping or sequence of mappings.
-        clean_index_kwargs (KwargsLikeSequence): Additional keyword arguments for cleaning
+        clean_index_kwargs (KwargsLikeSequence): Keyword arguments for cleaning
             column indexes via `clean_index`.
-        **kwargs: Additional keyword arguments passed to `pd.concat` and
+        **kwargs: Keyword arguments passed to `pd.concat` and
             `vectorbtpro.base.wrapping.Wrapping.column_stack`.
 
     Returns:
@@ -675,7 +675,7 @@ def imageio_merge(
         raise_no_results (bool): If True, raise an error when no valid results are found.
         to_image_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Figure.to_image`.
         imread_kwargs (KwargsLike): Keyword arguments for `imageio.imread`.
-        **imwrite_kwargs: Additional keyword arguments for `imageio.imwrite`.
+        **imwrite_kwargs: Keyword arguments for `imageio.imwrite`.
 
     Returns:
         MaybeTuple[Union[None, bytes]]: The merged image data.
@@ -765,7 +765,7 @@ def mixed_merge(
             (or their names) to apply to each group of objects.
         mixed_kwargs (Optional[Sequence[KwargsLike]]): A sequence of keyword argument dictionaries
             for each merging function.
-        **kwargs: Additional keyword arguments passed to the merging functions
+        **kwargs: Keyword arguments passed to the merging functions
             if not overridden by `mixed_kwargs`.
 
     Returns:

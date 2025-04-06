@@ -234,7 +234,7 @@ class SerialEngine(ExecutionEngine):
 
             If provided as an integer, collects garbage every specified number of tasks.
         delay (Optional[float]): Number of seconds to pause after each function call.
-        **kwargs: Additional keyword arguments passed to `ExecutionEngine`.
+        **kwargs: Keyword arguments passed to `ExecutionEngine`.
 
     For defaults, see `engines.serial` in `vectorbtpro._settings.execution`.
     """
@@ -359,7 +359,7 @@ class ThreadPoolEngine(ExecutionEngine):
         init_kwargs (KwargsLike): Keyword arguments for initializing `ThreadPoolExecutor`.
         timeout (Optional[int]): Timeout for waiting on task results.
         hide_inner_progress (Optional[bool]): Indicates whether inner progress bars are hidden.
-        **kwargs: Additional keyword arguments passed to `ExecutionEngine`.
+        **kwargs: Keyword arguments passed to `ExecutionEngine`.
 
     For defaults, see `engines.threadpool` in `vectorbtpro._settings.execution`.
     """
@@ -429,7 +429,7 @@ class ProcessPoolEngine(ExecutionEngine):
         init_kwargs (KwargsLike): Keyword arguments for initializing `ProcessPoolExecutor`.
         timeout (Optional[int]): Timeout for waiting on task results.
         hide_inner_progress (Optional[bool]): Indicates whether inner progress bars are hidden.
-        **kwargs: Additional keyword arguments passed to `ExecutionEngine`.
+        **kwargs: Keyword arguments passed to `ExecutionEngine`.
 
     For defaults, see `engines.processpool` in `vectorbtpro._settings.execution`.
     """
@@ -508,12 +508,12 @@ class PathosEngine(ExecutionEngine):
         timeout (Optional[int]): Maximum duration in seconds before execution is interrupted.
         check_delay (Optional[float]): Delay in seconds between successive task status checks.
         show_progress (Optional[bool]): Flag indicating whether to display the progress bar.
-        pbar_kwargs (KwargsLike): Additional keyword arguments for initializing
+        pbar_kwargs (KwargsLike): Keyword arguments for initializing
             `vectorbtpro.utils.pbar.ProgressBar`.
         hide_inner_progress (Optional[bool]): Flag indicating whether to hide progress bars
             within individual threads.
         join_pool (Optional[bool]): Flag indicating whether the pool should be joined after execution.
-        **kwargs: Additional keyword arguments passed to `ExecutionEngine`.
+        **kwargs: Keyword arguments passed to `ExecutionEngine`.
 
     For defaults, see `engines.pathos` in `vectorbtpro._settings.execution`.
     """
@@ -581,7 +581,7 @@ class PathosEngine(ExecutionEngine):
 
     @property
     def pbar_kwargs(self) -> tp.Kwargs:
-        """Additional keyword arguments for initializing `vectorbtpro.utils.pbar.ProgressBar`."""
+        """Keyword arguments for initializing `vectorbtpro.utils.pbar.ProgressBar`."""
         return self._pbar_kwargs
 
     @property
@@ -667,7 +667,7 @@ class MpireEngine(ExecutionEngine):
         init_kwargs (KwargsLike): Keyword arguments used for initializing `mpire.WorkerPool`.
         apply_kwargs (KwargsLike): Keyword arguments passed to `mpire.WorkerPool.async_apply`.
         hide_inner_progress (Optional[bool]): Flag indicating whether inner progress bars should be hidden.
-        **kwargs: Additional keyword arguments passed to `ExecutionEngine`.
+        **kwargs: Keyword arguments passed to `ExecutionEngine`.
 
     For defaults, see `engines.mpire` in `vectorbtpro._settings.execution`.
     """
@@ -740,7 +740,7 @@ class DaskEngine(ExecutionEngine):
         compute_kwargs (KwargsLike): Keyword arguments for `dask.compute`.
         hide_inner_progress (Optional[bool]): Flag indicating whether progress bars should be
             hidden within each thread.
-        **kwargs: Additional keyword arguments passed to `ExecutionEngine`.
+        **kwargs: Keyword arguments passed to `ExecutionEngine`.
 
     For defaults, see `engines.dask` in `vectorbtpro._settings.execution`.
 
@@ -1085,224 +1085,6 @@ class Executor(Configured):
     For default settings, refer to `vectorbtpro._settings.execution`."""
 
     _settings_path: tp.SettingsPath = "execution"
-
-    @classmethod
-    def get_engine_settings(cls, *args, engine_name: tp.Optional[str] = None, **kwargs) -> dict:
-        """Return engine-specific settings using the engine name as a subpath.
-
-        Additional arguments are passed to `Executor.get_settings`.
-
-        Args:
-            *args: Additional positional arguments passed to `Executor.get_settings`.
-            engine_name (Optional[str]): Engine name used to determine the settings subpath.
-            **kwargs: Additional keyword arguments passed to `Executor.get_settings`.
-
-        Returns:
-            dict: Settings for the specified engine.
-        """
-        if engine_name is not None:
-            sub_path = "engines." + engine_name
-        else:
-            sub_path = None
-        return cls.get_settings(*args, sub_path=sub_path, **kwargs)
-
-    @classmethod
-    def has_engine_settings(cls, *args, engine_name: tp.Optional[str] = None, **kwargs) -> bool:
-        """Return True if engine-specific settings exist using the given engine name as a subpath.
-
-        Additional arguments are passed to `Executor.has_settings`.
-
-        Args:
-            *args: Additional positional arguments passed to `Executor.has_settings`.
-            engine_name (Optional[str]): Engine name used to determine the settings subpath.
-            **kwargs: Additional keyword arguments passed to `Executor.has_settings`.
-        """
-        if engine_name is not None:
-            sub_path = "engines." + engine_name
-        else:
-            sub_path = None
-        return cls.has_settings(*args, sub_path=sub_path, **kwargs)
-
-    @classmethod
-    def get_engine_setting(cls, *args, engine_name: tp.Optional[str] = None, **kwargs) -> tp.Any:
-        """Return a specific engine setting using the engine name as a subpath.
-
-        Additional arguments are passed to `Executor.get_setting`.
-
-        Args:
-            *args: Additional positional arguments passed to `Executor.get_setting`.
-            engine_name (Optional[str]): Engine name used to determine the settings subpath.
-            **kwargs: Additional keyword arguments passed to `Executor.get_setting`.
-
-        Returns:
-            Any: The value of the specified engine setting.
-        """
-        if engine_name is not None:
-            sub_path = "engines." + engine_name
-        else:
-            sub_path = None
-        return cls.get_setting(*args, sub_path=sub_path, **kwargs)
-
-    @classmethod
-    def has_engine_setting(cls, *args, engine_name: tp.Optional[str] = None, **kwargs) -> bool:
-        """Return True if a specific engine setting exists using the given engine name as a subpath.
-
-        Additional arguments are passed to `Executor.has_setting`.
-
-        Args:
-            *args: Additional positional arguments passed to `Executor.has_setting`.
-            engine_name (Optional[str]): Engine name used to determine the settings subpath.
-            **kwargs: Additional keyword arguments passed to `Executor.has_setting`.
-        """
-        if engine_name is not None:
-            sub_path = "engines." + engine_name
-        else:
-            sub_path = None
-        return cls.has_setting(*args, sub_path=sub_path, **kwargs)
-
-    @classmethod
-    def resolve_engine_setting(cls, *args, engine_name: tp.Optional[str] = None, **kwargs) -> tp.Any:
-        """Return a resolved engine setting using the engine name as a subpath.
-
-        Additional arguments are passed to `Executor.resolve_setting`.
-
-        Args:
-            *args: Additional positional arguments passed to `Executor.resolve_setting`.
-            engine_name (Optional[str]): Engine name used to determine the settings subpath.
-            **kwargs: Additional keyword arguments passed to `Executor.resolve_setting`.
-
-        Returns:
-            Any: The resolved engine setting.
-        """
-        if engine_name is not None:
-            sub_path = "engines." + engine_name
-        else:
-            sub_path = None
-        return cls.resolve_setting(*args, sub_path=sub_path, **kwargs)
-
-    @classmethod
-    def set_engine_settings(cls, *args, engine_name: tp.Optional[str] = None, **kwargs) -> None:
-        """Set engine-specific settings using the engine name as a subpath.
-
-        Additional arguments are passed to `Executor.set_settings`.
-
-        Args:
-            *args: Additional positional arguments passed to `Executor.set_settings`.
-            engine_name (Optional[str]): Engine name used to determine the settings subpath.
-            **kwargs: Additional keyword arguments passed to `Executor.set_settings`.
-        """
-        if engine_name is not None:
-            sub_path = "engines." + engine_name
-        else:
-            sub_path = None
-        cls.set_settings(*args, sub_path=sub_path, **kwargs)
-
-    @classmethod
-    def resolve_engine(
-        cls,
-        engine: tp.ExecutionEngineLike,
-        show_progress: tp.Optional[bool] = None,
-        pbar_kwargs: tp.KwargsLike = None,
-        **engine_config,
-    ) -> tp.Tuple[tp.Union[ExecutionEngine, tp.Callable], tp.Optional[str]]:
-        """Resolve the engine based on the provided configuration and return the engine along with its name.
-
-        This method determines the execution engine from various types including:
-
-        * A string representing the engine name.
-        * A subclass or an instance of `ExecutionEngine`.
-        * A callable that processes tasks.
-
-        It applies additional configuration such as `show_progress` and `pbar_kwargs` if supported
-        by the engine. If the engine is a subclass of `ExecutionEngine`, it is instantiated with
-        the given `engine_config`. If the engine is an instance, it is replaced with updated configuration.
-        For callables, the engine name is inferred from available settings.
-
-        Args:
-            engine (ExecutionEngine or Callable): Engine specification which can be a string,
-                subclass, instance, or callable.
-            show_progress (Optional[bool]): Flag to enable progress display.
-            pbar_kwargs (KwargsLike): Additional keyword arguments for the progress bar.
-            **engine_config: Additional engine configuration parameters.
-
-        Returns:
-            Tuple[Union[ExecutionEngine, Callable], Optional[str]]: A tuple containing
-                the resolved engine and its name.
-        """
-        from vectorbtpro._settings import settings
-
-        execution_cfg = settings["execution"]
-        engines_cfg = execution_cfg["engines"]
-
-        engine_name = None
-        if engine is None:
-            engine = execution_cfg["engine"]
-        if isinstance(engine, str):
-            if engine in engines_cfg:
-                engine_name = engine
-                engine = engines_cfg[engine_name]["cls"]
-            elif engine.lower() in engines_cfg:
-                engine_name = engine.lower()
-                engine = engines_cfg[engine_name]["cls"]
-        if isinstance(engine, str):
-            globals_dict = globals()
-            if engine in globals_dict:
-                engine = globals_dict[engine]
-            else:
-                raise ValueError(f"Invalid engine name: '{engine}'")
-        if isinstance(engine, type) and issubclass(engine, ExecutionEngine):
-            if engine_name is None:
-                for k, v in engines_cfg.items():
-                    if v["cls"] is engine:
-                        engine_name = k
-            if show_progress is not None or pbar_kwargs is not None:
-                func_arg_names = get_func_arg_names(engine.__init__)
-                if show_progress is not None:
-                    if (
-                        "show_progress" in func_arg_names
-                        or (engine_name is not None and "show_progress" in engines_cfg[engine_name])
-                    ) and "show_progress" not in engine_config:
-                        engine_config["show_progress"] = show_progress
-                if pbar_kwargs is not None:
-                    if (
-                        "pbar_kwargs" in func_arg_names
-                        or (engine_name is not None and "pbar_kwargs" in engines_cfg[engine_name])
-                    ) and "pbar_kwargs" not in engine_config:
-                        engine_config["pbar_kwargs"] = pbar_kwargs
-            engine = engine(**engine_config)
-        if not isinstance(engine, type) and isinstance(engine, ExecutionEngine):
-            if engine_name is None:
-                for k, v in engines_cfg.items():
-                    if v["cls"] is type(engine):
-                        engine_name = k
-            if len(engine_config) > 0:
-                engine = engine.replace(**engine_config)
-        if callable(engine):
-            if engine_name is None:
-                for k, v in engines_cfg.items():
-                    if v["cls"] is engine:
-                        engine_name = k
-            if engine_name is None:
-                if engine.__name__ in engines_cfg:
-                    engine_name = engine.__name__
-            if show_progress is not None or pbar_kwargs is not None:
-                func_arg_names = get_func_arg_names(engine)
-                if show_progress is not None:
-                    if (
-                        "show_progress" in func_arg_names
-                        or (engine_name is not None and "show_progress" in engines_cfg[engine_name])
-                    ) and "show_progress" not in engine_config:
-                        engine_config["show_progress"] = show_progress
-                if pbar_kwargs is not None:
-                    if (
-                        "pbar_kwargs" in func_arg_names
-                        or (engine_name is not None and "pbar_kwargs" in engines_cfg[engine_name])
-                    ) and "pbar_kwargs" not in engine_config:
-                        engine_config["pbar_kwargs"] = pbar_kwargs
-            engine = partial(engine, **engine_config)
-        if not isinstance(engine, ExecutionEngine) and not callable(engine):
-            raise TypeError(f"Invalid engine: {engine}")
-        return engine, engine_name
 
     def __init__(
         self,
@@ -1767,6 +1549,224 @@ class Executor(Configured):
         """Keyword arguments forwarded to `vectorbtpro.utils.pbar.ProgressBar`."""
         return self._pbar_kwargs
 
+    @classmethod
+    def get_engine_settings(cls, *args, engine_name: tp.Optional[str] = None, **kwargs) -> dict:
+        """Return engine-specific settings using the engine name as a subpath.
+
+        Positional arguments are passed to `Executor.get_settings`.
+
+        Args:
+            *args: Positional arguments passed to `Executor.get_settings`.
+            engine_name (Optional[str]): Engine name used to determine the settings subpath.
+            **kwargs: Keyword arguments passed to `Executor.get_settings`.
+
+        Returns:
+            dict: Settings for the specified engine.
+        """
+        if engine_name is not None:
+            sub_path = "engines." + engine_name
+        else:
+            sub_path = None
+        return cls.get_settings(*args, sub_path=sub_path, **kwargs)
+
+    @classmethod
+    def has_engine_settings(cls, *args, engine_name: tp.Optional[str] = None, **kwargs) -> bool:
+        """Return True if engine-specific settings exist using the given engine name as a subpath.
+
+        Positional arguments are passed to `Executor.has_settings`.
+
+        Args:
+            *args: Positional arguments passed to `Executor.has_settings`.
+            engine_name (Optional[str]): Engine name used to determine the settings subpath.
+            **kwargs: Keyword arguments passed to `Executor.has_settings`.
+        """
+        if engine_name is not None:
+            sub_path = "engines." + engine_name
+        else:
+            sub_path = None
+        return cls.has_settings(*args, sub_path=sub_path, **kwargs)
+
+    @classmethod
+    def get_engine_setting(cls, *args, engine_name: tp.Optional[str] = None, **kwargs) -> tp.Any:
+        """Return a specific engine setting using the engine name as a subpath.
+
+        Positional arguments are passed to `Executor.get_setting`.
+
+        Args:
+            *args: Positional arguments passed to `Executor.get_setting`.
+            engine_name (Optional[str]): Engine name used to determine the settings subpath.
+            **kwargs: Keyword arguments passed to `Executor.get_setting`.
+
+        Returns:
+            Any: The value of the specified engine setting.
+        """
+        if engine_name is not None:
+            sub_path = "engines." + engine_name
+        else:
+            sub_path = None
+        return cls.get_setting(*args, sub_path=sub_path, **kwargs)
+
+    @classmethod
+    def has_engine_setting(cls, *args, engine_name: tp.Optional[str] = None, **kwargs) -> bool:
+        """Return True if a specific engine setting exists using the given engine name as a subpath.
+
+        Positional arguments are passed to `Executor.has_setting`.
+
+        Args:
+            *args: Positional arguments passed to `Executor.has_setting`.
+            engine_name (Optional[str]): Engine name used to determine the settings subpath.
+            **kwargs: Keyword arguments passed to `Executor.has_setting`.
+        """
+        if engine_name is not None:
+            sub_path = "engines." + engine_name
+        else:
+            sub_path = None
+        return cls.has_setting(*args, sub_path=sub_path, **kwargs)
+
+    @classmethod
+    def resolve_engine_setting(cls, *args, engine_name: tp.Optional[str] = None, **kwargs) -> tp.Any:
+        """Return a resolved engine setting using the engine name as a subpath.
+
+        Positional arguments are passed to `Executor.resolve_setting`.
+
+        Args:
+            *args: Positional arguments passed to `Executor.resolve_setting`.
+            engine_name (Optional[str]): Engine name used to determine the settings subpath.
+            **kwargs: Keyword arguments passed to `Executor.resolve_setting`.
+
+        Returns:
+            Any: The resolved engine setting.
+        """
+        if engine_name is not None:
+            sub_path = "engines." + engine_name
+        else:
+            sub_path = None
+        return cls.resolve_setting(*args, sub_path=sub_path, **kwargs)
+
+    @classmethod
+    def set_engine_settings(cls, *args, engine_name: tp.Optional[str] = None, **kwargs) -> None:
+        """Set engine-specific settings using the engine name as a subpath.
+
+        Positional arguments are passed to `Executor.set_settings`.
+
+        Args:
+            *args: Positional arguments passed to `Executor.set_settings`.
+            engine_name (Optional[str]): Engine name used to determine the settings subpath.
+            **kwargs: Keyword arguments passed to `Executor.set_settings`.
+        """
+        if engine_name is not None:
+            sub_path = "engines." + engine_name
+        else:
+            sub_path = None
+        cls.set_settings(*args, sub_path=sub_path, **kwargs)
+
+    @classmethod
+    def resolve_engine(
+        cls,
+        engine: tp.ExecutionEngineLike,
+        show_progress: tp.Optional[bool] = None,
+        pbar_kwargs: tp.KwargsLike = None,
+        **engine_config,
+    ) -> tp.Tuple[tp.Union[ExecutionEngine, tp.Callable], tp.Optional[str]]:
+        """Resolve the engine based on the provided configuration and return the engine along with its name.
+
+        This method determines the execution engine from various types including:
+
+        * A string representing the engine name.
+        * A subclass or an instance of `ExecutionEngine`.
+        * A callable that processes tasks.
+
+        It applies additional configuration such as `show_progress` and `pbar_kwargs` if supported
+        by the engine. If the engine is a subclass of `ExecutionEngine`, it is instantiated with
+        the given `engine_config`. If the engine is an instance, it is replaced with updated configuration.
+        For callables, the engine name is inferred from available settings.
+
+        Args:
+            engine (ExecutionEngine or Callable): Engine specification which can be a string,
+                subclass, instance, or callable.
+            show_progress (Optional[bool]): Flag to enable progress display.
+            pbar_kwargs (KwargsLike): Keyword arguments for the progress bar.
+            **engine_config: Additional engine configuration parameters.
+
+        Returns:
+            Tuple[Union[ExecutionEngine, Callable], Optional[str]]: A tuple containing
+                the resolved engine and its name.
+        """
+        from vectorbtpro._settings import settings
+
+        execution_cfg = settings["execution"]
+        engines_cfg = execution_cfg["engines"]
+
+        engine_name = None
+        if engine is None:
+            engine = execution_cfg["engine"]
+        if isinstance(engine, str):
+            if engine in engines_cfg:
+                engine_name = engine
+                engine = engines_cfg[engine_name]["cls"]
+            elif engine.lower() in engines_cfg:
+                engine_name = engine.lower()
+                engine = engines_cfg[engine_name]["cls"]
+        if isinstance(engine, str):
+            globals_dict = globals()
+            if engine in globals_dict:
+                engine = globals_dict[engine]
+            else:
+                raise ValueError(f"Invalid engine name: '{engine}'")
+        if isinstance(engine, type) and issubclass(engine, ExecutionEngine):
+            if engine_name is None:
+                for k, v in engines_cfg.items():
+                    if v["cls"] is engine:
+                        engine_name = k
+            if show_progress is not None or pbar_kwargs is not None:
+                func_arg_names = get_func_arg_names(engine.__init__)
+                if show_progress is not None:
+                    if (
+                        "show_progress" in func_arg_names
+                        or (engine_name is not None and "show_progress" in engines_cfg[engine_name])
+                    ) and "show_progress" not in engine_config:
+                        engine_config["show_progress"] = show_progress
+                if pbar_kwargs is not None:
+                    if (
+                        "pbar_kwargs" in func_arg_names
+                        or (engine_name is not None and "pbar_kwargs" in engines_cfg[engine_name])
+                    ) and "pbar_kwargs" not in engine_config:
+                        engine_config["pbar_kwargs"] = pbar_kwargs
+            engine = engine(**engine_config)
+        if not isinstance(engine, type) and isinstance(engine, ExecutionEngine):
+            if engine_name is None:
+                for k, v in engines_cfg.items():
+                    if v["cls"] is type(engine):
+                        engine_name = k
+            if len(engine_config) > 0:
+                engine = engine.replace(**engine_config)
+        if callable(engine):
+            if engine_name is None:
+                for k, v in engines_cfg.items():
+                    if v["cls"] is engine:
+                        engine_name = k
+            if engine_name is None:
+                if engine.__name__ in engines_cfg:
+                    engine_name = engine.__name__
+            if show_progress is not None or pbar_kwargs is not None:
+                func_arg_names = get_func_arg_names(engine)
+                if show_progress is not None:
+                    if (
+                        "show_progress" in func_arg_names
+                        or (engine_name is not None and "show_progress" in engines_cfg[engine_name])
+                    ) and "show_progress" not in engine_config:
+                        engine_config["show_progress"] = show_progress
+                if pbar_kwargs is not None:
+                    if (
+                        "pbar_kwargs" in func_arg_names
+                        or (engine_name is not None and "pbar_kwargs" in engines_cfg[engine_name])
+                    ) and "pbar_kwargs" not in engine_config:
+                        engine_config["pbar_kwargs"] = pbar_kwargs
+            engine = partial(engine, **engine_config)
+        if not isinstance(engine, ExecutionEngine) and not callable(engine):
+            raise TypeError(f"Invalid engine: {engine}")
+        return engine, engine_name
+
     @staticmethod
     def execute_serially(tasks: tp.TasksLike, id_objs: tp.Dict[int, tp.Any]) -> tp.ExecResults:
         """Execute tasks sequentially.
@@ -2131,7 +2131,7 @@ class Executor(Configured):
             filter_results (bool): Indicates whether to filter out results with no output.
             raise_no_results (bool): Specifies whether to raise an exception if no results remain after filtering.
             merge_func (Optional[MergeFuncLike]): Function used to merge the results.
-            merge_kwargs (KwargsLike): Additional keyword arguments for merging.
+            merge_kwargs (KwargsLike): Keyword arguments for merging.
             template_context (KwargsLike): Additional context for merging templates.
 
         Returns:
@@ -2755,7 +2755,7 @@ def execute(
     """Execute functions and their arguments using `Executor`.
 
     Executes the provided tasks by initializing or reusing an executor.
-    Additional keyword arguments that are not expected by `Executor` or `engine_config`
+    Keyword arguments that are not expected by `Executor` or `engine_config`
     may be merged into `engine_config` if `merge_to_engine_config` is True.
 
     If an executor instance is supplied and `replace_executor` is True, creates a new
@@ -2770,7 +2770,7 @@ def execute(
             non-None arguments.
         merge_to_engine_config (Optional[bool]): Flag indicating whether extra keyword arguments
             should be merged into `engine_config`.
-        **kwargs: Additional keyword arguments passed to `Executor` or merged into `engine_config`.
+        **kwargs: Keyword arguments passed to `Executor` or merged into `engine_config`.
 
     Returns:
         MergeableResults: The merged results from executing the tasks."""
@@ -2900,7 +2900,7 @@ def iterated(
     is removed from the final result.
 
     Args:
-        *args: Additional positional arguments passed to the decorated function.
+        *args: Positional arguments passed to the decorated function.
 
             The first argument is treated as the iterable when `over_arg` is not specified.
         over_arg (Optional[AnnArgQuery]): Query specifying which argument to iterate over.
@@ -2913,7 +2913,7 @@ def iterated(
             arguments when additional options are provided.
         merge_to_engine_config (Optional[bool]): Flag indicating whether keyword arguments not
             matching `Executor` keys should be merged into its `engine_config`.
-        **kwargs: Additional keyword arguments forwarded to `Executor` or merged into `engine_config`.
+        **kwargs: Keyword arguments forwarded to `Executor` or merged into `engine_config`.
 
     Returns:
         Callable: The wrapper function that executes the original function iteratively.

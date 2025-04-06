@@ -56,7 +56,7 @@ def attach_symbol_dict_methods(cls: tp.Type[tp.T]) -> tp.Type[tp.T]:
 
 Args:
     key (Key): The key used to select the feature or symbol.
-    **kwargs: Additional keyword arguments for selection.
+    **kwargs: Keyword arguments for selection.
     
 Returns:
     Any: The selected feature or symbol.
@@ -95,7 +95,7 @@ and return a new instance.
 
 Args:
     check_dict_type (bool): Flag indicating whether to validate the type of provided updates.
-    **kwargs: Additional keyword arguments representing update values for each symbol key.
+    **kwargs: Keyword arguments representing update values for each symbol key.
 
 Returns:
     Data: A new instance with the updated attribute.

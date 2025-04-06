@@ -75,7 +75,7 @@ class IndexingBase(Base):
 
         Args:
             pd_indexing_func (Callable): The pandas indexing function to apply.
-            **kwargs: Additional keyword arguments for the indexing function.
+            **kwargs: Keyword arguments for the indexing function.
 
         !!! note
             This method should be overridden in subclasses.
@@ -87,7 +87,7 @@ class IndexingBase(Base):
 
         Args:
             pd_indexing_setter_func (Callable): The pandas indexing setter function to apply.
-            **kwargs: Additional keyword arguments for the indexing setter function.
+            **kwargs: Keyword arguments for the indexing setter function.
 
         !!! note
             This method should be overridden in subclasses.
@@ -101,7 +101,7 @@ class LocBase(Base):
     Args:
         indexing_func (Callable): Function to perform indexing operations.
         indexing_setter_func (Optional[Callable]): Function to set values via indexing.
-        **kwargs: Additional keyword arguments for the indexing functions.
+        **kwargs: Keyword arguments for the indexing functions.
     """
 
     def __init__(
@@ -126,7 +126,7 @@ class LocBase(Base):
 
     @property
     def indexing_kwargs(self) -> dict:
-        """Additional keyword arguments for the indexing function."""
+        """Keyword arguments for the indexing function."""
         return self._indexing_kwargs
 
     def __getitem__(self, key: tp.Any) -> tp.Any:
@@ -207,7 +207,7 @@ class PandasIndexer(IndexingBase):
     """Class for indexing Pandas objects using `iloc`, `loc`, `xs`, and `__getitem__`.
 
     Args:
-        **kwargs: Additional keyword arguments for configuring indexing operations.
+        **kwargs: Keyword arguments for configuring indexing operations.
 
     Usage:
         ```pycon
@@ -277,8 +277,8 @@ class PandasIndexer(IndexingBase):
         """Forward the `xs` operation to each Pandas object and return a new instance.
 
         Args:
-            *args: Additional arguments passed to the Pandas `xs` method.
-            **kwargs: Additional keyword arguments passed to the Pandas `xs` method.
+            *args: Positional arguments passed to the Pandas `xs` method.
+            **kwargs: Keyword arguments passed to the Pandas `xs` method.
         """
         return self.indexing_func(lambda x: x.xs(*args, **kwargs), **self.indexing_kwargs)
 
@@ -334,7 +334,7 @@ class ExtPandasIndexer(PandasIndexer):
     `xLoc` for `Idxr`-based indexing.
 
     Args:
-        **kwargs: Additional keyword arguments for indexing configuration.
+        **kwargs: Keyword arguments for indexing configuration.
     """
 
     def __init__(self, **kwargs) -> None:
@@ -359,7 +359,7 @@ class ParamLoc(LocBase):
         indexing_func (Callable): Function used to perform indexing.
         indexing_setter_func (Optional[Callable]): Function used for setting indexed values.
         level_name (Level): Name of the column level to adjust after selection.
-        **kwargs: Additional keyword arguments for indexing.
+        **kwargs: Keyword arguments for indexing.
     """
 
     def __init__(
@@ -1106,7 +1106,7 @@ class DTCIdxr(UniIdxr, DefineMixin):
         Args:
             value (Optional[DTCLike]): A datetime-like value to convert. If None, returns a named tuple
                 representing a default DTC instance.
-            **parse_kwargs: Additional keyword arguments for `vectorbtpro.utils.datetime_.DTC.parse`.
+            **parse_kwargs: Keyword arguments for `vectorbtpro.utils.datetime_.DTC.parse`.
         """
         if value is None:
             return dt.DTC().to_namedtuple()
@@ -1265,7 +1265,20 @@ def get_index_points(
 ) -> tp.Array1d:
     """Translate indices or labels into index points.
 
-    See `PointIdxr` fields for argument descriptions.
+    Args:
+        index (Index): Index.
+        every (tp.Optional[tp.FrequencyLike]): See `PointIdxr.every`.
+        normalize_every (bool): See `PointIdxr.normalize_every`.
+        at_time (tp.Optional[tp.TimeLike]): See `PointIdxr.at_time`.
+        start (tp.Optional[tp.Union[int, tp.DatetimeLike]]): See `PointIdxr.start`.
+        end (tp.Optional[tp.Union[int, tp.DatetimeLike]]): See `PointIdxr.end`.
+        exact_start (bool): See `PointIdxr.exact_start`.
+        on (tp.Optional[tp.Union[int, tp.DatetimeLike, tp.IndexLike]]): See `PointIdxr.on`.
+        add_delta (tp.Optional[tp.FrequencyLike]): See `PointIdxr.add_delta`.
+        kind (tp.Optional[str]): See `PointIdxr.kind`.
+        indexer_method (str): See `PointIdxr.indexer_method`.
+        indexer_tolerance (str): See `PointIdxr.indexer_tolerance`.
+        skip_not_found (bool): See `PointIdxr.skip_not_found`.
 
     Returns:
         tp.Array1d: Array of index positions corresponding to the given index.
@@ -1614,7 +1627,26 @@ def get_index_ranges(
 ) -> tp.Tuple[tp.Array1d, tp.Array1d]:
     """Generate index ranges from a given index based on specified bounds, frequency, and adjustments.
 
-    See `RangeIdxr` fields for argument descriptions.
+    Args:
+        index (tp.Index): Index.
+        index_freq (tp.Optional[tp.FrequencyLike]): Index frequency.
+        every (tp.Optional[tp.FrequencyLike]): See `RangeIdxr.every`.
+        normalize_every (bool): See `RangeIdxr.normalize_every`.
+        split_every (bool): See `RangeIdxr.split_every`.
+        start_time (tp.Optional[tp.TimeLike]): See `RangeIdxr.start_time`.
+        end_time (tp.Optional[tp.TimeLike]): See `RangeIdxr.end_time`.
+        lookback_period (tp.Optional[tp.FrequencyLike]): See `RangeIdxr.lookback_period`.
+        start (tp.Optional[tp.Union[int, tp.DatetimeLike, tp.IndexLike]]): See `RangeIdxr.start`.
+        end (tp.Optional[tp.Union[int, tp.DatetimeLike, tp.IndexLike]]): See `RangeIdxr.end`.
+        exact_start (bool): See `RangeIdxr.exact_start`.
+        fixed_start (bool): See `RangeIdxr.fixed_start`.
+        closed_start (bool): See `RangeIdxr.closed_start`.
+        closed_end (bool): See `RangeIdxr.closed_end`.
+        add_start_delta (tp.Optional[tp.FrequencyLike]): See `RangeIdxr.add_start_delta`.
+        add_end_delta (tp.Optional[tp.FrequencyLike]): See `RangeIdxr.add_end_delta`.
+        kind (tp.Optional[str]): See `RangeIdxr.kind`.
+        skip_not_found (bool): See `RangeIdxr.skip_not_found`.
+        jitted (tp.JittedOption): See `RangeIdxr.jitted`.
 
     Returns:
         Tuple[Array1d, Array1d]: A tuple containing arrays of start and end indices for the generated ranges.
@@ -2087,8 +2119,8 @@ class AutoIdxr(UniIdxr, DefineMixin):
             * "frequency" for `PointIdxr`
 
             If None, the kind will be determined automatically based on the type of the indices.
-        idxr_kwargs (KwargsLike): Additional keyword arguments for the selected indexer.
-        **kwargs: Additional keyword arguments acting as `idxr_kwargs`.
+        idxr_kwargs (KwargsLike): Keyword arguments for the selected indexer.
+        **kwargs: Keyword arguments acting as `idxr_kwargs`.
     """
 
     value: tp.Union[
@@ -2142,7 +2174,7 @@ class AutoIdxr(UniIdxr, DefineMixin):
     If None, the kind will be determined automatically based on the type of the indices."""
 
     idxr_kwargs: tp.KwargsLike = define.field(default=None)
-    """Additional keyword arguments for the selected indexer."""
+    """Keyword arguments for the selected indexer."""
 
     def __init__(self, *args, **kwargs) -> None:
         idxr_kwargs = kwargs.pop("idxr_kwargs", None)
@@ -2305,7 +2337,7 @@ class RowIdxr(IdxrBase, DefineMixin):
     Args:
         idxr (object): Indexer that can be an instance of `UniIdxr`, a custom template,
             or a value to be wrapped with `AutoIdxr`.
-        **idxr_kwargs: Additional keyword arguments for initializing the indexer using `AutoIdxr`.
+        **idxr_kwargs: Keyword arguments for initializing the indexer using `AutoIdxr`.
     """
 
     idxr: object = define.field()
@@ -2314,7 +2346,7 @@ class RowIdxr(IdxrBase, DefineMixin):
     Can be an instance of `UniIdxr`, a custom template, or a value to be wrapped with `AutoIdxr`."""
 
     idxr_kwargs: tp.KwargsLike = define.field()
-    """Additional keyword arguments for initializing the indexer via `AutoIdxr`."""
+    """Keyword arguments for initializing the indexer via `AutoIdxr`."""
 
     def __init__(self, idxr: object, **idxr_kwargs) -> None:
         DefineMixin.__init__(self, idxr=idxr, idxr_kwargs=hdict(idxr_kwargs))
@@ -2343,7 +2375,7 @@ class ColIdxr(IdxrBase, DefineMixin):
     Args:
         idxr (object): Indexer that can be an instance of `UniIdxr`,
             a custom template, or a value to be wrapped with `AutoIdxr`.
-        **idxr_kwargs: Additional keyword arguments for initializing the indexer using `AutoIdxr`.
+        **idxr_kwargs: Keyword arguments for initializing the indexer using `AutoIdxr`.
     """
 
     idxr: object = define.field()
@@ -2352,7 +2384,7 @@ class ColIdxr(IdxrBase, DefineMixin):
     Can be an instance of `UniIdxr`, a custom template, or a value to be wrapped with `AutoIdxr`."""
 
     idxr_kwargs: tp.KwargsLike = define.field()
-    """Additional keyword arguments for initializing the indexer via `AutoIdxr`."""
+    """Keyword arguments for initializing the indexer via `AutoIdxr`."""
 
     def __init__(self, idxr: object, **idxr_kwargs) -> None:
         DefineMixin.__init__(self, idxr=idxr, idxr_kwargs=hdict(idxr_kwargs))
@@ -2385,7 +2417,7 @@ class Idxr(IdxrBase, DefineMixin):
             * If two indexers are provided, they are interpreted as row and column
                 indexers respectively, either as instances of `RowIdxr` and `ColIdxr`
                 or as values to be wrapped with `RowIdxr` and `ColIdxr`.
-        **idxr_kwargs: Additional keyword arguments for initializing `RowIdxr` and `ColIdxr`.
+        **idxr_kwargs: Keyword arguments for initializing `RowIdxr` and `ColIdxr`.
     """
 
     idxrs: tp.Tuple[object, ...] = define.field()
@@ -2398,7 +2430,7 @@ class Idxr(IdxrBase, DefineMixin):
     """
 
     idxr_kwargs: tp.KwargsLike = define.field()
-    """Additional keyword arguments for initializing the row and column indexers."""
+    """Keyword arguments for initializing the row and column indexers."""
 
     def __init__(self, *idxrs: object, **idxr_kwargs) -> None:
         DefineMixin.__init__(self, idxrs=idxrs, idxr_kwargs=hdict(idxr_kwargs))
@@ -2466,7 +2498,7 @@ def get_idxs(
 
     If the provided `idxr` is not an instance of `Idxr`, it is wrapped with `Idxr`.
 
-    Additional keyword arguments are passed when constructing a new `Idxr`.
+    Keyword arguments are passed when constructing a new `Idxr`.
 
     Args:
         idxr (object): The input indexer.
@@ -2474,7 +2506,7 @@ def get_idxs(
         columns (Optional[Index]): Optional column index.
         freq (Optional[FrequencyLike]): Optional frequency for row indices.
         template_context (KwargsLike): Optional context for template substitution.
-        **kwargs: Additional keyword arguments passed to `Idxr`.
+        **kwargs: Keyword arguments passed to `Idxr`.
 
     Returns:
         Tuple[MaybeIndexArray, MaybeIndexArray]: A tuple containing row and column indices.
@@ -2757,7 +2789,7 @@ class IdxSetter(DefineMixin):
             set_funcs (Optional[Sequence[Callable]]): Functions to set array values.
 
                 If not provided, they are obtained via `IdxSetter.get_set_meta`.
-            **kwargs: Additional keyword arguments for `IdxSetter.get_set_meta`.
+            **kwargs: Keyword arguments for `IdxSetter.get_set_meta`.
         """
         if set_funcs is None:
             set_meta = self.get_set_meta(arr.shape, **kwargs)
@@ -2770,7 +2802,7 @@ class IdxSetter(DefineMixin):
 
         Args:
             pd_arr (SeriesFrame): Pandas object whose underlying array values will be updated.
-            **kwargs: Additional keyword arguments for `IdxSetter.get_set_meta`.
+            **kwargs: Keyword arguments for `IdxSetter.get_set_meta`.
         """
         from vectorbtpro.base.indexes import get_index
 
@@ -2797,7 +2829,7 @@ class IdxSetter(DefineMixin):
             fill_value (Scalar): Initial fill value for the array.
 
                 This value is overridden by the metadata default if available.
-            **kwargs: Additional keyword arguments for `IdxSetter.get_set_meta`.
+            **kwargs: Keyword arguments for `IdxSetter.get_set_meta`.
 
         Returns:
             Array: The filled and updated NumPy array.
@@ -2855,7 +2887,7 @@ class IdxSeries(IdxSetterFactory, DefineMixin):
     """
 
     idx_kwargs: tp.KwargsLike = define.field(default=None)
-    """Additional keyword arguments for `idx` when the indexer is not an instance of `Idxr`."""
+    """Keyword arguments for `idx` when the indexer is not an instance of `Idxr`."""
 
     def get(self) -> tp.Union[IdxSetter, tp.Dict[tp.Label, IdxSetter]]:
         sr = self.sr
@@ -2901,10 +2933,10 @@ class IdxFrame(IdxSetterFactory, DefineMixin):
     """
 
     rowidx_kwargs: tp.KwargsLike = define.field(default=None)
-    """Additional keyword arguments for `rowidx` when the row indexer is not an instance of `RowIdxr`."""
+    """Keyword arguments for `rowidx` when the row indexer is not an instance of `RowIdxr`."""
 
     colidx_kwargs: tp.KwargsLike = define.field(default=None)
-    """Additional keyword arguments for `colidx` when the column indexer is not an instance of `ColIdxr`."""
+    """Keyword arguments for `colidx` when the column indexer is not an instance of `ColIdxr`."""
 
     def get(self) -> tp.Union[IdxSetter, tp.Dict[tp.Label, IdxSetter]]:
         df = self.df

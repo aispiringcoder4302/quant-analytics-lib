@@ -57,8 +57,8 @@ class DefineMixin(Hashable):
     """Mixin class for `define` that provides attribute field management capabilities for attrs-decorated classes.
 
     Args:
-        *args: Additional positional arguments passed to the underlying initializer.
-        **kwargs: Additional keyword arguments passed to the underlying initializer.
+        *args: Positional arguments passed to the underlying initializer.
+        **kwargs: Keyword arguments passed to the underlying initializer.
     """
 
     def __init__(self, *args, **kwargs) -> None:
@@ -247,7 +247,7 @@ class DefineMixin(Hashable):
 
         Args:
             other (DefineMixin): The other instance to merge with.
-            **changes: Additional keyword arguments specifying field updates.
+            **changes: Keyword arguments specifying field updates.
 
         Returns:
             DefineMixin: A new instance with merged attribute values.
@@ -264,7 +264,7 @@ class DefineMixin(Hashable):
 
         Args:
             other (DefineMixin): The other instance to merge over.
-            **changes: Additional keyword arguments specifying field updates.
+            **changes: Keyword arguments specifying field updates.
 
         Returns:
             DefineMixin: A new instance with merged attribute values.
@@ -298,7 +298,7 @@ class define(Base):
         """Alias for `attr.field`.
 
         Args:
-            **kwargs: Additional keyword arguments for `attr.field`.
+            **kwargs: Keyword arguments for `attr.field`.
 
         Returns:
             Any: The result from `attr.field`.
@@ -311,7 +311,7 @@ class define(Base):
         without a default in metadata.
 
         Args:
-            **kwargs: Additional keyword arguments for `attr.field`.
+            **kwargs: Keyword arguments for `attr.field`.
 
         Returns:
             Any: The defined field.
@@ -332,7 +332,7 @@ class define(Base):
         Args:
             default (Any): The default value stored in metadata.
             metadata (Optional[Mapping]): Additional metadata for the field.
-            **kwargs: Additional keyword arguments for `attr.field`.
+            **kwargs: Keyword arguments for `attr.field`.
 
         Returns:
             Any: The defined field.
@@ -389,8 +389,8 @@ def default_getattr_func(
     Args:
         obj (Any): The object from which to retrieve the attribute.
         attr (str): The attribute name to access.
-        args (Args): Additional arguments passed for calling a callable attribute.
-        kwargs (Kwargs): Additional keyword arguments passed for calling a callable attribute.
+        args (Args): Positional arguments passed for calling a callable attribute.
+        kwargs (Kwargs): Keyword arguments passed for calling a callable attribute.
         call_attr (bool): Indicates whether to call the attribute if it is callable.
 
     Returns:
@@ -511,11 +511,11 @@ class AttrResolverMixin(Base):
             impacts_caching (bool): Flag indicating whether resolution impacts caching.
             silence_warnings (bool): Flag to silence warnings during resolution.
 
-        !!! note
-            `cond_kwargs` can be modified in-place.
-
         Returns:
             AttrResolverMixin: The resolved self.
+
+        !!! note
+            `cond_kwargs` can be modified in-place.
         """
         return self
 
@@ -554,8 +554,8 @@ class AttrResolverMixin(Base):
 
         Args:
             attr (str): The attribute name to resolve.
-            *args: Additional positional arguments passed for resolution.
-            **kwargs: Additional keyword arguments passed for resolution.
+            *args: Positional arguments passed for resolution.
+            **kwargs: Keyword arguments passed for resolution.
 
         Returns:
             Any: The resolved attribute value.
@@ -666,8 +666,8 @@ class AttrResolverMixin(Base):
         """Retrieve a nested attribute using the `deep_getattr` function.
 
         Args:
-            *args: Additional positional arguments passed to `deep_getattr`.
-            **kwargs: Additional keyword arguments passed to `deep_getattr`.
+            *args: Positional arguments passed to `deep_getattr`.
+            **kwargs: Keyword arguments passed to `deep_getattr`.
 
         Returns:
             Any: The value of the nested attribute.

@@ -80,15 +80,11 @@ class atomic_dict(pdict):
     pass
 
 
-InConfigLikeT = tp.Union[None, dict, "ConfigT"]
-OutConfigLikeT = tp.Union[dict, "ConfigT"]
-
-
-def convert_to_dict(dct: InConfigLikeT, nested: bool = True) -> dict:
+def convert_to_dict(dct: tp.DictLike, nested: bool = True) -> dict:
     """Convert a configuration object to a dictionary.
 
     Args:
-        dct (Union[None, dict, Config]): A configuration input to convert.
+        dct (DictLike): A configuration input to convert.
         nested (bool): If True, recursively convert nested dictionaries.
 
     Returns:
@@ -170,11 +166,11 @@ def del_dict_item(dct: dict, k: tp.Any, force: bool = False) -> None:
         del dct[k]
 
 
-def copy_dict(dct: InConfigLikeT, copy_mode: str = "shallow", nested: bool = True) -> OutConfigLikeT:
+def copy_dict(dct: tp.DictLike, copy_mode: str = "shallow", nested: bool = True) -> dict:
     """Copy a dictionary based on the specified copy mode.
 
     Args:
-        dct (Union[None, dict, Config]): The input configuration dictionary.
+        dct (DictLike): The input configuration dictionary.
         copy_mode (str): Copying mode. Supported modes are:
 
             * 'none': No copy is performed.
@@ -184,7 +180,7 @@ def copy_dict(dct: InConfigLikeT, copy_mode: str = "shallow", nested: bool = Tru
         nested (bool): If True, recursively copy nested dictionaries.
 
     Returns:
-        Union[dict, Config]: A copy of the input dictionary according to the specified mode.
+        dict: A copy of the input dictionary according to the specified mode.
     """
     if dct is None:
         return {}
@@ -212,8 +208,8 @@ def copy_dict(dct: InConfigLikeT, copy_mode: str = "shallow", nested: bool = Tru
 
 
 def update_dict(
-    x: InConfigLikeT,
-    y: InConfigLikeT,
+    x: tp.DictLike,
+    y: tp.DictLike,
     nested: bool = True,
     force: bool = False,
     same_keys: bool = False,
@@ -221,8 +217,8 @@ def update_dict(
     """Update a dictionary with keys and values from another dictionary.
 
     Args:
-        x (Union[None, dict, Config]): The target dictionary to update.
-        y (Union[dict, Config]): The source dictionary with values to update.
+        x (DictLike): The target dictionary to update.
+        y (DictLike): The source dictionary with values to update.
         nested (bool): If True, recursively update nested dictionaries.
         force (bool): If True, override blocking flags when updating.
         same_keys (bool): If True, only update keys that already exist in the target dictionary.
@@ -370,14 +366,14 @@ It can still be overridden by another dictionary."""
 
 
 def unset_keys(
-    dct: InConfigLikeT,
+    dct: tp.DictLike,
     nested: bool = True,
     force: bool = False,
 ) -> None:
     """Unset keys in a dictionary that have the value `unsetkey`.
 
     Args:
-        dct (dict): The dictionary in which keys may be unset.
+        dct (DictLike): The dictionary in which keys may be unset.
         nested (bool): If True, unset keys in nested dictionaries recursively.
         force (bool): If True, force the removal of keys."""
     if dct is None:
@@ -392,12 +388,12 @@ def unset_keys(
 
 
 def merge_dicts(
-    *dicts: InConfigLikeT,
+    *dicts: tp.DictLike,
     to_dict: bool = True,
     copy_mode: str = "shallow",
     nested: tp.Optional[bool] = None,
     same_keys: bool = False,
-) -> OutConfigLikeT:
+) -> dict:
     """Merge multiple dictionaries into one.
 
     Merge provided dictionaries with optional conversion and copying, and optionally perform
@@ -479,14 +475,14 @@ def merge_dicts(
     return x
 
 
-def flat_merge_dicts(*dicts: InConfigLikeT, **kwargs) -> OutConfigLikeT:
+def flat_merge_dicts(*dicts: tp.DictLike, **kwargs) -> dict:
     """Merge multiple dictionaries with flat (non-recursive) merging.
 
     Wrapper around `merge_dicts` that forces `nested` to False while applying default arguments.
 
     Args:
         *dicts (dict): Dictionaries to merge.
-        **kwargs: Additional keyword arguments passed to `merge_dicts`.
+        **kwargs: Keyword arguments passed to `merge_dicts`.
 
     Returns:
         dict: The merged dictionary."""
@@ -510,7 +506,7 @@ class Config(pdict):
 
     Args:
         *args: Positional arguments to initialize the dictionary.
-        options_ (dict): Configuration options. See details below.
+        options_ (KwargsLike): Configuration options. See details below.
         **kwargs: Keyword arguments to initialize the dictionary.
 
     Options:
@@ -813,7 +809,7 @@ class Config(pdict):
         """Update the config with the provided key-value pairs using `update_dict`.
 
         Args:
-            *args: Additional positional arguments to form a dictionary.
+            *args: Positional arguments to form a dictionary.
             nested (Optional[bool]): Whether to perform a nested update.
             force (bool): Bypass configuration restrictions if True.
             **kwargs: Additional keyword arguments.
@@ -912,21 +908,21 @@ class Config(pdict):
 
     def merge_with(
         self: ConfigT,
-        other: InConfigLikeT,
+        other: tp.DictLike,
         copy_mode: tp.Optional[str] = None,
         nested: tp.Optional[bool] = None,
         **kwargs,
-    ) -> OutConfigLikeT:
+    ) -> dict:
         """Merge the current config with another dictionary, combining entries into one dictionary.
 
         Args:
-            other (Union[None, dict, Config]): A dictionary or config-like object to merge.
+            other (DictLike): A dictionary to merge.
             copy_mode (Optional[str]): The copy mode for merging.
             nested (Optional[bool]): Whether to perform a nested merge.
-            **kwargs: Additional keyword arguments for merging.
+            **kwargs: Keyword arguments for merging.
 
         Returns:
-            Union[dict, Config]: The merged configuration.
+            dict: The merged dictionary.
         """
         if copy_mode is None:
             copy_mode = "shallow"
@@ -950,7 +946,7 @@ class Config(pdict):
 
         Args:
             force (bool): Bypass configuration restrictions if True.
-            **reset_dct_copy_kwargs: Additional keyword arguments for copying the reset dictionary.
+            **reset_dct_copy_kwargs: Keyword arguments for copying the reset dictionary.
         """
         if not force and self.get_option("readonly"):
             raise TypeError("Config is read-only")
@@ -965,7 +961,7 @@ class Config(pdict):
 
         Args:
             force (bool): Bypass configuration restrictions if True.
-            **reset_dct_copy_kwargs: Additional keyword arguments for copying the current state.
+            **reset_dct_copy_kwargs: Keyword arguments for copying the current state.
         """
         if not force and self.get_option("readonly"):
             raise TypeError("Config is read-only")
@@ -988,7 +984,7 @@ class Config(pdict):
             clear (bool): Clear the current config before updating if True.
             update_options (bool): Update configuration options if True.
             nested (Optional[bool]): Whether to apply a nested update.
-            **kwargs: Additional keyword arguments for loading.
+            **kwargs: Keyword arguments for loading.
         """
         loaded = self.load(path=path, **kwargs)
         if clear:
@@ -1860,7 +1856,7 @@ class Configured(HasSettings, Cacheable, Comparable, Pickleable, Prettified, Cha
 
     !!! warning
         If any attribute is overwritten that is not listed in `Configured._writeable_attrs`,
-        or if any `Configured.__init__` argument depends on global defaults, those values will
+        or if any `Configured` argument depends on global defaults, those values will
         not be copied. Pass them explicitly to ensure the saved, loaded, or copied instance
         remains resilient to changes in globals.
     """
@@ -1941,7 +1937,7 @@ class Configured(HasSettings, Cacheable, Comparable, Pickleable, Prettified, Cha
         Args:
             *configs (MaybeTuple[Config]): Configuration objects to merge.
             on_merge_conflict (Union[str, dict]): Strategy for handling merge conflicts.
-            **kwargs: Additional keyword arguments for resolving merge.
+            **kwargs: Keyword arguments for resolving merge.
 
         Returns:
             Kwargs: Resolved keyword arguments for initialization.
@@ -2078,7 +2074,7 @@ class Configured(HasSettings, Cacheable, Comparable, Pickleable, Prettified, Cha
             check_attrs (bool): Whether to compare writable attributes.
             check_options (bool): Whether to compare configuration options.
             _key (str): Identifier key used for comparison context.
-            **kwargs: Additional keyword arguments for comparison.
+            **kwargs: Keyword arguments for comparison.
         """
         if _key is None:
             _key = type(self).__name__
@@ -2120,8 +2116,8 @@ class Configured(HasSettings, Cacheable, Comparable, Pickleable, Prettified, Cha
         """Force-update the configuration.
 
         Args:
-            *args: Additional arguments passed to `Config.update`.
-            **kwargs: Additional keyword arguments passed to `Config.update`.
+            *args: Positional arguments passed to `Config.update`.
+            **kwargs: Keyword arguments passed to `Config.update`.
         """
         self.config.update(*args, **kwargs, force=True)
 

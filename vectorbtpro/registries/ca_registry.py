@@ -1724,7 +1724,7 @@ class CAClassSetup(CABaseDelegatorSetup, DefineMixin):
     ) -> tp.Optional[CAClassSetupT]:
         """Get setup from `CacheableRegistry` or register a new one.
 
-        `**kwargs` are passed to `CAClassSetup.__init__`."""
+        `**kwargs` are passed to `CAClassSetup`."""
         from vectorbtpro._settings import settings
 
         caching_cfg = settings["caching"]
@@ -1858,7 +1858,7 @@ class CAInstanceSetup(CABaseDelegatorSetup, DefineMixin):
     ) -> tp.Optional[CAInstanceSetupT]:
         """Get setup from `CacheableRegistry` or register a new one.
 
-        `**kwargs` are passed to `CAInstanceSetup.__init__`."""
+        `**kwargs` are passed to `CAInstanceSetup`."""
         from vectorbtpro._settings import settings
 
         caching_cfg = settings["caching"]
@@ -1999,7 +1999,7 @@ class CAUnboundSetup(CABaseDelegatorSetup, DefineMixin):
     ) -> tp.Optional[CAUnboundSetupT]:
         """Get setup from `CacheableRegistry` or register a new one.
 
-        `**kwargs` are passed to `CAUnboundSetup.__init__`."""
+        `**kwargs` are passed to `CAUnboundSetup`."""
         from vectorbtpro._settings import settings
 
         caching_cfg = settings["caching"]
@@ -2152,9 +2152,9 @@ class CARunSetup(CABaseSetup, DefineMixin):
     updated more recently.
 
     !!! note
-        Use `CARunSetup.get` class method instead of `CARunSetup.__init__` to create a setup. The class method
+        Use `CARunSetup.get` class method instead of `CARunSetup` to create a setup. The class method
         first checks whether a setup with the same hash has already been registered, and if so, returns it.
-        Otherwise, creates and registers a new one. Using `CARunSetup.__init__` will throw an error if there
+        Otherwise, creates and registers a new one. Using `CARunSetup` will throw an error if there
         is a setup with the same hash."""
 
     cacheable: cacheableT = define.field(default=None, validator=_assert_value_not_none)
@@ -2186,7 +2186,7 @@ class CARunSetup(CABaseSetup, DefineMixin):
     ) -> tp.Optional[CARunSetupT]:
         """Get setup from `CacheableRegistry` or register a new one.
 
-        `**kwargs` are passed to `CARunSetup.__init__`."""
+        `**kwargs` are passed to `CARunSetup`."""
         from vectorbtpro._settings import settings
 
         caching_cfg = settings["caching"]

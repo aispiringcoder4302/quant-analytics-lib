@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Generic Numba-compiled functions for iterative use."""
+"""Module providing generic Numba-compiled functions for iterative use."""
 
 import numpy as np
 
@@ -19,7 +19,19 @@ from vectorbtpro.registries.jit_registry import register_jitted
 
 @register_jitted(cache=True)
 def iter_above_nb(arr1: tp.FlexArray2d, arr2: tp.FlexArray2d, i: int, col: int) -> bool:
-    """Check whether `arr1` is above `arr2` at specific row and column."""
+    """Return whether the value in `arr1` is above the value in `arr2`
+    at the specified row and column.
+
+    Args:
+        arr1 (FlexArray2d): 2D array from which to retrieve the current value.
+        arr2 (FlexArray2d): 2D array from which to retrieve the current value.
+        i (int): Current row index.
+        col (int): Column index.
+
+    Returns:
+        bool: True if the current value in `arr1` is greater than the corresponding value in `arr2`
+            and both values are valid, otherwise False.
+    """
     if i < 0:
         return False
     arr1_now = flex_select_nb(arr1, i, col)
@@ -31,7 +43,19 @@ def iter_above_nb(arr1: tp.FlexArray2d, arr2: tp.FlexArray2d, i: int, col: int) 
 
 @register_jitted(cache=True)
 def iter_below_nb(arr1: tp.FlexArray2d, arr2: tp.FlexArray2d, i: int, col: int) -> bool:
-    """Check whether `arr1` is below `arr2` at specific row and column."""
+    """Return whether the value in `arr1` is below the value in `arr2`
+    at the specified row and column.
+
+    Args:
+        arr1 (FlexArray2d): 2D array from which to retrieve the current value.
+        arr2 (FlexArray2d): 2D array from which to retrieve the current value.
+        i (int): Current row index.
+        col (int): Column index.
+
+    Returns:
+        bool: True if the current value in `arr1` is less than the corresponding value in `arr2`
+            and both values are valid, otherwise False.
+    """
     if i < 0:
         return False
     arr1_now = flex_select_nb(arr1, i, col)
@@ -43,7 +67,19 @@ def iter_below_nb(arr1: tp.FlexArray2d, arr2: tp.FlexArray2d, i: int, col: int) 
 
 @register_jitted(cache=True)
 def iter_crossed_above_nb(arr1: tp.FlexArray2d, arr2: tp.FlexArray2d, i: int, col: int) -> bool:
-    """Check whether `arr1` crossed above `arr2` at specific row and column."""
+    """Return whether the value in `arr1` has crossed above the value in `arr2`
+    at the specified row and column.
+
+    Args:
+        arr1 (FlexArray2d): 2D array from which to retrieve consecutive values.
+        arr2 (FlexArray2d): 2D array from which to retrieve consecutive values.
+        i (int): Current row index.
+        col (int): Column index.
+
+    Returns:
+        bool: True if, at the previous row, the value in `arr1` was below that in `arr2`
+            and at the current row it is above, provided all values are valid; otherwise, False.
+    """
     if i < 0 or i - 1 < 0:
         return False
     arr1_prev = flex_select_nb(arr1, i - 1, col)
@@ -57,7 +93,19 @@ def iter_crossed_above_nb(arr1: tp.FlexArray2d, arr2: tp.FlexArray2d, i: int, co
 
 @register_jitted(cache=True)
 def iter_crossed_below_nb(arr1: tp.FlexArray2d, arr2: tp.FlexArray2d, i: int, col: int) -> bool:
-    """Check whether `arr1` crossed below `arr2` at specific row and column."""
+    """Return whether the value in `arr1` has crossed below the value in `arr2`
+    at the specified row and column.
+
+    Args:
+        arr1 (FlexArray2d): 2D array from which to retrieve consecutive values.
+        arr2 (FlexArray2d): 2D array from which to retrieve consecutive values.
+        i (int): Current row index.
+        col (int): Column index.
+
+    Returns:
+        bool: True if, at the previous row, the value in `arr1` was above that in `arr2`
+            and at the current row it is below, provided all values are valid; otherwise, False.
+    """
     if i < 0 or i - 1 < 0:
         return False
     arr1_prev = flex_select_nb(arr1, i - 1, col)

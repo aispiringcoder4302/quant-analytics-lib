@@ -267,7 +267,7 @@ class QSAdapter(Configured):
         """Defaults for `QSAdapter`.
 
         Merges `defaults` from `vectorbtpro._settings.qs_adapter`, `returns_acc.defaults`
-        (with adapted naming), and `defaults` from `QSAdapter.__init__`."""
+        (with adapted naming), and `defaults` from `QSAdapter`."""
         from vectorbtpro._settings import settings
 
         qs_adapter_defaults_cfg = settings["qs_adapter"]["defaults"]

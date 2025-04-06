@@ -41,8 +41,8 @@ class Comparable(Base):
 
         Args:
             other (Any): The object to compare against.
-            *args: Additional arguments passed to `is_deep_equal`.
-            **kwargs: Additional keyword arguments passed to `is_deep_equal`.
+            *args: Positional arguments passed to `is_deep_equal`.
+            **kwargs: Keyword arguments passed to `is_deep_equal`.
 
         !!! note
             This method should accept all keyword arguments supported by `is_deep_equal`."""
@@ -499,7 +499,7 @@ def is_deep_equal(
         debug (bool): If True, output warning messages on mismatches.
         only_types (bool): If True, only compare the types of the objects.
         _key (Optional[str]): A key path identifier for nested comparisons.
-        **kwargs: Additional keyword arguments passed to underlying comparison functions.
+        **kwargs: Keyword arguments passed to underlying comparison functions.
     """
 
     def _select_kwargs(_method, _kwargs):

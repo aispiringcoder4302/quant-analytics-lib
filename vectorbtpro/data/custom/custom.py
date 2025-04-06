@@ -33,8 +33,8 @@ class CustomData(Data):
         """Return custom settings by calling `CustomData.get_settings` with `path_id="custom"`.
 
         Args:
-            *args: Additional arguments passed to `CustomData.get_settings`.
-            **kwargs: Additional keyword arguments passed to `CustomData.get_settings`.
+            *args: Positional arguments passed to `CustomData.get_settings`.
+            **kwargs: Keyword arguments passed to `CustomData.get_settings`.
 
         Returns:
             dict: The custom settings.
@@ -46,8 +46,8 @@ class CustomData(Data):
         """Return whether custom settings exist by calling `CustomData.has_settings` with `path_id="custom"`.
 
         Args:
-            *args: Additional arguments passed to `CustomData.has_settings`.
-            **kwargs: Additional keyword arguments passed to `CustomData.has_settings`.
+            *args: Positional arguments passed to `CustomData.has_settings`.
+            **kwargs: Keyword arguments passed to `CustomData.has_settings`.
         """
         return cls.has_settings(*args, path_id="custom", **kwargs)
 
@@ -56,8 +56,8 @@ class CustomData(Data):
         """Return a custom setting by calling `CustomData.get_setting` with `path_id="custom"`.
 
         Args:
-            *args: Additional arguments passed to `CustomData.get_setting`.
-            **kwargs: Additional keyword arguments passed to `CustomData.get_setting`.
+            *args: Positional arguments passed to `CustomData.get_setting`.
+            **kwargs: Keyword arguments passed to `CustomData.get_setting`.
 
         Returns:
             Any: The requested custom setting.
@@ -69,8 +69,8 @@ class CustomData(Data):
         """Return whether a custom setting exists by calling `CustomData.has_setting` with `path_id="custom"`.
 
         Args:
-            *args: Additional arguments passed to `CustomData.has_setting`.
-            **kwargs: Additional keyword arguments passed to `CustomData.has_setting`.
+            *args: Positional arguments passed to `CustomData.has_setting`.
+            **kwargs: Keyword arguments passed to `CustomData.has_setting`.
         """
         return cls.has_setting(*args, path_id="custom", **kwargs)
 
@@ -79,8 +79,8 @@ class CustomData(Data):
         """Return the resolved custom setting by calling `CustomData.resolve_setting` with `path_id="custom"`.
 
         Args:
-            *args: Additional arguments passed to `CustomData.resolve_setting`.
-            **kwargs: Additional keyword arguments passed to `CustomData.resolve_setting`.
+            *args: Positional arguments passed to `CustomData.resolve_setting`.
+            **kwargs: Keyword arguments passed to `CustomData.resolve_setting`.
 
         Returns:
             Any: The resolved custom setting.
@@ -92,8 +92,8 @@ class CustomData(Data):
         """Set custom settings by calling `CustomData.set_settings` with `path_id="custom"`.
 
         Args:
-            *args: Additional arguments passed to `CustomData.set_settings`.
-            **kwargs: Additional keyword arguments passed to `CustomData.set_settings`.
+            *args: Positional arguments passed to `CustomData.set_settings`.
+            **kwargs: Keyword arguments passed to `CustomData.set_settings`.
         """
         cls.set_settings(*args, path_id="custom", **kwargs)
 

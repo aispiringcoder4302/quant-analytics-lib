@@ -630,10 +630,10 @@ def get_obj(*args, allow_multiple: bool = False, **kwargs) -> tp.MaybeList:
     """Return the object obtained by resolving its reference name.
 
     Args:
-        *args: Additional arguments passed to `get_refname`.
+        *args: Positional arguments passed to `get_refname`.
         allow_multiple (bool): Whether to allow returning multiple objects
             if more than one reference name is resolved.
-        **kwargs: Additional keyword arguments passed to `get_refname`.
+        **kwargs: Keyword arguments passed to `get_refname`.
 
     Returns:
         MaybeList: The resolved object or a list of objects if multiple reference names are found.
@@ -750,7 +750,7 @@ def imlucky(query: str, **kwargs) -> None:
 
     Args:
         query (str): The search query.
-        **kwargs: Additional keyword arguments passed to `webbrowser.open`.
+        **kwargs: Keyword arguments passed to `webbrowser.open`.
     """
     webbrowser.open(get_imlucky_url(query), **kwargs)
 
@@ -807,6 +807,6 @@ def open_api_ref(
         obj (Any): The object whose API reference is to be opened.
         module (Union[None, str, ModuleType]): The module context used for resolving the object.
         resolve (bool): Whether to resolve the object's reference name.
-        **kwargs: Additional keyword arguments passed to `webbrowser.open`.
+        **kwargs: Keyword arguments passed to `webbrowser.open`.
     """
     webbrowser.open(get_api_ref(obj, module=module, resolve=resolve), **kwargs)

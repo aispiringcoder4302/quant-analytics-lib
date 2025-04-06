@@ -180,7 +180,7 @@ class TVClient(Configured):
         username (Optional[str]): Username for authentication.
         password (Optional[str]): Password for authentication.
         auth_token (Optional[str]): Authentication token; if provided, username and password should not be used.
-        **kwargs: Additional keyword arguments passed for configuration.
+        **kwargs: Keyword arguments passed for configuration.
     """
 
     def __init__(
@@ -550,7 +550,7 @@ class TVClient(Configured):
             delay (Optional[int]): Delay in seconds between retry attempts and between fetching pages.
             retries (int): Number of retries allowed for each API request in case of JSON decoding errors.
             show_progress (bool): Flag indicating whether to display a progress bar during symbol fetching.
-            pbar_kwargs (KwargsLike): Additional keyword arguments for configuring the progress bar.
+            pbar_kwargs (KwargsLike): Keyword arguments for configuring the progress bar.
 
         Returns:
             List[dict]: A list of dictionaries representing the fetched symbols.
@@ -624,7 +624,7 @@ class TVClient(Configured):
             market (Optional[str]): Market or region in which to scan for symbols.
 
                 Defaults to "global" if not provided.
-            **kwargs: Additional keyword arguments passed to the POST request payload.
+            **kwargs: Keyword arguments passed to the POST request payload.
 
         Returns:
             List[dict]: A list of dictionaries representing the scanned symbols.
@@ -717,7 +717,7 @@ class TVData(RemoteData):
         * Use `market` to filter by one or multiple markets (see `MARKET_LIST`).
         * Use `fields` to retrieve extra information for filtering with `filter_by` (see `FIELD_LIST`).
         * Use `groups` to specify group filters, providing each group as a dictionary in compressed or full format.
-        * Additional keyword arguments provided via `scanner_kwargs` are passed directly to the market scanner.
+        * Keyword arguments provided via `scanner_kwargs` are passed directly to the market scanner.
 
         Filter results further by:
 
@@ -739,7 +739,7 @@ class TVData(RemoteData):
             delay (Optional[int]): Delay between requests during symbol search.
             retries (Optional[int]): Number of retry attempts for symbol search requests.
             show_progress (Optional[bool]): Whether to display a progress bar during symbol search.
-            pbar_kwargs (KwargsLike): Additional keyword arguments for the progress bar.
+            pbar_kwargs (KwargsLike): Keyword arguments for the progress bar.
             market (Optional[str]): Market to filter symbols in the market scanner.
 
                 Defaults to "global" if no search-specific parameters are provided.
@@ -752,7 +752,7 @@ class TVData(RemoteData):
                 or list of dictionaries defining groups for filtering symbols.
             template_context (KwargsLike): Additional context to pass when using a template in `filter_by`.
             return_field_data (bool): If True, return additional field data instead of only symbol codes.
-            **scanner_kwargs: Additional keyword arguments passed to the market scanner.
+            **scanner_kwargs: Keyword arguments passed to the market scanner.
 
         Returns:
             Union[List[str], List[Kwargs]]: List of symbols or list of dictionaries

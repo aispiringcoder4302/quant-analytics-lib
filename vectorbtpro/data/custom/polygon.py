@@ -104,7 +104,7 @@ class PolygonData(RemoteData):
             sort (bool): Whether to return the symbols in sorted order.
             client (Optional[PolygonClient]): An existing client instance for API interaction.
             client_config (dict-like): Parameters for initializing a client if one is not provided.
-            **list_tickers_kwargs: Additional keyword arguments for `polygon.RESTClient.list_tickers`.
+            **list_tickers_kwargs: Keyword arguments for `polygon.RESTClient.list_tickers`.
 
         Returns:
             List[str]: A list of symbols.
@@ -133,7 +133,7 @@ class PolygonData(RemoteData):
 
         Args:
             client (Optional[PolygonClient]): An existing client instance.
-            **client_config: Additional keyword arguments for initializing the client.
+            **client_config: Keyword arguments for initializing the client.
 
         Returns:
             PolygonClient: An instance of `polygon.rest.RESTClient` for API interactions.

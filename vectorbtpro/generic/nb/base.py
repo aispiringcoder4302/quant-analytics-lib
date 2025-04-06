@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Generic Numba-compiled functions for base operations."""
+"""Module providing generic Numba-compiled functions for base operations."""
 
 import numpy as np
 from numba import prange
@@ -56,7 +56,16 @@ overload(_select_indices_1d_nb)(_select_indices_1d_nb)
 
 @register_jitted(cache=True)
 def select_indices_1d_nb(arr: tp.Array1d, indices: tp.Array1d, fill_value: tp.Scalar) -> tp.Array1d:
-    """Set each element to a value by boolean mask."""
+    """Select elements from a 1-D array based on provided indices.
+
+    Args:
+        arr (Array1d): 1-dimensional input array.
+        indices (Array1d): Array of integer indices for selection.
+        fill_value (Scalar): Value to assign for indices that are out of bounds.
+
+    Returns:
+        Array1d: Array containing the selected elements.
+    """
     return _select_indices_1d_nb(arr, indices, fill_value)
 
 
@@ -91,15 +100,30 @@ overload(_select_indices_nb)(_select_indices_nb)
 
 @register_jitted(cache=True)
 def select_indices_nb(arr: tp.Array2d, indices: tp.Array2d, fill_value: tp.Scalar) -> tp.Array2d:
-    """2-dim version of `select_indices_1d_nb`."""
+    """Select elements from a 2-D array based on provided indices.
+
+    Args:
+        arr (Array2d): 2-dimensional input array.
+        indices (Array2d): Array of integer indices for selection.
+        fill_value (Scalar): Value to assign for indices that are out of bounds.
+
+    Returns:
+        Array2d: Array containing the selected elements.
+    """
     return _select_indices_nb(arr, indices, fill_value)
 
 
 @register_jitted(cache=True)
 def shuffle_1d_nb(arr: tp.Array1d, seed: tp.Optional[int] = None) -> tp.Array1d:
-    """Shuffle each column in the array.
+    """Shuffle elements in a 1-D array.
 
-    Specify `seed` to make output deterministic."""
+    Args:
+        arr (Array1d): Input array to shuffle.
+        seed (Optional[int]): Seed for the random number generator to produce deterministic output.
+
+    Returns:
+        Array1d: Shuffled array.
+    """
     if seed is not None:
         np.random.seed(seed)
     return np.random.permutation(arr)
@@ -112,7 +136,18 @@ def shuffle_1d_nb(arr: tp.Array1d, seed: tp.Optional[int] = None) -> tp.Array1d:
 )
 @register_jitted(cache=True)
 def shuffle_nb(arr: tp.Array2d, seed: tp.Optional[int] = None) -> tp.Array2d:
-    """2-dim version of `shuffle_1d_nb`."""
+    """Shuffle each column in a 2-D array independently.
+
+    Args:
+        arr (Array2d): 2-dimensional input array.
+        seed (Optional[int]): Seed for the random number generator to produce deterministic output.
+
+    Returns:
+        Array2d: Array with each column's elements shuffled.
+
+    !!! tip
+        This function is parallelizable.
+    """
     if seed is not None:
         np.random.seed(seed)
     out = np.empty_like(arr, dtype=arr.dtype)
@@ -148,7 +183,16 @@ overload(_set_by_mask_1d_nb)(_set_by_mask_1d_nb)
 
 @register_jitted(cache=True)
 def set_by_mask_1d_nb(arr: tp.Array1d, mask: tp.Array1d, value: tp.Scalar) -> tp.Array1d:
-    """Set each element to a value by boolean mask."""
+    """Set elements in a 1-D array to a specified value using a boolean mask.
+
+    Args:
+        arr (Array1d): Input array.
+        mask (Array1d): Boolean mask indicating which elements to update.
+        value (Scalar): Value to assign where the mask is True.
+
+    Returns:
+        Array1d: Array with updated values.
+    """
     return _set_by_mask_1d_nb(arr, mask, value)
 
 
@@ -179,7 +223,16 @@ overload(_set_by_mask_nb)(_set_by_mask_nb)
 
 @register_jitted(cache=True)
 def set_by_mask_nb(arr: tp.Array2d, mask: tp.Array2d, value: tp.Scalar) -> tp.Array2d:
-    """2-dim version of `set_by_mask_1d_nb`."""
+    """Set elements in a 2-D array to a specified value using a boolean mask.
+
+    Args:
+        arr (Array2d): 2-dimensional input array.
+        mask (Array2d): Boolean mask indicating which elements to update.
+        value (Scalar): Value to assign where the mask is True.
+
+    Returns:
+        Array2d: Array with updated values.
+    """
     return _set_by_mask_nb(arr, mask, value)
 
 
@@ -209,9 +262,16 @@ overload(_set_by_mask_mult_1d_nb)(_set_by_mask_mult_1d_nb)
 
 @register_jitted(cache=True)
 def set_by_mask_mult_1d_nb(arr: tp.Array1d, mask: tp.Array1d, values: tp.Array1d) -> tp.Array1d:
-    """Set each element in one array to the corresponding element in another by boolean mask.
+    """Set elements in a 1-D array to corresponding values from another array using a boolean mask.
 
-    `values` must be of the same shape as in the array."""
+    Args:
+        arr (Array1d): Input array.
+        mask (Array1d): Boolean mask indicating which elements to update.
+        values (Array1d): Array of values to assign where the mask is True; must be the same shape as `arr`.
+
+    Returns:
+        Array1d: Array with updated values.
+    """
     return _set_by_mask_mult_1d_nb(arr, mask, values)
 
 
@@ -242,13 +302,30 @@ overload(_set_by_mask_mult_nb)(_set_by_mask_mult_nb)
 
 @register_jitted(cache=True)
 def set_by_mask_mult_nb(arr: tp.Array2d, mask: tp.Array2d, values: tp.Array2d) -> tp.Array2d:
-    """2-dim version of `set_by_mask_mult_1d_nb`."""
+    """Set elements in a 2-D array to corresponding values from another array using a boolean mask.
+
+    Args:
+        arr (Array2d): 2-dimensional input array.
+        mask (Array2d): Boolean mask indicating which elements to update.
+        values (Array2d): Array of values to assign where the mask is True; must be the same shape as `arr`.
+
+    Returns:
+        Array2d: Array with updated values.
+    """
     return _set_by_mask_mult_nb(arr, mask, values)
 
 
 @register_jitted(cache=True)
 def first_valid_index_1d_nb(arr: tp.Array1d, check_inf: bool = True) -> int:
-    """Get the index of the first valid value."""
+    """Return the index of the first valid element in a 1D array.
+
+    Args:
+        arr (Array1d): Input array to search.
+        check_inf (bool): Whether to treat infinity as an invalid value.
+
+    Returns:
+        int: The index of the first valid element, or -1 if no valid element is found.
+    """
     for i in range(arr.shape[0]):
         if not np.isnan(arr[i]) and (not check_inf or not np.isinf(arr[i])):
             return i
@@ -257,7 +334,16 @@ def first_valid_index_1d_nb(arr: tp.Array1d, check_inf: bool = True) -> int:
 
 @register_jitted(cache=True)
 def first_valid_index_nb(arr, check_inf: bool = True):
-    """2-dim version of `first_valid_index_1d_nb`."""
+    """Return an array of indices for the first valid elements from each column in a 2D array.
+
+    Args:
+        arr (Array2d): A 2D array to search column-wise.
+        check_inf (bool): Whether to treat infinity as an invalid value.
+
+    Returns:
+        Array1d: An array of indices where each element represents the first valid value index
+            in the corresponding column, or -1 if none is found.
+    """
     out = np.empty(arr.shape[1], dtype=int_)
     for col in range(arr.shape[1]):
         out[col] = first_valid_index_1d_nb(arr[:, col], check_inf=check_inf)
@@ -266,7 +352,15 @@ def first_valid_index_nb(arr, check_inf: bool = True):
 
 @register_jitted(cache=True)
 def last_valid_index_1d_nb(arr: tp.Array1d, check_inf: bool = True) -> int:
-    """Get the index of the last valid value."""
+    """Return the index of the last valid element in a 1D array.
+
+    Args:
+        arr (Array1d): Input array to search.
+        check_inf (bool): Whether to treat infinity as an invalid value.
+
+    Returns:
+        int: The index of the last valid element, or -1 if no valid element is found.
+    """
     for i in range(arr.shape[0] - 1, -1, -1):
         if not np.isnan(arr[i]) and (not check_inf or not np.isinf(arr[i])):
             return i
@@ -275,7 +369,16 @@ def last_valid_index_1d_nb(arr: tp.Array1d, check_inf: bool = True) -> int:
 
 @register_jitted(cache=True)
 def last_valid_index_nb(arr, check_inf: bool = True):
-    """2-dim version of `last_valid_index_1d_nb`."""
+    """Return an array of indices for the last valid elements from each column in a 2D array.
+
+    Args:
+        arr (Array2d): A 2D array to search column-wise.
+        check_inf (bool): Whether to treat infinity as an invalid value.
+
+    Returns:
+        Array1d: An array of indices where each element represents the last valid value index
+            in the corresponding column, or -1 if none is found.
+    """
     out = np.empty(arr.shape[1], dtype=int_)
     for col in range(arr.shape[1]):
         out[col] = last_valid_index_1d_nb(arr[:, col], check_inf=check_inf)
@@ -284,9 +387,17 @@ def last_valid_index_nb(arr, check_inf: bool = True):
 
 @register_jitted(cache=True)
 def fillna_1d_nb(arr: tp.Array1d, value: tp.Scalar) -> tp.Array1d:
-    """Replace NaNs with value.
+    """Return a 1D array with NaN values replaced by a specified value.
 
-    Numba equivalent to `pd.Series(arr).fillna(value)`."""
+    Numba equivalent to `pd.Series(arr).fillna(value)`.
+
+    Args:
+        arr (Array1d): Input array in which to replace NaN values.
+        value (Scalar): Value to use for replacing NaNs.
+
+    Returns:
+        Array1d: The resulting array with NaNs replaced.
+    """
     return set_by_mask_1d_nb(arr, np.isnan(arr), value)
 
 
@@ -297,7 +408,18 @@ def fillna_1d_nb(arr: tp.Array1d, value: tp.Scalar) -> tp.Array1d:
 )
 @register_jitted(cache=True)
 def fillna_nb(arr: tp.Array2d, value: tp.Scalar) -> tp.Array2d:
-    """2-dim version of `fillna_1d_nb`."""
+    """Return a 2D array with NaN values replaced by a specified value column-wise.
+
+    Args:
+        arr (Array2d): Input 2D array in which to replace NaN values.
+        value (Scalar): Value to use for replacing NaNs.
+
+    Returns:
+        Array2d: The resulting array with NaNs replaced.
+
+    !!! tip
+        This function is parallelizable.
+    """
     return set_by_mask_nb(arr, np.isnan(arr), value)
 
 
@@ -308,10 +430,20 @@ def fillna_nb(arr: tp.Array2d, value: tp.Scalar) -> tp.Array2d:
 )
 @register_jitted(cache=True, tags={"can_parallel"})
 def fbfill_nb(arr: tp.Array2d) -> tp.Array2d:
-    """Forward and backward fill NaN values.
+    """Return a 2D array with NaN values filled using forward and backward fill.
+
+    Args:
+        arr (Array2d): Input 2D array to process.
+
+    Returns:
+        Array2d: The array with NaN values filled by forward and backward fill.
 
     !!! note
-        If there are no NaN (or any) values, will return `arr`."""
+        If there are no NaN (or any) values, will return `arr`.
+
+    !!! tip
+        This function is parallelizable.
+    """
     if arr.size == 0:
         return arr
     need_fbfill = False
@@ -375,12 +507,21 @@ overload(_bshift_1d_nb)(_bshift_1d_nb)
 
 @register_jitted(cache=True)
 def bshift_1d_nb(arr: tp.Array1d, n: int = 1, fill_value: tp.Scalar = np.nan) -> tp.Array1d:
-    """Shift backward by `n` positions.
+    """Return a 1D array shifted backward by n positions, with missing elements filled by a specified value.
 
     Numba equivalent to `pd.Series(arr).shift(-n)`.
 
+    Args:
+        arr (Array1d): Input array to shift.
+        n (int): Number of positions to shift.
+        fill_value (Scalar): Value used to fill positions that exceed the array boundaries.
+
+    Returns:
+        Array1d: The shifted array.
+
     !!! warning
-        This operation looks ahead."""
+        This operation looks ahead.
+    """
     return _bshift_1d_nb(arr, n, fill_value)
 
 
@@ -419,7 +560,20 @@ overload(_bshift_nb)(_bshift_nb)
 )
 @register_jitted(cache=True)
 def bshift_nb(arr: tp.Array2d, n: int = 1, fill_value: tp.Scalar = np.nan) -> tp.Array2d:
-    """2-dim version of `bshift_1d_nb`."""
+    """Return a 2D array with each column shifted backward by n positions,
+    with missing elements filled by a specified value.
+
+    Args:
+        arr (Array2d): Input 2D array to shift.
+        n (int): Number of positions to shift.
+        fill_value (Scalar): Value used to fill positions that exceed the array boundaries.
+
+    Returns:
+        Array2d: The resulting 2D array with backward shift applied to each column.
+
+    !!! tip
+        This function is parallelizable.
+    """
     return _bshift_nb(arr, n, fill_value)
 
 
@@ -456,9 +610,18 @@ overload(_fshift_1d_nb)(_fshift_1d_nb)
 
 @register_jitted(cache=True)
 def fshift_1d_nb(arr: tp.Array1d, n: int = 1, fill_value: tp.Scalar = np.nan) -> tp.Array1d:
-    """Shift forward by `n` positions.
+    """Return a 1D array shifted forward by n positions, with missing elements filled by a specified value.
 
-    Numba equivalent to `pd.Series(arr).shift(n)`."""
+    Numba equivalent to `pd.Series(arr).shift(n)`.
+
+    Args:
+        arr (Array1d): Input array to shift.
+        n (int): Number of positions to shift.
+        fill_value (Scalar): Value used to fill positions that go out-of-bound.
+
+    Returns:
+        Array1d: The shifted array.
+    """
     return _fshift_1d_nb(arr, n, fill_value)
 
 
@@ -497,15 +660,35 @@ overload(_fshift_nb)(_fshift_nb)
 )
 @register_jitted(cache=True)
 def fshift_nb(arr: tp.Array2d, n: int = 1, fill_value: tp.Scalar = np.nan) -> tp.Array2d:
-    """2-dim version of `fshift_1d_nb`."""
+    """Return a 2-dimensional shifted version of the input array.
+
+    Args:
+        arr (Array2d): The input 2-dimensional array.
+        n (int): The number of positions to shift the array.
+        fill_value (Scalar): The value used to fill the newly created empty positions.
+
+    Returns:
+        Array2d: The shifted array.
+
+    !!! tip
+        This function is parallelizable.
+    """
     return _fshift_nb(arr, n, fill_value)
 
 
 @register_jitted(cache=True)
 def diff_1d_nb(arr: tp.Array1d, n: int = 1) -> tp.Array1d:
-    """Compute the 1-th discrete difference.
+    """Compute the discrete difference for a 1-dimensional array.
 
-    Numba equivalent to `pd.Series(arr).diff()`."""
+    Numba-optimized equivalent of `pd.Series(arr).diff()`.
+
+    Args:
+        arr (Array1d): The input array.
+        n (int): The interval over which to compute the difference.
+
+    Returns:
+        Array1d: An array of discrete differences.
+    """
     out = np.empty(arr.shape[0], dtype=float_)
     for i in range(out.shape[0]):
         if i - n >= 0:
@@ -522,7 +705,19 @@ def diff_1d_nb(arr: tp.Array1d, n: int = 1) -> tp.Array1d:
 )
 @register_jitted(cache=True, tags={"can_parallel"})
 def diff_nb(arr: tp.Array2d, n: int = 1) -> tp.Array2d:
-    """2-dim version of `diff_1d_nb`."""
+    """Return a 2-dimensional array of discrete differences computed column-wise.
+
+    Args:
+        arr (Array2d): The input 2-dimensional array.
+        n (int): The interval over which to compute the difference.
+
+    Returns:
+        Array2d: A 2-dimensional array where each column represents the discrete differences
+            of the corresponding input column.
+
+    !!! tip
+        This function is parallelizable.
+    """
     out = np.empty_like(arr, dtype=float_)
     for col in prange(arr.shape[1]):
         out[:, col] = diff_1d_nb(arr[:, col], n=n)
@@ -531,9 +726,17 @@ def diff_nb(arr: tp.Array2d, n: int = 1) -> tp.Array2d:
 
 @register_jitted(cache=True)
 def pct_change_1d_nb(arr: tp.Array1d, n: int = 1) -> tp.Array1d:
-    """Compute the percentage change.
+    """Compute the percentage change for a 1-dimensional array.
 
-    Numba equivalent to `pd.Series(arr).pct_change()`."""
+    Numba-optimized equivalent of `pd.Series(arr).pct_change()`.
+
+    Args:
+        arr (Array1d): The input array.
+        n (int): The period over which to compute the percentage change.
+
+    Returns:
+        Array1d: An array of percentage changes.
+    """
     out = np.empty(arr.shape[0], dtype=float_)
     for i in range(out.shape[0]):
         if i - n >= 0:
@@ -550,7 +753,19 @@ def pct_change_1d_nb(arr: tp.Array1d, n: int = 1) -> tp.Array1d:
 )
 @register_jitted(cache=True, tags={"can_parallel"})
 def pct_change_nb(arr: tp.Array2d, n: int = 1) -> tp.Array2d:
-    """2-dim version of `pct_change_1d_nb`."""
+    """Return a 2-dimensional array of percentage changes computed column-wise.
+
+    Args:
+        arr (Array2d): The input 2-dimensional array.
+        n (int): The period over which to compute the percentage change.
+
+    Returns:
+        Array2d: A 2-dimensional array where each column represents the percentage changes
+            of the corresponding input column.
+
+    !!! tip
+        This function is parallelizable.
+    """
     out = np.empty_like(arr, dtype=float_)
     for col in prange(arr.shape[1]):
         out[:, col] = pct_change_1d_nb(arr[:, col], n=n)
@@ -559,12 +774,19 @@ def pct_change_nb(arr: tp.Array2d, n: int = 1) -> tp.Array2d:
 
 @register_jitted(cache=True)
 def bfill_1d_nb(arr: tp.Array1d) -> tp.Array1d:
-    """Fill NaNs by propagating first valid observation backward.
+    """Fill NaN values in a 1-dimensional array by backward propagation of the next valid observation.
 
-    Numba equivalent to `pd.Series(arr).fillna(method='bfill')`.
+    Numba-optimized equivalent of `pd.Series(arr).fillna(method='bfill')`.
+
+    Args:
+        arr (Array1d): The input array with potential NaN values.
+
+    Returns:
+        Array1d: An array with NaN values filled using backward propagation.
 
     !!! warning
-        This operation looks ahead."""
+        This operation looks ahead.
+    """
     out = np.empty_like(arr, dtype=arr.dtype)
     lastval = arr[-1]
     for i in range(arr.shape[0] - 1, -1, -1):
@@ -582,7 +804,18 @@ def bfill_1d_nb(arr: tp.Array1d) -> tp.Array1d:
 )
 @register_jitted(cache=True, tags={"can_parallel"})
 def bfill_nb(arr: tp.Array2d) -> tp.Array2d:
-    """2-dim version of `bfill_1d_nb`."""
+    """Return a 2-dimensional array with NaN values filled by backward propagation computed column-wise.
+
+    Args:
+        arr (Array2d): The input 2-dimensional array with potential NaN values.
+
+    Returns:
+        Array2d: A 2-dimensional array where each column has been filled using
+            backward propagation via `bfill_1d_nb`.
+
+    !!! tip
+        This function is parallelizable.
+    """
     out = np.empty_like(arr, dtype=arr.dtype)
     for col in prange(arr.shape[1]):
         out[:, col] = bfill_1d_nb(arr[:, col])
@@ -591,9 +824,16 @@ def bfill_nb(arr: tp.Array2d) -> tp.Array2d:
 
 @register_jitted(cache=True)
 def ffill_1d_nb(arr: tp.Array1d) -> tp.Array1d:
-    """Fill NaNs by propagating last valid observation forward.
+    """Fill NaN values in a 1-dimensional array using forward propagation of the last valid observation.
 
-    Numba equivalent to `pd.Series(arr).fillna(method='ffill')`."""
+    Numba-optimized equivalent of `pd.Series(arr).fillna(method='ffill')`.
+
+    Args:
+        arr (Array1d): The input array with potential NaN values.
+
+    Returns:
+        Array1d: An array with NaN values filled using forward propagation.
+    """
     out = np.empty_like(arr, dtype=arr.dtype)
     lastval = arr[0]
     for i in range(arr.shape[0]):
@@ -611,7 +851,18 @@ def ffill_1d_nb(arr: tp.Array1d) -> tp.Array1d:
 )
 @register_jitted(cache=True, tags={"can_parallel"})
 def ffill_nb(arr: tp.Array2d) -> tp.Array2d:
-    """2-dim version of `ffill_1d_nb`."""
+    """Return a 2-dimensional array with NaN values filled by forward propagation computed column-wise.
+
+    Args:
+        arr (Array2d): The input 2-dimensional array with potential NaN values.
+
+    Returns:
+        Array2d: A 2-dimensional array where each column has been filled using
+            forward propagation via `ffill_1d_nb`.
+
+    !!! tip
+        This function is parallelizable.
+    """
     out = np.empty_like(arr, dtype=arr.dtype)
     for col in prange(arr.shape[1]):
         out[:, col] = ffill_1d_nb(arr[:, col])
@@ -648,7 +899,18 @@ overload(_nanprod_nb)(_nanprod_nb)
 )
 @register_jitted(cache=True)
 def nanprod_nb(arr: tp.Array2d) -> tp.Array1d:
-    """Numba equivalent of `np.nanprod` along axis 0."""
+    """Compute the product of array elements over axis 0, ignoring NaN values,
+    using a Numba-optimized algorithm.
+
+    Args:
+        arr (Array2d): The input 2-dimensional array.
+
+    Returns:
+        Array1d: An array containing the product for each column.
+
+    !!! tip
+        This function is parallelizable.
+    """
     return _nanprod_nb(arr)
 
 
@@ -682,7 +944,18 @@ overload(_nancumsum_nb)(_nancumsum_nb)
 )
 @register_jitted(cache=True)
 def nancumsum_nb(arr: tp.Array2d) -> tp.Array2d:
-    """Numba equivalent of `np.nancumsum` along axis 0."""
+    """Compute the cumulative sum of array elements over axis 0, ignoring NaN values,
+    with Numba optimization.
+
+    Args:
+        arr (Array2d): The input 2-dimensional array.
+
+    Returns:
+        Array2d: A 2-dimensional array of cumulative sums computed column-wise.
+
+    !!! tip
+        This function is parallelizable.
+    """
     return _nancumsum_nb(arr)
 
 
@@ -716,7 +989,18 @@ overload(_nancumprod_nb)(_nancumprod_nb)
 )
 @register_jitted(cache=True)
 def nancumprod_nb(arr: tp.Array2d) -> tp.Array2d:
-    """Numba equivalent of `np.nancumprod` along axis 0."""
+    """Compute the cumulative product of array elements over axis 0, ignoring NaN values,
+    using a Numba-optimized approach.
+
+    Args:
+        arr (Array2d): The input 2-dimensional array.
+
+    Returns:
+        Array2d: A 2-dimensional array of cumulative products computed column-wise.
+
+    !!! tip
+        This function is parallelizable.
+    """
     return _nancumprod_nb(arr)
 
 
@@ -750,13 +1034,30 @@ overload(_nansum_nb)(_nansum_nb)
 )
 @register_jitted(cache=True)
 def nansum_nb(arr: tp.Array2d) -> tp.Array1d:
-    """Numba equivalent of `np.nansum` along axis 0."""
+    """Compute the sum of a 2D array along axis 0 while ignoring NaN values using Numba.
+
+    Args:
+        arr (Array2d): A two-dimensional array containing numerical values with possible NaNs.
+
+    Returns:
+        Array1d: A one-dimensional array with the column-wise sums, ignoring NaNs.
+
+    !!! tip
+        This function is parallelizable.
+    """
     return _nansum_nb(arr)
 
 
 @register_jitted(cache=True)
 def nancnt_1d_nb(arr: tp.Array1d) -> int:
-    """Compute count while ignoring NaNs and not allocating any arrays."""
+    """Count the non-NaN elements in a 1D array without allocating extra arrays.
+
+    Args:
+        arr (Array1d): A one-dimensional array containing numerical values.
+
+    Returns:
+        int: The count of non-NaN elements in the array.
+    """
     cnt = 0
     for i in range(arr.shape[0]):
         if not np.isnan(arr[i]):
@@ -771,7 +1072,18 @@ def nancnt_1d_nb(arr: tp.Array1d) -> int:
 )
 @register_jitted(cache=True, tags={"can_parallel"})
 def nancnt_nb(arr: tp.Array2d) -> tp.Array1d:
-    """2-dim version of `nancnt_1d_nb`."""
+    """Count the non-NaN elements in each column of a 2D array without additional allocations.
+
+    Args:
+        arr (Array2d): A two-dimensional array containing numerical values with possible NaNs.
+
+    Returns:
+        Array1d: A one-dimensional array where each element is the count of non-NaN values
+            in the corresponding column.
+
+    !!! tip
+        This function is parallelizable.
+    """
     out = np.empty(arr.shape[1], dtype=int_)
     for col in prange(arr.shape[1]):
         out[col] = nancnt_1d_nb(arr[:, col])
@@ -785,7 +1097,17 @@ def nancnt_nb(arr: tp.Array2d) -> tp.Array1d:
 )
 @register_jitted(cache=True, tags={"can_parallel"})
 def nanmin_nb(arr: tp.Array2d) -> tp.Array1d:
-    """Numba equivalent of `np.nanmin` along axis 0."""
+    """Compute the minimum value of each column in a 2D array while ignoring NaNs using Numba.
+
+    Args:
+        arr (Array2d): A two-dimensional array containing numerical values with potential NaNs.
+
+    Returns:
+        Array1d: A one-dimensional array with the minimum value from each column.
+
+    !!! tip
+        This function is parallelizable.
+    """
     out = np.empty(arr.shape[1], dtype=arr.dtype)
     for col in prange(arr.shape[1]):
         out[col] = np.nanmin(arr[:, col])
@@ -799,7 +1121,17 @@ def nanmin_nb(arr: tp.Array2d) -> tp.Array1d:
 )
 @register_jitted(cache=True, tags={"can_parallel"})
 def nanmax_nb(arr: tp.Array2d) -> tp.Array1d:
-    """Numba equivalent of `np.nanmax` along axis 0."""
+    """Compute the maximum value of each column in a 2D array while ignoring NaNs using Numba.
+
+    Args:
+        arr (Array2d): A two-dimensional array containing numerical values with possible NaN entries.
+
+    Returns:
+        Array1d: A one-dimensional array with the maximum value from each column.
+
+    !!! tip
+        This function is parallelizable.
+    """
     out = np.empty(arr.shape[1], dtype=arr.dtype)
     for col in prange(arr.shape[1]):
         out[col] = np.nanmax(arr[:, col])
@@ -813,7 +1145,17 @@ def nanmax_nb(arr: tp.Array2d) -> tp.Array1d:
 )
 @register_jitted(cache=True, tags={"can_parallel"})
 def nanmean_nb(arr: tp.Array2d) -> tp.Array1d:
-    """Numba equivalent of `np.nanmean` along axis 0."""
+    """Compute the mean of each column in a 2D array while ignoring NaN values using Numba.
+
+    Args:
+        arr (Array2d): A two-dimensional array containing numerical values with potential NaNs.
+
+    Returns:
+        Array1d: A one-dimensional array with the column-wise means.
+
+    !!! tip
+        This function is parallelizable.
+    """
     out = np.empty(arr.shape[1], dtype=float_)
     for col in prange(arr.shape[1]):
         out[col] = np.nanmean(arr[:, col])
@@ -827,7 +1169,17 @@ def nanmean_nb(arr: tp.Array2d) -> tp.Array1d:
 )
 @register_jitted(cache=True, tags={"can_parallel"})
 def nanmedian_nb(arr: tp.Array2d) -> tp.Array1d:
-    """Numba equivalent of `np.nanmedian` along axis 0."""
+    """Compute the median of each column in a 2D array while ignoring NaN values using Numba.
+
+    Args:
+        arr (Array2d): A two-dimensional array containing numerical values with possible NaNs.
+
+    Returns:
+        Array1d: A one-dimensional array with the median value from each column.
+
+    !!! tip
+        This function is parallelizable.
+    """
     out = np.empty(arr.shape[1], dtype=float_)
     for col in prange(arr.shape[1]):
         out[col] = np.nanmedian(arr[:, col])
@@ -836,11 +1188,19 @@ def nanmedian_nb(arr: tp.Array2d) -> tp.Array1d:
 
 @register_jitted(cache=True)
 def nanpercentile_noarr_1d_nb(arr: tp.Array1d, q: float) -> float:
-    """Numba equivalent of `np.nanpercentile` that does not allocate any arrays.
+    """Compute the percentile of a 1D array while ignoring NaN values without allocating additional arrays.
+
+    Args:
+        arr (Array1d): A one-dimensional array containing numerical values that may include NaNs.
+        q (float): The percentile to compute, where 0 represents the minimum and 100 represents the maximum.
+
+    Returns:
+        float: The computed percentile value.
 
     !!! note
         Has worst case time complexity of O(N^2), which makes it much slower than `np.nanpercentile`,
-        but still faster if used in rolling calculations, especially for `q` near 0 and 100."""
+        but still faster if used in rolling calculations, especially for `q` near 0 and 100.
+    """
     if q < 0:
         q = 0
     elif q > 100:
@@ -904,11 +1264,20 @@ def nanpercentile_noarr_1d_nb(arr: tp.Array1d, q: float) -> float:
 
 @register_jitted(cache=True)
 def nanpartition_mean_noarr_1d_nb(arr: tp.Array1d, q: float) -> float:
-    """Average of `np.partition` that ignores NaN values and does not allocate any arrays.
+    """Compute the average value using a partitioning algorithm while ignoring NaN values
+    without additional allocations.
+
+    Args:
+        arr (Array1d): A one-dimensional array containing numerical values that may include NaNs.
+        q (float): The percentile threshold guiding the partitioning, where 0 indicates the minimum value.
+
+    Returns:
+        float: The computed average of the partitioned elements.
 
     !!! note
         Has worst case time complexity of O(N^2), which makes it much slower than `np.partition`,
-        but still faster if used in rolling calculations, especially for `q` near 0."""
+        but still faster if used in rolling calculations, especially for `q` near 0.
+    """
     if q < 0:
         q = 0
     elif q > 100:
@@ -949,7 +1318,16 @@ def nanpartition_mean_noarr_1d_nb(arr: tp.Array1d, q: float) -> float:
 
 @register_jitted(cache=True)
 def nanvar_1d_nb(arr: tp.Array1d, ddof: int = 0) -> float:
-    """Numba equivalent of `np.nanvar` that does not allocate any arrays."""
+    """Compute the variance of a 1D array while ignoring NaN values using Numba without
+    allocating extra arrays.
+
+    Args:
+        arr (Array1d): A one-dimensional array containing numerical values that may include NaNs.
+        ddof (int): Delta degrees of freedom for the variance calculation.
+
+    Returns:
+        float: The computed variance based on the non-NaN elements.
+    """
     cnt = arr.shape[0]
     for i in range(arr.shape[0]):
         if np.isnan(arr[i]):
@@ -967,7 +1345,15 @@ def nanvar_1d_nb(arr: tp.Array1d, ddof: int = 0) -> float:
 
 @register_jitted(cache=True)
 def nanstd_1d_nb(arr: tp.Array1d, ddof: int = 0) -> float:
-    """Numba equivalent of `np.nanstd`."""
+    """Compute the standard deviation of a 1D array while ignoring NaN values using Numba.
+
+    Args:
+        arr (Array1d): A one-dimensional array containing numerical values with possible NaNs.
+        ddof (int): Delta degrees of freedom for the standard deviation calculation.
+
+    Returns:
+        float: The computed standard deviation based on the non-NaN elements.
+    """
     return np.sqrt(nanvar_1d_nb(arr, ddof=ddof))
 
 
@@ -978,7 +1364,18 @@ def nanstd_1d_nb(arr: tp.Array1d, ddof: int = 0) -> float:
 )
 @register_jitted(cache=True, tags={"can_parallel"})
 def nanstd_nb(arr: tp.Array2d, ddof: int = 0) -> tp.Array1d:
-    """2-dim version of `nanstd_1d_nb`."""
+    """Compute the nan-standard deviation for each column in a 2-dimensional array, ignoring NaN values.
+
+    Args:
+        arr (Array2d): A 2-dimensional array containing numerical data.
+        ddof (int): Degrees of freedom used in the standard deviation calculation.
+
+    Returns:
+        Array1d: A 1-dimensional array of standard deviations computed for each column.
+
+    !!! tip
+        This function is parallelizable.
+    """
     out = np.empty(arr.shape[1], dtype=float_)
     for col in prange(arr.shape[1]):
         out[col] = nanstd_1d_nb(arr[:, col], ddof=ddof)
@@ -987,7 +1384,16 @@ def nanstd_nb(arr: tp.Array2d, ddof: int = 0) -> tp.Array1d:
 
 @register_jitted(cache=True)
 def nancov_1d_nb(arr1: tp.Array1d, arr2: tp.Array1d, ddof: int = 0) -> float:
-    """Numba equivalent of `np.cov` that ignores NaN values."""
+    """Compute the covariance for two 1-dimensional arrays while ignoring NaN values.
+
+    Args:
+        arr1 (Array1d): The first 1-dimensional numerical array.
+        arr2 (Array1d): The second 1-dimensional numerical array.
+        ddof (int): Degrees of freedom used in the covariance calculation.
+
+    Returns:
+        float: The covariance between `arr1` and `arr2`, or NaN if there is insufficient valid data.
+    """
     if len(arr1) != len(arr2):
         raise ValueError("Arrays must have the same length")
     arr1_sum = 0.0
@@ -1014,7 +1420,20 @@ def nancov_1d_nb(arr1: tp.Array1d, arr2: tp.Array1d, ddof: int = 0) -> float:
 )
 @register_jitted(cache=True, tags={"can_parallel"})
 def nancov_nb(arr1: tp.Array2d, arr2: tp.Array2d, ddof: int = 0) -> tp.Array1d:
-    """2-dim version of `nancov_1d_nb`."""
+    """Compute the covariance for corresponding columns of two 2-dimensional arrays while ignoring NaN values.
+
+    Args:
+        arr1 (Array2d): The first 2-dimensional numerical array.
+        arr2 (Array2d): The second 2-dimensional numerical array.
+        ddof (int): Degrees of freedom used in the covariance calculation.
+
+    Returns:
+        Array1d: A 1-dimensional array where each element is the covariance of the
+            corresponding columns in `arr1` and `arr2`.
+
+    !!! tip
+        This function is parallelizable.
+    """
     out = np.empty(arr1.shape[1], dtype=float_)
     for col in prange(arr1.shape[1]):
         out[col] = nancov_1d_nb(arr1[:, col], arr2[:, col], ddof=ddof)
@@ -1023,9 +1442,17 @@ def nancov_nb(arr1: tp.Array2d, arr2: tp.Array2d, ddof: int = 0) -> tp.Array1d:
 
 @register_jitted(cache=True)
 def nancorr_1d_nb(arr1: tp.Array1d, arr2: tp.Array1d) -> float:
-    """Numba equivalent of `np.corrcoef` that ignores NaN values.
+    """Compute the correlation coefficient for two 1-dimensional arrays while ignoring NaN values
+    using a numerically stable algorithm.
 
-    Numerically stable."""
+    Args:
+        arr1 (Array1d): The first 1-dimensional numerical array.
+        arr2 (Array1d): The second 1-dimensional numerical array.
+
+    Returns:
+        float: The correlation coefficient between `arr1` and `arr2`,
+            or NaN if the calculation cannot be performed.
+    """
     if len(arr1) != len(arr2):
         raise ValueError("Arrays must have the same length")
     arr1_sum = 0.0
@@ -1063,7 +1490,19 @@ def nancorr_1d_nb(arr1: tp.Array1d, arr2: tp.Array1d) -> float:
 )
 @register_jitted(cache=True, tags={"can_parallel"})
 def nancorr_nb(arr1: tp.Array2d, arr2: tp.Array2d) -> tp.Array1d:
-    """2-dim version of `nancorr_1d_nb`."""
+    """Compute the correlation coefficients for each corresponding column of two
+    2-dimensional arrays while ignoring NaN values.
+
+    Args:
+        arr1 (Array2d): The first 2-dimensional numerical array.
+        arr2 (Array2d): The second 2-dimensional numerical array.
+
+    Returns:
+        Array1d: A 1-dimensional array containing the correlation coefficient for each column.
+
+    !!! tip
+        This function is parallelizable.
+    """
     out = np.empty(arr1.shape[1], dtype=float_)
     for col in prange(arr1.shape[1]):
         out[col] = nancorr_1d_nb(arr1[:, col], arr2[:, col])
@@ -1072,9 +1511,21 @@ def nancorr_nb(arr1: tp.Array2d, arr2: tp.Array2d) -> tp.Array1d:
 
 @register_jitted(cache=True)
 def rank_1d_nb(arr: tp.Array1d, argsorted: tp.Optional[tp.Array1d] = None, pct: bool = False) -> tp.Array1d:
-    """Compute numerical data ranks.
+    """Compute the ranks for a 1-dimensional array while ignoring NaN values.
 
-    Numba equivalent to `pd.Series(arr).rank(pct=pct)`."""
+    This function mimics the behavior of `pd.Series(arr).rank(pct=pct)` by assigning
+    average ranks to tied values.
+
+    Args:
+        arr (Array1d): A 1-dimensional array of numerical data.
+        argsorted (Optional[Array1d]): An array of indices representing the sorted order of `arr`.
+
+            If not provided, the sorting is computed internally.
+        pct (bool): A flag indicating whether to return the ranks as percentiles.
+
+    Returns:
+        Array1d: A 1-dimensional array containing the computed ranks for each element.
+    """
     if argsorted is None:
         argsorted = np.argsort(arr)
     out = np.empty_like(arr, dtype=float_)
@@ -1126,7 +1577,21 @@ def rank_1d_nb(arr: tp.Array1d, argsorted: tp.Optional[tp.Array1d] = None, pct: 
 )
 @register_jitted(cache=True, tags={"can_parallel"})
 def rank_nb(arr: tp.Array2d, argsorted: tp.Optional[tp.Array2d] = None, pct: bool = False) -> tp.Array2d:
-    """2-dim version of `rank_1d_nb`."""
+    """Compute the ranks for each column in a 2-dimensional array while ignoring NaN values.
+
+    Args:
+        arr (Array2d): A 2-dimensional array of numerical data.
+        argsorted (Optional[Array2d]): An array of indices for each column representing the sorted order.
+
+            If not provided, the sorting is computed internally for each column.
+        pct (bool): A flag indicating whether to return the ranks as percentiles.
+
+    Returns:
+        Array2d: A 2-dimensional array containing the computed ranks for each element.
+
+    !!! tip
+        This function is parallelizable.
+    """
     out = np.empty_like(arr, dtype=float_)
     for col in prange(arr.shape[1]):
         if argsorted is None:
@@ -1138,7 +1603,17 @@ def rank_nb(arr: tp.Array2d, argsorted: tp.Optional[tp.Array2d] = None, pct: boo
 
 @register_jitted(cache=True)
 def polyfit_1d_nb(x: tp.Array1d, y: tp.Array1d, deg: int, stabilize: bool = False) -> tp.Array1d:
-    """Compute the least squares polynomial fit."""
+    """Compute least squares polynomial fit.
+
+    Args:
+        x (Array1d): Independent variable values.
+        y (Array1d): Dependent variable values.
+        deg (int): Degree of the polynomial.
+        stabilize (bool): If True, stabilize the computation by normalizing the Vandermonde matrix columns.
+
+    Returns:
+        Array1d: Polynomial coefficients in descending order.
+    """
     if stabilize:
         mat_ = np.ones(shape=(x.shape[0], deg + 1))
         mat_[:, 1] = x
@@ -1165,7 +1640,15 @@ def polyfit_1d_nb(x: tp.Array1d, y: tp.Array1d, deg: int, stabilize: bool = Fals
 
 @register_jitted(cache=True)
 def fir_filter_1d_nb(b: tp.Array1d, x: tp.Array1d) -> tp.Array1d:
-    """Filter data along one-dimension with an FIR filter."""
+    """Filter data along one dimension using an FIR filter.
+
+    Args:
+        b (Array1d): FIR filter coefficients.
+        x (Array1d): A one-dimensional signal to filter.
+
+    Returns:
+        Array1d: The filtered signal.
+    """
     n = len(x)
     m = len(b)
     y = np.zeros(n)
@@ -1190,7 +1673,19 @@ def fir_filter_1d_nb(b: tp.Array1d, x: tp.Array1d) -> tp.Array1d:
 )
 @register_jitted(cache=True, tags={"can_parallel"})
 def value_counts_nb(codes: tp.Array2d, n_uniques: int, group_map: tp.GroupMap) -> tp.Array2d:
-    """Compute value counts per column/group."""
+    """Compute value counts per group.
+
+    Args:
+        codes (Array2d): A 2-dimensional array of code values.
+        n_uniques (int): Number of unique values.
+        group_map (GroupMap): Mapping of groups with indices and lengths.
+
+    Returns:
+        Array2d: A 2-dimensional array of counts with shape (n_uniques, number of groups).
+
+    !!! tip
+        This function is parallelizable.
+    """
     group_idxs, group_lens = group_map
     group_start_idxs = np.cumsum(group_lens) - group_lens
     out = np.full((n_uniques, group_lens.shape[0]), 0, dtype=int_)
@@ -1208,7 +1703,15 @@ def value_counts_nb(codes: tp.Array2d, n_uniques: int, group_map: tp.GroupMap) -
 
 @register_jitted(cache=True)
 def value_counts_1d_nb(codes: tp.Array1d, n_uniques: int) -> tp.Array1d:
-    """Compute value counts."""
+    """Compute value counts.
+
+    Args:
+        codes (Array1d): A one-dimensional array of integer codes.
+        n_uniques (int): Total count of unique values.
+
+    Returns:
+        Array1d: An array of counts for each unique value.
+    """
     out = np.full(n_uniques, 0, dtype=int_)
 
     for i in range(codes.shape[0]):
@@ -1223,7 +1726,18 @@ def value_counts_1d_nb(codes: tp.Array1d, n_uniques: int) -> tp.Array1d:
 )
 @register_jitted(cache=True, tags={"can_parallel"})
 def value_counts_per_row_nb(codes: tp.Array2d, n_uniques: int) -> tp.Array2d:
-    """Compute value counts per row."""
+    """Compute value counts per row.
+
+    Args:
+        codes (Array2d): A 2-dimensional array where each row contains code values.
+        n_uniques (int): Number of unique value categories.
+
+    Returns:
+        Array2d: A 2-dimensional array of counts with shape (n_uniques, number of rows).
+
+    !!! tip
+        This function is parallelizable.
+    """
     out = np.empty((n_uniques, codes.shape[0]), dtype=int_)
 
     for i in prange(codes.shape[0]):
@@ -1236,7 +1750,15 @@ def value_counts_per_row_nb(codes: tp.Array2d, n_uniques: int) -> tp.Array2d:
 
 @register_jitted(cache=True)
 def repartition_nb(arr: tp.Array2d, counts: tp.Array1d) -> tp.Array1d:
-    """Repartition a 2-dimensional array into a 1-dimensional by removing empty elements."""
+    """Repartition a 2-dimensional array into a 1-dimensional array by removing empty elements.
+
+    Args:
+        arr (Array2d): The input 2-dimensional array.
+        counts (Array1d): An array of counts specifying the number of valid elements per column.
+
+    Returns:
+        Array1d: A 1-dimensional array composed of the valid elements from `arr`.
+    """
     if arr.shape[0] == 0:
         return arr.flatten()
     out = np.empty(np.sum(counts), dtype=arr.dtype)
@@ -1252,9 +1774,17 @@ def repartition_nb(arr: tp.Array2d, counts: tp.Array1d) -> tp.Array1d:
 
 @register_jitted(cache=True)
 def crossed_above_1d_nb(arr1: tp.Array1d, arr2: tp.FlexArray1dLike, wait: int = 0, dropna: bool = False) -> tp.Array1d:
-    """Get the crossover of the first array going above the second array.
+    """Return a boolean mask indicating where the first array crosses above the second array.
 
-    If `dropna` is True, produces the same results as if all rows with at least one NaN were dropped."""
+    Args:
+        arr1 (Array1d): A one-dimensional array of values.
+        arr2 (FlexArray1dLike): A one-dimensional array or similar structure for comparison.
+        wait (int): The number of consecutive data points required above the threshold to confirm a crossover.
+        dropna (bool): If True, treat indices with NaN values as missing, mimicking the removal of rows with NaN.
+
+    Returns:
+        Array1d: A boolean array with True at positions where a crossover from below to above occurs.
+    """
     arr2_ = to_1d_array_nb(np.asarray(arr2))
     out = np.empty(arr1.shape, dtype=np.bool_)
     was_below = False
@@ -1298,7 +1828,21 @@ def crossed_above_1d_nb(arr1: tp.Array1d, arr2: tp.FlexArray1dLike, wait: int = 
 )
 @register_jitted(cache=True, tags={"can_parallel"})
 def crossed_above_nb(arr1: tp.Array2d, arr2: tp.FlexArray2dLike, wait: int = 0, dropna: bool = False) -> tp.Array2d:
-    """2-dim version of `crossed_above_1d_nb`."""
+    """Compute a 2-dimensional boolean mask indicating where elements in the first array cross
+    above the corresponding elements in the second array column-wise.
+
+    Args:
+        arr1 (Array2d): A 2-dimensional array of values.
+        arr2 (FlexArray2dLike): A 2-dimensional array or similar structure for comparison.
+        wait (int): The number of consecutive data points required above the threshold to confirm a crossover.
+        dropna (bool): If True, treat rows with NaN values as missing in the crossover detection.
+
+    Returns:
+        Array2d: A boolean 2-dimensional array with True at positions where the crossover condition is met.
+
+    !!! tip
+        This function is parallelizable.
+    """
     arr2_ = to_2d_array_nb(np.asarray(arr2))
     out = np.empty(arr1.shape, dtype=np.bool_)
     for col in prange(arr1.shape[1]):
@@ -1309,9 +1853,17 @@ def crossed_above_nb(arr1: tp.Array2d, arr2: tp.FlexArray2dLike, wait: int = 0, 
 
 @register_jitted(cache=True)
 def crossed_below_1d_nb(arr1: tp.Array1d, arr2: tp.FlexArray1dLike, wait: int = 0, dropna: bool = False) -> tp.Array1d:
-    """Get the crossover of the first array going below the second array.
+    """Return a boolean mask indicating where the first array crosses below the second array.
 
-    If `dropna` is True, produces the same results as if all rows with at least one NaN were dropped."""
+    Args:
+        arr1 (Array1d): A one-dimensional array of values.
+        arr2 (FlexArray1dLike): A one-dimensional array or similar structure for comparison.
+        wait (int): The number of consecutive data points required below the threshold to confirm a crossover.
+        dropna (bool): If True, treat indices with NaN values as missing, mimicking the removal of rows with NaN.
+
+    Returns:
+        Array1d: A boolean array with True at positions where a crossover from above to below occurs.
+    """
     arr2_ = to_1d_array_nb(np.asarray(arr2))
     out = np.empty(arr1.shape, dtype=np.bool_)
     was_above = False
@@ -1355,7 +1907,21 @@ def crossed_below_1d_nb(arr1: tp.Array1d, arr2: tp.FlexArray1dLike, wait: int = 
 )
 @register_jitted(cache=True, tags={"can_parallel"})
 def crossed_below_nb(arr1: tp.Array2d, arr2: tp.FlexArray2dLike, wait: int = 0, dropna: bool = False) -> tp.Array2d:
-    """2-dim version of `crossed_below_1d_nb`."""
+    """Compute a boolean matrix indicating cross-below events column-wise between `arr1` and
+    `arr2` using `crossed_below_1d_nb`.
+
+    Args:
+        arr1 (Array2d): The primary 2-dimensional input array.
+        arr2 (FlexArray2dLike): The secondary array used for comparison.
+        wait (int): The waiting period before confirming a cross-below event.
+        dropna (bool): Whether to bypass NaN values during processing.
+
+    Returns:
+        Array2d: A boolean matrix with the same shape as `arr1` indicating cross-below events.
+
+    !!! tip
+        This function is parallelizable.
+    """
     arr2_ = to_2d_array_nb(np.asarray(arr2))
     out = np.empty(arr1.shape, dtype=np.bool_)
     for col in prange(arr1.shape[1]):
@@ -1377,7 +1943,18 @@ def crossed_below_nb(arr1: tp.Array2d, arr2: tp.FlexArray2dLike, wait: int = 0, 
 )
 @register_jitted(cache=True, tags={"can_parallel"})
 def demean_nb(arr: tp.Array2d, group_map: tp.GroupMap) -> tp.Array2d:
-    """Demean each value within its group."""
+    """Subtract group means from each element in a 2-dimensional array.
+
+    Args:
+        arr (Array2d): The input 2-dimensional array.
+        group_map (GroupMap): A tuple containing group indices and corresponding group lengths.
+
+    Returns:
+        Array2d: A 2-dimensional array with each element demeaned by its group's mean.
+
+    !!! tip
+        This function is parallelizable.
+    """
     group_idxs, group_lens = group_map
     group_start_idxs = np.cumsum(group_lens) - group_lens
     out = np.empty_like(arr, dtype=float_)
@@ -1390,12 +1967,12 @@ def demean_nb(arr: tp.Array2d, group_map: tp.GroupMap) -> tp.Array2d:
             group_sum = 0
             group_cnt = 0
             for k in range(group_len):
-                col = col_idxs[k]
+                col = group_idxs[start_idx + k]
                 if not np.isnan(arr[i, col]):
                     group_sum += arr[i, col]
                     group_cnt += 1
             for k in range(group_len):
-                col = col_idxs[k]
+                col = group_idxs[start_idx + k]
                 if np.isnan(arr[i, col]) or group_cnt == 0:
                     out[i, col] = np.nan
                 else:
@@ -1411,7 +1988,22 @@ def to_renko_1d_nb(
     start_value: tp.Optional[float] = None,
     max_out_len: tp.Optional[int] = None,
 ) -> tp.Tuple[tp.Array1d, tp.Array1d, tp.Array1d]:
-    """Convert to Renko format."""
+    """Convert a 1-dimensional array into its Renko brick representation.
+
+    Args:
+        arr (Array1d): The input array of numerical values.
+        brick_size (FlexArray1dLike): An array-like value specifying the brick size for each element.
+        relative (FlexArray1dLike): An array-like indicator determining if relative price changes should be used.
+        start_value (Optional[float]): The starting value for Renko calculation.
+        max_out_len (Optional[int]): The maximum number of output bricks allowed.
+
+    Returns:
+        Tuple[Array1d, Array1d, Array1d]: A tuple containing:
+
+          * The array of calculated Renko brick values.
+          * The indices corresponding to each brick.
+          * A boolean array indicating whether each brick represents an uptrend.
+    """
     brick_size_ = to_1d_array_nb(np.asarray(brick_size))
     relative_ = to_1d_array_nb(np.asarray(relative))
 
@@ -1483,7 +2075,21 @@ def to_renko_ohlc_1d_nb(
     start_value: tp.Optional[float] = None,
     max_out_len: tp.Optional[int] = None,
 ) -> tp.Tuple[tp.Array2d, tp.Array1d]:
-    """Convert to Renko OHLC format."""
+    """Convert a 1-dimensional array into its Renko OHLC (Open-High-Low-Close) representation.
+
+    Args:
+        arr (Array1d): The input array of numerical values.
+        brick_size (FlexArray1dLike): An array-like value specifying the brick size for each element.
+        relative (FlexArray1dLike): An array-like indicator determining if relative price changes should be used.
+        start_value (Optional[float]): The starting value for Renko OHLC calculation.
+        max_out_len (Optional[int]): The maximum number of output bars allowed.
+
+    Returns:
+        Tuple[Array2d, Array1d]: A tuple containing:
+
+          * A 2-dimensional array where each row represents an OHLC bar.
+          * An array of indices corresponding to each OHLC bar.
+    """
     brick_size_ = to_1d_array_nb(np.asarray(brick_size))
     relative_ = to_1d_array_nb(np.asarray(relative))
 
@@ -1700,16 +2306,32 @@ def realign_1d_nb(
     nan_value: tp.Scalar = np.nan,
     ffill: bool = True,
 ) -> tp.Array1d:
-    """Get the latest in `arr` at each index in `target_index` based on `source_index`.
+    """Return the latest available value in `arr` for each index in `target_index` based on `source_index`.
 
-    If `source_rbound` is True, then each element in `source_index` is effectively located at
-    the right bound, which is the frequency or the next element (excluding) if the frequency is None.
-    The same for `target_rbound` and `target_index`.
+    This function identifies, for each target index, the most recent corresponding value from `arr`.
+    If `source_rbound` is True, each element in `source_index` is treated as a right-bound value,
+    determined using the specified `source_freq` or the next index when `source_freq` is None.
+    The same approach applies to `target_rbound` and `target_index`.
+
+    Args:
+        arr (Array1d): One-dimensional array of values.
+        source_index (Array1d): Indices corresponding to the values in `arr`.
+        target_index (Array1d): Target indices used for realignment.
+        source_freq (Optional[Scalar]): Frequency applied to `source_index`.
+        target_freq (Optional[Scalar]): Frequency applied to `target_index`.
+        source_rbound (bool): Indicates if `source_index` values represent right bounds.
+        target_rbound (bool): Indicates if `target_index` values represent right bounds.
+        nan_value (Scalar): Value representing missing data.
+        ffill (bool): If True, forward fill missing values.
+
+    Returns:
+        Array1d: The realigned 1-dimensional array.
 
     !!! note
         Both index arrays must be increasing. Repeating values are allowed.
 
-        If `arr` contains bar data, both indexes must represent the opening time."""
+        If `arr` contains bar data, both index arrays must represent the opening time.
+    """
     return _realign_1d_nb(
         arr,
         source_index,
@@ -1815,7 +2437,28 @@ def realign_nb(
     nan_value: tp.Scalar = np.nan,
     ffill: bool = True,
 ) -> tp.Array2d:
-    """2-dim version of `realign_1d_nb`."""
+    """Return a two-dimensional array with values realigned for each column based on `target_index`.
+
+    This function applies `realign_1d_nb` to each column of the input array, aligning values
+    according to corresponding source and target indices.
+
+    Args:
+        arr (Array2d): Two-dimensional array of values.
+        source_index (Array1d): Indices corresponding to the rows of `arr`.
+        target_index (Array1d): Target indices used for realignment.
+        source_freq (Optional[Scalar]): Frequency applied to `source_index`.
+        target_freq (Optional[Scalar]): Frequency applied to `target_index`.
+        source_rbound (bool): Indicates if `source_index` values represent right bounds.
+        target_rbound (bool): Indicates if `target_index` values represent right bounds.
+        nan_value (Scalar): Value representing missing data.
+        ffill (bool): If True, forward fill missing values.
+
+    Returns:
+        Array2d: The realigned 2-dimensional array.
+
+    !!! tip
+        This function is parallelizable.
+    """
     return _realign_nb(
         arr,
         source_index,

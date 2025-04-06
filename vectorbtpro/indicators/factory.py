@@ -3834,9 +3834,9 @@ Other keyword arguments are passed to `{0}.run`.
 
             Kwargs:
                 adjust (bool): Default: True
-                presma (bool, optional): If True, uses SMA for initial value.
-                fillna (value, optional): pd.DataFrame.fillna(value)
-                fill_method (value, optional): Type of fill method
+                presma (bool): If True, uses SMA for initial value.
+                fillna (value): pd.DataFrame.fillna(value)
+                fill_method (value): Type of fill method
 
             Returns:
                 pd.Series: New feature generated.

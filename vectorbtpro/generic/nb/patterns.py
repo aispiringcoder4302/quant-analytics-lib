@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Generic Numba-compiled functions for working with patterns."""
+"""Module providing generic Numba-compiled functions for working with patterns."""
 
 import numpy as np
 
@@ -23,7 +23,17 @@ from vectorbtpro.utils.array_ import rescale_nb
 
 @register_jitted(cache=True)
 def linear_interp_nb(arr: tp.FlexArray1d, i: int, source_size: int, target_size: int) -> float:
-    """Get the value at a specific position in a target size using linear interpolation."""
+    """Return the interpolated value at a specified index using linear interpolation.
+
+    Args:
+        arr (FlexArray1d): Array to interpolate.
+        i (int): Target index position.
+        source_size (int): Size of the source array.
+        target_size (int): Desired size for interpolation.
+
+    Returns:
+        float: Interpolated value.
+    """
     if i == 0 or source_size == 1 or target_size == 1:
         return float(flex_select_1d_nb(arr, 0))
     if source_size == target_size:
@@ -41,7 +51,17 @@ def linear_interp_nb(arr: tp.FlexArray1d, i: int, source_size: int, target_size:
 
 @register_jitted(cache=True)
 def nearest_interp_nb(arr: tp.FlexArray1d, i: int, source_size: int, target_size: int) -> float:
-    """Get the value at a specific position in a target size using nearest-neighbor interpolation."""
+    """Return the interpolated value at a specified index using nearest-neighbor interpolation.
+
+    Args:
+        arr (FlexArray1d): Array to interpolate.
+        i (int): Target index position.
+        source_size (int): Size of the source array.
+        target_size (int): Desired size for interpolation.
+
+    Returns:
+        float: Interpolated value.
+    """
     if i == 0 or source_size == 1 or target_size == 1:
         return float(flex_select_1d_nb(arr, 0))
     if source_size == target_size:
@@ -54,7 +74,20 @@ def nearest_interp_nb(arr: tp.FlexArray1d, i: int, source_size: int, target_size
 
 @register_jitted(cache=True)
 def discrete_interp_nb(arr: tp.FlexArray1d, i: int, source_size: int, target_size: int) -> float:
-    """Get the value at a specific position in a target size using discrete interpolation."""
+    """Return the interpolated value at a specified index using discrete interpolation.
+
+    This function returns the nearest array value when the mapping aligns with a source index.
+    When ambiguity arises, it returns NaN.
+
+    Args:
+        arr (FlexArray1d): Array to interpolate.
+        i (int): Target index position.
+        source_size (int): Size of the source array.
+        target_size (int): Desired size for interpolation.
+
+    Returns:
+        float: Interpolated value or NaN if ambiguous.
+    """
     if source_size >= target_size:
         return nearest_interp_nb(arr, i, source_size, target_size)
     if i == 0 or source_size == 1 or target_size == 1:
@@ -82,10 +115,20 @@ def discrete_interp_nb(arr: tp.FlexArray1d, i: int, source_size: int, target_siz
 
 @register_jitted(cache=True)
 def mixed_interp_nb(arr: tp.FlexArray1d, i: int, source_size: int, target_size: int) -> float:
-    """Get the value at a specific position in a target size using mixed interpolation.
+    """Return the interpolated value at a specified index using mixed interpolation.
 
-    Mixed interpolation is based on the discrete interpolation, while filling resulting NaN values
-    using the linear interpolation. This way, the vertical scale of the pattern array is respected."""
+    This method uses discrete interpolation as the primary approach and applies linear interpolation
+    as a fallback for NaN cases, thereby preserving the vertical scale of the pattern.
+
+    Args:
+        arr (FlexArray1d): Array to interpolate.
+        i (int): Target index position.
+        source_size (int): Size of the source array.
+        target_size (int): Desired size for interpolation.
+
+    Returns:
+        float: Interpolated value.
+    """
     value = discrete_interp_nb(arr, i, source_size, target_size)
     if np.isnan(value):
         value = linear_interp_nb(arr, i, source_size, target_size)
@@ -94,9 +137,20 @@ def mixed_interp_nb(arr: tp.FlexArray1d, i: int, source_size: int, target_size: 
 
 @register_jitted(cache=True)
 def interp_nb(arr: tp.FlexArray1d, i: int, source_size: int, target_size: int, interp_mode: int) -> float:
-    """Get the value at a specific position in a target size using an interpolation mode.
+    """Return the interpolated value at a specified index based on the given interpolation mode.
 
-    See `vectorbtpro.generic.enums.InterpMode`."""
+    The interpolation mode is defined in `vectorbtpro.generic.enums.InterpMode`.
+
+    Args:
+        arr (FlexArray1d): Array to interpolate.
+        i (int): Target index position.
+        source_size (int): Size of the source array.
+        target_size (int): Desired size for interpolation.
+        interp_mode (int): Interpolation mode as defined in `vectorbtpro.generic.enums.InterpMode`.
+
+    Returns:
+        float: Interpolated value.
+    """
     if interp_mode == InterpMode.Linear:
         return linear_interp_nb(arr, i, source_size, target_size)
     if interp_mode == InterpMode.Nearest:
@@ -110,7 +164,16 @@ def interp_nb(arr: tp.FlexArray1d, i: int, source_size: int, target_size: int, i
 
 @register_jitted(cache=True)
 def interp_resize_1d_nb(arr: tp.FlexArray1d, target_size: int, interp_mode: int) -> tp.Array1d:
-    """Resize an array using `interp_nb`."""
+    """Return a resized array with interpolated values using `interp_nb`.
+
+    Args:
+        arr (FlexArray1d): Array to be resized.
+        target_size (int): Desired size for the output array.
+        interp_mode (int): Interpolation mode as defined in `vectorbtpro.generic.enums.InterpMode`.
+
+    Returns:
+        Array1d: Resized array with interpolated values.
+    """
     out = np.empty(target_size, dtype=float_)
     for i in range(target_size):
         out[i] = interp_nb(arr, i, arr.size, target_size, interp_mode)
@@ -134,7 +197,42 @@ def fit_pattern_nb(
 ) -> tp.Tuple[tp.Array1d, tp.Array1d]:
     """Fit pattern.
 
-    Returns the resized and rescaled pattern and max error."""
+    Resize and rescale the specified `pattern` to match the length and scale of the input array `arr`.
+
+    Args:
+        arr (Array1d): Input array determining the target length and rescaling range.
+        pattern (Array1d): Pattern array to be resized and rescaled.
+        interp_mode (int): Identifier for the interpolation mode used to resize the pattern.
+
+            See `vectorbtpro.generic.enums.InterpMode`.
+        rescale_mode (int): Identifier for the rescaling method applied to the pattern.
+
+            See `vectorbtpro.generic.enums.RescaleMode`.
+        vmin (float): Minimum threshold for clipping the input array.
+
+            If NaN, the minimum of `arr` is used.
+        vmax (float): Maximum threshold for clipping the input array.
+
+            If NaN, the maximum of `arr` is used.
+        pmin (float): Minimum threshold for clipping the resized pattern.
+
+            If NaN, the minimum of the resized pattern is used.
+        pmax (float): Maximum threshold for clipping the resized pattern.
+
+            If NaN, the maximum of the resized pattern is used.
+        invert (bool): Flag indicating whether to invert the rescaled pattern.
+        error_type (int): Identifier for the error calculation mode.
+
+            See `vectorbtpro.generic.enums.ErrorType`.
+        max_error (FlexArray1dLike): Array-like values representing the maximum error to be resized.
+        max_error_interp_mode (Optional[int]): Interpolation mode for resizing `max_error`.
+
+            If None, `interp_mode` is used.
+
+    Returns:
+        Tuple[Array1d, Array1d]: Tuple containing the resized and rescaled pattern and
+            the corresponding maximum error.
+    """
     max_error_ = to_1d_array_nb(np.asarray(max_error))
 
     if max_error_interp_mode is None:
@@ -219,17 +317,46 @@ def pattern_similarity_nb(
     min_similarity: float = np.nan,
     minp: tp.Optional[int] = None,
 ) -> float:
-    """Get the similarity between an array and a pattern array.
+    """Return the similarity between an input array and a pattern array.
 
-    At each position in the array, the value in `arr` is first mapped into the range of `pattern`.
-    Then, the absolute distance between the actual and expected value is calculated (= error).
-    This error is then divided by the maximum error at this position to get a relative value between 0 and 1.
-    Finally, all relative errors are added together and subtracted from 1 to get the similarity measure.
+    This function maps each element of `arr` into the range of `pattern` and computes
+    the absolute difference (error) between the actual and mapped values. It then normalizes
+    the error by the corresponding maximum error at that position to obtain a relative error
+    between 0 and 1, and aggregates these normalized errors to derive the overall similarity measure.
 
-    * For `interp_mode`, see `vectorbtpro.generic.enums.InterpMode`
-    * For `rescale_mode`, see `vectorbtpro.generic.enums.RescaleMode`
-    * For `error_type`, see `vectorbtpro.generic.enums.ErrorType`
-    * For `distance_measure`, see `vectorbtpro.generic.enums.DistanceMeasure`
+    Args:
+        arr (Array1d): 1-dimensional array to compare with the pattern.
+        pattern (Array1d): 1-dimensional array representing the reference pattern.
+        interp_mode (int): Interpolation mode for mapping array values.
+
+            See `vectorbtpro.generic.enums.InterpMode`.
+        rescale_mode (int): Rescaling mode for adjusting the ranges of `arr` and `pattern`.
+
+            See `vectorbtpro.generic.enums.RescaleMode`.
+        vmin (float): Minimum value used for rescaling `arr`.
+        vmax (float): Maximum value used for rescaling `arr`.
+        pmin (float): Minimum value used for rescaling `pattern`.
+        pmax (float): Maximum value used for rescaling `pattern`.
+        invert (bool): Invert the pattern by reflecting its values.
+        error_type (int): Error computation mode.
+
+            See `vectorbtpro.generic.enums.ErrorType`.
+        distance_measure (int): Method for measuring distance (e.g., MAE, MSE, RMSE).
+
+            See `vectorbtpro.generic.enums.DistanceMeasure`.
+        max_error (FlexArray1dLike): Maximum error threshold for normalization.
+        max_error_interp_mode (Optional[int]): Interpolation mode for computing the maximum error.
+        max_error_as_maxdist (bool): Treat maximum error directly as maximum distance if True.
+        max_error_strict (bool): Enforce strict maximum error rules; returns NaN if exceeded.
+        min_pct_change (float): Minimum percent change applied during rescaling.
+        max_pct_change (float): Maximum percent change applied during rescaling.
+        min_similarity (float): Minimum similarity threshold; if the computed similarity
+            falls below this, returns NaN.
+        minp (Optional[int]): Minimum number of valid data points required for computation.
+
+    Returns:
+        float: Similarity measure between `arr` and `pattern`,
+            or NaN if the computation conditions are not met.
     """
     max_error_ = to_1d_array_nb(np.asarray(max_error))
 

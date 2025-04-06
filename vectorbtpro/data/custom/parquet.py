@@ -178,7 +178,7 @@ class ParquetData(FileData):
             engine (Optional[str]): Parquet engine to use.
 
                 Refer to `pd.read_parquet` for details.
-            **read_kwargs: Additional keyword arguments passed to `pd.read_parquet`.
+            **read_kwargs: Keyword arguments passed to `pd.read_parquet`.
 
         Returns:
             KeyData: The fetched data and a metadata dictionary.
@@ -231,7 +231,7 @@ class ParquetData(FileData):
 
         Args:
             feature (hashable): The feature identifier.
-            **kwargs: Additional keyword arguments for `ParquetData.fetch_key`.
+            **kwargs: Keyword arguments for `ParquetData.fetch_key`.
 
         Returns:
             FeatureData: The fetched data and a metadata dictionary.
@@ -244,7 +244,7 @@ class ParquetData(FileData):
 
         Args:
             symbol (hashable): The symbol identifier.
-            **kwargs: Additional keyword arguments for `ParquetData.fetch_key`.
+            **kwargs: Keyword arguments for `ParquetData.fetch_key`.
 
         Returns:
             SymbolData: The fetched data and a metadata dictionary.
@@ -257,7 +257,7 @@ class ParquetData(FileData):
         Args:
             key (hashable): The feature or symbol identifier.
             key_is_feature (bool): Indicator whether the key represents a feature.
-            **kwargs: Additional keyword arguments passed to the fetch methods.
+            **kwargs: Keyword arguments passed to the fetch methods.
 
         Returns:
             KeyData: The updated data and a metadata dictionary.
@@ -273,7 +273,7 @@ class ParquetData(FileData):
 
         Args:
             feature (hashable): The feature identifier.
-            **kwargs: Additional keyword arguments passed to `ParquetData.update_key`.
+            **kwargs: Keyword arguments passed to `ParquetData.update_key`.
 
         Returns:
             FeatureData: The updated data and a metadata dictionary.
@@ -285,7 +285,7 @@ class ParquetData(FileData):
 
         Args:
             symbol (hashable): The symbol identifier.
-            **kwargs: Additional keyword arguments passed to `ParquetData.update_key`.
+            **kwargs: Keyword arguments passed to `ParquetData.update_key`.
 
         Returns:
             SymbolData: The updated data and a metadata dictionary.

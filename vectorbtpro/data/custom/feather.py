@@ -84,7 +84,7 @@ class FeatherData(FileData):
 
                 Applies if the fetched data has a default index.
             squeeze (bool): Whether to squeeze a DataFrame with a single column into a Series.
-            **read_kwargs: Additional keyword arguments passed to `pd.read_feather`.
+            **read_kwargs: Keyword arguments passed to `pd.read_feather`.
 
         Returns:
             KeyData: The fetched data and a metadata dictionary.
@@ -139,7 +139,7 @@ class FeatherData(FileData):
 
         Args:
             feature (Feature): Identifier for the feature.
-            **kwargs: Additional keyword arguments passed to `FeatherData.fetch_key`.
+            **kwargs: Keyword arguments passed to `FeatherData.fetch_key`.
 
         Returns:
             FeatureData: The fetched data and a metadata dictionary.
@@ -155,7 +155,7 @@ class FeatherData(FileData):
 
         Args:
             symbol (Symbol): Identifier for the symbol.
-            **kwargs: Additional keyword arguments passed to `FeatherData.fetch_key`.
+            **kwargs: Keyword arguments passed to `FeatherData.fetch_key`.
 
         Returns:
             SymbolData: The fetched data and a metadata dictionary.
@@ -171,7 +171,7 @@ class FeatherData(FileData):
         Args:
             key (hashable): Identifier for a feature or symbol.
             key_is_feature (bool): Flag indicating if `key` represents a feature.
-            **kwargs: Additional keyword arguments for fetching data.
+            **kwargs: Keyword arguments for fetching data.
 
         Returns:
             KeyData: The updated data and a metadata dictionary.
@@ -187,7 +187,7 @@ class FeatherData(FileData):
 
         Args:
             feature (Feature): Identifier for the feature.
-            **kwargs: Additional keyword arguments passed to `FeatherData.update_key`.
+            **kwargs: Keyword arguments passed to `FeatherData.update_key`.
 
         Returns:
             FeatureData: The updated data and a metadata dictionary.
@@ -204,7 +204,7 @@ class FeatherData(FileData):
 
         Args:
             symbol (Symbol): Identifier for the symbol.
-            **kwargs: Additional keyword arguments passed to `FeatherData.update_key`.
+            **kwargs: Keyword arguments passed to `FeatherData.update_key`.
 
         Returns:
             SymbolData: The updated data and a metadata dictionary.

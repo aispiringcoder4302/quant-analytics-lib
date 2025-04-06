@@ -35,11 +35,11 @@ class DataSaver(DataUpdater):
 
     Args:
         data (Data): Data instance.
-        save_kwargs (dict): Default keyword arguments for `DataSaver.init_save_data`
+        save_kwargs (KwargsLike): Default keyword arguments for `DataSaver.init_save_data`
             and `DataSaver.save_data`.
-        init_save_kwargs (dict): Keyword arguments overriding `save_kwargs` for initial data
+        init_save_kwargs (KwargsLike): Keyword arguments overriding `save_kwargs` for initial data
             saving via `DataSaver.init_save_data`.
-        **kwargs: Additional keyword arguments passed to the constructor of `DataUpdater`.
+        **kwargs: Keyword arguments passed to the constructor of `DataUpdater`.
     """
 
     def __init__(

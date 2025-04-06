@@ -69,7 +69,7 @@ class Timer(Base):
 
         Args:
             readable (bool): Whether to format the elapsed time as a human-readable string.
-            **kwargs: Additional keyword arguments passed to `humanize.precisedelta`.
+            **kwargs: Keyword arguments passed to `humanize.precisedelta`.
 
         Returns:
             Union[str, timedelta]: The elapsed time as a human-readable string or a timedelta.
@@ -104,12 +104,12 @@ def with_timer(
     prints the formatted elapsed time, and returns the function's output.
 
     Args:
-        *args: Additional arguments passed to the decorator.
-        timer_kwargs (KwargsLike): Additional keyword arguments for the `Timer` constructor.
-        elapsed_kwargs (KwargsLike): Additional keyword arguments for the `Timer.elapsed` method.
+        *args: Positional arguments passed to the decorator.
+        timer_kwargs (KwargsLike): Keyword arguments for the `Timer` constructor.
+        elapsed_kwargs (KwargsLike): Keyword arguments for the `Timer.elapsed` method.
         print_func (Optional[Callable]): Function used to print the formatted elapsed time.
         print_format (Optional[str]): Format string using `{func_name}` and `{elapsed}`.
-        print_kwargs (KwargsLike): Additional keyword arguments for `print_func`.
+        print_kwargs (KwargsLike): Keyword arguments for `print_func`.
 
     Returns:
         Callable: The decorated function.
@@ -159,7 +159,7 @@ def timeit(func: tp.Callable, readable: bool = True, **kwargs) -> tp.Union[str, 
     Args:
         func (Callable): The function to be timed.
         readable (bool): Whether to format the elapsed time as a human-readable string.
-        **kwargs: Additional keyword arguments passed to `humanize.precisedelta`.
+        **kwargs: Keyword arguments passed to `humanize.precisedelta`.
 
     Returns:
         Union[str, timedelta]: The average execution time as a human-readable string or a timedelta.
@@ -203,11 +203,11 @@ def with_timeit(
     and returns the function's output.
 
     Args:
-        *args: Additional arguments passed to the decorator.
-        timeit_kwargs (KwargsLike): Additional keyword arguments for the `timeit` function.
+        *args: Positional arguments passed to the decorator.
+        timeit_kwargs (KwargsLike): Keyword arguments for the `timeit` function.
         print_func (Optional[Callable]): Function used to print the formatted execution time.
         print_format (Optional[str]): Format string using `{func_name}` and `{elapsed}`.
-        print_kwargs (KwargsLike): Additional keyword arguments for `print_func`.
+        print_kwargs (KwargsLike): Keyword arguments for `print_func`.
 
     Returns:
         Callable: The decorated function.
@@ -273,7 +273,7 @@ class MemTracer(Base):
 
         Args:
             readable (bool): Whether to format the memory usage as a human-readable string.
-            **kwargs: Additional keyword arguments passed to `humanize.naturalsize`.
+            **kwargs: Keyword arguments passed to `humanize.naturalsize`.
 
         Returns:
             Union[str, int]: The final memory usage as a human-readable string or as an integer in bytes.
@@ -291,7 +291,7 @@ class MemTracer(Base):
 
         Args:
             readable (bool): Whether to format the memory usage as a human-readable string.
-            **kwargs: Additional keyword arguments passed to `humanize.naturalsize`.
+            **kwargs: Keyword arguments passed to `humanize.naturalsize`.
 
         Returns:
             Union[str, int]: The peak memory usage as a human-readable string or as an integer in bytes.
@@ -329,12 +329,12 @@ def with_memtracer(
     peak and final memory usage.
 
     Args:
-        *args: Additional arguments passed to the decorator.
+        *args: Positional arguments passed to the decorator.
         memtracer_kwargs (KwargsLike): Keyword arguments for initializing `MemTracer`.
         usage_kwargs (KwargsLike): Keyword arguments for computing memory usage.
         print_func (Optional[Callable]): Function used to print the memory report.
         print_format (Optional[str]): Format string for displaying memory usage.
-        print_kwargs (KwargsLike): Additional keyword arguments passed to `print_func`.
+        print_kwargs (KwargsLike): Keyword arguments passed to `print_func`.
 
     Returns:
         Callable: The decorated function.

@@ -87,7 +87,7 @@ class BentoData(RemoteData):
             client (Optional[databento.historical.client.Historical]): Client instance.
 
                 If provided, must be of type `databento.historical.client.Historical`.
-            **client_config: Additional keyword arguments for client configuration.
+            **client_config: Keyword arguments for client configuration.
 
         Returns:
             databento.historical.client.Historical: The resolved client instance.
@@ -114,7 +114,7 @@ class BentoData(RemoteData):
 
         Args:
             symbols (MaybeSymbols): A symbol or a list of symbols.
-            **kwargs: Additional keyword arguments for `BentoData.fetch_symbol`.
+            **kwargs: Keyword arguments for `BentoData.fetch_symbol`.
 
         Returns:
             float: The aggregated cost.
@@ -157,7 +157,7 @@ class BentoData(RemoteData):
             client (Optional[databento.historical.client.Historical]): Client instance.
 
                 See `BentoData.resolve_client`.
-            client_config (dict): Client configuration.
+            client_config (KwargsLike): Client configuration.
 
                 See `BentoData.resolve_client`.
             start (Optional[DatetimeLike]): Start datetime.
@@ -184,15 +184,15 @@ class BentoData(RemoteData):
             return_params (bool): If True, return the client and resolved parameters instead of fetched data.
 
                 Used by `BentoData.get_cost`.
-            df_kwargs (dict): Keyword arguments passed to `databento.common.dbnstore.DBNStore.to_df`.
-            **params: Additional keyword arguments for `databento.historical.client.Historical.get_range`.
+            df_kwargs (KwargsLike): Keyword arguments passed to `databento.common.dbnstore.DBNStore.to_df`.
+            **params: Keyword arguments for `databento.historical.client.Historical.get_range`.
 
         !!! note
             For defaults, see `custom.bento` in `vectorbtpro._settings.data`.
 
         Returns:
             Union[float, SymbolData]: If `return_params` is True, returns the client and final parameters.
-                Otherwise, returns the fetched Series/DataFrame and a metadata dictionary.
+                Otherwise, returns the fetched data and a metadata dictionary.
         """
         from vectorbtpro.utils.module_ import assert_can_import
 

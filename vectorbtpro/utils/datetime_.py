@@ -750,7 +750,7 @@ class DTC(DefineMixin):
 
         Args:
             time_str (str): A string representing a time.
-            **parse_kwargs: Additional keyword arguments for parsing.
+            **parse_kwargs: Keyword arguments for parsing.
         """
         from dateutil.parser import parser
 
@@ -794,7 +794,7 @@ class DTC(DefineMixin):
 
         Args:
             dtc (DTCLike): An object representing datetime components.
-            **parse_kwargs: Additional keyword arguments for parsing.
+            **parse_kwargs: Keyword arguments for parsing.
         """
         if checks.is_namedtuple(dtc):
             return cls.from_namedtuple(dtc)
@@ -828,7 +828,7 @@ class DTC(DefineMixin):
         Args:
             dtc (DTCLike): An object representing datetime components.
             check_func (Optional[Callable]): A function to validate the parsed object.
-            **parse_kwargs: Additional keyword arguments for parsing.
+            **parse_kwargs: Keyword arguments for parsing.
         """
         try:
             if isinstance(dtc, DTC):
@@ -918,7 +918,7 @@ def time_to_timedelta(t: tp.Union[tp.TimeLike, DTC], **kwargs) -> pd.Timedelta:
 
     Args:
         t (Union[TimeLike, DTC]): A time-like object to convert.
-        **kwargs: Additional keyword arguments for parsing.
+        **kwargs: Keyword arguments for parsing.
 
     Returns:
         Timedelta: A pandas Timedelta instance.
@@ -947,7 +947,7 @@ def get_utc_tz(**kwargs) -> tzinfo:
     """Return the UTC timezone object after conversion.
 
     Args:
-        **kwargs: Additional keyword arguments for `to_timezone`.
+        **kwargs: Keyword arguments for `to_timezone`.
 
     Returns:
         tzinfo: A timezone object representing UTC.
@@ -961,7 +961,7 @@ def get_local_tz(**kwargs) -> tzinfo:
     """Return the local timezone object.
 
     Args:
-        **kwargs (Any): Additional keyword arguments passed to `to_timezone`.
+        **kwargs (Any): Keyword arguments passed to `to_timezone`.
 
     Returns:
         tzinfo: The local timezone.
@@ -1063,7 +1063,7 @@ def to_timezone(
         tz (Optional[TimezoneLike]): The input timezone or offset to parse.
         to_fixed_offset (Optional[bool]): Flag to convert the timezone to a fixed offset.
         parse_with_dateparser (Optional[bool]): Flag to enable parsing with the dateparser library.
-        dateparser_kwargs (KwargsLike): Additional keyword arguments for `dateparser.parse`.
+        dateparser_kwargs (KwargsLike): Keyword arguments for `dateparser.parse`.
 
     Returns:
         tzinfo: The parsed timezone object.
@@ -1126,11 +1126,11 @@ def to_timestamp(
     Args:
         dt (DatetimeLike): The datetime input to parse. Can be a string, number, or datetime-like object.
         parse_with_dateparser (Optional[bool]): Flag to enable parsing with the dateparser library.
-        dateparser_kwargs (KwargsLike): Additional keyword arguments for `dateparser.parse`.
+        dateparser_kwargs (KwargsLike): Keyword arguments for `dateparser.parse`.
         unit (str): Unit of time for numerical timestamps.
         tz (TimezoneLike): Timezone information used for localizing or converting the timestamp.
         to_fixed_offset (Optional[bool]): Flag to convert timezones to a fixed offset.
-        **kwargs: Additional keyword arguments passed to `pd.Timestamp`.
+        **kwargs: Keyword arguments passed to `pd.Timestamp`.
 
     Returns:
         pd.Timestamp: The parsed and timezone-adjusted timestamp.
@@ -1236,7 +1236,7 @@ def to_tzaware_timestamp(
         dt (DatetimeLike): The datetime input to parse.
         naive_tz (TimezoneLike): Timezone used to localize naive datetime inputs.
         tz (TimezoneLike): Target timezone for converting the timestamp.
-        **kwargs: Additional keyword arguments passed to `to_timestamp`.
+        **kwargs: Keyword arguments passed to `to_timestamp`.
 
     Returns:
         pd.Timestamp: The timezone-aware timestamp.
@@ -1261,7 +1261,7 @@ def to_naive_timestamp(dt: tp.DatetimeLike = "now", **kwargs) -> pd.Timestamp:
 
     Args:
         dt (DatetimeLike): The datetime input to parse.
-        **kwargs: Additional keyword arguments passed to `to_timestamp`.
+        **kwargs: Keyword arguments passed to `to_timestamp`.
 
     Returns:
         pd.Timestamp: The timezone-naive timestamp.
@@ -1274,7 +1274,7 @@ def to_datetime(dt: tp.DatetimeLike = "now", **kwargs) -> datetime:
 
     Args:
         dt (DatetimeLike): The input datetime-like value.
-        **kwargs: Additional keyword arguments passed to `to_timestamp`.
+        **kwargs: Keyword arguments passed to `to_timestamp`.
 
     Returns:
         datetime: The resulting datetime object.
@@ -1297,7 +1297,7 @@ def to_tzaware_datetime(dt: tp.DatetimeLike = "now", **kwargs) -> datetime:
 
     Args:
         dt (DatetimeLike): The input datetime-like value.
-        **kwargs: Additional keyword arguments passed to `to_tzaware_timestamp`.
+        **kwargs: Keyword arguments passed to `to_tzaware_timestamp`.
 
     Returns:
         datetime: The resulting timezone-aware datetime object.
@@ -1312,7 +1312,7 @@ def to_naive_datetime(dt: tp.DatetimeLike = "now", **kwargs) -> datetime:
 
     Args:
         dt (DatetimeLike): The input datetime-like value.
-        **kwargs: Additional keyword arguments passed to `to_naive_timestamp`.
+        **kwargs: Keyword arguments passed to `to_naive_timestamp`.
 
     Returns:
         datetime: The resulting timezone-naive datetime object.
@@ -1377,7 +1377,7 @@ def readable_datetime(
         dt (DatetimeLike): The datetime-like input to format.
         drop_tz (Optional[bool]): If True, exclude timezone information from the output.
         freq (Optional[FrequencyLike]): Frequency to guide the formatting precision.
-        **kwargs: Additional keyword arguments passed to the timestamp conversion functions.
+        **kwargs: Keyword arguments passed to the timestamp conversion functions.
 
     Returns:
         str: The formatted human-readable datetime string.
@@ -1641,7 +1641,7 @@ def prepare_dt_index(
 
     Passes:
     * `dateparser_kwargs` to `dateparser.parse`.
-    * Additional keyword arguments to `pd.to_datetime`.
+    * Keyword arguments to `pd.to_datetime`.
 
     For default settings, see `vectorbtpro._settings.datetime`.
 
@@ -1717,7 +1717,7 @@ def prepare_dt_index(
 def try_align_to_dt_index(source_index: tp.IndexLike, target_index: tp.Index, **kwargs) -> tp.Index:
     """Align `source_index` to the timezone of `target_index` if both are datetime indices.
 
-    Additional keyword arguments are forwarded to `prepare_dt_index`.
+    Keyword arguments are forwarded to `prepare_dt_index`.
 
     Returns:
         pd.Index: The aligned source index."""
@@ -1733,7 +1733,7 @@ def try_align_to_dt_index(source_index: tp.IndexLike, target_index: tp.Index, **
 def try_align_dt_to_index(dt: tp.DatetimeLike, target_index: tp.Index, **kwargs) -> tp.DatetimeLike:
     """Align a datetime-like object to the timezone of a target datetime index.
 
-    Additional keyword arguments are passed to `to_timestamp`.
+    Keyword arguments are passed to `to_timestamp`.
 
     Returns:
         tp.DatetimeLike: The aligned datetime-like object."""
@@ -1880,13 +1880,13 @@ def get_dt_index_gaps(
     * The start indexes (inclusive) where gaps begin.
     * The end indexes (exclusive) where gaps end.
 
-    Additional keyword arguments are passed to `prepare_dt_index`.
+    Keyword arguments are passed to `prepare_dt_index`.
 
     Args:
         index (IndexLike): An index or index-like object with datetime values.
         freq (Optional[FrequencyLike]): A frequency specification used for gap calculation.
         skip_index (Optional[IndexLike]): An index of datetime values to skip.
-        **kwargs: Additional keyword arguments for `prepare_dt_index`.
+        **kwargs: Keyword arguments for `prepare_dt_index`.
 
     Returns:
         Tuple[Index, Index]: A tuple containing the start and end indexes of the detected gaps.
@@ -1932,7 +1932,7 @@ def get_rangebreaks(index: tp.IndexLike, **kwargs) -> list:
 
     Args:
         index (IndexLike): An index or index-like object with datetime values.
-        **kwargs: Additional keyword arguments for `get_dt_index_gaps`.
+        **kwargs: Keyword arguments for `get_dt_index_gaps`.
 
     Returns:
         list: A list of dictionaries with a `bounds` key for each range break.

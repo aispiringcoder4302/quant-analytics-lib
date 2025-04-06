@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Base class for splitting."""
+"""Module providing base functionality for splitting."""
 
 import inspect
 import math
@@ -70,7 +70,7 @@ SplitterT = tp.TypeVar("SplitterT", bound="Splitter")
 
 @define
 class FixRange(DefineMixin):
-    """Class that represents a fixed range."""
+    """Class representing a fixed range."""
 
     range_: tp.FixRangeLike = define.field()
     """Range."""
@@ -78,69 +78,124 @@ class FixRange(DefineMixin):
 
 @define
 class RelRange(DefineMixin):
-    """Class that represents a relative range."""
+    """Class for representing a relative range.
+
+    Args:
+        offset (Union[int, float, TimedeltaLike]): Offset value.
+
+            Floating numbers between 0 and 1 are interpreted as relative.
+
+            Can be negative.
+        offset_anchor (str): Anchor used for offset.
+
+            Supported values:
+
+            * 'start': Start of the range.
+            * 'end': End of the range.
+            * 'prev_start': Start of the previous range.
+            * 'prev_end': End of the previous range.
+            * 'next_start': Next start.
+            * 'next_end': Next end.
+        offset_space (str): Space used for applying the relative offset.
+
+            Supported values:
+
+            * 'all': Use the entire available space.
+            * 'free': Use the remaining space after the offset anchor.
+            * 'prev': Use the length of the previous range.
+
+            Applied only when `RelRange.offset` is relative.
+        length (Union[int, float, TimedeltaLike]): Range length value.
+
+            Floating numbers between 0 and 1 are interpreted as relative.
+
+            Can be negative.
+        length_space (str): Space used for applying the relative length.
+
+            Supported values:
+
+            * 'all': Use the entire available space.
+            * 'free': Use the remaining space after the offset.
+            * 'free_or_prev': Use the remaining space after the offset or the size of the
+                previous range, depending on which comes first in the direction of `RelRange.length`.
+
+            Applied only when `RelRange.length` is relative.
+        out_of_bounds (str): Strategy for handling indices that are out of bounds.
+
+            Supported values:
+
+            * 'keep': Retain out-of-bounds values.
+            * 'ignore': Silently ignore out-of-bound positions.
+            * 'warn': Emit a warning if values are out of bounds.
+            * 'raise': Raise an error for out-of-bound values.
+        is_gap (bool): Indicates whether the range represents a gap.
+    """
 
     offset: tp.Union[int, float, tp.TimedeltaLike] = define.field(default=0)
-    """Offset.
-    
-    Floating values between 0 and 1 are considered relative.
-    
+    """Offset value.
+
+    Floating numbers between 0 and 1 are interpreted as relative.
+
     Can be negative."""
 
     offset_anchor: str = define.field(default="prev_end")
-    """Offset anchor.
-    
-    Supported are
-    
-    * 'start': Start of the range
-    * 'end': End of the range
-    * 'prev_start': Start of the previous range
-    * 'prev_end': End of the previous range
+    """Anchor used for offset.
+
+    Supported values:
+
+    * 'start': Start of the range.
+    * 'end': End of the range.
+    * 'prev_start': Start of the previous range.
+    * 'prev_end': End of the previous range.
+    * 'next_start': Next start.
+    * 'next_end': Next end.
     """
 
     offset_space: str = define.field(default="free")
-    """Offset space.
+    """Space used for applying the relative offset.
 
-    Supported are
+    Supported values:
 
-    * 'all': All space
-    * 'free': Remaining space after the offset anchor
-    * 'prev': Length of the previous range
-    
-    Applied only when `RelRange.offset` is a relative number."""
+    * 'all': Use the entire available space.
+    * 'free': Use the remaining space after the offset anchor.
+    * 'prev': Use the length of the previous range.
+
+    Applied only when `RelRange.offset` is relative.
+    """
 
     length: tp.Union[int, float, tp.TimedeltaLike] = define.field(default=1.0)
-    """Length.
-    
-    Floating values between 0 and 1 are considered relative.
-    
+    """Range length value.
+
+    Floating numbers between 0 and 1 are interpreted as relative.
+
     Can be negative."""
 
     length_space: str = define.field(default="free")
-    """Length space.
-    
-    Supported are
-    
-    * 'all': All space
-    * 'free': Remaining space after the offset
-    * 'free_or_prev': Remaining space after the offset or the start/end of the previous range,
-    depending what comes first in the direction of `RelRange.length`
-    
-    Applied only when `RelRange.length` is a relative number."""
+    """Space used for applying the relative length.
+
+    Supported values:
+
+    * 'all': Use the entire available space.
+    * 'free': Use the remaining space after the offset.
+    * 'free_or_prev': Use the remaining space after the offset or the size of the previous range, 
+        depending on which comes first in the direction of `RelRange.length`.
+
+    Applied only when `RelRange.length` is relative.
+    """
 
     out_of_bounds: str = define.field(default="warn")
-    """Check if start and stop are within bounds.
-    
-    Supported are
-    
-    * 'keep': Keep out-of-bounds values
-    * 'ignore': Ignore if out-of-bounds
-    * 'warn': Emit a warning if out-of-bounds
-    * 'raise": Raise an error if out-of-bounds
+    """Strategy for handling indices that are out of bounds.
+
+    Supported values:
+
+    * 'keep': Retain out-of-bounds values.
+    * 'ignore': Silently ignore out-of-bound positions.
+    * 'warn': Emit a warning if values are out of bounds.
+    * 'raise': Raise an error for out-of-bound values.
     """
 
     is_gap: bool = define.field(default=False)
-    """Whether the range acts as a gap."""
+    """Indicates whether the range represents a gap."""
 
     def __attrs_post_init__(self):
         object.__setattr__(self, "offset_anchor", self.offset_anchor.lower())
@@ -164,7 +219,18 @@ class RelRange(DefineMixin):
         index: tp.Optional[tp.IndexLike] = None,
         freq: tp.Optional[tp.FrequencyLike] = None,
     ) -> slice:
-        """Convert the relative range into a slice."""
+        """Convert the relative range to a slice.
+
+        Args:
+            total_len (int): Total number of indices.
+            prev_start (int): Start index of the previous range.
+            prev_end (int): End index of the previous range.
+            index (Optional[IndexLike]): Index from which to derive datetime information.
+            freq (Optional[FrequencyLike]): Frequency for datetime-based calculations.
+
+        Returns:
+            slice: A slice object computed based on the relative range parameters.
+        """
         if index is not None:
             index = dt.prepare_dt_index(index)
             freq = BaseIDXAccessor(index, freq=freq).get_freq(allow_numeric=False)
@@ -262,7 +328,10 @@ class RelRange(DefineMixin):
 
         start = offset
         if checks.is_int(length):
-            stop = start + length
+            if isinstance(length, int):
+                stop = start + length
+            else:
+                stop = start + length
         else:
             if 0 <= start < total_len:
                 stop = index[start] + length
@@ -311,33 +380,33 @@ class RelRange(DefineMixin):
 
 @define
 class Takeable(Evaluable, Annotatable, DefineMixin):
-    """Class that represents an object from which a range can be taken."""
+    """Class for an object from which a range can be taken."""
 
     obj: tp.Any = define.required_field()
-    """Takeable object."""
+    """The object from which the range is taken."""
 
     remap_to_obj: bool = define.optional_field()
-    """Whether to remap `Splitter.index` to the index of `Takeable.obj`.
-    
-    Otherwise, will assume that the object has the same index."""
+    """Boolean indicating whether to remap `Splitter.index` to the index of `Takeable.obj`.
+
+    If False, it is assumed that the object already has the same index."""
 
     index: tp.Optional[tp.IndexLike] = define.optional_field()
-    """Index of the object.
-    
-    If not present, will be accessed using `Splitter.get_obj_index`."""
+    """The index associated with the object.
+
+    If not provided, `Splitter.get_obj_index` is used to retrieve it."""
 
     freq: tp.Optional[tp.FrequencyLike] = define.optional_field()
-    """Frequency of `Takeable.index`."""
+    """The frequency associated with `Takeable.index`."""
 
     point_wise: bool = define.optional_field()
-    """Whether to select one range point at a time and return a tuple."""
+    """Boolean indicating whether to select one range point at a time and return a tuple."""
 
     eval_id: tp.Optional[tp.MaybeSequence[tp.Hashable]] = define.field(default=None)
-    """One or more identifiers at which to evaluate this instance."""
+    """Identifier(s) at which to evaluate this instance."""
 
 
 class ZeroLengthError(ValueError):
-    """Thrown whenever a range has a length of zero."""
+    """Exception raised when a range has a zero length."""
 
     pass
 
@@ -363,18 +432,34 @@ class Splitter(Analyzable):
     ) -> SplitterT:
         """Create a `Splitter` instance from an iterable of splits.
 
-        Argument `splits` supports both absolute and relative ranges.
-        To transform relative ranges into the absolute format, enable `fix_ranges`.
-        Arguments `split_range_kwargs` are then passed to `Splitter.split_range`.
+        Args:
+            index (IndexLike): The index used to align the splits.
+            splits (Splits): An iterable of splits supporting both absolute and relative ranges.
+                Enable `fix_ranges` to convert relative ranges to absolute ranges.
 
-        Enable `wrap_with_fixrange` to wrap any fixed range with `FixRange`. If the range
-        is an array, it will be wrapped regardless of this argument to avoid building a 3d array.
+                The keyword arguments in `split_range_kwargs` are passed to `Splitter.split_range`.
+            squeeze (bool): Squeeze the splits array if its second dimension has length 1.
+            fix_ranges (bool): Convert relative ranges into absolute ranges.
+            wrap_with_fixrange (bool): Wrap fixed ranges with `FixRange`.
 
-        Pass a template via `split_check_template` to discard splits that do not fulfill certain criteria.
-        The current split will be available as `split`. Should return a boolean (`False` to discard).
+                If a range is an array, it is wrapped to avoid creating a 3D array.
+            split_range_kwargs (KwargsLike): Keyword arguments for `Splitter.split_range`.
+            split_check_template (Optional[CustomTemplate]): Template to validate each split.
 
-        Labels for splits and sets can be provided via `split_labels` and `set_labels` respectively.
-        Both arguments can be provided as templates. The split array will be available as `splits`."""
+                The current split is passed as `split`; splits that evaluate to False are discarded.
+            template_context (KwargsLike): Additional context for template substitutions.
+            split_labels (Optional[IndexLike]): Labels for the splits.
+
+                Can be provided as a template.
+            set_labels (Optional[IndexLike]): Labels for the sets.
+
+                Can be provided as a template.
+            wrapper_kwargs (KwargsLike): Keyword arguments for `ArrayWrapper`.
+            **kwargs: Keyword arguments for creating the `Splitter` instance.
+
+        Returns:
+            Splitter: A new `Splitter` instance.
+        """
         index = dt.prepare_dt_index(index)
         if split_range_kwargs is None:
             split_range_kwargs = {}
@@ -475,7 +560,18 @@ class Splitter(Analyzable):
         template_context: tp.KwargsLike = None,
         **kwargs,
     ) -> SplitterT:
-        """Create a `Splitter` instance from a single split."""
+        """Create a `Splitter` instance from a single split.
+
+        Args:
+            index (IndexLike): The index used for the split.
+            split (Optional[SplitLike]): A single split value.
+            split_range_kwargs (KwargsLike): Keyword arguments for `Splitter.split_range`.
+            template_context (KwargsLike): Additional context for template substitutions.
+            **kwargs: Keyword arguments for creating the `Splitter` instance.
+
+        Returns:
+            Splitter: A new `Splitter` instance.
+        """
         if split_range_kwargs is None:
             split_range_kwargs = {}
         new_split = cls.split_range(
@@ -512,35 +608,42 @@ class Splitter(Analyzable):
         freq: tp.Optional[tp.FrequencyLike] = None,
         **kwargs,
     ) -> SplitterT:
-        """Create a `Splitter` instance from a rolling range of a fixed length.
+        """Create a `Splitter` instance from a rolling range of fixed length.
 
-        Uses `Splitter.from_splits` to prepare the splits array and labels, and to build the instance.
+        Uses `Splitter.from_splits` to generate an array of splits and corresponding labels, and then
+        construct the `Splitter` instance.
 
         Args:
-            index (index_like): Index.
-            length (int, float, or timedelta_like): See `RelRange.length`.
-            offset (int, float, or timedelta_like): See `RelRange.offset`.
-            offset_anchor (str): See `RelRange.offset_anchor`.
-            offset_anchor_set (int): Offset anchor set.
+            index (IndexLike): Index over which the rolling range is computed.
+            length (Union[int, float, TimedeltaLike]): Desired length of the rolling range.
+            offset (Union[int, float, TimedeltaLike]): Offset applied after each split.
 
-                Selects the set from the previous range to be used as an offset anchor.
-                If None, the whole previous split is considered as a single range.
-                By default, it's the first set.
-            offset_space (str): See `RelRange.offset_space`.
-            backwards (bool or str): Whether to roll backwards.
+                See `RelRange.offset` for details.
+            offset_anchor (str): Anchor point used when applying the offset.
 
-                If 'sorted', will roll backwards and sort the resulting splits by the start index.
-            split (any): Ranges to split the range into.
+                See `RelRange.offset_anchor` for details.
+            offset_anchor_set (Optional[int]): Index of the set from the previous range
+                used as the offset anchor.
 
-                If None, will produce the entire range as a single range.
-                Otherwise, will use `Splitter.split_range` to split the range into multiple ranges.
-            split_range_kwargs (dict): Keyword arguments passed to `Splitter.split_range`.
-            range_bounds_kwargs (dict): Keyword arguments passed to `Splitter.get_range_bounds`.
-            template_context (dict): Context used to substitute templates in ranges.
-            freq (any): Index frequency in case it cannot be parsed from `index`.
+                If None, the entire previous split is used as a single anchor.
+                By default, the first set is used.
+            offset_space (str): Type of offset space.
 
-                If None, will be parsed using `vectorbtpro.base.accessors.BaseIDXAccessor.get_freq`.
-            **kwargs: Keyword arguments passed to the constructor of `Splitter`.
+                See `RelRange.offset_space` for details.
+            backwards (Union[bool, str]): Determines whether rolling occurs in reverse order.
+
+                If set to `'sorted'`, splits are sorted by their start index after rolling.
+            split (Optional[SplitLike]): Specification to split each rolling range into multiple segments.
+
+                If None, the entire range is treated as a single split;
+                otherwise, `Splitter.split_range` is used.
+            split_range_kwargs (KwargsLike): Keyword arguments passed to `Splitter.split_range`.
+            range_bounds_kwargs (KwargsLike): Keyword arguments passed to `Splitter.get_range_bounds`.
+            template_context (KwargsLike): Context for substituting templates in ranges.
+            freq (Optional[FrequencyLike]): Frequency of the index if it cannot be inferred.
+
+                If None, frequency is determined via `vectorbtpro.base.accessors.BaseIDXAccessor.get_freq`.
+            **kwargs: Keyword arguments passed to the `Splitter` constructor.
 
         Usage:
             * Divide a range into a set of non-overlapping ranges:
@@ -572,8 +675,7 @@ class Splitter(Analyzable):
             ![](/assets/images/api/from_rolling_2.light.svg#only-light){: .iimg loading=lazy }
             ![](/assets/images/api/from_rolling_2.dark.svg#only-dark){: .iimg loading=lazy }
 
-            * Make the ranges above non-overlapping by using the right bound of the last
-            set as an offset anchor:
+            * Create non-overlapping ranges by using the right bound of the last set as an offset anchor:
 
             ```pycon
             >>> splitter = vbt.Splitter.from_rolling(
@@ -691,14 +793,25 @@ class Splitter(Analyzable):
         freq: tp.Optional[tp.FrequencyLike] = None,
         **kwargs,
     ) -> SplitterT:
-        """Create a `Splitter` instance from a number of rolling ranges of the same length.
+        """Create a Splitter instance from a fixed number of rolling ranges with equal length.
 
-        If `length` is None, splits the index evenly into `n` non-overlapping ranges
-        using `Splitter.from_rolling`. Otherwise, picks `n` evenly-spaced, potentially overlapping
-        ranges of a fixed length. For other arguments, see `Splitter.from_rolling`.
+        Args:
+            index (IndexLike): The index used to generate rolling ranges.
+            n (int): The number of rolling ranges to generate.
+            length (Union[None, str, int, float, TimedeltaLike]): The length of each range.
 
-        If `length` is "optimize", searches for a length to cover the most of the index.
-        Use `optimize_anchor_set` to provide the index of a set that should become non-overlapping.
+                If None, splits the index evenly into n non-overlapping ranges using `Splitter.from_rolling`.
+                If a numeric value, it defines either a fraction of the index length or an absolute length.
+                If "optimize", determines an optimal length to cover most of the index.
+            optimize_anchor_set (int): Specifies which anchor set to optimize when using `length="optimize"`.
+            split (Optional[SplitLike]): Parameter for further splitting of each range.
+            split_range_kwargs (KwargsLike): Keyword arguments for splitting ranges.
+            template_context (KwargsLike): Additional context for templated splitting.
+            freq (Optional[FrequencyLike]): Frequency specification for date/time indices.
+            **kwargs: Keyword arguments passed to underlying methods.
+
+        Returns:
+            Splitter: A new `Splitter` instance.
 
         Usage:
             * Roll 10 ranges with 100 elements, and split it into 3/4:
@@ -844,10 +957,27 @@ class Splitter(Analyzable):
     ) -> SplitterT:
         """Create a `Splitter` instance from an expanding range.
 
-        Argument `min_length` is the minimum length of the expanding range. Provide it as
-        a float between 0 and 1 to make it relative to the length of the index. Argument `offset` is
-        an offset after the right bound of the previous range from which the next range should start.
-        It can also be a float relative to the index length. For other arguments, see `Splitter.from_rolling`.
+        Creates an expanding sequence of slices based on the provided index.
+        The first slice uses a minimum length defined by min_length, and each subsequent
+        slice begins after an offset from the previous slice’s right boundary.
+
+        Args:
+            index (IndexLike): The index to split.
+            min_length (Union[int, float, TimedeltaLike]): The minimum length for the first expanding range.
+                If specified as a float between 0 and 1, it is interpreted relative to the length of the index.
+            offset (Union[int, float, TimedeltaLike]): The offset after the previous range's
+                right boundary to determine the start of the next range.
+
+                It may also be provided as a float relative to the index length.
+            split (Optional[SplitLike]): The configuration applied to split each range.
+            split_range_kwargs (KwargsLike): Keyword arguments for configuring the split range.
+            range_bounds_kwargs (KwargsLike): Keyword arguments for computing the range bounds.
+            template_context (KwargsLike): Additional context for template substitution.
+            freq (Optional[FrequencyLike]): The frequency for date/time arithmetic with the index.
+            **kwargs: Keyword arguments passed to `Splitter.from_splits`.
+
+        Returns:
+            Splitter: A new `Splitter` instance.
 
         Usage:
             * Roll an expanding range with a length of 10 and an offset of 10, and split it into 3/4:
@@ -948,10 +1078,27 @@ class Splitter(Analyzable):
         freq: tp.Optional[tp.FrequencyLike] = None,
         **kwargs,
     ) -> SplitterT:
-        """Create a `Splitter` instance from a number of expanding ranges.
+        """Create a `Splitter` instance from multiple expanding ranges.
 
-        Picks `n` evenly-spaced, expanding ranges. Argument `min_length` defines the minimum
-        length for each range. For other arguments, see `Splitter.from_rolling`.
+        Selects n evenly spaced expanding ranges based on the given index. Each range uses
+        a minimum length specified by min_length, which is automatically computed if not provided.
+        An optional split configuration can be applied to transform each range.
+
+        Args:
+            index (IndexLike): The index to split.
+            n (int): The number of expanding ranges to select.
+            min_length (Union[None, int, float, TimedeltaLike]): The minimum length for each expanding range.
+
+                If specified as a float between 0 and 1, it is interpreted relative to the length of the index.
+                If None, it is determined based on the index length and the specified number of ranges.
+            split (Optional[SplitLike]): The configuration applied to split each range.
+            split_range_kwargs (KwargsLike): Keyword arguments for configuring the split range.
+            template_context (KwargsLike): Additional context for template substitution.
+            freq (Optional[FrequencyLike]): The frequency for date/time calculations with the index.
+            **kwargs: Keyword arguments passed to `Splitter.from_splits`.
+
+        Returns:
+            Splitter: A new `Splitter` instance.
 
         Usage:
             * Roll 10 expanding ranges with a minimum length of 100, while reserving 50 elements for test:
@@ -1039,11 +1186,22 @@ class Splitter(Analyzable):
     ) -> SplitterT:
         """Create a `Splitter` instance from ranges.
 
-        Uses `vectorbtpro.base.indexing.get_index_ranges` to generate start and end indices.
-        Passes only related keyword arguments found in `kwargs`.
+        Uses `vectorbtpro.base.indexing.get_index_ranges` to generate start and end indices
+        for splitting the index. Keyword arguments relevant to index range generation are
+        extracted from `**kwargs`, while the remaining ones are passed to `Splitter.from_splits`.
 
-        Other keyword arguments will be passed to `Splitter.from_splits`. For details on
-        `split` and `split_range_kwargs`, see `Splitter.from_rolling`.
+        Args:
+            index (IndexLike): The index to be divided into ranges.
+            split (Optional[SplitLike]): Specification to adjust the generated range slice.
+
+                Refer to `Splitter.from_rolling` for details.
+            split_range_kwargs (KwargsLike): Keyword arguments for processing the range splits.
+            template_context (KwargsLike): Additional context for template substitution during range splitting.
+            **kwargs: Additional keyword arguments; those relevant to `get_index_ranges`
+                are used for range generation, and others are forwarded to `Splitter.from_splits`.
+
+        Returns:
+            Splitter: A new `Splitter` instance.
 
         Usage:
             * Translate each quarter into a range:
@@ -1125,9 +1283,29 @@ class Splitter(Analyzable):
     ) -> SplitterT:
         """Create a `Splitter` instance from a grouper.
 
-        See `vectorbtpro.base.accessors.BaseIDXAccessor.get_grouper`.
+        Uses `vectorbtpro.base.accessors.BaseIDXAccessor.get_grouper` to group the index and generate splits.
+        Each group's indices may be adjusted using the provided `split` specification before being passed to 
+        `Splitter.from_splits` to build the instance.
 
-        Uses `Splitter.from_splits` to prepare the splits array and labels, and to build the instance.
+        Args:
+            index (IndexLike): The index to be grouped and split.
+            by (AnyGroupByLike): Parameter for grouping the index.
+
+                See `vectorbtpro.base.accessors.BaseIDXAccessor.get_grouper` for details.
+            groupby_kwargs (KwargsLike): Keyword arguments for the grouping operation.
+            grouper_kwargs (KwargsLike): Keyword arguments for constructing the grouper.
+            split (Optional[SplitLike]): Specification to modify each group slice.
+
+                Refer to `Splitter.from_rolling` for details.
+            split_range_kwargs (KwargsLike): Keyword arguments for processing group splits.
+            template_context (KwargsLike): Additional context for template substitution during splitting.
+            split_labels (Optional[IndexLike]): Labels to assign to the generated splits.
+            freq (Optional[FrequencyLike]): Frequency used to determine the grouping.
+            **kwargs: Additional keyword arguments; some are used in generating split ranges and
+                the remaining ones are forwarded to `Splitter.from_splits`.
+
+        Returns:
+            Splitter: A new `Splitter` instance.
 
         Usage:
             * Map each month into a range:
@@ -1216,22 +1394,56 @@ class Splitter(Analyzable):
         freq: tp.Optional[tp.FrequencyLike] = None,
         **kwargs,
     ) -> SplitterT:
-        """Create a `Splitter` instance from a number of random ranges.
+        """Create a `Splitter` instance with randomly generated ranges.
 
-        Randomly picks the length of a range between `min_length` and `max_length` (including) using
-        `length_choice_func`, which receives an array of possible values and selects one. It defaults to
-        `numpy.random.Generator.choice`. Optional function `length_p_func` takes the same as
-        `length_choice_func` and must return either None or probabilities.
+        Generate random ranges by selecting a range length and a start position.
+        The range length is chosen between `min_length` and `max_length` (inclusive)
+        using `length_choice_func`, which selects one value from the candidate lengths.
+        Optionally, `length_p_func` returns probability weights for the length selection.
 
-        Randomly picks the start position of a range starting at `min_start` and ending at `max_end`
-        (excluding) minus the chosen length using `start_choice_func`, which receives an array of possible
-        values and selects one. It defaults to `numpy.random.Generator.choice`. Optional function
-        `start_p_func` takes the same as `start_choice_func` and must return either None or probabilities.
+        The start position is selected from positions between `min_start` and `max_end`
+        (adjusted to accommodate the chosen range length) using `start_choice_func`.
+        Optionally, `start_p_func` returns probability weights for the start selection.
 
         !!! note
-            Each function must take two arguments: the iteration index and the array with possible values.
+            Both choice functions must accept two arguments: the iteration index and the array of
+            possible values.
 
-        For other arguments, see `Splitter.from_rolling`.
+        For additional arguments, refer to `Splitter.from_rolling`.
+
+        Args:
+            index (IndexLike): Index from which ranges are generated.
+            n (int): Number of random ranges to generate.
+            min_length (Union[int, float, TimedeltaLike]): Minimum length for each range.
+            max_length (Union[None, int, float, TimedeltaLike]): Maximum length for each range.
+                If not provided, it defaults to the same value as `min_length`.
+            min_start (Union[None, int, float, DatetimeLike]): Minimum allowable start position for a range.
+            max_end (Union[None, int, float, DatetimeLike]): Maximum allowable end position for a range.
+            length_choice_func (Optional[Callable]): Function to select a range length
+                from candidate values.
+
+                It should accept the iteration index and an array of candidate lengths.
+            start_choice_func (Optional[Callable]): Function to select a start position
+                from candidate values.
+
+                It should accept the iteration index and an array of candidate start positions.
+            length_p_func (Optional[Callable]): Function that returns probability weights
+                for the length selection.
+
+                It should accept the iteration index and candidate lengths.
+            start_p_func (Optional[Callable]): Function that returns probability weights
+                for the start selection.
+
+                It should accept the iteration index and candidate start positions.
+            seed (Optional[int]): Seed for initializing random number generators.
+            split (Optional[SplitLike]): Parameter to further split each generated range.
+            split_range_kwargs (KwargsLike): Keyword arguments for `split_range`.
+            template_context (KwargsLike): Context used for templating during range splitting.
+            freq (Optional[FrequencyLike]): Frequency used for aligning and generating date/time indices.
+            **kwargs: Keyword arguments passed to `Splitter.from_splits`.
+
+        Returns:
+            Splitter: A new `Splitter` instance.
 
         Usage:
             * Generate 20 random ranges with a length from [40, 100], and split each into 3/4:
@@ -1421,11 +1633,19 @@ class Splitter(Analyzable):
         set_labels: tp.Optional[tp.IndexLike] = None,
         **kwargs,
     ) -> SplitterT:
-        """Create a `Splitter` instance from a scikit-learn's splitter.
+        """Create a `Splitter` instance using a scikit-learn cross-validator.
 
-        The splitter must be an instance of `sklearn.model_selection.BaseCrossValidator`.
+        Args:
+            index (IndexLike): The index representing the dataset.
+            skl_splitter (BaseCrossValidator): A scikit-learn splitter instance.
+            groups (Optional[ArrayLike]): Group labels for the splitting process.
+            split_labels (Optional[IndexLike]): Labels for the splits.
+            set_labels (Optional[IndexLike]): Labels for the training and testing sets.
+            **kwargs: Keyword arguments passed to `Splitter.from_splits`.
 
-        Uses `Splitter.from_splits` to prepare the splits array and labels, and to build the instance."""
+        Returns:
+            Splitter: A new `Splitter` instance.
+        """
         from sklearn.model_selection import BaseCrossValidator
 
         index = dt.prepare_dt_index(index)
@@ -1453,11 +1673,21 @@ class Splitter(Analyzable):
         set_labels: tp.Optional[tp.IndexLike] = None,
         **kwargs,
     ) -> SplitterT:
-        """Create a `Splitter` instance from a purged splitter.
+        """Create a `Splitter` instance using a purged cross-validator.
 
-        The splitter must be an instance of `vectorbtpro.generic.splitting.purged.BasePurgedCV`.
+        Args:
+            index (IndexLike): The index representing the dataset.
+            purged_splitter (BasePurgedCV): A purged cross-validation splitter instance
+                from `vectorbtpro.generic.splitting.purged`.
+            pred_times (Union[None, Index, Series]): Indices for prediction times.
+            eval_times (Union[None, Index, Series]): Indices for evaluation times.
+            split_labels (Optional[IndexLike]): Labels for the splits.
+            set_labels (Optional[IndexLike]): Labels for the training and testing sets.
+            **kwargs: Keyword arguments passed to `Splitter.from_splits`.
 
-        Uses `Splitter.from_splits` to prepare the splits array and labels, and to build the instance."""
+        Returns:
+            Splitter: A new `Splitter` instance.
+        """
         index = dt.prepare_dt_index(index)
         checks.assert_instance_of(purged_splitter, BasePurgedCV)
         if set_labels is None:
@@ -1490,9 +1720,23 @@ class Splitter(Analyzable):
         eval_times: tp.Union[None, tp.Index, tp.Series] = None,
         **kwargs,
     ) -> SplitterT:
-        """Create a `Splitter` instance from `vectorbtpro.generic.splitting.purged.PurgedWalkForwardCV`.
+        """Create a `Splitter` instance using a purged walk-forward cross-validator.
 
-        Keyword arguments are passed to `Splitter.from_purged`."""
+        Args:
+            index (IndexLike): The index representing the dataset.
+            n_folds (int): Total number of folds.
+            n_test_folds (int): Number of folds allocated for testing.
+            min_train_folds (int): Minimum number of folds required for training.
+            max_train_folds (Optional[int]): Maximum number of folds allowed for training.
+            split_by_time (bool): Indicates whether to split based on time.
+            purge_td (TimedeltaLike): Time delta used for purging between folds.
+            pred_times (Union[None, Index, Series]): Indices for prediction times.
+            eval_times (Union[None, Index, Series]): Indices for evaluation times.
+            **kwargs: Keyword arguments passed to `Splitter.from_purged`.
+
+        Returns:
+            Splitter: A new `Splitter` instance.
+        """
         index = dt.prepare_dt_index(index)
         purged_splitter = PurgedWalkForwardCV(
             n_folds=n_folds,
@@ -1522,9 +1766,21 @@ class Splitter(Analyzable):
         eval_times: tp.Union[None, tp.Index, tp.Series] = None,
         **kwargs,
     ) -> SplitterT:
-        """Create a `Splitter` instance from `vectorbtpro.generic.splitting.purged.PurgedKFoldCV`.
+        """Create a `Splitter` instance using a purged K-fold cross-validator.
 
-        Keyword arguments are passed to `Splitter.from_purged`."""
+        Args:
+            index (IndexLike): The index representing the dataset.
+            n_folds (int): Total number of folds.
+            n_test_folds (int): Number of folds allocated for testing.
+            purge_td (TimedeltaLike): Time delta used for purging between splits.
+            embargo_td (TimedeltaLike): Time delta used as an embargo between splits.
+            pred_times (Union[None, Index, Series]): Indices for prediction times.
+            eval_times (Union[None, Index, Series]): Indices for evaluation times.
+            **kwargs: Keyword arguments passed to `Splitter.from_purged`.
+
+        Returns:
+            Splitter: A new `Splitter` instance.
+        """
         index = dt.prepare_dt_index(index)
         purged_splitter = PurgedKFoldCV(
             n_folds=n_folds,
@@ -1557,20 +1813,36 @@ class Splitter(Analyzable):
     ) -> SplitterT:
         """Create a `Splitter` instance from a custom split function.
 
-        In a while-loop, substitutes templates in `split_args` and `split_kwargs` and passes
-        them to `split_func`, which should return either a split (see `new_split` in `Splitter.split_range`,
-        also supports a single range if it's not an iterable) or None to abrupt the while-loop.
-        If `fix_ranges` is True, the returned split is then converted into a fixed split using
-        `Splitter.split_range` and the bounds of its sets are measured using `Splitter.get_range_bounds`.
+        This method repeatedly calls `split_func` with substituted templates in `split_args`
+        and `split_kwargs`. The function should return a split or a single range (if not iterable)
+        or None to terminate the loop. When `fix_ranges` is True or if `split` is provided,
+        the returned split is processed using `Splitter.split_range` and its bounds are
+        determined via `Splitter.get_range_bounds`.
 
-        Each template substitution has the following information:
+        Template substitutions have access to the following:
+    
+        * `split_idx`: The current split index, starting at 0.
+        * `splits`: A nested list of splits generated so far.
+        * `bounds`: A nested list of bounds generated so far.
+        * `prev_start`: The left bound of the previous split.
+        * `prev_end`: The right bound of the previous split.
+        * All arguments passed to `Splitter.from_split_func`.
 
-        * `split_idx`: Current split index, starting at 0
-        * `splits`: Nested list of splits appended up to this point
-        * `bounds`: Nested list of bounds appended up to this point
-        * `prev_start`: Left bound of the previous split
-        * `prev_end`: Right bound of the previous split
-        * Arguments and keyword arguments passed to `Splitter.from_split_func`
+        Args:
+            index (IndexLike): The index used for splitting.
+            split_func (Callable): A function that returns a new split based on substituted arguments.
+            split_args (ArgsLike): Templates for positional arguments to pass to `split_func`.
+            split_kwargs (KwargsLike): Templates for keyword arguments to pass to `split_func`.
+            fix_ranges (bool): Whether to convert splits into fixed ranges.
+            split (Optional[SplitLike]): A predefined split value to adjust when provided.
+            split_range_kwargs (KwargsLike): Keyword arguments for `Splitter.split_range`.
+            range_bounds_kwargs (KwargsLike): Keyword arguments for `Splitter.get_range_bounds`.
+            template_context (KwargsLike): Supplemental context for template substitution.
+            freq (Optional[FrequencyLike]): Frequency information for the provided index.
+            **kwargs: Keyword arguments for template substitution.
+
+        Returns:
+            Splitter: A new `Splitter` instance.
 
         Usage:
             * Rolling window of 30 elements, 20 for train and 10 for test:
@@ -1704,9 +1976,19 @@ class Splitter(Analyzable):
 
     @classmethod
     def guess_method(cls, **kwargs) -> tp.Optional[str]:
-        """Guess the factory method based on keyword arguments.
+        """Guess the appropriate factory method based on provided keyword arguments.
 
-        Returns None if cannot guess."""
+        This method inspects the keyword arguments and compares them against the required and optional
+        arguments of factory methods (i.e., methods starting with `from_`) defined in the class. If multiple
+        methods match, it selects the one with the fewest combined required and optional arguments,
+        preferring `from_n_rolling` when available. Returns None if no suitable method is found.
+
+        Args:
+            **kwargs: Keyword arguments used to determine the factory method.
+
+        Returns:
+            Optional[str]: The name of the factory method if a unique match is found; otherwise, None.
+        """
         if len(kwargs) == 0:
             return None
         keys = {"index"} | set(kwargs.keys())
@@ -1750,16 +2032,26 @@ class Splitter(Analyzable):
         _take_kwargs: tp.KwargsLike = None,
         **var_kwargs,
     ) -> tp.Any:
-        """Split an index and take from an object.
+        """Split an index and take values from an object.
 
-        Argument `splitter` can be an actual `Splitter` instance, the name of a factory method
-        (such as "from_n_rolling"), or the factory method itself. If `splitter` is None,
-        the right method will be guessed based on the supplied arguments using `Splitter.guess_method`.
+        Args:
+            index (IndexLike): The index to be split.
+            obj (Any): The object from which values are extracted.
+            splitter (Union[None, str, Splitter, Callable]): A splitter instance,
+                a factory method name, or a factory method.
 
-        Keyword arguments `splitter_kwargs` are passed to the factory method. Keyword arguments
-        `take_kwargs` are passed to `Splitter.take`. If variable keyword arguments are provided, they
-        will be used as `take_kwargs` if a splitter instance has been built, otherwise, arguments will
-        be distributed based on the signatures of the factory method and `Splitter.take`."""
+                If None, the appropriate splitter is determined using `Splitter.guess_method`.
+            splitter_kwargs (KwargsLike): Keyword arguments for the splitter factory method.
+            take_kwargs (KwargsLike): Keyword arguments for the splitter's `take` method.
+            template_context (KwargsLike): Context for templating.
+            _splitter_kwargs (KwargsLike): Keyword arguments for splitter initialization.
+            _take_kwargs (KwargsLike): Keyword arguments for the `take` method.
+            **var_kwargs: Keyword arguments to be distributed based on the signatures
+                of the factory method and `take`.
+
+        Returns:
+            Any: The result returned by the splitter's `take` method.
+        """
         if splitter_kwargs is None:
             splitter_kwargs = {}
         else:
@@ -1839,16 +2131,27 @@ class Splitter(Analyzable):
         _apply_kwargs: tp.KwargsLike = None,
         **var_kwargs,
     ) -> tp.Any:
-        """Split an index and apply a function.
+        """Split an index and apply a function to each segment.
 
-        Argument `splitter` can be an actual `Splitter` instance, the name of a factory method
-        (such as "from_n_rolling"), or the factory method itself. If `splitter` is None,
-        the right method will be guessed based on the supplied arguments using `Splitter.guess_method`.
+        Args:
+            index (IndexLike): The index to be split.
+            apply_func (Callable): The function to apply to each split segment.
+            *apply_args: Positional arguments for the apply function.
+            splitter (Union[None, str, Splitter, Callable]): A splitter instance,
+                a factory method name, or a factory method.
 
-        Keyword arguments `splitter_kwargs` are passed to the factory method. Keyword arguments
-        `apply_kwargs` are passed to `Splitter.apply`. If variable keyword arguments are provided, they
-        will be used as `apply_kwargs` if a splitter instance has been built, otherwise, arguments will
-        be distributed based on the signatures of the factory method and `Splitter.apply`."""
+                If None, the appropriate splitter is determined using `cls.guess_method`.
+            splitter_kwargs (KwargsLike): Keyword arguments for the splitter factory method.
+            apply_kwargs (KwargsLike): Keyword arguments for the splitter's `apply` method.
+            template_context (KwargsLike): Context for templating.
+            _splitter_kwargs (KwargsLike): Keyword arguments for splitter initialization.
+            _apply_kwargs (KwargsLike): Keyword arguments for the `apply` method.
+            **var_kwargs: Keyword arguments to be distributed based on the signatures
+                of the factory method and `apply`.
+
+        Returns:
+            Any: The result returned by the splitter's `apply` method.
+        """
         if splitter_kwargs is None:
             splitter_kwargs = {}
         else:
@@ -1920,7 +2223,15 @@ class Splitter(Analyzable):
         *objs: tp.MaybeTuple[SplitterT],
         **kwargs,
     ) -> tp.Kwargs:
-        """Resolve keyword arguments for initializing `Splitter` after stacking along rows."""
+        """Resolve keyword arguments for initializing a `Splitter` after stacking splits along rows.
+
+        Args:
+            *objs (MaybeTuple[Splitter]): Splitter instances whose `splits` arrays are to be stacked.
+            **kwargs: Additional keyword arguments.
+
+        Returns:
+            Kwargs: Updated keyword arguments including a `splits_arr` key.
+        """
         if "splits_arr" not in kwargs:
             kwargs["splits_arr"] = kwargs["wrapper"].row_stack_arrs(
                 *[obj.splits for obj in objs],
@@ -1936,7 +2247,16 @@ class Splitter(Analyzable):
         reindex_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> tp.Kwargs:
-        """Resolve keyword arguments for initializing `Splitter` after stacking along columns."""
+        """Resolve keyword arguments for initializing a `Splitter` after stacking splits along columns.
+
+        Args:
+            *objs (MaybeTuple[Splitter]): Splitter instances whose `splits` arrays are to be stacked.
+            reindex_kwargs (KwargsLike): Keyword arguments for reindexing during column stacking.
+            **kwargs: Additional keyword arguments.
+
+        Returns:
+            Kwargs: Updated keyword arguments including a `splits_arr` key.
+        """
         if "splits_arr" not in kwargs:
             kwargs["splits_arr"] = kwargs["wrapper"].column_stack_arrs(
                 *[obj.splits for obj in objs],
@@ -1955,7 +2275,18 @@ class Splitter(Analyzable):
     ) -> SplitterT:
         """Stack multiple `Splitter` instances along rows.
 
-        Uses `vectorbtpro.base.wrapping.ArrayWrapper.row_stack` to stack the wrappers."""
+        Stack multiple `Splitter` instances by stacking their wrappers along rows using
+        `vectorbtpro.base.wrapping.ArrayWrapper.row_stack`.
+
+        Args:
+            cls_or_self (MaybeType[Splitter]): A `Splitter` instance or class.
+            *objs (MaybeTuple[Splitter]): Additional `Splitter` instances.
+            wrapper_kwargs (KwargsLike): Keyword arguments for the wrapper stacking method.
+            **kwargs (KwargsLike): Keyword arguments for resolving stacking parameters.
+
+        Returns:
+            Splitter: A new `Splitter` instance with row-stacked wrappers.
+        """
         if not isinstance(cls_or_self, type):
             objs = (cls_or_self, *objs)
             cls = type(cls_or_self)
@@ -1989,7 +2320,18 @@ class Splitter(Analyzable):
     ) -> SplitterT:
         """Stack multiple `Splitter` instances along columns.
 
-        Uses `vectorbtpro.base.wrapping.ArrayWrapper.column_stack` to stack the wrappers."""
+        Stack multiple `Splitter` instances by stacking their wrappers along columns using
+        `vectorbtpro.base.wrapping.ArrayWrapper.column_stack`.
+
+        Args:
+            cls_or_self (MaybeType[Splitter]): A `Splitter` instance or class.
+            *objs (MaybeTuple[Splitter]): Additional `Splitter` instances.
+            wrapper_kwargs (KwargsLike): Keyword arguments for the wrapper stacking method.
+            **kwargs (KwargsLike): Keyword arguments for resolving stacking parameters.
+
+        Returns:
+            Splitter: A new `Splitter` instance with column-stacked wrappers.
+        """
         if not isinstance(cls_or_self, type):
             objs = (cls_or_self, *objs)
             cls = type(cls_or_self)
@@ -2041,7 +2383,17 @@ class Splitter(Analyzable):
         self._splits_arr = splits_arr
 
     def indexing_func_meta(self, *args, wrapper_meta: tp.DictLike = None, **kwargs) -> dict:
-        """Perform indexing on `Splitter` and return metadata."""
+        """Perform indexing on a `Splitter` instance and return metadata.
+
+        Args:
+            *args: Positional arguments for wrapper indexing.
+            wrapper_meta (DictLike): Metadata for the wrapper indexing.
+            **kwargs (KwargsLike): Keyword arguments for indexing.
+
+        Returns:
+            dict: A dictionary with keys `wrapper_meta` and `new_splits_arr` representing
+                the updated metadata and splits array.
+        """
         if wrapper_meta is None:
             wrapper_meta = self.wrapper.indexing_func_meta(*args, **kwargs)
         if wrapper_meta["rows_changed"] or wrapper_meta["columns_changed"]:
@@ -2060,7 +2412,16 @@ class Splitter(Analyzable):
         )
 
     def indexing_func(self: SplitterT, *args, splitter_meta: tp.DictLike = None, **kwargs) -> SplitterT:
-        """Perform indexing on `Splitter`."""
+        """Perform indexing on a `Splitter` instance.
+
+        Args:
+            *args: Positional arguments for splitter indexing.
+            splitter_meta (DictLike): Metadata for splitter indexing.
+            **kwargs (KwargsLike): Keyword arguments for indexing.
+
+        Returns:
+            Splitter: A new `Splitter` instance reflecting the indexing operation.
+        """
         if splitter_meta is None:
             splitter_meta = self.indexing_func_meta(*args, **kwargs)
         return self.replace(
@@ -2070,44 +2431,53 @@ class Splitter(Analyzable):
 
     @property
     def index(self) -> tp.Index:
-        """Index."""
+        """The index of the `Splitter` instance."""
         return self._index
 
     @property
     def splits_arr(self) -> tp.SplitsArray:
-        """Two-dimensional, object-dtype DataFrame with splits.
+        """A two-dimensional array representing splits.
 
-        First axis represents splits. Second axis represents sets. Elements represent ranges.
-        Range must be either a slice, a sequence of indices, a mask, or a callable that returns such."""
+        The first axis represents splits and the second axis represents sets.
+        Each element is a range defined as a slice, a sequence of indices, a mask,
+        or a callable returning such.
+        """
         return self._splits_arr
 
     @property
     def splits(self) -> tp.Frame:
-        """`Splitter.splits_arr` as a DataFrame."""
+        """Return the splits array as a DataFrame."""
         return self.wrapper.wrap(self._splits_arr, group_by=False)
 
     @property
     def split_labels(self) -> tp.Index:
-        """Split labels."""
+        """The labels for splits."""
         return self.wrapper.index
 
     @property
     def set_labels(self) -> tp.Index:
-        """Set labels."""
+        """The labels for sets."""
         return self.wrapper.columns
 
     @property
     def n_splits(self) -> int:
-        """Number of splits."""
+        """The number of splits."""
         return self.splits_arr.shape[0]
 
     @property
     def n_sets(self) -> int:
-        """Number of sets."""
+        """The number of sets."""
         return self.splits_arr.shape[1]
 
     def get_split_grouper(self, split_group_by: tp.AnyGroupByLike = None) -> tp.Optional[Grouper]:
-        """Get split grouper."""
+        """Return a grouper for splits based on the provided grouping parameter.
+
+        Args:
+            split_group_by (AnyGroupByLike): Parameter to generate a split grouper.
+
+        Returns:
+            Optional[Grouper]: A grouper for splits if applicable, otherwise None.
+        """
         if split_group_by is None:
             return None
         if isinstance(split_group_by, Grouper):
@@ -2115,7 +2485,14 @@ class Splitter(Analyzable):
         return BaseIDXAccessor(self.split_labels).get_grouper(split_group_by, def_lvl_name="split_group")
 
     def get_set_grouper(self, set_group_by: tp.AnyGroupByLike = None) -> tp.Optional[Grouper]:
-        """Get set grouper."""
+        """Return a grouper for sets based on the provided grouping parameter.
+
+        Args:
+            set_group_by (AnyGroupByLike): Parameter to generate a set grouper.
+
+        Returns:
+            Optional[Grouper]: A grouper for sets if applicable, otherwise None.
+        """
         if set_group_by is None:
             return None
         if isinstance(set_group_by, Grouper):
@@ -2123,28 +2500,56 @@ class Splitter(Analyzable):
         return BaseIDXAccessor(self.set_labels).get_grouper(set_group_by, def_lvl_name="set_group")
 
     def get_n_splits(self, split_group_by: tp.AnyGroupByLike = None) -> int:
-        """Get number of splits while considering the grouper."""
+        """Return the number of splits, optionally considering grouping.
+
+        Args:
+            split_group_by (AnyGroupByLike): Parameter for grouping splits.
+
+        Returns:
+            int: The count of splits after applying grouping.
+        """
         if split_group_by is not None:
             split_group_by = self.get_split_grouper(split_group_by=split_group_by)
             return split_group_by.get_group_count()
         return self.n_splits
 
     def get_n_sets(self, set_group_by: tp.AnyGroupByLike = None) -> int:
-        """Get number of sets while considering the grouper."""
+        """Return the number of sets, optionally considering grouping.
+
+        Args:
+            set_group_by (AnyGroupByLike): Parameter for grouping sets.
+
+        Returns:
+            int: The count of sets after applying grouping.
+        """
         if set_group_by is not None:
             set_group_by = self.get_set_grouper(set_group_by=set_group_by)
             return set_group_by.get_group_count()
         return self.n_sets
 
     def get_split_labels(self, split_group_by: tp.AnyGroupByLike = None) -> tp.Index:
-        """Get split labels while considering the grouper."""
+        """Return split labels, optionally modified by a grouper.
+
+        Args:
+            split_group_by (AnyGroupByLike): Parameter for grouping split labels.
+
+        Returns:
+            Index: The split labels, potentially modified by the grouper.
+        """
         if split_group_by is not None:
             split_group_by = self.get_split_grouper(split_group_by=split_group_by)
             return split_group_by.get_index()
         return self.split_labels
 
     def get_set_labels(self, set_group_by: tp.AnyGroupByLike = None) -> tp.Index:
-        """Get set labels while considering the grouper."""
+        """Return set labels, optionally modified by a grouper.
+
+        Args:
+            set_group_by (AnyGroupByLike): Parameter for grouping set labels.
+
+        Returns:
+            Index: The set labels, potentially modified by the grouper.
+        """
         if set_group_by is not None:
             set_group_by = self.get_set_grouper(set_group_by=set_group_by)
             return set_group_by.get_index()
@@ -2153,9 +2558,17 @@ class Splitter(Analyzable):
     # ############# Conversion ############# #
 
     def to_fixed(self: SplitterT, split_range_kwargs: tp.KwargsLike = None, **kwargs) -> SplitterT:
-        """Convert relative ranges into fixed ones and return a new `Splitter` instance.
+        """Convert relative ranges into fixed ranges and return a new `Splitter` instance.
 
-        Keyword arguments `split_range_kwargs` are passed to `Splitter.split_range`."""
+        `split_range_kwargs` are passed to `Splitter.split_range`.
+
+        Args:
+            split_range_kwargs (KwargsLike): Keyword arguments for specifying fixed range conversion.
+            **kwargs (KwargsLike): Keyword arguments to replace the splitter.
+
+        Returns:
+            Splitter: A new `Splitter` instance with fixed ranges.
+        """
         if split_range_kwargs is None:
             split_range_kwargs = {}
         split_range_kwargs = dict(split_range_kwargs)
@@ -2179,7 +2592,24 @@ class Splitter(Analyzable):
         merge_split_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> SplitterT:
-        """Merge all ranges within the same group and return a new `Splitter` instance."""
+        """Merge ranges within the same group.
+
+        Merge ranges across both dimensions using group indices derived from the provided
+        grouping parameters. A new `Splitter` instance is returned with its wrapper's index and
+        columns replaced by the corresponding group labels and with a splits array containing
+        the merged ranges.
+
+        Args:
+            split (Optional[Selection]): Selection for filtering the split side.
+            set_ (Optional[Selection]): Selection for filtering the set side.
+            split_group_by (AnyGroupByLike): Parameter used to determine grouping for split ranges.
+            set_group_by (AnyGroupByLike): Parameter used to determine grouping for set ranges.
+            merge_split_kwargs (KwargsLike): Additional options for merging split ranges.
+            **kwargs: Keyword arguments passed to `Splitter.replace`.
+
+        Returns:
+            Splitter: A new `Splitter` instance with merged ranges.
+        """
         if merge_split_kwargs is None:
             merge_split_kwargs = {}
         merge_split_kwargs = dict(merge_split_kwargs)
@@ -2227,7 +2657,16 @@ class Splitter(Analyzable):
 
     @classmethod
     def is_range_relative(cls, range_: tp.RangeLike) -> bool:
-        """Return whether a range is relative."""
+        """Determine if the provided range is relative.
+
+        A range is considered relative if it is a number, a time delta-like object, or an instance of `RelRange`.
+
+        Args:
+            range_ (RangeLike): The range object to evaluate.
+
+        Returns:
+            bool: True if the range is relative, otherwise False.
+        """
         return checks.is_number(range_) or checks.is_td_like(range_) or isinstance(range_, RelRange)
 
     @hybrid_method
@@ -2241,21 +2680,41 @@ class Splitter(Analyzable):
         index: tp.Optional[tp.IndexLike] = None,
         return_meta: bool = False,
     ) -> tp.Union[tp.RelRangeLike, tp.ReadyRangeLike, dict]:
-        """Get a range that can be directly used in array indexing.
+        """Return a range directly usable for array indexing.
 
-        Such a range is either an integer or datetime-like slice (right bound is always exclusive!),
-        a one-dimensional NumPy array with integer indices or datetime-like objects,
-        or a one-dimensional NumPy mask of the same length as the index.
+        This function converts an input range into a format suitable for array indexing.
+        The converted range can be one of the following:
+        a datetime-like or integer slice with an exclusive right bound, a 1D NumPy array of indices,
+        or a 1D boolean mask matching the length of the index.
 
-        Argument `range_format` accepts the following options:
+        Args:
+            range_ (FixRangeLike): The initial range specification.
 
-        * 'any': Return any format
-        * 'indices': Return indices
-        * 'mask': Return mask of the same length as index
-        * 'slice': Return slice
-        * 'slice_or_indices': If slice fails, return indices
-        * 'slice_or_mask': If slice fails, return mask
-        * 'slice_or_any': If slice fails, return any format
+                This may be a callable, slice, fixed range, or array.
+            allow_relative (bool): Allow relative ranges.
+
+                Relative ranges must be fixed unless this is True.
+            allow_zero_len (bool): Permit ranges with zero length.
+            range_format (str): Format of the returned range.
+
+                Accepted options are:
+
+                * "any": Return any supported format.
+                * "indices": Return integer indices.
+                * "mask": Return a boolean mask matching the index length.
+                * "slice": Return a slice.
+                * "slice_or_indices": Return a slice, or indices if slice conversion fails.
+                * "slice_or_mask": Return a slice, or a mask if slice conversion fails.
+                * "slice_or_any": Return a slice, or any available format if slice conversion fails.
+            template_context (KwargsLike): Context for substituting templates within the range.
+            index (Optional[IndexLike]): The index used for aligning and validating the range.
+
+                If not provided, the index is taken from `Splitter.index`.
+            return_meta (bool): Return a metadata dictionary (which includes the converted range) if True.
+
+        Returns:
+            Union[RelRangeLike, ReadyRangeLike, dict]: The range converted to the specified format,
+                or a metadata dictionary if `return_meta` is True.
         """
         if index is None:
             if isinstance(cls_or_self, type):
@@ -2474,24 +2933,51 @@ class Splitter(Analyzable):
         index: tp.Optional[tp.IndexLike] = None,
         freq: tp.Optional[tp.FrequencyLike] = None,
     ) -> tp.FixSplit:
-        """Split a fixed range into a split of multiple fixed ranges.
+        """Split a fixed range into multiple fixed ranges.
 
-        Range must be either a template, a callable, a tuple (start and stop), a slice, a sequence
-        of indices, or a mask. This range will then be re-mapped into the index.
+        This method splits an input range into several sub-ranges based on the provided
+        `new_split` specification. The input range (`range_`) may be defined as a template,
+        callable, tuple (start and stop), slice, sequence of indices, or mask, and it is mapped
+        onto the given index.
 
-        Each sub-range in `new_split` can be either a fixed or relative range, that is, an instance
-        of `RelRange` or a number that will be used as a length to create an `RelRange`.
-        Each sub-range will then be re-mapped into the main range. Argument `new_split` can also
-        be provided as an integer or a float indicating the length; in such a case the second part
-        (or the first one depending on `backwards`) will stretch. If `new_split` is a string,
-        the following options are supported:
+        Args:
+            range_ (FixRangeLike): Input range specified as a template, callable, tuple (start, stop),
+                slice, sequence of indices, or mask.
 
-        * 'by_gap': Split `range_` by gap using `vectorbtpro.generic.splitting.nb.split_range_by_gap_nb`.
+                It is mapped to the provided index.
+            new_split (SplitLike): Specification for splitting `range_`.
 
-        New ranges are returned relative to the index and in the same order as passed.
+                Each element can be one of:
 
-        For `range_format`, see `Splitter.get_ready_range`. Enable `wrap_with_template` to wrap the
-        resulting ranges with a template of the type `vectorbtpro.utils.template.Rep`."""
+                * A fixed or relative range (an instance of `RelRange`).
+                * A number representing a length to create a relative range.
+                * An integer or float indicating a length specifier, where the complementary
+                    part stretches depending on `backwards`.
+                * A string. If set to 'by_gap' (case-insensitive), `range_` is split by gap using
+                    `vectorbtpro.generic.splitting.nb.split_range_by_gap_nb`.
+            backwards (bool): Whether to split the range in reverse order.
+
+                When True, the order of the resulting ranges is reversed and length adjustments apply.
+            allow_zero_len (bool): Whether to allow creation of zero-length ranges.
+            range_format (Optional[str]): Format for the range.
+
+                If not provided, the format is inferred from `range_`.
+            wrap_with_template (bool): Whether to wrap the resulting ranges with a template of type
+                `vectorbtpro.utils.template.Rep`.
+            wrap_with_fixrange (Optional[bool]): If set to None, new ranges that are sequences
+                will be wrapped with `FixRange`.
+
+                Otherwise, wrapping is disabled.
+            template_context (KwargsLike): Additional context for template
+                substitution in `range_` and `new_split`.
+            index (Optional[IndexLike]): Index onto which `range_` is mapped.
+
+                Must be provided when called on a class instance.
+            freq (Optional[FrequencyLike]): Frequency used for converting time durations and relative ranges.
+
+        Returns:
+            tuple: A tuple of fixed ranges resulting from splitting `range_` relative to the provided index.
+        """
         if index is None:
             if isinstance(cls_or_self, type):
                 raise ValueError("Must provide index")
@@ -2647,14 +3133,33 @@ class Splitter(Analyzable):
         template_context: tp.KwargsLike = None,
         index: tp.Optional[tp.IndexLike] = None,
     ) -> tp.FixRangeLike:
-        """Merge a split of multiple fixed ranges into a fixed range.
+        """Merge multiple fixed ranges from a split into a single fixed range.
 
-        Creates one mask and sets True for each range. If all input ranges are masks,
-        returns that mask. If all input ranges are slices, returns a slice if possible.
-        Otherwise, returns integer indices.
+        Create a single fixed range by merging individual ranges from the provided split.
+        The function constructs a boolean mask marking True for elements within any range.
+        If all input ranges are masks, the result is a mask; if all are slices, a slice is
+        returned when possible; otherwise, integer indices are returned.
 
-        For `range_format`, see `Splitter.get_ready_range`. Enable `wrap_with_template` to wrap the
-        resulting range with a template of the type `vectorbtpro.utils.template.Rep`."""
+        Args:
+            split (FixSplit): A collection of fixed ranges to merge.
+            range_format (Optional[str]): Format specifier for the resulting fixed range.
+
+                See `Splitter.get_ready_range`.
+            wrap_with_template (bool): If True, wrap the resulting range with a template
+                using `vectorbtpro.utils.template.Rep`.
+            wrap_with_fixrange (Optional[bool]): If True, wrap the merged range with `FixRange`.
+
+                When None, the type is determined based on sequence checking.
+            wrap_with_hslice (Optional[bool]): If True, and applicable, wrap a slice result with an `hslice`.
+            template_context (KwargsLike): Additional context for template wrapping.
+            index (Optional[IndexLike]): Index used for alignment.
+
+                If not provided, `Splitter.index` is used.
+
+        Returns:
+            FixRangeLike: The merged fixed range, represented as a mask, slice,
+                or integer indices depending on input types.
+        """
         if index is None:
             if isinstance(cls_or_self, type):
                 raise ValueError("Must provide index")
@@ -2719,21 +3224,31 @@ class Splitter(Analyzable):
         split_group_by: tp.AnyGroupByLike = None,
         set_group_by: tp.AnyGroupByLike = None,
     ) -> tp.Tuple[tp.Array1d, tp.Array1d, tp.Array1d, tp.Array1d]:
-        """Get indices corresponding to selected splits and sets.
+        """Retrieve indices corresponding to selected splits and sets.
 
-        Arguments `split` and `set_` can be either integers and labels. Also, multiple
-        values are accepted; in such a case, the corresponding ranges are merged.
-        If split/set labels are of an integer data type, treats the provided values as labels
-        rather than indices, unless the split/set index is not of an integer data type or the values
-        are wrapped with `vectorbtpro.utils.selection.PosSel`.
+        Interpret selections for splits and sets, which can be provided as integers, labels,
+        or wrapped in `PosSel` or `LabelSel`. Multiple values are allowed, in which case
+        the corresponding ranges are merged. When labels are of an integer data type, they are
+        treated as labels unless the associated index or grouping indicates positions.
 
-        If `split_group_by` and/or `set_group_by` are provided, their groupers get
-        created using `vectorbtpro.base.accessors.BaseIDXAccessor.get_grouper` and
-        arguments `split` and `set_` become relative to the groups.
+        If `split_group_by` and/or `set_group_by` is provided, grouper objects are created using
+        `vectorbtpro.base.accessors.BaseIDXAccessor.get_grouper` so that the selections are interpreted
+        relative to groups. If `split` or `set_` is not provided, all indices for that category are selected.
 
-        If `split`/`set_` is not provided, selects all indices.
+        Args:
+            split (Optional[Selection]): Selection criteria for splits.
+            set_ (Optional[Selection]): Selection criteria for sets.
+            split_group_by (AnyGroupByLike): Grouping parameter for splits, defining groups for split indices.
+            set_group_by (AnyGroupByLike): Grouping parameter for sets, defining groups for set indices.
 
-        Returns four arrays: split group indices, set group indices, split indices, and set indices."""
+        Returns:
+            Tuple[Array1d, Array1d, Array1d, Array1d]: A tuple containing:
+
+                * Split group indices.
+                * Set group indices.
+                * Split indices.
+                * Set indices.
+        """
         split_group_by = self.get_split_grouper(split_group_by=split_group_by)
         set_group_by = self.get_set_grouper(set_group_by=set_group_by)
         if split is None:
@@ -2857,9 +3372,17 @@ class Splitter(Analyzable):
     def select_range(self, merge_split_kwargs: tp.KwargsLike = None, **select_indices_kwargs) -> tp.RangeLike:
         """Select a range.
 
-        Passes `**select_indices_kwargs` to `Splitter.select_indices` to get the indices for selected
-        splits and sets. If multiple ranges correspond to those indices, merges them using
-        `Splitter.merge_split`."""
+        Pass additional keyword arguments to `Splitter.select_indices` to obtain the indices
+        for the selected splits and sets. If more than one range corresponds to these indices,
+        merge them using `Splitter.merge_split`.
+
+        Args:
+            merge_split_kwargs (KwargsLike): Keyword arguments passed to `Splitter.merge_split`.
+            **select_indices_kwargs: Keyword arguments passed to `Splitter.select_indices`.
+
+        Returns:
+            RangeLike: The selected range, or the merged range if multiple ranges are found.
+        """
         _, _, split_indices, set_indices = self.select_indices(**select_indices_kwargs)
         ranges = []
         for i in split_indices:
@@ -2885,9 +3408,24 @@ class Splitter(Analyzable):
     ) -> tp.FixRangeLike:
         """Remap a range to a target index.
 
-        If `index` and `target_index` are the same, returns the range. Otherwise,
-        uses `vectorbtpro.base.resampling.base.Resampler.resample_source_mask` to resample
-        the range into the target index. In such a case, `freq` and `target_freq` must be provided."""
+        If the source `index` matches the `target_index`, return the original range.
+        Otherwise, resample the range to align with the target index using
+        `vectorbtpro.base.resampling.base.Resampler.resample_source_mask`.
+        In such cases, both `freq` and `target_freq` must be provided.
+
+        Args:
+            range_ (FixRangeLike): The input range to be remapped.
+            target_index (IndexLike): The target index to which the range is mapped.
+            target_freq (Optional[FrequencyLike]): The frequency for the target index.
+            template_context (KwargsLike): Additional context for generating the range mask.
+            jitted (JittedOption): Option for just-in-time compilation during resampling.
+            silence_warnings (bool): Flag to silence warnings during resampling.
+            index (Optional[IndexLike]): The source index associated with the range.
+            freq (Optional[FrequencyLike]): The frequency corresponding to the source index.
+
+        Returns:
+            FixRangeLike: The remapped range corresponding to the target index.
+        """
         if index is None:
             if isinstance(cls_or_self, type):
                 raise ValueError("Must provide index")
@@ -2912,7 +3450,17 @@ class Splitter(Analyzable):
 
     @classmethod
     def get_obj_index(cls, obj: tp.Any) -> tp.Index:
-        """Get index from an object."""
+        """Get the index from an object.
+
+        Extract the index from an object that is either a Pandas Index or possesses
+        an `index` or `wrapper.index` attribute.
+
+        Args:
+            obj (Any): An object with an associated index.
+
+        Returns:
+            Index: The extracted index.
+        """
         if isinstance(obj, pd.Index):
             return obj
         if hasattr(obj, "index"):
@@ -2937,12 +3485,30 @@ class Splitter(Analyzable):
         return_obj_meta: bool = False,
         **ready_range_kwargs,
     ) -> tp.Any:
-        """Get a range that is ready to be mapped into an array-like object.
+        """Get a ready-to-use range for indexing an array-like object.
 
-        If the object is Pandas-like and `obj_index` is not None, searches for an index in the object
-        using `Splitter.get_obj_index`. Once found, uses `Splitter.remap_range` to get the range
-        that maps to the object index. Finally, uses `Splitter.get_ready_range` to convert the range
-        into the one that can be used directly in indexing."""
+        Determine and process a range that aligns with the object index. When the object
+        is Pandas-like or an index is provided, obtain the index using `Splitter.get_obj_index`
+        (if needed) and remap the range using `Splitter.remap_range`. Finally, convert the range
+        into a form suitable for direct indexing using `Splitter.get_ready_range`.
+
+        Args:
+            obj (Any): The array-like object to be indexed.
+            range_ (FixRangeLike): The input range to be processed.
+            remap_to_obj (bool): Whether to remap the range to the object's index.
+            obj_index (Optional[IndexLike]): The target index for remapping, if available.
+            obj_freq (Optional[FrequencyLike]): The frequency corresponding to the target index.
+            template_context (KwargsLike): Additional context for processing the range.
+            jitted (JittedOption): Option for just-in-time compilation during remapping.
+            silence_warnings (bool): Flag to silence warnings during processing.
+            index (Optional[IndexLike]): The source index associated with the range.
+            freq (Optional[FrequencyLike]): The frequency corresponding to the source index.
+            return_obj_meta (bool): Whether to return metadata for the object.
+            **ready_range_kwargs: Keyword arguments passed to `Splitter.get_ready_range`.
+
+        Returns:
+            Any: The processed range ready for indexing, or a tuple with object metadata and the range if requested.
+        """
         if index is None:
             if isinstance(cls_or_self, type):
                 raise ValueError("Must provide index")
@@ -2983,7 +3549,17 @@ class Splitter(Analyzable):
     def take_range(cls, obj: tp.Any, ready_range: tp.ReadyRangeLike, point_wise: bool = False) -> tp.Any:
         """Take a ready range from an array-like object.
 
-        Set `point_wise` to True to select one range point at a time and return a tuple."""
+        Extract a segment from the object using the provided ready range.
+        If `point_wise` is True, select one range point at a time and return a tuple.
+
+        Args:
+            obj (Any): The array-like object to index.
+            ready_range (ReadyRangeLike): The preprocessed range used for indexing.
+            point_wise (bool): Whether to extract elements one point at a time.
+
+        Returns:
+            Any: The extracted segment of the object, or a tuple of elements if `point_wise` is True.
+        """
         if isinstance(obj, (pd.Series, pd.DataFrame, PandasIndexer)):
             if point_wise:
                 return tuple(obj.iloc[i] for i in np.arange(len(obj))[ready_range])
@@ -3006,7 +3582,29 @@ class Splitter(Analyzable):
         return_meta: bool = False,
         **ready_obj_range_kwargs,
     ) -> tp.Any:
-        """Take a range from a takeable object."""
+        """Take a range from a takeable object.
+
+        Process the provided `range_` from a takeable object's field `obj` by ensuring it aligns
+        with the object's index. If remapping is enabled (or an `obj_index` is provided),
+        obtain the ready range using `get_ready_obj_range`. For objects of type `CustomTemplate`,
+        substitute templates using a merged context; otherwise, extract the slice using `take_range`.
+
+        Args:
+            takeable (Takeable): The takeable object containing the data and configuration for range extraction.
+            range_ (FixRangeLike): The original range to be processed.
+            remap_to_obj (bool): Whether to remap the range to the object's index.
+            obj_index (Optional[IndexLike]): The object's index to use for remapping, if provided.
+            obj_freq (Optional[FrequencyLike]): The frequency corresponding to the object's index.
+            point_wise (bool): Whether to extract the range point by point.
+            template_context (KwargsLike): Additional context for template substitution.
+            return_obj_meta (bool): Whether to return metadata about the object.
+            return_meta (bool): Whether to return metadata about the range.
+            **ready_obj_range_kwargs: Keyword arguments passed to `Splitter.get_ready_obj_range`.
+
+        Returns:
+            Any: The extracted range from the takeable object, or a tuple containing metadata
+                and the range if requested.
+    """
         takeable.assert_field_not_missing("obj")
         obj_meta, obj_range_meta = cls_or_self.get_ready_obj_range(
             takeable.obj,
@@ -3069,37 +3667,72 @@ class Splitter(Analyzable):
     ) -> tp.Any:
         """Take all ranges from an array-like object and optionally column-stack them.
 
-        Uses `Splitter.select_indices` to get the indices for selected splits and sets.
-        Arguments `split_group_by` and `set_group_by` can be used to group splits and sets respectively.
-        Ranges belonging to the same split and set group will be merged.
+        This method uses `Splitter.select_indices` to determine indices for selected splits and sets.
+        Grouping is applied via `split_group_by` and `set_group_by` so that ranges within the
+        same group are merged.
 
-        For each index pair, resolves the source range using `Splitter.select_range` and
-        `Splitter.get_ready_range`. Then, remaps this range into the object index using
-        `Splitter.get_ready_obj_range` and takes the slice from the object using `Splitter.take_range`.
-        If the object is a custom template, substitutes its instead of calling `Splitter.take_range`.
-        Finally, uses `vectorbtpro.base.merging.column_stack_merge` (`stack_axis=1`) or
-        `vectorbtpro.base.merging.row_stack_merge` (`stack_axis=0`) with `stack_kwargs` to merge the taken slices.
+        For each split and set combination, the method:
 
-        If `attach_bounds` is enabled, measures the bounds of each range and makes it an additional
-        level in the final index hierarchy. The argument supports the following options:
+        * Resolves the source range using `Splitter.select_range` and
+            refines it with `Splitter.get_ready_range`.
+        * Remaps the range to the object's index using `Splitter.get_ready_obj_range`
+            and extracts the slice with `Splitter.take_range` (or substitutes using
+            a custom template if the object is a `CustomTemplate`).
+        * Merges the resulting slices by calling either `vectorbtpro.base.merging.column_stack_merge`
+            (when `stack_axis` is 1) or `vectorbtpro.base.merging.row_stack_merge` (when `stack_axis` is 0).
 
-        * True, 'index', 'source', or 'source_index': Attach source (index) bounds
-        * 'target' or 'target_index': Attach target (index) bounds
-        * False: Do not attach
+        If `attach_bounds` is enabled, the method computes bounds for each range and attaches
+        them as an additional level in the final index hierarchy. Supported options for `attach_bounds` are:
 
-        Argument `into` supports the following options:
+        * True, "index", "source", or "source_index": Attach bounds from the source index.
+        * "target" or "target_index": Attach bounds from the target index.
+        * False: Do not attach bounds.
 
-        * None: Series of range slices
-        * 'stacked': Stack all slices into a single object
-        * 'stacked_by_split': Stack set slices in each split and return a Series of objects
-        * 'stacked_by_set': Stack split slices in each set and return a Series of objects
-        * 'split_major_meta': Generator with ranges processed lazily in split-major order.
-            Returns meta with indices and labels, and the generator.
-        * 'set_major_meta': Generator with ranges processed lazily in set-major order.
-            Returns meta with indices and labels, and the generator.
+        The `into` parameter controls the output format:
 
-        Prepend any stacked option with "from_start_" (also "reset_") or "from_end_" to reset the index
-        from start and from end respectively.
+        * None: Returns a Series of range slices.
+        * "stacked": Stacks all slices into a single object.
+        * "stacked_by_split": Stacks set slices within each split and returns a Series of objects.
+        * "stacked_by_set": Stacks split slices within each set and returns a Series of objects.
+        * "split_major_meta": Returns a tuple with meta-information and a generator yielding
+            range details in split-major order.
+        * "set_major_meta": Returns a tuple with meta-information and a generator yielding
+            range details in set-major order.
+
+        Prepend any stacked option with "from_start_" (or "reset_") or "from_end_"
+        to reset the index from the start or end.
+
+        Args:
+            obj (Any): The array-like object from which to extract ranges.
+            split (Optional[Selection]): Selection of splits.
+            set_ (Optional[Selection]): Selection of sets.
+            split_group_by (AnyGroupByLike): Grouping criteria for splits.
+            set_group_by (AnyGroupByLike): Grouping criteria for sets.
+            squeeze_one_split (bool): Compress output when only one split is present.
+            squeeze_one_set (bool): Compress output when only one set is present.
+            into (Optional[str]): Specifies the output format.
+
+                Options include "stacked", "stacked_by_split", "stacked_by_set",
+                "split_major_meta", "set_major_meta", etc.
+            remap_to_obj (bool): Whether to remap the range to the object's index.
+            obj_index (Optional[IndexLike]): The target object's index.
+            obj_freq (Optional[FrequencyLike]): Frequency of the target object's index.
+            range_format (str): Format specifier for resolving the range.
+            point_wise (bool): Whether to perform point-wise range extraction.
+            attach_bounds (Union[bool, str]): Controls attaching bounds.
+
+                Options include True, "index", "source", "target", etc.
+            right_inclusive (bool): If true, treats the right bound as inclusive.
+            template_context (KwargsLike): Additional context for template substitution.
+            silence_warnings (bool): If true, suppresses warnings during processing.
+            index_combine_kwargs (KwargsLike): Keyword arguments for index combination when stacking.
+            stack_axis (int): Axis along which to stack slices (0 for rows, 1 for columns).
+            stack_kwargs (KwargsLike): Keyword arguments for the stacking merge function.
+            freq (Optional[FrequencyLike]): Frequency used for bound mapping.
+
+        Returns:
+            Any: The extracted range, which may be a single slice, a merged object,
+                or a pandas Series depending on the `into` parameter.
 
         Usage:
             * Roll a window and stack it along columns by keeping the index:
@@ -3137,7 +3770,7 @@ class Splitter(Analyzable):
             2020-12-31 00:00:00+00:00          NaN          NaN  29001.720703
             ```
 
-            * Disgard the index and attach index bounds to the column hierarchy:
+            * Disregard the index and attach index bounds to the column hierarchy:
 
             ```pycon
             >>> splitter.take(
@@ -3449,7 +4082,18 @@ class Splitter(Analyzable):
         flat_ann_args: tp.FlatAnnArgs,
         eval_id: tp.Optional[tp.Hashable] = None,
     ) -> tp.FlatAnnArgs:
-        """Parse `Takeable` instances from function annotations and inject them into flattened annotated arguments."""
+        """Parse `Takeable` instances in function annotations and inject their processed values
+        into flattened annotated arguments.
+
+        Args:
+            flat_ann_args (FlatAnnArgs): A dictionary mapping keys to dictionaries that may
+                include an `annotation` and a `value`.
+            eval_id (Optional[Hashable]): An evaluation identifier used to determine whether
+                to process a `Takeable` instance.
+
+        Returns:
+            FlatAnnArgs: A dictionary with updated annotated arguments after processing `Takeable` instances.
+        """
         new_flat_ann_args = dict()
         for k, v in flat_ann_args.items():
             new_flat_ann_args[k] = v = dict(v)
@@ -3496,57 +4140,85 @@ class Splitter(Analyzable):
         eval_id: tp.Optional[tp.Hashable] = None,
         **apply_kwargs,
     ) -> tp.Any:
-        """Apply a function on each range.
+        """Apply a function over each data range.
 
-        Uses `Splitter.select_indices` to get the indices for selected splits and sets.
-        Arguments `split_group_by` and `set_group_by` can be used to group splits and sets respectively.
-        Ranges belonging to the same split and set group will be merged.
+        Divides the index into ranges based on selected splits and sets, optionally grouping using
+        `split_group_by` and `set_group_by`. For each combination of split and set, retrieves
+        the corresponding range via `Splitter.select_range` and `Splitter.get_ready_range`.
+        Positional and keyword arguments that are instances of `Takeable` are sliced based on
+        these ranges using `Splitter.take_range`. Before slicing, the range into each object's index
+        using `Splitter.get_ready_obj_range`. The function and its arguments are then
+        template-substituted and scheduled for execution via `vectorbtpro.utils.execution.execute`.
+        After execution, the results are optionally merged using `merge_func` and wrapped in
+        a Pandas object if specified.
 
-        For each index pair, in a lazily manner, resolves the source range using `Splitter.select_range`
-        and `Splitter.get_ready_range`. Then, takes each argument from `args` and `kwargs`
-        wrapped with `Takeable`, remaps the range into each object's index using `Splitter.get_ready_obj_range`,
-        and takes the slice from that object using `Splitter.take_range`. The original object will
-        be substituted by this slice. At the end, substitutes any templates in the prepared
-        `args` and `kwargs` and saves the function and arguments for execution.
+        Template substitution variables include:
 
-        For substitution, the following information is available:
-
-        * `split/set_group_indices`: Indices corresponding to the selected row/column groups
-        * `split/set_indices`: Indices corresponding to the selected rows/columns
-        * `n_splits/sets`: Number of the selected rows/columns
-        * `split/set_labels`: Labels corresponding to the selected row/column groups
-        * `split/set_idx`: Index of the selected row/column
-        * `split/set_label`: Label of the selected row/column
-        * `range_`: Selected range ready for indexing (see `Splitter.get_ready_range`)
-        * `range_meta`: Various information on the selected range
-        * `obj_range_meta`: Various information on the range taken from each takeable argument.
+        * `split/set_group_indices`: Indices for selected row/column groups.
+        * `split/set_indices`: Indices for selected rows/columns.
+        * `n_splits/sets`: Number of selected splits/sets.
+        * `split/set_labels`: Labels for split or set groups.
+        * `split/set_idx`: Index of the selected split or set.
+        * `split/set_label`: Label of the selected split or set.
+        * `range_`: The range used for indexing (see `Splitter.get_ready_range`).
+        * `range_meta`: Metadata regarding the range.
+        * `obj_range_meta`: Metadata for the ranges taken from each takeable argument.
             Positional arguments are denoted by position, keyword arguments are denoted by keys.
-        * `args`: Positional arguments with ranges already selected
-        * `kwargs`: Keyword arguments with ranges already selected
-        * `bounds`: A tuple of either integer or index bounds. Can be source or target depending on `attach_bounds`.
-        * `template_context`: Passed template context
+        * `args`: Positional arguments with selected ranges.
+        * `kwargs`: Keyword arguments with selected ranges.
+        * `bounds`: A tuple of range boundaries.
+        * `template_context`: Template context provided for substitutions.
 
-        Since each range is processed lazily (that is, upon request), there are multiple iteration
-        modes controlled by the argument `iteration`:
+        Iteration over ranges is controlled by the `iteration` parameter:
 
-        * 'split_major': Flatten all ranges in split-major order and iterate over them
-        * 'set_major': Flatten all ranges in set-major order and iterate over them
-        * 'split_wise': Iterate over splits, while ranges in each split are processed sequentially
-        * 'set_wise': Iterate over sets, while ranges in each set are processed sequentially
+        * `split_major`: Iterate over ranges in split-major order.
+        * `set_major`: Iterate over ranges in set-major order.
+        * `split_wise`: Process ranges sequentially within each split.
+        * `set_wise`: Process ranges sequentially within each set.
 
-        The execution is done using `vectorbtpro.utils.execution.execute` with `execute_kwargs`.
-        Once all results have been obtained, attempts to merge them using `merge_func` with `merge_kwargs`
-        (all templates in it will be substituted as well), which can also be a string or a tuple of
-        strings resolved using `vectorbtpro.base.merging.resolve_merge_func`. If `wrap_results` is enabled,
-        packs the results into a Pandas object. If `apply_func` returns something complex, the resulting
-        Pandas object will be of object data type. If `apply_func` returns a tuple (detected by the first
-        returned result), a Pandas object is built for each element of that tuple.
+        Args:
+            apply_func (Callable): Function to apply over each range.
+            *apply_args: Positional arguments passed to `apply_func`.
+            split (Optional[Selection]): Selection specifying which splits to use.
+            set_ (Optional[Selection]): Selection specifying which sets to use.
+            split_group_by (AnyGroupByLike): Criteria to group splits.
+            set_group_by (AnyGroupByLike): Criteria to group sets.
+            squeeze_one_split (bool): Whether to squeeze the output if only one split exists.
+            squeeze_one_set (bool): Whether to squeeze the output if only one set exists.
+            remap_to_obj (bool): Whether to remap the range to the object's index for takeable arguments.
+            obj_index (Optional[IndexLike]): Index for remapping ranges for takeable arguments.
+            obj_freq (Optional[FrequencyLike]): Frequency for remapping to the object's index.
+            range_format (str): Format for the range to be applied (e.g., "slice_or_any").
+            point_wise (bool): Whether to apply `apply_func` in a point-wise manner.
+            attach_bounds (Union[bool, str]): Specifies if and how to attach bounds to the result.
 
-        If `merge_all` is True, will merge all results in a flattened manner irrespective of the
-        iteration mode. Otherwise, will merge by split/set.
+                If True or "source", attaches the source bounds; other string options are supported.
+            right_inclusive (bool): Whether the range's right bound is inclusive.
+            template_context (KwargsLike): Context for template substitutions in the function and its arguments.
+            silence_warnings (bool): Whether to suppress warnings during range selection and processing.
+            index_combine_kwargs (KwargsLike): Extra keyword arguments for combining indexes.
+            freq (Optional[FrequencyLike]): Frequency for mapping bounds to the index.
+            iteration (str): Iteration mode over ranges.
 
-        If `vectorbtpro.utils.execution.NoResult` is returned, will skip the current iteration and
-        remove it from the final index.
+                Options: "split_major", "set_major", "split_wise", "set_wise".
+            execute_kwargs (KwargsLike): Extra keyword arguments passed to
+                `vectorbtpro.utils.execution.execute`.
+            filter_results (bool): Whether to filter out results that are `NoResult`.
+            raise_no_results (bool): Whether to raise an exception if no valid results are produced.
+            merge_func (Union[None, str, tuple, Callable]): Function or specification used
+                to merge individual results.
+
+                Resolved using `vectorbtpro.base.merging.resolve_merge_func`.
+            merge_kwargs (KwargsLike): Extra keyword arguments for the merge function.
+            merge_all (bool): Whether to merge all results across iterations regardless of the iteration mode.
+            wrap_results (bool): Whether to wrap the final merged result in a Pandas object.
+            eval_id (Optional[Hashable]): Evaluation identifier for template substitution and annotation.
+            **apply_kwargs: Keyword arguments passed to `apply_func`.
+
+        Returns:
+            Any: The result of applying `apply_func` over each range, which may be a merged result,
+                a Pandas Series, or a tuple of Pandas objects depending on the processing and
+                output wrapping options.
 
         Usage:
             * Get the return of each data range:
@@ -3592,7 +4264,7 @@ class Splitter(Analyzable):
             ```
 
             * Divide into two windows, each consisting of 50% train and 50% test, compute SMA for
-            each range, and row-stack the outputs of each set upon merging:
+                each range, and row-stack the outputs of each set upon merging:
 
             ```pycon
             >>> splitter = vbt.Splitter.from_n_rolling(data.wrapper.index, 2, split=0.5)
@@ -4292,7 +4964,21 @@ class Splitter(Analyzable):
         wrapper_kwargs: tp.KwargsLike = None,
         **init_kwargs,
     ) -> SplitterT:
-        """Shuffle splits."""
+        """Shuffle the splits by randomly selecting indices.
+
+        Args:
+            size (Union[None, str, int]): Number or specification of splits to select.
+
+                If None, uses the total number of splits.
+            replace (bool): Whether to sample with replacement.
+            p (Optional[Array1d]): Probabilities associated with each split.
+            seed (Optional[int]): Seed for the random number generator.
+            wrapper_kwargs (KwargsLike): Keyword arguments for modifying the wrapper.
+            **init_kwargs: Keyword arguments for replacing the splitter.
+
+        Returns:
+            Splitter: A new splitter instance with the shuffled splits.
+        """
         if wrapper_kwargs is None:
             wrapper_kwargs = {}
         rng = np.random.default_rng(seed=seed)
@@ -4315,11 +5001,23 @@ class Splitter(Analyzable):
         init_kwargs: tp.KwargsLike = None,
         **split_range_kwargs,
     ) -> SplitterT:
-        """Split each split into multiple splits.
+        """Divide each split into multiple sub-splits using a new splitting specification.
 
-        If there are multiple sets, make sure to merge them into one beforehand.
+        !!! note
+            Ensure that there is only one set before breaking up splits.
+            Merge multiple sets into one if necessary.
 
-        Arguments `new_split` and `**split_range_kwargs` are passed to `Splitter.split_range`."""
+        Args:
+            new_split (SplitLike): Specification for generating new splitting ranges.
+            sort (bool): Whether to sort the resulting splits by their starting boundaries.
+            template_context (KwargsLike): Additional context for computing new ranges.
+            wrapper_kwargs (KwargsLike): Keyword arguments for modifying the wrapper.
+            init_kwargs (KwargsLike): Keyword arguments for updating the splitter.
+            **split_range_kwargs: Keyword arguments passed to `Splitter.split_range`.
+
+        Returns:
+            Splitter: A new splitter instance with updated splits.
+        """
         if self.n_sets > 1:
             raise ValueError("Cannot break up splits with more than one set. Merge sets first.")
         if wrapper_kwargs is None:
@@ -4368,15 +5066,29 @@ class Splitter(Analyzable):
         init_kwargs: tp.KwargsLike = None,
         **split_range_kwargs,
     ) -> SplitterT:
-        """Split a set (column) into multiple sets (columns).
+        """Split a set into multiple sets using a new splitting specification.
 
-        Arguments `new_split` and `**split_range_kwargs` are passed to `Splitter.split_range`.
+        This method applies `Splitter.split_range` to a specific column (or the only set)
+        to generate new ranges.
 
-        Column must be provided if there are two or more sets.
+        !!! note
+            The `column` parameter must be provided when multiple sets exist.
 
-        Use `new_set_labels` to specify the labels of the new sets; it must have the same length
-        as there are new ranges in the new split. To provide final labels, define `columns` in
-        `wrapper_kwargs`."""
+        Args:
+            new_split (SplitLike): Specification for generating new splitting ranges.
+            column (Optional[Hashable]): Identifier of the column to split.
+
+                Required if multiple sets are present.
+            new_set_labels (Optional[Sequence[Hashable]]): Labels to assign to the new sets.
+
+                Must match the number of new ranges.
+            wrapper_kwargs (KwargsLike): Keyword arguments for replacing the wrapper.
+            init_kwargs (KwargsLike): Keyword arguments for updating the splitter.
+            **split_range_kwargs: Keyword arguments passed to `Splitter.split_range`.
+
+        Returns:
+            Splitter: A new splitter instance with the updated sets.
+        """
         if self.n_sets == 0:
             raise ValueError("There are no sets to split")
         if self.n_sets > 1:
@@ -4431,15 +5143,23 @@ class Splitter(Analyzable):
         init_kwargs: tp.KwargsLike = None,
         **merge_split_kwargs,
     ) -> SplitterT:
-        """Merge multiple sets (columns) into a set (column).
+        """Merge multiple sets (columns) into a single set (column).
 
-        Arguments `**merge_split_kwargs` are passed to `Splitter.merge_split`.
+        Args:
+            columns (Optional[Iterable[Hashable]]): Columns to merge.
 
-        If columns are not provided, merges all columns. If provided and `insert_at_last` is True,
-        a new column is inserted at the position of the last column.
+                If not provided, all columns are merged.
+            new_set_label (Optional[Hashable]): Label for the new merged set.
 
-        Use `new_set_label` to specify the label of the new set. To provide final labels,
-        define `columns` in `wrapper_kwargs`."""
+                If not provided, a label is derived.
+            insert_at_last (bool): If True, insert the merged set at the position of the last specified column.
+            wrapper_kwargs (KwargsLike): Keyword arguments for the set wrapper.
+            init_kwargs (KwargsLike): Additional initialization keyword arguments.
+            **merge_split_kwargs: Keyword arguments passed to `Splitter.merge_split`.
+
+        Returns:
+            Splitter: A new Splitter instance with the merged sets and updated splits.
+        """
         if self.n_sets < 2:
             raise ValueError("There are no sets to merge")
         if columns is None:
@@ -4538,7 +5258,20 @@ class Splitter(Analyzable):
         index: tp.Optional[tp.IndexLike] = None,
         freq: tp.Optional[tp.FrequencyLike] = None,
     ) -> tp.Tuple[tp.Any, tp.Any]:
-        """Map bounds to index."""
+        """Map bounds to corresponding index values.
+
+        Args:
+            start (int): The starting index for the bound.
+            stop (int): The stopping index for the bound.
+            right_inclusive (bool): Whether the right bound is inclusive.
+            index (Optional[IndexLike]): Index to use for mapping bounds.
+
+                If not provided, the instance index is used.
+            freq (Optional[FrequencyLike]): Frequency for date arithmetic when adjusting bounds.
+
+        Returns:
+            Tuple[Any, Any]: A tuple with the mapped left and right bounds.
+        """
         if index is None:
             if isinstance(cls_or_self, type):
                 raise ValueError("Must provide index")
@@ -4565,10 +5298,25 @@ class Splitter(Analyzable):
         index: tp.Optional[tp.IndexLike] = None,
         freq: tp.Optional[tp.FrequencyLike] = None,
     ) -> tp.Tuple[tp.Any, tp.Any]:
-        """Get the left (inclusive) and right (exclusive) bound of a range.
+        """Get the inclusive left and exclusive right bounds of a range.
 
         !!! note
-            Even when mapped to the index, the right bound is always exclusive."""
+            Even when mapped to the index, the right bound remains exclusive.
+
+        Args:
+            range_ (FixRangeLike): The range specification to process.
+            index_bounds (bool): If True, map the bounds to the provided index.
+            right_inclusive (bool): If True, treat the right bound as inclusive before adjustment.
+            check_constant (bool): If True, verify that the range is constant.
+            template_context (KwargsLike): Context for template-based range evaluation.
+            index (Optional[IndexLike]): Index used for mapping bounds.
+
+                Required if called on a class.
+            freq (Optional[FrequencyLike]): Frequency used for adjusting the right bound.
+
+        Returns:
+            Tuple[Any, Any]: A tuple with the calculated left and right bounds.
+        """
         if index is None:
             if isinstance(cls_or_self, type):
                 raise ValueError("Must provide index")
@@ -4605,13 +5353,28 @@ class Splitter(Analyzable):
         template_context: tp.KwargsLike = None,
         **range_bounds_kwargs,
     ) -> tp.BoundsArray:
-        """Three-dimensional integer array with bounds.
+        """Return a three-dimensional array of bounds.
 
-        First axis represents splits. Second axis represents sets. Third axis represents bounds.
+        The array dimensions are:
 
-        Each range is getting selected using `Splitter.select_range` and then measured using
-        `Splitter.get_range_bounds`. Keyword arguments `**kwargs` are passed to
-        `Splitter.get_range_bounds`."""
+        * First axis: splits.
+        * Second axis: sets.
+        * Third axis: bounds.
+
+        Each range is selected using `Splitter.select_range` and processed using `Splitter.get_range_bounds`.
+        Keyword arguments are passed to `Splitter.get_range_bounds`.
+
+        Args:
+            index_bounds (bool): If True, use the index's data type for the bounds.
+            right_inclusive (bool): If True, treat the right bound as inclusive in computations.
+            split_group_by (AnyGroupByLike): Grouping criteria for splits.
+            set_group_by (AnyGroupByLike): Grouping criteria for sets.
+            template_context (KwargsLike): Template context for resolving ranges.
+            **range_bounds_kwargs: Keyword arguments passed to `Splitter.get_range_bounds`.
+
+        Returns:
+            BoundsArray: A three-dimensional array containing the bounds.
+        """
         if index_bounds:
             dtype = self.index.dtype
         else:
@@ -4645,7 +5408,11 @@ class Splitter(Analyzable):
 
     @property
     def bounds_arr(self) -> tp.BoundsArray:
-        """`Splitter.get_bounds_arr` with default arguments."""
+        """Property returning the three-dimensional bounds array.
+
+        This property obtains the bounds array by calling `Splitter.get_bounds_arr`
+        with default parameters.
+        """
         return self.get_bounds_arr()
 
     def get_bounds(
@@ -4659,9 +5426,22 @@ class Splitter(Analyzable):
         index_combine_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> tp.SeriesFrame:
-        """Boolean Series/DataFrame where index are bounds and columns are splits stacked together.
+        """Return a Series or DataFrame containing the start and end bounds.
 
-        Keyword arguments `**kwargs` are passed to `Splitter.get_bounds_arr`."""
+        Args:
+            index_bounds (bool): If True, compute bounds using the index.
+            right_inclusive (bool): If True, treat the right boundary as inclusive.
+            split_group_by (AnyGroupByLike): Grouping criterion for splits.
+            set_group_by (AnyGroupByLike): Grouping criterion for sets.
+            squeeze_one_split (bool): If True and only one split exists, simplify the result.
+            squeeze_one_set (bool): If True and only one set exists, simplify the result.
+            index_combine_kwargs (KwargsLike): Keyword arguments for combining indexes.
+            **kwargs: Positional arguments passed to `Splitter.get_bounds_arr`.
+
+        Returns:
+            SeriesFrame: A pandas Series or DataFrame with index based on
+                grouping and columns ['start', 'end'].
+        """
         split_group_by = self.get_split_grouper(split_group_by=split_group_by)
         split_labels = self.get_split_labels(split_group_by=split_group_by)
         set_group_by = self.get_set_grouper(set_group_by=set_group_by)
@@ -4690,27 +5470,37 @@ class Splitter(Analyzable):
 
     @property
     def bounds(self) -> tp.Frame:
-        """`Splitter.get_bounds` with default arguments."""
+        """Return the bounds by calling `Splitter.get_bounds` with default arguments."""
         return self.get_bounds()
 
     @property
     def index_bounds(self) -> tp.Frame:
-        """`Splitter.get_bounds` with `index_bounds=True`."""
+        """Return the bounds computed using the index by calling `Splitter.get_bounds`
+        with `index_bounds` set to True."""
         return self.get_bounds(index_bounds=True)
 
     def get_duration(self, **kwargs) -> tp.Series:
-        """Get duration."""
+        """Return a Series representing the duration computed as the difference between
+        the 'end' and 'start' bounds.
+
+        Args:
+            **kwargs: Positional arguments passed to `Splitter.get_bounds`.
+
+        Returns:
+            Series: A pandas Series of durations.
+        """
         bounds = self.get_bounds(right_inclusive=False, **kwargs)
         return (bounds["end"] - bounds["start"]).rename("duration")
 
     @property
     def duration(self) -> tp.Series:
-        """`Splitter.get_duration` with default arguments."""
+        """Return the duration by calling `Splitter.get_duration` with default arguments."""
         return self.get_duration()
 
     @property
     def index_duration(self) -> tp.Series:
-        """`Splitter.get_duration` with `index_bounds=True`."""
+        """Return the duration computed using index bounds by calling `Splitter.get_duration`
+        with `index_bounds` set to True."""
         return self.get_duration(index_bounds=True)
 
     # ############# Masks ############# #
@@ -4722,7 +5512,18 @@ class Splitter(Analyzable):
         template_context: tp.KwargsLike = None,
         index: tp.Optional[tp.IndexLike] = None,
     ) -> tp.Array1d:
-        """Get the mask of a range."""
+        """Return a boolean mask array for the specified range.
+
+        Args:
+            range_ (FixRangeLike): The range specification to generate the mask.
+            template_context (KwargsLike): Additional context parameters for preparing the range.
+            index (Optional[IndexLike]): The index to apply the range on.
+
+                If not provided, uses `Splitter.index`.
+
+        Returns:
+            Array1d: A boolean array mask where True indicates positions within the range.
+        """
         if index is None:
             if isinstance(cls_or_self, type):
                 raise ValueError("Must provide index")
@@ -4748,11 +5549,19 @@ class Splitter(Analyzable):
         template_context: tp.KwargsLike = None,
         **kwargs,
     ) -> tp.Iterator[tp.Array2d]:
-        """Generator of two-dimensional boolean arrays, one per split.
+        """Yield two-dimensional boolean arrays for each split.
 
-        First axis represents sets. Second axis represents index.
+        Each array has rows representing sets and columns representing index positions.
 
-        Keyword arguments `**kwargs` are passed to `Splitter.get_range_mask`."""
+        Args:
+            split_group_by (AnyGroupByLike): Grouping criterion for splits.
+            set_group_by (AnyGroupByLike): Grouping criterion for sets.
+            template_context (KwargsLike): Additional context for preparing ranges.
+            **kwargs: Positional arguments passed to `Splitter.get_range_mask`.
+
+        Returns:
+            Iterator[Array2d]: An iterator over two-dimensional boolean arrays.
+        """
         split_group_by = self.get_split_grouper(split_group_by=split_group_by)
         n_splits = self.get_n_splits(split_group_by=split_group_by)
         set_group_by = self.get_set_grouper(set_group_by=set_group_by)
@@ -4772,7 +5581,8 @@ class Splitter(Analyzable):
 
     @property
     def iter_split_mask_arrs(self) -> tp.Iterator[tp.Array2d]:
-        """`Splitter.get_iter_split_mask_arrs` with default arguments."""
+        """Return an iterator over two-dimensional boolean arrays for splits by calling
+        `Splitter.get_iter_split_mask_arrs` with default arguments."""
         return self.get_iter_split_mask_arrs()
 
     def get_iter_set_mask_arrs(
@@ -4782,11 +5592,19 @@ class Splitter(Analyzable):
         template_context: tp.KwargsLike = None,
         **kwargs,
     ) -> tp.Iterator[tp.Array2d]:
-        """Generator of two-dimensional boolean arrays, one per set.
+        """Yield two-dimensional boolean arrays for each set.
 
-        First axis represents splits. Second axis represents index.
+        Each array has rows representing splits and columns representing index positions.
 
-        Keyword arguments `**kwargs` are passed to `Splitter.get_range_mask`."""
+        Args:
+            split_group_by (AnyGroupByLike): Grouping criterion for splits.
+            set_group_by (AnyGroupByLike): Grouping criterion for sets.
+            template_context (KwargsLike): Additional context for preparing ranges.
+            **kwargs: Positional arguments passed to `Splitter.get_range_mask`.
+
+        Returns:
+            Iterator[Array2d]: An iterator over two-dimensional boolean arrays.
+        """
         split_group_by = self.get_split_grouper(split_group_by=split_group_by)
         n_splits = self.get_n_splits(split_group_by=split_group_by)
         set_group_by = self.get_set_grouper(set_group_by=set_group_by)
@@ -4806,7 +5624,8 @@ class Splitter(Analyzable):
 
     @property
     def iter_set_mask_arrs(self) -> tp.Iterator[tp.Array2d]:
-        """`Splitter.get_iter_set_mask_arrs` with default arguments."""
+        """Return an iterator over two-dimensional boolean arrays for sets by calling
+        `Splitter.get_iter_set_mask_arrs` with default arguments."""
         return self.get_iter_set_mask_arrs()
 
     def get_iter_split_masks(
@@ -4815,9 +5634,19 @@ class Splitter(Analyzable):
         set_group_by: tp.AnyGroupByLike = None,
         **kwargs,
     ) -> tp.Iterator[tp.Frame]:
-        """Generator of boolean DataFrames, one per split.
+        """Yield boolean DataFrames for each split.
 
-        Keyword arguments `**kwargs` are passed to `Splitter.get_iter_split_mask_arrs`."""
+        Each DataFrame is constructed by transposing the mask array and applying
+        appropriate index and set labels.
+
+        Args:
+            split_group_by (AnyGroupByLike): Grouping criterion for splits.
+            set_group_by (AnyGroupByLike): Grouping criterion for sets.
+            **kwargs: Positional arguments passed to `Splitter.get_iter_split_mask_arrs`.
+
+        Returns:
+            Iterator[Frame]: An iterator over boolean DataFrames.
+        """
         split_group_by = self.get_split_grouper(split_group_by=split_group_by)
         set_group_by = self.get_set_grouper(set_group_by=set_group_by)
         set_labels = self.get_set_labels(set_group_by=set_group_by)
@@ -4830,7 +5659,8 @@ class Splitter(Analyzable):
 
     @property
     def iter_split_masks(self) -> tp.Iterator[tp.Frame]:
-        """`Splitter.get_iter_split_masks` with default arguments."""
+        """Return an iterator over boolean DataFrames for splits by calling
+        `Splitter.get_iter_split_masks` with default arguments."""
         return self.get_iter_split_masks()
 
     def get_iter_set_masks(
@@ -4839,9 +5669,19 @@ class Splitter(Analyzable):
         set_group_by: tp.AnyGroupByLike = None,
         **kwargs,
     ) -> tp.Iterator[tp.Frame]:
-        """Generator of boolean DataFrames, one per set.
+        """Yield boolean DataFrames for each set.
 
-        Keyword arguments `**kwargs` are passed to `Splitter.get_iter_set_mask_arrs`."""
+        Each DataFrame is constructed by transposing the mask array and
+        applying appropriate index and split labels.
+
+        Args:
+            split_group_by (AnyGroupByLike): Grouping criterion for splits.
+            set_group_by (AnyGroupByLike): Grouping criterion for sets.
+            **kwargs: Positional arguments passed to `Splitter.get_iter_set_mask_arrs`.
+
+        Returns:
+            Iterator[Frame]: An iterator over boolean DataFrames.
+        """
         split_group_by = self.get_split_grouper(split_group_by=split_group_by)
         split_labels = self.get_split_labels(split_group_by=split_group_by)
         set_group_by = self.get_set_grouper(set_group_by=set_group_by)
@@ -4854,7 +5694,8 @@ class Splitter(Analyzable):
 
     @property
     def iter_set_masks(self) -> tp.Iterator[tp.Frame]:
-        """`Splitter.get_iter_set_masks` with default arguments."""
+        """Return an iterator over boolean DataFrames for sets by calling
+        `Splitter.get_iter_set_masks` with default arguments."""
         return self.get_iter_set_masks()
 
     def get_mask_arr(
@@ -4864,11 +5705,16 @@ class Splitter(Analyzable):
         template_context: tp.KwargsLike = None,
         **kwargs,
     ) -> tp.SplitsMask:
-        """Three-dimensional boolean array with splits.
+        """Return a three-dimensional boolean array representing splits.
 
-        First axis represents splits. Second axis represents sets. Third axis represents index.
+        The first dimension corresponds to splits, the second to sets, and the third to the index.
 
-        Keyword arguments `**kwargs` are passed to `Splitter.get_iter_split_mask_arrs`."""
+        Args:
+            split_group_by (AnyGroupByLike): Grouping parameter for splits.
+            set_group_by (AnyGroupByLike): Grouping parameter for sets.
+            template_context (KwargsLike): Context information used for template formatting.
+            **kwargs: Keyword arguments passed to `Splitter.get_iter_split_mask_arrs`.
+        """
         return np.array(
             list(
                 self.get_iter_split_mask_arrs(
@@ -4882,7 +5728,7 @@ class Splitter(Analyzable):
 
     @property
     def mask_arr(self) -> tp.SplitsMask:
-        """`Splitter.get_mask_arr` with default arguments."""
+        """Return the split mask array computed with default arguments from `Splitter.get_mask_arr`."""
         return self.get_mask_arr()
 
     def get_mask(
@@ -4894,12 +5740,21 @@ class Splitter(Analyzable):
         index_combine_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> tp.SeriesFrame:
-        """Boolean Series/DataFrame where index is `Splitter.index` and columns are splits stacked together.
+        """Return a boolean Series or DataFrame representing the split mask.
 
-        Keyword arguments `**kwargs` are passed to `Splitter.get_mask_arr`.
+        The returned object uses `Splitter.index` as the index and contains the splits as columns.
+
+        Args:
+            split_group_by (AnyGroupByLike): Grouping parameter for splits.
+            set_group_by (AnyGroupByLike): Grouping parameter for sets.
+            squeeze_one_split (bool): Whether to squeeze the output if only one split is present.
+            squeeze_one_set (bool): Whether to squeeze the output if only one set is present.
+            index_combine_kwargs (KwargsLike): Keyword arguments for combining indexes.
+            **kwargs: Keyword arguments passed to `Splitter.get_mask_arr`.
 
         !!! warning
-            Boolean arrays for a big number of splits may take a considerable amount of memory."""
+            Boolean arrays for a high number of splits may consume substantial memory.
+        """
         split_group_by = self.get_split_grouper(split_group_by=split_group_by)
         split_labels = self.get_split_labels(split_group_by=split_group_by)
         set_group_by = self.get_set_grouper(set_group_by=set_group_by)
@@ -4921,7 +5776,7 @@ class Splitter(Analyzable):
 
     @property
     def mask(self) -> tp.Frame:
-        """`Splitter.get_mask` with default arguments."""
+        """Return the boolean mask computed with default parameters from `Splitter.get_mask`."""
         return self.get_mask()
 
     def get_split_coverage(
@@ -4934,14 +5789,28 @@ class Splitter(Analyzable):
         squeeze_one_split: bool = True,
         **kwargs,
     ) -> tp.MaybeSeries:
-        """Get the coverage of each split mask.
+        """Return the coverage of each split mask.
 
-        If `overlapping` is True, returns the number of overlapping True values between sets in each split.
-        If `normalize` is True, returns the number of True values in each split relative to the
-        length of the index. If `normalize` and `relative` are True, returns the number of True values
-        in each split relative to the total number of True values across all splits.
+        Coverage is calculated based on the provided parameters:
+    
+        * If `overlapping` is True, compute the count of overlapping True values
+            between sets for each split.
+        * If `normalize` is True, the count is normalized by the length of the index.
+        * If both `normalize` and `relative` are True, compute the coverage relative
+            to the total True count across all splits.
 
-        Keyword arguments `**kwargs` are passed to `Splitter.get_mask_arr`."""
+        Args:
+            overlapping (bool): Whether to compute overlapping True values between sets.
+            normalize (bool): Whether to normalize the coverage by the index length.
+            relative (bool): When normalized, whether to compute coverage relative to the overall True count.
+            split_group_by (AnyGroupByLike): Grouping parameter for splits.
+            set_group_by (AnyGroupByLike): Grouping parameter for sets.
+            squeeze_one_split (bool): Whether to return a scalar value if a single split is present.
+            **kwargs: Keyword arguments passed to `Splitter.get_mask_arr`.
+
+        Returns:
+            MaybeSeries: The coverage of each split, either as a scalar or as a Series indexed by split labels.
+        """
         split_group_by = self.get_split_grouper(split_group_by=split_group_by)
         split_labels = self.get_split_labels(split_group_by=split_group_by)
         set_group_by = self.get_set_grouper(set_group_by=set_group_by)
@@ -4966,7 +5835,7 @@ class Splitter(Analyzable):
 
     @property
     def split_coverage(self) -> tp.Series:
-        """`Splitter.get_split_coverage` with default arguments."""
+        """Return the split coverage computed with default parameters from `Splitter.get_split_coverage`."""
         return self.get_split_coverage()
 
     def get_set_coverage(
@@ -4979,14 +5848,28 @@ class Splitter(Analyzable):
         squeeze_one_set: bool = True,
         **kwargs,
     ) -> tp.MaybeSeries:
-        """Get the coverage of each set mask.
+        """Return the coverage of each set mask.
 
-        If `overlapping` is True, returns the number of overlapping True values between splits in each set.
-        If `normalize` is True, returns the number of True values in each set relative to the
-        length of the index. If `normalize` and `relative` are True, returns the number of True values
-        in each set relative to the total number of True values across all sets.
+        Coverage is calculated based on the provided parameters:
+    
+        * If `overlapping` is True, compute the count of overlapping True values
+            between splits for each set.
+        * If `normalize` is True, the count is normalized by the length of the index.
+        * If both `normalize` and `relative` are True, compute the coverage relative
+            to the total True count across all sets.
 
-        Keyword arguments `**kwargs` are passed to `Splitter.get_mask_arr`."""
+        Args:
+            overlapping (bool): Whether to compute overlapping True values between splits.
+            normalize (bool): Whether to normalize the coverage by the index length.
+            relative (bool): When normalized, whether to compute coverage relative to the overall True count.
+            split_group_by (AnyGroupByLike): Grouping parameter for splits.
+            set_group_by (AnyGroupByLike): Grouping parameter for sets.
+            squeeze_one_set (bool): Whether to return a scalar value if a single set is present.
+            **kwargs: Keyword arguments passed to `Splitter.get_mask_arr`.
+
+        Returns:
+            MaybeSeries: The coverage for each set, either as a scalar or as a Series indexed by set labels.
+        """
         split_group_by = self.get_split_grouper(split_group_by=split_group_by)
         set_group_by = self.get_set_grouper(set_group_by=set_group_by)
         set_labels = self.get_set_labels(set_group_by=set_group_by)
@@ -5011,7 +5894,7 @@ class Splitter(Analyzable):
 
     @property
     def set_coverage(self) -> tp.Series:
-        """`Splitter.get_set_coverage` with default arguments."""
+        """Return the set coverage computed with default parameters from `Splitter.get_set_coverage`."""
         return self.get_set_coverage()
 
     def get_range_coverage(
@@ -5027,11 +5910,21 @@ class Splitter(Analyzable):
     ) -> tp.MaybeSeries:
         """Get the coverage of each range mask.
 
-        If `normalize` is True, returns the number of True values in each range relative to the
-        length of the index. If `normalize` and `relative` are True, returns the number of True values
-        in each range relative to the total number of True values in its split.
+        Args:
+            normalize (bool): Flag to determine if coverage should be normalized
+                relative to the index length.
+            relative (bool): If True and normalization is enabled, compute coverage relative
+                to the total True values in its split.
+            split_group_by (AnyGroupByLike): Grouping parameter for splitting the ranges.
+            set_group_by (AnyGroupByLike): Grouping parameter for setting the ranges.
+            squeeze_one_split (bool): If True, squeeze output when there is only one split.
+            squeeze_one_set (bool): If True, squeeze output when there is only one set.
+            index_combine_kwargs (KwargsLike): Keyword arguments for combining indexes.
+            **kwargs: Keyword arguments passed to `Splitter.get_mask_arr`.
 
-        Keyword arguments `**kwargs` are passed to `Splitter.get_mask_arr`."""
+        Returns:
+            MaybeSeries: Coverage values for each range mask, returned as a scalar or a Pandas Series.
+        """
         split_group_by = self.get_split_grouper(split_group_by=split_group_by)
         split_labels = self.get_split_labels(split_group_by=split_group_by)
         set_group_by = self.get_set_grouper(set_group_by=set_group_by)
@@ -5059,7 +5952,7 @@ class Splitter(Analyzable):
 
     @property
     def range_coverage(self) -> tp.Series:
-        """`Splitter.get_range_coverage` with default arguments."""
+        """Range coverage computed using default parameters from `Splitter.get_range_coverage`."""
         return self.get_range_coverage()
 
     def get_coverage(
@@ -5072,12 +5965,16 @@ class Splitter(Analyzable):
     ) -> float:
         """Get the coverage of the entire mask.
 
-        If `overlapping` is True, returns the number of overlapping True values.
-        If `normalize` is True, returns the number of True values relative to the length of the index.
-        If `overlapping` and `normalize` are True, returns the number of overlapping True values relative
-        to the total number of True values.
+        Args:
+            overlapping (bool): Flag to compute overlapping coverage by counting overlapping True values.
+            normalize (bool): Flag to normalize the coverage relative to the index length.
+            split_group_by (AnyGroupByLike): Grouping parameter for splitting the mask.
+            set_group_by (AnyGroupByLike): Grouping parameter for setting the mask.
+            **kwargs: Keyword arguments passed to `Splitter.get_mask_arr`.
 
-        Keyword arguments `**kwargs` are passed to `Splitter.get_mask_arr`."""
+        Returns:
+            float: Coverage value computed based on the provided mask and parameters.
+        """
         mask_arr = self.get_mask_arr(split_group_by=split_group_by, set_group_by=set_group_by, **kwargs)
         if overlapping:
             if normalize:
@@ -5089,7 +5986,7 @@ class Splitter(Analyzable):
 
     @property
     def coverage(self) -> float:
-        """`Splitter.get_coverage` with default arguments."""
+        """Coverage computed using default parameters from `Splitter.get_coverage`."""
         return self.get_coverage()
 
     def get_overlap_matrix(
@@ -5104,14 +6001,23 @@ class Splitter(Analyzable):
         index_combine_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> tp.Frame:
-        """Get the overlap between each pair of ranges.
+        """Get the overlap matrix between each pair of ranges.
 
-        The argument `by` can be one of 'split', 'set', and 'range'.
+        Args:
+            by (str): Specifies which overlap matrix to compute; must be one of "split", "set", or "range".
+            normalize (bool): Flag indicating whether to normalize overlaps relative to the
+                total True values in both ranges.
+            split_group_by (AnyGroupByLike): Grouping parameter for splitting the mask.
+            set_group_by (AnyGroupByLike): Grouping parameter for setting the mask.
+            jitted (JittedOption): Option for just-in-time compilation.
+            squeeze_one_split (bool): If True, squeeze the result when there is only one split.
+            squeeze_one_set (bool): If True, squeeze the result when there is only one set.
+            index_combine_kwargs (KwargsLike): Keyword arguments for combining indexes.
+            **kwargs: Keyword arguments passed to `Splitter.get_mask_arr`.
 
-        If `normalize` is True, returns the number of True values in each overlap relative
-        to the total number of True values in both ranges.
-
-        Keyword arguments `**kwargs` are passed to `Splitter.get_mask_arr`."""
+        Returns:
+            Frame: A DataFrame representing the computed overlap matrix, or a scalar if the result is squeezed.
+        """
         split_group_by = self.get_split_grouper(split_group_by=split_group_by)
         split_labels = self.get_split_labels(split_group_by=split_group_by)
         set_group_by = self.get_set_grouper(set_group_by=set_group_by)
@@ -5159,17 +6065,17 @@ class Splitter(Analyzable):
 
     @property
     def split_overlap_matrix(self) -> tp.Frame:
-        """`Splitter.get_overlap_matrix` with `by="split"`."""
+        """Overlap matrix computed with `get_overlap_matrix` using `by="split"`."""
         return self.get_overlap_matrix(by="split")
 
     @property
     def set_overlap_matrix(self) -> tp.Frame:
-        """`Splitter.get_overlap_matrix` with `by="set"`."""
+        """Overlap matrix computed with `get_overlap_matrix` using `by="set"`."""
         return self.get_overlap_matrix(by="set")
 
     @property
     def range_overlap_matrix(self) -> tp.Frame:
-        """`Splitter.get_overlap_matrix` with `by="range"`."""
+        """Overlap matrix computed with `get_overlap_matrix` using `by="range"`."""
         return self.get_overlap_matrix(by="range")
 
     # ############# Stats ############# #
@@ -5178,8 +6084,12 @@ class Splitter(Analyzable):
     def stats_defaults(self) -> tp.Kwargs:
         """Defaults for `Splitter.stats`.
 
-        Merges `vectorbtpro.generic.stats_builder.StatsBuilderMixin.stats_defaults` and
-        `stats` from `vectorbtpro._settings.splitter`."""
+        Merges defaults from `vectorbtpro.generic.stats_builder.StatsBuilderMixin.stats_defaults`
+        and the stats settings from `vectorbtpro._settings.splitter`.
+
+        Returns:
+            Kwargs: A dictionary containing the default settings for splitter statistics.
+        """
         from vectorbtpro._settings import settings
 
         splitter_stats_cfg = settings["splitter"]["stats"]
@@ -5292,18 +6202,27 @@ class Splitter(Analyzable):
         fig: tp.Optional[tp.BaseFigure] = None,
         **layout_kwargs,
     ) -> tp.BaseFigure:
-        """Plot splits as rows and sets as colors.
+        """Plot splits as rows with sets represented by distinct colors.
 
         Args:
-            split_group_by (any): Split groups. See `vectorbtpro.base.accessors.BaseIDXAccessor.get_grouper`.
-            set_group_by (any): Set groups. See `vectorbtpro.base.accessors.BaseIDXAccessor.get_grouper`.
-            mask_kwargs (dict): Keyword arguments passed to `Splitter.get_iter_set_masks`.
-            trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Heatmap`.
+            split_group_by (AnyGroupByLike): Grouping to split the data.
+
+                See `vectorbtpro.base.accessors.BaseIDXAccessor.get_grouper`.
+            set_group_by (AnyGroupByLike): Grouping to define sets.
+
+                See `vectorbtpro.base.accessors.BaseIDXAccessor.get_grouper`.
+            mask_kwargs (KwargsLike): Keyword arguments passed to
+                `Splitter.get_iter_set_masks`.
+            trace_kwargs (KwargsLikeSequence): Keyword arguments passed to
+                `plotly.graph_objects.Heatmap`.
 
                 Can be a sequence, one per set.
-            add_trace_kwargs (dict): Keyword arguments passed to `add_trace`.
-            fig (Figure or FigureWidget): Figure to add traces to.
+            add_trace_kwargs (KwargsLike): Keyword arguments passed to `add_trace`.
+            fig (Optional[BaseFigure]): Figure to which traces are added.
             **layout_kwargs: Keyword arguments for layout.
+
+        Returns:
+            BaseFigure: Figure to which traces were added.
 
         Usage:
             * Plot a scikit-learn splitter:
@@ -5384,19 +6303,30 @@ class Splitter(Analyzable):
         fig: tp.Optional[tp.BaseFigure] = None,
         **layout_kwargs,
     ) -> tp.BaseFigure:
-        """Plot index as rows and sets as lines.
+        """Plot index coverage as rows and sets as lines.
+
+        This method generates a plot where each index is represented as a row and
+        each set is shown as a line. A stacked area plot is created if `stacked` is True;
+        otherwise, a line plot is produced.
 
         Args:
-            stacked (bool): Whether to plot as an area plot.
-            split_group_by (any): Split groups. See `vectorbtpro.base.accessors.BaseIDXAccessor.get_grouper`.
-            set_group_by (any): Set groups. See `vectorbtpro.base.accessors.BaseIDXAccessor.get_grouper`.
-            mask_kwargs (dict): Keyword arguments passed to `Splitter.get_iter_set_masks`.
-            trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter`.
+            stacked (bool): Plot using a stacked area plot if True; otherwise, use a line plot.
+            split_group_by (AnyGroupByLike): Grouping key for splitting data.
 
-                Can be a sequence, one per set.
-            add_trace_kwargs (dict): Keyword arguments passed to `add_trace`.
-            fig (Figure or FigureWidget): Figure to add traces to.
-            **layout_kwargs: Keyword arguments for layout.
+                See `vectorbtpro.base.accessors.BaseIDXAccessor.get_grouper`.
+            set_group_by (AnyGroupByLike): Grouping key for defining sets.
+
+                See `vectorbtpro.base.accessors.BaseIDXAccessor.get_grouper`.
+            mask_kwargs (KwargsLike): Keyword arguments for `Splitter.get_iter_set_masks`.
+            trace_kwargs (KwargsLikeSequence): Keyword arguments for `plotly.graph_objects.Scatter`.
+
+                If provided as a sequence, each set uses its corresponding settings.
+            add_trace_kwargs (KwargsLike): Keyword arguments for `add_trace`.
+            fig (Optional[BaseFigure]): Figure object to which traces are added.
+            **layout_kwargs: Keyword arguments for figure layout configuration.
+
+        Returns:
+            BaseFigure: Figure to which traces were added.
 
         Usage:
             * Area plot:
@@ -5471,10 +6401,13 @@ class Splitter(Analyzable):
 
     @property
     def plots_defaults(self) -> tp.Kwargs:
-        """Defaults for `Splitter.plots`.
+        """Default plot settings for Splitter.
 
-        Merges `vectorbtpro.generic.plots_builder.PlotsBuilderMixin.plots_defaults` and
-        `plots` from `vectorbtpro._settings.splitter`."""
+        Returns:
+            Kwargs: A dictionary of merged plot settings from
+                `vectorbtpro.generic.plots_builder.PlotsBuilderMixin.plots_defaults`
+                and settings from `plots` in `vectorbtpro._settings.splitter`.
+        """
         from vectorbtpro._settings import settings
 
         splitter_plots_cfg = settings["splitter"]["plots"]

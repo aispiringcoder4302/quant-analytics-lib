@@ -75,7 +75,7 @@ class NumbaJitter(Jitter):
         parallel (bool): Flag indicating whether automatic parallelization is enabled.
         cache (bool): Flag indicating whether the compiled function should be cached on disk.
         boundscheck (bool): Flag indicating whether array bounds checking is enabled.
-        **options: Additional keyword arguments provided to the Numba decorator.
+        **options: Keyword arguments provided to the Numba decorator.
 
     !!! note
         If `fix_cannot_parallel` is True, then `parallel=True` is ignored when the 'can_parallel' tag is absent.
@@ -313,7 +313,7 @@ def specialize_jitted_option(option: tp.JittedOption = None, **kwargs) -> tp.Kwa
 
     Args:
         option (JittedOption): A jitted option to resolve.
-        **kwargs: Additional keyword arguments to merge.
+        **kwargs: Keyword arguments to merge.
 
     Returns:
         KwargsLike: The merged dictionary of keyword arguments, or None if the option cannot be resolved.
@@ -330,7 +330,7 @@ def resolve_jitted_kwargs(option: tp.JittedOption = None, **kwargs) -> tp.Kwargs
 
     Args:
         option (JittedOption): The jitted option to resolve.
-        **kwargs: Additional keyword arguments to merge.
+        **kwargs: Keyword arguments to merge.
 
     Returns:
         KwargsLike: A merged dictionary of keyword arguments with keys from `option` taking precedence.
@@ -362,7 +362,7 @@ def resolve_jitter(
     Args:
         jitter (Optional[JitterLike]): A jitter configuration or instance.
         py_func (Optional[Callable]): A Python function used to determine the jitter type.
-        **jitter_kwargs: Additional keyword arguments for jitter instantiation.
+        **jitter_kwargs: Keyword arguments for jitter instantiation.
 
     Returns:
         Jitter: A jitter instance based on the resolved configuration.
@@ -383,9 +383,9 @@ def jitted(*args, tags: tp.Optional[set] = None, **jitted_kwargs) -> tp.Callable
     setting the global `disable_wrapping` option.
 
     Args:
-        *args: Additional positional arguments for the decorator.
+        *args: Positional arguments for the decorator.
         tags (Optional[set]): A set of tags to pass to the jitter decorator.
-        **jitted_kwargs: Additional keyword arguments to resolve `jitter`.
+        **jitted_kwargs: Keyword arguments to resolve `jitter`.
 
     Returns:
         Callable: The decorated function with jitting applied.

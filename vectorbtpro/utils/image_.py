@@ -64,7 +64,7 @@ def save_animation(
     delta: tp.Optional[int] = None,
     step: int = 1,
     fps: int = 3,
-    writer_kwargs: dict = None,
+    writer_kwargs: tp.KwargsLike = None,
     show_progress: bool = True,
     pbar_kwargs: tp.KwargsLike = None,
     to_image_kwargs: tp.KwargsLike = None,
@@ -78,7 +78,7 @@ def save_animation(
         plot_func (Callable): Plotting function that accepts a slice of `index`, additional
             positional arguments, and keyword arguments, and returns either a Plotly figure, an image file
             path (readable by `imageio.imread`), or a NumPy array representing an image.
-        *args: Additional arguments passed to `plot_func`.
+        *args: Positional arguments passed to `plot_func`.
         delta (Optional[int]): Window size for each iteration.
 
             Defaults to half the length of `index` if None.
@@ -86,11 +86,11 @@ def save_animation(
         fps (int): Frames per second for the animation.
 
             Internally converted to a frame duration using `1000 / fps`.
-        writer_kwargs (dict): Additional keyword arguments for `imageio.get_writer`.
+        writer_kwargs (KwargsLike): Keyword arguments for `imageio.get_writer`.
         show_progress (bool): Whether to display the progress bar.
-        pbar_kwargs (dict): Additional keyword arguments for `vectorbtpro.utils.pbar.ProgressBar`.
-        to_image_kwargs (dict): Additional keyword arguments for `plotly.graph_objects.Figure.to_image`.
-        **kwargs: Additional keyword arguments passed to `plot_func`.
+        pbar_kwargs (KwargsLike): Keyword arguments for `vectorbtpro.utils.pbar.ProgressBar`.
+        to_image_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Figure.to_image`.
+        **kwargs: Keyword arguments passed to `plot_func`.
 
     Usage:
         ```pycon

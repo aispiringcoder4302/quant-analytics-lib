@@ -131,7 +131,7 @@ class HDFData(FileData):
             match_regex (Optional[str]): A regular expression to filter matching paths.
             sort_paths (bool): Flag indicating whether to sort the resulting paths.
             recursive (bool): Flag indicating whether to search directories recursively.
-            **kwargs: Additional keyword arguments for the matching process.
+            **kwargs: Keyword arguments for the matching process.
 
         Returns:
             List[Path]: A list of HDF paths, where each path represents a file with its HDF key appended.
@@ -266,7 +266,7 @@ class HDFData(FileData):
             chunk_func (Optional[Callable]): Function to process and concatenate chunks from `TableIterator`.
 
                 Called only if the iterator or chunksize is set.
-            **read_kwargs: Additional keyword arguments passed to `pd.read_hdf`.
+            **read_kwargs: Keyword arguments passed to `pd.read_hdf`.
 
         Returns:
             KeyData: The fetched data and a metadata dictionary.
@@ -349,7 +349,7 @@ class HDFData(FileData):
 
         Args:
             feature (Feature): Feature identifier.
-            **kwargs: Additional keyword arguments for `HDFData.fetch_key`.
+            **kwargs: Keyword arguments for `HDFData.fetch_key`.
 
         Returns:
             FeatureData: The fetched data and a metadata dictionary.
@@ -364,7 +364,7 @@ class HDFData(FileData):
 
         Args:
             symbol (Symbol): Symbol identifier.
-            **kwargs: Additional keyword arguments for `HDFData.fetch_key`.
+            **kwargs: Keyword arguments for `HDFData.fetch_key`.
 
         Returns:
             SymbolData: The fetched data and a metadata dictionary.
@@ -377,7 +377,7 @@ class HDFData(FileData):
         Args:
             key (Key): Feature or symbol identifier.
             key_is_feature (bool): Indicator whether the key represents a feature.
-            **kwargs: Additional keyword arguments for fetching data.
+            **kwargs: Keyword arguments for fetching data.
 
         Returns:
             KeyData: The updated data and a metadata dictionary.
@@ -397,7 +397,7 @@ class HDFData(FileData):
 
         Args:
             feature (Feature): Feature identifier.
-            **kwargs: Additional keyword arguments for `HDFData.update_key`.
+            **kwargs: Keyword arguments for `HDFData.update_key`.
 
         Returns:
             FeatureData: The updated data and a metadata dictionary.
@@ -411,7 +411,7 @@ class HDFData(FileData):
 
         Args:
             symbol (Symbol): Symbol identifier.
-            **kwargs: Additional keyword arguments for `HDFData.update_key`.
+            **kwargs: Keyword arguments for `HDFData.update_key`.
 
         Returns:
             SymbolData: The updated data and a metadata dictionary.

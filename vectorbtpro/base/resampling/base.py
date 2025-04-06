@@ -157,10 +157,10 @@ class Resampler(Configured):
 
         Args:
             source_index (index_like): Source index for resampling.
-            *args: Additional arguments passed to `pandas.Series.resample`.
+            *args: Positional arguments passed to `pandas.Series.resample`.
             source_freq (Optional[FrequencyLike]): Frequency for the source index.
             silence_warnings (bool): Flag indicating whether warnings should be silenced.
-            **kwargs: Additional keyword arguments passed to `pandas.Series.resample`.
+            **kwargs: Keyword arguments passed to `pandas.Series.resample`.
 
         Returns:
             Resampler: A new `Resampler` instance.
@@ -181,10 +181,10 @@ class Resampler(Configured):
 
         Args:
             source_index (index_like): Source index for resampling.
-            *args: Additional arguments passed to `vectorbtpro.utils.datetime_.date_range`.
+            *args: Positional arguments passed to `vectorbtpro.utils.datetime_.date_range`.
             source_freq (Optional[FrequencyLike]): Frequency for the source index.
             silence_warnings (Optional[bool]): Flag indicating whether warnings should be silenced.
-            **kwargs: Additional keyword arguments passed to `vectorbtpro.utils.datetime_.date_range`.
+            **kwargs: Keyword arguments passed to `vectorbtpro.utils.datetime_.date_range`.
 
         Returns:
             Resampler: A new `Resampler` instance.

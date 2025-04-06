@@ -10,13 +10,15 @@
 
 """Base plotting functions.
 
-Provides functions for visualizing data in an efficient and convenient way.
-Each creates a figure widget that is compatible with ipywidgets and enables interactive
-data visualization in Jupyter Notebook and JupyterLab environments. For more details
-on using Plotly, see [Getting Started with Plotly in Python](https://plotly.com/python/getting-started/).
+Provides functions to visualize data using interactive figure widgets that integrate with
+ipywidgets in Jupyter Notebook and JupyterLab.
+
+For more details on using Plotly, refer to
+[Getting Started with Plotly in Python](https://plotly.com/python/getting-started/).
 
 !!! warning
-    Errors related to plotting in Jupyter environment usually appear in the logs, not under the cell."""
+    Errors related to plotting in the Jupyter environment may appear in the logs rather than in the cell output.
+"""
 
 from vectorbtpro.utils.module_ import assert_can_import
 
@@ -51,9 +53,14 @@ __all__ = [
 
 
 def clean_labels(labels: tp.Labels) -> tp.Labels:
-    """Clean labels.
+    """Clean labels for Plotly compatibility.
 
-    Plotly doesn't support multi-indexes."""
+    Args:
+        labels (Labels): A sequence of labels, which may be a pandas MultiIndex, PeriodIndex, or list.
+
+    Returns:
+        Labels: A list of labels formatted for Plotly.
+    """
     if isinstance(labels, pd.MultiIndex):
         labels = labels.to_flat_index()
     if isinstance(labels, pd.PeriodIndex):
@@ -66,9 +73,15 @@ def clean_labels(labels: tp.Labels) -> tp.Labels:
 
 
 def clean_data(data: tp.Any) -> tp.Any:
-    """Clean data.
+    """Clean data for Plotly compatibility.
 
-    Plotly doesn't support NaNs."""
+    Args:
+        data (Any): Input data that may contain NaN values.
+
+    Returns:
+        Any: The data with NaN values replaced by None if it's a floating NumPy array;
+            otherwise, the original data.
+    """
     if isinstance(data, np.ndarray) and np.issubdtype(data.dtype, np.floating):
         mask = np.isnan(data)
         if mask.any():
@@ -77,13 +90,18 @@ def clean_data(data: tp.Any) -> tp.Any:
 
 
 class TraceType(Configured):
-    """Class representing a trace type."""
+    """Class representing a trace type configuration for Plotly visualizations.""" 
 
     _expected_keys_mode: tp.ExpectedKeysMode = "disable"
 
 
 class TraceUpdater(Base):
-    """Class for updating traces."""
+    """Class for updating Plotly traces.
+
+    Args:
+        fig (BaseFigure): The figure containing the traces to update.
+        traces (Tuple[BaseTraceType, ...]): A tuple of Plotly trace objects to update.
+    """
 
     def __init__(self, fig: tp.BaseFigure, traces: tp.Tuple[BaseTraceType, ...]) -> None:
         self._fig = fig
@@ -91,21 +109,33 @@ class TraceUpdater(Base):
 
     @property
     def fig(self) -> tp.BaseFigure:
-        """Figure."""
+        """Plotly figure widget containing the traces."""
         return self._fig
 
     @property
     def traces(self) -> tp.Tuple[BaseTraceType, ...]:
-        """Traces to update."""
+        """A tuple of Plotly trace objects that will be updated."""
         return self._traces
 
     @classmethod
     def update_trace(cls, trace: BaseTraceType, data: tp.ArrayLike, *args, **kwargs) -> None:
-        """Update one trace."""
+        """Update a single Plotly trace with new data.
+
+        Args:
+            trace (BaseTraceType): The Plotly trace to update.
+            data (ArrayLike): New data for the trace.
+            *args: Additional positional arguments.
+            **kwargs: Additional keyword arguments.
+        """
         raise NotImplementedError
 
     def update(self, *args, **kwargs) -> None:
-        """Update all traces using new data."""
+        """Update all Plotly traces with new data.
+
+        Args:
+            *args: Additional positional arguments.
+            **kwargs: Additional keyword arguments.
+        """
         raise NotImplementedError
 
 
@@ -113,17 +143,17 @@ class Gauge(TraceType, TraceUpdater):
     """Gauge plot.
 
     Args:
-        value (float): The value to be displayed.
-        label (str): The label to be displayed.
-        value_range (tuple of float): The value range of the gauge.
+        value (Optional[float]): The value to display on the gauge.
+        label (Optional[str]): The label shown on the gauge.
+        value_range (Optional[Tuple[float, float]]): The range of values for the gauge.
         cmap_name (str): A matplotlib-compatible colormap name.
 
             See the [list of available colormaps](https://matplotlib.org/tutorials/colors/colormaps.html).
-        trace_kwargs (dict): Keyword arguments passed to the `plotly.graph_objects.Indicator`.
-        add_trace_kwargs (dict): Keyword arguments passed to `add_trace`.
-        make_figure_kwargs (dict): Keyword arguments passed to `vectorbtpro.utils.figure.make_figure`.
-        fig (Figure or FigureWidget): Figure to add traces to.
-        **layout_kwargs: Keyword arguments for layout.
+        trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Indicator`.
+        add_trace_kwargs (KwargsLike): Keyword arguments for adding a trace with `add_trace`.
+        make_figure_kwargs (KwargsLike): Keyword arguments for `vectorbtpro.utils.figure.make_figure`.
+        fig (Optional[BaseFigure]): The figure to which traces are added.
+        **layout_kwargs: Keyword arguments for layout customization.
 
     Usage:
         ```pycon
@@ -201,12 +231,12 @@ class Gauge(TraceType, TraceUpdater):
 
     @property
     def value_range(self) -> tp.Tuple[float, float]:
-        """The value range of the gauge."""
+        """The value range of the gauge as a tuple of minimum and maximum values."""
         return self._value_range
 
     @property
     def cmap_name(self) -> str:
-        """A matplotlib-compatible colormap name."""
+        """The name of the matplotlib-compatible colormap used for the gauge."""
         return self._cmap_name
 
     @classmethod
@@ -240,21 +270,23 @@ class Gauge(TraceType, TraceUpdater):
 
 
 class Bar(TraceType, TraceUpdater):
-    """Bar plot.
+    """Class for creating a bar plot.
 
     Args:
-        data (array_like): Data in any format that can be converted to NumPy.
+        data (Optional[ArrayLike]): Data to create bar traces.
 
-            Must be of shape (`x_labels`, `trace_names`).
-        trace_names (str or list of str): Trace names, corresponding to columns in pandas.
-        x_labels (array_like): X-axis labels, corresponding to index in pandas.
-        trace_kwargs (dict or list of dict): Keyword arguments passed to `plotly.graph_objects.Bar`.
+            Must be convertible to a NumPy array and have shape (`x_labels`, `trace_names`).
+        trace_names (TraceNames): Names of the traces corresponding to data columns.
+        x_labels (Optional[Labels]): X-axis labels corresponding to the index in pandas.
+        trace_kwargs (KwargsLikeSequence): Keyword arguments for customizing individual
+            `plotly.graph_objects.Bar` traces.
 
-            Can be specified per trace as a sequence of dicts.
-        add_trace_kwargs (dict): Keyword arguments passed to `add_trace`.
-        make_figure_kwargs (dict): Keyword arguments passed to `vectorbtpro.utils.figure.make_figure`.
-        fig (Figure or FigureWidget): Figure to add traces to.
-        **layout_kwargs: Keyword arguments for layout.
+            If provided as a sequence, each dictionary applies to the corresponding trace.
+        add_trace_kwargs (KwargsLike): Keyword arguments passed to `add_trace` when adding traces to the figure.
+        make_figure_kwargs (KwargsLike): Keyword arguments passed to `vectorbtpro.utils.figure.make_figure`
+            for figure creation.
+        fig (Optional[BaseFigure]): A pre-existing figure to which bar traces are added.
+        **layout_kwargs: Keyword arguments for configuring the figure layout.
 
     Usage:
         ```pycon
@@ -350,25 +382,28 @@ class Bar(TraceType, TraceUpdater):
 
 
 class Scatter(TraceType, TraceUpdater):
-    """Scatter plot.
+    """Class for creating a scatter plot using Plotly.
 
     Args:
-        data (array_like): Data in any format that can be converted to NumPy.
+        data (Optional[ArrayLike]): Data values convertible to a NumPy array.
 
-            Must be of shape (`x_labels`, `trace_names`).
-        trace_names (str or list of str): Trace names, corresponding to columns in pandas.
-        x_labels (array_like): X-axis labels, corresponding to index in pandas.
-        trace_kwargs (dict or list of dict): Keyword arguments passed to `plotly.graph_objects.Scatter`.
+            Must have shape corresponding to (`x_labels`, `trace_names`).
+        trace_names (TraceNames): Names of traces corresponding to the columns in the data.
+        x_labels (Optional[Labels]): Labels for the x-axis, typically representing the index in a pandas DataFrame.
+        trace_kwargs (KwargsLikeSequence): Keyword arguments for `plotly.graph_objects.Scatter`.
 
-            Can be specified per trace as a sequence of dicts.
-        add_trace_kwargs (dict): Keyword arguments passed to `add_trace`.
-        make_figure_kwargs (dict): Keyword arguments passed to `vectorbtpro.utils.figure.make_figure`.
-        fig (Figure or FigureWidget): Figure to add traces to.
-        use_gl (bool): Whether to use `plotly.graph_objects.Scattergl`.
+            Can be specified individually for each trace when provided as a sequence of dictionaries.
+        add_trace_kwargs (KwargsLike): Keyword arguments passed to the `add_trace` method.
+        make_figure_kwargs (KwargsLike): Keyword arguments passed to `vectorbtpro.utils.figure.make_figure`
+            when creating a new figure.
+        fig (Optional[BaseFigure]): The figure instance to which scatter traces are added.
+        use_gl (bool): Flag to use `plotly.graph_objects.Scattergl`.
 
-            Defaults to the global setting. If the global setting is None, becomes True
-            if there are more than 10,000 data points.
-        **layout_kwargs: Keyword arguments for layout.
+            Defaults to the global setting.
+
+                If the global configuration is None and the data has more
+            than 10,000 points, this flag is set to True.
+        **layout_kwargs: Keyword arguments for the figure layout.
 
     Usage:
         ```pycon
@@ -498,25 +533,25 @@ class Histogram(TraceType, TraceUpdater):
     """Histogram plot.
 
     Args:
-        data (array_like): Data in any format that can be converted to NumPy.
+        data (Optional[ArrayLike]): Data convertible to a NumPy array.
 
-            Must be of shape (any, `trace_names`).
-        trace_names (str or list of str): Trace names, corresponding to columns in pandas.
-        horizontal (bool): Whether to plot horizontally.
-        remove_nan (bool): Whether to remove NaN values.
-        from_quantile (float): Filter out data points before this quantile.
+            Data must have shape (any, trace_names).
+        trace_names (TraceNames): Names for traces corresponding to data columns.
+        horizontal (bool): Flag indicating whether the histogram is plotted horizontally.
+        remove_nan (bool): Flag determining whether NaN values are removed from the data.
+        from_quantile (float): Lower quantile threshold used to filter out data points.
 
-            Must be in range `[0, 1]`.
-        to_quantile (float): Filter out data points after this quantile.
+            Must be in the range [0, 1].
+        to_quantile (float): Upper quantile threshold used to filter out data points.
 
-            Must be in range `[0, 1]`.
-        trace_kwargs (dict or list of dict): Keyword arguments passed to `plotly.graph_objects.Histogram`.
+            Must be in the range [0, 1].
+        trace_kwargs (KwargsLikeSequence): Keyword arguments to pass to `plotly.graph_objects.Histogram`.
 
-            Can be specified per trace as a sequence of dicts.
-        add_trace_kwargs (dict): Keyword arguments passed to `add_trace`.
-        make_figure_kwargs (dict): Keyword arguments passed to `vectorbtpro.utils.figure.make_figure`.
-        fig (Figure or FigureWidget): Figure to add traces to.
-        **layout_kwargs: Keyword arguments for layout.
+            Can be provided per trace as a sequence of dictionaries.
+        add_trace_kwargs (KwargsLike): Keyword arguments for `add_trace`.
+        make_figure_kwargs (KwargsLike): Keyword arguments for `vectorbtpro.utils.figure.make_figure`.
+        fig (Optional[BaseFigure]): Figure object to which traces are added.
+        **layout_kwargs: Keyword arguments for layout configuration.
 
     Usage:
         ```pycon
@@ -617,22 +652,22 @@ class Histogram(TraceType, TraceUpdater):
 
     @property
     def horizontal(self) -> bool:
-        """Whether to plot horizontally."""
+        """Indicates whether the histogram is plotted horizontally."""
         return self._horizontal
 
     @property
     def remove_nan(self) -> bool:
-        """Whether to remove NaN values."""
+        """Indicates whether NaN values are removed from the data."""
         return self._remove_nan
 
     @property
     def from_quantile(self) -> float:
-        """Filter out data points before this quantile."""
+        """Specifies the lower quantile threshold used to filter out data points."""
         return self._from_quantile
 
     @property
     def to_quantile(self) -> float:
-        """Filter out data points after this quantile."""
+        """Specifies the upper quantile threshold used to filter out data points."""
         return self._to_quantile
 
     @classmethod
@@ -681,9 +716,31 @@ class Histogram(TraceType, TraceUpdater):
 
 
 class Box(TraceType, TraceUpdater):
-    """Box plot.
+    """Box plot visualization.
 
-    For keyword arguments, see `Histogram`.
+    This class creates a box plot from the provided data and configuration parameters.
+    For additional keyword arguments for trace customization, see `Histogram`.
+
+    Args:
+        data (Optional[ArrayLike]): Data for the box plot, which is reshaped to a 2D array if provided.
+        trace_names (TraceNames): Names assigned to each trace.
+
+            If provided, their number should match the number of data columns.
+        horizontal (bool): Indicates if the box plot is oriented horizontally.
+        remove_nan (bool): Specifies whether to remove NaN values from the data.
+        from_quantile (Optional[float]): Lower quantile threshold to filter out data.
+
+            Data below this quantile are excluded.
+        to_quantile (Optional[float]): Upper quantile threshold to filter out data.
+
+            Data above this quantile are excluded.
+        trace_kwargs (KwargsLikeSequence): Keyword arguments for configuring individual traces.
+        add_trace_kwargs (KwargsLike): Keyword arguments when adding traces to the figure.
+        make_figure_kwargs (KwargsLike): Keyword arguments used in the creation of the figure.
+        fig (Optional[BaseFigure]): Pre-defined figure instance.
+
+            If not provided, a new figure is created.
+        **layout_kwargs: Keyword arguments passed for figure layout configuration.
 
     Usage:
         ```pycon
@@ -779,22 +836,22 @@ class Box(TraceType, TraceUpdater):
 
     @property
     def horizontal(self) -> bool:
-        """Whether to plot horizontally."""
+        """Indicates if the box plot is oriented horizontally."""
         return self._horizontal
 
     @property
     def remove_nan(self) -> bool:
-        """Whether to remove NaN values."""
+        """Specifies whether NaN values are removed from the data."""
         return self._remove_nan
 
     @property
     def from_quantile(self) -> float:
-        """Filter out data points before this quantile."""
+        """Specifies the lower quantile threshold; data points below this value are excluded."""
         return self._from_quantile
 
     @property
     def to_quantile(self) -> float:
-        """Filter out data points after this quantile."""
+        """Specifies the upper quantile threshold; data points above this value are excluded."""
         return self._to_quantile
 
     @classmethod
@@ -843,21 +900,21 @@ class Box(TraceType, TraceUpdater):
 
 
 class Heatmap(TraceType, TraceUpdater):
-    """Heatmap plot.
+    """Class for creating heatmap plots.
 
     Args:
-        data (array_like): Data in any format that can be converted to NumPy.
+        data (Optional[ArrayLike]): Data that can be converted to a NumPy array.
 
-            Must be of shape (`y_labels`, `x_labels`).
-        x_labels (array_like): X-axis labels, corresponding to columns in pandas.
-        y_labels (array_like): Y-axis labels, corresponding to index in pandas.
-        is_x_category (bool): Whether X-axis is a categorical axis.
-        is_y_category (bool): Whether Y-axis is a categorical axis.
-        trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Heatmap`.
-        add_trace_kwargs (dict): Keyword arguments passed to `add_trace`.
-        make_figure_kwargs (dict): Keyword arguments passed to `vectorbtpro.utils.figure.make_figure`.
-        fig (Figure or FigureWidget): Figure to add traces to.
-        **layout_kwargs: Keyword arguments for layout.
+            Must have shape (`y_labels`, `x_labels`).
+        x_labels (Optional[ArrayLike]): Labels for the X-axis corresponding to dataframe columns.
+        y_labels (Optional[ArrayLike]): Labels for the Y-axis corresponding to dataframe index.
+        is_x_category (bool): Indicates whether the X-axis represents categorical data.
+        is_y_category (bool): Indicates whether the Y-axis represents categorical data.
+        trace_kwargs (KwargsLike): Keyword arguments to be passed to `plotly.graph_objects.Heatmap`.
+        add_trace_kwargs (KwargsLike): Keyword arguments to be passed to `add_trace`.
+        make_figure_kwargs (KwargsLike): Keyword arguments to be passed to `vectorbtpro.utils.figure.make_figure`.
+        fig (Optional[BaseFigure]): Figure instance to which traces are added.
+        **layout_kwargs: Keyword arguments for layout configuration.
 
     Usage:
         ```pycon
@@ -972,25 +1029,24 @@ class Heatmap(TraceType, TraceUpdater):
 
 
 class Volume(TraceType, TraceUpdater):
-    """Volume plot.
+    """Class for volume plotting.
 
     Args:
-        data (array_like): Data in any format that can be converted to NumPy.
+        data (Optional[ArrayLike]): Data that can be converted to a NumPy array.
 
-            Must be a 3-dim array.
-        x_labels (array_like): X-axis labels.
-        y_labels (array_like): Y-axis labels.
-        z_labels (array_like): Z-axis labels.
-        trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Volume`.
-        add_trace_kwargs (dict): Keyword arguments passed to `add_trace`.
-        scene_name (str): Reference to the 3D scene.
-        make_figure_kwargs (dict): Keyword arguments passed to `vectorbtpro.utils.figure.make_figure`.
-        fig (Figure or FigureWidget): Figure to add traces to.
+            Must be a 3-dimensional array.
+        x_labels (Optional[ArrayLike]): Labels for the X-axis.
+        y_labels (Optional[ArrayLike]): Labels for the Y-axis.
+        z_labels (Optional[ArrayLike]): Labels for the Z-axis.
+        trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Volume`.
+        add_trace_kwargs (KwargsLike): Keyword arguments for `add_trace`.
+        scene_name (str): Name of the 3D scene.
+        make_figure_kwargs (KwargsLike): Keyword arguments for `vectorbtpro.utils.figure.make_figure`.
+        fig (Optional[BaseFigure]): Figure used for adding traces.
         **layout_kwargs: Keyword arguments for layout.
 
     !!! note
-        Figure widgets have currently problems displaying NaNs.
-        Use `.show()` method for rendering.
+        Figure widgets currently have issues displaying NaNs. Use the `.show()` method for rendering.
 
     Usage:
         ```pycon

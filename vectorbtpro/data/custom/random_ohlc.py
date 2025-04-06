@@ -78,8 +78,8 @@ class RandomOHLCData(SyntheticData):
             jitted (Optional[JittedOption]): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
-            template_context (Optional[KwargsLike]): Context for template substitution.
-            **kwargs: Additional keyword arguments passed to the function.
+            template_context (KwargsLike): Context for template substitution.
+            **kwargs: Keyword arguments passed to the function.
 
         Returns:
             KeyData: The generated data and a metadata dictionary.

@@ -45,7 +45,7 @@ def resolve_axis_refs(
     """Calculate x-axis and y-axis references based on provided trace settings.
 
     Args:
-        add_trace_kwargs (KwargsLike): Additional keyword arguments for configuring subplot row and column.
+        add_trace_kwargs (KwargsLike): Keyword arguments for configuring subplot row and column.
         xref (Optional[str]): Custom reference for the x-axis.
         yref (Optional[str]): Custom reference for the y-axis.
 
@@ -97,8 +97,8 @@ class FigureMixin(Base):
         """Return a copy of the figure.
 
         Args:
-            *args: Additional arguments passed for constructing the copy.
-            **kwargs: Additional keyword arguments passed for constructing the copy.
+            *args: Positional arguments passed for constructing the copy.
+            **kwargs: Keyword arguments passed for constructing the copy.
 
         Returns:
             FigureMixin: A new figure instance copied from the original.
@@ -229,7 +229,7 @@ class FigureMixin(Base):
         Args:
             index (Optional[IndexLike]): Index used to determine range breaks.
             inplace (bool): Whether to update the figure in place.
-            **kwargs: Additional keyword arguments passed to `vectorbtpro.utils.datetime_.get_rangebreaks`.
+            **kwargs: Keyword arguments passed to `vectorbtpro.utils.datetime_.get_rangebreaks`.
 
         Returns:
             FigureMixin: The figure with updated x-axis range breaks.
@@ -278,11 +278,11 @@ class FigureMixin(Base):
         """Resolve and return arguments for displaying the figure.
 
         Args:
-            *args: Additional arguments passed for display.
+            *args: Positional arguments passed for display.
             auto_rangebreaks (Union[None, bool, dict]): Configuration for auto range breaks.
 
                 If True, apply default settings; if a dict, use it as keyword arguments.
-            **kwargs: Additional keyword arguments for the display process.
+            **kwargs: Keyword arguments for the display process.
 
         Returns:
             Tuple[Args, Kwargs]: A tuple containing the resolved positional and keyword arguments.
@@ -335,7 +335,7 @@ class FigureMixin(Base):
         """Display the figure in PNG format.
 
         Args:
-            **kwargs: Additional keyword arguments passed to `FigureMixin.show` for PNG rendering.
+            **kwargs: Keyword arguments passed to `FigureMixin.show` for PNG rendering.
         """
         self.show(renderer="png", **kwargs)
 
@@ -343,7 +343,7 @@ class FigureMixin(Base):
         """Display the figure in SVG format.
 
         Args:
-            **kwargs: Additional keyword arguments passed to `FigureMixin.show` for SVG rendering.
+            **kwargs: Keyword arguments passed to `FigureMixin.show` for SVG rendering.
         """
         self.show(renderer="svg", **kwargs)
 
@@ -361,10 +361,10 @@ class FigureMixin(Base):
         Args:
             figure_name (str): The base name for the saved SVG files (without extension).
             dir_path (PathLike): Directory where SVG files will be saved.
-            mkdir_kwargs (KwargsLike): Additional keyword arguments for directory creation.
+            mkdir_kwargs (KwargsLike): Keyword arguments for directory creation.
             show (bool): Whether to display the SVG after saving.
-            show_kwargs (KwargsLike): Additional keyword arguments passed to `FigureMixin.show_svg`.
-            **kwargs: Additional keyword arguments passed to `FigureMixin.write_image`.
+            show_kwargs (KwargsLike): Keyword arguments passed to `FigureMixin.show_svg`.
+            **kwargs: Keyword arguments passed to `FigureMixin.write_image`.
         """
         if not isinstance(dir_path, Path):
             dir_path = Path(dir_path)
@@ -555,10 +555,10 @@ def make_subplots(
     """Create Plotly subplots using `make_figure`.
 
     Args:
-        *args: Additional positional arguments passed to `plotly.subplots.make_subplots`.
+        *args: Positional arguments passed to `plotly.subplots.make_subplots`.
         use_widgets (Optional[bool]): Determines whether to use a widget-based figure.
         use_resampler (Optional[bool]): Determines whether to enable resampling functionality.
-        **kwargs: Additional keyword arguments passed to `plotly.subplots.make_subplots`.
+        **kwargs: Keyword arguments passed to `plotly.subplots.make_subplots`.
 
     Returns:
         BaseFigure: A Plotly figure containing subplots.

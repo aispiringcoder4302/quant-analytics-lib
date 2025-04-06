@@ -52,13 +52,13 @@ class AssetCacheManager(Configured):
     Args:
         persist_cache (Optional[bool]): Whether to persist the cache to disk.
         cache_dir (Optional[PathLike]): Directory path for storing cached assets.
-        cache_mkdir_kwargs (Optional[KwargsLike]): Keyword arguments for creating the cache directory.
+        cache_mkdir_kwargs (KwargsLike): Keyword arguments for creating the cache directory.
         clear_cache (Optional[bool]): Whether to clear existing cache in the directory.
         max_cache_count (Optional[int]): Maximum number of assets to retain, evicting older ones.
-        save_cache_kwargs (Optional[KwargsLike]): Keyword arguments for saving assets to disk.
-        load_cache_kwargs (Optional[KwargsLike]): Keyword arguments for loading assets from disk.
-        template_context (Optional[KwargsLike]): Context for substituting template variables.
-        **kwargs: Additional keyword arguments for configuration.
+        save_cache_kwargs (KwargsLike): Keyword arguments for saving assets to disk.
+        load_cache_kwargs (KwargsLike): Keyword arguments for loading assets from disk.
+        template_context (KwargsLike): Context for substituting template variables.
+        **kwargs: Keyword arguments for configuration.
 
     For default settings, see `vectorbtpro._settings.knowledge`.
     """
@@ -233,7 +233,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
 
             If more than one item is provided, the asset is not considered a single item.
         single_item (bool): Indicates whether the asset holds a single data item.
-        **kwargs: Additional keyword arguments for configuration.
+        **kwargs: Keyword arguments for configuration.
 
     For defaults, see `vectorbtpro._settings.knowledge`."""
 
@@ -808,7 +808,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         Args:
             k (Optional[int]): Number of items to sample.
             seed (Optional[int]): Seed for random sampling.
-            **kwargs: Additional keyword arguments passed to `KnowledgeAsset.print`.
+            **kwargs: Keyword arguments passed to `KnowledgeAsset.print`.
         """
         self.sample(k=k, seed=seed).print(**kwargs)
 
@@ -881,12 +881,12 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
 
         Args:
             func (MaybeList[Union[AssetFuncLike, AssetPipeline]]): Function, pipeline, or expression to apply.
-            *args: Additional positional arguments for the function.
+            *args: Positional arguments for the function.
             execute_kwargs (KwargsLike): Keyword arguments for the execution engine.
             wrap (Optional[bool]): If True, return the result wrapped as an asset.
             single_item (Optional[bool]): Determines if data items are treated as single items.
             return_iterator (bool): If True, return an iterator instead of executing tasks.
-            **kwargs: Additional keyword arguments for processing.
+            **kwargs: Keyword arguments for processing.
 
         Returns:
             MaybeKnowledgeAsset: A new asset with processed data if `wrap` is True; otherwise, raw output.
@@ -1019,7 +1019,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
             source (Optional[CustomTemplateLike]): A template, function, or string for preprocessing;
                 in the template, "i" denotes the index, "d" the full data item, and "x" the extracted part.
             template_context (KwargsLike): Additional context for template rendering.
-            **kwargs: Additional keyword arguments passed to `KnowledgeAsset.apply`.
+            **kwargs: Keyword arguments passed to `KnowledgeAsset.apply`.
 
         Usage:
             ```pycon
@@ -1108,7 +1108,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
             make_copy (Optional[bool]): If True, operates on a copy to preserve the original data.
             changed_only (Optional[bool]): If True, returns only the data items that were modified.
             template_context (KwargsLike): Additional context for template processing.
-            **kwargs: Additional keyword arguments passed to `KnowledgeAsset.apply`.
+            **kwargs: Keyword arguments passed to `KnowledgeAsset.apply`.
 
         Usage:
             ```pycon
@@ -1328,7 +1328,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
             make_copy (Optional[bool]): If True, operate on a copy rather than modifying the original data.
             changed_only (Optional[bool]): If True, retain only data items that have been modified.
             template_context (KwargsLike): Context variables for template evaluation.
-            **kwargs: Additional keyword arguments for the underlying function.
+            **kwargs: Keyword arguments for the underlying function.
 
         Usage:
             ```pycon
@@ -1390,7 +1390,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
             template_context (KwargsLike): Context variables for template evaluation.
             return_type (Optional[str]): If "item", returns the matched data item; if "bool",
                 returns a boolean indicating a match.
-            **kwargs: Additional keyword arguments for the evaluation function.
+            **kwargs: Keyword arguments for the evaluation function.
 
         Usage:
             ```pycon
@@ -1563,7 +1563,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
             merge_fields (Optional[bool]): If False, keeps empty lists when searching for fields.
             unique_matches (Optional[bool]): If False, allows duplicate matches.
             unique_fields (Optional[bool]): If False, allows duplicate fields.
-            **kwargs: Additional keyword arguments passed to the underlying functions.
+            **kwargs: Keyword arguments passed to the underlying functions.
 
         Usage:
             ```pycon
@@ -1684,7 +1684,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
             escape_language (bool): If True, escape regex special characters in the language.
             return_type (Optional[str]): The type of result to return.
             flags (int): Additional regular expression flags.
-            **kwargs: Additional keyword arguments for `KnowledgeAsset.find`.
+            **kwargs: Keyword arguments for `KnowledgeAsset.find`.
 
         Returns:
             MaybeKnowledgeAsset: Asset segments that match the search criteria.
@@ -1808,7 +1808,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
             skip_missing (Optional[bool]): Skip data items that lack the specified path.
             make_copy (Optional[bool]): Operate on a copy of the data to preserve the original asset.
             changed_only (Optional[bool]): Return only data items that have been modified.
-            **kwargs: Additional keyword arguments passed to underlying functions.
+            **kwargs: Keyword arguments passed to underlying functions.
 
         Returns:
             MaybeKnowledgeAsset: A new asset with the specified replacements applied.
@@ -1894,7 +1894,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
             skip_missing (Optional[bool]): Whether to skip data items missing the specified key.
             make_copy (Optional[bool]): Whether to operate on a copy of the asset.
             changed_only (Optional[bool]): Whether to return only data items that were modified.
-            **kwargs: Additional keyword arguments for the operation.
+            **kwargs: Keyword arguments for the operation.
 
         Similar to `KnowledgeAsset.find_replace`.
         """
@@ -1942,7 +1942,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
             skip_missing (Optional[bool]): Whether to skip data items that lack the specified key.
             make_copy (Optional[bool]): Whether to operate on a copy of the asset.
             changed_only (Optional[bool]): Whether to return only data items that were modified.
-            **kwargs: Additional keyword arguments passed to `vectorbtpro.utils.search_.flatten_obj`.
+            **kwargs: Keyword arguments passed to `vectorbtpro.utils.search_.flatten_obj`.
 
         Usage:
             ```pycon
@@ -1990,7 +1990,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
             skip_missing (Optional[bool]): Whether to skip data items that lack the specified key.
             make_copy (Optional[bool]): Whether to operate on a copy of the asset.
             changed_only (Optional[bool]): Whether to return only data items that were modified.
-            **kwargs: Additional keyword arguments passed to `vectorbtpro.utils.search_.unflatten_obj`.
+            **kwargs: Keyword arguments passed to `vectorbtpro.utils.search_.unflatten_obj`.
 
         Usage:
             ```pycon
@@ -2040,7 +2040,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
             source (Optional[CustomTemplateLike]): Template or function to preprocess the source data.
             dump_engine (Optional[str]): Name of the dump engine.
             template_context (KwargsLike): Additional context for template rendering.
-            **kwargs: Additional keyword arguments for the dump engine.
+            **kwargs: Keyword arguments for the dump engine.
 
         Returns:
             MaybeKnowledgeAsset: The asset with dumped data.
@@ -2079,7 +2079,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
             source (Optional[CustomTemplateLike]): Template or function to preprocess the source data.
             dump_engine (Optional[str]): Name of the dump engine.
             template_context (KwargsLike): Additional context for template rendering.
-            **kwargs: Additional keyword arguments for the dump engine.
+            **kwargs: Keyword arguments for the dump engine.
 
         Returns:
             str: The dumped asset data as a string.
@@ -2105,7 +2105,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         * field names for respective data item fields.
 
         Args:
-            **kwargs: Additional keyword arguments for document conversion.
+            **kwargs: Keyword arguments for document conversion.
 
         Returns:
             MaybeKnowledgeAsset: The asset with data items converted to text documents.
@@ -2127,7 +2127,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         Args:
             text_path (Optional[PathLikeKey]): Path specifying the location of the text content.
             merge_chunks (Optional[bool]): If True, merge all text chunks into a single list.
-            **kwargs: Additional keyword arguments for text splitting.
+            **kwargs: Keyword arguments for text splitting.
 
         Returns:
             MaybeKnowledgeAsset: The asset with its text content split into chunks.
@@ -2222,15 +2222,15 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
 
         Args:
             func (CustomTemplateLike): The reduction function, expression, or template.
-            *args: Additional positional arguments for the reduction function.
+            *args: Positional arguments for the reduction function.
             initializer (Optional[Any]): Initial value for the reduction.
             by (Optional[PathLikeKey]): Key to group data items for reduction.
             template_context (KwargsLike): Context for template rendering.
             show_progress (Optional[bool]): Whether to display a progress bar.
-            pbar_kwargs (KwargsLike): Additional keyword arguments for progress bar configuration.
+            pbar_kwargs (KwargsLike): Keyword arguments for progress bar configuration.
             wrap (Optional[bool]): If True, wrap the result in a `KnowledgeAsset` instance.
             return_iterator (bool): If True, return an iterator over the reduction process.
-            **kwargs: Additional keyword arguments for the reduction function.
+            **kwargs: Keyword arguments for the reduction function.
 
         Returns:
             MaybeKnowledgeAsset: The result of reducing the asset data items.
@@ -2370,13 +2370,13 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
 
         Args:
             func (CustomTemplateLike): Function or template used to reduce each group.
-            *args: Additional positional arguments for `KnowledgeAsset.reduce`.
+            *args: Positional arguments for `KnowledgeAsset.reduce`.
             by (Optional[PathLikeKey]): Key or path used to group data items.
             uniform_groups (Optional[bool]): Whether to group only contiguous identical key values.
             get_kwargs (KwargsLike): Extra keyword arguments for retrieving keys via `KnowledgeAsset.get`.
             execute_kwargs (KwargsLike): Extra keyword arguments for task execution.
             return_group_keys (bool): If True, returns a dictionary mapping group keys to reduction results.
-            **kwargs: Additional keyword arguments for `KnowledgeAsset.reduce`.
+            **kwargs: Keyword arguments for `KnowledgeAsset.reduce`.
 
         """
         uniform_groups = self.resolve_setting(uniform_groups, "uniform_groups")
@@ -2425,7 +2425,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         """Merge list data items into a single list.
 
         Args:
-            **kwargs: Additional keyword arguments passed to `KnowledgeAsset.reduce`.
+            **kwargs: Keyword arguments passed to `KnowledgeAsset.reduce`.
 
         Returns:
             MaybeKnowledgeAsset: The merged data asset.
@@ -2441,7 +2441,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
 
         Args:
             sort_keys (Optional[bool]): Whether to sort the keys.
-            **kwargs: Additional keyword arguments passed to `KnowledgeAsset.reduce`.
+            **kwargs: Keyword arguments passed to `KnowledgeAsset.reduce`.
 
         Returns:
             MaybeKnowledgeAsset: An asset containing collected values for each key.
@@ -2456,7 +2456,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
 
         Args:
             lengths (list): List of numerical lengths.
-            **describe_kwargs: Additional keyword arguments for `pd.Series.describe`.
+            **describe_kwargs: Keyword arguments for `pd.Series.describe`.
 
         Returns:
             dict: A dictionary of descriptive statistics with keys prefixed by "len_".
@@ -2482,9 +2482,9 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
 
         Args:
             ignore_empty (Optional[bool]): Whether to ignore empty values.
-            describe_kwargs (KwargsLike): Additional keyword arguments for `pd.Series.describe`.
+            describe_kwargs (KwargsLike): Keyword arguments for `pd.Series.describe`.
             wrap (bool): If True, wraps the description in a single-item asset.
-            **kwargs: Additional keyword arguments passed to `KnowledgeAsset.collect`.
+            **kwargs: Keyword arguments passed to `KnowledgeAsset.collect`.
 
         Returns:
             Union[KnowledgeAssetT, dict]: A data asset or dictionary containing descriptive statistics.
@@ -2653,7 +2653,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         Args:
             to_documents_kwargs (KwargsLike): Keyword arguments for `KnowledgeAsset.to_documents`.
             wrap_documents (Optional[bool]): Flag indicating whether to retain the document embedding structure.
-            **kwargs: Additional keyword arguments for `embed_documents`.
+            **kwargs: Keyword arguments for `embed_documents`.
 
         Returns:
             Optional[MaybeKnowledgeAsset]: A new asset with embedded documents, or None if embedding fails.
@@ -2717,7 +2717,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
             asset_cache_manager (Optional[MaybeType[AssetCacheManager]]): Asset cache manager class or instance.
             asset_cache_manager_kwargs (KwargsLike): Keyword arguments for initializing or updating the cache manager.
             silence_warnings (bool): If True, caching warnings are suppressed.
-            **kwargs: Additional keyword arguments for `vectorbtpro.utils.knowledge.chatting.rank_documents`.
+            **kwargs: Keyword arguments for `vectorbtpro.utils.knowledge.chatting.rank_documents`.
 
         Returns:
             MaybeKnowledgeAsset: A new asset with documents ranked based on similarity to the query.

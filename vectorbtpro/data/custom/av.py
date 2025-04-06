@@ -262,8 +262,8 @@ class AVData(RemoteData):
             match_params (Optional[bool]): Whether to match parameters with those required by the endpoint.
 
                 Otherwise, only the resolved `function`, `apikey`, `datatype="csv"`, and `params` are used.
-            params (dict): Additional keyword arguments passed as key/value pairs in the URL.
-            read_csv_kwargs (dict): Keyword arguments passed to `pd.read_csv`.
+            params (KwargsLike): Keyword arguments passed as key/value pairs in the URL.
+            read_csv_kwargs (KwargsLike): Keyword arguments passed to `pd.read_csv`.
             silence_warnings (Optional[bool]): Whether to silence warnings.
 
         Returns:

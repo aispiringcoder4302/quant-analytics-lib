@@ -87,7 +87,7 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
 
     Args:
         arg_config (KwargsLike): Optional configuration for target function arguments.
-        **kwargs: Additional keyword arguments passed for configuration.
+        **kwargs: Keyword arguments passed for configuration.
 
     !!! warning
         Most properties are force-cached - create a new instance to override any attribute."""
@@ -125,7 +125,7 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
         Args:
             value (ArrayLike): The input value or container of values to map.
             look_for_type (Optional[type]): Type to search for within value to apply mapping.
-            **kwargs: Additional keyword arguments for enumeration mapping.
+            **kwargs: Keyword arguments for enumeration mapping.
 
         Returns:
             ArrayLike: The mapped value(s).
@@ -786,7 +786,7 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
     def target_func(self) -> tp.Optional[tp.Callable]:
         """Return the target function to be invoked with broadcasted arguments.
 
-        Returns `None` if no target function is defined.
+        Returns None if no target function is defined.
         """
         return None
 
@@ -803,7 +803,7 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
         """Return a dictionary of arguments to pass to the target function.
 
         Maps parameter names of `target_func` to corresponding preparer attributes using `target_arg_map`.
-        Returns `None` if no target function is defined.
+        Returns None if no target function is defined.
         """
         if self.target_func is not None:
             target_arg_map = self.target_arg_map

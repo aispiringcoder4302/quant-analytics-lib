@@ -159,7 +159,7 @@ class FinPyData(RemoteData):
             use_regex (bool): Whether the pattern should be interpreted as a regular expression.
             sort (bool): Whether to return the symbols in sorted order.
             config_manager (Optional[ConfigManager]): An optional configuration manager instance.
-            config_manager_config (KwargsLike): Additional keyword arguments for configuring the configuration manager.
+            config_manager_config (KwargsLike): Keyword arguments for configuring the configuration manager.
             category (Optional[MaybeList[str]]): A filter for the symbol category.
             data_source (Optional[MaybeList[str]]): A filter for the data source.
             freq (Optional[MaybeList[str]]): A filter for the frequency.
@@ -252,25 +252,25 @@ class FinPyData(RemoteData):
                 Accepts formats such as "fx.bloomberg.daily.NYC.EURUSD.close".
 
                 The fields `freq`, `cut`, `tickers`, and `fields` are optional.
-            market (Market, optional): The market instance.
+            market (Market): The market instance.
 
                 See `FinPyData.resolve_market`.
-            market_config (dict, optional): The client configuration.
+            market_config (KwargsLike): The client configuration.
 
                 See `FinPyData.resolve_market`.
-            start (DatetimeLike, optional): The start datetime.
+            start (DatetimeLike): The start datetime.
 
                 See `vectorbtpro.utils.datetime_.to_tzaware_datetime`.
-            end (DatetimeLike, optional): The end datetime.
+            end (DatetimeLike): The end datetime.
 
                 See `vectorbtpro.utils.datetime_.to_tzaware_datetime`.
-            timeframe (str, optional): The timeframe string.
+            timeframe (str): The timeframe string.
 
                 Accepts human-readable formats such as "15 minutes".
-            tz (TimezoneLike, optional): The timezone.
+            tz (TimezoneLike): The timezone.
 
                 See `vectorbtpro.utils.datetime_.to_timezone`.
-            **request_kwargs: Additional keyword arguments passed to
+            **request_kwargs: Keyword arguments passed to
                 `findatapy.market.marketdatarequest.MarketDataRequest`.
 
         Returns:

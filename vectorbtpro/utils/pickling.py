@@ -97,7 +97,7 @@ def compress(
         compression (CompressionLike): Compression algorithm identifier.
             If set to True, the default compression from settings is used.
         file_name (Optional[str]): File name for the compressed data when using archive-based compression.
-        **compress_kwargs: Additional keyword arguments passed to the compression function
+        **compress_kwargs: Keyword arguments passed to the compression function
             of the compression package.
 
     Returns:
@@ -194,7 +194,7 @@ def decompress(
         compression (CompressionLike): Compression algorithm identifier.
             If set to True, the default compression from settings is used.
         file_name (Optional[str]): File name to extract from the archive when using archive-based compression.
-        **decompress_kwargs: Additional keyword arguments passed to the decompression function
+        **decompress_kwargs: Keyword arguments passed to the decompression function
             of the compression package.
 
     Returns:
@@ -295,8 +295,8 @@ def dumps(
     Args:
         obj (Any): The object to serialize.
         compression (CompressionLike): The compression algorithm to use.
-        compress_kwargs (KwargsLike): Additional keyword arguments for compression.
-        **kwargs: Additional keyword arguments passed to the pickling library's `dumps` method.
+        compress_kwargs (KwargsLike): Keyword arguments for compression.
+        **kwargs: Keyword arguments passed to the pickling library's `dumps` method.
 
     Returns:
         bytes: The serialized and optionally compressed byte stream.
@@ -328,8 +328,8 @@ def loads(
     Args:
         bytes_ (bytes): The byte stream containing the serialized object.
         compression (CompressionLike): The compression algorithm used.
-        decompress_kwargs (KwargsLike): Additional keyword arguments for decompression.
-        **kwargs: Additional keyword arguments passed to the pickling library's `loads` method.
+        decompress_kwargs (KwargsLike): Keyword arguments for decompression.
+        **kwargs: Keyword arguments passed to the pickling library's `loads` method.
 
     Returns:
         Any: The deserialized object.
@@ -379,9 +379,9 @@ def save_bytes(
     Args:
         bytes_ (bytes): The byte stream to write.
         path (PathLike): The destination file path.
-        mkdir_kwargs (KwargsLike): Additional keyword arguments for directory creation.
+        mkdir_kwargs (KwargsLike): Keyword arguments for directory creation.
         compression (CompressionLike): The compression algorithm to use.
-        compress_kwargs (KwargsLike): Additional keyword arguments for compression.
+        compress_kwargs (KwargsLike): Keyword arguments for compression.
 
     Returns:
         Path: The path to the written file.
@@ -422,7 +422,7 @@ def load_bytes(
     Args:
         path (PathLike): The file path to read.
         compression (CompressionLike): The compression algorithm used.
-        decompress_kwargs (KwargsLike): Additional keyword arguments for decompression.
+        decompress_kwargs (KwargsLike): Keyword arguments for decompression.
 
     Returns:
         bytes: The read and optionally decompressed byte stream.
@@ -455,10 +455,10 @@ def save(
         path (Optional[PathLike]): The file path where the object will be saved.
 
             If a directory is provided, the file name is derived from the object's class name.
-        mkdir_kwargs (KwargsLike): Additional keyword arguments for directory creation.
+        mkdir_kwargs (KwargsLike): Keyword arguments for directory creation.
         compression (CompressionLike): The compression algorithm to use.
-        compress_kwargs (KwargsLike): Additional keyword arguments for compression.
-        **kwargs: Additional keyword arguments passed to `dumps`.
+        compress_kwargs (KwargsLike): Keyword arguments for compression.
+        **kwargs: Keyword arguments passed to `dumps`.
 
     Returns:
         Path: The path to the saved file.
@@ -492,8 +492,8 @@ def load(
     Args:
         path (PathLike): The file path from which to load the object.
         compression (CompressionLike): The compression algorithm used.
-        decompress_kwargs (KwargsLike): Additional keyword arguments for decompression.
-        **kwargs: Additional keyword arguments passed to `loads`.
+        decompress_kwargs (KwargsLike): Keyword arguments for decompression.
+        **kwargs: Keyword arguments passed to `loads`.
 
     Returns:
         Any: The deserialized object.
@@ -660,7 +660,7 @@ class Pickleable(Base):
         Args:
             rec_state_only (bool): If True, serialize only the instance's reconstruction state
                 for direct unpickling.
-            **kwargs: Additional keyword arguments passed to `dumps`.
+            **kwargs: Keyword arguments passed to `dumps`.
 
         Returns:
             bytes: The serialized byte stream.
@@ -681,7 +681,7 @@ class Pickleable(Base):
         Args:
             bytes_ (bytes): The byte stream containing the pickled data.
             check_type (bool): If True, validates that the unpickled object is an instance of the class.
-            **kwargs: Additional keyword arguments passed to `loads`.
+            **kwargs: Keyword arguments passed to `loads`.
 
         Returns:
             Pickleable: The unpickled instance.
@@ -699,7 +699,7 @@ class Pickleable(Base):
         Args:
             key (str): The key for the configuration node.
             value (Any): The value to encode.
-            **kwargs: Additional keyword arguments passed for encoding.
+            **kwargs: Keyword arguments passed for encoding.
 
         Returns:
             Any: The encoded configuration node.
@@ -713,7 +713,7 @@ class Pickleable(Base):
         Args:
             key (str): The key for the configuration node.
             value (Any): The value to decode.
-            **kwargs: Additional keyword arguments passed for decoding.
+            **kwargs: Keyword arguments passed for decoding.
 
         Returns:
             Any: The decoded configuration node.
@@ -760,7 +760,7 @@ class Pickleable(Base):
             nested (bool): Flag indicating whether to represent sub-dictionaries as individual sections.
             to_dict (bool): Flag to treat objects as dictionaries during encoding.
             parser_kwargs (KwargsLike): Keyword arguments for initializing the configuration parser.
-            **kwargs: Additional keyword arguments forwarded to `Pickleable.encode_config_node`.
+            **kwargs: Keyword arguments forwarded to `Pickleable.encode_config_node`.
 
         Returns:
             str: The encoded configuration string.
@@ -939,9 +939,9 @@ class Pickleable(Base):
                 using a DAG constructed with `graphlib`.
             use_class_ids (bool): Replace class identifiers prefixed with `@` with corresponding classes.
             code_context (KwargsLike): A context dictionary used during execution of Python code.
-            parser_kwargs (KwargsLike): Additional keyword arguments for configuring the parser.
+            parser_kwargs (KwargsLike): Keyword arguments for configuring the parser.
             check_type (bool): Check types during decoding.
-            **kwargs: Additional keyword arguments passed to `Pickleable.decode_config_node`.
+            **kwargs: Keyword arguments passed to `Pickleable.decode_config_node`.
 
         Returns:
             Pickleable: The decoded instance.
@@ -1357,8 +1357,8 @@ class Pickleable(Base):
         """Return whether a file exists.
 
         Args:
-            *args: Additional arguments passed to `Pickleable.resolve_file_path`.
-            **kwargs: Additional keyword arguments passed to `Pickleable.resolve_file_path`.
+            *args: Positional arguments passed to `Pickleable.resolve_file_path`.
+            **kwargs: Keyword arguments passed to `Pickleable.resolve_file_path`.
         """
         try:
             cls.resolve_file_path(*args, **kwargs)
@@ -1382,8 +1382,8 @@ class Pickleable(Base):
             path (Optional[PathLike]): File path to save the instance.
             file_format (Optional[str]): Format used for serialization.
             compression (CompressionLike): Compression method if applicable.
-            mkdir_kwargs (KwargsLike): Additional keyword arguments for directory creation.
-            **kwargs: Additional keyword arguments passed for serialization.
+            mkdir_kwargs (KwargsLike): Keyword arguments for directory creation.
+            **kwargs: Keyword arguments passed for serialization.
 
         Returns:
             Path: The file path where the instance was saved."""
@@ -1427,7 +1427,7 @@ class Pickleable(Base):
             path (Optional[PathLike]): Path of the file to load.
             file_format (Optional[str]): Format specifier for determining the file extension.
             compression (CompressionLike): Compression method if applicable.
-            **kwargs: Additional keyword arguments passed for deserialization.
+            **kwargs: Keyword arguments passed for deserialization.
 
         Returns:
             Pickleable: The deserialized instance."""
@@ -1456,7 +1456,7 @@ class Pickleable(Base):
 
         Args:
             readable (bool): If True, return a human-readable size string.
-            **kwargs: Additional keyword arguments for size formatting.
+            **kwargs: Keyword arguments for size formatting.
 
         Returns:
             Union[str, int]: The object's size as a human-readable string if `readable` is True,
@@ -1508,7 +1508,7 @@ class pdict(Comparable, Pickleable, Prettified, dict):
         Args:
             path (Optional[PathLike]): File path to load data from.
             clear (bool): If True, clear the existing dictionary before updating.
-            **kwargs: Additional keyword arguments passed for loading."""
+            **kwargs: Keyword arguments passed for loading."""
         if clear:
             self.clear()
         self.update(self.load(path=path, **kwargs))
@@ -1542,7 +1542,7 @@ class pdict(Comparable, Pickleable, Prettified, dict):
             other (Any): The object to compare against.
             check_types (bool): Whether to verify types during comparison.
             _key (Optional[str]): Internal key to use for comparison; defaults to the class name if not provided.
-            **kwargs: Additional keyword arguments for deep comparison.
+            **kwargs: Keyword arguments for deep comparison.
 
         Returns:
             bool: True if the objects are deeply equal, otherwise False."""

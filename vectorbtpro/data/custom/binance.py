@@ -42,7 +42,7 @@ BinanceDataT = tp.TypeVar("BinanceDataT", bound="BinanceData")
 class BinanceData(RemoteData):
     """Data class for fetching data from Binance using the Python Binance API.
 
-    See `https://github.com/sammchardy/python-binance` for API details.
+    See https://github.com/sammchardy/python-binance for API details.
 
     See `BinanceData.fetch_symbol` for argument details.
 
@@ -114,7 +114,7 @@ class BinanceData(RemoteData):
 
         Args:
             client (Optional[Client]): An existing Binance client instance.
-            client_config (KwargsLike): Additional keyword arguments for client configuration.
+            client_config (KwargsLike): Keyword arguments for client configuration.
 
         Returns:
             Client: A resolved or newly created Binance client.
@@ -154,7 +154,7 @@ class BinanceData(RemoteData):
             use_regex (bool): If True, interpret `pattern` as a regular expression.
             sort (bool): Whether to return the symbols in sorted order.
             client (Optional[Client]): A Binance client instance.
-            client_config (KwargsLike): Additional keyword arguments for client configuration.
+            client_config (KwargsLike): Keyword arguments for client configuration.
 
         Returns:
             List[str]: A list of Binance symbols.
@@ -199,7 +199,7 @@ class BinanceData(RemoteData):
             client (binance.client.Client): Binance client instance.
 
                 See `BinanceData.resolve_client`.
-            client_config (dict): Dictionary of client configuration options.
+            client_config (KwargsLike): Dictionary of client configuration options.
 
                 See `BinanceData.resolve_client`.
             start (any): Starting datetime for fetching data.
@@ -220,11 +220,11 @@ class BinanceData(RemoteData):
             limit (int): Maximum number of klines to retrieve per API call.
             delay (float): Delay in seconds after each request.
             show_progress (bool): Display a progress bar during data fetching.
-            pbar_kwargs (dict): Keyword arguments for the progress bar.
+            pbar_kwargs (KwargsLike): Keyword arguments for the progress bar.
 
                 Passed to `vectorbtpro.utils.pbar.ProgressBar`.
             silence_warnings (bool): Silence warnings if True.
-            **get_klines_kwargs: Additional keyword arguments for `binance.client.Client.get_klines`.
+            **get_klines_kwargs: Keyword arguments for `binance.client.Client.get_klines`.
 
         Returns:
             SymbolData: The fetched data and a metadata dictionary.

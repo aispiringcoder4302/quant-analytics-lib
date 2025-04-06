@@ -8,9 +8,9 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Custom Pandas accessors for generic data.
+"""Module providing custom Pandas accessors for generic data.
 
-Methods can be accessed as follows:
+Custom accessors extend Pandas objects:
 
 * `GenericSRAccessor` -> `pd.Series.vbt.*`
 * `GenericDFAccessor` -> `pd.DataFrame.vbt.*`
@@ -27,16 +27,16 @@ Methods can be accessed as follows:
 dtype: float64
 ```
 
-The accessors inherit `vectorbtpro.base.accessors` and are inherited by more
-specialized accessors, such as `vectorbtpro.signals.accessors` and `vectorbtpro.returns.accessors`.
+The accessors inherit from `vectorbtpro.base.accessors` and serve as the base for more specialized
+accessors such as `vectorbtpro.signals.accessors` and `vectorbtpro.returns.accessors`.
 
 !!! note
-    Grouping is only supported by the methods that accept the `group_by` argument.
+    Grouping is only supported by methods accepting the `group_by` argument.
 
     Accessors do not utilize caching.
 
 Run for the examples below:
-    
+
 ```pycon
 >>> df = pd.DataFrame({
 ...     'a': [1, 2, 3, 4, 5],
@@ -95,7 +95,7 @@ Name: a, dtype: object
 
 ### Mapping
 
-Mapping can be set both in `GenericAccessor` (preferred) and `GenericAccessor.stats`:
+Mapping can be configured both in `GenericAccessor` and via `GenericAccessor.stats`:
 
 ```pycon
 >>> mapping = {x: 'test_' + str(x) for x in pd.unique(df2.values.flatten())}
@@ -131,7 +131,7 @@ Value Counts: test_nan                  1
 Name: a, dtype: object
 ```
 
-Selecting a column before calling `stats` will consider uniques from this column only:
+Selecting a column before calling `stats` applies mapping to uniques in that column:
 
 ```pycon
 >>> df2['a'].vbt(freq='d', mapping=mapping).stats()
@@ -145,7 +145,7 @@ Value Counts: test_nan                  1
 Name: a, dtype: object
 ```
 
-To include all keys from `mapping`, pass `incl_all_keys=True`:
+To include all keys from the mapping, pass `incl_all_keys=True`:
 
 ```pycon
 >>> df2['a'].vbt(freq='d', mapping=mapping).stats(settings=dict(incl_all_keys=True))
@@ -163,7 +163,7 @@ Value Counts: test_nan                  1
 Name: a, dtype: object
 ```
 
-`GenericAccessor.stats` also supports (re-)grouping:
+`GenericAccessor.stats` also supports regrouping:
 
 ```pycon
 >>> df2.vbt(freq='d').stats(column=0, group_by=[0, 0, 1])
@@ -186,7 +186,7 @@ Name: 0, dtype: object
 !!! hint
     See `vectorbtpro.generic.plots_builder.PlotsBuilderMixin.plots` and `GenericAccessor.subplots`.
 
-`GenericAccessor` class has a single subplot based on `GenericAccessor.plot`:
+`GenericAccessor` provides a single subplot via `GenericAccessor.plot`:
 
 ```pycon
 >>> df2.vbt.plots().show()
@@ -303,7 +303,7 @@ nb_config = ReadonlyConfig(
 
 __pdoc__[
     "nb_config"
-] = f"""Config of Numba methods to be attached to `GenericAccessor`.
+] = f"""Configuration for Numba functions attached to `GenericAccessor`.
 
 ```python
 {nb_config.prettify_doc()}
@@ -313,9 +313,16 @@ __pdoc__[
 
 @attach_nb_methods(nb_config)
 class GenericAccessor(BaseAccessor, Analyzable):
-    """Accessor on top of data of any type. For both, Series and DataFrames.
+    """Accessor on top of data of any type for both Series and DataFrames.
 
-    Accessible via `pd.Series.vbt` and `pd.DataFrame.vbt`."""
+    Accessible via `pd.Series.vbt` and `pd.DataFrame.vbt`.
+
+    Args:
+        wrapper (Union[ArrayWrapper, ArrayLike]): Data wrapper for the values.
+        obj (Optional[ArrayLike]): Object containing the data.
+        mapping (Optional[MappingLike]): Mapping configuration for data transformation.
+        **kwargs: Additional keyword arguments.
+    """
 
     def __init__(
         self,
@@ -332,25 +339,26 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
     @hybrid_property
     def sr_accessor_cls(cls_or_self) -> tp.Type["GenericSRAccessor"]:
-        """Accessor class for `pd.Series`."""
+        """Return the accessor class for `pd.Series` objects."""
         return GenericSRAccessor
 
     @hybrid_property
     def df_accessor_cls(cls_or_self) -> tp.Type["GenericDFAccessor"]:
-        """Accessor class for `pd.DataFrame`."""
+        """Return the accessor class for `pd.DataFrame` objects."""
         return GenericDFAccessor
 
     # ############# Mapping ############# #
 
     @property
     def mapping(self) -> tp.Optional[tp.MappingLike]:
-        """Mapping."""
+        """Return the mapping configuration."""
         return self._mapping
 
     def resolve_mapping(self, mapping: tp.Union[None, bool, tp.MappingLike] = None) -> tp.Optional[tp.Mapping]:
-        """Resolve mapping.
+        """Resolve and return the mapping configuration based on the input.
 
-        Set `mapping` to False to disable mapping completely."""
+        If `mapping` is set to False, mapping is disabled and the function returns None.
+        """
         if mapping is None:
             mapping = self.mapping
         if isinstance(mapping, bool):
@@ -368,7 +376,10 @@ class GenericAccessor(BaseAccessor, Analyzable):
         return mapping
 
     def apply_mapping(self, mapping: tp.Union[None, bool, tp.MappingLike] = None, **kwargs) -> tp.SeriesFrame:
-        """See `vectorbtpro.utils.mapping.apply_mapping`."""
+        """Apply the resolved mapping configuration to the data.
+
+        Delegates to `vectorbtpro.utils.mapping.apply_mapping`.
+        """
         mapping = self.resolve_mapping(mapping)
         return apply_mapping(self.obj, mapping, **kwargs)
 
@@ -381,7 +392,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         get_indexer_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> tp.SeriesFrame:
-        """For each value, get the value `n` periods ago."""
+        """Return a copy of the data with each value replaced by the value from `n` periods ago."""
         if checks.is_int(n):
             return self.fshift(n, fill_value=fill_value, **kwargs)
         if get_indexer_kwargs is None:
@@ -394,7 +405,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
         return new_obj
 
     def any_ago(self, n: tp.Union[int, tp.FrequencyLike], **kwargs) -> tp.SeriesFrame:
-        """For each value, check whether any value within a window of `n` last periods is True."""
+        """Return a boolean Series/DataFrame indicating if any value in a rolling window of
+        `n` previous periods is True."""
         wrap_kwargs = kwargs.pop("wrap_kwargs", {})
         wrap_kwargs = merge_dicts(dict(fillna=False, dtype=bool), wrap_kwargs)
         if checks.is_int(n):
@@ -402,7 +414,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
         return self.rolling_apply(n, "any", wrap_kwargs=wrap_kwargs, **kwargs)
 
     def all_ago(self, n: tp.Union[int, tp.FrequencyLike], **kwargs) -> tp.SeriesFrame:
-        """For each value, check whether all values within a window of `n` last periods are True."""
+        """Return a boolean Series/DataFrame indicating if all values in a rolling window of
+        `n` previous periods are True."""
         wrap_kwargs = kwargs.pop("wrap_kwargs", {})
         wrap_kwargs = merge_dicts(dict(fillna=False, dtype=bool), wrap_kwargs)
         if checks.is_int(n):
@@ -420,7 +433,9 @@ class GenericAccessor(BaseAccessor, Analyzable):
         chunked: tp.ChunkedOption = None,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.SeriesFrame:
-        """See `vectorbtpro.generic.nb.rolling.rolling_argmin_nb`."""
+        """Compute the index of the minimum value within each rolling window.
+
+        Delegates to `vectorbtpro.generic.nb.rolling.rolling_argmin_nb` for computation."""
         if window is None:
             window = self.wrapper.shape[0]
         func = jit_reg.resolve_option(nb.rolling_argmin_nb, jitted)
@@ -431,7 +446,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
         return self.wrapper.wrap(out, group_by=False, **resolve_dict(wrap_kwargs))
 
     def expanding_idxmin(self, minp: tp.Optional[int] = 1, **kwargs) -> tp.SeriesFrame:
-        """Expanding version of `GenericAccessor.rolling_idxmin`."""
+        """Return the expanding index of the minimum value, equivalent to using the full-length
+        window as in `GenericAccessor.rolling_idxmin`."""
         return self.rolling_idxmin(None, minp=minp, **kwargs)
 
     def rolling_idxmax(
@@ -443,7 +459,9 @@ class GenericAccessor(BaseAccessor, Analyzable):
         chunked: tp.ChunkedOption = None,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.SeriesFrame:
-        """See `vectorbtpro.generic.nb.rolling.rolling_argmax_nb`."""
+        """Compute the index of the maximum value within each rolling window.
+
+        Delegates to `vectorbtpro.generic.nb.rolling.rolling_argmax_nb` for computation."""
         if window is None:
             window = self.wrapper.shape[0]
         func = jit_reg.resolve_option(nb.rolling_argmax_nb, jitted)
@@ -454,7 +472,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
         return self.wrapper.wrap(out, group_by=False, **resolve_dict(wrap_kwargs))
 
     def expanding_idxmax(self, minp: tp.Optional[int] = 1, **kwargs) -> tp.SeriesFrame:
-        """Expanding version of `GenericAccessor.rolling_idxmax`."""
+        """Return the expanding index of the maximum value, equivalent to using the full-length
+        window as in `GenericAccessor.rolling_idxmax`."""
         return self.rolling_idxmax(None, minp=minp, **kwargs)
 
     def rolling_mean(
@@ -465,7 +484,9 @@ class GenericAccessor(BaseAccessor, Analyzable):
         chunked: tp.ChunkedOption = None,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.SeriesFrame:
-        """See `vectorbtpro.generic.nb.rolling.rolling_mean_nb`."""
+        """Compute the rolling mean over a moving window.
+
+        Delegates to `vectorbtpro.generic.nb.rolling.rolling_mean_nb` for computation."""
         if window is None:
             window = self.wrapper.shape[0]
         func = jit_reg.resolve_option(nb.rolling_mean_nb, jitted)
@@ -474,7 +495,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
         return self.wrapper.wrap(out, group_by=False, **resolve_dict(wrap_kwargs))
 
     def expanding_mean(self, minp: tp.Optional[int] = 1, **kwargs) -> tp.SeriesFrame:
-        """Expanding version of `GenericAccessor.rolling_mean`."""
+        """Return the expanding mean computed over an increasing window, equivalent to using
+        the full-length window as in `GenericAccessor.rolling_mean`."""
         return self.rolling_mean(None, minp=minp, **kwargs)
 
     def rolling_std(
@@ -486,7 +508,9 @@ class GenericAccessor(BaseAccessor, Analyzable):
         chunked: tp.ChunkedOption = None,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.SeriesFrame:
-        """See `vectorbtpro.generic.nb.rolling.rolling_std_nb`."""
+        """Compute the rolling standard deviation over a moving window.
+
+        Delegates to `vectorbtpro.generic.nb.rolling.rolling_std_nb` for computation."""
         if window is None:
             window = self.wrapper.shape[0]
         func = jit_reg.resolve_option(nb.rolling_std_nb, jitted)
@@ -495,7 +519,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
         return self.wrapper.wrap(out, group_by=False, **resolve_dict(wrap_kwargs))
 
     def expanding_std(self, minp: tp.Optional[int] = 1, **kwargs) -> tp.SeriesFrame:
-        """Expanding version of `GenericAccessor.rolling_std`."""
+        """Return the expanding standard deviation computed over an increasing window,
+        equivalent to using the full-length window as in `GenericAccessor.rolling_std`."""
         return self.rolling_std(None, minp=minp, **kwargs)
 
     def rolling_zscore(
@@ -507,7 +532,21 @@ class GenericAccessor(BaseAccessor, Analyzable):
         chunked: tp.ChunkedOption = None,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.SeriesFrame:
-        """See `vectorbtpro.generic.nb.rolling.rolling_zscore_nb`."""
+        """Compute the rolling z-score for the instance's data using a specified window.
+
+        Args:
+            window (Optional[int]): Window size for computing the z-score.
+
+                If None, uses the full length of the data.
+            minp (Optional[int]): Minimum number of observations required within the window.
+            ddof (int): Delta degrees of freedom.
+            jitted (JittedOption): Option to control JIT compilation.
+            chunked (ChunkedOption): Option to control chunked computation.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the output.
+
+        Returns:
+            SeriesFrame: Calculated rolling z-score values.
+        """
         if window is None:
             window = self.wrapper.shape[0]
         func = jit_reg.resolve_option(nb.rolling_zscore_nb, jitted)
@@ -516,7 +555,15 @@ class GenericAccessor(BaseAccessor, Analyzable):
         return self.wrapper.wrap(out, group_by=False, **resolve_dict(wrap_kwargs))
 
     def expanding_zscore(self, minp: tp.Optional[int] = 1, **kwargs) -> tp.SeriesFrame:
-        """Expanding version of `GenericAccessor.rolling_zscore`."""
+        """Compute the expanding z-score for the instance's data over its entire length.
+
+        Args:
+            minp (Optional[int]): Minimum number of observations required before computing the z-score.
+            **kwargs: Keyword arguments passed to `GenericAccessor.rolling_zscore`.
+
+        Returns:
+            SeriesFrame: Calculated expanding z-score values.
+        """
         return self.rolling_zscore(None, minp=minp, **kwargs)
 
     def wm_mean(
@@ -527,7 +574,18 @@ class GenericAccessor(BaseAccessor, Analyzable):
         chunked: tp.ChunkedOption = None,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.SeriesFrame:
-        """See `vectorbtpro.generic.nb.rolling.wm_mean_nb`."""
+        """Compute the weighted moving mean for the instance's data using a specified span.
+
+        Args:
+            span (int): Window span for computing the weighted moving mean.
+            minp (Optional[int]): Minimum number of observations required within the span.
+            jitted (JittedOption): Option to control JIT compilation.
+            chunked (ChunkedOption): Option to control chunked computation.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the output.
+
+        Returns:
+            SeriesFrame: Calculated weighted moving mean values.
+        """
         func = jit_reg.resolve_option(nb.wm_mean_nb, jitted)
         func = ch_reg.resolve_option(func, chunked)
         out = func(self.to_2d_array(), span, minp=minp)
@@ -542,7 +600,19 @@ class GenericAccessor(BaseAccessor, Analyzable):
         chunked: tp.ChunkedOption = None,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.SeriesFrame:
-        """See `vectorbtpro.generic.nb.rolling.ewm_mean_nb`."""
+        """Compute the exponentially weighted moving mean for the instance's data using a specified span.
+
+        Args:
+            span (int): Window span for computing the exponentially weighted moving mean.
+            minp (Optional[int]): Minimum number of observations required.
+            adjust (bool): Whether to adjust the weights.
+            jitted (JittedOption): Option to control JIT compilation.
+            chunked (ChunkedOption): Option to control chunked computation.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the output.
+
+        Returns:
+            SeriesFrame: Calculated exponentially weighted moving mean values.
+        """
         func = jit_reg.resolve_option(nb.ewm_mean_nb, jitted)
         func = ch_reg.resolve_option(func, chunked)
         out = func(self.to_2d_array(), span, minp=minp, adjust=adjust)
@@ -557,7 +627,20 @@ class GenericAccessor(BaseAccessor, Analyzable):
         chunked: tp.ChunkedOption = None,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.SeriesFrame:
-        """See `vectorbtpro.generic.nb.rolling.ewm_std_nb`."""
+        """Compute the exponentially weighted moving standard deviation for the instance's
+        data using a specified span.
+
+        Args:
+            span (int): Window span for computing the exponentially weighted moving standard deviation.
+            minp (Optional[int]): Minimum number of observations required.
+            adjust (bool): Whether to adjust the weights.
+            jitted (JittedOption): Option to control JIT compilation.
+            chunked (ChunkedOption): Option to control chunked computation.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the output.
+
+        Returns:
+            SeriesFrame: Calculated exponentially weighted moving standard deviation values.
+        """
         func = jit_reg.resolve_option(nb.ewm_std_nb, jitted)
         func = ch_reg.resolve_option(func, chunked)
         out = func(self.to_2d_array(), span, minp=minp, adjust=adjust)
@@ -572,7 +655,19 @@ class GenericAccessor(BaseAccessor, Analyzable):
         chunked: tp.ChunkedOption = None,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.SeriesFrame:
-        """See `vectorbtpro.generic.nb.rolling.wwm_mean_nb`."""
+        """Compute the weighted window moving mean for the instance's data using a specified period.
+
+        Args:
+            period (int): Window period for computing the moving mean.
+            minp (Optional[int]): Minimum number of observations required.
+            adjust (bool): Whether to adjust the weights.
+            jitted (JittedOption): Option to control JIT compilation.
+            chunked (ChunkedOption): Option to control chunked computation.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the output.
+
+        Returns:
+            SeriesFrame: Calculated weighted window moving mean values.
+        """
         func = jit_reg.resolve_option(nb.wwm_mean_nb, jitted)
         func = ch_reg.resolve_option(func, chunked)
         out = func(self.to_2d_array(), period, minp=minp, adjust=adjust)
@@ -587,7 +682,20 @@ class GenericAccessor(BaseAccessor, Analyzable):
         chunked: tp.ChunkedOption = None,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.SeriesFrame:
-        """See `vectorbtpro.generic.nb.rolling.wwm_std_nb`."""
+        """Compute the weighted window moving standard deviation for the instance's data
+        using a specified period.
+
+        Args:
+            period (int): Window period for computing the moving standard deviation.
+            minp (Optional[int]): Minimum number of observations required.
+            adjust (bool): Whether to adjust the weights.
+            jitted (JittedOption): Option to control JIT compilation.
+            chunked (ChunkedOption): Option to control chunked computation.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the output.
+
+        Returns:
+            SeriesFrame: Calculated weighted window moving standard deviation values.
+        """
         func = jit_reg.resolve_option(nb.wwm_std_nb, jitted)
         func = ch_reg.resolve_option(func, chunked)
         out = func(self.to_2d_array(), period, minp=minp, adjust=adjust)
@@ -601,7 +709,19 @@ class GenericAccessor(BaseAccessor, Analyzable):
         chunked: tp.ChunkedOption = None,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.SeriesFrame:
-        """See `vectorbtpro.generic.nb.rolling.vidya_nb`."""
+        """Compute the Variable Index Dynamic Average (VIDYA) for the instance's data
+        using a specified window.
+
+        Args:
+            window (int): Window size for computing VIDYA.
+            minp (Optional[int]): Minimum number of observations required within the window.
+            jitted (JittedOption): Option to control JIT compilation.
+            chunked (ChunkedOption): Option to control chunked computation.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the output.
+
+        Returns:
+            SeriesFrame: Calculated VIDYA values.
+        """
         func = jit_reg.resolve_option(nb.vidya_nb, jitted)
         func = ch_reg.resolve_option(func, chunked)
         out = func(self.to_2d_array(), window, minp=minp)
@@ -617,7 +737,20 @@ class GenericAccessor(BaseAccessor, Analyzable):
         chunked: tp.ChunkedOption = None,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.SeriesFrame:
-        """See `vectorbtpro.generic.nb.rolling.ma_nb`."""
+        """Compute the moving average for the instance's data using a specified window and weighting type.
+
+        Args:
+            window (int): Window size for computing the moving average.
+            wtype (Union[int, str]): Type of weighting to use for the moving average.
+            minp (Optional[int]): Minimum number of observations required within the window.
+            adjust (bool): Whether to adjust the weights during computation.
+            jitted (JittedOption): Option to control JIT compilation.
+            chunked (ChunkedOption): Option to control chunked computation.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the output.
+
+        Returns:
+            SeriesFrame: Calculated moving average values.
+        """
         if isinstance(wtype, str):
             wtype = map_enum_fields(wtype, WType)
         func = jit_reg.resolve_option(nb.ma_nb, jitted)
@@ -636,7 +769,22 @@ class GenericAccessor(BaseAccessor, Analyzable):
         chunked: tp.ChunkedOption = None,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.SeriesFrame:
-        """See `vectorbtpro.generic.nb.rolling.msd_nb`."""
+        """Compute the moving standard deviation for the instance's data using a specified
+        window and weighting type.
+
+        Args:
+            window (int): Window size for computing the moving standard deviation.
+            wtype (Union[int, str]): Type of weighting to use for the moving standard deviation.
+            minp (Optional[int]): Minimum number of observations required within the window.
+            adjust (bool): Whether to adjust the weights during computation.
+            ddof (int): Delta degrees of freedom.
+            jitted (JittedOption): Option to control JIT compilation.
+            chunked (ChunkedOption): Option to control chunked computation.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the output.
+
+        Returns:
+            SeriesFrame: Calculated moving standard deviation values.
+        """
         if isinstance(wtype, str):
             wtype = map_enum_fields(wtype, WType)
         func = jit_reg.resolve_option(nb.msd_nb, jitted)
@@ -655,7 +803,24 @@ class GenericAccessor(BaseAccessor, Analyzable):
         chunked: tp.ChunkedOption = None,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.SeriesFrame:
-        """See `vectorbtpro.generic.nb.rolling.rolling_cov_nb`."""
+        """Compute the rolling covariance between the instance's data and another series
+        using a specified window.
+
+        Args:
+            other (SeriesFrame): Another data series to compute covariance with.
+            window (Optional[int]): Window size for computing covariance.
+
+                If None, uses the full series length.
+            minp (Optional[int]): Minimum number of observations required within the window.
+            ddof (int): Delta degrees of freedom.
+            broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting the data.
+            jitted (JittedOption): Option to control JIT compilation.
+            chunked (ChunkedOption): Option to control chunked computation.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the output.
+
+        Returns:
+            SeriesFrame: Calculated rolling covariance values.
+        """
         self_obj, other_obj = reshaping.broadcast(self.obj, other, **resolve_dict(broadcast_kwargs))
         if window is None:
             window = self_obj.shape[0]
@@ -665,7 +830,17 @@ class GenericAccessor(BaseAccessor, Analyzable):
         return ArrayWrapper.from_obj(self_obj).wrap(out, group_by=False, **resolve_dict(wrap_kwargs))
 
     def expanding_cov(self, other: tp.SeriesFrame, minp: tp.Optional[int] = 1, **kwargs) -> tp.SeriesFrame:
-        """Expanding version of `GenericAccessor.rolling_cov`."""
+        """Compute the expanding covariance between the instance's data and another
+        series using all available data.
+
+        Args:
+            other (SeriesFrame): Another data series to compute covariance with.
+            minp (Optional[int]): Minimum number of observations required before computing covariance.
+            **kwargs: Keyword arguments passed to `GenericAccessor.rolling_cov`.
+
+        Returns:
+            SeriesFrame: Calculated expanding covariance values.
+        """
         return self.rolling_cov(other, None, minp=minp, **kwargs)
 
     def rolling_corr(
@@ -678,7 +853,23 @@ class GenericAccessor(BaseAccessor, Analyzable):
         chunked: tp.ChunkedOption = None,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.SeriesFrame:
-        """See `vectorbtpro.generic.nb.rolling.rolling_corr_nb`."""
+        """Compute rolling correlation using a moving window based on
+        `vectorbtpro.generic.nb.rolling.rolling_corr_nb`.
+
+        Args:
+            other (SeriesFrame): Second series or frame for computing correlation.
+            window (Optional[int]): Size of the rolling window.
+
+                If None, uses the full data length.
+            minp (Optional[int]): Minimum number of observations required in each window.
+            broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting inputs.
+            jitted (JittedOption): Option to control just-in-time compilation.
+            chunked (ChunkedOption): Option to control chunked computation.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the output.
+
+        Returns:
+            SeriesFrame: The rolling correlation computed over the specified window.
+        """
         self_obj, other_obj = reshaping.broadcast(self.obj, other, **resolve_dict(broadcast_kwargs))
         if window is None:
             window = self_obj.shape[0]
@@ -688,7 +879,16 @@ class GenericAccessor(BaseAccessor, Analyzable):
         return ArrayWrapper.from_obj(self_obj).wrap(out, group_by=False, **resolve_dict(wrap_kwargs))
 
     def expanding_corr(self, other: tp.SeriesFrame, minp: tp.Optional[int] = 1, **kwargs) -> tp.SeriesFrame:
-        """Expanding version of `GenericAccessor.rolling_corr`."""
+        """Compute expanding correlation by applying a growing window via `GenericAccessor.rolling_corr`.
+
+        Args:
+            other (SeriesFrame): Second series or frame for correlation computation.
+            minp (Optional[int]): Minimum number of observations required.
+            **kwargs: Keyword arguments forwarded to `GenericAccessor.rolling_corr`.
+
+        Returns:
+            SeriesFrame: The expanding correlation result.
+        """
         return self.rolling_corr(other, None, minp=minp, **kwargs)
 
     def rolling_ols(
@@ -701,9 +901,23 @@ class GenericAccessor(BaseAccessor, Analyzable):
         chunked: tp.ChunkedOption = None,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.Tuple[tp.SeriesFrame, tp.SeriesFrame]:
-        """See `vectorbtpro.generic.nb.rolling.rolling_ols_nb`.
+        """Compute rolling ordinary least squares regression using
+        `vectorbtpro.generic.nb.rolling.rolling_ols_nb`.
 
-        Returns two arrays: slope and intercept."""
+        Args:
+            other (SeriesFrame): Second series or frame to perform regression against.
+            window (Optional[int]): Size of the rolling window.
+
+                If None, uses the full series length.
+            minp (Optional[int]): Minimum number of observations required per window.
+            broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting inputs.
+            jitted (JittedOption): Option to control just-in-time compilation.
+            chunked (ChunkedOption): Option to control chunked computation.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the output.
+
+        Returns:
+            Tuple[SeriesFrame, SeriesFrame]: A tuple containing the slope and intercept arrays.
+        """
         self_obj, other_obj = reshaping.broadcast(self.obj, other, **resolve_dict(broadcast_kwargs))
         if window is None:
             window = self_obj.shape[0]
@@ -726,7 +940,17 @@ class GenericAccessor(BaseAccessor, Analyzable):
         minp: tp.Optional[int] = 1,
         **kwargs,
     ) -> tp.Tuple[tp.SeriesFrame, tp.SeriesFrame]:
-        """Expanding version of `GenericAccessor.rolling_ols`."""
+        """Compute expanding ordinary least squares regression by applying a growing window
+        via `GenericAccessor.rolling_ols`.
+
+        Args:
+            other (SeriesFrame): Second series or frame for regression.
+            minp (Optional[int]): Minimum number of observations required.
+            **kwargs: Keyword arguments forwarded to `GenericAccessor.rolling_ols`.
+
+        Returns:
+            Tuple[SeriesFrame, SeriesFrame]: A tuple containing the slope and intercept arrays.
+        """
         return self.rolling_ols(other, None, minp=minp, **kwargs)
 
     def rolling_rank(
@@ -738,7 +962,21 @@ class GenericAccessor(BaseAccessor, Analyzable):
         chunked: tp.ChunkedOption = None,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.SeriesFrame:
-        """See `vectorbtpro.generic.nb.rolling.rolling_rank_nb`."""
+        """Compute rolling rank using `vectorbtpro.generic.nb.rolling.rolling_rank_nb`.
+
+        Args:
+            window (Optional[int]): Size of the rolling window.
+
+                If None, uses the full series length.
+            minp (Optional[int]): Minimum number of observations required per window.
+            pct (bool): If True, compute percentile rank; otherwise, compute ordinal rank.
+            jitted (JittedOption): Option to control just-in-time compilation.
+            chunked (ChunkedOption): Option to control chunked operations.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the output.
+
+        Returns:
+            SeriesFrame: The rolling rank result.
+        """
         if window is None:
             window = self.wrapper.shape[0]
         func = jit_reg.resolve_option(nb.rolling_rank_nb, jitted)
@@ -747,7 +985,15 @@ class GenericAccessor(BaseAccessor, Analyzable):
         return self.wrapper.wrap(out, group_by=False, **resolve_dict(wrap_kwargs))
 
     def expanding_rank(self, minp: tp.Optional[int] = 1, **kwargs) -> tp.SeriesFrame:
-        """Expanding version of `GenericAccessor.rolling_rank`."""
+        """Compute expanding rank by applying a growing window via `GenericAccessor.rolling_rank`.
+
+        Args:
+            minp (Optional[int]): Minimum number of observations required.
+            **kwargs: Keyword arguments forwarded to `GenericAccessor.rolling_rank`.
+
+        Returns:
+            SeriesFrame: The expanding rank result.
+        """
         return self.rolling_rank(None, minp=minp, **kwargs)
 
     def rolling_pattern_similarity(
@@ -778,7 +1024,46 @@ class GenericAccessor(BaseAccessor, Analyzable):
         chunked: tp.ChunkedOption = None,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.SeriesFrame:
-        """See `vectorbtpro.generic.nb.rolling.rolling_pattern_similarity_nb`."""
+        """Compute rolling pattern similarity using `vectorbtpro.generic.nb.rolling.rolling_pattern_similarity_nb`.
+
+        Args:
+            pattern (ArrayLike): Reference pattern array for similarity comparison.
+            window (Optional[int]): Base length of the rolling window.
+
+                Defaults to the length of `pattern`.
+            max_window (Optional[int]): Maximum length of the rolling window.
+            row_select_prob (float): Probability of selecting a row for computation.
+            window_select_prob (float): Probability of selecting a specific window size.
+            interp_mode (Union[int, str]): Interpolation mode, mapped using
+                `vectorbtpro.generic.enums.InterpMode` if provided as a string.
+            rescale_mode (Union[int, str]): Rescaling mode, mapped using
+                `vectorbtpro.generic.enums.RescaleMode` if provided as a string.
+            vmin (float): Minimum value used for rescaling `arr`.
+            vmax (float): Maximum value used for rescaling `arr`.
+            pmin (float): Minimum value used for rescaling `pattern`.
+            pmax (float): Maximum value used for rescaling `pattern`.
+            invert (bool): Invert the pattern by reflecting its values.
+            error_type (Union[int, str]): Error calculation type, mapped using
+                `vectorbtpro.generic.enums.ErrorType` if provided as a string.
+            distance_measure (Union[int, str]): Distance measure for error computation,
+                mapped using `vectorbtpro.generic.enums.DistanceMeasure` if provided as a string.
+            max_error (ArrayLike): Maximum allowed error.
+            max_error_interp_mode (Union[None, int, str]): Interpolation mode for maximum error,
+                mapped using `vectorbtpro.generic.enums.InterpMode` if provided.
+            max_error_as_maxdist (bool): Treat maximum error directly as maximum distance if True.
+            max_error_strict (bool): Enforce strict maximum error rules; returns NaN if exceeded.
+            min_pct_change (float): Minimum percent change applied during rescaling.
+            max_pct_change (float): Maximum percent change applied during rescaling.
+            min_similarity (float): Minimum similarity threshold; if the computed similarity
+                falls below this, returns NaN.
+            minp (Optional[int]): Minimum number of valid data points required for computation.
+            jitted (JittedOption): Option to control just-in-time compilation.
+            chunked (ChunkedOption): Option to control chunked processing.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the output.
+
+        Returns:
+            SeriesFrame: The rolling pattern similarity result.
+        """
         if isinstance(interp_mode, str):
             interp_mode = map_enum_fields(interp_mode, InterpMode)
         if isinstance(rescale_mode, str):
@@ -836,9 +1121,29 @@ class GenericAccessor(BaseAccessor, Analyzable):
         wrapper: tp.Optional[ArrayWrapper] = None,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.SeriesFrame:
-        """See `vectorbtpro.generic.nb.apply_reduce.map_nb`.
+        """Map the input arrays using the specified Numba mapping function.
 
-        For details on the meta version, see `vectorbtpro.generic.nb.apply_reduce.map_meta_nb`.
+        This method applies the mapping function to the underlying 2D array of data and
+        supports both regular and meta mapping operations. When invoked on a class,
+        it performs broadcasting and template substitution and utilizes the meta mapping version.
+        For further details on the meta version, see `vectorbtpro.generic.nb.apply_reduce.map_meta_nb`.
+
+        Args:
+            map_func_nb (Union[str, MapFunc, MapMetaFunc]): The mapping function to apply.
+
+                If provided as a string, selects the corresponding Numba function
+                from `nb` with the suffix "_map_nb".
+            *args: Positional arguments passed to the mapping function.
+            broadcast_named_args (KwargsLike): Additional named arguments for broadcasting templates across arrays.
+            broadcast_kwargs (KwargsLike): Keyword arguments controlling the broadcasting operation.
+            template_context (KwargsLike): Context dictionary for substituting templates in positional arguments.
+            jitted (JittedOption): Option specifying whether to control Numba JIT compilation.
+            chunked (ChunkedOption): Option specifying whether to execute the mapping function in a chunked manner.
+            wrapper (Optional[ArrayWrapper]): Array wrapper used to manage input and output arrays.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the output.
+
+        Returns:
+            SeriesFrame: The result of applying the mapping function to the input data, wrapped appropriately.
 
         Usage:
             * Using regular function:
@@ -951,11 +1256,31 @@ class GenericAccessor(BaseAccessor, Analyzable):
         wrapper: tp.Optional[ArrayWrapper] = None,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.SeriesFrame:
-        """See `vectorbtpro.generic.nb.apply_reduce.apply_nb` for `axis=1` and
-        `vectorbtpro.generic.nb.apply_reduce.row_apply_nb` for `axis=0`.
+        """Apply a function along a specified axis with optional broadcasting,
+        JIT compilation, and chunked processing.
 
-        For details on the meta version, see `vectorbtpro.generic.nb.apply_reduce.apply_meta_nb`
-        for `axis=1` and `vectorbtpro.generic.nb.apply_reduce.row_apply_meta_nb` for `axis=0`.
+        * For non-meta operations, refer to `vectorbtpro.generic.nb.apply_reduce.apply_nb`
+            for axis=1 and `vectorbtpro.generic.nb.apply_reduce.row_apply_nb` for axis=0.
+        * For meta operations, refer to `vectorbtpro.generic.nb.apply_reduce.apply_meta_nb`
+            for axis=1 and `vectorbtpro.generic.nb.apply_reduce.row_apply_meta_nb` for axis=0.
+
+        Args:
+            apply_func_nb (Union[str, ApplyFunc, ApplyMetaFunc]): Function or string identifier
+                to apply along the specified axis.
+            *args: Positional arguments passed to the apply function.
+            axis (int): Axis along which to apply the function.
+
+                Use 1 for column-wise and 0 for row-wise operations.
+            broadcast_named_args (KwargsLike): Named arguments for broadcasting input arrays.
+            broadcast_kwargs (KwargsLike): Keyword arguments controlling broadcasting behavior.
+            template_context (KwargsLike): Context dictionary for template substitution in positional arguments.
+            jitted (JittedOption): Option to control or configure just-in-time compilation.
+            chunked (ChunkedOption): Option to control or configure chunked processing.
+            wrapper (Optional[ArrayWrapper]): Optional array wrapper used to format the output.
+            wrap_kwargs (KwargsLike): Keyword arguments provided to the output wrapper.
+
+        Returns:
+            SeriesFrame: The result of applying the function to the input data.
 
         Usage:
             * Using regular function:
@@ -1061,12 +1386,22 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
     @hybrid_method
     def row_apply(self, *args, **kwargs) -> tp.SeriesFrame:
-        """`GenericAccessor.apply_along_axis` with `axis=0`."""
+        """Apply a function row-wise by invoking `GenericAccessor.apply_along_axis` with axis set to 0.
+
+        Args:
+            *args: Positional arguments for the apply function.
+            **kwargs: Keyword arguments for the apply function.
+        """
         return self.apply_along_axis(*args, axis=0, **kwargs)
 
     @hybrid_method
     def column_apply(self, *args, **kwargs) -> tp.SeriesFrame:
-        """`GenericAccessor.apply_along_axis` with `axis=1`."""
+        """Apply a function column-wise by invoking `GenericAccessor.apply_along_axis` with axis set to 1.
+
+        Args:
+            *args: Positional arguments for the apply function.
+            **kwargs: Keyword arguments for the apply function.
+        """
         return self.apply_along_axis(*args, axis=1, **kwargs)
 
     # ############# Reducing ############# #
@@ -1086,14 +1421,35 @@ class GenericAccessor(BaseAccessor, Analyzable):
         wrapper: tp.Optional[ArrayWrapper] = None,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.SeriesFrame:
-        """See `vectorbtpro.generic.nb.apply_reduce.rolling_reduce_nb` for integer windows
-        and `vectorbtpro.generic.nb.apply_reduce.rolling_freq_reduce_nb` for frequency windows.
+        """Apply a rolling reduction function over a specified window.
 
-        For details on the meta version, see `vectorbtpro.generic.nb.apply_reduce.rolling_reduce_meta_nb`
-        for integer windows and `vectorbtpro.generic.nb.apply_reduce.rolling_freq_reduce_meta_nb` for
-        frequency windows.
+        See `vectorbtpro.generic.nb.apply_reduce.rolling_reduce_nb` for integer windows and 
+        `vectorbtpro.generic.nb.apply_reduce.rolling_freq_reduce_nb` for frequency windows.
 
-        If `window` is None, it will become an expanding window.
+        For the meta version, see `vectorbtpro.generic.nb.apply_reduce.rolling_reduce_meta_nb`
+        for integer windows and `vectorbtpro.generic.nb.apply_reduce.rolling_freq_reduce_meta_nb`
+        for frequency windows.
+
+        If `window` is None, an expanding window is used.
+
+        Args:
+            window (Optional[FrequencyLike]): Window size as an integer or a frequency string.
+        
+                If None, an expanding window is used.
+            reduce_func_nb (Union[str, ReduceFunc, RangeReduceMetaFunc]):
+                Reduction function identifier or function.
+            *args: Positional arguments passed to the reduction function.
+            minp (Optional[int]): Minimum number of observations required in the window.
+            broadcast_named_args (KwargsLike): Positional arguments for named broadcasting.
+            broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
+            template_context (KwargsLike): Context for template substitution.
+            jitted (JittedOption): Configuration for just-in-time compilation.
+            chunked (ChunkedOption): Configuration for chunked execution.
+            wrapper (Optional[ArrayWrapper]): Array wrapper instance used to shape the output.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the output.
+
+        Returns:
+            SeriesFrame: The result of the rolling reduction.
 
         Usage:
             * Using regular function:
@@ -1233,7 +1589,18 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
     @hybrid_method
     def expanding_apply(cls_or_self, *args, **kwargs) -> tp.SeriesFrame:
-        """`GenericAccessor.rolling_apply` but expanding."""
+        """Apply an expanding reduction function.
+
+        This method is equivalent to calling `GenericAccessor.rolling_apply` with `window=None`,
+        resulting in an expanding window reduction.
+
+        Args:
+            *args: Positional arguments passed to `GenericAccessor.rolling_apply`.
+            **kwargs: Keyword arguments passed to `GenericAccessor.rolling_apply`.
+
+        Returns:
+            SeriesFrame: The result of the expanding reduction.
+        """
         return cls_or_self.rolling_apply(None, *args, **kwargs)
 
     @hybrid_method
@@ -1251,14 +1618,34 @@ class GenericAccessor(BaseAccessor, Analyzable):
         wrapper: tp.Optional[ArrayWrapper] = None,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.SeriesFrame:
-        """See `vectorbtpro.generic.nb.apply_reduce.groupby_reduce_nb`.
+        """Apply a groupby reduction function on a wrapped 2D array.
 
-        For details on the meta version, see `vectorbtpro.generic.nb.apply_reduce.groupby_reduce_meta_nb`.
+        See `vectorbtpro.generic.nb.apply_reduce.groupby_reduce_nb` for the standard version and
+        `vectorbtpro.generic.nb.apply_reduce.groupby_reduce_meta_nb` for the meta version.
 
-        Argument `by` can be an instance of `vectorbtpro.base.grouping.base.Grouper`,
-        `pandas.core.groupby.GroupBy`, `pandas.core.resample.Resampler`, or any other groupby-like
-        object that can be accepted by `vectorbtpro.base.grouping.base.Grouper`, or if it fails,
-        then by `pd.DataFrame.groupby` with `groupby_kwargs` passed as keyword arguments.
+        Args:
+            by (AnyGroupByLike): Grouping key or object that defines groups.
+
+                It may be an instance of `vectorbtpro.base.grouping.base.Grouper`, a pandas
+                `GroupBy`, a `vectorbtpro.base.resampling.base.Resampler`, or any groupby-like object.
+                If not accepted by a Grouper, `pd.DataFrame.groupby` is used with `groupby_kwargs`.
+            reduce_func_nb (Union[str, ReduceFunc, GroupByReduceMetaFunc]): Function to reduce groups.
+
+                If a string is provided, it is resolved to a function in `nb` by appending `_reduce_nb`.
+                Use a meta function for operations requiring additional group information.
+            *args: Positional arguments passed to the reduction function.
+            groupby_kwargs (KwargsLike): Keyword arguments for groupby operations when
+                using `pd.DataFrame.groupby`.
+            broadcast_named_args (KwargsLike): Additional named arguments to broadcast with the input arrays.
+            broadcast_kwargs (KwargsLike): Keyword arguments to control the broadcasting of input arrays.
+            template_context (KwargsLike): Context for substituting templates in parameters and arguments.
+            jitted (JittedOption): Option to control just-in-time compilation for the reduction function.
+            chunked (ChunkedOption): Option to control chunked processing.
+            wrapper (Optional[ArrayWrapper]): Array wrapper instance used to shape the output.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the final reduced result.
+
+        Returns:
+            SeriesFrame: The wrapped result after applying the groupby reduction.
 
         Usage:
             * Using regular function:
@@ -1293,7 +1680,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             ```
 
             * Using templates and broadcasting, let's split both input arrays into 2 groups of rows and
-            run the calculation function on each group:
+              run the calculation function on each group:
 
             ```pycon
             >>> from vectorbtpro.base.grouping.nb import group_by_evenly_nb
@@ -1314,8 +1701,9 @@ class GenericAccessor(BaseAccessor, Analyzable):
             1  4.5  2.25  1.500000
             ```
 
-            The advantage of the approach above is in the flexibility: we can pass two arrays of
-            any broadcastable shapes and everything else is done for us.
+            !!! note
+                The template and broadcasting approach offers flexibility by allowing arrays of any
+                broadcastable shapes to be processed seamlessly.
         """
         if broadcast_named_args is None:
             broadcast_named_args = {}
@@ -1382,11 +1770,33 @@ class GenericAccessor(BaseAccessor, Analyzable):
         wrapper: tp.Optional[ArrayWrapper] = None,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.SeriesFrame:
-        """See `vectorbtpro.generic.nb.apply_reduce.groupby_transform_nb`.
+        """Transform groups by applying a specified transformation function.
 
-        For details on the meta version, see `vectorbtpro.generic.nb.apply_reduce.groupby_transform_meta_nb`.
+        This method applies a transformation function to each group defined by `by`.
+        When invoked on a class, the meta version of the transformation function is used.
+        For further details, see `vectorbtpro.generic.nb.apply_reduce.groupby_transform_nb`
+        and `vectorbtpro.generic.nb.apply_reduce.groupby_transform_meta_nb`.
 
-        For argument `by`, see `GenericAccessor.groupby_apply`.
+        Args:
+            by (AnyGroupByLike): Grouping key or array for segmenting the data.
+        
+                See `GenericAccessor.groupby_apply` for details.
+            transform_func_nb (Union[str, GroupByTransformFunc, GroupByTransformMetaFunc]):
+                Transformation function to apply.
+        
+                If a string is provided, the corresponding function is retrieved from the `nb`
+                module using the `_transform_nb` suffix.
+            *args: Positional arguments passed to `transform_func_nb`.
+            groupby_kwargs (KwargsLike): Keyword arguments for the groupby operation.
+            broadcast_named_args (KwargsLike): Additional named arguments to broadcast to match the data shape.
+            broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting operations.
+            template_context (KwargsLike): Additional context for template substitution.
+            jitted (JittedOption): Option to control JIT compilation.
+            wrapper (Optional[ArrayWrapper]): Array wrapper for managing array operations.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the output.
+
+        Returns:
+            SeriesFrame: Transformed data as a Series or DataFrame.
 
         Usage:
             * Using regular function:
@@ -1490,13 +1900,30 @@ class GenericAccessor(BaseAccessor, Analyzable):
         wrap_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> tp.SeriesFrame:
-        """Resample.
+        """Resample the underlying data using a specified rule and reduction function.
 
-        Argument `rule` can be an instance of `vectorbtpro.base.resampling.base.Resampler`,
-        `pandas.core.resample.Resampler`, or any other frequency-like object that can be accepted by
-        `pd.DataFrame.resample` with `resample_kwargs` passed as keyword arguments.
-        If `use_groupby_apply` is True, uses `GenericAccessor.groupby_apply` (with some post-processing).
-        Otherwise, uses `GenericAccessor.resample_to_index`.
+        Args:
+            rule (AnyRuleLike): A frequency-like rule that can be an instance of
+                `vectorbtpro.base.resampling.base.Resampler`, `pandas.core.resample.Resampler`,
+                or any object accepted by `pd.DataFrame.resample` when combined with `resample_kwargs`.
+            reduce_func_nb (Union[str, ReduceFunc, GroupByReduceMetaFunc, RangeReduceMetaFunc]):
+                The reduction or meta function to apply.
+        
+                If provided as a string, it is converted by appending `_reduce_nb` and retrieved from `nb`.
+            *args: Positional arguments passed to the reduction function.
+            use_groupby_apply (bool): If True, apply the reduction function using
+                `GenericAccessor.groupby_apply` with post-processing; otherwise, use
+                `GenericAccessor.resample_to_index`.
+            freq (Optional[FrequencyLike]): An optional frequency parameter that can override the default rule.
+            resample_kwargs (KwargsLike): Keyword arguments for the `pd.DataFrame.resample` method.
+            broadcast_named_args (KwargsLike): Additional named arguments to broadcast during the resampling process.
+            broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting the named arguments.
+            template_context (KwargsLike): A context dictionary for substituting templates in the resampling rule.
+            wrapper (Optional[ArrayWrapper]): An optional array wrapper for reshaping.
+
+                If not provided, the instance's `wrapper` is used.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the output.
+            **kwargs: Keyword arguments passed to the reduction function.
 
         Usage:
             * Using regular function:
@@ -1645,9 +2072,25 @@ class GenericAccessor(BaseAccessor, Analyzable):
         wrapper: tp.Optional[ArrayWrapper] = None,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.MaybeSeries:
-        """See `vectorbtpro.generic.nb.apply_reduce.apply_and_reduce_nb`.
+        """Apply a function to an array and reduce its output.
 
-        For details on the meta version, see `vectorbtpro.generic.nb.apply_reduce.apply_and_reduce_meta_nb`.
+        This method supports both direct and meta function application. When called on a class,
+        template substitution and broadcasting are applied. For details on the direct mode, see
+        `vectorbtpro.generic.nb.apply_reduce.apply_and_reduce_nb` and for the meta version, see
+        `vectorbtpro.generic.nb.apply_reduce.apply_and_reduce_meta_nb`.
+
+        Args:
+            apply_func_nb (Union[str, ApplyFunc, ApplyMetaFunc]): Function or name of the apply function.
+            reduce_func_nb (Union[str, ReduceFunc, ReduceMetaFunc]): Function or name of the reduce function.
+            apply_args (Optional[tuple]): Arguments passed to the apply function.
+            reduce_args (Optional[tuple]): Arguments passed to the reduce function.
+            broadcast_named_args (KwargsLike): Keyword arguments for broadcasting.
+            broadcast_kwargs (KwargsLike): Keyword arguments controlling broadcasting behavior.
+            template_context (KwargsLike): Dictionary used for template substitution.
+            jitted (JittedOption): Option for Just-In-Time (JIT) compilation.
+            chunked (ChunkedOption): Option specifying chunked processing.
+            wrapper (Optional[ArrayWrapper]): Array wrapper for formatting the result.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the reduced output.
 
         Usage:
             * Using regular function:
@@ -1782,35 +2225,71 @@ class GenericAccessor(BaseAccessor, Analyzable):
         group_by: tp.GroupByLike = None,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.MaybeSeriesFrame:
-        """Reduce by column/group.
+        """Reduce data by column or for grouped data.
 
-        Set `flatten` to True when working with grouped data to pass a flattened array to `reduce_func_nb`.
-        The order in which to flatten the array can be specified using `order`.
+        The internal reduction function is chosen based on the grouping status and provided flags.
 
-        Set `returns_array` to True if `reduce_func_nb` returns an array.
+        If the data is grouped and `flatten` is True:
 
-        Set `returns_idx` to True if `reduce_func_nb` returns row index/position.
+        * `vectorbtpro.generic.nb.apply_reduce.reduce_flat_grouped_to_array_nb` is used
+            when `returns_array` is True.
+        * `vectorbtpro.generic.nb.apply_reduce.reduce_flat_grouped_nb` is used
+            when `returns_array` is False.
 
-        Set `to_index` to True to return labels instead of positions.
+        If the data is grouped and `flatten` is False:
 
-        For implementation details, see
+        * `vectorbtpro.generic.nb.apply_reduce.reduce_grouped_to_array_nb` is used
+            when `returns_array` is True.
+        * `vectorbtpro.generic.nb.apply_reduce.reduce_grouped_nb` is used
+            when `returns_array` is False.
 
-        * `vectorbtpro.generic.nb.apply_reduce.reduce_flat_grouped_to_array_nb` if grouped, `returns_array` is True, and `flatten` is True
-        * `vectorbtpro.generic.nb.apply_reduce.reduce_flat_grouped_nb` if grouped, `returns_array` is False, and `flatten` is True
-        * `vectorbtpro.generic.nb.apply_reduce.reduce_grouped_to_array_nb` if grouped, `returns_array` is True, and `flatten` is False
-        * `vectorbtpro.generic.nb.apply_reduce.reduce_grouped_nb` if grouped, `returns_array` is False, and `flatten` is False
-        * `vectorbtpro.generic.nb.apply_reduce.reduce_to_array_nb` if not grouped and `returns_array` is True
-        * `vectorbtpro.generic.nb.apply_reduce.reduce_nb` if not grouped and `returns_array` is False
+        If the data is not grouped:
 
-        For implementation details on the meta versions, see
+        * `vectorbtpro.generic.nb.apply_reduce.reduce_to_array_nb` is used
+            when `returns_array` is True.
+        * `vectorbtpro.generic.nb.apply_reduce.reduce_nb` is used
+            when `returns_array` is False.
 
-        * `vectorbtpro.generic.nb.apply_reduce.reduce_grouped_to_array_meta_nb` if grouped and `returns_array` is True
-        * `vectorbtpro.generic.nb.apply_reduce.reduce_grouped_meta_nb` if grouped and `returns_array` is False
-        * `vectorbtpro.generic.nb.apply_reduce.reduce_to_array_meta_nb` if not grouped and `returns_array` is True
-        * `vectorbtpro.generic.nb.apply_reduce.reduce_meta_nb` if not grouped and `returns_array` is False
+        For meta reducing functions, the following internal functions are used:
 
-        `reduce_func_nb` can be a string denoting the suffix of a reducing function
-        from `vectorbtpro.generic.nb`. For example, "sum" will refer to "sum_reduce_nb".
+        * `vectorbtpro.generic.nb.apply_reduce.reduce_grouped_to_array_meta_nb` for grouped data
+            when `returns_array` is True.
+        * `vectorbtpro.generic.nb.apply_reduce.reduce_grouped_meta_nb` for grouped data
+            when `returns_array` is False.
+        * `vectorbtpro.generic.nb.apply_reduce.reduce_to_array_meta_nb` for non-grouped data
+            when `returns_array` is True.
+        * `vectorbtpro.generic.nb.apply_reduce.reduce_meta_nb` for non-grouped data
+            when `returns_array` is False.
+
+        Args:
+            reduce_func_nb (Union[str, ReduceFunc, ..., ReduceGroupedToArrayMetaFunc]):
+                The reducing function to apply.
+
+                It can be a function or a string representing the suffix of a reducing
+                function from `vectorbtpro.generic.nb` (e.g., "sum" corresponds to `sum_reduce_nb`).
+            *args: Positional arguments passed to the reducing function.
+            returns_array (bool): True if the reducing function returns an array.
+        
+                Determines whether the output should be processed with array-specific logic.
+            returns_idx (bool): True if the reducing function returns a row index or position.
+        
+                When True, numeric positions may be converted to index labels if `to_index` is also True.
+            flatten (bool): True to flatten grouped data before applying the reducing function.
+        
+                When operating on grouped data, a flattened array is passed to `reduce_func_nb`.
+            order (str): The order in which to flatten the array ("C" for row-major or "F" for column-major).
+            to_index (bool): True to convert positions to index labels when `returns_idx` is True.
+            broadcast_named_args (KwargsLike): Additional named arguments for broadcasting.
+            broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
+            template_context (KwargsLike): Additional context for template substitution within arguments.
+            jitted (JittedOption): Option to control JIT (Just-In-Time) compilation.
+            chunked (ChunkedOption): Option to control chunked execution of the reduction.
+            wrapper (Optional[ArrayWrapper]): The array wrapper instance for handling array operations.
+            group_by (GroupByLike): Grouping specification for performing grouped reduction.
+            wrap_kwargs (KwargsLike): Keyword arguments for the wrapper's reduction method.
+
+        Returns:
+            MaybeSeriesFrame: The reduced data as a Series or DataFrame.
 
         Usage:
             * Using regular function:
@@ -2025,9 +2504,29 @@ class GenericAccessor(BaseAccessor, Analyzable):
         wrapper: tp.Optional[ArrayWrapper] = None,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.Frame:
-        """See `vectorbtpro.generic.nb.apply_reduce.proximity_reduce_nb`.
+        """Apply proximity reduction on data using a sliding window.
 
-        For details on the meta version, see `vectorbtpro.generic.nb.apply_reduce.proximity_reduce_meta_nb`.
+        This method applies a reduction function on neighboring data blocks.
+        When invoked on a class, it performs a meta reduction
+        (see `vectorbtpro.generic.nb.apply_reduce.proximity_reduce_meta_nb`);
+        when called on an instance, it performs a standard reduction
+        (see `vectorbtpro.generic.nb.apply_reduce.proximity_reduce_nb`).
+        The method supports broadcasting and template substitution to flexibly process input data.
+
+        Args:
+            window (int): Window size over which the reduction function is applied.
+            reduce_func_nb (Union[str, ReduceFunc, ProximityReduceMetaFunc]):
+                The reduction function or its string identifier.
+            *args: Positional arguments for the reduction function.
+            broadcast_named_args (KwargsLike): Additional named arguments for broadcasting inputs.
+            broadcast_kwargs (KwargsLike): Keyword arguments controlling broadcasting.
+            template_context (KwargsLike): Context for template substitution in positional arguments.
+            jitted (JittedOption): Option to control JIT compilation of the reduction function.
+            wrapper (Optional[ArrayWrapper]): Array wrapper for reshaping inputs and formatting the output.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the output.
+
+        Returns:
+            Frame: The resulting frame after applying the proximity reduction.
 
         Usage:
             * Using regular function:
@@ -2153,8 +2652,27 @@ class GenericAccessor(BaseAccessor, Analyzable):
     ) -> tp.SeriesFrame:
         """Squeeze each group of columns into a single column.
 
-        See `vectorbtpro.generic.nb.apply_reduce.squeeze_grouped_nb`.
-        For details on the meta version, see `vectorbtpro.generic.nb.apply_reduce.squeeze_grouped_meta_nb`.
+        See `vectorbtpro.generic.nb.apply_reduce.squeeze_grouped_nb` for the standard reduce version and
+        `vectorbtpro.generic.nb.apply_reduce.squeeze_grouped_meta_nb` for the meta function variant.
+
+        Args:
+            squeeze_func_nb (Union[str, ReduceFunc, GroupSqueezeMetaFunc]):
+                The squeeze function applied to each group.
+
+                If provided as a string, it is converted into a function by appending
+                "_reduce_nb" and retrieving it from `nb`.
+            *args: Positional arguments passed to the squeeze function.
+            broadcast_named_args (KwargsLike): Additional named arguments for broadcasting arrays.
+            broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting operations.
+            template_context (KwargsLike): Context for substituting templates in the positional arguments.
+            jitted (JittedOption): Option to control just-in-time compilation.
+            chunked (ChunkedOption): Option to control chunked processing of the operation.
+            wrapper (Optional[ArrayWrapper]): Array wrapper used for managing data shape and wrapping the output.
+            group_by (GroupByLike): Grouping identifier to split the columns into groups.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the output.
+
+        Returns:
+            MaybeSeriesFrame: The squeezed data as a Series or DataFrame.
 
         Usage:
             * Using regular function:
@@ -2267,6 +2785,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
     # ############# Flattening ############# #
 
+
     def flatten_grouped(
         self,
         order: str = "C",
@@ -2274,14 +2793,28 @@ class GenericAccessor(BaseAccessor, Analyzable):
         group_by: tp.GroupByLike = None,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.SeriesFrame:
-        """Flatten each group of columns.
+        """Flatten each group of columns in the associated data.
 
-        See `vectorbtpro.generic.nb.apply_reduce.flatten_grouped_nb`.
-        If all groups have the same length, see `vectorbtpro.generic.nb.apply_reduce.flatten_uniform_grouped_nb`.
+        Uses the JIT-compiled function based on the grouping structure:
+
+        * If all groups have the same length, employs
+            `vectorbtpro.generic.nb.apply_reduce.flatten_uniform_grouped_nb`.
+        * Otherwise, employs `vectorbtpro.generic.nb.apply_reduce.flatten_grouped_nb`.
+
+        Args:
+            order (str): Order in which to flatten columns.
+
+                Accepts 'C' or 'F'.
+            jitted (JittedOption): Option to control JIT compilation.
+            group_by (GroupByLike): Identifier for grouping columns.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the output.
+
+        Returns:
+            MaybeSeriesFrame: The flattened data as a Series or DataFrame.
 
         !!! warning
-            Make sure that the distribution of group lengths is close to uniform, otherwise
-            groups with less columns will be filled with NaN and needlessly occupy memory.
+            Ensure that the distribution of group lengths is nearly uniform. Otherwise,
+            groups with fewer columns may be padded with NaN values, unnecessarily consuming memory.
 
         Usage:
             ```pycon
@@ -2346,13 +2879,33 @@ class GenericAccessor(BaseAccessor, Analyzable):
         wrap_kwargs: tp.KwargsLike = None,
         silence_warnings: tp.Optional[bool] = None,
     ) -> tp.MaybeSeriesFrame:
-        """See `vectorbtpro.generic.nb.base.realign_nb`.
+        """Realign data to a new index using a resampling strategy.
 
-        `index` can be either an instance of `vectorbtpro.base.resampling.base.Resampler`,
-        or any index-like object.
+        This function wraps around `vectorbtpro.generic.nb.base.realign_nb` and accepts an
+        `index` that is either an instance of `vectorbtpro.base.resampling.base.Resampler` or any
+        index-like object. It produces results analogous to executing
+        `df.resample(closed='right', label='right').last().ffill()` on the target index.
 
-        Gives the same results as `df.resample(closed='right', label='right').last().ffill()`
-        when applied on the target index of the resampler.
+        Args:
+            index (AnyRuleLike): A resampler instance or index-like object that defines the new index.
+            freq (Union[None, bool, FrequencyLike]): Resampling frequency override.
+            nan_value (Optional[Scalar]): Value used for missing data.
+
+                Uses -1 if a mapping exists; otherwise defaults to np.nan.
+            ffill (bool): Whether to forward fill missing data after resampling.
+            source_rbound (Union[bool, str, IndexLike]): Determines the right boundary of the source index.
+
+                If set to a string "pandas", the resampler uses the pandas-defined right bound.
+            target_rbound (Union[bool, str, IndexLike]): Determines the right boundary of the target index.
+
+                If set to a string "pandas", the resampler uses the pandas-defined right bound.
+            jitted (JittedOption): Option to control just-in-time compilation.
+            chunked (ChunkedOption): Option to control chunked processing.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the output.
+            silence_warnings (Optional[bool]): Flag to suppress warnings during resampling.
+
+        Returns:
+            MaybeSeriesFrame: Realigned data as a Series or DataFrame.
 
         Usage:
             * Downsampling:
@@ -2465,16 +3018,36 @@ class GenericAccessor(BaseAccessor, Analyzable):
         return out
 
     def realign_opening(self, *args, **kwargs) -> tp.MaybeSeriesFrame:
-        """`GenericAccessor.realign` but creating a resampler and using the left bound
-        of the source and target index."""
+        """Realign data using left boundaries for source and target indexes.
+
+        This is a convenience wrapper around `GenericAccessor.realign` that creates a resampler
+        and applies left-bound indexing to both the source and target.
+
+        Args:
+            *args: Positional arguments passed to `GenericAccessor.realign`.
+            **kwargs: Keyword arguments passed to `GenericAccessor.realign`.
+
+        Returns:
+            MaybeSeriesFrame: Realigned data as a Series or DataFrame.
+        """
         return self.realign(*args, source_rbound=False, target_rbound=False, **kwargs)
 
     def realign_closing(self, *args, **kwargs) -> tp.MaybeSeriesFrame:
-        """`GenericAccessor.realign` but creating a resampler and using the right bound
-        of the source and target index.
+        """Realign data using right boundaries for source and target indexes.
+
+        This is a convenience wrapper around `GenericAccessor.realign` that creates a resampler
+        and applies right-bound indexing to both the source and target.
 
         !!! note
-            The timestamps in the source and target index should denote the open time."""
+            The timestamps in the source and target indexes should denote the open time.
+
+        Args:
+            *args: Positional arguments passed to `GenericAccessor.realign`.
+            **kwargs: Keyword arguments passed to `GenericAccessor.realign`.
+
+        Returns:
+            MaybeSeriesFrame: Realigned data as a Series or DataFrame.
+        """
         return self.realign(*args, source_rbound=True, target_rbound=True, **kwargs)
 
     @hybrid_method
@@ -2494,12 +3067,34 @@ class GenericAccessor(BaseAccessor, Analyzable):
         wrap_kwargs: tp.KwargsLike = None,
         silence_warnings: tp.Optional[bool] = None,
     ) -> tp.SeriesFrame:
-        """Resample solely based on target index.
+        """Resample data to a specified target index.
 
-        Applies `vectorbtpro.generic.nb.apply_reduce.reduce_index_ranges_nb` on index ranges
-        from `vectorbtpro.base.resampling.nb.map_index_to_source_ranges_nb`.
+        Apply the reduction function on segments of the source data corresponding to index ranges derived
+        from the target index. This method calls `vectorbtpro.generic.nb.apply_reduce.reduce_index_ranges_nb`
+        for standard operations and `vectorbtpro.generic.nb.apply_reduce.reduce_index_ranges_meta_nb`
+        for meta operations, where index ranges are determined by
+        `vectorbtpro.base.resampling.nb.map_index_to_source_ranges_nb`.
 
-        For details on the meta version, see `vectorbtpro.generic.nb.apply_reduce.reduce_index_ranges_meta_nb`.
+        Args:
+            index (AnyRuleLike): Target index for resampling.
+            reduce_func_nb (Union[str, ReduceFunc, RangeReduceMetaFunc]):
+                Reduction function to apply on each group.
+            *args: Positional arguments passed to the reduction function.
+            freq (Union[None, bool, FrequencyLike]): Frequency parameter used during resampling.
+            before (bool): If True, use index ranges preceding the target index.
+            broadcast_named_args (KwargsLike): Dictionary of named arrays or values
+                used for template substitution.
+            broadcast_kwargs (KwargsLike): Dictionary of keyword arguments for broadcasting.
+            template_context (KwargsLike): Context dictionary for template substitution.
+            jitted (JittedOption): Option to control JIT compilation of the reduction function.
+            chunked (ChunkedOption): Option to control chunked execution of the reduction function.
+            wrapper (Optional[ArrayWrapper]): Array wrapper for data manipulation;
+                if None, uses `cls_or_self.wrapper`.
+            wrap_kwargs (KwargsLike): Keyword arguments supplied when wrapping the result.
+            silence_warnings (Optional[bool]): If True, suppress warnings during resampling.
+
+        Returns:
+            SeriesFrame: The resampled data as a pandas Series or DataFrame.
 
         Usage:
             * Downsampling:
@@ -2680,10 +3275,32 @@ class GenericAccessor(BaseAccessor, Analyzable):
     ) -> tp.SeriesFrame:
         """Resample between target index bounds.
 
-        Applies `vectorbtpro.generic.nb.apply_reduce.reduce_index_ranges_nb` on index ranges
-        from `vectorbtpro.base.resampling.nb.map_bounds_to_source_ranges_nb`.
+        Applies `vectorbtpro.generic.nb.apply_reduce.reduce_index_ranges_nb` on index ranges derived from
+        `vectorbtpro.base.resampling.nb.map_bounds_to_source_ranges_nb`. For the meta version, refer to
+        `vectorbtpro.generic.nb.apply_reduce.reduce_index_ranges_meta_nb`.
 
-        For details on the meta version, see `vectorbtpro.generic.nb.apply_reduce.reduce_index_ranges_meta_nb`.
+        Args:
+            target_lbound_index (IndexLike): Target lower bound index for resampling.
+            target_rbound_index (IndexLike): Target upper bound index for resampling.
+            reduce_func_nb (Union[str, ReduceFunc, RangeReduceMetaFunc]):
+                Reduction function for aggregating data over index ranges.
+
+                If provided as a string, the corresponding function is resolved by appending `_reduce_nb`.
+            *args: Positional arguments passed to the reduction function.
+            closed_lbound (bool): Indicates if the lower bound of the interval is inclusive.
+            closed_rbound (bool): Indicates if the upper bound of the interval is inclusive.
+            broadcast_named_args (KwargsLike): Named arguments used for broadcasting input arrays.
+            broadcast_kwargs (KwargsLike): Keyword arguments to configure the broadcasting process.
+            template_context (KwargsLike): Context for template substitution in indices and additional arguments.
+            jitted (JittedOption): Option to control just-in-time compilation for the reduction function.
+            chunked (ChunkedOption): Option to control chunked processing of the reduction operation.
+            wrapper (Optional[ArrayWrapper]): Array wrapper used to convert input data and wrap the output.
+            wrap_with_lbound (Optional[bool]): Determines if the lower bound index is used for wrapping the output.
+            wrap_kwargs (KwargsLike): Keyword arguments for the wrapping process.
+
+        Returns:
+            SeriesFrame: A resampled series or frame with aggregated values,
+                wrapped based on the specified parameters.
 
         Usage:
             * Using regular function:
@@ -2857,7 +3474,18 @@ class GenericAccessor(BaseAccessor, Analyzable):
         group_by: tp.GroupByLike = None,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.MaybeSeries:
-        """Return min of non-NaN elements."""
+        """Return the minimum of non-NaN elements.
+
+        Args:
+            use_jitted (Optional[bool]): Whether to use jitted execution.
+            jitted (JittedOption): Jitting control option.
+            chunked (ChunkedOption): Option for chunked computation.
+            group_by (GroupByLike): Criteria for grouping elements during reduction.
+            wrap_kwargs (KwargsLike): Keyword arguments for result wrapping.
+
+        Returns:
+            MaybeSeries: The minimum value computed from non-NaN elements.
+        """
         wrap_kwargs = merge_dicts(dict(name_or_index="min"), wrap_kwargs)
         if self.wrapper.grouper.is_grouped(group_by=group_by):
             return self.reduce(
@@ -2894,7 +3522,18 @@ class GenericAccessor(BaseAccessor, Analyzable):
         group_by: tp.GroupByLike = None,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.MaybeSeries:
-        """Return max of non-NaN elements."""
+        """Return the maximum of non-NaN elements.
+
+        Args:
+            use_jitted (Optional[bool]): Whether to use jitted execution.
+            jitted (JittedOption): Jitting control option.
+            chunked (ChunkedOption): Option for chunked computation.
+            group_by (GroupByLike): Criteria for grouping elements during reduction.
+            wrap_kwargs (KwargsLike): Keyword arguments for result wrapping.
+
+        Returns:
+            MaybeSeries: The maximum value computed from non-NaN elements.
+        """
         wrap_kwargs = merge_dicts(dict(name_or_index="max"), wrap_kwargs)
         if self.wrapper.grouper.is_grouped(group_by=group_by):
             return self.reduce(
@@ -2931,7 +3570,18 @@ class GenericAccessor(BaseAccessor, Analyzable):
         group_by: tp.GroupByLike = None,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.MaybeSeries:
-        """Return mean of non-NaN elements."""
+        """Return the arithmetic mean of non-NaN elements.
+
+        Args:
+            use_jitted (Optional[bool]): Whether to use jitted execution.
+            jitted (JittedOption): Jitting control option.
+            chunked (ChunkedOption): Option for chunked computation.
+            group_by (GroupByLike): Criteria for grouping elements during reduction.
+            wrap_kwargs (KwargsLike): Keyword arguments for result wrapping.
+
+        Returns:
+            MaybeSeries: The mean value computed from non-NaN elements.
+        """
         wrap_kwargs = merge_dicts(dict(name_or_index="mean"), wrap_kwargs)
         if self.wrapper.grouper.is_grouped(group_by=group_by):
             return self.reduce(
@@ -2968,7 +3618,18 @@ class GenericAccessor(BaseAccessor, Analyzable):
         group_by: tp.GroupByLike = None,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.MaybeSeries:
-        """Return median of non-NaN elements."""
+        """Return the median of non-NaN elements.
+
+        Args:
+            use_jitted (Optional[bool]): Whether to use jitted execution.
+            jitted (JittedOption): Jitting control option.
+            chunked (ChunkedOption): Option for chunked computation.
+            group_by (GroupByLike): Criteria for grouping elements during reduction.
+            wrap_kwargs (KwargsLike): Keyword arguments for result wrapping.
+
+        Returns:
+            MaybeSeries: The median value computed from non-NaN elements.
+        """
         wrap_kwargs = merge_dicts(dict(name_or_index="median"), wrap_kwargs)
         if self.wrapper.grouper.is_grouped(group_by=group_by):
             return self.reduce(
@@ -3006,7 +3667,19 @@ class GenericAccessor(BaseAccessor, Analyzable):
         group_by: tp.GroupByLike = None,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.MaybeSeries:
-        """Return standard deviation of non-NaN elements."""
+        """Return the standard deviation of non-NaN elements.
+
+        Args:
+            ddof (int): Delta degrees of freedom for standard deviation calculation.
+            use_jitted (Optional[bool]): Whether to use jitted execution.
+            jitted (JittedOption): Jitting control option.
+            chunked (ChunkedOption): Option for chunked computation.
+            group_by (GroupByLike): Criteria for grouping elements during reduction.
+            wrap_kwargs (KwargsLike): Keyword arguments for result wrapping.
+
+        Returns:
+            MaybeSeries: The standard deviation computed from non-NaN elements.
+        """
         wrap_kwargs = merge_dicts(dict(name_or_index="std"), wrap_kwargs)
         if self.wrapper.grouper.is_grouped(group_by=group_by):
             return self.reduce(
@@ -3044,7 +3717,18 @@ class GenericAccessor(BaseAccessor, Analyzable):
         group_by: tp.GroupByLike = None,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.MaybeSeries:
-        """Return sum of non-NaN elements."""
+        """Return the sum of non-NaN elements.
+
+        Args:
+            use_jitted (Optional[bool]): Whether to use jitted execution.
+            jitted (JittedOption): Jitting control option.
+            chunked (ChunkedOption): Option for chunked computation.
+            group_by (GroupByLike): Criteria for grouping elements during reduction.
+            wrap_kwargs (KwargsLike): Keyword arguments for result wrapping.
+
+        Returns:
+            MaybeSeries: The sum computed from non-NaN elements.
+        """
         wrap_kwargs = merge_dicts(dict(name_or_index="sum"), wrap_kwargs)
         if self.wrapper.grouper.is_grouped(group_by=group_by):
             return self.reduce(
@@ -3081,7 +3765,20 @@ class GenericAccessor(BaseAccessor, Analyzable):
         group_by: tp.GroupByLike = None,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.MaybeSeries:
-        """Return count of non-NaN elements."""
+        """Return count of non-NaN elements.
+
+        Args:
+            use_jitted (Optional[bool]): Flag to use the jitted implementation.
+
+                If unspecified, the default setting is used.
+            jitted (JittedOption): Option for controlling JIT compilation.
+            chunked (ChunkedOption): Option for processing in chunks.
+            group_by (GroupByLike): Parameter to specify data grouping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+
+        Returns:
+            MaybeSeries: The count computed from non-NaN elements.
+        """
         wrap_kwargs = merge_dicts(dict(name_or_index="count", dtype=int_), wrap_kwargs)
         if self.wrapper.grouper.is_grouped(group_by=group_by):
             return self.reduce(
@@ -3117,7 +3814,20 @@ class GenericAccessor(BaseAccessor, Analyzable):
         group_by: tp.GroupByLike = None,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.MaybeSeries:
-        """Return covariance of non-NaN elements."""
+        """Return covariance of non-NaN elements.
+
+        Args:
+            other (SeriesFrame): Series or frame to compute covariance with.
+            ddof (int): Degrees of freedom for the covariance calculation.
+            broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
+            jitted (JittedOption): Option for controlling JIT compilation.
+            chunked (ChunkedOption): Option for processing in chunks.
+            group_by (GroupByLike): Parameter to specify data grouping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+
+        Returns:
+            MaybeSeries: The covariance computed from non-NaN elements.
+        """
         self_obj, other_obj = reshaping.broadcast(self.obj, other, **resolve_dict(broadcast_kwargs))
         self_arr = reshaping.to_2d_array(self_obj)
         other_arr = reshaping.to_2d_array(other_obj)
@@ -3149,7 +3859,19 @@ class GenericAccessor(BaseAccessor, Analyzable):
         group_by: tp.GroupByLike = None,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.MaybeSeries:
-        """Return correlation coefficient of non-NaN elements."""
+        """Return correlation coefficient of non-NaN elements.
+
+        Args:
+            other (SeriesFrame): Series or frame to compute correlation with.
+            broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
+            jitted (JittedOption): Option for controlling JIT compilation.
+            chunked (ChunkedOption): Option for processing in chunks.
+            group_by (GroupByLike): Parameter to specify data grouping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+
+        Returns:
+            MaybeSeries: The correlation coefficient computed from non-NaN elements.
+        """
         self_obj, other_obj = reshaping.broadcast(self.obj, other, **resolve_dict(broadcast_kwargs))
         self_arr = reshaping.to_2d_array(self_obj)
         other_arr = reshaping.to_2d_array(other_obj)
@@ -3180,7 +3902,17 @@ class GenericAccessor(BaseAccessor, Analyzable):
     ) -> tp.SeriesFrame:
         """Compute numerical data rank.
 
-        By default, equal values are assigned a rank that is the average of the ranks of those values."""
+        By default, equal values receive the average rank.
+
+        Args:
+            pct (bool): Flag to compute percentile ranks instead of raw rank values.
+            jitted (JittedOption): Option for controlling JIT compilation.
+            chunked (ChunkedOption): Option for processing in chunks.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+
+        Returns:
+            SeriesFrame: The rank as a pandas Series or DataFrame.
+        """
         func = jit_reg.resolve_option(nb.rank_nb, jitted)
         func = ch_reg.resolve_option(func, chunked)
         arr = self.to_2d_array()
@@ -3196,7 +3928,18 @@ class GenericAccessor(BaseAccessor, Analyzable):
         group_by: tp.GroupByLike = None,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.MaybeSeries:
-        """Return labeled index of min of non-NaN elements."""
+        """Return labeled index of minimum non-NaN element.
+
+        Args:
+            order (str): Memory order for processing the array.
+            jitted (JittedOption): Option for controlling JIT compilation.
+            chunked (ChunkedOption): Option for processing in chunks.
+            group_by (GroupByLike): Parameter to specify data grouping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+
+        Returns:
+            SeriesFrame: The labeled index as a pandas Series or DataFrame.
+        """
         wrap_kwargs = merge_dicts(dict(name_or_index="idxmin"), wrap_kwargs)
         if self.wrapper.grouper.is_grouped(group_by=group_by):
             return self.reduce(
@@ -3229,7 +3972,18 @@ class GenericAccessor(BaseAccessor, Analyzable):
         group_by: tp.GroupByLike = None,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.MaybeSeries:
-        """Return labeled index of max of non-NaN elements."""
+        """Return labeled index of maximum non-NaN element.
+
+        Args:
+            order (str): Memory order for processing the array.
+            jitted (JittedOption): Option for controlling JIT compilation.
+            chunked (ChunkedOption): Option for processing in chunks.
+            group_by (GroupByLike): Parameter to specify data grouping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+
+        Returns:
+            SeriesFrame: The labeled index as a pandas Series or DataFrame.
+        """
         wrap_kwargs = merge_dicts(dict(name_or_index="idxmax"), wrap_kwargs)
         if self.wrapper.grouper.is_grouped(group_by=group_by):
             return self.reduce(
@@ -3263,9 +4017,23 @@ class GenericAccessor(BaseAccessor, Analyzable):
         group_by: tp.GroupByLike = None,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.SeriesFrame:
-        """See `vectorbtpro.generic.nb.apply_reduce.describe_reduce_nb`.
+        """Compute descriptive statistics for the data.
 
-        For `percentiles`, see `pd.DataFrame.describe`.
+        This method computes statistics such as count, mean, standard deviation, minimum,
+        specified percentiles, and maximum by reducing the data using
+        `vectorbtpro.generic.nb.apply_reduce.describe_reduce_nb`.
+        For details on the percentiles parameter, please refer to `pd.DataFrame.describe`.
+
+        Args:
+            percentiles (Optional[ArrayLike]): Percentiles to include in the summary.
+            ddof (int): Delta degrees of freedom used in the computation of the standard deviation.
+            jitted (JittedOption): Option to control just-in-time compilation.
+            chunked (ChunkedOption): Option to process the data in chunks.
+            group_by (GroupByLike): Criteria for grouping the data before reduction.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the output.
+
+        Returns:
+            SeriesFrame: The descriptive statistics as a pandas Series or DataFrame.
 
         Usage:
             ```pycon
@@ -3323,7 +4091,25 @@ class GenericAccessor(BaseAccessor, Analyzable):
         return_mapping: bool = False,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.Union[tp.SeriesFrame, tp.Tuple[tp.SeriesFrame, dict]]:
-        """Apply `np.digitize`.
+        """Digitize the data into bins using `np.digitize`.
+
+        This method assigns each value in the data to a bin defined by `bins`.
+        If an integer is provided for `bins`, the bin edges are computed automatically based on the data range.
+        Optionally, a mapping of bin indices to their corresponding bin intervals can be returned.
+
+        Args:
+            bins (ArrayLike): Either an array defining the bin edges or an integer
+                specifying the number of bins.
+            right (bool): Whether to treat the bins as right-inclusive.
+            return_mapping (bool): Whether to return a mapping of bin indices to bin
+                intervals along with the digitized data.
+            wrap_kwargs (KwargsLike): Keyword arguments passed to
+                `vectorbtpro.base.wrapping.ArrayWrapper.wrap` for output wrapping.
+
+        Returns:
+            Union[SeriesFrame, Tuple[SeriesFrame, dict]]: The digitized data.
+
+                If `return_mapping` is True, also returns a mapping of bin indices to bin intervals.
 
         Usage:
             ```pycon
@@ -3394,23 +4180,35 @@ class GenericAccessor(BaseAccessor, Analyzable):
         """Return a Series/DataFrame containing counts of unique values.
 
         Args:
-            axis (int): 0 - counts per row, 1 - counts per column, and -1 - counts across the whole object.
-            normalize (bool): Whether to return the relative frequencies of the unique values.
-            sort_uniques (bool): Whether to sort uniques.
-            sort (bool): Whether to sort by frequency.
-            ascending (bool): Whether to sort in ascending order.
-            dropna (bool): Whether to exclude counts of NaN.
-            group_by (any): Group or ungroup columns.
+            axis (int): Axis along which to compute counts.
 
-                See `vectorbtpro.base.grouping.base.Grouper`.
-            mapping (mapping_like): Mapping of values to labels.
-            incl_all_keys (bool): Whether to include all mapping keys, no only those that are present in the array.
-            jitted (any): Whether to JIT-compile `vectorbtpro.generic.nb.base.value_counts_nb` or options.
-            chunked (any): Whether to chunk `vectorbtpro.generic.nb.base.value_counts_nb` or options.
+                Valid options:
 
-                See `vectorbtpro.utils.chunking.resolve_chunked`.
-            wrap_kwargs (dict): Keyword arguments passed to `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
+                * 0: Count per row.
+                * 1: Count per column.
+                * -1: Count across the entire object.
+            normalize (bool): If True, return relative frequencies of unique values.
+            sort_uniques (bool): If True, sort the unique values.
+            sort (bool): If True, sort counts by frequency.
+            ascending (bool): If True, sort in ascending order when sorting by frequency.
+            dropna (bool): If True, exclude counts for missing values (NaN).
+            group_by (GroupByLike): Grouping specification for columns.
+
+                See `vectorbtpro.base.grouping.base.Grouper` for details.
+            mapping (Union[None, bool, MappingLike]): Mapping to relabel unique values.
+            incl_all_keys (bool): If True, include all keys from the mapping even if they are absent in the data.
+            jitted (JittedOption): Option for JIT compilation of underlying routines.
+
+                See `vectorbtpro.generic.nb.base.value_counts_nb` for details.
+            chunked (ChunkedOption): Option for applying chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked` for details.
+            wrap_kwargs (KwargsLike): Keyword arguments passed to
+                `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
             **kwargs: Keyword arguments passed to `vectorbtpro.utils.mapping.apply_mapping`.
+
+        Returns:
+            SeriesFrame: A Series or DataFrame with counts of unique values.
 
         Usage:
             ```pycon
@@ -3561,7 +4359,22 @@ class GenericAccessor(BaseAccessor, Analyzable):
         group_by: tp.GroupByLike = None,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.SeriesFrame:
-        """See `vectorbtpro.generic.nb.base.demean_nb`."""
+        """Remove the mean value from the data array.
+
+        Args:
+            jitted (JittedOption): Option for JIT compilation of the demean routine.
+
+                See `vectorbtpro.generic.nb.base.demean_nb` for details.
+            chunked (ChunkedOption): Option for applying chunked processing.
+            group_by (GroupByLike): Grouping specification.
+
+                If provided, the data is demeaned separately for each group.
+            wrap_kwargs (KwargsLike): Keyword arguments passed to
+                `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
+
+        Returns:
+            SeriesFrame: The demeaned data as a Series or DataFrame.
+        """
         func = jit_reg.resolve_option(nb.demean_nb, jitted)
         func = ch_reg.resolve_option(func, chunked)
         group_map = self.wrapper.grouper.get_group_map(group_by=group_by)
@@ -3569,14 +4382,22 @@ class GenericAccessor(BaseAccessor, Analyzable):
         return self.wrapper.wrap(out, group_by=False, **resolve_dict(wrap_kwargs))
 
     def transform(self, transformer: TransformerT, wrap_kwargs: tp.KwargsLike = None, **kwargs) -> tp.SeriesFrame:
-        """Transform using a transformer.
+        """Transform the data using the specified transformer.
 
-        A transformer can be any class instance that has `transform` and `fit_transform` methods,
-        ideally subclassing `sklearn.base.TransformerMixin` and `sklearn.base.BaseEstimator`.
+        Applies the given transformer to the dataset. The transformer must be an instance with
+        `transform` and `fit_transform` methods, ideally subclassing `sklearn.base.TransformerMixin`
+        and `sklearn.base.BaseEstimator`.
 
-        Will fit `transformer` if not fitted.
+        If the transformer is not already fitted, it is fitted using `fit_transform`;
+        otherwise, `transform` is applied.
 
-        `**kwargs` are passed to the `transform` or `fit_transform` method.
+        Args:
+            transformer (Transformer): An instance with `transform` and `fit_transform` methods.
+            wrap_kwargs (KwargsLike): Keyword arguments for result wrapping.
+            **kwargs: Keyword arguments passed to the transformer methods.
+
+        Returns:
+            SeriesFrame: The transformed data as a Series or DataFrame.
 
         Usage:
             ```pycon
@@ -3612,7 +4433,14 @@ class GenericAccessor(BaseAccessor, Analyzable):
         return self.wrapper.wrap(result, group_by=False, **resolve_dict(wrap_kwargs))
 
     def zscore(self, **kwargs) -> tp.SeriesFrame:
-        """Compute z-score using `sklearn.preprocessing.StandardScaler`."""
+        """Compute the z-score normalization using `sklearn.preprocessing.StandardScaler`.
+
+        Args:
+            **kwargs: Keyword arguments passed to `GenericAccessor.scale`.
+
+        Returns:
+            SeriesFrame: The computed z-score as a Series or DataFrame.
+        """
         return self.scale(with_mean=True, with_std=True, **kwargs)
 
     def rebase(
@@ -3622,10 +4450,20 @@ class GenericAccessor(BaseAccessor, Analyzable):
         chunked: tp.ChunkedOption = None,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.SeriesFrame:
-        """Rebase all series to the given base.
+        """Rebase the series to the given base.
 
-        This makes comparing/plotting different series together easier.
-        Will forward and backward fill NaN values."""
+        Scales the series relative to `base` to facilitate easier comparison and plotting.
+        NaN values are filled using forward and backward fill.
+
+        Args:
+            base (float): The base value to rebase the series.
+            jitted (JittedOption): Option for JIT compilation.
+            chunked (ChunkedOption): Option for chunking.
+            wrap_kwargs (KwargsLike): Keyword arguments for result wrapping.
+
+        Returns:
+            SeriesFrame: The rebased data as a Series or DataFrame.
+        """
         func = jit_reg.resolve_option(nb.fbfill_nb, jitted)
         func = ch_reg.resolve_option(func, chunked)
         result = func(self.to_2d_array())
@@ -3640,34 +4478,62 @@ class GenericAccessor(BaseAccessor, Analyzable):
         chunked: tp.ChunkedOption = None,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.SeriesFrame:
-        """Get drawdown series."""
+        """Return the drawdown series.
+
+        Computes the drawdown series for the dataset.
+
+        Args:
+            jitted (JittedOption): Option for JIT compilation.
+            chunked (ChunkedOption): Option for chunking.
+            wrap_kwargs (KwargsLike): Keyword arguments for result wrapping.
+
+        Returns:
+            SeriesFrame: The drawdown series as a Series or DataFrame.
+        """
         func = jit_reg.resolve_option(nb.drawdown_nb, jitted)
         func = ch_reg.resolve_option(func, chunked)
         out = func(self.to_2d_array())
         return self.wrapper.wrap(out, group_by=False, **resolve_dict(wrap_kwargs))
 
-    @property
-    def ranges(self) -> Ranges:
-        """`GenericAccessor.get_ranges` with default arguments."""
-        return self.get_ranges()
-
     def get_ranges(self, *args, wrapper_kwargs: tp.KwargsLike = None, **kwargs) -> Ranges:
-        """Generate range records.
+        """Generate range records from the data.
 
-        See `vectorbtpro.generic.ranges.Ranges.from_array`."""
+        Utilizes `vectorbtpro.generic.ranges.Ranges.from_array` to generate range records.
+
+        Args:
+            *args: Positional arguments passed to `vectorbtpro.generic.ranges.Ranges.from_array`.
+            wrapper_kwargs (KwargsLike): Keyword arguments for result wrapping.
+            **kwargs: Keyword arguments passed to `vectorbtpro.generic.ranges.Ranges.from_array`.
+
+        Returns:
+            Ranges: The ranges generated from the data.
+        """
         wrapper_kwargs = merge_dicts(self.wrapper.config, wrapper_kwargs)
         return Ranges.from_array(self.obj, *args, wrapper_kwargs=wrapper_kwargs, **kwargs)
 
     @property
-    def drawdowns(self) -> Drawdowns:
-        """`GenericAccessor.get_drawdowns` with default arguments."""
-        return self.get_drawdowns()
+    def ranges(self) -> Ranges:
+        """Range records computed with default arguments by invoking `GenericAccessor.get_ranges`."""
+        return self.get_ranges()
 
     def get_drawdowns(self, *args, **kwargs) -> Drawdowns:
-        """Generate drawdown records.
+        """Generate drawdown records from the data.
 
-        See `vectorbtpro.generic.drawdowns.Drawdowns.from_price`."""
+        Utilizes `vectorbtpro.generic.drawdowns.Drawdowns.from_price` to generate drawdown records.
+
+        Args:
+            *args: Positional arguments passed to `vectorbtpro.generic.drawdowns.Drawdowns.from_price`.
+            **kwargs: Keyword arguments passed to `vectorbtpro.generic.drawdowns.Drawdowns.from_price`.
+
+        Returns:
+            Drawdowns: The drawdowns generated from the data.
+        """
         return Drawdowns.from_price(self.obj, *args, wrapper=self.wrapper, **kwargs)
+
+    @property
+    def drawdowns(self) -> Drawdowns:
+        """Drawdown records computed with default arguments by invoking `GenericAccessor.get_drawdowns`."""
+        return self.get_drawdowns()
 
     def to_mapped(
         self,
@@ -3676,7 +4542,19 @@ class GenericAccessor(BaseAccessor, Analyzable):
         group_by: tp.GroupByLike = None,
         **kwargs,
     ) -> MappedArray:
-        """Convert this object into an instance of `vectorbtpro.records.mapped_array.MappedArray`."""
+        """Convert the data into a `vectorbtpro.records.mapped_array.MappedArray` instance.
+
+        Flattens the data and maps indices and columns. NaN values are dropped if specified.
+
+        Args:
+            dropna (bool): Whether to drop NaN values.
+            dtype (Optional[DTypeLike]): Data type for the mapped array.
+            group_by (GroupByLike): Parameter for grouping.
+            **kwargs: Keyword arguments passed to `vectorbtpro.records.mapped_array.MappedArray`.
+
+        Returns:
+            MappedArray: The mapped array.
+        """
         mapped_arr = self.to_2d_array().flatten(order="F")
         col_arr = np.repeat(np.arange(self.wrapper.shape_2d[1]), self.wrapper.shape_2d[0])
         idx_arr = np.tile(np.arange(self.wrapper.shape_2d[0]), self.wrapper.shape_2d[1])
@@ -3694,7 +4572,17 @@ class GenericAccessor(BaseAccessor, Analyzable):
         ).regroup(group_by)
 
     def to_returns(self, **kwargs) -> tp.SeriesFrame:
-        """Get returns of this object."""
+        """Return the returns of the data.
+
+        Computes the returns using `vectorbtpro.returns.accessors.ReturnsAccessor.from_value`
+        with value returns enabled.
+
+        Args:
+            **kwargs: Keyword arguments passed to `vectorbtpro.returns.accessors.ReturnsAccessor.from_value`.
+
+        Returns:
+            SeriesFrame: The return series as a Series or DataFrame.
+        """
         from vectorbtpro.returns.accessors import ReturnsAccessor
 
         return ReturnsAccessor.from_value(
@@ -3705,7 +4593,17 @@ class GenericAccessor(BaseAccessor, Analyzable):
         )
 
     def to_log_returns(self, **kwargs) -> tp.SeriesFrame:
-        """Get log returns of this object."""
+        """Return the logarithmic returns of the data.
+
+        Compute log returns using `vectorbtpro.returns.accessors.ReturnsAccessor.from_value`
+        with log returns enabled.
+
+        Args:
+            **kwargs: Keyword arguments passed to `vectorbtpro.returns.accessors.ReturnsAccessor.from_value`.
+
+        Returns:
+            SeriesFrame: The log return series as a Series or DataFrame.
+        """
         from vectorbtpro.returns.accessors import ReturnsAccessor
 
         return ReturnsAccessor.from_value(
@@ -3717,7 +4615,19 @@ class GenericAccessor(BaseAccessor, Analyzable):
         )
 
     def to_daily_returns(self, **kwargs) -> tp.SeriesFrame:
-        """Get daily returns of this object."""
+        """Return the daily returns of the data.
+
+        Compute daily returns for the dataset using
+        `vectorbtpro.returns.accessors.ReturnsAccessor.from_value`
+        with value returns disabled, and aggregate them by day.
+
+        Args:
+            **kwargs: Keyword arguments passed to
+                `vectorbtpro.returns.accessors.ReturnsAccessor.from_value`.
+
+        Returns:
+            SeriesFrame: The daily return series as a Series or DataFrame.
+        """
         from vectorbtpro.returns.accessors import ReturnsAccessor
 
         return ReturnsAccessor.from_value(
@@ -3728,7 +4638,19 @@ class GenericAccessor(BaseAccessor, Analyzable):
         ).daily()
 
     def to_daily_log_returns(self, **kwargs) -> tp.SeriesFrame:
-        """Get daily log returns of this object."""
+        """Return the daily logarithmic returns of the data.
+
+        Compute daily log returns for the dataset using
+        `vectorbtpro.returns.accessors.ReturnsAccessor.from_value`
+        with log returns enabled, and aggregate them by day.
+
+        Args:
+            **kwargs: Keyword arguments passed to
+            `vectorbtpro.returns.accessors.ReturnsAccessor.from_value`.
+
+        Returns:
+            SeriesFrame: The daily log return series as a Series or DataFrame.
+        """
         from vectorbtpro.returns.accessors import ReturnsAccessor
 
         return ReturnsAccessor.from_value(
@@ -3742,9 +4664,16 @@ class GenericAccessor(BaseAccessor, Analyzable):
     # ############# Patterns ############# #
 
     def find_pattern(self, *args, **kwargs) -> PatternRanges:
-        """Generate pattern range records.
-
-        See `vectorbtpro.generic.ranges.PatternRanges.from_pattern_search`."""
+        """Return pattern range records from the data.
+    
+        Generate pattern range records using `vectorbtpro.generic.ranges.PatternRanges.from_pattern_search`.
+    
+        Args:
+            *args: Positional arguments passed to 
+                `vectorbtpro.generic.ranges.PatternRanges.from_pattern_search`.
+            **kwargs: Keyword arguments passed to 
+                `vectorbtpro.generic.ranges.PatternRanges.from_pattern_search`.
+        """
         return PatternRanges.from_pattern_search(self.obj, *args, **kwargs)
 
     # ############# Crossover ############# #
@@ -3759,7 +4688,21 @@ class GenericAccessor(BaseAccessor, Analyzable):
         chunked: tp.ChunkedOption = None,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.SeriesFrame:
-        """See `vectorbtpro.generic.nb.base.crossed_above_nb`.
+        """Return a boolean series indicating where the caller crosses above the provided array.
+
+        Relies on `vectorbtpro.generic.nb.base.crossed_above_nb` for computation.
+
+        Args:
+            other (ArrayLike): Input array to compare against.
+            wait (int): Number of periods to wait before confirming a cross.
+            dropna (bool): Flag to determine whether to handle missing values.
+            broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
+            jitted (JittedOption): Option for just-in-time compilation.
+            chunked (ChunkedOption): Option for chunked processing.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+
+        Returns:
+            SeriesFrame: Boolean series or dataframe indicating crossing events.
 
         Usage:
             ```pycon
@@ -3817,9 +4760,24 @@ class GenericAccessor(BaseAccessor, Analyzable):
         chunked: tp.ChunkedOption = None,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.SeriesFrame:
-        """See `vectorbtpro.generic.nb.base.crossed_below_nb`.
+        """Return a boolean series indicating where the caller crosses below the provided array.
 
-        Also, see `GenericAccessor.crossed_above` for similar examples."""
+        Computation relies on `vectorbtpro.generic.nb.base.crossed_below_nb`.
+
+        See also `GenericAccessor.crossed_above` for similar examples.
+
+        Args:
+            other (ArrayLike): Input array to compare against.
+            wait (int): Number of periods to wait before confirming a cross.
+            dropna (bool): Flag to determine whether to handle missing values.
+            broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
+            jitted (JittedOption): Option for just-in-time compilation.
+            chunked (ChunkedOption): Option for chunked processing.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+
+        Returns:
+            SeriesFrame: Boolean series or dataframe indicating crossing events.
+        """
         broadcastable_args = dict(obj=self.obj, other=other)
         broadcast_kwargs = merge_dicts(dict(keep_flex=dict(obj=False, other=True)), broadcast_kwargs)
         broadcasted_args, wrapper = reshaping.broadcast(
@@ -3848,11 +4806,20 @@ class GenericAccessor(BaseAccessor, Analyzable):
         impacts_caching: bool = True,
         silence_warnings: bool = False,
     ) -> GenericAccessorT:
-        """Resolve self.
+        """Return a resolved instance based on provided condition keyword arguments.
 
-        See `vectorbtpro.base.wrapping.Wrapping.resolve_self`.
+        Relies on `vectorbtpro.base.wrapping.Wrapping.resolve_self` to generate a modified instance.
+        A new instance is created if the `mapping` differs within `cond_kwargs`.
 
-        Creates a copy of this instance `mapping` is different in `cond_kwargs`."""
+        Args:
+            cond_kwargs (KwargsLike): Keyword arguments that may alter instance conditions.
+            custom_arg_names (Optional[Set[str]]): Set of custom argument names to consider.
+            impacts_caching (bool): Indicator whether modifications affect caching.
+            silence_warnings (bool): If True, suppress warnings when creating a copy.
+
+        Returns:
+            GenericAccessor: The resolved instance, possibly a new copy if conditions are met.
+        """
         if cond_kwargs is None:
             cond_kwargs = {}
         if custom_arg_names is None:
@@ -3887,10 +4854,11 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
     @property
     def stats_defaults(self) -> tp.Kwargs:
-        """Defaults for `GenericAccessor.stats`.
+        """Return default keyword arguments for `GenericAccessor.stats`.
 
-        Merges `vectorbtpro.generic.stats_builder.StatsBuilderMixin.stats_defaults` and
-        `stats` from `vectorbtpro._settings.generic`."""
+        Merges defaults from `vectorbtpro.generic.stats_builder.StatsBuilderMixin.stats_defaults`
+        with settings from `vectorbtpro._settings.generic`.
+        """
         from vectorbtpro._settings import settings
 
         generic_stats_cfg = settings["generic"]["stats"]
@@ -3962,7 +4930,18 @@ class GenericAccessor(BaseAccessor, Analyzable):
         return_fig: bool = True,
         **kwargs,
     ) -> tp.Union[tp.BaseFigure, tp.TraceUpdater]:
-        """Create `vectorbtpro.generic.plotting.Scatter` and return the figure.
+        """Create a scatter plot using `vectorbtpro.generic.plotting.Scatter` and
+        return the resulting figure or trace updater.
+
+        Args:
+            column (Optional[Label]): Column identifier to select specific data.
+            trace_names (TraceNames): Names for the plot traces.
+            x_labels (Optional[Labels]): Labels for the x-axis.
+            return_fig (bool): If True, return the figure; otherwise, return a trace updater.
+            **kwargs: Keyword arguments for configuring the scatter plot.
+
+        Returns:
+            Union[BaseFigure, TraceUpdater]: The plot figure or trace updater.
 
         Usage:
             ```pycon
@@ -3989,7 +4968,14 @@ class GenericAccessor(BaseAccessor, Analyzable):
         return scatter
 
     def lineplot(self, column: tp.Optional[tp.Label] = None, **kwargs) -> tp.Union[tp.BaseFigure, tp.TraceUpdater]:
-        """`GenericAccessor.plot` with 'lines' mode.
+        """Plot a line chart using `GenericAccessor.plot` in 'lines' mode.
+
+        Args:
+            column (Optional[Label]): Column label for plotting.
+            **kwargs: Keyword arguments passed to `GenericAccessor.plot`.
+
+        Returns:
+            Union[BaseFigure, TraceUpdater]: Figure or trace updater instance.
 
         Usage:
             ```pycon
@@ -4002,7 +4988,14 @@ class GenericAccessor(BaseAccessor, Analyzable):
         return self.plot(column=column, **merge_dicts(dict(trace_kwargs=dict(mode="lines")), kwargs))
 
     def scatterplot(self, column: tp.Optional[tp.Label] = None, **kwargs) -> tp.Union[tp.BaseFigure, tp.TraceUpdater]:
-        """`GenericAccessor.plot` with 'markers' mode.
+        """Plot a scatter chart using `GenericAccessor.plot` in 'markers' mode.
+
+        Args:
+            column (Optional[Label]): Column label for plotting.
+            **kwargs: Keyword arguments passed to `GenericAccessor.plot`.
+
+        Returns:
+            Union[BaseFigure, TraceUpdater]: Figure or trace updater instance.
 
         Usage:
             ```pycon
@@ -4022,7 +5015,17 @@ class GenericAccessor(BaseAccessor, Analyzable):
         return_fig: bool = True,
         **kwargs,
     ) -> tp.Union[tp.BaseFigure, tp.TraceUpdater]:
-        """Create `vectorbtpro.generic.plotting.Bar` and return the figure.
+        """Create a bar chart using `vectorbtpro.generic.plotting.Bar` and return the figure or chart object.
+
+        Args:
+            column (Optional[Label]): Column label for plotting.
+            trace_names (TraceNames): Names for the chart traces.
+            x_labels (Optional[Labels]): Labels for the x-axis.
+            return_fig (bool): Determines whether to return the figure.
+            **kwargs: Keyword arguments passed to the bar chart constructor.
+
+        Returns:
+            Union[BaseFigure, TraceUpdater]: Figure or bar chart object based on `return_fig`.
 
         Usage:
             ```pycon
@@ -4057,7 +5060,19 @@ class GenericAccessor(BaseAccessor, Analyzable):
         return_fig: bool = True,
         **kwargs,
     ) -> tp.Union[tp.BaseFigure, tp.TraceUpdater]:
-        """Create `vectorbtpro.generic.plotting.Histogram` and return the figure.
+        """Create a histogram chart using `vectorbtpro.generic.plotting.Histogram` and
+        return the figure or chart object.
+
+        Args:
+            column (Optional[Label]): Column label for plotting.
+            by_level (Optional[Level]): Level at which to unstack the data, if applicable.
+            trace_names (TraceNames): Names for the histogram traces.
+            group_by (GroupByLike): Specification for grouping data.
+            return_fig (bool): Determines whether to return the figure.
+            **kwargs: Keyword arguments passed to the histogram constructor.
+
+        Returns:
+            Union[BaseFigure, TraceUpdater]: Figure or histogram chart object based on `return_fig`.
 
         Usage:
             ```pycon
@@ -4103,7 +5118,19 @@ class GenericAccessor(BaseAccessor, Analyzable):
         return_fig: bool = True,
         **kwargs,
     ) -> tp.Union[tp.BaseFigure, tp.TraceUpdater]:
-        """Create `vectorbtpro.generic.plotting.Box` and return the figure.
+        """Create a box plot using `vectorbtpro.generic.plotting.Box` and
+        return the figure or chart object.
+
+        Args:
+            column (Optional[Label]): Column label for plotting.
+            by_level (Optional[Level]): Level at which to unstack the data, if applicable.
+            trace_names (TraceNames): Names for the box plot traces.
+            group_by (GroupByLike): Specification for grouping data.
+            return_fig (bool): Determines whether to return the figure.
+            **kwargs: Keyword arguments passed to the box plot constructor.
+
+        Returns:
+            Union[BaseFigure, TraceUpdater]: Figure or box plot object based on `return_fig`.
 
         Usage:
             ```pycon
@@ -4153,21 +5180,26 @@ class GenericAccessor(BaseAccessor, Analyzable):
         fig: tp.Optional[tp.BaseFigure] = None,
         **layout_kwargs,
     ) -> tp.BaseFigure:
-        """Plot Series as a line against another line.
+        """Plot a Series as a line against another line.
 
         Args:
-            other (array_like): Second array. Will broadcast.
-            column (hashable): Column to plot.
-            trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter`.
-            other_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter` for `other`.
+            other (ArrayLike): The second array to compare, which will be broadcast to match the primary data.
+            column (Optional[Label]): Column identifier to select from inputs.
+            trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter`
+                used to plot the main series.
+            other_trace_kwargs (Union[str, KwargsLike]): Keyword arguments for
+                `plotly.graph_objects.Scatter` used to plot the second series.
 
-                Set to 'hidden' to hide.
-            pos_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter` for positive line.
-            neg_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter` for negative line.
-            hidden_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter` for hidden lines.
-            add_trace_kwargs (dict): Keyword arguments passed to `add_trace`.
-            fig (Figure or FigureWidget): Figure to add traces to.
-            **layout_kwargs: Keyword arguments for layout.
+                Use 'hidden' to omit the secondary line.
+            pos_trace_kwargs (KwargsLike): Keyword arguments for plotting the positive area between the series.
+            neg_trace_kwargs (KwargsLike): Keyword arguments for plotting the negative area between the series.
+            hidden_trace_kwargs (KwargsLike): Keyword arguments for plotting hidden lines.
+            add_trace_kwargs (KwargsLike): Keyword arguments passed to the Plotly's `add_trace` method.
+            fig (Optional[BaseFigure]): Figure instance to which traces are added.
+            **layout_kwargs: Keyword arguments for updating the figure layout.
+
+        Returns:
+            BaseFigure: A Plotly figure with the main series, comparative lines, and filled areas.
 
         Usage:
             ```pycon
@@ -4304,16 +5336,22 @@ class GenericAccessor(BaseAccessor, Analyzable):
         fig: tp.Optional[tp.BaseFigure] = None,
         **layout_kwargs,
     ) -> tp.BaseFigure:
-        """Plot Series as a line and overlays it with a heatmap.
+        """Plot a Series as a line and overlay it with a heatmap.
 
         Args:
-            other (array_like): Second array. Will broadcast.
-            column (hashable): Column to plot.
-            trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter`.
-            heatmap_kwargs (dict): Keyword arguments passed to `GenericDFAccessor.heatmap`.
-            add_trace_kwargs (dict): Keyword arguments passed to `add_trace`.
-            fig (Figure or FigureWidget): Figure to add traces to.
-            **layout_kwargs: Keyword arguments for layout.
+            other (ArrayLike): The second array to compare, which will be broadcast
+                to match the primary data.
+            column (Optional[Label]): Column identifier to select from inputs.
+            trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter`
+                used to plot the line.
+            heatmap_kwargs (KwargsLike): Keyword arguments for `GenericDFAccessor.heatmap`
+                used to generate the heatmap.
+            add_trace_kwargs (KwargsLike): Keyword arguments passed to the Plotly's `add_trace` method.
+            fig (Optional[BaseFigure]): Figure instance to which traces are added.
+            **layout_kwargs: Keyword arguments for updating the figure layout.
+
+        Returns:
+            BaseFigure: A Plotly figure with the line plot and heatmap overlay.
 
         Usage:
             ```pycon
@@ -4378,15 +5416,37 @@ class GenericAccessor(BaseAccessor, Analyzable):
         fig: tp.Optional[tp.BaseFigure] = None,
         **kwargs,
     ) -> tp.Union[tp.BaseFigure, tp.TraceUpdater]:
-        """Create a heatmap figure based on object's multi-index and values.
+        """Create a heatmap figure using the object's data.
 
-        If the object is two-dimensional or the index is not a multi-index, returns a regular heatmap.
+        For 2D data or non-multi-index objects, a regular heatmap is produced.
+        For multi-index data with more than two levels, specify `x_level` and
+        `y_level` to define the axes and optionally use a slider by setting `slider_level`.
 
-        If multi-index contains more than two levels or you want them in specific order,
-        pass `x_level` and `y_level`, each (`int` if index or `str` if name) corresponding
-        to an axis of the heatmap. Optionally, pass `slider_level` to use a level as a slider.
+        Args:
+            column (Optional[Label]): Column to select from the object's data.
+            x_level (Optional[Level]): Level for the x-axis of the heatmap.
 
-        Creates `vectorbtpro.generic.plotting.Heatmap` and returns the figure.
+                Accepts an integer index or string name.
+            y_level (Optional[Level]): Level for the y-axis of the heatmap.
+
+                Accepts an integer index or string name.
+            symmetric (bool): Whether to apply symmetric unstacking to the data.
+            sort (bool): Whether to sort the data when unstacking.
+            x_labels (Optional[Labels]): Labels for the x-axis.
+
+                Defaults to the object's columns.
+            y_labels (Optional[Labels]): Labels for the y-axis.
+
+                Defaults to the object's index.
+            slider_level (Optional[Level]): Level to use for creating a slider in multi-index plots.
+            active (int): Index of the trace to display initially in slider-based plots.
+            slider_labels (Optional[Labels]): Labels for the slider steps.
+            return_fig (bool): If True, return the figure; otherwise, return the trace updater.
+            fig (Optional[BaseFigure]): Figure object to update with the heatmap.
+            **kwargs: Keyword arguments passed to `vectorbtpro.generic.plotting.Heatmap`.
+
+        Returns:
+            Union[BaseFigure, TraceUpdater]: Figure or heatmap object based on `return_fig`.
 
         Usage:
             * Plotting a figure based on a regular index:
@@ -4550,7 +5610,20 @@ class GenericAccessor(BaseAccessor, Analyzable):
         is_y_category: bool = True,
         **kwargs,
     ) -> tp.Union[tp.BaseFigure, tp.TraceUpdater]:
-        """Heatmap of time-series data."""
+        """Create a heatmap for time-series data.
+
+        The function selects a column from the object's data if specified,
+        converts a Series to a DataFrame if necessary, and transposes the data
+        to produce a heatmap with reversed vertical order.
+
+        Args:
+            column (Optional[Label]): Column to select from the object's data.
+            is_y_category (bool): Flag indicating whether to treat the y-axis as categorical.
+            **kwargs: Keyword arguments passed to `GenericAccessor.heatmap`.
+
+        Returns:
+            Union[BaseFigure, TraceUpdater]: Figure or heatmap object based on `return_fig`.
+        """
         if column is not None:
             obj = self.select_col_from_obj(self.obj, column=column)
         else:
@@ -4577,13 +5650,39 @@ class GenericAccessor(BaseAccessor, Analyzable):
         return_fig: bool = True,
         **kwargs,
     ) -> tp.Union[tp.BaseFigure, tp.TraceUpdater]:
-        """Create a 3D volume figure based on object's multi-index and values.
+        """Create a 3D volume figure using the object's multi-index and values.
 
-        If multi-index contains more than three levels or you want them in specific order, pass
-        `x_level`, `y_level`, and `z_level`, each (`int` if index or `str` if name) corresponding
-        to an axis of the volume. Optionally, pass `slider_level` to use a level as a slider.
+        Args:
+            column (Optional[Label]): Column label to select data.
+            x_level (Optional[Level]): Level to use for the x-axis.
 
-        Creates `vectorbtpro.generic.plotting.Volume` and returns the figure.
+                Provide an integer index or a level name.
+            y_level (Optional[Level]): Level to use for the y-axis.
+
+                Provide an integer index or a level name.
+            z_level (Optional[Level]): Level to use for the z-axis.
+
+                Provide an integer index or a level name.
+            x_labels (Optional[Labels]): Labels for the x-axis.
+
+                If not provided, unique x-level values are used.
+            y_labels (Optional[Labels]): Labels for the y-axis.
+
+                If not provided, unique y-level values are used.
+            z_labels (Optional[Labels]): Labels for the z-axis.
+
+                If not provided, unique z-level values are used.
+            slider_level (Optional[Level]): Level to use for grouping data with a slider.
+            slider_labels (Optional[Labels]): Labels to override default slider group names.
+            active (int): Index of the active slider step.
+            scene_name (str): Name for the scene in the figure layout.
+            fillna (Optional[Number]): Value to replace NaNs in the data.
+            fig (Optional[BaseFigure]): Figure object to update; if None, a new figure is created.
+            return_fig (bool): If True, return the figure; otherwise, return the volume object.
+            **kwargs: Keyword arguments passed to `vectorbtpro.generic.plotting.Volume`.
+
+        Returns:
+            Union[BaseFigure, TraceUpdater]: The created 3D volume figure or trace updater object.
 
         Usage:
             ```pycon
@@ -4714,9 +5813,21 @@ class GenericAccessor(BaseAccessor, Analyzable):
         fig: tp.Optional[tp.BaseFigure] = None,
         **kwargs,
     ) -> tp.BaseFigure:
-        """Plot probability plot using `scipy.stats.probplot`.
+        """Plot a probability plot using `scipy.stats.probplot` and display the results as a scatter plot.
 
-        `**kwargs` are passed to `GenericAccessor.scatterplot`.
+        Args:
+            column (Optional[Label]): Column label to select data.
+            sparams (Union[Iterable, tuple, None]): Parameters to pass to `scipy.stats.probplot`.
+            dist (str): Distribution name for generating the probability plot.
+            plot_line (bool): Whether to add a fitted reference line based on the probability plot.
+            line_shape_kwargs (KwargsLike): Keyword arguments for customizing the reference line.
+            xref (str): X-axis reference for the added line shape.
+            yref (str): Y-axis reference for the added line shape.
+            fig (Optional[BaseFigure]): Figure object to update; if None, a new figure is created.
+            **kwargs: Keyword arguments passed to `GenericAccessor.scatterplot`.
+
+        Returns:
+            BaseFigure: The generated probability plot figure with an optional reference line.
 
         Usage:
             ```pycon
@@ -4756,16 +5867,22 @@ class GenericAccessor(BaseAccessor, Analyzable):
         fig: tp.Optional[tp.BaseFigure] = None,
         **layout_kwargs,
     ) -> tp.BaseFigure:
-        """Plot stacked area.
+        """Plot a stacked area chart.
 
         Args:
-            line_shape (str): Line shape.
-            line_visible (bool): Whether to make line visible.
-            colorway (str or sequence): Name of the built-in, qualitative colorway, or a list with colors.
-            trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter`.
-            add_trace_kwargs (dict): Keyword arguments passed to `add_trace`.
-            fig (Figure or FigureWidget): Figure to add traces to.
-            **layout_kwargs: Keyword arguments for layout.
+            line_shape (str): Specifies the shape of the line, for example "spline".
+            line_visible (bool): Determines whether the line outlining the area is displayed.
+            colorway (Union[None, str, Sequence[str]]): Name of a built-in qualitative
+                color palette or a sequence of colors.
+            trace_kwargs (KwargsLike): Keyword arguments for configuring each `plotly.graph_objects.Scatter` trace.
+            add_trace_kwargs (KwargsLike): Keyword arguments for the Plotly's `add_trace` method.
+            fig (Optional[BaseFigure]): Figure to which traces are added.
+
+                If None, a new figure is created.
+            **layout_kwargs: Keyword arguments to update the figure layout.
+
+        Returns:
+            BaseFigure: The generated stacked area chart.
 
         Usage:
             ```pycon
@@ -4877,10 +5994,41 @@ class GenericAccessor(BaseAccessor, Analyzable):
         fig: tp.Optional[tp.BaseFigure] = None,
         **layout_kwargs,
     ) -> tp.BaseFigure:
-        """Plot pattern.
+        """Plot the pattern with computed error bounds.
 
-        Mimics the same similarity calculation procedure as implemented in
-        `vectorbtpro.generic.nb.patterns.pattern_similarity_nb`.
+        Perform a pattern similarity calculation analogous to
+        `vectorbtpro.generic.nb.patterns.pattern_similarity_nb` and plot the original data,
+        fitted pattern, and error bands.
+
+        Args:
+            pattern (ArrayLike): Reference pattern array for similarity comparison.
+            interp_mode (Union[int, str]): Interpolation mode, mapped using
+                `vectorbtpro.generic.enums.InterpMode` if provided as a string.
+            rescale_mode (Union[int, str]): Rescaling mode, mapped using
+                `vectorbtpro.generic.enums.RescaleMode` if provided as a string.
+            vmin (float): Minimum value used for rescaling `arr`.
+            vmax (float): Maximum value used for rescaling `arr`.
+            pmin (float): Minimum value used for rescaling `pattern`.
+            pmax (float): Maximum value used for rescaling `pattern`.
+            invert (bool): Invert the pattern by reflecting its values.
+            error_type (Union[int, str]): Error calculation type, mapped using
+                `vectorbtpro.generic.enums.ErrorType` if provided as a string.
+            max_error (ArrayLike): Maximum allowed error.
+            max_error_interp_mode (Union[None, int, str]): Interpolation mode for maximum error,
+                mapped using `vectorbtpro.generic.enums.InterpMode` if provided.
+            column (Optional[Label]): Column label for data selection.
+            plot_obj (bool): If True, includes the original object data in the plot.
+            fill_distance (bool): If True, fills the area under the pattern trace.
+            obj_trace_kwargs (KwargsLike): Keyword arguments for the original data trace.
+            pattern_trace_kwargs (KwargsLike): Keyword arguments for the pattern trace.
+            lower_max_error_trace_kwargs (KwargsLike): Keyword arguments for the lower error bound trace.
+            upper_max_error_trace_kwargs (KwargsLike): Keyword arguments for the upper error bound trace.
+            add_trace_kwargs (KwargsLike): Keyword arguments when adding traces.
+            fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
+            **layout_kwargs: Keyword arguments for updating the figure layout.
+
+        Returns:
+            BaseFigure: The figure object with the plotted pattern and error bands.
 
         Usage:
             ```pycon
@@ -5060,10 +6208,14 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
     @property
     def plots_defaults(self) -> tp.Kwargs:
-        """Defaults for `GenericAccessor.plots`.
+        """Default plotting parameters.
 
-        Merges `vectorbtpro.generic.plots_builder.PlotsBuilderMixin.plots_defaults` and
-        `plots` from `vectorbtpro._settings.generic`."""
+        Merges defaults from `vectorbtpro.generic.plots_builder.PlotsBuilderMixin.plots_defaults` with
+        the generic `plots` settings from `vectorbtpro._settings.generic`.
+
+        Returns:
+            Kwargs: A dictionary of default plotting parameters.
+        """
         from vectorbtpro._settings import settings
 
         generic_plots_cfg = settings["generic"]["plots"]
@@ -5122,7 +6274,7 @@ if settings["importing"]["sklearn"]:
 
     __pdoc__[
         "transform_config"
-    ] = f"""Config of transform methods to be attached to `GenericAccessor`.
+    ] = f"""Configuration for transformation methods to be attached to `GenericAccessor`.
 
     ```python
     {transform_config.prettify_doc()}
@@ -5136,9 +6288,17 @@ GenericAccessor.override_subplots_doc(__pdoc__)
 
 
 class GenericSRAccessor(GenericAccessor, BaseSRAccessor):
-    """Accessor on top of data of any type. For Series only.
+    """Class for accessing Series data of any type.
 
-    Accessible via `pd.Series.vbt`."""
+    Accessible via `pd.Series.vbt`.
+
+    Args:
+        wrapper (Union[ArrayWrapper, ArrayLike]): The array wrapper for the series data.
+        obj (Optional[ArrayLike]): The underlying data array.
+        mapping (Optional[MappingLike]): An optional mapping for metadata.
+        _full_init (bool): Whether to perform full initialization.
+        **kwargs: Keyword arguments for base accessor initialization.
+    """
 
     def __init__(
         self,
@@ -5168,7 +6328,29 @@ class GenericSRAccessor(GenericAccessor, BaseSRAccessor):
         max_error_interp_mode: tp.Union[None, int, str] = None,
         jitted: tp.JittedOption = None,
     ) -> tp.Tuple[tp.Series, tp.Series]:
-        """See `vectorbtpro.generic.nb.patterns.fit_pattern_nb`."""
+        """Fit a pattern on the series data using `vectorbtpro.generic.nb.patterns.fit_pattern_nb`.
+
+        Args:
+            pattern (ArrayLike): Reference pattern array for similarity comparison.
+            interp_mode (Union[int, str]): Interpolation mode, mapped using
+                `vectorbtpro.generic.enums.InterpMode` if provided as a string.
+            rescale_mode (Union[int, str]): Rescaling mode, mapped using
+                `vectorbtpro.generic.enums.RescaleMode` if provided as a string.
+            vmin (float): Minimum value used for rescaling `arr`.
+            vmax (float): Maximum value used for rescaling `arr`.
+            pmin (float): Minimum value used for rescaling `pattern`.
+            pmax (float): Maximum value used for rescaling `pattern`.
+            invert (bool): Invert the pattern by reflecting its values.
+            error_type (Union[int, str]): Error calculation type, mapped using
+                `vectorbtpro.generic.enums.ErrorType` if provided as a string.
+            max_error (ArrayLike): Maximum allowed error.
+            max_error_interp_mode (Union[None, int, str]): Interpolation mode for maximum error,
+                mapped using `vectorbtpro.generic.enums.InterpMode` if provided.
+            jitted (JittedOption): Option for just-in-time compilation.
+
+        Returns:
+            Tuple[Series, Series]: A tuple containing the fitted pattern series and the maximum error series.
+        """
         if isinstance(interp_mode, str):
             interp_mode = map_enum_fields(interp_mode, InterpMode)
         if isinstance(rescale_mode, str):
@@ -5212,7 +6394,23 @@ class GenericSRAccessor(GenericAccessor, BaseSRAccessor):
         jitted: tp.JittedOption = None,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.Union[tp.Series, tp.Tuple[tp.Series, tp.Series]]:
-        """See `vectorbtpro.generic.nb.base.to_renko_1d_nb`."""
+        """Generate a Renko chart from the series data using
+        `vectorbtpro.generic.nb.base.to_renko_1d_nb`.
+
+        Args:
+            brick_size (ArrayLike): The brick size for constructing the Renko chart.
+            relative (ArrayLike): Indicator specifying if the brick size is relative.
+            start_value (Optional[float]): The starting value for the Renko chart.
+            max_out_len (Optional[int]): Maximum length of the output.
+            reset_index (bool): Whether to reset the index of the resulting series.
+            return_uptrend (bool): Whether to return the uptrend series along with the Renko series.
+            jitted (JittedOption): Option for just-in-time compilation.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the output.
+
+        Returns:
+            Union[Series, Tuple[Series, Series]]: The Renko series or a tuple containing
+                the Renko series and the uptrend series.
+"""
         func = jit_reg.resolve_option(nb.to_renko_1d_nb, jitted)
         arr_out, idx_out, uptrend_out = func(
             self.to_1d_array(),
@@ -5245,7 +6443,22 @@ class GenericSRAccessor(GenericAccessor, BaseSRAccessor):
         jitted: tp.JittedOption = None,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.Frame:
-        """See `vectorbtpro.generic.nb.base.to_renko_ohlc_1d_nb`."""
+        """Generate OHLC Renko bars from the series data using
+        `vectorbtpro.generic.nb.base.to_renko_ohlc_1d_nb`.
+
+        Args:
+            brick_size (ArrayLike): The brick size for constructing the OHLC Renko chart.
+            relative (ArrayLike): Indicator specifying if the brick size is relative.
+            start_value (Optional[float]): The starting value for the Renko chart.
+            max_out_len (Optional[int]): Maximum length of the output.
+            reset_index (bool): Whether to reset the index of the resulting DataFrame.
+            jitted (JittedOption): Option for just-in-time compilation.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the output.
+
+        Returns:
+            Frame: A DataFrame representing the OHLC Renko bars with columns
+                ["Open", "High", "Low", "Close"].
+"""
         func = jit_reg.resolve_option(nb.to_renko_ohlc_1d_nb, jitted)
         arr_out, idx_out = func(
             self.to_1d_array(),
@@ -5266,9 +6479,17 @@ class GenericSRAccessor(GenericAccessor, BaseSRAccessor):
 
 
 class GenericDFAccessor(GenericAccessor, BaseDFAccessor):
-    """Accessor on top of data of any type. For DataFrames only.
+    """Accessor on top of data of any type for DataFrames only.
 
-    Accessible via `pd.DataFrame.vbt`."""
+    Accessible via `pd.DataFrame.vbt`.
+
+    Args:
+        wrapper (Union[ArrayWrapper, ArrayLike]): The wrapper that encapsulates the data.
+        obj (Optional[ArrayLike]): The underlying data object.
+        mapping (Optional[MappingLike]): A mapping for additional configuration.
+        _full_init (bool): Indicates whether to perform full initialization.
+        **kwargs: Keyword arguments passed for initialization.
+    """
 
     def __init__(
         self,
@@ -5284,22 +6505,30 @@ class GenericDFAccessor(GenericAccessor, BaseDFAccessor):
             GenericAccessor.__init__(self, wrapper, obj=obj, mapping=mapping, **kwargs)
 
     def band(self, band_name: str, return_meta: bool = False) -> tp.Union[tp.Series, dict]:
-        """Calculate the band by its name.
+        """Calculate the band value based on the given band name.
 
-        Examples for the band name:
+        Args:
+            band_name (str): The band name determining the calculation.
 
-        * "50%": 50th quantile
-        * "Q=50%": 50th quantile
-        * "Q=0.5": 50th quantile
-        * "Z=1.96": Z-score of 1.96
-        * "P=95%": One-tailed significance level of 0.95 (translated into z-score)
-        * "P=0.95": One-tailed significance level of 0.95 (translated into z-score)
-        * "median": Median (50th quantile)
-        * "mean": Mean across all columns
-        * "min": Min across all columns
-        * "max": Max across all columns
-        * "lowest": Column with the lowest final value
-        * "highest": Column with the highest final value
+                Possible values include:
+
+                * "50%": 50th quantile.
+                * "Q=50%": 50th quantile.
+                * "Q=0.5": 50th quantile.
+                * "Z=1.96": Z-score of 1.96.
+                * "P=95%": One-tailed significance level of 0.95 (translated into z-score).
+                * "P=0.95": One-tailed significance level of 0.95 (translated into z-score).
+                * "median": Median (50th quantile).
+                * "mean": Mean across all columns.
+                * "min": Minimum across all columns.
+                * "max": Maximum across all columns.
+                * "lowest": Column with the lowest final value.
+                * "highest": Column with the highest final value.
+            return_meta (bool): Whether to return metadata including band details.
+
+        Returns:
+            Union[Series, dict]: A computed band as a Series if return_meta is False, or a dict containing
+                band metadata (`band_name`, `band_title`, and `band_func`) if return_meta is True.
         """
         band_name = band_name.lower().replace(" ", "")
         if band_name == "median":
@@ -5401,35 +6630,72 @@ class GenericDFAccessor(GenericAccessor, BaseDFAccessor):
         fig: tp.Optional[tp.BaseFigure] = None,
         **layout_kwargs,
     ) -> tp.BaseFigure:
-        """Plot a DataFrame where each column is a projection.
+        """Plot DataFrame columns as projections with optional bands and colorization.
 
-        If `plot_projections` is True, will plot each projection as a semi-transparent line.
+        Plots each column of the DataFrame as a projection line. Optionally, bands
+        (lower, middle, upper, and auxiliary middle) are computed and plotted to provide
+        additional context. Projections are drawn with semi-transparent lines, and
+        colorization is applied based on band metrics if specified.
 
-        The arguments `plot_lower`, `plot_middle`, `plot_aux_middle`, and `plot_upper` represent
-        bands and accept the following:
+        Args:
+            plot_projections (bool): Plot each projection as a semi-transparent line if True.
+            plot_bands (bool): Plot computed bands if True.
 
-        * True: Plot the band using the default quantile (20/50/80)
-        * False: Do not plot the band
-        * callable: Custom function that accepts DataFrame and reduces it across columns
-        * For other options see `GenericDFAccessor.band`
+                Disabled for single-column DataFrames.
+            plot_lower (Union[bool, str, Callable]): Specification for the lower band.
+
+                Accepts:
+                * True: Compute using the default "20%" quantile.
+                * False: Do not plot the band.
+                * str: Use a custom band identifier.
+                * Callable: Function to compute the band by reducing the DataFrame.
+            plot_middle (Union[bool, str, Callable]): Specification for the middle band.
+
+                Accepts:
+                * True: Compute using the default "50%" quantile.
+                * False: Do not plot the band.
+                * str: Use a custom band identifier.
+                * Callable: Function to compute the band by reducing the DataFrame.
+            plot_upper (Union[bool, str, Callable]): Specification for the upper band.
+
+                Accepts:
+                * True: Compute using the default "80%" quantile.
+                * False: Do not plot the band.
+                * str: Use a custom band identifier.
+                * Callable: Function to compute the band by reducing the DataFrame.
+            plot_aux_middle (Union[bool, str, Callable]): Specification for an auxiliary middle band.
+
+                Accepts:
+                * True: Compute using "mean".
+                * False: Do not plot the band.
+                * str: Use a custom band identifier.
+                * Callable: Function to compute the band by reducing the DataFrame.
+            plot_fill (bool): Fill the area between band traces if True.
+            colorize (Union[bool, str, Callable]): Strategy for colorizing projections or bands.
+
+                Accepts:
+                * False: Do not colorize.
+                * True or "median": Colorize by median.
+                * "mean": Colorize by mean.
+                * "last": Colorize by last value.
+                * Callable: Function that reduces a Series or DataFrame to compute a metric.
+            rename_levels (Union[None, dict, Sequence]): Mapping or sequence to rename multi-index legend levels.
+            projection_trace_kwargs (KwargsLike): Keyword arguments for the projection trace.
+            upper_trace_kwargs (KwargsLike): Keyword arguments for the upper band trace.
+            middle_trace_kwargs (KwargsLike): Keyword arguments for the middle band trace.
+            lower_trace_kwargs (KwargsLike): Keyword arguments for the lower band trace.
+            aux_middle_trace_kwargs (KwargsLike): Keyword arguments for the auxiliary middle band trace.
+            add_trace_kwargs (KwargsLike): Keyword arguments for adding traces.
+            fig (Optional[BaseFigure]): Figure instance to update; a new figure is created if None.
+            **layout_kwargs: Additional layout keyword arguments for the figure.
+
+        Returns:
+            BaseFigure: The updated figure with plotted projections and bands.
 
         !!! note
-            When providing z-scores, the upper should be positive, the middle should be "mean", and
-            the lower should be negative. When providing significance levels, the middle should be "mean", while
-            the lower should be positive and lower than the upper, for example, 25% and 75%.
-
-        Argument `colorize` allows the following values:
-
-        * False: Do not colorize
-        * True or "median": Colorize by median
-        * "mean": Colorize by mean
-        * "last": Colorize by last value
-        * callable: Custom function that accepts (rebased to 0) Series/DataFrame with
-            nans already dropped and reduces it across rows
-
-        Colorization is performed by mapping the metric value of the band to the range between the
-        minimum and maximum value across all projections where 0 is always the middle point.
-        If none of the bands is plotted, projections got colorized. Otherwise, projections stay gray.
+            When using z-scores, the upper band should be positive, the middle computed as "mean", and
+            the lower negative. For significance levels, the middle remains "mean" whereas the lower should be
+            positive and lower than the upper (e.g., 25% and 75%).
 
         Usage:
             ```pycon

@@ -27,7 +27,7 @@ class Base:
         """Return API pages and headings relevant to the class or its attributes.
 
         Args:
-            **kwargs: Additional keyword arguments passed to `vectorbtpro.utils.knowledge.custom_assets.find_api`.
+            **kwargs: Keyword arguments passed to `vectorbtpro.utils.knowledge.custom_assets.find_api`.
 
         Returns:
             MaybePagesAsset: API pages and headings relevant to this class.
@@ -41,7 +41,7 @@ class Base:
         """Return documentation pages and headings relevant to the class or its attributes.
 
         Args:
-            **kwargs: Additional keyword arguments passed to `vectorbtpro.utils.knowledge.custom_assets.find_docs`.
+            **kwargs: Keyword arguments passed to `vectorbtpro.utils.knowledge.custom_assets.find_docs`.
 
         Returns:
             MaybePagesAsset: Documentation pages and headings relevant to this class.
@@ -55,7 +55,7 @@ class Base:
         """Return messages relevant to the class or its attributes.
 
         Args:
-            **kwargs: Additional keyword arguments passed to `vectorbtpro.utils.knowledge.custom_assets.find_messages`.
+            **kwargs: Keyword arguments passed to `vectorbtpro.utils.knowledge.custom_assets.find_messages`.
 
         Returns:
             MaybeMessagesAsset: Messages relevant to this class.
@@ -69,7 +69,7 @@ class Base:
         """Return code examples relevant to the class or its attributes.
 
         Args:
-            **kwargs: Additional keyword arguments passed to `vectorbtpro.utils.knowledge.custom_assets.find_examples`.
+            **kwargs: Keyword arguments passed to `vectorbtpro.utils.knowledge.custom_assets.find_examples`.
 
         Returns:
             MaybeVBTAsset: Code examples relevant to this class.
@@ -83,7 +83,7 @@ class Base:
         """Return all assets relevant to the class or its attributes.
 
         Args:
-            **kwargs: Additional keyword arguments passed to `vectorbtpro.utils.knowledge.custom_assets.find_assets`.
+            **kwargs: Keyword arguments passed to `vectorbtpro.utils.knowledge.custom_assets.find_assets`.
 
         Returns:
             MaybeDict[VBTAsset]: All assets relevant to this class.
@@ -99,7 +99,7 @@ class Base:
         Args:
             message (str): Chat message.
             chat_history (ChatHistory): Chat history.
-            **kwargs: Additional keyword arguments passed to `vectorbtpro.utils.knowledge.custom_assets.chat_about`.
+            **kwargs: Keyword arguments passed to `vectorbtpro.utils.knowledge.custom_assets.chat_about`.
 
         Returns:
             ChatOutput: Output data from the chat process.

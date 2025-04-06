@@ -114,7 +114,7 @@ class DuckDBData(DBData):
                 If None, a default connection is used.
             read_only (bool): Flag indicating whether the connection should be opened in read-only mode.
             return_meta (bool): If True, return a dictionary with connection metadata.
-            **connection_config: Additional keyword arguments for connection configuration.
+            **connection_config: Keyword arguments for connection configuration.
 
         Returns:
             Union[DuckDBPyConnection, dict]: A DuckDB connection or a metadata dictionary
@@ -180,7 +180,7 @@ class DuckDBData(DBData):
             incl_system (bool): Flag indicating whether to include system catalogs.
             connection (Union[None, str, DuckDBPyConnection]): A connection instance,
                 file path, or connection string.
-            connection_config (KwargsLike): Additional keyword arguments for connection configuration.
+            connection_config (KwargsLike): Keyword arguments for connection configuration.
 
         Returns:
             List[str]: A list of catalog names.
@@ -237,7 +237,7 @@ class DuckDBData(DBData):
             incl_system (bool): Flag indicating whether to include system schemas.
             connection (Union[None, str, DuckDBPyConnection]): A connection instance,
                 file path, or connection string.
-            connection_config (KwargsLike): Additional keyword arguments for connection configuration.
+            connection_config (KwargsLike): Keyword arguments for connection configuration.
 
         Returns:
             List[str]: A list of schema names.
@@ -296,7 +296,7 @@ class DuckDBData(DBData):
         Args:
             connection (Union[None, str, DuckDBPyConnection]): A connection instance,
                 file path, or connection string.
-            connection_config (KwargsLike): Additional keyword arguments for connection configuration.
+            connection_config (KwargsLike): Keyword arguments for connection configuration.
 
         Returns:
             str: The current schema name.
@@ -354,7 +354,7 @@ class DuckDBData(DBData):
             incl_temporary (bool): Include temporary tables.
             incl_views (bool): Include view objects.
             connection (Union[None, str, DuckDBPyConnection]): Database connection identifier or object.
-            connection_config (KwargsLike): Additional keyword arguments for database connection configuration.
+            connection_config (KwargsLike): Keyword arguments for database connection configuration.
 
         Returns:
             List[str]: List of table names, optionally prefixed with catalog and schema names.
@@ -537,13 +537,13 @@ class DuckDBData(DBData):
             symbols (MaybeSymbols): Symbols used for filtering the data.
             catalog (Optional[str]): Catalog name for database lookup.
             schema (Optional[str]): Schema name for database lookup.
-            list_tables_kwargs: Additional keyword arguments for listing database tables.
+            list_tables_kwargs: Keyword arguments for listing database tables.
             read_path (Optional[PathLike]): File or directory path for reading data.
             read_format (Optional[str]): Format to use when reading data.
             connection (Union[None, str, DuckDBPyConnection]): Database connection instance or identifier.
-            connection_config: Additional keyword arguments for configuring the connection.
+            connection_config: Keyword arguments for configuring the connection.
             share_connection (Optional[bool]): If True, uses a shared connection among keys.
-            **kwargs: Additional keyword arguments passed to the parent method.
+            **kwargs: Keyword arguments passed to the parent method.
 
         Returns:
             DuckDBData: An instance containing the pulled data with resolved keys and connection.
@@ -751,7 +751,7 @@ class DuckDBData(DBData):
             connection (str or DuckDBPyConnection): Connection reference.
 
                 See `DuckDBData.resolve_connection` for details.
-            connection_config (dict): Additional configuration for the connection;
+            connection_config (KwargsLike): Additional configuration for the connection;
 
                 See `DuckDBData.resolve_connection` for details.
             start (any): Start value for filtering.
@@ -777,8 +777,8 @@ class DuckDBData(DBData):
                 See `vectorbtpro.utils.datetime_.to_timezone`.
             index_col (int, str, or list): Column(s) to use as the index.
             squeeze (bool): Whether to squeeze a DataFrame with a single column into a Series.
-            df_kwargs (dict): Keyword arguments for `relation.df` to convert a relation to a DataFrame.
-            **sql_kwargs: Additional keyword arguments for `connection.execute` to run the SQL query.
+            df_kwargs (KwargsLike): Keyword arguments for `relation.df` to convert a relation to a DataFrame.
+            **sql_kwargs: Keyword arguments for `connection.execute` to run the SQL query.
 
         Returns:
             KeyData: The fetched data and a metadata dictionary.
@@ -1000,7 +1000,7 @@ class DuckDBData(DBData):
 
         Args:
             feature (str): The identifier for the feature whose data table is to be fetched.
-            **kwargs: Additional keyword arguments passed to `DuckDBData.fetch_key`.
+            **kwargs: Keyword arguments passed to `DuckDBData.fetch_key`.
 
         Returns:
             FeatureData: The fetched data and a metadata dictionary.
@@ -1013,7 +1013,7 @@ class DuckDBData(DBData):
 
         Args:
             symbol (str): The identifier for the symbol whose data table is to be fetched.
-            **kwargs: Additional keyword arguments passed to `DuckDBData.fetch_key`.
+            **kwargs: Keyword arguments passed to `DuckDBData.fetch_key`.
 
         Returns:
             SymbolData: The fetched data and a metadata dictionary.
@@ -1033,7 +1033,7 @@ class DuckDBData(DBData):
             from_last_index (Optional[bool]): Flag indicating whether to update data starting from the last index.
 
                 If not provided, it is inferred from the presence of a "query" in the merged keyword arguments.
-            **kwargs: Additional keyword arguments used for fetching the updated data.
+            **kwargs: Keyword arguments used for fetching the updated data.
 
         Returns:
             KeyData: The updated data and a metadata dictionary.
@@ -1057,7 +1057,7 @@ class DuckDBData(DBData):
 
         Args:
             feature (str): The identifier for the feature to update.
-            **kwargs: Additional keyword arguments passed to `DuckDBData.update_key`.
+            **kwargs: Keyword arguments passed to `DuckDBData.update_key`.
 
         Returns:
             FeatureData: The updated data and a metadata dictionary.
@@ -1069,7 +1069,7 @@ class DuckDBData(DBData):
 
         Args:
             symbol (str): The identifier for the symbol to update.
-            **kwargs: Additional keyword arguments passed to `DuckDBData.update_key`.
+            **kwargs: Keyword arguments passed to `DuckDBData.update_key`.
 
         Returns:
             SymbolData: The updated data and a metadata dictionary.

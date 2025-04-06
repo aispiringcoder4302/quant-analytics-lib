@@ -71,7 +71,7 @@ class Prettified(Base):
         """Pretty-print the object.
 
         Args:
-            **kwargs: Additional keyword arguments passed to `prettify`.
+            **kwargs: Keyword arguments passed to `prettify`.
         """
         print(self.prettify(**kwargs))
 
@@ -355,8 +355,8 @@ def pprint(*args, **kwargs) -> None:
     """Print the prettified representation of the given arguments.
 
     Args:
-        *args: Additional positional arguments passed to `prettify`.
-        **kwargs: Additional keyword arguments passed to `prettify`.
+        *args: Positional arguments passed to `prettify`.
+        **kwargs: Keyword arguments passed to `prettify`.
     """
     print(prettify(*args, **kwargs))
 
@@ -371,7 +371,7 @@ def format_array(array: tp.ArrayLike, tabulate: tp.Optional[bool] = None, html: 
 
             If None, auto-detect based on the availability of the `tabulate` library and the `html` parameter.
         html (bool): Format the output in HTML if True.
-        **kwargs: Additional keyword arguments for the formatting function.
+        **kwargs: Keyword arguments for the formatting function.
 
     Returns:
         str: The formatted array as a string.
@@ -405,11 +405,11 @@ def ptable(*args, display_html: tp.Optional[bool] = None, **kwargs) -> None:
     """Print the formatted array.
 
     Args:
-        *args: Additional arguments for `format_array`.
+        *args: Positional arguments for `format_array`.
         display_html (Optional[bool]): Display output in HTML if True.
 
             If None, auto-detect if running in an IPython notebook.
-        **kwargs: Additional keyword arguments for `format_array`.
+        **kwargs: Keyword arguments for `format_array`.
     """
     from vectorbtpro.utils.checks import in_notebook
 
@@ -516,7 +516,7 @@ def format_func(func: tp.Callable, incl_doc: bool = True, **kwargs) -> str:
     Args:
         func (Callable): The function or class to format. If a class, its `__init__` method is used.
         incl_doc (bool): If True, include the function's docstring in the output if available.
-        **kwargs: Additional keyword arguments for `format_signature`.
+        **kwargs: Keyword arguments for `format_signature`.
 
     Returns:
         str: The formatted function description, including its signature and docstring if available.
@@ -568,8 +568,8 @@ def phelp(*args, **kwargs) -> None:
     """Print the formatted representation of a function.
 
     Args:
-        *args: Additional arguments for `format_func`.
-        **kwargs: Additional keyword arguments for `format_func`.
+        *args: Positional arguments for `format_func`.
+        **kwargs: Keyword arguments for `format_func`.
     """
     print(format_func(*args, **kwargs))
 
@@ -578,8 +578,8 @@ def pdir(*args, **kwargs) -> None:
     """Print parsed attributes of an object.
 
     Args:
-        *args: Additional arguments for `vectorbtpro.utils.attr_.parse_attrs`.
-        **kwargs: Additional keyword arguments for `vectorbtpro.utils.attr_.parse_attrs`.
+        *args: Positional arguments for `vectorbtpro.utils.attr_.parse_attrs`.
+        **kwargs: Keyword arguments for `vectorbtpro.utils.attr_.parse_attrs`.
     """
     from vectorbtpro.utils.attr_ import parse_attrs
 
@@ -603,7 +603,7 @@ def dump(obj: tp.Any, dump_engine: str = "prettify", **kwargs) -> str:
             * "ruamel" or "ruamel.yaml"
             * "toml"
             * "json"
-        **kwargs: Additional keyword arguments for the dump engine.
+        **kwargs: Keyword arguments for the dump engine.
 
     Returns:
         str: The dumped object as a string.

@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Generic Numba-compiled functions for records."""
+"""Module providing generic Numba-compiled functions for records."""
 
 import numpy as np
 from numba import prange
@@ -40,7 +40,18 @@ from vectorbtpro.utils.template import Rep
 )
 @register_jitted(cache=True, tags={"can_parallel"})
 def get_ranges_nb(arr: tp.Array2d, gap_value: tp.Scalar) -> tp.RecordArray:
-    """Fill range records between gaps.
+    """Fill range records in a 2D array by detecting gaps.
+
+    Args:
+        arr (Array2d): 2D NumPy array where each column represents a time series.
+        gap_value (Scalar): Value that signifies a gap in the data.
+
+    Returns:
+        RecordArray: Record array containing range details with fields
+            `id`, `col`, `start_idx`, `end_idx`, and `status`.
+
+    !!! tip
+        This function is parallelizable.
 
     Usage:
         * Find ranges in time series:
@@ -142,7 +153,25 @@ def get_ranges_from_delta_nb(
     delta_use_index: bool = False,
     shift: int = 0,
 ) -> tp.RecordArray:
-    """Build delta ranges."""
+    """Build delta-based ranges for record indices.
+
+    Args:
+        n_rows (int): Total number of rows in the dataset.
+        idx_arr (Array1d): Array of record positions.
+        id_arr (Array1d): Array of record identifiers.
+        col_map (GroupMap): Tuple containing column indices and corresponding group lengths.
+        index (Optional[Array1d]): Array of index values used for delta-based calculations.
+        delta (int): Delta offset to compute range boundaries.
+        delta_use_index (bool): Flag indicating whether to use the index values for delta calculation.
+        shift (int): Shift applied to the starting index.
+
+    Returns:
+        RecordArray: Record array with fields `id`, `col`, `start_idx`, `end_idx`,
+            and `status` indicating the computed ranges.
+
+    !!! tip
+        This function is parallelizable.
+    """
     col_idxs, col_lens = col_map
     col_start_idxs = np.cumsum(col_lens) - col_lens
     out = np.empty(idx_arr.shape[0], dtype=range_dt)
@@ -222,7 +251,22 @@ def range_duration_nb(
     status_arr: tp.Array2d,
     freq: int = 1,
 ) -> tp.Array1d:
-    """Get duration of each range record."""
+    """Calculate the duration of each range record.
+
+    Args:
+        start_idx_arr (Array1d): Array of starting indices for each range record.
+        end_idx_arr (Array1d): Array of ending indices for each range record.
+        status_arr (Array2d): Array indicating the status of each range record.
+
+            If a record is open, the duration is adjusted.
+        freq (int): Frequency increment added to the duration for open range records.
+
+    Returns:
+        Array1d: An array containing the computed durations of the range records.
+
+    !!! tip
+        This function is parallelizable.
+    """
     out = np.empty(start_idx_arr.shape[0], dtype=int_)
     for r in prange(start_idx_arr.shape[0]):
         if status_arr[r] == RangeStatus.Open:
@@ -255,11 +299,24 @@ def range_coverage_nb(
     overlapping: bool = False,
     normalize: bool = False,
 ) -> tp.Array1d:
-    """Get coverage of range records.
+    """Calculate the coverage of range records for each group.
 
-    Set `overlapping` to True to get the number of overlapping steps.
-    Set `normalize` to True to get the number of steps in relation either to the total number of steps
-    (when `overlapping=False`) or to the number of covered steps (when `overlapping=True`).
+    Args:
+        start_idx_arr (Array1d): Array of starting indices for each range record.
+        end_idx_arr (Array1d): Array of ending indices for each range record.
+        status_arr (Array2d): Array indicating the status of each range record.
+        col_map (GroupMap): Tuple containing column indices and their corresponding lengths.
+        index_lens (Array1d): Array of index lengths for each group.
+        overlapping (bool): If True, compute the count of overlapping steps.
+        normalize (bool): If True, return the coverage as a normalized ratio relative
+            to the total number of steps (if overlapping is False) or the number of
+            covered steps (if overlapping is True).
+
+    Returns:
+        Array1d: An array containing the computed coverage values for each group.
+
+    !!! tip
+        This function is parallelizable.
     """
     col_idxs, col_lens = col_map
     col_start_idxs = np.cumsum(col_lens) - col_lens
@@ -316,7 +373,21 @@ def ranges_to_mask_nb(
     col_map: tp.GroupMap,
     index_len: int,
 ) -> tp.Array2d:
-    """Convert ranges to 2-dim mask."""
+    """Convert range records into a 2-dimensional mask.
+
+    Args:
+        start_idx_arr (Array1d): Array of starting indices for each range record.
+        end_idx_arr (Array1d): Array of ending indices for each range record.
+        status_arr (Array2d): Array indicating the status of each range record.
+        col_map (GroupMap): Tuple containing column indices and their corresponding lengths.
+        index_len (int): Length of the index for the resulting mask.
+
+    Returns:
+        Array2d: A 2-dimensional boolean mask where True indicates that the position is within a range.
+
+    !!! tip
+        This function is parallelizable.
+    """
     col_idxs, col_lens = col_map
     col_start_idxs = np.cumsum(col_lens) - col_lens
     out = np.full((index_len, col_lens.shape[0]), False, dtype=np.bool_)
@@ -355,12 +426,31 @@ def map_ranges_to_projections_nb(
     ffill: bool = False,
     remove_empty: bool = False,
 ) -> tp.Tuple[tp.Array1d, tp.Array2d]:
-    """Map each range into a projection.
+    """Map each specified range to a projection.
 
-    Returns two arrays:
+    Args:
+        close (Array2d): A 2D array of close prices.
+        col_arr (Array1d): A 1D array of column indices for selecting data from `close`.
+        start_idx_arr (Array1d): A 1D array of starting indices for each range.
+        end_idx_arr (Array1d): A 1D array of ending indices for each range.
+        status_arr (Array1d): A 1D array indicating the status of each range.
+        index (Optional[Array1d]): An optional 1D array representing timestamps or indices.
+        proj_start (int): The offset from the start index to begin the projection.
+        proj_start_use_index (bool): Whether to compute the projection start using the `index` array.
+        proj_period (Optional[int]): The period or duration for the projection.
+        proj_period_use_index (bool): Whether to determine the projection period based on the `index` array.
+        incl_end_idx (bool): Whether the end index of a range is inclusive.
+        extend (bool): Whether to extend the projection to a fixed length.
+        rebase (bool): Whether to rebase the projection series using a specified start value.
+        start_value (FlexArray1dLike): The initial value(s) used for rebasing projections.
+        ffill (bool): Whether to forward-fill missing projection values.
+        remove_empty (bool): Whether to exclude projections with no computed changes.
 
-    1. One-dimensional array where elements are record indices
-    2. Two-dimensional array where rows are projections"""
+    Returns:
+        Tuple[Array1d, Array2d]: A tuple where the first element is a 1D array of
+            record indices and the second element is a 2D array of projections,
+            with each row corresponding to a range.
+    """
     start_value_ = to_1d_array_nb(np.asarray(start_value))
 
     index_ranges_temp = np.empty((start_idx_arr.shape[0], 2), dtype=int_)
@@ -489,21 +579,106 @@ def find_pattern_1d_nb(
     max_records: tp.Optional[int] = None,
     col: int = 0,
 ) -> tp.RecordArray:
-    """Find all occurrences of a pattern in an array.
+    """Find all occurrences of a pattern in a 1D array.
 
-    Uses `vectorbtpro.generic.nb.patterns.pattern_similarity_nb` to fill records of the type
-    `vectorbtpro.generic.enums.pattern_range_dt`.
+    Iterate through the input array to identify segments that closely match the provided pattern.
+    For each valid window length between `window` and `max_window`, compute a similarity score
+    using `vectorbtpro.generic.nb.patterns.pattern_similarity_nb`. If the similarity meets the
+    `min_similarity` threshold, record the segment in a record array.
 
-    Goes through the array, and for each window selected between `window` and `max_window` (including),
-    checks whether the window of array values is similar enough to the pattern. If so, writes a new
-    range to the output array. If `window_select_prob` is set, decides whether to test a window based on
-    the given probability. The same for `row_select_prob` but on rows.
+    If `roll_forward` is True, windows are processed forward ensuring sorted `start_idx`;
+    otherwise, windows are processed backward with sorted `end_idx`. The function selectively
+    processes rows and windows based on `row_select_prob` and `window_select_prob`.
+    The length of the output record array is limited by `max_records` when specified.
 
-    If `roll_forward`, windows are rolled forward (`start_idx` is guaranteed to be sorted), otherwise
-    backward (`end_idx` is guaranteed to be sorted).
+    Args:
+        arr (Array1d): Input one-dimensional array in which to search for the pattern.
+        pattern (Array1d): 1D array representing the pattern to locate.
 
-    By default, creates an empty record array of the same size as the number of rows in `arr`.
-    This can be increased or decreased using `max_records`."""
+            Can be smaller or larger than the source array. In such cases,
+            the smaller array is stretched using the interpolation mode specified by `interp_mode`.
+        window (Optional[int]): Base length of the rolling window for matching.
+
+            If None, defaults to the length of `pattern`.
+        max_window (Optional[int]): Maximum length of the rolling window for matching.
+
+            If None, defaults to `window`.
+        row_select_prob (float): Probability of selecting a row.
+        window_select_prob (float): Probability of selecting a window size.
+        roll_forward (bool): Process windows in forward direction if True; otherwise, in backward direction.
+        interp_mode (int): Interpolation mode.
+
+            See `vectorbtpro.generic.enums.InterpMode` for options.
+        rescale_mode (int): Rescaling mode for adjusting the ranges of `arr` and `pattern`.
+
+            See `vectorbtpro.generic.enums.RescaleMode` for options.
+        vmin (float): Minimum value used for rescaling `arr`.
+
+            Use only when the array has fixed bounds. Used in rescaling with `RescaleMode.MinMax`
+            and for verifying `min_pct_change` and `max_pct_change`.
+
+            If set to NaN, it is calculated dynamically.
+        vmax (float): Maximum value used for rescaling `arr`.
+
+            Use only when the array has fixed bounds. Used in rescaling with `RescaleMode.MinMax`
+            and for verifying `min_pct_change` and `max_pct_change`.
+
+            If set to NaN, it is calculated dynamically.
+        pmin (float): Minimum value used for rescaling `pattern`.
+
+            Used in rescaling with `RescaleMode.MinMax` and for computing the maximum distance
+            at each point when `max_error_as_maxdist` is disabled.
+
+            If set to NaN, it is calculated dynamically.
+        pmax (float): Maximum value used for rescaling `pattern`.
+
+            Used in rescaling with `RescaleMode.MinMax` and for computing the maximum distance
+            at each point when `max_error_as_maxdist` is disabled.
+
+            If set to NaN, it is calculated dynamically.
+        invert (bool): Invert the pattern by reflecting its values.
+        error_type (int): Error computation mode.
+
+            See `vectorbtpro.generic.enums.ErrorType` for options.
+        distance_measure (int): Method for measuring distance (e.g., MAE, MSE, RMSE).
+
+            See `vectorbtpro.generic.enums.DistanceMeasure` for options.
+        max_error (FlexArray1dLike): Maximum error threshold for normalization.
+
+            If provided as an array, it must match the size of the pattern and be on the same scale.
+        max_error_interp_mode (Optional[int]): Interpolation mode for `max_error`.
+
+            If None, defaults to `interp_mode`.
+
+            See `vectorbtpro.generic.enums.InterpMode` for options.
+        max_error_as_maxdist (bool): Indicates whether `max_error` represents the maximum distance at each point.
+
+            If False, exceeding `max_error` sets the distance to the maximum derived from
+            `pmin`, `pmax`, and the pattern value at that point. If True and any point
+            in a window is NaN, that point is skipped.
+        max_error_strict (bool): If True, any instance of exceeding `max_error` results in a similarity of NaN.
+        min_pct_change (float): Minimum percentage change required for a window to remain a search candidate.
+
+            Window similarity is set to NaN if this threshold is not met.
+        max_pct_change (float): Maximum percentage change allowed for a window to remain a search candidate.
+
+            Window similarity is set to NaN if this threshold is exceeded.
+        min_similarity (float): Minimum similarity threshold.
+
+            If the computed similarity falls below this, returns NaN.
+        minp (Optional[int]): Minimum number of observations in the price window required to yield a value.
+        overlap_mode (int): Mode for handling overlapping matches.
+
+            See `vectorbtpro.generic.enums.OverlapMode` for options.
+        max_records (Optional[int]): Maximum number of records to be filled.
+
+            If None, defaults to the number of rows in `arr`.
+        col (int): Column index assigned to the result records.
+
+    Returns:
+        RecordArray: Array of matching segment records with fields such as
+            `id`, `col`, `start_idx`, `end_idx`, `status`, and `similarity`.
+    """
     max_error_ = to_1d_array_nb(np.asarray(max_error))
 
     if window is None:
@@ -705,7 +880,97 @@ def find_pattern_nb(
     overlap_mode: int = OverlapMode.Disallow,
     max_records: tp.Optional[int] = None,
 ) -> tp.RecordArray:
-    """2-dim version of `find_pattern_1d_nb`."""
+    """Find pattern records in a 2D array column-wise.
+
+    Args:
+        arr (Array2d): Input 2D array in which pattern matching is performed per column.
+        pattern (Array1d): 1D array representing the pattern to locate.
+
+            Can be smaller or larger than the source array. In such cases,
+            the smaller array is stretched using the interpolation mode specified by `interp_mode`.
+        window (Optional[int]): Base length of the rolling window for matching.
+
+            If None, defaults to the length of `pattern`.
+        max_window (Optional[int]): Maximum length of the rolling window for matching.
+
+            If None, defaults to `window`.
+        row_select_prob (float): Probability of selecting a row.
+        window_select_prob (float): Probability of selecting a window size.
+        roll_forward (bool): Process windows in forward direction if True; otherwise, in backward direction.
+        interp_mode (int): Interpolation mode.
+
+            See `vectorbtpro.generic.enums.InterpMode` for options.
+        rescale_mode (int): Rescaling mode for adjusting the ranges of `arr` and `pattern`.
+
+            See `vectorbtpro.generic.enums.RescaleMode` for options.
+        vmin (float): Minimum value used for rescaling `arr`.
+
+            Use only when the array has fixed bounds. Used in rescaling with `RescaleMode.MinMax`
+            and for verifying `min_pct_change` and `max_pct_change`.
+
+            If set to NaN, it is calculated dynamically.
+        vmax (float): Maximum value used for rescaling `arr`.
+
+            Use only when the array has fixed bounds. Used in rescaling with `RescaleMode.MinMax`
+            and for verifying `min_pct_change` and `max_pct_change`.
+
+            If set to NaN, it is calculated dynamically.
+        pmin (float): Minimum value used for rescaling `pattern`.
+
+            Used in rescaling with `RescaleMode.MinMax` and for computing the maximum distance
+            at each point when `max_error_as_maxdist` is disabled.
+
+            If set to NaN, it is calculated dynamically.
+        pmax (float): Maximum value used for rescaling `pattern`.
+
+            Used in rescaling with `RescaleMode.MinMax` and for computing the maximum distance
+            at each point when `max_error_as_maxdist` is disabled.
+
+            If set to NaN, it is calculated dynamically.
+        invert (bool): Invert the pattern by reflecting its values.
+        error_type (int): Error computation mode.
+
+            See `vectorbtpro.generic.enums.ErrorType` for options.
+        distance_measure (int): Method for measuring distance (e.g., MAE, MSE, RMSE).
+
+            See `vectorbtpro.generic.enums.DistanceMeasure` for options.
+        max_error (FlexArray1dLike): Maximum error threshold for normalization.
+
+            If provided as an array, it must match the size of the pattern and be on the same scale.
+        max_error_interp_mode (Optional[int]): Interpolation mode for `max_error`.
+
+            If None, defaults to `interp_mode`.
+
+            See `vectorbtpro.generic.enums.InterpMode` for options.
+        max_error_as_maxdist (bool): Indicates whether `max_error` represents the maximum distance at each point.
+
+            If False, exceeding `max_error` sets the distance to the maximum derived from
+            `pmin`, `pmax`, and the pattern value at that point. If True and any point
+            in a window is NaN, that point is skipped.
+        max_error_strict (bool): If True, any instance of exceeding `max_error` results in a similarity of NaN.
+        min_pct_change (float): Minimum percentage change required for a window to remain a search candidate.
+
+            Window similarity is set to NaN if this threshold is not met.
+        max_pct_change (float): Maximum percentage change allowed for a window to remain a search candidate.
+
+            Window similarity is set to NaN if this threshold is exceeded.
+        min_similarity (float): Minimum similarity threshold.
+
+            If the computed similarity falls below this, returns NaN.
+        minp (Optional[int]): Minimum number of observations in the price window required to yield a value.
+        overlap_mode (int): Mode for handling overlapping matches.
+
+            See `vectorbtpro.generic.enums.OverlapMode` for options.
+        max_records (Optional[int]): Maximum number of records to be filled.
+
+            If None, defaults to the number of rows in `arr`.
+
+    Returns:
+        RecordArray: Array of records detailing the located pattern matches.
+
+    !!! tip
+        This function is parallelizable.
+    """
     max_error_ = to_1d_array_nb(np.asarray(max_error))
 
     if window is None:
@@ -757,7 +1022,15 @@ def find_pattern_nb(
 
 @register_jitted(cache=True)
 def drawdown_1d_nb(arr: tp.Array1d) -> tp.Array1d:
-    """Compute drawdown."""
+    """Compute the drawdown for a 1D array.
+
+    Args:
+        arr (Array1d): Input array of numerical values.
+
+    Returns:
+        Array1d: Array representing the drawdown, calculated as the relative decline
+            from the maximum value encountered up to each index.
+    """
     out = np.empty_like(arr, dtype=float_)
     max_val = np.nan
     for i in range(arr.shape[0]):
@@ -777,7 +1050,17 @@ def drawdown_1d_nb(arr: tp.Array1d) -> tp.Array1d:
 )
 @register_jitted(cache=True, tags={"can_parallel"})
 def drawdown_nb(arr: tp.Array2d) -> tp.Array2d:
-    """2-dim version of `drawdown_1d_nb`."""
+    """Compute the drawdown for a 2D array column-wise.
+
+    Args:
+        arr (Array2d): 2D input array where the drawdown is computed separately for each column.
+
+    Returns:
+        Array2d: Array of drawdown values for each column.
+
+    !!! tip
+        This function is parallelizable.
+    """
     out = np.empty_like(arr, dtype=float_)
     for col in prange(arr.shape[1]):
         out[:, col] = drawdown_1d_nb(arr[:, col])
@@ -796,8 +1079,21 @@ def fill_drawdown_record_nb(
     valley_val: float,
     end_val: float,
     status: int,
-):
-    """Fill a drawdown record."""
+) -> None:
+    """Populate a drawdown record with indices and values.
+
+    Args:
+        new_records (RecordArray2d): Array structure to store the drawdown record fields.
+        counts (Array2d): Array tracking the current count of records per column.
+        i (int): Current index indicating the end of the drawdown.
+        col (int): Column index being processed.
+        start_idx (int): Index at which the drawdown begins.
+        valley_idx (int): Index corresponding to the trough of the drawdown.
+        start_val (float): Value at the start of the drawdown.
+        valley_val (float): Value at the valley (lowest point) of the drawdown.
+        end_val (float): Value at the end of the drawdown.
+        status (int): Code representing the status of the drawdown.
+    """
     r = counts[col]
     new_records["id"][r, col] = r
     new_records["col"][r, col] = col
@@ -835,7 +1131,22 @@ def get_drawdowns_nb(
 ) -> tp.RecordArray:
     """Fill drawdown records by analyzing a time series.
 
-    Only `close` must be provided, other time series are optional.
+    This function computes drawdown records using the provided price series arrays.
+    Only `close` is mandatory; other arrays supply supplementary price information.
+
+    Args:
+        open (Optional[Array2d]): Opening price time series for each asset column.
+        high (Optional[Array2d]): Highest price time series for each asset column.
+        low (Optional[Array2d]): Lowest price time series for each asset column.
+        close (Array2d): Closing price time series for each asset column.
+        sim_start (Optional[FlexArray1dLike]): Simulation start indices for each column.
+        sim_end (Optional[FlexArray1dLike]): Simulation end indices for each column.
+
+    Returns:
+        RecordArray: Array of computed drawdown records.
+
+    !!! tip
+        This function is parallelizable.
 
     Usage:
         ```pycon
@@ -997,7 +1308,18 @@ def get_drawdowns_nb(
 )
 @register_jitted(cache=True, tags={"can_parallel"})
 def dd_drawdown_nb(start_val_arr: tp.Array1d, valley_val_arr: tp.Array1d) -> tp.Array1d:
-    """Compute the drawdown of each drawdown record."""
+    """Compute drawdown metrics for each record.
+
+    Args:
+        start_val_arr (Array1d): Array of starting values from each drawdown record.
+        valley_val_arr (Array1d): Array of valley values from each drawdown record.
+
+    Returns:
+        Array1d: Array of drawdown percentages for each record.
+
+    !!! tip
+        This function is parallelizable.
+    """
     out = np.empty(valley_val_arr.shape[0], dtype=float_)
     for r in prange(valley_val_arr.shape[0]):
         if start_val_arr[r] == 0:
@@ -1014,7 +1336,18 @@ def dd_drawdown_nb(start_val_arr: tp.Array1d, valley_val_arr: tp.Array1d) -> tp.
 )
 @register_jitted(cache=True, tags={"can_parallel"})
 def dd_decline_duration_nb(start_idx_arr: tp.Array1d, valley_idx_arr: tp.Array1d) -> tp.Array1d:
-    """Compute the duration of the peak-to-valley phase of each drawdown record."""
+    """Compute the duration of the drawdown decline phase.
+
+    Args:
+        start_idx_arr (Array1d): Array of start indices marking the peak of each drawdown.
+        valley_idx_arr (Array1d): Array of valley indices where each drawdown reaches its minimum.
+
+    Returns:
+        Array1d: Array of durations representing the time from peak to valley in each record.
+
+    !!! tip
+        This function is parallelizable.
+    """
     out = np.empty(valley_idx_arr.shape[0], dtype=float_)
     for r in prange(valley_idx_arr.shape[0]):
         out[r] = valley_idx_arr[r] - start_idx_arr[r]
@@ -1028,7 +1361,18 @@ def dd_decline_duration_nb(start_idx_arr: tp.Array1d, valley_idx_arr: tp.Array1d
 )
 @register_jitted(cache=True, tags={"can_parallel"})
 def dd_recovery_duration_nb(valley_idx_arr: tp.Array1d, end_idx_arr: tp.Array1d) -> tp.Array1d:
-    """Compute the duration of the valley-to-recovery phase of each drawdown record."""
+    """Compute the duration of the drawdown recovery phase.
+
+    Args:
+        valley_idx_arr (Array1d): Array of valley indices for each drawdown record.
+        end_idx_arr (Array1d): Array of recovery indices marking the end of each drawdown.
+
+    Returns:
+        Array1d: Array of durations representing the time from the drawdown valley to recovery.
+
+    !!! tip
+        This function is parallelizable.
+    """
     out = np.empty(end_idx_arr.shape[0], dtype=float_)
     for r in prange(end_idx_arr.shape[0]):
         out[r] = end_idx_arr[r] - valley_idx_arr[r]
@@ -1050,7 +1394,24 @@ def dd_recovery_duration_ratio_nb(
     valley_idx_arr: tp.Array1d,
     end_idx_arr: tp.Array1d,
 ) -> tp.Array1d:
-    """Compute the ratio of the recovery duration to the decline duration of each drawdown record."""
+    """Compute the recovery duration ratio for each drawdown record.
+
+    This function computes the ratio between the recovery duration and the decline duration.
+
+    Args:
+        start_idx_arr (Array1d): Array of starting indices for the decline period.
+        valley_idx_arr (Array1d): Array of indices where the drawdown reaches its lowest point.
+        end_idx_arr (Array1d): Array of ending indices for the recovery period.
+
+    Returns:
+        Array1d: An array of recovery duration ratios calculated as (recovery duration)
+            divided by (decline duration).
+
+            NaN is returned when the decline duration is zero.
+
+    !!! tip
+        This function is parallelizable.
+    """
     out = np.empty(start_idx_arr.shape[0], dtype=float_)
     for r in prange(start_idx_arr.shape[0]):
         if valley_idx_arr[r] - start_idx_arr[r] == 0:
@@ -1067,7 +1428,22 @@ def dd_recovery_duration_ratio_nb(
 )
 @register_jitted(cache=True, tags={"can_parallel"})
 def dd_recovery_return_nb(valley_val_arr: tp.Array1d, end_val_arr: tp.Array1d) -> tp.Array1d:
-    """Compute the recovery return of each drawdown record."""
+    """Compute the recovery return for each drawdown record.
+
+    This function calculates the recovery return as the relative change from
+    the valley value to the end value.
+
+    Args:
+        valley_val_arr (Array1d): Array of drawdown valley values.
+        end_val_arr (Array1d): Array of values at the end of the recovery period.
+
+    Returns:
+        Array1d: An array of recovery returns computed as (end value - valley value)
+            divided by the valley value.
+
+    !!! tip
+        This function is parallelizable.
+    """
     out = np.empty(end_val_arr.shape[0], dtype=float_)
     for r in prange(end_val_arr.shape[0]):
         if valley_val_arr[r] == 0:
@@ -1079,7 +1455,20 @@ def dd_recovery_return_nb(valley_val_arr: tp.Array1d, end_val_arr: tp.Array1d) -
 
 @register_jitted(cache=True)
 def bar_price_nb(records: tp.RecordArray, price: tp.Optional[tp.FlexArray2d]) -> tp.Array1d:
-    """Return the bar price."""
+    """Return the bar prices corresponding to each record.
+
+    This function retrieves the bar price for each record using a flex selection from the price array.
+    If the price array is not provided, NaN is returned for the corresponding record.
+
+    Args:
+        records (RecordArray): Record array containing indices and column references.
+        price (Optional[FlexArray2d]): Two-dimensional array of bar prices to select
+            from using record indices and columns.
+
+    Returns:
+        Array1d: An array of bar prices for each record, with NaN for records
+            when the price array is None.
+    """
     out = np.empty(len(records), dtype=float_)
     for i in range(len(records)):
         record = records[i]

@@ -43,8 +43,8 @@ class Chainable(Base):
                 * A string representing an attribute path to resolve via `vectorbtpro.utils.attr_.deep_getattr`.
                 * A tuple where the first element is a callable or attribute path and the second element indicates
                   the positional or keyword argument where to pass the chainable instance.
-            *args: Additional arguments passed to `func`.
-            **kwargs: Additional keyword arguments passed to `func`.
+            *args: Positional arguments passed to `func`.
+            **kwargs: Keyword arguments passed to `func`.
 
         Returns:
             Any: The result of invoking the chainable function.

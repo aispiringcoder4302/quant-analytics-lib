@@ -249,7 +249,7 @@ def stack_indexes(*indexes: tp.MaybeTuple[tp.IndexLike], **clean_index_kwargs) -
 
     Args:
         *indexes (MaybeTuple[IndexLike]): One or more index-like objects to stack.
-        **clean_index_kwargs: Additional keyword arguments passed to `clean_index`.
+        **clean_index_kwargs: Keyword arguments passed to `clean_index`.
 
     Returns:
         Index: A MultiIndex constructed by stacking the levels of the provided indexes.
@@ -282,7 +282,7 @@ def combine_indexes(*indexes: tp.MaybeTuple[tp.IndexLike], **kwargs) -> tp.Index
 
     Args:
         *indexes (MaybeTuple[IndexLike]): Indexes to combine.
-        **kwargs (KwargsLike): Additional keyword arguments passed to `stack_indexes`.
+        **kwargs (KwargsLike): Keyword arguments passed to `stack_indexes`.
 
     Returns:
         Index: The combined index.
@@ -307,7 +307,7 @@ def combine_index_with_keys(index: tp.IndexLike, keys: tp.IndexLike, lens: tp.Se
         index (IndexLike): The original index to segment.
         keys (IndexLike): Keys to repeat for each index segment.
         lens (Sequence[int]): Sequence of lengths for each corresponding segment.
-        **kwargs (KwargsLike): Additional keyword arguments passed to `stack_indexes`.
+        **kwargs (KwargsLike): Keyword arguments passed to `stack_indexes`.
 
     Returns:
         Index: The composite index combining the repeated keys and segments.
@@ -360,7 +360,7 @@ def concat_indexes(
         *indexes (MaybeTuple[IndexLike]): Indexes to concatenate.
         index_concat_method (MaybeTuple[Union[str, Callable]]): Method for concatenating indexes.
         keys (Optional[IndexLike]): Index to add an additional level on top of the concatenated indexes.
-        clean_index_kwargs (KwargsLike): Additional keyword arguments for cleaning or stacking indexes.
+        clean_index_kwargs (KwargsLike): Keyword arguments for cleaning or stacking indexes.
         verify_integrity (bool): Whether to perform integrity checks on the concatenated index.
         axis (int): Axis corresponding to the indexes (0 for rows, 1 for columns, or other for groups).
 
@@ -877,7 +877,7 @@ def align_indexes(
     Args:
         indexes (MaybeTuple[Index]): One or more indexes to be aligned.
         return_new_index (bool): If True, return a new stacked index along with the index slices.
-        **kwargs: Additional keyword arguments passed to `align_index_to`.
+        **kwargs: Keyword arguments passed to `align_index_to`.
 
     Returns:
         Union[Tuple[IndexSlice, ...], Tuple[Tuple[IndexSlice, ...], Index]]:
@@ -1206,8 +1206,8 @@ class IndexApplier(Base):
 
         Args:
             apply_func (Callable): A callable to apply to the instance's index.
-            *args: Additional arguments for the callable.
-            **kwargs: Additional keyword arguments for the callable.
+            *args: Positional arguments for the callable.
+            **kwargs: Keyword arguments for the callable.
 
         Returns:
             IndexApplier: A new instance with the updated index.
@@ -1231,7 +1231,7 @@ class IndexApplier(Base):
             drop_duplicates (Optional[bool]): Indicates whether to remove duplicate levels.
             keep (Optional[str]): Specifies which duplicate to retain.
             drop_redundant (Optional[bool]): Indicates whether to remove redundant levels.
-            **kwargs: Additional keyword arguments passed to `IndexApplier.apply_to_index`.
+            **kwargs: Keyword arguments passed to `IndexApplier.apply_to_index`.
 
         Returns:
             IndexApplier: A new instance with the modified index.
@@ -1265,7 +1265,7 @@ class IndexApplier(Base):
         Args:
             levels (Union[ExceptLevel, MaybeLevelSequence]): The level or levels to be dropped from the index.
             strict (bool): Enforces strict matching of the specified levels.
-            **kwargs: Additional keyword arguments passed to `IndexApplier.apply_to_index`.
+            **kwargs: Keyword arguments passed to `IndexApplier.apply_to_index`.
 
         Returns:
             IndexApplier: A new instance with the specified levels removed from the index.
@@ -1287,7 +1287,7 @@ class IndexApplier(Base):
         Args:
             mapper (MaybeMappingSequence[Level]): A mapping or sequence indicating new names for the levels.
             strict (bool): Enforces strict renaming; only exact matches will be renamed.
-            **kwargs: Additional keyword arguments passed to `IndexApplier.apply_to_index`.
+            **kwargs: Keyword arguments passed to `IndexApplier.apply_to_index`.
 
         Returns:
             IndexApplier: A new instance with the index levels renamed.
@@ -1309,7 +1309,7 @@ class IndexApplier(Base):
         Args:
             level_names (Union[ExceptLevel, MaybeLevelSequence]): The level or levels to select from the index.
             strict (bool): Enforces strict matching for the selection.
-            **kwargs: Additional keyword arguments passed to `IndexApplier.apply_to_index`.
+            **kwargs: Keyword arguments passed to `IndexApplier.apply_to_index`.
 
         Returns:
             IndexApplier: A new instance with a subset of the index levels.
@@ -1324,7 +1324,7 @@ class IndexApplier(Base):
         """Remove redundant levels from the index using `drop_redundant_levels`.
 
         Args:
-            **kwargs: Additional keyword arguments passed to `IndexApplier.apply_to_index`.
+            **kwargs: Keyword arguments passed to `IndexApplier.apply_to_index`.
 
         Returns:
             IndexApplier: A new instance with redundant levels removed.
@@ -1340,7 +1340,7 @@ class IndexApplier(Base):
 
         Args:
             keep (Optional[str]): A strategy to determine which duplicate level to retain.
-            **kwargs: Additional keyword arguments passed to `IndexApplier.apply_to_index`.
+            **kwargs: Keyword arguments passed to `IndexApplier.apply_to_index`.
 
         Returns:
             IndexApplier: A new instance with duplicate levels removed.

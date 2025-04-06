@@ -658,8 +658,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
     def defaults(self) -> tp.Kwargs:
         """Defaults for `ReturnsAccessor`.
 
-        Merges `defaults` from `vectorbtpro._settings.returns` with `defaults`
-        from `ReturnsAccessor.__init__`."""
+        Merges `defaults` from `vectorbtpro._settings.returns` with `defaults` from `ReturnsAccessor`."""
         from vectorbtpro._settings import settings
 
         returns_defaults_cfg = settings["returns"]["defaults"]

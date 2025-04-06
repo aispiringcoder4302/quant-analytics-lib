@@ -697,7 +697,7 @@ def broadcast_index(
         ignore_ranges (Optional[bool]): Whether to disregard indexes of type `pd.RangeIndex`.
         check_index_names (Optional[bool]): Whether to validate index/columns names equality
             (see `vectorbtpro.utils.checks.is_index_equal`).
-        **clean_index_kwargs: Additional keyword arguments for `vectorbtpro.base.indexes.clean_index`.
+        **clean_index_kwargs: Keyword arguments for `vectorbtpro.base.indexes.clean_index`.
 
     Returns:
         Optional[Index]: Broadcasted index/columns, or None if original index/columns should be retained.
@@ -1167,7 +1167,7 @@ def broadcast(
 
     For defaults, see `vectorbtpro._settings.broadcasting`.
 
-    Additional keyword arguments for object-specific parameters can be provided as follows:
+    Keyword arguments for object-specific parameters can be provided as follows:
 
     * A constant applied to all objects.
     * A sequence with a value for each object.
@@ -2015,7 +2015,7 @@ def broadcast_to(
             if None, uses the index of `arg2`.
         columns_from (Optional[IndexFromLike]): Columns to use for the output;
             if None, uses the columns of `arg2`.
-        **kwargs: Additional keyword arguments passed to `broadcast`.
+        **kwargs: Keyword arguments passed to `broadcast`.
 
     Returns:
         Any: Broadcasted structure, either as an array or a pandas object depending on `to_pd`.
@@ -2122,7 +2122,7 @@ def broadcast_to_axis_of(
         arg1 (ArrayLike): Input value or array to be broadcast.
         arg2 (ArrayLike): Array whose specified axis determines the target length.
         axis (int): Axis index along which to broadcast `arg1`.
-        require_kwargs (KwargsLike): Additional keyword arguments for array requirements.
+        require_kwargs (KwargsLike): Keyword arguments for array requirements.
 
     Returns:
         Array: The broadcasted array.
@@ -2154,7 +2154,7 @@ def broadcast_combs(
         *objs (ArrayLike): Array-like objects to combine; at least two are required.
         axis (int): Axis along which to align and broadcast the arrays.
         comb_func (Callable): Combinatorial function applied to indices (e.g., `itertools.product`).
-        **broadcast_kwargs: Additional keyword arguments passed to `broadcast`.
+        **broadcast_kwargs: Keyword arguments passed to `broadcast`.
 
     Returns:
         Any: Tuple of broadcasted arrays aligned based on the combinatorial indices.

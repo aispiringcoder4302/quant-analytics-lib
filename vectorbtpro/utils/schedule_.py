@@ -235,7 +235,7 @@ class ScheduleManager(Base):
     ) -> AsyncJob:
         """Create a new asynchronous job that runs at a specified interval.
 
-        Additional arguments determine scheduling parameters in a strict order:
+        Positional arguments determine scheduling parameters in a strict order:
 
         * interval: int or timedelta specifying the time interval.
         * unit: str from `ScheduleManager.units` indicating the time unit.
@@ -245,7 +245,7 @@ class ScheduleManager(Base):
         This method utilizes the `schedule` package for job scheduling.
 
         Args:
-            *args (Any): Additional arguments for specifying scheduling parameters.
+            *args (Any): Positional arguments for specifying scheduling parameters.
 
                 They must be provided in the strict order:
 
@@ -443,7 +443,7 @@ class ScheduleManager(Base):
         """Start the asynchronous schedule manager in the background.
 
         Args:
-            **kwargs: Additional keyword arguments passed to `ScheduleManager.async_start`.
+            **kwargs: Keyword arguments passed to `ScheduleManager.async_start`.
         """
         async_task = asyncio.create_task(self.async_start(**kwargs))
         async_task.add_done_callback(self.done_callback)

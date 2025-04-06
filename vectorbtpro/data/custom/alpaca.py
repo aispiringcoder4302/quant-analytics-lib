@@ -176,7 +176,7 @@ class AlpacaData(RemoteData):
             client (Optional[RESTClient]): An existing client instance to use.
             client_type (Optional[str]): Specifies the type of client to create;
                 expected values are "crypto" or "stocks".
-            **client_config: Additional keyword arguments for client initialization.
+            **client_config: Keyword arguments for client initialization.
 
         Returns:
             RESTClient: An instance of the trading client.
@@ -233,7 +233,7 @@ class AlpacaData(RemoteData):
 
                 Automatically determined based on the symbol, as crypto symbols contain "/".
                 Also see `AlpacaData.resolve_client`.
-            client_config (dict): Configuration for the Alpaca client.
+            client_config (KwargsLike): Configuration for the Alpaca client.
 
                 See `AlpacaData.resolve_client`.
             start (Optional[DatetimeLike]): Start datetime.

@@ -131,7 +131,7 @@ if __version_info__ < (20, 0, 0, "alpha", 1):
 
                 These settings are merged with the default configuration obtained from
                 `vectorbtpro._settings.telegram` under the giphy key.
-            **kwargs: Additional keyword arguments for configuring the updater;
+            **kwargs: Keyword arguments for configuring the updater;
                 they override settings for the bot.
 
         See [Extensions – Your first Bot](https://github.com/python-telegram-bot/python-telegram-bot/wiki/Extensions-%E2%80%93-Your-first-Bot).
@@ -286,12 +286,12 @@ if __version_info__ < (20, 0, 0, "alpha", 1):
         def start(self, in_background: bool = False, **kwargs) -> None:
             """Start the Telegram bot.
 
-            Additional keyword arguments are passed to `telegram.ext.updater.Updater.start_polling`
+            Keyword arguments are passed to `telegram.ext.updater.Updater.start_polling`
             to override the default bot settings from `vectorbtpro._settings.telegram`.
 
             Args:
                 in_background (bool): Run the bot in the background if True; otherwise, block the main thread.
-                **kwargs: Additional keyword arguments for `Updater.start_polling`.
+                **kwargs: Keyword arguments for `Updater.start_polling`.
             """
             from vectorbtpro._settings import settings
 
@@ -326,10 +326,10 @@ if __version_info__ < (20, 0, 0, "alpha", 1):
             Args:
                 kind (str): The type of message to send.
                 chat_id (int): The target chat ID.
-                *args: Additional arguments for the bot's send method.
+                *args: Positional arguments for the bot's send method.
                 log_msg (Optional[str]): Message description for logging; if not provided,
                     defaults to the value of `kind`.
-                **kwargs: Additional keyword arguments for sending the message.
+                **kwargs: Keyword arguments for sending the message.
             """
             try:
                 getattr(self.updater.bot, "send_" + kind)(chat_id, *args, **kwargs)
@@ -350,8 +350,8 @@ if __version_info__ < (20, 0, 0, "alpha", 1):
 
             Args:
                 kind (str): The type of message to send.
-                *args: Additional positional arguments for sending the message.
-                **kwargs: Additional keyword arguments for sending the message.
+                *args: Positional arguments for sending the message.
+                **kwargs: Keyword arguments for sending the message.
             """
             for chat_id in self.chat_ids:
                 self.send(kind, chat_id, *args, **kwargs)
@@ -362,8 +362,8 @@ if __version_info__ < (20, 0, 0, "alpha", 1):
             Args:
                 chat_id (int): The unique identifier of the target chat.
                 text (str): The content of the message to send.
-                *args: Additional arguments passed to `TelegramBot.send`.
-                **kwargs: Additional keyword arguments passed to `TelegramBot.send`."""
+                *args: Positional arguments passed to `TelegramBot.send`.
+                **kwargs: Keyword arguments passed to `TelegramBot.send`."""
             log_msg = '"%s"' % text
             self.send("message", chat_id, text, *args, log_msg=log_msg, **kwargs)
 
@@ -372,8 +372,8 @@ if __version_info__ < (20, 0, 0, "alpha", 1):
 
             Args:
                 text (str): The content of the message to send.
-                *args: Additional arguments passed to `TelegramBot.send_to_all`.
-                **kwargs: Additional keyword arguments passed to `TelegramBot.send_to_all`."""
+                *args: Positional arguments passed to `TelegramBot.send_to_all`.
+                **kwargs: Keyword arguments passed to `TelegramBot.send_to_all`."""
             log_msg = '"%s"' % text
             self.send_to_all("message", text, *args, log_msg=log_msg, **kwargs)
 
@@ -383,9 +383,9 @@ if __version_info__ < (20, 0, 0, "alpha", 1):
             Args:
                 chat_id (int): The unique identifier of the target chat.
                 text (str): The text from which to generate a GIPHY URL.
-                *args: Additional arguments passed to `TelegramBot.send`.
-                giphy_kwargs (KwargsLike): Additional keyword arguments for generating the GIPHY URL.
-                **kwargs: Additional keyword arguments passed to `TelegramBot.send`."""
+                *args: Positional arguments passed to `TelegramBot.send`.
+                giphy_kwargs (KwargsLike): Keyword arguments for generating the GIPHY URL.
+                **kwargs: Keyword arguments passed to `TelegramBot.send`."""
             if giphy_kwargs is None:
                 giphy_kwargs = self.giphy_kwargs
             gif_url = text_to_giphy_url(text, **giphy_kwargs)
@@ -397,9 +397,9 @@ if __version_info__ < (20, 0, 0, "alpha", 1):
 
             Args:
                 text (str): The text from which to generate a GIPHY URL.
-                *args: Additional arguments passed to `TelegramBot.send_to_all`.
-                giphy_kwargs (KwargsLike): Additional keyword arguments for generating the GIPHY URL.
-                **kwargs: Additional keyword arguments passed to `TelegramBot.send_to_all`."""
+                *args: Positional arguments passed to `TelegramBot.send_to_all`.
+                giphy_kwargs (KwargsLike): Keyword arguments for generating the GIPHY URL.
+                **kwargs: Keyword arguments passed to `TelegramBot.send_to_all`."""
             if giphy_kwargs is None:
                 giphy_kwargs = self.giphy_kwargs
             gif_url = text_to_giphy_url(text, **giphy_kwargs)
@@ -473,7 +473,7 @@ if __version_info__ < (20, 0, 0, "alpha", 1):
             Args:
                 update (object): The update that triggered the error.
                 context (CallbackContext): The callback context containing error information.
-                *args: Additional arguments passed to the error handler."""
+                *args: Positional arguments passed to the error handler."""
             logger.error('Exception while handling an update "%s": ', update, exc_info=context.error)
             if isinstance(update, Update) and update.effective_chat:
                 chat_id = update.effective_chat.id
@@ -533,7 +533,7 @@ else:
         Implements a Telegram bot that handles commands, updates, and GIPHY configurations.
 
         Args:
-            giphy_kwargs (KwargsLike): Additional keyword arguments for GIPHY configuration.
+            giphy_kwargs (KwargsLike): Keyword arguments for GIPHY configuration.
             **kwargs: Additional configuration options passed to `TelegramBot.build_application`.
 
         See [Extensions – Your first Bot](https://github.com/python-telegram-bot/python-telegram-bot/wiki/Extensions-%E2%80%93-Your-first-Bot).
@@ -748,11 +748,11 @@ else:
             Args:
                 kind (str): The type of message to send (e.g., "message", "animation").
                 chat_id (int): The target chat ID.
-                *args: Additional arguments passed for sending the message.
+                *args: Positional arguments passed for sending the message.
                 log_msg (Optional[str]): Log message for tracking the message.
 
                     Defaults to the message kind if not provided.
-                **kwargs: Additional keyword arguments passed for sending the message.
+                **kwargs: Keyword arguments passed for sending the message.
             """
             try:
                 await getattr(self.application.bot, "send_" + kind)(chat_id, *args, **kwargs)
@@ -773,8 +773,8 @@ else:
 
             Args:
                 kind (str): The type of message to send (e.g., "message", "animation").
-                *args: Additional arguments for sending the message.
-                **kwargs: Additional keyword arguments for sending the message.
+                *args: Positional arguments for sending the message.
+                **kwargs: Keyword arguments for sending the message.
             """
             for chat_id in self.chat_ids:
                 await self.send(kind, chat_id, *args, **kwargs)
@@ -785,8 +785,8 @@ else:
             Args:
                 chat_id (int): The target chat ID.
                 text (str): The text message to send.
-                *args: Additional arguments for sending the message.
-                **kwargs: Additional keyword arguments for sending the message.
+                *args: Positional arguments for sending the message.
+                **kwargs: Keyword arguments for sending the message.
             """
             log_msg = '"%s"' % text
             await self.send("message", chat_id, text, *args, log_msg=log_msg, **kwargs)
@@ -796,8 +796,8 @@ else:
 
             Args:
                 text (str): The text message to send.
-                *args: Additional arguments for sending the message.
-                **kwargs: Additional keyword arguments for sending the message.
+                *args: Positional arguments for sending the message.
+                **kwargs: Keyword arguments for sending the message.
             """
             log_msg = '"%s"' % text
             await self.send_to_all("message", text, *args, log_msg=log_msg, **kwargs)
@@ -810,11 +810,11 @@ else:
             Args:
                 chat_id (int): The target chat ID.
                 text (str): Text to convert into a GIPHY URL.
-                *args: Additional arguments for sending the message.
+                *args: Positional arguments for sending the message.
                 giphy_kwargs (KwargsLike): Keyword arguments for configuring the GIPHY request.
 
                     If not provided, defaults to the `giphy_kwargs` property.
-                **kwargs: Additional keyword arguments for sending the message.
+                **kwargs: Keyword arguments for sending the message.
             """
             if giphy_kwargs is None:
                 giphy_kwargs = self.giphy_kwargs
@@ -827,11 +827,11 @@ else:
 
             Args:
                 text (str): Text to convert into a GIPHY URL.
-                *args: Additional arguments for sending the message.
+                *args: Positional arguments for sending the message.
                 giphy_kwargs (KwargsLike): Keyword arguments for configuring the GIPHY request.
 
                     If not provided, defaults to the `giphy_kwargs` property.
-                **kwargs: Additional keyword arguments for sending the message.
+                **kwargs: Keyword arguments for sending the message.
             """
             if giphy_kwargs is None:
                 giphy_kwargs = self.giphy_kwargs
@@ -970,7 +970,7 @@ else:
             Args:
                 close_loop (bool): Whether to close the event loop after stopping the bot.
                 stop_signals (Sequence[int]): Signals used to stop the event loop.
-                **kwargs: Additional keyword arguments that override the `bot` settings from
+                **kwargs: Keyword arguments that override the `bot` settings from
                     `vectorbtpro._settings.telegram`.
 
                     Only keys accepted by `telegram.ext._updater.Updater.start_polling` are passed.

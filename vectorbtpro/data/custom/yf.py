@@ -29,7 +29,7 @@ __pdoc__ = {}
 class YFData(RemoteData):
     """Class for fetching financial data from Yahoo Finance.
 
-    See `https://github.com/ranaroussi/yfinance` for API details.
+    See https://github.com/ranaroussi/yfinance for API details.
 
     See `YFData.fetch_symbol` for argument details.
 
@@ -101,7 +101,7 @@ class YFData(RemoteData):
             tz (TimezoneLike): Time zone for datetime conversion.
 
                 See `vectorbtpro.utils.datetime_.to_timezone` for conversion details.
-            **history_kwargs: Additional keyword arguments passed to `yfinance.base.TickerBase.history`.
+            **history_kwargs: Keyword arguments passed to `yfinance.base.TickerBase.history`.
 
         Returns:
             SymbolData: The fetched data and a metadata dictionary.

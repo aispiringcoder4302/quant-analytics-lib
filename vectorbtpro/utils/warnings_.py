@@ -103,7 +103,7 @@ class WarningsFiltered(warnings.catch_warnings, Base):
 
     Args:
         entries (Optional[MaybeSequence[Union[str, Kwargs]]]): Simple entries to add to the warnings filters.
-        **kwargs: Additional keyword arguments to pass to `warnings.catch_warnings`.
+        **kwargs: Keyword arguments to pass to `warnings.catch_warnings`.
     """
 
     def __init__(self, entries: tp.Optional[tp.MaybeSequence[tp.Union[str, tp.Kwargs]]] = "ignore", **kwargs) -> None:

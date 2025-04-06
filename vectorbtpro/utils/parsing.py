@@ -157,7 +157,7 @@ def get_forward_args(func: tp.Callable, local_dict: tp.Kwargs, **kwargs) -> tp.A
     Args:
         func (Callable): Target function to inspect.
         local_dict (Kwargs): Dictionary of local variables to consider.
-        **kwargs: Additional keyword arguments to match against the function's parameters.
+        **kwargs: Keyword arguments to match against the function's parameters.
 
     Returns:
         ArgsKwargs: A tuple where the first element is a tuple of positional arguments
@@ -194,7 +194,7 @@ def extend_args(func: tp.Callable, args: tp.Args, kwargs: tp.Kwargs, **with_kwar
         func (Callable): Target function whose signature is used.
         args (Args): Original positional arguments.
         kwargs (Kwargs): Original keyword arguments.
-        **with_kwargs: Additional keyword arguments to include.
+        **with_kwargs: Keyword arguments to include.
 
     Returns:
         ArgsKwargs: Extended positional and keyword arguments.
@@ -703,8 +703,8 @@ class PrintsSuppressed(contextlib.redirect_stdout, Base):
     """Context manager for suppressing printed output.
 
     Args:
-        *args: Additional positional arguments passed to the context manager.
-        **kwargs: Additional keyword arguments passed to the context manager.
+        *args: Positional arguments passed to the context manager.
+        **kwargs: Keyword arguments passed to the context manager.
     """
 
     def __new__(cls, *args, **kwargs) -> PrintsSuppressedT:

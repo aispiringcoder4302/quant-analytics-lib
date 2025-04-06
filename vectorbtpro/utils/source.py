@@ -86,7 +86,7 @@ def cut_from_source(
     Any line containing `# %` outside these blocks is interpreted as a Python expression. The evaluation
     result of the expression directs the output as follows:
 
-    * `None`: Skip the line.
+    * None: Skip the line.
     * `str`: Insert a single line.
     * `Iterable[str]`: Insert multiple lines into the output.
 
@@ -228,7 +228,7 @@ def suggest_module_path(
     Args:
         section_name (str): The name of the section.
         path (Optional[PathLike]): A base directory or file path.
-        mkdir_kwargs (KwargsLike): Additional keyword arguments for directory creation.
+        mkdir_kwargs (KwargsLike): Keyword arguments for directory creation.
 
     Returns:
         Path: The determined file path.
@@ -262,7 +262,7 @@ def cut_and_save(
         section_name (str): The name of the section to extract.
         path (Optional[PathLike]): File path or directory in which to save the extracted section.
         mkdir_kwargs (KwargsLike): Keyword arguments for directory creation.
-        **kwargs: Additional keyword arguments passed to `cut_from_source`.
+        **kwargs: Keyword arguments passed to `cut_from_source`.
 
     Returns:
         Path: The file path where the extracted section is saved.
@@ -283,8 +283,8 @@ def cut_and_save_module(module: tp.Union[str, ModuleType], *args, **kwargs) -> P
 
     Args:
         module (Union[str, ModuleType]): The target module or its import path.
-        *args: Additional positional arguments passed to `cut_and_save`.
-        **kwargs: Additional keyword arguments passed to `cut_and_save`.
+        *args: Positional arguments passed to `cut_and_save`.
+        **kwargs: Keyword arguments passed to `cut_and_save`.
 
     Returns:
         Path: The file path where the extracted module section is saved.
@@ -306,8 +306,8 @@ def cut_and_save_func(func: tp.Union[str, FunctionType], *args, **kwargs) -> Pat
         func (Union[str, FunctionType]): A function or its fully qualified name.
 
             If provided as a string, the module will be imported and the function will be retrieved.
-        *args: Additional positional arguments passed to `cut_and_save`.
-        **kwargs: Additional keyword arguments passed to `cut_and_save`.
+        *args: Positional arguments passed to `cut_and_save`.
+        **kwargs: Keyword arguments passed to `cut_and_save`.
 
     Returns:
         Path: The file path where the extracted function section is saved.
@@ -600,16 +600,16 @@ def refine_source(
         uniform_chunks (bool): Whether to each chunk should start and end at the same base level.
 
             If nested chunks (with level > base) are present, includes them only if they fit as a whole.
-        tokenize_kwargs (KwargsLike): Additional keyword arguments for
+        tokenize_kwargs (KwargsLike): Keyword arguments for
             `vectorbtpro.utils.knowledge.chatting.tokenize`.
-        complete_kwargs (KwargsLike): Additional keyword arguments for
+        complete_kwargs (KwargsLike): Keyword arguments for
             `vectorbtpro.utils.knowledge.chatting.completed`.
         show_progress (Optional[bool]): Whether to display progress during chunk processing.
-        pbar_kwargs (KwargsLike): Additional keyword arguments for `vectorbtpro.utils.pbar.ProgressBar`.
+        pbar_kwargs (KwargsLike): Keyword arguments for `vectorbtpro.utils.pbar.ProgressBar`.
         mult_show_progress (Optional[bool]): Whether to display progress when processing multiple sources.
 
             If not provided, defaults to `show_progress`.
-        mult_pbar_kwargs (KwargsLike): Additional keyword arguments for the progress bar
+        mult_pbar_kwargs (KwargsLike): Keyword arguments for the progress bar
             when processing multiple sources.
 
             These are merged with `pbar_kwargs`.
@@ -901,7 +901,10 @@ def refine_source(
             trailing_len = len(chunk) - len(chunk.rstrip())
             trailing = chunk[-trailing_len:] if trailing_len > 0 else ""
             middle = chunk[leading_len : len(chunk) - trailing_len]
-            new_middle = completed(middle, **complete_kwargs)
+            if middle:
+                new_middle = completed(middle, **complete_kwargs)
+            else:
+                new_middle = ""
             new_middle = add_source_indent(new_middle, indent)
             new_chunk = leading + new_middle + trailing
             processed.append(new_chunk)
@@ -998,10 +1001,18 @@ Your goal is to refine (rewrite for clarity, correctness, consistent format and 
     unless it is incorrect.
 - **Do not change code examples** in the "Usage" section. Use only the name "Usage", 
     not "Examples" or any other name.
-- If a function returns `None`, **do not add a "Returns" section**.
+    - **Do not change indentation of the code blocks** in "Usage" sections.
+- If a function returns None, **do not add a "Returns" section**.
+    - The same for bool but only if it would appear redundant.
 - **Do not add your own "Usage" section**.
-- **Make sure to list all arguments, their types, and descriptions**, apart from `self`, `cls`, and `cls_or_self`
+- **Make sure to list all arguments, their types, and descriptions**, apart from `self`, `cls`, and `cls_or_self`.
 - Do not mention type `dict` when describing variable keyword arguments.
+- If the function is decorated with `@register_chunkable` or `@register_jitted` with the `can_parallel` tag, 
+    add at the end of the docstring:
+    ```
+    !!! tip
+        This function is parallelizable.
+    ```
 
 ### 3. Style and Format
 
@@ -1014,6 +1025,16 @@ Your goal is to refine (rewrite for clarity, correctness, consistent format and 
 
     Returns:
         return_type: Description of the returned value.
+    ```
+    - If the sentence spans across multiple lines, add 4 spaces of indentation to the subsequent lines:
+    ```
+    Args:
+        arg_name (type): A very long 
+            description of the argument.
+
+    Returns:
+        return_type: A very long 
+            description of the returned value.
     ```
 - If the description of an argument has multiple sentences, **separate them by an empty line**. 
     For example:
@@ -1032,11 +1053,14 @@ Your goal is to refine (rewrite for clarity, correctness, consistent format and 
     x (Optional[int]): First integer. Refer to `prepare_x` for further details.
     y (Optional[int]): Second integer. If not provided, uses `x`. Refer to `prepare_y` for further details.
     ```
-- **Preserve type hints** but remove module prefixes such as "tp." and the suffix "T".
+- **Preserve type hints**.
+    - Remove module prefixes such as "tp." and the suffix "T".
     - For example, `x: tp.Union[None, int, tp.DatetimeLike] = ...` becomes 
         `x (Union[None, int, DatetimeLike]): ...`.
     - Also, `x: tp.MaybeType[KnowledgeAssetT] = ...` becomes `x (MaybeType[KnowledgeAsset]): ...`.
-    - Do not unfold type hints prefixed with `Maybe` into a union. Keep them as they are.
+    - **Do not unfold** type hints prefixed with `Maybe` into a union. Keep them as they are.
+    - **Do not replace** type hints `Args` and `Kwargs` to `tuple` and `dict`. Keep them as they are.
+    - If an argument already describes its type, such as `(bool or int)`, replace it with the type hint.
     - Change type hints in docstring only, **do not change type hints in function signatures**.
 - Treat classes decorated with `@define` **as if they were decorated with `@attr.s`**, adjusting 
     docstrings accordingly.
@@ -1053,11 +1077,11 @@ Your goal is to refine (rewrite for clarity, correctness, consistent format and 
 - Bullet points must be at the **same indentation level as the parent sentence** and should 
     have **one empty line before the list**.
 - **Use a consistent style for bullet points**, such as "*"
-- For `*args` begin the description with `Additional arguments passed to/for`.
-- For `**kwargs` begin the description with `Additional keyword arguments passed to/for`.
+- For `*args` begin the description with "Positional arguments passed to/for ...".
+    - If the target is not known, use "Additional positional arguments.".
+- For `**kwargs` begin the description with "Keyword arguments passed to/for ...".
+    - If the target is not known, use "Additional keyword arguments.".
 - When dealing with named tuples and enums, replace "Attributes:" by "Fields:" in their docstrings
-- Make sure that docstrings have three double quotes (\"\"\") at the start and the end
-- Make sure that **docstrings are properly indented** relative to the first three double quotes (\"\"\")
 
 ### 4. Referencing and Usage
 
@@ -1082,8 +1106,68 @@ Your goal is to refine (rewrite for clarity, correctness, consistent format and 
 - **Do not start any docstring with a blank line**.
 - **Do not end a docstring with a blank line** unless it contains multiple lines.
 - **Do not change any existing indentation or spacing**.
+    - Do not change indentation or spacing of existing code. **Change only the docstrings.**
 - **Do not change usage examples or their formatting**.
 - **Use the name "vectorbtpro" instead of "VectorBT® PRO"** in docstrings.
+- **Do not wrap URLs into backticks**.
+- Make sure that docstrings have three double quotes (\"\"\") at the start and the end
+- Make sure that **docstrings are properly indented** relative to the first three double quotes (\"\"\")
+    - All subsequent lines of a docstring must have at least 4 spaces of indentation.
+- Always use **indentation in 4-space increments**.
+- Don't replace `\"\"\"_\"\"\"`, refine the docstring in `__pdoc__` instead.
+- Don't change headers like "## Stats"
+    
+### 7. Refined Docstring Example
+
+```python
+@hybrid_method
+def chat(
+    cls_or_self: tp.MaybeType[ContextableT],
+    message: str,
+    chat_history: tp.Optional[tp.ChatHistory] = None,
+    *,
+    return_chat: bool = False,
+    **kwargs,
+) -> tp.MaybeChatOutput:
+    \"\"\"Chat with a language model using the instance as context.
+    
+    Generates a formatted response to the message using `Completions`.
+
+    Args:
+        message (str): The message to send to the language model.
+        
+            Will be appended to `chat_history` with the role "user".
+        chat_history (Optional[ChatHistory]): The conversation history.
+        
+            Will be modified in place.
+        return_chat (bool): Flag indicating whether to return both the completion and 
+            the chat instance of type `Completions`.
+        **kwargs: Keyword arguments passed to `Contextable.create_chat`.
+
+    Returns:
+        MaybeChatOutput: The completion response or a tuple of the response and the chat instance.
+        
+    For defaults, see `chat` in `vectorbtpro._settings.knowledge`.
+
+    !!! note
+        Context is recalculated each time this method is invoked. For multiple turns,
+        it's more efficient to use `Contextable.create_chat`.
+
+    Usage:
+        ```pycon
+        >>> asset.chat("What's the value under 'xyz'?")
+        The value under 'xyz' is 123.
+        ```
+    \"\"\"
+    if isinstance(cls_or_self, type):
+        args, kwargs = get_forward_args(super().chat, locals())
+        return super().chat(*args, **kwargs)
+
+    completions = cls_or_self.create_chat(chat_history=chat_history, **kwargs)
+    if return_chat:
+        return completions.get_completion(message), completions
+    return completions.get_completion(message)
+```
 """
 """Prompt for `refine_docstrings`."""
 
@@ -1094,7 +1178,7 @@ def refine_docstrings(source: tp.Any, **kwargs) -> tp.RefineSourceOutput:
 
     Args:
         source (Any): The source code to be refined.
-        **kwargs: Additional keyword arguments passed to `refine_source`.
+        **kwargs: Keyword arguments passed to `refine_source`.
 
     Returns:
         RefineSourceOutput: The result of the refinement process.

@@ -30,7 +30,7 @@ class DataUpdater(Configured):
     Args:
         data (Data): Data instance.
         update_kwargs (KwargsLike): Default keyword arguments for `DataSaver.update`.
-        **kwargs: Additional keyword arguments for the `Configured` base class.
+        **kwargs: Keyword arguments for the `Configured` base class.
     """
 
     def __init__(
@@ -106,15 +106,15 @@ class DataUpdater(Configured):
         For details on `*args`, `to`, and `tags`, refer to `vectorbtpro.utils.schedule_.ScheduleManager.every`.
 
         Args:
-            *args: Additional positional arguments passed to `vectorbtpro.utils.schedule_.ScheduleManager.every`.
+            *args: Positional arguments passed to `vectorbtpro.utils.schedule_.ScheduleManager.every`.
             to (int): The upper time boundary for scheduling updates.
             tags (Optional[Iterable[Hashable]]): Tags used to identify the scheduled job.
             in_background (bool): If True, the job runs as an asyncio task and
                 can be stopped using `vectorbtpro.utils.schedule_.ScheduleManager.stop`
             replace (bool): If True, remove existing jobs with matching tags.
             start (bool): If True, start the job immediately after scheduling.
-            start_kwargs (KwargsLike): Additional keyword arguments for starting the scheduler.
-            **update_kwargs: Additional keyword arguments passed to `DataUpdater.update`.
+            start_kwargs (KwargsLike): Keyword arguments for starting the scheduler.
+            **update_kwargs: Keyword arguments passed to `DataUpdater.update`.
         """
         if replace:
             self.schedule_manager.clear_jobs(tags)

@@ -8,9 +8,9 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Named tuples and enumerated types for generic data.
+"""Module providing named tuples and enumerations for generic data.
 
-Defines enums and other schemas for `vectorbtpro.generic`."""
+Defines enums and schemas for `vectorbtpro.generic`."""
 
 import numpy as np
 
@@ -74,7 +74,7 @@ BarZone = BarZoneT()
 
 __pdoc__[
     "BarZone"
-] = f"""Bar zone.
+] = f"""Bar zone enumeration.
 
 ```python
 {prettify_doc(BarZone)}
@@ -95,7 +95,7 @@ WType = WTypeT()
 
 __pdoc__[
     "WType"
-] = f"""Rolling window type.
+] = f"""Rolling window type enumeration.
 
 ```python
 {prettify_doc(WType)}
@@ -113,7 +113,7 @@ RangeStatus = RangeStatusT()
 
 __pdoc__[
     "RangeStatus"
-] = f"""Range status.
+] = f"""Range status enumeration.
 
 ```python
 {prettify_doc(RangeStatus)}
@@ -133,14 +133,14 @@ InterpMode = InterpModeT()
 
 __pdoc__[
     "InterpMode"
-] = f"""Interpolation mode.
+] = f"""Interpolation mode enumeration.
 
 ```python
 {prettify_doc(InterpMode)}
 ```
 
-Attributes:
-    Line: Linear interpolation.
+Fields:
+    Linear: Linear interpolation.
 
         For example: `[1.0, 2.0, 3.0]` -> `[1.0, 1.5, 2.0, 2.5, 3.0]`
     Nearest: Nearest-neighbor interpolation.
@@ -166,27 +166,27 @@ RescaleMode = RescaleModeT()
 
 __pdoc__[
     "RescaleMode"
-] = f"""Rescaling mode.
+] = f"""Rescaling mode enumeration.
 
 ```python
 {prettify_doc(RescaleMode)}
 ```
 
-Attributes:
-    MinMax: Array is rescaled from its min-max range to the min-max range of another array.
-    
+Fields:
+    MinMax: Rescales an array from its min-max range to match the min-max range of another array.
+        
         For example: `[3.0, 2.0, 1.0]` to `[10, 11, 12]` -> `[12.0, 11.0, 10.0]`
-    
+        
         Use this to search for patterns irrespective of their vertical scale.
-    Rebase: Array is rebased to the first value in another array.
+    Rebase: Rebases an array to the first value of another array.
     
         For example: `[3.0, 2.0, 1.0]` to `[10, 11, 12]` -> `[10.0, 6.6, 3.3]`
-    
+        
         Use this to search for percentage changes.
-    Disable: Disable any rescaling.
+    Disable: Disables rescaling, leaving the array unchanged.
     
         For example: `[3.0, 2.0, 1.0]` to `[10, 11, 12]` -> `[3.0, 2.0, 1.0]`
-    
+        
         Use this to search for particular numbers.
 """
 
@@ -201,15 +201,15 @@ ErrorType = ErrorTypeT()
 
 __pdoc__[
     "ErrorType"
-] = f"""Error type.
+] = f"""Error type enumeration.
 
 ```python
 {prettify_doc(ErrorType)}
 ```
 
-Attributes:
-    Absolute: Absolute error, that is, `x1 - x0`.
-    Relative: Relative error, that is, `(x1 - x0) / x0`.
+Fields:
+    Absolute: Represents the absolute error (x1 - x0).
+    Relative: Represents the relative error ((x1 - x0) / x0).
 """
 
 
@@ -224,13 +224,13 @@ DistanceMeasure = DistanceMeasureT()
 
 __pdoc__[
     "DistanceMeasure"
-] = f"""Distance measure.
+] = f"""Distance measure enumeration.
 
 ```python
 {prettify_doc(DistanceMeasure)}
 ```
 
-Attributes:
+Fields:
     MAE: Mean absolute error.
     MSE: Mean squared error.
     RMSE: Root mean squared error.
@@ -248,19 +248,19 @@ OverlapMode = OverlapModeT()
 
 __pdoc__[
     "OverlapMode"
-] = f"""Overlapping mode.
+] = f"""Overlap mode enumeration.
 
 ```python
 {prettify_doc(OverlapMode)}
 ```
 
-Attributes:
-    AllowAll: Allow any overlapping ranges, even if they start at the same row.
-    Allow: Allow overlapping ranges, but only if they do not start at the same row.
-    Disallow: Disallow any overlapping ranges.
-    
-Any other positive number will check whether the intersection of each two consecutive ranges is 
-bigger than that number of rows, and if so, the range with the highest similarity will be selected.
+Fields:
+    AllowAll: Allows any overlapping ranges, including those starting at the same row.
+    Allow: Allows overlapping ranges only if they do not share the same starting row.
+    Disallow: Disallows any overlapping ranges.
+
+Any other positive number specifies a minimum number of overlapping rows required to 
+select the range with the highest similarity.
 """
 
 
@@ -274,7 +274,7 @@ DrawdownStatus = DrawdownStatusT()
 
 __pdoc__[
     "DrawdownStatus"
-] = f"""Drawdown status.
+] = f"""Drawdown status enumeration.
 
 ```python
 {prettify_doc(DrawdownStatus)}
@@ -344,7 +344,7 @@ drawdown_dt = np.dtype(
 
 __pdoc__[
     "drawdown_dt"
-] = f"""`np.dtype` of drawdown records.
+] = f"""NumPy dtype for drawdown records.
 
 ```python
 {prettify_doc(drawdown_dt)}
@@ -367,8 +367,7 @@ class RollSumAIS(tp.NamedTuple):
 
 __pdoc__[
     "RollSumAIS"
-] = """A named tuple representing the input state of 
-`vectorbtpro.generic.nb.rolling.rolling_sum_acc_nb`."""
+] = """Named tuple representing the input state for `vectorbtpro.generic.nb.rolling.rolling_sum_acc_nb`."""
 
 
 class RollSumAOS(tp.NamedTuple):
@@ -380,8 +379,7 @@ class RollSumAOS(tp.NamedTuple):
 
 __pdoc__[
     "RollSumAOS"
-] = """A named tuple representing the output state of 
-`vectorbtpro.generic.nb.rolling.rolling_sum_acc_nb`."""
+] = """Named tuple representing the output state for `vectorbtpro.generic.nb.rolling.rolling_sum_acc_nb`."""
 
 
 class RollProdAIS(tp.NamedTuple):
@@ -396,8 +394,7 @@ class RollProdAIS(tp.NamedTuple):
 
 __pdoc__[
     "RollProdAIS"
-] = """A named tuple representing the input state of 
-`vectorbtpro.generic.nb.rolling.rolling_prod_acc_nb`."""
+] = """Named tuple representing the input state for `vectorbtpro.generic.nb.rolling.rolling_prod_acc_nb`."""
 
 
 class RollProdAOS(tp.NamedTuple):
@@ -409,8 +406,7 @@ class RollProdAOS(tp.NamedTuple):
 
 __pdoc__[
     "RollProdAOS"
-] = """A named tuple representing the output state of 
-`vectorbtpro.generic.nb.rolling.rolling_prod_acc_nb`."""
+] = """Named tuple representing the output state for `vectorbtpro.generic.nb.rolling.rolling_prod_acc_nb`."""
 
 
 class RollMeanAIS(tp.NamedTuple):
@@ -425,8 +421,7 @@ class RollMeanAIS(tp.NamedTuple):
 
 __pdoc__[
     "RollMeanAIS"
-] = """A named tuple representing the input state of 
-`vectorbtpro.generic.nb.rolling.rolling_mean_acc_nb`."""
+] = """Named tuple representing the input state for `vectorbtpro.generic.nb.rolling.rolling_mean_acc_nb`."""
 
 
 class RollMeanAOS(tp.NamedTuple):
@@ -438,8 +433,7 @@ class RollMeanAOS(tp.NamedTuple):
 
 __pdoc__[
     "RollMeanAOS"
-] = """A named tuple representing the output state of 
-`vectorbtpro.generic.nb.rolling.rolling_mean_acc_nb`."""
+] = """Named tuple representing the output state for `vectorbtpro.generic.nb.rolling.rolling_mean_acc_nb`."""
 
 
 class RollStdAIS(tp.NamedTuple):
@@ -456,8 +450,7 @@ class RollStdAIS(tp.NamedTuple):
 
 __pdoc__[
     "RollStdAIS"
-] = """A named tuple representing the input state of 
-`vectorbtpro.generic.nb.rolling.rolling_std_acc_nb`."""
+] = """Named tuple representing the input state for `vectorbtpro.generic.nb.rolling.rolling_std_acc_nb`."""
 
 
 class RollStdAOS(tp.NamedTuple):
@@ -470,8 +463,7 @@ class RollStdAOS(tp.NamedTuple):
 
 __pdoc__[
     "RollStdAOS"
-] = """A named tuple representing the output state of 
-`vectorbtpro.generic.nb.rolling.rolling_std_acc_nb`."""
+] = """Named tuple representing the output state for `vectorbtpro.generic.nb.rolling.rolling_std_acc_nb`."""
 
 
 class RollZScoreAIS(tp.NamedTuple):
@@ -488,8 +480,7 @@ class RollZScoreAIS(tp.NamedTuple):
 
 __pdoc__[
     "RollZScoreAIS"
-] = """A named tuple representing the input state of 
-`vectorbtpro.generic.nb.rolling.rolling_zscore_acc_nb`."""
+] = """Named tuple representing the input state for `vectorbtpro.generic.nb.rolling.rolling_zscore_acc_nb`."""
 
 
 class RollZScoreAOS(tp.NamedTuple):
@@ -502,8 +493,7 @@ class RollZScoreAOS(tp.NamedTuple):
 
 __pdoc__[
     "RollZScoreAOS"
-] = """A named tuple representing the output state of 
-`vectorbtpro.generic.nb.rolling.rolling_zscore_acc_nb`."""
+] = """Named tuple representing the output state for `vectorbtpro.generic.nb.rolling.rolling_zscore_acc_nb`."""
 
 
 class WMMeanAIS(tp.NamedTuple):
@@ -519,8 +509,7 @@ class WMMeanAIS(tp.NamedTuple):
 
 __pdoc__[
     "WMMeanAIS"
-] = """A named tuple representing the input state of 
-`vectorbtpro.generic.nb.rolling.wm_mean_acc_nb`."""
+] = """Named tuple representing the input state for `vectorbtpro.generic.nb.rolling.wm_mean_acc_nb`."""
 
 
 class WMMeanAOS(tp.NamedTuple):
@@ -533,8 +522,7 @@ class WMMeanAOS(tp.NamedTuple):
 
 __pdoc__[
     "WMMeanAOS"
-] = """A named tuple representing the output state of 
-`vectorbtpro.generic.nb.rolling.wm_mean_acc_nb`."""
+] = """Named tuple representing the output state for `vectorbtpro.generic.nb.rolling.wm_mean_acc_nb`."""
 
 
 class EWMMeanAIS(tp.NamedTuple):
@@ -550,10 +538,9 @@ class EWMMeanAIS(tp.NamedTuple):
 
 __pdoc__[
     "EWMMeanAIS"
-] = """A named tuple representing the input state of 
-`vectorbtpro.generic.nb.rolling.ewm_mean_acc_nb`.
+] = """Named tuple representing the input state for `vectorbtpro.generic.nb.rolling.ewm_mean_acc_nb`.
 
-To get `alpha`, use one of the following:
+To obtain `alpha`, use one of the following:
 
 * `vectorbtpro.generic.nb.rolling.alpha_from_com_nb`
 * `vectorbtpro.generic.nb.rolling.alpha_from_span_nb`
@@ -570,8 +557,7 @@ class EWMMeanAOS(tp.NamedTuple):
 
 __pdoc__[
     "EWMMeanAOS"
-] = """A named tuple representing the output state of 
-`vectorbtpro.generic.nb.rolling.ewm_mean_acc_nb`."""
+] = """Named tuple representing the output state for `vectorbtpro.generic.nb.rolling.ewm_mean_acc_nb`."""
 
 
 class EWMStdAIS(tp.NamedTuple):
@@ -591,8 +577,7 @@ class EWMStdAIS(tp.NamedTuple):
 
 __pdoc__[
     "EWMStdAIS"
-] = """A named tuple representing the input state of 
-`vectorbtpro.generic.nb.rolling.ewm_std_acc_nb`.
+] = """Named tuple representing the input state for `vectorbtpro.generic.nb.rolling.ewm_std_acc_nb`.
 
 For tips on `alpha`, see `EWMMeanAIS`."""
 
@@ -610,8 +595,7 @@ class EWMStdAOS(tp.NamedTuple):
 
 __pdoc__[
     "EWMStdAOS"
-] = """A named tuple representing the output state of 
-`vectorbtpro.generic.nb.rolling.ewm_std_acc_nb`."""
+] = """Named tuple representing the output state for `vectorbtpro.generic.nb.rolling.ewm_std_acc_nb`."""
 
 
 class VidyaAIS(tp.NamedTuple):
@@ -630,8 +614,7 @@ class VidyaAIS(tp.NamedTuple):
 
 __pdoc__[
     "VidyaAIS"
-] = """A named tuple representing the input state of 
-`vectorbtpro.generic.nb.rolling.vidya_acc_nb`."""
+] = """Named tuple representing the input state for `vectorbtpro.generic.nb.rolling.vidya_acc_nb`."""
 
 
 class VidyaAOS(tp.NamedTuple):
@@ -645,8 +628,7 @@ class VidyaAOS(tp.NamedTuple):
 
 __pdoc__[
     "VidyaAOS"
-] = """A named tuple representing the output state of 
-`vectorbtpro.generic.nb.rolling.vidya_acc_nb`."""
+] = """Named tuple representing the output state for `vectorbtpro.generic.nb.rolling.vidya_acc_nb`."""
 
 
 class RollCovAIS(tp.NamedTuple):
@@ -664,12 +646,12 @@ class RollCovAIS(tp.NamedTuple):
     ddof: int
 
 
+
 __pdoc__[
     "RollCovAIS"
-] = """A named tuple representing the input state of 
-`vectorbtpro.generic.nb.rolling.rolling_cov_acc_nb`."""
-
-
+] = """Named tuple representing the input state for `vectorbtpro.generic.nb.rolling.rolling_cov_acc_nb`."""
+    
+    
 class RollCovAOS(tp.NamedTuple):
     cumsum1: float
     cumsum2: float
@@ -677,14 +659,13 @@ class RollCovAOS(tp.NamedTuple):
     nancnt: int
     window_len: int
     value: float
-
-
+    
+    
 __pdoc__[
     "RollCovAOS"
-] = """A named tuple representing the output state of 
-`vectorbtpro.generic.nb.rolling.rolling_cov_acc_nb`."""
-
-
+] = """Named tuple representing the output state for `vectorbtpro.generic.nb.rolling.rolling_cov_acc_nb`."""
+    
+    
 class RollCorrAIS(tp.NamedTuple):
     i: int
     value1: float
@@ -699,14 +680,13 @@ class RollCorrAIS(tp.NamedTuple):
     nancnt: int
     window: int
     minp: tp.Optional[int]
-
-
+    
+    
 __pdoc__[
     "RollCorrAIS"
-] = """A named tuple representing the input state of 
-`vectorbtpro.generic.nb.rolling.rolling_corr_acc_nb`."""
-
-
+] = """Named tuple representing the input state for `vectorbtpro.generic.nb.rolling.rolling_corr_acc_nb`."""
+    
+    
 class RollCorrAOS(tp.NamedTuple):
     cumsum1: float
     cumsum2: float
@@ -716,14 +696,13 @@ class RollCorrAOS(tp.NamedTuple):
     nancnt: int
     window_len: int
     value: float
-
-
+    
+    
 __pdoc__[
     "RollCorrAOS"
-] = """A named tuple representing the output state of 
-`vectorbtpro.generic.nb.rolling.rolling_corr_acc_nb`."""
-
-
+] = """Named tuple representing the output state for `vectorbtpro.generic.nb.rolling.rolling_corr_acc_nb`."""
+    
+    
 class RollOLSAIS(tp.NamedTuple):
     i: int
     value1: float
@@ -738,14 +717,13 @@ class RollOLSAIS(tp.NamedTuple):
     nancnt: int
     window: int
     minp: tp.Optional[int]
-
-
+    
+    
 __pdoc__[
     "RollOLSAIS"
-] = """A named tuple representing the input state of 
-`vectorbtpro.generic.nb.rolling.rolling_ols_acc_nb`."""
-
-
+] = """Named tuple representing the input state for `vectorbtpro.generic.nb.rolling.rolling_ols_acc_nb`."""
+    
+    
 class RollOLSAOS(tp.NamedTuple):
     validcnt: int
     cumsum1: float
@@ -756,9 +734,8 @@ class RollOLSAOS(tp.NamedTuple):
     window_len: int
     slope_value: float
     intercept_value: float
-
-
+    
+    
 __pdoc__[
     "RollOLSAOS"
-] = """A named tuple representing the output state of 
-`vectorbtpro.generic.nb.rolling.rolling_ols_acc_nb`."""
+] = """Named tuple representing the output state for `vectorbtpro.generic.nb.rolling.rolling_ols_acc_nb`."""

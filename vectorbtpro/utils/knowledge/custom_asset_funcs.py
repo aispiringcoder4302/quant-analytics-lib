@@ -91,7 +91,7 @@ class ToMarkdownAssetFunc(AssetFunc):
             clean_metadata (bool): If True, clean the metadata to remove empty or irrelevant values.
             clean_metadata_kwargs (KwargsLike): Keyword arguments for cleaning metadata.
             dump_metadata_kwargs (KwargsLike): Keyword arguments for dumping metadata.
-            **to_markdown_kwargs: Additional arguments for Markdown conversion.
+            **to_markdown_kwargs: Positional arguments for Markdown conversion.
 
         Returns:
             str: Markdown formatted metadata string."""
@@ -129,7 +129,7 @@ class ToMarkdownAssetFunc(AssetFunc):
 
         Args:
             d (dict): Asset data dictionary containing the 'content' key.
-            **kwargs: Additional keyword arguments for Markdown conversion.
+            **kwargs: Keyword arguments for Markdown conversion.
 
         Returns:
             str: Markdown formatted content string."""
@@ -249,10 +249,10 @@ class ToHTMLAssetFunc(ToMarkdownAssetFunc):
             minimize_metadata (bool): Flag to minimize the metadata.
             minimize_keys (Optional[List[PathLikeKey]]): Keys to minimize in the metadata.
             clean_metadata (bool): Flag indicating whether to clean metadata.
-            clean_metadata_kwargs (KwargsLike): Additional keyword arguments for cleaning metadata.
-            dump_metadata_kwargs (KwargsLike): Additional keyword arguments for dumping metadata.
-            to_markdown_kwargs (KwargsLike): Additional keyword arguments for markdown conversion.
-            **to_html_kwargs: Additional keyword arguments for HTML conversion.
+            clean_metadata_kwargs (KwargsLike): Keyword arguments for cleaning metadata.
+            dump_metadata_kwargs (KwargsLike): Keyword arguments for dumping metadata.
+            to_markdown_kwargs (KwargsLike): Keyword arguments for markdown conversion.
+            **to_html_kwargs: Keyword arguments for HTML conversion.
 
         Returns:
             str: HTML formatted metadata.
@@ -282,8 +282,8 @@ class ToHTMLAssetFunc(ToMarkdownAssetFunc):
 
         Args:
             d (dict): Data dictionary containing content information.
-            to_markdown_kwargs (KwargsLike): Additional keyword arguments for markdown conversion.
-            **kwargs: Additional keyword arguments for HTML conversion.
+            to_markdown_kwargs (KwargsLike): Keyword arguments for markdown conversion.
+            **kwargs: Keyword arguments for HTML conversion.
 
         Returns:
             str: HTML formatted content.
