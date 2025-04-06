@@ -142,16 +142,16 @@ __pdoc__[
 Fields:
     Linear: Linear interpolation.
 
-        For example: `[1.0, 2.0, 3.0]` -> `[1.0, 1.5, 2.0, 2.5, 3.0]`
+        For example: `[1.0, 2.0, 3.0]` to 5 yields `[1.0, 1.5, 2.0, 2.5, 3.0]`
     Nearest: Nearest-neighbor interpolation.
 
-        For example: `[1.0, 2.0, 3.0]` -> `[1.0, 1.0, 2.0, 3.0, 3.0]`
+        For example: `[1.0, 2.0, 3.0]` to 5 yields `[1.0, 1.0, 2.0, 3.0, 3.0]`
     Discrete: Discrete interpolation.
 
-        For example: `[1.0, 2.0, 3.0]` -> `[1.0, np.nan, 2.0, np.nan, 3.0]`
+        For example: `[1.0, 2.0, 3.0]` to 5 yields `[1.0, np.nan, 2.0, np.nan, 3.0]`
     Mixed: Mixed interpolation.
 
-        For example: `[1.0, 2.0, 3.0]` -> `[1.0, 1.5, 2.0, 2.5, 3.0]`
+        For example: `[1.0, 2.0, 3.0]` to 5 yields `[1.0, 1.5, 2.0, 2.5, 3.0]`
 """
 
 
@@ -175,17 +175,17 @@ __pdoc__[
 Fields:
     MinMax: Rescales an array from its min-max range to match the min-max range of another array.
         
-        For example: `[3.0, 2.0, 1.0]` to `[10, 11, 12]` -> `[12.0, 11.0, 10.0]`
+        For example: `[3.0, 2.0, 1.0]` to `[10, 11, 12]` yields `[12.0, 11.0, 10.0]`
         
         Use this to search for patterns irrespective of their vertical scale.
     Rebase: Rebases an array to the first value of another array.
     
-        For example: `[3.0, 2.0, 1.0]` to `[10, 11, 12]` -> `[10.0, 6.6, 3.3]`
+        For example: `[3.0, 2.0, 1.0]` to `[10, 11, 12]` yields `[10.0, 6.6, 3.3]`
         
         Use this to search for percentage changes.
     Disable: Disables rescaling, leaving the array unchanged.
     
-        For example: `[3.0, 2.0, 1.0]` to `[10, 11, 12]` -> `[3.0, 2.0, 1.0]`
+        For example: `[3.0, 2.0, 1.0]` to `[10, 11, 12]` yields `[3.0, 2.0, 1.0]`
         
         Use this to search for particular numbers.
 """
@@ -208,8 +208,8 @@ __pdoc__[
 ```
 
 Fields:
-    Absolute: Represents the absolute error (x1 - x0).
-    Relative: Represents the relative error ((x1 - x0) / x0).
+    Absolute: Represents the absolute error `(x1 - x0)`.
+    Relative: Represents the relative error `((x1 - x0) / x0)`.
 """
 
 
@@ -297,7 +297,7 @@ range_dt = np.dtype(
 
 __pdoc__[
     "range_dt"
-] = f"""`np.dtype` of range records.
+] = f"""NumPy dtype of range records.
 
 ```python
 {prettify_doc(range_dt)}
@@ -319,7 +319,7 @@ pattern_range_dt = np.dtype(
 
 __pdoc__[
     "pattern_range_dt"
-] = f"""`np.dtype` of pattern range records.
+] = f"""NumPy dtype of pattern range records.
 
 ```python
 {prettify_doc(pattern_range_dt)}

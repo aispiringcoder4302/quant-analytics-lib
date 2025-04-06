@@ -1429,8 +1429,8 @@ class Trades(Ranges):
             add_trace_kwargs (dict): Keyword arguments passed to `add_trace`.
             xref (str): X coordinate axis.
             yref (str): Y coordinate axis.
-            fig (Figure or FigureWidget): Figure to add traces to.
-            **layout_kwargs: Keyword arguments for layout.
+            fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
+            **layout_kwargs: Keyword arguments for configuring the figure layout.
 
         Usage:
             ```pycon
@@ -1626,8 +1626,8 @@ class Trades(Ranges):
             add_trace_kwargs (dict): Keyword arguments passed to `add_trace`.
             xref (str): X coordinate axis.
             yref (str): Y coordinate axis.
-            fig (Figure or FigureWidget): Figure to add traces to.
-            **layout_kwargs: Keyword arguments for layout.
+            fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
+            **layout_kwargs: Keyword arguments for configuring the figure layout.
 
         Usage:
             ```pycon
@@ -1866,7 +1866,7 @@ class Trades(Ranges):
             colorize (bool, str or callable): See `vectorbtpro.generic.accessors.GenericDFAccessor.plot_projections`.
             field_pct_scale (bool): Whether to make y-axis a percentage scale.
             add_trace_kwargs (dict): Keyword arguments passed to `add_trace`.
-            fig (Figure or FigureWidget): Figure to add traces to.
+            fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
             **kwargs: Keyword arguments passed to `vectorbtpro.generic.accessors.GenericDFAccessor.plot_projections`.
 
         Usage:
@@ -2065,8 +2065,8 @@ class Trades(Ranges):
             add_trace_kwargs (dict): Keyword arguments passed to `add_trace`.
             xref (str): X coordinate axis.
             yref (str): Y coordinate axis.
-            fig (Figure or FigureWidget): Figure to add traces to.
-            **layout_kwargs: Keyword arguments for layout.
+            fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
+            **layout_kwargs: Keyword arguments for configuring the figure layout.
 
         Usage:
             ```pycon
@@ -2497,8 +2497,8 @@ class EntryTrades(Trades):
             long_entry_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter` for "Long Entry" markers.
             short_entry_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter` for "Short Entry" markers.
             add_trace_kwargs (dict): Keyword arguments passed to `add_trace`.
-            fig (Figure or FigureWidget): Figure to add traces to.
-            **layout_kwargs: Keyword arguments for layout.
+            fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
+            **layout_kwargs: Keyword arguments for configuring the figure layout.
 
         Usage:
             ```pycon
@@ -2741,8 +2741,8 @@ class ExitTrades(Trades):
             long_exit_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter` for "Long Exit" markers.
             short_exit_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter` for "Short Exit" markers.
             add_trace_kwargs (dict): Keyword arguments passed to `add_trace`.
-            fig (Figure or FigureWidget): Figure to add traces to.
-            **layout_kwargs: Keyword arguments for layout.
+            fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
+            **layout_kwargs: Keyword arguments for configuring the figure layout.
 
         Usage:
             ```pycon

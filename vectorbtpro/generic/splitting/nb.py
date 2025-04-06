@@ -30,8 +30,8 @@ def split_overlap_matrix_nb(mask_arr: tp.Array3d) -> tp.Array2d:
             element in the corresponding sub-array (across the second axis) is True.
 
     Returns:
-        Array2d: 2-dimensional integer array where each element [i, j] indicates the count
-            of overlapping active columns between split i and split j.
+        Array2d: 2-dimensional integer array where each element `[i, j]` indicates the count
+            of overlapping active columns between split `i` and split `j`.
 
     !!! tip
         This function is parallelizable.
@@ -61,9 +61,9 @@ def norm_split_overlap_matrix_nb(mask_arr: tp.Array3d) -> tp.Array2d:
             along the second axis.
 
     Returns:
-        Array2d: 2-dimensional float array where each element [i, j] is the ratio of
+        Array2d: 2-dimensional float array where each element `[i, j]` is the ratio of
             the count of overlapping active columns to the total number of active columns
-            (union) between split i and split j.
+            (union) between split `i` and split `j`.
 
     !!! tip
         This function is parallelizable.
@@ -95,8 +95,8 @@ def set_overlap_matrix_nb(mask_arr: tp.Array3d) -> tp.Array2d:
             A set is marked active for a column if any element (across the first axis) is True.
 
     Returns:
-        Array2d: 2-dimensional integer array where each element [j, k] represents the count
-            of common active columns between set j and set k.
+        Array2d: 2-dimensional integer array where each element `[j, k]` represents the count
+            of common active columns between set `j` and set `k`.
 
     !!! tip
         This function is parallelizable.
@@ -127,8 +127,8 @@ def norm_set_overlap_matrix_nb(mask_arr: tp.Array3d) -> tp.Array2d:
             A set is marked active for a column if any element (across the first axis) is True.
 
     Returns:
-        Array2d: 2-dimensional float array where each element [j, k] is the ratio of the count
-            of overlapping active columns to the total active columns (union) between set j and set k.
+        Array2d: 2-dimensional float array where each element `[j, k]` is the ratio of the count
+            of overlapping active columns to the total active columns (union) between set `j` and set `k`.
 
     !!! tip
         This function is parallelizable.
@@ -158,7 +158,7 @@ def range_overlap_matrix_nb(mask_arr: tp.Array3d) -> tp.Array2d:
             by a pair of indices corresponding to the first and second dimensions.
 
     Returns:
-        Array2d: 2-dimensional integer array with shape (n*m, n*m), where each element
+        Array2d: 2-dimensional integer array with shape `(n*m, n*m)`, where each element
             represents the count of overlapping True values between two range masks.
 
     !!! tip
@@ -185,7 +185,7 @@ def norm_range_overlap_matrix_nb(mask_arr: tp.Array3d) -> tp.Array2d:
             by a pair of indices from the first and second dimensions.
 
     Returns:
-        Array2d: 2-dimensional float array with shape (n*m, n*m) where each element is the ratio
+        Array2d: 2-dimensional float array with shape `(n*m, n*m)` where each element is the ratio
             of the count of overlapping True values to the union of True values between two range masks.
 
     !!! tip

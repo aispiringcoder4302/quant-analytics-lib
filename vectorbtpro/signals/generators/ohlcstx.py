@@ -141,8 +141,8 @@ def _bind_ohlcstx_plot(base_cls: type, entries_attr: str) -> tp.Callable:
             `vectorbtpro.signals.accessors.SignalsSRAccessor.plot_as_entries` for `{0}.{1}`.
         exit_trace_kwargs (dict): Keyword arguments passed to
             `vectorbtpro.signals.accessors.SignalsSRAccessor.plot_as_exits` for `{0}.exits`.
-        fig (Figure or FigureWidget): Figure to add traces to.
-        **layout_kwargs: Keyword arguments for layout.""".format(
+        fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
+        **layout_kwargs: Keyword arguments for configuring the figure layout.""".format(
         base_cls.__name__,
         entries_attr,
     )

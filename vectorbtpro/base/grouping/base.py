@@ -47,7 +47,9 @@ class Grouper(Configured):
 
     Args:
         index (Index): The original pandas Index to group.
-        group_by (GroupByLike): Grouping criteria, which can be
+        group_by (GroupByLike): Grouping specification.
+
+            Accepts:
 
             * boolean (False for no grouping, True for one group).
             * integer (level by position).
@@ -137,7 +139,7 @@ class Grouper(Configured):
 
         Args:
             index (Index): The original pandas Index.
-            group_by (GroupByLike): Grouping criteria.
+            group_by (GroupByLike): Grouping specification.
             def_lvl_name (Hashable): Default level name for groups if a new group index is generated.
 
         Returns:
@@ -199,7 +201,7 @@ class Grouper(Configured):
 
         Args:
             index (Index): The original pandas Index.
-            group_by (GroupByLike): Grouping criteria.
+            group_by (GroupByLike): Grouping specification.
             def_lvl_name (Hashable): Default level name for groups.
 
         Returns:
@@ -298,7 +300,7 @@ class Grouper(Configured):
         """Check whether the index is grouped.
 
         Args:
-            group_by (GroupByLike): An alternative grouping to check.
+            group_by (GroupByLike): Grouping specification.
 
                 If not provided, uses `Grouper.group_by`.
         """
@@ -312,7 +314,7 @@ class Grouper(Configured):
         """Check whether grouping is enabled.
 
         Args:
-            group_by (GroupByLike): A grouping value to evaluate.
+            group_by (GroupByLike): Grouping specification.
 
                 If not provided, uses `Grouper.group_by`.
         """
@@ -322,7 +324,7 @@ class Grouper(Configured):
         """Check whether grouping is disabled.
 
         Args:
-            group_by (GroupByLike): A grouping value to evaluate.
+            group_by (GroupByLike): Grouping specification.
 
                 If not provided, uses `Grouper.group_by`.
         """
@@ -333,7 +335,7 @@ class Grouper(Configured):
         """Check whether the grouping has been modified, disregarding changes in group labels.
 
         Args:
-            group_by (GroupByLike): An optional grouping to compare.
+            group_by (GroupByLike): Grouping specification.
 
                 If not provided, uses `Grouper.group_by`.
         """
@@ -362,7 +364,7 @@ class Grouper(Configured):
         """Check whether the grouping has changed in any way.
 
         Args:
-            group_by (GroupByLike): An optional grouping to compare.
+            group_by (GroupByLike): Grouping specification.
 
                 If not provided, uses `Grouper.group_by`.
         """
@@ -377,7 +379,7 @@ class Grouper(Configured):
         """Check whether the number of groups has changed.
 
         Args:
-            group_by (GroupByLike): An optional grouping to compare.
+            group_by (GroupByLike): Grouping specification.
 
                 If not provided, uses `Grouper.group_by`.
         """
@@ -397,7 +399,7 @@ class Grouper(Configured):
         """Check the provided `group_by` object against grouping restrictions.
 
         Args:
-            group_by (GroupByLike): A grouping object to validate.
+            group_by (GroupByLike): Grouping specification.
 
                 If not provided, uses `Grouper.group_by`.
             allow_enable (Optional[bool]): Whether enabling grouping is allowed.
@@ -425,7 +427,7 @@ class Grouper(Configured):
         """Resolve the `group_by` value using either the provided argument or the object's attribute.
 
         Args:
-            group_by (GroupByLike): A grouping object to resolve.
+            group_by (GroupByLike): Grouping specification.
 
                 If not provided, uses `Grouper.group_by`.
             **kwargs: Keyword arguments passed to `Grouper.check_group_by`.
@@ -445,7 +447,7 @@ class Grouper(Configured):
         """Return the groups array and associated index computed from the resolved grouping.
 
         Args:
-            group_by (GroupByLike): An optional grouping to use.
+            group_by (GroupByLike): Grouping specification.
 
                 If not provided, uses `Grouper.group_by`.
             **kwargs: Keyword arguments passed to `Grouper.resolve_group_by`.
@@ -517,7 +519,7 @@ class Grouper(Configured):
         """Determine if groups are monolithic and sorted.
 
         Args:
-            group_by (GroupByLike): An optional grouping to check.
+            group_by (GroupByLike): Grouping specification.
 
                 If not provided, uses `Grouper.group_by`.
             **kwargs: Keyword arguments passed to `Grouper.resolve_group_by`.
@@ -536,10 +538,10 @@ class Grouper(Configured):
         """Return the lengths of each group computed from the current grouping.
 
         Args:
-            group_by (GroupByLike): An optional grouping to use.
+            group_by (GroupByLike): Grouping specification.
 
                 If not provided, uses `Grouper.group_by`.
-            jitted (JittedOption): Option for just-in-time compilation.
+            jitted (JittedOption): Option to control JIT compilation.
             **kwargs: Keyword arguments passed to `Grouper.resolve_group_by`.
 
         Returns:
@@ -591,10 +593,10 @@ class Grouper(Configured):
         """Return the group mapping computed from the resolved grouping.
 
         Args:
-            group_by (GroupByLike): An optional grouping to use.
+            group_by (GroupByLike): Grouping specification.
 
                 If not provided, uses `Grouper.group_by`.
-            jitted (JittedOption): Option for just-in-time compilation.
+            jitted (JittedOption): Option to control JIT compilation.
             **kwargs: Keyword arguments passed to `Grouper.resolve_group_by`.
 
         Returns:
@@ -656,7 +658,7 @@ class Grouper(Configured):
 
         Args:
             group_idxs (Array1d): Array of group indices to be selected.
-            jitted (JittedOption): JIT optimization option for performance tuning.
+            jitted (JittedOption): Option to control JIT compilation.
 
         Returns:
             Tuple[Array1d, Array1d]: A tuple containing:

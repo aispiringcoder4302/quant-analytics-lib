@@ -1418,7 +1418,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             over (str): The iteration mode.
 
                 Allowed values include "columns", "symbols", "features", or "keys".
-            group_by (GroupByLike): A grouping specification for iterating over keys.
+            group_by (GroupByLike): Grouping specification.
             apply_group_by (bool): Whether to apply grouping during iteration.
 
                 !!! note
@@ -1503,7 +1503,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
                 If None, defaults to the object's keys.
             attach_classes (bool): Whether to attach classes from `Data.classes`.
             clean_index_kwargs (KwargsLike): Arguments for cleaning the index when stacking.
-            group_by (GroupByLike): Grouping specification for the resulting wrapper.
+            group_by (GroupByLike): Grouping specification.
             **kwargs: Keyword arguments passed to the wrapper constructor.
 
         Returns:
@@ -2540,8 +2540,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             missing_columns (Optional[str]): Identifier for aligning columns.
 
                 See `Data.align_columns`.
-            wrapper_kwargs (KwargsLike): Additional keyword arguments
-                passed to `vectorbtpro.base.wrapping.ArrayWrapper`.
+            wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
             fetch_kwargs (Optional[dict]): Additional keyword arguments
                 initially passed to `Data.fetch_symbol`.
             returned_kwargs (Optional[dict]): Additional keyword arguments
@@ -3023,7 +3022,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             pull_kwargs (KwargsLike): Keyword arguments passed to `Data.pull`.
             reuse_fetch_kwargs (bool): Whether to reuse fetch kwargs from the current instance.
             run_kwargs (KwargsLike): Keyword arguments passed to `Data.run`.
-            wrap_kwargs (KwargsLike): Keyword arguments passed to the wrapper.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
             merge_kwargs (KwargsLike): Keyword arguments passed to `Data.merge`.
             **kwargs: Keyword arguments for key dictionary attribute processing.
 
@@ -3792,7 +3791,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
                 as used in `Data.from_data`.
             missing_index (Optional[str]): Parameter for handling a missing index as used in `Data.from_data`.
             missing_columns (Optional[str]): Parameter for handling missing columns as used in `Data.from_data`.
-            wrapper_kwargs (KwargsLike): Keyword arguments for `Data.from_data`.
+            wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper for `Data.from_data`.
             skip_on_error (Optional[bool]): Skip the feature or symbol if an exception occurs.
             silence_warnings (Optional[bool]): Silence all warnings.
 
@@ -4408,9 +4407,8 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             per_symbol (bool): Process each symbol separately.
             pass_frame (bool): Pass a one-column DataFrame instead of a Series when processing individual keys.
             key_wrapper_kwargs (KwargsLike): Keyword arguments for `Data.get_key_wrapper`.
-            broadcast_kwargs (KwargsLike): Keyword arguments for `broadcast_to` for
-                broadcasting non-Pandas outputs.
-            template_context (KwargsLike): Context for template substitution in `transform_func`.
+            broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
+            template_context (KwargsLike): Additional context for template substitution.
             **kwargs: Keyword arguments passed to `transform_func`.
 
         Returns:
@@ -4582,7 +4580,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
 
         Args:
             jitted (JittedOption): Option to control JIT compilation.
-            chunked (ChunkedOption): Option for chunked processing.
+            chunked (ChunkedOption): Option to control chunked processing.
             start_value (ArrayLike): Initial value for the transformation.
             ref_feature (ArrayLike): The reference feature used for mirroring.
 
@@ -4952,7 +4950,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             raise_no_results (bool): If True, raises an exception when no results are obtained.
             merge_func (MergeFuncLike): Function to merge results from multiple function calls.
             merge_kwargs (KwargsLike): Keyword arguments for merging results.
-            template_context (KwargsLike): Context used for template-based processing.
+            template_context (KwargsLike): Additional context for template substitution.
             return_keys (bool): If True, includes keys representing function names in the return.
             _func_name (Optional[str]): Internal name used for the function.
             **kwargs: Keyword arguments passed to the function.
@@ -5233,7 +5231,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             arg_name (str): The name of the argument for validation and template evaluation.
             check_dict_type (bool): Indicates whether to validate that the argument is of
                 the expected dictionary type.
-            template_context (KwargsLike): Context for substituting templates within the argument.
+            template_context (KwargsLike): Additional context for template substitution.
             is_kwargs (bool): Specifies if the argument should be handled as keyword arguments.
 
         Returns:
@@ -5280,7 +5278,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
                 Keyword arguments for creating directories.
             check_dict_type (bool): Indicates whether to validate that dictionary-type
                 arguments match expected types.
-            template_context (KwargsLike): Context for substituting any templates present in the arguments.
+            template_context (KwargsLike): Additional context for template substitution.
             return_meta (bool): If True, returns metadata about the saved CSV file(s).
             **kwargs: Keyword arguments passed to `pandas.DataFrame.to_csv`.
 
@@ -5396,7 +5394,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             format (str): The file format for HDF storage.
             check_dict_type (bool): Indicates whether to validate that dictionary-type
                 arguments match expected types.
-            template_context (KwargsLike): Context for substituting any templates present in the arguments.
+            template_context (KwargsLike): Additional context for template substitution.
             return_meta (bool): If True, returns metadata about the saved HDF file(s).
             **kwargs: Keyword arguments passed to `pandas.DataFrame.to_hdf`.
 
@@ -5504,8 +5502,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
                 Keyword arguments for creating directories for each key.
             check_dict_type (bool): Flag indicating whether to verify the structure of
                 dict-like arguments per key.
-            template_context (KwargsLike): Additional context for template resolution in
-                processing key-specific arguments.
+            template_context (KwargsLike): Additional context for template substitution.
             return_meta (bool): Flag specifying whether to return a metadata dictionary
                 containing file paths and saving options.
             **kwargs:
@@ -5635,8 +5632,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             engine (Union[None, str, feature_dict, symbol_dict, CustomTemplate]):
                 Parquet engine to use; valid options are "pyarrow", "fastparquet", or "auto".
             check_dict_type (bool): Whether to validate the format of dictionary-based arguments.
-            template_context (KwargsLike): Additional context for template resolution
-                in key-specific argument processing.
+            template_context (KwargsLike): Additional context for template substitution.
             return_meta (bool): If True, returns a metadata dictionary containing
                 file paths and configuration settings.
             **kwargs: Keyword arguments passed to `DataFrame.to_parquet`.
@@ -5844,7 +5840,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             engine_config (KwargsLike): Additional configuration parameters for engine creation.
             dispose_engine (Optional[bool]): Determines whether to dispose of the engine after saving.
             check_dict_type (bool): Validates that dictionary arguments match the expected type.
-            template_context (KwargsLike): Extra context for resolving template variables.
+            template_context (KwargsLike): Additional context for template substitution.
             return_meta (bool): If True, returns metadata for each saved table.
             return_engine (bool): If True, returns the database engine used.
             **kwargs: Keyword arguments passed to `pandas.DataFrame.to_sql`.

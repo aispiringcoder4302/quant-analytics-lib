@@ -520,7 +520,7 @@ class ReorderAssetFunc(AssetFunc):
         skip_missing (Optional[bool]): Determines whether to skip keys that are missing in the data.
         make_copy (Optional[bool]): Indicates if the operation should be performed on a copy of the data.
         changed_only (Optional[bool]): If True, returns the data only when changes have occurred.
-        template_context (KwargsLike): Dictionary for merging template contexts during processing.
+        template_context (KwargsLike): Additional context for template substitution.
         asset_cls (Optional[Type[KnowledgeAsset]]): The asset class used to resolve settings for the operation.
     """
 
@@ -650,7 +650,7 @@ class QueryAssetFunc(AssetFunc):
     Args:
         expression (CustomTemplateLike): Expression used to query the asset. It may be a string,
             function, or template.
-        template_context (KwargsLike): Dictionary providing context for template substitution during evaluation.
+        template_context (KwargsLike): Additional context for template substitution.
         return_type (Optional[str]): Specifies the expected return type; use "item" for filtering or
             "bool" for boolean evaluation.
         asset_cls (Optional[Type[KnowledgeAsset]]): The asset class used to resolve settings for the query.

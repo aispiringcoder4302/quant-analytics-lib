@@ -86,7 +86,7 @@ class HasWrapper(ExtPandasIndexer, ItemParamable):
         """Regroup the instance based on the specified grouping criterion.
 
         Args:
-            group_by (GroupByLike): The grouping criterion used for regrouping.
+            group_by (GroupByLike): Grouping specification.
             **kwargs: Keyword arguments passed for regrouping.
 
         Returns:
@@ -117,7 +117,7 @@ class HasWrapper(ExtPandasIndexer, ItemParamable):
 
         Args:
             column (Any): Column identifier, which can be a label-based position or an integer position.
-            group_by (GroupByLike): The grouping criterion for selection.
+            group_by (GroupByLike): Grouping specification.
             **kwargs: Keyword arguments passed for regrouping.
 
         Returns:
@@ -184,8 +184,8 @@ class HasWrapper(ExtPandasIndexer, ItemParamable):
             obj (Optional[SeriesFrame]): The Pandas object from which to select a column or group.
             column (Any): Column identifier, which can be a label-based position or an integer position.
             obj_ungrouped (bool): Flag indicating whether the Pandas object is ungrouped.
-            group_by (GroupByLike): The grouping criterion for selection.
-            wrapper (Optional[ArrayWrapper]): The array wrapper to use for regrouping.
+            group_by (GroupByLike): Grouping specification.
+            wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
             **kwargs: Keyword arguments passed for regrouping.
 
         Returns:
@@ -441,7 +441,7 @@ class HasWrapper(ExtPandasIndexer, ItemParamable):
         otherwise, `wrapper.columns` is used.
 
         Args:
-            group_by (GroupByLike): Grouping instruction to determine the item keys.
+            group_by (GroupByLike): Grouping specification.
 
         Returns:
             Index: The index containing the keys for iterating over the items.
@@ -467,7 +467,7 @@ class HasWrapper(ExtPandasIndexer, ItemParamable):
         instance is grouped with group selection enabled.
 
         Args:
-            group_by (GroupByLike): Instruction to group columns or items.
+            group_by (GroupByLike): Grouping specification.
             apply_group_by (bool): If True, applies the grouping to both iteration and the final output.
                 If False, `group_by` is used solely as an iteration instruction.
             keep_2d (bool): Determines whether to retain the two-dimensional structure in the yielded items.
@@ -884,7 +884,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
 
                 If not provided, columns are derived from the wrappers.
             freq (Optional[FrequencyLike]): Frequency to enforce across all indexes.
-            group_by (GroupByLike): Grouping parameter applied if wrappers are grouped.
+            group_by (GroupByLike): Grouping specification.
             stack_columns (bool): Whether to stack differing column levels from wrappers.
             index_concat_method (MaybeTuple[Union[str, Callable]]): Method used for concatenating indexes.
             keys (Optional[IndexLike]): Keys used during index concatenation.
@@ -1031,7 +1031,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
             freq (Optional[FrequencyLike]): Custom frequency for the resulting wrapper.
 
                 If not provided, inferred from wrappers.
-            group_by (GroupByLike): Grouping parameter for stacking.
+            group_by (GroupByLike): Grouping specification.
 
                 If not provided, groups are concatenated if any wrapper is grouped, otherwise not applied.
             union_index (bool): Whether to merge differing indexes via a union operation.
@@ -1211,8 +1211,8 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
             return_slices (bool): If True, return indices as slice objects when they represent a continuous range.
             return_none_slices (bool): If True, return a slice `(None, None, None)` if an axis remains unchanged.
             return_scalars (bool): If True, return scalar values for single integer selections.
-            group_by (GroupByLike): Defines grouping parameters for indexing.
-            wrapper_kwargs (KwargsLike): Keyword arguments for updating array metadata.
+            group_by (GroupByLike): Grouping specification.
+            wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
 
         Returns:
             dict: Dictionary containing:
@@ -1559,7 +1559,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
 
         Args:
             *args: Positional arguments passed to `ArrayWrapper.get_resampler`.
-            wrapper_kwargs (KwargsLike): Keyword arguments used for creating the new instance.
+            wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
             **kwargs: Keyword arguments passed to `ArrayWrapper.get_resampler`.
 
         Returns:
@@ -1634,7 +1634,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
         """Return the group-aware columns index of the `ArrayWrapper`.
 
         Args:
-            group_by (GroupByLike): Parameter for resolving the group structure.
+            group_by (GroupByLike): Grouping specification.
 
         Returns:
             Index: The columns index.
@@ -1658,7 +1658,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
         """Return the group-aware name of the `ArrayWrapper`.
 
         Args:
-            group_by (GroupByLike): Parameter for resolving the group structure.
+            group_by (GroupByLike): Grouping specification.
 
         Returns:
             Any: The name for the group-aware `ArrayWrapper`.
@@ -1669,7 +1669,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
         """Return the group-aware number of dimensions of the `ArrayWrapper`.
 
         Args:
-            group_by (GroupByLike): Parameter for adjusting the group structure.
+            group_by (GroupByLike): Grouping specification.
 
         Returns:
             int: The number of dimensions.
@@ -1691,7 +1691,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
         """Return the group-aware shape of the `ArrayWrapper`.
 
         Args:
-            group_by (GroupByLike): Parameter for adjusting the group structure.
+            group_by (GroupByLike): Grouping specification.
 
         Returns:
             Shape: A tuple representing the dimensions.
@@ -1713,7 +1713,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
         """Return the group-aware two-dimensional shape of the `ArrayWrapper`.
 
         Args:
-            group_by (GroupByLike): Parameter for adjusting the group structure.
+            group_by (GroupByLike): Grouping specification.
 
         Returns:
             Shape: A tuple representing the 2D dimensions.
@@ -1779,7 +1779,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
         """Regroup the `ArrayWrapper` instance according to the specified grouping.
 
         Args:
-            group_by (GroupByLike): Parameter indicating how to group the data.
+            group_by (GroupByLike): Grouping specification.
             **kwargs: Keyword arguments passed to the replacement method.
 
         Returns:
@@ -1815,7 +1815,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
         """Resolve the instance by regrouping and updating metadata.
 
         Args:
-            group_by (GroupByLike): Grouping criteria to restructure metadata.
+            group_by (GroupByLike): Grouping specification.
             **kwargs: Keyword arguments for the regrouping process.
 
         Returns:
@@ -1881,7 +1881,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
 
         Args:
             arr (ArrayLike): The array to be wrapped.
-            group_by (GroupByLike): Grouping criteria to restructure metadata.
+            group_by (GroupByLike): Grouping specification.
             index (Optional[IndexLike]): Index to assign to the wrapped object.
 
                 Uses the stored index if not provided.
@@ -2011,7 +2011,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
 
         Args:
             arr (ArrayLike): The input array to be wrapped.
-            group_by (GroupByLike): Grouping criteria used for resolving internal attributes.
+            group_by (GroupByLike): Grouping specification.
             name_or_index (NameIndex): Name for a scalar reduction per column or index for an array reduction.
             columns (Optional[IndexLike]): Override for the object's default columns.
             force_1d (bool): Flag to force the input array to be treated as one-dimensional.
@@ -2131,7 +2131,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
 
         Args:
             *objs (ArrayLike): Additional arrays to be concatenated.
-            group_by (GroupByLike): Grouping criteria used for resolving internal attributes.
+            group_by (GroupByLike): Grouping specification.
             wrap (bool): Flag indicating whether to apply wrapping to the concatenated result.
             **kwargs: Keyword arguments passed to `ArrayWrapper.wrap_reduced`.
 
@@ -2165,7 +2165,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
 
         Args:
             *objs (ArrayLike): Additional arrays to be stacked along rows.
-            group_by (GroupByLike): Grouping criteria used for resolving internal attributes.
+            group_by (GroupByLike): Grouping specification.
             wrap (bool): Flag indicating whether to apply wrapping to the stacked result.
             **kwargs: Keyword arguments passed to `ArrayWrapper.wrap`.
 
@@ -2206,7 +2206,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
         Args:
             *objs (ArrayLike): Additional arrays to be concatenated along columns.
             reindex_kwargs (KwargsLike): Keyword arguments passed to `pd.DataFrame.reindex`.
-            group_by (GroupByLike): Grouping criteria used for resolving internal attributes.
+            group_by (GroupByLike): Grouping specification.
             wrap (bool): Flag indicating whether to apply wrapping to the concatenated result.
             **kwargs: Keyword arguments passed to the wrapping method.
 
@@ -2243,7 +2243,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
         """Create a dummy Series or DataFrame with an empty array based on the internal shape.
 
         Args:
-            group_by (GroupByLike): Grouping criteria used for resolving internal attributes.
+            group_by (GroupByLike): Grouping specification.
             **kwargs: Keyword arguments passed to `ArrayWrapper.wrap`.
 
         Returns:
@@ -2257,7 +2257,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
 
         Args:
             fill_value (Scalar): The value used to fill the Series or DataFrame.
-            group_by (GroupByLike): Grouping criteria used for resolving internal attributes.
+            group_by (GroupByLike): Grouping specification.
             **kwargs: Keyword arguments passed to `ArrayWrapper.wrap`.
 
         Returns:
@@ -2271,7 +2271,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
 
         Args:
             fill_value (Scalar): The value used to fill the reduced output.
-            group_by (GroupByLike): Grouping criteria used for resolving internal attributes.
+            group_by (GroupByLike): Grouping specification.
             **kwargs: Keyword arguments passed to `ArrayWrapper.wrap_reduced`.
 
         Returns:
@@ -2726,7 +2726,7 @@ class Wrapping(Configured, HasWrapper, IndexApplier, AttrResolverMixin):
 
         Args:
             *objs (MaybeTuple[Wrapping]): Wrapping instances to be stacked.
-            wrapper_kwargs (KwargsLike): Keyword arguments for the wrapper.
+            wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
             **kwargs: Additional keyword arguments.
 
         Returns:
@@ -2748,7 +2748,7 @@ class Wrapping(Configured, HasWrapper, IndexApplier, AttrResolverMixin):
 
         Args:
             *objs (MaybeTuple[Wrapping]): Wrapping instances to be stacked.
-            wrapper_kwargs (KwargsLike): Keyword arguments for the wrapper.
+            wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
             **kwargs: Additional keyword arguments.
 
         Returns:
@@ -2834,7 +2834,7 @@ class Wrapping(Configured, HasWrapper, IndexApplier, AttrResolverMixin):
         """Regroup the wrapping instance.
 
         Args:
-            group_by (GroupByLike): The grouping parameter to be applied.
+            group_by (GroupByLike): Grouping specification.
             **kwargs: Keyword arguments passed to `ArrayWrapper.regroup`.
 
         Returns:

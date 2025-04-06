@@ -2505,7 +2505,7 @@ def get_idxs(
         index (Optional[Index]): Optional row index.
         columns (Optional[Index]): Optional column index.
         freq (Optional[FrequencyLike]): Optional frequency for row indices.
-        template_context (KwargsLike): Optional context for template substitution.
+        template_context (KwargsLike): Additional context for template substitution.
         **kwargs: Keyword arguments passed to `Idxr`.
 
     Returns:
@@ -2692,7 +2692,7 @@ class IdxSetter(DefineMixin):
             index (Optional[Index]): The index labels of the array.
             columns (Optional[Index]): The column labels of the array.
             freq (Optional[FrequencyLike]): The frequency information used for generating indices.
-            template_context (KwargsLike): A dictionary of additional context for template substitution.
+            template_context (KwargsLike): Additional context for template substitution.
 
         Returns:
             dict: A dictionary containing:

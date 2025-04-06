@@ -191,7 +191,7 @@ class PlotsBuilderMixin(Base, metaclass=MetaPlotsBuilderMixin):
                 `vectorbtpro.generic.stats_builder.StatsBuilderMixin`.
             column (Optional[Label]): Column identifier as described in
                 `vectorbtpro.generic.stats_builder.StatsBuilderMixin`.
-            group_by (GroupByLike): Grouping parameter as described in
+            group_by (GroupByLike): Grouping specification, as described in
                 `vectorbtpro.generic.stats_builder.StatsBuilderMixin`.
             per_column (Optional[bool]): Flag indicating whether to plot per column,
                 as in `vectorbtpro.generic.stats_builder.StatsBuilderMixin`.
@@ -199,8 +199,7 @@ class PlotsBuilderMixin(Base, metaclass=MetaPlotsBuilderMixin):
                 as in `vectorbtpro.generic.stats_builder.StatsBuilderMixin`.
             silence_warnings (Optional[bool]): Flag to specify if warnings should be silenced,
                 as in `vectorbtpro.generic.stats_builder.StatsBuilderMixin`.
-            template_context (KwargsLike): Template context applied to `settings`, `make_subplots_kwargs`,
-                and `layout_kwargs`, then to each subplot.
+            template_context (KwargsLike): Additional context for template substitution.
             filters (KwargsLike): Filters as specified in `vectorbtpro.generic.stats_builder.StatsBuilderMixin`.
             settings (KwargsLike): Settings as specified in `vectorbtpro.generic.stats_builder.StatsBuilderMixin`.
             subplot_settings (KwargsLike): Subplot-specific settings, analogous to
@@ -216,8 +215,8 @@ class PlotsBuilderMixin(Base, metaclass=MetaPlotsBuilderMixin):
                 marker style, and line style).
             group_id_labels (bool): Whether to group identical legend labels.
             make_subplots_kwargs (KwargsLike): Keyword arguments passed to `plotly.subplots.make_subplots`.
-            fig (Optional[BaseFigure]): Figure to which traces are added.
-            **layout_kwargs: Keyword arguments used to update the figure layout.
+            fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
+            **layout_kwargs: Keyword arguments for configuring the figure layout.
 
         Returns:
             Optional[BaseFigure]: A Plotly figure containing subplots.

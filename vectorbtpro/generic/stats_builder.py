@@ -232,9 +232,7 @@ class StatsBuilderMixin(Base, metaclass=MetaStatsBuilderMixin):
 
                     Use the first method for large datasets or when caching is disabled,
                     and the second when most attributes are cached.
-            group_by (GroupByLike): Criteria to group or ungroup columns.
-
-                See `vectorbtpro.base.grouping.base.Grouper`.
+            group_by (GroupByLike): Grouping specification.
             per_column (Optional[bool]): If True, compute metrics for each column and stack the results.
             split_columns (Optional[bool]): If True and `per_column` is True, split the instance
                 into multiple columns; otherwise, iterate over columns and apply `column` to the entire instance.
@@ -250,7 +248,7 @@ class StatsBuilderMixin(Base, metaclass=MetaStatsBuilderMixin):
                 * A warning is raised if it is None but the calculation returns multiple values.
             dropna (Optional[bool]): If True, omit metrics that are entirely NaN.
             silence_warnings (Optional[bool]): If True, suppress all warnings.
-            template_context (KwargsLike): Context for template substitution.
+            template_context (KwargsLike): Additional context for template substitution.
 
                 Merged with `template_context` from `vectorbtpro._settings.stats_builder` and
                 `StatsBuilderMixin.stats_defaults`. Applied first to `settings` and then to

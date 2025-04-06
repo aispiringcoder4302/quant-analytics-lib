@@ -634,7 +634,7 @@ class VBTAsset(KnowledgeAsset):
             clear_cache (Optional[bool]): Flag to clear any existing directory before saving new files.
             show_progress (Optional[bool]): Flag to display a progress bar during file creation.
             pbar_kwargs (KwargsLike): Additional settings for the progress bar.
-            template_context (KwargsLike): Context for template substitution.
+            template_context (KwargsLike): Additional context for template substitution.
             **kwargs: Extra keyword arguments passed to
                 `vectorbtpro.utils.knowledge.custom_asset_funcs.ToMarkdownAssetFunc`
                 and forwarded to `vectorbtpro.utils.knowledge.formatting.to_markdown`.
@@ -821,7 +821,7 @@ class VBTAsset(KnowledgeAsset):
             clear_cache (Optional[bool]): Flag to clear any existing directory before saving.
             show_progress (Optional[bool]): Flag to display a progress bar during the save process.
             pbar_kwargs (KwargsLike): Additional settings for configuring the progress bar.
-            template_context (KwargsLike): Context for template substitution.
+            template_context (KwargsLike): Additional context for template substitution.
             return_url_map (bool): If True, also return a mapping of links to file paths along
                 with the HTML directory path.
             **kwargs: Extra keyword arguments passed to
@@ -983,7 +983,7 @@ class VBTAsset(KnowledgeAsset):
             body_extras (Optional[MaybeList[str]]): Extra HTML content for the body section.
             invert_colors (Optional[bool]): Flag to invert the color scheme.
             title (str): Title of the HTML page.
-            template_context (KwargsLike): Context dictionary for template substitution.
+            template_context (KwargsLike): Additional context for template substitution.
             **kwargs: Keyword arguments for `to_html`.
 
         Returns:

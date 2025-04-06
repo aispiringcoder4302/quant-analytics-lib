@@ -800,7 +800,7 @@ def align_index_to(index1: tp.Index, index2: tp.Index, jitted: tp.JittedOption =
     Args:
         index1 (Index): The index to be aligned.
         index2 (Index): The reference index providing the desired shape.
-        jitted (JittedOption): Option for enabling the JIT-compiled algorithm.
+        jitted (JittedOption): Option to control JIT compilation.
 
     Returns:
         IndexSlice: An index slice that aligns `index1` with `index2`.

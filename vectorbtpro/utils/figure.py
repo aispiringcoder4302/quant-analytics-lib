@@ -45,7 +45,7 @@ def resolve_axis_refs(
     """Calculate x-axis and y-axis references based on provided trace settings.
 
     Args:
-        add_trace_kwargs (KwargsLike): Keyword arguments for configuring subplot row and column.
+        add_trace_kwargs (KwargsLike): Keyword arguments for adding traces to the figure.
         xref (Optional[str]): Custom reference for the x-axis.
         yref (Optional[str]): Custom reference for the y-axis.
 

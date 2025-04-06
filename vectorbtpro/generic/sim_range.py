@@ -316,9 +316,7 @@ class SimRangeMixin(Base):
 
         Args:
             value (Scalar): A scalar simulation start value to resolve.
-            wrapper (Optional[ArrayWrapper]): A wrapper instance providing index and frequency details.
-
-                If not provided, the instance's wrapper attribute is used.
+            wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
 
         Returns:
             int: The resolved position corresponding to the simulation start.
@@ -342,9 +340,7 @@ class SimRangeMixin(Base):
 
         Args:
             value (Scalar): A scalar simulation end value to resolve.
-            wrapper (Optional[ArrayWrapper]): A wrapper instance providing index and frequency details.
-
-                If not provided, the instance's wrapper attribute is used.
+            wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
 
         Returns:
             int: The resolved position corresponding to the simulation end.
@@ -369,12 +365,10 @@ class SimRangeMixin(Base):
         """Resolve simulation start positions.
 
         Args:
-            sim_start (Optional[ArrayLike]): The simulation start input, which can be a scalar or array-like.
+            sim_start (Optional[ArrayLike]): Simulation start, which can be a scalar or array-like.
             allow_none (bool): Flag indicating whether None is allowed as a simulation start value.
-            wrapper (Optional[ArrayWrapper]): A wrapper instance providing index, frequency, and grouping details.
-
-                If not provided, the instance's wrapper attribute is used.
-            group_by (GroupByLike): Grouping keys used for resolving simulation start in grouped contexts.
+            wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
+            group_by (GroupByLike): Grouping specification.
 
         Returns:
             Optional[ArrayLike]: The resolved simulation start positions, or None if the input is treated as None.
@@ -441,12 +435,10 @@ class SimRangeMixin(Base):
         """Resolve simulation end positions.
 
         Args:
-            sim_end (Optional[ArrayLike]): The simulation end input, which can be a scalar or array-like.
+            sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
             allow_none (bool): Flag indicating whether None is allowed as a simulation end value.
-            wrapper (Optional[ArrayWrapper]): A wrapper instance providing index, frequency, and grouping details.
-
-                If not provided, the instance's wrapper attribute is used.
-            group_by (GroupByLike): Grouping keys used for resolving simulation end in grouped contexts.
+            wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
+            group_by (GroupByLike): Grouping specification.
 
         Returns:
             Optional[ArrayLike]: The resolved simulation end positions, or None if the input is treated as None.
@@ -515,14 +507,12 @@ class SimRangeMixin(Base):
         """Return the simulation start positions after resolution and optional wrapping.
 
         Args:
-            sim_start (Optional[ArrayLike]): Simulation start input to be resolved.
+            sim_start (Optional[ArrayLike]): Simulation start.
             keep_flex (bool): If True, return the raw resolved simulation start positions without wrapping.
             allow_none (bool): Flag indicating whether None is allowed as a simulation start value.
-            wrapper (Optional[ArrayWrapper]): A wrapper instance providing index, frequency, and grouping details.
-
-                If not provided, the instance's wrapper attribute is used.
-            group_by (GroupByLike): Grouping keys used for simulation start resolution.
-            wrap_kwargs (KwargsLike): Keyword arguments passed for wrapping simulation start results.
+            wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
+            group_by (GroupByLike): Grouping specification.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
 
         Returns:
             Union[None, Array1d, Series]: The final simulation start result, either wrapped or raw.
@@ -564,14 +554,12 @@ class SimRangeMixin(Base):
         """Return the simulation end positions after resolution and optional wrapping.
 
         Args:
-            sim_end (Optional[ArrayLike]): Simulation end input to be resolved.
+            sim_end (Optional[ArrayLike]): Simulation end.
             keep_flex (bool): If True, return the raw resolved simulation end positions without wrapping.
             allow_none (bool): Flag indicating whether None is allowed as a simulation end value.
-            wrapper (Optional[ArrayWrapper]): A wrapper instance providing index, frequency, and grouping details.
-
-                If not provided, the instance's wrapper attribute is used.
-            group_by (GroupByLike): Grouping keys used for simulation end resolution.
-            wrap_kwargs (KwargsLike): Keyword arguments passed for wrapping simulation end results.
+            wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
+            group_by (GroupByLike): Grouping specification.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
 
         Returns:
             Union[None, Array1d, Series]: The final simulation end result, either wrapped or raw.
@@ -612,9 +600,9 @@ class SimRangeMixin(Base):
         """Return the simulation start index.
 
         Args:
-            sim_start (Optional[ArrayLike]): Simulation start positions to resolve.
+            sim_start (Optional[ArrayLike]): Simulation start.
             allow_none (bool): Indicates whether None is allowed for the simulation start.
-            wrapper (Optional[ArrayWrapper]): Wrapper used for index resolution.
+            wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
             group_by (GroupByLike): Grouping specification.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
 
@@ -670,10 +658,10 @@ class SimRangeMixin(Base):
         """Return the simulation end index.
 
         Args:
-            sim_end (Optional[ArrayLike]): Simulation end positions to resolve.
+            sim_end (Optional[ArrayLike]): Simulation end.
             allow_none (bool): Indicates whether None is allowed for the simulation end.
             inclusive (bool): Determines if the simulation end should be treated as inclusive.
-            wrapper (Optional[ArrayWrapper]): Wrapper used for index resolution.
+            wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
             group_by (GroupByLike): Grouping specification.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
 
@@ -737,9 +725,9 @@ class SimRangeMixin(Base):
         """Return the duration of the simulation range.
 
         Args:
-            sim_start (Optional[ArrayLike]): Simulation start positions to resolve.
-            sim_end (Optional[ArrayLike]): Simulation end positions to resolve.
-            wrapper (Optional[ArrayWrapper]): Wrapper used for index resolution.
+            sim_start (Optional[ArrayLike]): Simulation start.
+            sim_end (Optional[ArrayLike]): Simulation end.
+            wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
             group_by (GroupByLike): Grouping specification.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
 
@@ -789,9 +777,9 @@ class SimRangeMixin(Base):
         Args:
             fig (BaseFigure): Figure to update.
             column (Optional[Label]): Column to use for simulation range selection.
-            sim_start (Optional[ArrayLike]): Simulation start positions to resolve.
-            sim_end (Optional[ArrayLike]): Simulation end positions to resolve.
-            wrapper (Optional[ArrayWrapper]): Wrapper used for index resolution.
+            sim_start (Optional[ArrayLike]): Simulation start.
+            sim_end (Optional[ArrayLike]): Simulation end.
+            wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
             group_by (GroupByLike): Grouping specification.
             xref (Optional[str]): X-axis reference for figure update.
 

@@ -67,7 +67,7 @@ class RandomData(SyntheticData):
                     When using a seed, pass a unique seed per feature or symbol via
                     `vectorbtpro.data.base.feature_dict`, `vectorbtpro.data.base.symbol_dict`,
                     or generally `vectorbtpro.data.base.key_dict`.
-            jitted (JittedOption): See `vectorbtpro.utils.jitting.resolve_jitted_option`.
+            jitted (JittedOption): Option to control JIT compilation.
 
         Returns:
             KeyData: The generated data and a metadata dictionary.

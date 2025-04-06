@@ -71,7 +71,7 @@ class GBMOHLCData(SyntheticData):
             dt (float): The time increment per period.
             seed (int): A seed for deterministic output.
             jitted (any): Jitting option; refer to `vectorbtpro.utils.jitting.resolve_jitted_option`.
-            template_context (KwargsLike): A context for template substitution.
+            template_context (KwargsLike): Additional context for template substitution.
 
         Returns:
             SymbolData: The generated data and a metadata dictionary.

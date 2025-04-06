@@ -1508,7 +1508,7 @@ class BaseAccessor(Wrapping):
             n (int): Number of times to tile the data.
             keys (Optional[IndexLike]): Outer-level keys used to combine indexes.
             axis (int): Axis along which to tile the data (1 for columns, 0 for index).
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the tiled data.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
 
         Returns:
             SeriesFrame: The tiled data, with updated index or columns if `keys` is provided.
@@ -1546,7 +1546,7 @@ class BaseAccessor(Wrapping):
             n (int): Number of times to repeat the data.
             keys (Optional[IndexLike]): Outer-level keys used to combine indexes.
             axis (int): Axis along which to repeat the data (1 for columns, 0 for index).
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the repeated data.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
 
         Returns:
             SeriesFrame: The repeated data, with updated index or columns if `keys` is provided.
@@ -1574,7 +1574,7 @@ class BaseAccessor(Wrapping):
             other (SeriesFrame): Object to align to.
 
                 Must be a `pd.Series` or `pd.DataFrame`.
-            wrap_kwargs (KwargsLike): Keyword arguments for the wrapper.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
             **kwargs: Keyword arguments passed to `vectorbtpro.base.indexes.align_index_to`.
 
         Returns:
@@ -1669,7 +1669,7 @@ class BaseAccessor(Wrapping):
 
         Args:
             other (SeriesFrame): Object to cross align with. Must be a `pd.Series` or `pd.DataFrame`.
-            wrap_kwargs (KwargsLike): Keyword arguments for the wrapper.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
 
         Returns:
             SeriesFrame: The cross aligned object.
@@ -1911,8 +1911,8 @@ class BaseAccessor(Wrapping):
             to_2d (bool): If True, reshape inputs to 2-dimensional arrays; otherwise, retain their original shape.
             broadcast_named_args (KwargsLike): Additional named arguments for broadcasting.
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
-            template_context (KwargsLike): A template context for substituting values.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            template_context (KwargsLike): Additional context for template substitution.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
             **kwargs: Keyword arguments passed to `apply_func`.
 
         Returns:
@@ -2190,10 +2190,10 @@ class BaseAccessor(Wrapping):
 
                 Can only be used with the instance method.
             keys (index_like): Label(s) for the outermost column level.
-            broadcast_named_args (KwargsLike): Positional arguments for broadcasting among arrays.
-            broadcast_kwargs (KwargsLike): Keyword arguments passed to `vectorbtpro.base.reshaping.broadcast`.
-            template_context (KwargsLike): Context used for substituting templates in `args` and `kwargs`.
-            wrap_kwargs (KwargsLike): Keyword arguments passed to `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
+            broadcast_named_args (KwargsLike): Additional named arguments for broadcasting.
+            broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
+            template_context (KwargsLike): Additional context for template substitution.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
             **kwargs: Keyword arguments passed to `combine_func`.
 
         Returns:
@@ -2375,8 +2375,8 @@ class BaseAccessor(Wrapping):
             numexpr_kwargs (KwargsLike): Keyword arguments passed to `numexpr.evaluate`.
             local_dict (Optional[Mapping]): Local variables mapping for resolving names in the expression.
             global_dict (Optional[Mapping]): Global variables mapping for resolving names in the expression.
-            broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting variables prior to evaluation.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the evaluation output.
+            broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
 
         Returns:
             Any: Evaluated expression wrapped using the broadcast wrapper.

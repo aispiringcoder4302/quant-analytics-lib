@@ -57,7 +57,7 @@ class AssetCacheManager(Configured):
         max_cache_count (Optional[int]): Maximum number of assets to retain, evicting older ones.
         save_cache_kwargs (KwargsLike): Keyword arguments for saving assets to disk.
         load_cache_kwargs (KwargsLike): Keyword arguments for loading assets from disk.
-        template_context (KwargsLike): Context for substituting template variables.
+        template_context (KwargsLike): Additional context for template substitution.
         **kwargs: Keyword arguments for configuration.
 
     For default settings, see `vectorbtpro._settings.knowledge`.
@@ -1018,7 +1018,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
             skip_missing (Optional[bool]): If True, omits data items where the target path is absent.
             source (Optional[CustomTemplateLike]): A template, function, or string for preprocessing;
                 in the template, "i" denotes the index, "d" the full data item, and "x" the extracted part.
-            template_context (KwargsLike): Additional context for template rendering.
+            template_context (KwargsLike): Additional context for template substitution.
             **kwargs: Keyword arguments passed to `KnowledgeAsset.apply`.
 
         Usage:
@@ -1107,7 +1107,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
             skip_missing (Optional[bool]): If True, skips data items where the specified path is missing.
             make_copy (Optional[bool]): If True, operates on a copy to preserve the original data.
             changed_only (Optional[bool]): If True, returns only the data items that were modified.
-            template_context (KwargsLike): Additional context for template processing.
+            template_context (KwargsLike): Additional context for template substitution.
             **kwargs: Keyword arguments passed to `KnowledgeAsset.apply`.
 
         Usage:
@@ -1327,7 +1327,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
             skip_missing (Optional[bool]): If True, skip data items missing the specified path.
             make_copy (Optional[bool]): If True, operate on a copy rather than modifying the original data.
             changed_only (Optional[bool]): If True, retain only data items that have been modified.
-            template_context (KwargsLike): Context variables for template evaluation.
+            template_context (KwargsLike): Additional context for template substitution.
             **kwargs: Keyword arguments for the underlying function.
 
         Usage:
@@ -1387,7 +1387,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         Args:
             expression (CustomTemplateLike): Query expression or template.
             query_engine (Optional[str]): Name of the query engine.
-            template_context (KwargsLike): Context variables for template evaluation.
+            template_context (KwargsLike): Additional context for template substitution.
             return_type (Optional[str]): If "item", returns the matched data item; if "bool",
                 returns a boolean indicating a match.
             **kwargs: Keyword arguments for the evaluation function.
@@ -1556,7 +1556,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
             source (Optional[CustomTemplateLike]): Template for preprocessing the source data.
             in_dumps (Optional[bool]): If True, converts the entire data item to string for searching.
             dump_kwargs (KwargsLike): Arguments for `vectorbtpro.utils.formatting.dump`.
-            template_context (KwargsLike): Context for template substitution.
+            template_context (KwargsLike): Additional context for template substitution.
             return_type (Optional[str]): Indicates the return type: "item", "field", or "bool".
             return_path (Optional[bool]): Specifies whether to include the path in the returned result.
             merge_matches (Optional[bool]): If False, keeps empty lists when searching for matches.
@@ -2039,7 +2039,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         Args:
             source (Optional[CustomTemplateLike]): Template or function to preprocess the source data.
             dump_engine (Optional[str]): Name of the dump engine.
-            template_context (KwargsLike): Additional context for template rendering.
+            template_context (KwargsLike): Additional context for template substitution.
             **kwargs: Keyword arguments for the dump engine.
 
         Returns:
@@ -2078,7 +2078,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         Args:
             source (Optional[CustomTemplateLike]): Template or function to preprocess the source data.
             dump_engine (Optional[str]): Name of the dump engine.
-            template_context (KwargsLike): Additional context for template rendering.
+            template_context (KwargsLike): Additional context for template substitution.
             **kwargs: Keyword arguments for the dump engine.
 
         Returns:
@@ -2225,7 +2225,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
             *args: Positional arguments for the reduction function.
             initializer (Optional[Any]): Initial value for the reduction.
             by (Optional[PathLikeKey]): Key to group data items for reduction.
-            template_context (KwargsLike): Context for template rendering.
+            template_context (KwargsLike): Additional context for template substitution.
             show_progress (Optional[bool]): Whether to display a progress bar.
             pbar_kwargs (KwargsLike): Keyword arguments for progress bar configuration.
             wrap (Optional[bool]): If True, wrap the result in a `KnowledgeAsset` instance.

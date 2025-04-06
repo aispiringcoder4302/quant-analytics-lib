@@ -391,8 +391,8 @@ class OHLCVDFAccessor(OHLCDataMixin, GenericDFAccessor):
                 Pass None to use the default.
             trace_kwargs (dict): Keyword arguments passed to `ohlc_type`.
             add_trace_kwargs (dict): Keyword arguments passed to `add_trace`.
-            fig (Figure or FigureWidget): Figure to add traces to.
-            **layout_kwargs: Keyword arguments for layout.
+            fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
+            **layout_kwargs: Keyword arguments for configuring the figure layout.
         """
         from vectorbtpro.utils.module_ import assert_can_import
 
@@ -468,8 +468,8 @@ class OHLCVDFAccessor(OHLCDataMixin, GenericDFAccessor):
         Args:
             trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Bar`.
             add_trace_kwargs (dict): Keyword arguments passed to `add_trace`.
-            fig (Figure or FigureWidget): Figure to add traces to.
-            **layout_kwargs: Keyword arguments for layout.
+            fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
+            **layout_kwargs: Keyword arguments for configuring the figure layout.
         """
         from vectorbtpro.utils.module_ import assert_can_import
 
@@ -532,8 +532,8 @@ class OHLCVDFAccessor(OHLCDataMixin, GenericDFAccessor):
             volume_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Bar`.
             add_trace_kwargs (dict): Keyword arguments passed to `add_trace` for OHLC.
             volume_add_trace_kwargs (dict): Keyword arguments passed to `add_trace` for volume.
-            fig (Figure or FigureWidget): Figure to add traces to.
-            **layout_kwargs: Keyword arguments for layout.
+            fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
+            **layout_kwargs: Keyword arguments for configuring the figure layout.
 
         Usage:
             ```pycon

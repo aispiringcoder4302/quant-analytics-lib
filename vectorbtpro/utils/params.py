@@ -1131,7 +1131,7 @@ class Parameterizer(Configured):
         param_search_kwargs (KwargsLike): Keyword arguments for parameter search settings.
         skip_single_comb (Optional[bool]): Flag indicating direct execution when only one
             parameter combination exists.
-        template_context (KwargsLike): Context for template substitution.
+        template_context (KwargsLike): Additional context for template substitution.
         build_grid (Optional[bool]): Flag controlling whether to build a parameter grid.
         grid_indices (Union[None, slice, Sequence[int]]): Indices used to select specific grid configurations.
         random_subset (Union[None, int, float]): Size of the random subset selected from parameter combinations.
@@ -1591,7 +1591,7 @@ class Parameterizer(Configured):
             param_index (Optional[Index]): Optional parameter index mapping.
             selection (Selection): Selection criteria for choosing a parameter combination.
             single_comb (bool): Flag indicating whether to enforce a single combination.
-            template_context (KwargsLike): Template context used for substitution.
+            template_context (KwargsLike): Additional context for template substitution.
             raise_no_results (bool): Flag to raise an exception if no matching result is found.
 
         Returns:
@@ -1669,7 +1669,7 @@ class Parameterizer(Configured):
             func (Callable): The function to be executed.
             ann_args (AnnArgs): Annotation arguments defining the function's parameters.
             param_configs (List[Kwargs]): List of parameter configuration dictionaries.
-            template_context (KwargsLike): Template context for substitution.
+            template_context (KwargsLike): Additional context for template substitution.
 
         Yields:
             TasksLike: A tuple consisting of the function, its positional arguments, and its keyword arguments.
@@ -1761,7 +1761,7 @@ class Parameterizer(Configured):
             mono_merge_func (Union[MergeFuncLike, Dict[str, MergeFuncLike]]): Function or mapping to
                 merge parameter values.
             mono_merge_kwargs (KwargsLike): Keyword arguments for the merge function.
-            template_context (KwargsLike): Dictionary for template substitution context.
+            template_context (KwargsLike): Additional context for template substitution.
 
         Returns:
             Kwargs: The mono-chunk parameter configuration.

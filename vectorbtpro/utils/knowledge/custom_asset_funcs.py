@@ -91,7 +91,7 @@ class ToMarkdownAssetFunc(AssetFunc):
             clean_metadata (bool): If True, clean the metadata to remove empty or irrelevant values.
             clean_metadata_kwargs (KwargsLike): Keyword arguments for cleaning metadata.
             dump_metadata_kwargs (KwargsLike): Keyword arguments for dumping metadata.
-            **to_markdown_kwargs: Positional arguments for Markdown conversion.
+            **to_markdown_kwargs: Keyword arguments for Markdown conversion.
 
         Returns:
             str: Markdown formatted metadata string."""

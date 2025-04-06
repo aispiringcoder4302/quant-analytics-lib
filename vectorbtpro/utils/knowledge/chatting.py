@@ -119,7 +119,7 @@ class Tokenizer(Configured):
     """Abstract class for tokenizers.
 
     Args:
-        template_context (KwargsLike): A mapping for template substitution and configuration.
+        template_context (KwargsLike): Additional context for template substitution.
         **kwargs: Keyword arguments for configuration.
 
     For defaults, see `chat.tokenizer_config` in `vectorbtpro._settings.knowledge`.
@@ -870,7 +870,7 @@ def embed(query: tp.MaybeList[str], embeddings: tp.EmbeddingsLike = None, **kwar
         embeddings (EmbeddingsLike): An identifier, subclass, or instance of `Embeddings`.
 
             If None, defaults are applied.
-        **kwargs: Positional arguments for initializing or modifying the embeddings instance.
+        **kwargs: Keyword arguments for initializing or modifying the embeddings instance.
 
     Returns:
         MaybeList[List[float]]: The embedding vector(s) corresponding to the input query or queries.
@@ -1713,7 +1713,7 @@ class TextSplitter(Configured):
 
     Args:
         chunk_template (Optional[CustomTemplateLike]): Template used to format each text chunk.
-        template_context (KwargsLike): Dictionary for substituting template values.
+        template_context (KwargsLike): Additional context for template substitution.
         **kwargs: Keyword arguments for configuration.
 
     For defaults, see `chat.text_splitter_config` in `vectorbtpro._settings.knowledge`.
@@ -2721,7 +2721,7 @@ class ObjectStore(Configured, MutableMapping, metaclass=MetaObjectStore):
     Args:
         store_id (Optional[str]): Identifier for the store.
         purge_on_open (Optional[bool]): Indicates if the store should be purged upon opening.
-        template_context (KwargsLike): Context for template substitution.
+        template_context (KwargsLike): Additional context for template substitution.
         **kwargs: Keyword arguments for configuration.
 
     For defaults, see `chat.obj_store_config` in `vectorbtpro._settings.knowledge`."""
@@ -3590,7 +3590,7 @@ class DocumentRanker(Configured):
         normalize_scores (Optional[bool]): Flag to indicate whether to normalize scores.
         show_progress (Optional[bool]): Flag to display progress during operations.
         pbar_kwargs (KwargsLike): Keyword arguments for configuring the progress bar.
-        template_context (KwargsLike): Template context for dynamic configuration.
+        template_context (KwargsLike): Additional context for template substitution.
         **kwargs: Keyword arguments for configuration.
 
     For defaults, see `chat.doc_ranker_config` in `vectorbtpro._settings.knowledge`.

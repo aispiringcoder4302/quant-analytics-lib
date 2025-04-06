@@ -196,7 +196,7 @@ class SignalFactory(IndicatorFactory):
                 `vectorbtpro.signals.accessors.SignalsSRAccessor.plot_as_entries` for `{0}.{1}`.
             exit_trace_kwargs (dict): Keyword arguments passed to 
                 `vectorbtpro.signals.accessors.SignalsSRAccessor.plot_as_exits` for `{0}.exits`.
-            fig (Figure or FigureWidget): Figure to add traces to.
+            fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
             **kwargs: Keyword arguments passed to `vectorbtpro.signals.accessors.SignalsSRAccessor.plot_as_markers`.
         """.format(
             self.class_name,

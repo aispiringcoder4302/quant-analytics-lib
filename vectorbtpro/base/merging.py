@@ -133,7 +133,7 @@ def concat_merge(
         wrap (Optional[bool]): If True, wrap each array with a Pandas Series using `pd.concat`.
 
             If None, the value is inferred from the presence of `wrapper`, `keys`, or `wrap_kwargs`.
-        wrapper (Optional[ArrayWrapper]): An object with a `wrap_reduced` method to wrap arrays.
+        wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
         wrap_kwargs (KwargsLikeSequence): Keyword arguments for wrapping arrays.
         clean_index_kwargs (KwargsLike): Keyword arguments for cleaning the merged index.
         **kwargs: Keyword arguments passed to `pd.concat`.
@@ -288,8 +288,7 @@ def row_stack_merge(
             * "df", "frame", or "dataframe": Wraps each array as a Pandas DataFrame.
 
             Without wrapping, arrays will be kept as-is and merged using `row_stack_arrays`.
-        wrapper (Optional[ArrayWrapper]): An array wrapper instance used via
-            `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
+        wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
         wrap_kwargs (KwargsLikeSequence): Keyword arguments for wrapping each array;
             can be a dictionary or a list of dictionaries.
         clean_index_kwargs (KwargsLikeSequence): Keyword arguments for cleaning
@@ -454,7 +453,7 @@ def column_stack_merge(
             * True: Wrap each array using Pandas Series or DataFrame based on its dimensions.
             * "sr" or "series": Wrap each array as a Pandas Series.
             * "df", "frame", or "dataframe": Wrap each array as a Pandas DataFrame.
-        wrapper (Optional[ArrayWrapper]): A custom wrapper instance to wrap arrays via `ArrayWrapper.wrap`.
+        wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
         wrap_kwargs (KwargsLikeSequence): Positional arguments for wrapping, provided as a
             mapping or sequence of mappings.
         clean_index_kwargs (KwargsLikeSequence): Keyword arguments for cleaning

@@ -1822,8 +1822,7 @@ class Executor(Configured):
             pre_clear_chunk_cache (bool): If True, clear the chunk cache directory before execution.
             pre_execute_func (Optional[Callable]): Function to be invoked prior to executing tasks.
             pre_execute_kwargs (KwargsLike): Keyword arguments for `pre_execute_func`.
-            template_context (KwargsLike): Context for template substitution in the pre-execution
-                function and its arguments.
+            template_context (KwargsLike): Additional context for template substitution.
         """
         if cache_chunks and pre_clear_chunk_cache:
             if chunk_cache_dir is None:
@@ -1870,8 +1869,7 @@ class Executor(Configured):
             release_chunk_cache (bool): If True, release the chunk cache by substituting dummy data after loading.
             pre_chunk_func (Optional[Callable]): Function to be invoked before processing the chunk.
             pre_chunk_kwargs (KwargsLike): Keyword arguments for `pre_chunk_func`.
-            template_context (KwargsLike): Context for template substitution in the pre-chunk
-                function and its arguments.
+            template_context (KwargsLike): Additional context for template substitution.
 
         Returns:
             Optional[ExecResults]: The result from `pre_chunk_func` if provided; otherwise, the loaded chunk cache.
@@ -1982,7 +1980,7 @@ class Executor(Configured):
             post_chunk_func (Optional[Callable]): Function to post-process chunk results.
             post_chunk_kwargs (KwargsLike): Keyword arguments for `post_chunk_func`.
             chunk_executed (bool): Indicates if the chunk was executed.
-            template_context (KwargsLike): Context for template substitution in post-chunk processing.
+            template_context (KwargsLike): Additional context for template substitution.
 
         Returns:
             ExecResults: The updated call results after post-chunk processing.
@@ -2066,8 +2064,7 @@ class Executor(Configured):
             release_chunk_cache (bool): If True, release cached chunk data by replacing with dummy values.
             post_execute_func (Optional[Callable]): Function to post-process the overall execution results.
             post_execute_kwargs (KwargsLike): Keyword arguments for `post_execute_func`.
-            template_context (KwargsLike): Context for template substitution in the post-execution
-                function and its arguments.
+            template_context (KwargsLike): Additional context for template substitution.
 
         Returns:
             Optional[ExecResults]: The post-processed execution results if modified; otherwise,
@@ -2132,7 +2129,7 @@ class Executor(Configured):
             raise_no_results (bool): Specifies whether to raise an exception if no results remain after filtering.
             merge_func (Optional[MergeFuncLike]): Function used to merge the results.
             merge_kwargs (KwargsLike): Keyword arguments for merging.
-            template_context (KwargsLike): Additional context for merging templates.
+            template_context (KwargsLike): Additional context for template substitution.
 
         Returns:
             Union[ExecResults, MergeResult]: Merged results if a merge function is provided;

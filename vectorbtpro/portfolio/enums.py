@@ -2729,7 +2729,7 @@ order_dt = np.dtype(order_fields, align=True)
 
 __pdoc__[
     "order_dt"
-] = f"""`np.dtype` of order records.
+] = f"""NumPy dtype of order records.
 
 ```python
 {prettify_doc(order_dt)}
@@ -2756,7 +2756,7 @@ fs_order_dt = np.dtype(fs_order_fields, align=True)
 
 __pdoc__[
     "fs_order_dt"
-] = f"""`np.dtype` of order records generated from signals.
+] = f"""NumPy dtype of order records generated from signals.
 
 ```python
 {prettify_doc(fs_order_dt)}
@@ -2788,7 +2788,7 @@ trade_dt = np.dtype(trade_fields, align=True)
 
 __pdoc__[
     "trade_dt"
-] = f"""`np.dtype` of trade records.
+] = f"""NumPy dtype of trade records.
 
 ```python
 {prettify_doc(trade_dt)}
@@ -2850,7 +2850,7 @@ log_dt = np.dtype(log_fields, align=True)
 
 __pdoc__[
     "log_dt"
-] = f"""`np.dtype` of log records.
+] = f"""NumPy dtype of log records.
 
 ```python
 {prettify_doc(log_dt)}
@@ -2872,7 +2872,7 @@ alloc_range_dt = np.dtype(alloc_range_fields, align=True)
 
 __pdoc__[
     "alloc_range_dt"
-] = f"""`np.dtype` of allocation range records.
+] = f"""NumPy dtype of allocation range records.
 
 ```python
 {prettify_doc(alloc_range_dt)}
@@ -2891,7 +2891,7 @@ alloc_point_dt = np.dtype(alloc_point_fields, align=True)
 
 __pdoc__[
     "alloc_point_dt"
-] = f"""`np.dtype` of allocation point records.
+] = f"""NumPy dtype of allocation point records.
 
 ```python
 {prettify_doc(alloc_point_dt)}
@@ -2920,7 +2920,7 @@ main_info_dt = np.dtype(main_info_fields, align=True)
 
 __pdoc__[
     "main_info_dt"
-] = f"""`np.dtype` of main information records.
+] = f"""NumPy dtype of main information records.
 
 ```python
 {prettify_doc(main_info_dt)}
@@ -2964,7 +2964,7 @@ limit_info_dt = np.dtype(limit_info_fields, align=True)
 
 __pdoc__[
     "limit_info_dt"
-] = f"""`np.dtype` of limit information records.
+] = f"""NumPy dtype of limit information records.
 
 ```python
 {prettify_doc(limit_info_dt)}
@@ -3011,7 +3011,7 @@ sl_info_dt = np.dtype(sl_info_fields, align=True)
 
 __pdoc__[
     "sl_info_dt"
-] = f"""`np.dtype` of SL information records.
+] = f"""NumPy dtype of SL information records.
 
 ```python
 {prettify_doc(sl_info_dt)}
@@ -3060,7 +3060,7 @@ tsl_info_dt = np.dtype(tsl_info_fields, align=True)
 
 __pdoc__[
     "tsl_info_dt"
-] = f"""`np.dtype` of TSL information records.
+] = f"""NumPy dtype of TSL information records.
 
 ```python
 {prettify_doc(tsl_info_dt)}
@@ -3109,7 +3109,7 @@ tp_info_dt = np.dtype(tp_info_fields, align=True)
 
 __pdoc__[
     "tp_info_dt"
-] = f"""`np.dtype` of TP information records.
+] = f"""NumPy dtype of TP information records.
 
 ```python
 {prettify_doc(tp_info_dt)}
@@ -3155,7 +3155,7 @@ time_info_dt = np.dtype(time_info_fields, align=True)
 
 __pdoc__[
     "time_info_dt"
-] = f"""`np.dtype` of time information records.
+] = f"""NumPy dtype of time information records.
 
 ```python
 {prettify_doc(time_info_dt)}

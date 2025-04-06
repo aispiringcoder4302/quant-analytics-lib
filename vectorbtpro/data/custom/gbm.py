@@ -63,7 +63,7 @@ class GBMData(SyntheticData):
             std (float): Standard deviation of the percentage change.
             dt (float): Time increment for one period.
             seed (int): Seed to ensure deterministic output.
-            jitted (JittedOption): See `vectorbtpro.utils.jitting.resolve_jitted_option`.
+            jitted (JittedOption): Option to control JIT compilation.
 
         Returns:
             KeyData: The generated data and a metadata dictionary.

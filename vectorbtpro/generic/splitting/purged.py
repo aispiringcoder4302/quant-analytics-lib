@@ -54,6 +54,7 @@ class BasePurgedCV(Base):
     """Abstract class for purged time series cross-validation.
 
     Time series cross-validation requires each sample to have:
+
     * a prediction time at which features are used to predict the response,
     * an evaluation time at which the true response is observed and errors can be computed.
 

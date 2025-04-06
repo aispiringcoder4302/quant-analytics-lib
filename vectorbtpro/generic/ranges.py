@@ -260,10 +260,10 @@ class Ranges(PriceRecords):
             arr (ArrayLike): Input array to analyze.
             gap_value (Optional[Scalar]): Value indicating a gap in the data.
             attach_as_close (bool): Whether to attach the input array as the `close` field.
-            jitted (JittedOption): Option for just-in-time compilation.
-            chunked (ChunkedOption): Option for chunked processing.
-            wrapper_kwargs (KwargsLike): Additional parameters for initializing the array wrapper.
-            **kwargs: Positional arguments passed to `Ranges`.
+            jitted (JittedOption): Option to control JIT compilation.
+            chunked (ChunkedOption): Option to control chunked processing.
+            wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
+            **kwargs: Keyword arguments passed to `Ranges`.
 
         Returns:
             Ranges: A new instance constructed from the array.
@@ -310,9 +310,9 @@ class Ranges(PriceRecords):
             delta (Union[str, int, FrequencyLike]): Time difference to apply, as a row count or timedelta.
             shift (Optional[int]): Number of rows to shift the delta application.
             idx_field_or_arr (Union[None, str, Array1d]): Field name or array for extracting index values.
-            jitted (JittedOption): Option for just-in-time compilation.
-            chunked (ChunkedOption): Option for chunked processing.
-            **kwargs: Positional arguments passed to `Ranges`.
+            jitted (JittedOption): Option to control JIT compilation.
+            chunked (ChunkedOption): Option to control chunked processing.
+            **kwargs: Keyword arguments passed to `Ranges`.
 
         Returns:
             Ranges: A new instance constructed based on the applied delta.
@@ -407,7 +407,7 @@ class Ranges(PriceRecords):
         Args:
             min_duration (Union[str, int, FrequencyLike]): The minimum allowed duration.
             real (bool): Whether to use real duration for filtering.
-            **kwargs: Positional arguments passed to `Ranges.apply_mask`.
+            **kwargs: Keyword arguments passed to `Ranges.apply_mask`.
 
         Returns:
             Ranges: A new instance with ranges meeting the minimum duration criteria.
@@ -430,7 +430,7 @@ class Ranges(PriceRecords):
         Args:
             max_duration (Union[str, int, FrequencyLike]): The maximum allowed duration.
             real (bool): Whether to use real duration for filtering.
-            **kwargs: Positional arguments passed to `Ranges.apply_mask`.
+            **kwargs: Keyword arguments passed to `Ranges.apply_mask`.
 
         Returns:
             Ranges: A new instance with ranges meeting the maximum duration criteria.
@@ -448,8 +448,8 @@ class Ranges(PriceRecords):
         """Generate a mask based on the first index of each range.
 
         Args:
-            group_by (GroupByLike): Parameter to group data.
-            **kwargs: Positional arguments passed to `Ranges.get_pd_mask`.
+            group_by (GroupByLike): Grouping specification.
+            **kwargs: Keyword arguments passed to `Ranges.get_pd_mask`.
 
         Returns:
             SeriesFrame: A mask indicating the first indices of each range.
@@ -460,8 +460,8 @@ class Ranges(PriceRecords):
         """Generate a mask based on the last index of each range.
 
         Args:
-            group_by (GroupByLike): Parameter to group data.
-            **kwargs: Positional arguments passed to `Ranges.get_pd_mask`.
+            group_by (GroupByLike): Grouping specification.
+            **kwargs: Keyword arguments passed to `Ranges.get_pd_mask`.
 
         Returns:
             SeriesFrame: A mask indicating the last indices of each range.
@@ -482,10 +482,10 @@ class Ranges(PriceRecords):
         into a boolean mask using `vectorbtpro.generic.nb.records.ranges_to_mask_nb`.
 
         Args:
-            group_by (GroupByLike): Parameter to group data.
-            jitted (JittedOption): Option for just-in-time compilation.
-            chunked (ChunkedOption): Option for chunked processing.
-            wrap_kwargs (KwargsLike): Positional arguments for output wrapping.
+            group_by (GroupByLike): Grouping specification.
+            jitted (JittedOption): Option to control JIT compilation.
+            chunked (ChunkedOption): Option to control chunked processing.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
 
         Returns:
             SeriesFrame: A boolean mask representing the ranges.
@@ -510,7 +510,7 @@ class Ranges(PriceRecords):
         A valid range is defined as having both the start and end indices not equal to -1.
 
         Args:
-            **kwargs: Positional arguments passed to `Ranges.apply_mask`.
+            **kwargs: Keyword arguments passed to `Ranges.apply_mask`.
 
         Returns:
             Ranges: A new instance containing only valid ranges.
@@ -571,7 +571,7 @@ class Ranges(PriceRecords):
 
         Args:
             jitted (JittedOption): Option to control JIT compilation.
-            chunked (ChunkedOption): Option to control chunked computation.
+            chunked (ChunkedOption): Option to control chunked processing.
             **kwargs: Keyword arguments passed to `Ranges.map_array`.
 
         Returns:
@@ -600,7 +600,7 @@ class Ranges(PriceRecords):
 
         Args:
             jitted (JittedOption): Option to control JIT compilation.
-            chunked (ChunkedOption): Option to control chunked computation.
+            chunked (ChunkedOption): Option to control chunked processing.
             **kwargs: Keyword arguments passed to `Ranges.map_array`.
 
         Returns:
@@ -631,10 +631,10 @@ class Ranges(PriceRecords):
 
         Args:
             real (bool): If True, use real durations; otherwise, use effective durations.
-            group_by (GroupByLike): Keys for grouping ranges when computing the average.
+            group_by (GroupByLike): Grouping specification.
             jitted (JittedOption): Option to control JIT compilation.
-            chunked (ChunkedOption): Option to control chunked computation.
-            wrap_kwargs (KwargsLike): Additional parameters for wrapping the result.
+            chunked (ChunkedOption): Option to control chunked processing.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
             **kwargs: Keyword arguments passed to `vectorbtpro.records.mapped_array.MappedArray.mean`.
 
         Returns:
@@ -664,10 +664,10 @@ class Ranges(PriceRecords):
 
         Args:
             real (bool): If True, use real durations; otherwise, use effective durations.
-            group_by (GroupByLike): Keys for grouping ranges when computing the maximum.
+            group_by (GroupByLike): Grouping specification.
             jitted (JittedOption): Option to control JIT compilation.
-            chunked (ChunkedOption): Option to control chunked computation.
-            wrap_kwargs (KwargsLike): Additional parameters for wrapping the result.
+            chunked (ChunkedOption): Option to control chunked processing.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
             **kwargs: Keyword arguments passed to `vectorbtpro.records.mapped_array.MappedArray.max`.
 
         Returns:
@@ -698,10 +698,10 @@ class Ranges(PriceRecords):
         Args:
             overlapping (bool): Whether to consider overlapping ranges.
             normalize (bool): Whether to normalize the coverage.
-            group_by (GroupByLike): Keys for grouping ranges when computing coverage.
+            group_by (GroupByLike): Grouping specification.
             jitted (JittedOption): Option to control JIT compilation.
-            chunked (ChunkedOption): Option to control chunked computation.
-            wrap_kwargs (KwargsLike): Additional parameters for wrapping the result.
+            chunked (ChunkedOption): Option to control chunked processing.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
 
         Returns:
             tp.MaybeSeries: The computed coverage of the ranges.
@@ -777,9 +777,8 @@ class Ranges(PriceRecords):
             id_level (Union[None, str, IndexLike]): Identifier or key for naming range IDs.
 
                 If a string, it may refer to a field mapping.
-            jitted (JittedOption): Option to enable or disable just-in-time compilation
-                for the projection function.
-            wrap_kwargs (KwargsLike): Keyword arguments passed to the wrapping function.
+            jitted (JittedOption): Option to control JIT compilation.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
             clean_index_kwargs (KwargsLike): Keyword arguments for cleaning the DataFrame index.
 
         Returns:
@@ -1058,9 +1057,9 @@ class Ranges(PriceRecords):
                 `plotly.graph_objects.Scatter` for the upper band.
             aux_middle_trace_kwargs (KwargsLike): Keyword arguments
                 for `plotly.graph_objects.Scatter` for the auxiliary middle band.
-            add_trace_kwargs (KwargsLike): Keyword arguments passed to `add_trace`.
-            fig (Optional[BaseFigure]): Figure to which traces are added.
-            **layout_kwargs: Keyword arguments for layout settings.
+            add_trace_kwargs (KwargsLike): Keyword arguments for adding traces to the figure.
+            fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
+            **layout_kwargs: Keyword arguments for configuring the figure layout.
 
         Returns:
             BaseFigure: A figure object containing the plotted projections and price data.
@@ -1321,7 +1320,7 @@ class Ranges(PriceRecords):
             xref (str): Reference for the x-axis.
             yref (str): Reference for the y-axis.
             fig (BaseFigure): Figure object to which traces are added.
-            **layout_kwargs: Keyword arguments for updating the figure layout.
+            **layout_kwargs: Keyword arguments for configuring the figure layout.
 
         Returns:
             BaseFigure: A figure object containing the plotted shapes.
@@ -1515,11 +1514,9 @@ class Ranges(PriceRecords):
             add_trace_kwargs (KwargsLike): Keyword arguments for adding traces to the figure.
             xref (str): X-axis reference identifier.
             yref (str): Y-axis reference identifier.
-            fig (Optional[BaseFigure]): The figure to which traces are added.
-
-                If None, a new figure is created.
+            fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
             return_close (bool): Whether to return the close Series along with the figure.
-            **layout_kwargs: Keyword arguments for figure layout.
+            **layout_kwargs: Keyword arguments for configuring the figure layout.
 
         Returns:
             BaseFigure: A figure object containing the plotted ranges.
@@ -2107,11 +2104,11 @@ class PatternRanges(Ranges):
 
                 If a configuration is a list of `PSC` instances, it is applied per column in `arr`;
                 otherwise, per array.
-            jitted (JittedOption): Option to control function jitting.
+            jitted (JittedOption): Option to control JIT compilation.
             execute_kwargs (KwargsLike): Keyword arguments for execution.
             attach_as_close (bool): Attach the input array as the `close` field if True.
             clean_index_kwargs (KwargsLike): Keyword arguments for cleaning index.
-            wrapper_kwargs (KwargsLike): Keyword arguments for wrapping the output.
+            wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
             **kwargs: Keyword arguments passed to `PatternRanges`.
 
         Returns:
@@ -2477,10 +2474,10 @@ class PatternRanges(Ranges):
                 `plotly.graph_objects.Scatter` for lower max error.
             upper_max_error_trace_kwargs (KwargsLike): Keyword arguments passed to
                 `plotly.graph_objects.Scatter` for upper max error.
-            add_trace_kwargs (KwargsLike): Keyword arguments passed to `add_trace`.
+            add_trace_kwargs (KwargsLike): Keyword arguments for adding traces to the figure.
             xref (str): Specifies the X coordinate axis.
             yref (str): Specifies the Y coordinate axis.
-            fig (Optional[BaseFigure]): Figure to which traces are added.
+            fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
             **kwargs: Keyword arguments passed to `Ranges.plot`.
 
         Returns:

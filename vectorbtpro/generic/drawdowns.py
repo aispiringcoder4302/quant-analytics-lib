@@ -308,17 +308,17 @@ class Drawdowns(Ranges):
         """Create a new `Drawdowns` instance from price data.
 
         Args:
-            close (ArrayLike): Price data for closing values.
-            open (Optional[ArrayLike]): Price data for opening values.
-            high (Optional[ArrayLike]): Price data for high values.
-            low (Optional[ArrayLike]): Price data for low values.
+            close (ArrayLike): Array of close prices.
+            open (Optional[ArrayLike]): Array of open prices.
+            high (Optional[ArrayLike]): Array of high prices.
+            low (Optional[ArrayLike]): Array of low prices.
             sim_start (Optional[ArrayLike]): Simulation start.
             sim_end (Optional[ArrayLike]): Simulation end.
             attach_data (bool): Whether to attach the price data to the instance.
-            jitted (JittedOption): JIT compilation option.
-            chunked (ChunkedOption): Option to process data in chunks.
-            wrapper (Optional[ArrayWrapper]): An array wrapper for formatting price data.
-            wrapper_kwargs (KwargsLike): Keyword arguments for creating an array wrapper.
+            jitted (JittedOption): Option to control JIT compilation.
+            chunked (ChunkedOption): Option to control chunked processing.
+            wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
+            wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
             **kwargs: Keyword arguments passed to `Drawdowns`.
 
         Returns:
@@ -360,7 +360,7 @@ class Drawdowns(Ranges):
         """Return peak-to-end range records.
 
         Args:
-            **kwargs: Keyword arguments passed to `Ranges.from_records`.
+            **kwargs: Keyword arguments passed to `vectorbtpro.generic.ranges.Ranges.from_records`.
 
         Returns:
             Ranges: An instance of `Ranges` representing peak-to-end records.
@@ -385,7 +385,7 @@ class Drawdowns(Ranges):
         """Return peak-to-valley range records.
 
         Args:
-            **kwargs: Keyword arguments passed to `Ranges.from_records`.
+            **kwargs: Keyword arguments passed to `vectorbtpro.generic.ranges.Ranges.from_records`.
 
         Returns:
             Ranges: An instance of `Ranges` representing peak-to-valley records.
@@ -410,7 +410,7 @@ class Drawdowns(Ranges):
         """Return valley-to-end range records.
 
         Args:
-            **kwargs: Keyword arguments passed to `Ranges.from_records`.
+            **kwargs: Keyword arguments passed to `vectorbtpro.generic.ranges.Ranges.from_records`.
 
         Returns:
             Ranges: An instance of `Ranges` representing valley-to-end records.
@@ -440,8 +440,8 @@ class Drawdowns(Ranges):
             Both recovered and active drawdowns are considered.
 
         Args:
-            jitted (JittedOption): JIT compilation option.
-            chunked (ChunkedOption): Option to process data in chunks.
+            jitted (JittedOption): Option to control JIT compilation.
+            chunked (ChunkedOption): Option to control chunked processing.
             **kwargs: Keyword arguments passed to `Drawdowns.map_array`.
 
         Returns:
@@ -463,10 +463,10 @@ class Drawdowns(Ranges):
         """Return the average drawdown computed from `Drawdowns.drawdown`.
 
         Args:
-            group_by (GroupByLike): Grouping criteria for averaging.
-            jitted (JittedOption): JIT compilation option.
-            chunked (ChunkedOption): Option to process data in chunks.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            group_by (GroupByLike): Grouping specification.
+            jitted (JittedOption): Option to control JIT compilation.
+            chunked (ChunkedOption): Option to control chunked processing.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
             **kwargs: Keyword arguments passed to `vectorbtpro.records.mapped_array.MappedArray.mean`.
 
         Returns:
@@ -486,10 +486,10 @@ class Drawdowns(Ranges):
         """Return the maximum drawdown computed from `Drawdowns.drawdown`.
 
         Args:
-            group_by (GroupByLike): Grouping criteria for computing maximum.
-            jitted (JittedOption): JIT compilation option.
-            chunked (ChunkedOption): Option to process data in chunks.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            group_by (GroupByLike): Grouping specification.
+            jitted (JittedOption): Option to control JIT compilation.
+            chunked (ChunkedOption): Option to control chunked processing.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
             **kwargs: Keyword arguments passed to `vectorbtpro.records.mapped_array.MappedArray.min`.
 
         Returns:
@@ -512,8 +512,8 @@ class Drawdowns(Ranges):
             Both recovered and active drawdowns are considered.
 
         Args:
-            jitted (JittedOption): JIT compilation option.
-            chunked (ChunkedOption): Option to process data in chunks.
+            jitted (JittedOption): Option to control JIT compilation.
+            chunked (ChunkedOption): Option to control chunked processing.
             **kwargs: Keyword arguments passed to `Drawdowns.map_array`.
 
         Returns:
@@ -535,10 +535,10 @@ class Drawdowns(Ranges):
         """Return the average recovery return computed from `Drawdowns.recovery_return`.
 
         Args:
-            group_by (GroupByLike): Grouping criteria for averaging.
-            jitted (JittedOption): JIT compilation option.
-            chunked (ChunkedOption): Option to process data in chunks.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            group_by (GroupByLike): Grouping specification.
+            jitted (JittedOption): Option to control JIT compilation.
+            chunked (ChunkedOption): Option to control chunked processing.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
             **kwargs: Keyword arguments passed to `vectorbtpro.records.mapped_array.MappedArray.mean`.
 
         Returns:
@@ -564,10 +564,10 @@ class Drawdowns(Ranges):
         """Return the maximum recovery return computed from `Drawdowns.recovery_return`.
 
         Args:
-            group_by (GroupByLike): Grouping criteria for computing maximum.
-            jitted (JittedOption): JIT compilation option.
-            chunked (ChunkedOption): Option to process data in chunks.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            group_by (GroupByLike): Grouping specification.
+            jitted (JittedOption): Option to control JIT compilation.
+            chunked (ChunkedOption): Option to control chunked processing.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
             **kwargs: Keyword arguments passed to `vectorbtpro.records.mapped_array.MappedArray.max`.
 
         Returns:
@@ -593,8 +593,8 @@ class Drawdowns(Ranges):
         """Call `vectorbtpro.generic.nb.records.dd_decline_duration_nb` to compute the decline duration.
 
         Args:
-            jitted (JittedOption): Option for JIT compilation.
-            chunked (ChunkedOption): Option for chunked computation.
+            jitted (JittedOption): Option to control JIT compilation.
+            chunked (ChunkedOption): Option to control chunked processing.
             **kwargs: Keyword arguments passed to `Drawdowns.map_array`.
 
         Returns:
@@ -617,8 +617,8 @@ class Drawdowns(Ranges):
         """Call `vectorbtpro.generic.nb.records.dd_recovery_duration_nb` to compute the recovery duration.
 
         Args:
-            jitted (JittedOption): Option for JIT compilation.
-            chunked (ChunkedOption): Option for chunked computation.
+            jitted (JittedOption): Option to control JIT compilation.
+            chunked (ChunkedOption): Option to control chunked processing.
             **kwargs: Keyword arguments passed to `Drawdowns.map_array`.
 
         Returns:
@@ -643,8 +643,8 @@ class Drawdowns(Ranges):
         the recovery duration ratio.
 
         Args:
-            jitted (JittedOption): Option for JIT compilation.
-            chunked (ChunkedOption): Option for chunked computation.
+            jitted (JittedOption): Option to control JIT compilation.
+            chunked (ChunkedOption): Option to control chunked processing.
             **kwargs: Keyword arguments passed to `Drawdowns.map_array`.
 
         Returns:
@@ -674,10 +674,10 @@ class Drawdowns(Ranges):
         """Return the drawdown of the last active drawdown.
 
         Args:
-            group_by (GroupByLike): Grouping parameter; grouping is not supported.
-            jitted (JittedOption): Option for JIT compilation.
-            chunked (ChunkedOption): Option for chunked computation.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the output.
+            group_by (GroupByLike): Grouping specification.
+            jitted (JittedOption): Option to control JIT compilation.
+            chunked (ChunkedOption): Option to control chunked processing.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
 
         Returns:
             MaybeSeries: The active drawdown.
@@ -705,10 +705,10 @@ class Drawdowns(Ranges):
         """Return the duration of the last active drawdown.
 
         Args:
-            group_by (GroupByLike): Grouping parameter; grouping is not supported.
-            jitted (JittedOption): Option for JIT compilation.
-            chunked (ChunkedOption): Option for chunked computation.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the output.
+            group_by (GroupByLike): Grouping specification.
+            jitted (JittedOption): Option to control JIT compilation.
+            chunked (ChunkedOption): Option to control chunked processing.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
             **kwargs: Keyword arguments passed to `vectorbtpro.records.mapped_array.MappedArray.nth`.
 
         Returns:
@@ -739,10 +739,10 @@ class Drawdowns(Ranges):
         """Return the recovery of the last active drawdown.
 
         Args:
-            group_by (GroupByLike): Grouping parameter; grouping is not supported.
-            jitted (JittedOption): Option for JIT compilation.
-            chunked (ChunkedOption): Option for chunked computation.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the output.
+            group_by (GroupByLike): Grouping specification.
+            jitted (JittedOption): Option to control JIT compilation.
+            chunked (ChunkedOption): Option to control chunked processing.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
 
         Returns:
             MaybeSeries: The active recovery.
@@ -771,10 +771,10 @@ class Drawdowns(Ranges):
         """Return the recovery return of the last active drawdown.
 
         Args:
-            group_by (GroupByLike): Grouping parameter; grouping is not supported.
-            jitted (JittedOption): Option for JIT compilation.
-            chunked (ChunkedOption): Option for chunked computation.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the output.
+            group_by (GroupByLike): Grouping specification.
+            jitted (JittedOption): Option to control JIT compilation.
+            chunked (ChunkedOption): Option to control chunked processing.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
             **kwargs: Keyword arguments passed to `vectorbtpro.records.mapped_array.MappedArray.nth`.
 
         Returns:
@@ -806,10 +806,10 @@ class Drawdowns(Ranges):
         """Return the recovery duration of the last active drawdown.
 
         Args:
-            group_by (GroupByLike): Grouping parameter; grouping is not supported.
-            jitted (JittedOption): Option for JIT compilation.
-            chunked (ChunkedOption): Option for chunked computation.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the output.
+            group_by (GroupByLike): Grouping specification.
+            jitted (JittedOption): Option to control JIT compilation.
+            chunked (ChunkedOption): Option to control chunked processing.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
             **kwargs: Keyword arguments passed to `vectorbtpro.records.mapped_array.MappedArray.nth`.
 
         Returns:
@@ -1032,11 +1032,11 @@ class Drawdowns(Ranges):
                 in `plotly.graph_objects.Figure.add_shape`.
             active_shape_kwargs (KwargsLike): Keyword arguments for shapes representing active recovery zones
                 in `plotly.graph_objects.Figure.add_shape`.
-            add_trace_kwargs (KwargsLike): Keyword arguments for adding traces.
+            add_trace_kwargs (KwargsLike): Keyword arguments for adding traces to the figure.
             xref (str): X-axis reference.
             yref (str): Y-axis reference.
-            fig (Optional[BaseFigure]): Figure to which traces will be added.
-            **layout_kwargs: Additional layout keyword arguments.
+            fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
+            **layout_kwargs: Keyword arguments for configuring the figure layout.
 
         Usage:
             ```pycon

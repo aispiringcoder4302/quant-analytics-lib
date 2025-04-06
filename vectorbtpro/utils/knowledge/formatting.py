@@ -443,7 +443,7 @@ class ContentFormatter(Configured):
         close_output (Optional[bool]): Whether to close the output stream after writing.
         update_interval (Optional[float]): Time interval in seconds for updates.
         minimal_format (Optional[bool]): Whether to apply minimal formatting to the content.
-        template_context (KwargsLike): Context for template substitution.
+        template_context (KwargsLike): Additional context for template substitution.
         **kwargs: Keyword arguments for configuration.
 
     For defaults, see `formatting.formatter_config` in `vectorbtpro._settings.knowledge`."""

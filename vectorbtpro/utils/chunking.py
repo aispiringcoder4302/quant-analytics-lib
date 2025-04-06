@@ -1211,7 +1211,7 @@ class Chunker(Configured):
             If set to None, prepending occurs automatically when the first argument is named 'chunk_meta'.
         skip_single_chunk (Optional[bool]): Indicates whether to bypass chunking when only one chunk is present.
         arg_take_spec (Optional[ArgTakeSpecLike]): Specification for selecting arguments during chunking.
-        template_context (KwargsLike): Context for template substitution in `execute_kwargs` and `merge_kwargs`.
+        template_context (KwargsLike): Additional context for template substitution.
         merge_func (Optional[MergeFuncLike]): Function used to merge results from multiple chunks.
         merge_kwargs (KwargsLike): Keyword arguments passed to the merging function.
         return_raw_chunks (Optional[bool]): Determines whether to return raw chunk data.
@@ -1644,8 +1644,7 @@ class Chunker(Configured):
                 !!! note
                     If a callable, it must accept the same arguments as `Chunker.take_from_args`
                     except for `arg_take_spec`.
-            template_context (KwargsLike): Context for substituting templates in
-                arguments and specifications.
+            template_context (KwargsLike): Additional context for template substitution.
             **kwargs: Keyword arguments passed to `Chunker.take_from_args` or to
                 `arg_take_spec` if it is callable.
 

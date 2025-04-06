@@ -541,8 +541,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
             minp (Optional[int]): Minimum number of observations required within the window.
             ddof (int): Delta degrees of freedom.
             jitted (JittedOption): Option to control JIT compilation.
-            chunked (ChunkedOption): Option to control chunked computation.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the output.
+            chunked (ChunkedOption): Option to control chunked processing.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
 
         Returns:
             SeriesFrame: Calculated rolling z-score values.
@@ -580,8 +580,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
             span (int): Window span for computing the weighted moving mean.
             minp (Optional[int]): Minimum number of observations required within the span.
             jitted (JittedOption): Option to control JIT compilation.
-            chunked (ChunkedOption): Option to control chunked computation.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the output.
+            chunked (ChunkedOption): Option to control chunked processing.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
 
         Returns:
             SeriesFrame: Calculated weighted moving mean values.
@@ -607,8 +607,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
             minp (Optional[int]): Minimum number of observations required.
             adjust (bool): Whether to adjust the weights.
             jitted (JittedOption): Option to control JIT compilation.
-            chunked (ChunkedOption): Option to control chunked computation.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the output.
+            chunked (ChunkedOption): Option to control chunked processing.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
 
         Returns:
             SeriesFrame: Calculated exponentially weighted moving mean values.
@@ -635,8 +635,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
             minp (Optional[int]): Minimum number of observations required.
             adjust (bool): Whether to adjust the weights.
             jitted (JittedOption): Option to control JIT compilation.
-            chunked (ChunkedOption): Option to control chunked computation.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the output.
+            chunked (ChunkedOption): Option to control chunked processing.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
 
         Returns:
             SeriesFrame: Calculated exponentially weighted moving standard deviation values.
@@ -662,8 +662,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
             minp (Optional[int]): Minimum number of observations required.
             adjust (bool): Whether to adjust the weights.
             jitted (JittedOption): Option to control JIT compilation.
-            chunked (ChunkedOption): Option to control chunked computation.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the output.
+            chunked (ChunkedOption): Option to control chunked processing.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
 
         Returns:
             SeriesFrame: Calculated weighted window moving mean values.
@@ -690,8 +690,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
             minp (Optional[int]): Minimum number of observations required.
             adjust (bool): Whether to adjust the weights.
             jitted (JittedOption): Option to control JIT compilation.
-            chunked (ChunkedOption): Option to control chunked computation.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the output.
+            chunked (ChunkedOption): Option to control chunked processing.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
 
         Returns:
             SeriesFrame: Calculated weighted window moving standard deviation values.
@@ -716,8 +716,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
             window (int): Window size for computing VIDYA.
             minp (Optional[int]): Minimum number of observations required within the window.
             jitted (JittedOption): Option to control JIT compilation.
-            chunked (ChunkedOption): Option to control chunked computation.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the output.
+            chunked (ChunkedOption): Option to control chunked processing.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
 
         Returns:
             SeriesFrame: Calculated VIDYA values.
@@ -745,8 +745,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
             minp (Optional[int]): Minimum number of observations required within the window.
             adjust (bool): Whether to adjust the weights during computation.
             jitted (JittedOption): Option to control JIT compilation.
-            chunked (ChunkedOption): Option to control chunked computation.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the output.
+            chunked (ChunkedOption): Option to control chunked processing.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
 
         Returns:
             SeriesFrame: Calculated moving average values.
@@ -779,8 +779,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
             adjust (bool): Whether to adjust the weights during computation.
             ddof (int): Delta degrees of freedom.
             jitted (JittedOption): Option to control JIT compilation.
-            chunked (ChunkedOption): Option to control chunked computation.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the output.
+            chunked (ChunkedOption): Option to control chunked processing.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
 
         Returns:
             SeriesFrame: Calculated moving standard deviation values.
@@ -813,10 +813,10 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 If None, uses the full series length.
             minp (Optional[int]): Minimum number of observations required within the window.
             ddof (int): Delta degrees of freedom.
-            broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting the data.
+            broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
             jitted (JittedOption): Option to control JIT compilation.
-            chunked (ChunkedOption): Option to control chunked computation.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the output.
+            chunked (ChunkedOption): Option to control chunked processing.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
 
         Returns:
             SeriesFrame: Calculated rolling covariance values.
@@ -862,10 +862,10 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 If None, uses the full data length.
             minp (Optional[int]): Minimum number of observations required in each window.
-            broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting inputs.
-            jitted (JittedOption): Option to control just-in-time compilation.
-            chunked (ChunkedOption): Option to control chunked computation.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the output.
+            broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
+            jitted (JittedOption): Option to control JIT compilation.
+            chunked (ChunkedOption): Option to control chunked processing.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
 
         Returns:
             SeriesFrame: The rolling correlation computed over the specified window.
@@ -910,10 +910,10 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 If None, uses the full series length.
             minp (Optional[int]): Minimum number of observations required per window.
-            broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting inputs.
-            jitted (JittedOption): Option to control just-in-time compilation.
-            chunked (ChunkedOption): Option to control chunked computation.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the output.
+            broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
+            jitted (JittedOption): Option to control JIT compilation.
+            chunked (ChunkedOption): Option to control chunked processing.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
 
         Returns:
             Tuple[SeriesFrame, SeriesFrame]: A tuple containing the slope and intercept arrays.
@@ -970,9 +970,9 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 If None, uses the full series length.
             minp (Optional[int]): Minimum number of observations required per window.
             pct (bool): If True, compute percentile rank; otherwise, compute ordinal rank.
-            jitted (JittedOption): Option to control just-in-time compilation.
-            chunked (ChunkedOption): Option to control chunked operations.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the output.
+            jitted (JittedOption): Option to control JIT compilation.
+            chunked (ChunkedOption): Option to control chunked processing.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
 
         Returns:
             SeriesFrame: The rolling rank result.
@@ -1057,9 +1057,9 @@ class GenericAccessor(BaseAccessor, Analyzable):
             min_similarity (float): Minimum similarity threshold; if the computed similarity
                 falls below this, returns NaN.
             minp (Optional[int]): Minimum number of valid data points required for computation.
-            jitted (JittedOption): Option to control just-in-time compilation.
+            jitted (JittedOption): Option to control JIT compilation.
             chunked (ChunkedOption): Option to control chunked processing.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the output.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
 
         Returns:
             SeriesFrame: The rolling pattern similarity result.
@@ -1134,13 +1134,13 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 If provided as a string, selects the corresponding Numba function
                 from `nb` with the suffix "_map_nb".
             *args: Positional arguments passed to the mapping function.
-            broadcast_named_args (KwargsLike): Additional named arguments for broadcasting templates across arrays.
-            broadcast_kwargs (KwargsLike): Keyword arguments controlling the broadcasting operation.
-            template_context (KwargsLike): Context dictionary for substituting templates in positional arguments.
-            jitted (JittedOption): Option specifying whether to control Numba JIT compilation.
-            chunked (ChunkedOption): Option specifying whether to execute the mapping function in a chunked manner.
-            wrapper (Optional[ArrayWrapper]): Array wrapper used to manage input and output arrays.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the output.
+            broadcast_named_args (KwargsLike): Additional named arguments for broadcasting.
+            broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
+            template_context (KwargsLike): Additional context for template substitution.
+            jitted (JittedOption): Option to control JIT compilation.
+            chunked (ChunkedOption): Option to control chunked processing.
+            wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
 
         Returns:
             SeriesFrame: The result of applying the mapping function to the input data, wrapped appropriately.
@@ -1271,13 +1271,13 @@ class GenericAccessor(BaseAccessor, Analyzable):
             axis (int): Axis along which to apply the function.
 
                 Use 1 for column-wise and 0 for row-wise operations.
-            broadcast_named_args (KwargsLike): Named arguments for broadcasting input arrays.
-            broadcast_kwargs (KwargsLike): Keyword arguments controlling broadcasting behavior.
-            template_context (KwargsLike): Context dictionary for template substitution in positional arguments.
-            jitted (JittedOption): Option to control or configure just-in-time compilation.
-            chunked (ChunkedOption): Option to control or configure chunked processing.
-            wrapper (Optional[ArrayWrapper]): Optional array wrapper used to format the output.
-            wrap_kwargs (KwargsLike): Keyword arguments provided to the output wrapper.
+            broadcast_named_args (KwargsLike): Additional named arguments for broadcasting.
+            broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
+            template_context (KwargsLike): Additional context for template substitution.
+            jitted (JittedOption): Option to control JIT compilation.
+            chunked (ChunkedOption): Option to control chunked processing.
+            wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
 
         Returns:
             SeriesFrame: The result of applying the function to the input data.
@@ -1440,13 +1440,13 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 Reduction function identifier or function.
             *args: Positional arguments passed to the reduction function.
             minp (Optional[int]): Minimum number of observations required in the window.
-            broadcast_named_args (KwargsLike): Positional arguments for named broadcasting.
+            broadcast_named_args (KwargsLike): Additional named arguments for broadcasting.
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
-            template_context (KwargsLike): Context for template substitution.
-            jitted (JittedOption): Configuration for just-in-time compilation.
-            chunked (ChunkedOption): Configuration for chunked execution.
-            wrapper (Optional[ArrayWrapper]): Array wrapper instance used to shape the output.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the output.
+            template_context (KwargsLike): Additional context for template substitution.
+            jitted (JittedOption): Option to control JIT compilation.
+            chunked (ChunkedOption): Option to control chunked processing.
+            wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
 
         Returns:
             SeriesFrame: The result of the rolling reduction.
@@ -1636,13 +1636,13 @@ class GenericAccessor(BaseAccessor, Analyzable):
             *args: Positional arguments passed to the reduction function.
             groupby_kwargs (KwargsLike): Keyword arguments for groupby operations when
                 using `pd.DataFrame.groupby`.
-            broadcast_named_args (KwargsLike): Additional named arguments to broadcast with the input arrays.
-            broadcast_kwargs (KwargsLike): Keyword arguments to control the broadcasting of input arrays.
-            template_context (KwargsLike): Context for substituting templates in parameters and arguments.
-            jitted (JittedOption): Option to control just-in-time compilation for the reduction function.
+            broadcast_named_args (KwargsLike): Additional named arguments for broadcasting.
+            broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
+            template_context (KwargsLike): Additional context for template substitution.
+            jitted (JittedOption): Option to control JIT compilation.
             chunked (ChunkedOption): Option to control chunked processing.
-            wrapper (Optional[ArrayWrapper]): Array wrapper instance used to shape the output.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the final reduced result.
+            wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
 
         Returns:
             SeriesFrame: The wrapped result after applying the groupby reduction.
@@ -1788,12 +1788,12 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 module using the `_transform_nb` suffix.
             *args: Positional arguments passed to `transform_func_nb`.
             groupby_kwargs (KwargsLike): Keyword arguments for the groupby operation.
-            broadcast_named_args (KwargsLike): Additional named arguments to broadcast to match the data shape.
-            broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting operations.
+            broadcast_named_args (KwargsLike): Additional named arguments for broadcasting.
+            broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
             template_context (KwargsLike): Additional context for template substitution.
             jitted (JittedOption): Option to control JIT compilation.
-            wrapper (Optional[ArrayWrapper]): Array wrapper for managing array operations.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the output.
+            wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
 
         Returns:
             SeriesFrame: Transformed data as a Series or DataFrame.
@@ -1916,13 +1916,11 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 `GenericAccessor.resample_to_index`.
             freq (Optional[FrequencyLike]): An optional frequency parameter that can override the default rule.
             resample_kwargs (KwargsLike): Keyword arguments for the `pd.DataFrame.resample` method.
-            broadcast_named_args (KwargsLike): Additional named arguments to broadcast during the resampling process.
-            broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting the named arguments.
-            template_context (KwargsLike): A context dictionary for substituting templates in the resampling rule.
-            wrapper (Optional[ArrayWrapper]): An optional array wrapper for reshaping.
-
-                If not provided, the instance's `wrapper` is used.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the output.
+            broadcast_named_args (KwargsLike): Additional named arguments for broadcasting.
+            broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
+            template_context (KwargsLike): Additional context for template substitution.
+            wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
             **kwargs: Keyword arguments passed to the reduction function.
 
         Usage:
@@ -2084,13 +2082,13 @@ class GenericAccessor(BaseAccessor, Analyzable):
             reduce_func_nb (Union[str, ReduceFunc, ReduceMetaFunc]): Function or name of the reduce function.
             apply_args (Optional[tuple]): Arguments passed to the apply function.
             reduce_args (Optional[tuple]): Arguments passed to the reduce function.
-            broadcast_named_args (KwargsLike): Keyword arguments for broadcasting.
-            broadcast_kwargs (KwargsLike): Keyword arguments controlling broadcasting behavior.
-            template_context (KwargsLike): Dictionary used for template substitution.
-            jitted (JittedOption): Option for Just-In-Time (JIT) compilation.
-            chunked (ChunkedOption): Option specifying chunked processing.
-            wrapper (Optional[ArrayWrapper]): Array wrapper for formatting the result.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the reduced output.
+            broadcast_named_args (KwargsLike): Additional named arguments for broadcasting.
+            broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
+            template_context (KwargsLike): Additional context for template substitution.
+            jitted (JittedOption): Option to control JIT compilation.
+            chunked (ChunkedOption): Option to control chunked processing.
+            wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
 
         Usage:
             * Using regular function:
@@ -2262,7 +2260,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             when `returns_array` is False.
 
         Args:
-            reduce_func_nb (Union[str, ReduceFunc, ..., ReduceGroupedToArrayMetaFunc]):
+            reduce_func_nb (Union[str, ReduceFunc, ReduceMetaFunc, ReduceToArrayFunc, ReduceToArrayMetaFunc, ReduceGroupedFunc, ReduceGroupedMetaFunc, ReduceGroupedToArrayFunc, ReduceGroupedToArrayMetaFunc]):
                 The reducing function to apply.
 
                 It can be a function or a string representing the suffix of a reducing
@@ -2281,12 +2279,12 @@ class GenericAccessor(BaseAccessor, Analyzable):
             to_index (bool): True to convert positions to index labels when `returns_idx` is True.
             broadcast_named_args (KwargsLike): Additional named arguments for broadcasting.
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
-            template_context (KwargsLike): Additional context for template substitution within arguments.
-            jitted (JittedOption): Option to control JIT (Just-In-Time) compilation.
-            chunked (ChunkedOption): Option to control chunked execution of the reduction.
-            wrapper (Optional[ArrayWrapper]): The array wrapper instance for handling array operations.
-            group_by (GroupByLike): Grouping specification for performing grouped reduction.
-            wrap_kwargs (KwargsLike): Keyword arguments for the wrapper's reduction method.
+            template_context (KwargsLike): Additional context for template substitution.
+            jitted (JittedOption): Option to control JIT compilation.
+            chunked (ChunkedOption): Option to control chunked processing.
+            wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
+            group_by (GroupByLike): Grouping specification.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
 
         Returns:
             MaybeSeriesFrame: The reduced data as a Series or DataFrame.
@@ -2518,12 +2516,12 @@ class GenericAccessor(BaseAccessor, Analyzable):
             reduce_func_nb (Union[str, ReduceFunc, ProximityReduceMetaFunc]):
                 The reduction function or its string identifier.
             *args: Positional arguments for the reduction function.
-            broadcast_named_args (KwargsLike): Additional named arguments for broadcasting inputs.
-            broadcast_kwargs (KwargsLike): Keyword arguments controlling broadcasting.
-            template_context (KwargsLike): Context for template substitution in positional arguments.
-            jitted (JittedOption): Option to control JIT compilation of the reduction function.
-            wrapper (Optional[ArrayWrapper]): Array wrapper for reshaping inputs and formatting the output.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the output.
+            broadcast_named_args (KwargsLike): Additional named arguments for broadcasting.
+            broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
+            template_context (KwargsLike): Additional context for template substitution.
+            jitted (JittedOption): Option to control JIT compilation.
+            wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
 
         Returns:
             Frame: The resulting frame after applying the proximity reduction.
@@ -2662,14 +2660,14 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 If provided as a string, it is converted into a function by appending
                 "_reduce_nb" and retrieving it from `nb`.
             *args: Positional arguments passed to the squeeze function.
-            broadcast_named_args (KwargsLike): Additional named arguments for broadcasting arrays.
-            broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting operations.
-            template_context (KwargsLike): Context for substituting templates in the positional arguments.
-            jitted (JittedOption): Option to control just-in-time compilation.
-            chunked (ChunkedOption): Option to control chunked processing of the operation.
-            wrapper (Optional[ArrayWrapper]): Array wrapper used for managing data shape and wrapping the output.
-            group_by (GroupByLike): Grouping identifier to split the columns into groups.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the output.
+            broadcast_named_args (KwargsLike): Additional named arguments for broadcasting.
+            broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
+            template_context (KwargsLike): Additional context for template substitution.
+            jitted (JittedOption): Option to control JIT compilation.
+            chunked (ChunkedOption): Option to control chunked processing.
+            wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
+            group_by (GroupByLike): Grouping specification.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
 
         Returns:
             MaybeSeriesFrame: The squeezed data as a Series or DataFrame.
@@ -2806,8 +2804,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 Accepts 'C' or 'F'.
             jitted (JittedOption): Option to control JIT compilation.
-            group_by (GroupByLike): Identifier for grouping columns.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the output.
+            group_by (GroupByLike): Grouping specification.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
 
         Returns:
             MaybeSeriesFrame: The flattened data as a Series or DataFrame.
@@ -2899,9 +2897,9 @@ class GenericAccessor(BaseAccessor, Analyzable):
             target_rbound (Union[bool, str, IndexLike]): Determines the right boundary of the target index.
 
                 If set to a string "pandas", the resampler uses the pandas-defined right bound.
-            jitted (JittedOption): Option to control just-in-time compilation.
+            jitted (JittedOption): Option to control JIT compilation.
             chunked (ChunkedOption): Option to control chunked processing.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the output.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
             silence_warnings (Optional[bool]): Flag to suppress warnings during resampling.
 
         Returns:
@@ -3082,15 +3080,13 @@ class GenericAccessor(BaseAccessor, Analyzable):
             *args: Positional arguments passed to the reduction function.
             freq (Union[None, bool, FrequencyLike]): Frequency parameter used during resampling.
             before (bool): If True, use index ranges preceding the target index.
-            broadcast_named_args (KwargsLike): Dictionary of named arrays or values
-                used for template substitution.
-            broadcast_kwargs (KwargsLike): Dictionary of keyword arguments for broadcasting.
-            template_context (KwargsLike): Context dictionary for template substitution.
-            jitted (JittedOption): Option to control JIT compilation of the reduction function.
-            chunked (ChunkedOption): Option to control chunked execution of the reduction function.
-            wrapper (Optional[ArrayWrapper]): Array wrapper for data manipulation;
-                if None, uses `cls_or_self.wrapper`.
-            wrap_kwargs (KwargsLike): Keyword arguments supplied when wrapping the result.
+            broadcast_named_args (KwargsLike): Additional named arguments for broadcasting.
+            broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
+            template_context (KwargsLike): Additional context for template substitution.
+            jitted (JittedOption): Option to control JIT compilation.
+            chunked (ChunkedOption): Option to control chunked processing.
+            wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
             silence_warnings (Optional[bool]): If True, suppress warnings during resampling.
 
         Returns:
@@ -3289,14 +3285,14 @@ class GenericAccessor(BaseAccessor, Analyzable):
             *args: Positional arguments passed to the reduction function.
             closed_lbound (bool): Indicates if the lower bound of the interval is inclusive.
             closed_rbound (bool): Indicates if the upper bound of the interval is inclusive.
-            broadcast_named_args (KwargsLike): Named arguments used for broadcasting input arrays.
-            broadcast_kwargs (KwargsLike): Keyword arguments to configure the broadcasting process.
-            template_context (KwargsLike): Context for template substitution in indices and additional arguments.
-            jitted (JittedOption): Option to control just-in-time compilation for the reduction function.
-            chunked (ChunkedOption): Option to control chunked processing of the reduction operation.
-            wrapper (Optional[ArrayWrapper]): Array wrapper used to convert input data and wrap the output.
+            broadcast_named_args (KwargsLike): Additional named arguments for broadcasting.
+            broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
+            template_context (KwargsLike): Additional context for template substitution.
+            jitted (JittedOption): Option to control JIT compilation.
+            chunked (ChunkedOption): Option to control chunked processing.
+            wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
             wrap_with_lbound (Optional[bool]): Determines if the lower bound index is used for wrapping the output.
-            wrap_kwargs (KwargsLike): Keyword arguments for the wrapping process.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
 
         Returns:
             SeriesFrame: A resampled series or frame with aggregated values,
@@ -3478,10 +3474,10 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
         Args:
             use_jitted (Optional[bool]): Whether to use jitted execution.
-            jitted (JittedOption): Jitting control option.
-            chunked (ChunkedOption): Option for chunked computation.
-            group_by (GroupByLike): Criteria for grouping elements during reduction.
-            wrap_kwargs (KwargsLike): Keyword arguments for result wrapping.
+            jitted (JittedOption): Option to control JIT compilation.
+            chunked (ChunkedOption): Option to control chunked processing.
+            group_by (GroupByLike): Grouping specification.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
 
         Returns:
             MaybeSeries: The minimum value computed from non-NaN elements.
@@ -3526,10 +3522,10 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
         Args:
             use_jitted (Optional[bool]): Whether to use jitted execution.
-            jitted (JittedOption): Jitting control option.
-            chunked (ChunkedOption): Option for chunked computation.
-            group_by (GroupByLike): Criteria for grouping elements during reduction.
-            wrap_kwargs (KwargsLike): Keyword arguments for result wrapping.
+            jitted (JittedOption): Option to control JIT compilation.
+            chunked (ChunkedOption): Option to control chunked processing.
+            group_by (GroupByLike): Grouping specification.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
 
         Returns:
             MaybeSeries: The maximum value computed from non-NaN elements.
@@ -3574,10 +3570,10 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
         Args:
             use_jitted (Optional[bool]): Whether to use jitted execution.
-            jitted (JittedOption): Jitting control option.
-            chunked (ChunkedOption): Option for chunked computation.
-            group_by (GroupByLike): Criteria for grouping elements during reduction.
-            wrap_kwargs (KwargsLike): Keyword arguments for result wrapping.
+            jitted (JittedOption): Option to control JIT compilation.
+            chunked (ChunkedOption): Option to control chunked processing.
+            group_by (GroupByLike): Grouping specification.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
 
         Returns:
             MaybeSeries: The mean value computed from non-NaN elements.
@@ -3622,10 +3618,10 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
         Args:
             use_jitted (Optional[bool]): Whether to use jitted execution.
-            jitted (JittedOption): Jitting control option.
-            chunked (ChunkedOption): Option for chunked computation.
-            group_by (GroupByLike): Criteria for grouping elements during reduction.
-            wrap_kwargs (KwargsLike): Keyword arguments for result wrapping.
+            jitted (JittedOption): Option to control JIT compilation.
+            chunked (ChunkedOption): Option to control chunked processing.
+            group_by (GroupByLike): Grouping specification.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
 
         Returns:
             MaybeSeries: The median value computed from non-NaN elements.
@@ -3672,10 +3668,10 @@ class GenericAccessor(BaseAccessor, Analyzable):
         Args:
             ddof (int): Delta degrees of freedom for standard deviation calculation.
             use_jitted (Optional[bool]): Whether to use jitted execution.
-            jitted (JittedOption): Jitting control option.
-            chunked (ChunkedOption): Option for chunked computation.
-            group_by (GroupByLike): Criteria for grouping elements during reduction.
-            wrap_kwargs (KwargsLike): Keyword arguments for result wrapping.
+            jitted (JittedOption): Option to control JIT compilation.
+            chunked (ChunkedOption): Option to control chunked processing.
+            group_by (GroupByLike): Grouping specification.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
 
         Returns:
             MaybeSeries: The standard deviation computed from non-NaN elements.
@@ -3721,10 +3717,10 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
         Args:
             use_jitted (Optional[bool]): Whether to use jitted execution.
-            jitted (JittedOption): Jitting control option.
-            chunked (ChunkedOption): Option for chunked computation.
-            group_by (GroupByLike): Criteria for grouping elements during reduction.
-            wrap_kwargs (KwargsLike): Keyword arguments for result wrapping.
+            jitted (JittedOption): Option to control JIT compilation.
+            chunked (ChunkedOption): Option to control chunked processing.
+            group_by (GroupByLike): Grouping specification.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
 
         Returns:
             MaybeSeries: The sum computed from non-NaN elements.
@@ -3771,10 +3767,10 @@ class GenericAccessor(BaseAccessor, Analyzable):
             use_jitted (Optional[bool]): Flag to use the jitted implementation.
 
                 If unspecified, the default setting is used.
-            jitted (JittedOption): Option for controlling JIT compilation.
-            chunked (ChunkedOption): Option for processing in chunks.
-            group_by (GroupByLike): Parameter to specify data grouping.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            jitted (JittedOption): Option to control JIT compilation.
+            chunked (ChunkedOption): Option to control chunked processing.
+            group_by (GroupByLike): Grouping specification.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
 
         Returns:
             MaybeSeries: The count computed from non-NaN elements.
@@ -3820,10 +3816,10 @@ class GenericAccessor(BaseAccessor, Analyzable):
             other (SeriesFrame): Series or frame to compute covariance with.
             ddof (int): Degrees of freedom for the covariance calculation.
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
-            jitted (JittedOption): Option for controlling JIT compilation.
-            chunked (ChunkedOption): Option for processing in chunks.
-            group_by (GroupByLike): Parameter to specify data grouping.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            jitted (JittedOption): Option to control JIT compilation.
+            chunked (ChunkedOption): Option to control chunked processing.
+            group_by (GroupByLike): Grouping specification.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
 
         Returns:
             MaybeSeries: The covariance computed from non-NaN elements.
@@ -3864,10 +3860,10 @@ class GenericAccessor(BaseAccessor, Analyzable):
         Args:
             other (SeriesFrame): Series or frame to compute correlation with.
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
-            jitted (JittedOption): Option for controlling JIT compilation.
-            chunked (ChunkedOption): Option for processing in chunks.
-            group_by (GroupByLike): Parameter to specify data grouping.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            jitted (JittedOption): Option to control JIT compilation.
+            chunked (ChunkedOption): Option to control chunked processing.
+            group_by (GroupByLike): Grouping specification.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
 
         Returns:
             MaybeSeries: The correlation coefficient computed from non-NaN elements.
@@ -3906,9 +3902,9 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
         Args:
             pct (bool): Flag to compute percentile ranks instead of raw rank values.
-            jitted (JittedOption): Option for controlling JIT compilation.
-            chunked (ChunkedOption): Option for processing in chunks.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            jitted (JittedOption): Option to control JIT compilation.
+            chunked (ChunkedOption): Option to control chunked processing.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
 
         Returns:
             SeriesFrame: The rank as a pandas Series or DataFrame.
@@ -3932,10 +3928,10 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
         Args:
             order (str): Memory order for processing the array.
-            jitted (JittedOption): Option for controlling JIT compilation.
-            chunked (ChunkedOption): Option for processing in chunks.
-            group_by (GroupByLike): Parameter to specify data grouping.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            jitted (JittedOption): Option to control JIT compilation.
+            chunked (ChunkedOption): Option to control chunked processing.
+            group_by (GroupByLike): Grouping specification.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
 
         Returns:
             SeriesFrame: The labeled index as a pandas Series or DataFrame.
@@ -3976,10 +3972,10 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
         Args:
             order (str): Memory order for processing the array.
-            jitted (JittedOption): Option for controlling JIT compilation.
-            chunked (ChunkedOption): Option for processing in chunks.
-            group_by (GroupByLike): Parameter to specify data grouping.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            jitted (JittedOption): Option to control JIT compilation.
+            chunked (ChunkedOption): Option to control chunked processing.
+            group_by (GroupByLike): Grouping specification.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
 
         Returns:
             SeriesFrame: The labeled index as a pandas Series or DataFrame.
@@ -4024,13 +4020,15 @@ class GenericAccessor(BaseAccessor, Analyzable):
         `vectorbtpro.generic.nb.apply_reduce.describe_reduce_nb`.
         For details on the percentiles parameter, please refer to `pd.DataFrame.describe`.
 
+        See `vectorbtpro.generic.nb.base.value_counts_nb` for details.
+
         Args:
             percentiles (Optional[ArrayLike]): Percentiles to include in the summary.
             ddof (int): Delta degrees of freedom used in the computation of the standard deviation.
-            jitted (JittedOption): Option to control just-in-time compilation.
-            chunked (ChunkedOption): Option to process the data in chunks.
-            group_by (GroupByLike): Criteria for grouping the data before reduction.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the output.
+            jitted (JittedOption): Option to control JIT compilation.
+            chunked (ChunkedOption): Option to control chunked processing.
+            group_by (GroupByLike): Grouping specification.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
 
         Returns:
             SeriesFrame: The descriptive statistics as a pandas Series or DataFrame.
@@ -4103,8 +4101,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             right (bool): Whether to treat the bins as right-inclusive.
             return_mapping (bool): Whether to return a mapping of bin indices to bin
                 intervals along with the digitized data.
-            wrap_kwargs (KwargsLike): Keyword arguments passed to
-                `vectorbtpro.base.wrapping.ArrayWrapper.wrap` for output wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
 
         Returns:
             Union[SeriesFrame, Tuple[SeriesFrame, dict]]: The digitized data.
@@ -4192,19 +4189,12 @@ class GenericAccessor(BaseAccessor, Analyzable):
             sort (bool): If True, sort counts by frequency.
             ascending (bool): If True, sort in ascending order when sorting by frequency.
             dropna (bool): If True, exclude counts for missing values (NaN).
-            group_by (GroupByLike): Grouping specification for columns.
-
-                See `vectorbtpro.base.grouping.base.Grouper` for details.
+            group_by (GroupByLike): Grouping specification.
             mapping (Union[None, bool, MappingLike]): Mapping to relabel unique values.
             incl_all_keys (bool): If True, include all keys from the mapping even if they are absent in the data.
-            jitted (JittedOption): Option for JIT compilation of underlying routines.
-
-                See `vectorbtpro.generic.nb.base.value_counts_nb` for details.
-            chunked (ChunkedOption): Option for applying chunked processing.
-
-                See `vectorbtpro.utils.chunking.resolve_chunked` for details.
-            wrap_kwargs (KwargsLike): Keyword arguments passed to
-                `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
+            jitted (JittedOption): Option to control JIT compilation.
+            chunked (ChunkedOption): Option to control chunked processing.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
             **kwargs: Keyword arguments passed to `vectorbtpro.utils.mapping.apply_mapping`.
 
         Returns:
@@ -4361,16 +4351,15 @@ class GenericAccessor(BaseAccessor, Analyzable):
     ) -> tp.SeriesFrame:
         """Remove the mean value from the data array.
 
-        Args:
-            jitted (JittedOption): Option for JIT compilation of the demean routine.
+        See `vectorbtpro.generic.nb.base.demean_nb` for details.
 
-                See `vectorbtpro.generic.nb.base.demean_nb` for details.
-            chunked (ChunkedOption): Option for applying chunked processing.
+        Args:
+            jitted (JittedOption): Option to control JIT compilation.
+            chunked (ChunkedOption): Option to control chunked processing.
             group_by (GroupByLike): Grouping specification.
 
                 If provided, the data is demeaned separately for each group.
-            wrap_kwargs (KwargsLike): Keyword arguments passed to
-                `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
 
         Returns:
             SeriesFrame: The demeaned data as a Series or DataFrame.
@@ -4393,7 +4382,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
         Args:
             transformer (Transformer): An instance with `transform` and `fit_transform` methods.
-            wrap_kwargs (KwargsLike): Keyword arguments for result wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
             **kwargs: Keyword arguments passed to the transformer methods.
 
         Returns:
@@ -4457,9 +4446,9 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
         Args:
             base (float): The base value to rebase the series.
-            jitted (JittedOption): Option for JIT compilation.
-            chunked (ChunkedOption): Option for chunking.
-            wrap_kwargs (KwargsLike): Keyword arguments for result wrapping.
+            jitted (JittedOption): Option to control JIT compilation.
+            chunked (ChunkedOption): Option to control chunked processing.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
 
         Returns:
             SeriesFrame: The rebased data as a Series or DataFrame.
@@ -4483,9 +4472,9 @@ class GenericAccessor(BaseAccessor, Analyzable):
         Computes the drawdown series for the dataset.
 
         Args:
-            jitted (JittedOption): Option for JIT compilation.
-            chunked (ChunkedOption): Option for chunking.
-            wrap_kwargs (KwargsLike): Keyword arguments for result wrapping.
+            jitted (JittedOption): Option to control JIT compilation.
+            chunked (ChunkedOption): Option to control chunked processing.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
 
         Returns:
             SeriesFrame: The drawdown series as a Series or DataFrame.
@@ -4502,7 +4491,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
         Args:
             *args: Positional arguments passed to `vectorbtpro.generic.ranges.Ranges.from_array`.
-            wrapper_kwargs (KwargsLike): Keyword arguments for result wrapping.
+            wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
             **kwargs: Keyword arguments passed to `vectorbtpro.generic.ranges.Ranges.from_array`.
 
         Returns:
@@ -4549,7 +4538,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         Args:
             dropna (bool): Whether to drop NaN values.
             dtype (Optional[DTypeLike]): Data type for the mapped array.
-            group_by (GroupByLike): Parameter for grouping.
+            group_by (GroupByLike): Grouping specification.
             **kwargs: Keyword arguments passed to `vectorbtpro.records.mapped_array.MappedArray`.
 
         Returns:
@@ -4697,9 +4686,9 @@ class GenericAccessor(BaseAccessor, Analyzable):
             wait (int): Number of periods to wait before confirming a cross.
             dropna (bool): Flag to determine whether to handle missing values.
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
-            jitted (JittedOption): Option for just-in-time compilation.
-            chunked (ChunkedOption): Option for chunked processing.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            jitted (JittedOption): Option to control JIT compilation.
+            chunked (ChunkedOption): Option to control chunked processing.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
 
         Returns:
             SeriesFrame: Boolean series or dataframe indicating crossing events.
@@ -4771,9 +4760,9 @@ class GenericAccessor(BaseAccessor, Analyzable):
             wait (int): Number of periods to wait before confirming a cross.
             dropna (bool): Flag to determine whether to handle missing values.
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
-            jitted (JittedOption): Option for just-in-time compilation.
-            chunked (ChunkedOption): Option for chunked processing.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            jitted (JittedOption): Option to control JIT compilation.
+            chunked (ChunkedOption): Option to control chunked processing.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
 
         Returns:
             SeriesFrame: Boolean series or dataframe indicating crossing events.
@@ -5067,7 +5056,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             column (Optional[Label]): Column label for plotting.
             by_level (Optional[Level]): Level at which to unstack the data, if applicable.
             trace_names (TraceNames): Names for the histogram traces.
-            group_by (GroupByLike): Specification for grouping data.
+            group_by (GroupByLike): Grouping specification.
             return_fig (bool): Determines whether to return the figure.
             **kwargs: Keyword arguments passed to the histogram constructor.
 
@@ -5125,7 +5114,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             column (Optional[Label]): Column label for plotting.
             by_level (Optional[Level]): Level at which to unstack the data, if applicable.
             trace_names (TraceNames): Names for the box plot traces.
-            group_by (GroupByLike): Specification for grouping data.
+            group_by (GroupByLike): Grouping specification.
             return_fig (bool): Determines whether to return the figure.
             **kwargs: Keyword arguments passed to the box plot constructor.
 
@@ -5194,9 +5183,9 @@ class GenericAccessor(BaseAccessor, Analyzable):
             pos_trace_kwargs (KwargsLike): Keyword arguments for plotting the positive area between the series.
             neg_trace_kwargs (KwargsLike): Keyword arguments for plotting the negative area between the series.
             hidden_trace_kwargs (KwargsLike): Keyword arguments for plotting hidden lines.
-            add_trace_kwargs (KwargsLike): Keyword arguments passed to the Plotly's `add_trace` method.
-            fig (Optional[BaseFigure]): Figure instance to which traces are added.
-            **layout_kwargs: Keyword arguments for updating the figure layout.
+            add_trace_kwargs (KwargsLike): Keyword arguments for adding traces to the figure.
+            fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
+            **layout_kwargs: Keyword arguments for configuring the figure layout.
 
         Returns:
             BaseFigure: A Plotly figure with the main series, comparative lines, and filled areas.
@@ -5346,9 +5335,9 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 used to plot the line.
             heatmap_kwargs (KwargsLike): Keyword arguments for `GenericDFAccessor.heatmap`
                 used to generate the heatmap.
-            add_trace_kwargs (KwargsLike): Keyword arguments passed to the Plotly's `add_trace` method.
-            fig (Optional[BaseFigure]): Figure instance to which traces are added.
-            **layout_kwargs: Keyword arguments for updating the figure layout.
+            add_trace_kwargs (KwargsLike): Keyword arguments for adding traces to the figure.
+            fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
+            **layout_kwargs: Keyword arguments for configuring the figure layout.
 
         Returns:
             BaseFigure: A Plotly figure with the line plot and heatmap overlay.
@@ -5442,7 +5431,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             active (int): Index of the trace to display initially in slider-based plots.
             slider_labels (Optional[Labels]): Labels for the slider steps.
             return_fig (bool): If True, return the figure; otherwise, return the trace updater.
-            fig (Optional[BaseFigure]): Figure object to update with the heatmap.
+            fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
             **kwargs: Keyword arguments passed to `vectorbtpro.generic.plotting.Heatmap`.
 
         Returns:
@@ -5677,7 +5666,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             active (int): Index of the active slider step.
             scene_name (str): Name for the scene in the figure layout.
             fillna (Optional[Number]): Value to replace NaNs in the data.
-            fig (Optional[BaseFigure]): Figure object to update; if None, a new figure is created.
+            fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
             return_fig (bool): If True, return the figure; otherwise, return the volume object.
             **kwargs: Keyword arguments passed to `vectorbtpro.generic.plotting.Volume`.
 
@@ -5823,7 +5812,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             line_shape_kwargs (KwargsLike): Keyword arguments for customizing the reference line.
             xref (str): X-axis reference for the added line shape.
             yref (str): Y-axis reference for the added line shape.
-            fig (Optional[BaseFigure]): Figure object to update; if None, a new figure is created.
+            fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
             **kwargs: Keyword arguments passed to `GenericAccessor.scatterplot`.
 
         Returns:
@@ -5875,11 +5864,9 @@ class GenericAccessor(BaseAccessor, Analyzable):
             colorway (Union[None, str, Sequence[str]]): Name of a built-in qualitative
                 color palette or a sequence of colors.
             trace_kwargs (KwargsLike): Keyword arguments for configuring each `plotly.graph_objects.Scatter` trace.
-            add_trace_kwargs (KwargsLike): Keyword arguments for the Plotly's `add_trace` method.
-            fig (Optional[BaseFigure]): Figure to which traces are added.
-
-                If None, a new figure is created.
-            **layout_kwargs: Keyword arguments to update the figure layout.
+            add_trace_kwargs (KwargsLike): Keyword arguments for adding traces to the figure.
+            fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
+            **layout_kwargs: Keyword arguments for configuring the figure layout.
 
         Returns:
             BaseFigure: The generated stacked area chart.
@@ -6023,9 +6010,9 @@ class GenericAccessor(BaseAccessor, Analyzable):
             pattern_trace_kwargs (KwargsLike): Keyword arguments for the pattern trace.
             lower_max_error_trace_kwargs (KwargsLike): Keyword arguments for the lower error bound trace.
             upper_max_error_trace_kwargs (KwargsLike): Keyword arguments for the upper error bound trace.
-            add_trace_kwargs (KwargsLike): Keyword arguments when adding traces.
+            add_trace_kwargs (KwargsLike): Keyword arguments for adding traces to the figure.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
-            **layout_kwargs: Keyword arguments for updating the figure layout.
+            **layout_kwargs: Keyword arguments for configuring the figure layout.
 
         Returns:
             BaseFigure: The figure object with the plotted pattern and error bands.
@@ -6346,7 +6333,7 @@ class GenericSRAccessor(GenericAccessor, BaseSRAccessor):
             max_error (ArrayLike): Maximum allowed error.
             max_error_interp_mode (Union[None, int, str]): Interpolation mode for maximum error,
                 mapped using `vectorbtpro.generic.enums.InterpMode` if provided.
-            jitted (JittedOption): Option for just-in-time compilation.
+            jitted (JittedOption): Option to control JIT compilation.
 
         Returns:
             Tuple[Series, Series]: A tuple containing the fitted pattern series and the maximum error series.
@@ -6404,8 +6391,8 @@ class GenericSRAccessor(GenericAccessor, BaseSRAccessor):
             max_out_len (Optional[int]): Maximum length of the output.
             reset_index (bool): Whether to reset the index of the resulting series.
             return_uptrend (bool): Whether to return the uptrend series along with the Renko series.
-            jitted (JittedOption): Option for just-in-time compilation.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the output.
+            jitted (JittedOption): Option to control JIT compilation.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
 
         Returns:
             Union[Series, Tuple[Series, Series]]: The Renko series or a tuple containing
@@ -6452,8 +6439,8 @@ class GenericSRAccessor(GenericAccessor, BaseSRAccessor):
             start_value (Optional[float]): The starting value for the Renko chart.
             max_out_len (Optional[int]): Maximum length of the output.
             reset_index (bool): Whether to reset the index of the resulting DataFrame.
-            jitted (JittedOption): Option for just-in-time compilation.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the output.
+            jitted (JittedOption): Option to control JIT compilation.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
 
         Returns:
             Frame: A DataFrame representing the OHLC Renko bars with columns
@@ -6645,6 +6632,7 @@ class GenericDFAccessor(GenericAccessor, BaseDFAccessor):
             plot_lower (Union[bool, str, Callable]): Specification for the lower band.
 
                 Accepts:
+
                 * True: Compute using the default "20%" quantile.
                 * False: Do not plot the band.
                 * str: Use a custom band identifier.
@@ -6652,6 +6640,7 @@ class GenericDFAccessor(GenericAccessor, BaseDFAccessor):
             plot_middle (Union[bool, str, Callable]): Specification for the middle band.
 
                 Accepts:
+
                 * True: Compute using the default "50%" quantile.
                 * False: Do not plot the band.
                 * str: Use a custom band identifier.
@@ -6659,6 +6648,7 @@ class GenericDFAccessor(GenericAccessor, BaseDFAccessor):
             plot_upper (Union[bool, str, Callable]): Specification for the upper band.
 
                 Accepts:
+
                 * True: Compute using the default "80%" quantile.
                 * False: Do not plot the band.
                 * str: Use a custom band identifier.
@@ -6666,6 +6656,7 @@ class GenericDFAccessor(GenericAccessor, BaseDFAccessor):
             plot_aux_middle (Union[bool, str, Callable]): Specification for an auxiliary middle band.
 
                 Accepts:
+
                 * True: Compute using "mean".
                 * False: Do not plot the band.
                 * str: Use a custom band identifier.
@@ -6674,6 +6665,7 @@ class GenericDFAccessor(GenericAccessor, BaseDFAccessor):
             colorize (Union[bool, str, Callable]): Strategy for colorizing projections or bands.
 
                 Accepts:
+
                 * False: Do not colorize.
                 * True or "median": Colorize by median.
                 * "mean": Colorize by mean.
@@ -6685,9 +6677,9 @@ class GenericDFAccessor(GenericAccessor, BaseDFAccessor):
             middle_trace_kwargs (KwargsLike): Keyword arguments for the middle band trace.
             lower_trace_kwargs (KwargsLike): Keyword arguments for the lower band trace.
             aux_middle_trace_kwargs (KwargsLike): Keyword arguments for the auxiliary middle band trace.
-            add_trace_kwargs (KwargsLike): Keyword arguments for adding traces.
-            fig (Optional[BaseFigure]): Figure instance to update; a new figure is created if None.
-            **layout_kwargs: Additional layout keyword arguments for the figure.
+            add_trace_kwargs (KwargsLike): Keyword arguments for adding traces to the figure.
+            fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
+            **layout_kwargs: Keyword arguments for configuring the figure layout.
 
         Returns:
             BaseFigure: The updated figure with plotted projections and bands.

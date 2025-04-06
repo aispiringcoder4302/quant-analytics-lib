@@ -1096,10 +1096,29 @@ Your goal is to refine (rewrite for clarity, correctness, consistent format and 
 - **Always use backticks around code references**, e.g., "Keyword arguments for `make_subplots`" 
     instead of "Keyword arguments for make_subplots".
 - **If a "Usage" section exists**, place it **at the end** of the docstring.
+- If a function primarily forwards its arguments to another function, that target function should be referenced.
+- If an argument is (a field from) a named tuple or an enumerated type, the type should be referenced.
 
 ### 5. Special Arguments
 
 - **Document the function(s)** that will receive `*args` or `**kwargs`, if known.
+- Use the following descriptions if the argument name and type hint match **exactly**:
+    ```
+    broadcast_named_args (KwargsLike): Additional named arguments for broadcasting.
+    broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
+    template_context (KwargsLike): Additional context for template substitution.
+    jitted (JittedOption): Option to control JIT compilation.
+    chunked (ChunkedOption): Option to control chunked processing.
+    wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
+    wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+    wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
+    group_by (GroupByLike): Grouping specification.
+    sim_start (Optional[ArrayLike]): Simulation start.
+    sim_end (Optional[ArrayLike]): Simulation end.
+    fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
+    add_trace_kwargs (KwargsLike): Keyword arguments for adding traces to the figure.
+    **layout_kwargs: Keyword arguments for configuring the figure layout.
+    ```
 
 ### 6. Miscellaneous
 

@@ -750,7 +750,7 @@ class TVData(RemoteData):
                 filtering symbols based on field data.
             groups (Optional[MaybeIterable[Dict[str, MaybeIterable[str]]]]): Single dictionary
                 or list of dictionaries defining groups for filtering symbols.
-            template_context (KwargsLike): Additional context to pass when using a template in `filter_by`.
+            template_context (KwargsLike): Additional context for template substitution.
             return_field_data (bool): If True, return additional field data instead of only symbol codes.
             **scanner_kwargs: Keyword arguments passed to the market scanner.
 

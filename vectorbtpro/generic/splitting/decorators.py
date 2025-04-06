@@ -84,7 +84,7 @@ def split(
             when `index` is not supplied.
         takeable_args (Optional[MaybeIterable[AnnArgQuery]]): Argument name(s) or position(s)
             to be wrapped with `vectorbtpro.generic.splitting.base.Takeable`.
-        template_context (KwargsLike): Context information passed to the splitter during construction.
+        template_context (KwargsLike): Additional context for template substitution.
         forward_kwargs_as (KwargsLike): Mapping for renaming keyword arguments when forwarding them.
         return_splitter (bool): If True, returns the constructed splitter instance instead of
             applying it to the function.
@@ -378,7 +378,7 @@ def cv_split(
         skip_errored (bool): If True, skips the current iteration upon encountering
             an error or `NoResultsException`, omitting it from the final results.
         raise_no_results (bool): If True, raises a `NoResultsException` when no valid results are obtained.
-        template_context (KwargsLike): Context for template substitution, augmented with split-related values.
+        template_context (KwargsLike): Additional context for template substitution.
         **split_kwargs: Keyword arguments for the splitting functionality from
             `vectorbtpro.generic.splitting.base.Splitter.apply`.
     

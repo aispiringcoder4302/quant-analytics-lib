@@ -2620,8 +2620,8 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             add_trace_kwargs (dict): Keyword arguments passed to `add_trace`.
             xref (str): X coordinate axis.
             yref (str): Y coordinate axis.
-            fig (Figure or FigureWidget): Figure to add traces to.
-            **layout_kwargs: Keyword arguments for layout.
+            fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
+            **layout_kwargs: Keyword arguments for configuring the figure layout.
 
         Usage:
             ```pycon

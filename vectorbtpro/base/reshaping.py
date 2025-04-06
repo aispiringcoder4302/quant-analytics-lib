@@ -1158,12 +1158,12 @@ def broadcast(
         keep_wrap_default (Optional[bool]): Whether to retain wrapping with
             `vectorbtpro.base.reshaping.Default` for default values.
         return_wrapper (bool): Whether to also return the associated wrapper.
-        wrapper_kwargs (KwargsLike): Keyword arguments for `vectorbtpro.base.wrapping.ArrayWrapper`.
+        wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
         ignore_sr_names (Optional[bool]): Whether to ignore Series names during broadcasting via `broadcast_index`.
         ignore_ranges (Optional[bool]): Whether to ignore range attributes during broadcasting via `broadcast_index`.
         check_index_names (Optional[bool]): Whether to check index names during broadcasting via `broadcast_index`.
         clean_index_kwargs (KwargsLike): Keyword arguments for `vectorbtpro.base.indexes.clean_index`.
-        template_context (KwargsLike): Context used for template substitution.
+        template_context (KwargsLike): Additional context for template substitution.
 
     For defaults, see `vectorbtpro._settings.broadcasting`.
 
