@@ -314,32 +314,6 @@ def combine_objs(
 
 
 IndicatorBaseT = tp.TypeVar("IndicatorBaseT", bound="IndicatorBase")
-CacheOutputT = tp.Any
-RawOutputT = tp.Tuple[
-    tp.List[tp.Array2d],
-    tp.List[tp.Tuple[tp.ParamValue, ...]],
-    int,
-    tp.List[tp.Any],
-]
-InputListT = tp.List[tp.Array2d]
-InputMapperT = tp.Optional[tp.Array1d]
-InOutputListT = tp.List[tp.Array2d]
-OutputListT = tp.List[tp.Array2d]
-ParamListT = tp.List[tp.List[tp.ParamValue]]
-MapperListT = tp.List[tp.Index]
-OtherListT = tp.List[tp.Any]
-PipelineOutputT = tp.Tuple[
-    ArrayWrapper,
-    InputListT,
-    InputMapperT,
-    InOutputListT,
-    OutputListT,
-    ParamListT,
-    MapperListT,
-    OtherListT,
-]
-RunOutputT = tp.Union[IndicatorBaseT, tp.Tuple[tp.Any, ...], RawOutputT, CacheOutputT]
-RunCombsOutputT = tp.Tuple[IndicatorBaseT, ...]
 
 
 def combine_indicator_with_other(
@@ -358,7 +332,19 @@ def combine_indicator_with_other(
 class IndicatorBase(Analyzable):
     """Indicator base class.
 
-    Properties should be set before instantiation."""
+    Properties should be set before instantiation.
+
+    Args:
+        wrapper (ArrayWrapper): Wrapper instance.
+        input_list (IFInputList): List of two-dimensional input arrays.
+        input_mapper (IFInputMapper): One-dimensional input mapper array.
+        in_output_list (IFInOutputList): List of two-dimensional input-output arrays.
+        output_list (IFOutputList): List of two-dimensional output arrays.
+        param_list (IFParamList): List of parameter value lists.
+        mapper_list (IFMapperList): List of mapper indexes.
+        short_name (str): Short name of the indicator.
+        **kwargs: Additional keyword arguments.
+    """
 
     _short_name: tp.ClassVar[str]
     _input_names: tp.ClassVar[tp.Tuple[str, ...]]
@@ -367,6 +353,71 @@ class IndicatorBase(Analyzable):
     _output_names: tp.ClassVar[tp.Tuple[str, ...]]
     _lazy_output_names: tp.ClassVar[tp.Tuple[str, ...]]
     _output_flags: tp.ClassVar[tp.Kwargs]
+
+    def __init__(
+        self,
+        wrapper: ArrayWrapper,
+        input_list: tp.IFInputList,
+        input_mapper: tp.IFInputMapper,
+        in_output_list: tp.IFInOutputList,
+        output_list: tp.IFOutputList,
+        param_list: tp.IFParamList,
+        mapper_list: tp.IFMapperList,
+        short_name: str,
+        **kwargs,
+    ) -> None:
+        if input_mapper is not None:
+            checks.assert_equal(input_mapper.shape[0], wrapper.shape_2d[1])
+        for ts in input_list:
+            checks.assert_equal(ts.shape[0], wrapper.shape_2d[0])
+        for ts in in_output_list + output_list:
+            checks.assert_equal(ts.shape, wrapper.shape_2d)
+        for params in param_list:
+            checks.assert_len_equal(param_list[0], params)
+        for mapper in mapper_list:
+            checks.assert_equal(len(mapper), wrapper.shape_2d[1])
+        checks.assert_instance_of(short_name, str)
+        if "level_names" in kwargs:
+            del kwargs["level_names"]
+
+        Analyzable.__init__(
+            self,
+            wrapper,
+            input_list=input_list,
+            input_mapper=input_mapper,
+            in_output_list=in_output_list,
+            output_list=output_list,
+            param_list=param_list,
+            mapper_list=mapper_list,
+            short_name=short_name,
+            **kwargs,
+        )
+
+        setattr(self, "_short_name", short_name)
+        for i, ts_name in enumerate(self.input_names):
+            setattr(self, f"_{ts_name}", input_list[i])
+        setattr(self, "_input_mapper", input_mapper)
+        for i, in_output_name in enumerate(self.in_output_names):
+            setattr(self, f"_{in_output_name}", in_output_list[i])
+        for i, output_name in enumerate(self.output_names):
+            setattr(self, f"_{output_name}", output_list[i])
+        for i, param_name in enumerate(self.param_names):
+            setattr(self, f"_{param_name}_list", param_list[i])
+            setattr(self, f"_{param_name}_mapper", mapper_list[i])
+
+        mapper_sr_list = []
+        for i, m in enumerate(mapper_list):
+            mapper_sr_list.append(pd.Series(m, index=wrapper.columns))
+        tuple_mapper = self._tuple_mapper
+        if tuple_mapper is not None:
+            level_names = tuple(tuple_mapper.names)
+            mapper_sr_list.append(pd.Series(tuple_mapper.tolist(), index=wrapper.columns))
+        else:
+            level_names = ()
+        self._level_names = level_names
+        for base_cls in type(self).__bases__:
+            if base_cls.__name__ == "ParamIndexer":
+                base_cls.__init__(self, mapper_sr_list, level_names=[*level_names, level_names])
 
     def __getattr__(self, k: str) -> tp.Any:
         """Redirect queries targeted at a generic output name by "output" or the short name of the indicator."""
@@ -470,11 +521,11 @@ class IndicatorBase(Analyzable):
         hide_levels: tp.Optional[tp.Sequence[tp.Union[str, int]]] = None,
         build_col_kwargs: tp.KwargsLike = None,
         return_raw: tp.Union[bool, str] = False,
-        use_raw: tp.Optional[RawOutputT] = None,
+        use_raw: tp.Optional[tp.IFRawOutput] = None,
         wrapper_kwargs: tp.KwargsLike = None,
         seed: tp.Optional[int] = None,
         **kwargs,
-    ) -> tp.Union[CacheOutputT, RawOutputT, PipelineOutputT]:
+    ) -> tp.Union[tp.IFCacheOutput, tp.IFRawOutput, tp.IFPipelineOutput]:
         """A pipeline for running an indicator, used by `IndicatorFactory`.
 
         Args:
@@ -1030,22 +1081,22 @@ class IndicatorBase(Analyzable):
         )
 
     @classmethod
-    def _run(cls: tp.Type[IndicatorBaseT], *args, **kwargs) -> RunOutputT:
+    def _run(cls: tp.Type[IndicatorBaseT], *args, **kwargs) -> tp.IFRunOutput:
         """Private run method."""
         raise NotImplementedError
 
     @classmethod
-    def run(cls: tp.Type[IndicatorBaseT], *args, **kwargs) -> RunOutputT:
+    def run(cls: tp.Type[IndicatorBaseT], *args, **kwargs) -> tp.IFRunOutput:
         """Public run method."""
         return cls._run(*args, **kwargs)
 
     @classmethod
-    def _run_combs(cls: tp.Type[IndicatorBaseT], *args, **kwargs) -> RunCombsOutputT:
+    def _run_combs(cls: tp.Type[IndicatorBaseT], *args, **kwargs) -> tp.IFRunCombsOutput:
         """Private run combinations method."""
         raise NotImplementedError
 
     @classmethod
-    def run_combs(cls: tp.Type[IndicatorBaseT], *args, **kwargs) -> RunCombsOutputT:
+    def run_combs(cls: tp.Type[IndicatorBaseT], *args, **kwargs) -> tp.IFRunCombsOutput:
         """Public run combinations method."""
         return cls._run_combs(*args, **kwargs)
 
@@ -1173,71 +1224,6 @@ class IndicatorBase(Analyzable):
         kwargs = cls.resolve_column_stack_kwargs(*objs, **kwargs)
         kwargs = cls.resolve_stack_kwargs(*objs, **kwargs)
         return cls(**kwargs)
-
-    def __init__(
-        self,
-        wrapper: ArrayWrapper,
-        input_list: InputListT,
-        input_mapper: InputMapperT,
-        in_output_list: InOutputListT,
-        output_list: OutputListT,
-        param_list: ParamListT,
-        mapper_list: MapperListT,
-        short_name: str,
-        **kwargs,
-    ) -> None:
-        if input_mapper is not None:
-            checks.assert_equal(input_mapper.shape[0], wrapper.shape_2d[1])
-        for ts in input_list:
-            checks.assert_equal(ts.shape[0], wrapper.shape_2d[0])
-        for ts in in_output_list + output_list:
-            checks.assert_equal(ts.shape, wrapper.shape_2d)
-        for params in param_list:
-            checks.assert_len_equal(param_list[0], params)
-        for mapper in mapper_list:
-            checks.assert_equal(len(mapper), wrapper.shape_2d[1])
-        checks.assert_instance_of(short_name, str)
-        if "level_names" in kwargs:
-            del kwargs["level_names"]
-
-        Analyzable.__init__(
-            self,
-            wrapper,
-            input_list=input_list,
-            input_mapper=input_mapper,
-            in_output_list=in_output_list,
-            output_list=output_list,
-            param_list=param_list,
-            mapper_list=mapper_list,
-            short_name=short_name,
-            **kwargs,
-        )
-
-        setattr(self, "_short_name", short_name)
-        for i, ts_name in enumerate(self.input_names):
-            setattr(self, f"_{ts_name}", input_list[i])
-        setattr(self, "_input_mapper", input_mapper)
-        for i, in_output_name in enumerate(self.in_output_names):
-            setattr(self, f"_{in_output_name}", in_output_list[i])
-        for i, output_name in enumerate(self.output_names):
-            setattr(self, f"_{output_name}", output_list[i])
-        for i, param_name in enumerate(self.param_names):
-            setattr(self, f"_{param_name}_list", param_list[i])
-            setattr(self, f"_{param_name}_mapper", mapper_list[i])
-
-        mapper_sr_list = []
-        for i, m in enumerate(mapper_list):
-            mapper_sr_list.append(pd.Series(m, index=wrapper.columns))
-        tuple_mapper = self._tuple_mapper
-        if tuple_mapper is not None:
-            level_names = tuple(tuple_mapper.names)
-            mapper_sr_list.append(pd.Series(tuple_mapper.tolist(), index=wrapper.columns))
-        else:
-            level_names = ()
-        self._level_names = level_names
-        for base_cls in type(self).__bases__:
-            if base_cls.__name__ == "ParamIndexer":
-                base_cls.__init__(self, mapper_sr_list, level_names=[*level_names, level_names])
 
     @property
     def _tuple_mapper(self) -> tp.Optional[pd.MultiIndex]:
@@ -2256,7 +2242,7 @@ class IndicatorFactory(Configured):
             **default_kwargs,
         )
 
-        def _run(cls: tp.Type[IndicatorBaseT], *args, **kwargs) -> RunOutputT:
+        def _run(cls: tp.Type[IndicatorBaseT], *args, **kwargs) -> tp.IFRunOutput:
             _short_name = kwargs.pop("short_name", def_run_kwargs["short_name"])
             _hide_params = kwargs.pop("hide_params", def_run_kwargs["hide_params"])
             _hide_default = kwargs.pop("hide_default", def_run_kwargs["hide_default"])
@@ -2416,7 +2402,7 @@ Other keyword arguments are passed to `{0}.run_pipeline`.""".format(
                 **default_kwargs,
             )
 
-            def _run_combs(cls: tp.Type[IndicatorBaseT], *args, **kwargs) -> RunCombsOutputT:
+            def _run_combs(cls: tp.Type[IndicatorBaseT], *args, **kwargs) -> tp.IFRunCombsOutput:
                 _r = kwargs.pop("r", def_run_combs_kwargs["r"])
                 _param_product = kwargs.pop("param_product", def_run_combs_kwargs["param_product"])
                 _comb_func = kwargs.pop("comb_func", def_run_combs_kwargs["comb_func"])
@@ -2769,7 +2755,7 @@ Other keyword arguments are passed to `{0}.run`.
             split_columns: bool = False,
             skipna: bool = False,
             return_cache: bool = False,
-            use_cache: tp.Union[bool, CacheOutputT] = True,
+            use_cache: tp.Union[bool, tp.IFCacheOutput] = True,
             jitted_loop: bool = False,
             jitted_warmup: bool = False,
             param_index: tp.Optional[tp.Index] = None,
@@ -2777,7 +2763,7 @@ Other keyword arguments are passed to `{0}.run`.
             single_comb: bool = False,
             execute_kwargs: tp.KwargsLike = None,
             **_kwargs,
-        ) -> tp.Union[None, CacheOutputT, tp.Array2d, tp.List[tp.Array2d]]:
+        ) -> tp.Union[None, tp.IFCacheOutput, tp.Array2d, tp.List[tp.Array2d]]:
             """Custom function that forwards inputs and parameters to `apply_func`."""
             if jitted_loop and not checks.is_numba_func(apply_func):
                 raise ValueError("Apply function must be Numba-compiled for jitted_loop=True")
