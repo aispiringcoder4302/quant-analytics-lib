@@ -645,8 +645,8 @@ class Splitter(Analyzable):
                 If None, frequency is determined via `vectorbtpro.base.accessors.BaseIDXAccessor.get_freq`.
             **kwargs: Keyword arguments passed to the `Splitter` constructor.
 
-        Usage:
-            * Divide a range into a set of non-overlapping ranges:
+        Examples:
+            Divide a range into a set of non-overlapping ranges:
 
             ```pycon
             >>> from vectorbtpro import *
@@ -660,7 +660,7 @@ class Splitter(Analyzable):
             ![](/assets/images/api/from_rolling_1.light.svg#only-light){: .iimg loading=lazy }
             ![](/assets/images/api/from_rolling_1.dark.svg#only-dark){: .iimg loading=lazy }
 
-            * Divide a range into ranges, each split into 1/2:
+            Divide a range into ranges, each split into 1/2:
 
             ```pycon
             >>> splitter = vbt.Splitter.from_rolling(
@@ -675,7 +675,7 @@ class Splitter(Analyzable):
             ![](/assets/images/api/from_rolling_2.light.svg#only-light){: .iimg loading=lazy }
             ![](/assets/images/api/from_rolling_2.dark.svg#only-dark){: .iimg loading=lazy }
 
-            * Create non-overlapping ranges by using the right bound of the last set as an offset anchor:
+            Create non-overlapping ranges by using the right bound of the last set as an offset anchor:
 
             ```pycon
             >>> splitter = vbt.Splitter.from_rolling(
@@ -813,8 +813,8 @@ class Splitter(Analyzable):
         Returns:
             Splitter: A new `Splitter` instance.
 
-        Usage:
-            * Roll 10 ranges with 100 elements, and split it into 3/4:
+        Examples:
+            Roll 10 ranges with 100 elements, and split it into 3/4:
 
             ```pycon
             >>> from vectorbtpro import *
@@ -979,8 +979,8 @@ class Splitter(Analyzable):
         Returns:
             Splitter: A new `Splitter` instance.
 
-        Usage:
-            * Roll an expanding range with a length of 10 and an offset of 10, and split it into 3/4:
+        Examples:
+            Roll an expanding range with a length of 10 and an offset of 10, and split it into 3/4:
 
             ```pycon
             >>> from vectorbtpro import *
@@ -1100,8 +1100,8 @@ class Splitter(Analyzable):
         Returns:
             Splitter: A new `Splitter` instance.
 
-        Usage:
-            * Roll 10 expanding ranges with a minimum length of 100, while reserving 50 elements for test:
+        Examples:
+            Roll 10 expanding ranges with a minimum length of 100, while reserving 50 elements for test:
 
             ```pycon
             >>> from vectorbtpro import *
@@ -1203,8 +1203,8 @@ class Splitter(Analyzable):
         Returns:
             Splitter: A new `Splitter` instance.
 
-        Usage:
-            * Translate each quarter into a range:
+        Examples:
+            Translate each quarter into a range:
 
             ```pycon
             >>> from vectorbtpro import *
@@ -1218,7 +1218,7 @@ class Splitter(Analyzable):
             ![](/assets/images/api/from_ranges_1.light.svg#only-light){: .iimg loading=lazy }
             ![](/assets/images/api/from_ranges_1.dark.svg#only-dark){: .iimg loading=lazy }
 
-            * In addition to the above, reserve the last month for testing purposes:
+            In addition to the above, reserve the last month for testing purposes:
 
             ```pycon
             >>> splitter = vbt.Splitter.from_ranges(
@@ -1307,8 +1307,8 @@ class Splitter(Analyzable):
         Returns:
             Splitter: A new `Splitter` instance.
 
-        Usage:
-            * Map each month into a range:
+        Examples:
+            Map each month into a range:
 
             ```pycon
             >>> from vectorbtpro import *
@@ -1445,8 +1445,8 @@ class Splitter(Analyzable):
         Returns:
             Splitter: A new `Splitter` instance.
 
-        Usage:
-            * Generate 20 random ranges with a length from [40, 100], and split each into 3/4:
+        Examples:
+            Generate 20 random ranges with a length from [40, 100], and split each into 3/4:
 
             ```pycon
             >>> from vectorbtpro import *
@@ -1844,8 +1844,8 @@ class Splitter(Analyzable):
         Returns:
             Splitter: A new `Splitter` instance.
 
-        Usage:
-            * Rolling window of 30 elements, 20 for train and 10 for test:
+        Examples:
+            Rolling window of 30 elements, 20 for train and 10 for test:
 
             ```pycon
             >>> from vectorbtpro import *
@@ -3692,8 +3692,8 @@ class Splitter(Analyzable):
             Any: The extracted range, which may be a single slice, a merged object,
                 or a pandas Series depending on the `into` parameter.
 
-        Usage:
-            * Roll a window and stack it along columns by keeping the index:
+        Examples:
+            Roll a window and stack it along columns by keeping the index:
 
             ```pycon
             >>> from vectorbtpro import *
@@ -3728,7 +3728,7 @@ class Splitter(Analyzable):
             2020-12-31 00:00:00+00:00          NaN          NaN  29001.720703
             ```
 
-            * Disregard the index and attach index bounds to the column hierarchy:
+            Disregard the index and attach index bounds to the column hierarchy:
 
             ```pycon
             >>> splitter.take(
@@ -4178,8 +4178,8 @@ class Splitter(Analyzable):
                 a Pandas Series, or a tuple of Pandas objects depending on the processing and
                 output wrapping options.
 
-        Usage:
-            * Get the return of each data range:
+        Examples:
+            Get the return of each data range:
 
             ```pycon
             >>> from vectorbtpro import *
@@ -4204,7 +4204,7 @@ class Splitter(Analyzable):
             dtype: float64
             ```
 
-            * The same but by indexing manually:
+            The same but by indexing manually:
 
             ```pycon
             >>> def apply_func(range_, data):
@@ -4221,8 +4221,8 @@ class Splitter(Analyzable):
             dtype: float64
             ```
 
-            * Divide into two windows, each consisting of 50% train and 50% test, compute SMA for
-                each range, and row-stack the outputs of each set upon merging:
+            Divide into two windows, each consisting of 50% train and 50% test, compute SMA for
+            each range, and row-stack the outputs of each set upon merging:
 
             ```pycon
             >>> splitter = vbt.Splitter.from_n_rolling(data.wrapper.index, 2, split=0.5)
@@ -6182,8 +6182,8 @@ class Splitter(Analyzable):
         Returns:
             BaseFigure: Figure to which traces were added.
 
-        Usage:
-            * Plot a scikit-learn splitter:
+        Examples:
+            Plot a scikit-learn splitter:
 
             ```pycon
             >>> from vectorbtpro import *
@@ -6286,8 +6286,8 @@ class Splitter(Analyzable):
         Returns:
             BaseFigure: Figure to which traces were added.
 
-        Usage:
-            * Area plot:
+        Examples:
+            Area plot:
 
             ```pycon
             >>> from vectorbtpro import *
@@ -6301,7 +6301,7 @@ class Splitter(Analyzable):
             ![](/assets/images/api/Splitter_coverage_area.light.svg#only-light){: .iimg loading=lazy }
             ![](/assets/images/api/Splitter_coverage_area.dark.svg#only-dark){: .iimg loading=lazy }
 
-            * Line plot:
+            Line plot:
 
             ```pycon
             >>> splitter.plot_coverage(stacked=False).show()

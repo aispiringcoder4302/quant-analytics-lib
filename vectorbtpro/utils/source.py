@@ -1131,8 +1131,9 @@ Your goal is to refine (rewrite for clarity, correctness, consistent format, and
 - **Retain any admonitions** like `"!!! note"` or `"!!! warning"` exactly as they are.
 - Instead of adding the section "Note", use the admonition "!!! note".
 - **Preserve indentation, whitespace, and formatting** in lists or multi-line text unless it is incorrect.
-- **Do not change code examples** in the "Usage" section. Use only the name "Usage". **Do not change the indentation** of those code blocks.
-- **Do not add your own** "Usage" sections and **do not prepend** a "Usage" section to existing code blocks.
+- **Do not change code blocks** in the docstrings. 
+    - **Do not change the indentation** of those code blocks.
+    - **Do not prepend** sections to existing code blocks.
 - **Omit sections** such as "Raises," "Attributes," "Methods," or default values.
 - If a function is decorated with `@register_chunkable` or `@register_jitted` with the `can_parallel` tag, add at the end of the docstring:
   ```
@@ -1170,7 +1171,7 @@ Your goal is to refine (rewrite for clarity, correctness, consistent format, and
 - **Properties** should describe what they represent rather than an action.
 - Bullet points must be at the **same indentation level as the parent sentence** and be separated by one empty line before the list.
 - When dealing with named tuples and enums, replace "Attributes:" with "Fields:" in their docstrings.
-- If a "Usage" section exists, **place it at the end** of the docstring.
+- If an "Examples" section exists, **place it at the end** of the docstring.
 
 ### 4. Referencing
 
@@ -1291,7 +1292,7 @@ class Chatable(Configured):
             Context is recalculated each time this method is invoked. For multiple turns,
             it's more efficient to use `Contextable.create_chat`.
     
-        Usage:
+        Examples:
             ```pycon
             >>> asset.chat("What's the value under 'xyz'?")
             The value under 'xyz' is 123.

@@ -698,8 +698,8 @@ def from_order_func_nb(  # %? line.replace("from_order_func_nb", new_func_name)
 
         ![](/assets/images/api/context_info.svg){: loading=lazy style="width:700px;" }
 
-    Usage:
-        * Create a group of three assets together sharing 100$ and simulate an equal-weighted portfolio
+    Examples:
+        Create a group of three assets together sharing 100$ and simulate an equal-weighted portfolio
         that rebalances every second tick, all without leaving Numba:
 
         ```pycon
@@ -1827,8 +1827,8 @@ def from_order_func_rw_nb(  # %? line.replace("from_order_func_rw_nb", new_func_
 
         ![](/assets/images/api/from_order_func_rw_nb.svg){: loading=lazy style="width:800px;" }
 
-    Usage:
-        * Running the same example as in `from_order_func_nb` but adapted for this function:
+    Examples:
+        Running the same example as in `from_order_func_nb` but adapted for this function:
 
         ```pycon
         >>> @njit
@@ -2856,8 +2856,8 @@ def from_flex_order_func_nb(  # %? line.replace("from_flex_order_func_nb", new_f
 
         ![](/assets/images/api/from_flex_order_func_nb.svg){: loading=lazy style="width:800px;" }
 
-    Usage:
-        * The same example as in `from_order_func_nb`:
+    Examples:
+        The same example as in `from_order_func_nb`:
 
         ```pycon
         >>> from vectorbtpro import *

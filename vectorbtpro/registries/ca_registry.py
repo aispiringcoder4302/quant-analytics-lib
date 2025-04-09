@@ -537,7 +537,7 @@ class CAQuery(DefineMixin):
             Not all attribute combinations can be safely parsed by this function.
             For example, you cannot combine cacheable together with options.
 
-        Usage:
+        Examples:
             ```pycon
             >>> vbt.CAQuery.parse(lambda x: x)
             CAQuery(cacheable=<function <lambda> at 0x7fd4766c7730>, instance=None, cls=None, base_cls=None, options=None)
@@ -609,7 +609,7 @@ class CAQuery(DefineMixin):
     def matches_setup(self, setup: "CABaseSetup") -> bool:
         """Return whether the setup matches this query.
 
-        Usage:
+        Examples:
             Let's evaluate various queries:
 
             ```pycon

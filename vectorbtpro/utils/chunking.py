@@ -2162,7 +2162,7 @@ def chunked(
     Returns:
         Callable: The decorated function with chunking capability.
 
-    Usage:
+    Examples:
         For testing purposes, let's divide the input array into 2 chunks and compute
         the mean in a sequential manner:
 

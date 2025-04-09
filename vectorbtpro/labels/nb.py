@@ -93,11 +93,11 @@ def future_mean_nb(
 
     Args:
         close (Array2d): 2-D array of input values.
-        window (FlexArray1dLike): Window size.
-        wtype (FlexArray1dLike): Weighting type.
+        window (FlexArray1dLike): Window size(s).
+        wtype (FlexArray1dLike): Weighting type(s).
 
             See `vectorbtpro.generic.enums.WType` for available types.
-        wait (FlexArray1dLike): Waiting period.
+        wait (FlexArray1dLike): Waiting period(s).
         minp (Optional[int]): Minimum number of observations required per window.
         adjust (bool): Flag indicating whether to adjust weights.
 
@@ -186,11 +186,11 @@ def future_std_nb(
 
     Args:
         close (Array2d): 2-D array of input values.
-        window (FlexArray1dLike): Window size.
-        wtype (FlexArray1dLike): Weighting type.
+        window (FlexArray1dLike): Window size(s).
+        wtype (FlexArray1dLike): Weighting type(s).
 
             See `vectorbtpro.generic.enums.WType` for available types.
-        wait (FlexArray1dLike): Waiting period.
+        wait (FlexArray1dLike): Waiting period(s).
         minp (Optional[int]): Minimum number of observations required per window.
         adjust (bool): Flag indicating whether to adjust weights.
         ddof (int): Degree of freedom for the calculation.
@@ -268,8 +268,8 @@ def future_min_nb(
 
     Args:
         close (Array2d): 2-D array of input values.
-        window (FlexArray1dLike): Window size.
-        wait (FlexArray1dLike): Waiting period.
+        window (FlexArray1dLike): Window size(s).
+        wait (FlexArray1dLike): Waiting period(s).
         minp (Optional[int]): Minimum number of observations required per window.
 
     Returns:
@@ -340,8 +340,8 @@ def future_max_nb(
 
     Args:
         close (Array2d): A two-dimensional array containing close prices.
-        window (FlexArray1dLike): Window length used for calculating the maximum.
-        wait (FlexArray1dLike): Number of periods to wait before starting computation.
+        window (FlexArray1dLike): Window length(s) used for calculating the maximum.
+        wait (FlexArray1dLike): Number(s) of periods to wait before starting computation.
         minp (Optional[int]): Minimum number of valid observations required.
 
     Returns:
@@ -401,7 +401,7 @@ def fixed_labels_nb(
 
     Args:
         close (Array2d): Two-dimensional array of close prices.
-        n (FlexArray1dLike): Period offset for computing future values.
+        n (FlexArray1dLike): Period offset(s) for computing future values.
 
     Returns:
         Array2d: A two-dimensional array where each column contains the computed percentage changes.
@@ -436,11 +436,11 @@ def mean_labels_1d_nb(
 
     Args:
         close (Array2d): Array of close prices.
-        window (FlexArray1dLike): Window length used for calculating the future average.
-        wtype (FlexArray1dLike): Weighting type for averaging.
+        window (FlexArray1dLike): Window length(s) used for calculating the future average.
+        wtype (FlexArray1dLike): Weighting type(s) for averaging.
 
             Refer to `vectorbtpro.generic.enums.WType` for available options.
-        wait (FlexArray1dLike): Number of periods to wait before applying the window.
+        wait (FlexArray1dLike): Number(s) of periods to wait before applying the window.
         minp (Optional[int]): Minimum number of valid observations required.
         adjust (bool): Flag indicating whether to apply an adjustment to the computed average.
 
@@ -477,11 +477,11 @@ def mean_labels_nb(
 
     Args:
         close (Array2d): Two-dimensional array of close prices.
-        window (FlexArray1dLike): Window length for computing the future average.
-        wtype (FlexArray1dLike): Weighting type for averaging.
+        window (FlexArray1dLike): Window length(s) for computing the future average.
+        wtype (FlexArray1dLike): Weighting type(s) for averaging.
 
             Refer to `vectorbtpro.generic.enums.WType` for available options.
-        wait (FlexArray1dLike): Number of periods to wait before applying the window.
+        wait (FlexArray1dLike): Number(s) of periods to wait before applying the window.
         minp (Optional[int]): Minimum number of valid observations required.
         adjust (bool): Flag indicating whether to adjust the computed average.
 
@@ -803,8 +803,8 @@ def bincs_trend_labels_1d_nb(
         high (Array1d): One-dimensional array of high values.
         low (Array1d): One-dimensional array of low values.
         pivots (Array1d): One-dimensional array of pivot indicators.
-        up_th (FlexArray1dLike): One-dimensional flexible array representing the upper threshold.
-        down_th (FlexArray1dLike): One-dimensional flexible array representing the lower threshold.
+        up_th (FlexArray1dLike): Upper threshold(s).
+        down_th (FlexArray1dLike): Lower threshold(s).
 
     Returns:
         Array1d: One-dimensional array of capped trend labels normalized
@@ -998,8 +998,8 @@ def trend_labels_1d_nb(
     Args:
         high (Array1d): 1D array of high prices.
         low (Array1d): 1D array of low prices.
-        up_th (FlexArray1dLike): 1D flexible array for upper threshold values.
-        down_th (FlexArray1dLike): 1D flexible array for lower threshold values.
+        up_th (FlexArray1dLike): Upper threshold(s).
+        down_th (FlexArray1dLike): Lower threshold(s).
         mode (int): Trend mode selected from `TrendLabelMode`.
 
     Returns:

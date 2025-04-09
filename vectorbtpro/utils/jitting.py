@@ -390,7 +390,7 @@ def jitted(*args, tags: tp.Optional[set] = None, **jitted_kwargs) -> tp.Callable
     Returns:
         Callable: The decorated function with jitting applied.
 
-    Usage:
+    Examples:
         ```pycon
         >>> from vectorbtpro import *
 

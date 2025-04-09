@@ -261,7 +261,7 @@ class ScheduleManager(Base):
         Returns:
             AsyncJob: The configured asynchronous job.
 
-        Usage:
+        Examples:
             ```pycon
             >>> from vectorbtpro import *
 

@@ -43,7 +43,7 @@ class _RANDX(RANDX):
 
     See `RAND` for notes on parameters.
 
-    Usage:
+    Examples:
         Generate an exit for each entry:
 
         ```pycon

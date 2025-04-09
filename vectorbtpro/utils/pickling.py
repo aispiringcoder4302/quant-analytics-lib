@@ -946,8 +946,8 @@ class Pickleable(Base):
         Returns:
             Pickleable: The decoded instance.
 
-        Usage:
-            * File `types.ini`:
+        Examples:
+            File `types.ini`:
 
             ```ini
             string = 'hello world'
@@ -986,7 +986,7 @@ class Pickleable(Base):
             )
             ```
 
-            * File `refs.ini`:
+            File `refs.ini`:
 
             ```ini
             [top]

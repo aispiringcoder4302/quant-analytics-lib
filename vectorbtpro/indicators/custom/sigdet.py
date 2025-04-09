@@ -78,7 +78,7 @@ class _SIGDET(SIGDET):
         Returns:
             BaseFigure: Figure object containing the plotted signal.
 
-        Usage:
+        Examples:
             ```pycon
             >>> vbt.SIGDET.run(ohlcv['Close']).plot().show()
             ```
@@ -131,7 +131,7 @@ class _SIGDET(SIGDET):
         Returns:
             BaseFigure: Figure object containing the plotted bands (and close line if requested).
 
-        Usage:
+        Examples:
             ```pycon
             >>> vbt.SIGDET.run(ohlcv['Close']).plot_bands().show()
             ```

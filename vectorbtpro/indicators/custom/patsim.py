@@ -129,7 +129,7 @@ class _PATSIM(PATSIM):
         Returns:
             BaseFigure: The updated or newly created figure with the similarity line plotted.
 
-        Usage:
+        Examples:
             ```pycon
             >>> vbt.PATSIM.run(ohlcv['Close'], np.array([1, 2, 3, 2, 1]), 30).plot().show()
             ```
@@ -189,7 +189,7 @@ class _PATSIM(PATSIM):
         Returns:
             BaseFigure: The updated or newly created figure with the heatmap overlay on `PATSIM.close`.
 
-        Usage:
+        Examples:
             ```pycon
             >>> vbt.PATSIM.run(ohlcv['Close'], np.array([1, 2, 3, 2, 1]), 30).overlay_with_heatmap().show()
             ```

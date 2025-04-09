@@ -126,8 +126,8 @@ def from_orders_nb(
 
         Single value must be passed as a 0-dim array (for example, by using `np.asarray(value)`).
 
-    Usage:
-        * Buy and hold using all cash and closing price (default):
+    Examples:
+        Buy and hold using all cash and closing price (default):
 
         ```pycon
         >>> from vectorbtpro import *

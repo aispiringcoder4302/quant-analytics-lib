@@ -5004,7 +5004,7 @@ class Contextable(HasSettings):
         Returns:
             Completions: An instance of `Completions` configured with the generated context.
 
-        Usage:
+        Examples:
             ```pycon
             >>> chat = asset.create_chat()
 
@@ -5048,7 +5048,7 @@ class Contextable(HasSettings):
             Context is recalculated each time this method is invoked. For multiple turns,
             it's more efficient to use `Contextable.create_chat`.
 
-        Usage:
+        Examples:
             ```pycon
             >>> asset.chat("What's the value under 'xyz'?")
             The value under 'xyz' is 123.

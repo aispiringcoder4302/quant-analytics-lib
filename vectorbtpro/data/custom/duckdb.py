@@ -43,8 +43,8 @@ class DuckDBData(DBData):
 
     See `DuckDBData.pull` and `DuckDBData.fetch_key` for details on parameters.
 
-    Usage:
-        * Set up the connection settings globally (optional):
+    Examples:
+        Set up the connection settings globally (optional):
 
         ```pycon
         >>> from vectorbtpro import *
@@ -52,13 +52,13 @@ class DuckDBData(DBData):
         >>> vbt.DuckDBData.set_custom_settings(connection="database.duckdb")
         ```
 
-        * Pull tables:
+        Pull tables:
 
         ```pycon
         >>> data = vbt.DuckDBData.pull(["TABLE1", "TABLE2"])
         ```
 
-        * Rename tables:
+        Rename tables:
 
         ```pycon
         >>> data = vbt.DuckDBData.pull(
@@ -70,7 +70,7 @@ class DuckDBData(DBData):
         ... )
         ```
 
-        * Pull queries:
+        Pull queries:
 
         ```pycon
         >>> data = vbt.DuckDBData.pull(
@@ -82,7 +82,7 @@ class DuckDBData(DBData):
         ... )
         ```
 
-        * Pull Parquet files:
+        Pull Parquet files:
 
         ```pycon
         >>> data = vbt.DuckDBData.pull(

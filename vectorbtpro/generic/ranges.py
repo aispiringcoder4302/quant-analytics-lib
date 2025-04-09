@@ -1064,7 +1064,7 @@ class Ranges(PriceRecords):
         Returns:
             BaseFigure: A figure object containing the plotted projections and price data.
 
-        Usage:
+        Examples:
             ```pycon
             >>> price = pd.Series(
             ...     [11, 12, 13, 14, 11, 12, 13, 12, 11, 12],
@@ -1325,8 +1325,8 @@ class Ranges(PriceRecords):
         Returns:
             BaseFigure: A figure object containing the plotted shapes.
 
-        Usage:
-            * Plot zones colored by duration:
+        Examples:
+            Plot zones colored by duration:
 
             ```pycon
             >>> price = pd.Series(
@@ -1521,7 +1521,7 @@ class Ranges(PriceRecords):
         Returns:
             BaseFigure: A figure object containing the plotted ranges.
 
-        Usage:
+        Examples:
             ```pycon
             >>> price = pd.Series(
             ...     [1, 2, 1, 2, 3, 2, 1, 2, 3],

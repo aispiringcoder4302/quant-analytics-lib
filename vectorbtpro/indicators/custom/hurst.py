@@ -89,7 +89,7 @@ class _HURST(HURST):
         Returns:
             BaseFigure: The figure updated with the Hurst exponent plot.
 
-        Usage:
+        Examples:
             ```pycon
             >>> ohlcv = vbt.YFData.pull(
             ...     "BTC-USD",

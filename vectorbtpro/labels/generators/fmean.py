@@ -73,7 +73,7 @@ class _FMEAN(FMEAN):
         Returns:
             BaseFigure: The figure object with the plotted indicators.
 
-        Usage:
+        Examples:
             ```pycon
             >>> vbt.FMEAN.run(ohlcv['Close']).plot().show()
             ```

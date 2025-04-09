@@ -77,7 +77,7 @@ class _ATR(ATR):
         Returns:
             BaseFigure: The updated figure with the TR and ATR traces plotted.
 
-        Usage:
+        Examples:
             ```pycon
             >>> vbt.ATR.run(ohlcv['High'], ohlcv['Low'], ohlcv['Close']).plot().show()
             ```

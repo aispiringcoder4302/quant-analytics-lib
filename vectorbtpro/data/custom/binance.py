@@ -50,8 +50,8 @@ class BinanceData(RemoteData):
         If using an exchange from the US, Japan, or another TLD, pass `tld="us"` in
         `client_config` when creating the client.
 
-    Usage:
-        * Set up the API key globally (optional):
+    Examples:
+        Set up the API key globally (optional):
 
         ```pycon
         >>> from vectorbtpro import *
@@ -64,7 +64,7 @@ class BinanceData(RemoteData):
         ... )
         ```
 
-        * Pull data:
+        Pull data:
 
         ```pycon
         >>> data = vbt.BinanceData.pull(

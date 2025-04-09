@@ -395,10 +395,9 @@ __pdoc__[
 
 This configuration can be modified.
 
-Usage:
-    ```python
-    {expr_res_func_config.prettify_doc()}
-    ```
+```python
+{expr_res_func_config.prettify_doc()}
+```
 """
 
 wqa101_expr_config = HybridConfig(
@@ -692,7 +691,6 @@ Based on the research presented in [101 Formulaic Alphas](https://arxiv.org/abs/
 
 This configuration is modifiable.
 
-Usage:
 ```python
 {wqa101_expr_config.prettify_doc()}
 ```

@@ -209,7 +209,7 @@ class PandasIndexer(IndexingBase):
     Args:
         **kwargs: Keyword arguments for configuring indexing operations.
 
-    Usage:
+    Examples:
         ```pycon
         >>> from vectorbtpro import *
         >>> from vectorbtpro.base.indexing import PandasIndexer
@@ -519,7 +519,7 @@ def build_param_indexer(
     Returns:
         Type[IndexingBase]: A subclass of `IndexingBase`.
 
-    Usage:
+    Examples:
         ```pycon
         >>> from vectorbtpro import *
         >>> from vectorbtpro.base.indexing import build_param_indexer, indexing_on_mapper
@@ -1283,8 +1283,8 @@ def get_index_points(
     Returns:
         tp.Array1d: Array of index positions corresponding to the given index.
 
-    Usage:
-        * Provide nothing to generate at the beginning:
+    Examples:
+        Provide nothing to generate at the beginning:
 
         ```pycon
         >>> from vectorbtpro import *
@@ -1295,7 +1295,7 @@ def get_index_points(
         array([0])
         ```
 
-        * Provide `every` as an integer frequency to generate index points using NumPy:
+        Provide `every` as an integer frequency to generate index points using NumPy:
 
         ```pycon
         >>> # Generate a point every five rows
@@ -1311,7 +1311,7 @@ def get_index_points(
         array([ 5, 10])
         ```
 
-        * Provide `every` as a time delta frequency to generate index points using Pandas:
+        Provide `every` as a time delta frequency to generate index points using Pandas:
 
         ```pycon
         >>> # Generate a point every week
@@ -1335,7 +1335,7 @@ def get_index_points(
         array([11, 18, 25])
         ```
 
-        * Instead of using `every`, provide indices explicitly:
+        Instead of using `every`, provide indices explicitly:
 
         ```pycon
         >>> # Generate one point
@@ -1651,8 +1651,8 @@ def get_index_ranges(
     Returns:
         Tuple[Array1d, Array1d]: A tuple containing arrays of start and end indices for the generated ranges.
 
-    Usage:
-        * Provide nothing to generate one largest index range:
+    Examples:
+        Provide nothing to generate one largest index range:
 
         ```pycon
         >>> from vectorbtpro import *
@@ -1663,7 +1663,7 @@ def get_index_ranges(
         array([[ 0, 32]])
         ```
 
-        * Provide `every` as an integer frequency to generate index ranges using NumPy:
+        Provide `every` as an integer frequency to generate index ranges using NumPy:
 
         ```pycon
         >>> # Generate a range every five rows
@@ -1698,7 +1698,7 @@ def get_index_ranges(
                [10, 15]])
         ```
 
-        * Provide `every` as a time delta frequency to generate index ranges using Pandas:
+        Provide `every` as a time delta frequency to generate index ranges using Pandas:
 
         ```pycon
         >>> # Generate a range every week
@@ -1770,7 +1770,7 @@ def get_index_ranges(
                [ 0, 25]])
         ```
 
-        * Use a look-back period (instead of an end index):
+        Use a look-back period (instead of an end index):
 
         ```pycon
         >>> # Generate a range every week, looking 5 days back
@@ -1794,7 +1794,7 @@ def get_index_ranges(
                [11, 25]])
         ```
 
-        * Instead of using `every`, provide start and end indices explicitly:
+        Instead of using `every`, provide start and end indices explicitly:
 
         ```pycon
         >>> # Generate one range
@@ -1824,7 +1824,7 @@ def get_index_ranges(
                [ 0, 13]])
         ```
 
-        * Use `closed_start` and `closed_end` to exclude any of the bounds:
+        Use `closed_start` and `closed_end` to exclude any of the bounds:
 
         ```pycon
         >>> # Generate ranges between multiple dates

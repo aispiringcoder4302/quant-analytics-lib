@@ -49,7 +49,7 @@ class _FIXLB(FIXLB):
         Returns:
             BaseFigure: The resulting figure object.
 
-        Usage:
+        Examples:
             ```pycon
             >>> vbt.FIXLB.run(ohlcv['Close']).plot().show()
             ```

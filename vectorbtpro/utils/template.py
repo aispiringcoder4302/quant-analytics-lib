@@ -427,7 +427,7 @@ def substitute_templates(
         eval_id (Optional[Hashable]): An identifier used during template evaluation.
         **kwargs: Additional parameters to override default search settings.
 
-    Usage:
+    Examples:
         ```pycon
         >>> from vectorbtpro import *
 

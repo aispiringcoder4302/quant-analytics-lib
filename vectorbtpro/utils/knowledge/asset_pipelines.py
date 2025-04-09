@@ -141,7 +141,7 @@ class BasicAssetPipeline(AssetPipeline):
             subsequent positional arguments are used in task resolution.
         kwargs (Any): Keyword arguments for task resolution.
 
-    Usage:
+    Examples:
         ```pycon
         >>> asset_pipeline = vbt.BasicAssetPipeline()
         >>> asset_pipeline.append("flatten")
@@ -200,7 +200,7 @@ class ComplexAssetPipeline(AssetPipeline):
         prepare_once (bool): Flag to indicate when functions should be prepared once.
         **resolve_task_kwargs: Keyword arguments for task resolution.
 
-    Usage:
+    Examples:
         ```pycon
         >>> asset_pipeline = vbt.ComplexAssetPipeline("query(flatten(d), len)")
         >>> asset_pipeline(dataset[0])

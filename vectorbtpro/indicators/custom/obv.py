@@ -60,7 +60,7 @@ class _OBV(OBV):
         Returns:
             BaseFigure: The updated figure displaying the plotted OBV data.
 
-        Usage:
+        Examples:
             ```py
             >>> vbt.OBV.run(ohlcv['Close'], ohlcv['Volume']).plot().show()
             ```

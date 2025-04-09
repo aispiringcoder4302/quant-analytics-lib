@@ -94,8 +94,8 @@ def split(
     Returns:
         Callable: The wrapper function that executes the original function using the splitter.
 
-    Usage:
-        * Split a Series and return its sum:
+    Examples:
+        Split a Series and return its sum:
 
         ```pycon
         >>> from vectorbtpro import *
@@ -117,7 +117,7 @@ def split(
         dtype: int64
         ```
 
-        * Perform a split manually:
+        Perform a split manually:
 
         ```pycon
         >>> @vbt.split(
@@ -135,7 +135,7 @@ def split(
         dtype: int64
         ```
 
-        * Construct splitter and mark arguments as "takeable" manually:
+        Construct splitter and mark arguments as "takeable" manually:
 
         ```pycon
         >>> splitter = vbt.Splitter.from_n_rolling(index, n=2)
@@ -151,7 +151,7 @@ def split(
         dtype: int64
         ```
 
-        * Split multiple timeframes using a custom index:
+        Split multiple timeframes using a custom index:
 
         ```pycon
         >>> @vbt.split(
@@ -385,9 +385,9 @@ def cv_split(
     Returns:
         Callable: A decorated function that applies cross-validation via splitting and parameterized execution.
     
-    Usage:
-        * Permutate a series and pick the first value. Make the seed parameterizable.
-            Cross-validate based on the highest picked value:
+    Examples:
+        Permutate a series and pick the first value. Make the seed parameterizable.
+        Cross-validate based on the highest picked value:
     
         ```pycon
         >>> from vectorbtpro import *
@@ -416,7 +416,7 @@ def cv_split(
         dtype: int64
         ```
     
-        * Extend the example above to also return the grid results of each set:
+        Extend the example above to also return the grid results of each set:
     
         ```pycon
         >>> f(sr, vbt.Param([41, 42, 43]), _return_grid="all")

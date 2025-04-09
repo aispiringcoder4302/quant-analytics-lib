@@ -1145,8 +1145,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
         Returns:
             SeriesFrame: The result of applying the mapping function to the input data, wrapped appropriately.
 
-        Usage:
-            * Using regular function:
+        Examples:
+            Using regular function:
 
             ```pycon
             >>> prod_nb = njit(lambda a, x: a * x)
@@ -1160,7 +1160,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             2020-01-05  50  10  10
             ```
 
-            * Using meta function:
+            Using meta function:
 
             ```pycon
             >>> diff_meta_nb = njit(lambda i, col, a, b: a[i, col] / b[i, col])
@@ -1179,7 +1179,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             2020-01-05  0.666667  0.000000  0.000000
             ```
 
-            * Using templates and broadcasting:
+            Using templates and broadcasting:
 
             ```pycon
             >>> vbt.pd_acc.map(
@@ -1282,8 +1282,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
         Returns:
             SeriesFrame: The result of applying the function to the input data.
 
-        Usage:
-            * Using regular function:
+        Examples:
+            Using regular function:
 
             ```pycon
             >>> power_nb = njit(lambda a: np.power(a, 2))
@@ -1297,7 +1297,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             2020-01-05  25   1  1
             ```
 
-            * Using meta function:
+            Using meta function:
 
             ```pycon
             >>> ratio_meta_nb = njit(lambda col, a, b: a[:, col] / b[:, col])
@@ -1316,7 +1316,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             2020-01-05  0.666667  0.000000  0.000000
             ```
 
-            * Using templates and broadcasting:
+            Using templates and broadcasting:
 
             ```pycon
             >>> vbt.pd_acc.apply_along_axis(
@@ -1451,8 +1451,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
         Returns:
             SeriesFrame: The result of the rolling reduction.
 
-        Usage:
-            * Using regular function:
+        Examples:
+            Using regular function:
 
             ```pycon
             >>> mean_nb = njit(lambda a: np.nanmean(a))
@@ -1466,7 +1466,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             2020-01-05  4.0  2.0  2.000000
             ```
 
-            * Using a frequency-based window:
+            Using a frequency-based window:
 
             ```pycon
             >>> df.vbt.rolling_apply("3d", mean_nb)
@@ -1478,7 +1478,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             2020-01-05  4.0  2.0  2.000000
             ```
 
-            * Using meta function:
+            Using meta function:
 
             ```pycon
             >>> mean_ratio_meta_nb = njit(lambda from_i, to_i, col, a, b: \\
@@ -1499,7 +1499,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             2020-01-05  0.600000  0.333333  0.333333
             ```
 
-            * Using templates and broadcasting:
+            Using templates and broadcasting:
 
             ```pycon
             >>> vbt.pd_acc.rolling_apply(
@@ -1647,8 +1647,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
         Returns:
             SeriesFrame: The wrapped result after applying the groupby reduction.
 
-        Usage:
-            * Using regular function:
+        Examples:
+            Using regular function:
 
             ```pycon
             >>> mean_nb = njit(lambda a: np.nanmean(a))
@@ -1660,7 +1660,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             3  5.0  1.0  1.0
             ```
 
-            * Using meta function:
+            Using meta function:
 
             ```pycon
             >>> mean_ratio_meta_nb = njit(lambda idxs, group, col, a, b: \\
@@ -1679,8 +1679,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
             3  0.666667  0.000000  0.000000
             ```
 
-            * Using templates and broadcasting, let's split both input arrays into 2 groups of rows and
-              run the calculation function on each group:
+            Using templates and broadcasting, let's split both input arrays into 2 groups of rows and
+            run the calculation function on each group:
 
             ```pycon
             >>> from vectorbtpro.base.grouping.nb import group_by_evenly_nb
@@ -1798,8 +1798,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
         Returns:
             SeriesFrame: Transformed data as a Series or DataFrame.
 
-        Usage:
-            * Using regular function:
+        Examples:
+            Using regular function:
 
             ```pycon
             >>> zscore_nb = njit(lambda a: (a - np.nanmean(a)) / np.nanstd(a))
@@ -1813,7 +1813,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             2020-01-05  1.414214 -0.707107 -0.707107
             ```
 
-            * Using meta function:
+            Using meta function:
 
             ```pycon
             >>> zscore_ratio_meta_nb = njit(lambda idxs, group, a, b: \\
@@ -1923,8 +1923,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
             **kwargs: Keyword arguments passed to the reduction function.
 
-        Usage:
-            * Using regular function:
+        Examples:
+            Using regular function:
 
             ```pycon
             >>> mean_nb = njit(lambda a: np.nanmean(a))
@@ -1936,7 +1936,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             2020-01-05  5.0  1.0  1.0
             ```
 
-            * Using meta function:
+            Using meta function:
 
             ```pycon
             >>> mean_ratio_meta_nb = njit(lambda idxs, group, col, a, b: \\
@@ -1955,7 +1955,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             2020-01-05  0.666667  0.000000  0.000000
             ```
 
-            * Using templates and broadcasting:
+            Using templates and broadcasting:
 
             ```pycon
             >>> vbt.pd_acc.resample_apply(
@@ -2090,8 +2090,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
             wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
 
-        Usage:
-            * Using regular function:
+        Examples:
+            Using regular function:
 
             ```pycon
             >>> greater_nb = njit(lambda a: a[a > 2])
@@ -2104,7 +2104,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             Name: apply_and_reduce, dtype: float64
             ```
 
-            * Using meta function:
+            Using meta function:
 
             ```pycon
             >>> and_meta_nb = njit(lambda col, a, b: a[:, col] & b[:, col])
@@ -2125,7 +2125,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             Name: apply_and_reduce, dtype: int64
             ```
 
-            * Using templates and broadcasting:
+            Using templates and broadcasting:
 
             ```pycon
             >>> vbt.pd_acc.apply_and_reduce(
@@ -2289,8 +2289,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
         Returns:
             MaybeSeriesFrame: The reduced data as a Series or DataFrame.
 
-        Usage:
-            * Using regular function:
+        Examples:
+            Using regular function:
 
             ```pycon
             >>> mean_nb = njit(lambda a: np.nanmean(a))
@@ -2330,7 +2330,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             dtype: float64
             ```
 
-            * Using meta function:
+            Using meta function:
 
             ```pycon
             >>> mean_meta_nb = njit(lambda col, a: np.nanmean(a[:, col]))
@@ -2367,7 +2367,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             Name: reduce, dtype: float64
             ```
 
-            * Using templates and broadcasting:
+            Using templates and broadcasting:
 
             ```pycon
             >>> mean_a_b_nb = njit(lambda col, a, b: \\
@@ -2526,8 +2526,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
         Returns:
             Frame: The resulting frame after applying the proximity reduction.
 
-        Usage:
-            * Using regular function:
+        Examples:
+            Using regular function:
 
             ```pycon
             >>> mean_nb = njit(lambda a: np.nanmean(a))
@@ -2541,7 +2541,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             2020-01-05  3.0  2.500000  1.500000
             ```
 
-            * Using meta function:
+            Using meta function:
 
             ```pycon
             >>> @njit
@@ -2565,7 +2565,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             2020-01-05  0.5  0.428571  0.200000
             ```
 
-            * Using templates and broadcasting:
+            Using templates and broadcasting:
 
             ```pycon
             >>> vbt.pd_acc.proximity_apply(
@@ -2672,8 +2672,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
         Returns:
             MaybeSeriesFrame: The squeezed data as a Series or DataFrame.
 
-        Usage:
-            * Using regular function:
+        Examples:
+            Using regular function:
 
             ```pycon
             >>> mean_nb = njit(lambda a: np.nanmean(a))
@@ -2688,7 +2688,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             2020-01-05    3.0     1.0
             ```
 
-            * Using meta function:
+            Using meta function:
 
             ```pycon
             >>> mean_ratio_meta_nb = njit(lambda i, group_idxs, group, a, b: \\
@@ -2709,7 +2709,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             2020-01-05    0.5  0.000000
             ```
 
-            * Using templates and broadcasting:
+            Using templates and broadcasting:
 
             ```pycon
             >>> vbt.pd_acc.squeeze_grouped(
@@ -2814,7 +2814,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             Ensure that the distribution of group lengths is nearly uniform. Otherwise,
             groups with fewer columns may be padded with NaN values, unnecessarily consuming memory.
 
-        Usage:
+        Examples:
             ```pycon
             >>> group_by = pd.Series(['first', 'first', 'second'], name='group')
             >>> df.vbt.flatten_grouped(group_by=group_by, order='C')
@@ -2905,8 +2905,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
         Returns:
             MaybeSeriesFrame: Realigned data as a Series or DataFrame.
 
-        Usage:
-            * Downsampling:
+        Examples:
+            Downsampling:
 
             ```pycon
             >>> h_index = pd.date_range('2020-01-01', '2020-01-05', freq='1h')
@@ -2922,7 +2922,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             Freq: D, dtype: float64
             ```
 
-            * Upsampling:
+            Upsampling:
 
             ```pycon
             >>> d_sr = pd.Series(range(len(d_index)), index=d_index)
@@ -3092,8 +3092,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
         Returns:
             SeriesFrame: The resampled data as a pandas Series or DataFrame.
 
-        Usage:
-            * Downsampling:
+        Examples:
+            Downsampling:
 
             ```pycon
             >>> h_index = pd.date_range('2020-01-01', '2020-01-05', freq='1h')
@@ -3117,7 +3117,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             Freq: D, dtype: float64
             ```
 
-            * Upsampling:
+            Upsampling:
 
             ```pycon
             >>> d_sr = pd.Series(range(len(d_index)), index=d_index)
@@ -3136,7 +3136,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             Freq: H, Length: 97, dtype: float64
             ```
 
-            * Using meta function:
+            Using meta function:
 
             ```pycon
             >>> mean_ratio_meta_nb = njit(lambda from_i, to_i, col, a, b: \\
@@ -3157,7 +3157,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             Freq: D, dtype: float64
             ```
 
-            * Using templates and broadcasting:
+            Using templates and broadcasting:
 
             ```pycon
             >>> vbt.pd_acc.resample_to_index(
@@ -3298,8 +3298,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
             SeriesFrame: A resampled series or frame with aggregated values,
                 wrapped based on the specified parameters.
 
-        Usage:
-            * Using regular function:
+        Examples:
+            Using regular function:
 
             ```pycon
             >>> h_index = pd.date_range('2020-01-01', '2020-01-05', freq='1h')
@@ -3315,7 +3315,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             Freq: D, dtype: float64
             ```
 
-            * Using meta function:
+            Using meta function:
 
             ```pycon
             >>> mean_ratio_meta_nb = njit(lambda from_i, to_i, col, a, b: \\
@@ -3337,7 +3337,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             Freq: D, dtype: float64
             ```
 
-            * Using templates and broadcasting:
+            Using templates and broadcasting:
 
             ```pycon
             >>> vbt.pd_acc.resample_between_bounds(
@@ -4033,7 +4033,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         Returns:
             SeriesFrame: The descriptive statistics as a pandas Series or DataFrame.
 
-        Usage:
+        Examples:
             ```pycon
             >>> df.vbt.describe()
                           a         b        c
@@ -4108,7 +4108,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 If `return_mapping` is True, also returns a mapping of bin indices to bin intervals.
 
-        Usage:
+        Examples:
             ```pycon
             >>> df.vbt.digitize(3)
                         a  b  c
@@ -4200,7 +4200,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         Returns:
             SeriesFrame: A Series or DataFrame with counts of unique values.
 
-        Usage:
+        Examples:
             ```pycon
             >>> df.vbt.value_counts()
                a  b  c
@@ -4388,7 +4388,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         Returns:
             SeriesFrame: The transformed data as a Series or DataFrame.
 
-        Usage:
+        Examples:
             ```pycon
             >>> from sklearn.preprocessing import MinMaxScaler
 
@@ -4693,7 +4693,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         Returns:
             SeriesFrame: Boolean series or dataframe indicating crossing events.
 
-        Usage:
+        Examples:
             ```pycon
             >>> df['b'].vbt.crossed_above(df['c'])
             2020-01-01    False
@@ -4932,7 +4932,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         Returns:
             Union[BaseFigure, TraceUpdater]: The plot figure or trace updater.
 
-        Usage:
+        Examples:
             ```pycon
             >>> df.vbt.plot().show()
             ```
@@ -4966,7 +4966,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         Returns:
             Union[BaseFigure, TraceUpdater]: Figure or trace updater instance.
 
-        Usage:
+        Examples:
             ```pycon
             >>> df.vbt.lineplot().show()
             ```
@@ -4986,7 +4986,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         Returns:
             Union[BaseFigure, TraceUpdater]: Figure or trace updater instance.
 
-        Usage:
+        Examples:
             ```pycon
             >>> df.vbt.scatterplot().show()
             ```
@@ -5016,7 +5016,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         Returns:
             Union[BaseFigure, TraceUpdater]: Figure or bar chart object based on `return_fig`.
 
-        Usage:
+        Examples:
             ```pycon
             >>> df.vbt.barplot().show()
             ```
@@ -5063,7 +5063,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         Returns:
             Union[BaseFigure, TraceUpdater]: Figure or histogram chart object based on `return_fig`.
 
-        Usage:
+        Examples:
             ```pycon
             >>> df.vbt.histplot().show()
             ```
@@ -5121,7 +5121,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         Returns:
             Union[BaseFigure, TraceUpdater]: Figure or box plot object based on `return_fig`.
 
-        Usage:
+        Examples:
             ```pycon
             >>> df.vbt.boxplot().show()
             ```
@@ -5190,7 +5190,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         Returns:
             BaseFigure: A Plotly figure with the main series, comparative lines, and filled areas.
 
-        Usage:
+        Examples:
             ```pycon
             >>> df['a'].vbt.plot_against(df['b']).show()
             ```
@@ -5342,7 +5342,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         Returns:
             BaseFigure: A Plotly figure with the line plot and heatmap overlay.
 
-        Usage:
+        Examples:
             ```pycon
             >>> df['a'].vbt.overlay_with_heatmap(df['b']).show()
             ```
@@ -5437,8 +5437,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
         Returns:
             Union[BaseFigure, TraceUpdater]: Figure or heatmap object based on `return_fig`.
 
-        Usage:
-            * Plotting a figure based on a regular index:
+        Examples:
+            Plotting a figure based on a regular index:
 
             ```pycon
             >>> df = pd.DataFrame([
@@ -5452,7 +5452,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             ![](/assets/images/api/df_heatmap.light.svg#only-light){: .iimg loading=lazy }
             ![](/assets/images/api/df_heatmap.dark.svg#only-dark){: .iimg loading=lazy }
 
-            * Plotting a figure based on a multi-index:
+            Plotting a figure based on a multi-index:
 
             ```pycon
             >>> multi_index = pd.MultiIndex.from_tuples([
@@ -5673,7 +5673,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         Returns:
             Union[BaseFigure, TraceUpdater]: The created 3D volume figure or trace updater object.
 
-        Usage:
+        Examples:
             ```pycon
             >>> multi_index = pd.MultiIndex.from_tuples([
             ...     (1, 1, 1),
@@ -5818,7 +5818,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         Returns:
             BaseFigure: The generated probability plot figure with an optional reference line.
 
-        Usage:
+        Examples:
             ```pycon
             >>> pd.Series(np.random.standard_normal(100)).vbt.qqplot().show()
             ```
@@ -5871,7 +5871,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         Returns:
             BaseFigure: The generated stacked area chart.
 
-        Usage:
+        Examples:
             ```pycon
             >>> df.vbt.areaplot().show()
             ```
@@ -6017,7 +6017,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         Returns:
             BaseFigure: The figure object with the plotted pattern and error bands.
 
-        Usage:
+        Examples:
             ```pycon
             >>> sr = pd.Series([10, 11, 12, 13, 12, 13, 14, 15, 13, 14, 11])
             >>> sr.vbt.plot_pattern([1, 2, 3, 2, 1]).show()
@@ -6689,7 +6689,7 @@ class GenericDFAccessor(GenericAccessor, BaseDFAccessor):
             the lower negative. For significance levels, the middle remains "mean" whereas the lower should be
             positive and lower than the upper (e.g., 25% and 75%).
 
-        Usage:
+        Examples:
             ```pycon
             >>> df = pd.DataFrame({
             ...     0: [10, 11, 12, 11, 10],

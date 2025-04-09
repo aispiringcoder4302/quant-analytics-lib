@@ -143,9 +143,6 @@ class FeatherData(FileData):
 
         Returns:
             FeatureData: The fetched data and a metadata dictionary.
-
-        Usage:
-            This method calls `FeatherData.fetch_key`.
         """
         return cls.fetch_key(feature, **kwargs)
 
@@ -159,9 +156,6 @@ class FeatherData(FileData):
 
         Returns:
             SymbolData: The fetched data and a metadata dictionary.
-
-        Usage:
-            This method calls `FeatherData.fetch_key`.
         """
         return cls.fetch_key(symbol, **kwargs)
 
@@ -191,9 +185,6 @@ class FeatherData(FileData):
 
         Returns:
             FeatureData: The updated data and a metadata dictionary.
-
-        Usage:
-            This method calls `FeatherData.update_key` with `key_is_feature=True`.
         """
         return self.update_key(feature, key_is_feature=True, **kwargs)
 

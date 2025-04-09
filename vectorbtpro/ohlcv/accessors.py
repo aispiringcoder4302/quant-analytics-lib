@@ -607,7 +607,7 @@ class OHLCVDFAccessor(OHLCDataMixin, GenericDFAccessor):
         Returns:
             BaseFigure: The updated figure with the OHLC(V) plot.
 
-        Usage:
+        Examples:
             ```pycon
             >>> vbt.YFData.pull("BTC-USD").get().vbt.ohlcv.plot().show()
             ```

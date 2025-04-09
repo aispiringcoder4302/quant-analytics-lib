@@ -65,7 +65,7 @@ class _FMAX(FMAX):
         Returns:
             BaseFigure: The figure with the indicator traces plotted.
 
-        Usage:
+        Examples:
             ```pycon
             >>> vbt.FMAX.run(ohlcv['Close']).plot().show()
             ```

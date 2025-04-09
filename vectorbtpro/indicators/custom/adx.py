@@ -80,7 +80,7 @@ class _ADX(ADX):
         Returns:
             BaseFigure: Figure containing the plotted ADX traces.
 
-        Usage:
+        Examples:
             ```pycon
             >>> vbt.ADX.run(ohlcv['High'], ohlcv['Low'], ohlcv['Close']).plot().show()
             ```

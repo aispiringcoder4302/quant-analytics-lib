@@ -49,8 +49,8 @@ class SQLData(DBData):
     * https://pandas.pydata.org/docs/reference/api/pandas.read_sql_query.html for the pandas read method.
     * `SQLData.pull` and `SQLData.fetch_key` for further arguments.
 
-    Usage:
-        * Set up the engine settings globally (optional):
+    Examples:
+        Set up the engine settings globally (optional):
 
         ```pycon
         >>> from vectorbtpro import *
@@ -64,7 +64,7 @@ class SQLData(DBData):
         ... )
         ```
 
-        * Pull tables:
+        Pull tables:
 
         ```pycon
         >>> data = vbt.SQLData.pull(
@@ -75,7 +75,7 @@ class SQLData(DBData):
         ... )
         ```
 
-        * Pull queries:
+        Pull queries:
 
         ```pycon
         >>> data = vbt.SQLData.pull(

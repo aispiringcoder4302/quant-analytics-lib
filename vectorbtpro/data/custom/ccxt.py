@@ -43,8 +43,8 @@ class CCXTData(RemoteData):
 
     For specific parameter details, refer to `CCXTData.fetch_symbol`.
 
-    Usage:
-        * Set up the API key globally (optional):
+    Examples:
+        Set up the API key globally (optional):
 
         ```pycon
         >>> from vectorbtpro import *
@@ -59,7 +59,7 @@ class CCXTData(RemoteData):
         ... )
         ```
 
-        * Pull data:
+        Pull data:
 
         ```pycon
         >>> data = vbt.CCXTData.pull(

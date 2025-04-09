@@ -46,7 +46,7 @@ class _RANDNX(RANDNX):
 
     See `RAND` for notes on parameters.
 
-    Usage:
+    Examples:
         Test three different entry and exit counts:
 
         ```pycon

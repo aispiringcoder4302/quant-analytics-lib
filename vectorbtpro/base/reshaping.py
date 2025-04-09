@@ -1176,8 +1176,8 @@ def broadcast(
     Additionally, any object can be wrapped with `BCO` to override the corresponding
     global arguments if its attributes are not None.
 
-    Usage:
-        * Without broadcasting index and columns:
+    Examples:
+        Without broadcasting index and columns:
 
         ```pycon
         >>> from vectorbtpro import *
@@ -1215,7 +1215,7 @@ def broadcast(
         z2   7   8   9
         ```
 
-        * Take index and columns from the argument at specific position:
+        Take index and columns from the argument at specific position:
 
         ```pycon
         >>> for i in vbt.broadcast(
@@ -1242,7 +1242,7 @@ def broadcast(
         z   7   8   9
         ```
 
-        * Broadcast index and columns through stacking:
+        Broadcast index and columns through stacking:
 
         ```pycon
         >>> for i in vbt.broadcast(
@@ -1269,7 +1269,7 @@ def broadcast(
         z z2   7   8   9
         ```
 
-        * Set index and columns manually:
+        Set index and columns manually:
 
         ```pycon
         >>> for i in vbt.broadcast(
@@ -1296,7 +1296,7 @@ def broadcast(
         c  7  8  9
         ```
 
-        * Pass arguments as a mapping returns a mapping:
+        Pass arguments as a mapping returns a mapping:
 
         ```pycon
         >>> vbt.broadcast(
@@ -1322,7 +1322,7 @@ def broadcast(
                z z2   7   8   9}
         ```
 
-        * Keep all results in a format suitable for flexible indexing apart from one:
+        Keep all results in a format suitable for flexible indexing apart from one:
 
         ```pycon
         >>> vbt.broadcast(
@@ -1345,7 +1345,7 @@ def broadcast(
                z z2  7.0  8.0  9.0}
         ```
 
-        * Specify arguments per object using `BCO`:
+        Specify arguments per object using `BCO`:
 
         ```pycon
         >>> df_bco = vbt.BCO(df, keep_flex=False, require_kwargs=dict(dtype=float))
@@ -1368,7 +1368,7 @@ def broadcast(
                z z2  7.0  8.0  9.0}
         ```
 
-        * Introduce a parameter that should build a Cartesian product of its values and other objects:
+        Introduce a parameter that should build a Cartesian product of its values and other objects:
 
         ```pycon
         >>> df_bco = vbt.BCO(df, keep_flex=False, require_kwargs=dict(dtype=float))
@@ -1394,7 +1394,7 @@ def broadcast(
          'p': array([[1, 1, 1, 2, 2, 2, 3, 3, 3]])}
         ```
 
-        * Build a Cartesian product of all parameters:
+        Build a Cartesian product of all parameters:
 
         ```pycon
         >>> vbt.broadcast(
@@ -1409,7 +1409,7 @@ def broadcast(
          'c': array([[False, True, False, True, False, True, False, True, False, True, False, True]])}
         ```
 
-        * Build a Cartesian product of two groups of parameters - (a, d) and (b, c):
+        Build a Cartesian product of two groups of parameters - (a, d) and (b, c):
 
         ```pycon
         >>> vbt.broadcast(
@@ -1426,7 +1426,7 @@ def broadcast(
          'c': array([[False,  True, False,  True, False,  True]])}
         ```
 
-        * Select a random subset of parameter combinations:
+        Select a random subset of parameter combinations:
 
         ```pycon
         >>> vbt.broadcast(
@@ -2020,7 +2020,7 @@ def broadcast_to(
     Returns:
         Any: Broadcasted structure, either as an array or a pandas object depending on `to_pd`.
 
-    Usage:
+    Examples:
         ```pycon
         >>> from vectorbtpro import *
         >>> from vectorbtpro.base.reshaping import broadcast_to
@@ -2080,7 +2080,7 @@ def broadcast_to_array_of(arg1: tp.ArrayLike, arg2: tp.ArrayLike) -> tp.Array:
     Returns:
         Array: Broadcasted array with shape `(1, *arg2.shape)`.
 
-    Usage:
+    Examples:
         ```pycon
         >>> from vectorbtpro import *
         >>> from vectorbtpro.base.reshaping import broadcast_to_array_of
@@ -2159,7 +2159,7 @@ def broadcast_combs(
     Returns:
         Any: Tuple of broadcasted arrays aligned based on the combinatorial indices.
 
-    Usage:
+    Examples:
         ```pycon
         >>> from vectorbtpro import *
         >>> from vectorbtpro.base.reshaping import broadcast_combs
@@ -2267,7 +2267,7 @@ def unstack_to_array(
         Union[Array, Tuple[Array, List[Index]]]: A multi-dimensional array of unstacked data, or a tuple containing
             the array and the list of new index values if `return_indexes` is True.
 
-    Usage:
+    Examples:
         ```pycon
         >>> from vectorbtpro import *
         >>> from vectorbtpro.base.reshaping import unstack_to_array
@@ -2334,7 +2334,7 @@ def make_symmetric(obj: tp.SeriesFrame, sort: bool = True) -> tp.Frame:
     Returns:
         Frame: A symmetric DataFrame with matching index and columns.
 
-    Usage:
+    Examples:
         ```pycon
         >>> from vectorbtpro import *
         >>> from vectorbtpro.base.reshaping import make_symmetric
@@ -2411,7 +2411,7 @@ def unstack_to_df(
     Returns:
         Frame: A DataFrame resulting from unstacking the specified index levels.
 
-    Usage:
+    Examples:
         ```pycon
         >>> from vectorbtpro import *
         >>> from vectorbtpro.base.reshaping import unstack_to_df

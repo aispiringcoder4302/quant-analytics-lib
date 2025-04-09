@@ -254,7 +254,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         Returns:
             KnowledgeAsset: A new `KnowledgeAsset` instance containing merged data.
 
-        Usage:
+        Examples:
             ```pycon
             >>> asset1 = asset[[0, 1]]
             >>> asset2 = asset[[2, 3]]
@@ -317,7 +317,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         Returns:
             KnowledgeAsset: A new `KnowledgeAsset` instance containing merged data.
 
-        Usage:
+        Examples:
             ```pycon
             >>> asset1 = asset.select(["s"])
             >>> asset2 = asset.select(["b", "d2"])
@@ -674,7 +674,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
             Optional[KnowledgeAsset]: A new `KnowledgeAsset` instance with duplicates removed,
                 or None if modified in place.
 
-        Usage:
+        Examples:
             ```pycon
             >>> asset.unique("b").get()
             [{'s': 'EFG', 'b': False, 'd2': {'c': 'black', 'l': [9, 10]}, 'xyz': 123},
@@ -726,7 +726,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
             Optional[KnowledgeAsset]: A new `KnowledgeAsset` instance with sorted data,
                 or None if sorted in place.
 
-        Usage:
+        Examples:
             ```pycon
             >>> asset.sort("d2.c").get()
             [{'s': 'EFG', 'b': False, 'd2': {'c': 'black', 'l': [9, 10]}, 'xyz': 123},
@@ -891,7 +891,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         Returns:
             MaybeKnowledgeAsset: A new asset with processed data if `wrap` is True; otherwise, raw output.
 
-        Usage:
+        Examples:
             ```pycon
             >>> asset.apply(["flatten", ("query", len)])
             [5, 5, 5, 5, 6]
@@ -1021,7 +1021,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
             template_context (KwargsLike): Additional context for template substitution.
             **kwargs: Keyword arguments passed to `KnowledgeAsset.apply`.
 
-        Usage:
+        Examples:
             ```pycon
             >>> asset.get()
             [{'s': 'ABC', 'b': True, 'd2': {'c': 'red', 'l': [1, 2]}},
@@ -1110,7 +1110,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
             template_context (KwargsLike): Additional context for template substitution.
             **kwargs: Keyword arguments passed to `KnowledgeAsset.apply`.
 
-        Usage:
+        Examples:
             ```pycon
             >>> asset.set(lambda d: sum(d["d2"]["l"])).get()
             [3, 7, 11, 15, 19]
@@ -1166,7 +1166,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
             changed_only (Optional[bool]): If True, returns only data items that were modified.
             **kwargs: Additional keyword arguments.
 
-        Usage:
+        Examples:
             ```pycon
             >>> asset.remove("d2.l[0]").get()
             [{'s': 'ABC', 'b': True, 'd2': {'c': 'red', 'l': [2]}},
@@ -1221,7 +1221,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
             changed_only (Optional[bool]): If True, returns only data items that were modified.
             **kwargs: Additional keyword arguments.
 
-        Usage:
+        Examples:
             ```pycon
             >>> asset.move("d2.l", "l").get()
             [{'s': 'ABC', 'b': True, 'd2': {'c': 'red'}, 'l': [1, 2]},
@@ -1276,7 +1276,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
             changed_only (Optional[bool]): If True, returns only data items that were modified.
             **kwargs: Additional keyword arguments.
 
-        Usage:
+        Examples:
             ```pycon
             >>> asset.rename("d2.l", "x").get()
             [{'s': 'ABC', 'b': True, 'd2': {'c': 'red', 'x': [1, 2]}},
@@ -1330,7 +1330,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
             template_context (KwargsLike): Additional context for template substitution.
             **kwargs: Keyword arguments for the underlying function.
 
-        Usage:
+        Examples:
             ```pycon
             >>> asset.reorder(["xyz", ...], skip_missing=True).get()
             >>> asset.reorder(lambda x: ["xyz", ...] if "xyz" in x else [...]).get()
@@ -1392,7 +1392,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
                 returns a boolean indicating a match.
             **kwargs: Keyword arguments for the evaluation function.
 
-        Usage:
+        Examples:
             ```pycon
             >>> asset.query("d['s'] == 'ABC'")
             >>> asset.query("x['s'] == 'ABC'")
@@ -1565,7 +1565,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
             unique_fields (Optional[bool]): If False, allows duplicate fields.
             **kwargs: Keyword arguments passed to the underlying functions.
 
-        Usage:
+        Examples:
             ```pycon
             >>> asset.find("BC").get()
             [{'s': 'ABC', 'b': True, 'd2': {'c': 'red', 'l': [1, 2]}},
@@ -1813,7 +1813,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         Returns:
             MaybeKnowledgeAsset: A new asset with the specified replacements applied.
 
-        Usage:
+        Examples:
             ```pycon
             >>> asset.find_replace("BC", "XY").get()
             [{'s': 'AXY', 'b': True, 'd2': {'c': 'red', 'l': [1, 2]}},
@@ -1944,7 +1944,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
             changed_only (Optional[bool]): Whether to return only data items that were modified.
             **kwargs: Keyword arguments passed to `vectorbtpro.utils.search_.flatten_obj`.
 
-        Usage:
+        Examples:
             ```pycon
             >>> asset.flatten().get()
             [{'s': 'ABC',
@@ -1992,7 +1992,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
             changed_only (Optional[bool]): Whether to return only data items that were modified.
             **kwargs: Keyword arguments passed to `vectorbtpro.utils.search_.unflatten_obj`.
 
-        Usage:
+        Examples:
             ```pycon
             >>> asset.flatten().unflatten().get()
             [{'s': 'ABC', 'b': True, 'd2': {'c': 'red', 'l': [1, 2]}},
@@ -2045,7 +2045,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         Returns:
             MaybeKnowledgeAsset: The asset with dumped data.
 
-        Usage:
+        Examples:
             ```pycon
             >>> print(asset.dump(source="{i: d}", default_flow_style=True).join())
             {0: {s: ABC, b: true, d2: {c: red, l: [1, 2]}}}
@@ -2235,7 +2235,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         Returns:
             MaybeKnowledgeAsset: The result of reducing the asset data items.
 
-        Usage:
+        Examples:
             ```pycon
             >>> asset.reduce(lambda d1, d2: vbt.merge_dicts(d1, d2))
             >>> asset.reduce(vbt.merge_dicts)
@@ -2547,7 +2547,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         Keyword arguments are forwarded to `KnowledgeAsset.describe` and
         `vectorbtpro.utils.path_.dir_tree_from_paths` to build the schema structure.
 
-        Usage:
+        Examples:
             ```pycon
             >>> asset.print_schema()
             /

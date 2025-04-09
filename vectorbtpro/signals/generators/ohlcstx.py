@@ -149,7 +149,7 @@ def _bind_ohlcstx_plot(base_cls: type, entries_attr: str) -> tp.Callable:
 
     if entries_attr == "entries":
         plot.__doc__ += """
-    Usage:
+    Examples:
         ```pycon
         >>> ohlcstx.iloc[:, 0].plot().show()
         ```
@@ -173,7 +173,7 @@ class _OHLCSTX(OHLCSTX):
         Searches for an exit after each entry. If two entries come one after another, no exit can be placed.
         Consider either cleaning up entry signals prior to passing, or using `OHLCSTCX`.
 
-    Usage:
+    Examples:
         Test each stop type:
 
         ```pycon

@@ -39,7 +39,7 @@ class PXAccessor(BaseAccessor):
 
     Accessible via `pd.Series.vbt.px` and `pd.DataFrame.vbt.px`.
 
-    Usage:
+    Examples:
         ```pycon
         >>> from vectorbtpro import *
 

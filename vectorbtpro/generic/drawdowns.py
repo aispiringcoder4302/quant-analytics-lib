@@ -1041,7 +1041,7 @@ class Drawdowns(Ranges):
         Returns:
             BaseFigure: A figure object containing the plotted drawdowns and price data.
 
-        Usage:
+        Examples:
             ```pycon
             >>> index = pd.date_range("2020", periods=8)
             >>> price = pd.Series([1, 2, 1, 2, 3, 2, 1, 2], index=index)

@@ -95,7 +95,7 @@ class _OLS(OLS):
         Returns:
             BaseFigure: Figure with plotted OLS predictions and actual values.
 
-        Usage:
+        Examples:
             ```pycon
             >>> vbt.OLS.run(np.arange(len(ohlcv)), ohlcv['Close']).plot().show()
             ```
@@ -167,7 +167,7 @@ class _OLS(OLS):
         Returns:
             BaseFigure: Figure with plotted OLS z-score and confidence intervals.
 
-        Usage:
+        Examples:
             ```pycon
             >>> vbt.OLS.run(np.arange(len(ohlcv)), ohlcv['Close']).plot_zscore().show()
             ```

@@ -597,8 +597,6 @@ def rsi_1d_nb(
         close (Array1d): 1-dimensional array of closing prices.
         window (int): Window size for average gain and loss calculations.
         wtype (int): Weighting type; see `vectorbtpro.generic.enums.WType` for the options.
-
-            For `wtype`, see `vectorbtpro.generic.enums.WType`.
         minp (Optional[int]): Minimum periods for computation.
         adjust (bool): Whether to adjust the moving average calculations.
 
@@ -1957,8 +1955,8 @@ def pivot_info_1d_nb(
     Args:
         high (Array1d): Array of high prices.
         low (Array1d): Array of low prices.
-        up_th (FlexArray1dLike): Up threshold(s).
-        down_th (FlexArray1dLike): Down threshold(s).
+        up_th (FlexArray1dLike): Upper threshold(s).
+        down_th (FlexArray1dLike): Lower threshold(s).
 
     Returns:
         Tuple[Array1d, Array1d, Array1d, Array1d]: A tuple containing:
@@ -2077,8 +2075,8 @@ def pivot_info_nb(
     Args:
         high (Array2d): Array of high prices.
         low (Array2d): Array of low prices.
-        up_th (FlexArray2dLike): Up threshold(s).
-        down_th (FlexArray2dLike): Down threshold(s).
+        up_th (FlexArray2dLike): Upper threshold(s).
+        down_th (FlexArray2dLike): Lower threshold(s).
 
     Returns:
         Tuple[Array2d, Array2d, Array2d, Array2d]: A tuple containing:
@@ -2172,9 +2170,6 @@ def pivot_value_nb(high: tp.Array2d, low: tp.Array2d, last_pivot: tp.Array2d, la
 def pivots_1d_nb(conf_pivot: tp.Array1d, conf_idx: tp.Array1d, last_pivot: tp.Array1d) -> tp.Array1d:
     """Return pivot values based on input configuration arrays.
 
-    !!! warning
-        To be used in plotting only. Do not use it as an indicator!
-
     Args:
         conf_pivot (Array1d): Array of pivot configuration values.
         conf_idx (Array1d): Array of indices where pivot values should be assigned.
@@ -2182,6 +2177,9 @@ def pivots_1d_nb(conf_pivot: tp.Array1d, conf_idx: tp.Array1d, last_pivot: tp.Ar
 
     Returns:
         Array1d: An array of computed pivot values.
+
+    !!! warning
+        To be used in plotting only. Do not use it as an indicator!
     """
     pivots = np.zeros(conf_pivot.shape, dtype=int_)
     for i in range(conf_pivot.shape[0] - 1):

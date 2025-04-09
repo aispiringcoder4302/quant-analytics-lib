@@ -58,7 +58,7 @@ class _MEANLB(MEANLB):
         Returns:
             BaseFigure: A figure displaying the overlaid heatmap.
 
-        Usage:
+        Examples:
             ```pycon
             >>> vbt.MEANLB.run(ohlcv['Close']).plot().show()
             ```

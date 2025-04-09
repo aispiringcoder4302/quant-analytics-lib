@@ -2623,7 +2623,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
             **layout_kwargs: Keyword arguments for configuring the figure layout.
 
-        Usage:
+        Examples:
             ```pycon
             >>> np.random.seed(0)
             >>> rets = pd.Series(np.random.uniform(-0.05, 0.05, size=100))

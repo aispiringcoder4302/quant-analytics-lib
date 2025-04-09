@@ -456,11 +456,7 @@ class AggMessageAssetFunc(AssetFunc):
 
 class AggBlockAssetFunc(AssetFunc):
     """Asset function class for aggregating block messages with
-    `vectorbtpro.utils.knowledge.custom_assets.MessagesAsset.aggregate_blocks`.
-
-    Usage:
-        See `vectorbtpro.utils.knowledge.custom_assets.MessagesAsset.aggregate_blocks` for an example.
-    """
+    `vectorbtpro.utils.knowledge.custom_assets.MessagesAsset.aggregate_blocks`."""
 
     _short_name: tp.ClassVar[tp.Optional[str]] = "agg_block"
 

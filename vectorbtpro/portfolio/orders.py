@@ -396,7 +396,7 @@ class Orders(PriceRecords):
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
             **layout_kwargs: Keyword arguments for configuring the figure layout.
 
-        Usage:
+        Examples:
             ```pycon
             >>> index = pd.date_range("2020", periods=5)
             >>> price = pd.Series([1., 2., 3., 2., 1.], index=index)

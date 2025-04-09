@@ -111,7 +111,7 @@ class _MACD(MACD):
         Returns:
             BaseFigure: The updated figure with the MACD indicator plots.
 
-        Usage:
+        Examples:
             ```pycon
             >>> vbt.MACD.run(ohlcv['Close']).plot().show()
             ```

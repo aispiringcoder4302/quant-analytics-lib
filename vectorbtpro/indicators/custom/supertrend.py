@@ -68,7 +68,7 @@ class _SUPERTREND(SUPERTREND):
         Returns:
             BaseFigure: The figure containing the plotted indicator traces.
 
-        Usage:
+        Examples:
             ```pycon
             >>> vbt.SUPERTREND.run(ohlcv['High'], ohlcv['Low'], ohlcv['Close']).plot().show()
             ```

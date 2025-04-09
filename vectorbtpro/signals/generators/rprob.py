@@ -50,7 +50,7 @@ class _RPROB(RPROB):
         All parameters can be either a single value (per frame) or a NumPy array (per row, column,
         or element). To generate multiple combinations, pass them as lists.
 
-    Usage:
+    Examples:
         Generate three columns with different entry probabilities:
 
         ```pycon

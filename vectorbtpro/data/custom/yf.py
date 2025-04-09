@@ -33,7 +33,7 @@ class YFData(RemoteData):
 
     See `YFData.fetch_symbol` for argument details.
 
-    Usage:
+    Examples:
         ```pycon
         >>> from vectorbtpro import *
 

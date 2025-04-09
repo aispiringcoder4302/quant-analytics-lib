@@ -49,7 +49,7 @@ class _RAND(RAND):
         Parameter `n` can be either a single value (per frame) or a NumPy array (per column).
         To generate multiple combinations, pass it as a list.
 
-    Usage:
+    Examples:
         Test three different entry counts values:
 
         ```pycon

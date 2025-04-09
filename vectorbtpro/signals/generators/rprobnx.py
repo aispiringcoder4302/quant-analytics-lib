@@ -54,7 +54,7 @@ class _RPROBNX(RPROBNX):
 
     See `RPROB` for notes on parameters.
 
-    Usage:
+    Examples:
         Test all probability combinations:
 
         ```pycon

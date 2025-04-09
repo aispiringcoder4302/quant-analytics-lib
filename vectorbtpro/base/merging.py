@@ -465,13 +465,6 @@ def column_stack_merge(
         MaybeTuple[AnyArray]: The merged column-stacked array-like object,
             or a tuple of such objects when merging a sequence of tuples.
 
-    Usage:
-        Merge with wrapping:
-            result = column_stack_merge(arr1, arr2, wrap=True, wrap_kwargs={'index': ...})
-
-        Merge without wrapping:
-            result = column_stack_merge(arr1, arr2, wrap=False)
-
     !!! note
         All arrays are assumed to have the same type and dimensionality.
     """

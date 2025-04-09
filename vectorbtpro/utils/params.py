@@ -98,7 +98,7 @@ def generate_param_combs(op_tree: tp.Tuple, depth: int = 0) -> tp.Params:
     Returns:
         Params: A sequence of generated parameter combinations.
 
-    Usage:
+    Examples:
         ```pycon
         >>> from vectorbtpro import *
 
@@ -2200,8 +2200,8 @@ def parameterized(
     Returns:
         Callable: A new function with the same signature as the provided function.
 
-    Usage:
-        * No parameters, no parameter configs:
+    Examples:
+        No parameters, no parameter configs:
 
         ```pycon
         >>> from vectorbtpro import *
@@ -2222,7 +2222,7 @@ def parameterized(
         dtype: float64
         ```
 
-        * One parameter, no parameter configs:
+        One parameter, no parameter configs:
 
         ```pycon
         >>> my_ma(sr, vbt.Param([3, 4, 5]))
@@ -2236,7 +2236,7 @@ def parameterized(
         6       2.000000  2.5  2.6
         ```
 
-        * Product of two parameters, no parameter configs:
+        Product of two parameters, no parameter configs:
 
         ```pycon
         >>> my_ma(
@@ -2255,7 +2255,7 @@ def parameterized(
         6       2.000000  1.765625    2.5  1.921984    2.6  1.990398
         ```
 
-        * No parameters, one partial parameter config:
+        No parameters, one partial parameter config:
 
         ```pycon
         >>> my_ma(sr, param_configs=[dict(window=3)])
@@ -2269,7 +2269,7 @@ def parameterized(
         6             2.000000
         ```
 
-        * No parameters, one full parameter config:
+        No parameters, one full parameter config:
 
         ```pycon
         >>> my_ma(param_configs=[dict(sr_or_df=sr, window=3)])
@@ -2283,7 +2283,7 @@ def parameterized(
         6             2.000000
         ```
 
-        * No parameters, multiple parameter configs:
+        No parameters, multiple parameter configs:
 
         ```pycon
         >>> my_ma(param_configs=[
@@ -2300,7 +2300,7 @@ def parameterized(
         6             2.5  1.000000
         ```
 
-        * Multiple parameters, multiple parameter configs:
+        Multiple parameters, multiple parameter configs:
 
         ```pycon
         >>> my_ma(param_configs=[
@@ -2318,7 +2318,7 @@ def parameterized(
         6             2.5  0.5  3.000000  1.000000
         ```
 
-        * Using annotations:
+        Using annotations:
 
         ```pycon
         >>> @vbt.parameterized

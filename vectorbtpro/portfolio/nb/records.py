@@ -268,7 +268,7 @@ def get_entry_trades_nb(
 
     Entry trade records are buy orders in a long position and sell orders in a short position.
 
-    Usage:
+    Examples:
         ```pycon
         >>> from vectorbtpro import *
 
@@ -586,8 +586,8 @@ def get_exit_trades_nb(
 
     Exit trade records are sell orders in a long position and buy orders in a short position.
 
-    Usage:
-        * Building upon the example in `get_exit_trades_nb`:
+    Examples:
+        Building upon the example in `get_exit_trades_nb`:
 
         ```pycon
         >>> exit_trade_records = vbt.pf_nb.get_exit_trades_nb(sim_out.order_records, close, col_map)
@@ -927,8 +927,8 @@ def get_positions_nb(trade_records: tp.RecordArray, col_map: tp.GroupMap) -> tp.
 
     Trades can be entry trades, exit trades, and even positions themselves - all will produce the same results.
 
-    Usage:
-        * Building upon the example in `get_exit_trades_nb`:
+    Examples:
+        Building upon the example in `get_exit_trades_nb`:
 
         ```pycon
         >>> col_map = vbt.rec_nb.col_map_nb(exit_trade_records['col'], target_shape[1])

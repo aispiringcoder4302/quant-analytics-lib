@@ -67,7 +67,7 @@ class _FMIN(FMIN):
         Returns:
             BaseFigure: The updated figure object with the plotted traces.
 
-        Usage:
+        Examples:
             ```pycon
             >>> vbt.FMIN.run(ohlcv['Close']).plot().show()
             ```

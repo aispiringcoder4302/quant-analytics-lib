@@ -39,8 +39,8 @@ class FinPyData(RemoteData):
     See https://github.com/cuemacro/findatapy for API documentation.
     See `FinPyData.fetch_symbol` for argument details.
 
-    Usage:
-        * Pull data (keyword argument format):
+    Examples:
+        Pull data (keyword argument format):
 
         ```pycon
         >>> data = vbt.FinPyData.pull(
@@ -54,7 +54,7 @@ class FinPyData(RemoteData):
         ... )
         ```
 
-        * Pull data (string format):
+        Pull data (string format):
 
         ```pycon
         >>> data = vbt.FinPyData.pull(

@@ -136,7 +136,7 @@ if __version_info__ < (20, 0, 0, "alpha", 1):
 
         See [Extensions – Your first Bot](https://github.com/python-telegram-bot/python-telegram-bot/wiki/Extensions-%E2%80%93-Your-first-Bot).
 
-        Usage:
+        Examples:
             Let's extend `TelegramBot` to track cryptocurrency prices:
 
             ```python
@@ -549,7 +549,7 @@ else:
             >>> nest_asyncio.apply()
             ```
 
-        Usage:
+        Examples:
             Let's extend `TelegramBot` to track cryptocurrency prices, as a Python script:
 
             ```python

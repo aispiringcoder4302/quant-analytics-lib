@@ -71,7 +71,7 @@ class _FSTD(FSTD):
         Returns:
             BaseFigure: The updated figure with the `FSTD.fstd` indicator plotted.
 
-        Usage:
+        Examples:
             ```pycon
             >>> vbt.FSTD.run(ohlcv['Close']).plot().show()
             ```

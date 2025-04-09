@@ -33,8 +33,8 @@ class BentoData(RemoteData):
 
     See `BentoData.fetch_symbol` for argument details.
 
-    Usage:
-        * Set up the API key globally (optional):
+    Examples:
+        Set up the API key globally (optional):
 
         ```pycon
         >>> from vectorbtpro import *
@@ -46,7 +46,7 @@ class BentoData(RemoteData):
         ... )
         ```
 
-        * Pull data:
+        Pull data:
 
         ```pycon
         >>> data = vbt.BentoData.pull(

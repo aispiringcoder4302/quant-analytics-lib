@@ -277,8 +277,8 @@ class SignalsAccessor(GenericAccessor):
 
         Arguments to `place_func_nb` can be passed either as `*args` or `place_args` (but not both!).
 
-        Usage:
-            * Generate random signals manually:
+        Examples:
+            Generate random signals manually:
 
             ```pycon
             >>> @njit
@@ -369,8 +369,8 @@ class SignalsAccessor(GenericAccessor):
         Arguments to `entry_place_func_nb` can be passed either as `*args` or `entry_place_args` while
         arguments to `exit_place_func_nb` can be passed either as `*args` or `exit_place_args` (but not both!).
 
-        Usage:
-            * Generate entry and exit signals one after another:
+        Examples:
+            Generate entry and exit signals one after another:
 
             ```pycon
             >>> @njit
@@ -403,7 +403,7 @@ class SignalsAccessor(GenericAccessor):
             2020-01-05  False  False  False
             ```
 
-            * Generate three entries and one exit one after another:
+            Generate three entries and one exit one after another:
 
             ```pycon
             >>> @njit
@@ -514,8 +514,8 @@ class SignalsAccessor(GenericAccessor):
     ) -> tp.SeriesFrame:
         """See `vectorbtpro.signals.nb.generate_ex_nb`.
 
-        Usage:
-            * Generate an exit just before the next entry:
+        Examples:
+            Generate an exit just before the next entry:
 
             ```pycon
             >>> @njit
@@ -655,8 +655,8 @@ class SignalsAccessor(GenericAccessor):
 
         Specify `seed` to make output deterministic.
 
-        Usage:
-            * For each column, generate a variable number of signals:
+        Examples:
+            For each column, generate a variable number of signals:
 
             ```pycon
             >>> vbt.pd_acc.signals.generate_random(
@@ -676,7 +676,7 @@ class SignalsAccessor(GenericAccessor):
             2020-01-05  False  False   True
             ```
 
-            * For each column and time step, pick a signal with 50% probability:
+            For each column and time step, pick a signal with 50% probability:
 
             ```pycon
             >>> vbt.pd_acc.signals.generate_random(
@@ -774,8 +774,8 @@ class SignalsAccessor(GenericAccessor):
         If `entry_prob` and `exit_prob` are set, uses `SignalsAccessor.generate_both` with
         `vectorbtpro.signals.nb.rand_by_prob_place_nb`.
 
-        Usage:
-            * For each column, generate two entries and exits randomly:
+        Examples:
+            For each column, generate two entries and exits randomly:
 
             ```pycon
             >>> en, ex = vbt.pd_acc.signals.generate_random_both(
@@ -803,7 +803,7 @@ class SignalsAccessor(GenericAccessor):
             2020-01-05   True   True   True
             ```
 
-            * For each column and time step, pick entry with 50% probability and exit right after:
+            For each column and time step, pick entry with 50% probability and exit right after:
 
             ```pycon
             >>> en, ex = vbt.pd_acc.signals.generate_random_both(
@@ -904,8 +904,8 @@ class SignalsAccessor(GenericAccessor):
 
         Specify `seed` to make output deterministic.
 
-        Usage:
-            * After each entry in `mask`, generate exactly one exit:
+        Examples:
+            After each entry in `mask`, generate exactly one exit:
 
             ```pycon
             >>> mask.vbt.signals.generate_random_exits(seed=42)
@@ -917,7 +917,7 @@ class SignalsAccessor(GenericAccessor):
             2020-01-05  False  False   True
             ```
 
-            * After each entry in `mask` and at each time step, generate exit with 50% probability:
+            After each entry in `mask` and at each time step, generate exit with 50% probability:
 
             ```pycon
             >>> mask.vbt.signals.generate_random_exits(prob=0.5, seed=42)
@@ -1027,8 +1027,8 @@ class SignalsAccessor(GenericAccessor):
             To remove all entries that come between an entry and its exit,
             set `chain` to True. This will return two arrays: new entries and exits.
 
-        Usage:
-            * Regular stop loss:
+        Examples:
+            Regular stop loss:
 
             ```pycon
             >>> ts = pd.Series([1, 2, 3, 2, 1])
@@ -1042,7 +1042,7 @@ class SignalsAccessor(GenericAccessor):
             2020-01-05  False  False  False
             ```
 
-            * Trailing stop loss:
+            Trailing stop loss:
 
             ```pycon
             >>> mask.vbt.signals.generate_stop_exits(ts, stop=-0.1, trailing=True)
@@ -1054,7 +1054,7 @@ class SignalsAccessor(GenericAccessor):
             2020-01-05  False  False  False
             ```
 
-            * Testing multiple take profit stops:
+            Testing multiple take profit stops:
 
             ```pycon
             >>> mask.vbt.signals.generate_stop_exits(ts, stop=vbt.Param([1.0, 1.5]))
@@ -1228,8 +1228,8 @@ class SignalsAccessor(GenericAccessor):
             To remove all entries that come between an entry and its exit,
             set `chain` to True. This will return two arrays: new entries and exits.
 
-        Usage:
-            * Generate exits for TSL and TP of 10%:
+        Examples:
+            Generate exits for TSL and TP of 10%:
 
             ```pycon
             >>> price = pd.DataFrame({
@@ -1278,7 +1278,7 @@ class SignalsAccessor(GenericAccessor):
             Notice how the first two entry signals in the third column have no exit signal -
             there is no room between them for an exit signal.
 
-            * To find an exit for the first entry and ignore all entries that are in-between them,
+            To find an exit for the first entry and ignore all entries that are in-between them,
             we can pass `until_next=False` and `skip_until_exit=True`:
 
             ```pycon
@@ -1324,7 +1324,7 @@ class SignalsAccessor(GenericAccessor):
             Now, the first signal in the third column gets executed regardless of the entries that come next,
             which is very similar to the logic that is implemented in `vectorbtpro.portfolio.base.Portfolio.from_signals`.
 
-            * To automatically remove all ignored entry signals, pass `chain=True`.
+            To automatically remove all ignored entry signals, pass `chain=True`.
             This will return a new entries array:
 
             ```pycon
@@ -1361,7 +1361,7 @@ class SignalsAccessor(GenericAccessor):
                 The last two examples above make entries dependent upon exits - this makes only sense
                 if you have no other exit arrays to combine this stop exit array with.
 
-            * Test multiple parameter combinations:
+            Test multiple parameter combinations:
 
             ```pycon
             >>> exits = mask.vbt.signals.generate_ohlc_stop_exits(
@@ -1646,8 +1646,8 @@ class SignalsAccessor(GenericAccessor):
 
         Uses `SignalsAccessor.rank` with `vectorbtpro.signals.nb.sig_pos_rank_nb`.
 
-        Usage:
-            * Rank each True value in each partition in `mask`:
+        Examples:
+            Rank each True value in each partition in `mask`:
 
             ```pycon
             >>> mask.vbt.signals.pos_rank()
@@ -1722,8 +1722,8 @@ class SignalsAccessor(GenericAccessor):
 
         Uses `SignalsAccessor.rank` with `vectorbtpro.signals.nb.part_pos_rank_nb`.
 
-        Usage:
-            * Rank each partition of True values in `mask`:
+        Examples:
+            Rank each partition of True values in `mask`:
 
             ```pycon
             >>> mask.vbt.signals.partition_pos_rank()
@@ -1883,8 +1883,8 @@ class SignalsAccessor(GenericAccessor):
     ) -> tp.SeriesFrame:
         """See `vectorbtpro.signals.nb.distance_from_last_nb`.
 
-        Usage:
-            * Get the distance to the last signal:
+        Examples:
+            Get the distance to the last signal:
 
             ```pycon
             >>> mask.vbt.signals.distance_from_last()
@@ -1896,7 +1896,7 @@ class SignalsAccessor(GenericAccessor):
             2020-01-05  4  2  2
             ```
 
-            * Get the distance to the second last signal:
+            Get the distance to the second last signal:
 
             ```pycon
             >>> mask.vbt.signals.distance_from_last(nth=2)
@@ -1981,8 +1981,8 @@ class SignalsAccessor(GenericAccessor):
         If `target` specified, see `vectorbtpro.signals.nb.between_two_ranges_nb`.
         Both will broadcast using `vectorbtpro.base.reshaping.broadcast` and `broadcast_kwargs`.
 
-        Usage:
-            * One array:
+        Examples:
+            One array:
 
             ```pycon
             >>> mask_sr = pd.Series([True, False, False, True, False, True, True])
@@ -2000,7 +2000,7 @@ class SignalsAccessor(GenericAccessor):
             array([3, 2, 1])
             ```
 
-            * Two arrays, traversing the signals of the first array:
+            Two arrays, traversing the signals of the first array:
 
             ```pycon
             >>> mask_sr1 = pd.Series([True, True, True, False, False])
@@ -2018,7 +2018,7 @@ class SignalsAccessor(GenericAccessor):
             array([0, 2])
             ```
 
-            * Two arrays, traversing the signals of the second array:
+            Two arrays, traversing the signals of the second array:
 
             ```pycon
             >>> ranges = mask_sr1.vbt.signals.between_ranges(target=mask_sr2, relation="manyone")
@@ -2078,7 +2078,7 @@ class SignalsAccessor(GenericAccessor):
         If `use_end_idxs` is True, uses the index of the last signal in each partition as `idx_arr`.
         Otherwise, uses the index of the first signal.
 
-        Usage:
+        Examples:
             ```pycon
             >>> mask_sr = pd.Series([True, True, True, False, True, True])
             >>> mask_sr.vbt.signals.partition_ranges().readable
@@ -2103,7 +2103,7 @@ class SignalsAccessor(GenericAccessor):
         """Wrap the result of `vectorbtpro.signals.nb.between_partition_ranges_nb`
         with `vectorbtpro.generic.ranges.Ranges`.
 
-        Usage:
+        Examples:
             ```pycon
             >>> mask_sr = pd.Series([True, False, False, True, False, True, True])
             >>> mask_sr.vbt.signals.between_partition_ranges().readable
@@ -2160,7 +2160,7 @@ class SignalsAccessor(GenericAccessor):
         * "position(s)": Integer position (row) of signal in a column
         * "label(s)": Label of signal in a column
 
-        Usage:
+        Examples:
             ```pycon
             >>> mask.vbt.signals.unravel()
             signal          0      0      1      2      0      1      2
@@ -2227,8 +2227,8 @@ class SignalsAccessor(GenericAccessor):
         * "source_label(s)": Label of signal in a source column
         * "target_label(s)": Label of signal in a target column
 
-        Usage:
-            * One mask:
+        Examples:
+            One mask:
 
             ```pycon
             >>> mask.vbt.signals.unravel_between()
@@ -2251,7 +2251,7 @@ class SignalsAccessor(GenericAccessor):
             2020-01-05     False  False   True  False  False
             ```
 
-            * Two masks:
+            Two masks:
 
             ```pycon
             >>> source_mask = pd.Series([True, True, False, False, True, True])
@@ -2419,7 +2419,7 @@ class SignalsAccessor(GenericAccessor):
 
         See `vectorbtpro.signals.nb.ravel_nb`.
 
-        Usage:
+        Examples:
             ```pycon
             >>> unravel_mask = mask.vbt.signals.unravel()
             >>> original_mask = unravel_mask.vbt.signals.ravel(group_by=vbt.ExceptLevel("signal"))
@@ -2452,7 +2452,7 @@ class SignalsAccessor(GenericAccessor):
     ) -> tp.MaybeSeries:
         """See `vectorbtpro.signals.nb.nth_index_nb`.
 
-        Usage:
+        Examples:
             ```pycon
             >>> mask.vbt.signals.nth_index(0)
             a   2020-01-01
@@ -2512,7 +2512,7 @@ class SignalsAccessor(GenericAccessor):
         * [-1.0, 0.0): average signal is on the left
         * (0.0, 1.0]: average signal is on the right
 
-        Usage:
+        Examples:
             ```pycon
             >>> pd.Series([True, False, False, False]).vbt.signals.norm_avg_index()
             -1.0
@@ -2721,7 +2721,7 @@ class SignalsAccessor(GenericAccessor):
             column (hashable): Column to plot.
             **kwargs: Keyword arguments passed to `vectorbtpro.generic.accessors.GenericAccessor.lineplot`.
 
-        Usage:
+        Examples:
             ```pycon
             >>> mask[['a', 'c']].vbt.signals.plot().show()
             ```
@@ -2750,7 +2750,7 @@ class SignalsAccessor(GenericAccessor):
             column (hashable): Column to plot.
             **kwargs: Keyword arguments passed to `vectorbtpro.generic.accessors.GenericAccessor.scatterplot`.
 
-        Usage:
+        Examples:
             ```pycon
             >>> ts = pd.Series([1, 2, 3, 2, 1], index=mask.index)
             >>> fig = ts.vbt.lineplot()

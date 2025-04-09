@@ -38,8 +38,8 @@ class AlpacaData(RemoteData):
 
     Refer to `AlpacaData.fetch_symbol` for detailed argument descriptions.
 
-    Usage:
-        * Set up the API key globally (optional for crypto):
+    Examples:
+        Set up the API key globally (optional for crypto):
 
         ```pycon
         >>> from vectorbtpro import *
@@ -52,7 +52,7 @@ class AlpacaData(RemoteData):
         ... )
         ```
 
-        * Pull stock data:
+        Pull stock data:
 
         ```pycon
         >>> data = vbt.AlpacaData.pull(
@@ -63,7 +63,7 @@ class AlpacaData(RemoteData):
         ... )
         ```
 
-        * Pull crypto data:
+        Pull crypto data:
 
         ```pycon
         >>> data = vbt.AlpacaData.pull(

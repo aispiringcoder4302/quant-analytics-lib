@@ -53,8 +53,8 @@ def get_ranges_nb(arr: tp.Array2d, gap_value: tp.Scalar) -> tp.RecordArray:
     !!! tip
         This function is parallelizable.
 
-    Usage:
-        * Find ranges in time series:
+    Examples:
+        Find ranges in time series:
 
         ```pycon
         >>> from vectorbtpro import *
@@ -1148,7 +1148,7 @@ def get_drawdowns_nb(
     !!! tip
         This function is parallelizable.
 
-    Usage:
+    Examples:
         ```pycon
         >>> from vectorbtpro import *
 

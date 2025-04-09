@@ -34,8 +34,8 @@ class NDLData(RemoteData):
 
     See `NDLData.fetch_symbol` for details on available arguments.
 
-    Usage:
-        * Set up the API key globally (optional):
+    Examples:
+        Set up the API key globally (optional):
 
         ```pycon
         >>> from vectorbtpro import *
@@ -45,7 +45,7 @@ class NDLData(RemoteData):
         ... )
         ```
 
-        * Pull a dataset:
+        Pull a dataset:
 
         ```pycon
         >>> data = vbt.NDLData.pull(
@@ -55,7 +55,7 @@ class NDLData(RemoteData):
         ... )
         ```
 
-        * Pull a datatable:
+        Pull a datatable:
 
         ```pycon
         >>> data = vbt.NDLData.pull(

@@ -155,7 +155,7 @@ class Gauge(TraceType, TraceUpdater):
         fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
         **layout_kwargs: Keyword arguments for configuring the figure layout.
 
-    Usage:
+    Examples:
         ```pycon
         >>> from vectorbtpro import *
 
@@ -287,7 +287,7 @@ class Bar(TraceType, TraceUpdater):
         fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
         **layout_kwargs: Keyword arguments for configuring the figure layout.
 
-    Usage:
+    Examples:
         ```pycon
         >>> from vectorbtpro import *
 
@@ -401,7 +401,7 @@ class Scatter(TraceType, TraceUpdater):
             more than 10,000 points, this flag is set to True.
         **layout_kwargs: Keyword arguments for configuring the figure layout.
 
-    Usage:
+    Examples:
         ```pycon
         >>> from vectorbtpro import *
 
@@ -549,7 +549,7 @@ class Histogram(TraceType, TraceUpdater):
         fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
         **layout_kwargs: Keyword arguments for configuring the figure layout.
 
-    Usage:
+    Examples:
         ```pycon
         >>> from vectorbtpro import *
 
@@ -736,7 +736,7 @@ class Box(TraceType, TraceUpdater):
         fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
         **layout_kwargs: Keyword arguments for configuring the figure layout.
 
-    Usage:
+    Examples:
         ```pycon
         >>> from vectorbtpro import *
 
@@ -910,7 +910,7 @@ class Heatmap(TraceType, TraceUpdater):
         fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
         **layout_kwargs: Keyword arguments for configuring the figure layout.
 
-    Usage:
+    Examples:
         ```pycon
         >>> from vectorbtpro import *
 
@@ -1042,7 +1042,7 @@ class Volume(TraceType, TraceUpdater):
     !!! note
         Figure widgets currently have issues displaying NaNs. Use the `.show()` method for rendering.
 
-    Usage:
+    Examples:
         ```pycon
         >>> from vectorbtpro import *
 

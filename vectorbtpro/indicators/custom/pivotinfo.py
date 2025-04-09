@@ -118,7 +118,7 @@ class _PIVOTINFO(PIVOTINFO):
         Returns:
             BaseFigure: The updated figure with the plotted confirmed and last pivot values.
 
-        Usage:
+        Examples:
             ```pycon
             >>> fig = ohlcv.vbt.ohlcv.plot()
             >>> vbt.PIVOTINFO.run(ohlcv['High'], ohlcv['Low'], 0.1, 0.1).plot(fig=fig).show()
@@ -185,7 +185,7 @@ class _PIVOTINFO(PIVOTINFO):
         Returns:
             BaseFigure: The updated figure with the plotted zigzag line.
 
-        Usage:
+        Examples:
             ```pycon
             >>> fig = ohlcv.vbt.ohlcv.plot()
             >>> vbt.PIVOTINFO.run(ohlcv['High'], ohlcv['Low'], 0.1, 0.1).plot_zigzag(fig=fig).show()

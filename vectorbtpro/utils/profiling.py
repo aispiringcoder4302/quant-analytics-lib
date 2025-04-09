@@ -33,7 +33,7 @@ __all__ = [
 class Timer(Base):
     """Class for measuring execution time using `timeit`.
 
-    Usage:
+    Examples:
         ```pycon
         >>> from vectorbtpro import *
 
@@ -164,7 +164,7 @@ def timeit(func: tp.Callable, readable: bool = True, **kwargs) -> tp.Union[str, 
     Returns:
         Union[str, timedelta]: The average execution time as a human-readable string or a timedelta.
 
-    Usage:
+    Examples:
         ```pycon
         >>> from vectorbtpro import *
 
@@ -249,7 +249,7 @@ class MemTracer(Base):
 
     This context manager starts tracing memory on entry and stops on exit, capturing the final and peak memory usage.
 
-    Usage:
+    Examples:
         ```pycon
         >>> from vectorbtpro import *
 

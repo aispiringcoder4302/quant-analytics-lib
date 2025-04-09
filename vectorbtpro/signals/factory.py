@@ -332,8 +332,8 @@ class SignalFactory(IndicatorFactory):
 
         For more arguments, see `vectorbtpro.indicators.factory.IndicatorBase.run_pipeline`.
 
-        Usage:
-            * The simplest signal indicator that places True at the very first index:
+        Examples:
+            The simplest signal indicator that places True at the very first index:
 
             ```pycon
             >>> from vectorbtpro import *
@@ -368,7 +368,7 @@ class SignalFactory(IndicatorFactory):
             2  False  False  False
             ```
 
-            * Take the first entry and place an exit after waiting `n` ticks. Find the next entry and repeat.
+            Take the first entry and place an exit after waiting `n` ticks. Find the next entry and repeat.
             Test three different `n` values.
 
             ```pycon
@@ -421,7 +421,7 @@ class SignalFactory(IndicatorFactory):
             4         False  False  False
             ```
 
-            * To combine multiple iterative signals, you would need to create a custom placement function.
+            To combine multiple iterative signals, you would need to create a custom placement function.
             Here is an example of combining two random generators using "OR" rule (the first signal wins):
 
             ```pycon

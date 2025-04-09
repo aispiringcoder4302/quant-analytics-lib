@@ -652,8 +652,8 @@ class TVData(RemoteData):
         To obtain your authentication token, log in to TradingView, open any chart, access your
         browser's developer tools, and search for "auth_token".
 
-    Usage:
-        * Set up the credentials globally (optional):
+    Examples:
+        Set up the credentials globally (optional):
 
         ```pycon
         >>> from vectorbtpro import *
@@ -667,7 +667,7 @@ class TVData(RemoteData):
         ... )
         ```
 
-        * Pull data:
+        Pull data:
 
         ```pycon
         >>> data = vbt.TVData.pull(
@@ -758,8 +758,8 @@ class TVData(RemoteData):
             Union[List[str], List[Kwargs]]: List of symbols or list of dictionaries
                 with additional field data if `return_field_data` is True.
 
-        Usage:
-            * List all symbols (market scanner):
+        Examples:
+            List all symbols (market scanner):
 
             ```pycon
             >>> from vectorbtpro import *
@@ -767,43 +767,43 @@ class TVData(RemoteData):
             >>> vbt.TVData.list_symbols()
             ```
 
-            * Search for symbols matching a pattern (market scanner, client-side):
+            Search for symbols matching a pattern (market scanner, client-side):
 
             ```pycon
             >>> vbt.TVData.list_symbols(symbol_pattern="BTC*")
             ```
 
-            * Search for exchanges matching a pattern (market scanner, client-side):
+            Search for exchanges matching a pattern (market scanner, client-side):
 
             ```pycon
             >>> vbt.TVData.list_symbols(exchange_pattern="NASDAQ")
             ```
 
-            * Search for symbols containing a text (symbol search, server-side):
+            Search for symbols containing a text (symbol search, server-side):
 
             ```pycon
             >>> vbt.TVData.list_symbols(text="BTC")
             ```
 
-            * List symbols from an exchange (symbol search):
+            List symbols from an exchange (symbol search):
 
             ```pycon
             >>> vbt.TVData.list_symbols(exchange="NASDAQ")
             ```
 
-            * List symbols from a market (market scanner):
+            List symbols from a market (market scanner):
 
             ```pycon
             >>> vbt.TVData.list_symbols(market="poland")
             ```
 
-            * List index constituents (market scanner):
+            List index constituents (market scanner):
 
             ```pycon
             >>> vbt.TVData.list_symbols(groups=dict(index="NASDAQ:NDX"))
             ```
 
-            * Filter symbols by fields using a function (market scanner):
+            Filter symbols by fields using a function (market scanner):
 
             ```pycon
             >>> vbt.TVData.list_symbols(
@@ -813,7 +813,7 @@ class TVData(RemoteData):
             ... )
             ```
 
-            * Filter symbols by fields using a template (market scanner):
+            Filter symbols by fields using a template (market scanner):
 
             ```pycon
             >>> vbt.TVData.list_symbols(

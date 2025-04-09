@@ -2648,8 +2648,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         !!! hint
             All broadcastable arguments can be set per frame, series, row, column, or element.
 
-        Usage:
-            * Buy 10 units each tick:
+        Examples:
+            Buy 10 units each tick:
 
             ```pycon
             >>> close = pd.Series([1, 2, 3, 4, 5])
@@ -2671,7 +2671,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             dtype: float64
             ```
 
-            * Reverse each position by first closing it:
+            Reverse each position by first closing it:
 
             ```pycon
             >>> size = [1, 0, -1, 0, 1]
@@ -2693,7 +2693,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             dtype: float64
             ```
 
-            * Regularly deposit cash at open and invest it within the same bar at close:
+            Regularly deposit cash at open and invest it within the same bar at close:
 
             ```pycon
             >>> close = pd.Series([1, 2, 3, 4, 5])
@@ -2722,7 +2722,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             dtype: float64
             ```
 
-            * Equal-weighted portfolio as in `vectorbtpro.portfolio.nb.from_order_func.from_order_func_nb` example
+            Equal-weighted portfolio as in `vectorbtpro.portfolio.nb.from_order_func.from_order_func_nb` example
             (it's more compact but has less control over execution):
 
             ```pycon
@@ -2748,7 +2748,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             ![](/assets/images/api/from_orders.light.svg#only-light){: .iimg loading=lazy }
             ![](/assets/images/api/from_orders.dark.svg#only-dark){: .iimg loading=lazy }
 
-            * Test 10 random weight combinations:
+            Test 10 random weight combinations:
 
             ```pycon
             >>> np.random.seed(42)
@@ -3279,8 +3279,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
         Also see notes and hints for `Portfolio.from_orders`.
 
-        Usage:
-            * By default, if all signal arrays are None, `entries` becomes True,
+        Examples:
+            By default, if all signal arrays are None, `entries` becomes True,
             which opens a position at the very first tick and does nothing else:
 
             ```pycon
@@ -3295,7 +3295,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             dtype: float64
             ```
 
-            * Entry opens long, exit closes long:
+            Entry opens long, exit closes long:
 
             ```pycon
             >>> pf = vbt.Portfolio.from_signals(
@@ -3334,7 +3334,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             Notice how both `short_entries` and `short_exits` are provided as constants - as any other
             broadcastable argument, they are treated as arrays where each element is False.
 
-            * Entry opens short, exit closes short:
+            Entry opens short, exit closes short:
 
             ```pycon
             >>> pf = vbt.Portfolio.from_signals(
@@ -3370,7 +3370,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             dtype: float64
             ```
 
-            * Entry opens long and closes short, exit closes long and opens short:
+            Entry opens long and closes short, exit closes long and opens short:
 
             ```pycon
             >>> pf = vbt.Portfolio.from_signals(
@@ -3406,7 +3406,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             dtype: float64
             ```
 
-            * More complex signal combinations are best expressed using direction-aware arrays.
+            More complex signal combinations are best expressed using direction-aware arrays.
             For example, ignore opposite signals as long as the current position is open:
 
             ```pycon
@@ -3428,7 +3428,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             dtype: float64
             ```
 
-            * First opposite signal closes the position, second one opens a new position:
+            First opposite signal closes the position, second one opens a new position:
 
             ```pycon
             >>> pf = vbt.Portfolio.from_signals(
@@ -3448,7 +3448,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             dtype: float64
             ```
 
-            * If both long entry and exit signals are True (a signal conflict), choose exit:
+            If both long entry and exit signals are True (a signal conflict), choose exit:
 
             ```pycon
             >>> pf = vbt.Portfolio.from_signals(
@@ -3467,7 +3467,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             dtype: float64
             ```
 
-            * If both long entry and short entry signal are True (a direction conflict), choose short:
+            If both long entry and short entry signal are True (a direction conflict), choose short:
 
             ```pycon
             >>> pf = vbt.Portfolio.from_signals(
@@ -3490,7 +3490,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
                 Remember that when direction is set to 'both', entries become `long_entries` and exits become
                 `short_entries`, so this becomes a conflict of directions rather than signals.
 
-            * If there are both signal and direction conflicts:
+            If there are both signal and direction conflicts:
 
             ```pycon
             >>> pf = vbt.Portfolio.from_signals(
@@ -3513,7 +3513,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             dtype: float64
             ```
 
-            * Turn on accumulation of signals. Entry means long order, exit means short order
+            Turn on accumulation of signals. Entry means long order, exit means short order
             (acts similar to `from_orders`):
 
             ```pycon
@@ -3533,7 +3533,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             dtype: float64
             ```
 
-            * Allow increasing a position (of any direction), deny decreasing a position:
+            Allow increasing a position (of any direction), deny decreasing a position:
 
             ```pycon
             >>> pf = vbt.Portfolio.from_signals(
@@ -3552,7 +3552,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             dtype: float64
             ```
 
-            * Test multiple parameters via regular broadcasting:
+            Test multiple parameters via regular broadcasting:
 
             ```pycon
             >>> pf = vbt.Portfolio.from_signals(
@@ -3570,7 +3570,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             4               0.0        0.0    0.0
             ```
 
-            * Test multiple parameters via `vectorbtpro.base.reshaping.BCO`:
+            Test multiple parameters via `vectorbtpro.base.reshaping.BCO`:
 
             ```pycon
             >>> pf = vbt.Portfolio.from_signals(
@@ -3587,7 +3587,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             4               0.0        0.0    0.0
             ```
 
-            * Set risk/reward ratio by passing trailing stop loss and take profit thresholds:
+            Set risk/reward ratio by passing trailing stop loss and take profit thresholds:
 
             ```pycon
             >>> close = pd.Series([10, 11, 12, 11, 10, 9])
@@ -3630,7 +3630,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             dtype: float64
             ```
 
-            * Test different stop combinations:
+            Test different stop combinations:
 
             ```pycon
             >>> pf = vbt.Portfolio.from_signals(
@@ -3652,7 +3652,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             This works because `pd.Index` automatically translates into `vectorbtpro.base.reshaping.BCO`
             with `product` set to True.
 
-            * We can implement our own stop loss or take profit, or adjust the existing one at each time step.
+            We can implement our own stop loss or take profit, or adjust the existing one at each time step.
             Let's implement [stepped stop-loss](https://www.freqtrade.io/en/stable/strategy-advanced/#stepped-stoploss):
 
             ```pycon
@@ -3679,7 +3679,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             dtype: float64
             ```
 
-            * Sometimes there is a need to provide or transform signals dynamically. For this, we can implement
+            Sometimes there is a need to provide or transform signals dynamically. For this, we can implement
             a custom signal function `signal_func_nb`. For example, let's implement a signal function that
             takes two numerical arrays - long and short one - and transforms them into 4 direction-aware boolean
             arrays that vectorbt understands:
@@ -3857,8 +3857,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             To generate random signals, the shape of `close` is used. Broadcasting with other
             arrays happens after the generation.
 
-        Usage:
-            * Test multiple combinations of random entries and exits:
+        Examples:
+            Test multiple combinations of random entries and exits:
 
             ```pycon
             >>> close = pd.Series([1, 2, 3, 4, 5])
@@ -3871,7 +3871,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             Name: count, dtype: int64
             ```
 
-            * Test the Cartesian product of entry and exit encounter probabilities:
+            Test the Cartesian product of entry and exit encounter probabilities:
 
             ```pycon
             >>> pf = vbt.Portfolio.from_random_signals(
@@ -3978,7 +3978,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         for negative-only values. Also, the cash sharing is set to True, the call sequence is set
         to 'auto', and the grouper is set to the grouper of the optimizer by default.
 
-        Usage:
+        Examples:
             ```pycon
             >>> close = pd.DataFrame({
             ...     "MSFT": [1, 2, 3, 4, 5],
@@ -4307,8 +4307,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             since the price of an order is unknown before the call (which is more realistic by the way).
             You can still override the valuation price in `pre_segment_func_nb`.
 
-        Usage:
-            * Buy 10 units each tick using closing price:
+        Examples:
+            Buy 10 units each tick using closing price:
 
             ```pycon
             >>> @njit
@@ -4338,7 +4338,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             dtype: float64
             ```
 
-            * Reverse each position by first closing it. Keep state of last position to determine
+            Reverse each position by first closing it. Keep state of last position to determine
             which position to open next (just as an example, there are easier ways to do this):
 
             ```pycon
@@ -4382,7 +4382,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             dtype: float64
             ```
 
-            * Equal-weighted portfolio as in the example under `vectorbtpro.portfolio.nb.from_order_func.from_order_func_nb`:
+            Equal-weighted portfolio as in the example under `vectorbtpro.portfolio.nb.from_order_func.from_order_func_nb`:
 
             ```pycon
             >>> @njit
@@ -4480,7 +4480,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             ![](/assets/images/api/from_order_func_g2.light.svg#only-light){: .iimg loading=lazy }
             ![](/assets/images/api/from_order_func_g2.dark.svg#only-dark){: .iimg loading=lazy }
 
-            * Combine multiple exit conditions. Exit early if the price hits some threshold before an actual exit:
+            Combine multiple exit conditions. Exit early if the price hits some threshold before an actual exit:
 
             ```pycon
             >>> @njit
@@ -4606,7 +4606,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             This works because `pd.Index` automatically translates into `vectorbtpro.base.reshaping.BCO`
             with `product` set to True.
 
-            * Let's illustrate how to generate multiple orders per symbol and bar.
+            Let's illustrate how to generate multiple orders per symbol and bar.
             For each bar, buy at open and sell at close:
 
             ```pycon
@@ -4743,8 +4743,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
         For details on other arguments, see `Portfolio.from_orders` and `Portfolio.from_order_func`.
 
-        Usage:
-            * Working with `Portfolio.from_def_order_func` is a similar experience as working
+        Examples:
+            Working with `Portfolio.from_def_order_func` is a similar experience as working
             with `Portfolio.from_orders`:
 
             ```pycon
@@ -4767,7 +4767,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             dtype: float64
             ```
 
-            * Equal-weighted portfolio as in the example under `Portfolio.from_order_func`
+            Equal-weighted portfolio as in the example under `Portfolio.from_order_func`
             but much less verbose and with asset value pre-computed during the simulation (= faster):
 
             ```pycon

@@ -78,7 +78,7 @@ class _MA(MA):
         Returns:
             BaseFigure: The figure with the plotted moving average and close price traces.
 
-        Usage:
+        Examples:
             ```pycon
             >>> vbt.MA.run(ohlcv['Close']).plot().show()
             ```

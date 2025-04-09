@@ -57,8 +57,8 @@ class AVData(RemoteData):
 
     See `AVData.fetch_symbol` for available arguments.
 
-    Usage:
-        * Set up the API key globally (optional):
+    Examples:
+        Set up the API key globally (optional):
 
         ```pycon
         >>> from vectorbtpro import *
@@ -68,7 +68,7 @@ class AVData(RemoteData):
         ... )
         ```
 
-        * Pull data:
+        Pull data:
 
         ```pycon
         >>> data = vbt.AVData.pull(

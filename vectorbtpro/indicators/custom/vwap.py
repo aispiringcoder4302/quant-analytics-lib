@@ -98,7 +98,7 @@ class _VWAP(VWAP):
         Returns:
             BaseFigure: The updated figure containing the plotted traces.
         
-        Usage:
+        Examples:
             ```pycon
             >>> vbt.VWAP.run(
             ...    ohlcv['High'],

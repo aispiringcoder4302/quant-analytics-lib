@@ -1432,7 +1432,7 @@ class Trades(Ranges):
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
             **layout_kwargs: Keyword arguments for configuring the figure layout.
 
-        Usage:
+        Examples:
             ```pycon
             >>> index = pd.date_range("2020", periods=7)
             >>> price = pd.Series([1., 2., 3., 4., 3., 2., 1.], index=index)
@@ -1629,7 +1629,7 @@ class Trades(Ranges):
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
             **layout_kwargs: Keyword arguments for configuring the figure layout.
 
-        Usage:
+        Examples:
             ```pycon
             >>> index = pd.date_range("2020", periods=10)
             >>> price = pd.Series([1., 2., 3., 4., 5., 6., 5., 3., 2., 1.], index=index)
@@ -1869,7 +1869,7 @@ class Trades(Ranges):
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
             **kwargs: Keyword arguments passed to `vectorbtpro.generic.accessors.GenericDFAccessor.plot_projections`.
 
-        Usage:
+        Examples:
             ```pycon
             >>> index = pd.date_range("2020", periods=10)
             >>> price = pd.Series([1., 2., 3., 2., 4., 5., 6., 5., 6., 7.], index=index)
@@ -2068,7 +2068,7 @@ class Trades(Ranges):
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
             **layout_kwargs: Keyword arguments for configuring the figure layout.
 
-        Usage:
+        Examples:
             ```pycon
             >>> index = pd.date_range("2020", periods=7)
             >>> price = pd.Series([1., 2., 3., 4., 3., 2., 1.], index=index)
@@ -2500,7 +2500,7 @@ class EntryTrades(Trades):
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
             **layout_kwargs: Keyword arguments for configuring the figure layout.
 
-        Usage:
+        Examples:
             ```pycon
             >>> index = pd.date_range("2020", periods=7)
             >>> price = pd.Series([1, 2, 3, 2, 3, 4, 3], index=index)
@@ -2744,7 +2744,7 @@ class ExitTrades(Trades):
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
             **layout_kwargs: Keyword arguments for configuring the figure layout.
 
-        Usage:
+        Examples:
             ```pycon
             >>> index = pd.date_range("2020", periods=7)
             >>> price = pd.Series([1, 2, 3, 2, 3, 4, 3], index=index)

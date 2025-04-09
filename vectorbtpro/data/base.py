@@ -6544,8 +6544,8 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         Returns:
             Union[BaseFigure, TraceUpdater]: A plot figure or trace updater instance.
 
-        Usage:
-            * Plot the lines of one feature across all symbols:
+        Examples:
+            Plot the lines of one feature across all symbols:
 
             ```pycon
             >>> from vectorbtpro import *
@@ -6561,7 +6561,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             >>> data.plot(feature='Close', base=1).show()
             ```
 
-            * Plot OHLC(V) of one symbol (only if data contains the respective features):
+            Plot OHLC(V) of one symbol (only if data contains the respective features):
 
             ![](/assets/images/api/data_plot.light.svg#only-light){: .iimg loading=lazy }
             ![](/assets/images/api/data_plot.dark.svg#only-dark){: .iimg loading=lazy }

@@ -538,7 +538,7 @@ class IndicatorBase(Analyzable):
 
     @property
     def main_output(self) -> tp.SeriesFrame:
-        """Return the main output.
+        """Main output.
 
         If the indicator has only one output, return that output.
         Otherwise, return the output matching the indicator's short name (case sensitive or lower case).
@@ -1350,7 +1350,7 @@ class IndicatorBase(Analyzable):
 
     @property
     def _tuple_mapper(self) -> tp.Optional[pd.MultiIndex]:
-        """Return a MultiIndex mapping of multiple parameters.
+        """MultiIndex mapping of multiple parameters.
 
         If more than one parameter exists, returns a MultiIndex combining each parameter's mapper;
         otherwise, returns None.
@@ -1361,7 +1361,7 @@ class IndicatorBase(Analyzable):
 
     @property
     def _param_mapper(self) -> tp.Optional[pd.Index]:
-        """Return an index mapping of all parameters.
+        """Index mapping of all parameters.
 
         For a single parameter, returns the corresponding mapper.
         For multiple parameters, returns the tuple mapper.
@@ -1375,7 +1375,7 @@ class IndicatorBase(Analyzable):
 
     @property
     def _visible_param_mapper(self) -> tp.Optional[pd.Index]:
-        """Return an index mapping of visible parameters.
+        """Index mapping of visible parameters.
 
         For a single parameter, returns its mapper if the mapper's name exists in the wrapper columns.
         For multiple parameters, returns a MultiIndex composed of levels corresponding to visible parameter names.
@@ -1709,19 +1709,34 @@ class IndicatorBase(Analyzable):
         """
         if hasattr(cls, "custom_func"):
             if cls.__name__ + ".custom_func" not in __pdoc__:
-                __pdoc__[cls.__name__ + ".custom_func"] = "Custom function."
+                if getattr(cls, "custom_func").__doc__ is not None:
+                    __pdoc__[cls.__name__ + ".custom_func"] = getattr(cls, "custom_func").__doc__
+                else:
+                    __pdoc__[cls.__name__ + ".custom_func"] = "Custom function."
         if hasattr(cls, "apply_func"):
             if cls.__name__ + ".apply_func" not in __pdoc__:
-                __pdoc__[cls.__name__ + ".apply_func"] = "Apply function."
+                if getattr(cls, "apply_func").__doc__ is not None:
+                    __pdoc__[cls.__name__ + ".apply_func"] = getattr(cls, "apply_func").__doc__
+                else:
+                    __pdoc__[cls.__name__ + ".apply_func"] = "Apply function."
         if hasattr(cls, "cache_func"):
             if cls.__name__ + ".cache_func" not in __pdoc__:
-                __pdoc__[cls.__name__ + ".cache_func"] = "Cache function."
+                if getattr(cls, "cache_func").__doc__ is not None:
+                    __pdoc__[cls.__name__ + ".cache_func"] = getattr(cls, "cache_func").__doc__
+                else:
+                    __pdoc__[cls.__name__ + ".cache_func"] = "Cache function."
         if hasattr(cls, "entry_place_func_nb"):
             if cls.__name__ + ".entry_place_func_nb" not in __pdoc__:
-                __pdoc__[cls.__name__ + ".entry_place_func_nb"] = "Entry placement function."
+                if getattr(cls, "entry_place_func_nb").__doc__ is not None:
+                    __pdoc__[cls.__name__ + ".entry_place_func_nb"] = getattr(cls, "entry_place_func_nb").__doc__
+                else:
+                    __pdoc__[cls.__name__ + ".entry_place_func_nb"] = "Entry placement function."
         if hasattr(cls, "exit_place_func_nb"):
             if cls.__name__ + ".exit_place_func_nb" not in __pdoc__:
-                __pdoc__[cls.__name__ + ".exit_place_func_nb"] = "Exit placement function."
+                if getattr(cls, "exit_place_func_nb").__doc__ is not None:
+                    __pdoc__[cls.__name__ + ".exit_place_func_nb"] = getattr(cls, "exit_place_func_nb").__doc__
+                else:
+                    __pdoc__[cls.__name__ + ".exit_place_func_nb"] = "Exit placement function."
 
 
 class IndicatorFactory(Configured):
@@ -1744,10 +1759,10 @@ class IndicatorFactory(Configured):
 
             An in-place output is modified in place rather than being returned. Advantages include:
 
-            1) It does not need to be returned.
-            2) It can be passed between functions as easily as inputs.
-            3) It can use pre-allocated memory to save memory.
-            4) If data or a default value is not provided, it is created empty to avoid occupying memory.
+            * It does not need to be returned.
+            * It can be passed between functions as easily as inputs.
+            * It can use pre-allocated memory to save memory.
+            * If data or a default value is not provided, it is created empty to avoid occupying memory.
         output_names (Optional[Sequence[str]]): List of output names.
         output_flags (KwargsLike): Dictionary of flags for in-place and regular outputs.
         lazy_outputs (KwargsLike): Dictionary of user-defined functions bound to the indicator class and
@@ -2391,8 +2406,8 @@ class IndicatorFactory(Configured):
                 If `custom_func` returns more objects than defined in `output_names`,
                 the additional objects are returned as a tuple alongside the indicator instance.
 
-        Usage:
-            * The following example produces the same indicator as the `IndicatorFactory.with_apply_func` example.
+        Examples:
+            The following example produces the same indicator as the `IndicatorFactory.with_apply_func` example.
 
             ```pycon
             >>> @njit
@@ -2435,8 +2450,8 @@ class IndicatorFactory(Configured):
             `IndicatorFactory.with_apply_func` is that here the function receives an index for
             the current parameter combination, which can be used for parameter selection.
         
-            * Alternatively, you can omit the separate `apply_func_nb` function and implement your
-                logic directly in `custom_func` (which need not be Numba-compiled):
+            Alternatively, you can omit the separate `apply_func_nb` function and implement your
+            logic directly in `custom_func` (which need not be Numba-compiled):
         
             ```pycon
             >>> @njit
@@ -2887,8 +2902,8 @@ Returns:
         Returns:
             Indicator: An indicator class constructed around the provided apply function.
 
-        Usage:
-            * The following example produces the same indicator as the `IndicatorFactory.with_custom_func` example.
+        Examples:
+            The following example produces the same indicator as the `IndicatorFactory.with_custom_func` example.
 
             ```pycon
             >>> @njit
@@ -2924,7 +2939,7 @@ Returns:
             2020-01-05  230.0  206.0  240.0  208.0
             ```
 
-            * To change the execution engine or specify other engine-related arguments, use `execute_kwargs`:
+            To change the execution engine or specify other engine-related arguments, use `execute_kwargs`:
 
             ```pycon
             >>> import time
@@ -3832,10 +3847,10 @@ Returns:
 
     @classmethod
     def list_talib_indicators(cls) -> tp.List[str]:
-        """Return a sorted list of all parseable indicator names from `talib`.
+        """Return a sorted list of all parseable indicator names from TA-Lib.
 
         Returns:
-            List[str]: Sorted list of indicator names from the `talib` module.
+            List[str]: Sorted list of indicator names from the TA-Lib module.
         """
         from vectorbtpro.utils.module_ import assert_can_import
 
@@ -3863,7 +3878,7 @@ Returns:
         Returns:
             IndicatorBase: A new indicator class based on the TA-Lib function.
 
-        Usage:
+        Examples:
             ```pycon
             >>> SMA = vbt.IF.from_talib('SMA')
 
@@ -3878,7 +3893,7 @@ Returns:
             2020-01-05      4.5  1.5  4.0  2.0
             ```
 
-            * To plot an indicator:
+            To plot an indicator:
 
             ```pycon
             >>> sma.plot(column=(2, 'a')).show()
@@ -4026,7 +4041,7 @@ Returns:
         silence_warnings: bool = False,
         **kwargs,
     ) -> tp.Kwargs:
-        """Parse the configuration of a `pandas_ta` indicator.
+        """Parse the configuration of a Pandas TA indicator.
     
         This class method inspects the signature of the provided indicator function to determine
         its inputs, parameters, and outputs. It creates a test DataFrame using random data, passes
@@ -4034,7 +4049,7 @@ Returns:
         dictionary encapsulates details required for further processing.
     
         Args:
-            func (Callable): The `pandas_ta` indicator function to parse.
+            func (Callable): The Pandas TA indicator function to parse.
 
                 The function is inspected to detect input and parameter names.
             test_input_names (Optional[Sequence[str]]): A collection of potential input parameter names.
@@ -4129,9 +4144,9 @@ Returns:
 
     @classmethod
     def list_pandas_ta_indicators(cls, silence_warnings: bool = True, **kwargs) -> tp.List[str]:
-        """List all parseable indicators in `pandas_ta`.
+        """List all parseable indicators in Pandas TA.
     
-        This class method iterates over the indicator functions available in `pandas_ta` and
+        This class method iterates over the indicator functions available in Pandas TA and
         attempts to parse each one's configuration using `IndicatorFactory.parse_pandas_ta_config`.
         Only indicator functions that are successfully parsed are included in the final list.
     
@@ -4168,7 +4183,7 @@ Returns:
         factory_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> tp.Type[IndicatorBase]:
-        """Build an indicator class around a `pandas_ta` function.
+        """Build an indicator class around a Pandas TA function.
 
         Requires `pandas-ta` installed. See https://github.com/twopirllc/pandas-ta for details.
 
@@ -4181,9 +4196,9 @@ Returns:
             **kwargs: Additional keyword arguments passed to `IndicatorFactory.with_apply_func`.
 
         Returns:
-            Type[IndicatorBase]: A new indicator class wrapping the specified `pandas_ta` function.
+            Type[IndicatorBase]: A new indicator class wrapping the specified Pandas TA function.
 
-        Usage:
+        Examples:
             ```pycon
             >>> SMA = vbt.IF.from_pandas_ta('SMA')
 
@@ -4255,7 +4270,7 @@ Returns:
 
     @classmethod
     def list_ta_indicators(cls, uppercase: bool = False) -> tp.List[str]:
-        """Return a sorted list of parseable indicator class names from the `ta` module.
+        """Return a sorted list of parseable indicator class names from the TA module.
 
         Args:
             uppercase (bool): If True, return indicator names in uppercase.
@@ -4289,16 +4304,16 @@ Returns:
 
     @classmethod
     def find_ta_indicator(cls, cls_name: str) -> IndicatorMixinT:
-        """Return a `ta` indicator class by its name.
+        """Return a TA indicator class by its name.
 
-        Searches through modules in the `ta` package for an indicator class
+        Searches through modules in the TA package for an indicator class
         whose name matches the provided value (case-insensitive).
 
         Args:
             cls_name (str): The name of the indicator class to find.
 
         Returns:
-            IndicatorMixin: The corresponding `ta` indicator class.
+            IndicatorMixin: The corresponding TA indicator class.
         """
         from vectorbtpro.utils.module_ import assert_can_import
 
@@ -4315,13 +4330,13 @@ Returns:
 
     @classmethod
     def parse_ta_config(cls, ind_cls: IndicatorMixinT) -> tp.Kwargs:
-        """Parse the configuration of a `ta` indicator class.
+        """Parse the configuration of a TA indicator class.
 
         Inspects the signature and docstring of the given indicator class to extract
         input names, parameter names, default values, and output names.
 
         Args:
-            ind_cls (IndicatorMixinT): The `ta` indicator class to parse.
+            ind_cls (IndicatorMixinT): The TA indicator class to parse.
 
         Returns:
             dict: A dictionary containing:
@@ -4368,12 +4383,12 @@ Returns:
 
     @classmethod
     def from_ta(cls, cls_name: str, factory_kwargs: tp.KwargsLike = None, **kwargs) -> tp.Type[IndicatorBase]:
-        """Build an indicator class around a `ta` technical analysis indicator.
+        """Build an indicator class around a TA technical analysis indicator.
 
         Requires [ta](https://github.com/bukosabino/ta) to be installed.
 
         Args:
-            cls_name (str): The name of the target `ta` class.
+            cls_name (str): The name of the target TA class.
             factory_kwargs (KwargsLike): Additional keyword arguments for configuring the `IndicatorFactory`.
             **kwargs: Additional keyword arguments for configuring the indicator
                 via `IndicatorFactory.with_apply_func`.
@@ -4381,7 +4396,7 @@ Returns:
         Returns:
             Type[IndicatorBase]: The built indicator class.
 
-        Usage:
+        Examples:
             ```pycon
             >>> SMAIndicator = vbt.IF.from_ta('SMAIndicator')
 
@@ -4558,9 +4573,9 @@ Returns:
 
     @classmethod
     def list_technical_indicators(cls, silence_warnings: bool = True, **kwargs) -> tp.List[str]:
-        """List all parseable technical indicator functions from the `technical` module.
+        """List all parseable technical indicator functions from the technical module.
 
-        Scans the `technical` package for functions and attempts to parse each using
+        Scans the technical package for functions and attempts to parse each using
         `IndicatorFactory.parse_technical_config`. Returns a sorted list of indicator names in uppercase.
 
         Args:
@@ -4589,7 +4604,7 @@ Returns:
 
     @classmethod
     def find_technical_indicator(cls, func_name: str) -> IndicatorMixinT:
-        """Get the `technical` indicator function corresponding to the given name.
+        """Get the technical indicator function corresponding to the given name.
 
         Args:
             func_name (str): The name of the technical indicator function.
@@ -4617,7 +4632,7 @@ Returns:
         factory_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> tp.Type[IndicatorBase]:
-        """Build an indicator class using the specified `technical` function.
+        """Build an indicator class using the specified technical function.
 
         This method requires the [technical](https://github.com/freqtrade/technical) package to be installed.
 
@@ -4630,7 +4645,7 @@ Returns:
         Returns:
             Indicator: An indicator class constructed around the given technical function.
 
-        Usage:
+        Examples:
             ```pycon
             >>> ROLLING_MEAN = vbt.IF.from_technical("ROLLING_MEAN")
 
@@ -4915,7 +4930,7 @@ Returns:
 
     @classmethod
     def list_techcon_indicators(cls) -> tp.List[str]:
-        """List all consensus indicators available in `technical`.
+        """List all consensus indicators available in technical.
 
         Returns:
             List[str]: A sorted list of consensus indicator names.
@@ -4924,7 +4939,7 @@ Returns:
 
     @classmethod
     def find_smc_indicator(cls, func_name: str, raise_error: bool = True) -> tp.Optional[tp.Callable]:
-        """Get the `smartmoneyconcepts` indicator class by its name.
+        """Get the Smart Money Concepts indicator class by its name.
 
         Args:
             func_name (str): The name of the smart money concepts indicator.
@@ -4948,7 +4963,7 @@ Returns:
 
     @classmethod
     def parse_smc_config(cls, func: tp.Callable, collapse: bool = True, snake_case: bool = True) -> tp.Kwargs:
-        """Parse the configuration of a `smartmoneyconcepts` indicator function.
+        """Parse the configuration of a Smart Money Concepts indicator function.
 
         Inspects the signature and source code of the given function to extract input names,
         parameter names, output names, default values, and nested indicator configurations.
@@ -5028,7 +5043,7 @@ Returns:
 
     @classmethod
     def list_smc_indicators(cls, silence_warnings: bool = True, **kwargs) -> tp.List[str]:
-        """List all parseable indicators from the `smartmoneyconcepts` package.
+        """List all parseable indicators from the Smart Money Concepts package.
 
         Inspects each public function in the `smartmoneyconcepts.smc` module and returns
         those that can be successfully parsed into a configuration.
@@ -5065,7 +5080,7 @@ Returns:
         factory_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> tp.Type[IndicatorBase]:
-        """Build an indicator class using a `smartmoneyconcepts` function.
+        """Build an indicator class using a Smart Money Concepts function.
 
         Requires [smart-money-concepts](https://github.com/joshyattridge/smart-money-concepts)
         to be installed.
@@ -5250,7 +5265,9 @@ Returns:
 
         Any of these settings can be overridden using `factory_kwargs`.
 
-        Usage:
+        The code context includes all variables from `vectorbtpro.imported_star`.
+
+        Examples:
             ```pycon
             >>> WMA = vbt.IF(
             ...     class_name='WMA',
@@ -5270,8 +5287,8 @@ Returns:
             2020-01-05  4.666667  1.333333  4.333333  1.666667
             ```
 
-            * The same can be achieved by calling the class method and providing prefixes
-                to the variable names to indicate their type:
+            The same can be achieved by calling the class method and providing prefixes
+            to the variable names to indicate their type:
 
             ```pycon
             >>> expr = "WMA: @out_wma:wm_mean_nb((@in_high + @in_low) / 2, @p_window)"
@@ -5287,13 +5304,13 @@ Returns:
             2020-01-05  5.166667  1.833333  4.833333  2.166667
             ```
 
-            * Magnet names are recognized automatically:
+            Magnet names are recognized automatically:
 
             ```pycon
             >>> expr = "WMA: @out_wma:wm_mean_nb((high + low) / 2, @p_window)"
             ```
 
-            * Most settings of this method can be overridden within the expression:
+            Most settings of this method can be overridden within the expression:
 
             ```pycon
             >>> expr = \"\"\"
@@ -5622,7 +5639,7 @@ Returns:
         ) -> tp.MaybeTuple[tp.Array2d]:
             import vectorbtpro as vbt
 
-            input_context = dict(np=np, pd=pd, vbt=vbt)
+            input_context = dict(vbt.imported_star)
             for i, input in enumerate(input_tuple):
                 input_context[input_names[i]] = input
             for i, in_output in enumerate(in_output_tuple):
@@ -5699,7 +5716,7 @@ Returns:
             Some expressions that utilize cross-sectional operations require columns to be
             a multi-index with a level `sector`, `subindustry`, or `industry`.
 
-        Usage:
+        Examples:
             ```pycon
             >>> data = vbt.YFData.pull(['BTC-USD', 'ETH-USD'])
 

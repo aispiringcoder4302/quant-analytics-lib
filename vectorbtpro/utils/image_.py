@@ -92,7 +92,7 @@ def save_animation(
         to_image_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Figure.to_image`.
         **kwargs: Keyword arguments passed to `plot_func`.
 
-    Usage:
+    Examples:
         ```pycon
         >>> from vectorbtpro import *
 

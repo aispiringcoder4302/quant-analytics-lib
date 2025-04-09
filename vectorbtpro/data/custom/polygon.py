@@ -43,8 +43,8 @@ class PolygonData(RemoteData):
 
     For arguments, see `PolygonData.fetch_symbol`.
 
-    Usage:
-        * Set up the API key globally:
+    Examples:
+        Set up the API key globally:
 
         ```pycon
         >>> from vectorbtpro import *
@@ -56,7 +56,7 @@ class PolygonData(RemoteData):
         ... )
         ```
 
-        * Pull stock data:
+        Pull stock data:
 
         ```pycon
         >>> data = vbt.PolygonData.pull(
@@ -67,7 +67,7 @@ class PolygonData(RemoteData):
         ... )
         ```
 
-        * Pull crypto data:
+        Pull crypto data:
 
         ```pycon
         >>> data = vbt.PolygonData.pull(

@@ -32,7 +32,7 @@ def match_tags(tags: tp.MaybeIterable[str], in_tags: tp.MaybeIterable[str]) -> b
 
             All elements must be valid Python identifiers.
 
-    Usage:
+    Examples:
         ```pycon
         >>> from vectorbtpro.utils.tagging import match_tags
 

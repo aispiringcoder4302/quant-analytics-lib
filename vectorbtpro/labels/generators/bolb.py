@@ -59,7 +59,7 @@ class _BOLB(BOLB):
         Returns:
             BaseFigure: A figure displaying the plotted median with the heatmap overlay.
 
-        Usage:
+        Examples:
             ```pycon
             >>> vbt.BOLB.run(ohlcv['High'], ohlcv['Low'], up_th=0.2, down_th=0.2).plot().show()
             ```

@@ -827,8 +827,8 @@ class BaseAccessor(Wrapping):
 
         Grouping is supported only by methods that accept the `group_by` argument.
 
-    Usage:
-        * Build a symmetric matrix:
+    Examples:
+        Build a symmetric matrix:
 
         ```pycon
         >>> from vectorbtpro import *
@@ -841,7 +841,7 @@ class BaseAccessor(Wrapping):
         2  3.0  NaN  NaN
         ```
 
-        * Broadcast pandas objects:
+        Broadcast pandas objects:
 
         ```pycon
         >>> sr = pd.Series([1])
@@ -860,7 +860,7 @@ class BaseAccessor(Wrapping):
         2  1
         ```
 
-        * Use class and instance methods like `BaseAccessor.broadcast`:
+        Use class and instance methods like `BaseAccessor.broadcast`:
 
         ```pycon
         >>> from vectorbtpro.base.accessors import BaseAccessor
@@ -879,7 +879,7 @@ class BaseAccessor(Wrapping):
         2  3
         ```
 
-        * Instead of explicitly importing an accessor, use `pd_acc`:
+        Instead of explicitly importing an accessor, use `pd_acc`:
 
         ```pycon
         >>> vbt.pd_acc.broadcast(sr, df)
@@ -895,8 +895,8 @@ class BaseAccessor(Wrapping):
         2  3
         ```
 
-        * Leverage arithmetic (e.g. `+`), comparison (e.g. `>`), and logical (e.g. `&`) operators that
-          forward operations to `BaseAccessor.combine`:
+        Leverage arithmetic (e.g. `+`), comparison (e.g. `>`), and logical (e.g. `&`) operators that
+        forward operations to `BaseAccessor.combine`:
 
         ```pycon
         >>> sr.vbt + df
@@ -908,7 +908,7 @@ class BaseAccessor(Wrapping):
 
         Many interesting use cases can be implemented this way.
 
-        * Compare an array with different thresholds:
+        Compare an array with different thresholds:
 
         ```pycon
         >>> df.vbt > vbt.Param(np.arange(3), name='threshold')
@@ -919,7 +919,7 @@ class BaseAccessor(Wrapping):
         z2         True  True  True   True  True  True   True   True  True
         ```
 
-        * Use the broadcasting mechanism:
+        Use the broadcasting mechanism:
 
         ```pycon
         >>> df.vbt > vbt.Param(np.arange(3), name='threshold')
@@ -1580,7 +1580,7 @@ class BaseAccessor(Wrapping):
         Returns:
             SeriesFrame: The aligned object.
 
-        Usage:
+        Examples:
             ```pycon
             >>> df1 = pd.DataFrame(
             ...     [[1, 2], [3, 4]],
@@ -1674,7 +1674,7 @@ class BaseAccessor(Wrapping):
         Returns:
             SeriesFrame: The cross aligned object.
 
-        Usage:
+        Examples:
             ```pycon
             >>> df1 = pd.DataFrame(
             ...     [[1, 2, 3, 4], [5, 6, 7, 8]],
@@ -1921,8 +1921,8 @@ class BaseAccessor(Wrapping):
         !!! note
             The resulting array must have the same shape as the original array.
 
-        Usage:
-            * Using instance method:
+        Examples:
+            Using instance method:
 
             ```pycon
             >>> sr = pd.Series([1, 2], index=['x', 'y'])
@@ -1932,7 +1932,7 @@ class BaseAccessor(Wrapping):
             dtype: int64
             ```
 
-            * Using class method, templates, and broadcasting:
+            Using class method, templates, and broadcasting:
 
             ```pycon
             >>> sr.vbt.apply(
@@ -1991,7 +1991,7 @@ class BaseAccessor(Wrapping):
         Returns:
             Frame: The concatenated frame.
 
-        Usage:
+        Examples:
             ```pycon
             >>> sr = pd.Series([1, 2], index=['x', 'y'])
             >>> df = pd.DataFrame([[3, 4], [5, 6]], index=['x', 'y'], columns=['a', 'b'])
@@ -2060,8 +2060,8 @@ class BaseAccessor(Wrapping):
         !!! note
             The arrays to be concatenated must have the same shape as the broadcast input arrays.
 
-        Usage:
-            * Using instance method:
+        Examples:
+            Using instance method:
 
             ```pycon
             >>> df = pd.DataFrame([[3, 4], [5, 6]], index=['x', 'y'], columns=['a', 'b'])
@@ -2077,7 +2077,7 @@ class BaseAccessor(Wrapping):
             y  5  6  10  12  15  18
             ```
 
-            * Using class method, templates, and broadcasting:
+            Using class method, templates, and broadcasting:
 
             ```pycon
             >>> sr = pd.Series([1, 2, 3], index=['x', 'y', 'z'])
@@ -2096,7 +2096,7 @@ class BaseAccessor(Wrapping):
             z          3  6  9  4  7  10  5  8  11
             ```
 
-            * To change the execution engine or specify other engine-related arguments, use `execute_kwargs`:
+            To change the execution engine or specify other engine-related arguments, use `execute_kwargs`:
 
             ```pycon
             >>> import time
@@ -2205,8 +2205,8 @@ class BaseAccessor(Wrapping):
             differing shapes or memory orders. Ensure that all objects have the same data type
             and that each argument in `*args` is Numba-compatible.
 
-        Usage:
-            * Using instance method:
+        Examples:
+            Using instance method:
 
             ```pycon
             >>> sr = pd.Series([1, 2], index=['x', 'y'])
@@ -2247,7 +2247,7 @@ class BaseAccessor(Wrapping):
             y  17  20
             ```
 
-            * Using class method, templates, and broadcasting:
+            Using class method, templates, and broadcasting:
 
             ```pycon
             >>> sr = pd.Series([1, 2, 3], index=['x', 'y', 'z'])
@@ -2266,7 +2266,7 @@ class BaseAccessor(Wrapping):
             z            5  6  7  6  7  8  7  8  9
             ```
 
-            * To change the execution engine or specify other engine-related arguments, use `execute_kwargs`:
+            To change the execution engine or specify other engine-related arguments, use `execute_kwargs`:
 
             ```pycon
             >>> import time
@@ -2384,7 +2384,7 @@ class BaseAccessor(Wrapping):
         !!! note
             All required variables will broadcast against each other prior to the evaluation.
 
-        Usage:
+        Examples:
             ```pycon
             >>> sr = pd.Series([1, 2, 3], index=['x', 'y', 'z'])
             >>> df = pd.DataFrame([[4, 5, 6]], index=['x', 'y', 'z'], columns=['a', 'b', 'c'])

@@ -82,7 +82,7 @@ class _RSI(RSI):
             BaseFigure: A figure object containing the RSI line plot and
                 the shaded area between the specified limits.
 
-        Usage:
+        Examples:
             ```pycon
             >>> vbt.RSI.run(ohlcv['Close']).plot().show()
             ```

@@ -56,7 +56,7 @@ class _TRENDLB(TRENDLB):
         Returns:
             BaseFigure: A figure object displaying the overlay of the median and heatmap.
         
-        Usage:
+        Examples:
             ```pycon
             >>> vbt.TRENDLB.run(ohlcv['High'], ohlcv['Low'], up_th=0.2, down_th=0.2).plot().show()
             ```

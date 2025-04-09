@@ -262,7 +262,7 @@ def get_pathlike_key(obj: tp.Any, key: tp.PathLikeKey, keep_path: bool = False) 
     Returns:
         Any: The value found at the specified path, or the nested path dictionary if `keep_path` is True.
 
-    Usage:
+    Examples:
         ```pycon
         >>> obj = dict(a=[dict(b="cde")])
         >>> vbt.utils.search_.get_pathlike_key(obj, "a")
@@ -602,8 +602,7 @@ def find_in_obj(
     Returns:
         PathDict: A mapping of path-like keys (using tuples for nested levels) to their corresponding values.
 
-    Usage:
-        Refer to `vectorbtpro._settings.search` for default configuration.
+    Refer to `vectorbtpro._settings.search` for default configuration.
     """
     from vectorbtpro._settings import settings
 

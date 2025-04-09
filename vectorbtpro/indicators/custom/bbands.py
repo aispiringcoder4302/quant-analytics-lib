@@ -116,7 +116,7 @@ class _BBANDS(BBANDS):
         Returns:
             BaseFigure: The updated figure with BBANDS traces.
 
-        Usage:
+        Examples:
             ```pycon
             >>> vbt.BBANDS.run(ohlcv['Close']).plot().show()
             ```

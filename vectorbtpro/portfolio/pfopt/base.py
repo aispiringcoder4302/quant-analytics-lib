@@ -578,8 +578,8 @@ def pypfopt_optimize(
 
     For defaults, see `pypfopt` under `vectorbtpro._settings.pfopt`.
 
-    Usage:
-        * Using mean historical returns, Ledoit-Wolf covariance matrix with constant variance,
+    Examples:
+        Using mean historical returns, Ledoit-Wolf covariance matrix with constant variance,
         and efficient frontier:
 
         ```pycon
@@ -595,7 +595,7 @@ def pypfopt_optimize(
         {'MSFT': 0.13324, 'AMZN': 0.10016, 'KO': 0.03229, 'MA': 0.73431}
         ```
 
-        * EMA historical returns and sample covariance:
+        EMA historical returns and sample covariance:
 
         ```pycon
         >>> vbt.pypfopt_optimize(
@@ -606,7 +606,7 @@ def pypfopt_optimize(
         {'MSFT': 0.08984, 'AMZN': 0.0, 'KO': 0.91016, 'MA': 0.0}
         ```
 
-        * EMA historical returns, efficient Conditional Value at Risk, and other parameters automatically
+        EMA historical returns, efficient Conditional Value at Risk, and other parameters automatically
         passed to their respective functions. Optimized towards lowest CVaR:
 
         ```pycon
@@ -621,7 +621,7 @@ def pypfopt_optimize(
         {'MSFT': 0.14779, 'AMZN': 0.07224, 'KO': 0.77552, 'MA': 0.00445}
         ```
 
-        * Adding custom objectives:
+        Adding custom objectives:
 
         ```pycon
         >>> vbt.pypfopt_optimize(
@@ -633,7 +633,7 @@ def pypfopt_optimize(
         {'MSFT': 0.22228, 'AMZN': 0.15685, 'KO': 0.28712, 'MA': 0.33375}
         ```
 
-        * Adding custom constraints:
+        Adding custom constraints:
 
         ```pycon
         >>> vbt.pypfopt_optimize(
@@ -643,7 +643,7 @@ def pypfopt_optimize(
         {'MSFT': 0.1, 'AMZN': 0.10676, 'KO': 0.04341, 'MA': 0.74982}
         ```
 
-        * Optimizing towards a custom convex objective (to add a non-convex objective,
+        Optimizing towards a custom convex objective (to add a non-convex objective,
         set `target_is_convex` to False):
 
         ```pycon
@@ -1180,8 +1180,8 @@ def riskfolio_optimize(
 
     For defaults, see `riskfolio` under `vectorbtpro._settings.pfopt`.
 
-    Usage:
-        * Classic Mean Risk Optimization:
+    Examples:
+        Classic Mean Risk Optimization:
 
         ```pycon
         >>> from vectorbtpro import *
@@ -1204,7 +1204,7 @@ def riskfolio_optimize(
          'MA': 0.238480902833802}
         ```
 
-        * The same by splitting arguments:
+        The same by splitting arguments:
 
         ```pycon
         >>> vbt.riskfolio_optimize(
@@ -1220,7 +1220,7 @@ def riskfolio_optimize(
          'MA': 0.238480902833802}
         ```
 
-        * Asset constraints:
+        Asset constraints:
 
         ```pycon
         >>> vbt.riskfolio_optimize(
@@ -1240,7 +1240,7 @@ def riskfolio_optimize(
          'MA': 0.336755163235327}
         ```
 
-        * Asset class constraints:
+        Asset class constraints:
 
         ```pycon
         >>> vbt.riskfolio_optimize(
@@ -1262,7 +1262,7 @@ def riskfolio_optimize(
          'MA': 0.4243375351611379}
         ```
 
-        * Hierarchical Risk Parity (HRP) Portfolio Optimization:
+        Hierarchical Risk Parity (HRP) Portfolio Optimization:
 
         ```pycon
         >>> vbt.riskfolio_optimize(
@@ -2025,8 +2025,8 @@ class PortfolioOptimizer(Analyzable):
         Also, in contrast to `PortfolioOptimizer.from_optimize_func`, creates records of type
         `vectorbtpro.portfolio.pfopt.records.AllocPoints`.
 
-        Usage:
-            * Allocate uniformly every day:
+        Examples:
+            Allocate uniformly every day:
 
             ```pycon
             >>> from vectorbtpro import *
@@ -2064,7 +2064,7 @@ class PortfolioOptimizer(Analyzable):
             [2516 rows x 3 columns]
             ```
 
-            * Allocate randomly every first date of the year:
+            Allocate randomly every first date of the year:
 
             ```pycon
             >>> def random_allocate_func(n_cols):
@@ -2091,7 +2091,7 @@ class PortfolioOptimizer(Analyzable):
             2019-01-02 00:00:00+00:00  0.368748  0.195147  0.436106
             ```
 
-            * Specify index points manually:
+            Specify index points manually:
 
             ```pycon
             >>> pfo = vbt.PortfolioOptimizer.from_allocate_func(
@@ -2108,7 +2108,7 @@ class PortfolioOptimizer(Analyzable):
             2010-03-31 00:00:00+00:00  0.395855  0.148516  0.455629
             ```
 
-            * Specify allocations manually:
+            Specify allocations manually:
 
             ```pycon
             >>> def manual_allocate_func(weights):
@@ -2132,7 +2132,7 @@ class PortfolioOptimizer(Analyzable):
             2010-03-31 00:00:00+00:00     0     0     1
             ```
 
-            * Use Numba-compiled loop:
+            Use Numba-compiled loop:
 
             ```pycon
             >>> @njit
@@ -2933,8 +2933,8 @@ class PortfolioOptimizer(Analyzable):
         that holds groups instead of columns, while the wrapper of the `PortfolioOptimizer` instance
         contains regular columns grouped by groups.
 
-        Usage:
-            * Allocate once:
+        Examples:
+            Allocate once:
 
             ```pycon
             >>> from vectorbtpro import *
@@ -2963,7 +2963,7 @@ class PortfolioOptimizer(Analyzable):
             group       2015-01-02 00:00:00+00:00  0.402459  0.309351  0.288191
             ```
 
-            * Allocate every first date of the year:
+            Allocate every first date of the year:
 
             ```pycon
             >>> pfo = vbt.PortfolioOptimizer.from_optimize_func(
@@ -2986,7 +2986,7 @@ class PortfolioOptimizer(Analyzable):
                         2019-01-02 00:00:00+00:00  0.411852  0.282680  0.305468
             ```
 
-            * Specify index ranges manually:
+            Specify index ranges manually:
 
             ```pycon
             >>> pfo = vbt.PortfolioOptimizer.from_optimize_func(
@@ -3007,7 +3007,7 @@ class PortfolioOptimizer(Analyzable):
                         2010-05-12 00:00:00+00:00  0.437481  0.283160  0.279358
             ```
 
-            * Test multiple combinations of one argument:
+            Test multiple combinations of one argument:
 
             ```pycon
             >>> pfo = vbt.PortfolioOptimizer.from_optimize_func(
@@ -3031,7 +3031,7 @@ class PortfolioOptimizer(Analyzable):
                             2019-01-02 00:00:00+00:00  0.565691  0.234760  0.199549
             ```
 
-            * Test multiple cross-argument combinations:
+            Test multiple cross-argument combinations:
 
             ```pycon
             >>> pfo = vbt.PortfolioOptimizer.from_optimize_func(
@@ -3063,7 +3063,7 @@ class PortfolioOptimizer(Analyzable):
                          2014-01-02 00:00:00+00:00  0.339649  0.273997  0.386354
             ```
 
-            * Use Numba-compiled loop:
+            Use Numba-compiled loop:
 
             ```pycon
             >>> @njit
@@ -3523,8 +3523,8 @@ class PortfolioOptimizer(Analyzable):
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
             **layout_kwargs: Keyword arguments for configuring the figure layout.
 
-        Usage:
-            * Continuing with the examples under `PortfolioOptimizer.from_optimize_func`:
+        Examples:
+            Continuing with the examples under `PortfolioOptimizer.from_optimize_func`:
 
             ```pycon
             >>> from vectorbtpro import *

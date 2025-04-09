@@ -2351,8 +2351,8 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
             AnyArray: The resulting array with updated values, either wrapped or unwrapped
                 depending on `keep_flex`.
 
-        Usage:
-            * Set a single row:
+        Examples:
+            Set a single row:
 
             ```pycon
             >>> from vectorbtpro import *
@@ -2392,7 +2392,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
             2020-01-05  NaN  NaN  NaN
             ```
 
-            * Set multiple rows:
+            Set multiple rows:
 
             ```pycon
             >>> wrapper.fill_and_set(vbt.index_dict({
@@ -2426,7 +2426,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
             2020-01-05  NaN  NaN  NaN
             ```
 
-            * Set rows using slices:
+            Set rows using slices:
 
             ```pycon
             >>> wrapper.fill_and_set(vbt.index_dict({
@@ -2470,7 +2470,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
             2020-01-05  4.0  5.0  6.0
             ```
 
-            * Set rows using index points:
+            Set rows using index points:
 
             ```pycon
             >>> wrapper.fill_and_set(vbt.index_dict({
@@ -2484,7 +2484,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
             2020-01-05  2.0  2.0  2.0
             ```
 
-            * Set rows using index ranges:
+            Set rows using index ranges:
 
             ```pycon
             >>> wrapper.fill_and_set(vbt.index_dict({
@@ -2501,7 +2501,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
             2020-01-05  NaN  NaN  NaN
             ```
 
-            * Set column indices:
+            Set column indices:
 
             ```pycon
             >>> wrapper.fill_and_set(vbt.index_dict({
@@ -2553,7 +2553,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
             2020-01-05 NaN NaN  3.0  4.0
             ```
 
-            * Set row and column indices:
+            Set row and column indices:
 
             ```pycon
             >>> wrapper.fill_and_set(vbt.index_dict({
@@ -2615,7 +2615,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
             2020-01-05  3.0 NaN  3.0 NaN
             ```
 
-            * Set rows using a template:
+            Set rows using a template:
 
             ```pycon
             >>> wrapper.fill_and_set(vbt.index_dict({

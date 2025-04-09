@@ -41,8 +41,8 @@ class SplitterCV(BaseCrossValidator, Base):
             passed to the splitter factory.
         **splitter_kwargs: Keyword arguments for the splitter factory method.
 
-    Usage:
-        * Replicate `TimeSeriesSplit` from scikit-learn:
+    Examples:
+        Replicate `TimeSeriesSplit` from scikit-learn:
 
         ```pycon
         >>> from vectorbtpro import *
