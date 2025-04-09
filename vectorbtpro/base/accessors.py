@@ -959,7 +959,7 @@ class BaseAccessor(Wrapping):
         """Pass additional keyword arguments to the initializer and return a new accessor instance.
 
         Args:
-            **kwargs (Any): Keyword arguments passed to the initializer.
+            **kwargs: Keyword arguments passed to the initializer.
 
         Returns:
             BaseAccessor: A new accessor instance with updated parameters.
@@ -1123,9 +1123,9 @@ class BaseAccessor(Wrapping):
         """Perform indexing on the accessor instance and return a new accessor with the selected data.
 
         Args:
-            *args (Any): Positional arguments passed to the indexing operation.
+            *args: Positional arguments passed to the indexing operation.
             wrapper_meta (DictLike): Metadata for indexing. If not provided, it is computed.
-            **kwargs (Any): Keyword arguments passed to the indexing operation.
+            **kwargs: Keyword arguments passed to the indexing operation.
 
         Returns:
             BaseAccessor: A new accessor instance with the selected subset of data.
@@ -1148,7 +1148,7 @@ class BaseAccessor(Wrapping):
 
         Args:
             pd_indexing_setter_func (Callable): The Pandas indexing setter function.
-            **kwargs (Any): Keyword arguments passed to the setter function.
+            **kwargs: Keyword arguments passed to the setter function.
         """
         pd_indexing_setter_func(self._obj)
 
@@ -1246,7 +1246,7 @@ class BaseAccessor(Wrapping):
         Args:
             shape (Shape): The desired shape.
             fill_value (Scalar): The value to fill the object.
-            **kwargs (Any): Keyword arguments for the Pandas constructor.
+            **kwargs: Keyword arguments for the Pandas constructor.
 
         Returns:
             SeriesFrame: An empty Series or DataFrame with the specified shape.
@@ -1262,7 +1262,7 @@ class BaseAccessor(Wrapping):
         Args:
             other (SeriesFrame): A reference Pandas object to mimic.
             fill_value (Scalar): The value to fill the new object.
-            **kwargs (Any): Keyword arguments for the Pandas constructor.
+            **kwargs: Keyword arguments for the Pandas constructor.
 
         Returns:
             SeriesFrame: An empty Series or DataFrame matching the structure of `other`.
@@ -1282,9 +1282,9 @@ class BaseAccessor(Wrapping):
         """Apply an indexing operation to the accessor.
 
         Args:
-            *args (Any): Positional arguments passed to the indexing operation.
+            *args: Positional arguments passed to the indexing operation.
             wrap (bool): If False, return the underlying Pandas object; if True, return an accessor.
-            **kwargs (Any): Keyword arguments passed to the indexing operation.
+            **kwargs: Keyword arguments passed to the indexing operation.
 
         Returns:
             Union[BaseAccessor, SeriesFrame]: An accessor instance with the applied indexing,
@@ -2212,7 +2212,6 @@ class BaseAccessor(Wrapping):
             >>> sr = pd.Series([1, 2], index=['x', 'y'])
             >>> df = pd.DataFrame([[3, 4], [5, 6]], index=['x', 'y'], columns=['a', 'b'])
 
-            >>> # using instance method
             >>> sr.vbt.combine(df, np.add)
                a  b
             x  4  5

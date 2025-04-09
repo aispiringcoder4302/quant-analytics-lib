@@ -8,24 +8,22 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Base class for working with records.
+"""Module for working with records.
 
-vectorbt works with two different representations of data: matrices and records.
+Vectorbtpro works with two distinct representations of data: matrices and records.
 
-A matrix, in this context, is just an array of one-dimensional arrays, each corresponding
-to a separate feature. The matrix itself holds only one kind of information (one attribute).
-For example, one can create a matrix for entry signals, with columns being different strategy
-configurations. But what if the matrix is huge and sparse? What if there is more
-information we would like to represent by each element? Creating multiple matrices would be
-a waste of memory.
+A matrix, in this context, is simply an array of one-dimensional arrays, each corresponding
+to a separate feature. A matrix typically holds data for a single attribute—for example,
+entry signals with different strategy configurations as columns. However, when a matrix is huge,
+sparse, or when each element must represent multiple pieces of information, creating multiple
+matrices becomes inefficient.
 
-Records make possible representing complex, sparse information in a dense format. They are just
-an array of one-dimensional arrays of a fixed schema, where each element holds a different
-kind of information. You can imagine records being a DataFrame, where each row represents a record
-and each column represents a specific attribute. Read more on structured arrays
-[here](https://numpy.org/doc/stable/user/basics.rec.html).
+Records enable the dense representation of complex, sparse information. They consist of a fixed-schema
+array of one-dimensional arrays where each element contains heterogeneous data. Essentially,
+records can be thought of as a DataFrame in which each row is a record and each column is a
+specific attribute. Learn more about structured arrays [here](https://numpy.org/doc/stable/user/basics.rec.html).
 
-For example, let's represent two DataFrames as a single record array:
+For example, consider representing two DataFrames as a single record array:
 
 ```plaintext
                a     b
@@ -49,9 +47,10 @@ attr2 =  1  10.0   NaN
 5      2    1    3      8     16
 ```
 
-Another advantage of records is that they are not constrained by size. Multiple records can map
-to a single element in a matrix. For example, one can define multiple orders at the same timestamp,
-which is impossible to represent in a matrix form without duplicating index entries or using complex data types.
+Another advantage of records is that they are not constrained by size; multiple records can
+correspond to a single element in a matrix. For instance, one can define multiple orders at
+the same timestamp, which is difficult to represent in a matrix without duplicating index
+entries or employing complex data types.
 
 Consider the following example:
 
@@ -82,9 +81,9 @@ Consider the following example:
 
 ## Printing
 
-There are two ways to print records:
+Records can be printed in two ways.
 
-* Raw dataframe that preserves field names and data types:
+Raw dataframe that preserves field names and data types:
 
 ```pycon
 >>> records.records
@@ -100,7 +99,7 @@ There are two ways to print records:
 8   2    2    2        18.0
 ```
 
-* Readable dataframe that takes into consideration `Records.field_config`:
+Readable dataframe that takes into account `Records.field_config`:
 
 ```pycon
 >>> records.readable
@@ -118,14 +117,13 @@ There are two ways to print records:
 
 ## Mapping
 
-`Records` are just [structured arrays](https://numpy.org/doc/stable/user/basics.rec.html) with a bunch
-of methods and properties for processing them. Their main feature is to map the records array and
-to reduce it by column (similar to the MapReduce paradigm). The main advantage is that it all happens
-without conversion to the matrix form and wasting memory resources.
+`Records` are structured arrays with numerous methods and properties for data processing.
+Their main feature is the ability to map and reduce the records array by column, similar
+to the MapReduce paradigm, all without converting to a matrix form and wasting memory.
 
-`Records` can be mapped to `vectorbtpro.records.mapped_array.MappedArray` in several ways:
+`Records` can be mapped to a `vectorbtpro.records.mapped_array.MappedArray` in several ways.
 
-* Use `Records.map_field` to map a record field:
+Use `Records.map_field` to map a record field:
 
 ```pycon
 >>> records.map_field('some_field')
@@ -135,7 +133,7 @@ without conversion to the matrix form and wasting memory resources.
 array([10., 11., 12., 13., 14., 15., 16., 17., 18.])
 ```
 
-* Use `Records.map` to map records using a custom function.
+Use `Records.map` to map records using a custom function.
 
 ```pycon
 >>> @njit
@@ -158,7 +156,7 @@ array([100., 121., 144., 169., 196., 225., 256., 289., 324.])
 array([100., 121., 144., 169., 196., 225., 256., 289., 324.])
 ```
 
-* Use `Records.map_array` to convert an array to `vectorbtpro.records.mapped_array.MappedArray`.
+Use `Records.map_array` to convert an array to a `vectorbtpro.records.mapped_array.MappedArray`:
 
 ```pycon
 >>> records.map_array(records_arr['some_field'] ** 2)
@@ -168,7 +166,7 @@ array([100., 121., 144., 169., 196., 225., 256., 289., 324.])
 array([100., 121., 144., 169., 196., 225., 256., 289., 324.])
 ```
 
-* Use `Records.apply` to apply a function on each column/group:
+Use `Records.apply` to apply a function on each column or group:
 
 ```pycon
 >>> @njit
@@ -195,11 +193,12 @@ array([10., 21., 33., 46., 60., 75., 16., 33., 51.])
 array([10., 21., 33., 13., 27., 42., 16., 33., 51.])
 ```
 
-Notice how cumsum resets at each column in the first example and at each group in the second example.
+Notice that in the first example the cumulative sum resets at each column,
+while in the second example it resets for each group.
 
 ## Filtering
 
-Use `Records.apply_mask` to filter elements per column/group:
+Use `Records.apply_mask` to filter elements within each column or group:
 
 ```pycon
 >>> mask = [True, False, True, False, True, False, True, False, True]
@@ -215,13 +214,13 @@ Use `Records.apply_mask` to filter elements per column/group:
 
 ## Grouping
 
-One of the key features of `Records` is that you can perform reducing operations on a group
-of columns as if they were a single column. Groups can be specified by `group_by`, which
-can be anything from positions or names of column levels, to a NumPy array with actual groups.
+One of the key features of `Records` is the ability to perform reducing operations on a group
+of columns as if they were a single column. Groups can be specified by `group_by`, which may be
+defined as positions, names of column levels, or a NumPy array representing actual groups.
 
-There are multiple ways of define grouping:
+There are several ways to define grouping.
 
-* When creating `Records`, pass `group_by` to `vectorbtpro.base.wrapping.ArrayWrapper`:
+When creating `Records`, pass `group_by` to `vectorbtpro.base.wrapping.ArrayWrapper`:
 
 ```pycon
 >>> group_by = np.array(['first', 'first', 'second'])
@@ -234,7 +233,7 @@ second    17.0
 dtype: float64
 ```
 
-* Regroup an existing `Records`:
+Regroup an existing `Records`:
 
 ```pycon
 >>> records.regroup(group_by).map_field('some_field').mean()
@@ -243,7 +242,7 @@ second    17.0
 dtype: float64
 ```
 
-* Pass `group_by` directly to the mapping method:
+Pass `group_by` directly to the mapping method:
 
 ```pycon
 >>> records.map_field('some_field', group_by=group_by).mean()
@@ -252,7 +251,7 @@ second    17.0
 dtype: float64
 ```
 
-* Pass `group_by` directly to the reducing method:
+Pass `group_by` directly to the reducing method:
 
 ```pycon
 >>> records.map_field('some_field').mean(group_by=group_by)
@@ -263,12 +262,12 @@ dtype: float64
 ```
 
 !!! note
-    Grouping applies only to reducing operations, there is no change to the arrays.
+    Grouping applies only to reducing operations; the underlying arrays remain unchanged.
 
 ## Indexing
 
-Like any other class subclassing `vectorbtpro.base.wrapping.Wrapping`, we can do pandas indexing
-on a `Records` instance, which forwards indexing operation to each object with columns:
+Similar to other classes subclassing `vectorbtpro.base.wrapping.Wrapping`, `Records` supports pandas
+indexing on a per-column basis. Indexing operations are forwarded to each object representing a column:
 
 ```pycon
 >>> records['a'].records
@@ -288,28 +287,27 @@ on a `Records` instance, which forwards indexing operation to each object with c
 ```
 
 !!! note
-    Changing index (time axis) is not supported. The object should be treated as a Series
-    rather than a DataFrame; for example, use `some_field.iloc[0]` instead of `some_field.iloc[:, 0]`
+    Changing the index (time axis) is not supported. The object should be treated as a Series
+    rather than a DataFrame. For example, use `some_field.iloc[0]` instead of `some_field.iloc[:, 0]`
     to get the first column.
 
-    Indexing behavior depends solely upon `vectorbtpro.base.wrapping.ArrayWrapper`.
-    For example, if `group_select` is enabled indexing will be performed on groups when grouped,
-    otherwise on single columns.
+    Indexing behavior depends solely on `vectorbtpro.base.wrapping.ArrayWrapper`. For instance,
+    if `group_select` is enabled, indexing will target groups when grouped, otherwise individual columns.
 
 ## Caching
 
-`Records` supports caching. If a method or a property requires heavy computation, it's wrapped
-with `vectorbtpro.utils.decorators.cached_method` and `vectorbtpro.utils.decorators.cached_property`
-respectively. Caching can be disabled globally via `vectorbtpro._settings.caching`.
+`Records` supports caching. Methods or properties that require heavy computation are decorated
+with `vectorbtpro.utils.decorators.cached_method` and `vectorbtpro.utils.decorators.cached_property`.
+Caching can be disabled globally via `vectorbtpro._settings.caching`.
 
 !!! note
-    Because of caching, class is meant to be immutable and all properties are read-only.
-    To change any attribute, use the `Records.replace` method and pass changes as keyword arguments.
+    Because of caching, the class is designed to be immutable and all properties are read-only.
+    To modify any attribute, use the `Records.replace` method, passing the changes as keyword arguments.
 
 ## Saving and loading
 
-Like any other class subclassing `vectorbtpro.utils.pickling.Pickleable`, we can save a `Records`
-instance to the disk with `Records.save` and load it with `Records.load`.
+Since `Records` subclasses `vectorbtpro.utils.pickling.Pickleable`, you can save an instance to disk
+using `Records.save` and later load it with `Records.load`.
 
 ## Stats
 
@@ -341,16 +339,16 @@ Name: first, dtype: object
 !!! hint
     See `vectorbtpro.generic.plots_builder.PlotsBuilderMixin.plots` and `Records.subplots`.
 
-This class is too generic to have any subplots, but feel free to add custom subplots to your subclass.
+This class does not include dedicated subplots by default, but you can add custom subplots in a subclass.
 
 ## Extending
 
-`Records` class can be extended by subclassing.
+The `Records` class can be extended by subclassing.
 
-In case some of our fields have the same meaning but different naming (such as the base field `idx`)
-or other properties, we can override `field_config` using `vectorbtpro.records.decorators.override_field_config`.
-It will look for configs of all base classes and merge our config on top of them. This preserves
-any base class property that is not explicitly listed in our config.
+If certain fields share the same meaning but use different naming conventions (such as the base field `idx`),
+you can override `field_config` using `vectorbtpro.records.decorators.override_field_config`.
+This decorator searches for configurations in base classes and merges your configuration with them,
+preserving any base class properties not explicitly overridden.
 
 ```pycon
 >>> from vectorbtpro.records.decorators import override_field_config
@@ -393,7 +391,7 @@ array([0, 0, 1, 1])
 array([0, 1, 0, 1])
 ```
 
-Alternatively, we can override the `_field_config` class attribute.
+Alternatively, you can override the `_field_config` class attribute:
 
 ```pycon
 >>> @override_field_config
@@ -409,9 +407,9 @@ Alternatively, we can override the `_field_config` class attribute.
 ```
 
 !!! note
-    Don't forget to decorate the class with `@override_field_config` to inherit configs from base classes.
-
-    You can stop inheritance by not decorating or passing `merge_configs=False` to the decorator.
+    Remember to decorate your subclass with `@override_field_config` to inherit configurations
+    from base classes. Inheritance can be stopped by not applying the decorator or by passing
+    `merge_configs=False` to it.
 """
 
 import inspect
@@ -434,7 +432,6 @@ from vectorbtpro.registries.ch_registry import ch_reg
 from vectorbtpro.registries.jit_registry import jit_reg
 from vectorbtpro.utils import checks
 from vectorbtpro.utils.attr_ import get_dict_attr
-from vectorbtpro.utils.base import Base
 from vectorbtpro.utils.config import resolve_dict, merge_dicts, Config, HybridConfig
 from vectorbtpro.utils.decorators import cached_method, hybrid_method
 from vectorbtpro.utils.random_ import set_seed_nb
@@ -450,35 +447,35 @@ RecordsT = tp.TypeVar("RecordsT", bound="Records")
 
 
 class MetaRecords(type(Analyzable)):
-    """Metaclass for `Records`."""
+    """Metaclass for `Records` that provides field configuration."""
 
     @property
     def field_config(cls) -> Config:
-        """Field config."""
+        """Field configuration."""
         return cls._field_config
 
 
 class Records(Analyzable, metaclass=MetaRecords):
     """Wraps the actual records array (such as trades) and exposes methods for mapping
-    it to some array of values (such as PnL of each trade).
+    it to an array of values (such as the PnL of each trade).
 
     Args:
         wrapper (ArrayWrapper): Wrapper instance.
 
             See `vectorbtpro.base.wrapping.ArrayWrapper`.
         records_arr (array_like): A structured NumPy array of records.
-
-            Must have the fields `id` (record index) and `col` (column index).
+            
+            Must contain the fields `id` (record index) and `col` (column index).
         col_mapper (ColumnMapper): Column mapper if already known.
 
             !!! note
-                It depends on `records_arr`, so make sure to invalidate `col_mapper` upon creating
-                a `Records` instance with a modified `records_arr`.
+                This depends on `records_arr`, so ensure that `col_mapper` is invalidated when
+                creating a `Records` instance with a modified `records_arr`.
 
-                `Records.replace` does it automatically.
+                `Records.replace` handles this automatically.
         **kwargs: Custom keyword arguments passed to the config.
-
-            Useful if any subclass wants to extend the config.
+            
+            Useful for extending the configuration in subclasses.
     """
 
     _writeable_attrs: tp.WriteableAttrs = {"_field_config"}
@@ -496,23 +493,65 @@ class Records(Analyzable, metaclass=MetaRecords):
 
     @property
     def field_config(self) -> Config:
-        """Field config of `${cls_name}`.
+        """Field configuration for `${cls_name}`.
 
         ```python
         ${field_config}
         ```
 
-        Returns `${cls_name}._field_config`, which gets (hybrid-) copied upon creation of each instance.
-        Thus, changing this config won't affect the class.
+        Returns:
+            Config: The field configuration copied for each instance. Changes to this configuration
+            do not affect the class-level configuration.
 
-        To change fields, you can either change the config in-place, override this property,
-        or overwrite the instance variable `${cls_name}._field_config`.
+        To modify the fields, update the config in-place, override this property,
+        or set `${cls_name}._field_config` on the instance.
         """
         return self._field_config
 
+    def __init__(
+        self,
+        wrapper: ArrayWrapper,
+        records_arr: tp.RecordArray,
+        col_mapper: tp.Optional[ColumnMapper] = None,
+        **kwargs,
+    ) -> None:
+        # Check fields
+        records_arr = np.asarray(records_arr)
+        checks.assert_not_none(records_arr.dtype.fields)
+        field_names = {dct.get("name", field_name) for field_name, dct in self.field_config.get("settings", {}).items()}
+        dtype = self.field_config.get("dtype", None)
+        if dtype is not None:
+            for field in dtype.names:
+                if field not in records_arr.dtype.names:
+                    if field not in field_names:
+                        raise TypeError(f"Field '{field}' from {dtype} cannot be found in records or config")
+        if col_mapper is None:
+            col_mapper = ColumnMapper(wrapper, records_arr[self.get_field_name("col")])
+
+        Analyzable.__init__(self, wrapper, records_arr=records_arr, col_mapper=col_mapper, **kwargs)
+
+        self._records_arr = records_arr
+        self._col_mapper = col_mapper
+
+        # Only slices of rows can be selected
+        self._range_only_select = True
+
+        # Copy writeable attrs
+        self._field_config = type(self)._field_config.copy()
+
     @classmethod
     def row_stack_records_arrs(cls, *objs: tp.MaybeTuple[tp.RecordArray], **kwargs) -> tp.RecordArray:
-        """Stack multiple record arrays along rows."""
+        """Stack multiple record arrays along rows.
+
+        Args:
+            *objs (RecordArray): Record arrays to stack.
+            **kwargs: Additional keyword arguments.
+
+                Must include a key "wrapper" representing the wrapper instance.
+
+        Returns:
+            RecordArray: The row-stacked record array.
+        """
         if len(objs) == 1:
             objs = objs[0]
         objs = list(objs)
@@ -553,7 +592,17 @@ class Records(Analyzable, metaclass=MetaRecords):
 
     @classmethod
     def get_row_stack_record_indices(cls, *objs: tp.MaybeTuple[tp.RecordArray], **kwargs) -> tp.Array1d:
-        """Get the indices that map concatenated record arrays into the row-stacked record array."""
+        """Get the indices mapping concatenated record arrays to the row-stacked record array.
+
+        Args:
+            *objs (RecordArray): Record arrays to process.
+            **kwargs: Additional keyword arguments.
+
+                Must include a key "wrapper" representing the wrapper instance.
+
+        Returns:
+            Array1d: The concatenated indices mapping the original record arrays to the row-stacked array.
+        """
         if len(objs) == 1:
             objs = objs[0]
         objs = list(objs)
@@ -591,11 +640,20 @@ class Records(Analyzable, metaclass=MetaRecords):
     ) -> RecordsT:
         """Stack multiple `Records` instances along rows.
 
-        Uses `vectorbtpro.base.wrapping.ArrayWrapper.row_stack` to stack the wrappers
-        and `Records.row_stack_records_arrs` to stack the record arrays.
+        Uses `vectorbtpro.base.wrapping.ArrayWrapper.row_stack` to stack the wrappers and
+        `Records.row_stack_records_arrs` to stack the record arrays.
+
+        Args:
+            *objs (Records): Additional `Records` instances to be stacked.
+            wrapper_kwargs (KwargsLike): Keyword arguments for configuring the row stacking of wrappers.
+            **kwargs: Additional keyword arguments passed to the `Records` constructor and configuration resolvers.
+
+        Returns:
+            Records: A new `Records` instance representing the row-stacked result.
 
         !!! note
-            Will produce a column-sorted array."""
+            Will produce a column-sorted array.
+        """
         if not isinstance(cls_or_self, type):
             objs = (cls_or_self, *objs)
             cls = type(cls_or_self)
@@ -631,7 +689,18 @@ class Records(Analyzable, metaclass=MetaRecords):
         get_indexer_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> tp.RecordArray:
-        """Stack multiple record arrays along columns."""
+        """Stack multiple record arrays along columns.
+
+        Args:
+            *objs (RecordArray): Record arrays to stack.
+            get_indexer_kwargs (KwargsLike): Keyword arguments for indexer calculation.
+            **kwargs: Additional keyword arguments.
+
+                Must include a key "wrapper" representing the wrapper instance.
+
+        Returns:
+            RecordArray: The column-stacked record array.
+        """
         if len(objs) == 1:
             objs = objs[0]
         objs = list(objs)
@@ -673,7 +742,15 @@ class Records(Analyzable, metaclass=MetaRecords):
 
     @classmethod
     def get_column_stack_record_indices(cls, *objs: tp.MaybeTuple[tp.RecordArray], **kwargs) -> tp.Array1d:
-        """Get the indices that map concatenated record arrays into the column-stacked record array."""
+        """Get the indices that map concatenated record arrays into the column-stacked record array.
+
+        Args:
+            *objs (MaybeTuple[RecordArray]): Record arrays or a tuple of record arrays to be concatenated.
+            **kwargs: Additional keyword arguments.
+
+        Returns:
+            Array1d: Numpy array of indices mapping the concatenated record arrays into the column-stacked array.
+        """
         if len(objs) == 1:
             objs = objs[0]
         objs = list(objs)
@@ -709,15 +786,22 @@ class Records(Analyzable, metaclass=MetaRecords):
     ) -> RecordsT:
         """Stack multiple `Records` instances along columns.
 
-        Uses `vectorbtpro.base.wrapping.ArrayWrapper.column_stack` to stack the wrappers
-        and `Records.column_stack_records_arrs` to stack the record arrays.
+        Uses `vectorbtpro.base.wrapping.ArrayWrapper.column_stack` to stack the wrappers and 
+        `Records.column_stack_records_arrs` to combine the record arrays. The `get_indexer_kwargs` 
+        are passed to `pandas.Index.get_indexer` to map old indices to new ones after reindexing.
 
-        `get_indexer_kwargs` are passed to
-        [pandas.Index.get_indexer](https://pandas.pydata.org/docs/reference/api/pandas.Index.get_indexer.html)
-        to translate old indices to new ones after the reindexing operation.
+        Args:
+            *objs (MaybeTuple[Records]): `Records` instances to stack.
+            wrapper_kwargs (KwargsLike): Additional keyword arguments for configuring the wrapper.
+            get_indexer_kwargs (KwargsLike): Additional keyword arguments for index translation.
+            **kwargs: Additional keyword arguments for column stacking.
+
+        Returns:
+            Records: A new `Records` instance with column-stacked data.
 
         !!! note
-            Will produce a column-sorted array."""
+            Produces a column-sorted array.
+        """
         if not isinstance(cls_or_self, type):
             objs = (cls_or_self, *objs)
             cls = type(cls_or_self)
@@ -753,41 +837,17 @@ class Records(Analyzable, metaclass=MetaRecords):
         kwargs = cls.resolve_stack_kwargs(*objs, **kwargs)
         return cls(**kwargs)
 
-    def __init__(
-        self,
-        wrapper: ArrayWrapper,
-        records_arr: tp.RecordArray,
-        col_mapper: tp.Optional[ColumnMapper] = None,
-        **kwargs,
-    ) -> None:
-        # Check fields
-        records_arr = np.asarray(records_arr)
-        checks.assert_not_none(records_arr.dtype.fields)
-        field_names = {dct.get("name", field_name) for field_name, dct in self.field_config.get("settings", {}).items()}
-        dtype = self.field_config.get("dtype", None)
-        if dtype is not None:
-            for field in dtype.names:
-                if field not in records_arr.dtype.names:
-                    if field not in field_names:
-                        raise TypeError(f"Field '{field}' from {dtype} cannot be found in records or config")
-        if col_mapper is None:
-            col_mapper = ColumnMapper(wrapper, records_arr[self.get_field_name("col")])
-
-        Analyzable.__init__(self, wrapper, records_arr=records_arr, col_mapper=col_mapper, **kwargs)
-
-        self._records_arr = records_arr
-        self._col_mapper = col_mapper
-
-        # Only slices of rows can be selected
-        self._range_only_select = True
-
-        # Copy writeable attrs
-        self._field_config = type(self)._field_config.copy()
-
     def replace(self: RecordsT, **kwargs) -> RecordsT:
         """See `vectorbtpro.utils.config.Configured.replace`.
 
-        Also, makes sure that `Records.col_mapper` is not passed to the new instance."""
+        Also ensures that `Records.col_mapper` is excluded from the new instance.
+
+        Args:
+            **kwargs: Additional keyword arguments for configuration.
+
+        Returns:
+            Records: A new `Records` instance with the updated configuration.
+        """
         if self.config.get("col_mapper", None) is not None:
             if "wrapper" in kwargs:
                 if self.wrapper is not kwargs.get("wrapper"):
@@ -802,9 +862,17 @@ class Records(Analyzable, metaclass=MetaRecords):
         col_idxs: tp.MaybeIndexArray,
         jitted: tp.JittedOption = None,
     ) -> tp.Tuple[tp.Array1d, tp.RecordArray]:
-        """Select columns.
+        """Select columns from the record array.
 
-        Returns indices and new record array. Automatically decides whether to use column lengths or column map."""
+        Automatically determines whether to use column lengths or the column map for selecting the columns.
+
+        Args:
+            col_idxs (MaybeIndexArray): Column indices or slice to select.
+            jitted (JittedOption): JIT compilation control; if provided, a compiled selection method is used.
+
+        Returns:
+            Tuple[Array1d, RecordArray]: A tuple containing the selected indices and the new record array.
+        """
         if len(self.values) == 0:
             return np.arange(len(self.values)), self.values
         if isinstance(col_idxs, slice):
@@ -822,10 +890,23 @@ class Records(Analyzable, metaclass=MetaRecords):
         return new_indices, new_records_arr
 
     def indexing_func_meta(self, *args, wrapper_meta: tp.DictLike = None, **kwargs) -> dict:
-        """Perform indexing on `Records` and return metadata.
+        """Perform indexing on the `Records` instance and return corresponding metadata.
 
-        By default, all fields that are mapped to index are indexed.
-        To avoid indexing on some fields, set their setting `noindex` to True."""
+        By default, all fields mapped to an index are processed. 
+        Set a field's `noindex` setting to True to exclude it from indexing.
+
+        Args:
+            *args: Additional positional arguments for indexing.
+            wrapper_meta (DictLike): Optional metadata from the wrapper's indexing function.
+            **kwargs: Additional keyword arguments for indexing.
+
+        Returns:
+            dict: A dictionary containing:
+
+                * `wrapper_meta`: Updated metadata from the wrapper.
+                * `new_indices`: Array of new indices after indexing.
+                * `new_records_arr`: Updated record array after applying the index filter.
+        """
         if wrapper_meta is None:
             wrapper_meta = self.wrapper.indexing_func_meta(
                 *args,
@@ -866,7 +947,16 @@ class Records(Analyzable, metaclass=MetaRecords):
         )
 
     def indexing_func(self: RecordsT, *args, records_meta: tp.DictLike = None, **kwargs) -> RecordsT:
-        """Perform indexing on `Records`."""
+        """Perform indexing on the `Records` instance.
+
+        Args:
+            *args: Additional positional arguments for indexing.
+            records_meta (DictLike): Optional metadata dictionary returned by `Records.indexing_func_meta`.
+            **kwargs: Additional keyword arguments for indexing.
+
+        Returns:
+            Records: A new `Records` instance with updated indexing.
+        """
         if records_meta is None:
             records_meta = self.indexing_func_meta(*args, **kwargs)
         return self.replace(
@@ -875,7 +965,14 @@ class Records(Analyzable, metaclass=MetaRecords):
         )
 
     def resample_records_arr(self, resampler: tp.Union[Resampler, tp.PandasResampler]) -> tp.RecordArray:
-        """Perform resampling on the record array."""
+        """Resample the record array.
+
+        Args:
+            resampler (Union[Resampler, PandasResampler]): Instance used to resample the record array.
+
+        Returns:
+            RecordArray: The resampled record array.
+        """
         if isinstance(resampler, Resampler):
             _resampler = resampler
         else:
@@ -889,14 +986,39 @@ class Records(Analyzable, metaclass=MetaRecords):
         return new_records_arr
 
     def resample_meta(self: RecordsT, *args, wrapper_meta: tp.DictLike = None, **kwargs) -> dict:
-        """Perform resampling on `Records` and return metadata."""
+        """Resample records and return metadata.
+
+        Args:
+            *args: Additional positional arguments.
+            wrapper_meta (DictLike): Metadata for the resampling wrapper.
+
+                If None, metadata is obtained from `Records.wrapper.resample_meta`.
+            **kwargs: Additional keyword arguments.
+
+        Returns:
+            dict: A dictionary containing:
+
+                * wrapper_meta: Metadata from the resampling operation.
+                * new_records_arr: The new resampled record array.
+        """
         if wrapper_meta is None:
             wrapper_meta = self.wrapper.resample_meta(*args, **kwargs)
         new_records_arr = self.resample_records_arr(wrapper_meta["resampler"])
         return dict(wrapper_meta=wrapper_meta, new_records_arr=new_records_arr)
 
     def resample(self: RecordsT, *args, records_meta: tp.DictLike = None, **kwargs) -> RecordsT:
-        """Perform resampling on `Records`."""
+        """Resample records.
+
+        Args:
+            *args: Additional positional arguments.
+            records_meta (DictLike): Metadata generated by resampling.
+
+                If None, it is computed using `Records.resample_meta`.
+            **kwargs: Additional keyword arguments.
+
+        Returns:
+            Records: A new instance of records with resampled data.
+        """
         if records_meta is None:
             records_meta = self.resample_meta(*args, **kwargs)
         return self.replace(
@@ -906,12 +1028,26 @@ class Records(Analyzable, metaclass=MetaRecords):
 
     @property
     def records_arr(self) -> tp.RecordArray:
-        """Records array."""
+        """Record array.
+
+        The internal array storing the records.
+        """
         return self._records_arr
 
     @property
+    def col_mapper(self) -> ColumnMapper:
+        """Column mapper.
+
+        Provides a mapping of record columns. See `vectorbtpro.records.col_mapper.ColumnMapper`.
+        """
+        return self._col_mapper
+
+    @property
     def values(self) -> tp.RecordArray:
-        """Records array."""
+        """Record array.
+
+        Alias for `Records.records_arr`.
+        """
         return self.records_arr
 
     def __len__(self) -> int:
@@ -919,28 +1055,37 @@ class Records(Analyzable, metaclass=MetaRecords):
 
     @property
     def records(self) -> tp.Frame:
-        """Records."""
+        """Records as DataFrame.
+
+        Converts the record array into a pandas DataFrame.
+        """
         return pd.DataFrame.from_records(self.values)
 
     @property
     def recarray(self) -> tp.RecArray:
-        """Records with field access using attributes."""
+        """Record array with attribute access.
+
+        Returns a NumPy recarray that supports accessing fields as attributes.
+        """
         return self.values.view(np.recarray)
 
     @property
-    def col_mapper(self) -> ColumnMapper:
-        """Column mapper.
-
-        See `vectorbtpro.records.col_mapper.ColumnMapper`."""
-        return self._col_mapper
-
-    @property
     def field_names(self) -> tp.List[str]:
-        """Field names."""
+        """Field names.
+
+        A list of field names extracted from the record array.
+        """
         return list(self.values.dtype.fields.keys())
 
     def to_readable(self, expand_columns: bool = False) -> tp.Frame:
-        """Get records in a human-readable format."""
+        """Convert records to a human-readable format.
+
+        Args:
+            expand_columns (bool): Flag to expand multi-index columns into a structured format.
+
+        Returns:
+            Frame: A DataFrame representing the records in a human-readable format.
+        """
         new_columns = list()
         field_settings = self.field_config.get("settings", {})
         for field_name in self.field_names:
@@ -970,7 +1115,7 @@ class Records(Analyzable, metaclass=MetaRecords):
                     else:
                         new_columns.append(pd.Series(self.get_apply_mapping_arr(field_name), name=title))
                 else:
-                    new_columns.append(pd.Series(self.values[field_name], name=title))
+                    new_columns.append(pd.Series(self.values[field_name], name=field_name))
             else:
                 new_columns.append(pd.Series(self.values[field_name], name=field_name))
         records_readable = pd.concat(new_columns, axis=1)
@@ -980,51 +1125,129 @@ class Records(Analyzable, metaclass=MetaRecords):
 
     @property
     def records_readable(self) -> tp.Frame:
-        """`Records.to_readable` with default arguments."""
+        """Readable records.
+
+        Returns the result of `Records.to_readable` with default arguments.
+        """
         return self.to_readable()
 
     readable = records_readable
 
     def get_field_setting(self, field: str, setting: str, default: tp.Any = None) -> tp.Any:
-        """Get any setting of the field. Uses `Records.field_config`."""
+        """Retrieve a field's setting.
+
+        Args:
+            field (str): The name of the field.
+            setting (str): The key of the setting.
+            default (Any): The default value to return if the setting is not present.
+
+        Returns:
+            Any: The value of the specified setting or the default value.
+        """
         return self.field_config.get("settings", {}).get(field, {}).get(setting, default)
 
     def get_field_name(self, field: str) -> str:
-        """Get the name of the field. Uses `Records.field_config`.."""
+        """Retrieve the display name of a field.
+
+        Args:
+            field (str): The identifier for the field.
+
+        Returns:
+            str: The display name for the field as specified in the field configuration
+                or the original field name.
+        """
         return self.get_field_setting(field, "name", field)
 
     def get_field_title(self, field: str) -> str:
-        """Get the title of the field. Uses `Records.field_config`."""
+        """Retrieve the title of a field.
+
+        Args:
+            field (str): The field identifier.
+
+        Returns:
+            str: The title of the field based on the field configuration,
+                or the field name if not specified.
+        """
         return self.get_field_setting(field, "title", field)
 
     def get_field_mapping(self, field: str) -> tp.Optional[tp.MappingLike]:
-        """Get the mapping of the field. Uses `Records.field_config`."""
+        """Retrieve the mapping for a field.
+
+        Args:
+            field (str): The field identifier.
+
+        Returns:
+            Optional[MappingLike]: The mapping for the field as defined in the field configuration,
+                or None if not set.
+        """
         return self.get_field_setting(field, "mapping", None)
 
     def get_field_arr(self, field: str, copy: bool = False) -> tp.Array1d:
-        """Get the array of the field. Uses `Records.field_config`."""
+        """Retrieve the array for a given field.
+
+        Args:
+            field (str): The field identifier.
+            copy (bool): Whether to return a copy of the array.
+
+        Returns:
+            Array1d: The array corresponding to the specified field.
+        """
         out = self.values[self.get_field_name(field)]
         if copy:
             out = out.copy()
         return out
 
     def get_map_field(self, field: str, **kwargs) -> MappedArray:
-        """Get the mapped array of the field. Uses `Records.field_config`."""
+        """Retrieve the mapped array for a field.
+
+        Args:
+            field (str): The field identifier.
+            **kwargs: Additional keyword arguments passed to `Records.map_field`.
+
+        Returns:
+            MappedArray: The mapped array for the specified field.
+        """
         mapping = self.get_field_mapping(field)
         if isinstance(mapping, str) and mapping == "ids":
             mapping = None
         return self.map_field(self.get_field_name(field), mapping=mapping, **kwargs)
 
     def get_map_field_to_index(self, field: str, minus_one_to_zero: bool = False, **kwargs) -> tp.Index:
-        """Get the mapped array on the field, with index applied. Uses `Records.field_config`."""
+        """Retrieve the mapped index for a field.
+
+        Args:
+            field (str): The field identifier.
+            minus_one_to_zero (bool): Flag indicating whether to convert -1 values to 0.
+            **kwargs: Additional keyword arguments passed to `Records.get_map_field`.
+
+        Returns:
+            Index: The index derived from the mapped field.
+        """
         return self.get_map_field(field, **kwargs).to_index(minus_one_to_zero=minus_one_to_zero)
 
     def get_map_field_to_columns(self, field: str, **kwargs) -> tp.Index:
-        """Get the mapped array on the field, with columns applied. Uses `Records.field_config`."""
+        """Retrieve the mapped columns for a field.
+
+        Args:
+            field (str): The field identifier.
+            **kwargs: Additional keyword arguments passed to `Records.get_map_field`.
+
+        Returns:
+            Index: The columns derived from the mapped field.
+        """
         return self.get_map_field(field, **kwargs).to_columns()
 
     def get_apply_mapping_arr(self, field: str, mapping_kwargs: tp.KwargsLike = None, **kwargs) -> tp.Array1d:
-        """Get the mapped array on the field, with mapping applied. Uses `Records.field_config`."""
+        """Retrieve the array for a field with applied mapping.
+
+        Args:
+            field (str): The field identifier.
+            mapping_kwargs (KwargsLike): Additional keyword arguments for applying the mapping.
+            **kwargs: Additional keyword arguments passed to `Records.get_map_field`.
+
+        Returns:
+            Array1d: The array with the applied mapping for the field.
+        """
         mapping = self.get_field_mapping(field)
         if isinstance(mapping, str) and mapping == "index":
             return self.get_map_field_to_index(field, **kwargs).values
@@ -1033,7 +1256,16 @@ class Records(Analyzable, metaclass=MetaRecords):
         return self.get_map_field(field, **kwargs).apply_mapping(mapping_kwargs=mapping_kwargs).values
 
     def get_apply_mapping_str_arr(self, field: str, mapping_kwargs: tp.KwargsLike = None, **kwargs) -> tp.Array1d:
-        """Get the mapped array on the field, with mapping applied and stringified. Uses `Records.field_config`."""
+        """Retrieve a stringified array for a field with applied mapping.
+
+        Args:
+            field (str): The field identifier.
+            mapping_kwargs (KwargsLike): Additional keyword arguments for applying the mapping.
+            **kwargs: Additional keyword arguments passed to `Records.get_map_field`.
+
+        Returns:
+            Array1d: The stringified array with the applied mapping for the field.
+        """
         mapping = self.get_field_mapping(field)
         if isinstance(mapping, str) and mapping == "index":
             return self.get_map_field_to_index(field, **kwargs).astype(str).values
@@ -1043,17 +1275,26 @@ class Records(Analyzable, metaclass=MetaRecords):
 
     @property
     def id_arr(self) -> tp.Array1d:
-        """Get id array."""
+        """ID array.
+
+        Array of IDs extracted from the record array.
+        """
         return self.values[self.get_field_name("id")]
 
     @property
     def col_arr(self) -> tp.Array1d:
-        """Get column array."""
+        """Column array.
+
+        Array of column identifiers extracted from the record array.
+        """
         return self.values[self.get_field_name("col")]
 
     @property
     def idx_arr(self) -> tp.Optional[tp.Array1d]:
-        """Get index array."""
+        """Index array.
+
+        Array of index values extracted from the record array, or None if not available.
+        """
         idx_field_name = self.get_field_name("idx")
         if idx_field_name is None:
             return None
@@ -1063,7 +1304,15 @@ class Records(Analyzable, metaclass=MetaRecords):
 
     @cached_method
     def is_sorted(self, incl_id: bool = False, jitted: tp.JittedOption = None) -> bool:
-        """Check whether records are sorted."""
+        """Check whether the records are sorted.
+
+        Args:
+            incl_id (bool): If True, check sorting using both column and id arrays.
+            jitted (JittedOption): Option to control JIT compilation for sorting.
+
+        Returns:
+            bool: True if the records are sorted, False otherwise.
+        """
         if incl_id:
             func = jit_reg.resolve_option(nb.is_col_id_sorted_nb, jitted)
             return func(self.col_arr, self.id_arr)
@@ -1071,10 +1320,19 @@ class Records(Analyzable, metaclass=MetaRecords):
         return func(self.col_arr)
 
     def sort(self: RecordsT, incl_id: bool = False, group_by: tp.GroupByLike = None, **kwargs) -> RecordsT:
-        """Sort records by columns (primary) and ids (secondary, optional).
+        """Sort records by column values with an optional secondary sort by record ids.
 
         !!! note
-            Sorting is expensive. A better approach is to append records already in the correct order."""
+            Sorting is expensive. It is more efficient to append records that are already in the correct order.
+
+        Args:
+            incl_id (bool): If True, include record ids in the sorting criteria.
+            group_by (GroupByLike): Grouping specification to regroup records after sorting.
+            **kwargs: Additional arguments passed to record replacement.
+
+        Returns:
+            Records: A new instance with sorted records.
+        """
         if self.is_sorted(incl_id=incl_id):
             return self.replace(**kwargs).regroup(group_by)
         if incl_id:
@@ -1086,7 +1344,16 @@ class Records(Analyzable, metaclass=MetaRecords):
     # ############# Filtering ############# #
 
     def apply_mask(self: RecordsT, mask: tp.Array1d, group_by: tp.GroupByLike = None, **kwargs) -> RecordsT:
-        """Return a new class instance, filtered by mask."""
+        """Return a new records instance filtered by a boolean mask.
+
+        Args:
+            mask (Array1d): Boolean array indicating which records to retain.
+            group_by (GroupByLike): Grouping specification for the resulting records.
+            **kwargs: Additional arguments passed to record replacement.
+
+        Returns:
+            Records: A new instance containing the filtered records.
+        """
         mask_indices = np.flatnonzero(mask)
         return self.replace(records_arr=np.take(self.values, mask_indices), **kwargs).regroup(group_by)
 
@@ -1097,7 +1364,17 @@ class Records(Analyzable, metaclass=MetaRecords):
         chunked: tp.ChunkedOption = None,
         **kwargs,
     ) -> RecordsT:
-        """Return the first N records in each column."""
+        """Return a new records instance with the first N records retained in each column.
+
+        Args:
+            n (int): Number of records to retain from the beginning of each column.
+            jitted (JittedOption): Option to control JIT compilation.
+            chunked (ChunkedOption): Option to control chunked processing.
+            **kwargs: Additional arguments passed to record replacement.
+
+        Returns:
+            Records: A new instance containing the first N records per column.
+        """
         col_map = self.col_mapper.get_col_map(group_by=False)
         func = jit_reg.resolve_option(nb.first_n_nb, jitted)
         func = ch_reg.resolve_option(func, chunked)
@@ -1110,7 +1387,17 @@ class Records(Analyzable, metaclass=MetaRecords):
         chunked: tp.ChunkedOption = None,
         **kwargs,
     ) -> RecordsT:
-        """Return the last N records in each column."""
+        """Return a new records instance with the last N records retained in each column.
+
+        Args:
+            n (int): Number of records to retain from the end of each column.
+            jitted (JittedOption): Option to control JIT compilation.
+            chunked (ChunkedOption): Option to control chunked processing.
+            **kwargs: Additional arguments passed to record replacement.
+
+        Returns:
+            Records: A new instance containing the last N records per column.
+        """
         col_map = self.col_mapper.get_col_map(group_by=False)
         func = jit_reg.resolve_option(nb.last_n_nb, jitted)
         func = ch_reg.resolve_option(func, chunked)
@@ -1124,7 +1411,18 @@ class Records(Analyzable, metaclass=MetaRecords):
         chunked: tp.ChunkedOption = None,
         **kwargs,
     ) -> RecordsT:
-        """Return random N records in each column."""
+        """Return a new records instance with N randomly selected records from each column.
+
+        Args:
+            n (int): Number of random records to select per column.
+            seed (Optional[int]): Seed for random number generation.
+            jitted (JittedOption): Option to control JIT compilation.
+            chunked (ChunkedOption): Option to control chunked processing.
+            **kwargs: Additional arguments passed to record replacement.
+
+        Returns:
+            Records: A new instance containing the randomly selected records.
+        """
         if seed is not None:
             set_seed_nb(seed)
         col_map = self.col_mapper.get_col_map(group_by=False)
@@ -1142,9 +1440,22 @@ class Records(Analyzable, metaclass=MetaRecords):
         group_by: tp.GroupByLike = None,
         **kwargs,
     ) -> MappedArray:
-        """Convert array to mapped array.
+        """Convert an array to a mapped array.
 
-        The length of the array must match that of the records."""
+        The input array's length must match the number of records.
+
+        Args:
+            a (ArrayLike): Array to be converted into a mapped array.
+            idx_arr (Union[None, str, Array1d]): Row indices as an array,
+                a field name, or None to use the default index array.
+            mapping (Optional[MappingLike]): Mapping to apply for re-labeling records.
+            group_by (GroupByLike): Grouping specification for the mapped array.
+            **kwargs: Additional arguments passed to the
+                `vectorbtpro.records.mapped_array.MappedArray` constructor.
+
+        Returns:
+            MappedArray: The resulting mapped array.
+        """
         if not isinstance(a, np.ndarray):
             a = np.asarray(a)
         checks.assert_shape_equal(a, self.values)
@@ -1164,9 +1475,15 @@ class Records(Analyzable, metaclass=MetaRecords):
         ).regroup(group_by)
 
     def map_field(self, field: str, **kwargs) -> MappedArray:
-        """Convert field to mapped array.
+        """Convert a field to a mapped array.
 
-        `**kwargs` are passed to `Records.map_array`."""
+        Args:
+            field (str): Name of the field to be converted.
+            **kwargs: Additional arguments passed to `Records.map_array`.
+
+        Returns:
+            MappedArray: The resulting mapped array for the specified field.
+        """
         mapped_arr = self.values[field]
         return self.map_array(mapped_arr, **kwargs)
 
@@ -1181,13 +1498,24 @@ class Records(Analyzable, metaclass=MetaRecords):
         col_mapper: tp.Optional[ColumnMapper] = None,
         **kwargs,
     ) -> MappedArray:
-        """Map each record to a scalar value. Returns mapped array.
+        """Map each record to a scalar value and return a mapped array.
 
-        See `vectorbtpro.records.nb.map_records_nb`.
+        See `vectorbtpro.records.nb.map_records_nb` and `vectorbtpro.records.nb.map_records_meta_nb`.
 
-        For details on the meta version, see `vectorbtpro.records.nb.map_records_meta_nb`.
+        For class method calls, `col_mapper` must be provided.
 
-        `**kwargs` are passed to `Records.map_array`."""
+        Args:
+            map_func_nb (Union[RecordsMapFunc, RecordsMapMetaFunc]): Mapping function applied to each record.
+            *args: Positional arguments passed to the mapping function.
+            dtype (Optional[DTypeLike]): Data type for the resulting mapped array.
+            jitted (JittedOption): Option to control JIT compilation.
+            chunked (ChunkedOption): Option to control chunked processing.
+            col_mapper (Optional[ColumnMapper]): Column mapper for the meta version.
+            **kwargs: Additional arguments passed to `Records.map_array`.
+
+        Returns:
+            MappedArray: Mapped array with scalar values for each record.
+        """
         if isinstance(cls_or_self, type):
             checks.assert_not_none(col_mapper, arg_name="col_mapper")
             func = jit_reg.resolve_option(nb.map_records_meta_nb, jitted)
@@ -1215,15 +1543,26 @@ class Records(Analyzable, metaclass=MetaRecords):
         col_mapper: tp.Optional[ColumnMapper] = None,
         **kwargs,
     ) -> MappedArray:
-        """Apply function on records per column/group. Returns mapped array.
+        """Apply a function to records on a per-column or per-group basis and return a mapped array.
 
-        Applies per group if `apply_per_group` is True.
+        See `vectorbtpro.records.nb.apply_nb` and `vectorbtpro.records.nb.apply_meta_nb`.
 
-        See `vectorbtpro.records.nb.apply_nb`.
+        If `apply_per_group` is True, the function is applied separately to each group.
 
-        For details on the meta version, see `vectorbtpro.records.nb.apply_meta_nb`.
+        Args:
+            apply_func_nb (Union[ApplyFunc, ApplyMetaFunc]): Function to apply to the records.
+            *args: Positional arguments passed to the apply function.
+            group_by (GroupByLike): Grouping specification for applying the function.
+            apply_per_group (bool): If True, apply the function to each group individually.
+            dtype (Optional[DTypeLike]): Data type for the resulting mapped array.
+            jitted (JittedOption): Option to control JIT compilation.
+            chunked (ChunkedOption): Option to control chunked processing.
+            col_mapper (Optional[ColumnMapper]): Column mapper for the meta version.
+            **kwargs: Additional arguments passed to `Records.map_array`.
 
-        `**kwargs` are passed to `Records.map_array`."""
+        Returns:
+            MappedArray: Mapped array resulting from applying the function to the records.
+        """
         if isinstance(cls_or_self, type):
             checks.assert_not_none(col_mapper, arg_name="col_mapper")
             col_map = col_mapper.get_col_map(group_by=group_by if apply_per_group else False)
@@ -1248,7 +1587,18 @@ class Records(Analyzable, metaclass=MetaRecords):
         group_by: tp.GroupByLike = None,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.SeriesFrame:
-        """Get mask in form of a Series/DataFrame from row and column indices."""
+        """Return a mask as a Series or DataFrame based on row and column indices.
+
+        Args:
+            idx_arr (Union[None, str, Array1d]): Index array or field name for retrieving row indices.
+
+                If None, `Records.idx_arr` is used.
+            group_by (GroupByLike): Grouping specification to apply when generating the mask.
+            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping the output mask.
+
+        Returns:
+            SeriesFrame: A Series or DataFrame representing the mask.
+        """
         if idx_arr is None:
             if self.idx_arr is None:
                 raise ValueError("Must pass idx_arr")
@@ -1263,14 +1613,23 @@ class Records(Analyzable, metaclass=MetaRecords):
 
     @property
     def pd_mask(self) -> tp.SeriesFrame:
-        """`MappedArray.get_pd_mask` with default arguments."""
+        """Return the mask as a SeriesFrame produced by invoking
+        `vectorbtpro.records.mapped_array.MappedArray.get_pd_mask` with default arguments."""
         return self.get_pd_mask()
 
     # ############# Reducing ############# #
 
     @cached_method
     def count(self, group_by: tp.GroupByLike = None, wrap_kwargs: tp.KwargsLike = None) -> tp.MaybeSeries:
-        """Get count by column."""
+        """Return count of records per column.
+
+        Args:
+            group_by (GroupByLike): Grouping specification.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+
+        Returns:
+            MaybeSeries: Series containing the count by column.
+        """
         wrap_kwargs = merge_dicts(dict(name_or_index="count"), wrap_kwargs)
         return self.wrapper.wrap_reduced(
             self.col_mapper.get_col_map(group_by=group_by)[1],
@@ -1282,21 +1641,39 @@ class Records(Analyzable, metaclass=MetaRecords):
 
     @cached_method
     def has_conflicts(self, **kwargs) -> bool:
-        """See `vectorbtpro.records.mapped_array.MappedArray.has_conflicts`."""
+        """Return whether conflicts exist in the mapped column records.
+
+        Args:
+            **kwargs: Additional keyword arguments.
+
+        Returns:
+            bool: True if conflicts are present, otherwise False.
+        """
         return self.get_map_field("col").has_conflicts(**kwargs)
 
     def coverage_map(self, **kwargs) -> tp.SeriesFrame:
-        """See `vectorbtpro.records.mapped_array.MappedArray.coverage_map`."""
+        """Return the coverage map for the records using the mapped column field.
+
+        Args:
+            **kwargs: Additional keyword arguments.
+
+        Returns:
+            SeriesFrame: The resulting coverage map.
+        """
         return self.get_map_field("col").coverage_map(**kwargs)
 
     # ############# Stats ############# #
 
     @property
     def stats_defaults(self) -> tp.Kwargs:
-        """Defaults for `Records.stats`.
+        """Return the default configuration settings for `Records.stats`.
 
-        Merges `vectorbtpro.generic.stats_builder.StatsBuilderMixin.stats_defaults` and
-        `stats` from `vectorbtpro._settings.records`."""
+        Merges `StatsBuilderMixin.stats_defaults` with the `stats` settings
+        from `vectorbtpro._settings.records`.
+
+        Returns:
+            Kwargs: A dictionary of default stats settings.
+        """
         from vectorbtpro._settings import settings
 
         records_stats_cfg = settings["records"]["stats"]
@@ -1341,19 +1718,30 @@ class Records(Analyzable, metaclass=MetaRecords):
         append_info: tp.Optional[tp.Sequence[tp.Tuple]] = None,
         mask: tp.Optional[tp.Array1d] = None,
     ) -> tp.Tuple[tp.Array2d, str]:
-        """Prepare customdata and hoverinfo for Plotly.
+        """Prepare `customdata` and `hoverinfo` for Plotly figures.
 
-        Will display all fields in the data type or only those in `incl_fields`, unless any of them has
-        the field config setting `as_customdata` disabled, or it's listed in `excl_fields`.
-        Additionally, you can define `hovertemplate` in the field config such as by using
-        `vectorbtpro.utils.template.Sub` where `title` is substituted by the title and `index` is
-        substituted by (final) index in the customdata. If provided as a string, will be wrapped with
-        `vectorbtpro.utils.template.Sub`. Defaults to "$title: %{{customdata[$index]}}". Mapped fields
-        will be stringified automatically.
+        This function constructs `customdata` arrays and hover templates by including available fields
+        from the record's data type. If `incl_fields` is provided, only those fields are considered
+        unless they have the field configuration `as_customdata` disabled or are explicitly listed
+        in `excl_fields`. Additionally, field hover templates can be defined via
+        `vectorbtpro.utils.template.Sub` with substitutions for `title` and `index`.
+        Mapped fields are automatically converted to strings.
 
-        To append one or more custom arrays, provide `append_info` as a list of tuples, each consisting
-        of a 1-dim NumPy array, title, and optionally hoverinfo. If the array's data type is `object`,
-        will treat it as strings, otherwise as numbers."""
+        To append additional custom arrays, provide `append_info` as a list of tuples, each containing
+        a 1D NumPy array, a title, and optionally a `hoverinfo` template. If an array's data type is
+        `object`, it is treated as strings; otherwise, it is treated as numbers.
+
+        Args:
+            incl_fields (Optional[Sequence[str]]): Fields to include in the `customdata`.
+            excl_fields (Optional[Sequence[str]]): Fields to exclude from the `customdata`.
+            append_info (Optional[Sequence[Tuple]]): Additional tuples with a 1D array, title,
+                and optional `hoverinfo` template.
+            mask (Optional[Array1d]): Boolean mask to apply to the `customdata` arrays.
+
+        Returns:
+            Tuple[Array2d, str]: A tuple where the first element is the `customdata` array and
+                the second element is the `hoverinfo` string.
+        """
         customdata_info = []
         if incl_fields is not None:
             iterate_over_names = incl_fields
@@ -1409,10 +1797,14 @@ class Records(Analyzable, metaclass=MetaRecords):
 
     @property
     def plots_defaults(self) -> tp.Kwargs:
-        """Defaults for `Records.plots`.
+        """Return the default configuration settings for `Records.plots`.
 
-        Merges `vectorbtpro.generic.plots_builder.PlotsBuilderMixin.plots_defaults` and
-        `plots` from `vectorbtpro._settings.records`."""
+        Merges `PlotsBuilderMixin.plots_defaults` with the `plots` settings
+        from `vectorbtpro._settings.records`.
+
+        Returns:
+            Kwargs: A dictionary of default plot settings.
+        """
         from vectorbtpro._settings import settings
 
         records_plots_cfg = settings["records"]["plots"]
@@ -1427,7 +1819,21 @@ class Records(Analyzable, metaclass=MetaRecords):
 
     @classmethod
     def build_field_config_doc(cls, source_cls: tp.Optional[type] = None) -> str:
-        """Build field config documentation."""
+        """Return the field configuration documentation for the class.
+
+        Builds and returns a formatted string of the field configuration documentation by
+        processing the docstring of the `Records.field_config` attribute from the provided source
+        class and substituting class-specific values.
+
+        Args:
+            source_cls (Optional[type]): The source class from which to extract field
+                configuration documentation.
+
+                Defaults to `Records` if not provided.
+
+        Returns:
+            str: The formatted field configuration documentation.
+        """
         if source_cls is None:
             source_cls = Records
         return string.Template(inspect.cleandoc(get_dict_attr(source_cls, "field_config").__doc__)).substitute(
@@ -1436,7 +1842,18 @@ class Records(Analyzable, metaclass=MetaRecords):
 
     @classmethod
     def override_field_config_doc(cls, __pdoc__: dict, source_cls: tp.Optional[type] = None) -> None:
-        """Call this method on each subclass that overrides `Records.field_config`."""
+        """Update the field configuration documentation in the provided doc dictionary.
+
+        This method should be called on each subclass that overrides `Records.field_config`
+        to update its documentation in the `__pdoc__` dictionary with the formatted field
+        configuration documentation generated by `Records.build_field_config_doc`.
+
+        Args:
+            __pdoc__ (dict): Dictionary in which the documentation for the field
+                configuration will be updated.
+            source_cls (Optional[type]): The source class from which to extract
+                field configuration documentation.
+        """
         __pdoc__[cls.__name__ + ".field_config"] = cls.build_field_config_doc(source_cls=source_cls)
 
 

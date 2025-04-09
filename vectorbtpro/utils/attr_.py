@@ -140,7 +140,7 @@ class DefineMixin(Hashable):
         """Resolve the value of the specified field for the instance.
 
         Checks the instance attribute and, if unset (i.e. equal to `MISSING`),
-        returns the field’s default value or the default specified in metadata if available.
+        returns the field's default value or the default specified in metadata if available.
 
         Args:
             field_or_name (Union[str, Attribute]): The name or object of the attribute field.

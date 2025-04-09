@@ -959,7 +959,7 @@ class Splitter(Analyzable):
 
         Creates an expanding sequence of slices based on the provided index.
         The first slice uses a minimum length defined by min_length, and each subsequent
-        slice begins after an offset from the previous slice’s right boundary.
+        slice begins after an offset from the previous slice's right boundary.
 
         Args:
             index (IndexLike): The index to split.
@@ -2279,10 +2279,9 @@ class Splitter(Analyzable):
         `vectorbtpro.base.wrapping.ArrayWrapper.row_stack`.
 
         Args:
-            cls_or_self (MaybeType[Splitter]): A `Splitter` instance or class.
             *objs (MaybeTuple[Splitter]): Additional `Splitter` instances.
             wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
-            **kwargs (KwargsLike): Keyword arguments for resolving stacking parameters.
+            **kwargs: Keyword arguments for resolving stacking parameters.
 
         Returns:
             Splitter: A new `Splitter` instance with row-stacked wrappers.
@@ -2324,10 +2323,9 @@ class Splitter(Analyzable):
         `vectorbtpro.base.wrapping.ArrayWrapper.column_stack`.
 
         Args:
-            cls_or_self (MaybeType[Splitter]): A `Splitter` instance or class.
             *objs (MaybeTuple[Splitter]): Additional `Splitter` instances.
             wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
-            **kwargs (KwargsLike): Keyword arguments for resolving stacking parameters.
+            **kwargs: Keyword arguments for resolving stacking parameters.
 
         Returns:
             Splitter: A new `Splitter` instance with column-stacked wrappers.
@@ -2362,7 +2360,7 @@ class Splitter(Analyzable):
         Args:
             *args: Positional arguments for wrapper indexing.
             wrapper_meta (DictLike): Metadata for the wrapper indexing.
-            **kwargs (KwargsLike): Keyword arguments for indexing.
+            **kwargs: Keyword arguments for indexing.
 
         Returns:
             dict: A dictionary with keys `wrapper_meta` and `new_splits_arr` representing
@@ -2391,7 +2389,7 @@ class Splitter(Analyzable):
         Args:
             *args: Positional arguments for splitter indexing.
             splitter_meta (DictLike): Metadata for splitter indexing.
-            **kwargs (KwargsLike): Keyword arguments for indexing.
+            **kwargs: Keyword arguments for indexing.
 
         Returns:
             Splitter: A new `Splitter` instance reflecting the indexing operation.
@@ -2523,7 +2521,7 @@ class Splitter(Analyzable):
 
         Args:
             split_range_kwargs (KwargsLike): Keyword arguments for specifying fixed range conversion.
-            **kwargs (KwargsLike): Keyword arguments to replace the splitter.
+            **kwargs: Keyword arguments to replace the splitter.
 
         Returns:
             Splitter: A new `Splitter` instance with fixed ranges.

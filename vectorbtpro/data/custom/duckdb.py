@@ -1023,7 +1023,7 @@ class DuckDBData(DBData):
     def update_key(self, key: str, from_last_index: tp.Optional[bool] = None, **kwargs) -> tp.KeyData:
         """Update the data table for a specified feature or symbol.
 
-        This method selects fetch parameters via `self.select_fetch_kwargs` and determines
+        This method selects fetch parameters via `DuckDBData.select_fetch_kwargs` and determines
         whether to start from the last index based on the `from_last_index` flag or the presence
         of a "query" in the keyword arguments. It then updates and fetches the data table by
         invoking either `fetch_feature` or `fetch_symbol` depending on the object's orientation.

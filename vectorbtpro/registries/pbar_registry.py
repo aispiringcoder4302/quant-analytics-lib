@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Global registry for progress bars."""
+"""Module with a global registry for managing progress bar instances."""
 
 import uuid
 
@@ -27,11 +27,16 @@ __all__ = [
 
 
 class PBarRegistry(Base):
-    """Class for registering `vectorbtpro.utils.pbar.ProgressBar` instances."""
+    """Class for registering and managing `vectorbtpro.utils.pbar.ProgressBar`
+    instances by their unique bar ids."""
 
     @classmethod
     def generate_bar_id(cls) -> tp.Hashable:
-        """Generate a unique bar id."""
+        """Generate a unique progress bar identifier.
+
+        Returns:
+            Hashable: A unique identifier for a progress bar.
+        """
         return str(uuid.uuid4())
 
     def __init__(self):
@@ -39,20 +44,40 @@ class PBarRegistry(Base):
 
     @property
     def instances(self) -> tp.Dict[tp.Hashable, ProgressBarT]:
-        """Dict of registered instances by their bar id."""
+        """Return the dictionary of registered progress bar instances.
+
+        Returns:
+            Dict[Hashable, ProgressBar]: A dictionary mapping unique bar ids to their
+                corresponding progress bar instances.
+        """
         return self._instances
 
     def register_instance(self, instance: ProgressBarT) -> None:
-        """Register an instance."""
+        """Register a progress bar instance.
+
+        Args:
+            instance (ProgressBar): The progress bar instance to be registered.
+        """
         self.instances[instance.bar_id] = instance
 
     def deregister_instance(self, instance: ProgressBarT) -> None:
-        """Deregister an instance."""
+        """Deregister a progress bar instance.
+
+        Args:
+            instance (ProgressBar): The progress bar instance to be deregistered.
+        """
         if instance.bar_id in self.instances:
             del self.instances[instance.bar_id]
 
     def has_conflict(self, instance: ProgressBarT) -> bool:
-        """Return whether there is an (active) instance with the same bar id."""
+        """Check for an active progress bar instance conflict.
+
+        Args:
+            instance (ProgressBar): The progress bar instance to check for conflicts.
+
+        Returns:
+            bool: True if another active progress bar with the same bar id exists, otherwise False.
+        """
         if instance.bar_id is None:
             return False
         for inst in self.instances.values():
@@ -61,7 +86,12 @@ class PBarRegistry(Base):
         return False
 
     def get_last_active_instance(self) -> tp.Optional[ProgressBarT]:
-        """Get the last active instance."""
+        """Return the last active progress bar instance.
+
+        Returns:
+            Optional[ProgressBar]: The most recently active progress bar instance,
+                or None if no active instance exists.
+        """
         max_open_time = None
         last_active_instance = None
         for inst in self.instances.values():
@@ -72,7 +102,11 @@ class PBarRegistry(Base):
         return last_active_instance
 
     def get_first_pending_instance(self) -> tp.Optional[ProgressBarT]:
-        """Get the first pending instance."""
+        """Return the first pending progress bar instance opened after the last active instance.
+
+        Returns:
+            Optional[ProgressBar]: The first pending progress bar instance if found, otherwise None.
+        """
         last_active_instance = self.get_last_active_instance()
         if last_active_instance is None:
             return None
@@ -86,9 +120,18 @@ class PBarRegistry(Base):
         return first_pending_instance
 
     def get_pending_instance(self, instance: ProgressBarT) -> tp.Optional[ProgressBarT]:
-        """Get the pending instance.
+        """Return a pending progress bar instance corresponding to the given instance.
 
-        If the bar id is not None, searches for the same id in the dictionary."""
+        If the instance has a non-None bar id, this method searches for another pending
+        instance with the same id. If the bar id is None, it returns the first pending progress
+        bar instance that was opened after the last active instance.
+
+        Args:
+            instance (ProgressBar): The progress bar instance to search a pending instance for.
+
+        Returns:
+            Optional[ProgressBar]: The matching pending progress bar instance if found, otherwise None.
+        """
         if instance.bar_id is not None:
             for inst in self.instances.values():
                 if inst is not instance and inst.pending:
@@ -108,7 +151,14 @@ class PBarRegistry(Base):
         return first_pending_instance
 
     def get_parent_instances(self, instance: ProgressBarT) -> tp.List[ProgressBarT]:
-        """Get the (active) parent instances of an instance."""
+        """Return active parent progress bar instances of the given instance.
+
+        Args:
+            instance (ProgressBar): The progress bar instance whose parent instances are to be retrieved.
+
+        Returns:
+            List[ProgressBar]: A list of active parent progress bar instances.
+        """
         parent_instances = []
         for inst in self.instances.values():
             if inst is not instance and inst.active:
@@ -117,7 +167,15 @@ class PBarRegistry(Base):
         return parent_instances
 
     def get_parent_instance(self, instance: ProgressBarT) -> tp.Optional[ProgressBarT]:
-        """Get the (active) parent instance of an instance."""
+        """Return the most recent active parent progress bar instance of the given instance.
+
+        Args:
+            instance (ProgressBar): The progress bar instance for which to find the parent instance.
+
+        Returns:
+            Optional[ProgressBar]: The active parent progress bar instance with the latest open time,
+            or None if none exist.
+        """
         max_open_time = None
         parent_instance = None
         for inst in self.get_parent_instances(instance):
@@ -127,7 +185,14 @@ class PBarRegistry(Base):
         return parent_instance
 
     def get_child_instances(self, instance: ProgressBarT) -> tp.List[ProgressBarT]:
-        """Get child (active or pending) instances of an instance."""
+        """Return active or pending child progress bar instances of the given instance.
+
+        Args:
+            instance (ProgressBar): The progress bar instance whose child instances are to be retrieved.
+
+        Returns:
+            List[ProgressBar]: A list of child progress bar instances.
+        """
         child_instances = []
         for inst in self.instances.values():
             if inst is not instance and (inst.active or inst.pending):
@@ -136,9 +201,9 @@ class PBarRegistry(Base):
         return child_instances
 
     def clear_instances(self) -> None:
-        """Clear instances."""
+        """Clear all registered progress bar instances."""
         self.instances.clear()
 
 
 pbar_reg = PBarRegistry()
-"""Default registry of type `PBarRegistry`."""
+"""Default registry instance of `PBarRegistry` for managing progress bar instances."""

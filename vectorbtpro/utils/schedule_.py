@@ -245,7 +245,7 @@ class ScheduleManager(Base):
         This method utilizes the `schedule` package for job scheduling.
 
         Args:
-            *args (Any): Positional arguments for specifying scheduling parameters.
+            *args: Positional arguments for specifying scheduling parameters.
 
                 They must be provided in the strict order:
 
@@ -270,7 +270,6 @@ class ScheduleManager(Base):
 
             >>> my_manager = vbt.ScheduleManager()
 
-            >>> # add jobs
             >>> my_manager.every().do(job_func, message="Hello")
             Every 1 second do job_func(message='Hello') (last run: [never], next run: 2021-03-18 19:06:47)
 

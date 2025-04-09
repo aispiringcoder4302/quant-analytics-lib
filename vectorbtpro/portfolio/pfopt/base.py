@@ -858,7 +858,7 @@ def resolve_asset_classes(
     directly as one class asset set named 'Class'.
     * Sequence of dicts: Each dict becomes a row in the new DataFrame
     * DataFrame where the first column is the asset list and the next columns are the
-    different asset’s classes sets (this is the target format accepted by Riskfolio-Lib).
+    different asset's classes sets (this is the target format accepted by Riskfolio-Lib).
     See an example [here](https://riskfolio-lib.readthedocs.io/en/latest/constraints.html#ConstraintsFunctions.assets_constraints).
 
     !!! note

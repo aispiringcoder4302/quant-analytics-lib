@@ -190,7 +190,7 @@ class StatsBuilderMixin(Base, metaclass=MetaStatsBuilderMixin):
                     in the function's signature (see below). If False, the argument is not passed.
                     This key is removed if the argument does not exist.
                 * `resolve_path_{arg}`: If True, resolve an argument intended as an attribute of the object
-                    and used as the first part of `calc_func`’s attribute path. Applies only to
+                    and used as the first part of `calc_func`'s attribute path. Applies only to
                     optional arguments. Defaults to True.
                     See `vectorbtpro.utils.attr_.AttrResolverMixin.resolve_attr`.
                 * `resolve_{arg}`: If True, resolve an argument found in the function's signature
@@ -207,7 +207,7 @@ class StatsBuilderMixin(Base, metaclass=MetaStatsBuilderMixin):
 
                 * Each alias in `vectorbtpro.utils.attr_.AttrResolverMixin.self_aliases`
                     representing the original object (ungrouped, with no column selected).
-                * group_by: Not passed if used in resolving the first attribute of `calc_func`’s path,
+                * group_by: Not passed if used in resolving the first attribute of `calc_func`'s path,
                     unless `pass_group_by=True` is specified.
                 * `column`
                 * `metric_name`

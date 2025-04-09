@@ -527,7 +527,7 @@ class Ranges(PriceRecords):
             **kwargs: Keyword arguments passed to `Ranges.apply_mask`.
 
         Returns:
-            RangesT: Ranges with indices marked as invalid.
+            Ranges: Ranges with indices marked as invalid.
         """
         filter_mask = (self.get_field_arr("start_idx") == -1) | (self.get_field_arr("end_idx") == -1)
         return self.apply_mask(filter_mask, **kwargs)

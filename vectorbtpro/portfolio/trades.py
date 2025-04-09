@@ -56,9 +56,9 @@ A position is created from a sequence of entry or exit trades.
 Use `vectorbtpro.portfolio.trades.Positions.from_trades` to build positions from entry or exit trades.
 Also available as `vectorbtpro.portfolio.base.Portfolio.positions`.
 
-## Example
+## Examples
 
-* Increasing position:
+Increasing position:
 
 ```pycon
 >>> from vectorbtpro import *
@@ -117,7 +117,7 @@ Also available as `vectorbtpro.portfolio.base.Portfolio.positions`.
 True
 ```
 
-* Decreasing position:
+Decreasing position:
 
 ```pycon
 >>> # Entry trades
@@ -174,7 +174,7 @@ True
 True
 ```
 
-* Multiple reversing positions:
+Multiple reversing positions:
 
 ```pycon
 >>> # Entry trades
@@ -249,7 +249,7 @@ True
 True
 ```
 
-* Open position:
+Open position:
 
 ```pycon
 >>> # Entry trades

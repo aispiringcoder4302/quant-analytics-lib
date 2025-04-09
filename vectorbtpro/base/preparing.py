@@ -98,14 +98,6 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
 
     _settings_path: tp.SettingsPath = None
 
-    def __init__(self, arg_config: tp.KwargsLike = None, **kwargs) -> None:
-        Configured.__init__(self, arg_config=arg_config, **kwargs)
-
-        # Copy writeable attrs
-        self._arg_config = type(self)._arg_config.copy()
-        if arg_config is not None:
-            self._arg_config = merge_dicts(self._arg_config, arg_config)
-
     _arg_config: tp.ClassVar[Config] = HybridConfig()
 
     @property
@@ -117,6 +109,14 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
         ```
         """
         return self._arg_config
+
+    def __init__(self, arg_config: tp.KwargsLike = None, **kwargs) -> None:
+        Configured.__init__(self, arg_config=arg_config, **kwargs)
+
+        # Copy writeable attrs
+        self._arg_config = type(self)._arg_config.copy()
+        if arg_config is not None:
+            self._arg_config = merge_dicts(self._arg_config, arg_config)
 
     @classmethod
     def map_enum_value(cls, value: tp.ArrayLike, look_for_type: tp.Optional[type] = None, **kwargs) -> tp.ArrayLike:
@@ -618,7 +618,7 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
     def pre_args(self) -> tp.Kwargs:
         """Return a dictionary of pre-broadcast arguments.
 
-        Iterates over `self.arg_config` and retrieves each corresponding `_pre_` attribute
+        Iterates over `BasePreparer.arg_config` and retrieves each corresponding `_pre_` attribute
         for keys with broadcasting enabled.
         """
         pre_args = dict()
@@ -761,7 +761,7 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
         """Return the complete template context.
 
         Merges details from the array wrapper (`wrapper`, `target_shape`, `index`, `freq`),
-        broadcast arguments from `self.arg_config`, post-broadcast named arguments,
+        broadcast arguments from `BasePreparer.arg_config`, post-broadcast named arguments,
         and the pre-template context.
         """
         builtin_args = {}

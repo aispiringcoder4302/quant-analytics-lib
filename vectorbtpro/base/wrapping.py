@@ -638,77 +638,6 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
         self._grouper = grouper
         self._grouped_ndim = grouped_ndim
 
-    @property
-    def index(self) -> tp.Index:
-        """The index associated with the wrapped array."""
-        return self._index
-
-    @property
-    def columns(self) -> tp.Index:
-        """The columns associated with the wrapped array."""
-        return self._columns
-
-    @property
-    def ndim(self) -> int:
-        """The number of dimensions of the wrapped array."""
-        return self._ndim
-
-    @property
-    def parse_index(self) -> tp.Optional[bool]:
-        """Flag indicating whether to convert the index to a datetime index.
-
-        Applied during initialization via `vectorbtpro.utils.datetime_.prepare_dt_index`."""
-        return self._parse_index
-
-    @property
-    def column_only_select(self) -> bool:
-        from vectorbtpro._settings import settings
-
-        wrapping_cfg = settings["wrapping"]
-
-        column_only_select = self._column_only_select
-        if column_only_select is None:
-            column_only_select = wrapping_cfg["column_only_select"]
-        return column_only_select
-
-    @property
-    def range_only_select(self) -> bool:
-        from vectorbtpro._settings import settings
-
-        wrapping_cfg = settings["wrapping"]
-
-        range_only_select = self._range_only_select
-        if range_only_select is None:
-            range_only_select = wrapping_cfg["range_only_select"]
-        return range_only_select
-
-    @property
-    def group_select(self) -> bool:
-        from vectorbtpro._settings import settings
-
-        wrapping_cfg = settings["wrapping"]
-
-        group_select = self._group_select
-        if group_select is None:
-            group_select = wrapping_cfg["group_select"]
-        return group_select
-
-    @property
-    def grouper(self) -> Grouper:
-        """The `vectorbtpro.base.grouping.base.Grouper` instance used for grouping columns."""
-        return self._grouper
-
-    @property
-    def grouped_ndim(self) -> int:
-        """The number of dimensions after applying column grouping.
-
-        If not explicitly set, it is derived from the grouper's state."""
-        if self._grouped_ndim is None:
-            if self.grouper.is_grouped():
-                return 2 if self.grouper.get_group_count() > 1 else 1
-            return self.ndim
-        return self._grouped_ndim
-
     @classmethod
     def from_obj(cls: tp.Type[ArrayWrapperT], obj: tp.ArrayLike, **kwargs) -> ArrayWrapperT:
         """Derive array wrapper metadata from the given object.
@@ -873,9 +802,6 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
         to have compatible configuration values, except where explicitly overridden via `kwargs`.
 
         Args:
-            cls_or_self (MaybeType[ArrayWrapper]): The class or instance invoking the method.
-
-                If an instance is provided, it is treated as the first object to stack.
             wrappers (MaybeTuple[ArrayWrapper]): Additional `ArrayWrapper` instances to stack.
             index (Optional[IndexLike]): Custom index for the stacked result.
 
@@ -1598,6 +1524,11 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
     def wrapper(self) -> "ArrayWrapper":
         return self
 
+    @property
+    def index(self) -> tp.Index:
+        """The index associated with the wrapped array."""
+        return self._index
+
     @cached_property(whitelist=True)
     def index_acc(self) -> BaseIDXAccessorT:
         """Index accessor for the `ArrayWrapper`.
@@ -1629,6 +1560,11 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
             Array1d: The period-based nanosecond index.
         """
         return self.index_acc.to_period_ns(*args, **kwargs)
+
+    @property
+    def columns(self) -> tp.Index:
+        """The columns associated with the wrapped array."""
+        return self._columns
 
     def get_columns(self, group_by: tp.GroupByLike = None) -> tp.Index:
         """Return the group-aware columns index of the `ArrayWrapper`.
@@ -1664,6 +1600,11 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
             Any: The name for the group-aware `ArrayWrapper`.
         """
         return self.resolve(group_by=group_by).name
+
+    @property
+    def ndim(self) -> int:
+        """The number of dimensions of the wrapped array."""
+        return self._ndim
 
     def get_ndim(self, group_by: tp.GroupByLike = None) -> int:
         """Return the group-aware number of dimensions of the `ArrayWrapper`.
@@ -1774,6 +1715,62 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
         """
         return self.index_acc.arr_to_timedelta(*args, **kwargs)
 
+    @property
+    def parse_index(self) -> tp.Optional[bool]:
+        """Flag indicating whether to convert the index to a datetime index.
+
+        Applied during initialization via `vectorbtpro.utils.datetime_.prepare_dt_index`."""
+        return self._parse_index
+
+    @property
+    def column_only_select(self) -> bool:
+        from vectorbtpro._settings import settings
+
+        wrapping_cfg = settings["wrapping"]
+
+        column_only_select = self._column_only_select
+        if column_only_select is None:
+            column_only_select = wrapping_cfg["column_only_select"]
+        return column_only_select
+
+    @property
+    def range_only_select(self) -> bool:
+        from vectorbtpro._settings import settings
+
+        wrapping_cfg = settings["wrapping"]
+
+        range_only_select = self._range_only_select
+        if range_only_select is None:
+            range_only_select = wrapping_cfg["range_only_select"]
+        return range_only_select
+
+    @property
+    def group_select(self) -> bool:
+        from vectorbtpro._settings import settings
+
+        wrapping_cfg = settings["wrapping"]
+
+        group_select = self._group_select
+        if group_select is None:
+            group_select = wrapping_cfg["group_select"]
+        return group_select
+
+    @property
+    def grouper(self) -> Grouper:
+        """The `vectorbtpro.base.grouping.base.Grouper` instance used for grouping columns."""
+        return self._grouper
+
+    @property
+    def grouped_ndim(self) -> int:
+        """The number of dimensions after applying column grouping.
+
+        If not explicitly set, it is derived from the grouper's state."""
+        if self._grouped_ndim is None:
+            if self.grouper.is_grouped():
+                return 2 if self.grouper.get_group_count() > 1 else 1
+            return self.ndim
+        return self._grouped_ndim
+
     @cached_method(whitelist=True)
     def regroup(self: ArrayWrapperT, group_by: tp.GroupByLike, **kwargs) -> ArrayWrapperT:
         """Regroup the `ArrayWrapper` instance according to the specified grouping.
@@ -1875,7 +1872,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
         * Replace NaN values if a fill value is provided.
         * Adjust the array shape to match the stored index and columns.
         * Apply minimum and maximum precision casting if configured.
-        * Create a pandas Series or DataFrame based on the array’s dimensionality.
+        * Create a pandas Series or DataFrame based on the array's dimensionality.
         * Optionally map output values to the original index.
         * Optionally convert data to timedelta using `ArrayWrapper.arr_to_timedelta`.
 
@@ -2669,10 +2666,6 @@ class Wrapping(Configured, HasWrapper, IndexApplier, AttrResolverMixin):
         HasWrapper.__init__(self)
         AttrResolverMixin.__init__(self)
 
-    @property
-    def wrapper(self) -> ArrayWrapper:
-        return self._wrapper
-
     @classmethod
     def resolve_row_stack_kwargs(cls, *wrappings: tp.MaybeTuple[WrappingT], **kwargs) -> tp.Kwargs:
         """Resolve keyword arguments for initializing `Wrapping` after stacking along rows.
@@ -2790,24 +2783,9 @@ class Wrapping(Configured, HasWrapper, IndexApplier, AttrResolverMixin):
         """
         raise NotImplementedError
 
-    def apply_to_index(
-        self: ArrayWrapperT,
-        apply_func: tp.Callable,
-        *args,
-        axis: tp.Optional[int] = None,
-        **kwargs,
-    ) -> ArrayWrapperT:
-        if axis is None:
-            axis = 0 if self.wrapper.ndim == 1 else 1
-        if self.wrapper.ndim == 1 and axis == 1:
-            raise TypeError("Axis 1 is not supported for one dimension")
-        checks.assert_in(axis, (0, 1))
-
-        if axis == 1:
-            new_wrapper = self.wrapper.replace(columns=apply_func(self.wrapper.columns, *args, **kwargs))
-        else:
-            new_wrapper = self.wrapper.replace(index=apply_func(self.wrapper.index, *args, **kwargs))
-        return self.replace(wrapper=new_wrapper)
+    @property
+    def wrapper(self) -> ArrayWrapper:
+        return self._wrapper
 
     @property
     def column_only_select(self) -> bool:
@@ -2829,6 +2807,25 @@ class Wrapping(Configured, HasWrapper, IndexApplier, AttrResolverMixin):
         if group_select is None:
             return self.wrapper.group_select
         return group_select
+
+    def apply_to_index(
+        self: ArrayWrapperT,
+        apply_func: tp.Callable,
+        *args,
+        axis: tp.Optional[int] = None,
+        **kwargs,
+    ) -> ArrayWrapperT:
+        if axis is None:
+            axis = 0 if self.wrapper.ndim == 1 else 1
+        if self.wrapper.ndim == 1 and axis == 1:
+            raise TypeError("Axis 1 is not supported for one dimension")
+        checks.assert_in(axis, (0, 1))
+
+        if axis == 1:
+            new_wrapper = self.wrapper.replace(columns=apply_func(self.wrapper.columns, *args, **kwargs))
+        else:
+            new_wrapper = self.wrapper.replace(index=apply_func(self.wrapper.index, *args, **kwargs))
+        return self.replace(wrapper=new_wrapper)
 
     def regroup(self: WrappingT, group_by: tp.GroupByLike, **kwargs) -> WrappingT:
         """Regroup the wrapping instance.

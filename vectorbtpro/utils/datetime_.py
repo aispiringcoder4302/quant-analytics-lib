@@ -961,7 +961,7 @@ def get_local_tz(**kwargs) -> tzinfo:
     """Return the local timezone object.
 
     Args:
-        **kwargs (Any): Keyword arguments passed to `to_timezone`.
+        **kwargs: Keyword arguments passed to `to_timezone`.
 
     Returns:
         tzinfo: The local timezone.

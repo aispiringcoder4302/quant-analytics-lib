@@ -545,7 +545,10 @@ def get_source_imports(source: str, global_only: bool = False) -> str:
     Returns:
         str: A sorted string of normalized import statements, separated by newlines.
     """
-    tree = ast.parse(source)
+    try:
+        tree = ast.parse(source)
+    except SyntaxError:
+        return ""
     imports = set()
 
     def process_import_node(node):
@@ -585,7 +588,10 @@ def get_source_map(source: str) -> dict:
     Returns:
         dict: A dictionary summarizing the top-level code structure.
     """
-    tree = ast.parse(source)
+    try:
+        tree = ast.parse(source)
+    except SyntaxError:
+        return {}
     code_map = {"variables": [], "functions": [], "classes": defaultdict(lambda: {"methods": [], "attributes": []})}
 
     for node in tree.body:
@@ -906,7 +912,8 @@ Metadata of the current code context:
         attach_imports = split
     if attach_imports:
         source_imports = get_source_imports(source, global_only=True)
-        system_prompt = f"""{system_prompt}
+        if source_imports:
+            system_prompt = f"""{system_prompt}
 
 ---
 
@@ -919,9 +926,10 @@ Complete list of global imports available to the current code context:
         attach_map = split
     if attach_map:
         source_map = get_source_map(source)
-        source_map = dump(source_map, dump_engine=dump_engine, **dump_kwargs).strip()
-        source_map_language = get_dump_language(dump_engine=dump_engine)
-        system_prompt = f"""{system_prompt}
+        if source_map:
+            source_map = dump(source_map, dump_engine=dump_engine, **dump_kwargs).strip()
+            source_map_language = get_dump_language(dump_engine=dump_engine)
+            system_prompt = f"""{system_prompt}
 
 ---
 
@@ -1108,6 +1116,7 @@ Your goal is to refine (rewrite for clarity, correctness, consistent format, and
 3. **Never enclose your output in triple backticks**, and return no other text or explanation.
 4. **Retain all non-docstring parts of the code** exactly as they are.
 5. **If there are no existing docstrings or if a docstring is empty, do not create or expand it**.
+6. **If the given chunk contains only text, consider it a docstring**.
 
 ### 1. Scope of Edits
 
@@ -1155,20 +1164,21 @@ Your goal is to refine (rewrite for clarity, correctness, consistent format, and
   ```
   - If a docstring lacks one of these sections, you must add it in the correct format.
 - If the description of an argument has multiple sentences, **separate them by an empty line**.
-- **Preserve type hints**:
+- **Preserve type hints** as argument types are meant to be parsed.
+  - For instance, `tp.Union[None, int, tp.DatetimeLike, tp.MaybeList[RangeT]]` becomes `Union[None, int, DatetimeLike, MaybeList[Range]]`.
+  - **Do not** replace type hints by human-readable strings (e.g., "or" instead of `Union`).
   - Remove module prefixes (such as `tp.`) and the suffix `T`.
-  - For instance, `tp.Union[None, int, tp.DatetimeLike]` becomes `Union[None, int, DatetimeLike]`.
   - Keep any `Maybe` types as they are.
   - Do not change type hints in function signatures.
 - **Always override existing types in the docstring** with the types from the signature.
   - If a type is already present in the docstring, replace it with the type from the signature.
 - For classes decorated with `@define`, treat them as if decorated with `@attr.s`.
   - **Do not duplicate fields and their descriptions** in the "Args" section unless the class defines its own `__init__`.
-- For module docstrings, retain the phrasing that **identifies them as a module**.
-- For `__init__.py` module docstrings, retain the phrasing that **identifies them as multiple modules**.
-- For class docstrings, retain the phrasing that **identifies them as a class**.
+- For module docstrings, retain the phrasing that **identifies them as a module** (e.g., "Module for/providing").
+- For `__init__.py` module docstrings, retain the phrasing that **identifies them as multiple modules** (e.g., "Modules for/providing").
+- For class docstrings, retain the phrasing that **identifies them as a class** (e.g., "Class for/representing").
 - **Begin method docstrings with imperative verbs** (e.g., "Return," "Fetch," "Create").
-- **Properties** should describe what they represent rather than an action.
+- **Properties** should describe what they represent rather than an action (e.g., instead of "Return a dictionary" use "Dictionary").
 - Bullet points must be at the **same indentation level as the parent sentence** and be separated by one empty line before the list.
 - When dealing with named tuples and enums, replace "Attributes:" with "Fields:" in their docstrings.
 - If an "Examples" section exists, **place it at the end** of the docstring.
@@ -1306,28 +1316,6 @@ class Chatable(Configured):
         if return_chat:
             return completions.get_completion(message), completions
         return completions.get_completion(message)
-    
-
-class TrendModeT(tp.NamedTuple):
-    Downtrend: int = -1
-    Uptrend: int = 1
-
-
-TrendMode = TrendModeT()
-\"\"\"_\"\"\"
-
-__pdoc__[
-    "TrendMode"
-] = f\"\"\"Trend mode named tuple representing indicator trend directions.
-
-Fields:
-    Downtrend: Downtrend direction.
-    Uptrend: Uptrend direction.
-
-```python
-{prettify_doc(TrendMode)}
-```
-\"\"\"
 ```
 
 ### 8. Penalty of Incorrect Formatting

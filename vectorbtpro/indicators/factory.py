@@ -374,10 +374,10 @@ def combine_indicator_with_other(
 
             If an instance of `IndicatorBase` is provided, its `main_output` is used.
         np_func (Callable[[ArrayLike, ArrayLike], Array1d]): A function that combines
-            the arrays from `self.main_output` and `other`.
+            the arrays from `IndicatorBase.main_output` and `other`.
 
     Returns:
-        SeriesFrame: The resulting series or frame after combining `self.main_output`
+        SeriesFrame: The resulting series or frame after combining `IndicatorBase.main_output`
             with the other object's data.
     """
     if isinstance(other, IndicatorBase):
@@ -2377,7 +2377,7 @@ class IndicatorFactory(Configured):
                 It can be Numba-compiled.
 
                 !!! note
-                    Each output’s shape must match the input shape repeated n times (where n is
+                    Each output's shape must match the input shape repeated n times (where n is
                     the number of parameter values) along the column axis.
             require_input_shape (bool): Indicates whether the input shape is required.
             param_settings (KwargsLike): A dictionary of parameter settings keyed by name.

@@ -282,7 +282,7 @@ def combine_indexes(*indexes: tp.MaybeTuple[tp.IndexLike], **kwargs) -> tp.Index
 
     Args:
         *indexes (MaybeTuple[IndexLike]): Indexes to combine.
-        **kwargs (KwargsLike): Keyword arguments passed to `stack_indexes`.
+        **kwargs: Keyword arguments passed to `stack_indexes`.
 
     Returns:
         Index: The combined index.
@@ -307,7 +307,7 @@ def combine_index_with_keys(index: tp.IndexLike, keys: tp.IndexLike, lens: tp.Se
         index (IndexLike): The original index to segment.
         keys (IndexLike): Keys to repeat for each index segment.
         lens (Sequence[int]): Sequence of lengths for each corresponding segment.
-        **kwargs (KwargsLike): Keyword arguments passed to `stack_indexes`.
+        **kwargs: Keyword arguments passed to `stack_indexes`.
 
     Returns:
         Index: The composite index combining the repeated keys and segments.

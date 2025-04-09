@@ -8,15 +8,13 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Numba-compiled functions for records and mapped arrays.
-
-Provides an arsenal of Numba-compiled functions for records and mapped arrays.
-These only accept NumPy arrays and other Numba-compatible types.
+"""Module providing a suite of Numba-compiled functions for processing records and mapped arrays.
 
 !!! note
     All functions passed as argument must be Numba-compiled.
 
-    Records must retain the order they were created in."""
+    Records must retain the order they were created in.
+"""
 
 import numpy as np
 from numba import prange
@@ -40,7 +38,15 @@ __all__ = []
 
 @register_jitted(cache=True)
 def generate_ids_nb(col_arr: tp.Array1d, n_cols: int) -> tp.Array1d:
-    """Generate the monotonically increasing id array based on the column index array."""
+    """Generate monotonically increasing IDs based on a column index array.
+
+    Args:
+        col_arr (Array1d): Array of column indices.
+        n_cols (int): Total number of columns.
+
+    Returns:
+        Array1d: Array of generated IDs corresponding to each entry in `col_arr`.
+    """
     col_idxs = np.full(n_cols, 0, dtype=int_)
     out = np.empty_like(col_arr)
     for c in range(len(col_arr)):
@@ -54,10 +60,18 @@ def generate_ids_nb(col_arr: tp.Array1d, n_cols: int) -> tp.Array1d:
 
 @register_jitted(cache=True)
 def col_lens_nb(col_arr: tp.Array1d, n_cols: int) -> tp.GroupLens:
-    """Get column lengths from sorted column array.
+    """Get lengths for each column in a sorted column index array.
+
+    Args:
+        col_arr (Array1d): Sorted array of column indices.
+        n_cols (int): Total number of columns.
+
+    Returns:
+        GroupLens: Array containing the count of elements for each column.
 
     !!! note
-        Requires `col_arr` to be in ascending order. This can be done by sorting."""
+        `col_arr` must be in ascending order (i.e., sorted).
+    """
     col_lens = np.full(n_cols, 0, dtype=int_)
     last_col = -1
 
@@ -76,9 +90,16 @@ def record_col_lens_select_nb(
     col_lens: tp.GroupLens,
     new_cols: tp.Array1d,
 ) -> tp.Tuple[tp.Array1d, tp.RecordArray]:
-    """Perform indexing on sorted records using column lengths.
+    """Select and reassign records based on column lengths from a sorted records array.
 
-    Returns new records."""
+    Args:
+        records (RecordArray): Array of records.
+        col_lens (GroupLens): Array of column lengths.
+        new_cols (Array1d): Array of new column indices for selection.
+
+    Returns:
+        Tuple[Array1d, RecordArray]: Tuple containing the original indices and the updated record array.
+    """
     col_end_idxs = np.cumsum(col_lens)
     col_start_idxs = col_end_idxs - col_lens
     n_values = np.sum(col_lens[new_cols])
@@ -102,11 +123,16 @@ def record_col_lens_select_nb(
 
 @register_jitted(cache=True)
 def col_map_nb(col_arr: tp.Array1d, n_cols: int) -> tp.GroupMap:
-    """Build a map between columns and value indices.
+    """Build a mapping between columns and their corresponding value indices.
 
-    Returns an array with indices segmented by column and an array with column lengths.
+    Args:
+        col_arr (Array1d): Array of column indices.
+        n_cols (int): Total number of columns.
 
-    Works well for unsorted column arrays."""
+    Returns:
+        GroupMap: Tuple containing the indices of values segmented by column
+            and the column lengths for each column.
+    """
     col_lens_out = np.full(n_cols, 0, dtype=int_)
     for c in range(col_arr.shape[0]):
         col = col_arr[c]
@@ -129,7 +155,17 @@ def record_col_map_select_nb(
     col_map: tp.GroupMap,
     new_cols: tp.Array1d,
 ) -> tp.Tuple[tp.Array1d, tp.RecordArray]:
-    """Same as `record_col_lens_select_nb` but using column map `col_map`."""
+    """Select and reassign records based on a provided column map.
+
+    Args:
+        records (RecordArray): Array of records.
+        col_map (GroupMap): Tuple containing column indices and column lengths.
+        new_cols (Array1d): Array of new column indices for selection.
+
+    Returns:
+        Tuple[Array1d, RecordArray]: Tuple containing the original indices and
+            the updated record array.
+    """
     col_idxs, col_lens = col_map
     col_start_idxs = np.cumsum(col_lens) - col_lens
     total_count = np.sum(col_lens[new_cols])
@@ -157,7 +193,14 @@ def record_col_map_select_nb(
 
 @register_jitted(cache=True)
 def is_col_sorted_nb(col_arr: tp.Array1d) -> bool:
-    """Check whether the column array is sorted."""
+    """Check whether an array of column indices is sorted in ascending order.
+
+    Args:
+        col_arr (Array1d): Array of column indices.
+
+    Returns:
+        bool: True if the column array is sorted; False otherwise.
+    """
     for i in range(len(col_arr) - 1):
         if col_arr[i + 1] < col_arr[i]:
             return False
@@ -166,7 +209,16 @@ def is_col_sorted_nb(col_arr: tp.Array1d) -> bool:
 
 @register_jitted(cache=True)
 def is_col_id_sorted_nb(col_arr: tp.Array1d, id_arr: tp.Array1d) -> bool:
-    """Check whether the column and id arrays are sorted."""
+    """Check whether both column and ID arrays are sorted.
+
+    Args:
+        col_arr (Array1d): Array of column indices.
+        id_arr (Array1d): Array of IDs corresponding to the records.
+
+    Returns:
+        bool: True if the arrays are sorted in ascending order by column and
+            by ID within each column; False otherwise.
+    """
     for i in range(len(col_arr) - 1):
         if col_arr[i + 1] < col_arr[i]:
             return False
@@ -188,7 +240,18 @@ def is_col_id_sorted_nb(col_arr: tp.Array1d, id_arr: tp.Array1d) -> bool:
 )
 @register_jitted(cache=True, tags={"can_parallel"})
 def first_n_nb(col_map: tp.GroupMap, n: int) -> tp.Array1d:
-    """Returns the mask of the first N elements."""
+    """Return a boolean mask marking the first N elements in each column group.
+
+    Args:
+        col_map (GroupMap): Tuple containing column indices and column lengths.
+        n (int): Number of elements to mark from the beginning of each group.
+
+    Returns:
+        Array1d: Boolean mask with True for the first N elements of each column group.
+
+    !!! tip
+        This function is parallelizable.
+    """
     col_idxs, col_lens = col_map
     col_start_idxs = np.cumsum(col_lens) - col_lens
     out = np.full(col_idxs.shape[0], False, dtype=np.bool_)
@@ -213,7 +276,18 @@ def first_n_nb(col_map: tp.GroupMap, n: int) -> tp.Array1d:
 )
 @register_jitted(cache=True, tags={"can_parallel"})
 def last_n_nb(col_map: tp.GroupMap, n: int) -> tp.Array1d:
-    """Returns the mask of the last N elements."""
+    """Return a boolean mask marking the last N elements in each column group.
+
+    Args:
+        col_map (GroupMap): Tuple containing column indices and column lengths.
+        n (int): Number of elements to mark from the end of each group.
+
+    Returns:
+        Array1d: Boolean mask with True for the last N elements of each column group.
+
+    !!! tip
+        This function is parallelizable.
+    """
     col_idxs, col_lens = col_map
     col_start_idxs = np.cumsum(col_lens) - col_lens
     out = np.full(col_idxs.shape[0], False, dtype=np.bool_)
@@ -238,7 +312,18 @@ def last_n_nb(col_map: tp.GroupMap, n: int) -> tp.Array1d:
 )
 @register_jitted(cache=True, tags={"can_parallel"})
 def random_n_nb(col_map: tp.GroupMap, n: int) -> tp.Array1d:
-    """Returns the mask of random N elements."""
+    """Return the boolean mask selecting n random elements from each group.
+
+    Args:
+        col_map (GroupMap): Tuple of column indices and column lengths defining groups.
+        n (int): Number of elements to select randomly from each group.
+
+    Returns:
+        Array1d: Boolean mask array with True at positions of selected elements.
+
+    !!! tip
+        This function is parallelizable.
+    """
     col_idxs, col_lens = col_map
     col_start_idxs = np.cumsum(col_lens) - col_lens
     out = np.full(col_idxs.shape[0], False, dtype=np.bool_)
@@ -264,7 +349,19 @@ def random_n_nb(col_map: tp.GroupMap, n: int) -> tp.Array1d:
 )
 @register_jitted(cache=True, tags={"can_parallel"})
 def top_n_mapped_nb(mapped_arr: tp.Array1d, col_map: tp.GroupMap, n: int) -> tp.Array1d:
-    """Returns the mask of the top N mapped elements."""
+    """Return the boolean mask selecting the top n elements from each group based on the mapped values.
+
+    Args:
+        mapped_arr (Array1d): Array containing numerical values used for ranking.
+        col_map (GroupMap): Tuple of column indices and column lengths defining groups.
+        n (int): Number of top elements to select from each group.
+
+    Returns:
+        Array1d: Boolean mask array with True for indices of the top n elements in each group.
+
+    !!! tip
+        This function is parallelizable.
+    """
     col_idxs, col_lens = col_map
     col_start_idxs = np.cumsum(col_lens) - col_lens
     out = np.full(mapped_arr.shape[0], False, dtype=np.bool_)
@@ -290,7 +387,19 @@ def top_n_mapped_nb(mapped_arr: tp.Array1d, col_map: tp.GroupMap, n: int) -> tp.
 )
 @register_jitted(cache=True, tags={"can_parallel"})
 def bottom_n_mapped_nb(mapped_arr: tp.Array1d, col_map: tp.GroupMap, n: int) -> tp.Array1d:
-    """Returns the mask of the bottom N mapped elements."""
+    """Return the boolean mask selecting the bottom n elements from each group based on the mapped values.
+
+    Args:
+        mapped_arr (Array1d): Array containing numerical values used for ranking.
+        col_map (GroupMap): Tuple of column indices and column lengths defining groups.
+        n (int): Number of bottom elements to select from each group.
+
+    Returns:
+        Array1d: Boolean mask array with True for indices of the bottom n elements in each group.
+
+    !!! tip
+        This function is parallelizable.
+    """
     col_idxs, col_lens = col_map
     col_start_idxs = np.cumsum(col_lens) - col_lens
     out = np.full(mapped_arr.shape[0], False, dtype=np.bool_)
@@ -317,7 +426,17 @@ def bottom_n_mapped_nb(mapped_arr: tp.Array1d, col_map: tp.GroupMap, n: int) -> 
 def map_records_nb(records: tp.RecordArray, map_func_nb: tp.RecordsMapFunc, *args) -> tp.Array1d:
     """Map each record to a single value.
 
-    `map_func_nb` must accept a single record and `*args`. Must return a single value."""
+    Args:
+        records (RecordArray): Array of records.
+        map_func_nb (RecordsMapFunc): Function that processes a single record with additional arguments.
+        *args: Additional positional arguments passed to the mapping function.
+
+    Returns:
+        Array1d: Array containing the mapped values for each record.
+
+    !!! tip
+        This function is parallelizable.
+    """
     out = np.empty(records.shape[0], dtype=float_)
 
     for ridx in prange(records.shape[0]):
@@ -332,9 +451,20 @@ def map_records_nb(records: tp.RecordArray, map_func_nb: tp.RecordsMapFunc, *arg
 )
 @register_jitted(tags={"can_parallel"})
 def map_records_meta_nb(n_values: int, map_func_nb: tp.MappedReduceMetaFunc, *args) -> tp.Array1d:
-    """Meta version of `map_records_nb`.
+    """Map each record index to a single value using a meta mapping function.
 
-    `map_func_nb` must accept the record index and `*args`. Must return a single value."""
+    Args:
+        n_values (int): Total number of values to process.
+        map_func_nb (MappedReduceMetaFunc): Function that accepts a record index and
+            additional arguments to return a single value.
+        *args: Additional positional arguments passed to the mapping function.
+
+    Returns:
+        Array1d: Array containing the meta-mapped values.
+
+    !!! tip
+        This function is parallelizable.
+    """
     out = np.empty(n_values, dtype=float_)
 
     for ridx in prange(n_values):
@@ -354,11 +484,21 @@ def map_records_meta_nb(n_values: int, map_func_nb: tp.MappedReduceMetaFunc, *ar
 )
 @register_jitted(tags={"can_parallel"})
 def apply_nb(arr: tp.Array1d, col_map: tp.GroupMap, apply_func_nb: tp.ApplyFunc, *args) -> tp.Array1d:
-    """Apply function on mapped array or records per column.
+    """Apply a function on segments of an array corresponding to each group.
 
-    Returns the same shape as `arr`.
+    Args:
+        arr (Array1d): Array on which to apply the function.
+        col_map (GroupMap): Tuple of column indices and column lengths defining groups.
+        apply_func_nb (ApplyFunc): Function to apply on each group segment.
+        *args: Additional positional arguments passed to the apply function.
 
-    `apply_func_nb` must accept the values of the column and `*args`. Must return an array."""
+    Returns:
+        Array1d: Array resulting from applying the function to each group, 
+            matching the shape of the input array.
+
+    !!! tip
+        This function is parallelizable.
+    """
     col_idxs, col_lens = col_map
     col_start_idxs = np.cumsum(col_lens) - col_lens
     out = np.empty(arr.shape[0], dtype=float_)
@@ -385,9 +525,21 @@ def apply_nb(arr: tp.Array1d, col_map: tp.GroupMap, apply_func_nb: tp.ApplyFunc,
 )
 @register_jitted(tags={"can_parallel"})
 def apply_meta_nb(n_values: int, col_map: tp.GroupMap, apply_func_nb: tp.ApplyMetaFunc, *args) -> tp.Array1d:
-    """Meta version of `apply_nb`.
+    """Apply a function to meta information for each group.
 
-    `apply_func_nb` must accept the indices, the column index, and `*args`. Must return an array."""
+    Args:
+        n_values (int): Total number of values.
+        col_map (GroupMap): Tuple of column indices and column lengths defining groups.
+        apply_func_nb (ApplyMetaFunc): Function that accepts indices, a column index, 
+            and additional arguments to return an array.
+        *args: Additional positional arguments passed to the meta apply function.
+
+    Returns:
+        Array1d: Array resulting from applying the function to each group's meta information.
+
+    !!! tip
+        This function is parallelizable.
+    """
     col_idxs, col_lens = col_map
     col_start_idxs = np.cumsum(col_lens) - col_lens
     out = np.empty(n_values, dtype=float_)
@@ -428,15 +580,30 @@ def reduce_mapped_segments_nb(
     reduce_func_nb: tp.ReduceFunc,
     *args,
 ) -> tp.Tuple[tp.Array1d, tp.Array1d, tp.Array1d, tp.Array1d]:
-    """Reduce each segment of values in mapped array.
+    """Reduce each segment of values in the mapped array.
 
-    Uses the last column, index, and id of each segment for the new value.
+    Uses the last column, index, and id of each segment to compute the reduced value.
 
-    `reduce_func_nb` must accept the values in the segment and `*args`. Must return a single value.
+    `reduce_func_nb` must accept the segment values and additional positional arguments,
+    and return a single value.
 
     !!! note
-        Groups must come in ascending order per column, and `idx_arr` and `id_arr`
-        must come in ascending order per segment of values."""
+        Groups must be in ascending order per column, and `idx_arr` and `id_arr` must be
+        in ascending order within each segment.
+
+    Args:
+        mapped_arr (Array1d): Array of mapped values.
+        idx_arr (Array1d): Array of indices corresponding to each value in `mapped_arr`.
+        id_arr (Array1d): Array of identifier values corresponding to each value in `mapped_arr`.
+        col_map (GroupMap): Tuple containing column indices and column lengths.
+        segment_arr (Array1d): Array indicating segment boundaries for mapped values.
+        reduce_func_nb (ReduceFunc): Function to reduce a segment of values.
+        *args: Additional positional arguments for `reduce_func_nb`.
+
+    Returns:
+        Tuple[Array1d, Array1d, Array1d, Array1d]: A tuple containing the reduced values,
+            column indices, indices, and id values.
+    """
     col_idxs, col_lens = col_map
     col_start_idxs = np.cumsum(col_lens) - col_lens
     out = np.empty(len(mapped_arr), dtype=mapped_arr.dtype)
@@ -507,13 +674,27 @@ def reduce_mapped_nb(
     reduce_func_nb: tp.ReduceFunc,
     *args,
 ) -> tp.Array1d:
-    """Reduce mapped array by column to a single value.
+    """Reduce the mapped array by column to a single reduced value.
 
-    Faster than `unstack_mapped_nb` and `vbt.*` used together, and also
-    requires less memory. But does not take advantage of caching.
+    Faster than unstack_mapped_nb used in combination with other vectorbtpro methods,
+    and it requires less memory, though it does not benefit from caching.
 
-    `reduce_func_nb` must accept the mapped array and `*args`.
-    Must return a single value."""
+    `reduce_func_nb` must accept a slice of the mapped array and additional positional arguments,
+    and return a single value.
+
+    Args:
+        mapped_arr (Array1d): Array of mapped values.
+        col_map (GroupMap): Tuple containing column indices and column lengths.
+        fill_value (float): Fill value used to initialize the output array.
+        reduce_func_nb (ReduceFunc): Reduction function applied to a slice of `mapped_arr`.
+        *args: Additional positional arguments for `reduce_func_nb`.
+
+    Returns:
+        Array1d: Array containing the reduced value for each column.
+
+    !!! tip
+        This function is parallelizable.
+    """
     col_idxs, col_lens = col_map
     col_start_idxs = np.cumsum(col_lens) - col_lens
     out = np.full(col_lens.shape[0], fill_value, dtype=float_)
@@ -540,10 +721,23 @@ def reduce_mapped_meta_nb(
     reduce_func_nb: tp.MappedReduceMetaFunc,
     *args,
 ) -> tp.Array1d:
-    """Meta version of `reduce_mapped_nb`.
+    """Provide a meta reduction of the mapped array per column.
 
-    `reduce_func_nb` must accept the mapped indices, the column index, and `*args`.
-    Must return a single value."""
+    `reduce_func_nb` must accept the mapped indices for a column, the column index,
+    and additional positional arguments, and return a single value.
+
+    Args:
+        col_map (GroupMap): Tuple containing column indices and column lengths.
+        fill_value (float): Fill value used to initialize the output array.
+        reduce_func_nb (MappedReduceMetaFunc): Reduction function for computing the meta value for a column.
+        *args: Additional positional arguments for `reduce_func_nb`.
+
+    Returns:
+        Array1d: Array containing the reduced meta value for each column.
+
+    !!! tip
+        This function is parallelizable.
+    """
     col_idxs, col_lens = col_map
     col_start_idxs = np.cumsum(col_lens) - col_lens
     out = np.full(col_lens.shape[0], fill_value, dtype=float_)
@@ -579,12 +773,27 @@ def reduce_mapped_to_idx_nb(
     reduce_func_nb: tp.ReduceFunc,
     *args,
 ) -> tp.Array1d:
-    """Reduce mapped array by column to an index.
+    """Reduce the mapped array by column to determine an index for each column.
 
-    Same as `reduce_mapped_nb` except `idx_arr` must be passed.
+    Same as `reduce_mapped_nb` but requires `idx_arr` to determine the index value.
 
     !!! note
-        Must return integers or raise an exception."""
+        The reduction function must return an integer value or raise an exception.
+
+    Args:
+        mapped_arr (Array1d): Array of mapped values.
+        col_map (GroupMap): Tuple containing column indices and column lengths.
+        idx_arr (Array1d): Array of indices corresponding to mapped values.
+        fill_value (float): Fill value used to initialize the output array.
+        reduce_func_nb (ReduceFunc): Reduction function that computes an index from a slice of `mapped_arr`.
+        *args: Additional positional arguments for `reduce_func_nb`.
+
+    Returns:
+        Array1d: Array of computed indices.
+
+    !!! tip
+        This function is parallelizable.
+    """
     col_idxs, col_lens = col_map
     col_start_idxs = np.cumsum(col_lens) - col_lens
     out = np.full(col_lens.shape[0], fill_value, dtype=float_)
@@ -621,7 +830,19 @@ def reduce_mapped_to_idx_meta_nb(
 ) -> tp.Array1d:
     """Meta version of `reduce_mapped_to_idx_nb`.
 
-    `reduce_func_nb` is the same as in `reduce_mapped_meta_nb`."""
+    Args:
+        col_map (GroupMap): Tuple of column indices and lengths.
+        idx_arr (Array1d): Array of indices corresponding to the groups.
+        fill_value (float): Value to fill in the output for groups without data.
+        reduce_func_nb (MappedReduceMetaFunc): Reduction function used for meta reduction.
+        *args: Additional positional arguments for the reduction function.
+
+    Returns:
+        Array1d: Array containing the meta reduced values for each group.
+
+    !!! tip
+        This function is parallelizable.
+    """
     col_idxs, col_lens = col_map
     col_start_idxs = np.cumsum(col_lens) - col_lens
     out = np.full(col_lens.shape[0], fill_value, dtype=float_)
@@ -658,7 +879,19 @@ def reduce_mapped_to_array_nb(
 ) -> tp.Array2d:
     """Reduce mapped array by column to an array.
 
-    `reduce_func_nb` same as for `reduce_mapped_nb` but must return an array."""
+    Args:
+        mapped_arr (Array1d): Array containing mapped values to reduce.
+        col_map (GroupMap): Tuple of column indices and lengths.
+        fill_value (float): Value used to initialize the output array.
+        reduce_func_nb (ReduceToArrayFunc): Function to reduce the mapped array to an array.
+        *args: Additional positional arguments for the reduction function.
+
+    Returns:
+        Array2d: 2D array with reduced values across columns, where each column corresponds to a group.
+
+    !!! tip
+        This function is parallelizable.
+    """
     col_idxs, col_lens = col_map
     col_start_idxs = np.cumsum(col_lens) - col_lens
     for col in range(col_lens.shape[0]):
@@ -699,7 +932,18 @@ def reduce_mapped_to_array_meta_nb(
 ) -> tp.Array2d:
     """Meta version of `reduce_mapped_to_array_nb`.
 
-    `reduce_func_nb` is the same as in `reduce_mapped_meta_nb`."""
+    Args:
+        col_map (GroupMap): Tuple of column indices and lengths.
+        fill_value (float): Value used to fill the output array.
+        reduce_func_nb (MappedReduceToArrayMetaFunc): Reduction function for meta conversion.
+        *args: Additional positional arguments for the reduction function.
+
+    Returns:
+        Array2d: 2D array with meta-reduced values across columns.
+
+    !!! tip
+        This function is parallelizable.
+    """
     col_idxs, col_lens = col_map
     col_start_idxs = np.cumsum(col_lens) - col_lens
     for col in range(col_lens.shape[0]):
@@ -749,10 +993,23 @@ def reduce_mapped_to_idx_array_nb(
 ) -> tp.Array2d:
     """Reduce mapped array by column to an index array.
 
-    Same as `reduce_mapped_to_array_nb` except `idx_arr` must be passed.
+    Args:
+        mapped_arr (Array1d): Array containing mapped values to reduce.
+        col_map (GroupMap): Tuple of column indices and lengths.
+        idx_arr (Array1d): Array of indices used to map reduced values to final indices.
+        fill_value (float): Value used to initialize the output array.
+        reduce_func_nb (ReduceToArrayFunc): Function to reduce the mapped array to an index array.
+        *args: Additional positional arguments for the reduction function.
+
+    Returns:
+        Array2d: 2D array with indices corresponding to reduced values for each group.
 
     !!! note
-        Must return integers or raise an exception."""
+        Must return integers or raise an exception.
+
+    !!! tip
+        This function is parallelizable.
+    """
     col_idxs, col_lens = col_map
     col_start_idxs = np.cumsum(col_lens) - col_lens
     for col in range(col_lens.shape[0]):
@@ -800,7 +1057,21 @@ def reduce_mapped_to_idx_array_meta_nb(
 ) -> tp.Array2d:
     """Meta version of `reduce_mapped_to_idx_array_nb`.
 
-    `reduce_func_nb` is the same as in `reduce_mapped_meta_nb`."""
+    Uses `reduce_func_nb` similarly to `reduce_mapped_meta_nb` to compute a 2D array by reducing mapped indexes.
+
+    Args:
+        col_map (GroupMap): Tuple containing column indices and their respective lengths.
+        idx_arr (Array1d): Array of indices used for reduction.
+        fill_value (float): Fill value used to initialize the output array.
+        reduce_func_nb (MappedReduceToArrayMetaFunc): Reduction function applied on sub-arrays.
+        *args: Additional positional arguments for the reduction function.
+
+    Returns:
+        Array2d: 2D array with reduced values computed from the input indices.
+
+    !!! tip
+        This function is parallelizable.
+    """
     col_idxs, col_lens = col_map
     col_start_idxs = np.cumsum(col_lens) - col_lens
     for col in range(col_lens.shape[0]):
@@ -827,9 +1098,6 @@ def reduce_mapped_to_idx_array_meta_nb(
     return out
 
 
-# ############# Value counts ############# #
-
-
 @register_chunkable(
     size=base_ch.GroupLensSizer(arg_query="col_map"),
     arg_take_spec=dict(
@@ -841,7 +1109,21 @@ def reduce_mapped_to_idx_array_meta_nb(
 )
 @register_jitted(cache=True, tags={"can_parallel"})
 def mapped_value_counts_per_col_nb(codes: tp.Array1d, n_uniques: int, col_map: tp.GroupMap) -> tp.Array2d:
-    """Get value counts per column/group of an already factorized mapped array."""
+    """Get value counts per column/group of a factorized mapped array.
+
+    Counts the occurrences of each unique value in each group defined by the column mapping.
+
+    Args:
+        codes (Array1d): Factorized array of integer codes.
+        n_uniques (int): Number of unique values.
+        col_map (GroupMap): Tuple containing column indices and their respective lengths.
+
+    Returns:
+        Array2d: 2D integer array with counts for each unique value per column.
+
+    !!! tip
+        This function is parallelizable.
+    """
     col_idxs, col_lens = col_map
     col_start_idxs = np.cumsum(col_lens) - col_lens
     out = np.full((n_uniques, col_lens.shape[0]), 0, dtype=int_)
@@ -863,7 +1145,19 @@ def mapped_value_counts_per_row_nb(
     idx_arr: tp.Array1d,
     n_rows: int,
 ) -> tp.Array2d:
-    """Get value counts per row of an already factorized mapped array."""
+    """Get value counts per row of a factorized mapped array.
+
+    Counts the occurrences of each unique factor across rows using the provided index mapping.
+
+    Args:
+        mapped_arr (Array1d): Factorized array of mapped values.
+        n_uniques (int): Number of unique values.
+        idx_arr (Array1d): Array of row indices corresponding to values in `mapped_arr`.
+        n_rows (int): Total number of rows.
+
+    Returns:
+        Array2d: 2D integer array with counts for each unique value per row.
+    """
     out = np.full((n_uniques, n_rows), 0, dtype=int_)
 
     for c in range(mapped_arr.shape[0]):
@@ -873,7 +1167,17 @@ def mapped_value_counts_per_row_nb(
 
 @register_jitted(cache=True)
 def mapped_value_counts_nb(mapped_arr: tp.Array1d, n_uniques: int) -> tp.Array2d:
-    """Get value counts globally of an already factorized mapped array."""
+    """Get global value counts of a factorized mapped array.
+
+    Counts the occurrences of each unique factor in the entire array.
+
+    Args:
+        mapped_arr (Array1d): Factorized array of values.
+        n_uniques (int): Number of unique values.
+
+    Returns:
+        Array2d: 1D integer array containing the count for each unique value.
+    """
     out = np.full(n_uniques, 0, dtype=int_)
 
     for c in range(mapped_arr.shape[0]):
@@ -881,12 +1185,21 @@ def mapped_value_counts_nb(mapped_arr: tp.Array1d, n_uniques: int) -> tp.Array2d
     return out
 
 
-# ############# Coverage ############# #
-
-
 @register_jitted(cache=True)
 def mapped_has_conflicts_nb(col_arr: tp.Array1d, idx_arr: tp.Array1d, target_shape: tp.Shape) -> bool:
-    """Check whether mapped array has positional conflicts."""
+    """Check for positional conflicts in a mapped array.
+
+    Verifies if any positions in the target array, defined by indices from `col_arr` and `idx_arr`,
+    have been assigned more than once.
+
+    Args:
+        col_arr (Array1d): Array of column indices.
+        idx_arr (Array1d): Array of row indices.
+        target_shape (Shape): Shape of the target array.
+
+    Returns:
+        bool: True if any positional conflict exists, False otherwise.
+    """
     temp = np.zeros(target_shape)
 
     for i in range(len(col_arr)):
@@ -900,16 +1213,22 @@ def mapped_has_conflicts_nb(col_arr: tp.Array1d, idx_arr: tp.Array1d, target_sha
 def mapped_coverage_map_nb(col_arr: tp.Array1d, idx_arr: tp.Array1d, target_shape: tp.Shape) -> tp.Array2d:
     """Get the coverage map of a mapped array.
 
-    Each element corresponds to the number of times it was referenced (= duplicates of `col_arr` and `idx_arr`).
-    More than one depicts a positional conflict."""
+    Generates a 2D map where each element indicates the number of times the corresponding
+    index was referenced. A value greater than one signals a positional conflict.
+
+    Args:
+        col_arr (Array1d): Array of column indices.
+        idx_arr (Array1d): Array of row indices.
+        target_shape (Shape): Shape of the output coverage map.
+
+    Returns:
+        Array2d: 2D integer array representing the coverage map.
+    """
     out = np.zeros(target_shape, dtype=int_)
 
     for i in range(len(col_arr)):
         out[idx_arr[i], col_arr[i]] += 1
     return out
-
-
-# ############# Unstacking ############# #
 
 
 def _unstack_mapped_nb(
@@ -952,7 +1271,20 @@ def unstack_mapped_nb(
     target_shape: tp.Shape,
     fill_value: float,
 ) -> tp.Array2d:
-    """Unstack mapped array using index data."""
+    """Unstack mapped array using index data.
+
+    Rearranges a mapped 1D array into a 2D array based on provided column and row indices.
+
+    Args:
+        mapped_arr (Array1d): Mapped array of values.
+        col_arr (Array1d): Column indices for positioning values.
+        idx_arr (Array1d): Row indices for positioning values.
+        target_shape (Shape): Shape of the unstacked 2D array.
+        fill_value (float): Fill value for positions with no data.
+
+    Returns:
+        Array2d: Unstacked 2D array with values placed according to `col_arr` and `idx_arr`.
+    """
     return _unstack_mapped_nb(mapped_arr, col_arr, idx_arr, target_shape, fill_value)
 
 
@@ -992,15 +1324,34 @@ overload(_ignore_unstack_mapped_nb)(_ignore_unstack_mapped_nb)
 
 @register_jitted(cache=True)
 def ignore_unstack_mapped_nb(mapped_arr: tp.Array1d, col_map: tp.GroupMap, fill_value: float) -> tp.Array2d:
-    """Unstack mapped array by ignoring index data."""
+    """Unstack mapped array by ignoring index data.
+
+    Rearranges the mapped array into a 2D array using grouping information from `col_map`,
+    without using explicit row indices.
+
+    Args:
+        mapped_arr (Array1d): Mapped array of values.
+        col_map (GroupMap): Tuple containing column indices and corresponding group lengths.
+        fill_value (float): Fill value for positions with no data.
+
+    Returns:
+        Array2d: 2D array where each column represents a group from the mapped array.
+    """
     return _ignore_unstack_mapped_nb(mapped_arr, col_map, fill_value)
 
 
 @register_jitted(cache=True)
 def unstack_index_nb(repeat_cnt_arr: tp.Array1d) -> tp.Array1d:
-    """Unstack index using the number of times each element must repeat.
+    """Unstack index using the repeat counts.
 
-    `repeat_cnt_arr` can be created from the coverage map."""
+    Generates a flattened index array where each index is repeated according to its count in `repeat_cnt_arr`.
+
+    Args:
+        repeat_cnt_arr (Array1d): Array of repeat counts for each index.
+
+    Returns:
+        Array1d: Flattened index array with indices repeated as specified.
+    """
     out = np.empty(np.sum(repeat_cnt_arr), dtype=int_)
 
     k = 0
@@ -1055,5 +1406,17 @@ def repeat_unstack_mapped_nb(
     n_cols: int,
     fill_value: float,
 ) -> tp.Array2d:
-    """Unstack mapped array using repeated index data."""
+    """Return an unstacked 2D array from a mapped array using repeated index data.
+
+    Args:
+        mapped_arr (Array1d): Mapped array containing values to be unstacked.
+        col_arr (Array1d): Array of column indices corresponding to each element in `mapped_arr`.
+        idx_arr (Array1d): Array of indices determining the row positions for unstacking.
+        repeat_cnt_arr (Array1d): Array of repetition counts used to compute starting indices.
+        n_cols (int): Total number of columns in the output array.
+        fill_value (float): Value used to initialize the output array.
+
+    Returns:
+        Array2d: Unstacked 2D array, where values are arranged based on index and repetition count.
+    """
     return _repeat_unstack_mapped_nb(mapped_arr, col_arr, idx_arr, repeat_cnt_arr, n_cols, fill_value)

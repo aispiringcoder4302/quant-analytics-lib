@@ -10,9 +10,10 @@
 
 """Modules for working with records.
 
-Records are the second form of data representation in vectorbtpro. They allow storing sparse event data
-such as drawdowns, orders, trades, and positions, without converting them back to the matrix form and
-occupying the user's memory."""
+Records provide a secondary data representation in `vectorbtpro` for efficiently storing sparse
+event data—such as drawdowns, orders, trades, and positions—without converting them back to
+a matrix form, thereby reducing memory usage.
+"""
 
 from typing import TYPE_CHECKING
 

@@ -53,7 +53,7 @@ class _BOLB(BOLB):
 
         Args:
             column (Label): Column to select for plotting.
-            **kwargs (KwargsLike): Additional keyword arguments passed to
+            **kwargs: Additional keyword arguments passed to
                 `vectorbtpro.generic.accessors.GenericAccessor.overlay_with_heatmap`.
 
         Returns:

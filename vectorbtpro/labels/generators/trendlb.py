@@ -50,7 +50,7 @@ class _TRENDLB(TRENDLB):
         
         Args:
             column (Optional[Label]): The column from the indicator data to plot.
-            **kwargs (KwargsLike): Additional keyword arguments passed to
+            **kwargs: Additional keyword arguments passed to
                 `vectorbtpro.generic.accessors.GenericAccessor.overlay_with_heatmap`.
         
         Returns:

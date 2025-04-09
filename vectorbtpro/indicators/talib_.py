@@ -287,22 +287,22 @@ Requires [TA-Lib](https://github.com/mrjbq7/ta-lib) installed.
 
 Args:
     *args (ArrayLike): Positional arguments corresponding to TA-Lib indicator input arrays.
-    timeframe (FrequencyLike): Frequency to resample input arrays before applying the function.
+    timeframe (Optional[FrequencyLike]): Frequency to resample input arrays before applying the function.
     
         Resamples the input arrays to this frequency, runs the function, and then resamples 
         the output arrays back to the original frequency.
-    resample_map (dict): Mapping from input names to resampling aggregation methods.
-    resample_kwargs (Sequence[dict]): Keyword arguments for resampling, passed to 
+    resample_map (KwargsLike): Mapping from input names to resampling aggregation methods.
+    resample_kwargs (KwargsLikeSequence): Keyword arguments for resampling, passed to 
         `vectorbtpro.generic.accessors.GenericAccessor.resample_apply`.
-    realign_kwargs (Sequence[dict]): Keyword arguments for realigning outputs, passed to 
+    realign_kwargs (KwargsLikeSequence): Keyword arguments for realigning outputs, passed to 
         `vectorbtpro.generic.accessors.GenericAccessor.realign`.
-    wrapper (ArrayWrapper): Instance used for wrapping inputs and outputs.
+    wrapper (Optional[ArrayWrapper]): Optional instance used for wrapping inputs and outputs.
     skipna (bool): If True, apply the TA-Lib function only on non-NA values.
     silence_warnings (bool): If True, suppress warnings during frequency handling.
-    broadcast_kwargs (dict): Additional keyword arguments for broadcasting input arrays.
-    wrap_kwargs (dict): Keyword arguments for wrapping output arrays.
-    wrap (bool): Determines whether to wrap the outputs in a Pandas format.
-    unpack_to (str): If provided, unpacks the output into a dictionary or DataFrame.
+    broadcast_kwargs (KwargsLike): Additional keyword arguments for broadcasting input arrays.
+    wrap_kwargs (KwargsLike): Keyword arguments for wrapping output arrays.
+    wrap (Optional[bool]): Determines whether to wrap the outputs in a Pandas format.
+    unpack_to (Optional[str]): If provided, unpacks the output into a dictionary or DataFrame.
     **kwargs: Additional keyword arguments passed to the TA-Lib function.
 
 Returns:
@@ -499,7 +499,7 @@ def talib_plot_func(func_name: str) -> tp.Callable:
     run_talib_plot_func.__signature__ = signature.replace(parameters=new_parameters)
     output_trace_kwargs_docstring = "\n    ".join(
         [
-            f"{output_name}_trace_kwargs (dict): Keyword arguments passed to the trace of `{output_name}`."
+            f"{output_name}_trace_kwargs (KwargsLike): Keyword arguments passed to the trace of `{output_name}`."
             for output_name in output_names
         ]
     )
@@ -510,13 +510,13 @@ def talib_plot_func(func_name: str) -> tp.Callable:
 Args:
     {', '.join(output_names)} (ArrayLike): TA-Lib indicator output arrays corresponding to the respective outputs.
     wrapper (Optional[ArrayWrapper]): Optional wrapper instance used to convert raw output arrays.
-    wrap_kwargs (dict): Additional keyword arguments for wrapping the output arrays.
+    wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping the output arrays.
 
-    column (str): Name of the column to plot.
-    limits (tuple of float): Tuple representing the lower and upper limits for the plot.
+    column (Optional[Label]): Name of the column to plot.
+    limits (Optional[Tuple[float, float]]): Tuple representing the lower and upper limits for the plot.
     {output_trace_kwargs_docstring}
-    add_shape_kwargs (dict): Keyword arguments passed to `fig.add_shape` when adding the range between limits.
-    add_trace_kwargs (dict): Keyword arguments passed to `fig.add_trace` for each trace.
+    add_shape_kwargs (KwargsLike): Keyword arguments passed to `fig.add_shape` when adding the range between limits.
+    add_trace_kwargs (KwargsLike): Keyword arguments passed to `fig.add_trace` for each trace.
     fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
     **layout_kwargs: Keyword arguments for configuring the figure layout.
 
