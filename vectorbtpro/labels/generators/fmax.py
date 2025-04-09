@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module with `FMAX`."""
+"""Module defining the `FMAX` indicator."""
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.indicators.factory import IndicatorFactory
@@ -35,7 +35,8 @@ FMAX = IndicatorFactory(
 
 
 class _FMAX(FMAX):
-    """Look-ahead indicator based on `vectorbtpro.labels.nb.future_max_nb`."""
+    """Class representing a look-ahead indicator that computes the future maximum value using
+    `vectorbtpro.labels.nb.future_max_nb`."""
 
     def plot(
         self,
@@ -51,12 +52,18 @@ class _FMAX(FMAX):
 
         Args:
             column (str): Name of the column to plot.
-            plot_close (bool): Whether to plot `FMAX.close`.
-            close_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter` for `FMAX.close`.
-            fmax_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter` for `FMAX.fmax`.
-            add_trace_kwargs (dict): Keyword arguments passed to `fig.add_trace` when adding each trace.
+            plot_close (bool): Flag indicating whether to plot `FMAX.close`.
+            close_trace_kwargs (dict): Keyword arguments passed to
+                `plotly.graph_objects.Scatter` for plotting `FMAX.close`.
+            fmax_trace_kwargs (dict): Keyword arguments passed to
+                `plotly.graph_objects.Scatter` for plotting `FMAX.fmax`.
+            add_trace_kwargs (dict): Keyword arguments passed to
+                `fig.add_trace` for adding each trace.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
-            **layout_kwargs: Keyword arguments for configuring the figure layout.
+            **layout_kwargs: Additional keyword arguments for configuring the figure layout.
+
+        Returns:
+            BaseFigure: The figure with the indicator traces plotted.
 
         Usage:
             ```pycon

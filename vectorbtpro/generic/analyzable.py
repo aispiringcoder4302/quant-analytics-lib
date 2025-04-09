@@ -32,7 +32,7 @@ class Analyzable(Wrapping, StatsBuilderMixin, PlotsBuilderMixin, metaclass=MetaA
     """Class that can be analyzed by computing and plotting various attributes.
 
     Args:
-        wrapper (ArrayWrapper): The array wrapper instance encapsulating the underlying data.
+        wrapper (ArrayWrapper): Wrapper instance.
         **kwargs: Keyword arguments passed to the constructor.
     """
 

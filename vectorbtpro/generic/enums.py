@@ -95,7 +95,7 @@ WType = WTypeT()
 
 __pdoc__[
     "WType"
-] = f"""Rolling window type enumeration.
+] = f"""Rolling weighting type enumeration.
 
 ```python
 {prettify_doc(WType)}

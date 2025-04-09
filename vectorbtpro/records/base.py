@@ -463,7 +463,7 @@ class Records(Analyzable, metaclass=MetaRecords):
     it to some array of values (such as PnL of each trade).
 
     Args:
-        wrapper (ArrayWrapper): Array wrapper.
+        wrapper (ArrayWrapper): Wrapper instance.
 
             See `vectorbtpro.base.wrapping.ArrayWrapper`.
         records_arr (array_like): A structured NumPy array of records.

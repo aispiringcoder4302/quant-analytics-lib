@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Named tuples and enumerated types for indicators."""
+"""Module defining named tuples and enumerated types for financial indicators."""
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.utils.formatting import prettify_doc
@@ -37,7 +37,11 @@ Pivot = PivotT()
 
 __pdoc__[
     "Pivot"
-] = f"""Pivot.
+] = f"""Pivot named tuple representing indicator pivot values.
+
+Fields:
+    Valley: Valley point.
+    Peak: Peak point.
 
 ```python
 {prettify_doc(Pivot)}
@@ -55,7 +59,11 @@ TrendMode = TrendModeT()
 
 __pdoc__[
     "TrendMode"
-] = f"""Trend mode.
+] = f"""Trend mode named tuple representing indicator trend directions.
+
+Fields:
+    Downtrend: Downtrend direction.
+    Uptrend: Uptrend direction.
 
 ```python
 {prettify_doc(TrendMode)}
@@ -76,7 +84,14 @@ HurstMethod = HurstMethodT()
 
 __pdoc__[
     "HurstMethod"
-] = f"""Hurst method.
+] = f"""Hurst method named tuple representing available methods for computing the Hurst exponent.
+
+Fields:
+    Standard: Standard method.
+    LogRS: Rescaled range (R/S) method with logarithmically distributed window sizes.
+    RS: Rescaled range (R/S) method with linearly distributed window sizes.
+    DMA: Detrending moving average method with linearly distributed window sizes.
+    DSOD: Discrete second order derivative method.
 
 ```python
 {prettify_doc(HurstMethod)}
@@ -105,7 +120,7 @@ class SuperTrendAIS(tp.NamedTuple):
 
 __pdoc__[
     "SuperTrendAIS"
-] = """A named tuple representing the input state of 
+] = """A named tuple representing the input state for the Super Trend indicator calculation in 
 `vectorbtpro.indicators.nb.supertrend_acc_nb`."""
 
 
@@ -123,5 +138,6 @@ class SuperTrendAOS(tp.NamedTuple):
 
 __pdoc__[
     "SuperTrendAOS"
-] = """A named tuple representing the output state of 
+] = """A named tuple representing the output state for the Super Trend indicator calculation in 
 `vectorbtpro.indicators.nb.supertrend_acc_nb`."""
+

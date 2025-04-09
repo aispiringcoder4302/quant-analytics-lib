@@ -78,58 +78,7 @@ class FixRange(DefineMixin):
 
 @define
 class RelRange(DefineMixin):
-    """Class for representing a relative range.
-
-    Args:
-        offset (Union[int, float, TimedeltaLike]): Offset value.
-
-            Floating numbers between 0 and 1 are interpreted as relative.
-
-            Can be negative.
-        offset_anchor (str): Anchor used for offset.
-
-            Supported values:
-
-            * 'start': Start of the range.
-            * 'end': End of the range.
-            * 'prev_start': Start of the previous range.
-            * 'prev_end': End of the previous range.
-            * 'next_start': Next start.
-            * 'next_end': Next end.
-        offset_space (str): Space used for applying the relative offset.
-
-            Supported values:
-
-            * 'all': Use the entire available space.
-            * 'free': Use the remaining space after the offset anchor.
-            * 'prev': Use the length of the previous range.
-
-            Applied only when `RelRange.offset` is relative.
-        length (Union[int, float, TimedeltaLike]): Range length value.
-
-            Floating numbers between 0 and 1 are interpreted as relative.
-
-            Can be negative.
-        length_space (str): Space used for applying the relative length.
-
-            Supported values:
-
-            * 'all': Use the entire available space.
-            * 'free': Use the remaining space after the offset.
-            * 'free_or_prev': Use the remaining space after the offset or the size of the
-                previous range, depending on which comes first in the direction of `RelRange.length`.
-
-            Applied only when `RelRange.length` is relative.
-        out_of_bounds (str): Strategy for handling indices that are out of bounds.
-
-            Supported values:
-
-            * 'keep': Retain out-of-bounds values.
-            * 'ignore': Silently ignore out-of-bound positions.
-            * 'warn': Emit a warning if values are out of bounds.
-            * 'raise': Raise an error for out-of-bound values.
-        is_gap (bool): Indicates whether the range represents a gap.
-    """
+    """Class for representing a relative range."""
 
     offset: tp.Union[int, float, tp.TimedeltaLike] = define.field(default=0)
     """Offset value.
@@ -412,7 +361,58 @@ class ZeroLengthError(ValueError):
 
 
 class Splitter(Analyzable):
-    """Base class for splitting."""
+    """Base class for splitting.
+
+    Args:
+        wrapper (ArrayWrapper): Wrapper instance.
+        index (Index): Index used for splitting.
+        splits_arr (SplitsArray): A two-dimensional array representing splits.
+
+            The first axis represents splits and the second axis represents sets.
+            Each element is a range defined as a slice, a sequence of indices, a mask,
+            or a callable returning such.
+    """
+
+    def __init__(
+        self,
+        wrapper: ArrayWrapper,
+        index: tp.Index,
+        splits_arr: tp.SplitsArray,
+        **kwargs,
+    ) -> None:
+        if wrapper.grouper.is_grouped():
+            raise ValueError("Splitter cannot be grouped")
+        index = dt.prepare_dt_index(index)
+        if splits_arr.shape[0] != wrapper.shape_2d[0]:
+            raise ValueError("Number of splits must match wrapper index")
+        if splits_arr.shape[1] != wrapper.shape_2d[1]:
+            raise ValueError("Number of sets must match wrapper columns")
+
+        Analyzable.__init__(
+            self,
+            wrapper,
+            index=index,
+            splits_arr=splits_arr,
+            **kwargs,
+        )
+
+        self._index = index
+        self._splits_arr = splits_arr
+
+    @property
+    def index(self) -> tp.Index:
+        """Index used for splitting."""
+        return self._index
+
+    @property
+    def splits_arr(self) -> tp.SplitsArray:
+        """A two-dimensional array representing splits.
+
+        The first axis represents splits and the second axis represents sets.
+        Each element is a range defined as a slice, a sequence of indices, a mask,
+        or a callable returning such.
+        """
+        return self._splits_arr
 
     @classmethod
     def from_splits(
@@ -2356,32 +2356,6 @@ class Splitter(Analyzable):
         kwargs = cls.resolve_stack_kwargs(*objs, **kwargs)
         return cls(**kwargs)
 
-    def __init__(
-        self,
-        wrapper: ArrayWrapper,
-        index: tp.Index,
-        splits_arr: tp.SplitsArray,
-        **kwargs,
-    ) -> None:
-        if wrapper.grouper.is_grouped():
-            raise ValueError("Splitter cannot be grouped")
-        index = dt.prepare_dt_index(index)
-        if splits_arr.shape[0] != wrapper.shape_2d[0]:
-            raise ValueError("Number of splits must match wrapper index")
-        if splits_arr.shape[1] != wrapper.shape_2d[1]:
-            raise ValueError("Number of sets must match wrapper columns")
-
-        Analyzable.__init__(
-            self,
-            wrapper,
-            index=index,
-            splits_arr=splits_arr,
-            **kwargs,
-        )
-
-        self._index = index
-        self._splits_arr = splits_arr
-
     def indexing_func_meta(self, *args, wrapper_meta: tp.DictLike = None, **kwargs) -> dict:
         """Perform indexing on a `Splitter` instance and return metadata.
 
@@ -2428,21 +2402,6 @@ class Splitter(Analyzable):
             wrapper=splitter_meta["wrapper_meta"]["new_wrapper"],
             splits_arr=splitter_meta["new_splits_arr"],
         )
-
-    @property
-    def index(self) -> tp.Index:
-        """The index of the `Splitter` instance."""
-        return self._index
-
-    @property
-    def splits_arr(self) -> tp.SplitsArray:
-        """A two-dimensional array representing splits.
-
-        The first axis represents splits and the second axis represents sets.
-        Each element is a range defined as a slice, a sequence of indices, a mask,
-        or a callable returning such.
-        """
-        return self._splits_arr
 
     @property
     def splits(self) -> tp.Frame:

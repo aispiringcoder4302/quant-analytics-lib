@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Generic Numba-compiled functions for simulation ranges.
+"""Module providing generic Numba-compiled functions for simulation ranges.
 
 !!! warning
     Resolution is more flexible and may return None while preparation always returns NumPy arrays.

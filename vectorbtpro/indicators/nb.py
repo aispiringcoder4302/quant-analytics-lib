@@ -8,10 +8,9 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Numba-compiled functions for custom indicators.
+"""Module providing Numba-compiled functions for custom indicators.
 
-Provides an arsenal of Numba-compiled functions that are used by indicator
-classes. These only accept NumPy arrays and other Numba-compatible types."""
+These only accept NumPy arrays and other Numba-compatible types."""
 
 import numpy as np
 from numba import prange
@@ -43,7 +42,20 @@ def ma_1d_nb(
 ) -> tp.Array1d:
     """Moving average.
 
-    For `wtype`, see `vectorbtpro.generic.enums.WType`."""
+    Computes a moving average for a 1-dimensional array.
+
+    Args:
+        close (Array1d): 1D array of numerical values.
+        window (int): The number of elements to include in each calculation window.
+        wtype (int): Weight type for the moving average.
+
+            See `vectorbtpro.generic.enums.WType`.
+        minp (Optional[int]): Minimum number of data points required for the calculation.
+        adjust (bool): Flag indicating whether to apply adjustment during computation.
+
+    Returns:
+        Array1d: The calculated moving average.
+    """
     return generic_nb.ma_1d_nb(close, window, wtype=wtype, minp=minp, adjust=adjust)
 
 
@@ -66,7 +78,25 @@ def ma_nb(
     minp: tp.Optional[int] = None,
     adjust: bool = False,
 ) -> tp.Array2d:
-    """2-dim version of `ma_1d_nb`."""
+    """2-dim version of `ma_1d_nb`.
+
+    Computes the moving average for each column of a 2-dimensional array.
+
+    Args:
+        close (Array2d): 2D array where each column represents a data series.
+        window (FlexArray1dLike): Window length(s).
+        wtype (FlexArray1dLike): Weight type(s).
+
+            See `vectorbtpro.generic.enums.WType`.
+        minp (Optional[int]): Minimum required observations.
+        adjust (bool): Flag indicating whether to apply adjustment during computation.
+
+    Returns:
+        Array2d: A 2D array of moving average values.
+
+    !!! tip
+        This function is parallelizable.
+    """
     window_ = to_1d_array_nb(np.asarray(window))
     wtype_ = to_1d_array_nb(np.asarray(wtype))
 
@@ -96,7 +126,21 @@ def msd_1d_nb(
 ) -> tp.Array1d:
     """Moving standard deviation.
 
-    For `wtype`, see `vectorbtpro.generic.enums.WType`."""
+    Computes the moving standard deviation for a 1-dimensional array.
+
+    Args:
+        close (Array1d): 1D array of numerical values.
+        window (int): The window size used for the calculation.
+        wtype (int): Weight type for the moving standard deviation.
+
+            See `vectorbtpro.generic.enums.WType`.
+        minp (Optional[int]): Minimum number of elements required for the computation.
+        adjust (bool): Flag indicating whether to adjust the calculation.
+        ddof (int): Delta degrees of freedom used in the standard deviation computation.
+
+    Returns:
+        Array1d: The moving standard deviation.
+    """
     return generic_nb.msd_1d_nb(close, window, wtype=wtype, minp=minp, adjust=adjust, ddof=ddof)
 
 
@@ -121,7 +165,26 @@ def msd_nb(
     adjust: bool = False,
     ddof: int = 0,
 ) -> tp.Array2d:
-    """2-dim version of `msd_1d_nb`."""
+    """2-dim version of `msd_1d_nb`.
+
+    Computes the moving standard deviation for each column of a 2-dimensional array.
+
+    Args:
+        close (Array2d): 2D array where each column represents a data series.
+        window (FlexArray1dLike): Window length(s).
+        wtype (FlexArray1dLike): Weight type(s).
+
+            See `vectorbtpro.generic.enums.WType`.
+        minp (Optional[int]): Minimum required observations.
+        adjust (bool): Flag indicating whether to adjust the computation.
+        ddof (int): Delta degrees of freedom for the standard deviation.
+
+    Returns:
+        Array2d: A 2D array of moving standard deviation values.
+
+    !!! tip
+        This function is parallelizable.
+    """
     window_ = to_1d_array_nb(np.asarray(window))
     wtype_ = to_1d_array_nb(np.asarray(wtype))
 
@@ -153,9 +216,22 @@ def bbands_1d_nb(
 ) -> tp.Tuple[tp.Array1d, tp.Array1d, tp.Array1d]:
     """Bollinger Bands.
 
-    Returns the upper band, the middle band, and the lower band.
+    Computes Bollinger Bands for a 1-dimensional array, returning the upper, middle, and lower bands.
 
-    For `wtype`, see `vectorbtpro.generic.enums.WType`."""
+    Args:
+        close (Array1d): 1D array of numerical values.
+        window (int): The number of observations used for computing the moving average.
+        wtype (int): Weight type for the moving average.
+
+            See `vectorbtpro.generic.enums.WType`.
+        alpha (float): Multiplier for the moving standard deviation to determine the band width.
+        minp (Optional[int]): Minimum data points required for the computation.
+        adjust (bool): Flag indicating whether to apply adjustment during calculation.
+        ddof (int): Delta degrees of freedom for the standard deviation calculation.
+
+    Returns:
+        Tuple[Array1d, Array1d, Array1d]: The upper band, middle band, and lower band.
+    """
     ma = ma_1d_nb(close, window=window, wtype=wtype, minp=minp, adjust=adjust)
     msd = msd_1d_nb(close, window=window, wtype=wtype, minp=minp, adjust=adjust, ddof=ddof)
     upper = ma + alpha * msd
@@ -187,7 +263,27 @@ def bbands_nb(
     adjust: bool = False,
     ddof: int = 0,
 ) -> tp.Tuple[tp.Array2d, tp.Array2d, tp.Array2d]:
-    """2-dim version of `bbands_1d_nb`."""
+    """2-dim version of `bbands_1d_nb`.
+
+    Computes Bollinger Bands for each column of a 2-dimensional array.
+
+    Args:
+        close (Array2d): 2D array where each column is a data series.
+        window (FlexArray1dLike): Window length(s).
+        wtype (FlexArray1dLike): Weight type(s).
+
+            See `vectorbtpro.generic.enums.WType`.
+        alpha (FlexArray1dLike): Multiplier(s) for the standard deviation.
+        minp (Optional[int]): Minimum required observations.
+        adjust (bool): Flag indicating whether to adjust the calculation.
+        ddof (int): Delta degrees of freedom for the standard deviation calculation.
+
+    Returns:
+        Tuple[Array2d, Array2d, Array2d]: The upper, middle, and lower Bollinger Bands for each column.
+
+    !!! tip
+        This function is parallelizable.
+    """
     window_ = to_1d_array_nb(np.asarray(window))
     wtype_ = to_1d_array_nb(np.asarray(wtype))
     alpha_ = to_1d_array_nb(np.asarray(alpha))
@@ -210,7 +306,19 @@ def bbands_nb(
 
 @register_jitted(cache=True)
 def bbands_percent_b_1d_nb(close: tp.Array1d, upper: tp.Array1d, lower: tp.Array1d) -> tp.Array1d:
-    """Bollinger Bands %B."""
+    """Bollinger Bands %B.
+
+    Computes the %B indicator, which represents the position of the closing price
+    relative to the lower and upper Bollinger Bands.
+
+    Args:
+        close (Array1d): 1D array of closing prices.
+        upper (Array1d): 1D array representing the upper Bollinger Band.
+        lower (Array1d): 1D array representing the lower Bollinger Band.
+
+    Returns:
+        Array1d: The %B values computed as (close - lower) / (upper - lower).
+    """
     return (close - lower) / (upper - lower)
 
 
@@ -225,7 +333,21 @@ def bbands_percent_b_1d_nb(close: tp.Array1d, upper: tp.Array1d, lower: tp.Array
 )
 @register_jitted(cache=True, tags={"can_parallel"})
 def bbands_percent_b_nb(close: tp.Array2d, upper: tp.Array2d, lower: tp.Array2d) -> tp.Array2d:
-    """2-dim version of `bbands_percent_b_1d_nb`."""
+    """Calculate percent b values for Bollinger Bands using 2-dimensional inputs.
+
+    Applies `bbands_percent_b_1d_nb` column-wise on 2D arrays of closing prices and Bollinger Bands.
+
+    Args:
+        close (Array2d): 2-dimensional array of closing prices.
+        upper (Array2d): 2-dimensional array of upper Bollinger band values.
+        lower (Array2d): 2-dimensional array of lower Bollinger band values.
+
+    Returns:
+        Array2d: 2-dimensional array of percent b values.
+
+    !!! tip
+        This function is parallelizable.
+    """
     percent_b = np.empty(close.shape, dtype=float_)
     for col in prange(close.shape[1]):
         percent_b[:, col] = bbands_percent_b_1d_nb(close[:, col], upper[:, col], lower[:, col])
@@ -234,7 +356,18 @@ def bbands_percent_b_nb(close: tp.Array2d, upper: tp.Array2d, lower: tp.Array2d)
 
 @register_jitted(cache=True)
 def bbands_bandwidth_1d_nb(upper: tp.Array1d, middle: tp.Array1d, lower: tp.Array1d) -> tp.Array1d:
-    """Bollinger Bands Bandwidth."""
+    """Calculate the Bollinger Bands bandwidth.
+
+    Computes the bandwidth as the difference between the upper and lower bands divided by the middle band.
+
+    Args:
+        upper (Array1d): Array of upper band values.
+        middle (Array1d): Array of middle band values.
+        lower (Array1d): Array of lower band values.
+
+    Returns:
+        Array1d: Array of computed Bollinger Bands bandwidth values.
+    """
     return (upper - lower) / middle
 
 
@@ -249,14 +382,25 @@ def bbands_bandwidth_1d_nb(upper: tp.Array1d, middle: tp.Array1d, lower: tp.Arra
 )
 @register_jitted(cache=True, tags={"can_parallel"})
 def bbands_bandwidth_nb(upper: tp.Array2d, middle: tp.Array2d, lower: tp.Array2d) -> tp.Array2d:
-    """2-dim version of `bbands_bandwidth_1d_nb`."""
+    """Calculate Bollinger Bands bandwidth for 2-dimensional arrays.
+
+    Applies `bbands_bandwidth_1d_nb` column-wise on 2D arrays of Bollinger Bands values.
+
+    Args:
+        upper (Array2d): 2-dimensional array of upper band values.
+        middle (Array2d): 2-dimensional array of middle band values.
+        lower (Array2d): 2-dimensional array of lower band values.
+
+    Returns:
+        Array2d: 2-dimensional array of Bollinger Bands bandwidth values.
+
+    !!! tip
+        This function is parallelizable.
+    """
     bandwidth = np.empty(upper.shape, dtype=float_)
     for col in prange(upper.shape[1]):
         bandwidth[:, col] = bbands_bandwidth_1d_nb(upper[:, col], middle[:, col], lower[:, col])
     return bandwidth
-
-
-# ############# RSI ############# #
 
 
 @register_jitted(cache=True)
@@ -267,7 +411,21 @@ def avg_gain_1d_nb(
     minp: tp.Optional[int] = None,
     adjust: bool = False,
 ) -> tp.Array1d:
-    """Average gain."""
+    """Calculate average gain over a specified window.
+
+    Computes the average gain from a 1-dimensional array of closing prices by calculating
+    the positive differences between consecutive values and applying a moving average via `ma_1d_nb`.
+
+    Args:
+        close (Array1d): 1-dimensional array of closing prices.
+        window (int): Window size for the moving average.
+        wtype (int): Weighting type; see `vectorbtpro.generic.enums.WType` for options.
+        minp (Optional[int]): Minimum periods for computation.
+        adjust (bool): Whether to adjust the moving average calculation.
+
+    Returns:
+        Array1d: Array of average gain values.
+    """
     up_change = np.empty(close.shape, dtype=float_)
     for i in range(close.shape[0]):
         if i == 0:
@@ -301,7 +459,24 @@ def avg_gain_nb(
     minp: tp.Optional[int] = None,
     adjust: bool = False,
 ) -> tp.Array2d:
-    """2-dim version of `avg_gain_1d_nb`."""
+    """Calculate average gain for 2-dimensional arrays.
+
+    Computes average gain for each column by applying `avg_gain_1d_nb` on slices
+    of a 2D array of closing prices.
+
+    Args:
+        close (Array2d): 2-dimensional array of closing prices.
+        window (FlexArray1dLike): Window size(s) for the moving average.
+        wtype (FlexArray1dLike): Weighting type(s); refer to `vectorbtpro.generic.enums.WType`.
+        minp (Optional[int]): Minimum periods for computation.
+        adjust (bool): Whether to adjust the moving average calculation.
+
+    Returns:
+        Array2d: 2-dimensional array of average gain values for each column.
+
+    !!! tip
+        This function is parallelizable.
+    """
     window_ = to_1d_array_nb(np.asarray(window))
     wtype_ = to_1d_array_nb(np.asarray(wtype))
 
@@ -325,7 +500,21 @@ def avg_loss_1d_nb(
     minp: tp.Optional[int] = None,
     adjust: bool = False,
 ) -> tp.Array1d:
-    """Average loss."""
+    """Calculate average loss over a specified window.
+
+    Computes the average loss from a 1-dimensional array of closing prices by measuring
+    the absolute negative changes between consecutive values and applying a moving average via `ma_1d_nb`.
+
+    Args:
+        close (Array1d): 1-dimensional array of closing prices.
+        window (int): Window size for the moving average.
+        wtype (int): Weighting type; see `vectorbtpro.generic.enums.WType` for options.
+        minp (Optional[int]): Minimum periods for computation.
+        adjust (bool): Whether to adjust the moving average calculation.
+
+    Returns:
+        Array1d: Array of average loss values.
+    """
     down_change = np.empty(close.shape, dtype=float_)
     for i in range(close.shape[0]):
         if i == 0:
@@ -359,7 +548,24 @@ def avg_loss_nb(
     minp: tp.Optional[int] = None,
     adjust: bool = False,
 ) -> tp.Array2d:
-    """2-dim version of `avg_loss_1d_nb`."""
+    """Calculate average loss for 2-dimensional arrays.
+
+    Computes average loss for each column by applying `avg_loss_1d_nb` on slices
+    of a 2D array of closing prices.
+
+    Args:
+        close (Array2d): 2-dimensional array of closing prices.
+        window (FlexArray1dLike): Window size(s) for the moving average.
+        wtype (FlexArray1dLike): Weighting type(s); refer to `vectorbtpro.generic.enums.WType`.
+        minp (Optional[int]): Minimum periods for computation.
+        adjust (bool): Whether to adjust the moving average calculation.
+
+    Returns:
+        Array2d: 2-dimensional array of average loss values for each column.
+
+    !!! tip
+        This function is parallelizable.
+    """
     window_ = to_1d_array_nb(np.asarray(window))
     wtype_ = to_1d_array_nb(np.asarray(wtype))
 
@@ -383,9 +589,22 @@ def rsi_1d_nb(
     minp: tp.Optional[int] = None,
     adjust: bool = False,
 ) -> tp.Array1d:
-    """RSI.
+    """Calculate the Relative Strength Index (RSI) for a 1-dimensional array.
 
-    For `wtype`, see `vectorbtpro.generic.enums.WType`."""
+    Computes the RSI by calculating the average gain and loss, then using these values to quantify the relative strength.
+
+    Args:
+        close (Array1d): 1-dimensional array of closing prices.
+        window (int): Window size for average gain and loss calculations.
+        wtype (int): Weighting type; see `vectorbtpro.generic.enums.WType` for the options.
+
+            For `wtype`, see `vectorbtpro.generic.enums.WType`.
+        minp (Optional[int]): Minimum periods for computation.
+        adjust (bool): Whether to adjust the moving average calculations.
+
+    Returns:
+        Array1d: Array of RSI values.
+    """
     avg_gain = avg_gain_1d_nb(close, window=window, wtype=wtype, minp=minp, adjust=adjust)
     avg_loss = avg_loss_1d_nb(close, window=window, wtype=wtype, minp=minp, adjust=adjust)
     return 100 * avg_gain / (avg_gain + avg_loss)
@@ -410,7 +629,23 @@ def rsi_nb(
     minp: tp.Optional[int] = None,
     adjust: bool = False,
 ) -> tp.Array2d:
-    """2-dim version of `rsi_1d_nb`."""
+    """Calculate the Relative Strength Index (RSI) for 2-dimensional arrays.
+
+    Computes the RSI for each column by applying `rsi_1d_nb` on slices of a 2D array of closing prices.
+
+    Args:
+        close (Array2d): 2-dimensional array of closing prices.
+        window (FlexArray1dLike): Window size(s) for RSI calculation.
+        wtype (FlexArray1dLike): Weighting type(s); see `vectorbtpro.generic.enums.WType` for available options.
+        minp (Optional[int]): Minimum periods for computation.
+        adjust (bool): Whether to adjust the moving average calculations.
+
+    Returns:
+        Array2d: Array of computed RSI values for each column.
+
+    !!! tip
+        This function is parallelizable.
+    """
     window_ = to_1d_array_nb(np.asarray(window))
     wtype_ = to_1d_array_nb(np.asarray(wtype))
 
@@ -437,7 +672,18 @@ def stoch_k_1d_nb(
     window: int = 14,
     minp: tp.Optional[int] = None,
 ) -> tp.Array1d:
-    """Stochastic Oscillator %K."""
+    """Calculate the Stochastic Oscillator %K for one-dimensional price arrays.
+
+    Args:
+        high (Array1d): Array of high prices.
+        low (Array1d): Array of low prices.
+        close (Array1d): Array of closing prices.
+        window (int): Period for computing the rolling minimum and maximum.
+        minp (Optional[int]): Minimum number of periods required for a valid calculation.
+
+    Returns:
+        Array1d: The computed %K values.
+    """
     lowest_low = generic_nb.rolling_min_1d_nb(low, window, minp=minp)
     highest_high = generic_nb.rolling_max_1d_nb(high, window, minp=minp)
     stoch_k = 100 * (close - lowest_low) / (highest_high - lowest_low)
@@ -463,7 +709,21 @@ def stoch_k_nb(
     window: tp.FlexArray1dLike = 14,
     minp: tp.Optional[int] = None,
 ) -> tp.Array2d:
-    """2-dim version of `stoch_k_1d_nb`."""
+    """Calculate the Stochastic Oscillator %K for two-dimensional price arrays column-wise.
+
+    Args:
+        high (Array2d): Two-dimensional array of high prices.
+        low (Array2d): Two-dimensional array of low prices.
+        close (Array2d): Two-dimensional array of closing prices.
+        window (FlexArray1dLike): Period(s) for computing the rolling minimum and maximum.
+        minp (Optional[int]): Minimum number of periods required for valid computation.
+
+    Returns:
+        Array2d: The computed %K values for each column.
+
+    !!! tip
+        This function is parallelizable.
+    """
     window_ = to_1d_array_nb(np.asarray(window))
 
     stoch_k = np.empty(close.shape, dtype=float_)
@@ -497,11 +757,47 @@ def stoch_1d_nb(
     slow_k_adjust: tp.Optional[bool] = None,
     slow_d_adjust: tp.Optional[bool] = None,
 ) -> tp.Tuple[tp.Array1d, tp.Array1d, tp.Array1d]:
-    """Stochastic Oscillator.
+    """Calculate the Stochastic Oscillator for one-dimensional price arrays.
 
-    Returns the fast %K, the slow %K, and the slow %D.
+    This function computes the fast %K, slow %K, and slow %D values using moving averages.
 
-    For `wtype`, see `vectorbtpro.generic.enums.WType`."""
+    Args:
+        high (Array1d): Array of high prices.
+        low (Array1d): Array of low prices.
+        close (Array1d): Array of closing prices.
+        fast_k_window (int): Lookback window for fast %K calculation.
+        slow_k_window (int): Window for the slow %K moving average.
+        slow_d_window (int): Window for the slow %D moving average.
+        wtype (int): Weight type for moving average calculations.
+
+            See `vectorbtpro.generic.enums.WType`.
+        slow_k_wtype (Optional[int]): Weight type for the slow %K moving average.
+
+            Defaults to `wtype` if not provided.
+        slow_d_wtype (Optional[int]): Weight type for the slow %D moving average.
+
+            Defaults to `wtype` if not provided.
+        minp (Optional[int]): Minimum number of periods required for computation.
+        fast_k_minp (Optional[int]): Minimum periods for fast %K calculation.
+
+            Falls back to `minp` if not specified.
+        slow_k_minp (Optional[int]): Minimum periods for slow %K calculation.
+
+            Falls back to `minp` if not specified.
+        slow_d_minp (Optional[int]): Minimum periods for slow %D calculation.
+
+            Falls back to `minp` if not specified.
+        adjust (bool): Whether to adjust the moving average calculations.
+        slow_k_adjust (Optional[bool]): Flag for adjusting the slow %K moving average.
+
+            Defaults to `adjust` if not provided.
+        slow_d_adjust (Optional[bool]): Flag for adjusting the slow %D moving average.
+
+            Defaults to `adjust` if not provided.
+
+    Returns:
+        Tuple[Array1d, Array1d, Array1d]: A tuple containing fast %K, slow %K, and slow %D values.
+    """
     if slow_k_wtype is not None:
         slow_k_wtype_ = slow_k_wtype
     else:
@@ -577,7 +873,50 @@ def stoch_nb(
     slow_k_adjust: tp.Optional[bool] = None,
     slow_d_adjust: tp.Optional[bool] = None,
 ) -> tp.Tuple[tp.Array2d, tp.Array2d, tp.Array2d]:
-    """2-dim version of `stoch_1d_nb`."""
+    """Calculate the Stochastic Oscillator for two-dimensional price arrays column-wise.
+
+    This function computes the fast %K, slow %K, and slow %D values for each column using `stoch_1d_nb`.
+
+    Args:
+        high (Array2d): Two-dimensional array of high prices.
+        low (Array2d): Two-dimensional array of low prices.
+        close (Array2d): Two-dimensional array of closing prices.
+        fast_k_window (FlexArray1dLike): Lookback window(s) for fast %K calculation.
+        slow_k_window (FlexArray1dLike): Window(s) for the slow %K moving average.
+        slow_d_window (FlexArray1dLike): Window(s) for the slow %D moving average.
+        wtype (FlexArray1dLike): Weight type(s) for moving average calculations.
+
+            See `vectorbtpro.generic.enums.WType`.
+        slow_k_wtype (Optional[FlexArray1dLike]): Weight type for the slow %K moving average.
+
+            Uses `wtype` if not provided.
+        slow_d_wtype (Optional[FlexArray1dLike]): Weight type for the slow %D moving average.
+
+            Uses `wtype` if not provided.
+        minp (Optional[int]): Minimum number of periods required for computation.
+        fast_k_minp (Optional[int]): Minimum periods for fast %K calculation.
+
+            Falls back to `minp` if not specified.
+        slow_k_minp (Optional[int]): Minimum periods for slow %K calculation.
+
+            Falls back to `minp` if not specified.
+        slow_d_minp (Optional[int]): Minimum periods for slow %D calculation.
+
+            Falls back to `minp` if not specified.
+        adjust (bool): Whether to adjust the moving average calculations.
+        slow_k_adjust (Optional[bool]): Flag for adjusting the slow %K moving average.
+
+            Defaults to `adjust` if not provided.
+        slow_d_adjust (Optional[bool]): Flag for adjusting the slow %D moving average.
+
+            Defaults to `adjust` if not provided.
+
+    Returns:
+        Tuple[Array2d, Array2d, Array2d]: A tuple containing fast %K, slow %K, and slow %D values for each column.
+
+    !!! tip
+        This function is parallelizable.
+    """
     fast_k_window_ = to_1d_array_nb(np.asarray(fast_k_window))
     slow_k_window_ = to_1d_array_nb(np.asarray(slow_k_window))
     slow_d_window_ = to_1d_array_nb(np.asarray(slow_d_window))
@@ -635,11 +974,43 @@ def macd_1d_nb(
     macd_adjust: tp.Optional[bool] = None,
     signal_adjust: tp.Optional[bool] = None,
 ) -> tp.Tuple[tp.Array1d, tp.Array1d]:
-    """MACD.
+    """Calculate MACD and signal line for a 1-D series of closing prices.
 
-    Returns the MACD and the signal.
+    Compute the fast and slow moving averages, derive the MACD as their difference,
+    and calculate the signal line as the moving average of the MACD.
 
-    For `wtype`, see `vectorbtpro.generic.enums.WType`."""
+    Args:
+        close (Array1d): 1-D array of closing prices.
+        fast_window (int): Window size for computing the fast moving average.
+        slow_window (int): Window size for computing the slow moving average.
+        signal_window (int): Window size for computing the signal moving average.
+        wtype (int): Weighting type for moving average calculation.
+
+            See `vectorbtpro.generic.enums.WType`.
+        macd_wtype (Optional[int]): Alternative weighting type for MACD computation.
+
+            Uses `wtype` if not provided.
+        signal_wtype (Optional[int]): Alternative weighting type for signal computation.
+
+            Uses `wtype` if not provided.
+        minp (Optional[int]): Minimum period required for moving average calculation.
+        macd_minp (Optional[int]): Minimum period for the MACD moving average.
+
+            Uses `minp` if not provided.
+        signal_minp (Optional[int]): Minimum period for the signal moving average.
+
+            Uses `minp` if not provided.
+        adjust (bool): Flag indicating whether to use the adjusted moving average.
+        macd_adjust (Optional[bool]): Alternative flag for MACD moving average adjustment.
+
+            Uses `adjust` if not provided.
+        signal_adjust (Optional[bool]): Alternative flag for signal moving average adjustment.
+
+            Uses `signal_adjust` if not provided.
+
+    Returns:
+        Tuple[Array1d, Array1d]: A tuple where the first element is the MACD and the second is the signal line.
+    """
     if macd_wtype is not None:
         macd_wtype_ = macd_wtype
     else:
@@ -707,7 +1078,47 @@ def macd_nb(
     macd_adjust: tp.Optional[bool] = None,
     signal_adjust: tp.Optional[bool] = None,
 ) -> tp.Tuple[tp.Array2d, tp.Array2d]:
-    """2-dim version of `macd_1d_nb`."""
+    """Calculate 2-D MACD and signal lines for multiple price series.
+
+    Compute the fast and slow moving averages along each column, derive the MACD as their difference,
+    and calculate the signal line as the moving average of the MACD for each column.
+
+    Args:
+        close (Array2d): 2-D array of closing prices.
+        fast_window (FlexArray1dLike): Array or scalar specifying the fast moving average window.
+        slow_window (FlexArray1dLike): Array or scalar specifying the slow moving average window.
+        signal_window (FlexArray1dLike): Array or scalar specifying the signal moving average window.
+        wtype (FlexArray1dLike): Array or scalar for the weighting type.
+
+            See `vectorbtpro.generic.enums.WType`.
+        macd_wtype (Optional[FlexArray1dLike]): Alternative weighting type for MACD computation.
+
+            Uses `wtype` if not provided.
+        signal_wtype (Optional[FlexArray1dLike]): Alternative weighting type for signal computation.
+
+            Uses `wtype` if not provided.
+        minp (Optional[int]): Minimum period required for moving average calculation.
+        macd_minp (Optional[int]): Minimum period for the MACD moving average.
+
+            Uses `minp` if not provided.
+        signal_minp (Optional[int]): Minimum period for the signal moving average.
+
+            Uses `minp` if not provided.
+        adjust (bool): Flag indicating whether to use the adjusted moving average.
+        macd_adjust (Optional[bool]): Alternative flag for MACD moving average adjustment.
+
+            Uses `adjust` if not provided.
+        signal_adjust (Optional[bool]): Alternative flag for signal moving average adjustment.
+
+            Uses `adjust` if not provided.
+
+    Returns:
+        Tuple[Array2d, Array2d]: A tuple where the first element contains MACD values and
+            the second contains the signal line.
+
+    !!! tip
+        This function is parallelizable.
+    """
     fast_window_ = to_1d_array_nb(np.asarray(fast_window))
     slow_window_ = to_1d_array_nb(np.asarray(slow_window))
     signal_window_ = to_1d_array_nb(np.asarray(signal_window))
@@ -744,7 +1155,17 @@ def macd_nb(
 
 @register_jitted(cache=True)
 def macd_hist_1d_nb(macd: tp.Array1d, signal: tp.Array1d) -> tp.Array1d:
-    """MACD histogram."""
+    """Calculate MACD histogram for a 1-D series.
+
+    Compute the difference between the MACD and the signal line for each element.
+
+    Args:
+        macd (Array1d): 1-D array of MACD values.
+        signal (Array1d): 1-D array of signal line values.
+
+    Returns:
+        Array1d: 1-D array representing the MACD histogram.
+    """
     return macd - signal
 
 
@@ -758,19 +1179,41 @@ def macd_hist_1d_nb(macd: tp.Array1d, signal: tp.Array1d) -> tp.Array1d:
 )
 @register_jitted(cache=True, tags={"can_parallel"})
 def macd_hist_nb(macd: tp.Array2d, signal: tp.Array2d) -> tp.Array2d:
-    """2-dim version of `macd_hist_1d_nb`."""
+    """Calculate 2-D MACD histogram for multiple price series.
+
+    Compute the difference between the MACD and signal line for each element along each column.
+
+    Args:
+        macd (Array2d): 2-D array of MACD values.
+        signal (Array2d): 2-D array of signal line values.
+
+    Returns:
+        Array2d: 2-D array representing the MACD histogram values.
+
+    !!! tip
+        This function is parallelizable.
+    """
     macd_hist = np.empty(macd.shape, dtype=float_)
     for col in prange(macd.shape[1]):
         macd_hist[:, col] = macd_hist_1d_nb(macd[:, col], signal[:, col])
     return macd_hist
 
 
-# ############# ATR ############# #
-
-
 @register_jitted(cache=True)
 def iter_tr_nb(high: float, low: float, prev_close: float) -> float:
-    """True Range (TR) at one iteration."""
+    """Calculate the True Range (TR) for a single iteration.
+
+    Compute the True Range based on the current high, low, and previous close values.
+    Returns NaN if any computed difference is NaN.
+
+    Args:
+        high (float): Current high price.
+        low (float): Current low price.
+        prev_close (float): Previous closing price.
+
+    Returns:
+        float: The True Range value.
+    """
     tr0 = abs(high - low)
     tr1 = abs(high - prev_close)
     tr2 = abs(low - prev_close)
@@ -783,7 +1226,19 @@ def iter_tr_nb(high: float, low: float, prev_close: float) -> float:
 
 @register_jitted(cache=True)
 def tr_1d_nb(high: tp.Array1d, low: tp.Array1d, close: tp.Array1d) -> tp.Array1d:
-    """True Range (TR)."""
+    """Calculate the True Range (TR) for a 1-D series of prices.
+
+    Iterate over the closing prices to compute the True Range using the corresponding high, low,
+    and previous close values.
+
+    Args:
+        high (Array1d): 1-D array of high prices.
+        low (Array1d): 1-D array of low prices.
+        close (Array1d): 1-D array of closing prices.
+
+    Returns:
+        Array1d: 1-D array of True Range values.
+    """
     tr = np.empty(close.shape, dtype=float_)
     for i in range(close.shape[0]):
         tr[i] = iter_tr_nb(high[i], low[i], close[i - 1] if i > 0 else np.nan)
@@ -801,7 +1256,21 @@ def tr_1d_nb(high: tp.Array1d, low: tp.Array1d, close: tp.Array1d) -> tp.Array1d
 )
 @register_jitted(cache=True, tags={"can_parallel"})
 def tr_nb(high: tp.Array2d, low: tp.Array2d, close: tp.Array2d) -> tp.Array2d:
-    """2-dim version of `tr_1d_nb`."""
+    """Calculate the True Range (TR) for each column in 2-D price arrays.
+
+    Process each column independently to compute the True Range using high, low, and closing prices.
+
+    Args:
+        high (Array2d): 2-D array of high prices.
+        low (Array2d): 2-D array of low prices.
+        close (Array2d): 2-D array of closing prices.
+
+    Returns:
+        Array2d: 2-D array of True Range values computed column-wise.
+
+    !!! tip
+        This function is parallelizable.
+    """
     tr = np.empty(close.shape, dtype=float_)
     for col in prange(close.shape[1]):
         tr[:, col] = tr_1d_nb(high[:, col], low[:, col], close[:, col])
@@ -820,9 +1289,22 @@ def atr_1d_nb(
 ) -> tp.Tuple[tp.Array1d, tp.Array1d]:
     """Average True Range (ATR).
 
-    Returns TR and ATR.
+    Calculates the True Range and Average True Range from high, low, and close price arrays.
 
-    For `wtype`, see `vectorbtpro.generic.enums.WType`."""
+    Args:
+        high (Array1d): Array of high prices.
+        low (Array1d): Array of low prices.
+        close (Array1d): Array of close prices.
+        window (int): Window size for moving average calculation.
+        wtype (int): Weight type for moving average computation.
+
+            See `vectorbtpro.generic.enums.WType`.
+        minp (Optional[int]): Minimum periods required.
+        adjust (bool): Flag to control adjustments.
+
+    Returns:
+        Tuple[Array1d, Array1d]: The True Range and Average True Range.
+    """
     tr = tr_1d_nb(high, low, close)
     atr = ma_1d_nb(tr, window, wtype=wtype, minp=minp, adjust=adjust)
     return tr, atr
@@ -851,7 +1333,27 @@ def atr_nb(
     minp: tp.Optional[int] = None,
     adjust: bool = False,
 ) -> tp.Tuple[tp.Array2d, tp.Array2d]:
-    """2-dim version of `atr_1d_nb`."""
+    """2-dim version of `atr_1d_nb`.
+
+    Computes the True Range and Average True Range for 2-dimensional input arrays column-wise.
+
+    Args:
+        high (Array2d): 2-dimensional array of high prices.
+        low (Array2d): 2-dimensional array of low prices.
+        close (Array2d): 2-dimensional array of close prices.
+        window (FlexArray1dLike): Window size(s) for moving average calculation.
+        wtype (FlexArray1dLike): Weight type(s) for moving average computation.
+
+            See `vectorbtpro.generic.enums.WType`.
+        minp (Optional[int]): Minimum periods required.
+        adjust (bool): Flag to determine adjustments.
+
+    Returns:
+        Tuple[Array2d, Array2d]: The True Range and Average True Range for each column.
+
+    !!! tip
+        This function is parallelizable.
+    """
     window_ = to_1d_array_nb(np.asarray(window))
     wtype_ = to_1d_array_nb(np.asarray(wtype))
 
@@ -885,9 +1387,23 @@ def adx_1d_nb(
 ) -> tp.Tuple[tp.Array1d, tp.Array1d, tp.Array1d, tp.Array1d]:
     """Average Directional Movement Index (ADX).
 
-    Returns +DI, -DI, DX, and ADX.
+    Calculates the positive and negative directional indicators (+DI, -DI),
+    the directional movement index (DX), and the ADX using high, low, and close price arrays.
 
-    For `wtype`, see `vectorbtpro.generic.enums.WType`."""
+    Args:
+        high (Array1d): Array of high prices.
+        low (Array1d): Array of low prices.
+        close (Array1d): Array of close prices.
+        window (int): Window size for calculation.
+        wtype (int): Weight type for moving average computation.
+
+            See `vectorbtpro.generic.enums.WType`.
+        minp (Optional[int]): Minimum periods required.
+        adjust (bool): Flag to indicate if adjustments are applied.
+
+    Returns:
+        Tuple[Array1d, Array1d, Array1d, Array1d]: The +DI, -DI, DX, and ADX values.
+    """
     _, atr = atr_1d_nb(
         high,
         low,
@@ -942,7 +1458,28 @@ def adx_nb(
     minp: tp.Optional[int] = None,
     adjust: bool = False,
 ) -> tp.Tuple[tp.Array2d, tp.Array2d, tp.Array2d, tp.Array2d]:
-    """2-dim version of `adx_1d_nb`."""
+    """2-dim version of `adx_1d_nb`.
+
+    Computes the average directional movement index components (+DI, -DI, DX, and ADX)
+    for 2-dimensional input arrays column-wise.
+
+    Args:
+        high (Array2d): 2-dimensional array of high prices.
+        low (Array2d): 2-dimensional array of low prices.
+        close (Array2d): 2-dimensional array of close prices.
+        window (FlexArray1dLike): Window size(s) for calculation.
+        wtype (FlexArray1dLike): Weight type(s) for moving average computation.
+
+            See `vectorbtpro.generic.enums.WType`.
+        minp (Optional[int]): Minimum periods required.
+        adjust (bool): Flag to control adjustments.
+
+    Returns:
+        Tuple[Array2d, Array2d, Array2d, Array2d]: The +DI, -DI, DX, and ADX values for each column.
+
+    !!! tip
+        This function is parallelizable.
+    """
     window_ = to_1d_array_nb(np.asarray(window))
     wtype_ = to_1d_array_nb(np.asarray(wtype))
 
@@ -968,7 +1505,17 @@ def adx_nb(
 
 @register_jitted(cache=True)
 def obv_1d_nb(close: tp.Array1d, volume: tp.Array1d) -> tp.Array1d:
-    """On-Balance Volume (OBV)."""
+    """On-Balance Volume (OBV).
+
+    Calculates the on-balance volume (OBV) from close prices and trading volumes.
+
+    Args:
+        close (Array1d): Array of close prices.
+        volume (Array1d): Array of trading volumes.
+
+    Returns:
+        Array1d: The computed on-balance volume.
+    """
     obv = np.empty(close.shape, dtype=float_)
     cumsum = 0.0
     for i in range(close.shape[0]):
@@ -993,7 +1540,20 @@ def obv_1d_nb(close: tp.Array1d, volume: tp.Array1d) -> tp.Array1d:
 )
 @register_jitted(cache=True, tags={"can_parallel"})
 def obv_nb(close: tp.Array2d, volume: tp.Array2d) -> tp.Array2d:
-    """2-dim version of `obv_1d_nb`."""
+    """2-dim version of `obv_1d_nb`.
+
+    Calculates the on-balance volume (OBV) for 2-dimensional input arrays column-wise.
+
+    Args:
+        close (Array2d): 2-dimensional array of close prices.
+        volume (Array2d): 2-dimensional array of trading volumes.
+
+    Returns:
+        Array2d: The computed on-balance volume for each column.
+
+    !!! tip
+        This function is parallelizable.
+    """
     obv = np.empty(close.shape, dtype=float_)
     for col in prange(close.shape[1]):
         obv[:, col] = obv_1d_nb(close[:, col], volume[:, col])
@@ -1013,7 +1573,22 @@ def ols_1d_nb(
     ddof: int = 0,
     with_zscore: bool = True,
 ) -> tp.Tuple[tp.Array1d, tp.Array1d, tp.Array1d]:
-    """Rolling Ordinary Least Squares (OLS)."""
+    """Compute rolling ordinary least squares (OLS) regression between 1-dimensional arrays.
+
+    Args:
+        x (Array1d): 1-dimensional array of independent variable values.
+        y (Array1d): 1-dimensional array of dependent variable values.
+        window (int): Length of the rolling regression window.
+        norm_window (Optional[int]): Window length for error normalization.
+
+            Defaults to `window` if None.
+        minp (Optional[int]): Minimum number of data points required for computation.
+        ddof (int): Delta degrees of freedom used in standard deviation calculation.
+        with_zscore (bool): Whether to compute and return the z-score of regression errors.
+
+    Returns:
+        Tuple[Array1d, Array1d, Array1d]: Arrays containing slopes, intercepts, and z-scores.
+    """
     if norm_window is not None:
         norm_window_ = norm_window
     else:
@@ -1053,7 +1628,27 @@ def ols_nb(
     ddof: int = 0,
     with_zscore: bool = True,
 ) -> tp.Tuple[tp.Array2d, tp.Array2d, tp.Array2d]:
-    """2-dim version of `ols_1d_nb`."""
+    """Compute rolling ordinary least squares (OLS) regression for 2-dimensional arrays.
+
+    This function applies a 1-dimensional OLS regression on each column.
+
+    Args:
+        x (Array2d): 2-dimensional array of independent variable values.
+        y (Array2d): 2-dimensional array of dependent variable values.
+        window (FlexArray1dLike): Rolling window length(s).
+        norm_window (Optional[FlexArray1dLike]): Rolling window length for error normalization.
+
+            Defaults to `window` if None.
+        minp (Optional[int]): Minimum number of data points required for computation.
+        ddof (int): Delta degrees of freedom used in standard deviation calculation.
+        with_zscore (bool): Whether to compute and return the z-score of regression errors.
+
+    Returns:
+        Tuple[Array2d, Array2d, Array2d]: Arrays of slopes, intercepts, and z-scores for each column.
+
+    !!! tip
+        This function is parallelizable.
+    """
     window_ = to_1d_array_nb(np.asarray(window))
     if norm_window is not None:
         norm_window_ = to_1d_array_nb(np.asarray(norm_window))
@@ -1078,7 +1673,16 @@ def ols_nb(
 
 @register_jitted(cache=True)
 def ols_pred_1d_nb(x: tp.Array1d, slope: tp.Array1d, intercept: tp.Array1d) -> tp.Array1d:
-    """OLS prediction."""
+    """Compute OLS prediction for 1-dimensional arrays.
+
+    Args:
+        x (Array1d): 1-dimensional array of independent variable values.
+        slope (Array1d): Array of slope values from OLS regression.
+        intercept (Array1d): Array of intercept values from OLS regression.
+
+    Returns:
+        Array1d: Predicted values computed as intercept + slope * x.
+    """
     return intercept + slope * x
 
 
@@ -1093,7 +1697,21 @@ def ols_pred_1d_nb(x: tp.Array1d, slope: tp.Array1d, intercept: tp.Array1d) -> t
 )
 @register_jitted(cache=True, tags={"can_parallel"})
 def ols_pred_nb(x: tp.Array2d, slope: tp.Array2d, intercept: tp.Array2d) -> tp.Array2d:
-    """2-dim version of `ols_pred_1d_nb`."""
+    """Compute OLS predictions for 2-dimensional arrays.
+
+    This function applies `ols_pred_1d_nb` to compute predictions column-wise.
+
+    Args:
+        x (Array2d): 2-dimensional array of independent variable values.
+        slope (Array2d): 2-dimensional array of slope values.
+        intercept (Array2d): 2-dimensional array of intercept values.
+
+    Returns:
+        Array2d: 2-dimensional array of predicted values.
+
+    !!! tip
+        This function is parallelizable.
+    """
     pred = np.empty(x.shape, dtype=float_)
     for col in prange(x.shape[1]):
         pred[:, col] = ols_pred_1d_nb(x[:, col], slope[:, col], intercept[:, col])
@@ -1102,7 +1720,15 @@ def ols_pred_nb(x: tp.Array2d, slope: tp.Array2d, intercept: tp.Array2d) -> tp.A
 
 @register_jitted(cache=True)
 def ols_error_1d_nb(y: tp.Array1d, pred: tp.Array1d) -> tp.Array1d:
-    """OLS error."""
+    """Compute the error between observed and predicted values for OLS regression.
+
+    Args:
+        y (Array1d): 1-dimensional array of observed values.
+        pred (Array1d): 1-dimensional array of predicted values.
+
+    Returns:
+        Array1d: Errors computed as the difference between y and pred.
+    """
     return y - pred
 
 
@@ -1116,7 +1742,20 @@ def ols_error_1d_nb(y: tp.Array1d, pred: tp.Array1d) -> tp.Array1d:
 )
 @register_jitted(cache=True, tags={"can_parallel"})
 def ols_error_nb(y: tp.Array2d, pred: tp.Array2d) -> tp.Array2d:
-    """2-dim version of `ols_error_1d_nb`."""
+    """Compute OLS regression errors for 2-dimensional arrays.
+
+    This function applies error computation column-wise using `ols_error_1d_nb`.
+
+    Args:
+        y (Array2d): 2-dimensional array of observed values.
+        pred (Array2d): 2-dimensional array of predicted values.
+
+    Returns:
+        Array2d: 2-dimensional array of errors for each column.
+
+    !!! tip
+        This function is parallelizable.
+    """
     error = np.empty(y.shape, dtype=float_)
     for col in prange(y.shape[1]):
         error[:, col] = ols_error_1d_nb(y[:, col], pred[:, col])
@@ -1125,7 +1764,14 @@ def ols_error_nb(y: tp.Array2d, pred: tp.Array2d) -> tp.Array2d:
 
 @register_jitted(cache=True)
 def ols_angle_1d_nb(slope: tp.Array1d) -> tp.Array1d:
-    """OLS angle."""
+    """Compute the angle in degrees from OLS regression slopes for 1-dimensional arrays.
+
+    Args:
+        slope (Array1d): 1-dimensional array of slope values.
+
+    Returns:
+        Array1d: Angles in degrees computed from the slope values.
+    """
     return np.arctan(slope) * 180 / np.pi
 
 
@@ -1138,19 +1784,37 @@ def ols_angle_1d_nb(slope: tp.Array1d) -> tp.Array1d:
 )
 @register_jitted(cache=True, tags={"can_parallel"})
 def ols_angle_nb(slope: tp.Array2d) -> tp.Array2d:
-    """2-dim version of `ols_angle_1d_nb`."""
+    """Compute the angles in degrees from OLS regression slopes for 2-dimensional arrays.
+
+    This function applies `ols_angle_1d_nb` column-wise to compute the angles.
+
+    Args:
+        slope (Array2d): 2-dimensional array of slope values.
+
+    Returns:
+        Array2d: 2-dimensional array of angles in degrees for each column.
+
+    !!! tip
+        This function is parallelizable.
+    """
     angle = np.empty(slope.shape, dtype=float_)
     for col in prange(slope.shape[1]):
         angle[:, col] = ols_angle_1d_nb(slope[:, col])
     return angle
 
 
-# ############# VWAP ############# #
-
-
 @register_jitted(cache=True)
 def typical_price_1d_nb(high: tp.Array1d, low: tp.Array1d, close: tp.Array1d) -> tp.Array1d:
-    """Typical price."""
+    """Compute the typical price from high, low, and close prices for 1-dimensional arrays.
+
+    Args:
+        high (Array1d): 1-dimensional array of high prices.
+        low (Array1d): 1-dimensional array of low prices.
+        close (Array1d): 1-dimensional array of closing prices.
+
+    Returns:
+        Array1d: Typical price calculated as (high + low + close) / 3.
+    """
     return (high + low + close) / 3
 
 
@@ -1165,7 +1829,21 @@ def typical_price_1d_nb(high: tp.Array1d, low: tp.Array1d, close: tp.Array1d) ->
 )
 @register_jitted(cache=True, tags={"can_parallel"})
 def typical_price_nb(high: tp.Array2d, low: tp.Array2d, close: tp.Array2d) -> tp.Array2d:
-    """2-dim version of `typical_price_1d_nb`."""
+    """Compute the typical price for 2-dimensional arrays of high, low, and close prices.
+
+    This function applies `typical_price_1d_nb` column-wise to compute the typical price.
+
+    Args:
+        high (Array2d): 2-dimensional array of high prices.
+        low (Array2d): 2-dimensional array of low prices.
+        close (Array2d): 2-dimensional array of closing prices.
+
+    Returns:
+        Array2d: 2-dimensional array of typical prices for each column.
+
+    !!! tip
+        This function is parallelizable.
+    """
     typical_price = np.empty(close.shape, dtype=float_)
     for col in prange(close.shape[1]):
         typical_price[:, col] = typical_price_1d_nb(high[:, col], low[:, col], close[:, col])
@@ -1180,7 +1858,20 @@ def vwap_1d_nb(
     volume: tp.Array1d,
     group_lens: tp.GroupLens,
 ) -> tp.Array1d:
-    """Volume-Weighted Average Price (VWAP)."""
+    """Compute the Volume-Weighted Average Price (VWAP) for 1-dimensional arrays.
+
+    The calculation uses typical prices weighted by volume, aggregated over groups defined by `group_lens`.
+
+    Args:
+        high (Array1d): 1-dimensional array of high prices.
+        low (Array1d): 1-dimensional array of low prices.
+        close (Array1d): 1-dimensional array of closing prices.
+        volume (Array1d): 1-dimensional array of trading volumes.
+        group_lens (GroupLens): Array defining lengths of consecutive groups over which VWAP is computed.
+
+    Returns:
+        Array1d: Computed VWAP values for each element.
+    """
     group_end_idxs = np.cumsum(group_lens)
     group_start_idxs = group_end_idxs - group_lens
     out = np.full(volume.shape, np.nan, dtype=float_)
@@ -1220,7 +1911,23 @@ def vwap_nb(
     volume: tp.Array2d,
     group_lens: tp.GroupLens,
 ) -> tp.Array2d:
-    """2-dim version of `vwap_1d_nb`."""
+    """Compute the volume weighted average price (VWAP) for 2D arrays.
+
+    Apply the 1D computation from `vwap_1d_nb` to each column independently.
+
+    Args:
+        high (Array2d): Array of high prices.
+        low (Array2d): Array of low prices.
+        close (Array2d): Array of closing prices.
+        volume (Array2d): Array of traded volumes.
+        group_lens (GroupLens): Group lengths used for segmenting the input arrays.
+
+    Returns:
+        Array2d: A 2D array containing the calculated VWAP values.
+
+    !!! tip
+        This function is parallelizable.
+    """
     vwap = np.empty(close.shape, dtype=float_)
     for col in prange(close.shape[1]):
         vwap[:, col] = vwap_1d_nb(
@@ -1243,7 +1950,24 @@ def pivot_info_1d_nb(
     up_th: tp.FlexArray1dLike,
     down_th: tp.FlexArray1dLike,
 ) -> tp.Tuple[tp.Array1d, tp.Array1d, tp.Array1d, tp.Array1d]:
-    """Pivot information."""
+    """Compute pivot information for 1D arrays.
+
+    Determine pivot types and their corresponding indices based on threshold values.
+
+    Args:
+        high (Array1d): Array of high prices.
+        low (Array1d): Array of low prices.
+        up_th (FlexArray1dLike): Up threshold(s).
+        down_th (FlexArray1dLike): Down threshold(s).
+
+    Returns:
+        Tuple[Array1d, Array1d, Array1d, Array1d]: A tuple containing:
+        
+            * Confirmed pivot types.
+            * Indices of confirmed pivots.
+            * Last pivot types.
+            * Indices of the last pivots.
+    """
     up_th_ = to_1d_array_nb(np.asarray(up_th))
     down_th_ = to_1d_array_nb(np.asarray(down_th))
 
@@ -1346,7 +2070,27 @@ def pivot_info_nb(
     up_th: tp.FlexArray2dLike,
     down_th: tp.FlexArray2dLike,
 ) -> tp.Tuple[tp.Array2d, tp.Array2d, tp.Array2d, tp.Array2d]:
-    """2-dim version of `pivot_info_1d_nb`."""
+    """Compute pivot information for 2D arrays.
+
+    Apply the 1D pivot information computation from `pivot_info_1d_nb` to each column independently.
+
+    Args:
+        high (Array2d): Array of high prices.
+        low (Array2d): Array of low prices.
+        up_th (FlexArray2dLike): Up threshold(s).
+        down_th (FlexArray2dLike): Down threshold(s).
+
+    Returns:
+        Tuple[Array2d, Array2d, Array2d, Array2d]: A tuple containing:
+        
+            * Confirmed pivot types.
+            * Indices of confirmed pivots.
+            * Last pivot types.
+            * Indices of the last pivots.
+
+    !!! tip
+        This function is parallelizable.
+    """
     up_th_ = to_2d_array_nb(np.asarray(up_th))
     down_th_ = to_2d_array_nb(np.asarray(down_th))
 
@@ -1366,7 +2110,19 @@ def pivot_info_nb(
 
 @register_jitted(cache=True)
 def pivot_value_1d_nb(high: tp.Array1d, low: tp.Array1d, last_pivot: tp.Array1d, last_idx: tp.Array1d) -> tp.Array1d:
-    """Pivot value."""
+    """Compute pivot values for 1D arrays.
+
+    Determine the pivot price based on the last pivot type and its corresponding index.
+
+    Args:
+        high (Array1d): Array of high prices.
+        low (Array1d): Array of low prices.
+        last_pivot (Array1d): Array indicating the type of the last pivot.
+        last_idx (Array1d): Array of indices corresponding to the last pivot positions.
+
+    Returns:
+        Array1d: A 1D array of pivot prices calculated from `high` or `low` based on the last pivot type.
+    """
     pivot_value = np.empty(high.shape, dtype=float_)
     for i in range(high.shape[0]):
         if last_pivot[i] == Pivot.Peak:
@@ -1390,7 +2146,22 @@ def pivot_value_1d_nb(high: tp.Array1d, low: tp.Array1d, last_pivot: tp.Array1d,
 )
 @register_jitted(cache=True, tags={"can_parallel"})
 def pivot_value_nb(high: tp.Array2d, low: tp.Array2d, last_pivot: tp.Array2d, last_idx: tp.Array2d) -> tp.Array2d:
-    """2-dim version of `pivot_value_1d_nb`."""
+    """Compute pivot values for 2D arrays.
+
+    Apply the 1D pivot value computation from `pivot_value_1d_nb` to each column independently.
+
+    Args:
+        high (Array2d): Array of high prices.
+        low (Array2d): Array of low prices.
+        last_pivot (Array2d): Array indicating the type of the last pivot for each element.
+        last_idx (Array2d): Array of indices corresponding to the last pivot positions.
+
+    Returns:
+        Array2d: A 2D array containing the calculated pivot values for each column.
+
+    !!! tip
+        This function is parallelizable.
+    """
     pivot_value = np.empty(high.shape, dtype=float_)
     for col in prange(high.shape[1]):
         pivot_value[:, col] = pivot_value_1d_nb(high[:, col], low[:, col], last_pivot[:, col], last_idx[:, col])
@@ -1399,10 +2170,19 @@ def pivot_value_nb(high: tp.Array2d, low: tp.Array2d, last_pivot: tp.Array2d, la
 
 @register_jitted(cache=True)
 def pivots_1d_nb(conf_pivot: tp.Array1d, conf_idx: tp.Array1d, last_pivot: tp.Array1d) -> tp.Array1d:
-    """Pivots.
+    """Return pivot values based on input configuration arrays.
 
     !!! warning
-        To be used in plotting. Do not use it as an indicator!"""
+        To be used in plotting only. Do not use it as an indicator!
+
+    Args:
+        conf_pivot (Array1d): Array of pivot configuration values.
+        conf_idx (Array1d): Array of indices where pivot values should be assigned.
+        last_pivot (Array1d): Array providing the pivot value for the last element.
+
+    Returns:
+        Array1d: An array of computed pivot values.
+    """
     pivots = np.zeros(conf_pivot.shape, dtype=int_)
     for i in range(conf_pivot.shape[0] - 1):
         pivots[conf_idx[i]] = conf_pivot[i]
@@ -1421,7 +2201,19 @@ def pivots_1d_nb(conf_pivot: tp.Array1d, conf_idx: tp.Array1d, last_pivot: tp.Ar
 )
 @register_jitted(cache=True, tags={"can_parallel"})
 def pivots_nb(conf_pivot: tp.Array2d, conf_idx: tp.Array2d, last_pivot: tp.Array2d) -> tp.Array2d:
-    """2-dim version of `pivots_1d_nb`."""
+    """Return pivot values for a 2-dimensional array by applying `pivots_1d_nb` per column.
+
+    Args:
+        conf_pivot (Array2d): Array of pivot configuration values for each column.
+        conf_idx (Array2d): Array of indices corresponding to pivot positions for each column.
+        last_pivot (Array2d): Array specifying the last pivot value for each column.
+
+    Returns:
+        Array2d: An array containing the computed pivot values for each column.
+
+    !!! tip
+        This function is parallelizable.
+    """
     pivots = np.empty(conf_pivot.shape, dtype=int_)
     for col in prange(conf_pivot.shape[1]):
         pivots[:, col] = pivots_1d_nb(conf_pivot[:, col], conf_idx[:, col], last_pivot[:, col])
@@ -1430,10 +2222,17 @@ def pivots_nb(conf_pivot: tp.Array2d, conf_idx: tp.Array2d, last_pivot: tp.Array
 
 @register_jitted(cache=True)
 def modes_1d_nb(pivots: tp.Array1d) -> tp.Array1d:
-    """Modes.
+    """Return mode values computed from pivot signals.
 
     !!! warning
-        To be used in plotting. Do not use it as an indicator!"""
+        To be used in plotting only. Do not use it as an indicator!
+
+    Args:
+        pivots (Array1d): Array of pivot values.
+
+    Returns:
+        Array1d: An array containing mode values corresponding to each pivot entry.
+    """
     modes = np.empty(pivots.shape, dtype=int_)
     mode = 0
     for i in range(pivots.shape[0]):
@@ -1452,7 +2251,17 @@ def modes_1d_nb(pivots: tp.Array1d) -> tp.Array1d:
 )
 @register_jitted(cache=True, tags={"can_parallel"})
 def modes_nb(pivots: tp.Array2d) -> tp.Array2d:
-    """2-dim version of `modes_1d_nb`."""
+    """Return 2-dimensional mode values by applying `modes_1d_nb` to each column.
+
+    Args:
+        pivots (Array2d): Array of pivot values arranged by columns.
+
+    Returns:
+        Array2d: An array of computed mode values for each column.
+
+    !!! tip
+        This function is parallelizable.
+    """
     modes = np.empty(pivots.shape, dtype=int_)
     for col in prange(pivots.shape[1]):
         modes[:, col] = modes_1d_nb(pivots[:, col])
@@ -1464,13 +2273,31 @@ def modes_nb(pivots: tp.Array2d) -> tp.Array2d:
 
 @register_jitted(cache=True)
 def iter_med_price_nb(high: float, low: float) -> float:
-    """Median price at one iteration."""
+    """Return the median price for one iteration.
+
+    Args:
+        high (float): The high price value.
+        low (float): The low price value.
+
+    Returns:
+        float: The computed median price.
+    """
     return (high + low) / 2
 
 
 @register_jitted(cache=True)
 def iter_basic_bands_nb(high: float, low: float, atr: float, multiplier: float) -> tp.Tuple[float, float]:
-    """Upper and lower bands at one iteration."""
+    """Return the upper and lower basic band values for one iteration.
+
+    Args:
+        high (float): The high price value.
+        low (float): The low price value.
+        atr (float): The average true range.
+        multiplier (float): The multiplier applied to the ATR.
+
+    Returns:
+        Tuple[float, float]: The computed upper and lower band values.
+    """
     med_price = iter_med_price_nb(high, low)
     matr = multiplier * atr
     upper = med_price + matr
@@ -1487,7 +2314,20 @@ def final_basic_bands_nb(
     prev_lower: float,
     prev_direction: int,
 ) -> tp.Tuple[float, float, float, int, float, float]:
-    """Final bands at one iteration."""
+    """Return final basic band values along with trend details for one iteration.
+
+    Args:
+        close (float): The current closing price.
+        upper (float): The upper band value before adjustments.
+        lower (float): The lower band value before adjustments.
+        prev_upper (float): The previous upper band value.
+        prev_lower (float): The previous lower band value.
+        prev_direction (int): The previous direction indicator.
+
+    Returns:
+        Tuple[float, float, float, int, float, float]: A tuple containing the adjusted
+            upper band, lower band, trend, direction, long band, and short band values.
+    """
     if close > prev_upper:
         direction = 1
     elif close < prev_lower:
@@ -1510,10 +2350,16 @@ def final_basic_bands_nb(
 
 @register_jitted(cache=True)
 def supertrend_acc_nb(in_state: SuperTrendAIS) -> SuperTrendAOS:
-    """Accumulator of `supertrend_nb`.
+    """Return an updated state for the supertrend indicator based on the provided input state.
 
-    Takes a state of type `vectorbtpro.indicators.enums.SuperTrendAIS` and returns
-    a state of type `vectorbtpro.indicators.enums.SuperTrendAOS`."""
+    Args:
+        in_state (SuperTrendAIS): The input state of type `vectorbtpro.indicators.enums.SuperTrendAIS`
+            containing price, band, and trend information.
+
+    Returns:
+        SuperTrendAOS: The output state of type `vectorbtpro.indicators.enums.SuperTrendAOS`
+            with updated band and trend values.
+    """
     i = in_state.i
     high = in_state.high
     low = in_state.low
@@ -1575,7 +2421,19 @@ def supertrend_1d_nb(
     period: int = 7,
     multiplier: float = 3.0,
 ) -> tp.Tuple[tp.Array1d, tp.Array1d, tp.Array1d, tp.Array1d]:
-    """Supertrend."""
+    """Return supertrend indicator arrays for a one-dimensional price series.
+
+    Args:
+        high (Array1d): Array of high price values.
+        low (Array1d): Array of low price values.
+        close (Array1d): Array of closing price values.
+        period (int): The period for the supertrend calculation.
+        multiplier (float): The multiplier applied to the average true range.
+
+    Returns:
+        Tuple[Array1d, Array1d, Array1d, Array1d]: A tuple containing
+            the trend, direction, long, and short arrays.
+    """
     trend = np.empty(close.shape, dtype=float_)
     direction = np.empty(close.shape, dtype=int_)
     long = np.empty(close.shape, dtype=float_)
@@ -1641,7 +2499,25 @@ def supertrend_nb(
     period: tp.FlexArray1dLike = 7,
     multiplier: tp.FlexArray1dLike = 3.0,
 ) -> tp.Tuple[tp.Array2d, tp.Array2d, tp.Array2d, tp.Array2d]:
-    """2-dim version of `supertrend_1d_nb`."""
+    """Compute the 2-dim Supertrend indicator.
+
+    Applies the one-dimensional `supertrend_1d_nb` to each column of the input arrays to compute
+    the Supertrend indicator for multi-dimensional data.
+
+    Args:
+        high (Array2d): Array of high prices.
+        low (Array2d): Array of low prices.
+        close (Array2d): Array of close prices.
+        period (FlexArray1dLike): Period(s) for the indicator calculation.
+        multiplier (FlexArray1dLike): Multiplier(s) used to determine the volatility threshold.
+
+    Returns:
+        Tuple[Array2d, Array2d, Array2d, Array2d]: A tuple containing
+            the trend, direction, long, and short arrays.
+
+    !!! tip
+        This function is parallelizable.
+    """
     period_ = to_1d_array_nb(np.asarray(period))
     multiplier_ = to_1d_array_nb(np.asarray(multiplier))
 
@@ -1674,7 +2550,37 @@ def signal_detection_1d_nb(
     mean_influence: tp.Optional[tp.FlexArray1dLike] = None,
     std_influence: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Tuple[tp.Array1d, tp.Array1d, tp.Array1d]:
-    """Signal detection."""
+    """Detect signals from a one-dimensional close price series.
+
+    Analyzes the input array using a moving window defined by `lag` to detect upward or downward
+    signals based on dynamic thresholding with influence factors. Computed signals and corresponding
+    upper/lower bands are returned.
+
+    Args:
+        close (Array1d): Array of close prices.
+        
+        lag (int): Window size for computing moving averages and standard deviations.
+        factor (FlexArray1dLike): Factor(s) to determine the threshold for signal detection.
+        influence (FlexArray1dLike): Influence factor(s) for updating the filtering process.
+        up_factor (Optional[FlexArray1dLike]): Factor for the upward threshold.
+
+            If None, uses `factor`.
+        down_factor (Optional[FlexArray1dLike]): Factor for the downward threshold.
+
+            If None, uses `factor`.
+        mean_influence (Optional[FlexArray1dLike]): Influence factor for updating
+        the moving average filter.
+
+            If None, uses `influence`.
+        std_influence (Optional[FlexArray1dLike]): Influence factor for updating
+        the standard deviation filter.
+
+            If None, uses `influence`.
+
+    Returns:
+        Tuple[Array1d, Array1d, Array1d]: A tuple containing
+            the signal array, upper band, and lower band.
+    """
     factor_ = to_1d_array_nb(np.asarray(factor))
     influence_ = to_1d_array_nb(np.asarray(influence))
     if up_factor is not None:
@@ -1763,7 +2669,38 @@ def signal_detection_nb(
     mean_influence: tp.Optional[tp.FlexArray2dLike] = None,
     std_influence: tp.Optional[tp.FlexArray2dLike] = None,
 ) -> tp.Tuple[tp.Array2d, tp.Array2d, tp.Array2d]:
-    """2-dim version of `signal_detection_1d_nb`."""
+    """Compute the 2-dim signal detection.
+
+    Applies the one-dimensional `signal_detection_1d_nb` function to each column of the input array
+    to detect signals and compute corresponding upper and lower bands for multi-dimensional data.
+
+    Args:
+        close (Array2d): Array of close prices.
+        lag (FlexArray1dLike): Window size(s) for computing moving averages and standard deviations.
+        factor (FlexArray2dLike): Factor to determine the threshold for signal detection.
+        influence (FlexArray2dLike): Influence factor for updating the filtering process.
+        up_factor (Optional[FlexArray2dLike]): Factor for the upward threshold.
+
+            If None, uses `factor`.
+        down_factor (Optional[FlexArray2dLike]): Factor for the downward threshold.
+
+            If None, uses `factor`.
+        mean_influence (Optional[FlexArray2dLike]): Influence factor for updating
+            the moving average filter.
+
+            If None, uses `influence`.
+        std_influence (Optional[FlexArray2dLike]): Influence factor for updating
+            the standard deviation filter.
+
+            If None, uses `influence`.
+
+    Returns:
+        Tuple[Array2d, Array2d, Array2d]: A tuple containing
+            the signal array, upper band, and lower band arrays.
+
+    !!! tip
+        This function is parallelizable.
+    """
     lag_ = to_1d_array_nb(np.asarray(lag))
     factor_ = to_2d_array_nb(np.asarray(factor))
     influence_ = to_2d_array_nb(np.asarray(influence))
@@ -1810,7 +2747,16 @@ def get_standard_hurst_nb(
     max_lag: int = 20,
     stabilize: bool = False,
 ) -> float:
-    """Estimate the Hurst exponent using standard method."""
+    """Estimate the Hurst exponent using the standard method.
+
+    Args:
+        close (Array1d): Array of closing prices.
+        max_lag (int): Maximum lag value to consider in the estimation.
+        stabilize (bool): Flag to enable stabilization in the polynomial fit.
+
+    Returns:
+        float: The estimated Hurst exponent.
+    """
     if max_lag is None:
         lags = np.arange(2, len(close) - 1)
     else:
@@ -1824,7 +2770,14 @@ def get_standard_hurst_nb(
 
 @register_jitted(cache=True)
 def get_rs_nb(close: tp.Array1d) -> float:
-    """Get rescaled range (R/S) for Hurst exponent estimation."""
+    """Compute the rescaled range (R/S) used in Hurst exponent estimation.
+
+    Args:
+        close (Array1d): Array of closing prices.
+
+    Returns:
+        float: The computed R/S ratio, or 0 if the range or standard deviation is zero.
+    """
     incs = close[1:] / close[:-1] - 1.0
     mean_inc = np.sum(incs) / len(incs)
     deviations = incs - mean_inc
@@ -1843,9 +2796,17 @@ def get_log_rs_hurst_nb(
     max_log: int = 2,
     log_step: int = 0.25,
 ) -> float:
-    """Estimate the Hurst exponent using R/S method.
+    """Estimate the Hurst exponent using the R/S method with logarithmically distributed window sizes.
 
-    Windows are log-distributed."""
+    Args:
+        close (Array1d): Array of closing prices.
+        min_log (int): Minimum logarithmic window size.
+        max_log (int): Maximum logarithmic window size.
+        log_step (float): Increment for logarithmic window size.
+
+    Returns:
+        float: The estimated Hurst exponent.
+    """
     max_log = min(max_log, np.log10(len(close) - 1))
     log_range = np.arange(min_log, max_log, log_step)
     windows = np.empty(len(log_range) + 1, dtype=int_)
@@ -1884,9 +2845,17 @@ def get_rs_hurst_nb(
     max_chunk: int = 100,
     num_chunks: int = 5,
 ) -> float:
-    """Estimate the Hurst exponent using R/S method.
+    """Estimate the Hurst exponent using the R/S method with linearly distributed window sizes.
 
-    Windows are linearly distributed."""
+    Args:
+        close (Array1d): Array of closing prices.
+        min_chunk (int): Minimum chunk size for splitting the series.
+        max_chunk (int): Maximum chunk size for splitting the series.
+        num_chunks (int): Number of chunk sizes to use in the estimation.
+
+    Returns:
+        float: The estimated Hurst exponent.
+    """
     diff = close[1:] - close[:-1]
     N = len(diff)
     max_chunk += 1
@@ -1928,9 +2897,17 @@ def get_dma_hurst_nb(
     max_chunk: int = 100,
     num_chunks: int = 5,
 ) -> float:
-    """Estimate the Hurst exponent using DMA method.
+    """Estimate the Hurst exponent using the DMA method with linearly distributed window sizes.
 
-    Windows are linearly distributed."""
+    Args:
+        close (Array1d): Array of closing prices.
+        min_chunk (int): Minimum window size.
+        max_chunk (int): Maximum window size.
+        num_chunks (int): Number of windows to use in the regression.
+
+    Returns:
+        float: The estimated Hurst exponent.
+    """
     max_chunk += 1
     max_chunk = min(max_chunk, len(close) - 1)
     N = len(close)
@@ -1963,7 +2940,14 @@ def get_dma_hurst_nb(
 
 @register_jitted(cache=True)
 def get_dsod_hurst_nb(close: tp.Array1d) -> float:
-    """Estimate the Hurst exponent using discrete second order derivative."""
+    """Estimate the Hurst exponent using the discrete second order derivative method.
+
+    Args:
+        close (Array1d): Array of closing prices.
+
+    Returns:
+        float: The estimated Hurst exponent based on the ratio of variances from second order differences.
+    """
     diff = close[1:] - close[:-1]
     y = np.cumsum(diff)
 
@@ -1994,15 +2978,32 @@ def get_hurst_nb(
     num_chunks: int = 5,
     stabilize: bool = False,
 ) -> float:
-    """Estimate the Hurst exponent using various methods.
+    """Estimate the Hurst exponent using one of several computation methods.
 
     Uses the following methods:
 
-    * `HurstMethod.Standard`: `vectorbtpro.indicators.nb.get_standard_hurst_nb`
-    * `HurstMethod.LogRS`: `vectorbtpro.indicators.nb.get_log_rs_hurst_nb`
-    * `HurstMethod.RS`: `vectorbtpro.indicators.nb.get_rs_hurst_nb`
-    * `HurstMethod.DMA`: `vectorbtpro.indicators.nb.get_dma_hurst_nb`
-    * `HurstMethod.DSOD`: `vectorbtpro.indicators.nb.get_dsod_hurst_nb`
+    * `HurstMethod.Standard`: Calls `vectorbtpro.indicators.nb.get_standard_hurst_nb`.
+    * `HurstMethod.LogRS`: Calls `vectorbtpro.indicators.nb.get_log_rs_hurst_nb`.
+    * `HurstMethod.RS`: Calls `vectorbtpro.indicators.nb.get_rs_hurst_nb`.
+    * `HurstMethod.DMA`: Calls `vectorbtpro.indicators.nb.get_dma_hurst_nb`.
+    * `HurstMethod.DSOD`: Calls `vectorbtpro.indicators.nb.get_dsod_hurst_nb`.
+
+    Args:
+        close (Array1d): One-dimensional array of price data.
+        method (int): Hurst exponent computation method.
+
+            See `vectorbtpro.indicators.enums.HurstMethod` for available options.
+        max_lag (int): Maximum lag parameter for the standard computation.
+        min_log (int): Minimum logarithmic scale for the LogRS method.
+        max_log (int): Maximum logarithmic scale for the LogRS method.
+        log_step (float): Step increment on the logarithmic scale for the LogRS method.
+        min_chunk (int): Minimum chunk size for RS and DMA methods.
+        max_chunk (int): Maximum chunk size for RS and DMA methods.
+        num_chunks (int): Number of chunks for RS and DMA methods.
+        stabilize (bool): If True, applies stabilization during computation.
+
+    Returns:
+        float: Estimated Hurst exponent.
     """
     if method == HurstMethod.Standard:
         return get_standard_hurst_nb(close, max_lag=max_lag, stabilize=stabilize)
@@ -2032,9 +3033,27 @@ def rolling_hurst_1d_nb(
     minp: tp.Optional[int] = None,
     stabilize: bool = False,
 ) -> tp.Array1d:
-    """Rolling version of `get_hurst_nb`.
+    """Compute the rolling Hurst exponent over a one-dimensional array.
 
-    For `method`, see `vectorbtpro.indicators.enums.HurstMethod`."""
+    Args:
+        close (Array1d): One-dimensional array of price data.
+        window (int): Size of the rolling window.
+        method (int): Hurst exponent computation method.
+
+            See `vectorbtpro.indicators.enums.HurstMethod` for details.
+        max_lag (int): Maximum lag parameter for the standard computation.
+        min_log (int): Minimum logarithmic scale for the LogRS method.
+        max_log (int): Maximum logarithmic scale for the LogRS method.
+        log_step (float): Increment on the logarithmic scale for the LogRS method.
+        min_chunk (int): Minimum chunk size for RS and DMA methods.
+        max_chunk (int): Maximum chunk size for RS and DMA methods.
+        num_chunks (int): Number of chunks for RS and DMA methods.
+        minp (Optional[int]): Minimum number of valid observations required within the window.
+        stabilize (bool): If True, applies stabilization during computation.
+
+    Returns:
+        Array1d: Array of rolling Hurst exponent values.
+    """
     if minp is None:
         minp = window
     if minp > window:
@@ -2104,7 +3123,30 @@ def rolling_hurst_nb(
     minp: tp.Optional[int] = None,
     stabilize: bool = False,
 ) -> tp.Array2d:
-    """2-dim version of `rolling_hurst_1d_nb`."""
+    """Compute the rolling Hurst exponent for each column in a two-dimensional array.
+
+    Args:
+        close (Array2d): Two-dimensional array of price data where each column represents a series.
+        window (int): Size of the rolling window.
+        method (int): Hurst exponent computation method.
+
+            See `vectorbtpro.indicators.enums.HurstMethod` for details.
+        max_lag (int): Maximum lag parameter for the standard computation.
+        min_log (int): Minimum logarithmic scale for the LogRS method.
+        max_log (int): Maximum logarithmic scale for the LogRS method.
+        log_step (float): Increment on the logarithmic scale for the LogRS method.
+        min_chunk (int): Minimum chunk size for RS and DMA methods.
+        max_chunk (int): Maximum chunk size for RS and DMA methods.
+        num_chunks (int): Number of chunks for RS and DMA methods.
+        minp (Optional[int]): Minimum number of valid observations required within each rolling window.
+        stabilize (bool): If True, applies stabilization during computation.
+
+    Returns:
+        Array2d: Two-dimensional array of rolling Hurst exponent values for each column.
+
+    !!! tip
+        This function is parallelizable.
+    """
     out = np.empty_like(close, dtype=float_)
     for col in prange(close.shape[1]):
         out[:, col] = rolling_hurst_1d_nb(

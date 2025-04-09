@@ -8,14 +8,14 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Numba-compiled functions for label generation.
+"""Module providing Numba-compiled functions for generating labels.
 
 !!! note
-    Set `wait` to 1 to exclude the current value from calculation of future values.
+    Set `wait` to 1 to exclude the current value from future value calculations.
 
 !!! warning
-    Do not attempt to use these functions for building predictor variables as they may introduce
-    the look-ahead bias to your model - only use for building target variables."""
+    Do not use these functions for building predictor variables as they may introduce look-ahead bias.
+    Use them only for constructing target variables."""
 
 import numpy as np
 from numba import prange
@@ -47,9 +47,21 @@ def future_mean_1d_nb(
     minp: tp.Optional[int] = None,
     adjust: bool = False,
 ) -> tp.Array1d:
-    """Rolling average over future values.
+    """Calculate rolling average over future values.
 
-    For `wtype`, see `vectorbtpro.generic.enums.WType`."""
+    Args:
+        close (Array1d): 1-D array of input values.
+        window (int): Window length for the rolling calculation.
+        wtype (int): Weighting type.
+
+            See `vectorbtpro.generic.enums.WType` for available types.
+        wait (int): Number of periods to delay the result to exclude the current value.
+        minp (Optional[int]): Minimum number of observations required in a window.
+        adjust (bool): Flag indicating whether to adjust weights.
+
+    Returns:
+        Array1d: An array containing the computed rolling averages over future values.
+    """
     future_mean = generic_nb.ma_1d_nb(close[::-1], window, wtype=wtype, minp=minp, adjust=adjust)[::-1]
     if wait > 0:
         return generic_nb.bshift_1d_nb(future_mean, wait)
@@ -77,7 +89,24 @@ def future_mean_nb(
     minp: tp.Optional[int] = None,
     adjust: bool = False,
 ) -> tp.Array2d:
-    """2-dim version of `future_mean_1d_nb`."""
+    """Calculate rolling average over future values for each column.
+
+    Args:
+        close (Array2d): 2-D array of input values.
+        window (FlexArray1dLike): Window size.
+        wtype (FlexArray1dLike): Weighting type.
+
+            See `vectorbtpro.generic.enums.WType` for available types.
+        wait (FlexArray1dLike): Waiting period.
+        minp (Optional[int]): Minimum number of observations required per window.
+        adjust (bool): Flag indicating whether to adjust weights.
+
+    Returns:
+        Array2d: A 2-D array of computed rolling averages over future values for each column.
+
+    !!! tip
+        This function is parallelizable.
+    """
     window_ = to_1d_array_nb(np.asarray(window))
     wtype_ = to_1d_array_nb(np.asarray(wtype))
     wait_ = to_1d_array_nb(np.asarray(wait))
@@ -108,9 +137,22 @@ def future_std_1d_nb(
     adjust: bool = False,
     ddof: int = 0,
 ) -> tp.Array1d:
-    """Rolling standard deviation over future values.
+    """Calculate rolling standard deviation over future values.
 
-    For `wtype`, see `vectorbtpro.generic.enums.WType`."""
+    Args:
+        close (Array1d): 1-D array of input values.
+        window (int): Window length for calculating the standard deviation.
+        wtype (int): Weighting type.
+
+            See `vectorbtpro.generic.enums.WType` for available types.
+        wait (int): Number of periods to delay the result to exclude the current value.
+        minp (Optional[int]): Minimum number of observations required in a window.
+        adjust (bool): Flag indicating whether to adjust weights.
+        ddof (int): Degree of freedom for the standard deviation.
+
+    Returns:
+        Array1d: An array containing the computed rolling standard deviations over future values.
+    """
     future_std = generic_nb.msd_1d_nb(close[::-1], window, wtype=wtype, minp=minp, adjust=adjust, ddof=ddof)[::-1]
     if wait > 0:
         return generic_nb.bshift_1d_nb(future_std, wait)
@@ -140,7 +182,26 @@ def future_std_nb(
     adjust: bool = False,
     ddof: int = 0,
 ) -> tp.Array2d:
-    """2-dim version of `future_std_1d_nb`."""
+    """Calculate rolling standard deviation over future values for each column.
+
+    Args:
+        close (Array2d): 2-D array of input values.
+        window (FlexArray1dLike): Window size.
+        wtype (FlexArray1dLike): Weighting type.
+
+            See `vectorbtpro.generic.enums.WType` for available types.
+        wait (FlexArray1dLike): Waiting period.
+        minp (Optional[int]): Minimum number of observations required per window.
+        adjust (bool): Flag indicating whether to adjust weights.
+        ddof (int): Degree of freedom for the calculation.
+
+    Returns:
+        Array2d: A 2-D array containing the computed rolling standard deviations
+            over future values for each column.
+
+    !!! tip
+        This function is parallelizable.
+    """
     window_ = to_1d_array_nb(np.asarray(window))
     wtype_ = to_1d_array_nb(np.asarray(wtype))
     wait_ = to_1d_array_nb(np.asarray(wait))
@@ -169,7 +230,17 @@ def future_min_1d_nb(
     wait: int = 1,
     minp: tp.Optional[int] = None,
 ) -> tp.Array1d:
-    """Rolling minimum over future values."""
+    """Calculate rolling minimum over future values.
+
+    Args:
+        close (Array1d): 1-D array of input values.
+        window (int): Window length for computing the minimum.
+        wait (int): Number of periods to delay the result to exclude the current value.
+        minp (Optional[int]): Minimum number of observations required in a window.
+
+    Returns:
+        Array1d: An array with the computed rolling minimum values over future values.
+    """
     future_min = generic_nb.rolling_min_1d_nb(close[::-1], window, minp=minp)[::-1]
     if wait > 0:
         return generic_nb.bshift_1d_nb(future_min, wait)
@@ -193,7 +264,20 @@ def future_min_nb(
     wait: tp.FlexArray1dLike = 1,
     minp: tp.Optional[int] = None,
 ) -> tp.Array2d:
-    """2-dim version of `future_min_1d_nb`."""
+    """Calculate rolling minimum over future values for each column.
+
+    Args:
+        close (Array2d): 2-D array of input values.
+        window (FlexArray1dLike): Window size.
+        wait (FlexArray1dLike): Waiting period.
+        minp (Optional[int]): Minimum number of observations required per window.
+
+    Returns:
+        Array2d: A 2-D array containing the computed rolling minimum values over future values for each column.
+
+    !!! tip
+        This function is parallelizable.
+    """
     window_ = to_1d_array_nb(np.asarray(window))
     wait_ = to_1d_array_nb(np.asarray(wait))
 
@@ -218,7 +302,17 @@ def future_max_1d_nb(
     wait: int = 1,
     minp: tp.Optional[int] = None,
 ) -> tp.Array1d:
-    """Rolling maximum over future values."""
+    """Calculate rolling maximum over future values.
+
+    Args:
+        close (Array1d): 1-D array of input values.
+        window (int): Window length for computing the maximum.
+        wait (int): Number of periods to delay the result to exclude the current value.
+        minp (Optional[int]): Minimum number of observations required in a window.
+
+    Returns:
+        Array1d: An array with the computed rolling maximum values over future values.
+    """
     future_max = generic_nb.rolling_max_1d_nb(close[::-1], window, minp=minp)[::-1]
     if wait > 0:
         return generic_nb.bshift_1d_nb(future_max, wait)
@@ -242,7 +336,20 @@ def future_max_nb(
     wait: tp.FlexArray1dLike = 1,
     minp: tp.Optional[int] = None,
 ) -> tp.Array2d:
-    """2-dim version of `future_max_1d_nb`."""
+    """Return a 2-dim array of future maximum values computed for each column of close prices.
+
+    Args:
+        close (Array2d): A two-dimensional array containing close prices.
+        window (FlexArray1dLike): Window length used for calculating the maximum.
+        wait (FlexArray1dLike): Number of periods to wait before starting computation.
+        minp (Optional[int]): Minimum number of valid observations required.
+
+    Returns:
+        Array2d: A two-dimensional array where each column contains the computed future maximum values.
+
+    !!! tip
+        This function is parallelizable.
+    """
     window_ = to_1d_array_nb(np.asarray(window))
     wait_ = to_1d_array_nb(np.asarray(wait))
 
@@ -265,7 +372,15 @@ def fixed_labels_1d_nb(
     close: tp.Array1d,
     n: int = 1,
 ) -> tp.Array1d:
-    """Percentage change of the current value relative to a future value."""
+    """Return the percentage change from the current value to the future value shifted by n periods.
+
+    Args:
+        close (Array1d): A one-dimensional array of close prices.
+        n (int): The period offset used for shifting to compute the future value.
+
+    Returns:
+        Array1d: An array of percentage changes.
+    """
     return (generic_nb.bshift_1d_nb(close, n) - close) / close
 
 
@@ -282,7 +397,18 @@ def fixed_labels_nb(
     close: tp.Array2d,
     n: tp.FlexArray1dLike = 1,
 ) -> tp.Array2d:
-    """2-dim version of `fixed_labels_1d_nb`."""
+    """Return a 2-dim array of percentage changes computed for each column from the current to the future value.
+
+    Args:
+        close (Array2d): Two-dimensional array of close prices.
+        n (FlexArray1dLike): Period offset for computing future values.
+
+    Returns:
+        Array2d: A two-dimensional array where each column contains the computed percentage changes.
+
+    !!! tip
+        This function is parallelizable.
+    """
     n_ = to_1d_array_nb(np.asarray(n))
 
     fixed_labels = np.empty(close.shape, dtype=float_)
@@ -306,9 +432,21 @@ def mean_labels_1d_nb(
     minp: tp.Optional[int] = None,
     adjust: bool = False,
 ) -> tp.Array1d:
-    """Percentage change of the current value relative to the average of a future period.
+    """Return the percentage change of the current value relative to the average of future periods.
 
-    For `wtype`, see `vectorbtpro.generic.enums.WType`."""
+    Args:
+        close (Array2d): Array of close prices.
+        window (FlexArray1dLike): Window length used for calculating the future average.
+        wtype (FlexArray1dLike): Weighting type for averaging.
+
+            Refer to `vectorbtpro.generic.enums.WType` for available options.
+        wait (FlexArray1dLike): Number of periods to wait before applying the window.
+        minp (Optional[int]): Minimum number of valid observations required.
+        adjust (bool): Flag indicating whether to apply an adjustment to the computed average.
+
+    Returns:
+        Array1d: An array of computed percentage changes.
+    """
     future_mean = future_mean_1d_nb(close, window=window, wtype=wtype, wait=wait, minp=minp, adjust=adjust)
     return (future_mean - close) / close
 
@@ -334,7 +472,25 @@ def mean_labels_nb(
     minp: tp.Optional[int] = None,
     adjust: bool = False,
 ) -> tp.Array2d:
-    """2-dim version of `mean_labels_1d_nb`."""
+    """Return a 2-dim array of percentage changes computed for each column,
+    where each value is derived by comparing the current price to the average of future periods.
+
+    Args:
+        close (Array2d): Two-dimensional array of close prices.
+        window (FlexArray1dLike): Window length for computing the future average.
+        wtype (FlexArray1dLike): Weighting type for averaging.
+
+            Refer to `vectorbtpro.generic.enums.WType` for available options.
+        wait (FlexArray1dLike): Number of periods to wait before applying the window.
+        minp (Optional[int]): Minimum number of valid observations required.
+        adjust (bool): Flag indicating whether to adjust the computed average.
+
+    Returns:
+        Array2d: A two-dimensional array where each column contains the computed percentage changes.
+
+    !!! tip
+        This function is parallelizable.
+    """
     window_ = to_1d_array_nb(np.asarray(window))
     wtype_ = to_1d_array_nb(np.asarray(wtype))
     wait_ = to_1d_array_nb(np.asarray(wait))
@@ -357,15 +513,31 @@ def mean_labels_nb(
 
 @register_jitted(cache=True)
 def iter_symmetric_up_th_nb(down_th: float) -> float:
-    """Positive upper threshold that is symmetric to a negative one at one iteration.
+    """Return the symmetric positive threshold corresponding to a given negative
+    threshold for a single iteration.
 
-    For example, 50% down requires 100% to go up to the initial level."""
+    Args:
+        down_th (float): Negative threshold value.
+
+    Returns:
+        float: The calculated positive threshold.
+
+            For example, a 50% drop requires a 100% increase to return to the initial level.
+    """
     return down_th / (1 - down_th)
 
 
 @register_jitted(cache=True)
 def iter_symmetric_down_th_nb(up_th: float) -> float:
-    """Negative upper threshold that is symmetric to a positive one at one iteration."""
+    """Return the symmetric negative threshold corresponding to a given positive
+    threshold for a single iteration.
+
+    Args:
+        up_th (float): Positive threshold value.
+
+    Returns:
+        float: The calculated negative threshold.
+    """
     return up_th / (1 + up_th)
 
 
@@ -376,11 +548,22 @@ def pivots_1d_nb(
     up_th: tp.FlexArray1dLike,
     down_th: tp.FlexArray1dLike,
 ) -> tp.Array1d:
-    """Pivots denoted by 1 (peak), 0 (no pivot) or -1 (valley).
+    """Return an array indicating pivot points in a price series,
+    where 1 represents a peak, -1 represents a valley, and 0 denotes no pivot.
 
-    Two adjacent peak and valley points should exceed the given threshold parameters.
+    Args:
+        high (Array1d): A one-dimensional array of high prices.
+        low (Array1d): A one-dimensional array of low prices.
+        up_th (FlexArray1dLike): Upper threshold(s) for detecting peaks.
+        down_th (FlexArray1dLike): Lower threshold(s) for detecting valleys.
 
-    If any threshold is given element-wise, it will be applied per new/updated pivot."""
+    Returns:
+        Array1d: An array of integer values indicating the detected pivot points.
+
+    !!! note
+        Two adjacent peak and valley points must surpass the respective threshold values.
+        If thresholds are specified element-wise, each new or updated pivot applies its corresponding threshold.
+    """
     up_th_ = to_1d_array_nb(np.asarray(up_th))
     down_th_ = to_1d_array_nb(np.asarray(down_th))
 
@@ -458,7 +641,20 @@ def pivots_nb(
     up_th: tp.FlexArray2dLike,
     down_th: tp.FlexArray2dLike,
 ) -> tp.Array2d:
-    """2-dim version of `pivots_1d_nb`."""
+    """Generate pivot labels column‐wise for two-dimensional input arrays.
+
+    Args:
+        high (Array2d): Two-dimensional array of high values.
+        low (Array2d): Two-dimensional array of low values.
+        up_th (FlexArray2dLike): Two-dimensional flexible array representing upper thresholds.
+        down_th (FlexArray2dLike): Two-dimensional flexible array representing lower thresholds.
+
+    Returns:
+        Array2d: Two-dimensional integer array containing pivot labels.
+
+    !!! tip
+        This function is parallelizable.
+    """
     up_th_ = to_2d_array_nb(np.asarray(up_th))
     down_th_ = to_2d_array_nb(np.asarray(down_th))
 
@@ -478,7 +674,14 @@ def pivots_nb(
 
 @register_jitted(cache=True)
 def bin_trend_labels_1d_nb(pivots: tp.Array1d) -> tp.Array1d:
-    """Values classified into 0 (downtrend) and 1 (uptrend)."""
+    """Classify trend labels for a one-dimensional array of pivots.
+
+    Args:
+        pivots (Array1d): One-dimensional array of pivot indicators.
+
+    Returns:
+        Array1d: One-dimensional array with trend labels where 0 indicates downtrend and 1 indicates uptrend.
+    """
     bin_trend_labels = np.full(pivots.shape, np.nan, dtype=float_)
     idxs = np.flatnonzero(pivots)
     if idxs.shape[0] == 0:
@@ -506,7 +709,19 @@ def bin_trend_labels_1d_nb(pivots: tp.Array1d) -> tp.Array1d:
 )
 @register_jitted(cache=True, tags={"can_parallel"})
 def bin_trend_labels_nb(pivots: tp.Array2d) -> tp.Array2d:
-    """2-dim version of `bin_trend_labels_1d_nb`."""
+    """Generate trend labels for two-dimensional pivot arrays by applying
+    one-dimensional classification column‐wise.
+
+    Args:
+        pivots (Array2d): Two-dimensional array of pivot indicators.
+
+    Returns:
+        Array2d: Two-dimensional array where each column contains trend labels
+            (0 for downtrend and 1 for uptrend).
+
+    !!! tip
+        This function is parallelizable.
+    """
     bin_trend_labels = np.empty(pivots.shape, dtype=float_)
     for col in prange(pivots.shape[1]):
         bin_trend_labels[:, col] = bin_trend_labels_1d_nb(pivots[:, col])
@@ -515,7 +730,16 @@ def bin_trend_labels_nb(pivots: tp.Array2d) -> tp.Array2d:
 
 @register_jitted(cache=True)
 def binc_trend_labels_1d_nb(high: tp.Array1d, low: tp.Array1d, pivots: tp.Array1d) -> tp.Array1d:
-    """Median values normalized between 0 (downtrend) and 1 (uptrend)."""
+    """Compute normalized trend labels for one-dimensional arrays based on median values.
+
+    Args:
+        high (Array1d): One-dimensional array of high values.
+        low (Array1d): One-dimensional array of low values.
+        pivots (Array1d): One-dimensional array of pivot indicators.
+
+    Returns:
+        Array1d: One-dimensional array of trend labels normalized between 0 (downtrend) and 1 (uptrend).
+    """
     binc_trend_labels = np.full(pivots.shape, np.nan, dtype=float_)
     idxs = np.flatnonzero(pivots[:])
     if idxs.shape[0] == 0:
@@ -545,7 +769,19 @@ def binc_trend_labels_1d_nb(high: tp.Array1d, low: tp.Array1d, pivots: tp.Array1
 )
 @register_jitted(cache=True, tags={"can_parallel"})
 def binc_trend_labels_nb(high: tp.Array2d, low: tp.Array2d, pivots: tp.Array2d) -> tp.Array2d:
-    """2-dim version of `binc_trend_labels_1d_nb`."""
+    """Apply one-dimensional median-based normalization for trend labels to two-dimensional arrays column‐wise.
+
+    Args:
+        high (Array2d): Two-dimensional array of high values.
+        low (Array2d): Two-dimensional array of low values.
+        pivots (Array2d): Two-dimensional array of pivot indicators.
+
+    Returns:
+        Array2d: Two-dimensional array of normalized trend labels.
+
+    !!! tip
+        This function is parallelizable.
+    """
     binc_trend_labels = np.empty(pivots.shape, dtype=float_)
     for col in prange(pivots.shape[1]):
         binc_trend_labels[:, col] = binc_trend_labels_1d_nb(high[:, col], low[:, col], pivots[:, col])
@@ -560,8 +796,20 @@ def bincs_trend_labels_1d_nb(
     up_th: tp.FlexArray1dLike,
     down_th: tp.FlexArray1dLike,
 ) -> tp.Array1d:
-    """Median values normalized between 0 (downtrend) and 1 (uptrend) but capped once
-    the threshold defined at the beginning of the trend is exceeded."""
+    """Compute capped trend labels for one-dimensional arrays by normalizing
+    median values with applied thresholds.
+
+    Args:
+        high (Array1d): One-dimensional array of high values.
+        low (Array1d): One-dimensional array of low values.
+        pivots (Array1d): One-dimensional array of pivot indicators.
+        up_th (FlexArray1dLike): One-dimensional flexible array representing the upper threshold.
+        down_th (FlexArray1dLike): One-dimensional flexible array representing the lower threshold.
+
+    Returns:
+        Array1d: One-dimensional array of capped trend labels normalized
+            between 0 (downtrend) and 1 (uptrend).
+    """
     up_th_ = to_1d_array_nb(np.asarray(up_th))
     down_th_ = to_1d_array_nb(np.asarray(down_th))
 
@@ -620,7 +868,23 @@ def bincs_trend_labels_nb(
     up_th: tp.FlexArray2dLike,
     down_th: tp.FlexArray2dLike,
 ) -> tp.Array2d:
-    """2-dim version of `bincs_trend_labels_1d_nb`."""
+    """Compute capped trend labels for two-dimensional arrays by applying
+    one-dimensional capped normalization column‐wise.
+
+    Args:
+        high (Array2d): Two-dimensional array of high values.
+        low (Array2d): Two-dimensional array of low values.
+        pivots (Array2d): Two-dimensional array of pivot signals.
+        up_th (FlexArray2dLike): Two-dimensional flexible array for upper thresholds.
+        down_th (FlexArray2dLike): Two-dimensional flexible array for lower thresholds.
+
+    Returns:
+        Array2d: Two-dimensional array of capped trend labels normalized between
+            0 (downtrend) and 1 (uptrend).
+
+    !!! tip
+        This function is parallelizable.
+    """
     up_th_ = to_2d_array_nb(np.asarray(up_th))
     down_th_ = to_2d_array_nb(np.asarray(down_th))
 
@@ -643,7 +907,17 @@ def pct_trend_labels_1d_nb(
     pivots: tp.Array1d,
     normalize: bool = False,
 ) -> tp.Array1d:
-    """Percentage change of median values relative to the next pivot."""
+    """Compute percentage change of median prices relative to the subsequent pivot.
+
+    Args:
+        high (Array1d): 1D array of high prices.
+        low (Array1d): 1D array of low prices.
+        pivots (Array1d): 1D array marking pivot events.
+        normalize (bool): Flag to determine if the percentage change is normalized.
+
+    Returns:
+        Array1d: Array of percentage changes with non-pivot positions set to NaN.
+    """
     pct_trend_labels = np.full(pivots.shape, np.nan, dtype=float_)
     idxs = np.flatnonzero(pivots)
     if idxs.shape[0] == 0:
@@ -686,7 +960,20 @@ def pct_trend_labels_nb(
     pivots: tp.Array2d,
     normalize: bool = False,
 ) -> tp.Array2d:
-    """2-dim version of `pct_trend_labels_1d_nb`."""
+    """Compute 2D percentage change of median prices relative to the subsequent pivot for each column.
+
+    Args:
+        high (Array2d): 2D array of high prices.
+        low (Array2d): 2D array of low prices.
+        pivots (Array2d): 2D array indicating pivot events.
+        normalize (bool): Flag to determine if the percentage change is normalized.
+
+    Returns:
+        Array2d: 2D array of percentage changes.
+
+    !!! tip
+        This function is parallelizable.
+    """
     pct_trend_labels = np.empty(pivots.shape, dtype=float_)
     for col in prange(pivots.shape[1]):
         pct_trend_labels[:, col] = pct_trend_labels_1d_nb(
@@ -706,7 +993,18 @@ def trend_labels_1d_nb(
     down_th: tp.FlexArray1dLike,
     mode: int = TrendLabelMode.Binary,
 ) -> tp.Array2d:
-    """Trend labels based on `vectorbtpro.labels.enums.TrendLabelMode`."""
+    """Generate trend labels for a 1D price series based on specified thresholds and mode.
+
+    Args:
+        high (Array1d): 1D array of high prices.
+        low (Array1d): 1D array of low prices.
+        up_th (FlexArray1dLike): 1D flexible array for upper threshold values.
+        down_th (FlexArray1dLike): 1D flexible array for lower threshold values.
+        mode (int): Trend mode selected from `TrendLabelMode`.
+
+    Returns:
+        Array2d: 2D array of trend labels determined by the specified mode.
+    """
     pivots = pivots_1d_nb(high, low, up_th, down_th)
     if mode == TrendLabelMode.Binary:
         return bin_trend_labels_1d_nb(pivots)
@@ -740,7 +1038,21 @@ def trend_labels_nb(
     down_th: tp.FlexArray2dLike,
     mode: tp.FlexArray1dLike = TrendLabelMode.Binary,
 ) -> tp.Array2d:
-    """2-dim version of `trend_labels_1d_nb`."""
+    """Compute 2D trend labels for each column from high and low prices using specified thresholds and mode.
+
+    Args:
+        high (Array2d): 2D array of high prices.
+        low (Array2d): 2D array of low prices.
+        up_th (FlexArray2dLike): 2D flexible array representing upper threshold values.
+        down_th (FlexArray2dLike): 2D flexible array representing lower threshold values.
+        mode (FlexArray1dLike): 1D flexible array indicating the trend mode from `TrendLabelMode`.
+
+    Returns:
+        Array2d: 2D array of computed trend labels.
+
+    !!! tip
+        This function is parallelizable.
+    """
     up_th_ = to_2d_array_nb(np.asarray(up_th))
     down_th_ = to_2d_array_nb(np.asarray(down_th))
     mode_ = to_1d_array_nb(np.asarray(mode))
@@ -769,10 +1081,25 @@ def breakout_labels_1d_nb(
     down_th: tp.FlexArray1dLike = np.inf,
     wait: int = 1,
 ) -> tp.Array1d:
-    """For each value, return 1 if any value in the next period is greater than the
-    positive threshold (in %), -1 if less than the negative threshold, and 0 otherwise.
+    """Compute breakout labels for a 1D price series based on future price comparisons.
 
-    First hit wins. Continue search if both thresholds were hit at the same time."""
+    For each index in the input series, the function searches forward over a specified window:
+
+    * Returns 1 if a future high price exceeds the calculated positive breakout threshold.
+    * Returns -1 if a future low price falls below the calculated negative breakout threshold.
+    * Returns 0 if no breakout is identified or if both thresholds are met simultaneously.
+
+    Args:
+        high (Array1d): 1D array of high prices.
+        low (Array1d): 1D array of low prices.
+        window (int): Number of periods to search for breakout events.
+        up_th (FlexArray1dLike): 1D flexible array representing the positive threshold factor.
+        down_th (FlexArray1dLike): 1D flexible array representing the negative threshold factor.
+        wait (int): Number of periods to delay before starting the breakout search.
+
+    Returns:
+        Array1d: Array of breakout labels with values 1, -1, or 0.
+    """
     up_th_ = to_1d_array_nb(np.asarray(up_th))
     down_th_ = to_1d_array_nb(np.asarray(down_th))
 
@@ -818,7 +1145,22 @@ def breakout_labels_nb(
     down_th: tp.FlexArray2dLike = np.inf,
     wait: tp.FlexArray1dLike = 1,
 ) -> tp.Array2d:
-    """2-dim version of `breakout_labels_1d_nb`."""
+    """Compute 2D breakout labels for each column based on future price comparisons.
+
+    Args:
+        high (Array2d): 2D array of high prices.
+        low (Array2d): 2D array of low prices.
+        window (FlexArray1dLike): 1D flexible array specifying the window length for breakout detection.
+        up_th (FlexArray2dLike): 2D flexible array representing the positive threshold factors.
+        down_th (FlexArray2dLike): 2D flexible array representing the negative threshold factors.
+        wait (FlexArray1dLike): 1D flexible array specifying the wait period before starting detection.
+
+    Returns:
+        Array2d: 2D array of breakout labels.
+
+    !!! tip
+        This function is parallelizable.
+    """
     window_ = to_1d_array_nb(np.asarray(window))
     up_th_ = to_2d_array_nb(np.asarray(up_th))
     down_th_ = to_2d_array_nb(np.asarray(down_th))

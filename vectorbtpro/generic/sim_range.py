@@ -37,6 +37,17 @@ class SimRangeMixin(Base):
         sim_end (Optional[Array1d]): Simulation end indices.
     """
 
+    def __init__(
+        self,
+        sim_start: tp.Optional[tp.Array1d] = None,
+        sim_end: tp.Optional[tp.Array1d] = None,
+    ) -> None:
+        sim_start = type(self).resolve_sim_start(sim_start=sim_start, wrapper=self.wrapper, group_by=False)
+        sim_end = type(self).resolve_sim_end(sim_end=sim_end, wrapper=self.wrapper, group_by=False)
+
+        self._sim_start = sim_start
+        self._sim_end = sim_end
+
     @classmethod
     def row_stack_sim_start(
         cls,
@@ -186,17 +197,6 @@ class SimRangeMixin(Base):
         else:
             new_sim_end = None
         return new_sim_end
-
-    def __init__(
-        self,
-        sim_start: tp.Optional[tp.Array1d] = None,
-        sim_end: tp.Optional[tp.Array1d] = None,
-    ) -> None:
-        sim_start = type(self).resolve_sim_start(sim_start=sim_start, wrapper=self.wrapper, group_by=False)
-        sim_end = type(self).resolve_sim_end(sim_end=sim_end, wrapper=self.wrapper, group_by=False)
-
-        self._sim_start = sim_start
-        self._sim_end = sim_end
 
     def sim_start_indexing_func(self, wrapper_meta: dict) -> tp.Optional[tp.ArrayLike]:
         """Index simulation start.

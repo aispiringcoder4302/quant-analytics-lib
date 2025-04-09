@@ -55,14 +55,49 @@ class PriceRecords(Records):
     """Extends `vectorbtpro.records.base.Records` for records that can make use of OHLC data.
 
     Args:
-        wrapper (ArrayWrapper): Data wrapper for array manipulation.
+        wrapper (ArrayWrapper): Wrapper instance.
         records_arr (RecordArray): Array of records.
         open (Optional[ArrayLike]): Array of open prices.
         high (Optional[ArrayLike]): Array of high prices.
         low (Optional[ArrayLike]): Array of low prices.
         close (Optional[ArrayLike]): Array of close prices.
-        kwargs: Additional keyword arguments.
+        kwargs: Additional keyword arguments passed to `vectorbtpro.records.base.Records`.
     """
+
+    def __init__(
+        self,
+        wrapper: ArrayWrapper,
+        records_arr: tp.RecordArray,
+        open: tp.Optional[tp.ArrayLike] = None,
+        high: tp.Optional[tp.ArrayLike] = None,
+        low: tp.Optional[tp.ArrayLike] = None,
+        close: tp.Optional[tp.ArrayLike] = None,
+        **kwargs,
+    ) -> None:
+        Records.__init__(
+            self,
+            wrapper,
+            records_arr,
+            open=open,
+            high=high,
+            low=low,
+            close=close,
+            **kwargs,
+        )
+
+        if open is not None:
+            open = to_2d_array(open)
+        if high is not None:
+            high = to_2d_array(high)
+        if low is not None:
+            low = to_2d_array(low)
+        if close is not None:
+            close = to_2d_array(close)
+
+        self._open = open
+        self._high = high
+        self._low = low
+        self._close = close
 
     @classmethod
     def from_records(
@@ -80,7 +115,7 @@ class PriceRecords(Records):
         """Build `PriceRecords` from records.
 
         Args:
-            wrapper (ArrayWrapper): Array wrapper for handling arrays.
+            wrapper (ArrayWrapper): Wrapper instance.
             records (RecordArray): Array of records.
             data (Optional[Data]): Data object containing OHLC data.
             open (Optional[ArrayLike]): Array of open prices.
@@ -204,41 +239,6 @@ class PriceRecords(Records):
                             new_price = new_price.vbt.ffill()
                     kwargs[price_name] = new_price.values
         return kwargs
-
-    def __init__(
-        self,
-        wrapper: ArrayWrapper,
-        records_arr: tp.RecordArray,
-        open: tp.Optional[tp.ArrayLike] = None,
-        high: tp.Optional[tp.ArrayLike] = None,
-        low: tp.Optional[tp.ArrayLike] = None,
-        close: tp.Optional[tp.ArrayLike] = None,
-        **kwargs,
-    ) -> None:
-        Records.__init__(
-            self,
-            wrapper,
-            records_arr,
-            open=open,
-            high=high,
-            low=low,
-            close=close,
-            **kwargs,
-        )
-
-        if open is not None:
-            open = to_2d_array(open)
-        if high is not None:
-            high = to_2d_array(high)
-        if low is not None:
-            low = to_2d_array(low)
-        if close is not None:
-            close = to_2d_array(close)
-
-        self._open = open
-        self._high = high
-        self._low = low
-        self._close = close
 
     def indexing_func_meta(self, *args, records_meta: tp.DictLike = None, **kwargs) -> dict:
         """Perform indexing on `PriceRecords` and return updated metadata.

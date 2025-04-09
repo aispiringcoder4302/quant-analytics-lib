@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Functions for reshaping arrays.
+"""Module providing functions for reshaping arrays.
 
 Reshape functions transform a Pandas object/NumPy array in some way.
 """
@@ -985,15 +985,15 @@ class BCO(DefineMixin):
     """A function to post-process the output array.
     """
 
-    require_kwargs: tp.Optional[tp.Kwargs] = define.field(default=None)
+    require_kwargs: tp.KwargsLike = define.field(default=None)
     """Keyword arguments for `np.require`.
     """
 
-    reindex_kwargs: tp.Optional[tp.Kwargs] = define.field(default=None)
+    reindex_kwargs: tp.KwargsLike = define.field(default=None)
     """Keyword arguments for `pd.DataFrame.reindex`.
     """
 
-    merge_kwargs: tp.Optional[tp.Kwargs] = define.field(default=None)
+    merge_kwargs: tp.KwargsLike = define.field(default=None)
     """Keyword arguments for `vectorbtpro.base.merging.column_stack_merge`.
     """
 
@@ -1074,9 +1074,9 @@ def broadcast(
     min_ndim: tp.MaybeMappingSequence[tp.Optional[int]] = None,
     expand_axis: tp.MaybeMappingSequence[tp.Optional[int]] = None,
     post_func: tp.MaybeMappingSequence[tp.Optional[tp.Callable]] = None,
-    require_kwargs: tp.MaybeMappingSequence[tp.Optional[tp.Kwargs]] = None,
-    reindex_kwargs: tp.MaybeMappingSequence[tp.Optional[tp.Kwargs]] = None,
-    merge_kwargs: tp.MaybeMappingSequence[tp.Optional[tp.Kwargs]] = None,
+    require_kwargs: tp.MaybeMappingSequence[tp.KwargsLike] = None,
+    reindex_kwargs: tp.MaybeMappingSequence[tp.KwargsLike] = None,
+    merge_kwargs: tp.MaybeMappingSequence[tp.KwargsLike] = None,
     tile: tp.Union[None, int, tp.IndexLike] = None,
     random_subset: tp.Optional[int] = None,
     seed: tp.Optional[int] = None,
@@ -1135,17 +1135,17 @@ def broadcast(
         post_func (MaybeMappingSequence[Optional[Callable]]): See `BCO.post_func`.
 
             Applied only when `keep_flex` is False.
-        require_kwargs (MaybeMappingSequence[Optional[Kwargs]]): See `BCO.require_kwargs`.
+        require_kwargs (MaybeMappingSequence[KwargsLike]): See `BCO.require_kwargs`.
 
             The provided values are merged with any argument-specific configuration.
 
             If the mapping contains all keys in `np.require`, it applies to all objects.
-        reindex_kwargs (MaybeMappingSequence[Optional[Kwargs]]): See `BCO.reindex_kwargs`.
+        reindex_kwargs (MaybeMappingSequence[KwargsLike]): See `BCO.reindex_kwargs`.
 
             The provided values are merged with any argument-specific configuration.
 
             If the mapping contains all keys in `pd.DataFrame.reindex`, it applies to all objects.
-        merge_kwargs (MaybeMappingSequence[Optional[Kwargs]]): See `BCO.merge_kwargs`.
+        merge_kwargs (MaybeMappingSequence[KwargsLike]): See `BCO.merge_kwargs`.
 
             The provided values are merged with any argument-specific configuration.
 

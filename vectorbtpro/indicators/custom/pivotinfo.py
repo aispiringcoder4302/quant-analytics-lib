@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module with `PIVOTINFO`."""
+"""Module providing the `PIVOTINFO` indicator."""
 
 import pandas as pd
 
@@ -79,18 +79,19 @@ PIVOTINFO = IndicatorFactory(
 
 
 class _PIVOTINFO(PIVOTINFO):
-    """Indicator that returns various information on pivots identified based on thresholds.
+    """Indicator returning various pivot analysis metrics based on predefined thresholds.
 
-    * `conf_pivot` (`vectorbtpro.indicators.enums.Pivot`): the type of the latest confirmed pivot (running)
-    * `conf_idx`: the index of the latest confirmed pivot (running)
-    * `conf_value`: the high/low value under the latest confirmed pivot (running)
-    * `last_pivot` (`vectorbtpro.indicators.enums.Pivot`): the type of the latest pivot (running)
-    * `last_idx`: the index of the latest pivot (running)
-    * `last_value`: the high/low value under the latest pivot (running)
-    * `pivots` (`vectorbtpro.indicators.enums.Pivot`): confirmed pivots stored under their indices
-        (looking ahead - use only for plotting!)
-    * `modes` (`vectorbtpro.indicators.enums.TrendMode`): modes between confirmed pivot points
-        (looking ahead - use only for plotting!)
+    Attributes:
+        `conf_pivot` (Pivot): Type of the latest confirmed pivot (running).
+        `conf_idx` (int): Index of the latest confirmed pivot (running).
+        `conf_value` (float): High/low value under the latest confirmed pivot (running).
+        `last_pivot` (Pivot): Type of the latest pivot (running).
+        `last_idx` (int): Index of the latest pivot (running).
+        `last_value` (float): High/low value under the latest pivot (running).
+        `pivots` (Pivot): Confirmed pivots stored by their indices
+            (looking ahead - use only for plotting).
+        `modes` (TrendMode): Trend modes between confirmed pivot points
+            (looking ahead - use only for plotting).
     """
 
     def plot(
@@ -102,15 +103,20 @@ class _PIVOTINFO(PIVOTINFO):
         fig: tp.Optional[tp.BaseFigure] = None,
         **layout_kwargs,
     ) -> tp.BaseFigure:
-        """Plot `PIVOTINFO.conf_value` and `PIVOTINFO.last_value`.
+        """Plot the confirmed and last pivot value lines on a figure.
 
         Args:
             column (str): Name of the column to plot.
-            conf_value_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter` for `PIVOTINFO.conf_value` line.
-            last_value_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter` for `PIVOTINFO.last_value` line.
+            conf_value_trace_kwargs (dict): Keyword arguments passed to
+                `plotly.graph_objects.Scatter` for the `PIVOTINFO.conf_value` line.
+            last_value_trace_kwargs (dict): Keyword arguments passed to
+                `plotly.graph_objects.Scatter` for the `PIVOTINFO.last_value` line.
             add_trace_kwargs (dict): Keyword arguments passed to `fig.add_trace` when adding each trace.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
-            **layout_kwargs: Keyword arguments for configuring the figure layout.
+            **layout_kwargs: Additional keyword arguments for configuring the figure layout.
+
+        Returns:
+            BaseFigure: The updated figure with the plotted confirmed and last pivot values.
 
         Usage:
             ```pycon
@@ -166,14 +172,18 @@ class _PIVOTINFO(PIVOTINFO):
         fig: tp.Optional[tp.BaseFigure] = None,
         **layout_kwargs,
     ) -> tp.BaseFigure:
-        """Plot zig-zag line.
+        """Plot the zigzag line based on pivot data.
 
         Args:
             column (str): Name of the column to plot.
-            zigzag_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter` for zig-zag line.
+
+            zigzag_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter` for the zigzag line.
             add_trace_kwargs (dict): Keyword arguments passed to `fig.add_trace` when adding each trace.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
-            **layout_kwargs: Keyword arguments for configuring the figure layout.
+            **layout_kwargs: Additional keyword arguments for configuring the figure layout.
+
+        Returns:
+            BaseFigure: The updated figure with the plotted zigzag line.
 
         Usage:
             ```pycon

@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module with `VWAP`."""
+"""Module providing the `VWAP` indicator."""
 
 import numpy as np
 
@@ -27,7 +27,19 @@ __pdoc__ = {}
 
 
 def substitute_anchor(wrapper: ArrayWrapper, anchor: tp.Optional[tp.FrequencyLike]) -> tp.Array1d:
-    """Substitute reset frequency by group lens."""
+    """Substitute the reset frequency with group lengths.
+
+    Computes group lengths based on the provided `anchor`. If `anchor` is None, returns an array
+    with the number of rows in the wrapper; otherwise, calculates group lengths using the
+    wrapper's index grouper.
+
+    Args:
+        wrapper (ArrayWrapper): Wrapper instance.
+        anchor (Optional[FrequencyLike]): The reset frequency for grouping.
+
+    Returns:
+        Array1d: An array containing the group lengths.
+    """
     if anchor is None:
         return np.array([wrapper.shape[0]])
     return wrapper.get_index_grouper(anchor).get_group_lens()
@@ -50,14 +62,15 @@ VWAP = IndicatorFactory(
 
 
 class _VWAP(VWAP):
-    """Volume-Weighted Average Price (VWAP).
+    """Volume-Weighted Average Price (VWAP)
 
-    VWAP is a technical analysis indicator used on intraday charts that resets at the start
-    of every new trading session.
+    Calculates the volume-weighted average price commonly used in intraday charts.
+    The calculation resets at the beginning of each trading session.
 
     See [Volume-Weighted Average Price (VWAP)](https://www.investopedia.com/terms/v/vwap.asp).
 
-    Anchor can be any index grouper."""
+    The `anchor` parameter specifies the grouping for when the VWAP resets and can be any valid index grouper.
+    """
 
     def plot(
         self,
@@ -69,17 +82,22 @@ class _VWAP(VWAP):
         fig: tp.Optional[tp.BaseFigure] = None,
         **layout_kwargs,
     ) -> tp.BaseFigure:
-        """Plot `VWAP.vwap` against `VWAP.close`.
+        """Plot `VWAP.vwap` against `VWAP.close` values.
 
         Args:
-            column (str): Name of the column to plot.
-            plot_close (bool): Whether to plot `VWAP.close`.
-            close_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter` for `VWAP.close`.
-            vwap_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter` for `VWAP.vwap`.
-            add_trace_kwargs (dict): Keyword arguments passed to `fig.add_trace` when adding each trace.
-            fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
+            column (str): The name of the column to plot.
+            plot_close (bool): Whether to include the `VWAP.close` values in the plot.
+            close_trace_kwargs (dict): Additional keyword arguments for
+                `plotly.graph_objects.Scatter` used to plot `VWAP.close`.
+            vwap_trace_kwargs (dict): Additional keyword arguments for
+                `plotly.graph_objects.Scatter` used to plot `VWAP.vwap`.
+            add_trace_kwargs (dict): Additional keyword arguments for `fig.add_trace` when adding each trace.
+            fig (Optional[BaseFigure]): The figure to update; if None, a new figure is created.
             **layout_kwargs: Keyword arguments for configuring the figure layout.
-
+        
+        Returns:
+            BaseFigure: The updated figure containing the plotted traces.
+        
         Usage:
             ```pycon
             >>> vbt.VWAP.run(
@@ -90,7 +108,7 @@ class _VWAP(VWAP):
             ...    anchor="W"
             ... ).plot().show()
             ```
-
+            
             ![](/assets/images/api/VWAP.light.svg#only-light){: .iimg loading=lazy }
             ![](/assets/images/api/VWAP.dark.svg#only-dark){: .iimg loading=lazy }
         """

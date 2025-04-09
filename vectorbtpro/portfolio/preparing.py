@@ -74,8 +74,8 @@ class PFPrepResult(Configured):
     def __init__(
         self,
         target_func: tp.Optional[tp.Callable] = None,
-        target_args: tp.Optional[tp.Kwargs] = None,
-        pf_args: tp.Optional[tp.Kwargs] = None,
+        target_args: tp.KwargsLike = None,
+        pf_args: tp.KwargsLike = None,
         **kwargs,
     ) -> None:
         Configured.__init__(
@@ -97,7 +97,7 @@ class PFPrepResult(Configured):
         return self.config["target_args"]
 
     @cachedproperty
-    def pf_args(self) -> tp.Optional[tp.Kwargs]:
+    def pf_args(self) -> tp.KwargsLike:
         """Portfolio arguments."""
         return self.config["pf_args"]
 
@@ -546,7 +546,7 @@ class BasePFPreparer(BasePreparer):
     # ############# Result ############# #
 
     @cachedproperty
-    def pf_args(self) -> tp.Optional[tp.Kwargs]:
+    def pf_args(self) -> tp.KwargsLike:
         """Arguments to be passed to the portfolio."""
         kwargs = dict()
         for k, v in self.config.items():
@@ -1804,7 +1804,7 @@ class FSPreparer(BasePFPreparer):
         return target_arg_map
 
     @cachedproperty
-    def pf_args(self) -> tp.Optional[tp.Kwargs]:
+    def pf_args(self) -> tp.KwargsLike:
         pf_args = dict(BasePFPreparer.pf_args.func(self))
         pf_args["orders_cls"] = FSOrders
         return pf_args

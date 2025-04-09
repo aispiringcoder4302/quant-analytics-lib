@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Base class for managing drawdown records.
+"""Module with a base class for managing drawdown records.
 
 Drawdown records capture critical information about drawdown intervals and are
 implemented as a subclass of `vectorbtpro.generic.ranges.Ranges`.
@@ -1037,6 +1037,9 @@ class Drawdowns(Ranges):
             yref (str): Y-axis reference.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
             **layout_kwargs: Keyword arguments for configuring the figure layout.
+
+        Returns:
+            BaseFigure: A figure object containing the plotted drawdowns and price data.
 
         Usage:
             ```pycon

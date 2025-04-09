@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module with `HURST`."""
+"""Module defining the `HURST` indicator."""
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.indicators import nb
@@ -63,7 +63,10 @@ HURST = IndicatorFactory(
 
 
 class _HURST(HURST):
-    """Moving Hurst exponent (HURST)."""
+    """Compute the moving Hurst exponent using a rolling window.
+
+    This indicator measures the long-term memory of a time series.
+    """
 
     def plot(
         self,
@@ -73,14 +76,18 @@ class _HURST(HURST):
         fig: tp.Optional[tp.BaseFigure] = None,
         **layout_kwargs,
     ) -> tp.BaseFigure:
-        """Plot `HURST.hurst`.
+        """Plot the HURST traces.
 
         Args:
             column (str): Name of the column to plot.
-            hurst_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter` for `HURST.hurst`.
+            hurst_trace_kwargs (dict): Keyword arguments passed to
+                `plotly.graph_objects.Scatter` for plotting `HURST.hurst`.
             add_trace_kwargs (dict): Keyword arguments passed to `fig.add_trace` when adding each trace.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
             **layout_kwargs: Keyword arguments for configuring the figure layout.
+
+        Returns:
+            BaseFigure: The figure updated with the Hurst exponent plot.
 
         Usage:
             ```pycon

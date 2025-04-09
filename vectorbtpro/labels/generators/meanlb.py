@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module with `MEANLB`."""
+"""Module providing the `MEANLB` indicator."""
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.generic import enums as generic_enums
@@ -45,12 +45,18 @@ MEANLB = IndicatorFactory(
 
 
 class _MEANLB(MEANLB):
-    """Label generator based on `vectorbtpro.labels.nb.mean_labels_nb`."""
+    """Class generating labels using `vectorbtpro.labels.nb.mean_labels_nb`."""
 
     def plot(self, column: tp.Optional[tp.Label] = None, **kwargs) -> tp.BaseFigure:
-        """Plot `close` and overlay it with the heatmap of `MEANLB.labels`.
+        """Plot the `close` data and overlay it with a heatmap of `MEANLB.labels`.
 
-        `**kwargs` are passed to `vectorbtpro.generic.accessors.GenericAccessor.overlay_with_heatmap`.
+        Args:
+            column (Optional[Label]): Column to select for plotting.
+            **kwargs: Keyword arguments passed to
+                `vectorbtpro.generic.accessors.GenericAccessor.overlay_with_heatmap`.
+
+        Returns:
+            BaseFigure: A figure displaying the overlaid heatmap.
 
         Usage:
             ```pycon

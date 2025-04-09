@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Base plotting functions.
+"""Module providing base plotting functions.
 
 Provides functions to visualize data using interactive figure widgets that integrate with
 ipywidgets in Jupyter Notebook and JupyterLab.

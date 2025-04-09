@@ -1961,7 +1961,36 @@ __pdoc__[
 @attach_fields
 @override_field_config(pattern_ranges_field_config)
 class PatternRanges(Ranges):
-    """Class for working with range records generated from pattern search, extending `Ranges`."""
+    """Class for working with range records generated from pattern search, extending `Ranges`.
+
+    Args:
+        wrapper (ArrayWrapper): Wrapper instance.
+        records_arr (RecordArray): Array of records.
+        search_configs (List[PSC]): List of `PSC` instances.
+        **kwargs: Additional keyword arguments passed to `Ranges`.
+    """
+
+    def __init__(
+        self,
+        wrapper: ArrayWrapper,
+        records_arr: tp.RecordArray,
+        search_configs: tp.List[PSC],
+        **kwargs,
+    ) -> None:
+        Ranges.__init__(
+            self,
+            wrapper,
+            records_arr,
+            search_configs=search_configs,
+            **kwargs,
+        )
+
+        self._search_configs = search_configs
+
+    @property
+    def search_configs(self) -> tp.List[PSC]:
+        """Return a list of `PSC` instances, one for each column."""
+        return self._search_configs
 
     @property
     def field_config(self) -> Config:
@@ -2354,23 +2383,6 @@ class PatternRanges(Ranges):
         kwargs["search_configs"] = [search_config for obj in objs for search_config in obj.search_configs]
         return kwargs
 
-    def __init__(
-        self,
-        wrapper: ArrayWrapper,
-        records_arr: tp.RecordArray,
-        search_configs: tp.List[PSC],
-        **kwargs,
-    ) -> None:
-        Ranges.__init__(
-            self,
-            wrapper,
-            records_arr,
-            search_configs=search_configs,
-            **kwargs,
-        )
-
-        self._search_configs = search_configs
-
     def indexing_func(self: PatternRangesT, *args, ranges_meta: tp.DictLike = None, **kwargs) -> PatternRangesT:
         """Index a `PatternRanges` instance and return a new instance with updated indexing
         and search configurations.
@@ -2405,11 +2417,6 @@ class PatternRanges(Ranges):
             low=ranges_meta["low"],
             close=ranges_meta["close"],
         )
-
-    @property
-    def search_configs(self) -> tp.List[PSC]:
-        """Return a list of `PSC` instances, one for each column."""
-        return self._search_configs
 
     # ############# Stats ############# #
 

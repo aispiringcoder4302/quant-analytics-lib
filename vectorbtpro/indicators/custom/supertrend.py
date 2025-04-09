@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module with `SUPERTREND`."""
+"""Module defining the `SUPERTREND` indicator."""
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.indicators import nb
@@ -32,7 +32,12 @@ SUPERTREND = IndicatorFactory(
 
 
 class _SUPERTREND(SUPERTREND):
-    """Supertrend indicator."""
+    """Supertrend indicator.
+
+    The supertrend indicator is a trend-following overlay that appears directly on price charts,
+    providing clear buy and sell signals based on the underlying asset's price action and volatility.
+
+    See [Supertrend Indicator: What It Is and How It Works](https://www.investopedia.com/supertrend-indicator-7976167)."""
 
     def plot(
         self,
@@ -45,17 +50,23 @@ class _SUPERTREND(SUPERTREND):
         fig: tp.Optional[tp.BaseFigure] = None,
         **layout_kwargs,
     ) -> tp.BaseFigure:
-        """Plot `SUPERTREND.long` and `SUPERTREND.short` against `SUPERTREND.close`.
+        """Plot the long and short signals of the Supertrend indicator, and optionally the close prices.
 
         Args:
             column (str): Name of the column to plot.
-            plot_close (bool): Whether to plot `SUPERTREND.close`.
-            close_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter` for `SUPERTREND.close`.
-            superl_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter` for `SUPERTREND.long`.
-            supers_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter` for `SUPERTREND.short`.
+            plot_close (bool): Indicates whether to include the `close` price trace.
+            close_trace_kwargs (dict): Keyword arguments for configuring
+                the `SUPERTREND.close` trace in `plotly.graph_objects.Scatter`.
+            superl_trace_kwargs (dict): Keyword arguments for configuring
+                the `SUPERTREND.long` trace in `plotly.graph_objects.Scatter`.
+            supers_trace_kwargs (dict): Keyword arguments for configuring
+                the `SUPERTREND.short` trace in `plotly.graph_objects.Scatter`.
             add_trace_kwargs (dict): Keyword arguments passed to `fig.add_trace` when adding each trace.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
-            **layout_kwargs: Keyword arguments for configuring the figure layout.
+            **layout_kwargs: Additional keyword arguments for configuring the figure layout.
+
+        Returns:
+            BaseFigure: The figure containing the plotted indicator traces.
 
         Usage:
             ```pycon

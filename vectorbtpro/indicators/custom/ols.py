@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module with `OLS`."""
+"""Module that provides the `OLS` indicator."""
 
 import numpy as np
 
@@ -65,7 +65,8 @@ OLS = IndicatorFactory(
 class _OLS(OLS):
     """Rolling Ordinary Least Squares (OLS).
 
-    The indicator can be used to detect changes in the behavior of the stocks against the market or each other.
+    The `OLS` indicator is used to detect changes in the relationship between stocks and
+    the market or between different stocks by computing rolling linear regressions.
 
     See [The Linear Regression of Time and Price](https://www.investopedia.com/articles/trading/09/linear-regression-time-price.asp).
     """
@@ -80,7 +81,7 @@ class _OLS(OLS):
         fig: tp.Optional[tp.BaseFigure] = None,
         **layout_kwargs,
     ) -> tp.BaseFigure:
-        """Plot `OLS.pred` against `OLS.y`.
+        """Plot the `OLS.pred` and (optionally) `OLS.y` values.
 
         Args:
             column (str): Name of the column to plot.
@@ -90,6 +91,9 @@ class _OLS(OLS):
             add_trace_kwargs (dict): Keyword arguments passed to `fig.add_trace` when adding each trace.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
             **layout_kwargs: Keyword arguments for configuring the figure layout.
+
+        Returns:
+            BaseFigure: Figure with plotted OLS predictions and actual values.
 
         Usage:
             ```pycon
@@ -147,19 +151,21 @@ class _OLS(OLS):
         fig: tp.Optional[tp.BaseFigure] = None,
         **layout_kwargs,
     ) -> tp.BaseFigure:
-        """Plot `OLS.zscore` with confidence intervals.
+        """Plot the `OLS.zscore` values with confidence intervals.
 
         Args:
             column (str): Name of the column to plot.
             alpha (float): The alpha level for the confidence interval.
 
-                The default alpha = .05 returns a 95% confidence interval.
+                The default alpha value of 0.05 returns a 95% confidence interval.
             zscore_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter` for `OLS.zscore`.
-            add_shape_kwargs (dict): Keyword arguments passed to `fig.add_shape`
-                when adding the range between both confidence intervals.
+            add_shape_kwargs (dict): Keyword arguments passed to `fig.add_shape` when adding the range between both confidence intervals.
             add_trace_kwargs (dict): Keyword arguments passed to `fig.add_trace` when adding each trace.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
             **layout_kwargs: Keyword arguments for configuring the figure layout.
+
+        Returns:
+            BaseFigure: Figure with plotted OLS z-score and confidence intervals.
 
         Usage:
             ```pycon

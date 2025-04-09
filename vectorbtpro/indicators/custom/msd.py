@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module with `MSD`."""
+"""Module defining the `MSD` indicator."""
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.generic import enums as generic_enums
@@ -47,10 +47,11 @@ MSD = IndicatorFactory(
 
 
 class _MSD(MSD):
-    """Moving Standard Deviation (MSD).
+    """Moving Standard Deviation (MSD) indicator.
 
-    Standard deviation is an indicator that measures the size of an assets recent price moves
-    in order to predict how volatile the price may be in the future."""
+    This class represents the moving standard deviation (MSD) indicator that measures
+    the magnitude of recent price movements to assess asset volatility.
+    """
 
     def plot(
         self,
@@ -60,14 +61,18 @@ class _MSD(MSD):
         fig: tp.Optional[tp.BaseFigure] = None,
         **layout_kwargs,
     ) -> tp.BaseFigure:
-        """Plot `MSD.msd`.
+        """Plot the `MSD.msd` indicator.
 
         Args:
-            column (str): Name of the column to plot.
-            msd_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter` for `MSD.msd`.
-            add_trace_kwargs (dict): Keyword arguments passed to `fig.add_trace` when adding each trace.
+            column (Optional[Label]): The name of the column to plot.
+            msd_trace_kwargs (KwargsLike): Keyword arguments for styling
+                the `plotly.graph_objects.Scatter` trace representing `MSD.msd`.
+            add_trace_kwargs (KwargsLike): Keyword arguments passed to `fig.add_trace` when adding traces.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
-            **layout_kwargs: Keyword arguments for configuring the figure layout.
+            **layout_kwargs: Additional keyword arguments for configuring the figure layout.
+
+        Returns:
+            BaseFigure: The figure instance containing the plotted MSD indicator.
 
         Usage:
             ```pycon

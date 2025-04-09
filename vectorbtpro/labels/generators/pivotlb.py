@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module with `PIVOTLB`."""
+"""Module defining the `PIVOTLB` indicator."""
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.indicators.configs import flex_elem_param_config
@@ -37,12 +37,24 @@ PIVOTLB = IndicatorFactory(
 
 
 class _PIVOTLB(PIVOTLB):
-    """Label generator based on `vectorbtpro.labels.nb.pivots_nb`."""
+    """Label generator using `vectorbtpro.labels.nb.pivots_nb`.
+
+    This class generates labels based on pivot thresholds applied to high and low values.
+    """
 
     def plot(self, column: tp.Optional[tp.Label] = None, **kwargs) -> tp.BaseFigure:
-        """Plot the median of `PIVOTLB.high` and `PIVOTLB.low`, and overlay it with the heatmap of `PIVOTLB.labels`.
+        """Plot the median of `PIVOTLB.high` and `PIVOTLB.low` with a heatmap overlay of `PIVOTLB.labels`.
 
-        `**kwargs` are passed to `vectorbtpro.generic.accessors.GenericAccessor.overlay_with_heatmap`.
+        Calculates the median of the high and low values and overlays it with a heatmap
+        representation of the generated labels.
+
+        Args:
+            column (Optional[Label]): Column to select from the indicator output.
+            **kwargs: Additional keyword arguments passed to
+                `vectorbtpro.generic.accessors.GenericAccessor.overlay_with_heatmap`.
+
+        Returns:
+            BaseFigure: A figure object displaying the plot.
 
         Usage:
             ```pycon

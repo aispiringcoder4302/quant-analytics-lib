@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module with `OBV`."""
+"""Module defining the `OBV` indicator."""
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.indicators import nb
@@ -32,11 +32,13 @@ OBV = IndicatorFactory(
 
 
 class _OBV(OBV):
-    """On-balance volume (OBV).
+    """Class representing the on-balance volume (OBV) indicator.
 
-    It relates price and volume in the stock market. OBV is based on a cumulative total volume.
+    Calculates OBV by accumulating total volume based on price movements,
+    thereby relating price and volume in the stock market.
 
-    See [On-Balance Volume (OBV)](https://www.investopedia.com/terms/o/onbalancevolume.asp)."""
+    See [On-Balance Volume (OBV)](https://www.investopedia.com/terms/o/onbalancevolume.asp).
+    """
 
     def plot(
         self,
@@ -49,11 +51,14 @@ class _OBV(OBV):
         """Plot `OBV.obv`.
 
         Args:
-            column (str): Name of the column to plot.
-            obv_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter` for `OBV.obv`.
+            column (str): The name of the column to plot.
+            obv_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter` for plotting `OBV.obv`.
             add_trace_kwargs (dict): Keyword arguments passed to `fig.add_trace` when adding each trace.
-            fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
-            **layout_kwargs: Keyword arguments for configuring the figure layout.
+            fig (Optional[BaseFigure]): The figure to update. If None, a new figure is created.
+            **layout_kwargs: Additional keyword arguments for configuring the figure layout.
+
+        Returns:
+            BaseFigure: The updated figure displaying the plotted OBV data.
 
         Usage:
             ```py

@@ -1778,7 +1778,7 @@ def crossed_above_1d_nb(arr1: tp.Array1d, arr2: tp.FlexArray1dLike, wait: int = 
 
     Args:
         arr1 (Array1d): A one-dimensional array of values.
-        arr2 (FlexArray1dLike): A one-dimensional array or similar structure for comparison.
+        arr2 (FlexArray1dLike): A one-dimensional array or scalar for comparison.
         wait (int): The number of consecutive data points required above the threshold to confirm a crossover.
         dropna (bool): If True, treat indices with NaN values as missing, mimicking the removal of rows with NaN.
 
@@ -1857,7 +1857,7 @@ def crossed_below_1d_nb(arr1: tp.Array1d, arr2: tp.FlexArray1dLike, wait: int = 
 
     Args:
         arr1 (Array1d): A one-dimensional array of values.
-        arr2 (FlexArray1dLike): A one-dimensional array or similar structure for comparison.
+        arr2 (FlexArray1dLike): A one-dimensional array or scalar for comparison.
         wait (int): The number of consecutive data points required below the threshold to confirm a crossover.
         dropna (bool): If True, treat indices with NaN values as missing, mimicking the removal of rows with NaN.
 

@@ -19,8 +19,10 @@ import tempfile
 import webbrowser
 from pathlib import Path
 from types import ModuleType, FunctionType
+from collections import defaultdict
 
 from vectorbtpro import _typing as tp
+from vectorbtpro.utils.formatting import dump, get_dump_language
 from vectorbtpro.utils.path_ import check_mkdir
 from vectorbtpro.utils.template import CustomTemplate, RepEval
 
@@ -533,6 +535,88 @@ def add_source_indent(source: str, indent: int) -> str:
     return "".join(indented_lines)
 
 
+def get_source_imports(source: str, global_only: bool = False) -> str:
+    """Extract, normalize, deduplicate, and sort import statements from the source code.
+
+    Args:
+        source (str): The Python source code as a string.
+        global_only (bool): If True, only extract top-level (global) import statements.
+
+    Returns:
+        str: A sorted string of normalized import statements, separated by newlines.
+    """
+    tree = ast.parse(source)
+    imports = set()
+
+    def process_import_node(node):
+        if isinstance(node, ast.Import):
+            for alias in node.names:
+                if alias.asname:
+                    imports.add(f"import {alias.name} as {alias.asname}")
+                else:
+                    imports.add(f"import {alias.name}")
+        elif isinstance(node, ast.ImportFrom):
+            module = node.module or ""
+            level = "." * node.level
+            for alias in node.names:
+                if alias.asname:
+                    imports.add(f"from {level}{module} import {alias.name} as {alias.asname}")
+                else:
+                    imports.add(f"from {level}{module} import {alias.name}")
+
+    if global_only:
+        for node in tree.body:
+            if isinstance(node, (ast.Import, ast.ImportFrom)):
+                process_import_node(node)
+    else:
+        for node in ast.walk(tree):
+            if isinstance(node, (ast.Import, ast.ImportFrom)):
+                process_import_node(node)
+
+    return "\n".join(sorted(imports)) if imports else ""
+
+
+def get_source_map(source: str) -> dict:
+    """Generates a high-level map of top-level variables, functions, and classes defined in the source code.
+
+    Args:
+        source (str): Python source code.
+
+    Returns:
+        dict: A dictionary summarizing the top-level code structure.
+    """
+    tree = ast.parse(source)
+    code_map = {"variables": [], "functions": [], "classes": defaultdict(lambda: {"methods": [], "attributes": []})}
+
+    for node in tree.body:
+        if isinstance(node, ast.Assign):
+            for target in node.targets:
+                if isinstance(target, ast.Name):
+                    code_map["variables"].append(target.id)
+        elif isinstance(node, ast.AnnAssign):
+            if isinstance(node.target, ast.Name):
+                code_map["variables"].append(node.target.id)
+        elif isinstance(node, ast.FunctionDef):
+            code_map["functions"].append(node.name)
+        elif isinstance(node, ast.ClassDef):
+            class_name = node.name
+            for class_body_item in node.body:
+                if isinstance(class_body_item, ast.FunctionDef):
+                    code_map["classes"][class_name]["methods"].append(class_body_item.name)
+                elif isinstance(class_body_item, (ast.Assign, ast.AnnAssign)):
+                    targets = []
+                    if isinstance(class_body_item, ast.Assign):
+                        targets = class_body_item.targets
+                    elif isinstance(class_body_item, ast.AnnAssign):
+                        targets = [class_body_item.target]
+                    for target in targets:
+                        if isinstance(target, ast.Name):
+                            code_map["classes"][class_name]["attributes"].append(target.id)
+
+    code_map["classes"] = dict(code_map["classes"])
+    return code_map
+
+
 REFINE_SRC_PROMPT = """You are a code-refinement assistant. 
 
 Present the refactored version of the given chunk of Python code to address 
@@ -540,7 +624,7 @@ any detected code smells or issues. You must:
 
 1. **Return the entire code block** in your output.
 2. **Do not enclose your output in triple backticks**, and return no other text or explanation."""
-"""Default prompt for `refine_source`."""
+"""Default system prompt for `refine_source`."""
 
 
 def refine_source(
@@ -550,7 +634,12 @@ def refine_source(
     as_package: bool = True,
     start_line: tp.Optional[int] = None,
     end_line: tp.Optional[int] = None,
-    prompt: tp.Optional[str] = None,
+    system_prompt: tp.Optional[str] = None,
+    attach_metadata: bool = True,
+    attach_imports: tp.Optional[bool] = True,
+    attach_map: tp.Optional[bool] = True,
+    dump_engine: str = "yaml",
+    dump_kwargs: tp.KwargsLike = None,
     chunk_size: tp.Optional[int] = 2000,
     split: bool = True,
     split_classes: bool = True,
@@ -558,7 +647,6 @@ def refine_source(
     max_split_level: tp.Optional[int] = None,
     uniform_chunks: bool = True,
     tokenize_kwargs: tp.KwargsLike = None,
-    complete_kwargs: tp.KwargsLike = None,
     show_progress: tp.Optional[bool] = True,
     pbar_kwargs: tp.KwargsLike = None,
     mult_show_progress: tp.Optional[bool] = None,
@@ -567,6 +655,7 @@ def refine_source(
     copy_to_clipboard: bool = False,
     show_diff: bool = True,
     open_browser: bool = True,
+    **kwargs,
 ) -> tp.Union[tp.RefineSourceOutput, tp.RefineSourceOutputs]:
     """Refine the source code by splitting it into manageable chunks and applying completion methods.
 
@@ -589,7 +678,16 @@ def refine_source(
 
             !!! note
                 Counting starts at 1.
-        prompt (Optional[str]): System prompt used for generating completions.
+        system_prompt (Optional[str]): System prompt used for generating completions.
+        attach_metadata (bool): Whether to attach (dumped) metadata to the system prompt.
+        attach_imports (Optional[bool]): Whether to attach global source imports to the system prompt.
+
+            If None, becomes True if `split` is True.
+        attach_map (Optional[bool]): Whether to attach (dumped) source map to the system prompt.
+
+            If None, becomes True if `split` is True.
+        dump_engine (str): Name of the dump engine.
+        dump_kwargs (KwargsLike): Keyword arguments for `vectorbtpro.utils.formatting.dump`.
         chunk_size (Optional[int]): Maximum token count for each chunk.
 
             If None, processes the entire source as a single chunk.
@@ -602,8 +700,6 @@ def refine_source(
             If nested chunks (with level > base) are present, includes them only if they fit as a whole.
         tokenize_kwargs (KwargsLike): Keyword arguments for
             `vectorbtpro.utils.knowledge.chatting.tokenize`.
-        complete_kwargs (KwargsLike): Keyword arguments for
-            `vectorbtpro.utils.knowledge.chatting.completed`.
         show_progress (Optional[bool]): Whether to display progress during chunk processing.
         pbar_kwargs (KwargsLike): Keyword arguments for `vectorbtpro.utils.pbar.ProgressBar`.
         mult_show_progress (Optional[bool]): Whether to display progress when processing multiple sources.
@@ -623,6 +719,7 @@ def refine_source(
         open_browser (bool): Whether to open the HTML diff in a web browser.
 
             Does not apply when processing multiple sources.
+        **kwargs: Keyword arguments for `vectorbtpro.utils.knowledge.chatting.completed`.
 
     Returns:
         Union[RefineSourceOutput, RefineSourceOutputs]: Result of the refinement process.
@@ -717,7 +814,12 @@ def refine_source(
                     as_package=False,
                     start_line=start_line,
                     end_line=end_line,
-                    prompt=prompt,
+                    system_prompt=system_prompt,
+                    attach_metadata=attach_metadata,
+                    attach_imports=attach_imports,
+                    attach_map=attach_map,
+                    dump_engine=dump_engine,
+                    dump_kwargs=dump_kwargs,
                     chunk_size=chunk_size,
                     split=split,
                     split_classes=split_classes,
@@ -725,13 +827,13 @@ def refine_source(
                     max_split_level=max_split_level,
                     uniform_chunks=uniform_chunks,
                     tokenize_kwargs=tokenize_kwargs,
-                    complete_kwargs=complete_kwargs,
                     show_progress=show_progress,
                     pbar_kwargs=pbar_kwargs,
                     modify=modify,
                     copy_to_clipboard=False,
                     show_diff=False,
                     open_browser=False,
+                    **kwargs,
                 )
                 outputs.append(output)
                 pbar.update()
@@ -779,19 +881,57 @@ def refine_source(
     source = "".join(source_lines)
     source_name = f"{source_name}#L{source_start_line}-L{source_end_line}"
 
-    if prompt is None:
-        prompt = REFINE_SRC_PROMPT
+    if system_prompt is None:
+        system_prompt = REFINE_SRC_PROMPT
+    if dump_kwargs is None:
+        dump_kwargs = {}
+    if attach_metadata:
+        source_metadata = dict(
+            source=str(source_path.resolve()) if source_path else "<string>",
+            start_line=source_start_line,
+            end_line=source_end_line,
+        )
+        source_metadata = dump(source_metadata, dump_engine=dump_engine, **dump_kwargs).strip()
+        source_metadata_language = get_dump_language(dump_engine=dump_engine)
+        system_prompt = f"""{system_prompt}
+
+---
+
+Metadata of the current code context:
+
+```{source_metadata_language}
+{source_metadata}
+```"""
+    if attach_imports is None:
+        attach_imports = split
+    if attach_imports:
+        source_imports = get_source_imports(source, global_only=True)
+        system_prompt = f"""{system_prompt}
+
+---
+
+Complete list of global imports available to the current code context:
+
+```python
+{source_imports}
+```"""
+    if attach_map is None:
+        attach_map = split
+    if attach_map:
+        source_map = get_source_map(source)
+        source_map = dump(source_map, dump_engine=dump_engine, **dump_kwargs).strip()
+        source_map_language = get_dump_language(dump_engine=dump_engine)
+        system_prompt = f"""{system_prompt}
+
+---
+
+High-level map of top-level variables, functions, and classes available to the current code context:
+
+```{source_map_language}
+{source_map}
+```"""
     if tokenize_kwargs is None:
         tokenize_kwargs = {}
-    complete_kwargs = merge_dicts(
-        dict(
-            model="o3-mini",
-            reasoning_effort="high",
-            system_as_user=True,
-            system_prompt=prompt,
-        ),
-        complete_kwargs,
-    )
     if copy_to_clipboard:
         assert_can_import("pyperclip")
 
@@ -902,7 +1042,7 @@ def refine_source(
             trailing = chunk[-trailing_len:] if trailing_len > 0 else ""
             middle = chunk[leading_len : len(chunk) - trailing_len]
             if middle:
-                new_middle = completed(middle, **complete_kwargs)
+                new_middle = completed(middle, system_prompt=system_prompt, **kwargs).strip("\n")
             else:
                 new_middle = ""
             new_middle = add_source_indent(new_middle, indent)
@@ -959,240 +1099,246 @@ def refine_source(
     return new_source
 
 
-REFINE_DOCSTR_PROMPT = """You are a code-refinement assistant. 
+REFINE_DOCSTR_PROMPT = """You are a code-refinement assistant.
 
-Your goal is to refine (rewrite for clarity, correctness, consistent format and wording) 
-**only** the docstrings of the given chunk of Python code. You must:
+Your goal is to refine (rewrite for clarity, correctness, consistent format, and wording) **only** the docstrings of the given chunk of Python code. You must:
 
 1. **Modify only existing docstrings**.
 2. **Return the entire code block** in your output.
-3. **Do not enclose your output in triple backticks**, and return no other text or explanation.
+3. **Never enclose your output in triple backticks**, and return no other text or explanation.
 4. **Retain all non-docstring parts of the code** exactly as they are.
+5. **If there are no existing docstrings or if a docstring is empty, do not create or expand it**.
 
 ### 1. Scope of Edits
 
 - **Identify existing docstrings** in functions, classes, and methods.
 - **Edit only those docstrings**; do not create new ones.
-- **Do not document** functions or methods whose names begin with one or two underscores 
-    (e.g., `_preprocess`, `__eq__`).
-- **Keep the `__init__` docstring empty**. Instead, document its parameters in the class 
-    docstring inside the "Args" section.
+- **Do not document** functions or methods whose names begin with one or two underscores (e.g., `_preprocess`, `__eq__`) as these are considered private or special methods.
+- **Keep the `__init__` docstring empty**. Instead, document its parameters in the class docstring inside the "Args" section.
 - **Keep the license text**.
 
 ### 2. Content Requirements
 
-- **Use relevant details from the code** to make each docstring clear and self-explanatory 
-    for someone who cannot see the source code.
-- **Keep docstrings concise and correct** in grammar and content, but do not remove any 
-    valuable information unless it's duplicate.
-- **Omit sections** such as "Raises," "Attributes," "Methods," or default values.
-- **Do not extra mention the default value of an argument**.
-- **Do not extra mention that an argument is optional**.
-    - For example, `x: tp.Optional[int] = None` becomes `x (Optional[int]): ...` and 
-        not `x (int, optional): ...`.
-    - Do not omit the `Optional[...]` type hint.
-- **Retain any admonitions** like `"!!! note"` or `"!!! warning"` exactly as they are, for example:
-    ```
-    !!! note
-      Here comes the note.
-    ```
+- **Use relevant details from the code** to make each docstring clear and self-explanatory for someone who cannot see the source code.
+- **Keep docstrings concise and correct** in grammar and content, but do not remove any valuable information unless it's duplicate.
+- **Mandatory sections**:
+  - Every docstring describing a function or method **with parameters** (excluding only `self`, `cls`, or `cls_or_self`) **must** have an "Args" section.
+  - Every docstring describing a function or method **returning a value other than None must** have a "Returns" section.
+  - If these sections are missing, **you must add them** using the correct format.
+  - Do not add a "Returns" section if the return is explicitly None or redundant for bool values.
+- **Do not explicitly mention the default value of an argument**.
+- **Do not mention that an argument is optional**. For example: `x (Optional[int]): ...` rather than `x (int, optional): ...`.
+- **Retain any admonitions** like `"!!! note"` or `"!!! warning"` exactly as they are.
 - Instead of adding the section "Note", use the admonition "!!! note".
-- **Preserve indentation, whitespace, and formatting** in lists or multi-line text 
-    unless it is incorrect.
-- **Do not change code examples** in the "Usage" section. Use only the name "Usage", 
-    not "Examples" or any other name.
-    - **Do not change indentation of the code blocks** in "Usage" sections.
-- If a function returns None, **do not add a "Returns" section**.
-    - The same for bool but only if it would appear redundant.
-- **Do not add your own "Usage" section**.
-- **Make sure to list all arguments, their types, and descriptions**, apart from `self`, `cls`, and `cls_or_self`.
-- Do not mention type `dict` when describing variable keyword arguments.
-- If the function is decorated with `@register_chunkable` or `@register_jitted` with the `can_parallel` tag, 
-    add at the end of the docstring:
-    ```
-    !!! tip
-        This function is parallelizable.
-    ```
+- **Preserve indentation, whitespace, and formatting** in lists or multi-line text unless it is incorrect.
+- **Do not change code examples** in the "Usage" section. Use only the name "Usage". **Do not change the indentation** of those code blocks.
+- **Do not add your own** "Usage" sections and **do not prepend** a "Usage" section to existing code blocks.
+- **Omit sections** such as "Raises," "Attributes," "Methods," or default values.
+- If a function is decorated with `@register_chunkable` or `@register_jitted` with the `can_parallel` tag, add at the end of the docstring:
+  ```
+  !!! tip
+      This function is parallelizable.
+  ```
 
 ### 3. Style and Format
 
 - **Use Markdown format**.
 - **Follow PEP 257 guidelines**.
-- **Use Google-style docstrings** for arguments and return values, for example:
-    ```
-    Args:
-        arg_name (type): Description of the argument.
+- **Use Google-style docstrings** for arguments and return values. For example:
+  ```
+  Args:
+      arg_name (type): Description of the argument.
+      
+  Returns:
+      type: Description of the return value.
+  ```
+  - If a docstring lacks one of these sections, you must add it in the correct format.
+- If the description of an argument has multiple sentences, **separate them by an empty line**.
+- **Preserve type hints**:
+  - Remove module prefixes (such as `tp.`) and the suffix `T`.
+  - For instance, `tp.Union[None, int, tp.DatetimeLike]` becomes `Union[None, int, DatetimeLike]`.
+  - Keep any `Maybe` types as they are.
+  - Do not change type hints in function signatures.
+- **Always override existing types in the docstring** with the types from the signature.
+  - If a type is already present in the docstring, replace it with the type from the signature.
+- For classes decorated with `@define`, treat them as if decorated with `@attr.s`.
+  - **Do not duplicate fields and their descriptions** in the "Args" section unless the class defines its own `__init__`.
+- For module docstrings, retain the phrasing that **identifies them as a module**.
+- For `__init__.py` module docstrings, retain the phrasing that **identifies them as multiple modules**.
+- For class docstrings, retain the phrasing that **identifies them as a class**.
+- **Begin method docstrings with imperative verbs** (e.g., "Return," "Fetch," "Create").
+- **Properties** should describe what they represent rather than an action.
+- Bullet points must be at the **same indentation level as the parent sentence** and be separated by one empty line before the list.
+- When dealing with named tuples and enums, replace "Attributes:" with "Fields:" in their docstrings.
+- If a "Usage" section exists, **place it at the end** of the docstring.
 
-    Returns:
-        return_type: Description of the returned value.
-    ```
-    - If the sentence spans across multiple lines, add 4 spaces of indentation to the subsequent lines:
-    ```
-    Args:
-        arg_name (type): A very long 
-            description of the argument.
+### 4. Referencing
 
-    Returns:
-        return_type: A very long 
-            description of the returned value.
-    ```
-- If the description of an argument has multiple sentences, **separate them by an empty line**. 
-    For example:
-    ```
-    x (Optional[int]): First integer.
-
-        Refer to `prepare_x` for further details.
-    y (Optional[int]): Second integer.
-
-        If not provided, uses `x`.
-
-        Refer to `prepare_y` for further details.
-    ```
-    instead of
-    ```
-    x (Optional[int]): First integer. Refer to `prepare_x` for further details.
-    y (Optional[int]): Second integer. If not provided, uses `x`. Refer to `prepare_y` for further details.
-    ```
-- **Preserve type hints**.
-    - Remove module prefixes such as "tp." and the suffix "T".
-    - For example, `x: tp.Union[None, int, tp.DatetimeLike] = ...` becomes 
-        `x (Union[None, int, DatetimeLike]): ...`.
-    - Also, `x: tp.MaybeType[KnowledgeAssetT] = ...` becomes `x (MaybeType[KnowledgeAsset]): ...`.
-    - **Do not unfold** type hints prefixed with `Maybe` into a union. Keep them as they are.
-    - **Do not replace** type hints `Args` and `Kwargs` to `tuple` and `dict`. Keep them as they are.
-    - If an argument already describes its type, such as `(bool or int)`, replace it with the type hint.
-    - Change type hints in docstring only, **do not change type hints in function signatures**.
-- Treat classes decorated with `@define` **as if they were decorated with `@attr.s`**, adjusting 
-    docstrings accordingly.
-    - **Do not duplicate fields and their descriptions** in the "Args" section.
-    - Create an "Args" section only if the class defines its own `__init__` method.
-- For module docstrings, retain the phrasing that **identifies them as a module**, 
-    such as "Module providing X".
-- For class docstrings, retain the phrasing that **identifies them as a class**, 
-    such as "Class for X".
-- **Begin method docstrings with imperative verbs** (e.g., "Return," "Fetch," "Create") 
-    rather than "Does X...".
-- **Properties should describe the object rather than the action**, for example "Context." 
-    instead of "Return the context."
-- Bullet points must be at the **same indentation level as the parent sentence** and should 
-    have **one empty line before the list**.
-- **Use a consistent style for bullet points**, such as "*"
-- For `*args` begin the description with "Positional arguments passed to/for ...".
-    - If the target is not known, use "Additional positional arguments.".
-- For `**kwargs` begin the description with "Keyword arguments passed to/for ...".
-    - If the target is not known, use "Additional keyword arguments.".
-- When dealing with named tuples and enums, replace "Attributes:" by "Fields:" in their docstrings
-
-### 4. Referencing and Usage
-
-- ***Refer to Python objects** (classes, functions, methods, or any code reference) **with backticks** and, 
-    if relevant, fully qualified names.
-    - For example, `Data.get` (if in the same module) or `vectorbtpro.data.base.Data.get`.
-    - Do not shorten fully qualified names, such as from `vectorbtpro.utils.datetime_.get_rangebreaks` 
-        to `dt.get_rangebreaks`.
-- If the reference is known to belong to the same class (for instance, when in the code the object 
-    is being accessed from `cls`, `self`, or `cls_or_self`), prepend the class to the reference if known.
-    - For example, `FigureMixin.show` instead of `show`.
-- **Always use backticks around code references**, e.g., "Keyword arguments for `make_subplots`" 
-    instead of "Keyword arguments for make_subplots".
-- **If a "Usage" section exists**, place it **at the end** of the docstring.
-- If a function primarily forwards its arguments to another function, that target function should be referenced.
-- If an argument is (a field from) a named tuple or an enumerated type, the type should be referenced.
+- References are an **integral part** of this documentation. The documentation is rendered on a website where the user can directly click on a reference to jump to its definition. Therefore:
+  - **All references to Python objects must be enclosed in backticks** (e.g., `ArrayWrapper` instead of ArrayWrapper).
+  - **Use fully qualified names** when referring to Python objects that exist outside the current scope (e.g., `vectorbtpro.indicators.custom.SMA.run` instead of `SMA.run` or `run`).
+  - If the referenced object belongs to the same class (e.g., via `self`, `cls`, or `cls_or_self`), prefix the reference with the class name (e.g., `SMA.run` instead of `run`).
+  - If a function forwards its arguments to another function, reference that target (e.g., "Arguments are forwarded to `combine_params`.")
+  - If an argument is a field from a named tuple or an enum, reference that type (e.g., "See `vectorbtpro.generic.enums.WType` for available options.").
+  - **Do not remove existing references**.
 
 ### 5. Special Arguments
 
-- **Document the function(s)** that will receive `*args` or `**kwargs`, if known.
-- Use the following descriptions if the argument name and type hint match **exactly**:
-    ```
-    broadcast_named_args (KwargsLike): Additional named arguments for broadcasting.
-    broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
-    template_context (KwargsLike): Additional context for template substitution.
-    jitted (JittedOption): Option to control JIT compilation.
-    chunked (ChunkedOption): Option to control chunked processing.
-    wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
-    wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
-    wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
-    group_by (GroupByLike): Grouping specification.
-    sim_start (Optional[ArrayLike]): Simulation start.
-    sim_end (Optional[ArrayLike]): Simulation end.
-    fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
-    add_trace_kwargs (KwargsLike): Keyword arguments for adding traces to the figure.
-    **layout_kwargs: Keyword arguments for configuring the figure layout.
-    ```
+- When documenting functions that use `*args` and `**kwargs`:
+  1. If you do not know what these parameters are passed to:
+   - For `*args`, use: **"Additional positional arguments."**
+   - For `**kwargs`, use: **"Additional keyword arguments."**
+  2. If you know the target or the function/method/class these parameters are passed to:
+   - For `*args`, use: **"Positional arguments passed to [target]."**
+   - For `**kwargs`, use: **"Keyword arguments passed to [target]."**
+- Use the following descriptions if the argument name and type hint match exactly:
+  ```
+  broadcast_named_args (KwargsLike): Additional named arguments for broadcasting.
+  broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
+  template_context (KwargsLike): Additional context for template substitution.
+  jitted (JittedOption): Option to control JIT compilation.
+  chunked (ChunkedOption): Option to control chunked processing.
+  wrapper (ArrayWrapper): Wrapper instance.
+  wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
+  wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+  wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
+  group_by (GroupByLike): Grouping specification.
+  sim_start (Optional[ArrayLike]): Simulation start.
+  sim_end (Optional[ArrayLike]): Simulation end.
+  fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
+  add_trace_kwargs (KwargsLike): Keyword arguments for adding traces to the figure.
+  **layout_kwargs: Keyword arguments for configuring the figure layout.
+  ```
+- Flexible types:
+  - Type `FlexArray1d` represents a flexible 1D array, such as "Window sizes".
+  - Type `FlexArray2d` represents a flexible 2D array, such as "Window sizes".
+  - Type `FlexArray1dLike` represents a single value or flexible 1D array, such as "Window size(s)".
+  - Type `FlexArray2dLike` represents a single value or flexible 2D array, such as "Window size(s)".
+  - Type `ArrayLike` represents a single value or any array, such as "Window size(s)".
 
 ### 6. Miscellaneous
 
 - **Do not start any docstring with a blank line**.
 - **Do not end a docstring with a blank line** unless it contains multiple lines.
-- **Do not change any existing indentation or spacing**.
-    - Do not change indentation or spacing of existing code. **Change only the docstrings.**
+- **Do not change any existing indentation or spacing** other than in docstrings. 
 - **Do not change usage examples or their formatting**.
-- **Use the name "vectorbtpro" instead of "VectorBT® PRO"** in docstrings.
-- **Do not wrap URLs into backticks**.
-- Make sure that docstrings have three double quotes (\"\"\") at the start and the end
-- Make sure that **docstrings are properly indented** relative to the first three double quotes (\"\"\")
-    - All subsequent lines of a docstring must have at least 4 spaces of indentation.
-- Always use **indentation in 4-space increments**.
-- Don't replace `\"\"\"_\"\"\"`, refine the docstring in `__pdoc__` instead.
-- Don't change headers like "## Stats"
-    
+- **Use "vectorbtpro"** instead of "VectorBT® PRO" in docstrings.
+- Enclose docstrings in triple double quotes (\"\"\") and indent by at least 4 spaces after the opening quotes.
+- Do not replace `\"\"\"_\"\"\"`; refine the docstring in `__pdoc__` instead.
+- Do not change headers like "## Stats".
+
 ### 7. Refined Docstring Example
 
 ```python
-@hybrid_method
-def chat(
-    cls_or_self: tp.MaybeType[ContextableT],
-    message: str,
-    chat_history: tp.Optional[tp.ChatHistory] = None,
-    *,
-    return_chat: bool = False,
-    **kwargs,
-) -> tp.MaybeChatOutput:
-    \"\"\"Chat with a language model using the instance as context.
+class Chatable(Configured):
+    \"\"\"Class that provides functionality for chatting.
     
-    Generates a formatted response to the message using `Completions`.
-
     Args:
-        message (str): The message to send to the language model.
+        formatter (ResponseFormatter): Response formatter of type `ResponseFormatter`.
+        **kwargs: Additional keyword arguments for configuration.
         
-            Will be appended to `chat_history` with the role "user".
-        chat_history (Optional[ChatHistory]): The conversation history.
-        
-            Will be modified in place.
-        return_chat (bool): Flag indicating whether to return both the completion and 
-            the chat instance of type `Completions`.
-        **kwargs: Keyword arguments passed to `Contextable.create_chat`.
-
-    Returns:
-        MaybeChatOutput: The completion response or a tuple of the response and the chat instance.
-        
-    For defaults, see `chat` in `vectorbtpro._settings.knowledge`.
-
-    !!! note
-        Context is recalculated each time this method is invoked. For multiple turns,
-        it's more efficient to use `Contextable.create_chat`.
-
-    Usage:
-        ```pycon
-        >>> asset.chat("What's the value under 'xyz'?")
-        The value under 'xyz' is 123.
-        ```
+    For defaults, see `chatting` in `vectorbtpro._settings`.
     \"\"\"
-    if isinstance(cls_or_self, type):
-        args, kwargs = get_forward_args(super().chat, locals())
-        return super().chat(*args, **kwargs)
+    
+    def __init__(self, formatter: ResponseFormatter, **kwargs) -> None:
+        Configured.__init__(self, formatter=formatter, **kwargs)
+        
+        self._formatter = formatter
+        
+    @property
+    def formatter(self) -> ResponseFormatter:
+        \"\"\"Response formatter of type `ResponseFormatter`.\"\"\"
+        return self._formatter
+        
+    @hybrid_method
+    def chat(
+        cls_or_self: tp.MaybeType[ContextableT],
+        message: str,
+        chat_history: tp.Optional[tp.ChatHistory] = None,
+        *,
+        formatter: str = "markdown",
+        return_chat: bool = False,
+        **kwargs,
+    ) -> tp.MaybeChatOutput:
+        \"\"\"Chat with a language model using the instance as context.
+        
+        Generates a formatted response to the message using `Completions`.
+    
+        Args:
+            message (str): The message to send to the language model.
+            
+                Will be appended to `chat_history` with the role "user".
+            chat_history (Optional[ChatHistory]): The conversation history.
+            
+                Will be modified in place.
+            formatter (str): Formatter.
+            
+                Supported formats:
+                
+                * "raw": Raw format.
+                * "markdown": Markdown format.
+                * "html": HTML format.
+            return_chat (bool): Flag indicating whether to return both the completion and 
+                the chat instance of type `Completions`.
+            **kwargs: Keyword arguments passed to `Contextable.create_chat`.
+    
+        Returns:
+            MaybeChatOutput: The completion response or a tuple of the response and the chat instance.
+            
+        For defaults, see `chat` in `vectorbtpro._settings.knowledge`.
+    
+        !!! note
+            Context is recalculated each time this method is invoked. For multiple turns,
+            it's more efficient to use `Contextable.create_chat`.
+    
+        Usage:
+            ```pycon
+            >>> asset.chat("What's the value under 'xyz'?")
+            The value under 'xyz' is 123.
+            ```
+        \"\"\"
+        if isinstance(cls_or_self, type):
+            args, kwargs = get_forward_args(super().chat, locals())
+            return super().chat(*args, **kwargs)
+    
+        completions = cls_or_self.create_chat(chat_history=chat_history, **kwargs)
+        if return_chat:
+            return completions.get_completion(message), completions
+        return completions.get_completion(message)
+    
 
-    completions = cls_or_self.create_chat(chat_history=chat_history, **kwargs)
-    if return_chat:
-        return completions.get_completion(message), completions
-    return completions.get_completion(message)
+class TrendModeT(tp.NamedTuple):
+    Downtrend: int = -1
+    Uptrend: int = 1
+
+
+TrendMode = TrendModeT()
+\"\"\"_\"\"\"
+
+__pdoc__[
+    "TrendMode"
+] = f\"\"\"Trend mode named tuple representing indicator trend directions.
+
+Fields:
+    Downtrend: Downtrend direction.
+    Uptrend: Uptrend direction.
+
+```python
+{prettify_doc(TrendMode)}
 ```
-"""
-"""Prompt for `refine_docstrings`."""
+\"\"\"
+```
+
+### 8. Penalty of Incorrect Formatting
+
+Failure to strictly adhere to these rules results in broken interactive documentation rendering. 
+
+**These rules are mandatory**."""
+"""System prompt for `refine_docstrings`."""
 
 
 def refine_docstrings(source: tp.Any, **kwargs) -> tp.RefineSourceOutput:
-    """Call `refine_source` with the prompt from `REFINE_DOCSTR_PROMPT` to refine
+    """Call `refine_source` with the system prompt from `REFINE_DOCSTR_PROMPT` to refine
     docstrings in the given source code.
 
     Args:
@@ -1202,4 +1348,4 @@ def refine_docstrings(source: tp.Any, **kwargs) -> tp.RefineSourceOutput:
     Returns:
         RefineSourceOutput: The result of the refinement process.
     """
-    return refine_source(source, prompt=REFINE_DOCSTR_PROMPT, **kwargs)
+    return refine_source(source, system_prompt=REFINE_DOCSTR_PROMPT, **kwargs)

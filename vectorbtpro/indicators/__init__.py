@@ -8,9 +8,9 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Modules for building and running indicators.
+"""Modules for building and running technical indicators.
 
-Technical indicators are used to see past trends and anticipate future moves.
+Technical indicators help analyze historical trends and anticipate future market movements.
 See [Using Technical Indicators to Develop Trading Strategies](https://www.investopedia.com/articles/trading/11/indicators-and-strategies-explained.asp)."""
 
 from typing import TYPE_CHECKING

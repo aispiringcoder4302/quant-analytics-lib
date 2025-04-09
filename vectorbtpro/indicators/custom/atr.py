@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module with `ATR`."""
+"""Module providing the `ATR` indicator."""
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.generic import enums as generic_enums
@@ -48,11 +48,12 @@ ATR = IndicatorFactory(
 class _ATR(ATR):
     """Average True Range (ATR).
 
-    The indicator provide an indication of the degree of price volatility.
-    Strong moves, in either direction, are often accompanied by large ranges,
-    or large True Ranges.
+    Calculates the average true range to measure price volatility.
+    Large price movements that result in extensive trading ranges typically yield a higher ATR,
+    indicating periods of increased market volatility.
 
-    See [Average True Range - ATR](https://www.investopedia.com/terms/a/atr.asp)."""
+    See [Average True Range - ATR](https://www.investopedia.com/terms/a/atr.asp).
+    """
 
     def plot(
         self,
@@ -63,15 +64,18 @@ class _ATR(ATR):
         fig: tp.Optional[tp.BaseFigure] = None,
         **layout_kwargs,
     ) -> tp.BaseFigure:
-        """Plot `ATR.tr` and `ATR.atr`.
+        """Plot the TR and ATR series.
 
         Args:
             column (str): Name of the column to plot.
-            tr_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter` for `ATR.tr`.
-            atr_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter` for `ATR.atr`.
+            tr_trace_kwargs (dict): Keyword arguments for `plotly.graph_objects.Scatter` used to plot `ATR.tr`.
+            atr_trace_kwargs (dict): Keyword arguments for `plotly.graph_objects.Scatter` used to plot `ATR.atr`.
             add_trace_kwargs (dict): Keyword arguments passed to `fig.add_trace` when adding each trace.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
             **layout_kwargs: Keyword arguments for configuring the figure layout.
+
+        Returns:
+            BaseFigure: The updated figure with the TR and ATR traces plotted.
 
         Usage:
             ```pycon

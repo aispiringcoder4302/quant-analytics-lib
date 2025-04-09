@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Modules for building and running look-ahead indicators and label generators."""
+"""Modules providing functionality for building and running look-ahead indicators and label generators."""
 
 from typing import TYPE_CHECKING
 

@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module with `FSTD`."""
+"""Module containing the definition and configuration of the `FSTD` indicator."""
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.generic import enums as generic_enums
@@ -47,7 +47,7 @@ FSTD = IndicatorFactory(
 
 
 class _FSTD(FSTD):
-    """Look-ahead indicator based on `vectorbtpro.labels.nb.future_std_nb`."""
+    """Class implementing a look-ahead indicator based on `vectorbtpro.labels.nb.future_std_nb`."""
 
     def plot(
         self,
@@ -57,14 +57,19 @@ class _FSTD(FSTD):
         fig: tp.Optional[tp.BaseFigure] = None,
         **layout_kwargs,
     ) -> tp.BaseFigure:
-        """Plot `FSTD.fstd`.
+        """Plot the `FSTD.fstd` indicator.
 
         Args:
-            column (str): Name of the column to plot.
-            fstd_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter` for `FSTD.fstd`.
-            add_trace_kwargs (dict): Keyword arguments passed to `fig.add_trace` when adding each trace.
-            fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
-            **layout_kwargs: Keyword arguments for configuring the figure layout.
+            column (Optional[Label]): The name of the column to plot.
+            fstd_trace_kwargs (dict): Additional keyword arguments passed to
+                `plotly.graph_objects.Scatter` for the `FSTD.fstd` indicator.
+            add_trace_kwargs (dict): Additional keyword arguments passed to
+                `fig.add_trace` when adding each trace.
+            fig (Optional[BaseFigure]): The figure to update; if None, a new figure is created.
+            **layout_kwargs: Additional keyword arguments for configuring the figure layout.
+
+        Returns:
+            BaseFigure: The updated figure with the `FSTD.fstd` indicator plotted.
 
         Usage:
             ```pycon

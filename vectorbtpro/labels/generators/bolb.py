@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module with `BOLB`."""
+"""Module defining the `BOLB` indicator."""
 
 import numpy as np
 
@@ -43,12 +43,21 @@ BOLB = IndicatorFactory(
 
 
 class _BOLB(BOLB):
-    """Label generator based on `vectorbtpro.labels.nb.breakout_labels_nb`."""
+    """Class representing the breakout label generator for the `BOLB` indicator.
+
+    Generates breakout labels using `vectorbtpro.labels.nb.breakout_labels_nb`.
+    """
 
     def plot(self, column: tp.Optional[tp.Label] = None, **kwargs) -> tp.BaseFigure:
-        """Plot the median of `BOLB.high` and `BOLB.low`, and overlay it with the heatmap of `BOLB.labels`.
+        """Plot the median of `BOLB.high` and `BOLB.low` and overlay it with a heatmap of `BOLB.labels`.
 
-        `**kwargs` are passed to `vectorbtpro.generic.accessors.GenericAccessor.overlay_with_heatmap`.
+        Args:
+            column (Label): Column to select for plotting.
+            **kwargs (KwargsLike): Additional keyword arguments passed to
+                `vectorbtpro.generic.accessors.GenericAccessor.overlay_with_heatmap`.
+
+        Returns:
+            BaseFigure: A figure displaying the plotted median with the heatmap overlay.
 
         Usage:
             ```pycon

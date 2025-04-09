@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module with `MACD`."""
+"""Module providing the `MACD` indicator."""
 
 import numpy as np
 
@@ -76,12 +76,13 @@ MACD = IndicatorFactory(
 
 
 class _MACD(MACD):
-    """Moving Average Convergence Divergence (MACD).
+    """Class representing the Moving Average Convergence Divergence (MACD) indicator.
 
-    Is a trend-following momentum indicator that shows the relationship between
-    two moving averages of prices.
+    This trend-following momentum indicator illustrates the relationship between
+    two moving averages of price data.
 
-    See [Moving Average Convergence Divergence – MACD](https://www.investopedia.com/terms/m/macd.asp)."""
+    See [Moving Average Convergence Divergence – MACD](https://www.investopedia.com/terms/m/macd.asp).
+    """
 
     def plot(
         self,
@@ -93,16 +94,22 @@ class _MACD(MACD):
         fig: tp.Optional[tp.BaseFigure] = None,
         **layout_kwargs,
     ) -> tp.BaseFigure:
-        """Plot `MACD.macd`, `MACD.signal` and `MACD.hist`.
+        """Plot the `MACD.macd`, `MACD.signal`, and `MACD.hist` values of the indicator.
 
         Args:
             column (str): Name of the column to plot.
-            macd_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter` for `MACD.macd`.
-            signal_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter` for `MACD.signal`.
-            hist_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Bar` for `MACD.hist`.
+            macd_trace_kwargs (dict): Keyword arguments passed to
+                `plotly.graph_objects.Scatter` for plotting the `MACD.macd` line.
+            signal_trace_kwargs (dict): Keyword arguments passed to
+                `plotly.graph_objects.Scatter` for plotting the `MACD.signal` line.
+            hist_trace_kwargs (dict): Keyword arguments passed to
+                `plotly.graph_objects.Bar` for plotting the `MACD.hist` as a histogram.
             add_trace_kwargs (dict): Keyword arguments passed to `fig.add_trace` when adding each trace.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
-            **layout_kwargs: Keyword arguments for configuring the figure layout.
+            **layout_kwargs: Additional keyword arguments for configuring the figure layout.
+
+        Returns:
+            BaseFigure: The updated figure with the MACD indicator plots.
 
         Usage:
             ```pycon

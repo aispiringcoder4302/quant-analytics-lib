@@ -381,7 +381,7 @@ def default_getattr_func(
     obj: tp.Any,
     attr: str,
     args: tp.Optional[tp.Args] = None,
-    kwargs: tp.Optional[tp.Kwargs] = None,
+    kwargs: tp.KwargsLike = None,
     call_attr: bool = True,
 ) -> tp.Any:
     """Retrieve an attribute from an object using default behavior.
@@ -390,7 +390,7 @@ def default_getattr_func(
         obj (Any): The object from which to retrieve the attribute.
         attr (str): The attribute name to access.
         args (Args): Positional arguments passed for calling a callable attribute.
-        kwargs (Kwargs): Keyword arguments passed for calling a callable attribute.
+        kwargs (KwargsLike): Keyword arguments passed for calling a callable attribute.
         call_attr (bool): Indicates whether to call the attribute if it is callable.
 
     Returns:

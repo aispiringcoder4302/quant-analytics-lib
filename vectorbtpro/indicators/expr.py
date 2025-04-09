@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Functions and config for evaluating indicator expressions."""
+"""Module providing functions and config for evaluating indicator expressions."""
 
 import math
 
@@ -44,51 +44,113 @@ __all__ = []
 
 # ############# Delay ############# #
 
-
 def delay(x: tp.Array2d, d: float) -> tp.Array2d:
-    """Value of `x` `d` days ago."""
+    """Return the value of `x` from `d` days ago.
+
+    Args:
+        x (Array2d): Input array.
+        d (float): Number of days specifying the delay.
+
+    Returns:
+        Array2d: The shifted array reflecting the value from the specified delay.
+    """
     return fshift_nb(x, math.floor(d))
 
 
 def delta(x: tp.Array2d, d: float) -> tp.Array2d:
-    """Today’s value of `x` minus the value of `x` `d` days ago."""
+    """Return today's value of `x` minus its value from `d` days ago.
+
+    Args:
+        x (Array2d): Input array.
+        d (float): Number of days delay.
+
+    Returns:
+        Array2d: The difference between the current and delayed values.
+    """
     return diff_nb(x, math.floor(d))
 
 
 # ############# Cross-section ############# #
 
-
 def cs_rescale(x: tp.Array2d) -> tp.Array2d:
-    """Rescale `x` such that `sum(abs(x)) = 1`."""
+    """Rescale `x` such that the sum of its absolute values equals 1.
+
+    Args:
+        x (Array2d): Input array.
+
+    Returns:
+        Array2d: The rescaled array with normalized absolute sum.
+    """
     return (x.T / np.abs(x).sum(axis=1)).T
 
 
 def cs_rank(x: tp.Array2d) -> tp.Array2d:
-    """Rank cross-sectionally."""
+    """Rank the elements of `x` cross-sectionally, expressed as percentages.
+
+    Args:
+        x (Array2d): Input array.
+
+    Returns:
+        Array2d: The cross-sectional ranks in percentage form.
+    """
     return rank_nb(x.T, pct=True).T
 
 
 def cs_demean(x: tp.Array2d, g: tp.GroupByLike, context: tp.KwargsLike = None) -> tp.Array2d:
-    """Demean `x` against groups `g` cross-sectionally."""
+    """Demean `x` cross-sectionally using the grouping defined by `g`.
+
+    Args:
+        x (Array2d): Input array.
+        g (GroupByLike): Grouping specification for demeaning.
+        context (KwargsLike): Additional context containing a `wrapper` with column information.
+
+    Returns:
+        Array2d: The demeaned array.
+    """
     group_map = Grouper(context["wrapper"].columns, g).get_group_map()
     return demean_nb(x, group_map)
 
 
 # ############# Rolling ############# #
 
-
 def ts_min(x: tp.Array2d, d: float) -> tp.Array2d:
-    """Return the rolling min."""
+    """Return the rolling minimum value over a window defined by `d` days.
+
+    Args:
+        x (Array2d): Input array.
+        d (float): Number of days defining the rolling window.
+
+    Returns:
+        Array2d: The rolling minimum values.
+    """
     return rolling_min_nb(x, math.floor(d))
 
 
 def ts_max(x: tp.Array2d, d: float) -> tp.Array2d:
-    """Return the rolling max."""
+    """Return the rolling maximum value over a window defined by `d` days.
+
+    Args:
+        x (Array2d): Input array.
+        d (float): Number of days defining the rolling window.
+
+    Returns:
+        Array2d: The rolling maximum values.
+    """
     return rolling_max_nb(x, math.floor(d))
 
 
 def ts_argmin(x: tp.Array2d, d: float) -> tp.Array2d:
-    """Return the rolling argmin."""
+    """Return the rolling index of the minimum value over a window defined by `d` days,
+    adjusted to be 1-indexed.
+
+    Args:
+        x (Array2d): Input array.
+        d (float): Number of days defining the rolling window.
+
+    Returns:
+        Array2d: The 1-indexed rolling indices of the minimum values,
+            with missing values represented as NaN.
+    """
     argmin = rolling_argmin_nb(x, math.floor(d), local=True)
     if -1 in argmin:
         argmin = np.where(argmin != -1, argmin, np.nan)
@@ -96,7 +158,17 @@ def ts_argmin(x: tp.Array2d, d: float) -> tp.Array2d:
 
 
 def ts_argmax(x: tp.Array2d, d: float) -> tp.Array2d:
-    """Return the rolling argmax."""
+    """Return the rolling index of the maximum value over a window defined by `d` days,
+    adjusted to be 1-indexed.
+
+    Args:
+        x (Array2d): Input array.
+        d (float): Number of days defining the rolling window.
+
+    Returns:
+        Array2d: The 1-indexed rolling indices of the maximum values,
+            with missing values represented as NaN.
+    """
     argmax = rolling_argmax_nb(x, math.floor(d), local=True)
     if -1 in argmax:
         argmax = np.where(argmax != -1, argmax, np.nan)
@@ -104,60 +176,151 @@ def ts_argmax(x: tp.Array2d, d: float) -> tp.Array2d:
 
 
 def ts_rank(x: tp.Array2d, d: float) -> tp.Array2d:
-    """Return the rolling rank."""
+    """Return the rolling rank of elements over a window defined by `d` days,
+    expressed as a percentage.
+
+    Args:
+        x (Array2d): Input array.
+        d (float): Number of days defining the rolling window.
+
+    Returns:
+        Array2d: The rolling ranks as percentages.
+    """
     return rolling_rank_nb(x, math.floor(d), pct=True)
 
 
 def ts_sum(x: tp.Array2d, d: float) -> tp.Array2d:
-    """Return the rolling sum."""
+    """Return the rolling sum over a window defined by `d` days.
+
+    Args:
+        x (Array2d): Input array.
+        d (float): Number of days defining the rolling window.
+
+    Returns:
+        Array2d: The rolling sum.
+    """
     return rolling_sum_nb(x, math.floor(d))
 
 
 def ts_product(x: tp.Array2d, d: float) -> tp.Array2d:
-    """Return the rolling product."""
+    """Return the rolling product over a window defined by `d` days.
+
+    Args:
+        x (Array2d): Input array.
+        d (float): Number of days defining the rolling window.
+
+    Returns:
+        Array2d: The rolling product.
+    """
     return rolling_prod_nb(x, math.floor(d))
 
 
 def ts_mean(x: tp.Array2d, d: float) -> tp.Array2d:
-    """Return the rolling mean."""
+    """Return the rolling mean over a window defined by `d` days.
+
+    Args:
+        x (Array2d): Input array.
+        d (float): Number of days defining the rolling window.
+
+    Returns:
+        Array2d: The rolling mean.
+    """
     return rolling_mean_nb(x, math.floor(d))
 
 
 def ts_wmean(x: tp.Array2d, d: float) -> tp.Array2d:
-    """Weighted moving average over the past `d` days with linearly decaying weight."""
+    """Return the weighted moving average over the past `d` days using linearly decaying weights.
+
+    Args:
+        x (Array2d): Input array.
+        d (float): Number of days over which to compute the weighted average.
+
+    Returns:
+        Array2d: The weighted moving average.
+    """
     return wm_mean_nb(x, math.floor(d))
 
 
 def ts_std(x: tp.Array2d, d: float) -> tp.Array2d:
-    """Return the rolling standard deviation."""
+    """Return the rolling standard deviation over a window defined by `d` days.
+
+    Args:
+        x (Array2d): Input array.
+        d (float): Number of days defining the rolling window.
+
+    Returns:
+        Array2d: The rolling standard deviation.
+    """
     return rolling_std_nb(x, math.floor(d))
 
 
 def ts_corr(x: tp.Array2d, y: tp.Array2d, d: float) -> tp.Array2d:
-    """Time-serial correlation of `x` and `y` for the past `d` days."""
+    """Return the time-serial correlation between `x` and `y` over a window defined by `d` days.
+
+    Args:
+        x (Array2d): First input array.
+        y (Array2d): Second input array.
+        d (float): Number of days defining the time window.
+
+    Returns:
+        Array2d: The rolling correlation values.
+    """
     return rolling_corr_nb(x, y, math.floor(d))
 
 
 def ts_cov(x: tp.Array2d, y: tp.Array2d, d: float) -> tp.Array2d:
-    """Time-serial covariance of `x` and `y` for the past `d` days."""
+    """Return the time-serial covariance between `x` and `y` over a window defined by `d` days.
+
+    Args:
+        x (Array2d): First input array.
+        y (Array2d): Second input array.
+        d (float): Number of days defining the time window.
+
+    Returns:
+        Array2d: The rolling covariance values.
+    """
     return rolling_cov_nb(x, y, math.floor(d))
 
 
 def adv(d: float, context: tp.KwargsLike = None) -> tp.Array2d:
-    """Average daily dollar volume for the past `d` days."""
+    """Return the average daily dollar volume calculated over the past `d` days.
+
+    Args:
+        d (float): Number of days to consider.
+        context (KwargsLike): A context dictionary expected to contain volume data
+            under the key "volume".
+
+    Returns:
+        Array2d: The average daily dollar volume.
+    """
     return ts_mean(context["volume"], math.floor(d))
 
 
 # ############# Substitutions ############# #
 
-
 def returns(context: tp.KwargsLike = None) -> tp.Array2d:
-    """Daily close-to-close returns."""
+    """Return the daily close-to-close returns.
+
+    Args:
+        context (KwargsLike): A context dictionary expected to contain close prices
+            under the key "close".
+
+    Returns:
+        Array2d: The computed daily returns.
+    """
     return returns_nb(context["close"])
 
 
 def vwap(context: tp.KwargsLike = None) -> tp.Array2d:
-    """VWAP."""
+    """Return the Volume Weighted Average Price (VWAP).
+
+    Args:
+        context (KwargsLike): A context dictionary expected to contain high, low, close,
+            volume, and wrapper data.
+
+    Returns:
+        Array2d: The computed VWAP.
+    """
     if isinstance(context["wrapper"].index, pd.DatetimeIndex):
         group_lens = context["wrapper"].get_index_grouper("D").get_group_lens()
     else:
@@ -166,7 +329,15 @@ def vwap(context: tp.KwargsLike = None) -> tp.Array2d:
 
 
 def cap(context: tp.KwargsLike = None) -> tp.Array2d:
-    """Market capitalization."""
+    """Return the market capitalization calculated as the product of close price and volume.
+
+    Args:
+        context (KwargsLike): A context dictionary expected to contain close prices
+            under the key "close" and volume data under the key "volume".
+
+    Returns:
+        Array2d: The market capitalization.
+    """
     return context["close"] * context["volume"]
 
 
@@ -200,9 +371,9 @@ expr_func_config = HybridConfig(
 
 __pdoc__[
     "expr_func_config"
-] = f"""Config for functions used in indicator expressions.
+] = f"""Configuration for functions used in indicator expressions.
 
-Can be modified.
+This configuration can be modified.
 
 ```python
 {expr_func_config.prettify_doc()}
@@ -220,13 +391,14 @@ expr_res_func_config = HybridConfig(
 
 __pdoc__[
     "expr_res_func_config"
-] = f"""Config for resolvable functions used in indicator expressions.
+] = f"""Configuration for resolvable functions used in indicator expressions.
 
-Can be modified.
+This configuration can be modified.
 
-```python
-{expr_res_func_config.prettify_doc()}
-```
+Usage:
+    ```python
+    {expr_res_func_config.prettify_doc()}
+    ```
 """
 
 wqa101_expr_config = HybridConfig(
@@ -514,12 +686,13 @@ wqa101_expr_config = HybridConfig(
 
 __pdoc__[
     "wqa101_expr_config"
-] = f"""Config with WorldQuant's 101 alpha expressions.
+] = f"""Configuration for WorldQuant's 101 alpha expressions.
 
-See [101 Formulaic Alphas](https://arxiv.org/abs/1601.00991).
+Based on the research presented in [101 Formulaic Alphas](https://arxiv.org/abs/1601.00991).
 
-Can be modified.
+This configuration is modifiable.
 
+Usage:
 ```python
 {wqa101_expr_config.prettify_doc()}
 ```

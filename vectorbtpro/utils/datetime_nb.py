@@ -636,11 +636,11 @@ __pdoc__[
 ```
 
 Fields:
-    SU (int): Start matched; remaining components are unspecified.
-    EU (int): End matched; remaining components are unspecified.
-    U (int): Unknown status.
-    O (int): Outside.
-    I (int): Inside.
+    SU: Start matched; remaining components are unspecified.
+    EU: End matched; remaining components are unspecified.
+    U: Unknown status.
+    O: Outside.
+    I: Inside.
 """
 
 

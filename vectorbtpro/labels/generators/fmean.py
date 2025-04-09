@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module with `FMEAN`."""
+"""Module defining the `FMEAN` indicator."""
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.generic import enums as generic_enums
@@ -46,7 +46,8 @@ FMEAN = IndicatorFactory(
 
 
 class _FMEAN(FMEAN):
-    """Look-ahead indicator based on `vectorbtpro.labels.nb.future_mean_nb`."""
+    """Represents a look-ahead indicator that computes the future mean
+    using `vectorbtpro.labels.nb.future_mean_nb`."""
 
     def plot(
         self,
@@ -58,16 +59,19 @@ class _FMEAN(FMEAN):
         fig: tp.Optional[tp.BaseFigure] = None,
         **layout_kwargs,
     ) -> tp.BaseFigure:
-        """Plot `FMEAN.fmean` against `FMEAN.close`.
+        """Plot the `FMEAN.fmean` indicator against the `FMEAN.close` price.
 
         Args:
             column (str): Name of the column to plot.
-            plot_close (bool): Whether to plot `FMEAN.close`.
-            close_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter` for `FMEAN.close`.
-            fmean_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter` for `FMEAN.fmean`.
+            plot_close (bool): Flag indicating whether to include `FMEAN.close` in the plot.
+            close_trace_kwargs (dict): Keyword arguments for `plotly.graph_objects.Scatter` for `FMEAN.close`.
+            fmean_trace_kwargs (dict): Keyword arguments for `plotly.graph_objects.Scatter` for `FMEAN.fmean`.
             add_trace_kwargs (dict): Keyword arguments passed to `fig.add_trace` when adding each trace.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
-            **layout_kwargs: Keyword arguments for configuring the figure layout.
+            **layout_kwargs: Additional keyword arguments for configuring the figure layout.
+
+        Returns:
+            BaseFigure: The figure object with the plotted indicators.
 
         Usage:
             ```pycon

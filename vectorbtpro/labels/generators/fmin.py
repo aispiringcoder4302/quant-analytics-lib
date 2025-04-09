@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module with `FMIN`."""
+"""Module for the `FMIN` indicator."""
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.indicators.factory import IndicatorFactory
@@ -35,7 +35,7 @@ FMIN = IndicatorFactory(
 
 
 class _FMIN(FMIN):
-    """Look-ahead indicator based on `vectorbtpro.labels.nb.future_min_nb`."""
+    """Implements a look-ahead indicator based on `vectorbtpro.labels.nb.future_min_nb`."""
 
     def plot(
         self,
@@ -51,12 +51,21 @@ class _FMIN(FMIN):
 
         Args:
             column (str): Name of the column to plot.
-            plot_close (bool): Whether to plot `FMIN.close`.
-            close_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter` for `FMIN.close`.
-            fmin_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter` for `FMIN.fmin`.
+            plot_close (bool): Whether to plot `FMIN.close` along with the indicator.
+            close_trace_kwargs (dict): Keyword arguments passed to
+                `plotly.graph_objects.Scatter` for plotting `FMIN.close`.
+
+                These arguments are merged with default settings.
+            fmin_trace_kwargs (dict): Keyword arguments passed to
+                `plotly.graph_objects.Scatter` for plotting `FMIN.fmin`.
+
+                These arguments are merged with default settings.
             add_trace_kwargs (dict): Keyword arguments passed to `fig.add_trace` when adding each trace.
-            fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
-            **layout_kwargs: Keyword arguments for configuring the figure layout.
+            fig (Optional[BaseFigure]): Figure to update. If None, a new figure is created.
+            **layout_kwargs: Additional keyword arguments for configuring the figure layout.
+
+        Returns:
+            BaseFigure: The updated figure object with the plotted traces.
 
         Usage:
             ```pycon

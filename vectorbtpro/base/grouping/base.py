@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Base classes and functions for grouping.
+"""Module providing base classes and functions for grouping.
 
 The `Grouper` class encapsulates metadata related to grouping an index. It provides details such as the number
 of groups, the starting indices of groups, and other information useful for grouping reduction operations.

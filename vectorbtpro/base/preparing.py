@@ -799,7 +799,7 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
         return dict()
 
     @cachedproperty
-    def target_args(self) -> tp.Optional[tp.Kwargs]:
+    def target_args(self) -> tp.KwargsLike:
         """Return a dictionary of arguments to pass to the target function.
 
         Maps parameter names of `target_func` to corresponding preparer attributes using `target_arg_map`.

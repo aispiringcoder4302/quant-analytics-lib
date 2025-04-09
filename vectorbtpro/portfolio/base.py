@@ -446,7 +446,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
     """Class for simulating a portfolio and measuring its performance.
 
     Args:
-        wrapper (ArrayWrapper): Array wrapper.
+        wrapper (ArrayWrapper): Wrapper instance.
 
             See `vectorbtpro.base.wrapping.ArrayWrapper`.
         close (array_like): Last asset price at each time step.

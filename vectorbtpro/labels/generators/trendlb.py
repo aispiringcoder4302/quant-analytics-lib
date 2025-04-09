@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module with `TRENDLB`."""
+"""Module containing the `TRENDLB` indicator."""
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.indicators.configs import flex_elem_param_config
@@ -43,18 +43,24 @@ TRENDLB = IndicatorFactory(
 
 
 class _TRENDLB(TRENDLB):
-    """Label generator based on `vectorbtpro.labels.nb.trend_labels_nb`."""
+    """Label generator for trend detection using `vectorbtpro.labels.nb.trend_labels_nb`."""
 
     def plot(self, column: tp.Optional[tp.Label] = None, **kwargs) -> tp.BaseFigure:
-        """Plot the median of `TRENDLB.high` and `TRENDLB.low`, and overlay it with the heatmap of `TRENDLB.labels`.
-
-        `**kwargs` are passed to `vectorbtpro.generic.accessors.GenericAccessor.overlay_with_heatmap`.
-
+        """Plot the median of `TRENDLB.high` and `TRENDLB.low` and overlay it with a heatmap of `TRENDLB.labels`.
+        
+        Args:
+            column (Optional[Label]): The column from the indicator data to plot.
+            **kwargs (KwargsLike): Additional keyword arguments passed to
+                `vectorbtpro.generic.accessors.GenericAccessor.overlay_with_heatmap`.
+        
+        Returns:
+            BaseFigure: A figure object displaying the overlay of the median and heatmap.
+        
         Usage:
             ```pycon
             >>> vbt.TRENDLB.run(ohlcv['High'], ohlcv['Low'], up_th=0.2, down_th=0.2).plot().show()
             ```
-
+        
             ![](/assets/images/api/TRENDLB.light.svg#only-light){: .iimg loading=lazy }
             ![](/assets/images/api/TRENDLB.dark.svg#only-dark){: .iimg loading=lazy }
         """

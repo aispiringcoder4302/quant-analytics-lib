@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module with `RSI`."""
+"""Module providing the `RSI` indicator."""
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.generic import enums as generic_enums
@@ -48,12 +48,13 @@ RSI = IndicatorFactory(
 class _RSI(RSI):
     """Relative Strength Index (RSI).
 
-    Compares the magnitude of recent gains and losses over a specified time
-    period to measure speed and change of price movements of a security. It is
-    primarily used to attempt to identify overbought or oversold conditions in
-    the trading of an asset.
+    Represents the Relative Strength Index indicator, which measures the speed
+    and change of price movements of a security by comparing the magnitude of
+    recent gains and losses over a specified period. It is primarily used to
+    identify overbought or oversold conditions.
 
-    See [Relative Strength Index (RSI)](https://www.investopedia.com/terms/r/rsi.asp)."""
+    See [Relative Strength Index (RSI)](https://www.investopedia.com/terms/r/rsi.asp).
+    """
 
     def plot(
         self,
@@ -65,16 +66,21 @@ class _RSI(RSI):
         fig: tp.Optional[tp.BaseFigure] = None,
         **layout_kwargs,
     ) -> tp.BaseFigure:
-        """Plot `RSI.rsi`.
+        """Plot the `RSI.rsi` output of the RSI indicator.
 
         Args:
-            column (str): Name of the column to plot.
-            limits (tuple of float): Tuple of the lower and upper limit.
-            rsi_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter` for `RSI.rsi`.
-            add_shape_kwargs (dict): Keyword arguments passed to `fig.add_shape` when adding the range between both limits.
-            add_trace_kwargs (dict): Keyword arguments passed to `fig.add_trace` when adding each trace.
+            column (str): Label of the column to plot.
+            limits (tuple of float): A tuple representing the lower and upper boundaries for the RSI plot.
+            rsi_trace_kwargs (dict): Keyword arguments for configuring the `RSI.rsi` trace,
+                passed to `plotly.graph_objects.Scatter`.
+            add_shape_kwargs (dict): Keyword arguments for `fig.add_shape` when drawing the area between the limits.
+            add_trace_kwargs (dict): Keyword arguments for `fig.add_trace` when adding additional traces.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
-            **layout_kwargs: Keyword arguments for configuring the figure layout.
+            **layout_kwargs: Additional keyword arguments for configuring the figure layout.
+
+        Returns:
+            BaseFigure: A figure object containing the RSI line plot and
+                the shaded area between the specified limits.
 
         Usage:
             ```pycon

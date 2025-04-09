@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module with `PATSIM`."""
+"""Module implementing the `PATSIM` indicator."""
 
 import numpy as np
 
@@ -102,9 +102,10 @@ PATSIM = IndicatorFactory(
 
 
 class _PATSIM(PATSIM):
-    """Rolling pattern similarity.
+    """Rolling pattern similarity indicator.
 
-    Based on `vectorbtpro.generic.nb.rolling.rolling_pattern_similarity_nb`."""
+    It is based on `vectorbtpro.generic.nb.rolling.rolling_pattern_similarity_nb`.
+    """
 
     def plot(
         self,
@@ -118,10 +119,15 @@ class _PATSIM(PATSIM):
 
         Args:
             column (str): Name of the column to plot.
-            similarity_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter` for `PATSIM.similarity`.
+
+            similarity_trace_kwargs (dict): Keyword arguments passed to
+                `plotly.graph_objects.Scatter` for plotting `PATSIM.similarity`.
             add_trace_kwargs (dict): Keyword arguments passed to `fig.add_trace` when adding each trace.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
-            **layout_kwargs: Keyword arguments for configuring the figure layout.
+            **layout_kwargs: Additional keyword arguments for configuring the figure layout.
+
+        Returns:
+            BaseFigure: The updated or newly created figure with the similarity line plotted.
 
         Usage:
             ```pycon
@@ -171,11 +177,17 @@ class _PATSIM(PATSIM):
 
         Args:
             column (str): Name of the column to plot.
-            close_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter` for `PATSIM.close`.
-            similarity_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Heatmap` for `PATSIM.similarity`.
+
+            close_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter`
+                for plotting `PATSIM.close`.
+            similarity_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Heatmap`
+                for plotting `PATSIM.similarity`.
             add_trace_kwargs (dict): Keyword arguments passed to `fig.add_trace` when adding each trace.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
-            **layout_kwargs: Keyword arguments for configuring the figure layout.
+            **layout_kwargs: Additional keyword arguments for configuring the figure layout.
+
+        Returns:
+            BaseFigure: The updated or newly created figure with the heatmap overlay on `PATSIM.close`.
 
         Usage:
             ```pycon

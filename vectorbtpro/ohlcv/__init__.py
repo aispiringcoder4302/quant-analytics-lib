@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Modules for working with OHLC(V) data."""
+"""Modules providing functionality for working with OHLC(V) data."""
 
 from typing import TYPE_CHECKING
 

@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module providing utilities for working with generic time series.
+"""Modules providing utilities for working with generic time series.
 
 In contrast to the `vectorbtpro.base` sub-package, this module focuses on data manipulation and analysis.
 """

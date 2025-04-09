@@ -74,8 +74,10 @@ if TYPE_CHECKING:
     from vectorbtpro.base.indexing import hslice
     from vectorbtpro.base.grouping.base import Grouper
     from vectorbtpro.base.resampling.base import Resampler
+    from vectorbtpro.base.wrapping import ArrayWrapper
     from vectorbtpro.data.base import Data
     from vectorbtpro.generic.splitting.base import FixRange, RelRange
+    from vectorbtpro.indicators.factory import IndicatorBase
 else:
     Regex = "Regex"
     Task = "Task"
@@ -111,9 +113,11 @@ else:
     hslice = "hslice"
     Grouper = "Grouper"
     Resampler = "Resampler"
+    ArrayWrapper = "ArrayWrapper"
     Data = "Data"
     FixRange = "FixRange"
     RelRange = "RelRange"
+    IndicatorBase = "IndicatorBase"
 
 __all__ = []
 
@@ -302,6 +306,30 @@ ParamsOrDict = Union[Params, Dict[Hashable, ParamValues]]
 ParamGrid = Union[ParamsOrLens, Dict[Hashable, ParamsOrLens]]
 ParamComb = Sequence[ParamValue]
 ParamCombOrDict = Union[ParamComb, Dict[Hashable, ParamValue]]
+IFCacheOutput = Any
+IFRawOutput = Tuple[
+    List[Array2d],
+    List[Tuple[ParamValue, ...]],
+    int,
+    List[Any],
+]
+IFArrayList = List[Array2d]
+IFInputMapper = Optional[Array1d]
+IFParamList = List[List[ParamValue]]
+IFMapperList = List[Index]
+IFOtherList = List[Any]
+IFPipelineOutput = Tuple[
+    ArrayWrapper,
+    IFArrayList,
+    IFInputMapper,
+    IFArrayList,
+    IFArrayList,
+    IFParamList,
+    IFMapperList,
+    IFOtherList,
+]
+IFRunOutput = Union[IndicatorBase, Tuple[Any, ...], IFRawOutput, IFCacheOutput]
+IFRunCombsOutput = Tuple[IndicatorBase, ...]
 
 # Mappings
 MappingLike = Union[str, Mapping, NamedTuple, EnumMeta, IndexLike]

@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module with `SIGDET`."""
+"""Module containing the `SIGDET` indicator."""
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.indicators import nb
@@ -51,9 +51,10 @@ SIGDET = IndicatorFactory(
 
 
 class _SIGDET(SIGDET):
-    """Robust peak detection algorithm (using z-scores).
+    """Robust peak detection algorithm using z-scores.
 
-    See https://stackoverflow.com/a/22640362"""
+    For additional details, see [this StackOverflow answer](https://stackoverflow.com/a/22640362).
+    """
 
     def plot(
         self,
@@ -63,14 +64,19 @@ class _SIGDET(SIGDET):
         fig: tp.Optional[tp.BaseFigure] = None,
         **layout_kwargs,
     ) -> tp.BaseFigure:
-        """Plot `SIGDET.signal` against `SIGDET.close`.
+        """Plot the signal from `SIGDET.signal`.
 
         Args:
             column (str): Name of the column to plot.
-            signal_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter` for `SIGDET.signal`.
-            add_trace_kwargs (dict): Keyword arguments passed to `fig.add_trace` when adding each trace.
+            signal_trace_kwargs (dict): Additional keyword arguments forwarded
+                to `plotly.graph_objects.Scatter` for plotting `SIGDET.signal`.
+            add_trace_kwargs (dict): Additional keyword arguments forwarded
+                to `fig.add_trace` when adding the trace.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
-            **layout_kwargs: Keyword arguments for configuring the figure layout.
+            **layout_kwargs: Additional keyword arguments for configuring the figure layout.
+
+        Returns:
+            BaseFigure: Figure object containing the plotted signal.
 
         Usage:
             ```pycon
@@ -110,17 +116,20 @@ class _SIGDET(SIGDET):
         fig: tp.Optional[tp.BaseFigure] = None,
         **layout_kwargs,
     ) -> tp.BaseFigure:
-        """Plot `SIGDET.upper_band` and `SIGDET.lower_band` against `SIGDET.close`.
+        """Plot the upper and lower bands from `SIGDET.upper_band` and `SIGDET.lower_band` against the close values from `SIGDET.close`.
 
         Args:
             column (str): Name of the column to plot.
             plot_close (bool): Whether to plot `SIGDET.close`.
-            close_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter` for `SIGDET.close`.
-            upper_band_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter` for `SIGDET.upper_band`.
-            lower_band_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter` for `SIGDET.lower_band`.
-            add_trace_kwargs (dict): Keyword arguments passed to `fig.add_trace` when adding each trace.
+            close_trace_kwargs (dict): Additional keyword arguments forwarded to `plotly.graph_objects.Scatter` for plotting `SIGDET.close`.
+            upper_band_trace_kwargs (dict): Additional keyword arguments forwarded to `plotly.graph_objects.Scatter` for plotting `SIGDET.upper_band`.
+            lower_band_trace_kwargs (dict): Additional keyword arguments forwarded to `plotly.graph_objects.Scatter` for plotting `SIGDET.lower_band`.
+            add_trace_kwargs (dict): Additional keyword arguments forwarded to `fig.add_trace` when adding each trace.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
-            **layout_kwargs: Keyword arguments for configuring the figure layout.
+            **layout_kwargs: Additional keyword arguments for configuring the figure layout.
+
+        Returns:
+            BaseFigure: Figure object containing the plotted bands (and close line if requested).
 
         Usage:
             ```pycon

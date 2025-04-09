@@ -2657,7 +2657,7 @@ class Wrapping(Configured, HasWrapper, IndexApplier, AttrResolverMixin):
     """Class for wrapping functionalities with a global `ArrayWrapper`.
 
     Args:
-        wrapper (ArrayWrapper): The array wrapper instance used globally.
+        wrapper (ArrayWrapper): Wrapper instance.
         **kwargs: Keyword arguments for parent configurations.
     """
 

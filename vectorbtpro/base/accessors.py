@@ -814,7 +814,7 @@ class BaseAccessor(Wrapping):
     `BaseAccessor.wrapper`.
 
     Args:
-        wrapper (Union[ArrayWrapper, tp.ArrayLike]): Array wrapper or array if `obj` is not provided.
+        wrapper (Union[ArrayWrapper, tp.ArrayLike]): Wrapper instance or array if `obj` is not provided.
         obj (Optional[tp.ArrayLike]): Array if `wrapper` is an array wrapper.
         **kwargs: Keyword arguments distributed between
             `vectorbtpro.base.wrapping.ArrayWrapper` and `vectorbtpro.base.wrapping.Wrapping`.

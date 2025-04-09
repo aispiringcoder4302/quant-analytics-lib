@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Configs for custom indicators."""
+"""Module containing configurations for custom indicators."""
 
 from vectorbtpro.utils.config import ReadonlyConfig
 
@@ -24,7 +24,7 @@ flex_elem_param_config = ReadonlyConfig(
         broadcast_kwargs=dict(keep_flex=True, min_ndim=2),
     )
 )
-"""Config for flexible element-wise parameters."""
+"""Configuration for flexible element-wise parameters."""
 
 flex_row_param_config = ReadonlyConfig(
     dict(
@@ -33,7 +33,7 @@ flex_row_param_config = ReadonlyConfig(
         broadcast_kwargs=dict(keep_flex=True, min_ndim=1),
     )
 )
-"""Config for flexible row-wise parameters."""
+"""Configuration for flexible row-wise parameters."""
 
 flex_col_param_config = ReadonlyConfig(
     dict(
@@ -43,4 +43,4 @@ flex_col_param_config = ReadonlyConfig(
         broadcast_kwargs=dict(keep_flex=True, min_ndim=1),
     )
 )
-"""Config for flexible column-wise parameters."""
+"""Configuration for flexible column-wise parameters."""

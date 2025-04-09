@@ -8,12 +8,13 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Numba-compiled functions for OHLCV.
+"""Module providing numba-compiled functions for processing OHLCV data.
 
 !!! note
-    vectorbt treats matrices as first-class citizens and expects input arrays to be
-    2-dim, unless function has suffix `_1d` or is meant to be input to another function.
-    Data is processed along index (axis 0)."""
+    `vectorbtpro` treats matrices as first-class citizens and expects input arrays to be
+    two-dimensional unless a function has a `_1d` suffix or is used as input to another function.
+    Data is processed along the index (axis 0).
+"""
 
 import numpy as np
 from numba import prange
@@ -33,7 +34,15 @@ __all__ = []
 
 @register_jitted(cache=True)
 def ohlc_every_1d_nb(price: tp.Array1d, n: tp.FlexArray1dLike) -> tp.Array2d:
-    """Aggregate every `n` price points into an OHLC point."""
+    """Aggregate every n price points into an OHLC bar.
+
+    Args:
+        price (Array1d): A one-dimensional array of price data.
+        n (FlexArray1dLike): The number of consecutive price points to aggregate.
+
+    Returns:
+        Array2d: A two-dimensional array where each row represents an OHLC bar.
+    """
     n_ = to_1d_array_nb(np.asarray(n))
     out = np.empty((price.shape[0], 4), dtype=float_)
     vmin = np.inf
@@ -80,7 +89,25 @@ def mirror_ohlc_1d_nb(
     start_value: float = np.nan,
     ref_feature: int = -1,
 ) -> tp.Tuple[tp.Array1d, tp.Array1d, tp.Array1d, tp.Array1d]:
-    """Mirror OHLC."""
+    """Mirror OHLC arrays by applying a cumulative scaling based on logarithmic returns.
+
+    Args:
+        n_rows (int): Number of rows for the output arrays.
+        open (Optional[Array1d]): 1D array of open prices.
+        high (Optional[Array1d]): 1D array of high prices.
+        low (Optional[Array1d]): 1D array of low prices.
+        close (Optional[Array1d]): 1D array of close prices.
+        start_value (float): Initial value for the reference price.
+
+            If provided and not NaN, it replaces the first valid reference price.
+        ref_feature (int): Indicator for the reference price feature.
+
+            See `vectorbtpro.ohlcv.enums.PriceFeature` for available options.
+            A value of -1 enables auto-detection of the first non-NaN price.
+
+    Returns:
+        Tuple[Array1d, Array1d, Array1d, Array1d]: Mirrored open, high, low, and close arrays.
+    """
     new_open = np.empty(n_rows, dtype=float_)
     new_high = np.empty(n_rows, dtype=float_)
     new_low = np.empty(n_rows, dtype=float_)
@@ -199,7 +226,29 @@ def mirror_ohlc_nb(
     start_value: tp.FlexArray1dLike = np.nan,
     ref_feature: tp.FlexArray1dLike = -1,
 ) -> tp.Tuple[tp.Array2d, tp.Array2d, tp.Array2d, tp.Array2d]:
-    """2-dim version of `mirror_ohlc_1d_nb`."""
+    """Generate mirrored OHLC arrays for two-dimensional inputs by applying the 1D operation column-wise.
+
+    Args:
+        target_shape (Shape): Shape of the output arrays (rows, columns).
+        open (Optional[Array2d]): 2D array of open prices.
+        high (Optional[Array2d]): 2D array of high prices.
+        low (Optional[Array2d]): 2D array of low prices.
+        close (Optional[Array2d]): 2D array of close prices.
+        start_value (FlexArray1dLike): Scalar or 1D array specifying the starting value.
+
+            If provided and not NaN, it replaces the first valid reference price.
+        ref_feature (FlexArray1dLike): Scalar or 1D array specifying the reference price feature.
+
+            See `vectorbtpro.ohlcv.enums.PriceFeature` for available options.
+            A value of -1 enables auto-detection of the first non-NaN price.
+
+    Returns:
+        Tuple[Array2d, Array2d, Array2d, Array2d]: Mirrored open, high, low, and
+            close arrays with the specified shape.
+
+    !!! tip
+        This function is parallelizable.
+    """
     start_value_ = to_1d_array_nb(np.asarray(start_value))
     ref_feature_ = to_1d_array_nb(np.asarray(ref_feature))
 

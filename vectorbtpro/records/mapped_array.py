@@ -467,7 +467,7 @@ class MappedArray(Analyzable):
     `vectorbtpro.records.base.Records` class.
 
     Args:
-        wrapper (ArrayWrapper): Array wrapper.
+        wrapper (ArrayWrapper): Wrapper instance.
 
             See `vectorbtpro.base.wrapping.ArrayWrapper`.
         mapped_arr (array_like): A one-dimensional array of mapped record values.

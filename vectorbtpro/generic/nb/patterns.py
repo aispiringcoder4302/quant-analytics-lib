@@ -224,7 +224,7 @@ def fit_pattern_nb(
         error_type (int): Identifier for the error calculation mode.
 
             See `vectorbtpro.generic.enums.ErrorType`.
-        max_error (FlexArray1dLike): Array-like values representing the maximum error to be resized.
+        max_error (FlexArray1dLike): Maximum error to be resized.
         max_error_interp_mode (Optional[int]): Interpolation mode for resizing `max_error`.
 
             If None, `interp_mode` is used.

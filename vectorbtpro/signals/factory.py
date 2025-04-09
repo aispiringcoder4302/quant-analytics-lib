@@ -24,7 +24,7 @@ from numba import njit
 from vectorbtpro import _typing as tp
 from vectorbtpro._dtypes import *
 from vectorbtpro.base import combining
-from vectorbtpro.indicators.factory import IndicatorFactory, IndicatorBase, CacheOutputT
+from vectorbtpro.indicators.factory import IndicatorFactory, IndicatorBase
 from vectorbtpro.registries.jit_registry import jit_reg
 from vectorbtpro.signals.enums import FactoryMode
 from vectorbtpro.signals.nb import generate_nb, generate_ex_nb, generate_enex_nb, first_place_nb
@@ -719,10 +719,10 @@ class SignalFactory(IndicatorFactory):
             exit_kwargs: tp.KwargsLike = None,
             cache_kwargs: tp.KwargsLike = None,
             return_cache: bool = False,
-            use_cache: tp.Optional[CacheOutputT] = None,
+            use_cache: tp.Optional[tp.IFCacheOutput] = None,
             execute_kwargs: tp.KwargsLike = None,
             **_kwargs,
-        ) -> tp.Union[CacheOutputT, tp.Array2d, tp.List[tp.Array2d]]:
+        ) -> tp.Union[tp.IFCacheOutput, tp.Array2d, tp.List[tp.Array2d]]:
             # Get arguments
             if len(input_list) == 0:
                 if input_shape is None:

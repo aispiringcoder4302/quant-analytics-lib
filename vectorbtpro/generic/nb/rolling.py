@@ -1342,7 +1342,7 @@ def ma_1d_nb(
     Args:
         arr (Array1d): 1-dimensional input array.
         window (int): The window size for the moving average calculation.
-        wtype (int): Mode for the moving average.
+        wtype (int): Weighting type.
 
             Expected values are defined in `vectorbtpro.generic.enums.WType`.
         minp (Optional[int]): Minimum number of observations required for the calculation.
@@ -1409,7 +1409,7 @@ def msd_1d_nb(
     adjust: bool = False,
     ddof: int = 0,
 ) -> tp.Array1d:
-    """Compute a moving standard deviation on a 1-dimensional array using a specified window type.
+    """Compute a moving standard deviation on a 1-dimensional array using a specified weighting type.
 
     Args:
         arr (Array1d): Input array of numerical values.

@@ -642,7 +642,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
     """Class for downloading, updating, and managing data from a data source.
 
     Args:
-        wrapper (ArrayWrapper): Instance providing array functionalities.
+        wrapper (ArrayWrapper): Wrapper instance.
         data (Union[feature_dict, symbol_dict]): Data dictionary structured as feature-oriented
             (`feature_dict`) or symbol-oriented (`symbol_dict`).
         single_key (bool): Flag indicating if the data dictionary contains a single key.

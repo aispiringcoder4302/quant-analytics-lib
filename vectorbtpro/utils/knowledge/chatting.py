@@ -5074,7 +5074,8 @@ class Contextable(HasSettings):
 class RankContextable(Rankable, Contextable):
     """Abstract class combining `Rankable` and `Contextable` functionalities.
 
-    This abstract class integrates ranking with contextual chat processing by applying ranking methods to chat queries when ranking parameters are provided.
+    This abstract class integrates ranking with contextual chat processing by applying
+    ranking methods to chat queries when ranking parameters are provided.
     """
 
     @hybrid_method

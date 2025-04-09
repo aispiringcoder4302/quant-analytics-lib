@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module with `MA`."""
+"""Module defining the `MA` indicator."""
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.generic import enums as generic_enums
@@ -48,10 +48,11 @@ MA = IndicatorFactory(
 class _MA(MA):
     """Moving Average (MA).
 
-    A moving average is a widely used indicator in technical analysis that helps smooth out
-    price action by filtering out the “noise” from random short-term price fluctuations.
+    A moving average is a popular technical analysis indicator that smooths out price
+    fluctuations by filtering out short-term noise from the price data.
 
-    See [Moving Average (MA)](https://www.investopedia.com/terms/m/movingaverage.asp)."""
+    See [Moving Average (MA)](https://www.investopedia.com/terms/m/movingaverage.asp).
+    """
 
     def plot(
         self,
@@ -63,16 +64,19 @@ class _MA(MA):
         fig: tp.Optional[tp.BaseFigure] = None,
         **layout_kwargs,
     ) -> tp.BaseFigure:
-        """Plot `MA.ma` against `MA.close`.
+        """Plot the moving average alongside the close price.
 
         Args:
-            column (str): Name of the column to plot.
-            plot_close (bool): Whether to plot `MA.close`.
-            close_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter` for `MA.close`.
-            ma_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter` for `MA.ma`.
-            add_trace_kwargs (dict): Keyword arguments passed to `fig.add_trace` when adding each trace.
+            column (Optional[Label]): Name of the column to select for plotting.
+            plot_close (bool): Whether to include the close price trace in the plot.
+            close_trace_kwargs (KwargsLike): Additional keyword arguments for the `MA.close` scatter trace.
+            ma_trace_kwargs (KwargsLike): Additional keyword arguments for the `MA.ma` scatter trace.
+            add_trace_kwargs (KwargsLike): Additional keyword arguments for adding a trace using `fig.add_trace`.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
-            **layout_kwargs: Keyword arguments for configuring the figure layout.
+            **layout_kwargs: Additional keyword arguments for configuring the figure layout.
+
+        Returns:
+            BaseFigure: The figure with the plotted moving average and close price traces.
 
         Usage:
             ```pycon

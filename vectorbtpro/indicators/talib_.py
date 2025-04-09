@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Helper functions for TA-Lib."""
+"""Module providing helper functions for TA-Lib integration."""
 
 import inspect
 
@@ -33,7 +33,20 @@ __all__ = [
 
 
 def talib_func(func_name: str) -> tp.Callable:
-    """Get the TA-Lib indicator function."""
+    """Get a TA-Lib indicator function.
+    
+    Verifies the availability of TA-Lib and returns a callable that applies the specified TA-Lib
+    indicator on provided data. The returned function handles input arrays in various formats and
+    optionally performs broadcasting, resampling, and output wrapping.
+    
+    Args:
+        func_name (str): Name of the TA-Lib indicator function.
+
+            Case is ignored.
+        
+    Returns:
+        Callable: A function that executes `talib.<FUNC_NAME>` on NumPy arrays, Pandas Series, or DataFrames.
+    """
     from vectorbtpro.utils.module_ import assert_can_import
 
     assert_can_import("talib")
@@ -272,25 +285,47 @@ def talib_func(func_name: str) -> tp.Callable:
     
 Requires [TA-Lib](https://github.com/mrjbq7/ta-lib) installed.
 
-Set `timeframe` to a frequency to resample the input arrays to this frequency, run the function,
-and then resample the output arrays back to the original frequency. Optionally, provide `resample_map`
-as a dictionary that maps input names to resample-apply function names. Keyword arguments 
-`resample_kwargs` are passed to `vectorbtpro.generic.accessors.GenericAccessor.resample_apply`
-while `realign_kwargs` are passed to `vectorbtpro.generic.accessors.GenericAccessor.realign`.
-Both can be also provided as sequences of dictionaries - one dictionary per input and output respectively.
+Args:
+    *args (ArrayLike): Positional arguments corresponding to TA-Lib indicator input arrays.
+    timeframe (FrequencyLike): Frequency to resample input arrays before applying the function.
+    
+        Resamples the input arrays to this frequency, runs the function, and then resamples 
+        the output arrays back to the original frequency.
+    resample_map (dict): Mapping from input names to resampling aggregation methods.
+    resample_kwargs (Sequence[dict]): Keyword arguments for resampling, passed to 
+        `vectorbtpro.generic.accessors.GenericAccessor.resample_apply`.
+    realign_kwargs (Sequence[dict]): Keyword arguments for realigning outputs, passed to 
+        `vectorbtpro.generic.accessors.GenericAccessor.realign`.
+    wrapper (ArrayWrapper): Instance used for wrapping inputs and outputs.
+    skipna (bool): If True, apply the TA-Lib function only on non-NA values.
+    silence_warnings (bool): If True, suppress warnings during frequency handling.
+    broadcast_kwargs (dict): Additional keyword arguments for broadcasting input arrays.
+    wrap_kwargs (dict): Keyword arguments for wrapping output arrays.
+    wrap (bool): Determines whether to wrap the outputs in a Pandas format.
+    unpack_to (str): If provided, unpacks the output into a dictionary or DataFrame.
+    **kwargs: Additional keyword arguments passed to the TA-Lib function.
 
-Set `skipna` to True to run the TA-Lib function on non-NA values only.
-
-Broadcasts the input arrays if they have different types or shapes.
-
-If one of the input arrays is a Series/DataFrame, wraps the output arrays into a Pandas format.
-To enable or disable wrapping, set `wrap` to True and False respectively."""
-
+Returns:
+    Union[MaybeTuple[AnyArray], Dict[str, AnyArray]]: The result from the TA-Lib indicator function. 
+        
+        A single output array is returned if the indicator produces one output; otherwise, 
+        a tuple of arrays is returned. If `unpack_to` is specified, the output is unpacked 
+        into a dictionary or DataFrame.
+"""
     return run_talib_func
 
 
 def talib_plot_func(func_name: str) -> tp.Callable:
-    """Get the TA-Lib indicator plotting function."""
+    """Return a function that plots output arrays of the specified TA-Lib indicator.
+
+    Args:
+        func_name (str): Name of the TA-Lib indicator function.
+
+            Case-insensitive identifier.
+
+    Returns:
+        Callable: A plotting function for the TA-Lib indicator.
+    """
     from vectorbtpro.utils.module_ import assert_can_import
 
     assert_can_import("talib")
@@ -473,12 +508,19 @@ def talib_plot_func(func_name: str) -> tp.Callable:
     run_talib_plot_func.__doc__ = f"""Plot output arrays of `talib.{func_name}`.
 
 Args:
-    column (str): Name of the column to plot.
-    limits (tuple of float): Tuple of the lower and upper limit.
-    {output_trace_kwargs_docstring}
-    add_shape_kwargs (dict): Keyword arguments passed to `fig.add_shape` when adding the range between both limits.
-    add_trace_kwargs (dict): Keyword arguments passed to `fig.add_trace` when adding each trace.
-    fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
-    **layout_kwargs: Keyword arguments for configuring the figure layout."""
+    {', '.join(output_names)} (ArrayLike): TA-Lib indicator output arrays corresponding to the respective outputs.
+    wrapper (Optional[ArrayWrapper]): Optional wrapper instance used to convert raw output arrays.
+    wrap_kwargs (dict): Additional keyword arguments for wrapping the output arrays.
 
+    column (str): Name of the column to plot.
+    limits (tuple of float): Tuple representing the lower and upper limits for the plot.
+    {output_trace_kwargs_docstring}
+    add_shape_kwargs (dict): Keyword arguments passed to `fig.add_shape` when adding the range between limits.
+    add_trace_kwargs (dict): Keyword arguments passed to `fig.add_trace` for each trace.
+    fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
+    **layout_kwargs: Keyword arguments for configuring the figure layout.
+
+Returns:
+    BaseFigure: The figure updated with the TA-Lib indicator plots.
+"""
     return run_talib_plot_func
