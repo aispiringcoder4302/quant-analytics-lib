@@ -226,7 +226,7 @@ class SerialEngine(ExecutionEngine):
     Args:
         show_progress (Optional[bool]): Determines whether to display the progress bar.
         pbar_kwargs (KwargsLike): Keyword arguments for configuring `vectorbtpro.utils.pbar.ProgressBar`.
-        clear_cache (Union[None, bool, int]): Indicates whether to clear vectorbt's cache after each iteration.
+        clear_cache (Union[None, bool, int]): Indicates whether to clear vectorbtpro's cache after each iteration.
 
             If provided as an integer, clears the cache every specified number of tasks.
         collect_garbage (Union[None, bool, int]): Specifies whether to perform garbage collection
@@ -278,7 +278,7 @@ class SerialEngine(ExecutionEngine):
 
     @property
     def clear_cache(self) -> tp.Union[bool, int]:
-        """Indicates whether to clear vectorbt's cache after each iteration.
+        """Indicates whether to clear vectorbtpro's cache after each iteration.
 
         If provided as an integer, clears the cache every specified number of tasks."""
         return self._clear_cache

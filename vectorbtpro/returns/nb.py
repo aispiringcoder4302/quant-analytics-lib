@@ -180,8 +180,7 @@ def mirror_returns_1d_nb(returns: tp.Array1d, log_returns: bool = False) -> tp.A
 
     Args:
         returns (Array1d): An array of return values.
-        log_returns (bool): If True, compute mirrored logarithmic returns; otherwise,
-            compute mirrored simple returns.
+        log_returns (bool): Flag indicating whether returns are logarithmic.
 
     Returns:
         Array1d: An array of mirrored return values.
@@ -219,8 +218,7 @@ def mirror_returns_nb(
 
     Args:
         returns (Array2d): A 2-dimensional array of return values.
-        log_returns (bool): If True, compute mirrored logarithmic returns;
-            otherwise, compute mirrored simple returns.
+        log_returns (bool): Flag indicating whether returns are logarithmic.
         sim_start (Optional[FlexArray1dLike]): Simulation start indices for each column.
         sim_end (Optional[FlexArray1dLike]): Simulation end indices for each column.
 
@@ -261,8 +259,7 @@ def cumulative_returns_1d_nb(
     Args:
         returns (Array1d): An array of individual return values.
         start_value (float): The initial value used to scale the cumulative returns.
-        log_returns (bool): If True, cumulative returns are calculated using logarithmic sums;
-            otherwise, using product accumulation.
+        log_returns (bool): Flag indicating whether returns are logarithmic.
 
     Returns:
         Array1d: An array of cumulative return values.
@@ -313,7 +310,7 @@ def cumulative_returns_nb(
     Args:
         returns (Array2d): 2D array of periodic returns.
         start_value (float): Initial portfolio value.
-        log_returns (bool): If True, compute cumulative returns using logarithmic returns.
+        log_returns (bool): Flag indicating whether returns are logarithmic.
         sim_start (Optional[FlexArray1dLike]): Array-like start indices for simulation per column.
         sim_end (Optional[FlexArray1dLike]): Array-like end indices for simulation per column.
 
@@ -355,7 +352,7 @@ def final_value_1d_nb(
     Args:
         returns (Array1d): 1D array of periodic returns.
         start_value (float): Initial portfolio value.
-        log_returns (bool): If True, treat returns as logarithmic values.
+        log_returns (bool): Flag indicating whether returns are logarithmic.
 
     Returns:
         float: Final value computed from the returns.
@@ -402,7 +399,7 @@ def final_value_nb(
     Args:
         returns (Array2d): 2D array of periodic returns.
         start_value (float): Initial portfolio value.
-        log_returns (bool): If True, treat returns as logarithmic values.
+        log_returns (bool): Flag indicating whether returns are logarithmic.
         sim_start (Optional[FlexArray1dLike]): Array-like start indices for simulation per column.
         sim_end (Optional[FlexArray1dLike]): Array-like end indices for simulation per column.
 
@@ -462,7 +459,7 @@ def rolling_final_value_nb(
         returns (Array2d): 2D array of periodic returns.
         window (int): Window length for rolling computation.
         start_value (float): Initial portfolio value.
-        log_returns (bool): If True, treat returns as logarithmic values.
+        log_returns (bool): Flag indicating whether returns are logarithmic.
         minp (Optional[int]): Minimum number of valid data points required in the window.
         sim_start (Optional[FlexArray1dLike]): Array-like start indices for simulation per column.
         sim_end (Optional[FlexArray1dLike]): Array-like end indices for simulation per column.
@@ -503,7 +500,7 @@ def total_return_1d_nb(returns: tp.Array1d, log_returns: bool = False) -> float:
 
     Args:
         returns (Array1d): 1D array of periodic returns.
-        log_returns (bool): Whether to compute returns using logarithmic transformation.
+        log_returns (bool): Flag indicating whether returns are logarithmic.
 
     Returns:
         float: Total return computed by setting the initial value to zero.
@@ -532,7 +529,7 @@ def total_return_nb(
 
     Args:
         returns (Array2d): 2D array of periodic returns.
-        log_returns (bool): Whether to compute returns using logarithmic transformation.
+        log_returns (bool): Flag indicating whether returns are logarithmic.
         sim_start (Optional[FlexArray1dLike]): Array-like start indices for simulation per column.
         sim_end (Optional[FlexArray1dLike]): Array-like end indices for simulation per column.
 
@@ -585,7 +582,7 @@ def rolling_total_return_nb(
     Args:
         returns (Array2d): 2D array of periodic returns.
         window (int): Length of the rolling window.
-        log_returns (bool): Whether to compute returns using logarithmic transformation.
+        log_returns (bool): Flag indicating whether returns are logarithmic.
         minp (Optional[int]): Minimum number of valid observations required in a window.
         sim_start (Optional[FlexArray1dLike]): Array-like start indices for simulation ranges.
         sim_end (Optional[FlexArray1dLike]): Array-like end indices for simulation ranges.
@@ -633,7 +630,7 @@ def annualized_return_1d_nb(
     Args:
         returns (Array1d): Array of daily returns.
         ann_factor (float): Factor used for annualization.
-        log_returns (bool): Indicates if the returns are logarithmic.
+        log_returns (bool): Flag indicating whether returns are logarithmic.
         periods (Optional[float]): Number of periods for the return calculation.
             
             If None, the period is determined by the length of the returns array.
@@ -675,7 +672,7 @@ def annualized_return_nb(
     Args:
         returns (Array2d): Two-dimensional array of returns.
         ann_factor (float): Annualization factor.
-        log_returns (bool): Indicates if the returns are logarithmic.
+        log_returns (bool): Flag indicating whether returns are logarithmic.
         periods (Optional[FlexArray1dLike]): Array-like specifying the number of periods for each column.
             
             If None, periods are determined from the simulation range.
@@ -744,7 +741,7 @@ def rolling_annualized_return_nb(
         returns (Array2d): Two-dimensional array of returns.
         window (int): Size of the rolling window.
         ann_factor (float): Annualization factor.
-        log_returns (bool): Indicates if the returns are logarithmic.
+        log_returns (bool): Flag indicating whether returns are logarithmic.
         minp (Optional[int]): Minimum number of observations required in each window.
         sim_start (Optional[FlexArray1dLike]): Array-like of simulation start indices for each column.
         sim_end (Optional[FlexArray1dLike]): Array-like of simulation end indices for each column.
@@ -933,7 +930,7 @@ def max_drawdown_1d_nb(returns: tp.Array1d, log_returns: bool = False) -> float:
 
     Args:
         returns (Array1d): Array of returns.
-        log_returns (bool): If True, treats returns as logarithmic.
+        log_returns (bool): Flag indicating whether returns are logarithmic.
 
     Returns:
         float: Maximum drawdown value; returns nan if no valid returns are present.
@@ -982,7 +979,7 @@ def max_drawdown_nb(
 
     Args:
         returns (Array2d): A 2-dimensional array of returns.
-        log_returns (bool): Whether to compute drawdown using logarithmic returns.
+        log_returns (bool): Flag indicating whether returns are logarithmic.
         sim_start (Optional[FlexArray1dLike]): Array of simulation start indices for each column.
         sim_end (Optional[FlexArray1dLike]): Array of simulation end indices for each column.
 
@@ -1035,7 +1032,7 @@ def rolling_max_drawdown_nb(
     Args:
         returns (Array2d): A 2-dimensional array of returns.
         window (int): The window size for computing the rolling drawdown.
-        log_returns (bool): Whether to use logarithmic returns.
+        log_returns (bool): Flag indicating whether returns are logarithmic.
         minp (Optional[int]): Minimum number of data points required for computation.
         sim_start (Optional[FlexArray1dLike]): Array of simulation start indices for each column.
         sim_end (Optional[FlexArray1dLike]): Array of simulation end indices for each column.
@@ -1081,7 +1078,7 @@ def calmar_ratio_1d_nb(
     Args:
         returns (Array1d): A 1-dimensional array of returns.
         ann_factor (float): The annualization factor.
-        log_returns (bool): Whether to compute using logarithmic returns.
+        log_returns (bool): Flag indicating whether returns are logarithmic.
         periods (Optional[float]): Number of periods for scaling the ratio;
             used in the annualized return computation.
 
@@ -1132,7 +1129,7 @@ def calmar_ratio_nb(
     Args:
         returns (Array2d): A 2-dimensional array of returns.
         ann_factor (float): The annualization factor.
-        log_returns (bool): Whether to compute using logarithmic returns.
+        log_returns (bool): Flag indicating whether returns are logarithmic.
         periods (Optional[FlexArray1dLike]): Array-like periods used for scaling, per column.
         sim_start (Optional[FlexArray1dLike]): Simulation start indices for each column.
         sim_end (Optional[FlexArray1dLike]): Simulation end indices for each column.
@@ -1199,7 +1196,7 @@ def rolling_calmar_ratio_nb(
         returns (Array2d): A 2-dimensional array of returns.
         window (int): The window size for rolling calculation.
         ann_factor (float): The annualization factor.
-        log_returns (bool): Whether returns should be treated as logarithmic.
+        log_returns (bool): Flag indicating whether returns are logarithmic.
         minp (Optional[int]): Minimum number of data points required for a valid rolling calculation.
         sim_start (Optional[FlexArray1dLike]): Simulation start indices for each column.
         sim_end (Optional[FlexArray1dLike]): Simulation end indices for each column.
@@ -3136,7 +3133,7 @@ def capture_ratio_1d_nb(
         returns (Array1d): 1D array of asset returns.
         bm_returns (Array1d): 1D array of benchmark returns.
         ann_factor (float): Annualization factor used in computing annualized returns.
-        log_returns (bool): Indicates whether the returns are logarithmic.
+        log_returns (bool): Flag indicating whether returns are logarithmic.
         periods (Optional[float]): Number of periods used for annualization.
 
     Returns:
@@ -3263,7 +3260,7 @@ def rolling_capture_ratio_nb(
         bm_returns (Array2d): Array of benchmark returns with matching dimensions.
         window (int): Rolling window size.
         ann_factor (float): Annualization factor.
-        log_returns (bool): Flag indicating whether to use logarithmic returns.
+        log_returns (bool): Flag indicating whether returns are logarithmic.
         minp (Optional[int]): Minimum number of observations required per window.
         sim_start (Optional[FlexArray1dLike]): Simulation start indices per asset.
         sim_end (Optional[FlexArray1dLike]): Simulation end indices per asset.
@@ -3313,7 +3310,7 @@ def up_capture_ratio_1d_nb(
         returns (Array1d): 1-d array of returns.
         bm_returns (Array1d): 1-d array of benchmark returns.
         ann_factor (float): Annualization factor.
-        log_returns (bool): Flag indicating whether to use logarithmic returns.
+        log_returns (bool): Flag indicating whether returns are logarithmic.
         periods (Optional[float]): Number of periods to consider.
             
             If None, defaults to the length of the returns array.
@@ -3382,7 +3379,7 @@ def up_capture_ratio_nb(
         returns (Array2d): 2-d array of returns.
         bm_returns (Array2d): 2-d array of benchmark returns.
         ann_factor (float): Annualization factor.
-        log_returns (bool): Flag indicating whether to use logarithmic returns.
+        log_returns (bool): Flag indicating whether returns are logarithmic.
         periods (Optional[FlexArray1dLike]): Periods used for adjustment.
             
             If None, computed as the difference between simulation end and simulation start.
@@ -3455,7 +3452,7 @@ def rolling_up_capture_ratio_nb(
         bm_returns (Array2d): 2-d array of benchmark returns.
         window (int): Rolling window size.
         ann_factor (float): Annualization factor.
-        log_returns (bool): Flag indicating whether to use logarithmic returns.
+        log_returns (bool): Flag indicating whether returns are logarithmic.
         minp (Optional[int]): Minimum number of observations required for each rolling window.
         sim_start (Optional[FlexArray1dLike]): Simulation start indices per asset.
         sim_end (Optional[FlexArray1dLike]): Simulation end indices per asset.
@@ -3509,7 +3506,7 @@ def down_capture_ratio_1d_nb(
         returns (Array1d): 1-dimensional array of asset returns.
         bm_returns (Array1d): 1-dimensional array of benchmark returns.
         ann_factor (float): Annualization factor used for scaling the computed return.
-        log_returns (bool): Convert log returns to simple returns using `np.exp(x) - 1` when True.
+        log_returns (bool): Flag indicating whether returns are logarithmic.
         periods (Optional[float]): Number of periods for annualization.
         
             If None, the function uses the length of the returns array.
@@ -3585,10 +3582,10 @@ def down_capture_ratio_nb(
         returns (Array2d): 2-dimensional array of asset returns.
         bm_returns (Array2d): 2-dimensional array of benchmark returns.
         ann_factor (float): Annualization factor used for scaling the computed return.
-        log_returns (bool): Convert log returns to simple returns using `np.exp(x) - 1` when True.
+        log_returns (bool): Flag indicating whether returns are logarithmic.
         periods (Optional[FlexArray1dLike]): Array-like specifying the number of periods for each column.
         
-            If None, periods are computed as sim_end minus sim_start.
+            If None, periods are computed as `sim_end` minus `sim_start`.
         sim_start (Optional[FlexArray1dLike]): Array-like defining the starting indices for simulation ranges.
         sim_end (Optional[FlexArray1dLike]): Array-like defining the ending indices for simulation ranges.
     
@@ -3664,7 +3661,7 @@ def rolling_down_capture_ratio_nb(
         bm_returns (Array2d): 2-dimensional array of benchmark returns.
         window (int): Size of the rolling window.
         ann_factor (float): Annualization factor used for scaling the computed return.
-        log_returns (bool): Convert log returns to simple returns using `np.exp(x) - 1` when True.
+        log_returns (bool): Flag indicating whether returns are logarithmic.
         minp (Optional[int]): Minimum number of periods required to compute a valid rolling result.
         sim_start (Optional[FlexArray1dLike]): Array-like defining the starting indices for simulation ranges.
         sim_end (Optional[FlexArray1dLike]): Array-like defining the ending indices for simulation ranges.

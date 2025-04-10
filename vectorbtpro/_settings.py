@@ -13,7 +13,7 @@
 `settings` config is also accessible via `vectorbtpro.settings`.
 
 !!! note
-    All places in vectorbt import `vectorbtpro._settings.settings`, not `vectorbtpro.settings`.
+    All places in vectorbtpro import `vectorbtpro._settings.settings`, not `vectorbtpro.settings`.
     Overwriting `vectorbtpro.settings` only overwrites the reference created for the user.
     Consider updating the settings config instead of replacing it.
 
@@ -116,7 +116,7 @@ Some settings (such as Numba-related ones) are applied only on import, so changi
 will have no effect. In this case, change the settings, save them to the disk, and then either
 rename the file to "vbt" (with extension) and place it in the working directory for it to be
 recognized automatically, or create an environment variable "VBT_SETTINGS_PATH" that holds the full path
-to the file - vectorbt will load it before any other module. You can also change the recognized file
+to the file - vectorbtpro will load it before any other module. You can also change the recognized file
 name using an environment variable "VBT_SETTINGS_NAME", which defaults to "vbt".
 
 !!! note
@@ -225,7 +225,7 @@ importing = frozen_cfg(
 __pdoc__["importing"] = Sub(
     """Sub-config with settings applied on importing.
     
-Disabling these options will make vectorbt load faster, but will limit the flexibility of accessing
+Disabling these options will make vectorbtpro load faster, but will limit the flexibility of accessing
 various features of the package.
     
 !!! note

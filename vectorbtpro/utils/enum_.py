@@ -10,7 +10,7 @@
 
 """Module providing utilities for mapping between enum fields and values.
 
-In `vectorbt`, enums are implemented as named tuple instances to facilitate their use with Numba.
+In vectorbtpro, enums are implemented as named tuple instances to facilitate their use with Numba.
 Enum values start at 0, and a value of -1 indicates an undefined enum.
 """
 

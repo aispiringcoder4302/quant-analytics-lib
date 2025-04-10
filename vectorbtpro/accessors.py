@@ -49,7 +49,7 @@ Class methods of any accessor can be conveniently accessed using `pd_acc`, `sr_a
 ```
 
 !!! note
-    Accessors in vectorbt are not cached, so querying `df.vbt` twice will also call `Vbt_DFAccessor` twice.
+    Accessors in vectorbtpro are not cached, so querying `df.vbt` twice will also call `Vbt_DFAccessor` twice.
     You can change this in global settings."""
 
 import pandas as pd
@@ -160,7 +160,7 @@ def register_dataframe_accessor(name: str) -> tp.Callable:
 
 @register_index_accessor("vbt")
 class Vbt_IDXAccessor(DirNamesMixin, BaseIDXAccessor):
-    """The main vectorbt accessor for `pd.Index`."""
+    """The main vectorbtpro accessor for `pd.Index`."""
 
     def __init__(self, obj: tp.Index, **kwargs) -> None:
         self._obj = obj
@@ -176,7 +176,7 @@ __pdoc__["idx_acc"] = False
 
 
 class Vbt_Accessor(DirNamesMixin, GenericAccessor):
-    """The main vectorbt accessor for `pd.Series` and `pd.DataFrame`."""
+    """The main vectorbtpro accessor for `pd.Series` and `pd.DataFrame`."""
 
     def __init__(
         self,
@@ -196,7 +196,7 @@ __pdoc__["pd_acc"] = False
 
 @register_series_accessor("vbt")
 class Vbt_SRAccessor(DirNamesMixin, GenericSRAccessor):
-    """The main vectorbt accessor for `pd.Series`."""
+    """The main vectorbtpro accessor for `pd.Series`."""
 
     def __init__(
         self,
@@ -216,7 +216,7 @@ __pdoc__["sr_acc"] = False
 
 @register_dataframe_accessor("vbt")
 class Vbt_DFAccessor(DirNamesMixin, GenericDFAccessor):
-    """The main vectorbt accessor for `pd.DataFrame`."""
+    """The main vectorbtpro accessor for `pd.DataFrame`."""
 
     def __init__(
         self,

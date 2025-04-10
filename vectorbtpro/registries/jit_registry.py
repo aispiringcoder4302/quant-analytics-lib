@@ -16,7 +16,7 @@ which may share the original signature or have a similar one. Jitters accept var
 to modify execution behavior, allowing a single function to be decorated by multiple jitter
 instances (for example, one using `numba.jit` and another applying a `parallel=True` flag).
 
-In addition to jitters, vectorbt introduces the concept of tasks. A single task can be implemented
+In addition to jitters, vectorbtpro introduces the concept of tasks. A single task can be implemented
 using various jitter types (such as NumPy, Numba, and JAX). For example, a task that converts
 prices to returns can be implemented using both NumPy and Numba. These implementations are
 registered by `JITRegistry` as `JitableSetup` instances, stored in `JITRegistry.jitable_setups`,
@@ -132,7 +132,7 @@ You can also disable jitting globally:
 
 ## Jitted option
 
-Since most vectorbt functions that call other jitted functions accept a `jitted` argument,
+Since most vectorbtpro functions that call other jitted functions accept a `jitted` argument,
 you can provide `jitted` as a dictionary with options, as a string denoting the jitter,
 or as False to disable jitting (see `vectorbtpro.utils.jitting.resolve_jitted_option`):
 
@@ -178,7 +178,7 @@ Options are typically specified during registration using `register_jitted`:
 {'nopython': True, 'nogil': True, 'parallel': True, 'boundscheck': False}
 ```
 
-If you want to change the registration options for vectorbt's built-in jitable functions,
+If you want to change the registration options for vectorbtpro's built-in jitable functions,
 such as `vectorbtpro.generic.nb.base.diff_nb`, you can update the settings.
 For example, to disable caching for all Numba functions:
 

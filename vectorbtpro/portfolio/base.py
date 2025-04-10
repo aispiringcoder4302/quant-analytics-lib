@@ -2631,7 +2631,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         but keep original shape to utilize flexible indexing and to save memory.
 
         For defaults, see `vectorbtpro._settings.portfolio`. Those defaults are not used to fill
-        NaN values after reindexing: vectorbt uses its own sensible defaults, which are usually NaN
+        NaN values after reindexing: vectorbtpro uses its own sensible defaults, which are usually NaN
         for floating arrays and default flags for integer arrays. Use `vectorbtpro.base.reshaping.BCO`
         with `fill_value` to override.
 
@@ -3273,7 +3273,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         but keep original shape to utilize flexible indexing and to save memory.
 
         For defaults, see `vectorbtpro._settings.portfolio`. Those defaults are not used to fill
-        NaN values after reindexing: vectorbt uses its own sensible defaults, which are usually NaN
+        NaN values after reindexing: vectorbtpro uses its own sensible defaults, which are usually NaN
         for floating arrays and default flags for integer arrays. Use `vectorbtpro.base.reshaping.BCO`
         with `fill_value` to override.
 
@@ -3682,7 +3682,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             Sometimes there is a need to provide or transform signals dynamically. For this, we can implement
             a custom signal function `signal_func_nb`. For example, let's implement a signal function that
             takes two numerical arrays - long and short one - and transforms them into 4 direction-aware boolean
-            arrays that vectorbt understands:
+            arrays that vectorbtpro understands:
 
             ```pycon
             >>> @njit
@@ -4293,7 +4293,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             **kwargs: Keyword arguments passed to the `Portfolio` constructor.
 
         For defaults, see `vectorbtpro._settings.portfolio`. Those defaults are not used to fill
-        NaN values after reindexing: vectorbt uses its own sensible defaults, which are usually NaN
+        NaN values after reindexing: vectorbtpro uses its own sensible defaults, which are usually NaN
         for floating arrays and default flags for integer arrays. Use `vectorbtpro.base.reshaping.BCO`
         with `fill_value` to override.
 

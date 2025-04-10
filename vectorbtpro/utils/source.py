@@ -1131,10 +1131,14 @@ Your goal is to refine (rewrite for clarity, correctness, consistent format, and
 - **Use relevant details from the code** to make each docstring clear and self-explanatory for someone who cannot see the source code.
 - **Keep docstrings concise and correct** in grammar and content, but do not remove any valuable information unless it's duplicate.
 - **Mandatory sections**:
-  - Every docstring describing a function or method **with parameters** (excluding only `self`, `cls`, or `cls_or_self`) **must** have an "Args" section.
-  - Every docstring describing a function or method **returning a value other than None must** have a "Returns" section.
-  - If these sections are missing, **you must add them** using the correct format.
-  - Do not add a "Returns" section if the return is explicitly None or redundant for bool values.
+    - Every docstring describing a function or method **with parameters** (excluding only `self`, `cls`, or `cls_or_self`) **must** have an "Args" section.
+    - Every docstring describing a function or method **returning a value other than None must** have a "Returns" section.
+    - If these sections are missing, **you must add them** using the correct format.
+    - Do not add any description in the "Returns" section if the return is explicitly None or redundant for bool values. For example:
+    ```
+    Returns:
+        None
+    ```
 - **Do not explicitly mention the default value of an argument**.
 - **Do not mention that an argument is optional**. For example: `x (Optional[int]): ...` rather than `x (int, optional): ...`.
 - **Retain any admonitions** like `"!!! note"` or `"!!! warning"` exactly as they are.
@@ -1144,41 +1148,51 @@ Your goal is to refine (rewrite for clarity, correctness, consistent format, and
     - **Do not change the indentation** of those code blocks.
     - **Do not prepend** sections to existing code blocks.
 - **Omit sections** such as "Raises," "Attributes," "Methods," or default values.
+- If a function is primarily based on another function, add a section "See" with the reference to the original function. For example:
+    ```
+    See: 
+        `vectorbtpro.signals.nb.generate_enex_nb`
+    ```
 - If a function is decorated with `@register_chunkable` or `@register_jitted` with the `can_parallel` tag, add at the end of the docstring:
-  ```
-  !!! tip
-      This function is parallelizable.
-  ```
+    ```
+    !!! tip
+        This function is parallelizable.
+    ```
 
 ### 3. Style and Format
 
 - **Use Markdown format**.
 - **Follow PEP 257 guidelines**.
 - **Use Google-style docstrings** for arguments and return values. For example:
-  ```
-  Args:
-      arg_name (type): Description of the argument.
+    ```
+    Args:
+        arg_name (type): Description of the argument.
       
-  Returns:
-      type: Description of the return value.
-  ```
-  - If a docstring lacks one of these sections, you must add it in the correct format.
+    Returns:
+        type: Description of the return value.
+    ```
+    - If a docstring lacks one of these sections, you must add it in the correct format.
 - If the description of an argument has multiple sentences, **separate them by an empty line**.
 - **Preserve type hints** as argument types are meant to be parsed.
-  - For instance, `tp.Union[None, int, tp.DatetimeLike, tp.MaybeList[RangeT]]` becomes `Union[None, int, DatetimeLike, MaybeList[Range]]`.
-  - **Do not** replace type hints by human-readable strings (e.g., "or" instead of `Union`).
-  - Remove module prefixes (such as `tp.`) and the suffix `T`.
-  - Keep any `Maybe` types as they are.
-  - Do not change type hints in function signatures.
+    - For instance, `tp.Union[None, int, tp.DatetimeLike, tp.MaybeList[RangeT]]` becomes `Union[None, int, DatetimeLike, MaybeList[Range]]`.
+    - **Do not** replace type hints by human-readable strings (e.g., "or" instead of `Union`).
+    - Remove module prefixes (such as `tp.`) and the suffix `T`.
+    - Keep any `Maybe` types as they are.
+    - Do not change type hints in function signatures.
 - **Always override existing types in the docstring** with the types from the signature.
-  - If a type is already present in the docstring, replace it with the type from the signature.
+    - If a type is already present in the docstring, replace it with the type from the signature.
 - For classes decorated with `@define`, treat them as if decorated with `@attr.s`.
-  - **Do not duplicate fields and their descriptions** in the "Args" section unless the class defines its own `__init__`.
+    - **Do not duplicate fields and their descriptions** in the "Args" section unless the class defines its own `__init__`.
 - For module docstrings, retain the phrasing that **identifies them as a module** (e.g., "Module for/providing").
-- For `__init__.py` module docstrings, retain the phrasing that **identifies them as multiple modules** (e.g., "Modules for/providing").
+- For `__init__.py` module docstrings (see the metadata of the current code context), retain the phrasing that **identifies them as multiple modules** (e.g., "Modules for/providing").
 - For class docstrings, retain the phrasing that **identifies them as a class** (e.g., "Class for/representing").
 - **Begin method docstrings with imperative verbs** (e.g., "Return," "Fetch," "Create").
 - **Properties** should describe what they represent rather than an action (e.g., instead of "Return a dictionary" use "Dictionary").
+    - They should list the type without any description. For example:
+    ```
+    Returns:
+        type
+    ```
 - Bullet points must be at the **same indentation level as the parent sentence** and be separated by one empty line before the list.
 - When dealing with named tuples and enums, replace "Attributes:" with "Fields:" in their docstrings.
 - If an "Examples" section exists, **place it at the end** of the docstring.
@@ -1186,46 +1200,46 @@ Your goal is to refine (rewrite for clarity, correctness, consistent format, and
 ### 4. Referencing
 
 - References are an **integral part** of this documentation. The documentation is rendered on a website where the user can directly click on a reference to jump to its definition. Therefore:
-  - **All references to Python objects must be enclosed in backticks** (e.g., `ArrayWrapper` instead of ArrayWrapper).
-  - **Use fully qualified names** when referring to Python objects that exist outside the current scope (e.g., `vectorbtpro.indicators.custom.SMA.run` instead of `SMA.run` or `run`).
-  - If the referenced object belongs to the same class (e.g., via `self`, `cls`, or `cls_or_self`), prefix the reference with the class name (e.g., `SMA.run` instead of `run`).
-  - If a function forwards its arguments to another function, reference that target (e.g., "Arguments are forwarded to `combine_params`.")
-  - If an argument is a field from a named tuple or an enum, reference that type (e.g., "See `vectorbtpro.generic.enums.WType` for available options.").
-  - **Do not remove existing references**.
+    - **All references to Python objects must be enclosed in backticks** (e.g., `ArrayWrapper` instead of ArrayWrapper).
+    - **Use fully qualified names** when referring to Python objects that exist outside the current scope (e.g., `vectorbtpro.indicators.custom.SMA.run` instead of `SMA.run` or `run`).
+    - If the referenced object belongs to the same class (e.g., via `self`, `cls`, or `cls_or_self`), prefix the reference with the class name (e.g., `SMA.run` instead of `run`).
+    - If a function forwards its arguments to another function, reference that target (e.g., "Arguments are forwarded to `combine_params`.")
+    - If an argument is a field from a named tuple or an enum, reference that type (e.g., "See `vectorbtpro.generic.enums.WType` for available options.").
+    - **Do not remove existing references**.
 
 ### 5. Special Arguments
 
 - When documenting functions that use `*args` and `**kwargs`:
-  1. If you do not know what these parameters are passed to:
-   - For `*args`, use: **"Additional positional arguments."**
-   - For `**kwargs`, use: **"Additional keyword arguments."**
-  2. If you know the target or the function/method/class these parameters are passed to:
-   - For `*args`, use: **"Positional arguments passed to [target]."**
-   - For `**kwargs`, use: **"Keyword arguments passed to [target]."**
+    1. If you do not know what these parameters are passed to:
+        - For `*args`, use: **"Additional positional arguments."**
+        - For `**kwargs`, use: **"Additional keyword arguments."**
+    2. If you know the target or the function/method/class these parameters are passed to:
+        - For `*args`, use: **"Positional arguments passed to [target]."**
+        - For `**kwargs`, use: **"Keyword arguments passed to [target]."**
 - Use the following descriptions if the argument name and type hint match exactly:
-  ```
-  broadcast_named_args (KwargsLike): Additional named arguments for broadcasting.
-  broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
-  template_context (KwargsLike): Additional context for template substitution.
-  jitted (JittedOption): Option to control JIT compilation.
-  chunked (ChunkedOption): Option to control chunked processing.
-  wrapper (ArrayWrapper): Wrapper instance.
-  wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
-  wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
-  wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
-  group_by (GroupByLike): Grouping specification.
-  sim_start (Optional[ArrayLike]): Simulation start.
-  sim_end (Optional[ArrayLike]): Simulation end.
-  fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
-  add_trace_kwargs (KwargsLike): Keyword arguments for adding traces to the figure.
-  **layout_kwargs: Keyword arguments for configuring the figure layout.
-  ```
+    ```
+    broadcast_named_args (KwargsLike): Additional named arguments for broadcasting.
+    broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
+    template_context (KwargsLike): Additional context for template substitution.
+    jitted (JittedOption): Option to control JIT compilation.
+    chunked (ChunkedOption): Option to control chunked processing.
+    wrapper (ArrayWrapper): Wrapper instance.
+    wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
+    wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+    wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
+    group_by (GroupByLike): Grouping specification.
+    sim_start (Optional[ArrayLike]): Simulation start.
+    sim_end (Optional[ArrayLike]): Simulation end.
+    fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
+    add_trace_kwargs (KwargsLike): Keyword arguments for adding traces to the figure.
+    **layout_kwargs: Keyword arguments for configuring the figure layout.
+    ```
 - Flexible types:
-  - Type `FlexArray1d` represents a flexible 1D array, such as "Window sizes".
-  - Type `FlexArray2d` represents a flexible 2D array, such as "Window sizes".
-  - Type `FlexArray1dLike` represents a single value or flexible 1D array, such as "Window size(s)".
-  - Type `FlexArray2dLike` represents a single value or flexible 2D array, such as "Window size(s)".
-  - Type `ArrayLike` represents a single value or any array, such as "Window size(s)".
+    - Type `FlexArray1d` represents a flexible 1D array, such as "Window sizes".
+    - Type `FlexArray2d` represents a flexible 2D array, such as "Window sizes".
+    - Type `FlexArray1dLike` represents a single value or flexible 1D array, such as "Window size(s)".
+    - Type `FlexArray2dLike` represents a single value or flexible 2D array, such as "Window size(s)".
+    - Type `ArrayLike` represents a single value or any array, such as "Window size(s)".
 
 ### 6. Miscellaneous
 

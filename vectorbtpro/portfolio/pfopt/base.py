@@ -2907,7 +2907,7 @@ class PortfolioOptimizer(Analyzable):
         and `forward_kwargs`.
 
         !!! note
-            Make sure to use vectorbt's own templates to select the current date range
+            Make sure to use vectorbtpro's own templates to select the current date range
             (available as `index_slice` in the context mapping) from each array.
 
         If `jitted_loop` is True, see `vectorbtpro.portfolio.pfopt.nb.optimize_meta_nb`.

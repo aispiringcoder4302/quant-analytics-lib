@@ -3647,10 +3647,10 @@ Returns:
 
     @classmethod
     def list_vbt_indicators(cls) -> tp.List[str]:
-        """Return a sorted list of all vectorbt indicators.
+        """Return a sorted list of all vectorbtpro indicators.
 
         Returns:
-            List[str]: A sorted list of all vectorbt indicator names.
+            List[str]: A sorted list of all vectorbtpro indicator names.
         """
         import vectorbtpro as vbt
 
@@ -3780,7 +3780,7 @@ Returns:
 
         The indicator name can include a location prefix separated by a colon. For example,
         `"talib:sma"` or `"talib_sma"` returns the TA-Lib SMA indicator. If no location is specified,
-        the indicator is searched across all available sources, including vectorbt indicators.
+        the indicator is searched across all available sources, including vectorbtpro indicators.
 
         Args:
             name (str): The name of the indicator, optionally including a location prefix.

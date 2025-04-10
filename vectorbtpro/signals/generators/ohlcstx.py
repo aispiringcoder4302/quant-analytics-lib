@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module with `OHLCSTX`."""
+"""Module providing the `OHLCSTX` signal generator."""
 
 import numpy as np
 import pandas as pd
@@ -41,7 +41,7 @@ ohlcstx_config = ReadonlyConfig(
         ),
     )
 )
-"""Factory config for `OHLCSTX`."""
+"""Factory configuration for the `OHLCSTX` signal generator."""
 
 ohlcstx_func_config = ReadonlyConfig(
     dict(
@@ -77,7 +77,7 @@ ohlcstx_func_config = ReadonlyConfig(
         is_entry_open=False,
     )
 )
-"""Exit function config for `OHLCSTX`."""
+"""Exit function configuration for the `OHLCSTX` signal generator."""
 
 OHLCSTX = SignalFactory(**ohlcstx_config).with_place_func(**ohlcstx_func_config)
 
@@ -97,6 +97,27 @@ def _bind_ohlcstx_plot(base_cls: type, entries_attr: str) -> tp.Callable:
         _base_cls_plot: tp.Callable = base_cls_plot,
         **layout_kwargs,
     ) -> tp.BaseFigure:
+        """Plot OHLC, `{0}.{1}` and `{0}.exits`.
+
+        Args:
+            column (Optional[Label]): Column label for data selection.
+
+                If None, a default column is used.
+            ohlc_kwargs (KwargsLike): Additional keyword arguments for plotting OHLC data using
+                `vectorbtpro.ohlcv.accessors.OHLCVDFAccessor.plot`.
+            entry_price_kwargs (KwargsLike): Additional keyword arguments for plotting the entry price line.
+            entry_trace_kwargs (KwargsLike): Additional keyword arguments for plotting entry signals using
+                `vectorbtpro.signals.accessors.SignalsSRAccessor.plot_as_entries` for `{0}.{1}`.
+            exit_trace_kwargs (KwargsLike): Additional keyword arguments for plotting exit signals using
+                `vectorbtpro.signals.accessors.SignalsSRAccessor.plot_as_exits` for `{0}.exits`.
+            add_trace_kwargs (KwargsLike): Additional keyword arguments for adding extra traces to the figure.
+            fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
+            _base_cls_plot (Callable): The base class plot function.
+            **layout_kwargs: Additional keyword arguments for configuring the figure layout.
+
+        Returns:
+            BaseFigure: The updated or newly created figure.
+        """
         self_col = self.select_col(column=column, group_by=False)
 
         if ohlc_kwargs is None:
@@ -132,46 +153,37 @@ def _bind_ohlcstx_plot(base_cls: type, entries_attr: str) -> tp.Callable:
         )
         return fig
 
-    plot.__doc__ = """Plot OHLC, `{0}.{1}` and `{0}.exits`.
+    plot.__doc__ += (
+        """
+Examples:
+    ```pycon
+    >>> ohlcstx.iloc[:, 0].plot().show()
+    ```
 
-    Args:
-        ohlc_kwargs (dict): Keyword arguments passed to
-            `vectorbtpro.ohlcv.accessors.OHLCVDFAccessor.plot`.
-        entry_trace_kwargs (dict): Keyword arguments passed to
-            `vectorbtpro.signals.accessors.SignalsSRAccessor.plot_as_entries` for `{0}.{1}`.
-        exit_trace_kwargs (dict): Keyword arguments passed to
-            `vectorbtpro.signals.accessors.SignalsSRAccessor.plot_as_exits` for `{0}.exits`.
-        fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
-        **layout_kwargs: Keyword arguments for configuring the figure layout.""".format(
-        base_cls.__name__,
-        entries_attr,
-    )
-
-    if entries_attr == "entries":
-        plot.__doc__ += """
-    Examples:
-        ```pycon
-        >>> ohlcstx.iloc[:, 0].plot().show()
-        ```
-
-        ![](/assets/images/api/OHLCSTX.light.svg#only-light){: .iimg loading=lazy }
-        ![](/assets/images/api/OHLCSTX.dark.svg#only-dark){: .iimg loading=lazy }
+    ![](/assets/images/api/OHLCSTX.light.svg#only-light){: .iimg loading=lazy }
+    ![](/assets/images/api/OHLCSTX.dark.svg#only-dark){: .iimg loading=lazy }
     """
+        if entries_attr == "entries"
+        else ""
+    )
     return plot
 
 
 class _OHLCSTX(OHLCSTX):
     """Exit signal generator based on OHLC and stop values.
 
-    Generates `exits` based on `entries` and `vectorbtpro.signals.nb.ohlc_stop_place_nb`.
+    Generates exit signals from entry indicators using logic defined in
+    `vectorbtpro.signals.nb.ohlc_stop_place_nb`.
 
     !!! hint
-        All parameters can be either a single value (per frame) or a NumPy array (per row, column,
-        or element). To generate multiple combinations, pass them as lists.
+        All parameters may be provided as a single value (per frame) or as a NumPy array
+        (per row, column, or element).
+
+        To generate multiple combinations, pass them as lists.
 
     !!! warning
-        Searches for an exit after each entry. If two entries come one after another, no exit can be placed.
-        Consider either cleaning up entry signals prior to passing, or using `OHLCSTCX`.
+        The generator checks for an exit after every entry. If two entries occur consecutively,
+        no exit signal is generated. Consider cleaning up entry signals before passing them, or use `OHLCSTCX`.
 
     Examples:
         Test each stop type:

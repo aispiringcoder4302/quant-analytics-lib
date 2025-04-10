@@ -12,7 +12,7 @@
 
 Trade records capture information on trades.
 
-In vectorbt, a trade is a sequence of orders that starts with an opening order and optionally ends
+In vectorbtpro, a trade is a sequence of orders that starts with an opening order and optionally ends
 with a closing order. Every pair of opposite orders can be represented by a trade. Each trade has a PnL
 info attached to quickly assess its performance. An interesting effect of this representation
 is the ability to aggregate trades: if two or more trades are happening one after another in time,

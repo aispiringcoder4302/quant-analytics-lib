@@ -39,7 +39,7 @@ Using the adapter offers two advantages:
 * `vectorbtpro` automatically translates parameters from `ReturnsAccessor` for QuantStats functions.
 
 ```pycon
->>> # Defaults that vectorbt understands
+>>> # Defaults that vectorbtpro understands
 >>> ret_acc = rets.vbt.returns(
 ...     bm_returns=bm_returns,
 ...     freq='d',
@@ -70,7 +70,8 @@ Using the adapter offers two advantages:
 
 For example, defaults defined in settings, in `ReturnsAccessor`, and in `QSAdapter` itself are merged
 and matched with the function's signature. In particular, the `periods` parameter defaults to
-`ReturnsAccessor.ann_factor`, which is based on the `freq` argument, aligning the results from QuantStats and vectorbt.
+`ReturnsAccessor.ann_factor`, which is based on the `freq` argument, aligning the results from
+QuantStats and vectorbtpro.
 
 ```pycon
 >>> vbt.settings.wrapping['freq'] = 'h'

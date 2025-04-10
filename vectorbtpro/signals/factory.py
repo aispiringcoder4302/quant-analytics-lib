@@ -8,12 +8,12 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Factory for building signal generators.
+"""Module for building signal generators.
 
-The signal factory class `SignalFactory` extends `vectorbtpro.indicators.factory.IndicatorFactory`
-to offer a convenient way to create signal generators of any complexity. By providing it with information
-such as entry and exit functions and the names of inputs, parameters, and outputs, it will create a
-stand-alone class capable of generating signals for an arbitrary combination of inputs and parameters.
+This module defines the `SignalFactory` class, which extends the `vectorbtpro.indicators.factory.IndicatorFactory`
+to provide a convenient way to create complex signal generators. By configuring entry and exit functions along with
+the names of inputs, parameters, and outputs, it constructs a stand-alone class capable of generating signals for
+various combinations of conditions.
 """
 
 import inspect
@@ -43,12 +43,19 @@ class SignalFactory(IndicatorFactory):
 
     Extends `vectorbtpro.indicators.factory.IndicatorFactory` with place functions.
 
-    Generates a fixed number of outputs (depending upon `mode`).
-    If you need to generate other outputs, use in-place outputs (via `in_output_names`).
+    Generates a fixed number of outputs based on the provided factory mode.
+    If other outputs are needed, use in-place outputs via `in_output_names`.
 
     See `vectorbtpro.signals.enums.FactoryMode` for supported generation modes.
 
-    Other arguments are passed to `vectorbtpro.indicators.factory.IndicatorFactory`.
+    Args:
+        *args: Additional positional arguments passed to `vectorbtpro.indicators.factory.IndicatorFactory`.
+        mode (Union[str, int]): Factory mode controlling generated outputs, mapped to a `FactoryMode` value.
+        input_names (Optional[Sequence[str]]): Sequence of input names.
+
+            Reserved names "entries" and "exits" are not allowed.
+        attr_settings (KwargsLike): Settings for attributes, where each key maps to a dictionary of options.
+        **kwargs: Additional keyword arguments passed to `vectorbtpro.indicators.factory.IndicatorFactory`.
     """
 
     def __init__(
@@ -185,29 +192,40 @@ class SignalFactory(IndicatorFactory):
 
             return fig
 
-        plot.__doc__ = """Plot `{0}.{1}` and `{0}.exits`.
-
-        Args:
-            entry_y (array_like): Y-axis values to plot entry markers on.
-            exit_y (array_like): Y-axis values to plot exit markers on.
-            entry_types (array_like): Entry types in string format.
-            exit_types (array_like): Exit types in string format.
-            entry_trace_kwargs (dict): Keyword arguments passed to
-                `vectorbtpro.signals.accessors.SignalsSRAccessor.plot_as_entries` for `{0}.{1}`.
-            exit_trace_kwargs (dict): Keyword arguments passed to 
-                `vectorbtpro.signals.accessors.SignalsSRAccessor.plot_as_exits` for `{0}.exits`.
-            fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
-            **kwargs: Keyword arguments passed to `vectorbtpro.signals.accessors.SignalsSRAccessor.plot_as_markers`.
-        """.format(
-            self.class_name,
-            "new_entries" if mode == FactoryMode.Chain else "entries",
+        plot.__doc__ = inspect.cleandoc(
+            """Plot `{0}.{1}` and `{0}.exits`.
+    
+            Args:
+                column (Optional[Label]): Column label for selecting signals.
+                entry_y (Optional[Union[str, ArrayLike]]): Y-axis values for plotting entry markers.
+                exit_y (Optional[Union[str, ArrayLike]]): Y-axis values for plotting exit markers.
+                entry_types (Optional[ArrayLike]): Entry types in string format.
+                exit_types (Optional[ArrayLike]): Exit types in string format.
+                entry_trace_kwargs (dict): Additional keyword arguments for plotting entries, 
+                    forwarded to `vectorbtpro.signals.accessors.SignalsSRAccessor.plot_as_entries` for `{0}.{1}`.
+                exit_trace_kwargs (dict): Additional keyword arguments for plotting exits, forwarded to 
+                    `vectorbtpro.signals.accessors.SignalsSRAccessor.plot_as_exits` for `{0}.exits`.
+                fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
+                **kwargs: Additional keyword arguments passed to 
+                    `vectorbtpro.signals.accessors.SignalsSRAccessor.plot_as_markers`.
+    
+            Returns:
+                BaseFigure: Updated figure with plotted signals.
+            """.format(
+                self.class_name,
+                "new_entries" if mode == FactoryMode.Chain else "entries",
+            )
         )
 
         setattr(self.Indicator, "plot", plot)
 
     @property
     def mode(self):
-        """Factory mode."""
+        """Factory mode.
+
+        Returns:
+            FactoryMode
+        """
         return self._mode
 
     def with_place_func(
@@ -225,112 +243,109 @@ class SignalFactory(IndicatorFactory):
         jitted: tp.JittedOption = None,
         **kwargs,
     ) -> tp.Type[IndicatorBase]:
-        """Build signal generator class around entry and exit placement functions.
+        """Build a signal generator class using entry and exit placement functions.
 
-        A placement function is simply a function that places signals.
-        There are two types of it: entry placement function and exit placement function.
-        Each placement function takes broadcast time series, broadcast in-place output time series,
-        broadcast parameter arrays, and other arguments, and returns an array of indices
-        corresponding to chosen signals. See `vectorbtpro.signals.nb.generate_nb`.
+        A placement function selects indices for signals and is available in two types:
+        entry and exit placement functions. Each function accepts broadcast time series,
+        in-place output arrays, parameter arrays, and other arguments, and returns an array
+        of indices corresponding to the chosen signals. See `vectorbtpro.signals.nb.generate_nb`
+        for more details.
 
         Args:
-            entry_place_func_nb (callable): `place_func_nb` that returns indices of entries.
+            entry_place_func_nb (Optional[PlaceFunc]): A function that returns indices for entry signals.
 
-                Defaults to `vectorbtpro.signals.nb.first_place_nb` for `FactoryMode.Chain`.
-            exit_place_func_nb (callable): `place_func_nb` that returns indices of exits.
-            generate_func_nb (callable): Entry generation function.
+                Defaults to `vectorbtpro.signals.nb.first_place_nb` when used with `FactoryMode.Chain`.
+            exit_place_func_nb (Optional[PlaceFunc]): A function that returns indices for exit signals.
+            generate_func_nb (Optional[Callable]): The entry generation function.
 
                 Defaults to `vectorbtpro.signals.nb.generate_nb`.
-            generate_ex_func_nb (callable): Exit generation function.
+            generate_ex_func_nb (Optional[Callable]): The exit generation function.
 
                 Defaults to `vectorbtpro.signals.nb.generate_ex_nb`.
-            generate_enex_func_nb (callable): Entry and exit generation function.
+            generate_enex_func_nb (Optional[Callable]): The generation function for both entry and exit signals.
 
                 Defaults to `vectorbtpro.signals.nb.generate_enex_nb`.
-            cache_func (callable): A caching function to preprocess data beforehand.
+            cache_func (Callable): A caching function to preprocess data.
 
-                All returned objects will be passed as last arguments to placement functions.
-            entry_settings (dict): Settings dict for `entry_place_func_nb`.
-            exit_settings (dict): Settings dict for `exit_place_func_nb`.
-            cache_settings (dict): Settings dict for `cache_func`.
-            jit_kwargs (dict): Keyword arguments passed to `@njit` decorator of the parameter selection function.
+                Its outputs are appended as the last arguments to placement functions.
+            entry_settings (KwargsLike): Settings dictionary for the entry placement function.
+            exit_settings (KwargsLike): Settings dictionary for the exit placement function.
+            cache_settings (KwargsLike): Settings dictionary for the cache function.
+            jit_kwargs (KwargsLike): Keyword arguments passed to the `@njit` decorator of the parameter
+                selection function.
 
-                By default, has `nogil` set to True.
-            jitted (any): See `vectorbtpro.utils.jitting.resolve_jitted_option`.
+                By default, sets `nogil` to True.
+            jitted (JittedOption): Option controlling JIT compilation for generation functions.
 
-                Gets applied to generation functions only. If the respective generation
-                function is not jitted, then the apply function won't be jitted as well.
-            **kwargs: Keyword arguments passed to `IndicatorFactory.with_custom_func`.
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
 
-        !!! note
-            Choice functions must be Numba-compiled.
+                If the generation function is not jitted, the apply function will not be jitted.
+            **kwargs: Additional keyword arguments passed to `IndicatorFactory.with_custom_func`.
 
-            Which inputs, parameters and arguments to pass to each function must be
-            explicitly indicated in the function's settings dict. By default, nothing is passed.
+        Returns:
+            Type[IndicatorBase]: A custom signal generator class configured with
+                the specified placement and generation functions.
 
-            Passing keyword arguments directly to the placement functions is not supported.
-            Use `pass_kwargs` in a settings dict to pass keyword arguments as positional.
-
-        Settings dict of each function can have the following keys:
+        The settings dictionary of each function can have the following attributes:
 
         Attributes:
-            pass_inputs (list of str): Input names to pass to the placement function.
+            pass_inputs (List[str]): Names of inputs to pass to the placement function.
 
-                Defaults to []. Order matters. Each name must be in `input_names`.
-            pass_in_outputs (list of str): In-place output names to pass to the placement function.
+                Order matters; each must be in `input_names`.
+            pass_in_outputs (List[str]): Names of in-place outputs to pass to the placement function.
 
-                Defaults to []. Order matters. Each name must be in `in_output_names`.
-            pass_params (list of str): Parameter names to pass to the placement function.
+                Order matters; each must be in `in_output_names`.
+            pass_params (List[str]): Names of parameters to pass to the placement function.
 
-                Defaults to []. Order matters. Each name must be in `param_names`.
-            pass_kwargs (dict, list of str or list of tuple): Keyword arguments from `kwargs` dict to
-                pass as positional arguments to the placement function.
-
-                Defaults to []. Order matters.
-
-                If any element is a tuple, must contain the name and the default value.
-                If any element is a string, the default value is None.
+                Order matters; each must be in `param_names`.
+            pass_kwargs (Union[dict, List[str], List[Tuple]]): Keyword arguments from the kwargs
+                dict to pass as positional arguments.
 
                 Built-in keys include:
 
-                * `input_shape`: Input shape if no input time series passed.
-                    Default is provided by the pipeline if `pass_input_shape` is True.
-                * `wait`: Number of ticks to wait before placing signals.
-                    Default is 1.
-                * `until_next`: Whether to place signals up to the next entry signal.
-                    Default is True. Applied in `generate_ex_func_nb` only.
-                * `skip_until_exit`: Whether to skip processing entry signals until the next exit.
-                    Default is False. Applied in `generate_ex_func_nb` only.
-                * `pick_first`: Whether to stop as soon as the first exit signal is found.
-                    Default is False with `FactoryMode.Entries`, otherwise is True.
-                * `temp_idx_arr`: Empty integer array used to temporarily store indices.
-                    Default is an automatically generated array of shape `input_shape[0]`.
-                    You can also pass `temp_idx_arr1`, `temp_idx_arr2`, etc. to generate multiple.
-            pass_cache (bool): Whether to pass cache from `cache_func` to the placement function.
+                * `input_shape`: Provided when no input time series are passed.
+                * `wait`: Number of ticks to wait before placing signals; defaults to 1.
+                * `until_next`: (Applied in `generate_ex_func_nb` only) Whether to place
+                    signals up to the next entry.
+                * `skip_until_exit`: (Applied in `generate_ex_func_nb` only) Whether to skip
+                    processing until the next exit.
+                * `pick_first`: Indicates whether to stop at the first exit signal.
+                * `temp_idx_arr`: An empty integer array for temporarily storing indices.
+            pass_cache (bool): Indicates whether to pass cache from `cache_func` to the placement function.
 
-                Defaults to False. Cache is passed unpacked.
+                Defaults to False.
 
         The following arguments can be passed to `run` and `run_combs` methods:
 
         Args:
-            *args: Can be used instead of `place_args`.
-            place_args (tuple): Arguments passed to any placement function (depending on the mode).
-            entry_place_args (tuple): Arguments passed to the entry placement function.
-            exit_place_args (tuple): Arguments passed to the exit placement function.
-            entry_args (tuple): Alias for `entry_place_args`.
-            exit_args (tuple): Alias for `exit_place_args`.
-            cache_args (tuple): Arguments passed to the cache function.
-            entry_kwargs (tuple): Settings for the entry placement function. Also contains arguments
-                passed as positional if in `pass_kwargs`.
-            exit_kwargs (tuple): Settings for the exit placement function. Also contains arguments
-                passed as positional if in `pass_kwargs`.
-            cache_kwargs (tuple): Settings for the cache function. Also contains arguments
-                passed as positional if in `pass_kwargs`.
-            return_cache (bool): Whether to return only cache.
-            use_cache (any): Cache to use.
-            **kwargs: Default keyword arguments (depending on the mode).
+            *args: Additional positional arguments that can be used instead of `place_args`.
+            place_args (ArgsLike): Arguments passed to any placement function (depending on the mode).
+            entry_place_args (ArgsLike): Arguments for the entry placement function.
+            exit_place_args (ArgsLike): Arguments for the exit placement function.
+            entry_args (ArgsLike): Alias for `entry_place_args`.
+            exit_args (ArgsLike): Alias for `exit_place_args`.
+            cache_args (ArgsLike): Arguments passed to the cache function.
+            entry_kwargs (KwargsLike): Settings for the entry placement function,
+                including arguments from `pass_kwargs`.
+            exit_kwargs (KwargsLike): Settings for the exit placement function,
+                including arguments from `pass_kwargs`.
+            cache_kwargs (KwargsLike): Settings for the cache function,
+                including arguments from `pass_kwargs`.
+            return_cache (bool): Indicates whether to return only the cache.
+            use_cache (Optional[IFCacheOutput]): Cache to use.
+            execute_kwargs (KwargsLike): Keyword arguments passed to `vectorbtpro.utils.execution.execute`.
+            **kwargs: Default keyword arguments based on the mode.
 
         For more arguments, see `vectorbtpro.indicators.factory.IndicatorBase.run_pipeline`.
+
+        !!! note
+            Choice functions must be Numba-compiled.
+
+            Which inputs, parameters and arguments to pass to each function must be explicitly indicated
+            in the function's settings dict. By default, nothing is passed.
+
+            Passing keyword arguments directly to the placement functions is not supported.
+            Use `pass_kwargs` in a settings dict to pass keyword arguments as positional.
 
         Examples:
             The simplest signal indicator that places True at the very first index:

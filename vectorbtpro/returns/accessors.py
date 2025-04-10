@@ -1083,7 +1083,8 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         Returns:
             SeriesFrame: The wrapped array of rolling final values.
 
-        See `vectorbtpro.returns.nb.rolling_final_value_nb`.
+        See:
+            `vectorbtpro.returns.nb.rolling_final_value_nb`
         """
         if window is None:
             window = self.defaults["window"]
@@ -1127,7 +1128,8 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         Returns:
             MaybeSeries: The computed total return.
 
-        See `vectorbtpro.returns.nb.total_return_nb`.
+        See:
+            `vectorbtpro.returns.nb.total_return_nb`
         """
         sim_start = self.resolve_sim_start(sim_start=sim_start, group_by=False)
         sim_end = self.resolve_sim_end(sim_end=sim_end, group_by=False)
@@ -1172,7 +1174,8 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         Returns:
             SeriesFrame: The wrapped array of rolling total returns.
 
-        See `vectorbtpro.returns.nb.rolling_total_return_nb`.
+        See:
+            `vectorbtpro.returns.nb.rolling_total_return_nb`
         """
         if window is None:
             window = self.defaults["window"]
@@ -1216,7 +1219,8 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         Returns:
             MaybeSeries: The computed annualized return.
 
-        See `vectorbtpro.returns.nb.annualized_return_nb`.
+        See:
+            `vectorbtpro.returns.nb.annualized_return_nb`
         """
         periods = self.get_periods(periods=periods, sim_start=sim_start, sim_end=sim_end)
         sim_start = self.resolve_sim_start(sim_start=sim_start, group_by=False)
@@ -1264,7 +1268,8 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         Returns:
             MaybeSeries: The computed rolling annualized return.
 
-        See `vectorbtpro.returns.nb.rolling_annualized_return_nb`.
+        See:
+            `vectorbtpro.returns.nb.rolling_annualized_return_nb`
         """
         if window is None:
             window = self.defaults["window"]
@@ -1314,7 +1319,8 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         Returns:
             MaybeSeries: The computed annualized volatility.
 
-        See `vectorbtpro.returns.nb.annualized_volatility_nb`.
+        See:
+            `vectorbtpro.returns.nb.annualized_volatility_nb`
         """
         if levy_alpha is None:
             levy_alpha = self.defaults["levy_alpha"]
@@ -3442,7 +3448,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         silence_warnings: bool = False,
     ) -> ReturnsAccessorT:
         """Resolve self.
-    
+
         See `vectorbtpro.base.wrapping.Wrapping.resolve_self`.
     
         If `year_freq` is provided in `cond_kwargs` and differs from the current instance,

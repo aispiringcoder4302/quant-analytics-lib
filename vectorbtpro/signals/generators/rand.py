@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module with `RAND`."""
+"""Module providing the `RAND` signal generator."""
 
 import numpy as np
 
@@ -41,16 +41,17 @@ RAND = SignalFactory(
 
 
 class _RAND(RAND):
-    """Random entry signal generator based on the number of signals.
+    """Class for generating random entry signals based on a specified signal count.
 
-    Generates `entries` based on `vectorbtpro.signals.nb.rand_place_nb`.
+    This generator produces entries by invoking `vectorbtpro.signals.nb.rand_place_nb`.
 
     !!! hint
-        Parameter `n` can be either a single value (per frame) or a NumPy array (per column).
-        To generate multiple combinations, pass it as a list.
+        The parameter `n` may be provided as either a single value (per frame) or a NumPy array (per column).
+
+        To create multiple combinations, specify `n` as a list.
 
     Examples:
-        Test three different entry counts values:
+        Test three different entry count values:
 
         ```pycon
         >>> from vectorbtpro import *

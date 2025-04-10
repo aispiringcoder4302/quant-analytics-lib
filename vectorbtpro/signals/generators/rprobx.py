@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module with `RPROBX`."""
+"""Module providing `RPROBX`."""
 
 from vectorbtpro.indicators.configs import flex_elem_param_config
 from vectorbtpro.signals.factory import SignalFactory
@@ -30,7 +30,7 @@ rprobx_config = ReadonlyConfig(
         param_names=["prob"],
     ),
 )
-"""Factory config for `RPROBX`."""
+"""Readonly configuration for the `RPROBX` factory."""
 
 rprobx_func_config = ReadonlyConfig(
     dict(
@@ -45,7 +45,7 @@ rprobx_func_config = ReadonlyConfig(
         seed=None,
     )
 )
-"""Exit function config for `RPROBX`."""
+"""Readonly configuration for the exit function of `RPROBX`."""
 
 RPROBX = SignalFactory(**rprobx_config).with_place_func(**rprobx_func_config)
 
@@ -53,10 +53,10 @@ RPROBX = SignalFactory(**rprobx_config).with_place_func(**rprobx_func_config)
 class _RPROBX(RPROBX):
     """Random exit signal generator based on probabilities.
 
-    Generates `exits` based on `entries` and `vectorbtpro.signals.nb.rand_by_prob_place_nb`.
+    Generates exit signals from entries using the helper function
+    `vectorbtpro.signals.nb.rand_by_prob_place_nb`.
 
-    See `RPROB` for notes on parameters."""
-
+    See `RPROB` for details on parameters."""
     pass
 
 

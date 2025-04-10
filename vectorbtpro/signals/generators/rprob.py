@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module with `RPROB`."""
+"""Module providing the `RPROB` signal generator."""
 
 import numpy as np
 
@@ -42,13 +42,15 @@ RPROB = SignalFactory(
 
 
 class _RPROB(RPROB):
-    """Random entry signal generator based on probabilities.
+    """Class representing a random entry signal generator based on probabilities.
 
-    Generates `entries` based on `vectorbtpro.signals.nb.rand_by_prob_place_nb`.
+    Uses `vectorbtpro.signals.nb.rand_by_prob_place_nb` to generate signal entries.
 
     !!! hint
-        All parameters can be either a single value (per frame) or a NumPy array (per row, column,
-        or element). To generate multiple combinations, pass them as lists.
+        All parameters can be provided as a single value (per frame) or as a NumPy array
+        (per row, column, or element).
+
+        To generate multiple combinations, pass them as lists.
 
     Examples:
         Generate three columns with different entry probabilities:
@@ -81,7 +83,6 @@ class _RPROB(RPROB):
         Name: array_0, dtype: bool
         ```
     """
-
     pass
 
 

@@ -5,7 +5,7 @@ simulation, such as generating and filling orders. These only accept NumPy array
 other Numba-compatible types.
 
 !!! note
-    vectorbt treats matrices as first-class citizens and expects input arrays to be
+    vectorbtpro treats matrices as first-class citizens and expects input arrays to be
     2-dim, unless function has suffix `_1d` or is meant to be input to another function.
 
     All functions passed as argument must be Numba-compiled.
@@ -34,7 +34,7 @@ other Numba-compatible types.
     5.657668225467205e-06
     ```
 
-    While vectorbt has implemented tolerance checks when comparing floats for equality,
+    While vectorbtpro has implemented tolerance checks when comparing floats for equality,
     adding/subtracting small amounts large number of times may still introduce a noticable
     error that cannot be corrected post factum.
 

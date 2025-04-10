@@ -21,7 +21,7 @@ The accessors inherit from `vectorbtpro.generic.accessors`.
 
 ## Column names
 
-By default, vectorbt searches for columns with names 'open', 'high', 'low', 'close', and 'volume'
+By default, vectorbtpro searches for columns with names 'open', 'high', 'low', 'close', and 'volume'
 (case-insensitive). You can change the naming by either using `feature_map` in
 `vectorbtpro._settings.ohlcv` or by providing a custom `feature_map` directly to the accessor.
 

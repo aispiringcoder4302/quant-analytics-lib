@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module with `STX`."""
+"""Module providing the `STX` signal generator."""
 
 import numpy as np
 
@@ -34,7 +34,7 @@ stx_config = ReadonlyConfig(
         param_names=["stop", "trailing"],
     )
 )
-"""Factory config for `STX`."""
+"""Factory configuration for creating a `STX` signal generator instance."""
 
 stx_func_config = ReadonlyConfig(
     dict(
@@ -54,7 +54,8 @@ stx_func_config = ReadonlyConfig(
         stop_ts=np.nan,
     )
 )
-"""Exit function config for `STX`."""
+"""Configuration for the exit function of the `STX` signal generator, specifying mappings 
+for inputs, outputs, and parameters."""
 
 STX = SignalFactory(**stx_config).with_place_func(**stx_func_config)
 
@@ -62,12 +63,12 @@ STX = SignalFactory(**stx_config).with_place_func(**stx_func_config)
 class _STX(STX):
     """Exit signal generator based on stop values.
 
-    Generates `exits` based on `entries` and `vectorbtpro.signals.nb.stop_place_nb`.
+    Generates exit signals from entry signals using the `vectorbtpro.signals.nb.stop_place_nb` function.
 
     !!! hint
-        All parameters can be either a single value (per frame) or a NumPy array (per row, column,
-        or element). To generate multiple combinations, pass them as lists."""
-
+        All parameter values can be specified as a single value (per frame) or as a NumPy array
+        (per row, column, or element). To generate multiple combinations, pass them as lists.
+    """
     pass
 
 
