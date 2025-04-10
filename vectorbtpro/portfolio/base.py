@@ -510,6 +510,166 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
     _writeable_attrs: tp.WriteableAttrs = {"_in_output_config"}
 
+    def __init__(
+        self,
+        wrapper: ArrayWrapper,
+        order_records: tp.Union[tp.RecordArray, enums.SimulationOutput],
+        *,
+        close: tp.ArrayLike,
+        open: tp.Optional[tp.ArrayLike] = None,
+        high: tp.Optional[tp.ArrayLike] = None,
+        low: tp.Optional[tp.ArrayLike] = None,
+        log_records: tp.Optional[tp.RecordArray] = None,
+        cash_sharing: bool = False,
+        init_cash: tp.Union[str, tp.ArrayLike] = "auto",
+        init_position: tp.ArrayLike = 0.0,
+        init_price: tp.ArrayLike = np.nan,
+        cash_deposits: tp.ArrayLike = 0.0,
+        cash_deposits_as_input: tp.Optional[bool] = None,
+        cash_earnings: tp.ArrayLike = 0.0,
+        sim_start: tp.Optional[tp.ArrayLike] = None,
+        sim_end: tp.Optional[tp.ArrayLike] = None,
+        call_seq: tp.Optional[tp.Array2d] = None,
+        in_outputs: tp.Optional[tp.NamedTuple] = None,
+        use_in_outputs: tp.Optional[bool] = None,
+        bm_close: tp.Optional[tp.ArrayLike] = None,
+        fillna_close: tp.Optional[bool] = None,
+        year_freq: tp.Optional[tp.FrequencyLike] = None,
+        returns_acc_defaults: tp.KwargsLike = None,
+        trades_type: tp.Optional[tp.Union[str, int]] = None,
+        orders_cls: tp.Optional[type] = None,
+        logs_cls: tp.Optional[type] = None,
+        trades_cls: tp.Optional[type] = None,
+        entry_trades_cls: tp.Optional[type] = None,
+        exit_trades_cls: tp.Optional[type] = None,
+        positions_cls: tp.Optional[type] = None,
+        drawdowns_cls: tp.Optional[type] = None,
+        weights: tp.Union[None, bool, tp.ArrayLike] = None,
+        **kwargs,
+    ) -> None:
+        from vectorbtpro._settings import settings
+
+        portfolio_cfg = settings["portfolio"]
+
+        if cash_sharing:
+            if wrapper.grouper.allow_enable or wrapper.grouper.allow_modify:
+                wrapper = wrapper.replace(allow_enable=False, allow_modify=False)
+        if isinstance(order_records, enums.SimulationOutput):
+            sim_out = order_records
+            order_records = sim_out.order_records
+            log_records = sim_out.log_records
+            cash_deposits = sim_out.cash_deposits
+            cash_earnings = sim_out.cash_earnings
+            sim_start = sim_out.sim_start
+            sim_end = sim_out.sim_end
+            call_seq = sim_out.call_seq
+            in_outputs = sim_out.in_outputs
+        close = to_2d_array(close)
+        if open is not None:
+            open = to_2d_array(open)
+        if high is not None:
+            high = to_2d_array(high)
+        if low is not None:
+            low = to_2d_array(low)
+        if isinstance(init_cash, str):
+            init_cash = map_enum_fields(init_cash, enums.InitCashMode)
+        if not checks.is_int(init_cash) or init_cash not in enums.InitCashMode:
+            init_cash = to_1d_array(init_cash)
+        init_position = to_1d_array(init_position)
+        init_price = to_1d_array(init_price)
+        cash_deposits = to_2d_array(cash_deposits)
+        cash_earnings = to_2d_array(cash_earnings)
+        if cash_deposits_as_input is None:
+            cash_deposits_as_input = portfolio_cfg["cash_deposits_as_input"]
+        if bm_close is not None and not isinstance(bm_close, bool):
+            bm_close = to_2d_array(bm_close)
+        if log_records is None:
+            log_records = np.array([], dtype=enums.log_dt)
+        if use_in_outputs is None:
+            use_in_outputs = portfolio_cfg["use_in_outputs"]
+        if fillna_close is None:
+            fillna_close = portfolio_cfg["fillna_close"]
+        if weights is None:
+            weights = portfolio_cfg["weights"]
+        if trades_type is None:
+            trades_type = portfolio_cfg["trades_type"]
+        if isinstance(trades_type, str):
+            trades_type = map_enum_fields(trades_type, enums.TradesType)
+
+        Analyzable.__init__(
+            self,
+            wrapper,
+            order_records=order_records,
+            open=open,
+            high=high,
+            low=low,
+            close=close,
+            log_records=log_records,
+            cash_sharing=cash_sharing,
+            init_cash=init_cash,
+            init_position=init_position,
+            init_price=init_price,
+            cash_deposits=cash_deposits,
+            cash_deposits_as_input=cash_deposits_as_input,
+            cash_earnings=cash_earnings,
+            sim_start=sim_start,
+            sim_end=sim_end,
+            call_seq=call_seq,
+            in_outputs=in_outputs,
+            use_in_outputs=use_in_outputs,
+            bm_close=bm_close,
+            fillna_close=fillna_close,
+            year_freq=year_freq,
+            returns_acc_defaults=returns_acc_defaults,
+            trades_type=trades_type,
+            orders_cls=orders_cls,
+            logs_cls=logs_cls,
+            trades_cls=trades_cls,
+            entry_trades_cls=entry_trades_cls,
+            exit_trades_cls=exit_trades_cls,
+            positions_cls=positions_cls,
+            drawdowns_cls=drawdowns_cls,
+            weights=weights,
+            **kwargs,
+        )
+        SimRangeMixin.__init__(self, sim_start=sim_start, sim_end=sim_end)
+
+        self._open = open
+        self._high = high
+        self._low = low
+        self._close = close
+        self._order_records = order_records
+        self._log_records = log_records
+        self._cash_sharing = cash_sharing
+        self._init_cash = init_cash
+        self._init_position = init_position
+        self._init_price = init_price
+        self._cash_deposits = cash_deposits
+        self._cash_deposits_as_input = cash_deposits_as_input
+        self._cash_earnings = cash_earnings
+        self._call_seq = call_seq
+        self._in_outputs = in_outputs
+        self._use_in_outputs = use_in_outputs
+        self._bm_close = bm_close
+        self._fillna_close = fillna_close
+        self._year_freq = year_freq
+        self._returns_acc_defaults = returns_acc_defaults
+        self._trades_type = trades_type
+        self._orders_cls = orders_cls
+        self._logs_cls = logs_cls
+        self._trades_cls = trades_cls
+        self._entry_trades_cls = entry_trades_cls
+        self._exit_trades_cls = exit_trades_cls
+        self._positions_cls = positions_cls
+        self._drawdowns_cls = drawdowns_cls
+        self._weights = weights
+
+        # Only slices of rows can be selected
+        self._range_only_select = True
+
+        # Copy writeable attrs
+        self._in_output_config = type(self)._in_output_config.copy()
+
     @classmethod
     def row_stack_objs(
         cls: tp.Type[PortfolioT],
@@ -1281,166 +1441,6 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         kwargs = cls.resolve_column_stack_kwargs(*objs, **kwargs)
         kwargs = cls.resolve_stack_kwargs(*objs, **kwargs)
         return cls(**kwargs)
-
-    def __init__(
-        self,
-        wrapper: ArrayWrapper,
-        order_records: tp.Union[tp.RecordArray, enums.SimulationOutput],
-        *,
-        close: tp.ArrayLike,
-        open: tp.Optional[tp.ArrayLike] = None,
-        high: tp.Optional[tp.ArrayLike] = None,
-        low: tp.Optional[tp.ArrayLike] = None,
-        log_records: tp.Optional[tp.RecordArray] = None,
-        cash_sharing: bool = False,
-        init_cash: tp.Union[str, tp.ArrayLike] = "auto",
-        init_position: tp.ArrayLike = 0.0,
-        init_price: tp.ArrayLike = np.nan,
-        cash_deposits: tp.ArrayLike = 0.0,
-        cash_deposits_as_input: tp.Optional[bool] = None,
-        cash_earnings: tp.ArrayLike = 0.0,
-        sim_start: tp.Optional[tp.ArrayLike] = None,
-        sim_end: tp.Optional[tp.ArrayLike] = None,
-        call_seq: tp.Optional[tp.Array2d] = None,
-        in_outputs: tp.Optional[tp.NamedTuple] = None,
-        use_in_outputs: tp.Optional[bool] = None,
-        bm_close: tp.Optional[tp.ArrayLike] = None,
-        fillna_close: tp.Optional[bool] = None,
-        year_freq: tp.Optional[tp.FrequencyLike] = None,
-        returns_acc_defaults: tp.KwargsLike = None,
-        trades_type: tp.Optional[tp.Union[str, int]] = None,
-        orders_cls: tp.Optional[type] = None,
-        logs_cls: tp.Optional[type] = None,
-        trades_cls: tp.Optional[type] = None,
-        entry_trades_cls: tp.Optional[type] = None,
-        exit_trades_cls: tp.Optional[type] = None,
-        positions_cls: tp.Optional[type] = None,
-        drawdowns_cls: tp.Optional[type] = None,
-        weights: tp.Union[None, bool, tp.ArrayLike] = None,
-        **kwargs,
-    ) -> None:
-        from vectorbtpro._settings import settings
-
-        portfolio_cfg = settings["portfolio"]
-
-        if cash_sharing:
-            if wrapper.grouper.allow_enable or wrapper.grouper.allow_modify:
-                wrapper = wrapper.replace(allow_enable=False, allow_modify=False)
-        if isinstance(order_records, enums.SimulationOutput):
-            sim_out = order_records
-            order_records = sim_out.order_records
-            log_records = sim_out.log_records
-            cash_deposits = sim_out.cash_deposits
-            cash_earnings = sim_out.cash_earnings
-            sim_start = sim_out.sim_start
-            sim_end = sim_out.sim_end
-            call_seq = sim_out.call_seq
-            in_outputs = sim_out.in_outputs
-        close = to_2d_array(close)
-        if open is not None:
-            open = to_2d_array(open)
-        if high is not None:
-            high = to_2d_array(high)
-        if low is not None:
-            low = to_2d_array(low)
-        if isinstance(init_cash, str):
-            init_cash = map_enum_fields(init_cash, enums.InitCashMode)
-        if not checks.is_int(init_cash) or init_cash not in enums.InitCashMode:
-            init_cash = to_1d_array(init_cash)
-        init_position = to_1d_array(init_position)
-        init_price = to_1d_array(init_price)
-        cash_deposits = to_2d_array(cash_deposits)
-        cash_earnings = to_2d_array(cash_earnings)
-        if cash_deposits_as_input is None:
-            cash_deposits_as_input = portfolio_cfg["cash_deposits_as_input"]
-        if bm_close is not None and not isinstance(bm_close, bool):
-            bm_close = to_2d_array(bm_close)
-        if log_records is None:
-            log_records = np.array([], dtype=enums.log_dt)
-        if use_in_outputs is None:
-            use_in_outputs = portfolio_cfg["use_in_outputs"]
-        if fillna_close is None:
-            fillna_close = portfolio_cfg["fillna_close"]
-        if weights is None:
-            weights = portfolio_cfg["weights"]
-        if trades_type is None:
-            trades_type = portfolio_cfg["trades_type"]
-        if isinstance(trades_type, str):
-            trades_type = map_enum_fields(trades_type, enums.TradesType)
-
-        Analyzable.__init__(
-            self,
-            wrapper,
-            order_records=order_records,
-            open=open,
-            high=high,
-            low=low,
-            close=close,
-            log_records=log_records,
-            cash_sharing=cash_sharing,
-            init_cash=init_cash,
-            init_position=init_position,
-            init_price=init_price,
-            cash_deposits=cash_deposits,
-            cash_deposits_as_input=cash_deposits_as_input,
-            cash_earnings=cash_earnings,
-            sim_start=sim_start,
-            sim_end=sim_end,
-            call_seq=call_seq,
-            in_outputs=in_outputs,
-            use_in_outputs=use_in_outputs,
-            bm_close=bm_close,
-            fillna_close=fillna_close,
-            year_freq=year_freq,
-            returns_acc_defaults=returns_acc_defaults,
-            trades_type=trades_type,
-            orders_cls=orders_cls,
-            logs_cls=logs_cls,
-            trades_cls=trades_cls,
-            entry_trades_cls=entry_trades_cls,
-            exit_trades_cls=exit_trades_cls,
-            positions_cls=positions_cls,
-            drawdowns_cls=drawdowns_cls,
-            weights=weights,
-            **kwargs,
-        )
-        SimRangeMixin.__init__(self, sim_start=sim_start, sim_end=sim_end)
-
-        self._open = open
-        self._high = high
-        self._low = low
-        self._close = close
-        self._order_records = order_records
-        self._log_records = log_records
-        self._cash_sharing = cash_sharing
-        self._init_cash = init_cash
-        self._init_position = init_position
-        self._init_price = init_price
-        self._cash_deposits = cash_deposits
-        self._cash_deposits_as_input = cash_deposits_as_input
-        self._cash_earnings = cash_earnings
-        self._call_seq = call_seq
-        self._in_outputs = in_outputs
-        self._use_in_outputs = use_in_outputs
-        self._bm_close = bm_close
-        self._fillna_close = fillna_close
-        self._year_freq = year_freq
-        self._returns_acc_defaults = returns_acc_defaults
-        self._trades_type = trades_type
-        self._orders_cls = orders_cls
-        self._logs_cls = logs_cls
-        self._trades_cls = trades_cls
-        self._entry_trades_cls = entry_trades_cls
-        self._exit_trades_cls = exit_trades_cls
-        self._positions_cls = positions_cls
-        self._drawdowns_cls = drawdowns_cls
-        self._weights = weights
-
-        # Only slices of rows can be selected
-        self._range_only_select = True
-
-        # Copy writeable attrs
-        self._in_output_config = type(self)._in_output_config.copy()
 
     # ############# In-outputs ############# #
 

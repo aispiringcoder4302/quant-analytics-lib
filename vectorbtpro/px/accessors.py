@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Pandas accessors for Plotly Express functions.
+"""Module with Pandas accessors for Plotly Express functions.
 
 !!! note
     The accessors in this module do not utilize caching.

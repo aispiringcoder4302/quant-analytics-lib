@@ -239,6 +239,26 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
 
     _settings_path: tp.SettingsPath = "knowledge"
 
+    def __init__(self, data: tp.Optional[tp.List[tp.Any]] = None, single_item: bool = True, **kwargs) -> None:
+        if data is None:
+            data = []
+        if not isinstance(data, list):
+            data = [data]
+        else:
+            data = list(data)
+        if len(data) > 1:
+            single_item = False
+
+        Configured.__init__(
+            self,
+            data=data,
+            single_item=single_item,
+            **kwargs,
+        )
+
+        self._data = data
+        self._single_item = single_item
+
     @hybrid_method
     def combine(
         cls_or_self: tp.MaybeType[KnowledgeAssetT],
@@ -427,26 +447,6 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         bytes_ = decompress(bytes_, compression=compression, **decompress_kwargs)
         json_str = bytes_.decode("utf-8")
         return cls(data=json.loads(json_str), **kwargs)
-
-    def __init__(self, data: tp.Optional[tp.List[tp.Any]] = None, single_item: bool = True, **kwargs) -> None:
-        if data is None:
-            data = []
-        if not isinstance(data, list):
-            data = [data]
-        else:
-            data = list(data)
-        if len(data) > 1:
-            single_item = False
-
-        Configured.__init__(
-            self,
-            data=data,
-            single_item=single_item,
-            **kwargs,
-        )
-
-        self._data = data
-        self._single_item = single_item
 
     @property
     def data(self) -> tp.List[tp.Any]:

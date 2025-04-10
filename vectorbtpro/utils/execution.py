@@ -84,6 +84,9 @@ class Task(DefineMixin):
     kwargs: tp.Kwargs = define.field(factory=dict)
     """Keyword arguments for the function."""
 
+    def __init__(self, func: tp.Callable, *args, **kwargs) -> None:
+        DefineMixin.__init__(self, func=func, args=args, kwargs=kwargs)
+
     @classmethod
     def from_tuple(cls: tp.Type[TaskT], tuple_: tp.Tuple[tp.Any, ...]) -> TaskT:
         """Construct a Task instance from a tuple representation.
@@ -110,9 +113,6 @@ class Task(DefineMixin):
             if isinstance(tuple_[1], tuple) and isinstance(tuple_[2], dict):
                 return cls(tuple_[0], *tuple_[1], **tuple_[2])
         return cls(*tuple_)
-
-    def __init__(self, func: tp.Callable, *args, **kwargs) -> None:
-        DefineMixin.__init__(self, func=func, args=args, kwargs=kwargs)
 
     def __iter__(self) -> tp.Iterator:
         return iter((self.func, self.args, self.kwargs))

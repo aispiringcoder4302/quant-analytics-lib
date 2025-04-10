@@ -998,8 +998,8 @@ class Records(Analyzable, metaclass=MetaRecords):
         Returns:
             dict: A dictionary containing:
 
-                * wrapper_meta: Metadata from the resampling operation.
-                * new_records_arr: The new resampled record array.
+                * `wrapper_meta`: Metadata from the resampling operation.
+                * `new_records_arr`: The new resampled record array.
         """
         if wrapper_meta is None:
             wrapper_meta = self.wrapper.resample_meta(*args, **kwargs)

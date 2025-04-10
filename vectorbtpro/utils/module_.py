@@ -718,8 +718,8 @@ def annotate_refname_parts(refname: str) -> tp.Tuple[dict, ...]:
     Returns:
         Tuple[dict, ...]: A tuple of dictionaries, each containing:
 
-            * name: The reference name part.
-            * obj: The object corresponding to the reference name part.
+            * `name`: The reference name part.
+            * `obj`: The object corresponding to the reference name part.
     """
     refname_parts = refname.split(".")
     obj = None

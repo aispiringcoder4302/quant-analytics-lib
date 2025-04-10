@@ -774,12 +774,12 @@ class MappedArray(Analyzable):
         Returns:
             dict: A dictionary containing:
 
-                * wrapper_meta: Metadata from the wrapper.
-                * new_indices: New indices after selection.
-                * new_mapped_arr: The mapped array after indexing.
-                * new_col_arr: The column array after indexing.
-                * new_idx_arr: The new index array, if available.
-                * new_id_arr: The new ID array after indexing.
+                * `wrapper_meta`: Metadata from the wrapper.
+                * `new_indices`: New indices after selection.
+                * `new_mapped_arr`: The mapped array after indexing.
+                * `new_col_arr`: The column array after indexing.
+                * `new_idx_arr`: The new index array, if available.
+                * `new_id_arr`: The new ID array after indexing.
         """
         if wrapper_meta is None:
             wrapper_meta = self.wrapper.indexing_func_meta(
@@ -851,8 +851,8 @@ class MappedArray(Analyzable):
         Returns:
             dict: A dictionary containing:
 
-                * wrapper_meta: Resampling metadata from the wrapper.
-                * new_idx_arr: The new index array after resampling, if available.
+                * `wrapper_meta`: Resampling metadata from the wrapper.
+                * `new_idx_arr`: The new index array after resampling, if available.
         """
         if wrapper_meta is None:
             wrapper_meta = self.wrapper.resample_meta(*args, **kwargs)

@@ -10,8 +10,9 @@
 
 """Modules for working with returns.
 
-Offers common financial risk and performance metrics as found in [empyrical](https://github.com/quantopian/empyrical),
-an adapter for quantstats, and other features based on returns."""
+Provides common financial risk and performance metrics modeled after
+[empyrical](https://github.com/quantopian/empyrical), an adapter for quantstats,
+and additional return-based features."""
 
 from typing import TYPE_CHECKING
 

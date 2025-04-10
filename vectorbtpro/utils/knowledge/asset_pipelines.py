@@ -208,6 +208,20 @@ class ComplexAssetPipeline(AssetPipeline):
         ```
     """
 
+    def __init__(
+        self,
+        expression: str,
+        context: tp.KwargsLike = None,
+        prepare_once: bool = True,
+        **resolve_task_kwargs,
+    ) -> None:
+        self._expression, self._context = self.resolve_expression_and_context(
+            expression,
+            context=context,
+            prepare_once=prepare_once,
+            **resolve_task_kwargs,
+        )
+
     @classmethod
     def resolve_expression_and_context(
         cls,
@@ -386,20 +400,6 @@ class ComplexAssetPipeline(AssetPipeline):
 
         new_context = merge_dicts(func_context, context)
         return new_expression, new_context
-
-    def __init__(
-        self,
-        expression: str,
-        context: tp.KwargsLike = None,
-        prepare_once: bool = True,
-        **resolve_task_kwargs,
-    ) -> None:
-        self._expression, self._context = self.resolve_expression_and_context(
-            expression,
-            context=context,
-            prepare_once=prepare_once,
-            **resolve_task_kwargs,
-        )
 
     @property
     def expression(self) -> str:

@@ -8,40 +8,38 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Custom Pandas accessors for returns.
+"""Module providing custom Pandas accessors for returns.
 
-Methods can be accessed as follows:
+Access methods are available as follows:
 
-* `ReturnsSRAccessor` -> `pd.Series.vbt.returns.*`
-* `ReturnsDFAccessor` -> `pd.DataFrame.vbt.returns.*`
+* `ReturnsSRAccessor` can be accessed via `pd.Series.vbt.returns.*`
+* `ReturnsDFAccessor` can be accessed via `pd.DataFrame.vbt.returns.*`
 
 !!! note
-    The underlying Series/DataFrame must already be a return series.
-    To convert price to returns, use `ReturnsAccessor.from_value`.
+    The underlying Series/DataFrame must represent returns. To convert price data to returns, use `ReturnsAccessor.from_value`.
 
-    Grouping is only supported by the methods that accept the `group_by` argument.
+    Grouping is supported only by methods accepting the `group_by` argument.
+    Accessor methods do not use caching.
 
-    Accessors do not utilize caching.
-
-There are three options to compute returns and get the accessor:
+There are three ways to compute returns and obtain the accessor:
 
 ```pycon
 >>> from vectorbtpro import *
 
 >>> price = pd.Series([1.1, 1.2, 1.3, 1.2, 1.1])
 
->>> # 1. pd.Series.pct_change
+>>> # 1. Using pd.Series.pct_change
 >>> rets = price.pct_change()
 >>> ret_acc = rets.vbt.returns(freq='d')
 
->>> # 2. vectorbtpro.generic.accessors.GenericAccessor.to_returns
+>>> # 2. Using vectorbtpro.generic.accessors.GenericAccessor.to_returns
 >>> rets = price.vbt.to_returns()
 >>> ret_acc = rets.vbt.returns(freq='d')
 
->>> # 3. vectorbtpro.returns.accessors.ReturnsAccessor.from_value
+>>> # 3. Using vectorbtpro.returns.accessors.ReturnsAccessor.from_value
 >>> ret_acc = pd.Series.vbt.returns.from_value(price, freq='d')
 
->>> # vectorbtpro.returns.accessors.ReturnsAccessor.total
+>>> # Access total returns using vectorbtpro.returns.accessors.ReturnsAccessor.total
 >>> ret_acc.total()
 0.0
 ```
@@ -49,27 +47,26 @@ There are three options to compute returns and get the accessor:
 The accessors extend `vectorbtpro.generic.accessors`.
 
 ```pycon
->>> # inherited from GenericAccessor
+>>> # Inherited from GenericAccessor
 >>> ret_acc.max()
 0.09090909090909083
 ```
 
 ## Defaults
 
-`vectorbtpro.returns.accessors.ReturnsAccessor` accepts `defaults` dictionary where you can pass
-defaults for arguments used throughout the accessor, such as
+`ReturnsAccessor` accepts a `defaults` dictionary that provides default parameters used throughout the accessor, such as:
 
-* `start_value`: The starting value.
+* `start_value`: Starting value.
 * `window`: Window length.
-* `minp`: Minimum number of observations in a window required to have a value.
+* `minp`: Minimum number of observations required in a window.
 * `ddof`: Delta Degrees of Freedom.
-* `risk_free`: Constant risk-free return throughout the period.
+* `risk_free`: Constant risk-free return during the period.
 * `levy_alpha`: Scaling relation (Levy stability exponent).
-* `required_return`: Minimum acceptance return of the investor.
-* `cutoff`: Decimal representing the percentage cutoff for the bottom percentile of returns.
-* `periods`: Number of observations for annualization. Can be an integer or "dt_periods".
+* `required_return`: Minimum acceptable return.
+* `cutoff`: Decimal representing the cutoff percentage for the lowest returns.
+* `periods`: Number of observations for annualization (can be an integer or "dt_periods").
 
-Defaults as well as `bm_returns` and `year_freq` can be set globally using settings:
+Global settings, including `bm_returns` and `year_freq`, can be configured through:
 
 ```pycon
 >>> benchmark = pd.Series([1.05, 1.1, 1.15, 1.1, 1.05])
@@ -113,9 +110,9 @@ dtype: object
 ## Plots
 
 !!! hint
-    See `vectorbtpro.generic.plots_builder.PlotsBuilderMixin.plots` and `ReturnsAccessor.subplots`.
+    Refer to `vectorbtpro.generic.plots_builder.PlotsBuilderMixin.plots` and `ReturnsAccessor.subplots`.
 
-`ReturnsAccessor` class has a single subplot based on `ReturnsAccessor.plot_cumulative`:
+The `ReturnsAccessor` class provides a single subplot based on `ReturnsAccessor.plot_cumulative`:
 
 ```pycon
 >>> ret_acc.plots().show()
@@ -157,19 +154,55 @@ ReturnsAccessorT = tp.TypeVar("ReturnsAccessorT", bound="ReturnsAccessor")
 
 @register_vbt_accessor("returns")
 class ReturnsAccessor(GenericAccessor, SimRangeMixin):
-    """Accessor on top of return series. For both, Series and DataFrames.
+    """Accessor on top of return series for both Pandas `Series` and `DataFrame`.
 
     Accessible via `pd.Series.vbt.returns` and `pd.DataFrame.vbt.returns`.
 
     Args:
-        obj (pd.Series or pd.DataFrame): Pandas object representing returns.
-        bm_returns (array_like): Pandas object representing benchmark returns.
-        log_returns (bool): Whether returns and benchmark returns are provided as log returns.
-        year_freq (any): Year frequency for annualization purposes.
-        defaults (dict): Defaults that override `defaults` in `vectorbtpro._settings.returns`.
-        sim_start (int, datetime_like, or array_like): Simulation start per column.
-        sim_end (int, datetime_like, or array_like): Simulation end per column.
-        **kwargs: Keyword arguments that are passed down to `vectorbtpro.generic.accessors.GenericAccessor`."""
+        wrapper (Union[ArrayWrapper, ArrayLike]): Wrapper instance or a Pandas object containing
+            return data if `obj` is None.
+        obj (Optional[ArrayLike]): The Pandas object containing return data.
+
+            Represents the return series.
+        bm_returns (Optional[ArrayLike]): Benchmark return data.
+        log_returns (bool): Indicates whether the provided returns are in log format.
+        year_freq (Optional[FrequencyLike]): Frequency used for annualization.
+        defaults (KwargsLike): Overrides for default settings in `vectorbtpro._settings.returns`.
+        sim_start (Optional[ArrayLike]): Simulation start, which can be a scalar or array-like.
+        sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
+        **kwargs: Additional keyword arguments passed to `vectorbtpro.generic.accessors.GenericAccessor`.
+    """
+
+    def __init__(
+        self,
+        wrapper: tp.Union[ArrayWrapper, tp.ArrayLike],
+        obj: tp.Optional[tp.ArrayLike] = None,
+        bm_returns: tp.Optional[tp.ArrayLike] = None,
+        log_returns: bool = False,
+        year_freq: tp.Optional[tp.FrequencyLike] = None,
+        defaults: tp.KwargsLike = None,
+        sim_start: tp.Optional[tp.ArrayLike] = None,
+        sim_end: tp.Optional[tp.ArrayLike] = None,
+        **kwargs,
+    ) -> None:
+        GenericAccessor.__init__(
+            self,
+            wrapper,
+            obj=obj,
+            bm_returns=bm_returns,
+            log_returns=log_returns,
+            year_freq=year_freq,
+            defaults=defaults,
+            sim_start=sim_start,
+            sim_end=sim_end,
+            **kwargs,
+        )
+        SimRangeMixin.__init__(self, sim_start=sim_start, sim_end=sim_end)
+
+        self._bm_returns = bm_returns
+        self._log_returns = log_returns
+        self._year_freq = year_freq
+        self._defaults = defaults
 
     @classmethod
     def from_value(
@@ -177,8 +210,8 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         value: tp.ArrayLike,
         init_value: tp.ArrayLike = np.nan,
         log_returns: bool = False,
-        sim_start: tp.Optional[tp.Array1d] = None,
-        sim_end: tp.Optional[tp.Array1d] = None,
+        sim_start: tp.Optional[tp.ArrayLike] = None,
+        sim_end: tp.Optional[tp.ArrayLike] = None,
         jitted: tp.JittedOption = None,
         chunked: tp.ChunkedOption = None,
         wrapper: tp.Optional[ArrayWrapper] = None,
@@ -186,7 +219,24 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         return_values: bool = False,
         **kwargs,
     ) -> tp.Union[ReturnsAccessorT, tp.SeriesFrame]:
-        """Returns a new `ReturnsAccessor` instance with returns calculated from `value`."""
+        """Return a new `ReturnsAccessor` instance with return calculations derived from `value`.
+
+        Args:
+            value (ArrayLike): Input data from which returns are computed.
+            init_value (ArrayLike): Initial value to broadcast for each column.
+            log_returns (bool): Flag indicating if returns are provided as log returns.
+            sim_start (Optional[Array1d]): Simulation start, which can be a scalar or array-like.
+            sim_end (Optional[Array1d]): Simulation end, which can be a scalar or array-like.
+            jitted (JittedOption): Option to control JIT compilation.
+            chunked (ChunkedOption): Option to control chunked processing.
+            wrapper (Optional[ArrayWrapper]): Wrapper instance for array operations.
+            wrapper_kwargs (KwargsLike): Additional keyword arguments to configure the wrapper.
+            return_values (bool): If True, return wrapped return values instead of a `ReturnsAccessor` instance.
+            **kwargs: Additional keyword arguments for accessor initialization.
+
+        Returns:
+            Union[ReturnsAccessor, SeriesFrame]: A new accessor instance or wrapped return values.
+        """
         if wrapper_kwargs is None:
             wrapper_kwargs = {}
         if not checks.is_any_array(value):
@@ -219,7 +269,15 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         *objs: tp.MaybeTuple[ReturnsAccessorT],
         **kwargs,
     ) -> tp.Kwargs:
-        """Resolve keyword arguments for initializing `ReturnsAccessor` after stacking along rows."""
+        """Resolve keyword arguments for initializing a `ReturnsAccessor` after stacking along rows.
+
+        Args:
+            *objs (ReturnsAccessor): Instances of `ReturnsAccessor` to be merged.
+            **kwargs: Additional keyword arguments.
+
+        Returns:
+            dict: Resolved keyword arguments for creating a new `ReturnsAccessor` instance.
+        """
         kwargs = GenericAccessor.resolve_row_stack_kwargs(*objs, **kwargs)
         if len(objs) == 1:
             objs = objs[0]
@@ -255,7 +313,16 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         reindex_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> tp.Kwargs:
-        """Resolve keyword arguments for initializing `ReturnsAccessor` after stacking along columns."""
+        """Resolve keyword arguments for initializing a `ReturnsAccessor` after stacking along columns.
+
+        Args:
+            *objs (ReturnsAccessor): Instances of `ReturnsAccessor` to be merged.
+            reindex_kwargs (KwargsLike): Parameters for reindexing after stacking.
+            **kwargs: Additional keyword arguments.
+
+        Returns:
+            dict: Resolved keyword arguments for creating a new `ReturnsAccessor` instance.
+        """
         kwargs = GenericAccessor.resolve_column_stack_kwargs(*objs, reindex_kwargs=reindex_kwargs, **kwargs)
         kwargs.pop("reindex_kwargs", None)
         if len(objs) == 1:
@@ -286,37 +353,6 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             kwargs["sim_end"] = cls.column_stack_sim_end(kwargs["wrapper"], *objs)
         return kwargs
 
-    def __init__(
-        self,
-        wrapper: tp.Union[ArrayWrapper, tp.ArrayLike],
-        obj: tp.Optional[tp.ArrayLike] = None,
-        bm_returns: tp.Optional[tp.ArrayLike] = None,
-        log_returns: bool = False,
-        year_freq: tp.Optional[tp.FrequencyLike] = None,
-        defaults: tp.KwargsLike = None,
-        sim_start: tp.Optional[tp.Array1d] = None,
-        sim_end: tp.Optional[tp.Array1d] = None,
-        **kwargs,
-    ) -> None:
-        GenericAccessor.__init__(
-            self,
-            wrapper,
-            obj=obj,
-            bm_returns=bm_returns,
-            log_returns=log_returns,
-            year_freq=year_freq,
-            defaults=defaults,
-            sim_start=sim_start,
-            sim_end=sim_end,
-            **kwargs,
-        )
-        SimRangeMixin.__init__(self, sim_start=sim_start, sim_end=sim_end)
-
-        self._bm_returns = bm_returns
-        self._log_returns = log_returns
-        self._year_freq = year_freq
-        self._defaults = defaults
-
     @hybrid_property
     def sr_accessor_cls(cls_or_self) -> tp.Type["ReturnsSRAccessor"]:
         """Accessor class for `pd.Series`."""
@@ -333,7 +369,19 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         wrapper_meta: tp.DictLike = None,
         **kwargs,
     ) -> ReturnsAccessorT:
-        """Perform indexing on `ReturnsAccessor`."""
+        """Perform indexing on a `ReturnsAccessor` instance.
+
+        Args:
+            *args: Additional positional arguments for indexing.
+            wrapper_meta (DictLike): Indexing metadata.
+
+                If not provided, it is derived from the wrapper.
+            **kwargs: Additional keyword arguments for indexing.
+
+        Returns:
+            ReturnsAccessor: A new accessor instance with the sliced data,
+                benchmark returns, and simulation indices.
+        """
         if wrapper_meta is None:
             wrapper_meta = self.wrapper.indexing_func_meta(*args, **kwargs)
         new_obj = wrapper_meta["new_wrapper"].wrap(
@@ -375,7 +423,11 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
     @property
     def bm_returns(self) -> tp.Optional[tp.SeriesFrame]:
-        """Benchmark returns."""
+        """Return benchmark returns wrapped using the assigned array wrapper.
+    
+        Returns:
+            Optional[SeriesFrame]: The benchmark returns if available; otherwise, None.
+        """
         from vectorbtpro._settings import settings
 
         returns_cfg = settings["returns"]
@@ -393,7 +445,19 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         sim_start: tp.Optional[tp.ArrayLike] = None,
         sim_end: tp.Optional[tp.ArrayLike] = None,
     ) -> tp.Optional[ReturnsAccessorT]:
-        """Get accessor for benchmark returns."""
+        """Return a returns accessor for benchmark returns based on provided data and simulation range.
+    
+        Args:
+            bm_returns (Optional[ArrayLike]): Benchmark returns data.
+
+                If not provided, the `bm_returns` property is used.
+            sim_start (Optional[ArrayLike]): Simulation start, which can be a scalar or array-like.
+            sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
+    
+        Returns:
+            Optional[ReturnsAccessorT]: A returns accessor instance for benchmark returns,
+                or None if benchmark returns are unavailable.
+        """
         if bm_returns is None:
             bm_returns = self.bm_returns
         if bm_returns is None:
@@ -409,17 +473,24 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
     @property
     def bm_returns_acc(self) -> tp.Optional[ReturnsAccessorT]:
-        """`ReturnsAccessor.get_bm_returns_acc` with default arguments."""
+        """Benchmark returns accessor using default arguments."""
         return self.get_bm_returns_acc()
 
     @property
     def log_returns(self) -> bool:
-        """Whether returns and benchmark returns are provided as log returns."""
+        """Flag indicating if returns and benchmark returns are provided as log returns."""
         return self._log_returns
 
     @classmethod
     def auto_detect_ann_factor(cls, index: pd.DatetimeIndex) -> tp.Optional[float]:
-        """Auto-detect annualization factor from a datetime index."""
+        """Auto-detect the annualization factor using a datetime index.
+    
+        Args:
+            index (DatetimeIndex): Datetime index used for computing the annualization factor.
+    
+        Returns:
+            Optional[float]: The computed annualization factor, or None if indeterminable.
+        """
         checks.assert_instance_of(index, pd.DatetimeIndex, arg_name="index")
         if len(index) == 1:
             return None
@@ -434,7 +505,15 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
     @classmethod
     def parse_ann_factor(cls, index: pd.DatetimeIndex, method_name: str = "max") -> tp.Optional[float]:
-        """Parse annualization factor from a datetime index."""
+        """Parse the annualization factor from a datetime index using a specified method.
+    
+        Args:
+            index (DatetimeIndex): Datetime index used to determine the annualization factor.
+            method_name (str): Method name to apply on yearly counts (e.g., "max").
+    
+        Returns:
+            Optional[float]: The parsed annualization factor, or None if not determinable.
+        """
         checks.assert_instance_of(index, pd.DatetimeIndex, arg_name="index")
         if len(index) == 1:
             return None
@@ -453,7 +532,16 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         freq: tp.PandasFrequency,
         method_name: tp.Optional[str] = None,
     ) -> tp.PandasFrequency:
-        """Convert annualization factor into year frequency."""
+        """Convert an annualization factor into a year frequency.
+    
+        Args:
+            ann_factor (float): The annualization factor.
+            freq (PandasFrequency): Data frequency to be scaled.
+            method_name (Optional[str]): Name of the NumPy method to apply to the annualization factor.
+    
+        Returns:
+            PandasFrequency: The resulting year frequency.
+        """
         if method_name not in (None, False):
             if method_name is True:
                 ann_factor = round(ann_factor)
@@ -467,7 +555,14 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
     @classmethod
     def year_freq_depends_on_index(cls, year_freq: tp.FrequencyLike) -> bool:
-        """Return whether frequency depends on index."""
+        """Determine whether the specified year frequency depends on the index.
+    
+        Args:
+            year_freq (FrequencyLike): The year frequency specification.
+    
+        Returns:
+            bool: True if the frequency depends on the index; otherwise, False.
+        """
         if isinstance(year_freq, str):
             year_freq = " ".join(year_freq.strip().split())
             if year_freq == "auto" or year_freq.startswith("auto_"):
@@ -483,12 +578,21 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         index: tp.Optional[tp.Index] = None,
         freq: tp.Optional[tp.PandasFrequency] = None,
     ) -> tp.Optional[tp.PandasFrequency]:
-        """Resolve year frequency.
-
-        If `year_freq` is "auto", uses `ReturnsAccessor.auto_detect_ann_factor`. If `year_freq`
-        is "auto_[method_name]`, also applies the method `np.[method_name]` to the annualization factor,
-        mostly to round it. If `year_freq` is "index_[method_name]", uses `ReturnsAccessor.parse_ann_factor`
-        to determine the annualization factor by applying the method to `pd.DatetimeIndex.year`."""
+        """Resolve and return the year frequency based on provided input and index information.
+    
+        If `year_freq` is a string starting with "auto", the annualization factor is auto-detected using
+        `ReturnsAccessor.auto_detect_ann_factor`. If it has the form "auto_[method_name]", the corresponding
+        NumPy method is applied to the annualization factor. Similarly, if `year_freq` starts with "index_", the
+        annualization factor is parsed using `ReturnsAccessor.parse_ann_factor`.
+    
+        Args:
+            year_freq (Optional[FrequencyLike]): Year frequency specification.
+            index (Optional[Index]): Datetime index used for annualization factor detection.
+            freq (Optional[PandasFrequency]): Data frequency corresponding to the index.
+    
+        Returns:
+            Optional[PandasFrequency]: The resolved year frequency, or None if it cannot be determined.
+        """
         if not isinstance(cls_or_self, type):
             if year_freq is None:
                 year_freq = cls_or_self._year_freq
@@ -536,7 +640,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
     @property
     def year_freq(self) -> tp.Optional[tp.PandasFrequency]:
-        """Year frequency."""
+        """Year frequency if available; otherwise, None."""
         return self.get_year_freq()
 
     @hybrid_method
@@ -546,7 +650,16 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         freq: tp.Optional[tp.FrequencyLike] = None,
         raise_error: bool = False,
     ) -> tp.Optional[float]:
-        """Get the annualization factor from the year and data frequency."""
+        """Return the annualization factor based on the given year frequency and data frequency.
+    
+        Args:
+            year_freq (Optional[FrequencyLike]): Year frequency specification.
+            freq (Optional[FrequencyLike]): Data frequency specification.
+            raise_error (bool): Flag indicating whether to raise an error if the frequencies are None.
+    
+        Returns:
+            Optional[float]: The computed annualization factor, or None if not determinable.
+        """
         if isinstance(cls_or_self, type):
             from vectorbtpro._settings import settings
 
@@ -596,7 +709,20 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         wrapper: tp.Optional[ArrayWrapper] = None,
         group_by: tp.GroupByLike = None,
     ) -> tp.Optional[tp.ArrayLike]:
-        """Prepare periods."""
+        """Prepare periods using simulation parameters and a wrapper if necessary.
+
+        Args:
+            periods (Union[None, str, ArrayLike]): Designation of periods to prepare.
+
+                If None, defaults are used.
+            sim_start (Optional[ArrayLike]): Simulation start, which can be a scalar or array-like.
+            sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
+            wrapper (Optional[ArrayWrapper]): Array wrapper for index extraction.
+            group_by (GroupByLike): Grouping specification.
+
+        Returns:
+            Optional[ArrayLike]: Prepared periods array or None.
+        """
         if not isinstance(cls_or_self, type) and periods is None:
             periods = cls_or_self.defaults["periods"]
         if isinstance(periods, str) and periods.lower() == "dt_periods":
@@ -647,18 +773,26 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
     @property
     def periods(self) -> tp.Optional[tp.ArrayLike]:
-        """Periods."""
+        """Periods computed for the returns accessor."""
         return self.get_periods()
 
     def deannualize(self, value: float) -> float:
-        """Deannualize a value."""
+        """Deannualize a value based on the annualization factor.
+
+        Args:
+            value (float): The annual return value.
+
+        Returns:
+            float: The deannualized return value.
+        """
         return np.power(1 + value, 1.0 / self.ann_factor) - 1.0
 
     @property
     def defaults(self) -> tp.Kwargs:
-        """Defaults for `ReturnsAccessor`.
+        """Defaults for ReturnsAccessor.
 
-        Merges `defaults` from `vectorbtpro._settings.returns` with `defaults` from `ReturnsAccessor`."""
+        Merges defaults from `vectorbtpro._settings.returns` with the accessor's own defaults.
+        """
         from vectorbtpro._settings import settings
 
         returns_defaults_cfg = settings["returns"]["defaults"]
@@ -675,9 +809,21 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         chunked: tp.ChunkedOption = None,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.SeriesFrame:
-        """Mirror returns.
+        """Mirror returns based on simulation indices.
 
-        See `vectorbtpro.returns.nb.mirror_returns_nb`."""
+        Args:
+            sim_start (Optional[ArrayLike]): Simulation start, which can be a scalar or array-like.
+            sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
+            jitted (JittedOption): Option to control JIT compilation.
+            chunked (ChunkedOption): Option to control chunked processing.
+            wrap_kwargs (KwargsLike): Additional keyword arguments for configuring the wrapper.
+
+        Returns:
+            SeriesFrame: The mirrored returns.
+        
+        See:
+            `vectorbtpro.returns.nb.mirror_returns_nb`
+        """
         sim_start = self.resolve_sim_start(sim_start=sim_start, group_by=False)
         sim_end = self.resolve_sim_end(sim_end=sim_end, group_by=False)
 
@@ -700,9 +846,24 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         chunked: tp.ChunkedOption = None,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.SeriesFrame:
-        """Cumulative returns.
+        """Calculate cumulative returns.
 
-        See `vectorbtpro.returns.nb.cumulative_returns_nb`."""
+        Args:
+            start_value (Optional[float]): Initial value for cumulative returns.
+
+                Defaults to the value in `ReturnsAccessor.defaults` if not provided.
+            sim_start (Optional[ArrayLike]): Simulation start, which can be a scalar or array-like.
+            sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
+            jitted (JittedOption): Option to control JIT compilation.
+            chunked (ChunkedOption): Option to control chunked processing.
+            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapper configuration.
+
+        Returns:
+            SeriesFrame: The cumulative returns.
+        
+        See:
+            `vectorbtpro.returns.nb.cumulative_returns_nb`
+        """
         if start_value is None:
             start_value = self.defaults["start_value"]
         sim_start = self.resolve_sim_start(sim_start=sim_start, group_by=False)
@@ -726,7 +887,17 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         wrapper_meta: tp.DictLike = None,
         **kwargs,
     ) -> ReturnsAccessorT:
-        """Perform resampling on `ReturnsAccessor`."""
+        """Resample returns in the accessor.
+
+        Args:
+            *args: Positional arguments defining resampling parameters.
+            fill_with_zero (bool): Flag indicating whether to fill missing values with zero.
+            wrapper_meta (DictLike): Metadata for creating the resampling wrapper.
+            **kwargs: Additional keyword arguments for resampling operations.
+
+        Returns:
+            ReturnsAccessor: A new resampled returns accessor.
+        """
         if wrapper_meta is None:
             wrapper_meta = self.wrapper.resample_meta(*args, **kwargs)
         new_wrapper = wrapper_meta["new_wrapper"]
@@ -766,7 +937,17 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         chunked: tp.ChunkedOption = None,
         **kwargs,
     ) -> tp.SeriesFrame:
-        """Resample returns to a custom frequency, date offset, or index."""
+        """Resample returns to a custom frequency, date offset, or index.
+
+        Args:
+            rule (AnyRuleLike): The resampling rule or date offset.
+            jitted (JittedOption): Option to control JIT compilation.
+            chunked (ChunkedOption): Option for chunked processing.
+            **kwargs: Additional keyword arguments for resampling.
+
+        Returns:
+            SeriesFrame: The resampled returns.
+        """
         checks.assert_instance_of(self.obj.index, dt.PandasDatetimeIndex)
 
         func = jit_reg.resolve_option(nb.total_return_1d_nb, jitted)
@@ -793,7 +974,16 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         chunked: tp.ChunkedOption = None,
         **kwargs,
     ) -> tp.SeriesFrame:
-        """Daily returns."""
+        """Calculate daily returns.
+
+        Args:
+            jitted (JittedOption): Option to control JIT compilation.
+            chunked (ChunkedOption): Option for chunked processing.
+            **kwargs: Additional keyword arguments for resampling returns.
+
+        Returns:
+            SeriesFrame: The daily returns.
+        """
         return self.resample_returns("1D", jitted=jitted, chunked=chunked, **kwargs)
 
     def annual(
@@ -802,7 +992,16 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         chunked: tp.ChunkedOption = None,
         **kwargs,
     ) -> tp.SeriesFrame:
-        """Annual returns."""
+        """Calculate annual returns using the defined year frequency.
+
+        Args:
+            jitted (JittedOption): Option to control JIT compilation.
+            chunked (ChunkedOption): Option for chunked processing.
+            **kwargs: Additional keyword arguments for resampling returns.
+
+        Returns:
+            SeriesFrame: The annual returns.
+        """
         return self.resample_returns(self.year_freq, jitted=jitted, chunked=chunked, **kwargs)
 
     # ############# Metrics ############# #
@@ -816,9 +1015,24 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         chunked: tp.ChunkedOption = None,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.MaybeSeries:
-        """Final value.
+        """Calculate the final value of returns over a simulation period.
 
-        See `vectorbtpro.returns.nb.final_value_nb`."""
+        Args:
+            start_value (Optional[float]): Initial value for cumulative returns.
+
+                Defaults to the value in `ReturnsAccessor.defaults` if not provided.
+            sim_start (Optional[ArrayLike]): Simulation start, which can be a scalar or array-like.
+            sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
+            jitted (JittedOption): Option to control JIT compilation.
+            chunked (ChunkedOption): Option for chunked processing.
+            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping the result.
+
+        Returns:
+            MaybeSeries: The final cumulative return value.
+        
+        See:
+            `vectorbtpro.returns.nb.final_value_nb`
+        """
         if start_value is None:
             start_value = self.defaults["start_value"]
         sim_start = self.resolve_sim_start(sim_start=sim_start, group_by=False)
@@ -848,9 +1062,29 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         chunked: tp.ChunkedOption = None,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.SeriesFrame:
-        """Rolling final value.
+        """Compute rolling final value.
 
-        See `vectorbtpro.returns.nb.rolling_final_value_nb`."""
+        Args:
+            window (Optional[int]): Rolling window size.
+
+                Defaults to the value in `ReturnsAccessor.defaults` if not provided.
+            minp (Optional[int]): Minimum number of periods required.
+
+                Defaults to the value in `ReturnsAccessor.defaults` if not provided.
+            start_value (Optional[float]): Starting value for the calculation.
+
+                Defaults to the value in `ReturnsAccessor.defaults` if not provided.
+            sim_start (Optional[ArrayLike]): Simulation period start.
+            sim_end (Optional[ArrayLike]): Simulation period end.
+            jitted (JittedOption): Option for controlling JIT compilation.
+            chunked (ChunkedOption): Option for controlling chunked processing.
+            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping the result.
+
+        Returns:
+            SeriesFrame: The wrapped array of rolling final values.
+
+        See `vectorbtpro.returns.nb.rolling_final_value_nb`.
+        """
         if window is None:
             window = self.defaults["window"]
         if minp is None:
@@ -881,9 +1115,20 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         chunked: tp.ChunkedOption = None,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.MaybeSeries:
-        """Total return.
+        """Compute total return.
 
-        See `vectorbtpro.returns.nb.total_return_nb`."""
+        Args:
+            sim_start (Optional[ArrayLike]): Simulation period start.
+            sim_end (Optional[ArrayLike]): Simulation period end.
+            jitted (JittedOption): Option for controlling JIT compilation.
+            chunked (ChunkedOption): Option for controlling chunked processing.
+            wrap_kwargs (KwargsLike): Additional keyword arguments for result wrapping.
+
+        Returns:
+            MaybeSeries: The computed total return.
+
+        See `vectorbtpro.returns.nb.total_return_nb`.
+        """
         sim_start = self.resolve_sim_start(sim_start=sim_start, group_by=False)
         sim_end = self.resolve_sim_end(sim_end=sim_end, group_by=False)
 
@@ -909,9 +1154,26 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         chunked: tp.ChunkedOption = None,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.SeriesFrame:
-        """Rolling total return.
+        """Compute rolling total return.
 
-        See `vectorbtpro.returns.nb.rolling_total_return_nb`."""
+        Args:
+            window (Optional[int]): Rolling window size. 
+            
+                Defaults to the value in `ReturnsAccessor.defaults` if not provided.
+            minp (Optional[int]): Minimum number of periods required. 
+            
+                Defaults to the value in `ReturnsAccessor.defaults` if not provided.
+            sim_start (Optional[ArrayLike]): Simulation period start.
+            sim_end (Optional[ArrayLike]): Simulation period end.
+            jitted (JittedOption): Option for controlling JIT compilation.
+            chunked (ChunkedOption): Option for controlling chunked processing.
+            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping the result.
+
+        Returns:
+            SeriesFrame: The wrapped array of rolling total returns.
+
+        See `vectorbtpro.returns.nb.rolling_total_return_nb`.
+        """
         if window is None:
             window = self.defaults["window"]
         if minp is None:
@@ -940,9 +1202,22 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         chunked: tp.ChunkedOption = None,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.MaybeSeries:
-        """Annualized return.
+        """Compute annualized return.
 
-        See `vectorbtpro.returns.nb.annualized_return_nb`."""
+        Args:
+            periods (Union[None, str, ArrayLike]): Period specification resolved
+                using `ReturnsAccessor.get_periods`.
+            sim_start (Optional[ArrayLike]): Simulation period start.
+            sim_end (Optional[ArrayLike]): Simulation period end.
+            jitted (JittedOption): Option for controlling JIT compilation.
+            chunked (ChunkedOption): Option for controlling chunked processing.
+            wrap_kwargs (KwargsLike): Additional keyword arguments for result wrapping.
+
+        Returns:
+            MaybeSeries: The computed annualized return.
+
+        See `vectorbtpro.returns.nb.annualized_return_nb`.
+        """
         periods = self.get_periods(periods=periods, sim_start=sim_start, sim_end=sim_end)
         sim_start = self.resolve_sim_start(sim_start=sim_start, group_by=False)
         sim_end = self.resolve_sim_end(sim_end=sim_end, group_by=False)
@@ -971,9 +1246,26 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         chunked: tp.ChunkedOption = None,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.MaybeSeries:
-        """Rolling annualized return.
+        """Compute rolling annualized return.
 
-        See `vectorbtpro.returns.nb.rolling_annualized_return_nb`."""
+        Args:
+            window (Optional[int]): Rolling window size.
+
+                Defaults to the value in `ReturnsAccessor.defaults` if not provided.
+            minp (Optional[int]): Minimum number of periods required.
+
+                Defaults to the value in `ReturnsAccessor.defaults` if not provided.
+            sim_start (Optional[ArrayLike]): Simulation period start.
+            sim_end (Optional[ArrayLike]): Simulation period end.
+            jitted (JittedOption): Option for controlling JIT compilation.
+            chunked (ChunkedOption): Option for controlling chunked processing.
+            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping the result.
+
+        Returns:
+            MaybeSeries: The computed rolling annualized return.
+
+        See `vectorbtpro.returns.nb.rolling_annualized_return_nb`.
+        """
         if window is None:
             window = self.defaults["window"]
         if minp is None:
@@ -1004,9 +1296,26 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         chunked: tp.ChunkedOption = None,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.MaybeSeries:
-        """Annualized volatility.
+        """Compute annualized volatility.
 
-        See `vectorbtpro.returns.nb.annualized_volatility_nb`."""
+        Args:
+            levy_alpha (Optional[float]): Levy alpha parameter.
+
+                Defaults to the value in `ReturnsAccessor.defaults` if not provided.
+            ddof (Optional[int]): Degrees of freedom for the standard deviation calculation.
+
+                Defaults to the value in `ReturnsAccessor.defaults` if not provided.
+            sim_start (Optional[ArrayLike]): Simulation period start.
+            sim_end (Optional[ArrayLike]): Simulation period end.
+            jitted (JittedOption): Option for controlling JIT compilation.
+            chunked (ChunkedOption): Option for controlling chunked processing.
+            wrap_kwargs (KwargsLike): Additional keyword arguments for result wrapping.
+
+        Returns:
+            MaybeSeries: The computed annualized volatility.
+
+        See `vectorbtpro.returns.nb.annualized_volatility_nb`.
+        """
         if levy_alpha is None:
             levy_alpha = self.defaults["levy_alpha"]
         if ddof is None:
@@ -1040,9 +1349,33 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         chunked: tp.ChunkedOption = None,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.MaybeSeries:
-        """Rolling annualized volatility.
+        """Calculate rolling annualized volatility.
 
-        See `vectorbtpro.returns.nb.rolling_annualized_volatility_nb`."""
+        Args:
+            window (Optional[int]): Window size for the rolling calculation.
+
+                Defaults to the value in `ReturnsAccessor.defaults` if not provided.
+            minp (Optional[int]): Minimum number of observations required.
+
+                Defaults to the value in `ReturnsAccessor.defaults` if not provided.
+            levy_alpha (Optional[float]): Alpha parameter for Lévy correction.
+
+                Defaults to the value in `ReturnsAccessor.defaults` if not provided.
+            ddof (Optional[int]): Degrees of freedom for standard deviation computation.
+
+                Defaults to the value in `ReturnsAccessor.defaults` if not provided.
+            sim_start (Optional[ArrayLike]): Simulation start, which can be a scalar or array-like.
+            sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
+            jitted (JittedOption): Flag to control JIT compilation.
+            chunked (ChunkedOption): Flag to control chunked processing.
+            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping the output.
+
+        Returns:
+            MaybeSeries: A series of rolling annualized volatility values.
+
+        See:
+            `vectorbtpro.returns.nb.rolling_annualized_volatility_nb`
+        """
         if window is None:
             window = self.defaults["window"]
         if minp is None:
@@ -1077,9 +1410,23 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         chunked: tp.ChunkedOption = None,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.MaybeSeries:
-        """Calmar ratio.
+        """Calculate Calmar ratio.
 
-        See `vectorbtpro.returns.nb.calmar_ratio_nb`."""
+        Args:
+            periods (Union[None, str, ArrayLike]): Period specification resolved
+                using `ReturnsAccessor.get_periods`.
+            sim_start (Optional[ArrayLike]): Simulation start, which can be a scalar or array-like.
+            sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
+            jitted (JittedOption): Flag to control JIT compilation.
+            chunked (ChunkedOption): Flag to control chunked processing.
+            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping the output.
+
+        Returns:
+            MaybeSeries: A series of Calmar ratio values.
+
+        See:
+            `vectorbtpro.returns.nb.calmar_ratio_nb`
+        """
         periods = self.get_periods(periods=periods, sim_start=sim_start, sim_end=sim_end)
         sim_start = self.resolve_sim_start(sim_start=sim_start, group_by=False)
         sim_end = self.resolve_sim_end(sim_end=sim_end, group_by=False)
@@ -1108,9 +1455,27 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         chunked: tp.ChunkedOption = None,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.MaybeSeries:
-        """Rolling Calmar ratio.
+        """Calculate rolling Calmar ratio.
 
-        See `vectorbtpro.returns.nb.rolling_calmar_ratio_nb`."""
+        Args:
+            window (Optional[int]): Window size for the rolling calculation.
+
+                Defaults to the value in `ReturnsAccessor.defaults` if not provided.
+            minp (Optional[int]): Minimum number of observations required.
+
+                Defaults to the value in `ReturnsAccessor.defaults` if not provided.
+            sim_start (Optional[ArrayLike]): Simulation start, which can be a scalar or array-like.
+            sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
+            jitted (JittedOption): Flag to control JIT compilation.
+            chunked (ChunkedOption): Flag to control chunked processing.
+            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping the output.
+
+        Returns:
+            MaybeSeries: A series of rolling Calmar ratio values.
+
+        See:
+            `vectorbtpro.returns.nb.rolling_calmar_ratio_nb`
+        """
         if window is None:
             window = self.defaults["window"]
         if minp is None:
@@ -1141,9 +1506,27 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         chunked: tp.ChunkedOption = None,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.MaybeSeries:
-        """Omega ratio.
+        """Calculate Omega ratio.
 
-        See `vectorbtpro.returns.nb.omega_ratio_nb`."""
+        Args:
+            risk_free (Optional[float]): Risk-free rate for adjusting returns.
+
+                Defaults to the value in `ReturnsAccessor.defaults` if not provided.
+            required_return (Optional[float]): Required return threshold.
+
+                Defaults to the value in `ReturnsAccessor.defaults` if not provided.
+            sim_start (Optional[ArrayLike]): Simulation start, which can be a scalar or array-like.
+            sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
+            jitted (JittedOption): Flag to control JIT compilation.
+            chunked (ChunkedOption): Flag to control chunked processing.
+            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping the output.
+
+        Returns:
+            MaybeSeries: A series of Omega ratio values.
+
+        See:
+            `vectorbtpro.returns.nb.omega_ratio_nb`
+        """
         if risk_free is None:
             risk_free = self.defaults["risk_free"]
         if required_return is None:
@@ -1176,9 +1559,33 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         chunked: tp.ChunkedOption = None,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.MaybeSeries:
-        """Rolling Omega ratio.
+        """Calculate rolling Omega ratio.
 
-        See `vectorbtpro.returns.nb.rolling_omega_ratio_nb`."""
+        Args:
+            window (Optional[int]): Window size for the rolling calculation.
+
+                Defaults to the value in `ReturnsAccessor.defaults` if not provided.
+            minp (Optional[int]): Minimum number of observations required.
+
+                Defaults to the value in `ReturnsAccessor.defaults` if not provided.
+            risk_free (Optional[float]): Risk-free rate for adjusting returns.
+
+                Defaults to the value in `ReturnsAccessor.defaults` if not provided.
+            required_return (Optional[float]): Required return threshold.
+
+                Defaults to the value in `ReturnsAccessor.defaults` if not provided.
+            sim_start (Optional[ArrayLike]): Simulation start, which can be a scalar or array-like.
+            sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
+            jitted (JittedOption): Flag to control JIT compilation.
+            chunked (ChunkedOption): Flag to control chunked processing.
+            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping the output.
+
+        Returns:
+            MaybeSeries: A series of rolling Omega ratio values.
+
+        See:
+            `vectorbtpro.returns.nb.rolling_omega_ratio_nb`
+        """
         if window is None:
             window = self.defaults["window"]
         if minp is None:
@@ -1214,9 +1621,28 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         chunked: tp.ChunkedOption = None,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.MaybeSeries:
-        """Sharpe ratio.
+        """Calculate Sharpe ratio.
 
-        See `vectorbtpro.returns.nb.sharpe_ratio_nb`."""
+        Args:
+            annualized (bool): Whether to annualize the Sharpe ratio.
+
+                Defaults to the value in `ReturnsAccessor.defaults` if not provided.
+            risk_free (Optional[float]): Risk-free rate for adjusting returns.
+
+                Defaults to the value in `ReturnsAccessor.defaults` if not provided.
+            ddof (Optional[int]): Degrees of freedom for standard deviation calculation.
+            sim_start (Optional[ArrayLike]): Simulation start, which can be a scalar or array-like.
+            sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
+            jitted (JittedOption): Flag to control JIT compilation.
+            chunked (ChunkedOption): Flag to control chunked processing.
+            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping the output.
+
+        Returns:
+            MaybeSeries: A series of Sharpe ratio values.
+
+        See:
+            `vectorbtpro.returns.nb.sharpe_ratio_nb`
+        """
         if risk_free is None:
             risk_free = self.defaults["risk_free"]
         if ddof is None:
@@ -1245,9 +1671,9 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         window: tp.Optional[int] = None,
         *,
         minp: tp.Optional[int] = None,
-        annualized: bool = True,
         risk_free: tp.Optional[float] = None,
         ddof: tp.Optional[int] = None,
+        annualized: bool = True,
         sim_start: tp.Optional[tp.ArrayLike] = None,
         sim_end: tp.Optional[tp.ArrayLike] = None,
         stream_mode: bool = True,
@@ -1255,9 +1681,38 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         chunked: tp.ChunkedOption = None,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.MaybeSeries:
-        """Rolling Sharpe ratio.
+        """Calculate rolling Sharpe ratio.
 
-        See `vectorbtpro.returns.nb.rolling_sharpe_ratio_nb`."""
+        Computes the rolling Sharpe ratio over a specified window using excess returns relative
+        to the risk-free rate.
+
+        Args:
+            window (Optional[int]): Window length for the rolling calculation.
+
+                Defaults to the value in `ReturnsAccessor.defaults` if not provided.
+            minp (Optional[int]): Minimum number of observations required to calculate the ratio.
+
+                Defaults to the value in `ReturnsAccessor.defaults` if not provided.
+            risk_free (Optional[float]): Risk-free return used in the excess return computation.
+
+                Defaults to the value in `ReturnsAccessor.defaults` if not provided.
+            ddof (Optional[int]): Degrees of freedom for standard deviation calculation.
+
+                Defaults to the value in `ReturnsAccessor.defaults` if not provided.
+            annualized (bool): Whether to annualize the Sharpe ratio.
+            sim_start (Optional[ArrayLike]): Simulation start, which can be a scalar or array-like.
+            sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
+            stream_mode (bool): Indicates if stream mode processing is enabled.
+            jitted (JittedOption): Option to control JIT compilation.
+            chunked (ChunkedOption): Option to process data in chunks.
+            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping the result.
+
+        Returns:
+            MaybeSeries: Series representing the rolling Sharpe ratio.
+
+        See:
+            `vectorbtpro.returns.nb.rolling_sharpe_ratio_nb`
+        """
         if window is None:
             window = self.defaults["window"]
         if minp is None:
@@ -1294,9 +1749,30 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         bias: bool = True,
         wrap_kwargs: tp.KwargsLike = None,
     ):
-        """Standard deviation of the sharpe ratio estimation."""
+        """Calculate the standard deviation of the Sharpe ratio estimation.
+
+        Computes the standard deviation (or standard error) of the Sharpe ratio estimate using
+        the sample's skewness and kurtosis, adjusted by the degrees of freedom.
+
+        Args:
+            risk_free (Optional[float]): Risk-free return used in Sharpe ratio calculation.
+
+                Defaults to the value in `ReturnsAccessor.defaults` if not provided.
+            ddof (Optional[int]): Degrees of freedom adjustment for statistical calculations.
+
+                Defaults to the value in `ReturnsAccessor.defaults` if not provided.
+            bias (bool): Indicates whether bias correction is applied for skewness and kurtosis.
+            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping the result.
+
+        Returns:
+            MaybeSeries: Standard deviation of the Sharpe ratio estimation.
+        """
         from scipy import stats as scipy_stats
 
+        if risk_free is None:
+            risk_free = self.defaults["risk_free"]
+        if ddof is None:
+            ddof = self.defaults["ddof"]
         returns = to_2d_array(self.obj)
         nanmask = np.isnan(returns)
         if nanmask.any():
@@ -1318,11 +1794,35 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         bias: bool = True,
         wrap_kwargs: tp.KwargsLike = None,
     ):
-        """Probabilistic Sharpe Ratio (PSR)."""
+        """Calculate the probabilistic Sharpe Ratio (PSR).
+
+        Evaluates the probability that the strategy's Sharpe ratio exceeds that of a benchmark.
+        If benchmark returns are provided, the benchmark Sharpe ratio is computed for comparison.
+
+        Args:
+            bm_returns (Optional[ArrayLike]): Benchmark returns used for comparison.
+
+                Defaults to `ReturnsAccessor.bm_returns` if not provided.
+            risk_free (Optional[float]): Risk-free return utilized in the Sharpe ratio computation.
+
+                Defaults to the value in `ReturnsAccessor.defaults` if not provided.
+            ddof (Optional[int]): Degrees of freedom for statistical adjustments.
+
+                Defaults to the value in `ReturnsAccessor.defaults` if not provided.
+            bias (bool): Flag indicating whether to apply bias correction for skewness and kurtosis.
+            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping the result.
+
+        Returns:
+            MaybeSeries: The computed probabilistic Sharpe ratio.
+        """
         from scipy import stats as scipy_stats
 
         if bm_returns is None:
             bm_returns = self.bm_returns
+        if risk_free is None:
+            risk_free = self.defaults["risk_free"]
+        if ddof is None:
+            ddof = self.defaults["ddof"]
         if bm_returns is not None:
             bm_sr = to_1d_array(
                 self.replace(obj=bm_returns, bm_returns=None).sharpe_ratio(
@@ -1346,9 +1846,24 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         bias: bool = True,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.MaybeSeries:
-        """Deflated Sharpe Ratio (DSR).
+        """Calculate the deflated Sharpe Ratio (DSR).
 
-        Expresses the chance that the advertised strategy has a positive Sharpe ratio."""
+        Adjusts the Sharpe ratio for bias and sample variability, expressing the probability that
+        the strategy's true Sharpe ratio is positive.
+
+        Args:
+            risk_free (Optional[float]): Risk-free return used to compute excess returns.
+
+                Defaults to the value in `ReturnsAccessor.defaults` if not provided.
+            ddof (Optional[int]): Degrees of freedom for standard deviation computation.
+
+                Defaults to the value in `ReturnsAccessor.defaults` if not provided.
+            bias (bool): Indicates whether bias correction for skewness and kurtosis should be applied.
+            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping the result.
+
+        Returns:
+            MaybeSeries: The deflated Sharpe ratio.
+        """
         from scipy import stats as scipy_stats
 
         if risk_free is None:
@@ -1384,9 +1899,26 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         chunked: tp.ChunkedOption = None,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.MaybeSeries:
-        """Downside risk.
+        """Calculate downside risk.
 
-        See `vectorbtpro.returns.nb.downside_risk_nb`."""
+        Computes the downside risk of the returns relative to a specified required return.
+
+        Args:
+            required_return (Optional[float]): The minimum required return threshold for downside risk.
+
+                Defaults to the value in `ReturnsAccessor.defaults` if not provided.
+            sim_start (Optional[ArrayLike]): Simulation start, which can be a scalar or array-like.
+            sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
+            jitted (JittedOption): Option to control JIT compilation.
+            chunked (ChunkedOption): Option to process data in chunks.
+            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping the result.
+
+        Returns:
+            MaybeSeries: The calculated downside risk.
+
+        See:
+            `vectorbtpro.returns.nb.downside_risk_nb`
+        """
         if required_return is None:
             required_return = self.defaults["required_return"]
         sim_start = self.resolve_sim_start(sim_start=sim_start, group_by=False)
@@ -1415,9 +1947,30 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         chunked: tp.ChunkedOption = None,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.MaybeSeries:
-        """Rolling downside risk.
+        """Compute rolling downside risk.
 
-        See `vectorbtpro.returns.nb.rolling_downside_risk_nb`."""
+        Args:
+            window (Optional[int]): Rolling window size.
+
+                Defaults to the value in `ReturnsAccessor.defaults` if not provided.
+            minp (Optional[int]): Minimum number of periods required.
+
+                Defaults to the value in `ReturnsAccessor.defaults` if not provided.
+            required_return (Optional[float]): Required return threshold; subtracted from returns.
+
+                Defaults to the value in `ReturnsAccessor.defaults` if not provided.
+            sim_start (Optional[ArrayLike]): Simulation start, which can be a scalar or array-like.
+            sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
+            jitted (JittedOption): Option to control JIT compilation.
+            chunked (ChunkedOption): Option to control chunked processing.
+            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping the output.
+
+        Returns:
+            MaybeSeries: The rolling downside risk series wrapped with the configured wrapper.
+
+        See:
+            `vectorbtpro.returns.nb.rolling_downside_risk_nb`
+        """
         if window is None:
             window = self.defaults["window"]
         if minp is None:
@@ -1439,6 +1992,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         )
         return self.wrapper.wrap(out, group_by=False, **resolve_dict(wrap_kwargs))
 
+
     def sortino_ratio(
         self,
         required_return: tp.Optional[float] = None,
@@ -1448,9 +2002,24 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         chunked: tp.ChunkedOption = None,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.MaybeSeries:
-        """Sortino ratio.
+        """Compute sortino ratio.
 
-        See `vectorbtpro.returns.nb.sortino_ratio_nb`."""
+        Args:
+            required_return (Optional[float]): Required return threshold.
+
+                Defaults to the value in `ReturnsAccessor.defaults` if not provided.
+            sim_start (Optional[ArrayLike]): Simulation start, which can be a scalar or array-like.
+            sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
+            jitted (JittedOption): Option to control JIT compilation.
+            chunked (ChunkedOption): Option for chunked processing.
+            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping adjustments.
+
+        Returns:
+            MaybeSeries: The sortino ratio values wrapped with the configured wrapper.
+
+        See:
+            `vectorbtpro.returns.nb.sortino_ratio_nb`
+        """
         if required_return is None:
             required_return = self.defaults["required_return"]
         sim_start = self.resolve_sim_start(sim_start=sim_start, group_by=False)
@@ -1467,6 +2036,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         wrap_kwargs = merge_dicts(dict(name_or_index="sortino_ratio"), wrap_kwargs)
         return self.wrapper.wrap_reduced(out, group_by=False, **wrap_kwargs)
 
+
     def rolling_sortino_ratio(
         self,
         window: tp.Optional[int] = None,
@@ -1479,9 +2049,30 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         chunked: tp.ChunkedOption = None,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.MaybeSeries:
-        """Rolling Sortino ratio.
+        """Compute rolling sortino ratio.
 
-        See `vectorbtpro.returns.nb.rolling_sortino_ratio_nb`."""
+        Args:
+            window (Optional[int]): Rolling window size.
+
+                Defaults to the value in `ReturnsAccessor.defaults` if not provided.
+            minp (Optional[int]): Minimum number of periods required.
+
+                Defaults to the value in `ReturnsAccessor.defaults` if not provided.
+            required_return (Optional[float]): Required return threshold; subtracted from returns.
+
+                Defaults to the value in `ReturnsAccessor.defaults` if not provided.
+            sim_start (Optional[ArrayLike]): Simulation start, which can be a scalar or array-like.
+            sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
+            jitted (JittedOption): Option to control JIT compilation.
+            chunked (ChunkedOption): Option for chunked processing.
+            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping.
+
+        Returns:
+            MaybeSeries: The rolling sortino ratio series wrapped with the configured wrapper.
+
+        See:
+            `vectorbtpro.returns.nb.rolling_sortino_ratio_nb`
+        """
         if window is None:
             window = self.defaults["window"]
         if minp is None:
@@ -1503,6 +2094,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         )
         return self.wrapper.wrap(out, group_by=False, **resolve_dict(wrap_kwargs))
 
+
     def information_ratio(
         self,
         bm_returns: tp.Optional[tp.ArrayLike] = None,
@@ -1513,9 +2105,27 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         chunked: tp.ChunkedOption = None,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.MaybeSeries:
-        """Information ratio.
+        """Compute information ratio.
 
-        See `vectorbtpro.returns.nb.information_ratio_nb`."""
+        Args:
+            bm_returns (Optional[ArrayLike]): Benchmark returns for comparison.
+
+                Defaults to `ReturnsAccessor.bm_returns` if not provided.
+            ddof (Optional[int]): Delta degrees of freedom for statistical calculation.
+
+                Defaults to the value in `ReturnsAccessor.defaults` if not provided.
+            sim_start (Optional[ArrayLike]): Simulation start, which can be a scalar or array-like.
+            sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
+            jitted (JittedOption): Option to control JIT compilation.
+            chunked (ChunkedOption): Option for chunked processing.
+            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping adjustments.
+
+        Returns:
+            MaybeSeries: The information ratio series wrapped with the configured wrapper.
+
+        See:
+            `vectorbtpro.returns.nb.information_ratio_nb`
+        """
         if ddof is None:
             ddof = self.defaults["ddof"]
         if bm_returns is None:
@@ -1536,6 +2146,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         wrap_kwargs = merge_dicts(dict(name_or_index="information_ratio"), wrap_kwargs)
         return self.wrapper.wrap_reduced(out, group_by=False, **wrap_kwargs)
 
+
     def rolling_information_ratio(
         self,
         window: tp.Optional[int] = None,
@@ -1549,9 +2160,33 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         chunked: tp.ChunkedOption = None,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.MaybeSeries:
-        """Rolling information ratio.
+        """Compute rolling information ratio.
 
-        See `vectorbtpro.returns.nb.rolling_information_ratio_nb`."""
+        Args:
+            window (Optional[int]): Rolling window size.
+
+                Defaults to the value in `ReturnsAccessor.defaults` if not provided.
+            minp (Optional[int]): Minimum number of periods required.
+
+                Defaults to the value in `ReturnsAccessor.defaults` if not provided.
+            bm_returns (Optional[ArrayLike]): Benchmark returns for comparison.
+
+                Defaults to the value in `ReturnsAccessor.defaults` if not provided.
+            ddof (Optional[int]): Delta degrees of freedom for statistical calculation.
+
+                Defaults to the value in `ReturnsAccessor.defaults` if not provided.
+            sim_start (Optional[ArrayLike]): Simulation start, which can be a scalar or array-like.
+            sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
+            jitted (JittedOption): Option to control JIT compilation.
+            chunked (ChunkedOption): Option for chunked processing.
+            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping.
+
+        Returns:
+            MaybeSeries: The rolling information ratio series wrapped with the configured wrapper.
+
+        See:
+            `vectorbtpro.returns.nb.rolling_information_ratio_nb`
+        """
         if window is None:
             window = self.defaults["window"]
         if minp is None:
@@ -1577,6 +2212,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         )
         return self.wrapper.wrap(out, group_by=False, **resolve_dict(wrap_kwargs))
 
+
     def beta(
         self,
         bm_returns: tp.Optional[tp.ArrayLike] = None,
@@ -1587,9 +2223,27 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         chunked: tp.ChunkedOption = None,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.MaybeSeries:
-        """Beta.
+        """Compute beta.
 
-        See `vectorbtpro.returns.nb.beta_nb`."""
+        Args:
+            bm_returns (Optional[ArrayLike]): Benchmark returns for beta calculation.
+
+                Defaults to `ReturnsAccessor.bm_returns` if not provided.
+            ddof (Optional[int]): Delta degrees of freedom for normalization.
+
+                Defaults to the value in `ReturnsAccessor.defaults` if not provided.
+            sim_start (Optional[ArrayLike]): Simulation start, which can be a scalar or array-like.
+            sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
+            jitted (JittedOption): Option to control JIT compilation.
+            chunked (ChunkedOption): Option for chunked processing.
+            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping adjustments.
+
+        Returns:
+            MaybeSeries: The beta values wrapped with the configured wrapper.
+
+        See:
+            `vectorbtpro.returns.nb.beta_nb`
+        """
         if ddof is None:
             ddof = self.defaults["ddof"]
         if bm_returns is None:
@@ -1624,9 +2278,33 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         chunked: tp.ChunkedOption = None,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.MaybeSeries:
-        """Rolling beta.
+        """Compute rolling beta values.
 
-        See `vectorbtpro.returns.nb.rolling_beta_nb`."""
+        Args:
+            window (Optional[int]): Window length for the rolling beta calculation.
+
+                Defaults to the value in `ReturnsAccessor.defaults` if not provided.
+            minp (Optional[int]): Minimum number of observations required for calculation.
+
+                Defaults to the value in `ReturnsAccessor.defaults` if not provided.
+            bm_returns (Optional[ArrayLike]): Benchmark returns array.
+
+                Defaults to `ReturnsAccessor.bm_returns` if not provided.
+            ddof (Optional[int]): Degrees of freedom for the calculation.
+
+                Defaults to the value in `ReturnsAccessor.defaults` if not provided.
+            sim_start (Optional[ArrayLike]): Simulation start, which can be a scalar or array-like.
+            sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
+            jitted (JittedOption): Option to control JIT compilation.
+            chunked (ChunkedOption): Option to control chunked processing.
+            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping the output value.
+
+        Returns:
+            MaybeSeries: The computed rolling beta values.
+
+        See:
+            `vectorbtpro.returns.nb.rolling_beta_nb`
+        """
         if window is None:
             window = self.defaults["window"]
         if minp is None:
@@ -1663,9 +2341,27 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         chunked: tp.ChunkedOption = None,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.MaybeSeries:
-        """Alpha.
+        """Compute alpha values.
 
-        See `vectorbtpro.returns.nb.alpha_nb`."""
+        Args:
+            bm_returns (Optional[ArrayLike]): Benchmark returns array.
+
+                Defaults to `ReturnsAccessor.bm_returns` if not provided.
+            risk_free (Optional[float]): Risk-free rate applied in the calculation.
+
+                Defaults to the value in `ReturnsAccessor.defaults` if not provided.
+            sim_start (Optional[ArrayLike]): Simulation start, which can be a scalar or array-like.
+            sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
+            jitted (JittedOption): Option to control JIT compilation.
+            chunked (ChunkedOption): Option to control chunked processing.
+            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping the output value.
+
+        Returns:
+            MaybeSeries: The computed alpha values.
+
+        See:
+            `vectorbtpro.returns.nb.alpha_nb`
+        """
         if risk_free is None:
             risk_free = self.defaults["risk_free"]
         if bm_returns is None:
@@ -1700,9 +2396,33 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         chunked: tp.ChunkedOption = None,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.MaybeSeries:
-        """Rolling alpha.
+        """Compute rolling alpha values.
 
-        See `vectorbtpro.returns.nb.rolling_alpha_nb`."""
+        Args:
+            window (Optional[int]): Window length for the rolling alpha calculation.
+
+                Defaults to the value in `ReturnsAccessor.defaults` if not provided.
+            minp (Optional[int]): Minimum number of observations required for calculation.
+
+                Defaults to the value in `ReturnsAccessor.defaults` if not provided.
+            bm_returns (Optional[ArrayLike]): Benchmark returns array.
+
+                Defaults to `ReturnsAccessor.bm_returns` if not provided.
+            risk_free (Optional[float]): Risk-free rate applied in the calculation.
+
+                Defaults to the value in `ReturnsAccessor.defaults` if not provided.
+            sim_start (Optional[ArrayLike]): Simulation start, which can be a scalar or array-like.
+            sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
+            jitted (JittedOption): Option to control JIT compilation.
+            chunked (ChunkedOption): Option to control chunked processing.
+            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping the output value.
+
+        Returns:
+            MaybeSeries: The computed rolling alpha values.
+
+        See:
+            `vectorbtpro.returns.nb.rolling_alpha_nb`
+        """
         if window is None:
             window = self.defaults["window"]
         if minp is None:
@@ -1738,9 +2458,22 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         chunked: tp.ChunkedOption = None,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.MaybeSeries:
-        """Tail ratio.
+        """Compute tail ratio values.
 
-        See `vectorbtpro.returns.nb.tail_ratio_nb`."""
+        Args:
+            sim_start (Optional[ArrayLike]): Simulation start, which can be a scalar or array-like.
+            sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
+            noarr_mode (bool): Flag indicating whether to operate in no-array mode.
+            jitted (JittedOption): Option to control JIT compilation.
+            chunked (ChunkedOption): Option to control chunked processing.
+            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping the output value.
+
+        Returns:
+            MaybeSeries: The computed tail ratio values.
+
+        See:
+            `vectorbtpro.returns.nb.tail_ratio_nb`
+        """
         sim_start = self.resolve_sim_start(sim_start=sim_start, group_by=False)
         sim_end = self.resolve_sim_end(sim_end=sim_end, group_by=False)
 
@@ -1767,9 +2500,28 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         chunked: tp.ChunkedOption = None,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.MaybeSeries:
-        """Rolling tail ratio.
+        """Compute rolling tail ratio values.
 
-        See `vectorbtpro.returns.nb.rolling_tail_ratio_nb`."""
+        Args:
+            window (Optional[int]): Window length for the rolling tail ratio calculation.
+
+                Defaults to the value in `ReturnsAccessor.defaults` if not provided.
+            minp (Optional[int]): Minimum number of observations required for calculation.
+
+                Defaults to the value in `ReturnsAccessor.defaults` if not provided.
+            sim_start (Optional[ArrayLike]): Simulation start, which can be a scalar or array-like.
+            sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
+            noarr_mode (bool): Flag indicating whether to operate in no-array mode.
+            jitted (JittedOption): Option to control JIT compilation.
+            chunked (ChunkedOption): Option to control chunked processing.
+            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping the output value.
+
+        Returns:
+            MaybeSeries: The computed rolling tail ratio values.
+
+        See:
+            `vectorbtpro.returns.nb.rolling_tail_ratio_nb`
+        """
         if window is None:
             window = self.defaults["window"]
         if minp is None:
@@ -1797,9 +2549,21 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         chunked: tp.ChunkedOption = None,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.MaybeSeries:
-        """Profit factor.
+        """Compute the profit factor.
 
-        See `vectorbtpro.returns.nb.profit_factor_nb`."""
+        Args:
+            sim_start (Optional[ArrayLike]): Simulation start, which can be a scalar or array-like.
+            sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
+            jitted (JittedOption): Option to control JIT compilation.
+            chunked (ChunkedOption): Option to control chunked processing.
+            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping the output value.
+
+        Returns:
+            MaybeSeries: The computed profit factor values.
+
+        See:
+            `vectorbtpro.returns.nb.profit_factor_nb`
+        """
         sim_start = self.resolve_sim_start(sim_start=sim_start, group_by=False)
         sim_end = self.resolve_sim_end(sim_end=sim_end, group_by=False)
 
@@ -1824,9 +2588,27 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         chunked: tp.ChunkedOption = None,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.MaybeSeries:
-        """Rolling profit factor.
+        """Compute rolling profit factor.
 
-        See `vectorbtpro.returns.nb.rolling_profit_factor_nb`."""
+        Args:
+            window (Optional[int]): Rolling window size.
+
+                Defaults to the value in `ReturnsAccessor.defaults` if not provided.
+            minp (Optional[int]): Minimum periods required.
+
+                Defaults to the value in `ReturnsAccessor.defaults` if not provided.
+            sim_start (Optional[ArrayLike]): Simulation start, which can be a scalar or array-like.
+            sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
+            jitted (JittedOption): Option to control JIT compilation.
+            chunked (ChunkedOption): Option to control chunked processing.
+            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping the result.
+
+        Returns:
+            MaybeSeries: The rolling profit factor.
+
+        See:
+            `vectorbtpro.returns.nb.rolling_profit_factor_nb`
+        """
         if window is None:
             window = self.defaults["window"]
         if minp is None:
@@ -1853,9 +2635,21 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         chunked: tp.ChunkedOption = None,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.MaybeSeries:
-        """Common Sense Ratio (CSR).
+        """Compute Common Sense Ratio (CSR).
 
-        See `vectorbtpro.returns.nb.common_sense_ratio_nb`."""
+        Args:
+            sim_start (Optional[ArrayLike]): Simulation start, which can be a scalar or array-like.
+            sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
+            jitted (JittedOption): Option to control JIT compilation.
+            chunked (ChunkedOption): Option to control chunked processing.
+            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping the result.
+
+        Returns:
+            MaybeSeries: The computed Common Sense Ratio.
+
+        See:
+            `vectorbtpro.returns.nb.common_sense_ratio_nb`
+        """
         sim_start = self.resolve_sim_start(sim_start=sim_start, group_by=False)
         sim_end = self.resolve_sim_end(sim_end=sim_end, group_by=False)
 
@@ -1880,9 +2674,27 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         chunked: tp.ChunkedOption = None,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.MaybeSeries:
-        """Rolling Common Sense Ratio (CSR).
+        """Compute rolling Common Sense Ratio (CSR) over a specified window.
 
-        See `vectorbtpro.returns.nb.rolling_common_sense_ratio_nb`."""
+        Args:
+            window (Optional[int]): Rolling window size.
+
+                Defaults to the value in `ReturnsAccessor.defaults` if not provided.
+            minp (Optional[int]): Minimum periods required.
+
+                Defaults to the value in `ReturnsAccessor.defaults` if not provided.
+            sim_start (Optional[ArrayLike]): Simulation start, which can be a scalar or array-like.
+            sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
+            jitted (JittedOption): Option to control JIT compilation.
+            chunked (ChunkedOption): Option to control chunked processing.
+            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping the result.
+
+        Returns:
+            MaybeSeries: The rolling Common Sense Ratio.
+
+        See:
+            `vectorbtpro.returns.nb.rolling_common_sense_ratio_nb`
+        """
         if window is None:
             window = self.defaults["window"]
         if minp is None:
@@ -1911,9 +2723,25 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         chunked: tp.ChunkedOption = None,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.MaybeSeries:
-        """Value at Risk (VaR).
+        """Compute Value at Risk (VaR).
 
-        See `vectorbtpro.returns.nb.value_at_risk_nb`."""
+        Args:
+            cutoff (Optional[float]): Cutoff value.
+
+                Defaults to the value in `ReturnsAccessor.defaults` if not provided.
+            sim_start (Optional[ArrayLike]): Simulation start, which can be a scalar or array-like.
+            sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
+            noarr_mode (bool): Flag indicating whether to use non-array mode.
+            jitted (JittedOption): Option to control JIT compilation.
+            chunked (ChunkedOption): Option to control chunked processing.
+            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping the result.
+
+        Returns:
+            MaybeSeries: The computed Value at Risk.
+
+        See:
+            `vectorbtpro.returns.nb.value_at_risk_nb`
+        """
         if cutoff is None:
             cutoff = self.defaults["cutoff"]
         sim_start = self.resolve_sim_start(sim_start=sim_start, group_by=False)
@@ -1944,9 +2772,31 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         chunked: tp.ChunkedOption = None,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.MaybeSeries:
-        """Rolling Value at Risk (VaR).
+        """Compute rolling Value at Risk (VaR) over a specified window.
 
-        See `vectorbtpro.returns.nb.rolling_value_at_risk_nb`."""
+        Args:
+            window (Optional[int]): Rolling window size.
+
+                Defaults to the value in `ReturnsAccessor.defaults` if not provided.
+            minp (Optional[int]): Minimum periods required.
+
+                Defaults to the value in `ReturnsAccessor.defaults` if not provided.
+            cutoff (Optional[float]): Cutoff value.
+
+                Defaults to the value in `ReturnsAccessor.defaults` if not provided.
+            sim_start (Optional[ArrayLike]): Simulation start, which can be a scalar or array-like.
+            sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
+            noarr_mode (bool): Flag indicating whether to use non-array mode.
+            jitted (JittedOption): Option to control JIT compilation.
+            chunked (ChunkedOption): Option to control chunked processing.
+            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping the result.
+
+        Returns:
+            MaybeSeries: The rolling Value at Risk.
+
+        See:
+            `vectorbtpro.returns.nb.rolling_value_at_risk_nb`
+        """
         if window is None:
             window = self.defaults["window"]
         if minp is None:
@@ -1979,9 +2829,25 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         chunked: tp.ChunkedOption = None,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.MaybeSeries:
-        """Conditional Value at Risk (CVaR).
+        """Compute Conditional Value at Risk (CVaR).
 
-        See `vectorbtpro.returns.nb.cond_value_at_risk_nb`."""
+        Args:
+            cutoff (Optional[float]): Cutoff value.
+
+                Defaults to the value in `ReturnsAccessor.defaults` if not provided.
+            sim_start (Optional[ArrayLike]): Simulation start, which can be a scalar or array-like.
+            sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
+            noarr_mode (bool): Flag indicating whether to use non-array mode.
+            jitted (JittedOption): Option to control JIT compilation.
+            chunked (ChunkedOption): Option to control chunked processing.
+            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping the result.
+
+        Returns:
+            MaybeSeries: The computed Conditional Value at Risk.
+
+        See:
+            `vectorbtpro.returns.nb.cond_value_at_risk_nb`
+        """
         if cutoff is None:
             cutoff = self.defaults["cutoff"]
         sim_start = self.resolve_sim_start(sim_start=sim_start, group_by=False)
@@ -2014,7 +2880,29 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
     ) -> tp.MaybeSeries:
         """Rolling Conditional Value at Risk (CVaR).
 
-        See `vectorbtpro.returns.nb.rolling_cond_value_at_risk_nb`."""
+        Args:
+            window (Optional[int]): Rolling window size.
+
+                Defaults to the value in `ReturnsAccessor.defaults` if not provided.
+            minp (Optional[int]): Minimum number of valid data points.
+
+                Defaults to the value in `ReturnsAccessor.defaults` if not provided.
+            cutoff (Optional[float]): Cutoff probability for the CVaR calculation.
+
+                Defaults to the value in `ReturnsAccessor.defaults` if not provided.
+            sim_start (Optional[ArrayLike]): Simulation start, which can be a scalar or array-like.
+            sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
+            noarr_mode (bool): Flag to enable no-array mode.
+            jitted (JittedOption): Option to control JIT compilation.
+            chunked (ChunkedOption): Option to control chunked processing.
+            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping the output.
+
+        Returns:
+            MaybeSeries: The rolling CVaR values.
+
+        See:
+            `vectorbtpro.returns.nb.rolling_cond_value_at_risk_nb`
+        """
         if window is None:
             window = self.defaults["window"]
         if minp is None:
@@ -2047,9 +2935,26 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         chunked: tp.ChunkedOption = None,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.MaybeSeries:
-        """Capture ratio.
+        """Compute the capture ratio.
 
-        See `vectorbtpro.returns.nb.capture_ratio_nb`."""
+        Args:
+            bm_returns (Optional[ArrayLike]): Benchmark returns.
+
+                Defaults to `ReturnsAccessor.bm_returns` if not provided.
+            periods (Union[None, str, ArrayLike]): Period specification resolved
+                using `ReturnsAccessor.get_periods`.
+            sim_start (Optional[ArrayLike]): Simulation start, which can be a scalar or array-like.
+            sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
+            jitted (JittedOption): Option to control JIT compilation.
+            chunked (ChunkedOption): Option to control chunked processing.
+            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping the reduced result.
+
+        Returns:
+            MaybeSeries: The computed capture ratio.
+
+        See:
+            `vectorbtpro.returns.nb.capture_ratio_nb`
+        """
         if bm_returns is None:
             bm_returns = self.bm_returns
         checks.assert_not_none(bm_returns, arg_name="bm_returns")
@@ -2084,9 +2989,30 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         chunked: tp.ChunkedOption = None,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.MaybeSeries:
-        """Rolling capture ratio.
+        """Compute the rolling capture ratio.
 
-        See `vectorbtpro.returns.nb.rolling_capture_ratio_nb`."""
+        Args:
+            window (Optional[int]): Rolling window size.
+
+                Defaults to the value in `ReturnsAccessor.defaults` if not provided.
+            minp (Optional[int]): Minimum number of valid data points.
+
+                Defaults to the value in `ReturnsAccessor.defaults` if not provided.
+            bm_returns (Optional[ArrayLike]): Benchmark returns.
+
+                Defaults to `ReturnsAccessor.bm_returns` if not provided.
+            sim_start (Optional[ArrayLike]): Simulation start, which can be a scalar or array-like.
+            sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
+            jitted (JittedOption): Option to control JIT compilation.
+            chunked (ChunkedOption): Option to control chunked processing.
+            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping the output.
+
+        Returns:
+            MaybeSeries: The rolling capture ratio values.
+
+        See:
+            `vectorbtpro.returns.nb.rolling_capture_ratio_nb`
+        """
         if window is None:
             window = self.defaults["window"]
         if minp is None:
@@ -2122,9 +3048,26 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         chunked: tp.ChunkedOption = None,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.MaybeSeries:
-        """Up-market capture ratio.
+        """Compute the up-market capture ratio.
 
-        See `vectorbtpro.returns.nb.up_capture_ratio_nb`."""
+        Args:
+            bm_returns (Optional[ArrayLike]): Benchmark returns.
+
+                Defaults to `ReturnsAccessor.bm_returns` if not provided.
+            periods (Union[None, str, ArrayLike]): Period specification resolved
+                using `ReturnsAccessor.get_periods`.
+            sim_start (Optional[ArrayLike]): Simulation start, which can be a scalar or array-like.
+            sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
+            jitted (JittedOption): Option to control JIT compilation.
+            chunked (ChunkedOption): Option to control chunked processing.
+            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping the reduced result.
+
+        Returns:
+            MaybeSeries: The up-market capture ratio values.
+
+        See:
+            `vectorbtpro.returns.nb.up_capture_ratio_nb`
+        """
         if bm_returns is None:
             bm_returns = self.bm_returns
         checks.assert_not_none(bm_returns, arg_name="bm_returns")
@@ -2159,9 +3102,30 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         chunked: tp.ChunkedOption = None,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.MaybeSeries:
-        """Rolling up-market capture ratio.
+        """Compute the rolling up-market capture ratio.
 
-        See `vectorbtpro.returns.nb.rolling_up_capture_ratio_nb`."""
+        Args:
+            window (Optional[int]): Rolling window size.
+
+                Defaults to the value in `ReturnsAccessor.defaults` if not provided.
+            minp (Optional[int]): Minimum number of valid data points.
+
+                Defaults to the value in `ReturnsAccessor.defaults` if not provided.
+            bm_returns (Optional[ArrayLike]): Benchmark returns.
+
+                Defaults to `ReturnsAccessor.bm_returns` if not provided.
+            sim_start (Optional[ArrayLike]): Simulation start, which can be a scalar or array-like.
+            sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
+            jitted (JittedOption): Option to control JIT compilation.
+            chunked (ChunkedOption): Option to control chunked processing.
+            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping the output.
+
+        Returns:
+            MaybeSeries: The rolling up-market capture ratio values.
+
+        See:
+            `vectorbtpro.returns.nb.rolling_up_capture_ratio_nb`
+        """
         if window is None:
             window = self.defaults["window"]
         if minp is None:
@@ -2197,9 +3161,26 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         chunked: tp.ChunkedOption = None,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.MaybeSeries:
-        """Up-market capture ratio.
+        """Compute the down-market capture ratio against benchmark returns.
 
-        See `vectorbtpro.returns.nb.down_capture_ratio_nb`."""
+        Args:
+            bm_returns (Optional[ArrayLike]): Benchmark returns.
+
+                Defaults to `ReturnsAccessor.bm_returns` if not provided.
+            periods (Union[None, str, ArrayLike]): Period specification resolved
+                using `ReturnsAccessor.get_periods`.
+            sim_start (Optional[ArrayLike]): Simulation start, which can be a scalar or array-like.
+            sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
+            jitted (JittedOption): Option to control JIT compilation.
+            chunked (ChunkedOption): Option to control chunked processing.
+            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping.
+
+        Returns:
+            MaybeSeries: Wrapped series or DataFrame containing the down-market capture ratio.
+
+        See:
+            `vectorbtpro.returns.nb.down_capture_ratio_nb`
+        """
         if bm_returns is None:
             bm_returns = self.bm_returns
         checks.assert_not_none(bm_returns, arg_name="bm_returns")
@@ -2234,9 +3215,30 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         chunked: tp.ChunkedOption = None,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.MaybeSeries:
-        """Rolling down-market capture ratio.
+        """Compute the rolling down-market capture ratio over a specified window.
 
-        See `vectorbtpro.returns.nb.rolling_down_capture_ratio_nb`."""
+        Args:
+            window (Optional[int]): Length of the rolling window.
+
+                Defaults to the value in `ReturnsAccessor.defaults` if not provided.
+            minp (Optional[int]): Minimum number of periods required for computation.
+
+                Defaults to the value in `ReturnsAccessor.defaults` if not provided.
+            bm_returns (Optional[ArrayLike]): Benchmark returns.
+
+                Defaults to `ReturnsAccessor.bm_returns` if not provided.
+            sim_start (Optional[ArrayLike]): Simulation start, which can be a scalar or array-like.
+            sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
+            jitted (JittedOption): Option to control JIT compilation.
+            chunked (ChunkedOption): Option to control chunked processing.
+            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping.
+
+        Returns:
+            MaybeSeries: Rolling down-market capture ratio values.
+
+        See:
+            `vectorbtpro.returns.nb.rolling_down_capture_ratio_nb`
+        """
         if window is None:
             window = self.defaults["window"]
         if minp is None:
@@ -2270,7 +3272,18 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         chunked: tp.ChunkedOption = None,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.SeriesFrame:
-        """Relative decline from a peak."""
+        """Compute the relative decline from a peak based on cumulative returns.
+
+        Args:
+            sim_start (Optional[ArrayLike]): Simulation start, which can be a scalar or array-like.
+            sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
+            jitted (JittedOption): Option to control JIT compilation.
+            chunked (ChunkedOption): Option to control chunked processing.
+            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping.
+
+        Returns:
+            SeriesFrame: Series or DataFrame representing the relative drawdown.
+        """
         return self.cumulative(
             start_value=1,
             sim_start=sim_start,
@@ -2291,11 +3304,22 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         chunked: tp.ChunkedOption = None,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.MaybeSeries:
-        """Maximum Drawdown (MDD).
+        """Calculate the maximum drawdown (MDD) from returns, yielding the same output as
+        `ReturnsAccessor.drawdowns.max_drawdown`.
 
-        See `vectorbtpro.returns.nb.max_drawdown_nb`.
+        Args:
+            sim_start (Optional[ArrayLike]): Simulation start, which can be a scalar or array-like.
+            sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
+            jitted (JittedOption): Option to control JIT compilation.
+            chunked (ChunkedOption): Option to control chunked processing.
+            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping.
 
-        Yields the same out as `max_drawdown` of `ReturnsAccessor.drawdowns`."""
+        Returns:
+            MaybeSeries: Maximum drawdown values.
+
+        See:
+            `vectorbtpro.returns.nb.max_drawdown_nb`
+        """
         sim_start = self.resolve_sim_start(sim_start=sim_start, group_by=False)
         sim_end = self.resolve_sim_end(sim_end=sim_end, group_by=False)
 
@@ -2321,9 +3345,27 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         chunked: tp.ChunkedOption = None,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.MaybeSeries:
-        """Rolling Maximum Drawdown (MDD).
+        """Calculate rolling maximum drawdown (MDD) over a specified window.
 
-        See `vectorbtpro.returns.nb.rolling_max_drawdown_nb`."""
+        Args:
+            window (Optional[int]): Length of the rolling window.
+
+                Defaults to the value in `ReturnsAccessor.defaults` if not provided.
+            minp (Optional[int]): Minimum number of periods required for computation.
+
+                Defaults to the value in `ReturnsAccessor.defaults` if not provided.
+            sim_start (Optional[ArrayLike]): Simulation start, which can be a scalar or array-like.
+            sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
+            jitted (JittedOption): Option to control JIT compilation.
+            chunked (ChunkedOption): Option to control chunked processing.
+            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping.
+
+        Returns:
+            MaybeSeries: Rolling maximum drawdown values.
+
+        See:
+            `vectorbtpro.returns.nb.rolling_max_drawdown_nb`
+        """
         if window is None:
             window = self.defaults["window"]
         if minp is None:
@@ -2345,7 +3387,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
     @property
     def drawdowns(self) -> Drawdowns:
-        """`ReturnsAccessor.get_drawdowns` with default arguments."""
+        """Drawdowns computed from cumulative returns using default arguments."""
         return self.get_drawdowns()
 
     def get_drawdowns(
@@ -2356,9 +3398,19 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         chunked: tp.ChunkedOption = None,
         **kwargs,
     ) -> Drawdowns:
-        """Generate drawdown records of cumulative returns.
+        """Generate drawdown records from cumulative returns.
 
-        See `vectorbtpro.generic.drawdowns.Drawdowns`."""
+        Args:
+            sim_start (Optional[ArrayLike]): Simulation start, which can be a scalar or array-like.
+            sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
+            jitted (JittedOption): Option to control JIT compilation.
+            chunked (ChunkedOption): Option to control chunked processing.
+            **kwargs: Additional keyword arguments forwarded to
+                `vectorbtpro.generic.drawdowns.Drawdowns.from_price`.
+
+        Returns:
+            Drawdowns: An instance containing drawdown records computed from cumulative returns.
+        """
         sim_start = self.resolve_sim_start(sim_start=sim_start, group_by=False)
         sim_end = self.resolve_sim_end(sim_end=sim_end, group_by=False)
 
@@ -2377,12 +3429,10 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
     @property
     def qs(self) -> "QSAdapter":
-        """Quantstats adapter."""
+        """Quantstats adapter for performance analysis."""
         from vectorbtpro.returns.qs_adapter import QSAdapter
 
         return QSAdapter(self)
-
-    # ############# Resolution ############# #
 
     def resolve_self(
         self: ReturnsAccessorT,
@@ -2392,10 +3442,22 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         silence_warnings: bool = False,
     ) -> ReturnsAccessorT:
         """Resolve self.
-
+    
         See `vectorbtpro.base.wrapping.Wrapping.resolve_self`.
-
-        Creates a copy of this instance `year_freq` is different in `cond_kwargs`."""
+    
+        If `year_freq` is provided in `cond_kwargs` and differs from the current instance,
+        creates and returns a new instance with the updated `year_freq` and disabled caching,
+        while warning the user if warnings are not silenced. Otherwise, returns the resolved instance.
+    
+        Args:
+            cond_kwargs (KwargsLike): Additional keyword arguments for condition overrides.
+            custom_arg_names (Optional[Set[str]]): Set of custom attribute names to consider during resolution.
+            impacts_caching (bool): Flag indicating whether the changes affect caching.
+            silence_warnings (bool): If True, suppress warnings regarding object copying.
+    
+        Returns:
+            ReturnsAccessor: The resolved instance.
+        """
         if cond_kwargs is None:
             cond_kwargs = {}
         if custom_arg_names is None:
@@ -2430,11 +3492,14 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
     @property
     def stats_defaults(self) -> tp.Kwargs:
-        """Defaults for `ReturnsAccessor.stats`.
+        """Default settings for `ReturnsAccessor.stats`.
+    
+        Merges defaults from:
 
-        Merges `vectorbtpro.generic.accessors.GenericAccessor.stats_defaults`,
-        defaults from `ReturnsAccessor.defaults` (acting as `settings`), and
-        `stats` from `vectorbtpro._settings.returns`"""
+        * `vectorbtpro.generic.accessors.GenericAccessor.stats_defaults`
+        * `ReturnsAccessor.defaults` (acting as settings)
+        * `stats` configuration from `vectorbtpro._settings.returns`
+        """
         from vectorbtpro._settings import settings
 
         returns_stats_cfg = settings["returns"]["stats"]
@@ -2605,23 +3670,37 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         """Plot cumulative returns.
 
         Args:
-            column (str): Name of the column to plot.
-            bm_returns (array_like): Benchmark return to compare returns against.
-                Will broadcast per element.
-            start_value (float): The starting value.
-            sim_start (int, datetime_like, or array_like): Simulation start row or index (inclusive).
-            sim_end (int, datetime_like, or array_like): Simulation end row or index (exclusive).
-            fit_sim_range (bool): Whether to fit figure to simulation range.
-            fill_to_benchmark (bool): Whether to fill between main and benchmark, or between main and `start_value`.
-            main_kwargs (dict): Keyword arguments passed to `vectorbtpro.generic.accessors.GenericSRAccessor.plot` for main.
-            bm_kwargs (dict): Keyword arguments passed to `vectorbtpro.generic.accessors.GenericSRAccessor.plot` for benchmark.
-            pct_scale (bool): Whether to use the percentage scale for the y-axis.
-            hline_shape_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Figure.add_shape` for `start_value` line.
-            add_trace_kwargs (dict): Keyword arguments passed to `add_trace`.
-            xref (str): X coordinate axis.
-            yref (str): Y coordinate axis.
-            fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
-            **layout_kwargs: Keyword arguments for configuring the figure layout.
+            column (Optional[Label]): Name of the column to plot.
+            bm_returns (Optional[ArrayLike]): Benchmark returns to compare against.
+
+                Will be broadcast per element.
+            start_value (float): The starting value for cumulative returns.
+            sim_start (Optional[ArrayLike]): Simulation start row or index (inclusive).
+
+                May be an int, datetime-like, or array-like.
+            sim_end (Optional[ArrayLike]): Simulation end row or index (exclusive).
+
+                May be an int, datetime-like, or array-like.
+            fit_sim_range (bool): Whether to adjust the figure to the simulation range.
+            fill_to_benchmark (bool): Whether to fill between the main plot and the benchmark plot or
+                between the main plot and the start value.
+            main_kwargs (KwargsLike): Keyword arguments passed to
+                `vectorbtpro.generic.accessors.GenericSRAccessor.plot` for the main plot.
+            bm_kwargs (KwargsLike): Keyword arguments passed to
+                `vectorbtpro.generic.accessors.GenericSRAccessor.plot` for the benchmark plot.
+            pct_scale (bool): Use percentage scale for the y-axis.
+            hline_shape_kwargs (KwargsLike): Keyword arguments for configuring the horizontal
+                line at the start value, passed to `plotly.graph_objects.Figure.add_shape`.
+            add_trace_kwargs (KwargsLike): Keyword arguments passed to `add_trace`.
+            xref (str): Reference for the x-axis.
+            yref (str): Reference for the y-axis.
+            fig (Optional[BaseFigure]): Figure to update.
+
+                If None, a new figure is created.
+            **layout_kwargs: Additional keyword arguments for configuring the figure layout.
+
+        Returns:
+            BaseFigure: Figure displaying the cumulative returns plot.
 
         Examples:
             ```pycon
@@ -2743,9 +3822,9 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
     def plots_defaults(self) -> tp.Kwargs:
         """Defaults for `ReturnsAccessor.plots`.
 
-        Merges `vectorbtpro.generic.accessors.GenericAccessor.plots_defaults`,
-        defaults from `ReturnsAccessor.defaults` (acting as `settings`), and
-        `plots` from `vectorbtpro._settings.returns`"""
+        Merges `vectorbtpro.generic.accessors.GenericAccessor.plots_defaults`, defaults from
+        `ReturnsAccessor.defaults` (serving as settings), and `plots` from `vectorbtpro._settings.returns`.
+        """
         from vectorbtpro._settings import settings
 
         returns_plots_cfg = settings["returns"]["plots"]
@@ -2783,9 +3862,20 @@ ReturnsAccessor.override_subplots_doc(__pdoc__)
 
 @register_sr_vbt_accessor("returns")
 class ReturnsSRAccessor(ReturnsAccessor, GenericSRAccessor):
-    """Accessor on top of return series. For Series only.
+    """Accessor on top of return series for Series only.
 
-    Accessible via `pd.Series.vbt.returns`."""
+    Accessible via `pd.Series.vbt.returns`.
+
+    Args:
+        wrapper (Union[ArrayWrapper, ArrayLike]): Array wrapper instance or array-like input.
+        obj (Optional[ArrayLike]): The underlying data for the Series.
+        bm_returns (Optional[ArrayLike]): Benchmark returns.
+        year_freq (Optional[FrequencyLike]): Frequency identifier for annualization.
+        defaults (KwargsLike): Default configuration parameters.
+        sim_start (Optional[ArrayLike]): Simulation start, which can be a scalar or array-like.
+        sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
+        **kwargs: Additional keyword arguments passed to `vectorbtpro.generic.accessors.GenericSRAccessor`.
+    """
 
     def __init__(
         self,
@@ -2817,9 +3907,20 @@ class ReturnsSRAccessor(ReturnsAccessor, GenericSRAccessor):
 
 @register_df_vbt_accessor("returns")
 class ReturnsDFAccessor(ReturnsAccessor, GenericDFAccessor):
-    """Accessor on top of return series. For DataFrames only.
+    """Accessor on top of return series for DataFrames only.
 
-    Accessible via `pd.DataFrame.vbt.returns`."""
+    Accessible via `pd.DataFrame.vbt.returns`.
+
+    Args:
+        wrapper (Union[ArrayWrapper, ArrayLike]): Array wrapper instance or array-like input.
+        obj (Optional[ArrayLike]): The underlying data for the DataFrame.
+        bm_returns (Optional[ArrayLike]): Benchmark returns.
+        year_freq (Optional[FrequencyLike]): Frequency identifier for annualization.
+        defaults (KwargsLike): Default configuration parameters.
+        sim_start (Optional[ArrayLike]): Simulation start, which can be a scalar or array-like.
+        sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
+        **kwargs: Additional keyword arguments passed to `vectorbtpro.generic.accessors.GenericSRAccessor`.
+    """
 
     def __init__(
         self,

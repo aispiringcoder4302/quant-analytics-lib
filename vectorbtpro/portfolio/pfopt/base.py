@@ -1657,6 +1657,27 @@ PortfolioOptimizerT = tp.TypeVar("PortfolioOptimizerT", bound="PortfolioOptimize
 class PortfolioOptimizer(Analyzable):
     """Class that exposes methods for generating allocations."""
 
+    def __init__(
+        self,
+        wrapper: ArrayWrapper,
+        alloc_records: tp.Union[AllocRanges, AllocPoints],
+        allocations: tp.Array2d,
+        **kwargs,
+    ) -> None:
+        Analyzable.__init__(
+            self,
+            wrapper,
+            alloc_records=alloc_records,
+            allocations=allocations,
+            **kwargs,
+        )
+
+        self._alloc_records = alloc_records
+        self._allocations = allocations
+
+        # Only slices of rows can be selected
+        self._range_only_select = True
+
     @hybrid_method
     def row_stack(
         cls_or_self: tp.MaybeType[PortfolioOptimizerT],
@@ -1758,27 +1779,6 @@ class PortfolioOptimizer(Analyzable):
         kwargs = cls.resolve_column_stack_kwargs(*objs, **kwargs)
         kwargs = cls.resolve_stack_kwargs(*objs, **kwargs)
         return cls(**kwargs)
-
-    def __init__(
-        self,
-        wrapper: ArrayWrapper,
-        alloc_records: tp.Union[AllocRanges, AllocPoints],
-        allocations: tp.Array2d,
-        **kwargs,
-    ) -> None:
-        Analyzable.__init__(
-            self,
-            wrapper,
-            alloc_records=alloc_records,
-            allocations=allocations,
-            **kwargs,
-        )
-
-        self._alloc_records = alloc_records
-        self._allocations = allocations
-
-        # Only slices of rows can be selected
-        self._range_only_select = True
 
     def indexing_func(
         self: PortfolioOptimizerT,

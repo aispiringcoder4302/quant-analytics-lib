@@ -33,14 +33,14 @@ class SimRangeMixin(Base):
     Should be subclassed by a subclass of `vectorbtpro.base.wrapping.Wrapping`.
 
     Args:
-        sim_start (Optional[Array1d]): Simulation start indices.
-        sim_end (Optional[Array1d]): Simulation end indices.
+        sim_start (Optional[ArrayLike]): Simulation start, which can be a scalar or array-like.
+        sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
     """
 
     def __init__(
         self,
-        sim_start: tp.Optional[tp.Array1d] = None,
-        sim_end: tp.Optional[tp.Array1d] = None,
+        sim_start: tp.Optional[tp.ArrayLike] = None,
+        sim_end: tp.Optional[tp.ArrayLike] = None,
     ) -> None:
         sim_start = type(self).resolve_sim_start(sim_start=sim_start, wrapper=self.wrapper, group_by=False)
         sim_end = type(self).resolve_sim_end(sim_end=sim_end, wrapper=self.wrapper, group_by=False)
@@ -507,7 +507,7 @@ class SimRangeMixin(Base):
         """Return the simulation start positions after resolution and optional wrapping.
 
         Args:
-            sim_start (Optional[ArrayLike]): Simulation start.
+            sim_start (Optional[ArrayLike]): Simulation start, which can be a scalar or array-like.
             keep_flex (bool): If True, return the raw resolved simulation start positions without wrapping.
             allow_none (bool): Flag indicating whether None is allowed as a simulation start value.
             wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
@@ -554,7 +554,7 @@ class SimRangeMixin(Base):
         """Return the simulation end positions after resolution and optional wrapping.
 
         Args:
-            sim_end (Optional[ArrayLike]): Simulation end.
+            sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
             keep_flex (bool): If True, return the raw resolved simulation end positions without wrapping.
             allow_none (bool): Flag indicating whether None is allowed as a simulation end value.
             wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
@@ -600,7 +600,7 @@ class SimRangeMixin(Base):
         """Return the simulation start index.
 
         Args:
-            sim_start (Optional[ArrayLike]): Simulation start.
+            sim_start (Optional[ArrayLike]): Simulation start, which can be a scalar or array-like.
             allow_none (bool): Indicates whether None is allowed for the simulation start.
             wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
             group_by (GroupByLike): Grouping specification.
@@ -658,7 +658,7 @@ class SimRangeMixin(Base):
         """Return the simulation end index.
 
         Args:
-            sim_end (Optional[ArrayLike]): Simulation end.
+            sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
             allow_none (bool): Indicates whether None is allowed for the simulation end.
             inclusive (bool): Determines if the simulation end should be treated as inclusive.
             wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
@@ -725,8 +725,8 @@ class SimRangeMixin(Base):
         """Return the duration of the simulation range.
 
         Args:
-            sim_start (Optional[ArrayLike]): Simulation start.
-            sim_end (Optional[ArrayLike]): Simulation end.
+            sim_start (Optional[ArrayLike]): Simulation start, which can be a scalar or array-like.
+            sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
             wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
             group_by (GroupByLike): Grouping specification.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
@@ -777,8 +777,8 @@ class SimRangeMixin(Base):
         Args:
             fig (BaseFigure): Figure to update.
             column (Optional[Label]): Column to use for simulation range selection.
-            sim_start (Optional[ArrayLike]): Simulation start.
-            sim_end (Optional[ArrayLike]): Simulation end.
+            sim_start (Optional[ArrayLike]): Simulation start, which can be a scalar or array-like.
+            sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
             wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
             group_by (GroupByLike): Grouping specification.
             xref (Optional[str]): X-axis reference for figure update.
