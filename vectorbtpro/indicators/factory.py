@@ -2050,7 +2050,7 @@ class IndicatorFactory(Configured):
                     `{attr_name}` in a human-readable format based on the mapping below:
                     
                     ```python
-                    {prettify(to_value_mapping(dtype, enum_unkval=enum_unkval))}
+                    {prettify(to_value_mapping(dtype, enum_unkval=enum_unkval), indent=5, indent_head=False)}
                     ```
                     """
                 )
@@ -2074,7 +2074,7 @@ class IndicatorFactory(Configured):
                     Compute statistics for `{attr_name}` based on the mapping below:
 
                     ```python
-                    {prettify(to_value_mapping(dtype))}
+                    {prettify(to_value_mapping(dtype), indent=5, indent_head=False)}
                     ```
                 
                     Args:

@@ -90,8 +90,9 @@ def prettify_inited(
     htchar: str = "    ",
     lfchar: str = "\n",
     indent: int = 0,
+    indent_head: bool = True,
     repr_: tp.Optional[tp.Callable] = None,
-) -> tp.Any:
+) -> str:
     """Prettify an instance initialized with keyword arguments.
 
     Args:
@@ -102,23 +103,34 @@ def prettify_inited(
         htchar (str): The string used for horizontal indentation.
         lfchar (str): The line feed character.
         indent (int): The current indentation level.
+        indent_head (bool): Whether to indent the head line.
         repr_ (Optional[Callable]): A function to get the representation of an object.
 
             Defaults to `repr`.
 
     Returns:
-        Any: A prettified string representation of the initialized instance.
+        str: A prettified string representation of the initialized instance.
     """
+
+    def _indent_head(content):
+        if indent_head:
+            return htchar * indent + content
+        return content
+
+    def _indent_tail(content):
+        return htchar * indent + content
+
     if repr_ is None:
         repr_ = repr
+    if replace is None:
+        replace = {}
+
     items = []
     for k, v in kwargs.items():
-        if replace is None:
-            replace = {}
         if path is None:
             new_path = k
         else:
-            new_path = str(path) + "." + str(k)
+            new_path = f"{path}.{k}"
         if new_path in replace:
             new_v = replace[new_path]
         else:
@@ -129,6 +141,7 @@ def prettify_inited(
                 htchar=htchar,
                 lfchar=lfchar,
                 indent=indent + 1,
+                indent_head=False,
                 repr_=repr_,
             )
         k_repr = repr(k)
@@ -136,38 +149,52 @@ def prettify_inited(
             k_repr = k_repr[1:-1]
         items.append(lfchar + htchar * (indent + 1) + k_repr + "=" + new_v)
     if len(items) == 0:
-        return "%s()" % (cls.__name__,)
-    return "%s(%s)" % (cls.__name__, ",".join(items) + lfchar + htchar * indent)
+        return _indent_head(f"{cls.__name__}()")
+    return _indent_head(f"{cls.__name__}(") + ",".join(items) + lfchar + _indent_tail(")")
 
 
 def prettify_dict(
-    obj: tp.Any,
+    obj: dict,
     replace: tp.DictLike = None,
     path: str = None,
     htchar: str = "    ",
     lfchar: str = "\n",
     indent: int = 0,
+    indent_head: bool = True,
     repr_: tp.Optional[tp.Callable] = None,
-) -> tp.Any:
+) -> str:
     """Prettify a dictionary.
 
     Args:
-        obj (Any): The dictionary to prettify.
+        obj (dict): The dictionary to prettify.
         replace (DictLike): A mapping for value replacement.
         path (str): The current path in the object hierarchy.
         htchar (str): The string used for horizontal indentation.
         lfchar (str): The line feed character.
         indent (int): The current indentation level.
+        indent_head (bool): Whether to indent the head line.
         repr_ (Optional[Callable]): A function to get the representation of an object.
 
             Defaults to `repr`.
 
     Returns:
-        Any: A prettified string representation of the dictionary.
+        str: A prettified string representation of the dictionary.
     """
+
+    def _indent_head(content):
+        if indent_head:
+            return htchar * indent + content
+        return content
+
+    def _indent_tail(content):
+        return htchar * indent + content
+
     if repr_ is None:
         repr_ = repr
-    if all([isinstance(k, str) and k.isidentifier() for k in obj]):
+    if replace is None:
+        replace = {}
+
+    if all(isinstance(k, str) and k.isidentifier() for k in obj):
         return prettify_inited(
             type(obj),
             obj,
@@ -176,16 +203,16 @@ def prettify_dict(
             htchar=htchar,
             lfchar=lfchar,
             indent=indent,
+            indent_head=indent_head,
             repr_=repr_,
         )
     items = []
     for k, v in obj.items():
-        if replace is None:
-            replace = {}
         if path is None:
             new_path = k
         else:
-            new_path = str(path) + "." + str(k)
+            new_path = f"{path}.{k}"
+
         if new_path in replace:
             new_v = replace[new_path]
         else:
@@ -196,16 +223,17 @@ def prettify_dict(
                 htchar=htchar,
                 lfchar=lfchar,
                 indent=indent + 1,
+                indent_head=False,
                 repr_=repr_,
             )
-        items.append(lfchar + htchar * (indent + 1) + repr(k) + ": " + new_v)
+        items.append(lfchar + htchar * (indent + 1) + repr_(k) + ": " + new_v)
     if type(obj) is dict:
         if len(items) == 0:
-            return "{}"
-        return "{%s}" % (",".join(items) + lfchar + htchar * indent)
+            return _indent_head("{}")
+        return _indent_head("{") + ",".join(items) + lfchar + _indent_tail("}")
     if len(items) == 0:
-        return "%s({})" % (type(obj).__name__,)
-    return "%s({%s})" % (type(obj).__name__, ",".join(items) + lfchar + htchar * indent)
+        return _indent_head(f"{type(obj).__name__}({{}})")
+    return _indent_head(f"{type(obj).__name__}({{") + ",".join(items) + lfchar + _indent_tail("})")
 
 
 def prettify(
@@ -215,8 +243,9 @@ def prettify(
     htchar: str = "    ",
     lfchar: str = "\n",
     indent: int = 0,
+    indent_head: bool = True,
     repr_: tp.Optional[tp.Callable] = None,
-) -> tp.Any:
+) -> str:
     """Prettify an object.
 
     Unfolds regular Python data structures such as lists, tuples, and dictionaries.
@@ -230,15 +259,28 @@ def prettify(
         htchar (str): The string used for horizontal indentation.
         lfchar (str): The line feed character.
         indent (int): The current indentation level.
+        indent_head (bool): Whether to indent the head line.
         repr_ (Optional[Callable]): A function to get the representation of an object.
 
             Defaults to `repr`.
 
     Returns:
-        Any: A prettified string representation of the object.
+        str: A prettified string representation of the object.
     """
+
+    def _indent_head(content):
+        if indent_head:
+            return htchar * indent + content
+        return content
+
+    def _indent_tail(content):
+        return htchar * indent + content
+
     if repr_ is None:
         repr_ = repr
+    if replace is None:
+        replace = {}
+
     if isinstance(obj, Prettified):
         return obj.prettify(
             replace=replace,
@@ -246,6 +288,7 @@ def prettify(
             htchar=htchar,
             lfchar=lfchar,
             indent=indent,
+            indent_head=indent_head,
             repr_=repr_,
         )
     if attr.has(type(obj)):
@@ -257,6 +300,7 @@ def prettify(
             htchar=htchar,
             lfchar=lfchar,
             indent=indent,
+            indent_head=indent_head,
             repr_=repr_,
         )
     if isinstance(obj, dict):
@@ -267,6 +311,7 @@ def prettify(
             htchar=htchar,
             lfchar=lfchar,
             indent=indent,
+            indent_head=indent_head,
             repr_=repr_,
         )
     if isinstance(obj, tuple) and hasattr(obj, "_asdict"):
@@ -278,6 +323,7 @@ def prettify(
             htchar=htchar,
             lfchar=lfchar,
             indent=indent,
+            indent_head=indent_head,
             repr_=repr_,
         )
     if isinstance(obj, (tuple, list, set, frozenset)):
@@ -290,33 +336,36 @@ def prettify(
                 htchar=htchar,
                 lfchar=lfchar,
                 indent=indent + 1,
+                indent_head=False,
                 repr_=repr_,
             )
             items.append(lfchar + htchar * (indent + 1) + new_v)
-        if type(obj) is tuple:
+        if isinstance(obj, tuple):
             if len(items) == 0:
-                return "()"
-            return "(%s)" % (",".join(items) + lfchar + htchar * indent)
-        if type(obj) is list:
+                return _indent_head("()")
+            return _indent_head("(") + ",".join(items) + lfchar + _indent_tail(")")
+        if isinstance(obj, list):
             if len(items) == 0:
-                return "[]"
-            return "[%s]" % (",".join(items) + lfchar + htchar * indent)
-        if type(obj) is set:
+                return _indent_head("[]")
+            return _indent_head("[") + ",".join(items) + lfchar + _indent_tail("]")
+        if isinstance(obj, set):
             if len(items) == 0:
-                return "set()"
-            return "{%s}" % (",".join(items) + lfchar + htchar * indent)
+                return _indent_head("set()")
+            return _indent_head("{") + ",".join(items) + lfchar + _indent_tail("}")
         if len(items) == 0:
-            return "%s([])" % (type(obj).__name__,)
-        return "%s([%s])" % (type(obj).__name__, ",".join(items) + lfchar + htchar * indent)
+            return _indent_head(f"{type(obj).__name__}([])")
+        return _indent_head(f"{type(obj).__name__}([") + ",".join(items) + lfchar + _indent_tail("])")
     if isinstance(obj, np.dtype) and hasattr(obj, "fields"):
         items = []
         for k, v in dict(obj.fields).items():
             items.append(lfchar + htchar * (indent + 1) + repr_((k, str(v[0]))))
-        return "np.dtype([%s])" % (",".join(items) + lfchar + htchar * indent)
+        if len(items) == 0:
+            return _indent_head("np.dtype([])")
+        return _indent_head("np.dtype([") + ",".join(items) + lfchar + _indent_tail("])")
     if hasattr(obj, "shape") and isinstance(obj.shape, tuple) and len(obj.shape) > 0:
         module = type(obj).__module__
         qualname = type(obj).__qualname__
-        return "<%s.%s object at %s with shape %s>" % (module, qualname, str(hex(id(obj))), obj.shape)
+        return _indent_head(f"<{module}.{qualname} object at {hex(id(obj))} with shape {obj.shape}>")
     if isinstance(obj, float):
         if np.isnan(obj):
             return "np.nan"
@@ -324,7 +373,7 @@ def prettify(
             return "np.inf"
         if np.isneginf(obj):
             return "-np.inf"
-    return repr_(obj)
+    return "".join(_indent_head(line) for line in repr_(obj).splitlines(keepends=True))
 
 
 def repr_doc(obj: tp.Any) -> str:

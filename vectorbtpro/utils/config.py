@@ -1005,6 +1005,7 @@ class Config(pdict):
         htchar: str = "    ",
         lfchar: str = "\n",
         indent: int = 0,
+        indent_head: bool = True,
         repr_: tp.Optional[tp.Callable] = None,
     ) -> str:
         dct = dict(self)
@@ -1019,6 +1020,7 @@ class Config(pdict):
                 htchar=htchar,
                 lfchar=lfchar,
                 indent=indent,
+                indent_head=indent_head,
                 repr_=repr_,
             )
         return prettify_dict(
@@ -1028,6 +1030,7 @@ class Config(pdict):
             htchar=htchar,
             lfchar=lfchar,
             indent=indent,
+            indent_head=indent_head,
             repr_=repr_,
         )
 
