@@ -421,8 +421,8 @@ class SignalsAccessor(GenericAccessor):
         Args:
             shape (Union[ShapeLike, ArrayWrapper]): A shape-like tuple or 
                 an `vectorbtpro.base.wrapping.ArrayWrapper` instance defining the target shape.
-            entry_place_func_nb (PlaceFunc): Numba-jitted function that places entry signals.
-            exit_place_func_nb (PlaceFunc): Numba-jitted function that places exit signals.
+            entry_place_func_nb (PlaceFunc): Numba-jitted function for placing entry signals.
+            exit_place_func_nb (PlaceFunc): Numba-jitted function for placing exit signals.
             args: Additional positional arguments forwarded to both entry and exit functions if 
                 explicit arguments are not provided.
             entry_place_args (ArgsLike): Positional arguments passed to `entry_place_func_nb`.
@@ -593,7 +593,7 @@ class SignalsAccessor(GenericAccessor):
         It uses either positional or keyword arguments for exit placement.
 
         Args:
-            exit_place_func_nb (PlaceFunc): A Numba-jitted function that determines the exit signal placement.
+            exit_place_func_nb (PlaceFunc): A Numba-jitted function for placing exit signals.
             *args: Additional positional arguments passed to the exit placement function.
             exit_place_args (ArgsLike): Additional arguments for the exit placement function.
 
@@ -705,7 +705,7 @@ class SignalsAccessor(GenericAccessor):
             wrap_kwargs (KwargsLike): Keyword arguments for configuring the array wrapper.
 
         Returns:
-            SeriesFrame or tuple(SeriesFrame, SeriesFrame): Cleaned signal array if one is provided,
+            MaybeTuple[SeriesFrame]: Cleaned signal array if one is provided,
                 or a tuple of cleaned entries and exits if two arrays are provided.
         """
         if broadcast_kwargs is None:
@@ -3516,7 +3516,7 @@ class SignalsAccessor(GenericAccessor):
             **kwargs: Additional keyword arguments passed to `SignalsAccessor.plot_as_markers`.
 
         Returns:
-            Union[tp.BaseFigure, tp.TraceUpdater]: Figure or trace updater with plotted entry markers.
+            Union[BaseFigure, TraceUpdater]: Figure or trace updater with plotted entry markers.
 
         See:
             `SignalsSRAccessor.plot_as_markers`

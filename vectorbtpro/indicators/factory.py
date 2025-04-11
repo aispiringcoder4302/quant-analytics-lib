@@ -1938,7 +1938,7 @@ class IndicatorFactory(Configured):
                     return self.wrapper.wrap(old_input)
                 return self.wrapper.wrap(old_input[:, input_mapper])
 
-            input_prop.__doc__ = f"""Input array for `{input_name}`."""
+            input_prop.__doc__ = f"Input array for `{input_name}`."
             input_prop.__name__ = input_name
             input_prop.__module__ = Indicator.__module__
             input_prop.__qualname__ = f"{Indicator.__name__}.{input_prop.__name__}"
@@ -1953,9 +1953,9 @@ class IndicatorFactory(Configured):
                 return self.wrapper.wrap(getattr(self, "_" + _output_name))
 
             if output_name in in_output_names:
-                output_prop.__doc__ = f"""In-place output array for `{output_name}`."""
+                output_prop.__doc__ = f"In-place output array for `{output_name}`."
             else:
-                output_prop.__doc__ = f"""Output array for `{output_name}`."""
+                output_prop.__doc__ = f"Output array for `{output_name}`."
             output_prop.__name__ = output_name
             output_prop.__module__ = Indicator.__module__
             output_prop.__qualname__ = f"{Indicator.__name__}.{output_prop.__name__}"
@@ -1971,7 +1971,7 @@ class IndicatorFactory(Configured):
             prop.__module__ = Indicator.__module__
             prop.__qualname__ = f"{Indicator.__name__}.{prop.__name__}"
             if prop.__doc__ is None:
-                prop.__doc__ = f"""Custom property."""
+                prop.__doc__ = "Custom property."
             if not isinstance(prop, property):
                 prop = property(prop)
             setattr(Indicator, prop_name, prop)
@@ -2046,11 +2046,13 @@ class IndicatorFactory(Configured):
                 attr_readable.__module__ = Indicator.__module__
                 attr_readable.__qualname__ = f"{Indicator.__name__}.{attr_readable.__name__}"
                 attr_readable.__doc__ = inspect.cleandoc(
-                    f"""`{attr_name}` in a human-readable format based on the mapping below:
+                    f"""
+                    `{attr_name}` in a human-readable format based on the mapping below:
                     
                     ```python
                     {prettify(to_value_mapping(dtype, enum_unkval=enum_unkval))}
-                    ```"""
+                    ```
+                    """
                 )
 
                 setattr(Indicator, f"{attr_name}_readable", property(attr_readable))
@@ -2068,7 +2070,8 @@ class IndicatorFactory(Configured):
                 attr_stats.__module__ = Indicator.__module__
                 attr_stats.__qualname__ = f"{Indicator.__name__}.{attr_stats.__name__}"
                 attr_stats.__doc__ = inspect.cleandoc(
-                    f"""Compute statistics for `{attr_name}` based on the mapping below:
+                    f"""
+                    Compute statistics for `{attr_name}` based on the mapping below:
 
                     ```python
                     {prettify(to_value_mapping(dtype))}
@@ -2112,7 +2115,8 @@ class IndicatorFactory(Configured):
                 ]
                 for func_name, np_func, def_kwargs in func_info:
                     method_docstring = inspect.cleandoc(
-                        f"""Return a boolean array indicating where `{attr_name}` is {func_name} compared to `other`.
+                        f"""
+                        Return a boolean array indicating where `{attr_name}` is {func_name} compared to `other`.
 
                         See `vectorbtpro.indicators.factory.combine_objs`.
 
@@ -2138,7 +2142,8 @@ class IndicatorFactory(Configured):
                 attr_stats.__module__ = Indicator.__module__
                 attr_stats.__qualname__ = f"{Indicator.__name__}.{attr_stats.__name__}"
                 attr_stats.__doc__ = inspect.cleandoc(
-                    f"""Compute generic statistics for `{attr_name}`.
+                    f"""
+                    Compute generic statistics for `{attr_name}`.
                 
                     Args:
                         *args: Additional positional arguments.
@@ -2158,7 +2163,8 @@ class IndicatorFactory(Configured):
                 ]
                 for func_name, np_func, def_kwargs in func_info:
                     method_docstring = inspect.cleandoc(
-                        f"""Return a boolean array representing the element-wise `{func_name.upper()}` 
+                        f"""
+                        Return a boolean array representing the element-wise `{func_name.upper()}` 
                         operation between `{attr_name}` and `other`.
 
                         See `vectorbtpro.indicators.factory.combine_objs`.
@@ -2185,7 +2191,8 @@ class IndicatorFactory(Configured):
                 attr_stats.__module__ = Indicator.__module__
                 attr_stats.__qualname__ = f"{Indicator.__name__}.{attr_stats.__name__}"
                 attr_stats.__doc__ = inspect.cleandoc(
-                    f"""Compute signal statistics for `{attr_name}`.
+                    f"""
+                    Compute signal statistics for `{attr_name}`.
 
                     Args:
                         *args: Additional positional arguments.
@@ -2793,7 +2800,7 @@ Args:
         Other keyword arguments are passed to `{0}.run`.
 
 Returns:
-    Tuple[Indicator, ...]: A tuple of indicator instances generated for each parameter combination.
+    Tuple[Indicator, ...]: A tuple of indicator instances generated.
 
 !!! note
     Use this method only when multiple indicator instances are required.
@@ -3949,7 +3956,8 @@ Returns:
             )
 
         apply_func.__doc__ = inspect.cleandoc(
-            f"""Apply the TA-Lib function with the provided inputs and parameters.
+            f"""
+            Apply the TA-Lib function with the provided inputs and parameters.
             
             Based on `vbt.talib_func("{func_name}")`.
     
@@ -4011,7 +4019,8 @@ Returns:
             )
 
         plot.__doc__ = inspect.cleandoc(
-            f"""Plot the indicator output using the TA-Lib plotting function.
+            f"""
+            Plot the indicator output using the TA-Lib plotting function.
             
             Based on `vbt.talib_plot_func("{func_name}")`.
     

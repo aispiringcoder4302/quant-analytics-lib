@@ -1254,10 +1254,10 @@ def relation_idxs_1d_nb(
     Returns:
         Tuple[Array1d, Array1d, Array1d, Array1d]: A tuple containing:
         
-            * source_range: Order positions for source signals.
-            * target_range: Order positions for target signals.
-            * source_idxs: Indices of True entries in the source mask.
-            * target_idxs: Indices of True entries in the target mask.
+            * `source_range`: Order positions for source signals.
+            * `target_range`: Order positions for target signals.
+            * `source_idxs`: Indices of True entries in the source mask.
+            * `target_idxs`: Indices of True entries in the target mask.
 
     !!! note
         If both True values occur simultaneously, the source signal is prioritized.

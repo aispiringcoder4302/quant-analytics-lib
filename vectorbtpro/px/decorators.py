@@ -86,7 +86,8 @@ def attach_px_methods(cls: tp.Type[tp.T]) -> tp.Type[tp.T]:
             plot_method.__module__ = cls.__module__
             plot_method.__qualname__ = f"{cls.__name__}.{plot_method.__name__}"
             plot_method.__doc__ = inspect.cleandoc(
-                f"""Plot using `{px_func.__module__ + '.' + px_func.__name__}`.
+                f"""
+                Plot using `{px_func.__module__ + '.' + px_func.__name__}`.
 
                 Args:
                     *args: Additional positional arguments passed to the Plotly Express function.

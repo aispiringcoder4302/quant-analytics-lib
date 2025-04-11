@@ -10,6 +10,8 @@
 
 """Module providing class decorators for data classes."""
 
+import inspect
+
 from vectorbtpro import _typing as tp
 from vectorbtpro.utils import checks
 from vectorbtpro.utils.config import copy_dict
@@ -52,19 +54,22 @@ def attach_symbol_dict_methods(cls: tp.Type[tp.T]) -> tp.Type[tp.T]:
         select_method.__name__ = "select_" + target_name
         select_method.__module__ = cls.__module__
         select_method.__qualname__ = f"{cls.__name__}.{select_method.__name__}"
-        select_method.__doc__ = f"""Select a feature or symbol from the attribute `Data.{target_name}`.
-
-Args:
-    key (Key): The key used to select the feature or symbol.
-    **kwargs: Keyword arguments for selection.
-    
-Returns:
-    Any: The selected feature or symbol.
-
-!!! note
-    If the attribute name ends with "_kwargs", selection is performed using `Data.select_key_kwargs`,
-    otherwise `Data.select_key_from_dict` is used.
-    """
+        select_method.__doc__ = inspect.cleandoc(
+            f"""
+            Select a feature or symbol from the attribute `Data.{target_name}`.
+            
+            Args:
+                key (Key): The key used to select the feature or symbol.
+                **kwargs: Keyword arguments for selection.
+                
+            Returns:
+                Any: The selected feature or symbol.
+            
+            !!! note
+                If the attribute name ends with "_kwargs", selection is performed using `Data.select_key_kwargs`,
+                otherwise `Data.select_key_from_dict` is used.
+            """
+        )
         setattr(cls, select_method.__name__, select_method)
 
     for target_name in cls._updatable_attrs:
@@ -90,16 +95,18 @@ Returns:
         update_method.__name__ = "update_" + target_name
         update_method.__module__ = cls.__module__
         update_method.__qualname__ = f"{cls.__name__}.{update_method.__name__}"
-        update_method.__doc__ = f"""Update the attribute `Data.{target_name}` by merging provided updates 
-and return a new instance.
-
-Args:
-    check_dict_type (bool): Flag indicating whether to validate the type of provided updates.
-    **kwargs: Keyword arguments representing update values for each symbol key.
-
-Returns:
-    Data: A new instance with the updated attribute.
-    """
+        update_method.__doc__ = inspect.cleandoc(
+            f"""
+            Update the attribute `Data.{target_name}` by merging provided updates and return a new instance.
+            
+            Args:
+                check_dict_type (bool): Flag indicating whether to validate the type of provided updates.
+                **kwargs: Keyword arguments representing update values for each symbol key.
+            
+            Returns:
+                Data: A new instance with the updated attribute.
+            """
+        )
         setattr(cls, update_method.__name__, update_method)
 
     return cls

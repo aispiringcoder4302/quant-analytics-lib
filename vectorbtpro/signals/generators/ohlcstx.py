@@ -10,6 +10,8 @@
 
 """Module providing the `OHLCSTX` signal generator."""
 
+import inspect
+
 import numpy as np
 import pandas as pd
 
@@ -97,27 +99,6 @@ def _bind_ohlcstx_plot(base_cls: type, entries_attr: str) -> tp.Callable:
         _base_cls_plot: tp.Callable = base_cls_plot,
         **layout_kwargs,
     ) -> tp.BaseFigure:
-        """Plot OHLC, `{0}.{1}` and `{0}.exits`.
-
-        Args:
-            column (Optional[Label]): Column label for data selection.
-
-                If None, a default column is used.
-            ohlc_kwargs (KwargsLike): Additional keyword arguments for plotting OHLC data using
-                `vectorbtpro.ohlcv.accessors.OHLCVDFAccessor.plot`.
-            entry_price_kwargs (KwargsLike): Additional keyword arguments for plotting the entry price line.
-            entry_trace_kwargs (KwargsLike): Additional keyword arguments for plotting entry signals using
-                `vectorbtpro.signals.accessors.SignalsSRAccessor.plot_as_entries` for `{0}.{1}`.
-            exit_trace_kwargs (KwargsLike): Additional keyword arguments for plotting exit signals using
-                `vectorbtpro.signals.accessors.SignalsSRAccessor.plot_as_exits` for `{0}.exits`.
-            add_trace_kwargs (KwargsLike): Additional keyword arguments for adding extra traces to the figure.
-            fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
-            _base_cls_plot (Callable): The base class plot function.
-            **layout_kwargs: Additional keyword arguments for configuring the figure layout.
-
-        Returns:
-            BaseFigure: The updated or newly created figure.
-        """
         self_col = self.select_col(column=column, group_by=False)
 
         if ohlc_kwargs is None:
@@ -153,19 +134,41 @@ def _bind_ohlcstx_plot(base_cls: type, entries_attr: str) -> tp.Callable:
         )
         return fig
 
-    plot.__doc__ += (
+    plot.__doc__ = inspect.cleandoc(
         """
-Examples:
-    ```pycon
-    >>> ohlcstx.iloc[:, 0].plot().show()
-    ```
+        Plot OHLC, `{0}.{1}` and `{0}.exits`.
+    
+        Args:
+            column (Optional[Label]): Column label for data selection.
 
-    ![](/assets/images/api/OHLCSTX.light.svg#only-light){: .iimg loading=lazy }
-    ![](/assets/images/api/OHLCSTX.dark.svg#only-dark){: .iimg loading=lazy }
-    """
-        if entries_attr == "entries"
-        else ""
-    )
+                If None, a default column is used.
+            ohlc_kwargs (KwargsLike): Additional keyword arguments for plotting OHLC data using
+                `vectorbtpro.ohlcv.accessors.OHLCVDFAccessor.plot`.
+            entry_price_kwargs (KwargsLike): Additional keyword arguments for plotting the entry price line.
+            entry_trace_kwargs (KwargsLike): Additional keyword arguments for plotting entry signals using
+                `vectorbtpro.signals.accessors.SignalsSRAccessor.plot_as_entries` for `{0}.{1}`.
+            exit_trace_kwargs (KwargsLike): Additional keyword arguments for plotting exit signals using
+                `vectorbtpro.signals.accessors.SignalsSRAccessor.plot_as_exits` for `{0}.exits`.
+            add_trace_kwargs (KwargsLike): Additional keyword arguments for adding extra traces to the figure.
+            fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
+            **layout_kwargs: Additional keyword arguments for configuring the figure layout.
+
+        Returns:
+            BaseFigure: The updated or newly created figure.
+        """
+    ).format(base_cls.__name__, entries_attr)
+    if entries_attr == "entries":
+        plot.__doc__ += "\n" + inspect.cleandoc(
+            """
+            Examples:
+                ```pycon
+                >>> ohlcstx.iloc[:, 0].plot().show()
+                ```
+            
+                ![](/assets/images/api/OHLCSTX.light.svg#only-light){: .iimg loading=lazy }
+                ![](/assets/images/api/OHLCSTX.dark.svg#only-dark){: .iimg loading=lazy }
+            """
+        )
     return plot
 
 

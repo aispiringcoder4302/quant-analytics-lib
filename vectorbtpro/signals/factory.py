@@ -193,7 +193,8 @@ class SignalFactory(IndicatorFactory):
             return fig
 
         plot.__doc__ = inspect.cleandoc(
-            """Plot `{0}.{1}` and `{0}.exits`.
+            """
+            Plot `{0}.{1}` and `{0}.exits`.
     
             Args:
                 column (Optional[Label]): Column label for selecting signals.
@@ -252,10 +253,10 @@ class SignalFactory(IndicatorFactory):
         for more details.
 
         Args:
-            entry_place_func_nb (Optional[PlaceFunc]): A function that returns indices for entry signals.
+            entry_place_func_nb (Optional[PlaceFunc]): A function for placing entry signals.
 
                 Defaults to `vectorbtpro.signals.nb.first_place_nb` when used with `FactoryMode.Chain`.
-            exit_place_func_nb (Optional[PlaceFunc]): A function that returns indices for exit signals.
+            exit_place_func_nb (Optional[PlaceFunc]): A function for placing exit signals.
             generate_func_nb (Optional[Callable]): The entry generation function.
 
                 Defaults to `vectorbtpro.signals.nb.generate_nb`.
@@ -315,37 +316,17 @@ class SignalFactory(IndicatorFactory):
 
                 Defaults to False.
 
-        The following arguments can be passed to `run` and `run_combs` methods:
-
-        Args:
-            *args: Additional positional arguments that can be used instead of `place_args`.
-            place_args (ArgsLike): Arguments passed to any placement function (depending on the mode).
-            entry_place_args (ArgsLike): Arguments for the entry placement function.
-            exit_place_args (ArgsLike): Arguments for the exit placement function.
-            entry_args (ArgsLike): Alias for `entry_place_args`.
-            exit_args (ArgsLike): Alias for `exit_place_args`.
-            cache_args (ArgsLike): Arguments passed to the cache function.
-            entry_kwargs (KwargsLike): Settings for the entry placement function,
-                including arguments from `pass_kwargs`.
-            exit_kwargs (KwargsLike): Settings for the exit placement function,
-                including arguments from `pass_kwargs`.
-            cache_kwargs (KwargsLike): Settings for the cache function,
-                including arguments from `pass_kwargs`.
-            return_cache (bool): Indicates whether to return only the cache.
-            use_cache (Optional[IFCacheOutput]): Cache to use.
-            execute_kwargs (KwargsLike): Keyword arguments passed to `vectorbtpro.utils.execution.execute`.
-            **kwargs: Default keyword arguments based on the mode.
-
-        For more arguments, see `vectorbtpro.indicators.factory.IndicatorBase.run_pipeline`.
+        For more arguments, see the custom function of the generated indicator and
+        `vectorbtpro.indicators.factory.IndicatorBase.run_pipeline`.
 
         !!! note
             Choice functions must be Numba-compiled.
 
             Which inputs, parameters and arguments to pass to each function must be explicitly indicated
-            in the function's settings dict. By default, nothing is passed.
+            in the function's settings dictionary. By default, nothing is passed.
 
             Passing keyword arguments directly to the placement functions is not supported.
-            Use `pass_kwargs` in a settings dict to pass keyword arguments as positional.
+            Use `pass_kwargs` in a settings dictionary to pass keyword arguments as positional.
 
         Examples:
             The simplest signal indicator that places True at the very first index:
@@ -722,7 +703,7 @@ class SignalFactory(IndicatorFactory):
             input_list: tp.List[tp.AnyArray],
             in_output_list: tp.List[tp.List[tp.AnyArray]],
             param_list: tp.List[tp.List[tp.ParamValue]],
-            *args,
+            *args_,
             input_shape: tp.Optional[tp.Shape] = None,
             place_args: tp.ArgsLike = None,
             entry_place_args: tp.ArgsLike = None,
@@ -736,8 +717,42 @@ class SignalFactory(IndicatorFactory):
             return_cache: bool = False,
             use_cache: tp.Optional[tp.IFCacheOutput] = None,
             execute_kwargs: tp.KwargsLike = None,
-            **_kwargs,
-        ) -> tp.Union[tp.IFCacheOutput, tp.Array2d, tp.List[tp.Array2d]]:
+            **kwargs_,
+        ) -> tp.Union[None, tp.IFCacheOutput, tp.Array2d, tp.List[tp.Array2d]]:
+            """Forward inputs and parameters to `apply_func`, performing caching and pre-processing.
+
+            Args:
+                input_tuple (Tuple[AnyArray, ...]): Tuple of input arrays.
+                in_output_tuple (Tuple[List[AnyArray], ...]): Tuple of lists of in-output arrays.
+                param_tuple (Tuple[List[ParamValue], ...]): Tuple of lists of parameter values.
+                *args_: Additional positional arguments.
+                input_shape (Optional[Shape]): Shape of the input arrays.
+                place_args (ArgsLike): Arguments passed to any placement function (depending on the mode).
+                entry_place_args (ArgsLike): Arguments for the entry placement function.
+                exit_place_args (ArgsLike): Arguments for the exit placement function.
+                entry_args (ArgsLike): Alias for `entry_place_args`.
+                exit_args (ArgsLike): Alias for `exit_place_args`.
+                cache_args (ArgsLike): Arguments passed to the cache function.
+                entry_kwargs (KwargsLike): Settings for the entry placement function,
+                    including arguments from `pass_kwargs`.
+                exit_kwargs (KwargsLike): Settings for the exit placement function,
+                    including arguments from `pass_kwargs`.
+                cache_kwargs (KwargsLike): Settings for the cache function,
+                    including arguments from `pass_kwargs`.
+                return_cache (bool): Indicates whether to return only the cache.
+                use_cache (Optional[IFCacheOutput]): Cache to use.
+                execute_kwargs (KwargsLike): Keyword arguments passed to `vectorbtpro.utils.execution.execute`.
+                **kwargs: Default keyword arguments based on the mode.
+
+            Returns:
+                Union[None, IFCacheOutput, Array2d, List[Array2d]]:
+                    The result of applying `apply_func`, which may be:
+
+                    * The cache output if `return_cache` is True.
+                    * A 2D array.
+                    * A list of 2D arrays.
+                    * None.
+            """
             # Get arguments
             if len(input_list) == 0:
                 if input_shape is None:
@@ -745,10 +760,10 @@ class SignalFactory(IndicatorFactory):
             else:
                 input_shape = input_list[0].shape
 
-            if len(args) > 0 and place_args is not None:
-                raise ValueError("Must provide either *args or place_args, not both")
+            if len(args_) > 0 and place_args is not None:
+                raise ValueError("Must provide either *args_ or place_args, not both")
             if place_args is None:
-                place_args = args
+                place_args = args_
             if (
                 mode == FactoryMode.Entries
                 or mode == FactoryMode.Both
@@ -785,12 +800,12 @@ class SignalFactory(IndicatorFactory):
                 or mode == FactoryMode.Both
                 or (mode == FactoryMode.Chain and not default_chain_entry_func)
             ):
-                entry_kwargs = merge_dicts(_kwargs, entry_kwargs)
+                entry_kwargs = merge_dicts(kwargs_, entry_kwargs)
             else:
                 if entry_kwargs is None:
                     entry_kwargs = {}
             if mode in (FactoryMode.Exits, FactoryMode.Both, FactoryMode.Chain):
-                exit_kwargs = merge_dicts(_kwargs, exit_kwargs)
+                exit_kwargs = merge_dicts(kwargs_, exit_kwargs)
             else:
                 if exit_kwargs is None:
                     exit_kwargs = {}

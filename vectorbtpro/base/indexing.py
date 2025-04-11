@@ -11,6 +11,7 @@
 """Module providing classes and functions for indexing."""
 
 import functools
+import inspect
 from datetime import time
 from functools import partial
 
@@ -585,10 +586,13 @@ def build_param_indexer(
         def param_loc(self, _param_name=param_name) -> ParamLoc:
             return getattr(self, f"_{_param_name}_loc")
 
-        param_loc.__doc__ = f"""Return the parameter locator for the `{param_name}` mapping using `pd.Series.loc`.
-
-        The locator forwards indexing operations to each Series/DataFrame and returns a new instance.
-        """
+        param_loc.__doc__ = inspect.cleandoc(
+            f"""
+            Return the parameter locator for the `{param_name}` mapping using `pd.Series.loc`.
+    
+            The locator forwards indexing operations to each Series/DataFrame and returns a new instance.
+            """
+        )
 
         setattr(ParamIndexer, param_name + "_loc", property(param_loc))
 
