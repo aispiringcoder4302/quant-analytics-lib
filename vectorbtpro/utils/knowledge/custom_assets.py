@@ -561,6 +561,7 @@ class VBTAsset(KnowledgeAsset):
         urls: tp.Iterable[str],
         extension: tp.Optional[str] = None,
         allow_fragments: bool = True,
+        use_hash: bool = False,
     ) -> tp.List[Path]:
         """Convert a collection of URLs into corresponding filesystem paths.
 
@@ -568,15 +569,25 @@ class VBTAsset(KnowledgeAsset):
             urls (Iterable[str]): Iterable of URL strings.
             extension (Optional[str]): File extension to append to generated file names.
             allow_fragments (bool): Whether URL fragments are allowed in path generation.
+            use_hash (bool): If True, use a hash of the URL as filename to avoid long paths.
 
         Returns:
             List[Path]: A list of filesystem paths generated from the URLs.
         """
         from urllib.parse import urlparse
+        import hashlib
 
         url_paths = []
         for url in urls:
             parsed = urlparse(url, allow_fragments=allow_fragments)
+
+            if use_hash:
+                file_name = hashlib.sha1(url.encode("utf-8")).hexdigest()
+                if extension is not None:
+                    file_name += "." + extension
+                url_paths.append(Path(file_name))
+                continue
+
             path_parts = [parsed.netloc]
             url_path = parsed.path.strip("/")
             if url_path:
@@ -618,6 +629,7 @@ class VBTAsset(KnowledgeAsset):
         cache_dir: tp.Optional[tp.PathLike] = None,
         cache_mkdir_kwargs: tp.KwargsLike = None,
         clear_cache: tp.Optional[bool] = None,
+        use_hash: bool = False,
         show_progress: tp.Optional[bool] = None,
         pbar_kwargs: tp.KwargsLike = None,
         template_context: tp.KwargsLike = None,
@@ -628,10 +640,11 @@ class VBTAsset(KnowledgeAsset):
         Args:
             cache (Optional[bool]): Flag to determine whether to use the cache directory.
 
-                 Otherwise, creates a temporary directory.
+                Otherwise, creates a temporary directory.
             cache_dir (Optional[PathLike]): Directory for saving Markdown files (`markdown_dir` in settings).
             cache_mkdir_kwargs (KwargsLike): Keyword arguments for creating the cache directory.
             clear_cache (Optional[bool]): Flag to clear any existing directory before saving new files.
+            use_hash (bool): If True, use a hash of the URL as filename to avoid long paths.
             show_progress (Optional[bool]): Flag to display a progress bar during file creation.
             pbar_kwargs (KwargsLike): Additional settings for the progress bar.
             template_context (KwargsLike): Additional context for template substitution.
@@ -672,7 +685,7 @@ class VBTAsset(KnowledgeAsset):
         else:
             markdown_dir = Path(tempfile.mkdtemp(prefix=get_caller_qualname() + "_"))
         link_map = {d["link"]: dict(d) for d in self.data}
-        url_paths = self.links_to_paths(link_map.keys(), extension="md")
+        url_paths = self.links_to_paths(link_map.keys(), extension="md", use_hash=use_hash)
         url_file_map = dict(zip(link_map.keys(), [markdown_dir / p for p in url_paths]))
         _, kwargs = ToMarkdownAssetFunc.prepare(**kwargs)
 
@@ -806,6 +819,7 @@ class VBTAsset(KnowledgeAsset):
         cache_dir: tp.Optional[tp.PathLike] = None,
         cache_mkdir_kwargs: tp.KwargsLike = None,
         clear_cache: tp.Optional[bool] = None,
+        use_hash: bool = False,
         show_progress: tp.Optional[bool] = None,
         pbar_kwargs: tp.KwargsLike = None,
         template_context: tp.KwargsLike = None,
@@ -819,6 +833,7 @@ class VBTAsset(KnowledgeAsset):
             cache_dir (Optional[PathLike]): Directory for saving HTML files when caching is enabled.
             cache_mkdir_kwargs (KwargsLike): Keyword arguments for creating the cache directory.
             clear_cache (Optional[bool]): Flag to clear any existing directory before saving.
+            use_hash (bool): If True, use a hash of the URL as filename to avoid long paths.
             show_progress (Optional[bool]): Flag to display a progress bar during the save process.
             pbar_kwargs (KwargsLike): Additional settings for configuring the progress bar.
             template_context (KwargsLike): Additional context for template substitution.
@@ -866,7 +881,7 @@ class VBTAsset(KnowledgeAsset):
         top_parents = self.top_parent_links
         if len(top_parents) > 1:
             link_map["/"] = {}
-        url_paths = self.links_to_paths(link_map.keys(), extension="html")
+        url_paths = self.links_to_paths(link_map.keys(), extension="html", use_hash=use_hash)
         url_file_map = dict(zip(link_map.keys(), [html_dir / p for p in url_paths]))
         url_map = {k: "file://" + str(v.resolve()) for k, v in url_file_map.items()}
         _, kwargs = ToHTMLAssetFunc.prepare(**kwargs)
