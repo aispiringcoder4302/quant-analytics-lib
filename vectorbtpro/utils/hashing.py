@@ -28,17 +28,28 @@ class Hashable(Base):
         Args:
             *args: Positional arguments passed for hash computation.
             **kwargs: Keyword arguments passed for hash computation.
+
+        Returns:
+            int: The computed hash value.
         """
         raise NotImplementedError
 
     @property
     def hash_key(self) -> tuple:
-        """Unique key used for computing the instance's hash."""
+        """Unique key used for computing the instance's hash.
+        
+        Returns:
+            tuple: A unique key for hash computation.
+        """
         raise NotImplementedError
 
     @cachedproperty
     def hash(self) -> int:
-        """Computed hash value of the instance based on its hash key."""
+        """Computed hash value of the instance based on its hash key.
+        
+        Returns:
+            int: The computed hash value.
+        """
         return hash(self.hash_key)
 
     def __hash__(self) -> int:

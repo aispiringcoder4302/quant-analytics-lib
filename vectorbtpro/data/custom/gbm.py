@@ -51,18 +51,18 @@ class GBMData(SyntheticData):
         """Generate synthetic data for a feature or symbol using geometric Brownian motion.
 
         Args:
-            key (Hashable): Feature or symbol identifier.
-            index (pd.Index): Pandas index representing time.
-            columns (Hashable or IndexLike): Column names.
+            key (Key): Feature or symbol identifier.
+            index (Index): Pandas index representing time.
+            columns (Optional[Union[Hashable, IndexLike]]): Column names.
 
                 Provide a single hashable value to create a Series.
-            start_value (float): Initial value at time 0.
+            start_value (Optional[float]): Initial value at time 0.
 
                 Note that this value does not appear as the first data point.
-            mean (float): Drift or mean of the percentage change.
-            std (float): Standard deviation of the percentage change.
-            dt (float): Time increment for one period.
-            seed (int): Seed to ensure deterministic output.
+            mean (Optional[float]): Drift or mean of the percentage change.
+            std (Optional[float]): Standard deviation of the percentage change.
+            dt (Optional[float]): Time increment for one period.
+            seed (Optional[int]): Seed to ensure deterministic output.
             jitted (JittedOption): Option to control JIT compilation.
 
         Returns:

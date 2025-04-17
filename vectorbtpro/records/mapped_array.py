@@ -891,12 +891,20 @@ class MappedArray(Analyzable):
 
     @property
     def mapped_arr(self) -> tp.Array1d:
-        """Mapped array."""
+        """Mapped array.
+        
+        Returns:
+            Array1d: The mapped array.
+        """
         return self._mapped_arr
 
     @property
     def values(self) -> tp.Array1d:
-        """1D array of mapped values."""
+        """1D array of mapped values.
+        
+        Returns:
+            Array1d: The mapped values.
+        """
         return self.mapped_arr
 
     def to_readable(
@@ -940,7 +948,11 @@ class MappedArray(Analyzable):
     @property
     def mapped_readable(self) -> tp.SeriesFrame:
         """Mapped data in a human-readable format using default parameters,
-        equivalent to calling `MappedArray.to_readable`."""
+        equivalent to calling `MappedArray.to_readable`.
+        
+        Returns:
+            SeriesFrame: A Pandas Series or DataFrame with human-readable mapped values.
+        """
         return self.to_readable()
 
     readable = mapped_readable
@@ -950,7 +962,11 @@ class MappedArray(Analyzable):
 
     @property
     def col_arr(self) -> tp.Array1d:
-        """Column array of indices corresponding to the mapped array columns."""
+        """Column array of indices corresponding to the mapped array columns.
+        
+        Returns:
+            Array1d: The column array.
+        """
         return self._col_arr
 
     @property
@@ -958,22 +974,37 @@ class MappedArray(Analyzable):
         """Column mapper instance.
 
         See `vectorbtpro.records.col_mapper.ColumnMapper`.
+
+        Returns:
+            ColumnMapper: The column mapper instance.
         """
         return self._col_mapper
 
     @property
     def idx_arr(self) -> tp.Optional[tp.Array1d]:
-        """Index array mapping each element to its corresponding index in the wrapper."""
+        """Index array mapping each element to its corresponding index in the wrapper.
+        
+        Returns:
+            Optional[Array1d]: The index array mapping each element if available; otherwise, None.
+        """
         return self._idx_arr
 
     @property
     def id_arr(self) -> tp.Array1d:
-        """1D array of element identifiers."""
+        """1D array of element identifiers.
+        
+        Returns:
+            Array1d: The ID array.
+        """
         return self._id_arr
 
     @property
     def mapping(self) -> tp.Optional[tp.MappingLike]:
-        """Mapping used for value conversion; may be None."""
+        """Mapping used for value conversion.
+        
+        Returns:
+            Optional[MappingLike]: The mapping dictionary or None.
+        """
         return self._mapping
 
     # ############# Sorting ############# #
@@ -2300,7 +2331,11 @@ class MappedArray(Analyzable):
 
     @property
     def pd_mask(self) -> tp.SeriesFrame:
-        """Series/DataFrame mask produced by `MappedArray.get_pd_mask` with default arguments."""
+        """Series/DataFrame mask produced by `MappedArray.get_pd_mask` with default arguments.
+        
+        Returns:
+            SeriesFrame: A wrapped mask array as a Series or DataFrame.
+        """
         return self.get_pd_mask()
 
     # ############# Stats ############# #
@@ -2311,6 +2346,9 @@ class MappedArray(Analyzable):
 
         Merges defaults from `vectorbtpro.generic.stats_builder.StatsBuilderMixin.stats_defaults` with the
         `stats` settings from `vectorbtpro._settings.mapped_array`.
+
+        Returns:
+            Kwargs: Merged default statistics configuration.
         """
         from vectorbtpro._settings import settings
 
@@ -2410,6 +2448,9 @@ class MappedArray(Analyzable):
 
         Merge plotting defaults from `vectorbtpro.generic.plots_builder.PlotsBuilderMixin.plots_defaults`
         with settings from `vectorbtpro._settings.mapped_array`.
+
+        Returns:
+            Kwargs: Merged default plotting configuration.
         """
         from vectorbtpro._settings import settings
 

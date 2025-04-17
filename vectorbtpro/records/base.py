@@ -451,7 +451,11 @@ class MetaRecords(type(Analyzable)):
 
     @property
     def field_config(cls) -> Config:
-        """Field configuration."""
+        """Field configuration.
+        
+        Returns:
+            Config: The field configuration for the `Records` class.
+        """
         return cls._field_config
 
 
@@ -501,7 +505,7 @@ class Records(Analyzable, metaclass=MetaRecords):
 
         Returns:
             Config: The field configuration copied for each instance. Changes to this configuration
-            do not affect the class-level configuration.
+                do not affect the class-level configuration.
 
         To modify the fields, update the config in-place, override this property,
         or set `${cls_name}._field_config` on the instance.
@@ -1031,6 +1035,9 @@ class Records(Analyzable, metaclass=MetaRecords):
         """Record array.
 
         The internal array storing the records.
+
+        Returns:
+            RecordArray: The record array containing the records.
         """
         return self._records_arr
 
@@ -1039,6 +1046,9 @@ class Records(Analyzable, metaclass=MetaRecords):
         """Column mapper.
 
         Provides a mapping of record columns. See `vectorbtpro.records.col_mapper.ColumnMapper`.
+
+        Returns:
+            ColumnMapper: The column mapper instance.
         """
         return self._col_mapper
 
@@ -1047,6 +1057,9 @@ class Records(Analyzable, metaclass=MetaRecords):
         """Record array.
 
         Alias for `Records.records_arr`.
+
+        Returns:
+            RecordArray: The record array containing the records.
         """
         return self.records_arr
 
@@ -1058,6 +1071,9 @@ class Records(Analyzable, metaclass=MetaRecords):
         """Records as DataFrame.
 
         Converts the record array into a pandas DataFrame.
+
+        Returns:
+            Frame: A DataFrame representation of the records.
         """
         return pd.DataFrame.from_records(self.values)
 
@@ -1066,6 +1082,9 @@ class Records(Analyzable, metaclass=MetaRecords):
         """Record array with attribute access.
 
         Returns a NumPy recarray that supports accessing fields as attributes.
+
+        Returns:
+            RecArray: A NumPy recarray representation of the records.
         """
         return self.values.view(np.recarray)
 
@@ -1074,6 +1093,9 @@ class Records(Analyzable, metaclass=MetaRecords):
         """Field names.
 
         A list of field names extracted from the record array.
+
+        Returns:
+            List[str]: A list of field names.
         """
         return list(self.values.dtype.fields.keys())
 
@@ -1128,6 +1150,9 @@ class Records(Analyzable, metaclass=MetaRecords):
         """Readable records.
 
         Returns the result of `Records.to_readable` with default arguments.
+
+        Returns:
+            Frame: A DataFrame representing the records in a human-readable format.
         """
         return self.to_readable()
 
@@ -1278,6 +1303,9 @@ class Records(Analyzable, metaclass=MetaRecords):
         """ID array.
 
         Array of IDs extracted from the record array.
+
+        Returns:
+            Array1d: The array of IDs.
         """
         return self.values[self.get_field_name("id")]
 
@@ -1286,6 +1314,10 @@ class Records(Analyzable, metaclass=MetaRecords):
         """Column array.
 
         Array of column identifiers extracted from the record array.
+
+
+        Returns:
+            Array1d: The array of column identifiers.
         """
         return self.values[self.get_field_name("col")]
 
@@ -1294,6 +1326,9 @@ class Records(Analyzable, metaclass=MetaRecords):
         """Index array.
 
         Array of index values extracted from the record array, or None if not available.
+
+        Returns:
+            Optional[Array1d]: The array of index values if available; otherwise, None.
         """
         idx_field_name = self.get_field_name("idx")
         if idx_field_name is None:
@@ -1614,7 +1649,11 @@ class Records(Analyzable, metaclass=MetaRecords):
     @property
     def pd_mask(self) -> tp.SeriesFrame:
         """Return the mask as a SeriesFrame produced by invoking
-        `vectorbtpro.records.mapped_array.MappedArray.get_pd_mask` with default arguments."""
+        `vectorbtpro.records.mapped_array.MappedArray.get_pd_mask` with default arguments.
+        
+        Returns:
+            SeriesFrame: A Series or DataFrame representing the mask.
+        """
         return self.get_pd_mask()
 
     # ############# Reducing ############# #
@@ -1853,6 +1892,9 @@ class Records(Analyzable, metaclass=MetaRecords):
                 configuration will be updated.
             source_cls (Optional[type]): The source class from which to extract
                 field configuration documentation.
+
+        Returns:
+            None
         """
         __pdoc__[cls.__name__ + ".field_config"] = cls.build_field_config_doc(source_cls=source_cls)
 

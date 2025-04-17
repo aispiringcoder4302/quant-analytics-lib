@@ -34,7 +34,11 @@ class MetaPlotsBuilderMixin(type):
 
     @property
     def subplots(cls) -> Config:
-        """Subplots configuration used by `PlotsBuilderMixin.plots`."""
+        """Subplots configuration used by `PlotsBuilderMixin.plots`.
+        
+        Returns:
+            Config: A dictionary containing the default subplots configuration.
+        """
         return cls._subplots
 
 
@@ -106,6 +110,9 @@ class PlotsBuilderMixin(Base, metaclass=MetaPlotsBuilderMixin):
 
         To modify the subplots, update the configuration in-place, override this property, or assign a new value
         to `${cls_name}._subplots` on the instance.
+
+        Returns:
+            Config: A hybrid copy of the subplots configuration.
         """
         return self._subplots
 
@@ -936,6 +943,9 @@ class PlotsBuilderMixin(Base, metaclass=MetaPlotsBuilderMixin):
             source_cls (Optional[type]): Class used as the source for subplots documentation.
 
                 If not provided, defaults to using `PlotsBuilderMixin`.
+
+        Returns:
+            None
         """
         __pdoc__[cls.__name__ + ".subplots"] = cls.build_subplots_doc(source_cls=source_cls)
 

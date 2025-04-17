@@ -79,10 +79,10 @@ class _HURST(HURST):
         """Plot the HURST traces.
 
         Args:
-            column (str): Name of the column to plot.
-            hurst_trace_kwargs (dict): Keyword arguments passed to
+            column (Optional[Label]): Name of the column to plot.
+            hurst_trace_kwargs (KwargsLike): Keyword arguments passed to
                 `plotly.graph_objects.Scatter` for plotting `HURST.hurst`.
-            add_trace_kwargs (dict): Keyword arguments passed to `fig.add_trace` when adding each trace.
+            add_trace_kwargs (KwargsLike): Keyword arguments passed to `fig.add_trace` when adding each trace.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
             **layout_kwargs: Keyword arguments for configuring the figure layout.
 

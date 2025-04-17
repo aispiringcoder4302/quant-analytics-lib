@@ -32,6 +32,9 @@ def match_tags(tags: tp.MaybeIterable[str], in_tags: tp.MaybeIterable[str]) -> b
 
             All elements must be valid Python identifiers.
 
+    Returns:
+        bool: True if any tag from `tags` matches identifiers in `in_tags`, False otherwise.
+
     Examples:
         ```pycon
         >>> from vectorbtpro.utils.tagging import match_tags

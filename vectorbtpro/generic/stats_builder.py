@@ -36,7 +36,11 @@ class MetaStatsBuilderMixin(type):
     
     @property
     def metrics(cls) -> Config:
-        """Return the performance metrics configuration used by `StatsBuilderMixin.stats`."""
+        """Return the performance metrics configuration used by `StatsBuilderMixin.stats`.
+        
+        Returns:
+            Config: The performance metrics configuration.
+        """
         return cls._metrics
 
 
@@ -56,7 +60,11 @@ class StatsBuilderMixin(Base, metaclass=MetaStatsBuilderMixin):
 
     @property
     def stats_defaults(self) -> tp.Kwargs:
-        """Return default settings for `StatsBuilderMixin.stats`."""
+        """Return default settings for `StatsBuilderMixin.stats`.
+        
+        Returns:
+            Kwargs: Default settings for the stats method.
+        """
         return dict(settings=dict(freq=self.wrapper.freq))
 
     def resolve_stats_setting(
@@ -816,6 +824,9 @@ class StatsBuilderMixin(Base, metaclass=MetaStatsBuilderMixin):
         Args:
             __pdoc__ (dict): Dictionary mapping fully qualified names to their documentation strings.
             source_cls (Optional[type]): Class used to obtain the baseline metrics documentation.
+
+        Returns:
+            None
         """
         __pdoc__[cls.__name__ + ".metrics"] = cls.build_metrics_doc(source_cls=source_cls)
 

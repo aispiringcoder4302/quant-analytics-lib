@@ -276,7 +276,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             **kwargs: Additional keyword arguments.
 
         Returns:
-            dict: Resolved keyword arguments for creating a new `ReturnsAccessor` instance.
+            Kwargs: Resolved keyword arguments for creating a new `ReturnsAccessor` instance.
         """
         kwargs = GenericAccessor.resolve_row_stack_kwargs(*objs, **kwargs)
         if len(objs) == 1:
@@ -321,7 +321,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             **kwargs: Additional keyword arguments.
 
         Returns:
-            dict: Resolved keyword arguments for creating a new `ReturnsAccessor` instance.
+            Kwargs: Resolved keyword arguments for creating a new `ReturnsAccessor` instance.
         """
         kwargs = GenericAccessor.resolve_column_stack_kwargs(*objs, reindex_kwargs=reindex_kwargs, **kwargs)
         kwargs.pop("reindex_kwargs", None)
@@ -355,12 +355,20 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
     @hybrid_property
     def sr_accessor_cls(cls_or_self) -> tp.Type["ReturnsSRAccessor"]:
-        """Accessor class for `pd.Series`."""
+        """Accessor class for `pd.Series`.
+        
+        Returns:
+            Type[ReturnsSRAccessor]: The accessor class for Series.
+        """
         return ReturnsSRAccessor
 
     @hybrid_property
     def df_accessor_cls(cls_or_self) -> tp.Type["ReturnsDFAccessor"]:
-        """Accessor class for `pd.DataFrame`."""
+        """Accessor class for `pd.DataFrame`.
+        
+        Returns:
+            Type[ReturnsDFAccessor]: The accessor class for DataFrame.
+        """
         return ReturnsDFAccessor
 
     def indexing_func(
@@ -473,12 +481,21 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
     @property
     def bm_returns_acc(self) -> tp.Optional[ReturnsAccessorT]:
-        """Benchmark returns accessor using default arguments."""
+        """Benchmark returns accessor using default arguments.
+        
+        Returns:
+            Optional[ReturnsAccessor]: A returns accessor instance for benchmark returns,
+                or None if benchmark returns are unavailable.
+        """
         return self.get_bm_returns_acc()
 
     @property
     def log_returns(self) -> bool:
-        """Flag indicating if returns and benchmark returns are provided as log returns."""
+        """Flag indicating if returns and benchmark returns are provided as log returns.
+        
+        Returns:
+            bool: True if returns are log returns; otherwise, False.
+        """
         return self._log_returns
 
     @classmethod
@@ -640,7 +657,11 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
     @property
     def year_freq(self) -> tp.Optional[tp.PandasFrequency]:
-        """Year frequency if available; otherwise, None."""
+        """Year frequency.
+        
+        Returns:
+            Optional[PandasFrequency]: The year frequency if available; otherwise, None.
+        """
         return self.get_year_freq()
 
     @hybrid_method
@@ -697,7 +718,11 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
     @property
     def ann_factor(self) -> float:
-        """Annualization factor."""
+        """Annualization factor.
+        
+        Returns:
+            float: The annualization factor.
+        """
         return self.get_ann_factor(raise_error=True)
 
     @hybrid_method
@@ -773,7 +798,11 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
     @property
     def periods(self) -> tp.Optional[tp.ArrayLike]:
-        """Periods computed for the returns accessor."""
+        """Periods computed for the returns accessor.
+        
+        Returns:
+            Optional[ArrayLike]: The periods array, or None if not applicable.
+        """
         return self.get_periods()
 
     def deannualize(self, value: float) -> float:
@@ -792,6 +821,9 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         """Defaults for ReturnsAccessor.
 
         Merges defaults from `vectorbtpro._settings.returns` with the accessor's own defaults.
+
+        Returns:
+            Kwargs: Merged defaults dictionary.
         """
         from vectorbtpro._settings import settings
 
@@ -3393,7 +3425,11 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
     @property
     def drawdowns(self) -> Drawdowns:
-        """Drawdowns computed from cumulative returns using default arguments."""
+        """Drawdowns computed from cumulative returns using default arguments.
+        
+        Returns:
+            Drawdowns: An instance containing drawdown records.
+        """
         return self.get_drawdowns()
 
     def get_drawdowns(
@@ -3435,7 +3471,11 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
     @property
     def qs(self) -> "QSAdapter":
-        """Quantstats adapter for performance analysis."""
+        """Quantstats adapter for performance analysis.
+        
+        Returns:
+            QSAdapter: An instance of `vectorbtpro.returns.qs_adapter.QSAdapter`.
+        """
         from vectorbtpro.returns.qs_adapter import QSAdapter
 
         return QSAdapter(self)
@@ -3505,6 +3545,9 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         * `vectorbtpro.generic.accessors.GenericAccessor.stats_defaults`
         * `ReturnsAccessor.defaults` (acting as settings)
         * `stats` configuration from `vectorbtpro._settings.returns`
+
+        Returns:
+            Kwargs: Merged default settings for stats.
         """
         from vectorbtpro._settings import settings
 
@@ -3830,6 +3873,9 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
         Merges `vectorbtpro.generic.accessors.GenericAccessor.plots_defaults`, defaults from
         `ReturnsAccessor.defaults` (serving as settings), and `plots` from `vectorbtpro._settings.returns`.
+
+        Returns:
+            Kwargs: Merged default settings for plots.
         """
         from vectorbtpro._settings import settings
 

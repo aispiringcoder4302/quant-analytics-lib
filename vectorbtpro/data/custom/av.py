@@ -217,7 +217,7 @@ class AVData(RemoteData):
             api_meta (Optional[dict]): API meta information.
 
                 If None, `AVData.parse_api_meta` is used when `function` is not provided
-                 or when `match_params` is True.
+                or when `match_params` is True.
             category (Union[None, str, AlphaVantage, Type[AlphaVantage]]): API category.
 
                 Used when `function` is not provided or when `match_params` is True.

@@ -85,7 +85,8 @@ class RelRange(DefineMixin):
 
     Floating numbers between 0 and 1 are interpreted as relative.
 
-    Can be negative."""
+    Can be negative.
+    """
 
     offset_anchor: str = define.field(default="prev_end")
     """Anchor used for offset.
@@ -117,7 +118,8 @@ class RelRange(DefineMixin):
 
     Floating numbers between 0 and 1 are interpreted as relative.
 
-    Can be negative."""
+    Can be negative.
+    """
 
     length_space: str = define.field(default="free")
     """Space used for applying the relative length.
@@ -337,12 +339,14 @@ class Takeable(Evaluable, Annotatable, DefineMixin):
     remap_to_obj: bool = define.optional_field()
     """Boolean indicating whether to remap `Splitter.index` to the index of `Takeable.obj`.
 
-    If False, it is assumed that the object already has the same index."""
+    If False, it is assumed that the object already has the same index.
+    """
 
     index: tp.Optional[tp.IndexLike] = define.optional_field()
     """The index associated with the object.
 
-    If not provided, `Splitter.get_obj_index` is used to retrieve it."""
+    If not provided, `Splitter.get_obj_index` is used to retrieve it.
+    """
 
     freq: tp.Optional[tp.FrequencyLike] = define.optional_field()
     """The frequency associated with `Takeable.index`."""
@@ -401,7 +405,11 @@ class Splitter(Analyzable):
 
     @property
     def index(self) -> tp.Index:
-        """Index used for splitting."""
+        """Index used for splitting.
+        
+        Returns:
+            Index: The index used for splitting.
+        """
         return self._index
 
     @property
@@ -411,6 +419,9 @@ class Splitter(Analyzable):
         The first axis represents splits and the second axis represents sets.
         Each element is a range defined as a slice, a sequence of indices, a mask,
         or a callable returning such.
+        
+        Returns:
+            SplitsArray: A two-dimensional array representing splits.
         """
         return self._splits_arr
 
@@ -644,6 +655,9 @@ class Splitter(Analyzable):
 
                 If None, frequency is determined via `vectorbtpro.base.accessors.BaseIDXAccessor.get_freq`.
             **kwargs: Keyword arguments passed to the `Splitter` constructor.
+
+        Returns:
+            Splitter: A new `Splitter` instance.
 
         Examples:
             Divide a range into a set of non-overlapping ranges:
@@ -2403,27 +2417,47 @@ class Splitter(Analyzable):
 
     @property
     def splits(self) -> tp.Frame:
-        """Return the splits array as a DataFrame."""
+        """Return the splits array as a DataFrame.
+        
+        Returns:
+            Frame: A DataFrame representing the splits.
+        """
         return self.wrapper.wrap(self._splits_arr, group_by=False)
 
     @property
     def split_labels(self) -> tp.Index:
-        """The labels for splits."""
+        """The labels for splits.
+        
+        Returns:
+            Index: The labels for splits.
+        """
         return self.wrapper.index
 
     @property
     def set_labels(self) -> tp.Index:
-        """The labels for sets."""
+        """The labels for sets.
+        
+        Returns:
+            Index: The labels for sets.
+        """
         return self.wrapper.columns
 
     @property
     def n_splits(self) -> int:
-        """The number of splits."""
+        """The number of splits.
+        
+        Returns:
+            int: The number of splits.
+        """ 
         return self.splits_arr.shape[0]
 
     @property
     def n_sets(self) -> int:
-        """The number of sets."""
+        """The number of sets.
+        
+        Returns:
+            int: The number of sets.
+        """
         return self.splits_arr.shape[1]
 
     def get_split_grouper(self, split_group_by: tp.AnyGroupByLike = None) -> tp.Optional[Grouper]:
@@ -2932,7 +2966,7 @@ class Splitter(Analyzable):
             freq (Optional[FrequencyLike]): Frequency used for converting time durations and relative ranges.
 
         Returns:
-            tuple: A tuple of fixed ranges resulting from splitting `range_` relative to the provided index.
+            FixSplit: A tuple of fixed ranges resulting from splitting `range_` relative to the provided index.
         """
         if index is None:
             if isinstance(cls_or_self, type):
@@ -5368,6 +5402,9 @@ class Splitter(Analyzable):
 
         This property obtains the bounds array by calling `Splitter.get_bounds_arr`
         with default parameters.
+
+        Returns:
+            BoundsArray: A three-dimensional array of bounds.
         """
         return self.get_bounds_arr()
 
@@ -5426,13 +5463,21 @@ class Splitter(Analyzable):
 
     @property
     def bounds(self) -> tp.Frame:
-        """Return the bounds by calling `Splitter.get_bounds` with default arguments."""
+        """Return the bounds by calling `Splitter.get_bounds` with default arguments.
+        
+        Returns:
+            Frame: A pandas DataFrame with the bounds.
+        """
         return self.get_bounds()
 
     @property
     def index_bounds(self) -> tp.Frame:
         """Return the bounds computed using the index by calling `Splitter.get_bounds`
-        with `index_bounds` set to True."""
+        with `index_bounds` set to True.
+        
+        Returns:
+            Frame: A pandas DataFrame with the index bounds.
+        """
         return self.get_bounds(index_bounds=True)
 
     def get_duration(self, **kwargs) -> tp.Series:
@@ -5450,13 +5495,21 @@ class Splitter(Analyzable):
 
     @property
     def duration(self) -> tp.Series:
-        """Return the duration by calling `Splitter.get_duration` with default arguments."""
+        """Return the duration by calling `Splitter.get_duration` with default arguments.
+        
+        Returns:
+            Series: A pandas Series of durations.
+        """
         return self.get_duration()
 
     @property
     def index_duration(self) -> tp.Series:
         """Return the duration computed using index bounds by calling `Splitter.get_duration`
-        with `index_bounds` set to True."""
+        with `index_bounds` set to True.
+        
+        Returns:
+            Series: A pandas Series of durations.
+        """
         return self.get_duration(index_bounds=True)
 
     # ############# Masks ############# #
@@ -5538,7 +5591,11 @@ class Splitter(Analyzable):
     @property
     def iter_split_mask_arrs(self) -> tp.Iterator[tp.Array2d]:
         """Return an iterator over two-dimensional boolean arrays for splits by calling
-        `Splitter.get_iter_split_mask_arrs` with default arguments."""
+        `Splitter.get_iter_split_mask_arrs` with default arguments.
+        
+        Returns:
+            Iterator[Array2d]: An iterator over two-dimensional boolean arrays.
+        """
         return self.get_iter_split_mask_arrs()
 
     def get_iter_set_mask_arrs(
@@ -5581,7 +5638,11 @@ class Splitter(Analyzable):
     @property
     def iter_set_mask_arrs(self) -> tp.Iterator[tp.Array2d]:
         """Return an iterator over two-dimensional boolean arrays for sets by calling
-        `Splitter.get_iter_set_mask_arrs` with default arguments."""
+        `Splitter.get_iter_set_mask_arrs` with default arguments.
+        
+        Returns:
+            Iterator[Array2d]: An iterator over two-dimensional boolean arrays.
+        """
         return self.get_iter_set_mask_arrs()
 
     def get_iter_split_masks(
@@ -5616,7 +5677,11 @@ class Splitter(Analyzable):
     @property
     def iter_split_masks(self) -> tp.Iterator[tp.Frame]:
         """Return an iterator over boolean DataFrames for splits by calling
-        `Splitter.get_iter_split_masks` with default arguments."""
+        `Splitter.get_iter_split_masks` with default arguments.
+        
+        Returns:
+            Iterator[Frame]: An iterator over boolean DataFrames.
+        """
         return self.get_iter_split_masks()
 
     def get_iter_set_masks(
@@ -5651,7 +5716,11 @@ class Splitter(Analyzable):
     @property
     def iter_set_masks(self) -> tp.Iterator[tp.Frame]:
         """Return an iterator over boolean DataFrames for sets by calling
-        `Splitter.get_iter_set_masks` with default arguments."""
+        `Splitter.get_iter_set_masks` with default arguments.
+        
+        Returns:
+            Iterator[Frame]: An iterator over boolean DataFrames.
+        """
         return self.get_iter_set_masks()
 
     def get_mask_arr(
@@ -5670,6 +5739,9 @@ class Splitter(Analyzable):
             set_group_by (AnyGroupByLike): Grouping parameter for defining sets.
             template_context (KwargsLike): Additional context for template substitution.
             **kwargs: Keyword arguments passed to `Splitter.get_iter_split_mask_arrs`.
+
+        Returns:
+            SplitsMask: A three-dimensional boolean array representing the split mask.
         """
         return np.array(
             list(
@@ -5684,7 +5756,11 @@ class Splitter(Analyzable):
 
     @property
     def mask_arr(self) -> tp.SplitsMask:
-        """Return the split mask array computed with default arguments from `Splitter.get_mask_arr`."""
+        """Return the split mask array computed with default arguments from `Splitter.get_mask_arr`.
+        
+        Returns:
+            SplitsMask: A three-dimensional boolean array representing the split mask.
+        """
         return self.get_mask_arr()
 
     def get_mask(
@@ -5707,6 +5783,9 @@ class Splitter(Analyzable):
             squeeze_one_set (bool): Whether to squeeze the output if only one set is present.
             index_combine_kwargs (KwargsLike): Keyword arguments for combining indexes.
             **kwargs: Keyword arguments passed to `Splitter.get_mask_arr`.
+
+        Returns:
+            SeriesFrame: A pandas Series or DataFrame representing the split mask.
 
         !!! warning
             Boolean arrays for a high number of splits may consume substantial memory.
@@ -5732,7 +5811,11 @@ class Splitter(Analyzable):
 
     @property
     def mask(self) -> tp.Frame:
-        """Return the boolean mask computed with default parameters from `Splitter.get_mask`."""
+        """Return the boolean mask computed with default parameters from `Splitter.get_mask`.
+        
+        Returns:
+            Frame: A pandas DataFrame representing the split mask.
+        """
         return self.get_mask()
 
     def get_split_coverage(
@@ -5791,7 +5874,11 @@ class Splitter(Analyzable):
 
     @property
     def split_coverage(self) -> tp.Series:
-        """Return the split coverage computed with default parameters from `Splitter.get_split_coverage`."""
+        """Return the split coverage computed with default parameters from `Splitter.get_split_coverage`.
+        
+        Returns:
+            Series: A pandas Series of split coverage.
+        """
         return self.get_split_coverage()
 
     def get_set_coverage(
@@ -5850,7 +5937,11 @@ class Splitter(Analyzable):
 
     @property
     def set_coverage(self) -> tp.Series:
-        """Return the set coverage computed with default parameters from `Splitter.get_set_coverage`."""
+        """Return the set coverage computed with default parameters from `Splitter.get_set_coverage`.
+        
+        Returns:
+            Series: A pandas Series of set coverage.
+        """
         return self.get_set_coverage()
 
     def get_range_coverage(
@@ -5908,7 +5999,11 @@ class Splitter(Analyzable):
 
     @property
     def range_coverage(self) -> tp.Series:
-        """Range coverage computed using default parameters from `Splitter.get_range_coverage`."""
+        """Range coverage computed using default parameters from `Splitter.get_range_coverage`.
+        
+        Returns:
+            Series: A pandas Series of range coverage.
+        """
         return self.get_range_coverage()
 
     def get_coverage(
@@ -5942,7 +6037,11 @@ class Splitter(Analyzable):
 
     @property
     def coverage(self) -> float:
-        """Coverage computed using default parameters from `Splitter.get_coverage`."""
+        """Coverage computed using default parameters from `Splitter.get_coverage`.
+        
+        Returns:
+            float: Coverage value.
+        """
         return self.get_coverage()
 
     def get_overlap_matrix(
@@ -6021,17 +6120,29 @@ class Splitter(Analyzable):
 
     @property
     def split_overlap_matrix(self) -> tp.Frame:
-        """Overlap matrix computed with `get_overlap_matrix` using `by="split"`."""
+        """Overlap matrix computed with `get_overlap_matrix` using `by="split"`.
+        
+        Returns:
+            Frame: A DataFrame representing the split overlap matrix.
+        """
         return self.get_overlap_matrix(by="split")
 
     @property
     def set_overlap_matrix(self) -> tp.Frame:
-        """Overlap matrix computed with `get_overlap_matrix` using `by="set"`."""
+        """Overlap matrix computed with `get_overlap_matrix` using `by="set"`.
+        
+        Returns:
+            Frame: A DataFrame representing the set overlap matrix.
+        """
         return self.get_overlap_matrix(by="set")
 
     @property
     def range_overlap_matrix(self) -> tp.Frame:
-        """Overlap matrix computed with `get_overlap_matrix` using `by="range"`."""
+        """Overlap matrix computed with `get_overlap_matrix` using `by="range"`.
+        
+        Returns:
+            Frame: A DataFrame representing the range overlap matrix.
+        """
         return self.get_overlap_matrix(by="range")
 
     # ############# Stats ############# #

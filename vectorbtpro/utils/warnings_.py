@@ -29,6 +29,9 @@ def use_formatwarning(formatwarning: tp.Any) -> tp.Generator[None, None, None]:
 
     Args:
         formatwarning (Any): Custom function to format warning messages.
+
+    Yields:
+        None: The context manager that temporarily sets the custom formatter.
     """
     old_formatter = warnings.formatwarning
     warnings.formatwarning = formatwarning
@@ -71,6 +74,9 @@ def warn(message: tp.Any, category: type = VBTWarning, stacklevel: int = 2) -> N
         message (Any): The warning message to emit.
         category (type): The warning category to use.
         stacklevel (int): The stack level for the warning; defaults to 2.
+
+    Returns:
+        None
     """
     with use_formatwarning(custom_formatwarning):
         warnings.warn(message, category, stacklevel=stacklevel)
@@ -112,7 +118,11 @@ class WarningsFiltered(warnings.catch_warnings, Base):
 
     @property
     def entries(self) -> tp.Optional[tp.MaybeSequence[tp.Union[str, tp.Kwargs]]]:
-        """Simple entries to add to the warnings filters."""
+        """Simple entries to add to the warnings filters.
+        
+        Returns:
+            Optional[MaybeSequence[Union[str, Kwargs]]]: The entries for the warnings filters.
+        """
         return self._entries
 
     def __enter__(self) -> tp.Self:

@@ -847,6 +847,9 @@ class FindAssetFunc(AssetFunc):
                 `vectorbtpro.utils.search_.Not` instance.
             find_all (bool): Flag specifying if all targets should be evaluated.
             **kwargs: Keyword arguments for the matching process.
+
+        Returns:
+            bool: True if the data item matches the target criteria, False otherwise.
         """
         if not isinstance(target, list):
             targets = [target]

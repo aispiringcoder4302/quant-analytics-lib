@@ -109,12 +109,20 @@ class TraceUpdater(Base):
 
     @property
     def fig(self) -> tp.BaseFigure:
-        """Plotly figure widget containing the traces."""
+        """Plotly figure widget containing the traces.
+        
+        Returns:
+            BaseFigure: The Plotly figure widget.
+        """
         return self._fig
 
     @property
     def traces(self) -> tp.Tuple[BaseTraceType, ...]:
-        """A tuple of Plotly trace objects that will be updated."""
+        """A tuple of Plotly trace objects that will be updated.
+        
+        Returns:
+            Tuple[BaseTraceType, ...]: The tuple of Plotly trace objects.
+        """
         return self._traces
 
     @classmethod
@@ -126,6 +134,9 @@ class TraceUpdater(Base):
             data (ArrayLike): New data for the trace.
             *args: Additional positional arguments.
             **kwargs: Additional keyword arguments.
+
+        Returns:
+            None
         """
         raise NotImplementedError
 
@@ -135,6 +146,9 @@ class TraceUpdater(Base):
         Args:
             *args: Additional positional arguments.
             **kwargs: Additional keyword arguments.
+
+        Returns:
+            None
         """
         raise NotImplementedError
 
@@ -231,12 +245,20 @@ class Gauge(TraceType, TraceUpdater):
 
     @property
     def value_range(self) -> tp.Tuple[float, float]:
-        """The value range of the gauge as a tuple of minimum and maximum values."""
+        """The value range of the gauge as a tuple of minimum and maximum values.
+        
+        Returns:
+            Tuple[float, float]: The value range of the gauge.
+        """
         return self._value_range
 
     @property
     def cmap_name(self) -> str:
-        """The name of the matplotlib-compatible colormap used for the gauge."""
+        """The name of the matplotlib-compatible colormap used for the gauge.
+        
+        Returns:
+            str: The name of the colormap.
+        """
         return self._cmap_name
 
     @classmethod
@@ -648,22 +670,38 @@ class Histogram(TraceType, TraceUpdater):
 
     @property
     def horizontal(self) -> bool:
-        """Indicates whether the histogram is plotted horizontally."""
+        """Indicates whether the histogram is plotted horizontally.
+        
+        Returns:
+            bool: True if the histogram is horizontal, False otherwise.
+        """
         return self._horizontal
 
     @property
     def remove_nan(self) -> bool:
-        """Indicates whether NaN values are removed from the data."""
+        """Indicates whether NaN values are removed from the data.
+        
+        Returns:
+            bool: True if NaN values are removed, False otherwise.
+        """
         return self._remove_nan
 
     @property
     def from_quantile(self) -> float:
-        """Specifies the lower quantile threshold used to filter out data points."""
+        """Specifies the lower quantile threshold used to filter out data points.
+        
+        Returns:
+            float: The lower quantile threshold.
+        """
         return self._from_quantile
 
     @property
     def to_quantile(self) -> float:
-        """Specifies the upper quantile threshold used to filter out data points."""
+        """Specifies the upper quantile threshold used to filter out data points.
+        
+        Returns:
+            float: The upper quantile threshold.
+        """
         return self._to_quantile
 
     @classmethod
@@ -830,22 +868,38 @@ class Box(TraceType, TraceUpdater):
 
     @property
     def horizontal(self) -> bool:
-        """Indicates if the box plot is oriented horizontally."""
+        """Indicates if the box plot is oriented horizontally.
+        
+        Returns:
+            bool: True if the box plot is horizontal, False otherwise.
+        """
         return self._horizontal
 
     @property
     def remove_nan(self) -> bool:
-        """Specifies whether NaN values are removed from the data."""
+        """Specifies whether NaN values are removed from the data.
+        
+        Returns:
+            bool: True if NaN values are removed, False otherwise.
+        """
         return self._remove_nan
 
     @property
     def from_quantile(self) -> float:
-        """Specifies the lower quantile threshold; data points below this value are excluded."""
+        """Specifies the lower quantile threshold; data points below this value are excluded.
+        
+        Returns:
+            float: The lower quantile threshold.
+        """
         return self._from_quantile
 
     @property
     def to_quantile(self) -> float:
-        """Specifies the upper quantile threshold; data points above this value are excluded."""
+        """Specifies the upper quantile threshold; data points above this value are excluded.
+        
+        Returns:
+            float: The upper quantile threshold.
+        """
         return self._to_quantile
 
     @classmethod

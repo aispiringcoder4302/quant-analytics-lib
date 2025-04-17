@@ -300,7 +300,8 @@ def row_stack_merge(
         MaybeTuple[AnyArray]: The merged result after row stacking.
 
     !!! note
-        All arrays are assumed to have the same type and dimensionality."""
+        All arrays are assumed to have the same type and dimensionality.
+    """
     if len(objs) == 1:
         objs = objs[0]
     objs = list(objs)

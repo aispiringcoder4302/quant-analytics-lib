@@ -39,6 +39,9 @@ def custom_apply_and_concat_none_nb(
         indices (Array1d): 1D array of indices to iterate over.
         apply_func_nb (Callable): Function that accepts an index and additional arguments, returning nothing.
         *args: Positional arguments passed to `apply_func_nb`.
+
+    Returns:
+        None
     """
     for i in indices:
         apply_func_nb(i, *args)
@@ -58,6 +61,9 @@ def apply_and_concat_none_nb(
         ntimes (int): The number of times to execute `apply_func_nb`.
         apply_func_nb (Callable): Function invoked for each index that returns nothing.
         *args: Positional arguments passed to `apply_func_nb`.
+
+    Returns:
+        None
     """
     custom_apply_and_concat_none_nb(np.arange(ntimes), apply_func_nb, *args)
 
@@ -275,15 +281,15 @@ def apply_and_concat(
         execute_kwargs (KwargsLike): Keyword arguments passed to the execution function.
         **kwargs: Keyword arguments passed to `apply_func` when not using a JIT-compiled loop.
 
-    !!! note
-        When `jitted_loop` is True, `n_outputs` must be provided as Numba does not support
-        variable keyword arguments.
-
     Returns:
         Union[None, Array2d, List[Array2d]]:
             * None if no outputs are produced.
             * A 2D array if a single output is produced.
             * A list of 2D arrays if multiple outputs are produced.
+
+    !!! note
+        When `jitted_loop` is True, `n_outputs` must be provided as Numba does not support
+        variable keyword arguments.
     """
     if jitted_loop:
         if n_outputs is None:
@@ -476,11 +482,11 @@ def combine_multiple(
         jitted_loop (bool): Flag indicating whether to use the Numba JIT-compiled version.
         **kwargs: Keyword arguments for the combination function.
 
-    !!! note
-        Numba doesn't support variable keyword arguments.
-
     Returns:
         Any: The combined result after pairwise merging of the objects.
+
+    !!! note
+        Numba doesn't support variable keyword arguments.
 
     !!! note
         If `jitted_loop` is True, the function resolves `combine_multiple_nb` using

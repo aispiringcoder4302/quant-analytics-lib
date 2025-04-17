@@ -1360,7 +1360,11 @@ class Drawdowns(Ranges):
         """Return default parameters for `Drawdowns.plots`.
 
         Merges defaults from `vectorbtpro.generic.ranges.Ranges.plots_defaults`
-        with the `plots` configuration from `vectorbtpro._settings.drawdowns`."""
+        with the `plots` configuration from `vectorbtpro._settings.drawdowns`.
+        
+        Returns:
+            Kwargs: The default plot settings.
+        """
         from vectorbtpro._settings import settings
 
         drawdowns_plots_cfg = settings["drawdowns"]["plots"]

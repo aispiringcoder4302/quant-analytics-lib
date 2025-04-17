@@ -66,14 +66,14 @@ class _ADX(ADX):
         """Plot ADX traces including `ADX.plus_di`, `ADX.minus_di`, and `ADX.adx`.
 
         Args:
-            column (str): Column name to plot.
-            plus_di_trace_kwargs (dict): Additional keyword arguments for
+            column (Optional[Label]): Column name to plot.
+            plus_di_trace_kwargs (KwargsLike): Additional keyword arguments for
                 `plotly.graph_objects.Scatter` when plotting `ADX.plus_di`.
-            minus_di_trace_kwargs (dict): Additional keyword arguments for
+            minus_di_trace_kwargs (KwargsLike): Additional keyword arguments for
                 `plotly.graph_objects.Scatter` when plotting `ADX.minus_di`.
-            adx_trace_kwargs (dict): Additional keyword arguments for
+            adx_trace_kwargs (KwargsLike): Additional keyword arguments for
                 `plotly.graph_objects.Scatter` when plotting `ADX.adx`.
-            add_trace_kwargs (dict): Additional keyword arguments passed to `fig.add_trace` for each trace.
+            add_trace_kwargs (KwargsLike): Additional keyword arguments passed to `fig.add_trace` for each trace.
             fig (Optional[BaseFigure]): Figure to update. If None, a new figure is created.
             **layout_kwargs: Additional keyword arguments for configuring the figure layout.
 

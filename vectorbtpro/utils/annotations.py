@@ -32,7 +32,13 @@ except ImportError:
     import types
     import functools
 
-    def get_raw_annotations(obj, *, globals=None, locals=None, eval_str=False):
+    def get_raw_annotations(
+        obj: tp.Any, 
+        *, 
+        globals: tp.Optional[dict] = None, 
+        locals: tp.Optional[dict] = None, 
+        eval_str: bool = False
+    ) -> dict:
         """Return raw annotations for a module, class, or callable.
 
         Backport of Python 3.10's `inspect.get_annotations` function.
@@ -40,8 +46,8 @@ except ImportError:
 
         Args:
             obj (Any): A module, class, or callable to retrieve annotations from.
-            globals (dict): Global namespace for evaluation.
-            locals (dict): Local namespace for evaluation.
+            globals (Optional[dict]): Global namespace for evaluation.
+            locals (Optional[dict]): Local namespace for evaluation.
             eval_str (bool): Whether to evaluate string annotations.
 
         Returns:
@@ -206,6 +212,9 @@ def has_annotatables(func: tp.Callable, target_cls: tp.Type[Annotatable] = Annot
     Args:
         func (Callable): The function to inspect.
         target_cls (Type[Annotatable]): The class to check against.
+
+    Returns:
+        bool: True if any argument or return type is an instance of `Annotatable`, False otherwise.
     """
     annotations = flatten_annotations(get_annotations(func))
     for k, v in annotations.items():

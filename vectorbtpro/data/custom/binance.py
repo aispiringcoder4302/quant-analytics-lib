@@ -214,7 +214,7 @@ class BinanceData(RemoteData):
             tz (any): Timezone for datetime conversion.
 
                 See `vectorbtpro.utils.datetime_.to_timezone`.
-            klines_type (int or str): Type of klines to fetch.
+            klines_type (Union[None, int, str]): Type of klines to fetch.
 
                 See `binance.enums.HistoricalKlinesType` for valid types. Supports strings.
             limit (int): Maximum number of klines to retrieve per API call.

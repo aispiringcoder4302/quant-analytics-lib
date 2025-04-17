@@ -81,7 +81,7 @@ PIVOTINFO = IndicatorFactory(
 class _PIVOTINFO(PIVOTINFO):
     """Indicator returning various pivot analysis metrics based on predefined thresholds.
 
-    Attributes:
+    Fields:
         `conf_pivot` (Pivot): Type of the latest confirmed pivot (running).
         `conf_idx` (int): Index of the latest confirmed pivot (running).
         `conf_value` (float): High/low value under the latest confirmed pivot (running).
@@ -106,12 +106,13 @@ class _PIVOTINFO(PIVOTINFO):
         """Plot the confirmed and last pivot value lines on a figure.
 
         Args:
-            column (str): Name of the column to plot.
-            conf_value_trace_kwargs (dict): Keyword arguments passed to
+            column (Optional[Label]): Name of the column to plot.
+            conf_value_trace_kwargs (KwargsLike): Keyword arguments passed to
                 `plotly.graph_objects.Scatter` for the `PIVOTINFO.conf_value` line.
-            last_value_trace_kwargs (dict): Keyword arguments passed to
+            last_value_trace_kwargs (KwargsLike): Keyword arguments passed to
                 `plotly.graph_objects.Scatter` for the `PIVOTINFO.last_value` line.
-            add_trace_kwargs (dict): Keyword arguments passed to `fig.add_trace` when adding each trace.
+            add_trace_kwargs (KwargsLike): Keyword arguments passed to 
+                `fig.add_trace` when adding each trace.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
             **layout_kwargs: Additional keyword arguments for configuring the figure layout.
 
@@ -175,10 +176,12 @@ class _PIVOTINFO(PIVOTINFO):
         """Plot the zigzag line based on pivot data.
 
         Args:
-            column (str): Name of the column to plot.
+            column (Optional[Label]): Name of the column to plot.
 
-            zigzag_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter` for the zigzag line.
-            add_trace_kwargs (dict): Keyword arguments passed to `fig.add_trace` when adding each trace.
+            zigzag_trace_kwargs (KwargsLike): Keyword arguments passed to 
+                `plotly.graph_objects.Scatter` for the zigzag line.
+            add_trace_kwargs (KwargsLike): Keyword arguments passed to 
+                `fig.add_trace` when adding each trace.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
             **layout_kwargs: Additional keyword arguments for configuring the figure layout.
 

@@ -30,7 +30,7 @@ def override_arg_config(config: Config, merge_configs: bool = True) -> tp.ClassW
             If False, replace it entirely.
 
     Returns:
-        tp.ClassWrapper: The decorated class with the updated `_arg_config`.
+        ClassWrapper: The decorated class with the updated `_arg_config`.
     """
 
     def wrapper(cls: tp.Type[tp.T]) -> tp.Type[tp.T]:
@@ -52,11 +52,11 @@ def attach_arg_properties(cls: tp.Type[tp.T]) -> tp.Type[tp.T]:
     of a subclass of `vectorbtpro.base.preparing.BasePreparer`.
 
     Args:
-        cls (type): A subclass of `vectorbtpro.base.preparing.BasePreparer` for which
+        cls (Type[T]): A subclass of `vectorbtpro.base.preparing.BasePreparer` for which
             argument properties will be attached.
 
     Returns:
-        type: The decorated class with the new argument properties attached.
+        Type[T]: The decorated class with the new argument properties attached.
     """
     checks.assert_subclass_of(cls, "BasePreparer")
 

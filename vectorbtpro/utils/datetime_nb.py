@@ -308,7 +308,7 @@ def from_civil_nb(y: int, m: int, d: int) -> int:
 
 
 @register_jitted(cache=True)
-def matches_date_nb(ts: int, y: int, m: int, d: int) -> int:
+def matches_date_nb(ts: int, y: int, m: int, d: int) -> bool:
     """Return whether the timestamp corresponds to the given civil date.
 
     Args:
@@ -316,6 +316,9 @@ def matches_date_nb(ts: int, y: int, m: int, d: int) -> int:
         y (int): Year.
         m (int): Month.
         d (int): Day.
+
+    Returns:
+        int: True if the timestamp matches the date, False otherwise.
     """
     midnight_ts1 = midnight_nb(ts)
     midnight_ts2 = from_civil_nb(y, m, d)
@@ -356,6 +359,9 @@ def day_changed_nb(ts1: int, ts2: int) -> bool:
     Args:
         ts1 (int): First timestamp in nanoseconds.
         ts2 (int): Second timestamp in nanoseconds.
+
+    Returns:
+        bool: True if the timestamps are on different days, False otherwise.
     """
     return midnight_nb(ts1) != midnight_nb(ts2)
 
@@ -512,11 +518,14 @@ def year_nb(ts: int) -> int:
 
 
 @register_jitted(cache=True)
-def is_leap_year_nb(y: int) -> int:
+def is_leap_year_nb(y: int) -> bool:
     """Determine if a given year is a leap year.
 
     Args:
         y (int): The year to evaluate.
+
+    Returns:
+        int: True if the year is a leap year, False otherwise.
     """
     return (y % 4 == 0) and (y % 100 != 0 or y % 400 == 0)
 
@@ -568,6 +577,9 @@ def matches_dtc_nb(dtc: DTCNT, other_dtc: DTCNT) -> bool:
     Args:
         dtc (DTCNT): Datetime components to compare.
         other_dtc (DTCNT): Datetime components to compare.
+
+    Returns:
+        bool: True if the components match, False otherwise.
     """
     if dtc.year != -1 and other_dtc.year != -1 and dtc.year != other_dtc.year:
         return False
@@ -850,6 +862,9 @@ def must_resolve_dtc_nb(
         c (int): Datetime component value.
         start_c (int): Start boundary for resolution.
         end_c (int): End boundary for resolution.
+
+    Returns:
+        bool: True if the component must be resolved, False otherwise.
     """
     if c == -1:
         return False
@@ -870,6 +885,9 @@ def start_dtc_lt_nb(
         c (int): Datetime component value.
         start_c (int): Start boundary to compare.
         end_c (int): End boundary to compare.
+
+    Returns:
+        bool: True if the start boundary is less than the end boundary, False otherwise.
     """
     if c == -1:
         return False
@@ -892,6 +910,9 @@ def start_dtc_eq_nb(
         c (int): Datetime component value.
         start_c (int): Start boundary to compare.
         end_c (int): End boundary to compare.
+
+    Returns:
+        bool: True if the start boundary is equal to the end boundary, False otherwise.
     """
     if c == -1:
         return False
@@ -914,6 +935,9 @@ def start_dtc_gt_nb(
         c (int): Datetime component value.
         start_c (int): Start boundary to compare.
         end_c (int): End boundary to compare.
+
+    Returns:
+        bool: True if the start boundary is greater than the end boundary, False otherwise.
     """
     if c == -1:
         return False
@@ -940,6 +964,9 @@ def within_dtc_range_nb(
         end_dtc (DTCNT): Datetime component object representing the end boundary.
         closed_start (bool): Include the start boundary if True.
         closed_end (bool): Include the end boundary if True.
+
+    Returns:
+        bool: True if the datetime components fall within the specified range, False otherwise.
     """
     last = -1
     overflow_possible = True

@@ -62,11 +62,14 @@ class _FMEAN(FMEAN):
         """Plot the `FMEAN.fmean` indicator against the `FMEAN.close` price.
 
         Args:
-            column (str): Name of the column to plot.
+            column (Optional[Label]): Name of the column to plot.
             plot_close (bool): Flag indicating whether to include `FMEAN.close` in the plot.
-            close_trace_kwargs (dict): Keyword arguments for `plotly.graph_objects.Scatter` for `FMEAN.close`.
-            fmean_trace_kwargs (dict): Keyword arguments for `plotly.graph_objects.Scatter` for `FMEAN.fmean`.
-            add_trace_kwargs (dict): Keyword arguments passed to `fig.add_trace` when adding each trace.
+            close_trace_kwargs (KwargsLike): Keyword arguments for 
+                `plotly.graph_objects.Scatter` for `FMEAN.close`.
+            fmean_trace_kwargs (KwargsLike): Keyword arguments for 
+                `plotly.graph_objects.Scatter` for `FMEAN.fmean`.
+            add_trace_kwargs (KwargsLike): Keyword arguments passed to 
+                `fig.add_trace` when adding each trace.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
             **layout_kwargs: Additional keyword arguments for configuring the figure layout.
 

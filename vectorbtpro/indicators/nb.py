@@ -10,7 +10,8 @@
 
 """Module providing Numba-compiled functions for custom indicators.
 
-These only accept NumPy arrays and other Numba-compatible types."""
+These only accept NumPy arrays and other Numba-compatible types.
+"""
 
 import numpy as np
 from numba import prange

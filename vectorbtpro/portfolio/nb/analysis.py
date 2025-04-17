@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Numba-compiled functions for portfolio analysis."""
+"""Module providing numba-compiled functions for portfolio analysis."""
 
 from numba import prange
 
@@ -29,7 +29,19 @@ from vectorbtpro.utils.template import RepFunc
 
 @register_jitted(cache=True)
 def get_long_size_nb(position_before: float, position_now: float) -> float:
-    """Get long size."""
+    """Compute the change in long position size.
+
+    Calculates the change in long position based on the previous position (`position_before`)
+    and the current position (`position_now`). Returns 0.0 if both positions are not long;
+    otherwise, computes the adjustment for a transition into or out of a long position.
+
+    Args:
+        position_before (float): The asset position before the trade.
+        position_now (float): The asset position after the trade.
+
+    Returns:
+        float: The computed change in long size.
+    """
     if position_before <= 0 and position_now <= 0:
         return 0.0
     if position_before >= 0 and position_now < 0:
@@ -41,7 +53,19 @@ def get_long_size_nb(position_before: float, position_now: float) -> float:
 
 @register_jitted(cache=True)
 def get_short_size_nb(position_before: float, position_now: float) -> float:
-    """Get short size."""
+    """Compute the change in short position size.
+
+    Calculates the change in short position based on the previous position (`position_before`)
+    and the current position (`position_now`). Returns 0.0 if both positions are not short;
+    otherwise, computes the adjustment for a transition into or out of a short position.
+
+    Args:
+        position_before (float): The asset position before the trade.
+        position_now (float): The asset position after the trade.
+
+    Returns:
+        float: The computed change in short size.
+    """
     if position_before >= 0 and position_now >= 0:
         return 0.0
     if position_before >= 0 and position_now < 0:
@@ -74,9 +98,29 @@ def asset_flow_nb(
     sim_start: tp.Optional[tp.FlexArray1dLike] = None,
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array2d:
-    """Get asset flow series per column.
+    """Compute asset flow series per column.
 
-    Returns the total transacted amount of assets at each time step."""
+    Calculates the total transacted asset amount at each time step based on the order records.
+    The asset flow is determined by computing changes in position from the orders and may be filtered
+    by direction using the `direction` parameter.
+
+    Args:
+        target_shape (Shape): Shape of the output array.
+        order_records (RecordArray): Array of order records.
+        col_map (GroupMap): Mapping for grouping orders by column.
+        direction (int): Direction filter for orders.
+
+            See `vectorbtpro.portfolio.enums.Direction` for options.
+        init_position (FlexArray1dLike): Initial position for each column.
+        sim_start (Optional[FlexArray1dLike]): Start indices for simulation per column.
+        sim_end (Optional[FlexArray1dLike]): End indices for simulation per column.
+
+    Returns:
+        Array2d: Array representing asset flow at each time step per column.
+
+    !!! tip
+        This function is parallelizable.
+    """
     init_position_ = to_1d_array_nb(np.asarray(init_position))
 
     out = np.full(target_shape, np.nan, dtype=float_)
@@ -146,9 +190,26 @@ def assets_nb(
     sim_start: tp.Optional[tp.FlexArray1dLike] = None,
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array2d:
-    """Get asset series per column.
+    """Compute asset series per column.
 
-    Returns the current position at each time step."""
+    Calculates the current asset position at each time step by cumulatively summing the asset flow.
+    Positions are adjusted based on the specified `direction`, which filters long or short exposures.
+
+    Args:
+        asset_flow (Array2d): Array of asset flow values.
+        direction (int): Direction specifier.
+
+            See `vectorbtpro.portfolio.enums.Direction` for options.
+        init_position (FlexArray1dLike): Initial asset position for each column.
+        sim_start (Optional[FlexArray1dLike]): Start indices for simulation per column.
+        sim_end (Optional[FlexArray1dLike]): End indices for simulation per column.
+
+    Returns:
+        Array2d: Array containing the updated asset position at each time step per column.
+
+    !!! tip
+        This function is parallelizable.
+    """
     init_position_ = to_1d_array_nb(np.asarray(init_position))
 
     out = np.full(asset_flow.shape, np.nan, dtype=float_)
@@ -194,7 +255,22 @@ def position_mask_nb(
     sim_start: tp.Optional[tp.FlexArray1dLike] = None,
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array2d:
-    """Get position mask per column."""
+    """Compute position mask per column.
+
+    Generates a boolean mask that indicates whether a non-zero asset position exists at each time step.
+    The mask is computed within the simulation range defined by `sim_start` and `sim_end`.
+
+    Args:
+        assets (Array2d): Array of asset positions.
+        sim_start (Optional[FlexArray1dLike]): Start indices for simulation per column.
+        sim_end (Optional[FlexArray1dLike]): End indices for simulation per column.
+
+    Returns:
+        Array2d: Boolean array indicating the presence of an asset position per column at each time step.
+
+    !!! tip
+        This function is parallelizable.
+    """
     out = np.full(assets.shape, False, dtype=np.bool_)
 
     sim_start_, sim_end_ = generic_nb.prepare_sim_range_nb(
@@ -231,7 +307,21 @@ def position_mask_grouped_nb(
     sim_start: tp.Optional[tp.FlexArray1dLike] = None,
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array2d:
-    """Get position mask per group."""
+    """Generate a boolean mask indicating active positions for each group based on asset data.
+
+    Args:
+        assets (Array2d): Array of asset values.
+        group_lens (GroupLens): Lengths of each asset group.
+        sim_start (Optional[FlexArray1dLike]): Starting simulation index for each asset column.
+        sim_end (Optional[FlexArray1dLike]): Ending simulation index for each asset column.
+
+    Returns:
+        Array2d: Boolean array of shape (number of time steps, number of groups) where True indicates
+            at least one active position in the corresponding group.
+
+    !!! tip
+        This function is parallelizable.
+    """
     out = np.full((assets.shape[0], len(group_lens)), False, dtype=np.bool_)
 
     group_end_idxs = np.cumsum(group_lens)
@@ -272,7 +362,19 @@ def position_coverage_nb(
     sim_start: tp.Optional[tp.FlexArray1dLike] = None,
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array1d:
-    """Get position mask per column."""
+    """Compute the position coverage ratio for each asset column.
+
+    Args:
+        assets (Array2d): Array of asset values.
+        sim_start (Optional[FlexArray1dLike]): Starting index for the simulation range in each column.
+        sim_end (Optional[FlexArray1dLike]): Ending index for the simulation range in each column.
+
+    Returns:
+        Array1d: Array containing the coverage ratio (fraction of non-zero positions) for each asset column.
+
+    !!! tip
+        This function is parallelizable.
+    """
     out = np.full(assets.shape[1], 0.0, dtype=float_)
 
     sim_start_, sim_end_ = generic_nb.prepare_sim_range_nb(
@@ -314,7 +416,24 @@ def position_coverage_grouped_nb(
     sim_start: tp.Optional[tp.FlexArray1dLike] = None,
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array1d:
-    """Get position coverage per group."""
+    """Compute the position coverage ratio for each group of asset columns.
+
+    Args:
+        assets (Array2d): Array of asset values.
+        group_lens (GroupLens): Sequence of lengths indicating column groupings.
+        granular_groups (bool): Flag to determine if coverage is computed per individual column within a group.
+        sim_start (Optional[FlexArray1dLike]): Starting simulation index for each asset column.
+        sim_end (Optional[FlexArray1dLike]): Ending simulation index for each asset column.
+
+    Returns:
+        Array1d: Array of coverage ratios for each group.
+
+            Each ratio is the fraction of time steps with active positions within
+            the aggregated simulation range, or NaN if no valid simulation range exists.
+
+    !!! tip
+        This function is parallelizable.
+    """
     out = np.full(len(group_lens), 0.0, dtype=float_)
 
     group_end_idxs = np.cumsum(group_lens)
@@ -402,7 +521,24 @@ def cash_deposits_nb(
     sim_start: tp.Optional[tp.FlexArray1dLike] = None,
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array2d:
-    """Get cash deposit series per column."""
+    """Calculate cash deposit series per column.
+
+    Args:
+        target_shape (Shape): Target shape of the output cash deposit array.
+        group_lens (GroupLens): Lengths of groups for processing.
+        cash_sharing (bool): Indicates whether cash is shared among columns.
+        cash_deposits_raw (FlexArray2dLike): Raw cash deposit values.
+        split_shared (bool): If cash is shared, determines whether to split the deposits evenly across columns.
+        weights (Optional[FlexArray1dLike]): Weights applied to cash deposits per column.
+        sim_start (Optional[FlexArray1dLike]): Start indices for the simulation period per column.
+        sim_end (Optional[FlexArray1dLike]): End indices for the simulation period per column.
+
+    Returns:
+        Array2d: 2D array containing the cash deposit series per column.
+
+    !!! tip
+        This function is parallelizable.
+    """
     cash_deposits_raw_ = to_2d_array_nb(np.asarray(cash_deposits_raw))
     if weights is None:
         weights_ = np.full(target_shape[1], np.nan, dtype=float_)
@@ -487,7 +623,23 @@ def cash_deposits_grouped_nb(
     sim_start: tp.Optional[tp.FlexArray1dLike] = None,
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array2d:
-    """Get cash deposit series per group."""
+    """Calculate cash deposit series aggregated by group.
+
+    Args:
+        target_shape (Shape): Target shape of the simulation period.
+        group_lens (GroupLens): Lengths of column groups.
+        cash_sharing (bool): Indicates whether cash is shared among columns within each group.
+        cash_deposits_raw (FlexArray2dLike): Raw cash deposit values.
+        weights (Optional[FlexArray1dLike]): Weights applied to cash deposits for each column.
+        sim_start (Optional[FlexArray1dLike]): Start indices for the simulation period.
+        sim_end (Optional[FlexArray1dLike]): End indices for the simulation period.
+
+    Returns:
+        Array2d: 2D array containing the grouped cash deposit series.
+
+    !!! tip
+        This function is parallelizable.
+    """
     cash_deposits_raw_ = to_2d_array_nb(np.asarray(cash_deposits_raw))
     if weights is None:
         weights_ = np.full(target_shape[1], np.nan, dtype=float_)
@@ -581,7 +733,21 @@ def cash_earnings_nb(
     sim_start: tp.Optional[tp.FlexArray1dLike] = None,
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array2d:
-    """Get cash earning series per column."""
+    """Calculate cash earning series per column by applying weight adjustments and simulation range filters.
+    
+    Args:
+        target_shape (Shape): The shape of the target output array.
+        cash_earnings_raw (FlexArray2dLike): Raw cash earnings data, converted internally to a 2D array.
+        weights (FlexArray1dLike): Weight factors for scaling cash earnings per column.
+        sim_start (FlexArray1dLike): Start indices of the simulation range for each column.
+        sim_end (FlexArray1dLike): End indices of the simulation range for each column.
+        
+    Returns:
+        Array2d: A 2D array with calculated cash earnings per column.
+    
+    !!! tip
+        This function is parallelizable.
+    """
     cash_earnings_raw_ = to_2d_array_nb(np.asarray(cash_earnings_raw))
     if weights is None:
         weights_ = np.full(target_shape[1], np.nan, dtype=float_)
@@ -632,7 +798,22 @@ def cash_earnings_grouped_nb(
     sim_start: tp.Optional[tp.FlexArray1dLike] = None,
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array2d:
-    """Get cash earning series per group."""
+    """Calculate aggregated cash earning series per group by summing weighted cash earnings of grouped columns.
+    
+    Args:
+        target_shape (Shape): The shape of the target output array.
+        group_lens (GroupLens): Lengths defining the groups of columns.
+        cash_earnings_raw (FlexArray2dLike): Raw cash earnings data, converted internally to a 2D array.
+        weights (FlexArray1dLike): Weight factors applied to cash earnings per column.
+        sim_start (FlexArray1dLike): Start indices of the simulation range for each column.
+        sim_end (FlexArray1dLike): End indices of the simulation range for each column.
+        
+    Returns:
+        Array2d: A 2D array with aggregated cash earnings per group.
+    
+    !!! tip
+        This function is parallelizable.
+    """
     cash_earnings_raw_ = to_2d_array_nb(np.asarray(cash_earnings_raw))
     if weights is None:
         weights_ = np.full(target_shape[1], np.nan, dtype=float_)
@@ -678,7 +859,18 @@ def get_free_cash_diff_nb(
     price: float,
     fees: float,
 ) -> tp.Tuple[float, float]:
-    """Get updated debt and free cash flow."""
+    """Calculate updated debt and free cash difference after a position change.
+    
+    Args:
+        position_before (float): The position amount before the transaction.
+        position_now (float): The position amount after the transaction.
+        debt_now (float): The current debt amount.
+        price (float): The asset price used for computing the transaction value.
+        fees (float): The fees incurred during the transaction.
+        
+    Returns:
+        Tuple[float, float]: A tuple containing the updated debt and the free cash difference.
+    """
     size = add_nb(position_now, -position_before)
     final_cash = -size * price - fees
     if is_close_nb(size, 0):
@@ -735,7 +927,27 @@ def cash_flow_nb(
     sim_start: tp.Optional[tp.FlexArray1dLike] = None,
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array2d:
-    """Get (free) cash flow series per column."""
+    """Compute cash flow series per column.
+
+    Calculates the cash flow for each column based on order records, cash earnings,
+    and simulation ranges. If `free` is True, computes free cash flow differences;
+    otherwise, computes standard cash flow.
+
+    Args:
+        target_shape (Shape): Target shape of the output array.
+        order_records (RecordArray): Array of order records.
+        col_map (GroupMap): Mapping of group indices and their lengths.
+        free (bool): Flag indicating whether to compute free cash flow differences.
+        cash_earnings (FlexArray2dLike): Array of cash earnings.
+        sim_start (Optional[FlexArray1dLike]): Simulation start indices.
+        sim_end (Optional[FlexArray1dLike]): Simulation end indices.
+
+    Returns:
+        Array2d: Array representing the cash flow series.
+
+    !!! tip
+        This function is parallelizable.
+    """
     cash_earnings_ = to_2d_array_nb(np.asarray(cash_earnings))
 
     out = np.full(target_shape, np.nan, dtype=float_)
@@ -817,7 +1029,24 @@ def cash_flow_grouped_nb(
     sim_start: tp.Optional[tp.FlexArray1dLike] = None,
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array2d:
-    """Get (free) cash flow series per group."""
+    """Compute aggregated cash flow series per group.
+
+    Aggregates cash flow data from the input array into groups determined by the provided
+    group lengths. The function sums cash flow values across columns within each group over
+    the simulation range.
+
+    Args:
+        cash_flow (Array2d): Array of cash flow values.
+        group_lens (GroupLens): Array specifying the lengths of each group.
+        sim_start (Optional[FlexArray1dLike]): Simulation start indices.
+        sim_end (Optional[FlexArray1dLike]): Simulation end indices.
+
+    Returns:
+        Array2d: Aggregated cash flow series for each group.
+
+    !!! tip
+        This function is parallelizable.
+    """
     out = np.full((cash_flow.shape[0], len(group_lens)), np.nan, dtype=float_)
 
     group_end_idxs = np.cumsum(group_lens)
@@ -864,7 +1093,26 @@ def align_init_cash_nb(
     sim_start: tp.Optional[tp.FlexArray1dLike] = None,
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array1d:
-    """Align initial cash to the maximum negative free cash flow per column or group."""
+    """Align initial cash based on the maximum negative free cash flow per column or group.
+
+    Evaluates the cumulative free cash flow by summing free cash flow and cash deposits
+    over the simulation range for each column. The aligned initial cash is set to cover the
+    maximum negative cash requirement. If `init_cash_raw` equals auto-align mode, all columns
+    are adjusted to the maximum required cash across columns.
+
+    Args:
+        init_cash_raw (int): Raw initial cash value or mode indicator for auto alignment.
+        free_cash_flow (Array2d): Array of free cash flow values.
+        cash_deposits (FlexArray2dLike): Array representing cash deposits.
+        sim_start (Optional[FlexArray1dLike]): Simulation start indices.
+        sim_end (Optional[FlexArray1dLike]): Simulation end indices.
+
+    Returns:
+        Array1d: Aligned initial cash values for each column.
+
+    !!! tip
+        This function is parallelizable.
+    """
     cash_deposits_ = to_2d_array_nb(np.asarray(cash_deposits))
 
     out = np.full(free_cash_flow.shape[1], np.nan, dtype=float_)
@@ -906,7 +1154,18 @@ def init_cash_nb(
     split_shared: bool = False,
     weights: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array1d:
-    """Get initial cash per column."""
+    """Compute initial cash for each column based on initial cash values, group lengths, cash sharing, and weights.
+    
+    Args:
+        init_cash_raw (FlexArray1d): Raw initial cash values.
+        group_lens (GroupLens): Array indicating the length of each group.
+        cash_sharing (bool): Flag specifying whether cash is shared among columns.
+        split_shared (bool): If True, split shared cash equally among columns in a group.
+        weights (Optional[FlexArray1dLike]): Optional weights to adjust the initial cash.
+    
+    Returns:
+        Array1d: Computed initial cash values per column.
+    """
     out = np.empty(np.sum(group_lens), dtype=float_)
     if weights is None:
         weights_ = np.full(group_lens.sum(), np.nan, dtype=float_)
@@ -950,7 +1209,17 @@ def init_cash_grouped_nb(
     cash_sharing: bool,
     weights: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array1d:
-    """Get initial cash per group."""
+    """Compute initial cash for each group based on raw initial cash values, group lengths, cash sharing, and weights.
+    
+    Args:
+        init_cash_raw (FlexArray1d): Raw initial cash values.
+        group_lens (GroupLens): Array of group lengths.
+        cash_sharing (bool): Boolean flag indicating if cash sharing is applied across columns within a group.
+        weights (Optional[FlexArray1dLike]): Optional weights to adjust the initial cash.
+    
+    Returns:
+        Array1d: Computed initial cash values per group.
+    """
     out = np.empty(group_lens.shape, dtype=float_)
     if weights is None:
         weights_ = np.full(group_lens.sum(), np.nan, dtype=float_)
@@ -1013,7 +1282,21 @@ def cash_nb(
     sim_start: tp.Optional[tp.FlexArray1dLike] = None,
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array2d:
-    """Get cash series per column or group."""
+    """Compute cash series per column or group using cash flow, initial cash, cash deposits, and simulation range.
+    
+    Args:
+        cash_flow (Array2d): 2D array of cash flow values.
+        init_cash (FlexArray1d): Initial cash amounts per column.
+        cash_deposits (FlexArray2dLike): Cash deposit values over time for each column.
+        sim_start (Optional[FlexArray1dLike]): Simulation start indices for each column.
+        sim_end (Optional[FlexArray1dLike]): Simulation end indices for each column.
+    
+    Returns:
+        Array2d: 2D array of computed cash series.
+    
+    !!! tip
+        This function is parallelizable.
+    """
     cash_deposits_ = to_2d_array_nb(np.asarray(cash_deposits))
 
     out = np.full(cash_flow.shape, np.nan, dtype=float_)
@@ -1046,7 +1329,16 @@ def init_position_value_nb(
     init_position: tp.FlexArray1dLike = 0.0,
     init_price: tp.FlexArray1dLike = np.nan,
 ) -> tp.Array1d:
-    """Get initial position value per column."""
+    """Compute the initial position value for each column as the product of initial position and initial price.
+    
+    Args:
+        n_cols (int): Number of columns.
+        init_position (FlexArray1dLike): Initial positions for each column.
+        init_price (FlexArray1dLike): Initial prices for each column.
+    
+    Returns:
+        Array1d: Computed initial position values per column.
+    """
     init_position_ = to_1d_array_nb(np.asarray(init_position))
     init_price_ = to_1d_array_nb(np.asarray(init_price))
 
@@ -1068,7 +1360,16 @@ def init_position_value_grouped_nb(
     init_position: tp.FlexArray1dLike = 0.0,
     init_price: tp.FlexArray1dLike = np.nan,
 ) -> tp.Array1d:
-    """Get initial position value per group."""
+    """Compute the aggregated initial position value per group as the sum of the product of initial position and price for columns within the group.
+    
+    Args:
+        group_lens (GroupLens): Array specifying the number of columns in each group.
+        init_position (FlexArray1dLike): Initial positions for each column.
+        init_price (FlexArray1dLike): Initial prices for each column.
+    
+    Returns:
+        Array1d: Computed initial position values per group.
+    """
     init_position_ = to_1d_array_nb(np.asarray(init_position))
     init_price_ = to_1d_array_nb(np.asarray(init_price))
 
@@ -1090,7 +1391,15 @@ def init_position_value_grouped_nb(
 
 @register_jitted(cache=True)
 def init_value_nb(init_position_value: tp.Array1d, init_cash: tp.FlexArray1d) -> tp.Array1d:
-    """Get initial value per column or group."""
+    """Compute the total initial value per column or group by summing initial cash and initial position value.
+    
+    Args:
+        init_position_value (Array1d): Initial position values per column.
+        init_cash (FlexArray1d): Initial cash amounts per column.
+    
+    Returns:
+        Array1d: Computed total initial values per column or group.
+    """
     out = np.empty(len(init_position_value), dtype=float_)
 
     for col in range(len(init_position_value)):
@@ -1116,7 +1425,21 @@ def asset_value_nb(
     sim_start: tp.Optional[tp.FlexArray1dLike] = None,
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array2d:
-    """Get asset value series per column."""
+    """Compute asset value series per column.
+
+    Args:
+        close (Array2d): Price series per column.
+        assets (Array2d): Asset quantity series per column.
+        sim_start (Optional[FlexArray1dLike]): Simulation start indices per column.
+        sim_end (Optional[FlexArray1dLike]): Simulation end indices per column.
+
+    Returns:
+        Array2d: Asset value series computed as the product of price and asset quantity
+            when assets are non-zero; otherwise, zero.
+
+    !!! tip
+        This function is parallelizable.
+    """
     out = np.full(close.shape, np.nan, dtype=float_)
 
     sim_start_, sim_end_ = generic_nb.prepare_sim_range_nb(
@@ -1155,7 +1478,20 @@ def asset_value_grouped_nb(
     sim_start: tp.Optional[tp.FlexArray1dLike] = None,
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array2d:
-    """Get asset value series per group."""
+    """Compute grouped asset value series.
+
+    Args:
+        asset_value (Array2d): Asset value series per column.
+        group_lens (GroupLens): Lengths of each group.
+        sim_start (Optional[FlexArray1dLike]): Simulation start indices per column.
+        sim_end (Optional[FlexArray1dLike]): Simulation end indices per column.
+
+    Returns:
+        Array2d: Grouped asset value series computed by summing column values within each group.
+
+    !!! tip
+        This function is parallelizable.
+    """
     out = np.full((asset_value.shape[0], len(group_lens)), np.nan, dtype=float_)
 
     group_end_idxs = np.cumsum(group_lens)
@@ -1200,7 +1536,20 @@ def value_nb(
     sim_start: tp.Optional[tp.FlexArray1dLike] = None,
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array2d:
-    """Get value series per column or group."""
+    """Compute value series per column or group.
+
+    Args:
+        cash (Array2d): Cash series per column.
+        asset_value (Array2d): Asset value series per column.
+        sim_start (Optional[FlexArray1dLike]): Simulation start indices per column.
+        sim_end (Optional[FlexArray1dLike]): Simulation end indices per column.
+
+    Returns:
+        Array2d: Value series computed as the sum of cash and asset value for each column.
+
+    !!! tip
+        This function is parallelizable.
+    """
     out = np.full(cash.shape, np.nan, dtype=float_)
 
     sim_start_, sim_end_ = generic_nb.prepare_sim_range_nb(
@@ -1236,7 +1585,21 @@ def gross_exposure_nb(
     sim_start: tp.Optional[tp.FlexArray1dLike] = None,
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array2d:
-    """Get gross exposure series per column."""
+    """Compute gross exposure series per column.
+
+    Args:
+        asset_value (Array2d): Asset value series per column.
+        value (Array2d): Total value series per column.
+        sim_start (Optional[FlexArray1dLike]): Simulation start indices per column.
+        sim_end (Optional[FlexArray1dLike]): Simulation end indices per column.
+
+    Returns:
+        Array2d: Gross exposure series calculated as the absolute ratio of
+            asset value to total value for each column.
+
+    !!! tip
+        This function is parallelizable.
+    """
     out = np.full(asset_value.shape, np.nan, dtype=float_)
 
     sim_start_, sim_end_ = generic_nb.prepare_sim_range_nb(
@@ -1275,7 +1638,21 @@ def net_exposure_nb(
     sim_start: tp.Optional[tp.FlexArray1dLike] = None,
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array2d:
-    """Get net exposure series per column."""
+    """Compute net exposure series per column.
+
+    Args:
+        long_exposure (Array2d): Long exposure series per column.
+        short_exposure (Array2d): Short exposure series per column.
+        sim_start (Optional[FlexArray1dLike]): Simulation start indices per column.
+        sim_end (Optional[FlexArray1dLike]): Simulation end indices per column.
+
+    Returns:
+        Array2d: Net exposure series calculated as the difference between
+            long and short exposures for each column.
+
+    !!! tip
+        This function is parallelizable.
+    """
     out = np.full(long_exposure.shape, np.nan, dtype=float_)
 
     sim_start_, sim_end_ = generic_nb.prepare_sim_range_nb(
@@ -1313,7 +1690,22 @@ def allocations_nb(
     sim_start: tp.Optional[tp.FlexArray1dLike] = None,
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array2d:
-    """Get allocations per column."""
+    """Calculate allocations for each column by computing the ratio of asset values to
+    group totals over the simulation period.
+
+    Args:
+        asset_value (Array2d): Matrix of asset values.
+        value (Array2d): Matrix of group total values used for normalization.
+        group_lens (GroupLens): Number of columns for each group.
+        sim_start (Optional[FlexArray1dLike]): Start indices for the simulation period per column.
+        sim_end (Optional[FlexArray1dLike]): End indices for the simulation period per column.
+
+    Returns:
+        Array2d: Matrix of calculated allocations per column.
+
+    !!! tip
+        This function is parallelizable.
+    """
     out = np.full(asset_value.shape, np.nan, dtype=float_)
 
     group_end_idxs = np.cumsum(group_lens)
@@ -1368,9 +1760,26 @@ def total_profit_nb(
     sim_start: tp.Optional[tp.FlexArray1dLike] = None,
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array1d:
-    """Get total profit per column.
+    """Compute total profit for each column by aggregating asset values, order records, and
+    cash flows over the simulation period.
 
-    A much faster version than the one based on `value_nb`."""
+    Args:
+        target_shape (Shape): Target shape of the simulation output.
+        close (Array2d): Matrix of closing prices.
+        order_records (RecordArray): Array of order records.
+        col_map (GroupMap): Mapping specifying column indices and group lengths.
+        init_position (FlexArray1dLike): Initial asset positions for each column.
+        init_price (FlexArray1dLike): Initial asset prices for each column.
+        cash_earnings (FlexArray2dLike): Matrix of cash earnings.
+        sim_start (Optional[FlexArray1dLike]): Simulation start indices for each column.
+        sim_end (Optional[FlexArray1dLike]): Simulation end indices for each column.
+
+    Returns:
+        Array1d: Array containing the computed total profit for each column.
+
+    !!! tip
+        This function is parallelizable.
+    """
     init_position_ = to_1d_array_nb(np.asarray(init_position))
     init_price_ = to_1d_array_nb(np.asarray(init_price))
     cash_earnings_ = to_2d_array_nb(np.asarray(cash_earnings))
@@ -1442,7 +1851,15 @@ def total_profit_nb(
 
 @register_jitted(cache=True)
 def total_profit_grouped_nb(total_profit: tp.Array1d, group_lens: tp.GroupLens) -> tp.Array1d:
-    """Get total profit per group."""
+    """Aggregate total profit over groups by summing the column profits within each group.
+
+    Args:
+        total_profit (Array1d): Array of total profits per column.
+        group_lens (GroupLens): Array indicating the number of columns in each group.
+
+    Returns:
+        Array1d: Array containing the aggregated total profit for each group.
+    """
     out = np.empty(len(group_lens), dtype=float_)
 
     from_col = 0
@@ -1476,7 +1893,23 @@ def returns_nb(
     sim_start: tp.Optional[tp.FlexArray1dLike] = None,
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array2d:
-    """Get return series per column or group."""
+    """Compute return series per column or group.
+
+    Args:
+        value (Array2d): Array of asset values.
+        init_value (FlexArray1d): Initial asset value per column.
+        cash_deposits (FlexArray2dLike): Array of cash deposits.
+        cash_deposits_as_input (bool): Whether to add cash deposits to the input value.
+        log_returns (bool): Whether to compute logarithmic returns.
+        sim_start (Optional[FlexArray1dLike]): Starting simulation index per column.
+        sim_end (Optional[FlexArray1dLike]): Ending simulation index per column.
+
+    Returns:
+        Array2d: Computed return series for each column.
+
+    !!! tip
+        This function is parallelizable.
+    """
     cash_deposits_ = to_2d_array_nb(np.asarray(cash_deposits))
 
     out = np.full(value.shape, np.nan, dtype=float_)
@@ -1512,7 +1945,16 @@ def get_asset_pnl_nb(
     output_asset_value: float,
     cash_flow: float,
 ) -> float:
-    """Get asset PnL from the input and output asset value, and the cash flow."""
+    """Compute asset profit and loss from input and output asset values and cash flow.
+
+    Args:
+        input_asset_value (float): Asset value at the beginning.
+        output_asset_value (float): Asset value at the end.
+        cash_flow (float): Cash flow during the period.
+
+    Returns:
+        float: Calculated asset profit and loss.
+    """
     return output_asset_value + cash_flow - input_asset_value
 
 
@@ -1535,7 +1977,21 @@ def asset_pnl_nb(
     sim_start: tp.Optional[tp.FlexArray1dLike] = None,
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array2d:
-    """Get asset (realized and unrealized) PnL series per column or group."""
+    """Compute asset (realized and unrealized) profit and loss series per column or group.
+
+    Args:
+        asset_value (Array2d): Array of asset values.
+        cash_flow (Array2d): Array of cash flows.
+        init_position_value (FlexArray1dLike): Initial asset position value for each column.
+        sim_start (Optional[FlexArray1dLike]): Starting simulation index per column.
+        sim_end (Optional[FlexArray1dLike]): Ending simulation index per column.
+
+    Returns:
+        Array2d: Calculated asset profit and loss series for each column.
+
+    !!! tip
+        This function is parallelizable.
+    """
     init_position_value_ = to_1d_array_nb(np.asarray(init_position_value))
 
     out = np.full(asset_value.shape, np.nan, dtype=float_)
@@ -1572,7 +2028,17 @@ def get_asset_return_nb(
     cash_flow: float,
     log_returns: bool = False,
 ) -> float:
-    """Get asset return from the input and output asset value, and the cash flow."""
+    """Compute asset return from input and output asset values and cash flow.
+
+    Args:
+        input_asset_value (float): Asset value at the beginning.
+        output_asset_value (float): Asset value at the end.
+        cash_flow (float): Cash flow during the period.
+        log_returns (bool): Whether to compute logarithmic returns.
+
+    Returns:
+        float: Computed asset return.
+    """
     if is_close_nb(input_asset_value, 0):
         input_value = -output_asset_value
         output_value = cash_flow
@@ -1609,7 +2075,22 @@ def asset_returns_nb(
     sim_start: tp.Optional[tp.FlexArray1dLike] = None,
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array2d:
-    """Get asset return series per column or group."""
+    """Compute asset return series per column or group.
+
+    Args:
+        asset_value (Array2d): Array of asset values.
+        cash_flow (Array2d): Array of cash flows corresponding to asset values.
+        init_position_value (FlexArray1dLike): Initial asset position value for each column.
+        log_returns (bool): Whether to compute logarithmic returns.
+        sim_start (Optional[FlexArray1dLike]): Starting simulation index per column.
+        sim_end (Optional[FlexArray1dLike]): Ending simulation index per column.
+
+    Returns:
+        Array2d: Computed asset return series for each column.
+
+    !!! tip
+        This function is parallelizable.
+    """
     init_position_value_ = to_1d_array_nb(np.asarray(init_position_value))
 
     out = np.full(asset_value.shape, np.nan, dtype=float_)
@@ -1659,7 +2140,21 @@ def market_value_nb(
     sim_start: tp.Optional[tp.FlexArray1dLike] = None,
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array2d:
-    """Get market value per column."""
+    """Compute market value for each column based on asset prices and cash deposits.
+
+    Args:
+        close (Array2d): Asset prices with rows as time steps and columns as assets.
+        init_value (FlexArray1d): Initial market values for each asset.
+        cash_deposits (FlexArray2dLike): Cash deposits applied at each time step.
+        sim_start (Optional[FlexArray1dLike]): Simulation start indices per asset.
+        sim_end (Optional[FlexArray1dLike]): Simulation end indices per asset.
+
+    Returns:
+        Array2d: Computed market values for each asset over the simulation period.
+
+    !!! tip
+        This function is parallelizable.
+    """
     cash_deposits_ = to_2d_array_nb(np.asarray(cash_deposits))
 
     out = np.full(close.shape, np.nan, dtype=float_)
@@ -1705,7 +2200,23 @@ def market_value_grouped_nb(
     sim_start: tp.Optional[tp.FlexArray1dLike] = None,
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array2d:
-    """Get market value per group."""
+    """Compute market value for each group by aggregating asset market values based on group lengths,
+    asset prices, and cash deposits.
+
+    Args:
+        close (Array2d): Asset prices with rows as time steps and columns as individual assets.
+        group_lens (GroupLens): Lengths of asset groups for aggregation.
+        init_value (FlexArray1d): Initial market values for each asset.
+        cash_deposits (FlexArray2dLike): Cash deposits applied at each time step for each asset.
+        sim_start (Optional[FlexArray1dLike]): Simulation start indices per asset.
+        sim_end (Optional[FlexArray1dLike]): Simulation end indices per asset.
+
+    Returns:
+        Array2d: Aggregated market values per group over time.
+
+    !!! tip
+        This function is parallelizable.
+    """
     cash_deposits_ = to_2d_array_nb(np.asarray(cash_deposits))
 
     out = np.full((close.shape[0], len(group_lens)), np.nan, dtype=float_)
@@ -1755,7 +2266,17 @@ def total_market_return_nb(
     sim_start: tp.Optional[tp.FlexArray1dLike] = None,
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array1d:
-    """Get total market return per column or group."""
+    """Compute total market return per column or group using final market value and initial input value.
+
+    Args:
+        market_value (Array2d): Market values over time per column or group.
+        input_value (FlexArray1d): Initial input values for each column or group.
+        sim_start (Optional[FlexArray1dLike]): Simulation start indices per column or group.
+        sim_end (Optional[FlexArray1dLike]): Simulation end indices per column or group.
+
+    Returns:
+        Array1d: Total market return for each column or group.
+    """
     out = np.full(market_value.shape[1], np.nan, dtype=float_)
 
     sim_start_, sim_end_ = generic_nb.prepare_sim_range_nb(

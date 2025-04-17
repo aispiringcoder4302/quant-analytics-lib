@@ -254,17 +254,29 @@ if __version_info__ < (20, 0, 0, "alpha", 1):
 
         @property
         def updater(self) -> Updater:
-            """Telegram updater instance used to poll messages and handle updates."""
+            """Telegram updater instance used to poll messages and handle updates.
+
+            Returns:
+                Updater: The `Updater` instance responsible for polling messages.
+            """
             return self._updater
 
         @property
         def dispatcher(self) -> Dispatcher:
-            """Telegram dispatcher instance for registering handlers."""
+            """Telegram dispatcher instance for registering handlers.
+
+            Returns:
+                Dispatcher: The `telegram.ext.Dispatcher` instance managing update handlers.
+            """
             return self._dispatcher
 
         @property
         def log_handler(self) -> LogHandler:
-            """Telegram log handler instance for logging incoming user updates."""
+            """Telegram log handler instance for logging incoming user updates.
+
+            Returns:
+                LogHandler: An instance of `LogHandler` set up for logging updates.
+            """
             return LogHandler(lambda update, context: None)
 
         @property
@@ -273,6 +285,9 @@ if __version_info__ < (20, 0, 0, "alpha", 1):
 
             Override this property to provide additional command handlers.
             The order of handlers is significant.
+
+            Returns:
+                Iterable[Handler]: An iterable collection of additional command `telegram.extHandler` instances.
             """
             return ()
 
@@ -281,6 +296,9 @@ if __version_info__ < (20, 0, 0, "alpha", 1):
             """List of chat IDs that have interacted with the bot.
 
             A chat ID is added when the `/start` command is received.
+
+            Returns:
+                List[int]: A list of chat IDs for all chats currently tracked by the bot.
             """
             return self.dispatcher.bot_data["chat_ids"]
 
@@ -293,6 +311,9 @@ if __version_info__ < (20, 0, 0, "alpha", 1):
             Args:
                 in_background (bool): Run the bot in the background if True; otherwise, block the main thread.
                 **kwargs: Keyword arguments for `Updater.start_polling`.
+
+            Returns:
+                None
             """
             from vectorbtpro._settings import settings
 
@@ -331,6 +352,9 @@ if __version_info__ < (20, 0, 0, "alpha", 1):
                 log_msg (Optional[str]): Message description for logging; if not provided,
                     defaults to the value of `kind`.
                 **kwargs: Keyword arguments for sending the message.
+
+            Returns:
+                None
             """
             try:
                 getattr(self.updater.bot, "send_" + kind)(chat_id, *args, **kwargs)
@@ -351,8 +375,11 @@ if __version_info__ < (20, 0, 0, "alpha", 1):
 
             Args:
                 kind (str): The type of message to send.
-                *args: Positional arguments for sending the message.
-                **kwargs: Keyword arguments for sending the message.
+                *args: Positional arguments passed to `TelegramBot.send`.
+                **kwargs: Keyword arguments passed to `TelegramBot.send`.
+
+            Returns:
+                None
             """
             for chat_id in self.chat_ids:
                 self.send(kind, chat_id, *args, **kwargs)
@@ -364,7 +391,11 @@ if __version_info__ < (20, 0, 0, "alpha", 1):
                 chat_id (int): The unique identifier of the target chat.
                 text (str): The content of the message to send.
                 *args: Positional arguments passed to `TelegramBot.send`.
-                **kwargs: Keyword arguments passed to `TelegramBot.send`."""
+                **kwargs: Keyword arguments passed to `TelegramBot.send`.
+
+            Returns:
+                None
+            """
             log_msg = '"%s"' % text
             self.send("message", chat_id, text, *args, log_msg=log_msg, **kwargs)
 
@@ -374,7 +405,11 @@ if __version_info__ < (20, 0, 0, "alpha", 1):
             Args:
                 text (str): The content of the message to send.
                 *args: Positional arguments passed to `TelegramBot.send_to_all`.
-                **kwargs: Keyword arguments passed to `TelegramBot.send_to_all`."""
+                **kwargs: Keyword arguments passed to `TelegramBot.send_to_all`.
+
+            Returns:
+                None
+            """
             log_msg = '"%s"' % text
             self.send_to_all("message", text, *args, log_msg=log_msg, **kwargs)
 
@@ -386,7 +421,11 @@ if __version_info__ < (20, 0, 0, "alpha", 1):
                 text (str): The text from which to generate a GIPHY URL.
                 *args: Positional arguments passed to `TelegramBot.send`.
                 giphy_kwargs (KwargsLike): Keyword arguments for generating the GIPHY URL.
-                **kwargs: Keyword arguments passed to `TelegramBot.send`."""
+                **kwargs: Keyword arguments passed to `TelegramBot.send`.
+
+            Returns:
+                None
+            """
             if giphy_kwargs is None:
                 giphy_kwargs = self.giphy_kwargs
             gif_url = text_to_giphy_url(text, **giphy_kwargs)
@@ -400,7 +439,11 @@ if __version_info__ < (20, 0, 0, "alpha", 1):
                 text (str): The text from which to generate a GIPHY URL.
                 *args: Positional arguments passed to `TelegramBot.send_to_all`.
                 giphy_kwargs (KwargsLike): Keyword arguments for generating the GIPHY URL.
-                **kwargs: Keyword arguments passed to `TelegramBot.send_to_all`."""
+                **kwargs: Keyword arguments passed to `TelegramBot.send_to_all`.
+                
+            Returns:
+                None
+            """
             if giphy_kwargs is None:
                 giphy_kwargs = self.giphy_kwargs
             gif_url = text_to_giphy_url(text, **giphy_kwargs)
@@ -411,7 +454,11 @@ if __version_info__ < (20, 0, 0, "alpha", 1):
         def start_message(self) -> str:
             """Message to be sent in response to the `/start` command.
 
-            Override this property to define a custom start message."""
+            Override this property to define a custom start message.
+            
+            Returns:
+                str: The message.
+            """
             return "Hello!"
 
         def start_callback(self, update: object, context: CallbackContext) -> None:
@@ -419,7 +466,11 @@ if __version_info__ < (20, 0, 0, "alpha", 1):
 
             Args:
                 update (object): The incoming update.
-                context (CallbackContext): The callback context containing additional data."""
+                context (CallbackContext): The callback context containing additional data.
+                
+            Returns:
+                None
+            """
             if isinstance(update, Update) and update.effective_chat:
                 chat_id = update.effective_chat.id
                 if chat_id not in self.chat_ids:
@@ -430,7 +481,11 @@ if __version_info__ < (20, 0, 0, "alpha", 1):
         def help_message(self) -> str:
             """Message to be sent in response to the `/help` command.
 
-            Override this property to define a custom help message."""
+            Override this property to define a custom help message.
+            
+            Returns:
+                str: The message.
+            """
             return "Can't help you here, buddy."
 
         def help_callback(self, update: object, context: CallbackContext) -> None:
@@ -438,7 +493,11 @@ if __version_info__ < (20, 0, 0, "alpha", 1):
 
             Args:
                 update (object): The incoming update.
-                context (CallbackContext): The callback context containing additional data."""
+                context (CallbackContext): The callback context containing additional data.
+
+            Returns:
+                None
+            """
             if isinstance(update, Update) and update.effective_chat:
                 chat_id = update.effective_chat.id
                 self.send_message(chat_id, self.help_message)
@@ -448,7 +507,11 @@ if __version_info__ < (20, 0, 0, "alpha", 1):
 
             Args:
                 update (object): The incoming update.
-                context (CallbackContext): The callback context containing additional data."""
+                context (CallbackContext): The callback context containing additional data.
+            
+            Returns:
+                None
+            """
             if isinstance(update, Update) and update.message:
                 old_id = update.message.migrate_from_chat_id or update.message.chat_id
                 new_id = update.message.migrate_to_chat_id or update.message.chat_id
@@ -462,7 +525,11 @@ if __version_info__ < (20, 0, 0, "alpha", 1):
 
             Args:
                 update (object): The incoming update.
-                context (CallbackContext): The callback context containing additional data."""
+                context (CallbackContext): The callback context containing additional data.
+                
+            Returns:
+                None
+            """
             if isinstance(update, Update) and update.effective_chat:
                 chat_id = update.effective_chat.id
                 logger.info(f'{chat_id} - Unknown command "{update.message}"')
@@ -474,7 +541,11 @@ if __version_info__ < (20, 0, 0, "alpha", 1):
             Args:
                 update (object): The update that triggered the error.
                 context (CallbackContext): The callback context containing error information.
-                *args: Positional arguments passed to the error handler."""
+                *args: Positional arguments passed to the error handler.
+
+            Returns:
+                None
+            """
             logger.error('Exception while handling an update "%s": ', update, exc_info=context.error)
             if isinstance(update, Update) and update.effective_chat:
                 chat_id = update.effective_chat.id
@@ -483,13 +554,21 @@ if __version_info__ < (20, 0, 0, "alpha", 1):
         def stop(self) -> None:
             """Stop the bot.
 
-            Logs an informational message and stops the updater."""
+            Logs an informational message and stops the updater.
+            
+            Returns:
+                None
+            """
             logger.info("Stopping bot")
             self.updater.stop()
 
         @property
         def running(self) -> bool:
-            """Indicate whether the bot is currently running."""
+            """Indicate whether the bot is currently running.
+            
+            Returns:
+                bool: True if the bot is running, False otherwise.
+            """
             return self.updater.running
 
 else:
@@ -731,6 +810,9 @@ else:
             Args:
                 update (Update): Update from Telegram.
                 context (ContextTypes.DEFAULT_TYPE): Context associated with the update.
+
+            Returns:
+                None
             """
             pass
 
@@ -754,6 +836,9 @@ else:
 
                     Defaults to the message kind if not provided.
                 **kwargs: Keyword arguments passed for sending the message.
+
+            Returns:
+                None
             """
             try:
                 await getattr(self.application.bot, "send_" + kind)(chat_id, *args, **kwargs)
@@ -774,8 +859,11 @@ else:
 
             Args:
                 kind (str): The type of message to send (e.g., "message", "animation").
-                *args: Positional arguments for sending the message.
-                **kwargs: Keyword arguments for sending the message.
+                *args: Positional arguments passed to `TelegramBot.send`.
+                **kwargs: Keyword arguments passed to `TelegramBot.send`.
+
+            Returns:
+                None
             """
             for chat_id in self.chat_ids:
                 await self.send(kind, chat_id, *args, **kwargs)
@@ -786,8 +874,11 @@ else:
             Args:
                 chat_id (int): The target chat ID.
                 text (str): The text message to send.
-                *args: Positional arguments for sending the message.
-                **kwargs: Keyword arguments for sending the message.
+                *args: Positional arguments passed to `TelegramBot.send`.
+                **kwargs: Keyword arguments passed to `TelegramBot.send`.
+            
+            Returns:
+                None
             """
             log_msg = '"%s"' % text
             await self.send("message", chat_id, text, *args, log_msg=log_msg, **kwargs)
@@ -797,8 +888,11 @@ else:
 
             Args:
                 text (str): The text message to send.
-                *args: Positional arguments for sending the message.
-                **kwargs: Keyword arguments for sending the message.
+                *args: Positional arguments passed to `TelegramBot.send_to_all`.
+                **kwargs: Keyword arguments passed to `TelegramBot.send_to_all`.
+
+            Returns:
+                None
             """
             log_msg = '"%s"' % text
             await self.send_to_all("message", text, *args, log_msg=log_msg, **kwargs)
@@ -811,11 +905,14 @@ else:
             Args:
                 chat_id (int): The target chat ID.
                 text (str): Text to convert into a GIPHY URL.
-                *args: Positional arguments for sending the message.
+                *args: Positional arguments passed to `TelegramBot.send`.
                 giphy_kwargs (KwargsLike): Keyword arguments for configuring the GIPHY request.
 
                     If not provided, defaults to the `giphy_kwargs` property.
-                **kwargs: Keyword arguments for sending the message.
+                **kwargs: Keyword arguments passed to `TelegramBot.send`.
+
+            Returns:
+                None
             """
             if giphy_kwargs is None:
                 giphy_kwargs = self.giphy_kwargs
@@ -828,11 +925,14 @@ else:
 
             Args:
                 text (str): Text to convert into a GIPHY URL.
-                *args: Positional arguments for sending the message.
+                *args: Positional arguments passed to `TelegramBot.send_all`.
                 giphy_kwargs (KwargsLike): Keyword arguments for configuring the GIPHY request.
 
                     If not provided, defaults to the `giphy_kwargs` property.
-                **kwargs: Keyword arguments for sending the message.
+                **kwargs: Keyword arguments passed to `TelegramBot.send_all`.
+
+            Returns:
+                None
             """
             if giphy_kwargs is None:
                 giphy_kwargs = self.giphy_kwargs
@@ -873,6 +973,9 @@ else:
             Args:
                 update (Update): The update triggered by the `/start` command.
                 context (ContextTypes.DEFAULT_TYPE): The context associated with the update.
+
+            Returns:
+                None
             """
             if isinstance(update, Update) and update.effective_chat:
                 chat_id = update.effective_chat.id
@@ -899,6 +1002,9 @@ else:
             Args:
                 update (Update): The update triggered by the `/help` command.
                 context (ContextTypes.DEFAULT_TYPE): The context associated with the update.
+
+            Returns:
+                None
             """
             if isinstance(update, Update) and update.effective_chat:
                 chat_id = update.effective_chat.id
@@ -912,6 +1018,9 @@ else:
             Args:
                 update (Update): The update containing migration information.
                 context (ContextTypes.DEFAULT_TYPE): The context associated with the update.
+
+            Returns:
+                None
             """
             if isinstance(update, Update) and update.message:
                 old_id = update.message.migrate_from_chat_id or update.message.chat_id
@@ -929,6 +1038,9 @@ else:
             Args:
                 update (Update): The update containing the unknown command.
                 context (ContextTypes.DEFAULT_TYPE): The context associated with the update.
+
+            Returns:
+                None
             """
             if isinstance(update, Update) and update.effective_chat:
                 chat_id = update.effective_chat.id
@@ -945,6 +1057,9 @@ else:
                 context (ContextTypes.DEFAULT_TYPE): The context associated with the error.
                 *args: Additional positional arguments.
                 **kwargs: Additional keyword arguments.
+
+            Returns:
+                None
             """
             logger.error('Exception while handling an update "%s": ', update, exc_info=context.error)
             if isinstance(update, Update) and update.effective_chat:
@@ -956,7 +1071,7 @@ else:
             """Current event loop.
 
             Returns:
-                Optional[BaseEventLoop]: The event loop instance, if available.
+                Optional[asyncio.BaseEventLoop]: The event loop instance, if available.
             """
             return self._loop
 
@@ -975,6 +1090,9 @@ else:
                     `vectorbtpro._settings.telegram`.
 
                     Only keys accepted by `telegram.ext._updater.Updater.start_polling` are passed.
+
+            Returns:
+                None
             """
             from vectorbtpro._settings import settings
 
@@ -1036,6 +1154,9 @@ else:
 
             Args:
                 close_loop (bool): Whether to close the event loop if it is not running after stopping.
+
+            Returns:
+                None
             """
             if self.loop is None:
                 raise RuntimeError("There is no event loop running this Application")
@@ -1054,5 +1175,9 @@ else:
 
         @property
         def running(self) -> bool:
-            """Bot running state."""
+            """Bot running state.
+            
+            Returns:
+                bool: True if the bot is running, False otherwise.
+            """
             return self.application.running

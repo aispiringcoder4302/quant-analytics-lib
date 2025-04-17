@@ -37,7 +37,8 @@ class _SUPERTREND(SUPERTREND):
     The supertrend indicator is a trend-following overlay that appears directly on price charts,
     providing clear buy and sell signals based on the underlying asset's price action and volatility.
 
-    See [Supertrend Indicator: What It Is and How It Works](https://www.investopedia.com/supertrend-indicator-7976167)."""
+    See [Supertrend Indicator: What It Is and How It Works](https://www.investopedia.com/supertrend-indicator-7976167).
+    """
 
     def plot(
         self,
@@ -53,15 +54,15 @@ class _SUPERTREND(SUPERTREND):
         """Plot the long and short signals of the Supertrend indicator, and optionally the close prices.
 
         Args:
-            column (str): Name of the column to plot.
+            column (Optional[Label]): Name of the column to plot.
             plot_close (bool): Indicates whether to include the `close` price trace.
-            close_trace_kwargs (dict): Keyword arguments for configuring
+            close_trace_kwargs (KwargsLike): Keyword arguments for configuring
                 the `SUPERTREND.close` trace in `plotly.graph_objects.Scatter`.
-            superl_trace_kwargs (dict): Keyword arguments for configuring
+            superl_trace_kwargs (KwargsLike): Keyword arguments for configuring
                 the `SUPERTREND.long` trace in `plotly.graph_objects.Scatter`.
-            supers_trace_kwargs (dict): Keyword arguments for configuring
+            supers_trace_kwargs (KwargsLike): Keyword arguments for configuring
                 the `SUPERTREND.short` trace in `plotly.graph_objects.Scatter`.
-            add_trace_kwargs (dict): Keyword arguments passed to `fig.add_trace` when adding each trace.
+            add_trace_kwargs (KwargsLike): Keyword arguments passed to `fig.add_trace` when adding each trace.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
             **layout_kwargs: Additional keyword arguments for configuring the figure layout.
 

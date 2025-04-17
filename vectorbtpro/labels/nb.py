@@ -15,7 +15,8 @@
 
 !!! warning
     Do not use these functions for building predictor variables as they may introduce look-ahead bias.
-    Use them only for constructing target variables."""
+    Use them only for constructing target variables.
+"""
 
 import numpy as np
 from numba import prange

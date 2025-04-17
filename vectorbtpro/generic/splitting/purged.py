@@ -32,7 +32,8 @@
 
 """Module providing classes for purged cross-validation in time series.
 
-As described in Advances in Financial Machine Learning by Marcos Lopez de Prado (2018)."""
+As described in Advances in Financial Machine Learning by Marcos Lopez de Prado (2018).
+"""
 
 from abc import abstractmethod
 from itertools import combinations
@@ -75,27 +76,47 @@ class BasePurgedCV(Base):
 
     @property
     def n_folds(self) -> int:
-        """Number of folds used in cross-validation."""
+        """Number of folds used in cross-validation.
+        
+        Returns:
+            int: Number of folds.
+        """
         return self._n_folds
 
     @property
     def purge_td(self) -> pd.Timedelta:
-        """Timedelta period added to evaluation times for purging training samples."""
+        """Timedelta period added to evaluation times for purging training samples.
+        
+        Returns:
+            Timedelta: Purge period.
+        """
         return self._purge_td
 
     @property
-    def pred_times(self) -> tp.Optional[pd.Series]:
-        """Time stamps at which predictions are made for each sample."""
+    def pred_times(self) -> tp.Optional[tp.Series]:
+        """Time stamps at which predictions are made for each sample.
+        
+        Returns:
+            Optional[Series]: Prediction times.
+        """
         return self._pred_times
 
     @property
-    def eval_times(self) -> tp.Optional[pd.Series]:
-        """Time stamps at which responses become available for error computation."""
+    def eval_times(self) -> tp.Optional[tp.Series]:
+        """Time stamps at which responses become available for error computation.
+        
+        Returns:
+            Optional[Series]: Evaluation times.
+        """
         return self._eval_times
 
     @property
     def indices(self) -> tp.Optional[tp.Array1d]:
-        """Array of indices corresponding to the dataset samples."""
+        """Array of indices corresponding to the dataset samples.
+        
+        Returns:
+            Optional[Array1d]: Array of indices.
+        """
         return self._indices
 
     def purge(
@@ -219,30 +240,49 @@ class PurgedWalkForwardCV(BasePurgedCV):
 
     @property
     def n_test_folds(self) -> int:
-        """Number of folds used as the test set."""
+        """Number of folds used as the test set.
+        
+        Returns:
+            int: Number of test folds.
+        """
         return self._n_test_folds
 
     @property
     def min_train_folds(self) -> int:
-        """Minimum number of folds for the training set."""
+        """Minimum number of folds for the training set.
+        
+        Returns:
+            int: Minimum number of training folds.
+        """
         return self._min_train_folds
 
     @property
     def max_train_folds(self) -> int:
-        """Maximum number of folds for the training set."""
+        """Maximum number of folds for the training set.
+        
+        Returns:
+            int: Maximum number of training folds.
+        """
         return self._max_train_folds
 
     @property
-    def split_by_time(self) -> int:
+    def split_by_time(self) -> bool:
         """Flag indicating whether folds are based on equal time intervals.
 
         If False, the folds contain an approximately equal number of samples.
+
+        Returns:
+            bool: True if folds are based on equal time intervals, False otherwise.
         """
         return self._split_by_time
 
     @property
     def fold_bounds(self) -> tp.List[int]:
-        """List of indices representing the left boundaries of folds."""
+        """List of indices representing the left boundaries of folds.
+        
+        Returns:
+            List[int]: List of indices representing the left boundaries of folds.
+        """
         return self._fold_bounds
 
     def compute_fold_bounds(self) -> tp.List[int]:
@@ -361,13 +401,21 @@ class PurgedKFoldCV(BasePurgedCV):
 
     @property
     def n_test_folds(self) -> int:
-        """Number of folds reserved for testing in each cross-validation round."""
+        """Number of folds reserved for testing in each cross-validation round.
+        
+        Returns:
+            int: Number of test folds.
+        """
         return self._n_test_folds
 
     @property
     def embargo_td(self) -> pd.Timedelta:
         """Embargo period duration enforcing a minimum gap between test set evaluation times
-        and training set prediction times."""
+        and training set prediction times.
+        
+        Returns:
+            Timedelta: Embargo period.
+        """
         return self._embargo_td
 
     def embargo(

@@ -724,7 +724,8 @@ ${config_doc}
 ```
 
 When enabling `max_precision` and running your code for the first time, make sure to enable 
-`prec_check_bounds`. After that, you can safely disable it to slightly increase performance."""
+`prec_check_bounds`. After that, you can safely disable it to slightly increase performance.
+"""
 )
 
 _settings["wrapping"] = wrapping
@@ -2831,7 +2832,8 @@ class SettingsConfig(Config):
     def get(self, key: tp.PathLikeKey, default: tp.Any = MISSING) -> tp.Any:
         """Get setting(s) under a path.
 
-        See `vectorbtpro.utils.search_.get_pathlike_key` for path format."""
+        See `vectorbtpro.utils.search_.get_pathlike_key` for path format.
+        """
         from vectorbtpro.utils.search_ import get_pathlike_key
 
         try:
@@ -2844,7 +2846,8 @@ class SettingsConfig(Config):
     def set(self, key: tp.PathLikeKey, value: tp.Any, default_config_type: tp.Type[Config] = flex_cfg) -> None:
         """Set setting(s) under a path.
 
-        See `vectorbtpro.utils.search_.get_pathlike_key` for path format."""
+        See `vectorbtpro.utils.search_.get_pathlike_key` for path format.
+        """
         from vectorbtpro.utils.search_ import resolve_pathlike_key
 
         tokens = resolve_pathlike_key(key)
@@ -2874,7 +2877,8 @@ class SettingsConfig(Config):
 settings = SettingsConfig(_settings)
 """Global settings config.
 
-Combines all sub-configs defined in this module."""
+Combines all sub-configs defined in this module.
+"""
 
 settings_name = os.environ.get("VBT_SETTINGS_NAME", "vbt")
 if "VBT_SETTINGS_PATH" in os.environ:

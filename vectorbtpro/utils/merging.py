@@ -86,7 +86,8 @@ class MergeFunc(Evaluable, Annotatable, DefineMixin):
     def resolve_merge_func(self) -> tp.Optional[tp.Callable]:
         """Return the merging function with pre-bound keyword arguments after applying template substitutions.
 
-        If the merging function cannot be resolved, returns None."""
+        If the merging function cannot be resolved, returns None.
+        """
         from vectorbtpro.base.merging import resolve_merge_func
 
         merge_func = resolve_merge_func(self.merge_func)
@@ -117,8 +118,9 @@ def parse_merge_func(func: tp.Callable, eval_id: tp.Optional[tp.Hashable] = None
         eval_id (Optional[Hashable]): Evaluation identifier for filtering merge functions.
 
     Returns:
-        `MergeFunc` or list or None: The merging function(s) extracted from the annotations,
-            or None if not found."""
+        Optional[MergeFunc]: The merging function(s) extracted from the annotations,
+            or None if not found.
+    """
     annotations = get_annotations(func)
     merge_func = None
     for k, v in annotations.items():

@@ -10,7 +10,8 @@
 
 """Modules providing custom signal generators built using the signal factory.
 
-Access all indicators via `vbt.*`."""
+Access all indicators via `vbt.*`.
+"""
 
 from typing import TYPE_CHECKING
 

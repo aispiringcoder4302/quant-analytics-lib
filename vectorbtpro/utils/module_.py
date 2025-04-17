@@ -73,6 +73,9 @@ def is_from_module(obj: tp.Any, module: ModuleType) -> bool:
     Args:
         obj (Any): The object to verify.
         module (ModuleType): The module to check against.
+
+    Returns:
+        bool: True if the object is from the specified module; otherwise, False.
     """
     mod = get_module(obj)
     return mod is None or mod.__name__ == module.__name__
@@ -132,7 +135,6 @@ def search_package(
         blacklist (Optional[Sequence[str]]): Names to exclude from the search.
         path_attrs (bool): If True, use fully qualified names for object attributes.
         return_first (bool): If True, return the first matching object.
-        _visited (Optional[Set[str]]): Internal set tracking visited modules.
 
     Returns:
         Union[None, Any, Dict[str, Any]]: If return_first is True, returns the first matching object or None;
@@ -222,6 +224,9 @@ def check_installed(pkg_name: str) -> bool:
 
     Args:
         pkg_name (str): The name of the package to check.
+
+    Returns:
+        bool: True if the package is installed; otherwise, False.
     """
     return importlib.util.find_spec(pkg_name) is not None
 
@@ -260,6 +265,9 @@ def assert_can_import(pkg_name: str) -> None:
 
     Args:
         pkg_name (str): The name of the package to check.
+
+    Returns:
+        None
     """
     from importlib.metadata import version as get_version
 
@@ -292,6 +300,9 @@ def assert_can_import_any(*pkg_names: str) -> None:
 
     Args:
         *pkg_names (str): Additional package names for checking import.
+
+    Returns:
+        None
     """
     if len(pkg_names) == 1:
         return assert_can_import(pkg_names[0])
@@ -318,6 +329,9 @@ def warn_cannot_import(pkg_name: str) -> bool:
 
     Args:
         pkg_name (str): The name of the package to check.
+
+    Returns:
+        bool: True if the package cannot be imported; otherwise, False.
     """
     try:
         assert_can_import(pkg_name)
@@ -745,14 +759,17 @@ def get_imlucky_url(query: str) -> str:
     return "https://duckduckgo.com/?q=!ducky+" + urllib.request.pathname2url(query)
 
 
-def imlucky(query: str, **kwargs) -> None:
+def imlucky(query: str, **kwargs) -> bool:
     """Open a DuckDuckGo "I'm lucky" URL for a query in the web browser.
 
     Args:
         query (str): The search query.
         **kwargs: Keyword arguments passed to `webbrowser.open`.
+
+    Returns:
+        bool: True if the browser was opened successfully, False otherwise.
     """
-    webbrowser.open(get_imlucky_url(query), **kwargs)
+    return webbrowser.open(get_imlucky_url(query), **kwargs)
 
 
 def get_api_ref(
@@ -800,7 +817,7 @@ def open_api_ref(
     module: tp.Union[None, str, ModuleType] = None,
     resolve: bool = True,
     **kwargs,
-) -> None:
+) -> bool:
     """Open the API reference URL for an object in the web browser.
 
     Args:
@@ -808,5 +825,8 @@ def open_api_ref(
         module (Union[None, str, ModuleType]): The module context used for resolving the object.
         resolve (bool): Whether to resolve the object's reference name.
         **kwargs: Keyword arguments passed to `webbrowser.open`.
+
+    Returns:
+        bool: True if the browser was opened successfully, False otherwise.
     """
-    webbrowser.open(get_api_ref(obj, module=module, resolve=resolve), **kwargs)
+    return webbrowser.open(get_api_ref(obj, module=module, resolve=resolve), **kwargs)

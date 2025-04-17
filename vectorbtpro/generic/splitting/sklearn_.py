@@ -101,6 +101,9 @@ class SplitterCV(BaseCrossValidator, Base):
         """Splitter instance, factory name, or factory function used for splitting.
 
         If None, it is determined automatically based on `SplitterCV.splitter_kwargs`.
+
+        Returns:
+            Union[str, Splitter, Callable]: The splitter instance or factory.
         """
         return self._splitter
 
@@ -109,12 +112,19 @@ class SplitterCV(BaseCrossValidator, Base):
         """Splitter class used as the factory for creating splitter instances.
 
         Defaults to `vectorbtpro.generic.splitting.base.Splitter`.
+
+        Returns:
+            Type[Splitter]: The splitter class used for creating splitter instances.
         """
         return self._splitter_cls
 
     @property
     def splitter_kwargs(self) -> tp.KwargsLike:
-        """Keyword arguments for the splitter factory method."""
+        """Keyword arguments for the splitter factory method.
+        
+        Returns:
+            KwargsLike: Keyword arguments for the splitter factory method.
+        """
         return self._splitter_kwargs
 
     @property
@@ -122,6 +132,9 @@ class SplitterCV(BaseCrossValidator, Base):
         """Group labels for splitting. See `vectorbtpro.base.accessors.BaseIDXAccessor.get_grouper`.
 
         Not passed to the factory method.
+
+        Returns:
+            AnyGroupByLike: Group labels for splitting.
         """
         return self._split_group_by
 
@@ -130,12 +143,19 @@ class SplitterCV(BaseCrossValidator, Base):
         """Group labels for setting. See `vectorbtpro.base.accessors.BaseIDXAccessor.get_grouper`.
 
         Not passed to the factory method.
+
+        Returns:
+            AnyGroupByLike: Group labels for setting.
         """
         return self._set_group_by
 
     @property
     def template_context(self) -> tp.KwargsLike:
-        """Mapping used for template substitution in ranges, passed to the splitter factory."""
+        """Mapping used for template substitution in ranges, passed to the splitter factory.
+        
+        Returns:
+            KwargsLike: Mapping for template substitution in ranges.
+        """
         return self._template_context
 
     def get_splitter(

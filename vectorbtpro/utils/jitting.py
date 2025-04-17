@@ -32,7 +32,11 @@ class Jitter(Configured):
 
     @property
     def wrapping_disabled(self) -> bool:
-        """Global flag indicating whether jitting wrapping is disabled."""
+        """Global flag indicating whether jitting wrapping is disabled.
+        
+        Returns:
+            bool: True if jitting wrapping is disabled, False otherwise.
+        """
         from vectorbtpro._settings import settings
 
         jitting_cfg = settings["jitting"]
@@ -112,37 +116,65 @@ class NumbaJitter(Jitter):
 
     @property
     def fix_cannot_parallel(self) -> bool:
-        """Flag indicating whether to disable parallel execution if the 'can_parallel' tag is missing."""
+        """Flag indicating whether to disable parallel execution if the 'can_parallel' tag is missing.
+
+        Returns:
+            bool: True if parallel execution should be disabled when 'can_parallel' is absent, False otherwise.
+        """
         return self._fix_cannot_parallel
 
     @property
     def nopython(self) -> bool:
-        """Flag indicating whether functions should be compiled in nopython mode."""
+        """Flag indicating whether functions should be compiled in nopython mode.
+
+        Returns:
+            bool: True if nopython mode is enabled, False otherwise.
+        """
         return self._nopython
 
     @property
     def nogil(self) -> bool:
-        """Flag indicating whether to release the Global Interpreter Lock (GIL) during execution."""
+        """Flag indicating whether to release the Global Interpreter Lock (GIL) during execution.
+
+        Returns:
+            bool: True if the GIL should be released during execution, False otherwise.
+        """
         return self._nogil
 
     @property
     def parallel(self) -> bool:
-        """Flag indicating whether automatic parallelization is enabled."""
+        """Flag indicating whether automatic parallelization is enabled.
+
+        Returns:
+            bool: True if parallel execution is enabled, False otherwise.
+        """
         return self._parallel
 
     @property
     def boundscheck(self) -> bool:
-        """Flag indicating whether array bounds checking is enabled."""
+        """Flag indicating whether array bounds checking is enabled.
+
+        Returns:
+            bool: True if array bounds checking is turned on, False otherwise.
+        """
         return self._boundscheck
 
     @property
     def cache(self) -> bool:
-        """Flag indicating whether the compiled function should be cached on disk."""
+        """Flag indicating whether the compiled function should be cached on disk.
+
+        Returns:
+            bool: True if caching of the compiled function is enabled, False otherwise.
+        """
         return self._cache
 
     @property
     def options(self) -> tp.Kwargs:
-        """Dictionary of additional keyword arguments provided to the Numba decorator."""
+        """Dictionary of additional keyword arguments provided to the Numba decorator.
+
+        Returns:
+            Kwargs: A dictionary containing extra options for the Numba decorator.
+        """
         return self._options
 
     def decorate(self, py_func: tp.Callable, tags: tp.Optional[set] = None) -> tp.Callable:

@@ -56,7 +56,8 @@ class _RPROBX(RPROBX):
     Generates exit signals from entries using the helper function
     `vectorbtpro.signals.nb.rand_by_prob_place_nb`.
 
-    See `RPROB` for details on parameters."""
+    See `RPROB` for details on parameters.
+    """
     pass
 
 

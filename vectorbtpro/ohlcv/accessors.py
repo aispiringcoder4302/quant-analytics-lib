@@ -149,7 +149,11 @@ class OHLCVDFAccessor(OHLCDataMixin, GenericDFAccessor):
 
     @hybrid_property
     def df_accessor_cls(cls_or_self) -> tp.Type["OHLCVDFAccessor"]:
-        """Accessor class for pandas DataFrames."""
+        """Accessor class for pandas DataFrames.
+        
+        Returns:
+            Type[OHLCVDFAccessor]: The accessor class.
+        """
         return OHLCVDFAccessor
 
     @property
@@ -157,6 +161,9 @@ class OHLCVDFAccessor(OHLCDataMixin, GenericDFAccessor):
         """Merged feature mapping for OHLCV columns.
 
         Merges default feature settings from `vectorbtpro._settings` with the instance's feature map.
+
+        Returns:
+            Kwargs: A dictionary mapping OHLCV feature names to their corresponding column names.
         """
         from vectorbtpro._settings import settings
 
@@ -672,6 +679,9 @@ class OHLCVDFAccessor(OHLCDataMixin, GenericDFAccessor):
 
         Merges the plots defaults from `vectorbtpro.generic.accessors.GenericAccessor.plots_defaults`
         with the plot settings defined in `vectorbtpro._settings.ohlcv`.
+
+        Returns:
+            Kwargs: A dictionary containing the default plotting configurations.
         """
         from vectorbtpro._settings import settings
 

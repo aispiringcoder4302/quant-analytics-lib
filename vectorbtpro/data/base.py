@@ -109,22 +109,38 @@ class BaseDataMixin(Base):
 
     @property
     def feature_wrapper(self) -> ArrayWrapper:
-        """Column wrapper for feature data."""
+        """Column wrapper for feature data.
+        
+        Returns:
+            ArrayWrapper: The column wrapper for feature data.
+        """
         raise NotImplementedError
 
     @property
     def symbol_wrapper(self) -> ArrayWrapper:
-        """Column wrapper for symbol data."""
+        """Column wrapper for symbol data.
+        
+        Returns:
+            ArrayWrapper: The column wrapper for symbol data.
+        """
         raise NotImplementedError
 
     @property
     def features(self) -> tp.List[tp.Feature]:
-        """List of features obtained from the feature wrapper columns."""
+        """List of features obtained from the feature wrapper columns.
+        
+        Returns:
+            List[Feature]: The list of features.
+        """
         return self.feature_wrapper.columns.tolist()
 
     @property
     def symbols(self) -> tp.List[tp.Symbol]:
-        """List of symbols obtained from the symbol wrapper columns."""
+        """List of symbols obtained from the symbol wrapper columns.
+        
+        Returns:
+            List[Symbol]: The list of symbols.
+        """
         return self.symbol_wrapper.columns.tolist()
 
     @classmethod
@@ -133,6 +149,9 @@ class BaseDataMixin(Base):
 
         Args:
             keys (MaybeKeys): A single key or a sequence of keys to evaluate.
+
+        Returns:
+            bool: True if the keys are a sequence, False if they are hashable.
         """
         if checks.is_hashable(keys):
             return False
@@ -169,8 +188,8 @@ class BaseDataMixin(Base):
         Returns:
             int: The index of the feature, or -1 if not found.
 
-        !!! note
-            Raises a `ValueError` if multiple features match the specified key.
+        Raises:
+            ValueError: If multiple features match the specified key.
         """
         # shortcut
         columns = self.feature_wrapper.columns
@@ -202,8 +221,8 @@ class BaseDataMixin(Base):
         Returns:
             int: The index of the symbol, or -1 if not found.
 
-        !!! note
-            Raises a `ValueError` if multiple symbols match the specified key.
+        Raises:
+            ValueError: If multiple symbols match the specified key.
         """
         # shortcut
         columns = self.symbol_wrapper.columns
@@ -308,6 +327,9 @@ class BaseDataMixin(Base):
 
         Args:
             feature (Feature): The feature to check.
+
+        Returns:
+            bool: True if the feature exists, False otherwise.
         """
         feature_idx = self.get_feature_idx(feature, raise_error=False)
         return feature_idx != -1
@@ -317,6 +339,9 @@ class BaseDataMixin(Base):
 
         Args:
             symbol (Symbol): The symbol to check.
+
+        Returns:
+            bool: True if the symbol exists, False otherwise.
         """
         symbol_idx = self.get_symbol_idx(symbol, raise_error=False)
         return symbol_idx != -1
@@ -326,6 +351,9 @@ class BaseDataMixin(Base):
 
         Args:
             feature (Feature): The feature that must exist.
+
+        Returns:
+            None
         """
         self.get_feature_idx(feature, raise_error=True)
 
@@ -334,6 +362,9 @@ class BaseDataMixin(Base):
 
         Args:
             symbol (Symbol): The symbol that must exist.
+
+        Returns:
+            None
         """
         self.get_symbol_idx(symbol, raise_error=True)
 
@@ -388,42 +419,74 @@ class OHLCDataMixin(BaseDataMixin):
 
     @property
     def open(self) -> tp.Optional[tp.SeriesFrame]:
-        """Series representing the open prices."""
+        """Series representing the open prices.
+        
+        Returns:
+            Optional[SeriesFrame]: The open prices for the data if available; otherwise, None.
+        """
         return self.get_feature("Open")
 
     @property
     def high(self) -> tp.Optional[tp.SeriesFrame]:
-        """Series representing the high prices."""
+        """Series representing the high prices.
+        
+        Returns:
+            Optional[SeriesFrame]: The high prices for the data if available; otherwise, None.
+        """
         return self.get_feature("High")
 
     @property
     def low(self) -> tp.Optional[tp.SeriesFrame]:
-        """Series representing the low prices."""
+        """Series representing the low prices.
+        
+        Returns:
+            Optional[SeriesFrame]: The low prices for the data if available; otherwise, None.
+        """
         return self.get_feature("Low")
 
     @property
     def close(self) -> tp.Optional[tp.SeriesFrame]:
-        """Series representing the close prices."""
+        """Series representing the close prices.
+        
+        Returns:
+            Optional[SeriesFrame]: The close prices for the data if available; otherwise, None.
+        """
         return self.get_feature("Close")
 
     @property
     def volume(self) -> tp.Optional[tp.SeriesFrame]:
-        """Series representing the volume data."""
+        """Series representing the volume data.
+        
+        Returns:
+            Optional[SeriesFrame]: The volume data for the data if available; otherwise, None.
+        """
         return self.get_feature("Volume")
 
     @property
     def trade_count(self) -> tp.Optional[tp.SeriesFrame]:
-        """Series representing the trade count."""
+        """Series representing the trade count.
+        
+        Returns:
+            Optional[SeriesFrame]: The trade count for the data if available; otherwise, None.
+        """
         return self.get_feature("Trade count")
 
     @property
     def vwap(self) -> tp.Optional[tp.SeriesFrame]:
-        """Series representing the volume-weighted average price (VWAP) data."""
+        """Series representing the volume-weighted average price (VWAP) data.
+        
+        Returns:
+            Optional[SeriesFrame]: The volume-weighted average price for the data if available; otherwise, None.
+        """
         return self.get_feature("VWAP")
 
     @property
     def hlc3(self) -> tp.SeriesFrame:
-        """Series computed as the arithmetic mean of the high, low, and close prices."""
+        """Series computed as the arithmetic mean of the high, low, and close prices.
+        
+        Returns:
+            SeriesFrame: The arithmetic mean of the high, low, and close prices.
+        """
         high = self.get_feature("High", raise_error=True)
         low = self.get_feature("Low", raise_error=True)
         close = self.get_feature("Close", raise_error=True)
@@ -431,7 +494,11 @@ class OHLCDataMixin(BaseDataMixin):
 
     @property
     def ohlc4(self) -> tp.SeriesFrame:
-        """Series computed as the arithmetic mean of the open, high, low, and close prices."""
+        """Series computed as the arithmetic mean of the open, high, low, and close prices.
+        
+        Returns:
+            SeriesFrame: The arithmetic mean of the open, high, low, and close prices.
+        """
         open = self.get_feature("Open", raise_error=True)
         high = self.get_feature("High", raise_error=True)
         low = self.get_feature("Low", raise_error=True)
@@ -440,14 +507,22 @@ class OHLCDataMixin(BaseDataMixin):
 
     @property
     def has_any_ohlc(self) -> bool:
-        """Boolean flag indicating if any OHLC feature (open, high, low, or close) is present."""
+        """Boolean flag indicating if any OHLC feature (open, high, low, or close) is present.
+        
+        Returns:
+            bool: True if any OHLC feature is present, False otherwise.
+        """
         return (
             self.has_feature("Open") or self.has_feature("High") or self.has_feature("Low") or self.has_feature("Close")
         )
 
     @property
     def has_ohlc(self) -> bool:
-        """Boolean flag indicating if all OHLC features (open, high, low, and close) are present."""
+        """Boolean flag indicating if all OHLC features (open, high, low, and close) are present.
+        
+        Returns:
+            bool: True if all OHLC features are present, False otherwise.
+        """
         return (
             self.has_feature("Open")
             and self.has_feature("High")
@@ -457,17 +532,29 @@ class OHLCDataMixin(BaseDataMixin):
 
     @property
     def has_any_ohlcv(self) -> bool:
-        """Boolean flag indicating if any OHLCV feature (OHLC or volume) is available."""
+        """Boolean flag indicating if any OHLCV feature (OHLC or volume) is available.
+        
+        Returns:
+            bool: True if any OHLCV feature is present, False otherwise.
+        """
         return self.has_any_ohlc or self.has_feature("Volume")
 
     @property
     def has_ohlcv(self) -> bool:
-        """Boolean flag indicating if all OHLCV features (open, high, low, close, and volume) are present."""
+        """Boolean flag indicating if all OHLCV features (open, high, low, close, and volume) are present.
+        
+        Returns:
+            bool: True if all OHLCV features are present, False otherwise.
+        """
         return self.has_ohlc and self.has_feature("Volume")
 
     @property
     def ohlc(self: OHLCDataMixinT) -> OHLCDataMixinT:
-        """New `OHLCDataMixin` instance containing only OHLC features (open, high, low, and close)."""
+        """New `OHLCDataMixin` instance containing only OHLC features (open, high, low, and close).
+        
+        Returns:
+            OHLCDataMixin: A new instance containing only OHLC features.
+        """
         open_idx = self.get_feature_idx("Open", raise_error=True)
         high_idx = self.get_feature_idx("High", raise_error=True)
         low_idx = self.get_feature_idx("Low", raise_error=True)
@@ -476,7 +563,11 @@ class OHLCDataMixin(BaseDataMixin):
 
     @property
     def ohlcv(self: OHLCDataMixinT) -> OHLCDataMixinT:
-        """New `OHLCDataMixin` instance containing only OHLCV features (open, high, low, close, and volume)."""
+        """New `OHLCDataMixin` instance containing only OHLCV features (open, high, low, close, and volume).
+        
+        Returns:
+            OHLCDataMixin: A new instance containing only OHLCV features.
+        """
         open_idx = self.get_feature_idx("Open", raise_error=True)
         high_idx = self.get_feature_idx("High", raise_error=True)
         low_idx = self.get_feature_idx("Low", raise_error=True)
@@ -503,7 +594,11 @@ class OHLCDataMixin(BaseDataMixin):
 
     @property
     def returns_acc(self) -> ReturnsAccessor:
-        """Returns a `ReturnsAccessor` using default parameters from `OHLCDataMixin.get_returns_acc`."""
+        """Returns a `ReturnsAccessor` using default parameters from `OHLCDataMixin.get_returns_acc`.
+        
+        Returns:
+            ReturnsAccessor: An accessor for return calculations using the close price.
+        """
         return self.get_returns_acc()
 
     def get_returns(self, **kwargs) -> tp.SeriesFrame:
@@ -525,7 +620,11 @@ class OHLCDataMixin(BaseDataMixin):
 
     @property
     def returns(self) -> tp.SeriesFrame:
-        """Returns computed return values using default parameters from `OHLCDataMixin.get_returns`."""
+        """Returns computed return values using default parameters from `OHLCDataMixin.get_returns`.
+        
+        Returns:
+            SeriesFrame: Computed returns from the close price.
+        """
         return self.get_returns()
 
     def get_log_returns(self, **kwargs) -> tp.SeriesFrame:
@@ -548,7 +647,11 @@ class OHLCDataMixin(BaseDataMixin):
 
     @property
     def log_returns(self) -> tp.SeriesFrame:
-        """Returns logarithmic return values using default parameters from `OHLCDataMixin.get_log_returns`."""
+        """Returns logarithmic return values using default parameters from `OHLCDataMixin.get_log_returns`.
+        
+        Returns:
+            SeriesFrame: Computed logarithmic returns from the close price.
+        """
         return self.get_log_returns()
 
     def get_daily_returns(self, **kwargs) -> tp.SeriesFrame:
@@ -570,7 +673,11 @@ class OHLCDataMixin(BaseDataMixin):
 
     @property
     def daily_returns(self) -> tp.SeriesFrame:
-        """Returns daily computed returns using default parameters from `OHLCDataMixin.get_daily_returns`."""
+        """Returns daily computed returns using default parameters from `OHLCDataMixin.get_daily_returns`.
+        
+        Returns:
+            SeriesFrame: Daily computed returns from the close price.
+        """
         return self.get_daily_returns()
 
     def get_daily_log_returns(self, **kwargs) -> tp.SeriesFrame:
@@ -594,7 +701,11 @@ class OHLCDataMixin(BaseDataMixin):
     @property
     def daily_log_returns(self) -> tp.SeriesFrame:
         """Returns daily computed logarithmic returns using default parameters from
-        `OHLCDataMixin.get_daily_log_returns`."""
+        `OHLCDataMixin.get_daily_log_returns`.
+        
+        Returns:
+            SeriesFrame: Daily computed logarithmic returns from the close price.
+        """
         return self.get_daily_log_returns()
 
     def get_drawdowns(self, **kwargs) -> Drawdowns:
@@ -617,7 +728,11 @@ class OHLCDataMixin(BaseDataMixin):
 
     @property
     def drawdowns(self) -> Drawdowns:
-        """Returns drawdown records using default parameters from `OHLCDataMixin.get_drawdowns`."""
+        """Returns drawdown records using default parameters from `OHLCDataMixin.get_drawdowns`.
+        
+        Returns:
+            Drawdowns: Drawdown records generated using open, high, low, and close prices.
+        """
         return self.get_drawdowns()
 
 
@@ -753,6 +868,9 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         """Data dictionary.
 
         Either feature-oriented (`feature_dict`) or symbol-oriented (`symbol_dict`).
+
+        Returns:
+            Union[feature_dict, symbol_dict]: The data dictionary.
         """
         return self._data
 
@@ -762,6 +880,9 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
 
         Indicates whether the data dictionary is feature-oriented (`feature_dict`) or
         symbol-oriented (`symbol_dict`).
+
+        Returns:
+            Type[Union[feature_dict, symbol_dict]]: The type of the data dictionary.
         """
         return type(self.data)
 
@@ -771,6 +892,9 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
 
         If the data is feature-oriented (`feature_dict`), returns `symbol_dict`;
         otherwise, returns `feature_dict`.
+
+        Returns:
+            Type[Union[feature_dict, symbol_dict]]: The column type.
         """
         if isinstance(self.data, feature_dict):
             return symbol_dict
@@ -781,6 +905,9 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         """Feature-oriented flag.
 
         Indicates whether the data is feature-oriented, meaning keys represent features.
+
+        Returns:
+            bool: True if the data is feature-oriented, False otherwise.
         """
         return issubclass(self.dict_type, feature_dict)
 
@@ -789,6 +916,9 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         """Symbol-oriented flag.
 
         Indicates whether the data is symbol-oriented, meaning keys represent symbols.
+
+        Returns:
+            bool: True if the data is symbol-oriented, False otherwise.
         """
         return issubclass(self.dict_type, symbol_dict)
 
@@ -812,6 +942,9 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         """List of keys in the data dictionary.
 
         These represent features for `feature_dict` data or symbols for `symbol_dict` data.
+
+        Returns:
+            List[Union[Feature, Symbol]]: List of keys in the data dictionary.
         """
         return list(self.data.keys())
 
@@ -820,6 +953,9 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         """Single key flag.
 
         Indicates whether the underlying data dictionary contains only one key.
+
+        Returns:
+            bool: True if the data dictionary has only one key, False otherwise.
         """
         return self._single_key
 
@@ -829,6 +965,9 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
 
         Indicates whether there is only one feature in the data. For feature-oriented data,
         this is equivalent to `single_key`; otherwise, it is determined by the dimensionality of the wrapper.
+
+        Returns:
+            bool: True if there is only one feature, False otherwise.
         """
         if self.feature_oriented:
             return self.single_key
@@ -840,6 +979,9 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
 
         Indicates whether there is only one symbol in the data. For symbol-oriented data,
         this equals `single_key`; otherwise, it is determined by the dimensionality of the wrapper.
+
+        Returns:
+            bool: True if there is only one symbol, False otherwise.
         """
         if self.symbol_oriented:
             return self.single_key
@@ -847,14 +989,19 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
 
     @property
     def classes(self) -> tp.Union[feature_dict, symbol_dict]:
-        """Class definitions for the keys in the data dictionary."""
+        """Class definitions for the keys in the data dictionary.
+        
+        Returns:
+            Type[Union[feature_dict, symbol_dict]]: The type of the data dictionary.
+        """
         return self._classes
 
     @property
     def feature_classes(self) -> tp.Optional[feature_dict]:
         """Feature classes.
 
-        Returns the key classes if the data is feature-oriented; otherwise, returns None.
+        Returns:
+            Optional[feature_dict]: The key classes if the data is feature-oriented; otherwise, returns None.
         """
         if self.feature_oriented:
             return self.classes
@@ -864,7 +1011,8 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
     def symbol_classes(self) -> tp.Optional[symbol_dict]:
         """Symbol classes.
 
-        Returns the key classes if the data is symbol-oriented; otherwise, returns None.
+        Returns:
+            Optional[symbol_dict]: The key classes if the data is symbol-oriented; otherwise, returns None.
         """
         if self.symbol_oriented:
             return self.classes
@@ -932,6 +1080,9 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         Specifies the name(s) for the keys in the data dictionary.
         For multi-level keys, it is a sequence of names; for single-level keys, it is a hashable.
         If set to `False`, no level names are used.
+
+        Returns:
+            Optional[MaybeIterable[Hashable]]: The level name(s) for the keys.
         """
         return self.get_level_name()
 
@@ -969,47 +1120,82 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         """Key index property.
 
         A pandas Index generated from the data keys using `Data.get_key_index`.
+
+        Returns:
+            Index: A pandas Index, or a MultiIndex if level names are provided as a tuple.
         """
         return self.get_key_index()
 
     @property
     def fetch_kwargs(self) -> tp.Union[feature_dict, symbol_dict]:
-        """Keyword arguments originally passed to `Data.fetch_symbol`, maintained as a `symbol_dict`."""
+        """Keyword arguments originally passed to `Data.fetch_symbol`, maintained as a `symbol_dict`.
+        
+        Returns:
+            Union[feature_dict, symbol_dict]: The keyword arguments for fetching data.
+        """
         return self._fetch_kwargs
 
     @property
     def returned_kwargs(self) -> tp.Union[feature_dict, symbol_dict]:
-        """Keyword arguments returned by `Data.fetch_symbol`, stored as a `symbol_dict`."""
+        """Keyword arguments returned by `Data.fetch_symbol`, stored as a `symbol_dict`.
+        
+        Returns:
+            Union[feature_dict, symbol_dict]: The keyword arguments returned from fetching data.
+        """
         return self._returned_kwargs
 
     @property
     def last_index(self) -> tp.Union[feature_dict, symbol_dict]:
-        """Last fetched index for each symbol, maintained as a `symbol_dict`."""
+        """Last fetched index for each symbol, maintained as a `symbol_dict`.
+        
+        Returns:
+            Union[feature_dict, symbol_dict]: The last index for each symbol.
+        """
         return self._last_index
 
     @property
     def delisted(self) -> tp.Union[feature_dict, symbol_dict]:
-        """Delisting status for each symbol, stored as a `symbol_dict`."""
+        """Delisting status for each symbol, stored as a `symbol_dict`.
+        
+        Returns:
+            Union[feature_dict, symbol_dict]: The delisting status for each symbol.
+        """
         return self._delisted
 
     @property
     def tz_localize(self) -> tp.Union[None, bool, tp.TimezoneLike]:
-        """Timezone for localizing a datetime-naive index, initially provided to `Data.pull`."""
+        """Timezone for localizing a datetime-naive index, initially provided to `Data.pull`.
+        
+        Returns:
+            Union[None, bool, TimezoneLike]: The timezone for localizing the index.
+        """
         return self._tz_localize
 
     @property
     def tz_convert(self) -> tp.Union[None, bool, tp.TimezoneLike]:
-        """Timezone for converting a datetime-aware index, initially provided to `Data.pull`."""
+        """Timezone for converting a datetime-aware index, initially provided to `Data.pull`.
+        
+        Returns:
+            Union[None, bool, TimezoneLike]: The timezone for converting the index.
+        """
         return self._tz_convert
 
     @property
     def missing_index(self) -> tp.Optional[str]:
-        """The `missing` argument provided to `Data.align_index`."""
+        """The `missing` argument provided to `Data.align_index`.
+        
+        Returns:
+            Optional[str]: The missing index argument.
+        """
         return self._missing_index
 
     @property
     def missing_columns(self) -> tp.Optional[str]:
-        """The `missing` argument provided to `Data.align_columns`."""
+        """The `missing` argument provided to `Data.align_columns`.
+        
+        Returns:
+            Optional[str]: The missing columns argument.
+        """
         return self._missing_columns
 
     # ############# Settings ############# #
@@ -1058,7 +1244,11 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         creation. Modifying this configuration does not affect the class-level configuration.
 
         To change fields, modify the configuration in-place, override this property, or replace the
-        instance variable `${cls_name}._feature_config`."""
+        instance variable `${cls_name}._feature_config`.
+        
+        Returns:
+            Config: The feature configuration for the class.
+        """
         return self._feature_config
 
     def use_feature_config_of(self, cls: tp.Type[DataT]) -> None:
@@ -1422,7 +1612,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             apply_group_by (bool): Whether to apply grouping during iteration.
 
                 !!! note
-                  Grouping is not supported when iterating over keys.
+                    Grouping is not supported when iterating over keys.
             keep_2d (bool): Whether to retain a two-dimensional structure in the output.
             key_as_index (bool): Whether to return the key as an index.
 
@@ -1568,6 +1758,9 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
 
         This property returns an `vectorbtpro.base.wrapping.ArrayWrapper` instance with columns
         determined by the object's keys via `get_key_wrapper`.
+
+        Returns:
+            ArrayWrapper: The `vectorbtpro.base.wrapping.ArrayWrapper` instance with keys as columns.
         """
         return self.get_key_wrapper()
 
@@ -1621,32 +1814,56 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
 
     @property
     def ndim(self) -> int:
-        """Number of dimensions based on the default symbol wrapper."""
+        """Number of dimensions based on the default symbol wrapper.
+        
+        Returns:
+            int: The number of dimensions of the default symbol wrapper.
+        """
         return self.symbol_wrapper.ndim
 
     @property
     def shape(self) -> tp.Shape:
-        """Shape determined from the default symbol wrapper."""
+        """Shape determined from the default symbol wrapper.
+        
+        Returns:
+            Shape: The shape of the default symbol wrapper.
+        """
         return self.symbol_wrapper.shape
 
     @property
     def shape_2d(self) -> tp.Shape:
-        """Shape as if the object were two-dimensional, based on the default symbol wrapper."""
+        """Shape as if the object were two-dimensional, based on the default symbol wrapper.
+        
+        Returns:
+            Shape: The two-dimensional shape of the default symbol wrapper.
+        """
         return self.symbol_wrapper.shape_2d
 
     @property
     def columns(self) -> tp.Index:
-        """Column index based on the default symbol wrapper."""
+        """Column index based on the default symbol wrapper.
+        
+        Returns:
+            Index: The column index of the default symbol wrapper.
+        """
         return self.symbol_wrapper.columns
 
     @property
     def index(self) -> tp.Index:
-        """Index based on the default symbol wrapper."""
+        """Index based on the default symbol wrapper.
+        
+        Returns:
+            Index: The index of the default symbol wrapper.
+        """
         return self.symbol_wrapper.index
 
     @property
     def freq(self) -> tp.Optional[tp.PandasFrequency]:
-        """Frequency based on the default symbol wrapper."""
+        """Frequency based on the default symbol wrapper.
+        
+        Returns:
+            Optional[PandasFrequency]: The frequency of the default symbol wrapper.
+        """
         return self.symbol_wrapper.freq
 
     @property
@@ -2550,11 +2767,10 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             silence_warnings (Optional[bool]): Flag to silence all warnings.
             **kwargs: Keyword arguments passed to the instance `__init__` method.
 
-        !!! note
-            For default values, refer to `vectorbtpro._settings.data`.
-
         Returns:
             Data: A new `Data` instance constructed from the provided data.
+
+        For default values, refer to `vectorbtpro._settings.data`.
         """
         if wrapper_kwargs is None:
             wrapper_kwargs = {}
@@ -2701,6 +2917,9 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             dict_type (Optional[Type[Union[feature_dict, symbol_dict]]]): A type to check against.
 
                 Defaults to `key_dict` if not specified.
+
+        Returns:
+            bool: True if the argument contains a data dictionary, False otherwise.
         """
         if dict_type is None:
             dict_type = key_dict
@@ -2725,6 +2944,9 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             arg (Any): The argument to be validated.
             arg_name (Optional[str]): The name of the argument for error messages.
             dict_type (Optional[Type[Union[feature_dict, symbol_dict]]]): A dictionary type to validate against.
+
+        Returns:
+            None
         """
         if isinstance(cls_or_self, type):
             checks.assert_not_none(dict_type, arg_name="dict_type")
@@ -3164,7 +3386,6 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         """Create a new `Data` instance with a new feature or symbol based on the data's orientation.
 
         The orientation is automatically determined by comparing data columns with existing features and symbols.
-        If the orientation cannot be determined, a `ValueError` is raised.
 
         Args:
             key (Key): The identifier corresponding to the feature or symbol.
@@ -3173,6 +3394,9 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
 
         Returns:
             Data: A new `Data` instance with the added feature or symbol.
+
+        Raises:
+            ValueError: If the orientation cannot be determined from the data.
         """
         if data is not None:
             if isinstance(data, CustomTemplate):
@@ -3447,7 +3671,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         merging both symbols and features.
 
         Args:
-            *datas (DataT): Additional data instances to merge.
+            *datas (Data): Additional data instances to merge.
             rename (Optional[Dict[Key, Key]]): Optional mapping for renaming keys during merging.
             **kwargs: Keyword arguments for merging.
 
@@ -4952,7 +5176,6 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             merge_kwargs (KwargsLike): Keyword arguments for merging results.
             template_context (KwargsLike): Additional context for template substitution.
             return_keys (bool): If True, includes keys representing function names in the return.
-            _func_name (Optional[str]): Internal name used for the function.
             **kwargs: Keyword arguments passed to the function.
 
         Returns:
@@ -6659,6 +6882,9 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         Args:
             __pdoc__ (dict): Documentation dictionary to update.
             source_cls (Optional[type]): Source class to extract the feature configuration from.
+
+        Returns:
+            None
         """
         __pdoc__[cls.__name__ + ".feature_config"] = cls.build_feature_config_doc(source_cls=source_cls)
 

@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Numba-compiled functions for portfolio records."""
+"""Module providing numba-compiled functions for processing portfolio records."""
 
 from numba import prange
 
@@ -34,7 +34,19 @@ def records_within_sim_range_nb(
     sim_start: tp.Optional[tp.FlexArray1dLike] = None,
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.RecordArray:
-    """Return records within simulation range."""
+    """Return records within the specified simulation range.
+
+    Args:
+        target_shape (Shape): The target shape specification for the simulation.
+        records (RecordArray): Array of record entries.
+        col_arr (Array1d): Array of column indices corresponding to each record.
+        idx_arr (Array1d): Array of row indices corresponding to each record.
+        sim_start (Optional[FlexArray1dLike]): Starting indices for the simulation range.
+        sim_end (Optional[FlexArray1dLike]): Ending indices for the simulation range.
+
+    Returns:
+        RecordArray: An array of records filtered to lie within the simulation range.
+    """
     out = np.empty(len(records), dtype=records.dtype)
     k = 0
 
@@ -60,7 +72,16 @@ def apply_weights_to_orders_nb(
     col_arr: tp.Array1d,
     weights: tp.Array1d,
 ) -> tp.RecordArray:
-    """Apply weights to order records."""
+    """Apply weights to order records by scaling sizes and fees.
+
+    Args:
+        order_records (RecordArray): Array of order records.
+        col_arr (Array1d): Array of column indices for the order records.
+        weights (Array1d): Array of weights used to scale order sizes and fees per column.
+
+    Returns:
+        RecordArray: A new array of order records after applying weights and filtering orders with zero size.
+    """
     order_records = order_records.copy()
     out = np.empty(len(order_records), dtype=order_records.dtype)
     k = 0
@@ -87,7 +108,17 @@ def weighted_price_reduce_meta_nb(
     size_arr: tp.Array1d,
     price_arr: tp.Array1d,
 ) -> float:
-    """Size-weighted price average."""
+    """Calculate the size-weighted average price.
+
+    Args:
+        idxs (Array1d): Array of indices to consider for the computation.
+        col (int): Column index (unused in computation).
+        size_arr (Array1d): Array of sizes corresponding to prices.
+        price_arr (Array1d): Array of prices corresponding to sizes.
+
+    Returns:
+        float: The size-weighted average price, or NaN if no valid data is available.
+    """
     if len(idxs) == 0:
         return np.nan
     size_price_sum = 0.0
@@ -120,7 +151,28 @@ def fill_trade_record_nb(
     status: int,
     parent_id: int,
 ) -> None:
-    """Fill a trade record."""
+    """Fill a trade record in the provided records array.
+
+    Args:
+        new_records (RecordArray): Array to store the trade record.
+        r (int): Index at which to fill the trade record.
+        col (int): Column index associated with the trade.
+        size (float): Trade size.
+        entry_order_id (int): Identifier for the entry order.
+        entry_idx (int): Row index of the entry order.
+        entry_price (float): Entry price.
+        entry_fees (float): Entry fees.
+        exit_order_id (int): Identifier for the exit order.
+        exit_idx (int): Row index of the exit order.
+        exit_price (float): Exit price.
+        exit_fees (float): Exit fees.
+        direction (int): Trade direction.
+        status (int): Trade status.
+        parent_id (int): Identifier linking the trade to its parent order.
+
+    Returns:
+        None: The function modifies `new_records` in place.
+    """
     # Calculate PnL and return
     pnl, ret = get_trade_stats_nb(size, entry_price, entry_fees, exit_price, exit_fees, direction)
 
@@ -166,9 +218,35 @@ def fill_entry_trades_in_position_nb(
     new_records: tp.RecordArray,
     r: int,
 ) -> int:
-    """Fill entry trades located within a single position.
+    """Fill entry trades within a single position and return the next trade ID.
 
-    Returns the next trade id."""
+    Iterates over order records corresponding to a position and computes trade details such as
+    size-weighted exit price and fees.
+
+    Args:
+        order_records (RecordArray): Array of order records.
+        col_map (GroupMap): Group mapping containing order indices and their lengths.
+        col (int): Column index for the orders.
+        sim_start (int): Simulation start index.
+        sim_end (int): Simulation end index.
+        first_c (int): Index of the first entry order.
+        last_c (int): Index of the last entry order.
+        init_price (float): Initial price for the position.
+        first_entry_size (float): Size of the first entry order.
+        first_entry_fees (float): Fees of the first entry order.
+        exit_idx (int): Row index corresponding to the exit order.
+        exit_size_sum (float): Total size of exit orders.
+        exit_gross_sum (float): Gross sum used to compute the weighted exit price.
+        exit_fees_sum (float): Total exit fees for proportional allocation.
+        direction (int): Trade direction, indicating long or short.
+        status (int): Trade status indicating whether the position is closed.
+        parent_id (int): Identifier linking orders to a parent trade.
+        new_records (RecordArray): Array where filled trade records are stored.
+        r (int): Current trade index used as the starting ID.
+
+    Returns:
+        int: The next trade ID after filling the entry trades.
+    """
     col_idxs, col_lens = col_map
     col_start_idxs = np.cumsum(col_lens) - col_lens
 
@@ -266,12 +344,32 @@ def get_entry_trades_nb(
 ) -> tp.RecordArray:
     """Fill entry trade records by aggregating order records.
 
-    Entry trade records are buy orders in a long position and sell orders in a short position.
+    Entry trade records are defined as buy orders in a long position and sell orders in a short position.
+
+    Args:
+        order_records (RecordArray): Array of order records.
+        close (FlexArray2dLike): 2D array of closing prices.
+        col_map (GroupMap): Mapping of columns for aggregating order records.
+        init_position (FlexArray1dLike): 1D array of initial positions.
+
+            Specifies the starting position for each asset.
+        init_price (FlexArray1dLike): 1D array of initial prices.
+
+            Used to calculate the entry price when an initial position exists.
+        sim_start (Optional[FlexArray1dLike]): 1D array of simulation start indices.
+
+            Indicates the beginning of the simulation range.
+        sim_end (Optional[FlexArray1dLike]): 1D array of simulation end indices.
+
+            Indicates the end of the simulation range.
+
+    Returns:
+        RecordArray: Array of entry trade records aggregated from order records.
 
     Examples:
         ```pycon
         >>> from vectorbtpro import *
-
+    
         >>> close = order_price = np.array([
         ...     [1, 6],
         ...     [2, 5],
@@ -291,7 +389,7 @@ def get_entry_trades_nb(
         >>> target_shape = close.shape
         >>> group_lens = np.full(target_shape[1], 1)
         >>> init_cash = np.full(target_shape[1], 100)
-
+    
         >>> sim_out = vbt.pf_nb.from_orders_nb(
         ...     target_shape,
         ...     group_lens,
@@ -301,7 +399,7 @@ def get_entry_trades_nb(
         ...     fees=np.asarray([[0.01]]),
         ...     slippage=np.asarray([[0.01]])
         ... )
-
+    
         >>> col_map = vbt.rec_nb.col_map_nb(sim_out.order_records['col'], target_shape[1])
         >>> entry_trade_records = vbt.pf_nb.get_entry_trades_nb(sim_out.order_records, close, col_map)
         >>> pd.DataFrame.from_records(entry_trade_records)
@@ -314,7 +412,7 @@ def get_entry_trades_nb(
         5   1    1   0.1               1          1         4.95     0.00495
         6   2    1   1.0               4          4         1.98     0.01980
         7   3    1   1.0               5          5         1.01     0.01010
-
+    
            exit_order_id  exit_idx  exit_price  exit_fees       pnl    return  \\
         0              3         3    3.060000   0.030600  2.009300  1.989406
         1              3         3    3.060000   0.003060  0.098920  0.489703
@@ -324,7 +422,7 @@ def get_entry_trades_nb(
         5              3         3    3.948182   0.003948  0.091284  0.184411
         6              5         5    1.010000   0.010100  0.940100  0.474798
         7             -1         5    1.000000   0.000000 -0.020100 -0.019901
-
+    
            direction  status  parent_id
         0          0       1          0
         1          0       1          0
@@ -335,6 +433,9 @@ def get_entry_trades_nb(
         6          1       1          1
         7          0       0          2
         ```
+
+    !!! tip
+        This function is parallelizable.
     """
     close_ = to_2d_array_nb(np.asarray(close))
     init_position_ = to_1d_array_nb(np.asarray(init_position))
@@ -558,6 +659,8 @@ def get_entry_trades_nb(
     return generic_nb.repartition_nb(new_records, counts)
 
 
+
+
 @register_chunkable(
     size=base_ch.GroupLensSizer(arg_query="col_map"),
     arg_take_spec=dict(
@@ -584,7 +687,33 @@ def get_exit_trades_nb(
 ) -> tp.RecordArray:
     """Fill exit trade records by aggregating order records.
 
-    Exit trade records are sell orders in a long position and buy orders in a short position.
+    Exit trade records correspond to sell orders in a long position and buy orders in a short position.
+
+    Args:
+        order_records (RecordArray): Array of order records.
+            
+            Contains structured order data from simulation outputs.
+        close (FlexArray2dLike): 2D array of closing prices.
+            
+            Each element represents the closing price at a specific index for each column.
+        col_map (GroupMap): Mapping of group columns.
+            
+            Consists of column indices and lengths used to group orders.
+        init_position (FlexArray1dLike): Initial positions for each column.
+            
+            Represented as a 1D array-like structure.
+        init_price (FlexArray1dLike): Initial prices for each column.
+            
+            Represented as a 1D array-like structure.
+        sim_start (Optional[FlexArray1dLike]): Simulation start indices.
+            
+            Denotes the beginning of the simulation range for each column.
+        sim_end (Optional[FlexArray1dLike]): Simulation end indices.
+            
+            Denotes the end of the simulation range for each column.
+
+    Returns:
+        RecordArray: Array of aggregated exit trade records.
 
     Examples:
         Building upon the example in `get_exit_trades_nb`:
@@ -622,6 +751,9 @@ def get_exit_trades_nb(
         6          1       1          1
         7          0       0          2
         ```
+
+    !!! tip
+        This function is parallelizable.
     """
     close_ = to_2d_array_nb(np.asarray(close))
     init_position_ = to_1d_array_nb(np.asarray(init_position))
@@ -857,7 +989,20 @@ def get_exit_trades_nb(
 
 @register_jitted(cache=True)
 def fill_position_record_nb(new_records: tp.RecordArray, r: int, trade_records: tp.RecordArray) -> None:
-    """Fill a position record by aggregating trade records."""
+    """Fill a position record by aggregating trade records.
+
+    Aggregates multiple trade records into a consolidated position record by computing the total
+    size, weighted average entry and exit prices, fees, profit, and return. The aggregated record
+    is stored in `new_records` at the specified index.
+
+    Args:
+        new_records (RecordArray): Array to store the aggregated position record.
+        r (int): Index where the new position record will be inserted.
+        trade_records (RecordArray): Array of trade records to aggregate.
+
+    Returns:
+        None: The function modifies `new_records` in place.
+    """
     # Aggregate trades
     col = trade_records["col"][0]
     size = np.sum(trade_records["size"])
@@ -894,7 +1039,18 @@ def fill_position_record_nb(new_records: tp.RecordArray, r: int, trade_records: 
 
 @register_jitted(cache=True)
 def copy_trade_record_nb(new_records: tp.RecordArray, r: int, trade_record: tp.Record) -> None:
-    """Copy a trade record."""
+    """Copy a trade record.
+
+    Copies a single trade record into the provided `new_records` array at the specified index.
+
+    Args:
+        new_records (RecordArray): Array to which the trade record is copied.
+        r (int): Index in `new_records` where the trade record will be inserted.
+        trade_record (Record): Trade record to copy.
+
+    Returns:
+        None: The function modifies `new_records` in place.
+    """
     new_records["id"][r] = r
     new_records["col"][r] = trade_record["col"]
     new_records["size"][r] = trade_record["size"]
@@ -925,7 +1081,16 @@ def copy_trade_record_nb(new_records: tp.RecordArray, r: int, trade_record: tp.R
 def get_positions_nb(trade_records: tp.RecordArray, col_map: tp.GroupMap) -> tp.RecordArray:
     """Fill position records by aggregating trade records.
 
-    Trades can be entry trades, exit trades, and even positions themselves - all will produce the same results.
+    Aggregates trade records into position records by grouping them using the provided column map.
+    Trades—whether entry trades, exit trades, or positions—are processed uniformly to calculate
+    aggregated metrics such as size, weighted entry and exit prices, fees, profit, and return.
+
+    Args:
+        trade_records (RecordArray): Array of trade records to aggregate.
+        col_map (GroupMap): Mapping of columns containing indices and group lengths.
+
+    Returns:
+        RecordArray: Array of aggregated position records after repartitioning based on group counts.
 
     Examples:
         Building upon the example in `get_exit_trades_nb`:
@@ -958,6 +1123,9 @@ def get_positions_nb(trade_records: tp.RecordArray, col_map: tp.GroupMap) -> tp.
         4          1       1          1
         5          0       0          2
         ```
+
+    !!! tip
+        This function is parallelizable.
     """
     col_idxs, col_lens = col_map
     col_start_idxs = np.cumsum(col_lens) - col_lens
@@ -1026,7 +1194,23 @@ def get_long_view_orders_nb(
     sim_start: tp.Optional[tp.FlexArray1dLike] = None,
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.RecordArray:
-    """Get view of orders in long positions only."""
+    """Return a view of order records corresponding to long positions only.
+
+    Args:
+        order_records (RecordArray): Array of structured order records.
+        close (Array2d): Array of closing prices.
+        col_map (GroupMap): Tuple containing column indices and group lengths for orders.
+        init_position (FlexArray1dLike): Initial position for each group.
+        init_price (FlexArray1dLike): Initial price for each group.
+        sim_start (Optional[FlexArray1dLike]): Simulation start index for each group.
+        sim_end (Optional[FlexArray1dLike]): Simulation end index for each group.
+
+    Returns:
+        RecordArray: Filtered order records containing only long position entries.
+
+    !!! tip
+        This function is parallelizable.
+    """
     init_position_ = to_1d_array_nb(np.asarray(init_position))
     init_price_ = to_1d_array_nb(np.asarray(init_price))
 
@@ -1178,7 +1362,32 @@ def get_short_view_orders_nb(
     sim_start: tp.Optional[tp.FlexArray1dLike] = None,
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.RecordArray:
-    """Get view of orders in short positions only."""
+    """Get view of orders in short positions only.
+
+    Filters order records to return only those corresponding to short positions.
+    The function simulates the evolution of trading positions for each group using the provided
+    initial position and price, and applies simulation range filters defined by `sim_start` and `sim_end`.
+
+    Args:
+        order_records (RecordArray): Order records as a NumPy record array
+            containing trading order details.
+        close (Array2d): A 2D array of closing prices.
+        col_map (GroupMap): Mapping information for group columns,
+            containing grouped column indices and lengths.
+        init_position (FlexArray1dLike): Initial position for each group.
+
+            A negative value indicates a short initial position.
+            A positive value indicates a long initial position.
+        init_price (FlexArray1dLike): Initial price for each group.
+        sim_start (Optional[FlexArray1dLike]): Simulation start indices for filtering orders.
+        sim_end (Optional[FlexArray1dLike]): Simulation end indices for filtering orders.
+
+    Returns:
+        RecordArray: Filtered order records corresponding to short positions.
+
+    !!! tip
+        This function is parallelizable.
+    """
     init_position_ = to_1d_array_nb(np.asarray(init_position))
     init_price_ = to_1d_array_nb(np.asarray(init_price))
 
@@ -1336,15 +1545,34 @@ def get_position_feature_nb(
     sim_start: tp.Optional[tp.FlexArray1dLike] = None,
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array2d:
-    """Get the position's feature at each time step.
+    """Compute the position feature at each time step.
 
-    For the list of supported features see `vectorbtpro.portfolio.enums.PositionFeature`.
+    Computes the specified position feature (either entry price or exit price) using order records
+    and closing prices across multiple groups. The calculation adapts based on the selected
+    `feature` and the flags controlling the treatment of open and closed positions.
 
-    If `fill_exit_price` is True and a part of the position is not closed yet, will fill
-    the exit price as if the part was closed using the current close.
+    Args:
+        order_records (RecordArray): Order records array.
+        close (Array2d): Array of market close prices.
+        col_map (GroupMap): Mapping of columns to their corresponding indices.
+        feature (int): Position feature to compute.
 
-    If `fill_closed_position` is True, will forward-fill missing values with the prices of the
-    previously closed position."""
+            See `vectorbtpro.portfolio.enums.PositionFeature` for available options.
+        init_position (FlexArray1dLike): Initial positions for each group.
+        init_price (FlexArray1dLike): Initial prices for each group.
+        fill_closed_position (bool): If True, forward-fill missing values using
+            prices from a previously closed position.
+        fill_exit_price (bool): If True, fill exit prices for open positions using
+            the current close price.
+        sim_start (Optional[FlexArray1dLike]): Simulation start indices for each group.
+        sim_end (Optional[FlexArray1dLike]): Simulation end indices for each group.
+
+    Returns:
+        Array2d: Array of computed feature values matching the shape of `close`.
+
+    !!! tip
+        This function is parallelizable.
+    """
     init_position_ = to_1d_array_nb(np.asarray(init_position))
     init_price_ = to_1d_array_nb(np.asarray(init_price))
 
@@ -1518,9 +1746,17 @@ def price_status_nb(
     high: tp.Optional[tp.FlexArray2d],
     low: tp.Optional[tp.FlexArray2d],
 ) -> tp.Array1d:
-    """Return the status of the order's price related to high and low.
+    """Return the status of each order's price relative to provided high and low arrays.
 
-    See `vectorbtpro.portfolio.enums.OrderPriceStatus`."""
+    Args:
+        records (RecordArray): Array of order records.
+        high (Optional[FlexArray2d]): Array of high prices corresponding to orders.
+        low (Optional[FlexArray2d]): Array of low prices corresponding to orders.
+
+    Returns:
+        Array1d: Array of `vectorbtpro.portfolio.enums.OrderPriceStatus` codes indicating
+            the price condition for each order.
+    """
     out = np.full(len(records), 0, dtype=int_)
     for i in range(len(records)):
         order = records[i]
@@ -1546,7 +1782,14 @@ def price_status_nb(
 
 @register_jitted(cache=True)
 def trade_winning_streak_nb(records: tp.RecordArray) -> tp.Array1d:
-    """Return the current winning streak of each trade."""
+    """Return the current winning streak for each trade.
+
+    Args:
+        records (RecordArray): Array of trade records containing profit and loss details.
+
+    Returns:
+        Array1d: Array of integers representing the winning streak count for each trade.
+    """
     out = np.full(len(records), 0, dtype=int_)
     curr_rank = 0
     for i in range(len(records)):
@@ -1560,7 +1803,14 @@ def trade_winning_streak_nb(records: tp.RecordArray) -> tp.Array1d:
 
 @register_jitted(cache=True)
 def trade_losing_streak_nb(records: tp.RecordArray) -> tp.Array1d:
-    """Return the current losing streak of each trade."""
+    """Return the current losing streak for each trade.
+
+    Args:
+        records (RecordArray): Array of trade records containing profit and loss details.
+
+    Returns:
+        Array1d: Array of integers representing the losing streak count for each trade.
+    """
     out = np.full(len(records), 0, dtype=int_)
     curr_rank = 0
     for i in range(len(records)):
@@ -1574,7 +1824,15 @@ def trade_losing_streak_nb(records: tp.RecordArray) -> tp.Array1d:
 
 @register_jitted(cache=True)
 def win_rate_reduce_nb(pnl_arr: tp.Array1d) -> float:
-    """Win rate of a PnL array."""
+    """Calculate the win rate from a profit and loss array.
+
+    Args:
+        pnl_arr (Array1d): Array of profit and loss values.
+
+    Returns:
+        float: The win rate computed as the ratio of winning entries to total valid entries,
+            or NaN if no entries exist.
+    """
     if pnl_arr.shape[0] == 0:
         return np.nan
     win_count = 0
@@ -1591,7 +1849,15 @@ def win_rate_reduce_nb(pnl_arr: tp.Array1d) -> float:
 
 @register_jitted(cache=True)
 def profit_factor_reduce_nb(pnl_arr: tp.Array1d) -> float:
-    """Profit factor of a PnL array."""
+    """Calculate the profit factor from a profit and loss array.
+
+    Args:
+        pnl_arr (Array1d): Array of profit and loss values.
+
+    Returns:
+        float: The profit factor computed as the ratio of total profits to total losses,
+            returning infinity if total losses are zero.
+    """
     if pnl_arr.shape[0] == 0:
         return np.nan
     win_sum = 0
@@ -1611,7 +1877,15 @@ def profit_factor_reduce_nb(pnl_arr: tp.Array1d) -> float:
 
 @register_jitted(cache=True)
 def expectancy_reduce_nb(pnl_arr: tp.Array1d) -> float:
-    """Expectancy of a PnL array."""
+    """Calculate the expectancy from a profit and loss array.
+
+    Args:
+        pnl_arr (Array1d): Array of profit and loss values.
+
+    Returns:
+        float: The expectancy computed as the difference between weighted average win and loss,
+            or NaN if no valid entries exist.
+    """
     if pnl_arr.shape[0] == 0:
         return np.nan
     win_count = 0
@@ -1645,7 +1919,15 @@ def expectancy_reduce_nb(pnl_arr: tp.Array1d) -> float:
 
 @register_jitted(cache=True)
 def sqn_reduce_nb(pnl_arr: tp.Array1d, ddof: int = 0) -> float:
-    """SQN of a PnL array."""
+    """Calculate the System Quality Number (SQN) for a profit and loss array.
+
+    Args:
+        pnl_arr (Array1d): Array of profit and loss values.
+        ddof (int): Delta degrees of freedom for standard deviation calculation.
+
+    Returns:
+        float: The SQN computed as `sqrt(count) * mean / std`, or NaN if the standard deviation is zero.
+    """
     count = generic_nb.nancnt_1d_nb(pnl_arr)
     mean = np.nanmean(pnl_arr)
     std = generic_nb.nanstd_1d_nb(pnl_arr, ddof=ddof)
@@ -1672,7 +1954,32 @@ def trade_best_worst_price_nb(
     imin: int = -1,
     imax: int = -1,
 ) -> tp.Tuple[float, float, int, int]:
-    """Best price, worst price, and their indices during a trade."""
+    """Compute the best and worst prices during a trade along with their indices.
+
+    Args:
+        trade (Record): Trade record containing entry and exit indices, status, direction, and prices.
+        open (Optional[FlexArray2d]): Array of open prices.
+        high (Optional[FlexArray2d]): Array of high prices.
+        low (Optional[FlexArray2d]): Array of low prices.
+        close (FlexArray2d): Array of close prices.
+        entry_price_open (bool): Include the open price of the entry bar when evaluating prices.
+        exit_price_close (bool): Include the close price of the exit bar when evaluating prices.
+        max_duration (Optional[int]): Maximum number of bars to evaluate price movements.
+        idx_relative (bool): Return indices relative to the trade's entry index.
+        cont_idx (int): Starting row index for computations.
+
+            If set to -1 or equal to the trade's entry index, iteration begins at the entry index.
+        one_iteration (bool): Stop the evaluation after one iteration.
+        vmin (float): Initial best (minimum) price for continuation.
+        vmax (float): Initial worst (maximum) price for continuation.
+        imin (int): Initial index corresponding to the best price.
+        imax (int): Initial index corresponding to the worst price.
+
+    Returns:
+        Tuple[float, float, int, int]:
+            * For long trades, returns (best price, worst price, index of best price, index of worst price).
+            * For short trades, returns (worst price, best price, index of worst price, index of best price).
+    """
     from_i = trade["entry_idx"]
     to_i = trade["exit_idx"]
     trade_open = trade["status"] == TradeStatus.Open
@@ -1771,7 +2078,24 @@ def best_price_nb(
     exit_price_close: bool = False,
     max_duration: tp.Optional[int] = None,
 ) -> tp.Array1d:
-    """Get best price by applying `trade_best_worst_price_nb` on each trade."""
+    """Compute the best price for each trade using `trade_best_worst_price_nb`.
+
+    Args:
+        records (RecordArray): Array of trade records.
+        open (Optional[FlexArray2d]): Array of open prices.
+        high (Optional[FlexArray2d]): Array of high prices.
+        low (Optional[FlexArray2d]): Array of low prices.
+        close (FlexArray2d): Array of close prices.
+        entry_price_open (bool): Include the open price of the entry bar when evaluating prices.
+        exit_price_close (bool): Include the close price of the exit bar when evaluating prices.
+        max_duration (Optional[int]): Maximum number of bars to evaluate price movements.
+
+    Returns:
+        Array1d: Array of best prices computed for each trade.
+
+    !!! tip
+        This function is parallelizable.
+    """
     out = np.empty(len(records), dtype=float_)
     for r in prange(len(records)):
         trade = records[r]
@@ -1813,7 +2137,24 @@ def worst_price_nb(
     exit_price_close: bool = False,
     max_duration: tp.Optional[int] = None,
 ) -> tp.Array1d:
-    """Get worst price by applying `trade_best_worst_price_nb` on each trade."""
+    """Compute the worst price for each trade using `trade_best_worst_price_nb`.
+
+    Args:
+        records (RecordArray): Array of trade records.
+        open (Optional[FlexArray2d]): Array of open prices.
+        high (Optional[FlexArray2d]): Array of high prices.
+        low (Optional[FlexArray2d]): Array of low prices.
+        close (FlexArray2d): Array of close prices.
+        entry_price_open (bool): Include the open price of the entry bar when evaluating prices.
+        exit_price_close (bool): Include the close price of the exit bar when evaluating prices.
+        max_duration (Optional[int]): Maximum number of bars to evaluate price movements.
+
+    Returns:
+        Array1d: Array of worst prices computed for each trade.
+
+    !!! tip
+        This function is parallelizable.
+    """
     out = np.empty(len(records), dtype=float_)
     for r in prange(len(records)):
         trade = records[r]
@@ -1857,7 +2198,25 @@ def best_price_idx_nb(
     max_duration: tp.Optional[int] = None,
     relative: bool = True,
 ) -> tp.Array1d:
-    """Get index of best price by applying `trade_best_worst_price_nb` on each trade."""
+    """Compute the index of the best price for each trade using `trade_best_worst_price_nb`.
+
+    Args:
+        records (RecordArray): Array of trade records.
+        open (Optional[FlexArray2d]): Array of open prices.
+        high (Optional[FlexArray2d]): Array of high prices.
+        low (Optional[FlexArray2d]): Array of low prices.
+        close (FlexArray2d): Array of close prices.
+        entry_price_open (bool): Include the open price of the entry bar when evaluating prices.
+        exit_price_close (bool): Include the close price of the exit bar when evaluating prices.
+        max_duration (Optional[int]): Maximum number of bars to evaluate price movements.
+        relative (bool): Return the index as relative to the trade's entry index.
+
+    Returns:
+        Array1d: Array of indices corresponding to the best prices for each trade.
+
+    !!! tip
+        This function is parallelizable.
+    """
     out = np.empty(len(records), dtype=float_)
     for r in prange(len(records)):
         trade = records[r]
@@ -1902,7 +2261,25 @@ def worst_price_idx_nb(
     max_duration: tp.Optional[int] = None,
     relative: bool = True,
 ) -> tp.Array1d:
-    """Get worst price by applying `trade_best_worst_price_nb` on each trade."""
+    """Return worst price index for each trade by applying `trade_best_worst_price_nb` on each trade.
+
+    Args:
+        records (RecordArray): Array of trade records.
+        open (Optional[FlexArray2d]): Array of open prices.
+        high (Optional[FlexArray2d]): Array of high prices.
+        low (Optional[FlexArray2d]): Array of low prices.
+        close (FlexArray2d): Array of closing prices.
+        entry_price_open (bool): Include the open price of the entry bar when evaluating prices.
+        exit_price_close (bool): Include the close price of the exit bar when evaluating prices.
+        max_duration (Optional[int]): Maximum number of bars to evaluate price movements.
+        relative (bool): Flag indicating if the worst price index is relative to the trade's entry index.
+
+    Returns:
+        Array1d: Array of worst price indexes for each trade.
+
+    !!! tip
+        This function is parallelizable.
+    """
     out = np.empty(len(records), dtype=float_)
     for r in prange(len(records)):
         trade = records[r]
@@ -1931,7 +2308,28 @@ def expanding_best_price_nb(
     exit_price_close: bool = False,
     max_duration: tp.Optional[int] = None,
 ) -> tp.Array2d:
-    """Get expanding best price of each trade."""
+    """Return an expanding view of the best price for each trade.
+
+    Calculates a 2D array where each column corresponds to a trade and each row represents
+    the best price reached up to that time index, starting from the trade's entry.
+
+    Args:
+        records (RecordArray): Array of trade records.
+        open (Optional[FlexArray2d]): Array of open prices.
+        high (Optional[FlexArray2d]): Array of high prices.
+        low (Optional[FlexArray2d]): Array of low prices.
+        close (FlexArray2d): Array of closing prices.
+        entry_price_open (bool): Include the open price of the entry bar when evaluating prices.
+        exit_price_close (bool): Include the close price of the exit bar when evaluating prices.
+        max_duration (Optional[int]): Maximum number of bars to evaluate price movements.
+
+    Returns:
+        Array2d: 2D array where each column represents a trade and each row contains
+            the best price up to that time index.
+
+    !!! tip
+        This function is parallelizable.
+    """
     if max_duration is None:
         _max_duration = 0
         for r in range(len(records)):
@@ -1986,7 +2384,28 @@ def expanding_worst_price_nb(
     exit_price_close: bool = False,
     max_duration: tp.Optional[int] = None,
 ) -> tp.Array2d:
-    """Get expanding worst price of each trade."""
+    """Return an expanding view of the worst price for each trade.
+
+    Calculates a 2D array where each column corresponds to a trade and each row represents
+    the worst price reached up to that time index, starting from the trade's entry.
+
+    Args:
+        records (RecordArray): Array of trade records.
+        open (Optional[FlexArray2d]): Array of open prices.
+        high (Optional[FlexArray2d]): Array of high prices.
+        low (Optional[FlexArray2d]): Array of low prices.
+        close (FlexArray2d): Array of closing prices.
+        entry_price_open (bool): Include the open price of the entry bar when evaluating prices.
+        exit_price_close (bool): Include the close price of the exit bar when evaluating prices.
+        max_duration (Optional[int]): Maximum number of bars to evaluate price movements.
+
+    Returns:
+        Array2d: 2D array where each column represents a trade and each row contains
+            the worst price up to that time index.
+
+    !!! tip
+        This function is parallelizable.
+    """
     if max_duration is None:
         _max_duration = 0
         for r in range(len(records)):
@@ -2038,7 +2457,21 @@ def trade_mfe_nb(
     best_price: float,
     use_returns: bool = False,
 ) -> float:
-    """Compute Maximum Favorable Excursion (MFE)."""
+    """Compute the Maximum Favorable Excursion (MFE) for a trade.
+
+    Calculates the favorable price movement for a trade based on its direction and
+    whether to compute using returns.
+
+    Args:
+        size (float): Trade size used in the profit calculation.
+        direction (int): Trade direction indicator.
+        entry_price (float): Price at trade entry.
+        best_price (float): Best price reached during the trade.
+        use_returns (bool): Flag indicating whether to compute using return-based values.
+
+    Returns:
+        float: The Maximum Favorable Excursion for the trade.
+    """
     if direction == TradeDirection.Long:
         if use_returns:
             return (best_price - entry_price) / entry_price
@@ -2066,7 +2499,23 @@ def mfe_nb(
     best_price: tp.Array1d,
     use_returns: bool = False,
 ) -> tp.Array1d:
-    """Apply `trade_mfe_nb` on each trade."""
+    """Apply `trade_mfe_nb` to compute the Maximum Favorable Excursion (MFE) for each trade.
+
+    Iterates over the provided arrays and computes the MFE for each trade using the `trade_mfe_nb` function.
+
+    Args:
+        size (Array1d): Array of trade sizes.
+        direction (Array1d): Array of trade direction indicators.
+        entry_price (Array1d): Array of entry prices.
+        best_price (Array1d): Array of best prices reached during trades.
+        use_returns (bool): Flag indicating whether to compute using return-based values.
+
+    Returns:
+        Array1d: Array containing the MFE values for each trade.
+
+    !!! tip
+        This function is parallelizable.
+    """
     out = np.empty(size.shape[0], dtype=float_)
     for r in prange(size.shape[0]):
         out[r] = trade_mfe_nb(
@@ -2087,7 +2536,21 @@ def trade_mae_nb(
     worst_price: float,
     use_returns: bool = False,
 ) -> float:
-    """Compute Maximum Adverse Excursion (MAE)."""
+    """Compute the Maximum Adverse Excursion (MAE) for a trade.
+
+    Calculates the adverse price movement for a trade based on its direction and
+    whether to compute using returns.
+
+    Args:
+        size (float): Trade size used in the loss calculation.
+        direction (int): Trade direction indicator.
+        entry_price (float): Price at trade entry.
+        worst_price (float): Worst price reached during the trade.
+        use_returns (bool): Flag indicating whether to compute using return-based values.
+
+    Returns:
+        float: The Maximum Adverse Excursion for the trade.
+    """
     if direction == TradeDirection.Long:
         if use_returns:
             return (worst_price - entry_price) / entry_price
@@ -2115,7 +2578,23 @@ def mae_nb(
     worst_price: tp.Array1d,
     use_returns: bool = False,
 ) -> tp.Array1d:
-    """Apply `trade_mae_nb` on each trade."""
+    """Apply `trade_mae_nb` to compute the Maximum Adverse Excursion (MAE) for each trade.
+
+    Iterates over the provided arrays and computes the MAE for each trade using the `trade_mae_nb` function.
+
+    Args:
+        size (Array1d): Array of trade sizes.
+        direction (Array1d): Array of trade direction indicators.
+        entry_price (Array1d): Array of entry prices.
+        worst_price (Array1d): Array of worst prices reached during trades.
+        use_returns (bool): Flag indicating whether to compute using return-based values.
+
+    Returns:
+        Array1d: Array containing the MAE values for each trade.
+
+    !!! tip
+        This function is parallelizable.
+    """
     out = np.empty(size.shape[0], dtype=float_)
     for r in prange(size.shape[0]):
         out[r] = trade_mae_nb(
@@ -2143,7 +2622,19 @@ def expanding_mfe_nb(
     expanding_best_price: tp.Array2d,
     use_returns: bool = False,
 ) -> tp.Array2d:
-    """Get expanding MFE of each trade."""
+    """Get expanding maximum favorable excursion (MFE) for each trade using expanding best prices.
+
+    Args:
+        records (RecordArray): Trade records containing trade data.
+        expanding_best_price (Array2d): 2D array of expanding best prices for each trade.
+        use_returns (bool): Flag indicating whether to compute MFE using returns instead of absolute prices.
+
+    Returns:
+        Array2d: 2D array of expanding MFE values for each trade.
+
+    !!! tip
+        This function is parallelizable.
+    """
     out = np.empty_like(expanding_best_price, dtype=float_)
     for r in prange(expanding_best_price.shape[1]):
         for i in range(expanding_best_price.shape[0]):
@@ -2172,7 +2663,19 @@ def expanding_mae_nb(
     expanding_worst_price: tp.Array2d,
     use_returns: bool = False,
 ) -> tp.Array2d:
-    """Get expanding MAE of each trade."""
+    """Get expanding maximum adverse excursion (MAE) for each trade using expanding worst prices.
+
+    Args:
+        records (RecordArray): Trade records containing trade data.
+        expanding_worst_price (Array2d): 2D array of expanding worst prices for each trade.
+        use_returns (bool): Flag indicating whether to compute MAE using returns instead of absolute prices.
+
+    Returns:
+        Array2d: 2D array of expanding MAE values for each trade.
+
+    !!! tip
+        This function is parallelizable.
+    """
     out = np.empty_like(expanding_worst_price, dtype=float_)
     for r in prange(expanding_worst_price.shape[1]):
         for i in range(expanding_worst_price.shape[0]):
@@ -2215,7 +2718,27 @@ def edge_ratio_nb(
     exit_price_close: bool = False,
     max_duration: tp.Optional[int] = None,
 ) -> tp.Array1d:
-    """Get edge ratio of each column."""
+    """Get the edge ratio for each column based on normalized trade outcomes.
+
+    Args:
+        records (RecordArray): Trade records used for calculation.
+        col_map (GroupMap): Mapping of column indices and their respective lengths.
+        open (Optional[FlexArray2d]): 2D array representing open prices.
+        high (Optional[FlexArray2d]): 2D array representing high prices.
+        low (Optional[FlexArray2d]): 2D array representing low prices.
+        close (FlexArray2d): 2D array representing close prices.
+        volatility (FlexArray2d): 2D array containing volatility data.
+        entry_price_open (bool): Include the open price of the entry bar when evaluating prices.
+        exit_price_close (bool): Include the close price of the exit bar when evaluating prices.
+        max_duration (Optional[int]): Maximum number of bars to evaluate price movements.
+
+    Returns:
+        Array1d: 1D array containing the edge ratio for each column, computed as the ratio of
+            the mean normalized MFE to the mean normalized MAE.
+
+    !!! tip
+        This function is parallelizable.
+    """
     col_idxs, col_lens = col_map
     col_start_idxs = np.cumsum(col_lens) - col_lens
     out = np.full(len(col_lens), np.nan, dtype=float_)
@@ -2303,7 +2826,34 @@ def running_edge_ratio_nb(
     max_duration: tp.Optional[int] = None,
     incl_shorter: bool = False,
 ) -> tp.Array2d:
-    """Get running edge ratio of each column."""
+    """Compute the running edge ratio for each column.
+
+    The function calculates a 2D array where each element represents the ratio of the
+    mean normalized maximum favorable excursion (MFE) to the mean normalized minimum adverse
+    excursion (MAE) for trades associated with each column. Normalization is performed using
+    the provided volatility array.
+
+    Args:
+        records (RecordArray): Array of trade records.
+        col_map (GroupMap): Tuple containing column indices and their corresponding lengths.
+        open (Optional[FlexArray2d]): Array of opening prices.
+        high (Optional[FlexArray2d]): Array of high prices.
+        low (Optional[FlexArray2d]): Array of low prices.
+        close (FlexArray2d): Array of closing prices.
+        volatility (FlexArray2d): Array of volatility values used for normalization.
+        entry_price_open (bool): Include the open price of the entry bar when evaluating prices.
+        exit_price_close (bool): Include the close price of the exit bar when evaluating prices.
+        max_duration (Optional[int]): Maximum number of bars to evaluate price movements.
+
+            If None, it is determined from the maximum trade duration in `records`.
+        incl_shorter (bool): Whether to include trades shorter than the current duration step.
+
+    Returns:
+        Array2d: A 2D array with shape (max_duration, number of columns) containing the running edge ratio.
+
+    !!! tip
+        This function is parallelizable.
+    """
     col_idxs, col_lens = col_map
     col_start_idxs = np.cumsum(col_lens) - col_lens
 

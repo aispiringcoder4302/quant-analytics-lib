@@ -97,14 +97,14 @@ class _MACD(MACD):
         """Plot the `MACD.macd`, `MACD.signal`, and `MACD.hist` values of the indicator.
 
         Args:
-            column (str): Name of the column to plot.
-            macd_trace_kwargs (dict): Keyword arguments passed to
+            column (Optional[Label]): Name of the column to plot.
+            macd_trace_kwargs (KwargsLike): Keyword arguments passed to
                 `plotly.graph_objects.Scatter` for plotting the `MACD.macd` line.
-            signal_trace_kwargs (dict): Keyword arguments passed to
+            signal_trace_kwargs (KwargsLike): Keyword arguments passed to
                 `plotly.graph_objects.Scatter` for plotting the `MACD.signal` line.
-            hist_trace_kwargs (dict): Keyword arguments passed to
+            hist_trace_kwargs (KwargsLike): Keyword arguments passed to
                 `plotly.graph_objects.Bar` for plotting the `MACD.hist` as a histogram.
-            add_trace_kwargs (dict): Keyword arguments passed to `fig.add_trace` when adding each trace.
+            add_trace_kwargs (KwargsLike): Keyword arguments passed to `fig.add_trace` when adding each trace.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
             **layout_kwargs: Additional keyword arguments for configuring the figure layout.
 

@@ -1165,6 +1165,9 @@ def broadcast(
         clean_index_kwargs (KwargsLike): Keyword arguments for `vectorbtpro.base.indexes.clean_index`.
         template_context (KwargsLike): Additional context for template substitution.
 
+    Returns:
+        Any: The broadcasted object(s) and the associated wrapper if `return_wrapper` is True.
+
     For defaults, see `vectorbtpro._settings.broadcasting`.
 
     Keyword arguments for object-specific parameters can be provided as follows:

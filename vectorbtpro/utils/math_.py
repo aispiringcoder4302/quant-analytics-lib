@@ -40,6 +40,9 @@ def is_close_nb(
         use_tol (bool): Flag to enable tolerance-based comparison.
         rel_tol (float): Relative tolerance used for comparing values.
         abs_tol (float): Absolute tolerance used for comparing values.
+
+    Returns:
+        bool: True if the values are approximately equal based on the tolerance settings, otherwise False.
     """
     if np.isnan(a) or np.isnan(b):
         return False
@@ -66,6 +69,9 @@ def is_less_nb(
         use_tol (bool): Flag to enable tolerance-based comparison.
         rel_tol (float): Relative tolerance used for comparing values.
         abs_tol (float): Absolute tolerance used for comparing values.
+
+    Returns:
+        bool: True if a is less than b given the tolerance criteria, otherwise False.
     """
     if use_tol and is_close_nb(a, b, rel_tol=rel_tol, abs_tol=abs_tol):
         return False
@@ -88,6 +94,9 @@ def is_close_or_less_nb(
         use_tol (bool): Flag to enable tolerance-based comparison.
         rel_tol (float): Relative tolerance used for comparing values.
         abs_tol (float): Absolute tolerance used for comparing values.
+
+    Returns:
+        bool: True if a is approximately equal to or less than b considering tolerance, otherwise False.
     """
     if use_tol and is_close_nb(a, b, rel_tol=rel_tol, abs_tol=abs_tol):
         return True
@@ -110,6 +119,9 @@ def is_close_or_greater_nb(
         use_tol (bool): Flag to enable tolerance-based comparison.
         rel_tol (float): Relative tolerance used for comparing values.
         abs_tol (float): Absolute tolerance used for comparing values.
+
+    Returns:
+        bool: True if a is approximately equal to or greater than b considering tolerance, otherwise False.
     """
     if use_tol and is_close_nb(a, b, rel_tol=rel_tol, abs_tol=abs_tol):
         return True
@@ -132,6 +144,9 @@ def is_greater_nb(
         use_tol (bool): Flag to enable tolerance-based comparison.
         rel_tol (float): Relative tolerance used for comparing values.
         abs_tol (float): Absolute tolerance used for comparing values.
+
+    Returns:
+        bool: True if a is greater than b given the tolerance criteria, otherwise False.
     """
     if use_tol and is_close_nb(a, b, rel_tol=rel_tol, abs_tol=abs_tol):
         return False
@@ -154,6 +169,9 @@ def is_addition_zero_nb(
         use_tol (bool): Flag to enable tolerance-based approximation.
         rel_tol (float): Relative tolerance used for approximation.
         abs_tol (float): Absolute tolerance used for approximation.
+
+    Returns:
+        bool: True if the sum of a and b is approximately zero according to the tolerance settings, otherwise False.
     """
     if use_tol:
         if np.sign(a) != np.sign(b):
@@ -180,7 +198,7 @@ def add_nb(
         abs_tol (float): Absolute tolerance used for approximation.
 
     Returns:
-        float: The sum of a and b, or 0.0 if the sum is approximately zero based on tolerance.
+        float: The sum of a and b, or 0.0 if the sum is approximately zero based on the tolerance settings.
     """
     if use_tol and is_addition_zero_nb(a, b, rel_tol=rel_tol, abs_tol=abs_tol):
         return 0.0
@@ -197,7 +215,7 @@ def round_nb(a: float, use_round: bool = _use_round, decimals: int = _decimals) 
         decimals (int): The number of decimals to round to.
 
     Returns:
-        float: The rounded float value.
+        float: The rounded float value if rounding is enabled; otherwise, the original value.
     """
     if use_round:
         return round(a, decimals)

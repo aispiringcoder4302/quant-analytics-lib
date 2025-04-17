@@ -76,7 +76,11 @@ class MetaBasePreparer(type(Configured)):
 
     @property
     def arg_config(cls) -> Config:
-        """Class-level argument configuration."""
+        """Class-level argument configuration.
+        
+        Returns:
+            Config: The class-level argument configuration.
+        """
         return cls._arg_config
 
 
@@ -90,7 +94,8 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
         **kwargs: Keyword arguments passed for configuration.
 
     !!! warning
-        Most properties are force-cached - create a new instance to override any attribute."""
+        Most properties are force-cached - create a new instance to override any attribute.
+    """
 
     _expected_keys_mode: tp.ExpectedKeysMode = "disable"
 
@@ -107,6 +112,9 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
         ```python
         ${arg_config}
         ```
+
+        Returns:
+            Config: The argument configuration of `BasePreparer`.
         """
         return self._arg_config
 
@@ -512,6 +520,9 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
             staticized (Kwargs): A dictionary containing function configuration.
             func (Union[str, Callable]): A function reference, name, or path.
             func_name (str): The target function name.
+
+        Returns:
+            None
         """
         target_func_module = inspect.getmodule(staticized["func"])
         if isinstance(func, tuple):
@@ -554,6 +565,9 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
 
         Args:
             target_func_name (str): The name of the target function.
+
+        Returns:
+            Callable: The found target function.
         """
         raise NotImplementedError
 
@@ -609,17 +623,24 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
 
     @cachedproperty
     def _pre_template_context(self) -> tp.Kwargs:
-        """Argument `template_context` before broadcasting."""
+        """Argument `template_context` before broadcasting.
+        
+        Returns:
+            Kwargs: The template context before broadcasting.
+        """
         return merge_dicts(dict(preparer=self), self["template_context"])
 
     # ############# Broadcasting ############# #
 
     @cachedproperty
     def pre_args(self) -> tp.Kwargs:
-        """Return a dictionary of pre-broadcast arguments.
+        """Dictionary of pre-broadcast arguments.
 
         Iterates over `BasePreparer.arg_config` and retrieves each corresponding `_pre_` attribute
         for keys with broadcasting enabled.
+
+        Returns:
+            Kwargs: Dictionary of pre-broadcast arguments.
         """
         pre_args = dict()
         for k, v in self.arg_config.items():
@@ -629,18 +650,24 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
 
     @cachedproperty
     def args_to_broadcast(self) -> dict:
-        """Return a merged dictionary of arguments to broadcast.
+        """Merged dictionary of arguments to broadcast.
 
         Combines `idx_setters`, pre-broadcast arguments, and broadcast named arguments.
+
+        Returns:
+            dict: Dictionary of arguments to broadcast.
         """
         return merge_dicts(self.idx_setters, self.pre_args, self.broadcast_named_args)
 
     @cachedproperty
     def def_broadcast_kwargs(self) -> tp.Kwargs:
-        """Return a dictionary of default keyword arguments for broadcasting.
+        """Dictionary of default keyword arguments for broadcasting.
 
         Includes flags for conversion, flexible settings, wrapper configuration,
         and the pre-template context.
+
+        Returns:
+            Kwargs: Dictionary of default broadcasting keyword arguments.
         """
         return dict(
             to_pd=False,
@@ -655,10 +682,13 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
 
     @cachedproperty
     def broadcast_kwargs(self) -> tp.Kwargs:
-        """Return a dictionary of keyword arguments for broadcasting.
+        """Dictionary of keyword arguments for broadcasting.
 
         Merges default broadcast kwargs, argument-specific broadcast configurations,
         and additional user-provided overrides.
+
+        Returns:
+            Kwargs: Dictionary of broadcasting keyword arguments.
         """
         arg_broadcast_kwargs = defaultdict(dict)
         for k, v in self.arg_config.items():
@@ -696,27 +726,36 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
 
     @cachedproperty
     def broadcast_result(self) -> tp.Any:
-        """Return the result of the broadcasting process.
+        """Result of the broadcasting process.
 
         The result is typically a tuple where the first element contains
         the post-broadcast arguments and the second element is the array wrapper.
+
+        Returns:
+            Any: The result of the broadcasting process.
         """
         return broadcast(self.args_to_broadcast, **self.broadcast_kwargs)
 
     @cachedproperty
     def post_args(self) -> tp.Kwargs:
-        """Return the dictionary of arguments after broadcasting.
+        """Dictionary of arguments after broadcasting.
 
         Extracts the first element from the broadcasting result.
+
+        Returns:
+            Kwargs: Dictionary of post-broadcast arguments.
         """
         return self.broadcast_result[0]
 
     @cachedproperty
     def post_broadcast_named_args(self) -> tp.Kwargs:
-        """Return a dictionary of custom broadcast arguments.
+        """Dictionary of custom broadcast arguments.
 
         Filters the post-broadcast arguments to include only those specified as named broadcast arguments,
         or those from index setters not present in the pre-broadcast arguments.
+
+        Returns:
+            Kwargs: Dictionary of post-broadcast named arguments.
         """
         if self.broadcast_named_args is None:
             return dict()
@@ -730,39 +769,56 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
 
     @cachedproperty
     def wrapper(self) -> ArrayWrapper:
-        """Return the array wrapper from the broadcasting process.
+        """Array wrapper from the broadcasting process.
 
         Extracts the second element of the broadcasting result.
+
+        Returns:
+            ArrayWrapper: The array wrapper containing the broadcasted data.
         """
         return self.broadcast_result[1]
 
     @cachedproperty
     def target_shape(self) -> tp.Shape:
-        """Return the target shape from the array wrapper.
+        """Target shape from the array wrapper.
 
         Uses the 2D shape attribute of the wrapper.
+
+        Returns:
+            Shape: The target shape of the array wrapper.
         """
         return self.wrapper.shape_2d
 
     @cachedproperty
     def index(self) -> tp.Array1d:
-        """Return the index in nanosecond format from the array wrapper."""
+        """Index in nanosecond format from the array wrapper.
+        
+        Returns:
+            Array1d: The index of the array wrapper in nanoseconds.
+        """
         return self.wrapper.ns_index
 
     @cachedproperty
     def freq(self) -> int:
-        """Return the frequency in nanosecond format from the array wrapper."""
+        """Frequency in nanosecond format from the array wrapper.
+        
+        Returns:
+            int: The frequency of the array wrapper in nanoseconds.
+        """
         return self.wrapper.ns_freq
 
     # ############# Template substitution ############# #
 
     @cachedproperty
     def template_context(self) -> tp.Kwargs:
-        """Return the complete template context.
+        """Complete template context.
 
         Merges details from the array wrapper (`wrapper`, `target_shape`, `index`, `freq`),
         broadcast arguments from `BasePreparer.arg_config`, post-broadcast named arguments,
         and the pre-template context.
+
+        Returns:
+            Kwargs: The complete template context for the preparer.
         """
         builtin_args = {}
         for k, v in self.arg_config.items():
@@ -784,26 +840,33 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
 
     @cachedproperty
     def target_func(self) -> tp.Optional[tp.Callable]:
-        """Return the target function to be invoked with broadcasted arguments.
+        """Target function to be invoked with broadcasted arguments.
 
-        Returns None if no target function is defined.
+        Returns:
+            Optional[Callable]: The target function to be invoked or None if no target function is defined.
         """
         return None
 
     @cachedproperty
     def target_arg_map(self) -> tp.Kwargs:
-        """Return a mapping of target function parameters to preparer attribute names.
+        """Mapping of target function parameters to preparer attribute names.
 
         This mapping aligns broadcasted arguments with the target function's parameters.
+
+        Returns:
+            Kwargs: Dictionary mapping target function parameter names to preparer attribute names.
         """
         return dict()
 
     @cachedproperty
     def target_args(self) -> tp.KwargsLike:
-        """Return a dictionary of arguments to pass to the target function.
+        """Dictionary of arguments to pass to the target function.
 
         Maps parameter names of `target_func` to corresponding preparer attributes using `target_arg_map`.
         Returns None if no target function is defined.
+
+        Returns:
+            KwargsLike: Dictionary of arguments to be passed to the target function.
         """
         if self.target_func is not None:
             target_arg_map = self.target_arg_map
@@ -846,6 +909,9 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
         Args:
             __pdoc__ (dict): Documentation dictionary to update.
             source_cls (Optional[type]): Base class to source the `arg_config` documentation from.
+
+        Returns:
+            None
         """
         __pdoc__[cls.__name__ + ".arg_config"] = cls.build_arg_config_doc(source_cls=source_cls)
 

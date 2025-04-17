@@ -211,22 +211,38 @@ class TVClient(Configured):
 
     @property
     def auth_token(self) -> str:
-        """Authentication token used for client authentication."""
+        """Authentication token used for client authentication.
+        
+        Returns:
+            str: Authentication token used for client authentication.
+        """
         return self._auth_token
 
     @property
     def ws(self) -> WebSocket:
-        """WebSocket connection instance used for real-time communication."""
+        """WebSocket connection instance used for real-time communication.
+        
+        Returns:
+            WebSocket: WebSocket connection instance used for real-time communication.
+        """
         return self._ws
 
     @property
     def session(self) -> str:
-        """Unique session identifier for quote sessions."""
+        """Unique session identifier for quote sessions.
+        
+        Returns:
+            str: Unique session identifier for quote sessions.
+        """
         return self._session
 
     @property
     def chart_session(self) -> str:
-        """Unique session identifier for chart data."""
+        """Unique session identifier for chart data.
+        
+        Returns:
+            str: Unique session identifier for chart data.
+        """
         return self._chart_session
 
     @classmethod
@@ -286,6 +302,9 @@ class TVClient(Configured):
 
         Args:
             pro_data (bool): Indicates whether to use the professional data connection.
+
+        Returns:
+            None
         """
         from websocket import create_connection
 
@@ -359,12 +378,15 @@ class TVClient(Configured):
         Args:
             func (str): The function name for the message.
             param_list (List[str]): A list of parameter strings.
+
+        Returns:
+            None
         """
         m = self.create_message(func, param_list)
         self.ws.send(m)
 
     @classmethod
-    def convert_raw_data(cls, raw_data: str, symbol: str) -> pd.DataFrame:
+    def convert_raw_data(cls, raw_data: str, symbol: str) -> tp.Frame:
         """Convert a raw data string into a pandas DataFrame containing historical trading data.
 
         Args:
@@ -372,7 +394,7 @@ class TVClient(Configured):
             symbol (str): The trading symbol.
 
         Returns:
-            DataFrame: A DataFrame with columns ['datetime', 'open', 'high', 'low', 'close', 'volume']
+            Frame: A DataFrame with columns ['datetime', 'open', 'high', 'low', 'close', 'volume']
                 and an added 'symbol' column, indexed by datetime.
         """
         search_result = re.search(r'"s":\[(.+?)\}\]', raw_data)
@@ -968,8 +990,8 @@ class TVData(RemoteData):
         Returns:
             TVClient: The resolved client instance.
 
-        !!! note
-            If a client is provided along with `client_config` parameters, a `ValueError` is raised.
+        Raises:
+            ValueError: If both `client` and `client_config` are provided.
         """
         client = cls.resolve_custom_setting(client, "client")
         if client_config is None:

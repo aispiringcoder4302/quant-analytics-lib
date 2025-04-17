@@ -94,7 +94,8 @@ class ToMarkdownAssetFunc(AssetFunc):
             **to_markdown_kwargs: Keyword arguments for Markdown conversion.
 
         Returns:
-            str: Markdown formatted metadata string."""
+            str: Markdown formatted metadata string.
+        """
         from vectorbtpro.utils.formatting import get_dump_language
         from vectorbtpro.utils.knowledge.base_asset_funcs import FindRemoveAssetFunc, DumpAssetFunc
 
@@ -132,7 +133,8 @@ class ToMarkdownAssetFunc(AssetFunc):
             **kwargs: Keyword arguments for Markdown conversion.
 
         Returns:
-            str: Markdown formatted content string."""
+            str: Markdown formatted content string.
+        """
         if d["content"] is None:
             return ""
         return to_markdown(d["content"], **kwargs)
@@ -731,7 +733,8 @@ class AggChannelAssetFunc(AggThreadAssetFunc):
             link (str): A message link to process.
 
         Returns:
-            str: The extracted channel link."""
+            str: The extracted channel link.
+        """
         if link.startswith("$discord/"):
             link = link[len("$discord/") :]
             link_parts = link.split("/")

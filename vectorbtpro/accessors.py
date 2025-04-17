@@ -50,7 +50,8 @@ Class methods of any accessor can be conveniently accessed using `pd_acc`, `sr_a
 
 !!! note
     Accessors in vectorbtpro are not cached, so querying `df.vbt` twice will also call `Vbt_DFAccessor` twice.
-    You can change this in global settings."""
+    You can change this in global settings.
+"""
 
 import pandas as pd
 from pandas.core.accessor import DirNamesMixin
@@ -120,7 +121,8 @@ class CachedAccessor(Base):
 def register_accessor(name: str, cls: tp.Type[DirNamesMixin]) -> tp.Callable:
     """Register a custom accessor.
 
-    `cls` must subclass `pandas.core.accessor.DirNamesMixin`."""
+    `cls` must subclass `pandas.core.accessor.DirNamesMixin`.
+    """
 
     def decorator(accessor: tp.Type[AccessorT]) -> tp.Type[AccessorT]:
         from vectorbtpro._settings import settings

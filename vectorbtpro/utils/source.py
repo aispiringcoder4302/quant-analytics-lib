@@ -629,7 +629,8 @@ Present the refactored version of the given chunk of Python code to address
 any detected code smells or issues. You must:
 
 1. **Return the entire code block** in your output.
-2. **Do not enclose your output in triple backticks**, and return no other text or explanation."""
+2. **Do not enclose your output in triple backticks**, and return no other text or explanation.
+"""
 """Default system prompt for `refine_source`."""
 
 
@@ -641,6 +642,7 @@ def refine_source(
     start_line: tp.Optional[int] = None,
     end_line: tp.Optional[int] = None,
     system_prompt: tp.Optional[str] = None,
+    context: tp.Optional[str] = None,
     attach_metadata: bool = True,
     attach_imports: tp.Optional[bool] = True,
     attach_map: tp.Optional[bool] = True,
@@ -685,11 +687,12 @@ def refine_source(
             !!! note
                 Counting starts at 1.
         system_prompt (Optional[str]): System prompt used for generating completions.
-        attach_metadata (bool): Whether to attach (dumped) metadata to the system prompt.
-        attach_imports (Optional[bool]): Whether to attach global source imports to the system prompt.
+        context (Optional[str]): Custom context.
+        attach_metadata (bool): Whether to attach (dumped) metadata to the context.
+        attach_imports (Optional[bool]): Whether to attach global source imports to the context.
 
             If None, becomes True if `split` is True.
-        attach_map (Optional[bool]): Whether to attach (dumped) source map to the system prompt.
+        attach_map (Optional[bool]): Whether to attach (dumped) source map to the context.
 
             If None, becomes True if `split` is True.
         dump_engine (str): Name of the dump engine.
@@ -821,6 +824,7 @@ def refine_source(
                     start_line=start_line,
                     end_line=end_line,
                     system_prompt=system_prompt,
+                    context=context,
                     attach_metadata=attach_metadata,
                     attach_imports=attach_imports,
                     attach_map=attach_map,
@@ -889,6 +893,8 @@ def refine_source(
 
     if system_prompt is None:
         system_prompt = REFINE_SRC_PROMPT
+    if context is None:
+        context = ""
     if dump_kwargs is None:
         dump_kwargs = {}
     if attach_metadata:
@@ -899,11 +905,9 @@ def refine_source(
         )
         source_metadata = dump(source_metadata, dump_engine=dump_engine, **dump_kwargs).strip()
         source_metadata_language = get_dump_language(dump_engine=dump_engine)
-        system_prompt = f"""{system_prompt}
-
----
-
-Metadata of the current code context:
+        if context:
+            context += "\n\n---\n\n"
+        context += f"""Metadata of the current code context:
 
 ```{source_metadata_language}
 {source_metadata}
@@ -913,11 +917,9 @@ Metadata of the current code context:
     if attach_imports:
         source_imports = get_source_imports(source, global_only=True)
         if source_imports:
-            system_prompt = f"""{system_prompt}
-
----
-
-Complete list of global imports available to the current code context:
+            if context:
+                context += "\n\n---\n\n"
+            context += f"""Complete list of global imports available to the current code context:
 
 ```python
 {source_imports}
@@ -929,11 +931,9 @@ Complete list of global imports available to the current code context:
         if source_map:
             source_map = dump(source_map, dump_engine=dump_engine, **dump_kwargs).strip()
             source_map_language = get_dump_language(dump_engine=dump_engine)
-            system_prompt = f"""{system_prompt}
-
----
-
-High-level map of top-level variables, functions, and classes available to the current code context:
+            if context:
+                context += "\n\n---\n\n"
+            context += f"""High-level map of top-level objects available to the current code context:
 
 ```{source_map_language}
 {source_map}
@@ -1050,7 +1050,7 @@ High-level map of top-level variables, functions, and classes available to the c
             trailing = chunk[-trailing_len:] if trailing_len > 0 else ""
             middle = chunk[leading_len : len(chunk) - trailing_len]
             if middle:
-                new_middle = completed(middle, system_prompt=system_prompt, **kwargs).strip("\n")
+                new_middle = completed(middle, system_prompt=system_prompt, context=context, **kwargs).strip("\n")
             else:
                 new_middle = ""
             new_middle = add_source_indent(new_middle, indent)
@@ -1134,11 +1134,6 @@ Your goal is to refine (rewrite for clarity, correctness, consistent format, and
     - Every docstring describing a function or method **with parameters** (excluding only `self`, `cls`, or `cls_or_self`) **must** have an "Args" section.
     - Every docstring describing a function or method **returning a value other than None must** have a "Returns" section.
     - If these sections are missing, **you must add them** using the correct format.
-    - Do not add any description in the "Returns" section if the return is explicitly None or redundant for bool values. For example:
-    ```
-    Returns:
-        None
-    ```
 - **Do not explicitly mention the default value of an argument**.
 - **Do not mention that an argument is optional**. For example: `x (Optional[int]): ...` rather than `x (int, optional): ...`.
 - **Retain any admonitions** like `"!!! note"` or `"!!! warning"` exactly as they are.
@@ -1167,7 +1162,7 @@ Your goal is to refine (rewrite for clarity, correctness, consistent format, and
     ```
     Args:
         arg_name (type): Description of the argument.
-      
+    
     Returns:
         type: Description of the return value.
     ```
@@ -1188,11 +1183,6 @@ Your goal is to refine (rewrite for clarity, correctness, consistent format, and
 - For class docstrings, retain the phrasing that **identifies them as a class** (e.g., "Class for/representing").
 - **Begin method docstrings with imperative verbs** (e.g., "Return," "Fetch," "Create").
 - **Properties** should describe what they represent rather than an action (e.g., instead of "Return a dictionary" use "Dictionary").
-    - They should list the type without any description. For example:
-    ```
-    Returns:
-        type
-    ```
 - Bullet points must be at the **same indentation level as the parent sentence** and be separated by one empty line before the list.
 - When dealing with named tuples and enums, replace "Attributes:" with "Fields:" in their docstrings.
 - If an "Examples" section exists, **place it at the end** of the docstring.

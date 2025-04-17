@@ -187,12 +187,11 @@ class BentoData(RemoteData):
             df_kwargs (KwargsLike): Keyword arguments passed to `databento.common.dbnstore.DBNStore.to_df`.
             **params: Keyword arguments for `databento.historical.client.Historical.get_range`.
 
-        !!! note
-            For defaults, see `custom.bento` in `vectorbtpro._settings.data`.
-
         Returns:
             Union[float, SymbolData]: If `return_params` is True, returns the client and final parameters.
                 Otherwise, returns the fetched data and a metadata dictionary.
+
+        For defaults, see `custom.bento` in `vectorbtpro._settings.data`.
         """
         from vectorbtpro.utils.module_ import assert_can_import
 

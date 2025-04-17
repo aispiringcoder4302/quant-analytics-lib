@@ -48,6 +48,9 @@ class CustomData(Data):
         Args:
             *args: Positional arguments passed to `CustomData.has_settings`.
             **kwargs: Keyword arguments passed to `CustomData.has_settings`.
+
+        Returns:
+            bool: True if custom settings exist, False otherwise.
         """
         return cls.has_settings(*args, path_id="custom", **kwargs)
 
@@ -71,6 +74,9 @@ class CustomData(Data):
         Args:
             *args: Positional arguments passed to `CustomData.has_setting`.
             **kwargs: Keyword arguments passed to `CustomData.has_setting`.
+
+        Returns:
+            bool: True if the custom setting exists, False otherwise.
         """
         return cls.has_setting(*args, path_id="custom", **kwargs)
 
@@ -94,6 +100,9 @@ class CustomData(Data):
         Args:
             *args: Positional arguments passed to `CustomData.set_settings`.
             **kwargs: Keyword arguments passed to `CustomData.set_settings`.
+
+        Returns:
+            None
         """
         cls.set_settings(*args, path_id="custom", **kwargs)
 

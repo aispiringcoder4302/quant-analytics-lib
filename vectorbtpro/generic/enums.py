@@ -10,7 +10,8 @@
 
 """Module providing named tuples and enumerations for generic data.
 
-Defines enums and schemas for `vectorbtpro.generic`."""
+Defines enums and schemas for `vectorbtpro.generic`.
+"""
 
 import numpy as np
 
@@ -579,7 +580,8 @@ __pdoc__[
     "EWMStdAIS"
 ] = """Named tuple representing the input state for `vectorbtpro.generic.nb.rolling.ewm_std_acc_nb`.
 
-For tips on `alpha`, see `EWMMeanAIS`."""
+For tips on `alpha`, see `EWMMeanAIS`.
+"""
 
 
 class EWMStdAOS(tp.NamedTuple):

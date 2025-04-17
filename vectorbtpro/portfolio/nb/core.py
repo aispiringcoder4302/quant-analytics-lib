@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Core Numba-compiled functions for portfolio simulation."""
+"""Module providing core Numba-compiled functions for portfolio simulation."""
 
 import numpy as np
 
@@ -23,7 +23,16 @@ from vectorbtpro.utils.math_ import is_close_nb, is_close_or_less_nb, is_close_o
 
 @register_jitted(cache=True)
 def order_not_filled_nb(status: int, status_info: int) -> OrderResult:
-    """Return `OrderResult` for order that hasn't been filled."""
+    """Return an `vectorbtpro.portfolio.enums.OrderResult` for an order that has not been filled.
+
+    Args:
+        status (int): The order status code.
+        status_info (int): Additional status information code.
+
+    Returns:
+        OrderResult: An order result with NaN size, price, and fees, a side of -1,
+            and the provided status and status_info.
+    """
     return OrderResult(size=np.nan, price=np.nan, fees=np.nan, side=-1, status=status, status_info=status_info)
 
 
@@ -34,7 +43,21 @@ def check_adj_price_nb(
     is_closing_price: bool,
     price_area_vio_mode: int,
 ) -> float:
-    """Check whether adjusted price is within price boundaries."""
+    """Adjust the given price to ensure it falls within the specified price boundaries.
+
+    Args:
+        adj_price (float): The initial adjusted price.
+        price_area (PriceArea): An object defining price boundaries.
+        is_closing_price (bool): If True, enforce the price to match the closing price.
+        
+            If the adjusted price differs from `PriceArea.close`, it may trigger an error or cap.
+        price_area_vio_mode (int): Mode for handling price violations.
+
+            Expected values are defined in `PriceAreaVioMode`.
+
+    Returns:
+        float: The validated and, if necessary, adjusted price.
+    """
     if price_area_vio_mode == PriceAreaVioMode.Ignore:
         return adj_price
     if adj_price > price_area.high:
@@ -57,9 +80,18 @@ def check_adj_price_nb(
 
 @register_jitted(cache=True)
 def approx_long_buy_value_nb(val_price: float, size: float) -> float:
-    """Approximate value of a long-buy operation.
+    """Approximate the value of a long-buy operation.
 
-    Positive value means spending (for sorting reasons)."""
+    Calculates the order value as the product of the absolute order size and the valuation price,
+    and returns it as a negative value to represent spending.
+
+    Args:
+        val_price (float): The valuation price.
+        size (float): The order size.
+
+    Returns:
+        float: A negative value representing spending, or 0.0 if the order size is zero.
+    """
     if size == 0:
         return 0.0
     order_value = abs(size) * val_price
@@ -69,7 +101,15 @@ def approx_long_buy_value_nb(val_price: float, size: float) -> float:
 
 @register_jitted(cache=True)
 def should_apply_size_granularity_nb(size: float, size_granularity: float) -> bool:
-    """Whether to apply a size granularity to a size."""
+    """Determine whether size granularity should be applied to the given size.
+
+    Args:
+        size (float): The original size value.
+        size_granularity (float): The granularity factor used to round the size.
+
+    Returns:
+        bool: True if size granularity should be applied; otherwise, False.
+    """
     if np.isnan(size_granularity):
         return False
     if size_granularity % 1 == 0:
@@ -80,13 +120,28 @@ def should_apply_size_granularity_nb(size: float, size_granularity: float) -> bo
 
 @register_jitted(cache=True)
 def apply_size_granularity_nb(size: float, size_granularity: float) -> float:
-    """Apply a size granularity to a size."""
+    """Apply size granularity to the given size by rounding it down to the nearest multiple.
+
+    Args:
+        size (float): The original size value.
+        size_granularity (float): The granularity factor used to adjust the size.
+
+    Returns:
+        float: The size rounded down to a multiple of size_granularity.
+    """
     return size // size_granularity * size_granularity
 
 
 @register_jitted(cache=True)
 def cast_account_state_nb(account_state: AccountState) -> AccountState:
-    """Cast account state to float."""
+    """Convert all numeric fields of the given `AccountState` to floats.
+
+    Args:
+        account_state (AccountState): The original account state instance with numeric attributes.
+
+    Returns:
+        AccountState: A new account state instance with all numerical attributes cast to float.
+    """
     return AccountState(
         cash=float(account_state.cash),
         position=float(account_state.position),
@@ -115,7 +170,34 @@ def long_buy_nb(
     price_area: PriceArea = NoPriceArea,
     is_closing_price: bool = False,
 ) -> tp.Tuple[OrderResult, AccountState]:
-    """Open or increase a long position."""
+    """Open or increase a long position.
+    
+    Args:
+        account_state (AccountState): Current account state.
+        size (float): Requested order size.
+        price (float): Order price.
+        fees (float): Proportional fees applied to the order price.
+        fixed_fees (float): Fixed fees for the order.
+        slippage (float): Fractional slippage applied to the order price.
+        min_size (float): Minimum acceptable order size.
+        max_size (float): Maximum acceptable order size.
+        size_granularity (float): Granularity used to adjust order size.
+        leverage (float): Leverage factor.
+        leverage_mode (int): Mode for leverage calculation (e.g., lazy or eager).
+
+            See `vectorbtpro.portfolio.enums.LeverageMode` for options.
+        price_area_vio_mode (int): Mode for handling price area violations.
+
+            See `vectorbtpro.portfolio.enums.PriceAreaVioMode` for options.
+        allow_partial (bool): Determines whether partial order execution is permitted.
+        percent (float): Fraction of free cash to consider for the order.
+        price_area (PriceArea): Price area used to validate the adjusted price; see
+            `vectorbtpro.portfolio.enums.PriceArea`.
+        is_closing_price (bool): Indicates if the provided price is a closing price.
+    
+    Returns:
+        Tuple[OrderResult, AccountState]: A tuple containing the order result and the updated account state.
+    """
     _account_state = cast_account_state_nb(account_state)
 
     # Get cash limit
@@ -237,9 +319,20 @@ def long_buy_nb(
 
 @register_jitted(cache=True)
 def approx_long_sell_value_nb(position: float, debt: float, val_price: float, size: float) -> float:
-    """Approximate value of a long-sell operation.
-
-    Positive value means spending (for sorting reasons)."""
+    """Approximate the value of a long-sell operation.
+    
+    The computed value represents the spending amount for sorting purposes,
+    where a positive value indicates spending.
+    
+    Args:
+        position (float): Current position size.
+        debt (float): Current account debt.
+        val_price (float): Valuation price for the asset.
+        size (float): Requested order size for the long-sell operation.
+    
+    Returns:
+        float: The approximate value of the long-sell operation.
+    """
     if size == 0 or position == 0:
         return 0.0
     size_limit = min(abs(size), position)
@@ -267,7 +360,32 @@ def long_sell_nb(
     price_area: PriceArea = NoPriceArea,
     is_closing_price: bool = False,
 ) -> tp.Tuple[OrderResult, AccountState]:
-    """Decrease or close a long position."""
+    """Decrease or close a long position.
+
+    Args:
+        account_state (AccountState): Current account state with cash, position, debt,
+            and locked/free cash details.
+        size (float): Desired size to sell. The size is capped by the current open long position.
+        price (float): Price at which to execute the sell order.
+        fees (float): Fee rate applied proportionally to the acquired cash.
+        fixed_fees (float): Fixed fee amount applied to the transaction.
+        slippage (float): Price adjustment factor to compensate for slippage.
+        min_size (float): Minimum allowable order size.
+        max_size (float): Maximum allowable order size.
+        size_granularity (float): Granularity factor for rounding the order size.
+        price_area_vio_mode (int): Mode to handle price area violations.
+
+            See `vectorbtpro.portfolio.enums.PriceAreaVioMode` for options.
+        allow_partial (bool): Indicator whether a partial fill of the order is permitted.
+        percent (float): Percentage factor to adjust the order size relative to the current position.
+        price_area (PriceArea): Permissible price area; see
+            `vectorbtpro.portfolio.enums.PriceArea`.
+        is_closing_price (bool): Flag indicating if the provided price is derived from a closing value.
+
+    Returns:
+        Tuple[OrderResult, AccountState]: A tuple containing the created order result and
+            the updated account state.
+    """
     _account_state = cast_account_state_nb(account_state)
 
     # Check for open position
@@ -349,9 +467,18 @@ def long_sell_nb(
 
 @register_jitted(cache=True)
 def approx_short_sell_value_nb(val_price: float, size: float) -> float:
-    """Approximate value of a short-sell operation.
+    """Approximate the value of a short-sell operation.
 
-    Positive value means spending (for sorting reasons)."""
+    Calculates the transaction value based on the provided price and position size.
+    A positive result indicates expenditure (for sorting purposes).
+
+    Args:
+        val_price (float): Reference price for evaluating the short sale.
+        size (float): Size of the short position.
+
+    Returns:
+        float: The approximated value of the short-sell operation.
+    """
     if size == 0:
         return 0.0
     order_value = abs(size) * val_price
@@ -377,7 +504,32 @@ def short_sell_nb(
     price_area: PriceArea = NoPriceArea,
     is_closing_price: bool = False,
 ) -> tp.Tuple[OrderResult, AccountState]:
-    """Open or increase a short position."""
+    """Open or increase a short position by placing a sell order.
+
+    Args:
+        account_state (AccountState): The current account state.
+        size (float): Intended order size to initiate or increase a short position.
+        price (float): Market price used to compute the adjusted order price.
+        fees (float): Proportional fee rate applied to the order.
+        fixed_fees (float): Fixed fee amount charged per order.
+        slippage (float): Fraction representing potential price slippage.
+        min_size (float): Minimum allowed order size.
+        max_size (float): Maximum allowed order size.
+        size_granularity (float): Order size step size for rounding.
+        leverage (float): Leverage multiplier to adjust the cash limit.
+        price_area_vio_mode (int): Mode for handling price area violations.
+
+            See `vectorbtpro.portfolio.enums.PriceAreaVioMode` for options.
+        allow_partial (bool): Indicates whether a partial fill is permitted.
+        percent (float): Fraction of free cash to allocate for the order.
+        price_area (PriceArea): Price area specification; see
+            `vectorbtpro.portfolio.enums.PriceArea`.
+        is_closing_price (bool): Indicates if the provided price is a closing price.
+
+    Returns:
+        Tuple[OrderResult, AccountState]: A tuple containing the filled order result and
+            the updated account state.
+    """
     _account_state = cast_account_state_nb(account_state)
 
     # Get cash limit
@@ -475,9 +627,21 @@ def short_sell_nb(
 
 @register_jitted(cache=True)
 def approx_short_buy_value_nb(position: float, debt: float, locked_cash: float, val_price: float, size: float) -> float:
-    """Approximate value of a short-buy operation.
+    """Approximate the cash value adjustment for a short-buy operation.
 
-    Positive value means spending (for sorting reasons)."""
+    Computes the additional cash required or freed by comparing the released debt and locked cash 
+    against the order value. A positive return value indicates a spending requirement.
+
+    Args:
+        position (float): The current short position size.
+        debt (float): Total debt associated with the short position.
+        locked_cash (float): Cash currently locked as collateral.
+        val_price (float): Valuation price used to compute the order's value.
+        size (float): Desired order size for the short-buy operation.
+
+    Returns:
+        float: The approximate cash value adjustment, where a positive value signifies spending.
+    """
     if size == 0 or position == 0:
         return 0.0
     size_limit = min(abs(size), abs(position))
@@ -506,7 +670,35 @@ def short_buy_nb(
     price_area: PriceArea = NoPriceArea,
     is_closing_price: bool = False,
 ) -> tp.Tuple[OrderResult, AccountState]:
-    """Decrease or close a short position."""
+    """Decrease or close a short position.
+
+    This function processes an order to reduce or cover a short position. It verifies that an open
+    position exists, checks for sufficient cash, and adjusts the order size based on constraints
+    such as maximum size, granularity, and percentage limits. The function calculates the required
+    fees and cash, and returns the order result along with an updated account state.
+
+    Args:
+        account_state (AccountState): Current state of the trading account.
+        size (float): Requested order size for covering the short position.
+        price (float): Execution price for the order.
+        fees (float): Fraction of the order value charged as fee.
+        fixed_fees (float): Fixed fee amount applied to the order.
+        slippage (float): Slippage percentage to adjust the execution price.
+        min_size (float): Minimum acceptable order size.
+        max_size (float): Maximum allowed order size.
+        size_granularity (float): Step size used for adjusting order size.
+        price_area_vio_mode (int): Price area violation mode as defined by
+            `vectorbtpro.portfolio.enums.PriceAreaVioMode`.
+        allow_partial (bool): Whether to allow a partial fill if the full size cannot be executed.
+        percent (float): Scaling factor to restrict the allowed order size.
+        price_area (PriceArea): Price area constraint for order execution; see
+            `vectorbtpro.portfolio.enums.PriceArea`.
+        is_closing_price (bool): Indicates if the provided price is to be treated as a closing price.
+
+    Returns:
+        Tuple[OrderResult, AccountState]: A tuple containing the executed order result and
+            the updated account state.
+    """
     _account_state = cast_account_state_nb(account_state)
 
     # Check for open position
@@ -626,7 +818,24 @@ def approx_buy_value_nb(
 ) -> float:
     """Approximate value of a buy operation.
 
-    Positive value means spending (for sorting reasons)."""
+    Calculates an estimated order value based on the current position, debt, locked cash,
+    valuation price, and desired order size. Depending on the position and trade direction,
+    it uses a short or long buy approximation or a combination of both. A positive return
+    value indicates spending, which is useful for sorting.
+
+    Args:
+        position (float): Current position amount.
+        debt (float): Current debt amount.
+        locked_cash (float): Amount of cash locked in orders.
+        val_price (float): Valuation price of the asset.
+        size (float): Requested order size.
+        direction (int): Indicator of trade direction.
+
+            See `vectorbtpro.portfolio.enums.Direction` for options.
+
+    Returns:
+        float: Approximate order value representing the spending amount.
+    """
     if position <= 0 and direction == Direction.ShortOnly:
         return approx_short_buy_value_nb(position, debt, locked_cash, val_price, size)
     if position >= 0:
@@ -659,7 +868,32 @@ def buy_nb(
     price_area: PriceArea = NoPriceArea,
     is_closing_price: bool = False,
 ) -> tp.Tuple[OrderResult, AccountState]:
-    """Buy."""
+    """Perform a buy operation on an account by determining the appropriate long or short strategy
+    based on the current state and provided parameters.
+
+    Args:
+        account_state (AccountState): Current state of the account.
+        size (float): Order size.
+        price (float): Execution price for the order.
+        direction (int): Direction flag; see `vectorbtpro.portfolio.enums.Direction` for options.
+        fees (float): Trading fees.
+        fixed_fees (float): Fixed fee charges.
+        slippage (float): Slippage applied to the order.
+        min_size (float): Minimum allowed order size, may be NaN.
+        max_size (float): Maximum allowed order size, may be NaN.
+        size_granularity (float): Granularity factor for the order size, may be NaN.
+        leverage (float): Leverage factor.
+        leverage_mode (int): Leverage mode; see `vectorbtpro.portfolio.enums.LeverageMode`.
+        price_area_vio_mode (int): Price area violation mode; see `vectorbtpro.portfolio.enums.PriceAreaVioMode`.
+        allow_partial (bool): Flag permitting partial order fills.
+        percent (float): Percentage parameter used in order calculations, may be NaN.
+        price_area (PriceArea): Constraint for the price area; see `vectorbtpro.portfolio.enums.PriceArea`.
+        is_closing_price (bool): Indicates whether the provided price is for closing positions.
+
+    Returns:
+        Tuple[OrderResult, AccountState]: A tuple containing the order execution result and
+            the updated account state.
+    """
     _account_state = cast_account_state_nb(account_state)
 
     if _account_state.position <= 0 and direction == Direction.ShortOnly:
@@ -782,9 +1016,21 @@ def approx_sell_value_nb(
     size: float,
     direction: int,
 ) -> float:
-    """Approximate value of a sell operation.
+    """Approximate the sell operation value based on asset position, debt, and valuation price.
 
-    Positive value means spending (for sorting reasons)."""
+    Calculates an estimated sell value given the current position, associated debt, valuation price,
+    and order size. A positive result represents spending, which is useful for sorting operations.
+
+    Args:
+        position (float): Current asset position.
+        debt (float): Debt associated with the asset.
+        val_price (float): Valuation price of the asset.
+        size (float): Size of the sell order.
+        direction (int): Direction flag for the sell order; see `vectorbtpro.portfolio.enums.Direction`.
+
+    Returns:
+        float: The approximate value of the sell operation.
+    """
     if position >= 0 and direction == Direction.LongOnly:
         return approx_long_sell_value_nb(position, debt, val_price, size)
     if position <= 0:
@@ -816,7 +1062,36 @@ def sell_nb(
     price_area: PriceArea = NoPriceArea,
     is_closing_price: bool = False,
 ) -> tp.Tuple[OrderResult, AccountState]:
-    """Sell."""
+    """Execute a sell order based on the current account state and specified parameters.
+
+    Depending on the account state and trade direction, this function delegates the sell
+    order to either `long_sell_nb` or `short_sell_nb`. For positions spanning both long and
+    short, it processes the long portion first and, if fully filled, proceeds with a short sell
+    for the remaining size.
+
+    Args:
+        account_state (AccountState): Current account state.
+        size (float): Order size.
+        price (float): Order price.
+        direction (int): Direction restriction for the sell order; see
+            `vectorbtpro.portfolio.enums.Direction`.
+        fees (float): Fee associated with the order.
+        fixed_fees (float): Fixed fee amount.
+        slippage (float): Allowed price slippage.
+        min_size (float): Minimum order size constraint.
+        max_size (float): Maximum order size constraint.
+        size_granularity (float): Size granularity factor.
+        leverage (float): Leverage factor.
+        price_area_vio_mode (int): Mode for handling price area violation; see
+            `vectorbtpro.portfolio.enums.PriceAreaVioMode`.
+        allow_partial (bool): Whether partial fills are permitted.
+        percent (float): Order size as a percentage.
+        price_area (PriceArea): Price area constraint; see `vectorbtpro.portfolio.enums.PriceArea`.
+        is_closing_price (bool): Flag indicating if the price is a closing price.
+
+    Returns:
+        Tuple[OrderResult, AccountState]: A tuple containing the order result and the updated account state.
+    """
     _account_state = cast_account_state_nb(account_state)
 
     if _account_state.position >= 0 and direction == Direction.LongOnly:
@@ -939,7 +1214,20 @@ def update_value_nb(
     val_price_now: float,
     value_before: float,
 ) -> float:
-    """Update valuation price and value."""
+    """Calculate updated portfolio value based on changes in cash and asset positions.
+
+    Args:
+        cash_before (float): Cash amount before the update.
+        cash_now (float): Current cash amount.
+        position_before (float): Asset position before the update.
+        position_now (float): Current asset position.
+        val_price_before (float): Valuation price before the update.
+        val_price_now (float): Current valuation price.
+        value_before (float): Portfolio value before the update.
+
+    Returns:
+        float: Updated portfolio value.
+    """
     cash_flow = cash_now - cash_before
     if position_before != 0:
         asset_value_before = position_before * val_price_before
@@ -956,7 +1244,17 @@ def update_value_nb(
 
 @register_jitted(cache=True)
 def get_diraware_size_nb(size: float, direction: int) -> float:
-    """Get direction-aware size."""
+    """Adjust size based on trade direction.
+
+    Args:
+        size (float): Base size value.
+        direction (int): Direction indicator; if equal to `Direction.ShortOnly`, the size is negated.
+
+            See `vectorbtpro.portfolio.enums.Direction` for options.
+
+    Returns:
+        float: Adjusted size reflecting trade direction.
+    """
     if direction == Direction.ShortOnly:
         return size * -1
     return size
@@ -972,9 +1270,24 @@ def resolve_size_nb(
     target_size_type: int = SizeType.Amount,
     as_requirement: bool = False,
 ) -> tp.Tuple[float, float]:
-    """Resolve size into an absolute amount of assets and percentage of resources.
+    """Convert size specification into an absolute asset amount and its corresponding percentage.
 
-    Percentage is only set if the option `SizeType.Percent(100)` is used."""
+    The percentage is set only when the `SizeType.Percent(100)` option is used.
+
+    Args:
+        size (float): Input size value.
+        size_type (int): Indicator of the size specification type.
+        position (float): Current asset position.
+        val_price (float): Valuation price for converting value into asset amount.
+        value (float): Total portfolio value.
+        target_size_type (int): Desired size type for the output.
+
+            See `vectorbtpro.portfolio.enums.SizeType` for options.
+        as_requirement (bool): Whether to treat the size as a requirement adjustment.
+
+    Returns:
+        Tuple[float, float]: A tuple containing the absolute asset amount and the percentage representation.
+    """
     percent = np.nan
     if size_type == target_size_type:
         return float(size), percent
@@ -1055,9 +1368,24 @@ def approx_order_value_nb(
 ) -> float:
     """Approximate the value of an order.
 
-    Assumes that cash is infinite.
+    Assumes infinite cash.
 
-    Positive value means spending (for sorting reasons)."""
+    Positive value indicates spending (used for sorting purposes).
+
+    Args:
+        exec_state (ExecState): Execution state containing portfolio details such as position,
+            value, debt, locked cash, and valuation price.
+        size (float): Order size.
+        size_type (int): Indicator specifying the type of the order size.
+
+            See `vectorbtpro.portfolio.enums.SizeType`.
+        direction (int): Order direction.
+
+            See `vectorbtpro.portfolio.enums.Direction`.
+
+    Returns:
+        float: The approximate order value.
+    """
     size = get_diraware_size_nb(float(size), direction)
     amount_size, _ = resolve_size_nb(
         size=size,
@@ -1095,15 +1423,26 @@ def execute_order_nb(
 ) -> tp.Tuple[OrderResult, ExecState]:
     """Execute an order given the current state.
 
-    Args:
-        exec_state (ExecState): See `vectorbtpro.portfolio.enums.ExecState`.
-        order (Order): See `vectorbtpro.portfolio.enums.Order`.
-        price_area (OrderPriceArea): See `vectorbtpro.portfolio.enums.PriceArea`.
-        update_value (bool): Whether to update the value.
+    Error is raised if any input value is invalid.
 
-    Error is thrown if an input has value that is not expected.
-    Order is ignored if its execution has no effect on the current balance.
-    Order is rejected if an input goes over a limit or against a restriction.
+    The order is ignored if its execution does not affect the current balance.
+    The order is rejected if any input violates a limit or restriction.
+
+    Args:
+        exec_state (ExecState): The current execution state.
+
+            See `vectorbtpro.portfolio.enums.ExecState`.
+        order (Order): The order to execute.
+
+            See `vectorbtpro.portfolio.enums.Order`.
+        price_area (PriceArea): Price area information.
+
+            See `vectorbtpro.portfolio.enums.PriceArea`.
+        update_value (bool): Update the account value after executing the order.
+
+    Returns:
+        Tuple[OrderResult, ExecState]: A tuple containing the order execution result and
+            the updated execution state.
     """
     # numerical stability
     cash = float(exec_state.cash)
@@ -1354,7 +1693,24 @@ def fill_log_record_nb(
     new_exec_state: ExecState,
     order_id: int,
 ) -> None:
-    """Fill a log record."""
+    """Fill a log record with order and execution state details.
+
+    Args:
+        records (RecordArray2d): The array where log records are stored.
+        r (int): The index of the log record in the column.
+        group (int): The current group index.
+        col (int): The current column index.
+        i (int): The current row index.
+        price_area (PriceArea): Price area data with attributes `open`, `high`, `low`, and `close`.
+        exec_state (ExecState): The execution state before executing the order.
+        order (Order): The order details including size, price, fees, and other parameters.
+        order_result (OrderResult): The result of the order execution.
+        new_exec_state (ExecState): The execution state after executing the order.
+        order_id (int): The unique identifier of the order.
+
+    Returns:
+        None: This function modifies `records` in place.
+    """
 
     records["id"][r, col] = r
     records["group"][r, col] = group
@@ -1406,7 +1762,18 @@ def fill_log_record_nb(
 
 @register_jitted(cache=True)
 def fill_order_record_nb(records: tp.RecordArray2d, r: int, col: int, i: int, order_result: OrderResult) -> None:
-    """Fill an order record."""
+    """Fill an order record with executed order details.
+
+    Args:
+        records (RecordArray2d): The array where order records are stored.
+        r (int): The index of the order record in the column.
+        col (int): The current column index.
+        i (int): The current row index.
+        order_result (OrderResult): The result of the order execution containing size, price, fees, and side.
+
+    Returns:
+        None: This function modifies `records` in place.
+    """
 
     records["id"][r, col] = r
     records["col"][r, col] = col
@@ -1419,7 +1786,15 @@ def fill_order_record_nb(records: tp.RecordArray2d, r: int, col: int, i: int, or
 
 @register_jitted(cache=True)
 def raise_rejected_order_nb(order_result: OrderResult) -> None:
-    """Raise an `vectorbtpro.portfolio.enums.RejectedOrderError`."""
+    """Raise a `vectorbtpro.portfolio.enums.RejectedOrderError` based on the order result's status.
+
+    Args:
+        order_result (OrderResult): The order result containing status information used to
+            determine the rejection reason.
+
+    Returns:
+        None
+    """
 
     if order_result.status_info == OrderStatusInfo.SizeNaN:
         raise RejectedOrderError("Size is NaN")
@@ -1464,7 +1839,25 @@ def process_order_nb(
     log_records: tp.Optional[tp.RecordArray2d] = None,
     log_counts: tp.Optional[tp.Array1d] = None,
 ) -> tp.Tuple[OrderResult, ExecState]:
-    """Process an order by executing it, saving relevant information to the logs, and returning a new state."""
+    """Process an order by executing it, logging details, and returning the result with updated state.
+
+    Args:
+        group (int): The current group index.
+        col (int): The current column index.
+        i (int): The current row index.
+        exec_state (ExecState): The current execution state before processing the order.
+        order (Order): The order details to be processed.
+        price_area (PriceArea): The price area data used in order execution.
+        update_value (bool): Flag indicating whether to update the portfolio value.
+        order_records (Optional[RecordArray2d]): The array to store order record details.
+        order_counts (Optional[Array1d]): Counters for order records per column.
+        log_records (Optional[RecordArray2d]): The array to store detailed log records.
+        log_counts (Optional[Array1d]): Counters for log records per column.
+
+    Returns:
+        Tuple[OrderResult, ExecState]: A tuple containing the result of the order execution and
+            the updated execution state.
+    """
     # Execute the order
     order_result, new_exec_state = execute_order_nb(
         exec_state=exec_state,
@@ -1527,8 +1920,36 @@ def order_nb(
 ) -> Order:
     """Create an order.
 
-    See `vectorbtpro.portfolio.enums.Order` for details on arguments."""
+    Args:
+        size (float): Order size.
+        price (float): Order price.
+        size_type (int): Type of order size.
 
+            See `vectorbtpro.portfolio.enums.SizeType` for details.
+        direction (int): Order direction.
+
+            See `vectorbtpro.portfolio.enums.Direction` for details.
+        fees (float): Fee rate or amount.
+        fixed_fees (float): Fixed fees.
+        slippage (float): Expected slippage.
+        min_size (float): Minimum order size.
+        max_size (float): Maximum order size.
+        size_granularity (float): Granularity for order size.
+        leverage (float): Leverage multiplier.
+        leverage_mode (int): Leverage mode.
+
+            See `vectorbtpro.portfolio.enums.LeverageMode` for details.
+        reject_prob (float): Rejection probability threshold.
+        price_area_vio_mode (int): Price area violation mode.
+
+            See `vectorbtpro.portfolio.enums.PriceAreaVioMode` for details.
+        allow_partial (bool): Allow partial order fulfillment.
+        raise_reject (bool): Raise an exception if the order is rejected.
+        log (bool): Log the order execution.
+
+    Returns:
+        Order: Created order object.
+    """
     return Order(
         size=float(size),
         price=float(price),
@@ -1567,8 +1988,31 @@ def close_position_nb(
     raise_reject: bool = False,
     log: bool = False,
 ) -> Order:
-    """Close the current position."""
+    """Close the current position.
 
+    Args:
+        price (float): Order price.
+        fees (float): Fee rate or amount.
+        fixed_fees (float): Fixed fees.
+        slippage (float): Expected slippage.
+        min_size (float): Minimum order size.
+        max_size (float): Maximum order size.
+        size_granularity (float): Granularity for order size.
+        leverage (float): Leverage multiplier.
+        leverage_mode (int): Leverage mode.
+
+            See `vectorbtpro.portfolio.enums.LeverageMode` for details.
+        reject_prob (float): Rejection probability threshold.
+        price_area_vio_mode (int): Price area violation mode.
+
+            See `vectorbtpro.portfolio.enums.PriceAreaVioMode` for details.
+        allow_partial (bool): Allow partial order fulfillment.
+        raise_reject (bool): Raise an exception if the order is rejected.
+        log (bool): Log the order execution.
+
+    Returns:
+        Order: Order object representing the closed position.
+    """
     return order_nb(
         size=0.0,
         price=price,
@@ -1592,20 +2036,39 @@ def close_position_nb(
 
 @register_jitted(cache=True)
 def order_nothing_nb() -> Order:
-    """Convenience function to order nothing."""
+    """Create an order representing no operation.
+
+    Returns:
+        Order: An order that effectively does nothing.
+    """
     return NoOrder
 
 
 @register_jitted(cache=True)
 def check_group_lens_nb(group_lens: tp.GroupLens, n_cols: int) -> None:
-    """Check `group_lens`."""
+    """Ensure the group lengths sum to the total number of columns.
+
+    Args:
+        group_lens (GroupLens): An array specifying the length of each group.
+        n_cols (int): Total expected number of columns.
+
+    Returns:
+        None
+    """
     if np.sum(group_lens) != n_cols:
         raise ValueError("group_lens has incorrect total number of columns")
 
 
 @register_jitted(cache=True)
 def is_grouped_nb(group_lens: tp.GroupLens) -> bool:
-    """Check if columm,ns are grouped, that is, more than one column per group."""
+    """Determine if columns are grouped.
+
+    Args:
+        group_lens (GroupLens): Array of group lengths.
+
+    Returns:
+        bool: True if at least one group contains more than one column, otherwise False.
+    """
     return np.any(group_lens > 1)
 
 
@@ -1615,7 +2078,21 @@ def prepare_records_nb(
     max_order_records: tp.Optional[int] = None,
     max_log_records: tp.Optional[int] = 0,
 ) -> tp.Tuple[tp.RecordArray2d, tp.RecordArray2d]:
-    """Prepare records."""
+    """Prepare order and log records arrays.
+
+    Args:
+        target_shape (Shape): Target shape to determine array dimensions.
+        max_order_records (Optional[int]): Maximum number of order records.
+
+            If None, `target_shape[0]` is used.
+        max_log_records (Optional[int]): Maximum number of log records.
+
+            If None, `target_shape[0]` is used.
+
+    Returns:
+        Tuple[RecordArray2d, RecordArray2d]: Tuple containing the order records array and
+            the log records array.
+    """
     if max_order_records is None:
         order_records = np.empty((target_shape[0], target_shape[1]), dtype=order_dt)
     else:
@@ -1634,7 +2111,17 @@ def prepare_last_cash_nb(
     cash_sharing: bool,
     init_cash: tp.FlexArray1d,
 ) -> tp.Array1d:
-    """Prepare `last_cash`."""
+    """Prepare the last cash array based on cash sharing.
+
+    Args:
+        target_shape (Shape): Target shape used to determine dimensions.
+        group_lens (GroupLens): Array of group lengths.
+        cash_sharing (bool): Indicates whether cash is shared across groups.
+        init_cash (FlexArray1d): Array of initial cash values.
+
+    Returns:
+        Array1d: Array containing the last cash values per group or column.
+    """
     if cash_sharing:
         last_cash = np.empty(len(group_lens), dtype=float_)
         for group in range(len(group_lens)):
@@ -1648,7 +2135,15 @@ def prepare_last_cash_nb(
 
 @register_jitted(cache=True)
 def prepare_last_position_nb(target_shape: tp.Shape, init_position: tp.FlexArray1d) -> tp.Array1d:
-    """Prepare `last_position`."""
+    """Prepare the last position array.
+
+    Args:
+        target_shape (Shape): Target shape for determining the number of columns.
+        init_position (FlexArray1d): Array of initial position values.
+
+    Returns:
+        Array1d: Array containing the last positions for each column.
+    """
     last_position = np.empty(target_shape[1], dtype=float_)
     for col in range(target_shape[1]):
         last_position[col] = float(flex_select_1d_pc_nb(init_position, col))
@@ -1664,7 +2159,19 @@ def prepare_last_value_nb(
     init_position: tp.FlexArray1d,
     init_price: tp.FlexArray1d,
 ) -> tp.Array1d:
-    """Prepare `last_value`."""
+    """Prepare the last value array by combining cash and position values.
+
+    Args:
+        target_shape (Shape): Target shape used to determine the output dimensions.
+        group_lens (GroupLens): Array of group lengths.
+        cash_sharing (bool): Indicates if cash is shared among groups.
+        init_cash (FlexArray1d): Array of initial cash values.
+        init_position (FlexArray1d): Array of initial position values.
+        init_price (FlexArray1d): Array of initial prices corresponding to positions.
+
+    Returns:
+        Array1d: Array with computed last values calculated as cash plus position times price.
+    """
     if cash_sharing:
         last_value = np.empty(len(group_lens), dtype=float_)
         from_col = 0
@@ -1698,7 +2205,17 @@ def prepare_last_pos_info_nb(
     init_price: tp.FlexArray1d,
     fill_pos_info: bool = True,
 ) -> tp.RecordArray:
-    """Prepare `last_pos_info`."""
+    """Prepare last position information array.
+
+    Args:
+        target_shape (Shape): Target shape for the position info array.
+        init_position (FlexArray1d): Array containing initial positions.
+        init_price (FlexArray1d): Array containing initial prices.
+        fill_pos_info (bool): If True, fill the position info with initial data.
+
+    Returns:
+        RecordArray: Array of last position information records.
+    """
     if fill_pos_info:
         last_pos_info = np.empty(target_shape[1], dtype=trade_dt)
         last_pos_info["id"][:] = -1
@@ -1741,7 +2258,24 @@ def prepare_sim_out_nb(
     sim_start: tp.Optional[tp.Array1d] = None,
     sim_end: tp.Optional[tp.Array1d] = None,
 ) -> SimulationOutput:
-    """Prepare simulation output."""
+    """Prepare simulation output.
+
+    Args:
+        order_records (RecordArray2d): Array of order records.
+        order_counts (Array1d): Array containing order counts.
+        log_records (RecordArray2d): Array of log records.
+        log_counts (Array1d): Array containing log counts.
+        cash_deposits (Array2d): Array of cash deposit entries.
+        cash_earnings (Array2d): Array of cash earning entries.
+        call_seq (Optional[Array2d]): Optional array for call sequence.
+        in_outputs (Optional[NamedTuple]): Optional additional outputs.
+        sim_start (Optional[Array1d]): Optional simulation start times.
+        sim_end (Optional[Array1d]): Optional simulation end times.
+
+    Returns:
+        SimulationOutput: Simulation output record with repartitioned order and
+            log records and cash entries.
+    """
     order_records_flat = generic_nb.repartition_nb(order_records, order_counts)
     log_records_flat = generic_nb.repartition_nb(log_records, log_counts)
     return SimulationOutput(
@@ -1765,7 +2299,21 @@ def get_trade_stats_nb(
     exit_fees: float,
     direction: int,
 ) -> tp.Tuple[float, float]:
-    """Get trade statistics."""
+    """Get trade statistics.
+
+    Args:
+        size (float): Trade size.
+        entry_price (float): Entry price of the trade.
+        entry_fees (float): Fees incurred at entry.
+        exit_price (float): Exit price of the trade.
+        exit_fees (float): Fees incurred at exit.
+        direction (int): Trade direction.
+
+            See `vectorbtpro.portfolio.enums.TradeDirection` for details.
+
+    Returns:
+        Tuple[float, float]: A tuple containing the profit and loss (pnl) and the return ratio.
+    """
     entry_val = size * entry_price
     exit_val = size * exit_price
     val_diff = add_nb(exit_val, -entry_val)
@@ -1781,7 +2329,16 @@ def get_trade_stats_nb(
 
 @register_jitted(cache=True)
 def update_open_pos_info_stats_nb(record: tp.Record, position_now: float, price: float) -> None:
-    """Update statistics of an open position record using custom price."""
+    """Update statistics of an open position record using a custom price.
+
+    Args:
+        record (Record): Position record to update.
+        position_now (float): Current position size.
+        price (float): Price used for updating the statistics.
+
+    Returns:
+        None: This function modifies `record` in place.
+    """
     if record["id"] >= 0 and record["status"] == TradeStatus.Open:
         if np.isnan(record["exit_price"]):
             exit_price = price
@@ -1804,7 +2361,17 @@ def update_open_pos_info_stats_nb(record: tp.Record, position_now: float, price:
 
 @register_jitted(cache=True)
 def fill_init_pos_info_nb(record: tp.Record, col: int, position_now: float, price: float) -> None:
-    """Fill position record for an initial position."""
+    """Fill a position record for an initial position.
+
+    Args:
+        record (Record): The position record to populate.
+        col (int): Current column index.
+        position_now (float): The initial position size.
+        price (float): The initial price.
+
+    Returns:
+        None: This function modifies `record` in place.
+    """
     record["id"] = 0
     record["col"] = col
     record["size"] = abs(position_now)
@@ -1837,7 +2404,20 @@ def update_pos_info_nb(
     order_result: OrderResult,
     order_id: int,
 ) -> None:
-    """Update position record after filling an order."""
+    """Update the position record after an order is filled.
+
+    Args:
+        record (Record): Record structure containing trade details.
+        i (int): Current row index.
+        col (int): Current column index.
+        position_before (float): Position size before the order execution.
+        position_now (float): Position size after the order execution.
+        order_result (OrderResult): Object containing order execution details.
+        order_id (int): Identifier of the executed order.
+
+    Returns:
+        None: This function modifies `record` in place.
+    """
     if order_result.status == OrderStatus.Filled:
         if position_before == 0 and position_now != 0:
             # New position opened
@@ -1930,7 +2510,17 @@ def update_pos_info_nb(
 
 @register_jitted(cache=True)
 def resolve_hl_nb(open, high, low, close):
-    """Resolve the current high and low."""
+    """Resolve the current high and low prices based on OHLC data.
+
+    Args:
+        open (float): The opening price.
+        high (float): The high price.
+        low (float): The low price.
+        close (float): The closing price.
+
+    Returns:
+        Tuple[float, float]: The resolved high and low prices.
+    """
     if np.isnan(high):
         if np.isnan(open):
             high = close
@@ -1960,12 +2550,26 @@ def check_price_hit_nb(
     check_open: bool = True,
     hard_price: bool = False,
 ) -> tp.Tuple[float, bool, bool]:
-    """Check whether a target price was hit.
+    """Determine whether the target price is hit and compute the effective price and hit flags.
 
-    If `hard_price` is False, and `can_use_ohlc` and `check_open` are True and the target price
-    is hit by open, returns open. Otherwise, returns the actual target price.
+    Args:
+        open (float): The opening price.
+        high (float): The high price.
+        low (float): The low price.
+        close (float): The closing price.
+        price (float): The target price to evaluate.
+        hit_below (bool): If True, check whether the target price is hit from above.
+        can_use_ohlc (bool): Indicates if OHLC data should be used for the evaluation.
+        check_open (bool): Determines whether the open price should be considered.
+        hard_price (bool): If True, enforces the target price when hit by the open price.
 
-    Returns the stop price, whether it was hit by open, and whether it was hit during this bar."""
+    Returns:
+        Tuple[float, bool, bool]: A tuple containing:
+
+            * The effective stop price,
+            * A flag indicating if the open price was used,
+            * A flag indicating if the price was hit during the bar.
+    """
     high, low = resolve_hl_nb(
         open=open,
         high=high,
@@ -1995,7 +2599,19 @@ def resolve_stop_exit_price_nb(
     close: float,
     stop_exit_price: float,
 ) -> float:
-    """Resolve the exit price of a stop order."""
+    """Resolve the exit price for a stop order based on the specified stop exit option.
+
+    Args:
+        stop_price (float): The computed stop price.
+        close (float): The closing price.
+        stop_exit_price (float): Option indicating how to determine the exit price.
+
+            If equal to `StopExitPrice.Stop` or `StopExitPrice.HardStop`, the stop price is used;
+            if equal to `StopExitPrice.Close`, the closing price is used; otherwise, the provided value is used.
+
+    Returns:
+        float: The resolved exit price.
+    """
     if stop_exit_price == StopExitPrice.Stop or stop_exit_price == StopExitPrice.HardStop:
         return float(stop_price)
     elif stop_exit_price == StopExitPrice.Close:
@@ -2007,25 +2623,59 @@ def resolve_stop_exit_price_nb(
 
 @register_jitted(cache=True)
 def is_limit_active_nb(init_idx: int, init_price: float) -> bool:
-    """Check whether a limit order is active."""
+    """Check whether a limit order is active.
+
+    Args:
+        init_idx (int): The initial row index for the limit order; -1 indicates inactivity.
+        init_price (float): The initial price for the limit order; NaN implies inactivity.
+
+    Returns:
+        bool: True if the limit order is active, otherwise False.
+    """
     return init_idx != -1 and not np.isnan(init_price)
 
 
 @register_jitted(cache=True)
 def is_stop_active_nb(init_idx: int, stop: float) -> bool:
-    """Check whether a stop order is active."""
+    """Check whether a stop order is active.
+
+    Args:
+        init_idx (int): The initial row index for the stop order; -1 indicates inactivity.
+        stop (float): The stop value; NaN indicates that the stop is inactive.
+
+    Returns:
+        bool: True if the stop order is active, otherwise False.
+    """
     return init_idx != -1 and not np.isnan(stop)
 
 
 @register_jitted(cache=True)
 def is_time_stop_active_nb(init_idx: int, stop: int) -> bool:
-    """Check whether a time stop order is active."""
+    """Check whether a time stop order is active.
+
+    Args:
+        init_idx (int): The initial row index for the time stop order; -1 indicates inactivity.
+        stop (int): The time stop value; -1 signifies that the stop is inactive.
+
+    Returns:
+        bool: True if the time stop order is active, otherwise False.
+    """
     return init_idx != -1 and stop != -1
 
 
 @register_jitted(cache=True)
 def should_update_stop_nb(new_stop: float, upon_stop_update: int) -> bool:
-    """Whether to update stop."""
+    """Determine whether the stop value should be updated based on the update mode.
+
+    Args:
+        new_stop (float): The new candidate for the stop value.
+        upon_stop_update (int): The mode for updating the stop value, where `StopUpdateMode.Keep`
+            means no update, and `StopUpdateMode.Override` or `StopUpdateMode.OverrideNaN`
+            may trigger an update.
+
+    Returns:
+        bool: True if the stop value should be updated, otherwise False.
+    """
     if upon_stop_update == StopUpdateMode.Keep:
         return False
     if upon_stop_update == StopUpdateMode.Override or upon_stop_update == StopUpdateMode.OverrideNaN:
@@ -2037,7 +2687,18 @@ def should_update_stop_nb(new_stop: float, upon_stop_update: int) -> bool:
 
 @register_jitted(cache=True)
 def should_update_time_stop_nb(new_stop: int, upon_stop_update: int) -> bool:
-    """Whether to update time stop."""
+    """Determine whether the time stop value should be updated based on the update mode.
+
+    Args:
+        new_stop (int): The new candidate for the time stop value.
+        upon_stop_update (int): The mode for updating the time stop value.
+
+            Mode `StopUpdateMode.Keep` indicates no update, while `StopUpdateMode.Override` or
+            `StopUpdateMode.OverrideNaN` may trigger an update.
+
+    Returns:
+        bool: True if the time stop value should be updated, otherwise False.
+    """
     if upon_stop_update == StopUpdateMode.Keep:
         return False
     if upon_stop_update == StopUpdateMode.Override or upon_stop_update == StopUpdateMode.OverrideNaN:
@@ -2057,9 +2718,27 @@ def check_limit_expired_nb(
     index: tp.Optional[tp.Array1d] = None,
     freq: tp.Optional[int] = None,
 ) -> tp.Tuple[bool, bool]:
-    """Check whether limit is expired by comparing the current index with the creation index.
+    """Check whether the limit order is expired based on the current and creation indices.
 
-    Returns whether the limit expires already on open, and whether the limit expires during this bar."""
+    Args:
+        creation_idx (int): The row index at which the limit order was created.
+        i (int): The current row index.
+        tif (int): The time-in-force duration; use -1 if undefined.
+        expiry (int): The explicit expiry time; use -1 if undefined.
+        time_delta_format (int): The format for calculating time differences.
+
+            See `vectorbtpro.portfolio.enums.TimeDeltaFormat` for options.
+        index (Optional[Array1d]): Array of time indices, required when using index-based time deltas.
+
+            Must be in nanosecond format.
+        freq (Optional[int]): Frequency value for time calculations when using index format.
+
+            Must be in nanosecond format.
+
+    Returns:
+        Tuple[bool, bool]: A tuple where the first element indicates if the limit expires on open,
+            and the second element indicates if it expires during the current bar.
+    """
     if tif == -1 and expiry == -1:
         return False, False
     if time_delta_format == TimeDeltaFormat.Rows:
@@ -2109,7 +2788,19 @@ def resolve_limit_price_nb(
     delta_format: int = DeltaFormat.Percent,
     hit_below: bool = True,
 ) -> float:
-    """Resolve the limit price."""
+    """Resolve the limit price based on the initial price and adjustment delta.
+
+    Args:
+        init_price (float): The initial reference price.
+        limit_delta (float): The delta value used to adjust the limit price.
+        delta_format (int): The format of the delta.
+
+            See `vectorbtpro.portfolio.enums.DeltaFormat` for options.
+        hit_below (bool): Indicates whether the order should hit below the reference price.
+
+    Returns:
+        float: The computed limit price.
+    """
     if delta_format == DeltaFormat.Percent100:
         limit_delta /= 100
         delta_format = DeltaFormat.Percent
@@ -2165,11 +2856,34 @@ def check_limit_hit_nb(
     check_open: bool = True,
     hard_limit: bool = False,
 ) -> tp.Tuple[float, bool, bool]:
-    """Resolve the limit price using `resolve_limit_price_nb` and check whether it was hit.
+    """Resolve the limit price using `resolve_limit_price_nb` and determine if the limit was hit.
 
-    Returns the limit price, whether it was hit before open, and whether it was hit during this bar.
+    Args:
+        open (float): The opening price.
+        high (float): The highest price of the period.
+        low (float): The lowest price of the period.
+        close (float): The closing price.
+        price (float): The reference price used for calculating the limit.
+        size (float): The order size (must be non-zero).
+        direction (int): The order direction.
 
-    If `can_use_ohlc` and `check_open` is True and the stop is hit before open, returns open."""
+            See `vectorbtpro.portfolio.enums.Direction` for options.
+        limit_delta (float): The delta adjustment for computing the limit price.
+        delta_format (int): The format of the delta.
+
+            See `vectorbtpro.portfolio.enums.DeltaFormat` for options.
+        limit_reverse (bool): Flag to reverse the limit condition.
+        can_use_ohlc (bool): Indicates whether OHLC data can be used for detecting a limit hit.
+        check_open (bool): Flag indicating whether to check if the limit is hit at the open price.
+        hard_limit (bool): Enforces a hard limit without fallback to the open price if True.
+
+    Returns:
+        Tuple[float, bool, bool]: A tuple containing:
+
+            * The computed limit price (which may be adjusted to the open price if conditions are met).
+            * True if the limit was hit before open; otherwise, False.
+            * True if the limit was hit during the current bar; otherwise, False.
+    """
     if size == 0:
         raise ValueError("Limit order size cannot be zero")
     _size = get_diraware_size_nb(size, direction)
@@ -2225,7 +2939,24 @@ def resolve_limit_order_price_nb(
     close: float,
     limit_order_price: float,
 ) -> float:
-    """Resolve the limit order price of a limit order."""
+    """Determine the appropriate limit order price based on the specified option.
+
+    Args:
+        limit_price (float): The computed limit price.
+        close (float): The closing price.
+        limit_order_price (float): An option to select the price from
+            `vectorbtpro.portfolio.enums.LimitOrderPrice`:
+
+            * If equal to `LimitOrderPrice.Limit` or `LimitOrderPrice.HardLimit`, returns `limit_price`.
+            * If equal to `LimitOrderPrice.Close`, returns `close`.
+            * Otherwise, returns the provided value.
+
+    Returns:
+        float: The resolved limit order price.
+
+    Raises:
+        ValueError: If `limit_order_price` is less than 0.
+    """
     if limit_order_price == LimitOrderPrice.Limit or limit_order_price == LimitOrderPrice.HardLimit:
         return float(limit_price)
     elif limit_order_price == LimitOrderPrice.Close:
@@ -2242,7 +2973,19 @@ def resolve_stop_price_nb(
     delta_format: int = DeltaFormat.Percent,
     hit_below: bool = True,
 ) -> float:
-    """Resolve the stop price."""
+    """Resolve the stop price based on the initial price and adjustment value.
+
+    Args:
+        init_price (float): The initial reference price.
+        stop (float): The stop adjustment value.
+        delta_format (int): The format of the stop adjustment.
+
+            See `vectorbtpro.portfolio.enums.DeltaFormat` for options.
+        hit_below (bool): Indicates whether the stop should be applied below the initial price.
+
+    Returns:
+        float: The computed stop price.
+    """
     if delta_format == DeltaFormat.Percent100:
         stop /= 100
         delta_format = DeltaFormat.Percent
@@ -2282,9 +3025,31 @@ def check_stop_hit_nb(
     check_open: bool = True,
     hard_stop: bool = False,
 ) -> tp.Tuple[float, bool, bool]:
-    """Resolve the stop price using `resolve_stop_price_nb` and check whether it was hit.
+    """Resolve the stop price using `resolve_stop_price_nb` and check if it was hit.
 
-    See `check_price_hit_nb`."""
+    Args:
+        open (float): Opening price.
+        high (float): High price.
+        low (float): Low price.
+        close (float): Close price.
+        is_position_long (bool): Indicates whether the position is long.
+        init_price (float): Initial price used for stop price calculation.
+        stop (float): Stop parameter value.
+        delta_format (int): Format for the stop delta.
+
+            See `vectorbtpro.portfolio.enums.DeltaFormat` for options.
+        hit_below (bool): Direction flag for stop hit determination.
+        can_use_ohlc (bool): Whether to use OHLC data when checking the stop hit.
+        check_open (bool): Whether to include the open price in the hit check.
+        hard_stop (bool): Whether the stop is considered a hard stop.
+
+    Returns:
+        Tuple[float, bool, bool]: A tuple containing:
+
+            * The resolved stop price.
+            * True if the stop was hit on open.
+            * True if the stop was hit during the bar.
+    """
     hit_below = (is_position_long and hit_below) or (not is_position_long and not hit_below)
     stop_price = resolve_stop_price_nb(
         init_price=init_price,
@@ -2314,9 +3079,28 @@ def check_td_stop_hit_nb(
     index: tp.Optional[tp.Array1d] = None,
     freq: tp.Optional[int] = None,
 ) -> tp.Tuple[bool, bool]:
-    """Check whether TD stop was hit by comparing the current index with the initial index.
+    """Check whether a TD stop was hit by comparing the initial index with the current index.
 
-    Returns whether the stop was hit already on open, and whether the stop was hit during this bar."""
+    Args:
+        init_idx (int): Row index of the initial event.
+        i (int): Current row index.
+        stop (int): Stop offset; -1 indicates no stop.
+        time_delta_format (int): Format for time delta comparisons (e.g., rows or index).
+
+            See `vectorbtpro.portfolio.enums.TimeDeltaFormat` for options.
+        index (Optional[Array1d]): Array of index values, required when using index-based time delta.
+
+            Must be in nanosecond format.
+        freq (Optional[int]): Frequency for time delta comparisons when using index-based format.
+
+            Must be in nanosecond format.
+
+    Returns:
+        Tuple[bool, bool]: A tuple containing:
+
+            * True if the stop was hit on open.
+            * True if the stop was hit during the current bar.
+    """
     if stop == -1:
         return False, False
     if time_delta_format == TimeDeltaFormat.Rows:
@@ -2355,9 +3139,27 @@ def check_dt_stop_hit_nb(
     index: tp.Optional[tp.Array1d] = None,
     freq: tp.Optional[int] = None,
 ) -> tp.Tuple[bool, bool]:
-    """Check whether DT stop was hit by comparing the current index with the initial index.
+    """Check whether a DT stop was hit by comparing the current index against the stop threshold.
 
-    Returns whether the stop was hit already on open, and whether the stop was hit during this bar."""
+    Args:
+        i (int): Current row index.
+        stop (int): Stop threshold offset; -1 indicates no stop.
+        time_delta_format (int): Format for time delta calculations (rows or index).
+
+            See `vectorbtpro.portfolio.enums.TimeDeltaFormat` for options.
+        index (Optional[Array1d]): Array of index values, required for index-based time delta.
+
+            Must be in nanosecond format.
+        freq (Optional[int]): Frequency for index-based time delta comparisons.
+
+            Must be in nanosecond format.
+
+    Returns:
+        Tuple[bool, bool]: A tuple containing:
+
+            * True if the stop was hit on open.
+            * True if the stop was hit during the current bar.
+    """
     if stop == -1:
         return False, False
     if time_delta_format == TimeDeltaFormat.Rows:
@@ -2396,7 +3198,20 @@ def check_tsl_th_hit_nb(
     threshold: float,
     delta_format: int = DeltaFormat.Percent,
 ) -> bool:
-    """Resolve the TSL threshold price using `resolve_stop_price_nb` and check whether it was hit."""
+    """Resolve the TSL threshold price using `resolve_stop_price_nb` and check if it was hit.
+
+    Args:
+        is_position_long (bool): True if the position is long, False if short.
+        init_price (float): Initial price used for threshold computation.
+        peak_price (float): Peak price reached (maximum for long, minimum for short).
+        threshold (float): TSL threshold value.
+        delta_format (int): Format for computing the trailing stop threshold.
+
+            See `vectorbtpro.portfolio.enums.DeltaFormat` for options.
+
+    Returns:
+        bool: True if the TSL threshold was hit, False otherwise.
+    """
     hit_below = not is_position_long
     tsl_th_price = resolve_stop_price_nb(
         init_price=init_price,
@@ -2411,9 +3226,19 @@ def check_tsl_th_hit_nb(
 
 @register_jitted(cache=True)
 def resolve_dyn_limit_price_nb(val_price: float, price: float, limit_price: float) -> float:
-    """Resolve price dynamically.
+    """Resolve the dynamic limit price.
 
-    Uses the valuation price as the left bound and order price as the right bound."""
+    Determines a bounded limit price using the valuation price as the lower bound and
+    the order price as the upper bound.
+
+    Args:
+        val_price (float): Valuation price used as the lower bound.
+        price (float): Order price used as the upper bound.
+        limit_price (float): Proposed limit price value; if infinite, selects a bound based on its sign.
+
+    Returns:
+        float: The resolved limit price.
+    """
     if np.isinf(limit_price):
         if limit_price < 0:
             return float(val_price)
@@ -2423,9 +3248,21 @@ def resolve_dyn_limit_price_nb(val_price: float, price: float, limit_price: floa
 
 @register_jitted(cache=True)
 def resolve_dyn_stop_entry_price_nb(val_price: float, price: float, stop_entry_price: float) -> float:
-    """Resolve stop entry price dynamically.
+    """Resolve the dynamic stop entry price.
 
-    Uses the valuation/open price as the left bound and order price as the right bound."""
+    Determines the stop entry price using the valuation/open price as the lower bound and
+    the order price as the upper bound.
+
+    Args:
+        val_price (float): Valuation price used as the lower bound.
+        price (float): Order price used as the upper bound.
+        stop_entry_price (float): Proposed stop entry price value.
+
+            A negative value selects between valuation and order price.
+
+    Returns:
+        float: The resolved stop entry price.
+    """
     if np.isinf(stop_entry_price):
         if stop_entry_price < 0:
             return float(val_price)
@@ -2451,7 +3288,26 @@ def get_stop_ladder_exit_size_nb(
     delta_format: int = DeltaFormat.Percent,
     hit_below: bool = True,
 ) -> float:
-    """Get the exit size corresponding to the current step in the ladder."""
+    """Calculate the exit size for the current ladder step in a stop ladder strategy.
+
+    Args:
+        stop_ (FlexArray2d): 2D array of stop values.
+        step (int): Current ladder step index.
+        col (int): Current column index.
+        init_price (float): Initial price used to resolve stop levels.
+        init_position (float): Initial position size.
+        position_now (float): Current position size.
+        ladder (int): Stop ladder mode; must be static.
+
+            See `vectorbtpro.portfolio.enums.StopLadderMode` for options.
+        delta_format (int): Format for computing stop deltas.
+
+            See `vectorbtpro.portfolio.enums.DeltaFormat` for options.
+        hit_below (bool): Determines the direction for stop price resolution.
+
+    Returns:
+        float: The exit size corresponding to the current ladder step, or NaN if no valid stop is found.
+    """
     if ladder == StopLadderMode.Disabled:
         raise ValueError("Stop ladder must be enabled to select exit size")
     if ladder == StopLadderMode.Dynamic:
@@ -2521,7 +3377,28 @@ def get_time_stop_ladder_exit_size_nb(
     time_delta_format: int = TimeDeltaFormat.Index,
     index: tp.Optional[tp.Array1d] = None,
 ) -> float:
-    """Get the exit size corresponding to the current step in the ladder."""
+    """Get the exit size corresponding to the current step in the ladder.
+
+    Args:
+        stop_ (FlexArray2d): A 2D array representing stop values.
+        step (int): Current step index in the ladder.
+        col (int): Current column index.
+        init_idx (int): Initial row index in the ladder.
+        init_position (float): Initial position size.
+        position_now (float): Current position size.
+        ladder (int): Stop ladder mode.
+
+            See `vectorbtpro.portfolio.enums.StopLadderMode` for available options.
+        time_delta_format (int): Time delta format.
+
+            See `vectorbtpro.portfolio.enums.TimeDeltaFormat` for details.
+        index (Optional[Array1d]): Array of index values when using index-based time delta.
+
+            Must be in nanosecond format.
+
+    Returns:
+        float: The calculated exit size.
+    """
     if ladder == StopLadderMode.Disabled:
         raise ValueError("Stop ladder must be enabled to select exit size")
     if ladder == StopLadderMode.Dynamic:
@@ -2568,25 +3445,53 @@ def get_time_stop_ladder_exit_size_nb(
 
 @register_jitted(cache=True)
 def is_limit_info_active_nb(limit_info: tp.Record) -> bool:
-    """Check whether information record for a limit order is active."""
+    """Check whether the information record for a limit order is active.
+
+    Args:
+        limit_info (Record): Record containing limit order information.
+
+    Returns:
+        bool: True if the limit order record is active, otherwise False.
+    """
     return is_limit_active_nb(limit_info["init_idx"], limit_info["init_price"])
 
 
 @register_jitted(cache=True)
 def is_stop_info_active_nb(stop_info: tp.Record) -> bool:
-    """Check whether information record for a stop order is active."""
+    """Check whether the information record for a stop order is active.
+
+    Args:
+        stop_info (Record): Record containing stop order information.
+
+    Returns:
+        bool: True if the stop order record is active, otherwise False.
+    """
     return is_stop_active_nb(stop_info["init_idx"], stop_info["stop"])
 
 
 @register_jitted(cache=True)
 def is_time_stop_info_active_nb(time_stop_info: tp.Record) -> bool:
-    """Check whether information record for a time stop order is active."""
+    """Check whether the information record for a time stop order is active.
+
+    Args:
+        time_stop_info (Record): Record containing time stop order information.
+
+    Returns:
+        bool: True if the time stop order record is active, otherwise False.
+    """
     return is_time_stop_active_nb(time_stop_info["init_idx"], time_stop_info["stop"])
 
 
 @register_jitted(cache=True)
 def is_stop_info_ladder_active_nb(info: tp.Record) -> bool:
-    """Check whether information record for a stop ladder is active."""
+    """Check whether the information record for a stop ladder is active.
+
+    Args:
+        info (Record): Record containing stop ladder information.
+
+    Returns:
+        bool: True if the stop ladder record is active, otherwise False.
+    """
     return info["ladder"] != -1 and info["ladder"] > 0 and info["step"] != -1
 
 
@@ -2609,9 +3514,44 @@ def set_limit_info_nb(
     reverse: bool = False,
     order_price: int = LimitOrderPrice.Limit,
 ) -> None:
-    """Set limit order information.
+    """Set limit order information in the provided record.
 
-    See `vectorbtpro.portfolio.enums.limit_info_dt`."""
+    Args:
+        limit_info (Record): Record for limit order information.
+        signal_idx (int): Row index of the signal triggering the limit order.
+        creation_idx (Optional[int]): Creation row index.
+        init_idx (Optional[int]): Initial row index for the order.
+        init_price (float): Initial price.
+        init_size (float): Initial size for the order.
+        init_size_type (int): Indicator for size type.
+
+            See `vectorbtpro.portfolio.enums.SizeType`.
+        init_direction (int): Order direction indicator.
+
+            See `vectorbtpro.portfolio.enums.Direction`.
+        init_stop_type (int): Initial stop type.
+
+            See `vectorbtpro.portfolio.enums.StopType`.
+        delta (float): Delta value associated with the order.
+        delta_format (int): Format for the delta value.
+
+            See `vectorbtpro.portfolio.enums.DeltaFormat`.
+        tif (int): Time in force parameter.
+        expiry (int): Expiry index.
+        time_delta_format (int): Time delta format.
+
+            See `vectorbtpro.portfolio.enums.TimeDeltaFormat`.
+        reverse (bool): Flag indicating if the order is reversed.
+        order_price (int): Order price type.
+
+            See `vectorbtpro.portfolio.enums.LimitOrderPrice`.
+
+    Returns:
+        None: The function modifies the `limit_info` record in place.
+
+    See:
+        `vectorbtpro.portfolio.enums.limit_info_dt`
+    """
     limit_info["signal_idx"] = signal_idx
     limit_info["creation_idx"] = creation_idx if creation_idx is not None else signal_idx
     limit_info["init_idx"] = init_idx if init_idx is not None else signal_idx
@@ -2631,7 +3571,14 @@ def set_limit_info_nb(
 
 @register_jitted(cache=True)
 def clear_limit_info_nb(limit_info: tp.Record) -> None:
-    """Clear limit order information."""
+    """Clear limit order information in the provided record.
+
+    Args:
+        limit_info (Record): Record for limit order information to be cleared.
+
+    Returns:
+        None: The function modifies the `limit_info` record in place.
+    """
     limit_info["signal_idx"] = -1
     limit_info["creation_idx"] = -1
     limit_info["init_idx"] = -1
@@ -2667,9 +3614,43 @@ def set_sl_info_nb(
     step: int = -1,
     step_idx: int = -1,
 ) -> None:
-    """Set SL order information.
+    """Set SL (stop loss) order information in the provided record.
 
-    See `vectorbtpro.portfolio.enums.sl_info_dt`."""
+    Args:
+        sl_info (Record): Record for SL order information.
+        init_idx (int): Initial row index for the SL order.
+        init_price (float): Initial price for the SL order.
+        init_position (float): Initial position size.
+        stop (float): Stop price.
+        exit_price (float): Indicator for the exit price.
+
+            See `vectorbtpro.portfolio.enums.StopExitPrice`.
+        exit_size (float): Exit position size.
+        exit_size_type (int): Type indicator for the exit size.
+
+            See `vectorbtpro.portfolio.enums.SizeType`.
+        exit_type (int): Exit type indicator.
+
+            See `vectorbtpro.portfolio.enums.StopExitType`.
+        order_type (int): Order type for the SL order.
+
+            See `vectorbtpro.portfolio.enums.OrderType`.
+        limit_delta (float): Delta value used for limit calculations.
+        delta_format (int): Format for the delta value.
+
+            See `vectorbtpro.portfolio.enums.DeltaFormat`.
+        ladder (int): Stop ladder mode.
+
+            See `vectorbtpro.portfolio.enums.StopLadderMode`.
+        step (int): Ladder step.
+        step_idx (int): Ladder step index.
+
+    Returns:
+        None: The function modifies the `sl_info` record in place.
+
+    See:
+        `vectorbtpro.portfolio.enums.sl_info_dt`
+    """
     sl_info["init_idx"] = init_idx
     sl_info["init_price"] = init_price
     sl_info["init_position"] = init_position
@@ -2688,7 +3669,14 @@ def set_sl_info_nb(
 
 @register_jitted(cache=True)
 def clear_sl_info_nb(sl_info: tp.Record) -> None:
-    """Clear SL order information."""
+    """Clear SL (stop loss) order information in the provided record.
+
+    Args:
+        sl_info (Record): Record for SL order information to be cleared.
+    
+    Returns:
+        None: The function modifies the `sl_info` record in place.
+    """
     sl_info["init_idx"] = -1
     sl_info["init_price"] = np.nan
     sl_info["init_position"] = np.nan
@@ -2728,7 +3716,48 @@ def set_tsl_info_nb(
 ) -> None:
     """Set TSL/TTP order information.
 
-    See `vectorbtpro.portfolio.enums.tsl_info_dt`."""
+    Args:
+        tsl_info (Record): Record to store trailing stop (TSL) or trailing take profit (TTP) order data.
+        init_idx (int): Initialization row index.
+        init_price (float): Initial price.
+        init_position (float): Initial position.
+        peak_idx (Optional[int]): Peak row index.
+
+            Defaults to `init_idx` if not provided.
+        peak_price (Optional[float]): Peak price.
+
+            Defaults to `init_price` if not provided.
+        stop (float): Stop loss value.
+        th (float): Trailing threshold value.
+        exit_price (float): Exit price mode.
+
+            See `vectorbtpro.portfolio.enums.StopExitPrice`.
+        exit_size (float): Exit size.
+        exit_size_type (int): Exit size type.
+
+            See `vectorbtpro.portfolio.enums.SizeType`.
+        exit_type (int): Exit order type.
+
+            See `vectorbtpro.portfolio.enums.OrderType`.
+        order_type (int): Order execution type.
+
+            See `vectorbtpro.portfolio.enums.OrderType`.
+        limit_delta (float): Limit delta value.
+        delta_format (int): Delta format.
+
+            See `vectorbtpro.portfolio.enums.DeltaFormat`.
+        ladder (int): Ladder mode indicator.
+
+            See `vectorbtpro.portfolio.enums.StopLadderMode`.
+        step (int): Ladder step value.
+        step_idx (int): Ladder step index.
+
+    Returns:
+        None: The function modifies the `tsl_info` record in place.
+
+    See:
+        `vectorbtpro.portfolio.enums.tsl_info_dt`
+    """
     tsl_info["init_idx"] = init_idx
     tsl_info["init_price"] = init_price
     tsl_info["init_position"] = init_position
@@ -2750,7 +3779,14 @@ def set_tsl_info_nb(
 
 @register_jitted(cache=True)
 def clear_tsl_info_nb(tsl_info: tp.Record) -> None:
-    """Clear TSL/TTP order information."""
+    """Clear TSL/TTP order information.
+
+    Args:
+        tsl_info (Record): Record containing trailing stop order information to clear.
+
+    Returns:
+        None: The function modifies the `tsl_info` record in place.
+    """
     tsl_info["init_idx"] = -1
     tsl_info["init_price"] = np.nan
     tsl_info["init_position"] = np.nan
@@ -2790,7 +3826,41 @@ def set_tp_info_nb(
 ) -> None:
     """Set TP order information.
 
-    See `vectorbtpro.portfolio.enums.tp_info_dt`."""
+    Args:
+        tp_info (Record): Record to store take profit (TP) order data.
+        init_idx (int): Initialization row index.
+        init_price (float): Initial price.
+        init_position (float): Initial position.
+        stop (float): Stop loss value.
+        exit_price (float): Exit price mode.
+
+            See `vectorbtpro.portfolio.enums.StopExitPrice`.
+        exit_size (float): Exit size.
+        exit_size_type (int): Exit size type.
+
+            See `vectorbtpro.portfolio.enums.SizeType`.
+        exit_type (int): Exit order type.
+
+            See `vectorbtpro.portfolio.enums.StopExitType`.
+        order_type (int): Order execution type.
+
+            See `vectorbtpro.portfolio.enums.OrderType`.
+        limit_delta (float): Limit delta value.
+        delta_format (int): Delta format.
+
+            See `vectorbtpro.portfolio.enums.DeltaFormat`.
+        ladder (int): Ladder mode indicator.
+
+            See `vectorbtpro.portfolio.enums.StopLadderMode`.
+        step (int): Ladder step value.
+        step_idx (int): Ladder step index.
+
+    Returns:
+        None: The function modifies the `tp_info` record in place.
+
+    See:
+        `vectorbtpro.portfolio.enums.tp_info_dt`
+    """
     tp_info["init_idx"] = init_idx
     tp_info["init_price"] = init_price
     tp_info["init_position"] = init_position
@@ -2809,7 +3879,14 @@ def set_tp_info_nb(
 
 @register_jitted(cache=True)
 def clear_tp_info_nb(tp_info: tp.Record) -> None:
-    """Clear TP order information."""
+    """Clear TP order information.
+
+    Args:
+        tp_info (Record): Record containing take profit order information to clear.
+
+    Returns:
+        None: The function modifies the `tp_info` record in place.
+    """
     tp_info["init_idx"] = -1
     tp_info["init_price"] = np.nan
     tp_info["init_position"] = np.nan
@@ -2846,7 +3923,43 @@ def set_time_info_nb(
 ) -> None:
     """Set time order information.
 
-    See `vectorbtpro.portfolio.enums.time_info_dt`."""
+    Args:
+        time_info (Record): Record to store time-based order information.
+        init_idx (int): Initialization row index.
+        init_position (float): Initial position.
+        stop (int): Stop indicator or time.
+        exit_price (float): Exit price mode.
+
+            See `vectorbtpro.portfolio.enums.StopExitPrice`.
+        exit_size (float): Exit size.
+        exit_size_type (int): Exit size type.
+
+            See `vectorbtpro.portfolio.enums.SizeType`.
+        exit_type (int): Exit order type.
+
+            See `vectorbtpro.portfolio.enums.StopExitType`.
+        order_type (int): Order execution type.
+
+            See `vectorbtpro.portfolio.enums.OrderType`.
+        limit_delta (float): Limit delta value.
+        delta_format (int): Delta format.
+
+            See `vectorbtpro.portfolio.enums.DeltaFormat`.
+        time_delta_format (int): Time delta format.
+
+            See `vectorbtpro.portfolio.enums.TimeDeltaFormat`.
+        ladder (int): Ladder mode indicator.
+
+            See `vectorbtpro.portfolio.enums.StopLadderMode`.
+        step (int): Ladder step value.
+        step_idx (int): Ladder step index.
+
+    Returns:
+        None: The function modifies the `time_info` record in place.
+
+    See:
+        `vectorbtpro.portfolio.enums.time_info_dt`
+    """
     time_info["init_idx"] = init_idx
     time_info["init_position"] = init_position
     time_info["stop"] = stop
@@ -2865,7 +3978,14 @@ def set_time_info_nb(
 
 @register_jitted(cache=True)
 def clear_time_info_nb(time_info: tp.Record) -> None:
-    """Clear time order information."""
+    """Clear time order information.
+
+    Args:
+        time_info (Record): Record containing time-based order information to clear.
+
+    Returns:
+        None: The function modifies the `time_info` record in place.
+    """
     time_info["init_idx"] = -1
     time_info["init_position"] = np.nan
     time_info["stop"] = -1
@@ -2884,7 +4004,14 @@ def clear_time_info_nb(time_info: tp.Record) -> None:
 
 @register_jitted(cache=True)
 def get_limit_info_target_price_nb(limit_info: tp.Record) -> float:
-    """Get target price from limit order information."""
+    """Get target price from limit order information.
+
+    Args:
+        limit_info (Record): Record with limit order details.
+
+    Returns:
+        float: The target price if the limit order information is active; otherwise, NaN.
+    """
     if not is_limit_info_active_nb(limit_info):
         return np.nan
     if limit_info["init_size"] == 0:
@@ -2901,7 +4028,15 @@ def get_limit_info_target_price_nb(limit_info: tp.Record) -> float:
 
 @register_jitted
 def get_sl_info_target_price_nb(sl_info: tp.Record, position_now: float) -> float:
-    """Get target price from SL order information."""
+    """Get target price from SL order information.
+
+    Args:
+        sl_info (Record): Record with stop loss (SL) order details.
+        position_now (float): Current position used to determine the hit direction.
+
+    Returns:
+        float: The target stop loss price if the SL order is active; otherwise, NaN.
+    """
     if not is_stop_info_active_nb(sl_info):
         return np.nan
     hit_below = position_now > 0
@@ -2915,7 +4050,18 @@ def get_sl_info_target_price_nb(sl_info: tp.Record, position_now: float) -> floa
 
 @register_jitted
 def get_tsl_info_target_price_nb(tsl_info: tp.Record, position_now: float) -> float:
-    """Get target price from TSL/TTP order information."""
+    """Get target price from trailing stop loss (TSL) order information.
+
+    Args:
+        tsl_info (Record): Trailing stop loss order information.
+        position_now (float): Current position size, used to determine whether
+            the stop should be applied below the peak.
+
+    Returns:
+        float: The computed target price based on TSL information.
+
+            Returns NaN if the stop information is inactive.
+    """
     if not is_stop_info_active_nb(tsl_info):
         return np.nan
     hit_below = position_now > 0
@@ -2929,7 +4075,18 @@ def get_tsl_info_target_price_nb(tsl_info: tp.Record, position_now: float) -> fl
 
 @register_jitted
 def get_tp_info_target_price_nb(tp_info: tp.Record, position_now: float) -> float:
-    """Get target price from TP order information."""
+    """Get target price from take profit (TP) order information.
+
+    Args:
+        tp_info (Record): Take profit order information.
+        position_now (float): Current position size, used to determine whether
+            the stop should be applied below the initial price.
+
+    Returns:
+        float: The computed target price based on TP information.
+
+            Returns NaN if the stop information is inactive.
+    """
     if not is_stop_info_active_nb(tp_info):
         return np.nan
     hit_below = position_now < 0

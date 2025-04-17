@@ -40,6 +40,11 @@ class PXAccessor(BaseAccessor):
 
     Accessible via `pd.Series.vbt.px` and `pd.DataFrame.vbt.px`.
 
+    Args:
+        wrapper (Union[ArrayWrapper, ArrayLike]): The wrapper or array-like object to be wrapped.
+        obj (Optional[ArrayLike]): The object to be wrapped.
+        **kwargs: Additional keyword arguments passed to `vectorbtpro.base.accessors.BaseAccessor`.
+
     Examples:
         ```pycon
         >>> from vectorbtpro import *
@@ -64,7 +69,13 @@ class PXAccessor(BaseAccessor):
 class PXSRAccessor(PXAccessor, BaseSRAccessor):
     """Class that provides a Pandas accessor to apply Plotly Express functions on Series objects.
 
-    Accessible via `pd.Series.vbt.px`."""
+    Accessible via `pd.Series.vbt.px`.
+
+    Args:
+        wrapper (Union[ArrayWrapper, ArrayLike]): The wrapper or array-like object to be wrapped.
+        obj (Optional[ArrayLike]): The object to be wrapped.
+        **kwargs: Additional keyword arguments passed to `vectorbtpro.base.accessors.BaseAccessor`.
+    """
 
     def __init__(
         self,
@@ -83,7 +94,13 @@ class PXSRAccessor(PXAccessor, BaseSRAccessor):
 class PXDFAccessor(PXAccessor, BaseDFAccessor):
     """Class that provides a Pandas accessor to apply Plotly Express functions on DataFrame objects.
 
-    Accessible via `pd.DataFrame.vbt.px`."""
+    Accessible via `pd.DataFrame.vbt.px`.
+
+    Args:
+        wrapper (Union[ArrayWrapper, ArrayLike]): The wrapper or array-like object to be wrapped.
+        obj (Optional[ArrayLike]): The object to be wrapped.
+        **kwargs: Additional keyword arguments passed to `vectorbtpro.base.accessors.BaseAccessor`.
+    """
 
     def __init__(
         self,

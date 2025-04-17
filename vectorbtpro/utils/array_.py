@@ -24,6 +24,9 @@ def is_sorted(arr: tp.Array1d) -> bool:
 
     Args:
         arr (Array1d): The input array.
+
+    Returns:
+        bool: True if the array is sorted, False otherwise.
     """
     return np.all(arr[:-1] <= arr[1:])
 
@@ -34,6 +37,9 @@ def is_sorted_nb(arr: tp.Array1d) -> bool:
 
     Args:
         arr (Array1d): The input array.
+
+    Returns:
+        bool: True if the array is sorted, False otherwise.
     """
     for i in range(arr.size - 1):
         if arr[i + 1] < arr[i]:
@@ -46,6 +52,9 @@ def is_range(arr: tp.Array1d) -> bool:
 
     Args:
         arr (Array1d): The input array.
+
+    Returns:
+        bool: True if the array is a consecutive integer sequence, False otherwise.
     """
     return np.all(np.diff(arr) == 1)
 
@@ -56,6 +65,9 @@ def is_range_nb(arr: tp.Array1d) -> bool:
 
     Args:
         arr (Array1d): The input array.
+    
+    Returns:
+        bool: True if the array is a consecutive integer sequence, False otherwise.
     """
     for i in range(arr.size):
         if arr[i] != arr[0] + i:
@@ -69,9 +81,12 @@ def insert_argsort_nb(A: tp.Array1d, I: tp.Array1d) -> None:
 
     This in-memory, non-recursive approach is optimized for small arrays.
 
-        Args:
-            A (Array1d): Array of values to sort.
-            I (Array1d): Array of indices to reorder alongside A.
+    Args:
+        A (Array1d): Array of values to sort.
+        I (Array1d): Array of indices to reorder alongside A.
+
+    Returns:
+        None: The function modifies the input arrays in place.
     """
     for j in range(1, len(A)):
         A_j = A[j]

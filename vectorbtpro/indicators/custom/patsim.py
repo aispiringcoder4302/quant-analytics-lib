@@ -118,11 +118,11 @@ class _PATSIM(PATSIM):
         """Plot `PATSIM.similarity` against `PATSIM.close`.
 
         Args:
-            column (str): Name of the column to plot.
+            column (Optional[Label]): Name of the column to plot.
 
-            similarity_trace_kwargs (dict): Keyword arguments passed to
+            similarity_trace_kwargs (KwargsLike): Keyword arguments passed to
                 `plotly.graph_objects.Scatter` for plotting `PATSIM.similarity`.
-            add_trace_kwargs (dict): Keyword arguments passed to `fig.add_trace` when adding each trace.
+            add_trace_kwargs (KwargsLike): Keyword arguments passed to `fig.add_trace` when adding each trace.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
             **layout_kwargs: Additional keyword arguments for configuring the figure layout.
 
@@ -176,13 +176,14 @@ class _PATSIM(PATSIM):
         """Overlay `PATSIM.similarity` as a heatmap on top of `PATSIM.close`.
 
         Args:
-            column (str): Name of the column to plot.
+            column (Optional[Label]): Name of the column to plot.
 
-            close_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter`
-                for plotting `PATSIM.close`.
-            similarity_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Heatmap`
-                for plotting `PATSIM.similarity`.
-            add_trace_kwargs (dict): Keyword arguments passed to `fig.add_trace` when adding each trace.
+            close_trace_kwargs (KwargsLike): Keyword arguments passed to 
+                `plotly.graph_objects.Scatter` for plotting `PATSIM.close`.
+            similarity_trace_kwargs (KwargsLike): Keyword arguments passed to 
+                `plotly.graph_objects.Heatmap` for plotting `PATSIM.similarity`.
+            add_trace_kwargs (KwargsLike): Keyword arguments passed to 
+                `fig.add_trace` when adding each trace.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
             **layout_kwargs: Additional keyword arguments for configuring the figure layout.
 

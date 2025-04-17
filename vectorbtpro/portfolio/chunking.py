@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Extensions for chunking of portfolio."""
+"""Module with extensions for chunking of portfolio."""
 
 import numpy as np
 
@@ -25,7 +25,14 @@ __all__ = []
 
 
 def get_init_cash_slicer(ann_args: tp.AnnArgs) -> ArraySlicer:
-    """Get slicer for `init_cash` based on cash sharing."""
+    """Return the slicer for `init_cash` based on the cash sharing configuration.
+
+    Args:
+        ann_args (AnnArgs): Dictionary of annotation arguments containing cash sharing settings.
+
+    Returns:
+        ArraySlicer: A slicer configured for slicing the initial cash values.
+    """
     cash_sharing = ann_args["cash_sharing"]["value"]
     if cash_sharing:
         return base_ch.FlexArraySlicer()
@@ -33,7 +40,14 @@ def get_init_cash_slicer(ann_args: tp.AnnArgs) -> ArraySlicer:
 
 
 def get_cash_deposits_slicer(ann_args: tp.AnnArgs) -> ArraySlicer:
-    """Get slicer for `cash_deposits` based on cash sharing."""
+    """Return the slicer for `cash_deposits` based on the cash sharing configuration.
+
+    Args:
+        ann_args (AnnArgs): Dictionary of annotation arguments containing cash sharing settings.
+
+    Returns:
+        ArraySlicer: A slicer configured for slicing the cash deposit values.
+    """
     cash_sharing = ann_args["cash_sharing"]["value"]
     if cash_sharing:
         return base_ch.FlexArraySlicer(axis=1)
@@ -45,11 +59,22 @@ def in_outputs_merge_func(
     chunk_meta: tp.Iterable[ChunkMeta],
     ann_args: tp.AnnArgs,
     mapper: base_ch.GroupLensMapper,
-):
+) -> tp.NamedTuple:
     """Merge chunks of in-output objects.
 
-    Concatenates 1-dim arrays, stacks columns of 2-dim arrays, and fixes and concatenates record arrays
-    using `vectorbtpro.records.chunking.merge_records`. Other objects will throw an error."""
+    Concatenates 1-dimensional arrays, stacks columns of 2-dimensional arrays, and 
+    merges record arrays using `vectorbtpro.records.chunking.merge_records`. 
+    Other object types will raise an error.
+
+    Args:
+        results (List[SimulationOutput]): List of simulation output chunks.
+        chunk_meta (Iterable[ChunkMeta]): Iterable containing metadata for each chunk.
+        ann_args (AnnArgs): Dictionary of annotation arguments.
+        mapper (GroupLensMapper): Mapper for grouping and lens mapping.
+
+    Returns:
+        NamedTuple: An instance of the same type as `results[0].in_outputs` with merged data.
+    """
     in_outputs = dict()
     for k, v in results[0].in_outputs._asdict().items():
         if v is None:
@@ -80,7 +105,21 @@ def merge_sim_outs(
 ) -> SimulationOutput:
     """Merge chunks of `vectorbtpro.portfolio.enums.SimulationOutput` instances.
 
-    If `SimulationOutput.in_outputs` is not None, must provide `in_outputs_merge_func` or similar."""
+    Merges various components including order and log records, cash deposits, cash earnings, call sequence,
+    in-outputs, and simulation timing arrays. If `vectorbtpro.portfolio.enums.SimulationOutput.in_outputs` 
+    is provided, a merge function such as `in_outputs_merge_func` must be used.
+
+    Args:
+        results (List[SimulationOutput]): List of simulation output chunks.
+        chunk_meta (Iterable[ChunkMeta]): Iterable containing metadata for each chunk.
+        ann_args (AnnArgs): Dictionary of annotation arguments.
+        mapper (GroupLensMapper): Mapper for grouping and lens mapping.
+        in_outputs_merge_func (Callable): Function to merge in-output objects.
+        **kwargs: Additional keyword arguments passed to `in_outputs_merge_func`.
+
+    Returns:
+        SimulationOutput: A merged simulation output instance.
+    """
     order_records = [r.order_records for r in results]
     order_records = merge_records(order_records, chunk_meta, ann_args=ann_args, mapper=mapper)
 
@@ -134,4 +173,4 @@ merge_sim_outs_config = ReadonlyConfig(
         ),
     )
 )
-"""Config for merging using `merge_sim_outs`."""
+"""Configuration for merging simulation outputs using `merge_sim_outs`."""

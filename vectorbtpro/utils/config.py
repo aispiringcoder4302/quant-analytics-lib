@@ -145,6 +145,9 @@ def set_dict_item(dct: dict, k: tp.Any, v: tp.Any, force: bool = False) -> None:
         k (Any): The key to set.
         v (Any): The value to assign.
         force (bool): If True, and if `dct` is an instance of `Config`, override blocking flags.
+
+    Returns:
+        None: The dictionary is updated in place.
     """
     if isinstance(dct, Config):
         dct.__setitem__(k, v, force=force)
@@ -159,6 +162,9 @@ def del_dict_item(dct: dict, k: tp.Any, force: bool = False) -> None:
         dct (dict): The dictionary from which to delete the item.
         k (Any): The key of the item to delete.
         force (bool): If True, and if `dct` is an instance of `Config`, override blocking flags.
+
+    Returns:
+        None: The dictionary is updated in place.
     """
     if isinstance(dct, Config):
         dct.__delitem__(k, force=force)
@@ -223,6 +229,9 @@ def update_dict(
         force (bool): If True, override blocking flags when updating.
         same_keys (bool): If True, only update keys that already exist in the target dictionary.
 
+    Returns:
+        None: The dictionary is updated in place.
+
     !!! note
         When updating a nested configuration (an instance of `Configured`), if the corresponding
         value in `y` is a dictionary, the method `Configured.replace` is invoked. Additionally,
@@ -264,7 +273,8 @@ def reorder_dict(dct: dict, keys: tp.Iterable[tp.Union[tp.Hashable, type(...)]],
         skip_missing (bool): If True, ignore keys missing from `dct`.
 
     Returns:
-        dict: A new dictionary with items reordered."""
+        dict: A new dictionary with items reordered.
+    """
     if not isinstance(dct, dict):
         dct = dict(dct)
     if not isinstance(keys, list):
@@ -304,7 +314,8 @@ def reorder_list(lst: list, keys: tp.Iterable[tp.Union[int, type(...)]], skip_mi
         skip_missing (bool): If True, ignore indices not present in `lst`.
 
     Returns:
-        list: A new list with elements reordered."""
+        list: A new list with elements reordered.
+    """
     if not isinstance(lst, list):
         lst = list(lst)
     if not isinstance(keys, list):
@@ -362,7 +373,8 @@ class _unsetkey:
 unsetkey = _unsetkey()
 """Sentinel value indicating that a key should be removed.
 
-It can still be overridden by another dictionary."""
+It can still be overridden by another dictionary.
+"""
 
 
 def unset_keys(
@@ -375,7 +387,11 @@ def unset_keys(
     Args:
         dct (DictLike): The dictionary in which keys may be unset.
         nested (bool): If True, unset keys in nested dictionaries recursively.
-        force (bool): If True, force the removal of keys."""
+        force (bool): If True, force the removal of keys.
+
+    Returns:
+        None: The dictionary is updated in place.
+    """
     if dct is None:
         return
     assert_instance_of(dct, dict)
@@ -400,7 +416,7 @@ def merge_dicts(
     recursive merging of nested dictionaries.
 
     Args:
-        *dicts (dict): Dictionaries to merge.
+        *dicts (DictLike): Dictionaries to merge.
         to_dict (bool): Whether to convert each dictionary using `convert_to_dict` before merging.
         copy_mode (str): The copy mode used by `copy_dict` to duplicate each dictionary.
         nested (Optional[bool]): Whether to recursively merge nested dictionaries.
@@ -409,7 +425,8 @@ def merge_dicts(
         same_keys (bool): Whether to merge only overlapping keys.
 
     Returns:
-        dict: The merged dictionary."""
+        dict: The merged dictionary.
+    """
     if len(dicts) == 1:
         dicts = (None, dicts[0])
 
@@ -481,18 +498,20 @@ def flat_merge_dicts(*dicts: tp.DictLike, **kwargs) -> dict:
     Wrapper around `merge_dicts` that forces `nested` to False while applying default arguments.
 
     Args:
-        *dicts (dict): Dictionaries to merge.
+        *dicts (DictLike): Dictionaries to merge.
         **kwargs: Keyword arguments passed to `merge_dicts`.
 
     Returns:
-        dict: The merged dictionary."""
+        dict: The merged dictionary.
+    """
     return merge_dicts(*dicts, nested=False, **kwargs)
 
 
 class child_dict(pdict):
     """Child dictionary class.
 
-    Subclass of `dict` representing a nested child dictionary."""
+    Subclass of `dict` representing a nested child dictionary.
+    """
 
     pass
 
@@ -541,7 +560,7 @@ class Config(pdict):
             Disable this to treat each child dictionary as a single value.
 
             Defaults to True.
-        convert_children (bool or type): Converts child dictionaries of type `child_dict` to
+        convert_children (Union[bool, type]): Converts child dictionaries of type `child_dict` to
             configurations with the same settings if True or if set to a `Config` subclass.
 
             This triggers a waterfall conversion across all child dictionaries.
@@ -555,7 +574,7 @@ class Config(pdict):
             and ensure both `convert_children` and `nested` are True.
 
             Defaults to True if `frozen_keys` or `readonly` is True, otherwise False.
-        override_keys (set of str): Specifies keys that can override attribute names when `as_attrs` is True.
+        override_keys (Set[str]): Specifies keys that can override attribute names when `as_attrs` is True.
 
     Defaults can be overridden using settings from `vectorbtpro._settings.config`.
 
@@ -686,7 +705,13 @@ class Config(pdict):
 
     @property
     def options_(self) -> dict:
-        """Configuration options dictionary."""
+        """Configuration options dictionary.
+        
+        This dictionary contains various settings that control the behavior of the configuration.
+        
+        Returns:
+            dict: The configuration options dictionary.
+        """
         return self._options_
 
     def get_option(self, k: str) -> tp.Any:
@@ -706,6 +731,9 @@ class Config(pdict):
         Args:
             k (str): The key of the option.
             v (Any): The value to set for the option.
+
+        Returns:
+            None: The option is set in place.
         """
         self._options_[k] = v
 
@@ -798,6 +826,9 @@ class Config(pdict):
 
         Args:
             force (bool): Bypass configuration restrictions if True.
+
+        Returns:
+            None: The config is cleared in place.
         """
         if not force and self.get_option("readonly"):
             raise TypeError("Config is read-only")
@@ -813,6 +844,9 @@ class Config(pdict):
             nested (Optional[bool]): Whether to perform a nested update.
             force (bool): Bypass configuration restrictions if True.
             **kwargs: Additional keyword arguments.
+
+        Returns:
+            None: The config is updated in place.
         """
         other = dict(*args, **kwargs)
         if nested is None:
@@ -947,6 +981,9 @@ class Config(pdict):
         Args:
             force (bool): Bypass configuration restrictions if True.
             **reset_dct_copy_kwargs: Keyword arguments for copying the reset dictionary.
+
+        Returns:
+            None: The config is reset in place.
         """
         if not force and self.get_option("readonly"):
             raise TypeError("Config is read-only")
@@ -962,6 +999,9 @@ class Config(pdict):
         Args:
             force (bool): Bypass configuration restrictions if True.
             **reset_dct_copy_kwargs: Keyword arguments for copying the current state.
+
+        Returns:
+            None: The reset dictionary is updated in place.
         """
         if not force and self.get_option("readonly"):
             raise TypeError("Config is read-only")
@@ -985,6 +1025,9 @@ class Config(pdict):
             update_options (bool): Update configuration options if True.
             nested (Optional[bool]): Whether to apply a nested update.
             **kwargs: Keyword arguments for loading.
+
+        Returns:
+            None: The config is updated in place.
         """
         loaded = self.load(path=path, **kwargs)
         if clear:
@@ -1084,7 +1127,12 @@ class AtomicConfig(Config, atomic_dict):
 
 
 class FrozenConfig(Config):
-    """Configuration class with the `frozen_keys` flag enabled."""
+    """Configuration class with the `frozen_keys` flag enabled.
+    
+    Args:
+        *args: Additional positional arguments.
+        **kwargs: Additional keyword arguments.
+    """
 
     def __init__(
         self,
@@ -1099,7 +1147,12 @@ class FrozenConfig(Config):
 
 
 class ReadonlyConfig(Config):
-    """Configuration class with the `readonly` flag enabled."""
+    """Configuration class with the `readonly` flag enabled.
+    
+    Args:
+        *args: Additional positional arguments.
+        **kwargs: Additional keyword arguments.
+    """
 
     def __init__(
         self,
@@ -1114,7 +1167,12 @@ class ReadonlyConfig(Config):
 
 
 class HybridConfig(Config):
-    """Configuration class with `copy_kwargs` configured to use `copy_mode='hybrid'`."""
+    """Configuration class with `copy_kwargs` configured to use `copy_mode='hybrid'`.
+    
+    Args:
+        *args: Additional positional arguments.
+        **kwargs: Additional keyword arguments.
+    """
 
     def __init__(
         self,
@@ -1166,7 +1224,11 @@ Stores tuples of class names and their associated settings paths by unique ident
 
 
 class ExtSettingsPath(Base):
-    """Context manager to temporarily add extensional settings paths."""
+    """Context manager to temporarily add extensional settings paths.
+    
+    Args:
+        ext_settings_paths (ExtSettingsPaths): Dictionary of extensional settings paths.
+    """
 
     def __init__(self, ext_settings_paths: tp.ExtSettingsPaths) -> None:
         self._unique_id = str(uuid.uuid4())
@@ -1174,12 +1236,20 @@ class ExtSettingsPath(Base):
 
     @property
     def unique_id(self) -> str:
-        """Unique identifier for this extensional settings path instance."""
+        """Unique identifier for this extensional settings path instance.
+        
+        Returns:
+            str: The unique identifier.
+        """
         return self._unique_id
 
     @property
     def ext_settings_paths(self) -> tp.ExtSettingsPaths:
-        """Dictionary containing extensional settings paths."""
+        """Dictionary containing extensional settings paths.
+        
+        Returns:
+            ExtSettingsPaths: The dictionary of extensional settings paths.
+        """
         return self._ext_settings_paths
 
     def __enter__(self) -> tp.Self:
@@ -1210,7 +1280,11 @@ For instance, a relationship `knowledge` -> `pages` will also consider `pages` s
 
 
 class SpecSettingsPath(Base):
-    """Context manager to temporarily add specialized settings paths."""
+    """Context manager to temporarily add specialized settings paths.
+    
+    Args:
+        spec_settings_paths (SpecSettingsPaths): Dictionary of specialized settings paths.
+    """
 
     def __init__(self, spec_settings_paths: tp.SpecSettingsPaths) -> None:
         self._unique_id = str(uuid.uuid4())
@@ -1218,12 +1292,20 @@ class SpecSettingsPath(Base):
 
     @property
     def unique_id(self) -> str:
-        """Unique identifier for this specialized settings path instance."""
+        """Unique identifier for this specialized settings path instance.
+        
+        Returns:
+            str: The unique identifier.
+        """
         return self._unique_id
 
     @property
     def spec_settings_paths(self) -> tp.SpecSettingsPaths:
-        """Dictionary containing specialized settings paths."""
+        """Dictionary containing specialized settings paths.
+        
+        Returns:
+            SpecSettingsPaths: The dictionary of specialized settings paths.
+        """
         return self._spec_settings_paths
 
     def __enter__(self) -> tp.Self:
@@ -1240,10 +1322,11 @@ class HasSettings(Base):
     _settings_path: tp.SettingsPath = None
     """Path(s) that locate settings for this class in `vectorbtpro._settings`.
 
-Must be provided as a single path, a list of paths ordered by specialization, 
-or a dictionary mapping path IDs to paths.
+    Must be provided as a single path, a list of paths ordered by specialization, 
+    or a dictionary mapping path IDs to paths.
 
-Lookup is performed using `get_dict_item`."""
+    Lookup is performed using `get_dict_item`.
+    """
 
     _specializable: tp.ClassVar[bool] = True
     """Boolean flag indicating if the settings for this class can be specialized."""
@@ -1433,6 +1516,9 @@ Lookup is performed using `get_dict_item`."""
             path (PathLikeKey): The primary settings path.
             sub_path (Optional[PathLikeKey]): A sub-path to combine with the primary path.
             sub_path_only (bool): If True, enforce lookup solely in the combined sub-path.
+
+        Returns:
+            bool: True if settings exist under the specified path; otherwise, False.
         """
         try:
             cls.get_path_settings(path, sub_path=sub_path, sub_path_only=sub_path_only)
@@ -1455,6 +1541,9 @@ Lookup is performed using `get_dict_item`."""
             inherit (bool): Whether to include settings from superclasses.
             sub_path (Optional[PathLikeKey]): A sub-path to combine with the main settings path.
             sub_path_only (bool): If True, enforce lookup solely in the combined sub-path.
+
+        Returns:
+            bool: True if settings exist; otherwise, False.
         """
         try:
             cls.get_settings(
@@ -1610,6 +1699,9 @@ Lookup is performed using `get_dict_item`."""
             key (PathLikeKey): The key identifying the setting.
             sub_path (Optional[PathLikeKey]): A sub-key for nested settings.
             sub_path_only (bool): Whether to consider only the sub-path.
+
+        Returns:
+            bool: True if the setting exists; otherwise, False.
         """
         try:
             cls.get_path_setting(path, key, sub_path=sub_path, sub_path_only=sub_path_only)
@@ -1635,6 +1727,9 @@ Lookup is performed using `get_dict_item`."""
             inherit (bool): Whether to include superclasses in the lookup.
             sub_path (Optional[PathLikeKey]): A sub-key for nested settings.
             sub_path_only (bool): Whether to consider only the sub-path.
+
+        Returns:
+            bool: True if the setting exists; otherwise, False.
         """
         try:
             cls.get_setting(
@@ -1722,6 +1817,9 @@ Lookup is performed using `get_dict_item`."""
 
                 If the settings do not exist, pass `populate_=True` to initialize them.
             **kwargs: Additional key-value pairs to update the settings.
+
+        Returns:
+            None: The settings are updated in place.
         """
         from vectorbtpro._settings import settings
 
@@ -1764,6 +1862,9 @@ Lookup is performed using `get_dict_item`."""
         Args:
             path_id (Optional[Hashable]): Identifier for the settings path.
             sub_path (Optional[PathLikeKey]): A sub-key for nested settings.
+
+        Returns:
+            None: The settings are reset in place.
         """
         from vectorbtpro._settings import settings
 
@@ -1855,7 +1956,7 @@ class Configured(HasSettings, Cacheable, Comparable, Pickleable, Prettified, Cha
     Settings are defined under `vectorbtpro._settings.configured`.
 
     Args:
-        config: Keyword arguments for initialization configuration.
+        **config: Keyword arguments for initialization configuration.
 
     !!! warning
         If any attribute is overwritten that is not listed in `Configured._writeable_attrs`,
@@ -1908,7 +2009,11 @@ class Configured(HasSettings, Cacheable, Comparable, Pickleable, Prettified, Cha
 
     @property
     def config(self) -> Config:
-        """Configuration instance set during initialization."""
+        """Configuration instance set during initialization.
+        
+        Returns:
+            Config: The configuration instance.
+        """
         return self._config
 
     @hybrid_method
@@ -2076,8 +2181,10 @@ class Configured(HasSettings, Cacheable, Comparable, Pickleable, Prettified, Cha
             check_types (bool): Whether to compare types.
             check_attrs (bool): Whether to compare writable attributes.
             check_options (bool): Whether to compare configuration options.
-            _key (str): Identifier key used for comparison context.
             **kwargs: Keyword arguments for comparison.
+
+        Returns:
+            bool: True if the objects are equal, False otherwise.
         """
         if _key is None:
             _key = type(self).__name__
@@ -2121,6 +2228,9 @@ class Configured(HasSettings, Cacheable, Comparable, Pickleable, Prettified, Cha
         Args:
             *args: Positional arguments passed to `Config.update`.
             **kwargs: Keyword arguments passed to `Config.update`.
+
+        Returns:
+            None: The configuration is updated in place.
         """
         self.config.update(*args, **kwargs, force=True)
 

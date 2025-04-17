@@ -72,6 +72,9 @@ class Prettified(Base):
 
         Args:
             **kwargs: Keyword arguments passed to `prettify`.
+
+        Returns:
+            None
         """
         print(self.prettify(**kwargs))
 
@@ -406,6 +409,9 @@ def pprint(*args, **kwargs) -> None:
     Args:
         *args: Positional arguments passed to `prettify`.
         **kwargs: Keyword arguments passed to `prettify`.
+
+    Returns:
+        None
     """
     print(prettify(*args, **kwargs))
 
@@ -459,6 +465,9 @@ def ptable(*args, display_html: tp.Optional[bool] = None, **kwargs) -> None:
 
             If None, auto-detect if running in an IPython notebook.
         **kwargs: Keyword arguments for `format_array`.
+
+    Returns:
+        None
     """
     from vectorbtpro.utils.checks import in_notebook
 
@@ -619,6 +628,9 @@ def phelp(*args, **kwargs) -> None:
     Args:
         *args: Positional arguments for `format_func`.
         **kwargs: Keyword arguments for `format_func`.
+
+    Returns:
+        None
     """
     print(format_func(*args, **kwargs))
 
@@ -629,6 +641,9 @@ def pdir(*args, **kwargs) -> None:
     Args:
         *args: Positional arguments for `vectorbtpro.utils.attr_.parse_attrs`.
         **kwargs: Keyword arguments for `vectorbtpro.utils.attr_.parse_attrs`.
+
+    Returns:
+        None
     """
     from vectorbtpro.utils.attr_ import parse_attrs
 

@@ -660,7 +660,7 @@ __pdoc__[
     "DTCNT"
 ] = """A named tuple representing date-time components for `DTC`.
 
-Attributes:
+Fields:
     year (int): The year component.
     month (int): The month component.
     day (int): The day of the month.
@@ -668,7 +668,8 @@ Attributes:
     hour (int): The hour component.
     minute (int): The minute component.
     second (int): The second component.
-    nanosecond (int): The nanosecond component."""
+    nanosecond (int): The nanosecond component.
+"""
 
 DTCT = tp.TypeVar("DTCT", bound="DTC")
 
@@ -707,6 +708,9 @@ class DTC(DefineMixin):
 
         Args:
             dt (datetime): A datetime object from which to extract components.
+
+        Returns:
+            DTC: A `DTC` instance with the extracted components.
         """
         if isinstance(dt, np.datetime64):
             dt = pd.Timestamp(dt)
@@ -732,6 +736,9 @@ class DTC(DefineMixin):
 
         Args:
             d (date): A date object from which to extract components.
+
+        Returns:
+            DTC: A `DTC` instance with the extracted components.
         """
         return cls(year=d.year, month=d.month, day=d.day, weekday=d.weekday())
 
@@ -741,6 +748,9 @@ class DTC(DefineMixin):
 
         Args:
             t (time): A time object from which to extract components.
+
+        Returns:
+            DTC: A `DTC` instance with the extracted components.
         """
         return cls(hour=t.hour, minute=t.minute, second=t.second, nanosecond=t.microsecond * 1000)
 
@@ -751,6 +761,9 @@ class DTC(DefineMixin):
         Args:
             time_str (str): A string representing a time.
             **parse_kwargs: Keyword arguments for parsing.
+
+        Returns:
+            DTC: A `DTC` instance with the parsed components.
         """
         from dateutil.parser import parser
 
@@ -776,6 +789,9 @@ class DTC(DefineMixin):
 
         Args:
             dtc (DTCNT): A named tuple with datetime components, where missing values are indicated by -1.
+
+        Returns:
+            DTC: A `DTC` instance with the extracted components.
         """
         return cls(
             year=dtc.year if dtc.year != -1 else None,
@@ -795,6 +811,9 @@ class DTC(DefineMixin):
         Args:
             dtc (DTCLike): An object representing datetime components.
             **parse_kwargs: Keyword arguments for parsing.
+
+        Returns:
+            DTC: A `DTC` instance with the parsed components.
         """
         if checks.is_namedtuple(dtc):
             return cls.from_namedtuple(dtc)
@@ -829,6 +848,9 @@ class DTC(DefineMixin):
             dtc (DTCLike): An object representing datetime components.
             check_func (Optional[Callable]): A function to validate the parsed object.
             **parse_kwargs: Keyword arguments for parsing.
+
+        Returns:
+            bool: True if the object is parsable, False otherwise.
         """
         try:
             if isinstance(dtc, DTC):
@@ -1578,7 +1600,8 @@ def date_range(
     * If `periods` is provided but both `start` and `end` are None, sets `start` to the Unix epoch start.
 
     Returns:
-        pd.DatetimeIndex: The generated datetime index."""
+        pd.DatetimeIndex: The generated datetime index.
+    """
     if timestamp_kwargs is None:
         timestamp_kwargs = {}
     if freq_kwargs is None:
@@ -1646,7 +1669,8 @@ def prepare_dt_index(
     For default settings, see `vectorbtpro._settings.datetime`.
 
     Returns:
-        pd.Index: The converted index, which will be a DatetimeIndex if conversion succeeded."""
+        Index: The converted index, which will be a DatetimeIndex if conversion succeeded.
+    """
     import dateparser
     from vectorbtpro._settings import settings
 
@@ -1720,7 +1744,8 @@ def try_align_to_dt_index(source_index: tp.IndexLike, target_index: tp.Index, **
     Keyword arguments are forwarded to `prepare_dt_index`.
 
     Returns:
-        pd.Index: The aligned source index."""
+        Index: The aligned source index.
+    """
     source_index = prepare_dt_index(source_index, **kwargs)
     if isinstance(source_index, pd.DatetimeIndex) and isinstance(target_index, pd.DatetimeIndex):
         if source_index.tz is None and target_index.tz is not None:
@@ -1736,7 +1761,8 @@ def try_align_dt_to_index(dt: tp.DatetimeLike, target_index: tp.Index, **kwargs)
     Keyword arguments are passed to `to_timestamp`.
 
     Returns:
-        tp.DatetimeLike: The aligned datetime-like object."""
+        DatetimeLike: The aligned datetime-like object.
+    """
     if not isinstance(target_index, pd.DatetimeIndex):
         return dt
     dt = to_timestamp(dt, **kwargs)
@@ -1754,7 +1780,8 @@ def auto_detect_freq(index: tp.Index) -> tp.Optional[tp.PandasFrequency]:
     otherwise, returns None.
 
     Returns:
-        Optional[PandasFrequency]: The detected frequency or None."""
+        Optional[PandasFrequency]: The detected frequency or None.
+    """
     diff_values = index.values[1:] - index.values[:-1]
     if len(diff_values) > 0:
         mini, _, minc = min_count_nb(diff_values)
@@ -1770,7 +1797,8 @@ def parse_index_freq(index: pd.DatetimeIndex) -> tp.Optional[tp.PandasFrequency]
     has at least three elements.
 
     Returns:
-        Optional[PandasFrequency]: The parsed frequency or None if undetectable."""
+        Optional[PandasFrequency]: The parsed frequency or None if undetectable.
+    """
     if index.freqstr is not None:
         return to_freq(index.freqstr)
     if index.freq is not None:
@@ -1788,7 +1816,8 @@ def freq_depends_on_index(freq: tp.FrequencyLike) -> bool:
     Returns True if `freq` is "auto" or starts with "index_", otherwise returns False.
 
     Returns:
-        bool: True if the frequency depends on the index, else False."""
+        bool: True if the frequency depends on the index, else False.
+    """
     if isinstance(freq, str):
         freq = " ".join(freq.strip().split())
         if freq == "auto":

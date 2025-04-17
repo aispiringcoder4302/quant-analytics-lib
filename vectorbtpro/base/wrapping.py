@@ -54,7 +54,11 @@ class HasWrapper(ExtPandasIndexer, ItemParamable):
 
     @property
     def unwrapped(self) -> tp.Any:
-        """Underlying unwrapped object."""
+        """Underlying unwrapped object.
+        
+        Returns:
+            Any: The unwrapped object.
+        """
         raise NotImplementedError
 
     @hybrid_method
@@ -64,22 +68,38 @@ class HasWrapper(ExtPandasIndexer, ItemParamable):
 
     @property
     def wrapper(self) -> "ArrayWrapper":
-        """Underlying array wrapper of type `ArrayWrapper` used for data manipulation."""
+        """Underlying array wrapper of type `ArrayWrapper` used for data manipulation.
+        
+        Returns:
+            ArrayWrapper: The array wrapper instance.
+        """
         raise NotImplementedError
 
     @property
     def column_only_select(self) -> bool:
-        """Indicates whether indexing is restricted to columns."""
+        """Indicates whether indexing is restricted to columns.
+        
+        Returns:
+            bool: True if indexing is limited to columns, False otherwise.
+        """
         raise NotImplementedError
 
     @property
     def range_only_select(self) -> bool:
-        """Indicates whether row indexing should be performed using slices only."""
+        """Indicates whether row indexing should be performed using slices only.
+        
+        Returns:
+            bool: True if row indexing is limited to slices, False otherwise.
+        """
         raise NotImplementedError
 
     @property
     def group_select(self) -> bool:
-        """Indicates whether indexing operations can be performed on groups."""
+        """Indicates whether indexing operations can be performed on groups.
+        
+        Returns:
+            bool: True if indexing operations can be performed on groups, False otherwise.
+        """
         raise NotImplementedError
 
     def regroup(self: HasWrapperT, group_by: tp.GroupByLike, **kwargs) -> HasWrapperT:
@@ -1526,7 +1546,11 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
 
     @property
     def index(self) -> tp.Index:
-        """The index associated with the wrapped array."""
+        """The index associated with the wrapped array.
+        
+        Returns:
+            Index: The index of the wrapped array.
+        """
         return self._index
 
     @cached_property(whitelist=True)
@@ -1543,7 +1567,11 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
 
     @property
     def ns_index(self) -> tp.Array1d:
-        """Nanosecond index representation obtained from `vectorbtpro.base.accessors.BaseIDXAccessor.to_ns`."""
+        """Nanosecond index representation obtained from `vectorbtpro.base.accessors.BaseIDXAccessor.to_ns`.
+        
+        Returns:
+            Array1d: The nanosecond index.
+        """
         return self.index_acc.to_ns()
 
     def get_period_ns_index(self, *args, **kwargs) -> tp.Array1d:
@@ -1563,7 +1591,11 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
 
     @property
     def columns(self) -> tp.Index:
-        """The columns associated with the wrapped array."""
+        """The columns associated with the wrapped array.
+        
+        Returns:
+            Index: The columns of the wrapped array.
+        """
         return self._columns
 
     def get_columns(self, group_by: tp.GroupByLike = None) -> tp.Index:
@@ -1603,7 +1635,11 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
 
     @property
     def ndim(self) -> int:
-        """The number of dimensions of the wrapped array."""
+        """The number of dimensions of the wrapped array.
+        
+        Returns:
+            int: The number of dimensions.
+        """
         return self._ndim
 
     def get_ndim(self, group_by: tp.GroupByLike = None) -> int:
@@ -1676,28 +1712,48 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
     @property
     def freq(self) -> tp.Optional[tp.PandasFrequency]:
         """Frequency associated with the `ArrayWrapper` as defined by
-        `vectorbtpro.base.accessors.BaseIDXAccessor.freq`."""
+        `vectorbtpro.base.accessors.BaseIDXAccessor.freq`.
+        
+        Returns:
+            Optional[PandasFrequency]: The frequency of the index.
+        """
         return self.index_acc.freq
 
     @property
     def ns_freq(self) -> tp.Optional[int]:
         """Nanosecond frequency associated with the `ArrayWrapper` from
-        `vectorbtpro.base.accessors.BaseIDXAccessor.ns_freq`."""
+        `vectorbtpro.base.accessors.BaseIDXAccessor.ns_freq`.
+        
+        Returns:
+            Optional[int]: The nanosecond frequency of the index.
+        """
         return self.index_acc.ns_freq
 
     @property
     def any_freq(self) -> tp.Union[None, float, tp.PandasFrequency]:
-        """Frequency value determined by `vectorbtpro.base.accessors.BaseIDXAccessor.any_freq`."""
+        """Frequency value determined by `vectorbtpro.base.accessors.BaseIDXAccessor.any_freq`.
+        
+        Returns:
+            Union[None, float, PandasFrequency]: The frequency of the index.
+        """
         return self.index_acc.any_freq
 
     @property
     def periods(self) -> int:
-        """The number of periods defined by `vectorbtpro.base.accessors.BaseIDXAccessor.periods`."""
+        """The number of periods defined by `vectorbtpro.base.accessors.BaseIDXAccessor.periods`.
+        
+        Returns:
+            int: The number of periods in the index.
+        """
         return self.index_acc.periods
 
     @property
     def dt_periods(self) -> float:
-        """Time-based periods derived from `vectorbtpro.base.accessors.BaseIDXAccessor.dt_periods`."""
+        """Time-based periods derived from `vectorbtpro.base.accessors.BaseIDXAccessor.dt_periods`.
+        
+        Returns:
+            float: The number of periods in the index as a float.
+        """
         return self.index_acc.dt_periods
 
     def arr_to_timedelta(self, *args, **kwargs) -> tp.Union[pd.Index, tp.MaybeArray]:
@@ -1719,7 +1775,11 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
     def parse_index(self) -> tp.Optional[bool]:
         """Flag indicating whether to convert the index to a datetime index.
 
-        Applied during initialization via `vectorbtpro.utils.datetime_.prepare_dt_index`."""
+        Applied during initialization via `vectorbtpro.utils.datetime_.prepare_dt_index`.
+        
+        Returns:
+            Optional[bool]: True if the index should be parsed; otherwise, False.
+        """
         return self._parse_index
 
     @property
@@ -1757,14 +1817,22 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
 
     @property
     def grouper(self) -> Grouper:
-        """The `vectorbtpro.base.grouping.base.Grouper` instance used for grouping columns."""
+        """The `vectorbtpro.base.grouping.base.Grouper` instance used for grouping columns.
+        
+        Returns:
+            Grouper: The grouper instance.
+        """
         return self._grouper
 
     @property
     def grouped_ndim(self) -> int:
         """The number of dimensions after applying column grouping.
 
-        If not explicitly set, it is derived from the grouper's state."""
+        If not explicitly set, it is derived from the grouper's state.
+        
+        Returns:
+            int: The number of dimensions after grouping.
+        """
         if self._grouped_ndim is None:
             if self.grouper.is_grouped():
                 return 2 if self.grouper.get_group_count() > 1 else 1
@@ -2760,7 +2828,7 @@ class Wrapping(Configured, HasWrapper, IndexApplier, AttrResolverMixin):
             **kwargs: Keyword arguments for indexing.
 
         Returns:
-            Wrapping: A new wrapping instance with updated indexing.
+            Wrapping: A new wrapping instance resulting from indexing.
         """
         new_wrapper = self.wrapper.indexing_func(
             *args,
@@ -2777,6 +2845,9 @@ class Wrapping(Configured, HasWrapper, IndexApplier, AttrResolverMixin):
         Args:
             *args: Positional arguments for resampling.
             **kwargs: Keyword arguments for resampling.
+
+        Returns:
+            Wrapping: A new wrapping instance resulting from resampling.
 
         !!! note
             When overriding, pass `*args` and `**kwargs` to `ArrayWrapper.get_resampler` to create a resampler.

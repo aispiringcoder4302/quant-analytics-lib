@@ -207,6 +207,9 @@ def is_single_param_value(
         param_values (MaybeParamValues): The value or iterable to evaluate.
         is_tuple (bool): If True, treat tuples as single values.
         is_array_like (bool): If True, treat array-like objects as single values.
+
+    Returns:
+        bool: True if `param_values` is a single value, False otherwise.
     """
     check_against = [list, List]
     if not is_tuple:
@@ -330,12 +333,14 @@ class Param(Evaluable, Annotatable, DefineMixin):
     is_tuple: bool = define.optional_field(default=False)
     """Indicates whether `Param.value` is interpreted as a tuple.
 
-    When True, a tuple is considered a single parameter value."""
+    When True, a tuple is considered a single parameter value.
+    """
 
     is_array_like: bool = define.optional_field(default=False)
     """Indicates whether `Param.value` should be treated as array-like.
 
-    When True, a NumPy array is considered a single parameter value."""
+    When True, a NumPy array is considered a single parameter value.
+    """
 
     map_template: tp.Optional[CustomTemplate] = define.optional_field(default=None)
     """A mapping template applied to `Param.value` prior to constructing parameter combinations."""
@@ -348,7 +353,8 @@ class Param(Evaluable, Annotatable, DefineMixin):
 
     Parameters sharing the same level are grouped together.
     Lower-level parameters are processed before higher-level ones.
-    Levels must be consecutive starting from 0 without gaps."""
+    Levels must be consecutive starting from 0 without gaps.
+    """
 
     condition: tp.Union[None, str, CustomTemplate] = define.optional_field(default=None)
     """Specifies a condition to filter parameter combinations.
@@ -356,7 +362,8 @@ class Param(Evaluable, Annotatable, DefineMixin):
     The condition can be provided as a template or an expression where `x` (or the parameter's name) 
     represents this parameter. If provided as an expression, it is pre-compiled for efficiency.
     To reference a parameter index value, enclose the level name with double underscores 
-    (e.g., `__fast_sma_timeperiod__`)."""
+    (e.g., `__fast_sma_timeperiod__`).
+    """
 
     context: tp.KwargsLike = define.optional_field(default=None)
     """Context for evaluating `Param.condition` and applying `Param.map_template`."""
@@ -364,7 +371,8 @@ class Param(Evaluable, Annotatable, DefineMixin):
     keys: tp.Optional[tp.IndexLike] = define.optional_field(default=None)
     """Specifies keys to serve as the index level.
 
-    If not provided, `Param.value` is converted to an index via `vectorbtpro.base.indexes.index_from_values`."""
+    If not provided, `Param.value` is converted to an index via `vectorbtpro.base.indexes.index_from_values`.
+    """
 
     hide: bool = define.optional_field(default=False)
     """Indicates whether the parameter should be hidden from the parameter index."""
@@ -373,7 +381,8 @@ class Param(Evaluable, Annotatable, DefineMixin):
     """Specifies the name of the parameter.
 
     If not provided, it defaults to the index name from `Param.keys` or the key from `param_dct` 
-    in `combine_params`."""
+    in `combine_params`.
+    """
 
     mono_reduce: bool = define.optional_field(default=False)
     """Indicates if a mono-chunk of identical values should be reduced to a single value."""
@@ -381,7 +390,8 @@ class Param(Evaluable, Annotatable, DefineMixin):
     mono_merge_func: tp.MergeFuncLike = define.optional_field(default=None)
     """Specifies the merge function used for reducing a mono-chunk.
 
-    It is resolved via `vectorbtpro.base.merging.resolve_merge_func`."""
+    It is resolved via `vectorbtpro.base.merging.resolve_merge_func`.
+    """
 
     mono_merge_kwargs: tp.KwargsLike = define.optional_field(default=None)
     """Keyword arguments for `Param.mono_merge_func`."""
@@ -1092,13 +1102,13 @@ class Parameterizer(Configured):
     Does the following:
 
     1. Search for values wrapped with the class `Param` in any nested dicts and tuples
-       using `Parameterizer.find_params_in_obj`
+        using `Parameterizer.find_params_in_obj`
     2. Use `combine_params` to build parameter combinations
     3. Map parameter combinations to configs using `Parameterizer.param_product_to_objs`
     4. Generate and resolve parameter configs by combining combinations from the previous step with
-       `param_configs` optionally provided by the user. User-defined `param_configs` have priority.
+        `param_configs` optionally provided by the user. User-defined `param_configs` have priority.
     5. Substitute `selection` as a template if provided, convert it to indices for mapping to `param_index`,
-       and select the corresponding objects.
+        and select the corresponding objects.
     6. Build mono-chunks if `mono_n_chunks`, `mono_chunk_len`, or `mono_chunk_meta` is provided.
     7. Extract arguments and keyword arguments from each parameter config and substitute any templates lazily.
     8. Pass each function and its arguments to `vectorbtpro.utils.execution.execute` for execution.
@@ -1265,191 +1275,266 @@ class Parameterizer(Configured):
     def param_search_kwargs(self) -> tp.Kwargs:
         """Parameter search keyword arguments.
 
-        See `Parameterizer.find_params_in_obj`.
+        Returns:
+            Kwargs: The dictionary of keyword arguments used for parameter search.
         """
         return self._param_search_kwargs
 
     @property
     def skip_single_comb(self) -> bool:
-        """Flag indicating direct execution when only one parameter combination exists."""
+        """Flag indicating direct execution when only one parameter combination exists.
+
+        Returns:
+            bool: True if direct execution is enabled when there is only one combination; otherwise False.
+        """
         return self._skip_single_comb
 
     @property
     def template_context(self) -> tp.Kwargs:
         """Return the template context dictionary.
 
-        Any template in `execute_kwargs` and `merge_kwargs` is substituted using keys from
-        `param_configs`, `param_index`, the template context, and the function's signature arguments.
-
-        To substitute templates at deeper pipeline stages, use substitution ids."""
+        Returns:
+            Kwargs: The context dictionary used for template substitution in parameters.
+        """
         return self._template_context
 
     @property
     def build_grid(self) -> tp.Optional[bool]:
-        """Build grid flag from parameter combination (see `combine_params`)."""
+        """Build grid flag from parameter combination.
+
+        Returns:
+            Optional[bool]: True if the full parameter grid should be built, False if not, 
+                or None for default behavior.
+        """
         return self._build_grid
 
     @property
     def grid_indices(self) -> tp.Union[None, slice, tp.Sequence[int]]:
-        """Grid indices from parameter combination (see `combine_params`)."""
+        """Grid indices from parameter combination.
+
+        Returns:
+            Union[None, slice, Sequence[int]]: The indices used to select specific combinations from the grid.
+        """
         return self._grid_indices
 
     @property
     def random_subset(self) -> tp.Union[None, int, float]:
-        """Random subset value from parameter combination (see `combine_params`)."""
+        """Random subset value from parameter combination.
+
+        Returns:
+            Union[None, int, float]: The size or fraction used to select a random subset of parameter combinations.
+        """
         return self._random_subset
 
     @property
     def random_replace(self) -> bool:
-        """Random replacement option from parameter combination (see `combine_params`)."""
+        """Random replacement option from parameter combination.
+
+        Returns:
+            bool: True if sampling is performed with replacement; otherwise False.
+        """
         return self._random_replace
 
     @property
     def random_sort(self) -> bool:
-        """Random sort option from parameter combination (see `combine_params`)."""
+        """Random sort option from parameter combination.
+
+        Returns:
+            bool: True if the selected random indices are sorted; otherwise False.
+        """
         return self._random_sort
 
     @property
     def max_guesses(self) -> tp.Union[None, int, float]:
-        """Maximum guess count for parameter combination (see `combine_params`)."""
+        """Maximum guess count for parameter combination.
+
+        Returns:
+            Union[None, int, float]: The maximum number of parameter guesses allowed.
+        """
         return self._max_guesses
 
     @property
     def max_misses(self) -> tp.Union[None, int, float]:
-        """Maximum miss count for parameter combination (see `combine_params`)."""
+        """Maximum miss count for parameter combination.
+
+        Returns:
+            Union[None, int, float]: The maximum number of misses allowed during parameter search.
+        """
         return self._max_misses
 
     @property
     def seed(self) -> tp.Optional[int]:
-        """Random seed for parameter combination (see `combine_params`)."""
+        """Random seed for parameter combination.
+
+        Returns:
+            Optional[int]: The seed value used for random number generation.
+        """
         return self._seed
 
     @property
     def clean_index_kwargs(self) -> tp.Kwargs:
-        """Keyword arguments for cleaning the index in parameter combination (see `combine_params`)."""
+        """Keyword arguments for cleaning the index in parameter combination.
+
+        Returns:
+            Kwargs: The dictionary of keyword arguments for index cleaning.
+        """
         return self._clean_index_kwargs
 
     @property
     def name_tuple_to_str(self) -> tp.Union[bool, tp.Callable]:
-        """Callable or flag for converting name tuples to strings in parameter combination
-        (see `combine_params`)."""
+        """Callable or flag for converting name tuples to strings in parameter combination.
+
+        Returns:
+            Union[bool, Callable]: The flag or function used to convert name tuples to string format.
+        """
         return self._name_tuple_to_str
 
     @property
     def selection(self) -> tp.Optional[tp.Selection]:
         """Parameter combination selection.
 
-        Specifies one or more positions or labels from the parameter index.
-
-        The selection can be wrapped with `vectorbtpro.utils.selection.PosSel` or
-        `vectorbtpro.utils.selection.LabelSel` to denote its meaning.
-
-        Ensure that the selection is provided as a sequence (e.g., a list) to attach the
-        parameter index to the final result.
-
-        Alternatively, it may be `vectorbtpro.utils.execution.NoResult` or a template to
-        yield any of the above."""
+        Returns:
+            Optional[Selection]: The selection criteria used to filter parameter combinations.
+        """
         return self._selection
 
     @property
     def forward_kwargs_as(self) -> tp.Kwargs:
         """Keyword argument renaming mapping.
 
-        Also accepts variables from the scope of `Parameterized.run`."""
+        Returns:
+            Kwargs: The dictionary mapping original keyword arguments to new names.
+        """
         return self._forward_kwargs_as
 
     @property
     def mono_min_size(self) -> tp.Optional[int]:
-        """Minimum chunk size for generating chunk metadata (see `vectorbtpro.utils.chunking.iter_chunk_meta`)."""
+        """Minimum chunk size for generating chunk metadata.
+
+        Returns:
+            Optional[int]: The minimum allowed size for mono-chunks.
+        """
         return self._mono_min_size
 
     @property
     def mono_n_chunks(self) -> tp.Optional[tp.Union[str, int]]:
-        """Number of chunks for generating chunk metadata (see `vectorbtpro.utils.chunking.iter_chunk_meta`)."""
+        """Number of chunks for generating chunk metadata.
+
+        Returns:
+            Optional[Union[str, int]]: The number or method indicator for determining the number of chunks.
+        """
         return self._mono_n_chunks
 
     @property
     def mono_chunk_len(self) -> tp.Optional[tp.Union[str, int]]:
-        """Chunk length for generating chunk metadata (see `vectorbtpro.utils.chunking.iter_chunk_meta`)."""
+        """Chunk length for generating chunk metadata.
+
+        Returns:
+            Optional[Union[str, int]]: The length or method indicator for the size of each mono-chunk.
+        """
         return self._mono_chunk_len
 
     @property
     def mono_chunk_meta(self) -> tp.Optional[tp.Iterable[tp.ChunkMeta]]:
-        """Iterable of chunk metadata."""
+        """Iterable of chunk metadata.
+
+        Returns:
+            Optional[Iterable[ChunkMeta]]: The metadata information for each mono-chunk.
+        """
         return self._mono_chunk_meta
 
     @property
     def mono_reduce(self) -> tp.Union[bool, tp.Kwargs]:
         """Reduction configuration for parameters.
 
-        Can be a dictionary mapping unpacked argument names to values, or a single value applied
-        to each parameter unless overridden.
-
-        See `Param.mono_reduce` for details."""
+        Returns:
+            Union[bool, Kwargs]: The configuration determining if mono-chunks should be reduced, 
+                or a dictionary of settings.
+        """
         return self._mono_reduce
 
     @property
     def mono_merge_func(self) -> tp.Union[tp.MergeFuncLike, tp.Dict[str, tp.MergeFuncLike]]:
         """Merging function configuration for parameters.
 
-        Can be a dictionary mapping unpacked argument names to merging functions, or a single
-        function applied to every parameter unless overridden.
-
-        See `Param.mono_merge_func` for details."""
+        Returns:
+            Union[MergeFuncLike, Dict[str, MergeFuncLike]]: The merging function or mapping used to 
+                combine parameter values.
+        """
         return self._mono_merge_func
 
     @property
     def mono_merge_kwargs(self) -> tp.Kwargs:
         """Keyword arguments for the merging function.
 
-        Can be a dictionary mapping unpacked argument names to arguments, or applied uniformly
-        to each parameter unless overridden.
-
-        See `Param.mono_merge_kwargs` for details."""
+        Returns:
+            Kwargs: The dictionary of keyword arguments passed to the merging function.
+        """
         return self._mono_merge_kwargs
 
     @property
     def filter_results(self) -> bool:
-        """Flag indicating whether to filter `vectorbtpro.utils.execution.NoResult` results."""
+        """Flag indicating whether to filter `vectorbtpro.utils.execution.NoResult` results during execution.
+
+        Returns:
+            bool: True if results marked as `vectorbtpro.utils.execution.NoResult` 
+                should be filtered out; otherwise False.
+        """
         return self._filter_results
 
     @property
     def raise_no_results(self) -> bool:
-        """Flag indicating whether to raise `vectorbtpro.utils.execution.NoResultsException` when
-        no results are present.
+        """Flag indicating whether to raise an exception when no results are produced.
 
-        If False, returns `vectorbtpro.utils.execution.NoResult`. This flag applies only when
-        `Parameterizer.filter_results` is True, and is always passed to the merging function if pre-configured."""
+        Returns:
+            bool: True if a `vectorbtpro.utils.execution.NoResultsException` should be raised 
+                when there are no results; otherwise False.
+        """
         return self._raise_no_results
 
     @property
     def merge_func(self) -> tp.Optional[tp.MergeFuncLike]:
-        """Merging function used to combine results.
+        """Merging function used to combine execution results.
 
-        Resolved using `vectorbtpro.base.merging.resolve_merge_func`."""
+        Returns:
+            Optional[MergeFuncLike]: The merging function used to aggregate individual results, or None.
+        """
         return self._merge_func
 
     @property
     def merge_kwargs(self) -> tp.Kwargs:
         """Keyword arguments for the merging function.
 
-        When defining a custom merging function, ensure to use `param_index` (via templates) to
-        construct the final index hierarchy."""
+        Returns:
+            Kwargs: The dictionary of keyword arguments used with the merging function.
+        """
         return self._merge_kwargs
 
     @property
     def return_meta(self) -> bool:
-        """Flag indicating whether to return all metadata generated before executing the function."""
+        """Flag indicating whether to return additional metadata.
+
+        Returns:
+            bool: True if metadata should be returned along with the main results; otherwise False.
+        """
         return self._return_meta
 
     @property
     def return_param_index(self) -> bool:
-        """Flag indicating whether to return the parameter index along with the results (as a tuple)."""
+        """Flag indicating whether to include the parameter index in the results.
+
+        Returns:
+            bool: True if the parameter index is to be returned with the results; otherwise False.
+        """
         return self._return_param_index
 
     @property
     def execute_kwargs(self) -> tp.Kwargs:
-        """Keyword arguments for `vectorbtpro.utils.execution.execute`."""
+        """Keyword arguments for execution.
+
+        Returns:
+            Kwargs: The dictionary of keyword arguments passed to the execution function.
+        """
         return self._execute_kwargs
 
     @classmethod
@@ -1460,7 +1545,8 @@ class Parameterizer(Configured):
 
         Only parameters meeting the specified evaluation identifier are included.
 
-        Keyword arguments are passed to `vectorbtpro.utils.search_.find_in_obj`."""
+        Keyword arguments are passed to `vectorbtpro.utils.search_.find_in_obj`.
+        """
         return find_in_obj(obj, lambda k, v: isinstance(v, Param) and v.meets_eval_id(eval_id), **kwargs)
 
     @classmethod
@@ -1471,7 +1557,8 @@ class Parameterizer(Configured):
 
         Uses `vectorbtpro.utils.search_.replace_in_obj` to replace parameter templates in the object.
 
-        Iterates over each combination of parameter values to generate a new object."""
+        Iterates over each combination of parameter values to generate a new object.
+        """
         if len(param_product) == 0:
             return []
         param_product_items = list(param_product.items())
@@ -1493,7 +1580,8 @@ class Parameterizer(Configured):
         Iterates over each key in the input dictionary and, if the annotation is a `Param` subclass or
         instance that meets the evaluation identifier, updates or merges the corresponding value.
 
-        Processes function annotations to correctly parse and inject parameter values."""
+        Processes function annotations to correctly parse and inject parameter values.
+        """
         new_flat_ann_args = dict()
         for k, v in flat_ann_args.items():
             new_flat_ann_args[k] = v = dict(v)
@@ -1514,7 +1602,8 @@ class Parameterizer(Configured):
         provided annotations.
 
         Iterates over the annotations and extracts the names for parameters of kind
-        `VAR_POSITIONAL` and `VAR_KEYWORD`."""
+        `VAR_POSITIONAL` and `VAR_KEYWORD`.
+        """
         var_args_name = None
         var_kwargs_name = None
         for k, v in ann_args.items():

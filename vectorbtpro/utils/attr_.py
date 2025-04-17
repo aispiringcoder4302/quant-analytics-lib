@@ -111,11 +111,14 @@ class DefineMixin(Hashable):
         return cls_or_self.fields_dict[field_name]
 
     @hybrid_method
-    def is_field_required(cls_or_self, field_or_name: tp.Union[str, attr.Attribute]) -> None:
+    def is_field_required(cls_or_self, field_or_name: tp.Union[str, attr.Attribute]) -> bool:
         """Determine if the specified field is required.
 
         Args:
             field_or_name (Union[str, Attribute]): The name or object of the attribute field.
+
+        Returns:
+            bool: True if the field is required, False otherwise.
         """
         if isinstance(field_or_name, str):
             field = cls_or_self.get_field(field_or_name)
@@ -124,11 +127,14 @@ class DefineMixin(Hashable):
         return field.default is MISSING and "default" not in field.metadata
 
     @hybrid_method
-    def is_field_optional(cls_or_self, field_or_name: tp.Union[str, attr.Attribute]) -> None:
+    def is_field_optional(cls_or_self, field_or_name: tp.Union[str, attr.Attribute]) -> bool:
         """Determine if the specified field is optional.
 
         Args:
             field_or_name (Union[str, Attribute]): The name or object of the attribute field.
+
+        Returns:
+            bool: True if the field is optional, False otherwise.
         """
         if isinstance(field_or_name, str):
             field = cls_or_self.get_field(field_or_name)
@@ -160,11 +166,14 @@ class DefineMixin(Hashable):
             return field.default
         return field.metadata.get("default", MISSING)
 
-    def is_field_missing(self, field_or_name: tp.Union[str, attr.Attribute]) -> None:
+    def is_field_missing(self, field_or_name: tp.Union[str, attr.Attribute]) -> bool:
         """Determine if the specified field is missing.
 
         Args:
             field_or_name (Union[str, Attribute]): The name or object of the attribute field.
+
+        Returns:
+            bool: True if the field is missing, False otherwise.
         """
         return self.resolve_field(field_or_name) is MISSING
 
@@ -175,6 +184,9 @@ class DefineMixin(Hashable):
 
         Args:
             field_or_name (Union[str, Attribute]): The name or object of the attribute field.
+
+        Returns:
+            None
         """
         if isinstance(field_or_name, str):
             field = self.get_field(field_or_name)
@@ -493,7 +505,11 @@ class AttrResolverMixin(Base):
 
     @property
     def self_aliases(self) -> tp.Set[str]:
-        """Set of alias names associated with the object."""
+        """Set of alias names associated with the object.
+        
+        Returns:
+            Set[str]: A set of alias names.
+        """
         return {"self"}
 
     def resolve_self(
@@ -546,7 +562,11 @@ class AttrResolverMixin(Base):
 
     @cachedproperty
     def cls_dir(self) -> tp.Set[str]:
-        """Set of attribute names defined on the object's class."""
+        """Set of attribute names defined on the object's class.
+        
+        Returns:
+            Set[str]: A set of attribute names.
+        """
         return set(dir(type(self)))
 
     def resolve_shortcut_attr(self, attr: str, *args, **kwargs) -> tp.Any:

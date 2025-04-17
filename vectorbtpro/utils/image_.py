@@ -10,6 +10,8 @@
 
 """Module providing utility functions for image processing."""
 
+from pathlib import Path
+
 import numpy as np
 
 from vectorbtpro import _typing as tp
@@ -57,7 +59,7 @@ def vstack_image_arrays(a: tp.Array3d, b: tp.Array3d) -> tp.Array3d:
 
 
 def save_animation(
-    fname: str,
+    fname: tp.PathLike,
     index: tp.Sequence,
     plot_func: tp.Callable,
     *args,
@@ -69,11 +71,11 @@ def save_animation(
     pbar_kwargs: tp.KwargsLike = None,
     to_image_kwargs: tp.KwargsLike = None,
     **kwargs,
-) -> None:
+) -> tp.Path:
     """Save an animation to a file by iterating over a provided index.
 
     Args:
-        fname (str): File name to save the animation.
+        fname (PathLike): File name or path to save the animation.
         index (Sequence): Iterable index for generating frames.
         plot_func (Callable): Plotting function that accepts a slice of `index`, additional
             positional arguments, and keyword arguments, and returns either a Plotly figure, an image file
@@ -91,6 +93,9 @@ def save_animation(
         pbar_kwargs (KwargsLike): Keyword arguments for `vectorbtpro.utils.pbar.ProgressBar`.
         to_image_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Figure.to_image`.
         **kwargs: Keyword arguments passed to `plot_func`.
+
+    Returns:
+        Path: The path to the saved animation file.
 
     Examples:
         ```pycon
@@ -116,6 +121,8 @@ def save_animation(
     import plotly.graph_objects as go
     import imageio
 
+    if isinstance(fname, str):
+        fname = Path(fname)
     if writer_kwargs is None:
         writer_kwargs = {}
     if "duration" not in writer_kwargs:
@@ -149,3 +156,5 @@ def save_animation(
                     next_j = index_steps[i + 1]
                     pbar.set_description("{} → {}".format(str(index[next_j]), str(index[next_j + delta - 1])))
                 pbar.update()
+                
+    return fname

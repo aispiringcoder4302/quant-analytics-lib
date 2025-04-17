@@ -10,7 +10,8 @@
 
 """Module providing named tuples and enumerated types for signals.
 
-Defines enumerations and context schemas for `vectorbtpro.signals`."""
+Defines enumerations and context schemas for `vectorbtpro.signals`.
+"""
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.utils.formatting import prettify_doc
@@ -238,7 +239,8 @@ __pdoc__["RankContext.i"] = "Current row."
 __pdoc__["RankContext.last_false_i"] = "Row of the last False value in the main mask."
 __pdoc__["RankContext.last_reset_i"] = """Row index of the last True value in the resetting mask.
 
-Does not account for `reset_wait`."""
+Does not account for `reset_wait`.
+"""
 __pdoc__["RankContext.all_sig_cnt"] = """Total number of signals encountered, including the current one."""
 __pdoc__["RankContext.all_part_cnt"] = """Total number of partitions encountered, including the current partition."""
 __pdoc__["RankContext.all_sig_in_part_cnt"] = """Total number of signals encountered in the current partition, including the current signal."""

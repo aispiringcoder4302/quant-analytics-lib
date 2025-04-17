@@ -57,6 +57,9 @@ class PBarRegistry(Base):
 
         Args:
             instance (ProgressBar): The progress bar instance to be registered.
+
+        Returns:
+            None
         """
         self.instances[instance.bar_id] = instance
 
@@ -65,6 +68,9 @@ class PBarRegistry(Base):
 
         Args:
             instance (ProgressBar): The progress bar instance to be deregistered.
+
+        Returns:
+            None
         """
         if instance.bar_id in self.instances:
             del self.instances[instance.bar_id]

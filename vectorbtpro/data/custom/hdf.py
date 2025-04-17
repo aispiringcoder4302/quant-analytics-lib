@@ -57,6 +57,9 @@ class HDFData(FileData):
         Args:
             path (PathLike): The file path to validate.
 
+        Returns:
+            bool: True if the path is an HDF file, False otherwise.
+
         !!! note
             Checks for file suffixes `.hdf`, `.hdf5`, and `.h5`.
         """
@@ -92,9 +95,6 @@ class HDFData(FileData):
             key (Optional[str]): The key to identify the object within the HDF file.
 
                 Defaults to None. When provided, it is combined with portions of the path during recursion.
-            _full_path (Optional[Path]): The original complete path used for error reporting.
-
-                Defaults to the initial path.
 
         Returns:
             Tuple[Path, Optional[str]]: A tuple containing the HDF file path and the associated key.

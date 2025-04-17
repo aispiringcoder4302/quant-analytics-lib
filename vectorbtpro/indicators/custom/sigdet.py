@@ -67,11 +67,11 @@ class _SIGDET(SIGDET):
         """Plot the signal from `SIGDET.signal`.
 
         Args:
-            column (str): Name of the column to plot.
-            signal_trace_kwargs (dict): Additional keyword arguments forwarded
-                to `plotly.graph_objects.Scatter` for plotting `SIGDET.signal`.
-            add_trace_kwargs (dict): Additional keyword arguments forwarded
-                to `fig.add_trace` when adding the trace.
+            column (Optional[Label]): Name of the column to plot.
+            signal_trace_kwargs (KwargsLike): Additional keyword arguments forwarded to 
+                `plotly.graph_objects.Scatter` for plotting `SIGDET.signal`.
+            add_trace_kwargs (KwargsLike): Additional keyword arguments forwarded to 
+                `fig.add_trace` when adding the trace.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
             **layout_kwargs: Additional keyword arguments for configuring the figure layout.
 
@@ -116,15 +116,20 @@ class _SIGDET(SIGDET):
         fig: tp.Optional[tp.BaseFigure] = None,
         **layout_kwargs,
     ) -> tp.BaseFigure:
-        """Plot the upper and lower bands from `SIGDET.upper_band` and `SIGDET.lower_band` against the close values from `SIGDET.close`.
+        """Plot the upper and lower bands from `SIGDET.upper_band` and `SIGDET.lower_band` 
+        against the close values from `SIGDET.close`.
 
         Args:
-            column (str): Name of the column to plot.
+            column (Optional[Label]): Name of the column to plot.
             plot_close (bool): Whether to plot `SIGDET.close`.
-            close_trace_kwargs (dict): Additional keyword arguments forwarded to `plotly.graph_objects.Scatter` for plotting `SIGDET.close`.
-            upper_band_trace_kwargs (dict): Additional keyword arguments forwarded to `plotly.graph_objects.Scatter` for plotting `SIGDET.upper_band`.
-            lower_band_trace_kwargs (dict): Additional keyword arguments forwarded to `plotly.graph_objects.Scatter` for plotting `SIGDET.lower_band`.
-            add_trace_kwargs (dict): Additional keyword arguments forwarded to `fig.add_trace` when adding each trace.
+            close_trace_kwargs (KwargsLike): Additional keyword arguments forwarded to 
+                `plotly.graph_objects.Scatter` for plotting `SIGDET.close`.
+            upper_band_trace_kwargs (KwargsLike): Additional keyword arguments forwarded to 
+                `plotly.graph_objects.Scatter` for plotting `SIGDET.upper_band`.
+            lower_band_trace_kwargs (KwargsLike): Additional keyword arguments forwarded to 
+                `plotly.graph_objects.Scatter` for plotting `SIGDET.lower_band`.
+            add_trace_kwargs (KwargsLike): Additional keyword arguments forwarded to 
+                `fig.add_trace` when adding each trace.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
             **layout_kwargs: Additional keyword arguments for configuring the figure layout.
 

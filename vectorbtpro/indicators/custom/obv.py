@@ -51,9 +51,11 @@ class _OBV(OBV):
         """Plot `OBV.obv`.
 
         Args:
-            column (str): The name of the column to plot.
-            obv_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter` for plotting `OBV.obv`.
-            add_trace_kwargs (dict): Keyword arguments passed to `fig.add_trace` when adding each trace.
+            column (Optional[Label]): The name of the column to plot.
+            obv_trace_kwargs (KwargsLike): Keyword arguments passed to 
+                `plotly.graph_objects.Scatter` for plotting `OBV.obv`.
+            add_trace_kwargs (KwargsLike): Keyword arguments passed to 
+                `fig.add_trace` when adding each trace.
             fig (Optional[BaseFigure]): The figure to update. If None, a new figure is created.
             **layout_kwargs: Additional keyword arguments for configuring the figure layout.
 

@@ -49,6 +49,9 @@ def fix_field_in_records(
         ann_args (Optional[AnnArgs]): Annotation arguments used for mapping, if applicable.
         mapper (Optional[ChunkMapper]): Mapper used to transform chunk metadata before adjusting the field.
         field (str): Name of the field in the record arrays to adjust.
+
+    Returns:
+        None: The function modifies the record arrays in place.
     """
     for _chunk_meta in chunk_meta:
         if mapper is None:

@@ -61,12 +61,20 @@ class DataSaver(DataUpdater):
 
     @property
     def save_kwargs(self) -> tp.KwargsLike:
-        """Property providing keyword arguments for data saving via `DataSaver.save_data`."""
+        """Property providing keyword arguments for data saving via `DataSaver.save_data`.
+        
+        Returns:
+            KwargsLike: Keyword arguments for data saving.
+        """
         return self._save_kwargs
 
     @property
     def init_save_kwargs(self) -> tp.KwargsLike:
-        """Property providing keyword arguments for initial data saving via `DataSaver.init_save_data`."""
+        """Property providing keyword arguments for initial data saving via `DataSaver.init_save_data`.
+        
+        Returns:
+            KwargsLike: Keyword arguments for initial data saving.
+        """
         return self._init_save_kwargs
 
     def init_save_data(self, **kwargs) -> None:

@@ -339,19 +339,31 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
     @hybrid_property
     def sr_accessor_cls(cls_or_self) -> tp.Type["GenericSRAccessor"]:
-        """Return the accessor class for `pd.Series` objects."""
+        """Return the accessor class for `pd.Series` objects.
+        
+        Returns:
+            Type[GenericSRAccessor]: The accessor class for Series objects.
+        """
         return GenericSRAccessor
 
     @hybrid_property
     def df_accessor_cls(cls_or_self) -> tp.Type["GenericDFAccessor"]:
-        """Return the accessor class for `pd.DataFrame` objects."""
+        """Return the accessor class for `pd.DataFrame` objects.
+        
+        Returns:
+            Type[GenericDFAccessor]: The accessor class for DataFrame objects.
+        """
         return GenericDFAccessor
 
     # ############# Mapping ############# #
 
     @property
     def mapping(self) -> tp.Optional[tp.MappingLike]:
-        """Return the mapping configuration."""
+        """Return the mapping configuration.
+        
+        Returns:
+            Optional[MappingLike]: The mapping configuration.
+        """
         return self._mapping
 
     def resolve_mapping(self, mapping: tp.Union[None, bool, tp.MappingLike] = None) -> tp.Optional[tp.Mapping]:
@@ -435,7 +447,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
     ) -> tp.SeriesFrame:
         """Compute the index of the minimum value within each rolling window.
 
-        Delegates to `vectorbtpro.generic.nb.rolling.rolling_argmin_nb` for computation."""
+        Delegates to `vectorbtpro.generic.nb.rolling.rolling_argmin_nb` for computation.
+        """
         if window is None:
             window = self.wrapper.shape[0]
         func = jit_reg.resolve_option(nb.rolling_argmin_nb, jitted)
@@ -461,7 +474,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
     ) -> tp.SeriesFrame:
         """Compute the index of the maximum value within each rolling window.
 
-        Delegates to `vectorbtpro.generic.nb.rolling.rolling_argmax_nb` for computation."""
+        Delegates to `vectorbtpro.generic.nb.rolling.rolling_argmax_nb` for computation.
+        """
         if window is None:
             window = self.wrapper.shape[0]
         func = jit_reg.resolve_option(nb.rolling_argmax_nb, jitted)
@@ -486,7 +500,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
     ) -> tp.SeriesFrame:
         """Compute the rolling mean over a moving window.
 
-        Delegates to `vectorbtpro.generic.nb.rolling.rolling_mean_nb` for computation."""
+        Delegates to `vectorbtpro.generic.nb.rolling.rolling_mean_nb` for computation.
+        """
         if window is None:
             window = self.wrapper.shape[0]
         func = jit_reg.resolve_option(nb.rolling_mean_nb, jitted)
@@ -510,7 +525,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
     ) -> tp.SeriesFrame:
         """Compute the rolling standard deviation over a moving window.
 
-        Delegates to `vectorbtpro.generic.nb.rolling.rolling_std_nb` for computation."""
+        Delegates to `vectorbtpro.generic.nb.rolling.rolling_std_nb` for computation.
+        """
         if window is None:
             window = self.wrapper.shape[0]
         func = jit_reg.resolve_option(nb.rolling_std_nb, jitted)
@@ -1391,6 +1407,9 @@ class GenericAccessor(BaseAccessor, Analyzable):
         Args:
             *args: Positional arguments for the apply function.
             **kwargs: Keyword arguments for the apply function.
+
+        Returns:
+            SeriesFrame: The result of applying the function row-wise.
         """
         return self.apply_along_axis(*args, axis=0, **kwargs)
 
@@ -1401,6 +1420,9 @@ class GenericAccessor(BaseAccessor, Analyzable):
         Args:
             *args: Positional arguments for the apply function.
             **kwargs: Keyword arguments for the apply function.
+
+        Returns:
+            SeriesFrame: The result of applying the function column-wise.
         """
         return self.apply_along_axis(*args, axis=1, **kwargs)
 
@@ -1923,6 +1945,9 @@ class GenericAccessor(BaseAccessor, Analyzable):
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
             **kwargs: Keyword arguments passed to the reduction function.
 
+        Returns:
+            SeriesFrame: The result of the resampling and reduction.
+
         Examples:
             Using regular function:
 
@@ -2089,6 +2114,9 @@ class GenericAccessor(BaseAccessor, Analyzable):
             chunked (ChunkedOption): Option to control chunked processing.
             wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+
+        Returns:
+            Series: The result of the apply and reduce operation.
 
         Examples:
             Using regular function:
@@ -4502,7 +4530,11 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
     @property
     def ranges(self) -> Ranges:
-        """Range records computed with default arguments by invoking `GenericAccessor.get_ranges`."""
+        """Range records computed with default arguments by invoking `GenericAccessor.get_ranges`.
+        
+        Returns:
+            Ranges: The ranges generated from the data.
+        """
         return self.get_ranges()
 
     def get_drawdowns(self, *args, **kwargs) -> Drawdowns:
@@ -4521,7 +4553,11 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
     @property
     def drawdowns(self) -> Drawdowns:
-        """Drawdown records computed with default arguments by invoking `GenericAccessor.get_drawdowns`."""
+        """Drawdown records computed with default arguments by invoking `GenericAccessor.get_drawdowns`.
+        
+        Returns:
+            Drawdowns: Drawdown records computed with default arguments.
+        """
         return self.get_drawdowns()
 
     def to_mapped(
@@ -4662,6 +4698,9 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 `vectorbtpro.generic.ranges.PatternRanges.from_pattern_search`.
             **kwargs: Keyword arguments passed to 
                 `vectorbtpro.generic.ranges.PatternRanges.from_pattern_search`.
+
+        Returns:
+            PatternRanges: The generated pattern range records.
         """
         return PatternRanges.from_pattern_search(self.obj, *args, **kwargs)
 
@@ -4847,6 +4886,9 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
         Merges defaults from `vectorbtpro.generic.stats_builder.StatsBuilderMixin.stats_defaults`
         with settings from `vectorbtpro._settings.generic`.
+
+        Returns:
+            Kwargs: Default keyword arguments for `GenericAccessor.stats`.
         """
         from vectorbtpro._settings import settings
 
@@ -6283,7 +6325,6 @@ class GenericSRAccessor(GenericAccessor, BaseSRAccessor):
         wrapper (Union[ArrayWrapper, ArrayLike]): The array wrapper for the series data.
         obj (Optional[ArrayLike]): The underlying data array.
         mapping (Optional[MappingLike]): An optional mapping for metadata.
-        _full_init (bool): Whether to perform full initialization.
         **kwargs: Keyword arguments for base accessor initialization.
     """
 
@@ -6474,7 +6515,6 @@ class GenericDFAccessor(GenericAccessor, BaseDFAccessor):
         wrapper (Union[ArrayWrapper, ArrayLike]): The wrapper that encapsulates the data.
         obj (Optional[ArrayLike]): The underlying data object.
         mapping (Optional[MappingLike]): A mapping for additional configuration.
-        _full_init (bool): Indicates whether to perform full initialization.
         **kwargs: Keyword arguments passed for initialization.
     """
 

@@ -62,7 +62,11 @@ class ChunkableRegistry(Base):
 
     @property
     def setups(self) -> tp.Dict[tp.Hashable, ChunkedSetup]:
-        """Dictionary mapping setup IDs to registered `ChunkedSetup` instances."""
+        """Dictionary mapping setup IDs to registered `ChunkedSetup` instances.
+        
+        Returns:
+            Dict[Hashable, ChunkedSetup]: The dictionary of registered setups.
+        """
         return self._setups
 
     def register(
@@ -81,6 +85,9 @@ class ChunkableRegistry(Base):
                 If omitted, it is derived from the function's module and name.
             options (DictLike): Dictionary of options for chunking.
             tags (SetLike): Set of tags associated with the setup.
+
+        Returns:
+            None
         """
         if setup_id is None:
             setup_id = func.__module__ + "." + func.__name__

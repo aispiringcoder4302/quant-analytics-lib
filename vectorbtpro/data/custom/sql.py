@@ -117,6 +117,9 @@ class SQLData(DBData):
             *args: Positional arguments passed to `SQLData.has_custom_settings`.
             engine_name (Optional[str]): Name of the engine used to determine the settings sub-path.
             **kwargs: Keyword arguments passed to `SQLData.has_custom_settings`.
+
+        Returns:
+            bool: True if custom engine settings exist, False otherwise.
         """
         if engine_name is not None:
             sub_path = "engines." + engine_name
@@ -150,6 +153,9 @@ class SQLData(DBData):
             *args: Positional arguments passed to `SQLData.has_custom_setting`.
             engine_name (Optional[str]): Name of the engine used to determine the settings sub-path.
             **kwargs: Keyword arguments passed to `SQLData.has_custom_setting`.
+
+        Returns:
+            bool: True if the custom engine setting exists, False otherwise.
         """
         if engine_name is not None:
             sub_path = "engines." + engine_name
@@ -183,6 +189,9 @@ class SQLData(DBData):
             *args: Positional arguments passed to `SQLData.set_custom_settings`.
             engine_name (Optional[str]): Name of the engine used to determine the settings sub-path.
             **kwargs: Keyword arguments passed to `SQLData.set_custom_settings`.
+
+        Returns:
+            None
         """
         if engine_name is not None:
             sub_path = "engines." + engine_name
@@ -452,6 +461,9 @@ class SQLData(DBData):
             engine (Union[None, str, Engine]): Engine or identifier for the database connection.
             engine_name (Optional[str]): Name assigned to the engine.
             engine_config (KwargsLike): Additional configuration parameters for engine setup.
+
+        Returns:
+            bool: True if the schema exists, False otherwise.
         """
         from vectorbtpro.utils.module_ import assert_can_import
 
@@ -482,6 +494,9 @@ class SQLData(DBData):
             engine (Union[None, str, Engine]): Engine or identifier for the database connection.
             engine_name (Optional[str]): Name assigned to the engine.
             engine_config (KwargsLike): Additional configuration parameters for engine setup.
+
+        Returns:
+            None
         """
         from vectorbtpro.utils.module_ import assert_can_import
 
@@ -517,6 +532,9 @@ class SQLData(DBData):
             engine (Union[None, str, Engine]): Engine or identifier for the database connection.
             engine_name (Optional[str]): Name assigned to the engine.
             engine_config (KwargsLike): Additional configuration parameters for engine setup.
+
+        Returns:
+            bool: True if the table exists, False otherwise.
         """
         from vectorbtpro.utils.module_ import assert_can_import
 
@@ -798,78 +816,81 @@ class SQLData(DBData):
                 If both `table` and `query` are None, the key is used as the table name.
                 If the key contains a colon (`:`), it must follow the `SCHEMA:TABLE` format,
                 and the `schema` argument is ignored.
-            table (str or Table): Table name or table object.
+            table (Optional[Union[str, Table]]): Table name or table object.
 
                 Must not be provided together with `query`.
-            schema (str): Database schema. Must not be used with `query`.
-            query (str or Selectable): Custom SQL query.
+            schema (Optional[str]): Database schema. Must not be used with `query`.
+            query (Optional[Union[str, Selectable]]): Custom SQL query.
 
                 Must not be provided together with `table` or `schema`.
-            engine (str or object): Database engine information.
+            engine (Union[None, str, Engine]): Database engine information.
 
                 See `SQLData.resolve_engine`.
-            engine_name (str): Identifier for the engine.
+            engine_name (Optional[str]): Identifier for the engine.
 
                 See `SQLData.resolve_engine`.
             engine_config (KwargsLike): Engine configuration.
 
                 See `SQLData.resolve_engine`.
-            dispose_engine (bool): Flag indicating whether to dispose the engine after use.
+            dispose_engine (Optional[bool]): Flag indicating whether to dispose the engine after use.
 
                 See `SQLData.resolve_engine`.
-            start (any): Starting value for filtering data.
+            start (Optional[Any]): Starting value for filtering data.
 
                 If the index is datetime and `align_dates` is True, it is parsed
                 with `vectorbtpro.utils.datetime_.to_timestamp`.
 
                 For a multi-index, provide a tuple. Must not be used with `query`.
-            end (any): Ending value for filtering data. If the index is datetime and
-                `align_dates` is True, it is parsed with `vectorbtpro.utils.datetime_.to_timestamp`.
+            end (Optional[Any]): Ending value for filtering data. 
+            
+                If the index is datetime and `align_dates` is True, it is parsed with 
+                `vectorbtpro.utils.datetime_.to_timestamp`.
 
                 For a multi-index, provide a tuple. Must not be used with `query`.
-            align_dates (bool): Indicates whether to align `start` and `end` to the index's timezone.
+            align_dates (Optional[bool]): Indicates whether to align `start` and `end` to the index's timezone.
 
                 Retrieves one row (using `LIMIT 1`) and uses `SQLData.prepare_dt` to obtain the index.
-            parse_dates (bool, list, or dict): Configuration for parsing date columns.
+            parse_dates (Optional[Union[bool, List[IntStr], Dict[IntStr, Any]]]): 
+                Configuration for parsing date columns.
 
                 If `query` is not used, it maps to column names; otherwise, integer values are disallowed.
 
                 Enabled parsing also attempts to process datetime columns that Pandas fails to parse.
-            to_utc (bool, str, or sequence of str): Parameter for UTC conversion.
+            to_utc (Optional[Union[bool, str, Sequence[str]]]): Parameter for UTC conversion.
 
                 See `SQLData.prepare_dt`.
-            tz (any): Timezone information.
+            tz (Optional[TimezoneLike]): Timezone information.
 
                 See `vectorbtpro.utils.datetime_.to_timezone`.
-            start_row (int): Starting row number for data retrieval.
+            start_row (Optional[int]): Starting row number for data retrieval.
 
                 The table must contain the column specified by `row_number_column`.
 
                 Must not be used with `query`.
-            end_row (int): Ending row number for data retrieval.
+            end_row (Optional[int]): Ending row number for data retrieval.
 
                 The table must contain the column specified by `row_number_column`.
 
                 Must not be used with `query`.
-            keep_row_number (bool): Determines whether to include the row number column
+            keep_row_number (Optional[bool]): Determines whether to include the row number column
                 (specified by `row_number_column`) in the output.
-            row_number_column (str): Name of the column containing row numbers.
-            index_col (int, str, or list): Column(s) to use as the index.
+            row_number_column (Optional[str]): Name of the column containing row numbers.
+            index_col (Optional[Union[None, bool, MaybeList[IntStr]]]): Column(s) to use as the index.
 
                 If `query` is not used, integers map to column positions; otherwise,
                 only column names are allowed.
-            columns (int, str, or list): Column(s) to select from the table.
+            columns (Optional[MaybeList[IntStr]]): Column(s) to select from the table.
 
                 Must not be used with `query`.
-            dtype (dtype_like or dict): Data type for each column.
+            dtype (Optional[Union[None, DTypeLike, Dict[IntStr, DTypeLike]]]): Data type for each column.
 
                 If `query` is not used, integers map to column positions;
                 otherwise, only column names are allowed.
-            chunksize (int): Number of rows per chunk for processing.
+            chunksize (Optional[int]): Number of rows per chunk for processing.
 
                 See `pd.read_sql_query`.
-            chunk_func (callable): Function to process and concatenate chunks when `chunksize` is set.
-            squeeze (bool): Determines whether to squeeze a DataFrame with one column into a Series.
+            chunk_func (Optional[Callable]): Function to process and concatenate chunks when `chunksize` is set.
+            squeeze (Optional[bool]): Determines whether to squeeze a DataFrame with one column into a Series.
             **read_sql_kwargs: Keyword arguments passed to `pd.read_sql_query`.
 
         Returns:

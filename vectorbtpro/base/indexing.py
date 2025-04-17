@@ -78,6 +78,9 @@ class IndexingBase(Base):
             pd_indexing_func (Callable): The pandas indexing function to apply.
             **kwargs: Keyword arguments for the indexing function.
 
+        Returns:
+            IndexingBase: A new instance of the class with the applied indexing function.
+
         !!! note
             This method should be overridden in subclasses.
         """
@@ -89,6 +92,9 @@ class IndexingBase(Base):
         Args:
             pd_indexing_setter_func (Callable): The pandas indexing setter function to apply.
             **kwargs: Keyword arguments for the indexing setter function.
+
+        Returns:
+            None
 
         !!! note
             This method should be overridden in subclasses.
@@ -117,17 +123,29 @@ class LocBase(Base):
 
     @property
     def indexing_func(self) -> tp.Callable:
-        """The function used to perform indexing operations on associated pandas objects."""
+        """The function used to perform indexing operations on associated pandas objects.
+        
+        Returns:
+            Callable: The function used for indexing.
+        """
         return self._indexing_func
 
     @property
     def indexing_setter_func(self) -> tp.Optional[tp.Callable]:
-        """The function used to set values via indexing on associated pandas objects."""
+        """The function used to set values via indexing on associated pandas objects.
+        
+        Returns:
+            Optional[Callable]: The function used for setting indexed values.
+        """
         return self._indexing_setter_func
 
     @property
     def indexing_kwargs(self) -> dict:
-        """Keyword arguments for the indexing function."""
+        """Keyword arguments for the indexing function.
+        
+        Returns:
+            dict: A dictionary of keyword arguments for indexing.
+        """
         return self._indexing_kwargs
 
     def __getitem__(self, key: tp.Any) -> tp.Any:
@@ -165,6 +183,9 @@ class pdLoc(LocBase):
             obj (SeriesFrame): The pandas Series or DataFrame to modify.
             key (Any): The key identifying the location to set.
             value (Any): The value to assign.
+
+        Returns:
+            None: The function modifies the Series or DataFrame in place.
         """
         raise NotImplementedError
 
@@ -262,14 +283,22 @@ class PandasIndexer(IndexingBase):
 
     @property
     def iloc(self) -> iLoc:
-        """Property providing integer-location based indexing via Pandas `iloc`."""
+        """Property providing integer-location based indexing via Pandas `iloc`.
+        
+        Returns:
+            iLoc: An instance of the `iLoc` accessor for integer-location based indexing.
+        """
         return self._iloc
 
     iloc.__doc__ = iLoc.__doc__
 
     @property
     def loc(self) -> Loc:
-        """Property providing label-based indexing via Pandas `loc`."""
+        """Property providing label-based indexing via Pandas `loc`.
+        
+        Returns:
+            Loc: An instance of the `Loc` accessor for label-based indexing.
+        """
         return self._loc
 
     loc.__doc__ = Loc.__doc__
@@ -280,6 +309,9 @@ class PandasIndexer(IndexingBase):
         Args:
             *args: Positional arguments passed to the Pandas `xs` method.
             **kwargs: Keyword arguments passed to the Pandas `xs` method.
+
+        Returns:
+            PandasIndexer: A new instance of the class with the result of the `xs` operation.
         """
         return self.indexing_func(lambda x: x.xs(*args, **kwargs), **self.indexing_kwargs)
 
@@ -344,7 +376,11 @@ class ExtPandasIndexer(PandasIndexer):
 
     @property
     def xloc(self) -> xLoc:
-        """Property providing `Idxr`-based indexing functionality via `xLoc`."""
+        """Property providing `Idxr`-based indexing functionality via `xLoc`.
+        
+        Returns:
+            xLoc: An instance of the `xLoc` accessor for `Idxr`-based indexing.
+        """
         return self._xloc
 
     xloc.__doc__ = xLoc.__doc__
@@ -388,7 +424,7 @@ class ParamLoc(LocBase):
         """Mapper used for linking columns to parameter values.
 
         Returns:
-            pd.Series: The mapping of columns to parameter values.
+            Series: The mapping of columns to parameter values.
         """
         return self._mapper
 
@@ -477,7 +513,7 @@ def indexing_on_mapper(
 
     Args:
         mapper (Series): Series used as a mapping to reindex data.
-        ref_obj (Series or DataFrame): Reference object whose structure defines the target shape.
+        ref_obj (SeriesFrame): Reference object whose structure defines the target shape.
         pd_indexing_func (Callable): Function that performs pandas indexing.
 
     Returns:
@@ -669,6 +705,9 @@ class IdxrBase(Base):
         Args:
             *args: Additional positional arguments.
             **kwargs: Additional keyword arguments.
+
+        Returns:
+            Any: The computed indices based on the indexer.
         """
         raise NotImplementedError
 
@@ -715,6 +754,9 @@ class IdxrBase(Base):
         Args:
             idxs (MaybeIndexArray): The indices to validate.
             check_minus_one (bool): Flag indicating whether to consider -1 as an unmatched index.
+
+        Returns:
+            None
         """
         if isinstance(idxs, slice):
             if idxs.start is not None and not checks.is_int(idxs.start):
@@ -1111,6 +1153,9 @@ class DTCIdxr(UniIdxr, DefineMixin):
             value (Optional[DTCLike]): A datetime-like value to convert. If None, returns a named tuple
                 representing a default DTC instance.
             **parse_kwargs: Keyword arguments for `vectorbtpro.utils.datetime_.DTC.parse`.
+
+        Returns:
+            DTCNT: A named tuple representing the parsed datetime components.
         """
         if value is None:
             return dt.DTC().to_namedtuple()
@@ -1172,7 +1217,8 @@ class PointIdxr(UniIdxr, DefineMixin):
     `start` to `end` (exclusive) is created and 'indices' as `kind` is used. If timedelta-like, 
     a date sequence from `start` to `end` (inclusive) is created and 'labels' as `kind` is used.
     
-    If `at_time` is not None and `every` and `on` are None, `every` defaults to one day."""
+    If `at_time` is not None and `every` and `on` are None, `every` defaults to one day.
+    """
 
     normalize_every: bool = define.field(default=False)
     """Normalize start/end dates to midnight before generating date range."""
@@ -1182,37 +1228,43 @@ class PointIdxr(UniIdxr, DefineMixin):
     
     Every datetime in `on` gets floored to the daily frequency, while `at_time` gets converted into 
     a timedelta using `vectorbtpro.utils.datetime_.time_to_timedelta` and added to `add_delta`. 
-    Index must be datetime-like."""
+    Index must be datetime-like.
+    """
 
     start: tp.Optional[tp.Union[int, tp.DatetimeLike]] = define.field(default=None)
     """Start index/date.
     
     If (human-readable) string, gets converted into a datetime.
     
-    If `every` is None, gets used to filter the final index array."""
+    If `every` is None, gets used to filter the final index array.
+    """
 
     end: tp.Optional[tp.Union[int, tp.DatetimeLike]] = define.field(default=None)
     """End index/date.
     
     If (human-readable) string, gets converted into a datetime.
     
-    If `every` is None, gets used to filter the final index array."""
+    If `every` is None, gets used to filter the final index array.
+    """
 
     exact_start: bool = define.field(default=False)
     """Whether the first index should be exactly `start`.
     
     Depending on `every`, the first index picked by `pd.date_range` may happen after `start`.
-    In such a case, `start` gets injected before the first index generated by `pd.date_range`."""
+    In such a case, `start` gets injected before the first index generated by `pd.date_range`.
+    """
 
     on: tp.Optional[tp.Union[int, tp.DatetimeLike, tp.IndexLike]] = define.field(default=None)
     """Index/label or a sequence of such.
     
-    Gets converted into datetime format whenever possible."""
+    Gets converted into datetime format whenever possible.
+    """
 
     add_delta: tp.Optional[tp.FrequencyLike] = define.field(default=None)
     """Offset to be added to each in `on`.
     
-    Gets converted to a proper offset/timedelta using `vectorbtpro.utils.datetime_.to_freq`."""
+    Gets converted to a proper offset/timedelta using `vectorbtpro.utils.datetime_.to_freq`.
+    """
 
     kind: tp.Optional[str] = define.field(default=None)
     """Kind of data in `on`: indices or labels.
@@ -1221,18 +1273,21 @@ class PointIdxr(UniIdxr, DefineMixin):
     
     If `kind` is 'labels', `on` gets converted into indices using `pd.Index.get_indexer`. 
     Prior to this, gets its timezone aligned to the timezone of the index. If `kind` is 'indices', 
-    `on` gets wrapped with NumPy."""
+    `on` gets wrapped with NumPy.
+    """
 
     indexer_method: str = define.field(default="bfill")
     """Method for `pd.Index.get_indexer`.
     
-    Allows two additional values: "before" and "after"."""
+    Allows two additional values: "before" and "after".
+    """
 
     indexer_tolerance: tp.Optional[tp.Union[int, tp.TimedeltaLike, tp.IndexLike]] = define.field(default=None)
     """Tolerance for `pd.Index.get_indexer`.
     
     If `at_time` is set and `indexer_method` is neither exact nor nearest, `indexer_tolerance` 
-    becomes such that the next element must be within the current day."""
+    becomes such that the next element must be within the current day.
+    """
 
     skip_not_found: bool = define.field(default=True)
     """Whether to drop indices that are -1 (not found)."""
@@ -1271,21 +1326,21 @@ def get_index_points(
 
     Args:
         index (Index): Index.
-        every (tp.Optional[tp.FrequencyLike]): See `PointIdxr.every`.
+        every (Optional[FrequencyLike]): See `PointIdxr.every`.
         normalize_every (bool): See `PointIdxr.normalize_every`.
-        at_time (tp.Optional[tp.TimeLike]): See `PointIdxr.at_time`.
-        start (tp.Optional[tp.Union[int, tp.DatetimeLike]]): See `PointIdxr.start`.
-        end (tp.Optional[tp.Union[int, tp.DatetimeLike]]): See `PointIdxr.end`.
+        at_time (Optional[TimeLike]): See `PointIdxr.at_time`.
+        start (Optional[Union[int, DatetimeLike]]): See `PointIdxr.start`.
+        end (Optional[Union[int, DatetimeLike]]): See `PointIdxr.end`.
         exact_start (bool): See `PointIdxr.exact_start`.
-        on (tp.Optional[tp.Union[int, tp.DatetimeLike, tp.IndexLike]]): See `PointIdxr.on`.
-        add_delta (tp.Optional[tp.FrequencyLike]): See `PointIdxr.add_delta`.
-        kind (tp.Optional[str]): See `PointIdxr.kind`.
+        on (Optional[Union[int, DatetimeLike, IndexLike]]): See `PointIdxr.on`.
+        add_delta (Optional[FrequencyLike]): See `PointIdxr.add_delta`.
+        kind (Optional[str]): See `PointIdxr.kind`.
         indexer_method (str): See `PointIdxr.indexer_method`.
         indexer_tolerance (str): See `PointIdxr.indexer_tolerance`.
         skip_not_found (bool): See `PointIdxr.skip_not_found`.
 
     Returns:
-        tp.Array1d: Array of index positions corresponding to the given index.
+        Array1d: Array of index positions corresponding to the given index.
 
     Examples:
         Provide nothing to generate at the beginning:
@@ -1489,7 +1544,8 @@ class RangeIdxr(UniIdxr, DefineMixin):
     `end` (inclusive) is generated and `kind` is set to `bounds`.
 
     If `start_time` and `end_time` are provided and `every`, `start`, and `end` are None, 
-    `every` defaults to one day."""
+    `every` defaults to one day.
+    """
 
     normalize_every: bool = define.field(default=False)
     """Normalize `start` and `end` dates to midnight before generating the date range."""
@@ -1500,7 +1556,8 @@ class RangeIdxr(UniIdxr, DefineMixin):
     If True, creates an index range from each consecutive pair of values in the sequence. 
     If False, the entire sequence is used for both `start` and `end`, with further differentiation 
     achieved through time and delta adjustments. Forced to False when `every`, `start_time`, 
-    and `end_time` are provided and `fixed_start` is False."""
+    and `end_time` are provided and `fixed_start` is False.
+    """
 
     start_time: tp.Optional[tp.TimeLike] = define.field(default=None)
     """Start time of the day as a human-readable string or a `datetime.time` object.
@@ -1508,7 +1565,8 @@ class RangeIdxr(UniIdxr, DefineMixin):
     Each datetime in `start` is floored to a daily frequency. The `start_time` is converted to a timedelta 
     using `vectorbtpro.utils.datetime_.time_to_timedelta` and added to `add_start_delta`.
     
-    The index must be datetime-like."""
+    The index must be datetime-like.
+    """
 
     end_time: tp.Optional[tp.TimeLike] = define.field(default=None)
     """End time of the day as a human-readable string or a `datetime.time` object.
@@ -1516,7 +1574,8 @@ class RangeIdxr(UniIdxr, DefineMixin):
     Each datetime in `end` is floored to a daily frequency. The `end_time` is converted to a timedelta 
     using `vectorbtpro.utils.datetime_.time_to_timedelta` and added to `add_end_delta`.
     
-    The index must be datetime-like."""
+    The index must be datetime-like.
+    """
 
     lookback_period: tp.Optional[tp.FrequencyLike] = define.field(default=None)
     """Lookback period specified as an integer or an offset.
@@ -1525,17 +1584,20 @@ class RangeIdxr(UniIdxr, DefineMixin):
     generated from `start + lookback_period` to `end` and then assigned to `end`.
 
     If given as a string, it is converted to an offset/timedelta using `vectorbtpro.utils.datetime_.to_freq`.
-    If given as an integer, it is multiplied by the index frequency when the index is not integer."""
+    If given as an integer, it is multiplied by the index frequency when the index is not integer.
+    """
 
     start: tp.Optional[tp.Union[int, tp.DatetimeLike, tp.IndexLike]] = define.field(default=None)
     """Starting index/label or a sequence thereof.
 
-    Converted to datetime format when possible and broadcast together with `end`."""
+    Converted to datetime format when possible and broadcast together with `end`.
+    """
 
     end: tp.Optional[tp.Union[int, tp.DatetimeLike, tp.IndexLike]] = define.field(default=None)
     """Ending index/label or a sequence thereof.
 
-    Converted to datetime format when possible and broadcast together with `start`."""
+    Converted to datetime format when possible and broadcast together with `start`.
+    """
 
     exact_start: bool = define.field(default=False)
     """Determines if the first index in `start` should exactly match the specified `start`.
@@ -1543,12 +1605,14 @@ class RangeIdxr(UniIdxr, DefineMixin):
     If `every` is provided and the first index from `pd.date_range` occurs after `start`, 
     the specified `start` is prepended.
     
-    Cannot be used with `lookback_period`."""
+    Cannot be used with `lookback_period`.
+    """
 
     fixed_start: bool = define.field(default=False)
     """Determines if all indices in `start` should exactly match the specified `start`.
 
-    Applies only with `every` and cannot be used with `lookback_period`."""
+    Applies only with `every` and cannot be used with `lookback_period`.
+    """
 
     closed_start: bool = define.field(default=True)
     """Indicates if the `start` bound is inclusive."""
@@ -1560,13 +1624,15 @@ class RangeIdxr(UniIdxr, DefineMixin):
     """Offset to add to each element in `start`.
 
     If provided as a string, it is converted to an offset/timedelta using 
-    `vectorbtpro.utils.datetime_.to_freq`."""
+    `vectorbtpro.utils.datetime_.to_freq`.
+    """
 
     add_end_delta: tp.Optional[tp.FrequencyLike] = define.field(default=None)
     """Offset to add to each element in `end`.
 
     If provided as a string, it is converted to an offset/timedelta using 
-    `vectorbtpro.utils.datetime_.to_freq`."""
+    `vectorbtpro.utils.datetime_.to_freq`.
+    """
 
     kind: tp.Optional[str] = define.field(default=None)
     """Type of data to be used.
@@ -1632,25 +1698,25 @@ def get_index_ranges(
     """Generate index ranges from a given index based on specified bounds, frequency, and adjustments.
 
     Args:
-        index (tp.Index): Index.
-        index_freq (tp.Optional[tp.FrequencyLike]): Index frequency.
-        every (tp.Optional[tp.FrequencyLike]): See `RangeIdxr.every`.
+        index (Index): Index.
+        index_freq (Optional[FrequencyLike]): Index frequency.
+        every (Optional[FrequencyLike]): See `RangeIdxr.every`.
         normalize_every (bool): See `RangeIdxr.normalize_every`.
         split_every (bool): See `RangeIdxr.split_every`.
-        start_time (tp.Optional[tp.TimeLike]): See `RangeIdxr.start_time`.
-        end_time (tp.Optional[tp.TimeLike]): See `RangeIdxr.end_time`.
-        lookback_period (tp.Optional[tp.FrequencyLike]): See `RangeIdxr.lookback_period`.
-        start (tp.Optional[tp.Union[int, tp.DatetimeLike, tp.IndexLike]]): See `RangeIdxr.start`.
-        end (tp.Optional[tp.Union[int, tp.DatetimeLike, tp.IndexLike]]): See `RangeIdxr.end`.
+        start_time (Optional[TimeLike]): See `RangeIdxr.start_time`.
+        end_time (Optional[TimeLike]): See `RangeIdxr.end_time`.
+        lookback_period (Optional[FrequencyLike]): See `RangeIdxr.lookback_period`.
+        start (Optional[Union[int, DatetimeLike, IndexLike]]): See `RangeIdxr.start`.
+        end (Optional[Union[int, DatetimeLike, IndexLike]]): See `RangeIdxr.end`.
         exact_start (bool): See `RangeIdxr.exact_start`.
         fixed_start (bool): See `RangeIdxr.fixed_start`.
         closed_start (bool): See `RangeIdxr.closed_start`.
         closed_end (bool): See `RangeIdxr.closed_end`.
-        add_start_delta (tp.Optional[tp.FrequencyLike]): See `RangeIdxr.add_start_delta`.
-        add_end_delta (tp.Optional[tp.FrequencyLike]): See `RangeIdxr.add_end_delta`.
-        kind (tp.Optional[str]): See `RangeIdxr.kind`.
+        add_start_delta (Optional[FrequencyLike]): See `RangeIdxr.add_start_delta`.
+        add_end_delta (Optional[FrequencyLike]): See `RangeIdxr.add_end_delta`.
+        kind (Optional[str]): See `RangeIdxr.kind`.
         skip_not_found (bool): See `RangeIdxr.skip_not_found`.
-        jitted (tp.JittedOption): See `RangeIdxr.jitted`.
+        jitted (JittedOption): See `RangeIdxr.jitted`.
 
     Returns:
         Tuple[Array1d, Array1d]: A tuple containing arrays of start and end indices for the generated ranges.
@@ -2141,7 +2207,8 @@ class AutoIdxr(UniIdxr, DefineMixin):
     """One or more indices represented as integers, datetime-like objects, frequency-like objects, or labels.
 
     Can also be a `vectorbtpro.utils.selection.PosSel` instance holding position(s) or 
-    a `vectorbtpro.utils.selection.LabelSel` instance holding label(s)."""
+    a `vectorbtpro.utils.selection.LabelSel` instance holding label(s).
+    """
 
     closed_start: bool = define.optional_field()
     """Whether the start of a slice is inclusive."""
@@ -2161,7 +2228,8 @@ class AutoIdxr(UniIdxr, DefineMixin):
     level: tp.MaybeLevelSequence = define.field(default=None)
     """One or more levels.
 
-    If provided and `kind` is None, `kind` is set to "labels"."""
+    If provided and `kind` is None, `kind` is set to "labels".
+    """
 
     kind: tp.Optional[str] = define.field(default=None)
     """Specifies the kind of the provided value.
@@ -2175,7 +2243,8 @@ class AutoIdxr(UniIdxr, DefineMixin):
     * "dtc" for `DTCIdxr`
     * "frequency" for `PointIdxr`
 
-    If None, the kind will be determined automatically based on the type of the indices."""
+    If None, the kind will be determined automatically based on the type of the indices.
+    """
 
     idxr_kwargs: tp.KwargsLike = define.field(default=None)
     """Keyword arguments for the selected indexer."""
@@ -2347,7 +2416,8 @@ class RowIdxr(IdxrBase, DefineMixin):
     idxr: object = define.field()
     """Indexer object.
 
-    Can be an instance of `UniIdxr`, a custom template, or a value to be wrapped with `AutoIdxr`."""
+    Can be an instance of `UniIdxr`, a custom template, or a value to be wrapped with `AutoIdxr`.
+    """
 
     idxr_kwargs: tp.KwargsLike = define.field()
     """Keyword arguments for initializing the indexer via `AutoIdxr`."""
@@ -2385,7 +2455,8 @@ class ColIdxr(IdxrBase, DefineMixin):
     idxr: object = define.field()
     """Indexer object.
 
-    Can be an instance of `UniIdxr`, a custom template, or a value to be wrapped with `AutoIdxr`."""
+    Can be an instance of `UniIdxr`, a custom template, or a value to be wrapped with `AutoIdxr`.
+    """
 
     idxr_kwargs: tp.KwargsLike = define.field()
     """Keyword arguments for initializing the indexer via `AutoIdxr`."""
@@ -2553,6 +2624,9 @@ class IdxSetter(DefineMixin):
             arr (Array): The array to modify.
             idxs (MaybeIndexArray): The row indices or slice defining which rows to set.
             v (Any): The value or array of values to assign, which is broadcast to match the target shape.
+
+        Returns:
+            None: The function modifies `arr` in place.
         """
         from vectorbtpro.base.reshaping import broadcast_array_to
 
@@ -2588,6 +2662,9 @@ class IdxSetter(DefineMixin):
             arr (Array): The array to modify.
             idxs (MaybeIndexArray): The column indices or slice defining which columns to set.
             v (Any): The value or array of values to assign, which is broadcast to match the target shape.
+
+        Returns:
+            None: The function modifies `arr` in place.
         """
         from vectorbtpro.base.reshaping import broadcast_array_to
 
@@ -2622,6 +2699,9 @@ class IdxSetter(DefineMixin):
             row_idxs (MaybeIndexArray): The row indices or slice specifying which rows to set.
             col_idxs (MaybeIndexArray): The column indices or slice specifying which columns to set.
             v (Any): The value or array of values to assign, which is broadcast to match the target shape.
+
+        Returns:
+            None: The function modifies `arr` in place.
         """
         from vectorbtpro.base.reshaping import broadcast_array_to
 
@@ -2699,7 +2779,7 @@ class IdxSetter(DefineMixin):
             template_context (KwargsLike): Additional context for template substitution.
 
         Returns:
-            dict: A dictionary containing:
+            Kwargs: A dictionary containing:
 
                 * `default`: The default value specified in `IdxSetter.idx_items`, if any.
                 * `set_funcs`: A list of partially-applied functions for setting values in the array.
@@ -2794,6 +2874,9 @@ class IdxSetter(DefineMixin):
 
                 If not provided, they are obtained via `IdxSetter.get_set_meta`.
             **kwargs: Keyword arguments for `IdxSetter.get_set_meta`.
+
+        Returns:
+            None: The function modifies `arr` in place.
         """
         if set_funcs is None:
             set_meta = self.get_set_meta(arr.shape, **kwargs)
@@ -2807,6 +2890,9 @@ class IdxSetter(DefineMixin):
         Args:
             pd_arr (SeriesFrame): Pandas object whose underlying array values will be updated.
             **kwargs: Keyword arguments for `IdxSetter.get_set_meta`.
+
+        Returns:
+            None: The function modifies `arr` in place.
         """
         from vectorbtpro.base.indexes import get_index
 
@@ -2999,7 +3085,8 @@ class IdxRecords(IdxSetterFactory, DefineMixin):
     """Series, DataFrame, or any sequence of mapping-like objects.
 
     If a Series or DataFrame is provided and the index is not a default range, the index becomes a row field.
-    If a custom row field is provided, the index is ignored."""
+    If a custom row field is provided, the index is ignored.
+    """
 
     row_field: tp.Union[None, bool, tp.Label] = define.field(default=None)
     """Row field.
@@ -3007,14 +3094,16 @@ class IdxRecords(IdxSetterFactory, DefineMixin):
     If None or True, searches for "row", "index", "open time", and "date" (case-insensitive).
     If `IdxRecords.records` is a Series or DataFrame, also includes the index name if the index 
     is not a default range. If a record lacks a row field, all rows are set.
-    If neither a row nor a column field is found, the field value becomes the default for the entire array."""
+    If neither a row nor a column field is found, the field value becomes the default for the entire array.
+    """
 
     col_field: tp.Union[None, bool, tp.Label] = define.field(default=None)
     """Column field.
 
     If None or True, searches for "col", "column", and "symbol" (case-insensitive).
     If a record lacks a column field, all columns are set. If neither a row nor a column 
-    field is present, the field value becomes the default for the entire array."""
+    field is present, the field value becomes the default for the entire array.
+    """
 
     rowidx_kwargs: tp.KwargsLike = define.field(default=None)
     """Keyword arguments passed to `rowidx` if the indexer is not an instance of `RowIdxr`."""

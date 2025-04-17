@@ -96,6 +96,9 @@ def file_exists(file_path: tp.PathLike) -> bool:
 
     Args:
         file_path (PathLike): The path of the file to check.
+
+    Returns:
+        bool: True if the file exists, False otherwise.
     """
     file_path = Path(file_path)
     if file_path.exists() and file_path.is_file():
@@ -108,6 +111,9 @@ def dir_exists(dir_path: tp.PathLike) -> bool:
 
     Args:
         dir_path (PathLike): The path of the directory to check.
+
+    Returns:
+        bool: True if the directory exists, False otherwise.
     """
     dir_path = Path(dir_path)
     if dir_path.exists() and dir_path.is_dir():
@@ -180,6 +186,9 @@ def check_mkdir(
 
             If None, the default setting is used.
 
+    Returns:
+        None
+
     For defaults, see `mkdir` in `vectorbtpro._settings.path`.
     """
     from vectorbtpro._settings import settings
@@ -241,6 +250,9 @@ def remove_file(file_path: tp.PathLike, missing_ok: bool = False) -> None:
     Args:
         file_path (PathLike): The path of the file to delete.
         missing_ok (bool): If True, do not raise an error if the file is not found.
+
+    Returns:
+        None
     """
     file_path = Path(file_path)
     if file_exists(file_path):
@@ -257,6 +269,9 @@ def remove_dir(dir_path: tp.PathLike, missing_ok: bool = False, with_contents: b
         missing_ok (bool): If True, do not raise an error if the directory is not found.
         with_contents (bool): If True, delete directories that contain files;
             otherwise, raise an error if the directory is not empty.
+
+    Returns:
+        None
     """
     dir_path = Path(dir_path)
     if dir_exists(dir_path):
@@ -476,5 +491,8 @@ def print_dir_tree(*args, **kwargs) -> None:
     Args:
         *args: Positional arguments passed to `dir_tree`.
         **kwargs: Keyword arguments passed to `dir_tree`.
+
+    Returns:
+        None
     """
     print(dir_tree(*args, **kwargs))

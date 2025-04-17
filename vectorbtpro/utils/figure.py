@@ -336,6 +336,9 @@ class FigureMixin(Base):
 
         Args:
             **kwargs: Keyword arguments passed to `FigureMixin.show` for PNG rendering.
+
+        Returns:
+            None
         """
         self.show(renderer="png", **kwargs)
 
@@ -344,6 +347,9 @@ class FigureMixin(Base):
 
         Args:
             **kwargs: Keyword arguments passed to `FigureMixin.show` for SVG rendering.
+
+        Returns:
+            None
         """
         self.show(renderer="svg", **kwargs)
 
@@ -355,7 +361,7 @@ class FigureMixin(Base):
         show: bool = True,
         show_kwargs: tp.KwargsLike = None,
         **kwargs,
-    ) -> None:
+    ) -> tp.Path:
         """Save the figure as both light and dark themed SVG files for documentation.
 
         Args:
@@ -365,6 +371,9 @@ class FigureMixin(Base):
             show (bool): Whether to display the SVG after saving.
             show_kwargs (KwargsLike): Keyword arguments passed to `FigureMixin.show_svg`.
             **kwargs: Keyword arguments passed to `FigureMixin.write_image`.
+
+        Returns:
+            Path: The directory path where SVG files are saved.
         """
         if not isinstance(dir_path, Path):
             dir_path = Path(dir_path)
@@ -381,6 +390,7 @@ class FigureMixin(Base):
             if show_kwargs is None:
                 show_kwargs = {}
             self.show_svg(**show_kwargs)
+        return dir_path
 
 
 class Figure(_Figure, FigureMixin):

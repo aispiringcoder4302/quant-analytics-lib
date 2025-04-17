@@ -117,7 +117,8 @@ class Sizer(Evaluable, Annotatable, DefineMixin):
     """Abstract base class for determining size from annotated arguments.
 
     !!! note
-        Use `Sizer.apply` instead of calling `Sizer.get_size` directly."""
+        Use `Sizer.apply` instead of calling `Sizer.get_size` directly.
+    """
 
     eval_id: tp.Optional[tp.MaybeSequence[tp.Hashable]] = define.field(default=None)
     """Identifier or sequence of identifiers used for evaluating this instance."""
@@ -451,7 +452,8 @@ class ChunkMapper(DefineMixin):
     `ChunkMeta` instances.
 
     !!! note
-        Use `ChunkMapper.apply` instead of `ChunkMapper.map`."""
+        Use `ChunkMapper.apply` instead of `ChunkMapper.map`.
+    """
 
     should_cache: bool = define.field(default=True)
     """Indicates whether to cache mapped `ChunkMeta` results."""
@@ -808,13 +810,15 @@ class ContainerTaker(ChunkTaker, DefineMixin):
 class SequenceTaker(ContainerTaker):
     """Class for taking items from a sequence container.
 
-    Calls `Chunker.take_from_arg` on each element."""
+    Calls `Chunker.take_from_arg` on each element.
+    """
 
     def adapt_cont_take_spec(self, obj: tp.Sequence) -> tp.ContainerTakeSpec:
         """Adapt the container take specification for the given sequence.
 
         If the last element is an ellipsis, replace it by repeating the preceding specification
-        to match the sequence length."""
+        to match the sequence length.
+        """
         cont_take_spec = list(self.cont_take_spec)
         if len(cont_take_spec) >= 2:
             if isinstance(cont_take_spec[-1], type(...)):
@@ -893,12 +897,14 @@ class SequenceTaker(ContainerTaker):
 class MappingTaker(ContainerTaker):
     """Class for taking items from a mapping container.
 
-    Calls `Chunker.take_from_arg` on each element."""
+    Calls `Chunker.take_from_arg` on each element.
+    """
 
     def adapt_cont_take_spec(self, obj: tp.Mapping) -> tp.ContainerTakeSpec:
         """Adapt the container take specification for the given mapping.
 
-        If an ellipsis key is present, assign its corresponding specification to any missing keys."""
+        If an ellipsis key is present, assign its corresponding specification to any missing keys.
+        """
         cont_take_spec = dict(self.cont_take_spec)
         ellipsis_take_spec = None
         ellipsis_found = False
@@ -976,7 +982,14 @@ class MappingTaker(ContainerTaker):
 
 
 class ArgsTaker(SequenceTaker):
-    """Class for taking items from a variable-length positional arguments container."""
+    """Class for taking items from a variable-length positional arguments container.
+    
+    Args:
+        *args: Additional positional arguments.
+        single_type (Optional[TypeLike]): Type or tuple of types that should be treated as a single value.
+        ignore_none (bool): Indicates whether None values should be ignored.
+        mapper (Optional[ChunkMapper]): Optional chunk mapper (`ChunkMapper`) to process chunk metadata.
+    """
 
     def __init__(
         self,
@@ -995,7 +1008,14 @@ class ArgsTaker(SequenceTaker):
 
 
 class KwargsTaker(MappingTaker):
-    """Class for taking items from a variable-length keyword arguments container."""
+    """Class for taking items from a variable-length keyword arguments container.
+    
+    Args:
+        single_type (Optional[TypeLike]): Type or tuple of types that should be treated as a single value.
+        ignore_none (bool): Indicates whether None values should be ignored.
+        mapper (Optional[ChunkMapper]): Optional chunk mapper (`ChunkMapper`) to process chunk metadata.
+        **kwargs: Additional keyword arguments.
+    """
 
     def __init__(
         self,
@@ -1093,7 +1113,11 @@ class Chunked(Chunkable, DefineMixin):
 
     @property
     def take_spec_missing(self) -> bool:
-        """Boolean flag indicating whether `take_spec` is missing."""
+        """Boolean flag indicating whether `take_spec` is missing.
+        
+        Returns:
+            bool: True if `take_spec` is missing, False otherwise.
+        """
         return self.take_spec is MISSING
 
     def resolve_take_spec(self) -> tp.TakeSpec:
@@ -1288,105 +1312,166 @@ class Chunker(Configured):
     def size(self) -> tp.Optional[int]:
         """Chunk size used for metadata generation.
 
-        See `Chunker.get_chunk_meta_from_args` for details."""
+        See `Chunker.get_chunk_meta_from_args` for details.
+
+        Returns:
+            Optional[int]: The configured chunk size.
+        """
         return self._size
 
     @property
     def min_size(self) -> tp.Optional[int]:
         """Minimum chunk size used in metadata generation.
 
-        See `Chunker.get_chunk_meta_from_args` for details."""
+        See `Chunker.get_chunk_meta_from_args` for details.
+
+        Returns:
+            Optional[int]: The minimum allowable chunk size.
+        """
         return self._min_size
 
     @property
     def n_chunks(self) -> tp.Optional[tp.SizeLike]:
         """Desired number of chunks used in metadata generation.
 
-        See `Chunker.get_chunk_meta_from_args` for details."""
+        See `Chunker.get_chunk_meta_from_args` for details.
+
+        Returns:
+            Optional[SizeLike]: The target number of chunks.
+        """
         return self._n_chunks
 
     @property
     def chunk_len(self) -> tp.Optional[tp.SizeLike]:
         """Length of each chunk used in metadata generation.
 
-        See `Chunker.get_chunk_meta_from_args` for details."""
+        See `Chunker.get_chunk_meta_from_args` for details.
+
+        Returns:
+            Optional[SizeLike]: The length assigned to each chunk.
+        """
         return self._chunk_len
 
     @property
     def chunk_meta(self) -> tp.Optional[tp.ChunkMetaLike]:
         """Custom chunk metadata for argument chunking.
 
-        See `Chunker.get_chunk_meta_from_args` for details."""
+        See `Chunker.get_chunk_meta_from_args` for details.
+
+        Returns:
+            Optional[ChunkMetaLike]: The custom chunk metadata configuration.
+        """
         return self._chunk_meta
 
     @property
     def prepend_chunk_meta(self) -> tp.Optional[bool]:
         """Determines whether to prepend a `ChunkMeta` instance to the function arguments.
 
-        If set to None, prepending occurs automatically when the first argument is named 'chunk_meta'."""
+        If set to None, prepending occurs automatically when the first argument is named 'chunk_meta'.
+
+        Returns:
+            Optional[bool]: True if chunk metadata should be prepended; otherwise False.
+        """
         return self._prepend_chunk_meta
 
     @property
     def skip_single_chunk(self) -> bool:
-        """Specifies whether to bypass chunking and execute the function directly when only one chunk is present."""
+        """Specifies whether to bypass chunking and execute the function directly when only one chunk is present.
+
+        Returns:
+            bool: True if single chunk execution should skip chunk processing; otherwise False.
+        """
         return self._skip_single_chunk
 
     @property
     def arg_take_spec(self) -> tp.Optional[tp.ArgTakeSpecLike]:
         """Specification for selecting function arguments during chunking.
 
-        See `Chunker.iter_tasks` for usage."""
+        See `Chunker.iter_tasks` for usage.
+
+        Returns:
+            Optional[ArgTakeSpecLike]: The specification dict or object for argument extraction.
+        """
         return self._arg_take_spec
 
     @property
     def template_context(self) -> tp.Kwargs:
         """Template context for substituting templates in `execute_kwargs` and `merge_kwargs`.
 
-        Available keys:
+        Returns:
+            Kwargs: A dictionary representing the template context. Available keys:
 
-        * `ann_args`
-        * `chunk_meta`
-        * `arg_take_spec`
-        * `tasks`
+                * `ann_args`
+                * `chunk_meta`
+                * `arg_take_spec`
+                * `tasks`
         """
         return self._template_context
 
     @property
     def merge_func(self) -> tp.Optional[tp.MergeFuncLike]:
         """Function used to merge results from multiple chunks. Resolved via
-        `vectorbtpro.base.merging.resolve_merge_func`."""
+        `vectorbtpro.base.merging.resolve_merge_func`.
+
+        Returns:
+            Optional[MergeFuncLike]: The merging function or merge function configuration.
+        """
         return self._merge_func
 
     @property
     def merge_kwargs(self) -> tp.Kwargs:
-        """Keyword arguments passed to the merging function."""
+        """Keyword arguments passed to the merging function.
+
+        Returns:
+            Kwargs: A dictionary of keyword arguments for merging results.
+        """
         return self._merge_kwargs
 
     @property
     def return_raw_chunks(self) -> bool:
-        """Determines whether to return raw chunk data instead of post-processed results."""
+        """Determines whether to return raw chunk data instead of post-processed results.
+
+        Returns:
+            bool: True if the raw chunk data should be returned; otherwise False.
+        """
         return self._return_raw_chunks
 
     @property
     def silence_warnings(self) -> bool:
-        """Indicates whether to suppress warnings during chunk processing."""
+        """Indicates whether to suppress warnings during chunk processing.
+
+        Returns:
+            bool: True if warnings should be suppressed; otherwise False.
+        """
         return self._silence_warnings
 
     @property
     def forward_kwargs_as(self) -> tp.Kwargs:
         """Mapping for renaming keyword arguments.
 
-        Variables from the context of `Chunker.run` may be included."""
+        Variables from the context of `Chunker.run` may be included.
+
+        Returns:
+            Kwargs: A mapping of keyword arguments for renaming.
+        """
         return self._forward_kwargs_as
 
     @property
     def execute_kwargs(self) -> tp.Kwargs:
-        """Keyword arguments provided to `vectorbtpro.utils.execution.execute` for executing chunks."""
+        """Keyword arguments provided to `vectorbtpro.utils.execution.execute` for executing chunks.
+
+        Returns:
+            Kwargs: The dictionary of execution keyword arguments.
+        """
         return self._execute_kwargs
 
     @property
     def disable(self) -> bool:
-        """Specifies whether chunking is disabled."""
+        """Specifies whether chunking is disabled.
+
+        Returns:
+            bool: True if chunking is disabled; otherwise False.
+        """
         return self._disable
 
     @classmethod
@@ -1520,7 +1605,7 @@ class Chunker(Configured):
         Args:
             i (int): The index of the argument.
             ann_arg_name (str): The name of the annotated argument.
-            ann_arg (dict): Details of the annotated argument.
+            ann_arg (Kwargs): Details of the annotated argument.
             arg_take_spec (ArgTakeSpec): The specification mapping for chunk-taking.
 
         Returns:
@@ -2498,6 +2583,9 @@ def resolve_chunked_option(option: tp.ChunkedOption = None) -> tp.KwargsLike:
             * None or False: Disable chunking.
             * str: Specify the name of an execution engine (see `vectorbtpro.utils.execution.execute`).
             * dict: Provide keyword arguments to be passed to `chunked`.
+
+    Returns:
+        KwargsLike: A dictionary of keyword arguments for chunking configuration, or None if chunking is disabled.
 
     For defaults, see `option` in `vectorbtpro._settings.chunking`.
     """

@@ -1091,14 +1091,13 @@ def ewm_std_nb(arr: tp.Array2d, span: int, minp: tp.Optional[int] = None, adjust
 def wwm_mean_1d_nb(arr: tp.Array1d, period: int, minp: tp.Optional[int] = None, adjust: bool = False) -> tp.Array1d:
     """Compute Wilder's exponential weighted moving average for a 1-dimensional array.
 
+    Applies `ewm_mean_1d_nb` internally with a span calculated as `2 * period - 1`.
+
     Args:
         arr (Array1d): Input data array.
         period (int): Period used for the moving average computation.
         minp (Optional[int]): Minimum number of observations required.
         adjust (bool): Whether to adjust weights.
-
-    Uses:
-        Applies `ewm_mean_1d_nb` internally with a span calculated as 2 * period - 1.
 
     Returns:
         Array1d: Wilder's exponential weighted moving average.

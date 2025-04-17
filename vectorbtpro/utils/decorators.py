@@ -55,7 +55,11 @@ def memoized_method(func: tp.Callable) -> tp.Callable:
 
 
 class class_property(Base):
-    """Class for defining properties accessible directly on the class."""
+    """Class for defining properties accessible directly on the class.
+    
+    Args:
+        func (Callable): The function to be wrapped as a class property.
+    """
 
     def __init__(self, func: tp.Callable) -> None:
         self._func = func
@@ -63,7 +67,13 @@ class class_property(Base):
 
     @property
     def func(self) -> tp.Callable:
-        """Wrapped function."""
+        """Wrapped function.
+        
+        Returns the function itself, not the result of calling it.
+        
+        Returns:
+            Callable: The wrapped function.
+        """
         return self._func
 
     def __get__(self, instance: object, owner: tp.Optional[tp.Type] = None) -> tp.Any:
@@ -75,7 +85,11 @@ class class_property(Base):
 
 class hybrid_property(Base):
     """Hybrid property that binds the first parameter to the class when accessed via the class,
-    and to an instance when accessed via an instance."""
+    and to an instance when accessed via an instance.
+    
+    Args:
+        func (Callable): The function to be wrapped as a hybrid property.
+    """
 
     def __init__(self, func: tp.Callable) -> None:
         self._func = func
@@ -83,7 +97,13 @@ class hybrid_property(Base):
 
     @property
     def func(self) -> tp.Callable:
-        """Wrapped function."""
+        """Wrapped function.
+        
+        Returns the function itself, not the result of calling it.
+        
+        Returns:
+            Callable: The wrapped function.
+        """
         return self._func
 
     def __get__(self, instance: object, owner: tp.Optional[tp.Type] = None) -> tp.Any:
@@ -112,6 +132,10 @@ custom_propertyT = tp.TypeVar("custom_propertyT", bound="custom_property")
 class custom_property(property, Base):
     """Custom extensible property that stores the wrapped function and its configuration options as attributes.
 
+    Args:
+        func (Callable): The function to be wrapped as a property.
+        **options: Configuration options for the property.
+
     !!! note
         `custom_property` instances are defined at the class level, so modifying the property affects all instances.
     """
@@ -133,17 +157,31 @@ class custom_property(property, Base):
 
     @property
     def func(self) -> tp.Callable:
-        """Wrapped function."""
+        """Wrapped function.
+        
+        Returns the function itself, not the result of calling it.
+        
+        Returns:
+            Callable: The wrapped function.
+        """
         return self._func
 
     @property
     def name(self) -> str:
-        """Name of the wrapped function."""
+        """Name of the wrapped function.
+        
+        Returns:
+            str: The name of the wrapped function.
+        """
         return self._name
 
     @property
     def options(self) -> tp.Kwargs:
-        """Configuration options provided to the property."""
+        """Configuration options provided to the property.
+        
+        Returns:
+            Kwargs: The configuration options.
+        """
         return self._options
 
     def __set_name__(self, owner: tp.Type, name: str) -> None:
@@ -164,6 +202,12 @@ class custom_property(property, Base):
 class cacheable_property(custom_property):
     """Cacheable property extending `custom_property` to support caching of computed values.
 
+    Args:
+        func (Callable): The function to be wrapped as a cacheable property.
+        use_cache (bool): Whether to use caching.
+        whitelist (bool): Whether to whitelist the property.
+        **options: Configuration options for the property.
+
     !!! note
         This property assumes the instance remains unchanged; changes to dependent attributes are not detected.
     """
@@ -182,19 +226,28 @@ class cacheable_property(custom_property):
 
     @property
     def init_use_cache(self) -> bool:
-        """Initial `use_cache` value."""
+        """Initial `use_cache` value.
+        
+        Returns:
+            bool: The initial value of `use_cache`.
+        """
         return self._init_use_cache
 
     @property
     def init_whitelist(self) -> bool:
-        """Initial `whitelist` flag."""
+        """Initial `whitelist` flag.
+        
+        Returns:
+            bool: The initial value of `whitelist`.
+        """
         return self._init_whitelist
 
     def get_ca_setup(self, instance: tp.Optional[object] = None) -> tp.Optional["CARunSetup"]:
         """Retrieve the caching setup as `vectorbtpro.registries.ca_registry.CARunSetup`
         when an instance is provided, or as `vectorbtpro.registries.ca_registry.CAUnboundSetup` if not.
 
-        See `vectorbtpro.registries.ca_registry` for details on the caching procedure."""
+        See `vectorbtpro.registries.ca_registry` for details on the caching procedure.
+        """
         from vectorbtpro.registries.ca_registry import CAUnboundSetup, CARunSetup
 
         unbound_setup = CAUnboundSetup.get(self, use_cache=self.init_use_cache, whitelist=self.init_whitelist)
@@ -212,7 +265,12 @@ class cacheable_property(custom_property):
 
 
 class cached_property(cacheable_property):
-    """Cached property, equivalent to using `cacheable_property` with `use_cache=True`."""
+    """Cached property, equivalent to using `cacheable_property` with `use_cache=True`.
+    
+    Args:
+        func (Callable): The function to be wrapped as a cacheable property.
+        **options: Configuration options for the property.
+    """
 
     def __init__(self, func: tp.Callable, **options) -> None:
         cacheable_property.__init__(self, func, use_cache=True, **options)
@@ -286,7 +344,8 @@ def cacheable(
     See notes on `cacheable_property`.
 
     !!! note
-        To decorate an instance method, use `cacheable_method`."""
+        To decorate an instance method, use `cacheable_method`.
+    """
 
     def decorator(func: tp.Callable) -> cacheable_functionT:
         from vectorbtpro.registries.ca_registry import CARunSetup
@@ -304,7 +363,8 @@ def cacheable(
         def get_ca_setup() -> tp.Optional[CARunSetup]:
             """Return the caching run setup instance of type `vectorbtpro.registries.ca_registry.CARunSetup`.
 
-            See `vectorbtpro.registries.ca_registry` for details on the caching procedure."""
+            See `vectorbtpro.registries.ca_registry` for details on the caching procedure.
+            """
             return CARunSetup.get(
                 wrapper,
                 use_cache=use_cache,
@@ -337,7 +397,8 @@ def cached(*args, **options) -> tp.Union[tp.Callable, cacheable_functionT]:
     """Decorate a function with caching enabled, equivalent to using `cacheable` with `use_cache=True`.
 
     !!! note
-        To decorate an instance method, use `cached_method`."""
+        To decorate an instance method, use `cached_method`.
+    """
     return cacheable(*args, use_cache=True, _decorator_name="cached", **options)
 
 
@@ -398,7 +459,8 @@ def cacheable_method(
 ) -> tp.Union[tp.Callable, cacheable_methodT]:
     """Decorate an instance method to enable caching functionality.
 
-    See notes on `cacheable_property`."""
+    See notes on `cacheable_property`.
+    """
 
     def decorator(func: tp.Callable) -> cacheable_methodT:
         from vectorbtpro.registries.ca_registry import CAUnboundSetup, CARunSetup
@@ -418,7 +480,8 @@ def cacheable_method(
             if an instance is provided, or return the unbound caching setup of type
             `vectorbtpro.registries.ca_registry.CAUnboundSetup` if not.
 
-            See `vectorbtpro.registries.ca_registry` for details on the caching procedure."""
+            See `vectorbtpro.registries.ca_registry` for details on the caching procedure.
+            """
             unbound_setup = CAUnboundSetup.get(wrapper, use_cache=use_cache, whitelist=whitelist)
             if instance is None:
                 return unbound_setup

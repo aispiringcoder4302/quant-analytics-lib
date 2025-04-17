@@ -60,7 +60,7 @@ class GBMOHLCData(SyntheticData):
         Args:
             symbol (hashable): The symbol identifier.
             index (pd.Index): The Pandas index representing time periods.
-            n_ticks (int or array_like): The number of ticks per bar.
+            n_ticks (Optional[ArrayLike]): The number of ticks per bar.
 
                 Can be substituted using a template with a context containing `symbol` and `index`.
             start_value (float): The initial value at time 0.
@@ -69,7 +69,7 @@ class GBMOHLCData(SyntheticData):
             mean (float): The drift representing the mean percentage change.
             std (float): The standard deviation of the percentage change.
             dt (float): The time increment per period.
-            seed (int): A seed for deterministic output.
+            seed (Optional[int]): A seed for deterministic output.
             jitted (any): Jitting option; refer to `vectorbtpro.utils.jitting.resolve_jitted_option`.
             template_context (KwargsLike): Additional context for template substitution.
 

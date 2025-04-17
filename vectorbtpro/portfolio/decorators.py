@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Class decorators for portfolio."""
+"""Module with class decorators for portfolio."""
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.base.wrapping import ArrayWrapper
@@ -23,13 +23,19 @@ __all__ = []
 def attach_returns_acc_methods(config: Config) -> tp.ClassWrapper:
     """Class decorator to attach returns accessor methods.
 
-    `config` must contain target method names (keys) and settings (values) with the following keys:
+    The decorated class must be a subclass of `vectorbtpro.portfolio.base.Portfolio`.
 
-    * `source_name`: Name of the source method. Defaults to the target name.
-    * `docstring`: Method docstring.
+    Args:
+        config (Config): A dictionary mapping target method names to their corresponding settings.
 
-    The class must be a subclass of `vectorbtpro.portfolio.base.Portfolio`."""
+            Each settings dictionary must include:
 
+            * `source_name`: The name of the source method. Defaults to the target method name.
+            * `docstring`: The docstring for the generated method.
+
+    Returns:
+        ClassWrapper: A decorator that attaches returns accessor methods to the class.
+    """
     def wrapper(cls: tp.Type[tp.T]) -> tp.Type[tp.T]:
         checks.assert_subclass_of(cls, "Portfolio")
 
@@ -93,19 +99,25 @@ def attach_returns_acc_methods(config: Config) -> tp.ClassWrapper:
 def attach_shortcut_properties(config: Config) -> tp.ClassWrapper:
     """Class decorator to attach shortcut properties.
 
-    `config` must contain target property names (keys) and settings (values) with the following keys:
+    The decorated class must be a subclass of `vectorbtpro.portfolio.base.Portfolio`.
 
-    * `method_name`: Name of the source method. Defaults to the target name prepended with the prefix `get_`.
-    * `use_in_outputs`: Whether the property can return an in-place output. Defaults to True.
-    * `method_kwargs`: Keyword arguments passed to the source method. Defaults to None.
-    * `decorator`: Defaults to `vectorbtpro.utils.decorators.cached_property` for object types
-        'records' and 'red_array'. Otherwise, to `vectorbtpro.utils.decorators.cacheable_property`.
-    * `docstring`: Method docstring.
-    * Other keyword arguments are passed to the decorator and can include settings for wrapping,
-        indexing, resampling, stacking, etc.
+    Args:
+        config (Config): A dictionary mapping target property names to their corresponding settings.
 
-    The class must be a subclass of `vectorbtpro.portfolio.base.Portfolio`."""
+            Each settings dictionary may include:
 
+            * `method_name`: The name of the source method. Defaults to the target name prefixed with "get_".
+            * `use_in_outputs`: A boolean indicating whether the property can return an in-place output.
+            * `method_kwargs`: Keyword arguments passed to the source method.
+            * `decorator`: The decorator to apply. Defaults to `vectorbtpro.utils.decorators.cached_property` 
+                for object types 'records' and 'red_array', otherwise 
+                `vectorbtpro.utils.decorators.cacheable_property`.
+            * `docstring`: The docstring for the generated property.
+            * Additional keyword arguments for wrapping, indexing, resampling, stacking, etc.
+
+    Returns:
+        ClassWrapper: A decorator that attaches shortcut properties to the class.
+    """
     def wrapper(cls: tp.Type[tp.T]) -> tp.Type[tp.T]:
         checks.assert_subclass_of(cls, "Portfolio")
 

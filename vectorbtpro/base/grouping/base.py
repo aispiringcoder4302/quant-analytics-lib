@@ -100,32 +100,56 @@ class Grouper(Configured):
 
     @property
     def index(self) -> tp.Index:
-        """Original pandas Index used for grouping."""
+        """Original pandas Index used for grouping.
+        
+        Returns:
+            Index: The original pandas Index.
+        """
         return self._index
 
     @property
     def group_by(self) -> tp.GroupBy:
-        """Group-by mapping generated from the provided grouping criteria."""
+        """Group-by mapping generated from the provided grouping criteria.
+        
+        Returns:
+            GroupBy: The group-by mapping generated from the provided grouping criteria.
+        """
         return self._group_by
 
     @property
     def def_lvl_name(self) -> tp.Hashable:
-        """Default group level name."""
+        """Default group level name.
+        
+        Returns:
+            Hashable: The default level name for groups.
+        """
         return self._def_lvl_name
 
     @property
     def allow_enable(self) -> bool:
-        """Indicates if enabling grouping is permitted."""
+        """Indicates if enabling grouping is permitted.
+        
+        Returns:
+            bool: True if enabling grouping is allowed, False otherwise.
+        """
         return self._allow_enable
 
     @property
     def allow_disable(self) -> bool:
-        """Indicates if disabling grouping is permitted."""
+        """Indicates if disabling grouping is permitted.
+        
+        Returns:
+            bool: True if disabling grouping is allowed, False otherwise.
+        """
         return self._allow_disable
 
     @property
     def allow_modify(self) -> bool:
-        """Indicates if modifying groups is allowed."""
+        """Indicates if modifying groups is allowed.
+        
+        Returns:
+            bool: True if modifying groups is allowed, False otherwise.
+        """
         return self._allow_modify
 
     @classmethod
@@ -303,6 +327,9 @@ class Grouper(Configured):
             group_by (GroupByLike): Grouping specification.
 
                 If not provided, uses `Grouper.group_by`.
+
+        Returns:
+            bool: True if the index is grouped, False otherwise.
         """
         if group_by is False:
             return False
@@ -317,6 +344,9 @@ class Grouper(Configured):
             group_by (GroupByLike): Grouping specification.
 
                 If not provided, uses `Grouper.group_by`.
+
+        Returns:
+            bool: True if grouping is enabled, False otherwise.
         """
         return self.group_by is None and self.is_grouped(group_by=group_by)
 
@@ -327,6 +357,9 @@ class Grouper(Configured):
             group_by (GroupByLike): Grouping specification.
 
                 If not provided, uses `Grouper.group_by`.
+
+        Returns:
+            bool: True if grouping is disabled, False otherwise.
         """
         return self.group_by is not None and not self.is_grouped(group_by=group_by)
 
@@ -338,6 +371,9 @@ class Grouper(Configured):
             group_by (GroupByLike): Grouping specification.
 
                 If not provided, uses `Grouper.group_by`.
+
+        Returns:
+            bool: True if the grouping has been modified, False otherwise.
         """
         if group_by is None or (group_by is False and self.group_by is None):
             return False
@@ -367,6 +403,9 @@ class Grouper(Configured):
             group_by (GroupByLike): Grouping specification.
 
                 If not provided, uses `Grouper.group_by`.
+
+        Returns:
+            bool: True if the grouping has changed, False otherwise.
         """
         if group_by is None or (group_by is False and self.group_by is None):
             return False
@@ -382,6 +421,9 @@ class Grouper(Configured):
             group_by (GroupByLike): Grouping specification.
 
                 If not provided, uses `Grouper.group_by`.
+
+        Returns:
+            bool: True if the number of groups has changed, False otherwise.
         """
         if group_by is None or (group_by is False and self.group_by is None):
             return False
@@ -405,6 +447,9 @@ class Grouper(Configured):
             allow_enable (Optional[bool]): Whether enabling grouping is allowed.
             allow_disable (Optional[bool]): Whether disabling grouping is allowed.
             allow_modify (Optional[bool]): Whether modifying groups is allowed.
+
+        Returns:
+            None
         """
         if allow_enable is None:
             allow_enable = self.allow_enable
@@ -523,6 +568,9 @@ class Grouper(Configured):
 
                 If not provided, uses `Grouper.group_by`.
             **kwargs: Keyword arguments passed to `Grouper.resolve_group_by`.
+
+        Returns:
+            bool: True if groups are monolithic and sorted, False otherwise.
         """
         group_by = self.resolve_group_by(group_by=group_by, **kwargs)
         groups = self.get_groups(group_by=group_by)
@@ -547,8 +595,8 @@ class Grouper(Configured):
         Returns:
             GroupLens: An array containing the length of each group.
 
-        !!! note
-            Grouping must form monolithic, sorted groups; otherwise, a `ValueError` is raised.
+        Raises:
+            ValueError: If the grouping is not monolithic and sorted.
         """
         group_by = self.resolve_group_by(group_by=group_by, **kwargs)
         if group_by is None or group_by is False:  # no grouping

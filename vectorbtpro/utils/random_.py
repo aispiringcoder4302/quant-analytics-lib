@@ -27,6 +27,9 @@ def set_seed_nb(seed: int) -> None:
 
     Args:
         seed (int): The seed value for random number generation.
+
+    Returns:
+        None
     """
     np.random.seed(seed)
 
@@ -36,6 +39,9 @@ def set_seed(seed: int) -> None:
 
     Args:
         seed (int): The seed value for random number generation.
+
+    Returns:
+        None
     """
     random.seed(seed)
     np.random.seed(seed)

@@ -274,13 +274,26 @@ class QSAdapter(Configured):
 
     @property
     def returns_acc(self) -> ReturnsAccessor:
-        """Returns accessor instance."""
+        """Returns accessor instance.
+        
+        This is the main entry point for accessing returns-related methods and properties.
+        
+        Returns:
+            ReturnsAccessor: The returns accessor instance.
+        """
         return self._returns_acc
 
     @property
-    def defaults_mapping(self) -> tp.Dict:
+    def defaults_mapping(self) -> tp.Dict[str, str]:
         """Mapping of common quantstats argument names to
-        `vectorbtpro.returns.accessors.ReturnsAccessor.defaults`."""
+        `vectorbtpro.returns.accessors.ReturnsAccessor.defaults`.
+        
+        This mapping is used to translate parameters from `ReturnsAccessor` to
+        QuantStats functions.
+        
+        Returns:
+            Dict[str, str]: A dictionary mapping common argument names to their corresponding defaults.
+        """
         return dict(rf="risk_free", rolling_period="window")
 
     @property
@@ -288,7 +301,11 @@ class QSAdapter(Configured):
         """Merged default parameters for `QSAdapter`.
 
         Merges defaults from `vectorbtpro._settings.qs_adapter`, mapped values from 
-        `vectorbtpro.returns.accessors.ReturnsAccessor.defaults`, and user-provided defaults."""
+        `vectorbtpro.returns.accessors.ReturnsAccessor.defaults`, and user-provided defaults.
+        
+        Returns:
+            Kwargs: Merged default settings for plots.
+        """
         from vectorbtpro._settings import settings
 
         qs_adapter_defaults_cfg = settings["qs_adapter"]["defaults"]

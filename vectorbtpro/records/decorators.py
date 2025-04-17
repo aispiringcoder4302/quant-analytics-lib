@@ -247,7 +247,7 @@ def attach_shortcut_properties(config: Config) -> tp.ClassWrapper:
             and their corresponding settings.
 
     Returns:
-        tp.ClassWrapper: A class decorator that attaches the configured shortcut properties
+        ClassWrapper: A class decorator that attaches the configured shortcut properties
             to a subclass of `vectorbtpro.records.base.Records`.
     """
 

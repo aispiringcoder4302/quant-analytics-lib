@@ -50,17 +50,17 @@ class _FMIN(FMIN):
         """Plot `FMIN.fmin` against `FMIN.close`.
 
         Args:
-            column (str): Name of the column to plot.
+            column (Optional[Label]): Name of the column to plot.
             plot_close (bool): Whether to plot `FMIN.close` along with the indicator.
-            close_trace_kwargs (dict): Keyword arguments passed to
+            close_trace_kwargs (KwargsLike): Keyword arguments passed to
                 `plotly.graph_objects.Scatter` for plotting `FMIN.close`.
 
                 These arguments are merged with default settings.
-            fmin_trace_kwargs (dict): Keyword arguments passed to
+            fmin_trace_kwargs (KwargsLike): Keyword arguments passed to
                 `plotly.graph_objects.Scatter` for plotting `FMIN.fmin`.
 
                 These arguments are merged with default settings.
-            add_trace_kwargs (dict): Keyword arguments passed to `fig.add_trace` when adding each trace.
+            add_trace_kwargs (KwargsLike): Keyword arguments passed to `fig.add_trace` when adding each trace.
             fig (Optional[BaseFigure]): Figure to update. If None, a new figure is created.
             **layout_kwargs: Additional keyword arguments for configuring the figure layout.
 

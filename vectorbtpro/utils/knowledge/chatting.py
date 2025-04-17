@@ -10,7 +10,8 @@
 
 """Module providing classes and utilities for processing chat interactions.
 
-See `vectorbtpro.utils.knowledge` for the toy dataset."""
+See `vectorbtpro.utils.knowledge` for the toy dataset.
+"""
 
 import hashlib
 import inspect
@@ -139,7 +140,11 @@ class Tokenizer(Configured):
 
     @property
     def template_context(self) -> tp.Kwargs:
-        """Template context used for substituting templates."""
+        """Template context used for substituting templates.
+        
+        Returns:
+            Kwargs: The template context.
+        """
         return self._template_context
 
     def encode(self, text: str) -> tp.Tokens:
@@ -168,13 +173,14 @@ class Tokenizer(Configured):
     def encode_single(self, text: str) -> tp.Token:
         """Return a single token encoded from the given text.
 
-        If encoding results in multiple tokens, a `ValueError` is raised.
-
         Args:
             text (str): The text to encode.
 
         Returns:
             Token: The single token representing the input text.
+
+        Raises:
+            ValueError: If the text contains multiple tokens.
         """
         tokens = self.encode(text)
         if len(tokens) > 1:
@@ -282,17 +288,29 @@ class TikTokenizer(Tokenizer):
 
     @property
     def encoding(self) -> EncodingT:
-        """Token encoding object used for tokenization."""
+        """Token encoding object used for tokenization.
+        
+        Returns:
+            Encoding: The encoding object.
+        """
         return self._encoding
 
     @property
     def tokens_per_message(self) -> int:
-        """Token count charged per message."""
+        """Token count charged per message.
+        
+        Returns:
+            int: The number of tokens charged per message.
+        """
         return self._tokens_per_message
 
     @property
     def tokens_per_name(self) -> int:
-        """Additional token count for message names."""
+        """Additional token count for message names.
+        
+        Returns:
+            int: The number of tokens charged for message names.
+        """
         return self._tokens_per_name
 
     def encode(self, text: str) -> tp.Tokens:
@@ -440,27 +458,49 @@ class Embeddings(Configured):
 
     @property
     def batch_size(self) -> tp.Optional[int]:
-        """Batch size used for processing queries. Use None to disable batching."""
+        """Batch size used for processing queries. 
+        
+        Use None to disable batching.
+        
+        Returns:
+            Optional[int]: The batch size.
+        """
         return self._batch_size
 
     @property
     def show_progress(self) -> tp.Optional[bool]:
-        """Whether to display a progress bar."""
+        """Whether to display a progress bar.
+        
+        Returns:
+            Optional[bool]: True if progress bar is shown, False otherwise.
+        """
         return self._show_progress
 
     @property
     def pbar_kwargs(self) -> tp.Kwargs:
-        """Keyword arguments for configuring `vectorbtpro.utils.pbar.ProgressBar`."""
+        """Keyword arguments for configuring `vectorbtpro.utils.pbar.ProgressBar`.
+        
+        Returns:
+            Kwargs: The keyword arguments for the progress bar.
+        """
         return self._pbar_kwargs
 
     @property
     def template_context(self) -> tp.Kwargs:
-        """Context used for template substitution."""
+        """Context used for template substitution.
+        
+        Returns:
+            Kwargs: The template context.
+        """
         return self._template_context
 
     @property
     def model(self) -> tp.Optional[str]:
-        """Model identifier; returns None by default."""
+        """Model identifier.
+        
+        Returns:
+            Optional[str]: The model identifier; None by default.
+        """
         return None
 
     def get_embedding(self, query: str) -> tp.List[float]:
@@ -595,12 +635,20 @@ class OpenAIEmbeddings(Embeddings):
 
     @property
     def client(self) -> OpenAIT:
-        """OpenAI client instance."""
+        """OpenAI client instance.
+        
+        Returns:
+            OpenAI: The OpenAI client instance.
+        """
         return self._client
 
     @property
     def embeddings_kwargs(self) -> tp.Kwargs:
-        """Keyword arguments for `openai.resources.embeddings.Embeddings.create`."""
+        """Keyword arguments for `openai.resources.embeddings.Embeddings.create`.
+        
+        Returns:
+            Kwargs: The keyword arguments for creating embeddings.
+        """
         return self._embeddings_kwargs
 
     def get_embedding(self, query: str) -> tp.List[float]:
@@ -671,7 +719,11 @@ class LiteLLMEmbeddings(Embeddings):
 
     @property
     def embedding_kwargs(self) -> tp.Kwargs:
-        """Keyword arguments for `litellm.embedding`."""
+        """Keyword arguments for `litellm.embedding`.
+        
+        Returns:
+            Kwargs: The keyword arguments for creating embeddings.
+        """
         return self._embedding_kwargs
 
     def get_embedding(self, query: str) -> tp.List[float]:
@@ -799,7 +851,11 @@ class LlamaIndexEmbeddings(Embeddings):
 
     @property
     def embedding(self) -> BaseEmbeddingT:
-        """Underlying embedding instance."""
+        """Underlying embedding instance.
+        
+        Returns:
+            BaseEmbedding: The embedding instance.
+        """
         return self._embedding
 
     def get_embedding(self, query: str) -> tp.List[float]:
@@ -999,14 +1055,22 @@ class Completions(Configured):
 
     @property
     def context(self) -> str:
-        """Context string to be used as a user message."""
+        """Context string to be used as a user message.
+        
+        Returns:
+            str: The context string used for expression evaluation.
+        """
         return self._context
 
     @property
     def chat_history(self) -> tp.ChatHistory:
         """Chat history, a list of dictionaries with defined roles.
 
-        After a response is generated, the assistant message is appended to this history."""
+        After a response is generated, the assistant message is appended to this history.
+        
+        Returns:
+            ChatHistory: A list of dictionaries representing the chat history.
+        """
         return self._chat_history
 
     @property
@@ -1014,83 +1078,151 @@ class Completions(Configured):
         """Boolean indicating whether responses are streamed.
 
         In streaming mode, chunks are appended and displayed incrementally; otherwise,
-        the entire message is displayed."""
+        the entire message is displayed.
+        
+        Returns:
+            bool: True if streaming is enabled, False otherwise.
+        """
         return self._stream
 
     @property
     def max_tokens_set(self) -> tp.Optional[int]:
-        """Boolean indicating if `max_tokens` was explicitly provided by the user."""
+        """Boolean indicating if `max_tokens` was explicitly provided by the user.
+        
+        Returns:
+            Optional[int]: The maximum token limit set by the user; None if not set.
+        """
         return self._max_tokens_set
 
     @property
     def max_tokens(self) -> tp.Optional[int]:
-        """Maximum token limit configured for messages."""
+        """Maximum token limit configured for messages.
+        
+        Returns:
+            Optional[int]: The maximum token limit; None if not set.
+        """
         return self._max_tokens
 
     @property
     def tokenizer(self) -> tp.MaybeType[Tokenizer]:
-        """Tokenizer subclass or instance, resolved using `resolve_tokenizer`."""
+        """Tokenizer subclass or instance, resolved using `resolve_tokenizer`.
+        
+        Returns:
+            MaybeType[Tokenizer]: The resolved tokenizer instance or subclass.
+        """
         return self._tokenizer
 
     @property
     def tokenizer_kwargs(self) -> tp.Kwargs:
-        """Keyword arguments for `Completions.tokenizer` used during tokenizer initialization or update."""
+        """Keyword arguments for `Completions.tokenizer` used during tokenizer initialization or update.
+        
+        Returns:
+            Kwargs: The keyword arguments for tokenizer initialization or update.
+        """
         return self._tokenizer_kwargs
 
     @property
     def system_prompt(self) -> str:
-        """System prompt that precedes the context prompt."""
+        """System prompt that precedes the context prompt.
+
+        This prompt is used to set the system's behavior or context for the conversation.
+        
+        Returns:
+            str: The system prompt.
+        """
         return self._system_prompt
 
     @property
     def system_as_user(self) -> bool:
         """Boolean indicating whether to use the user role for the system message.
 
-        This is mainly used for experimental models where a dedicated system role is not available."""
+        This is mainly used for experimental models where a dedicated system role is not available.
+        
+        Returns:
+            bool: True if the system message is treated as a user message, False otherwise.
+        """
         return self._system_as_user
 
     @property
     def context_prompt(self) -> str:
         """Context prompt template requiring a 'context' variable.
 
-        The template, which can be custom, a string, or a function, is evaluated to a user message."""
+        The template can be a string, a function, or an instance of `vectorbtpro.utils.template.CustomTemplate`.
+        
+        This prompt is used to provide context for the conversation.
+        
+        Returns:
+            str: The context prompt template.
+        """
         return self._context_prompt
 
     @property
     def formatter(self) -> tp.MaybeType[ContentFormatter]:
         """Content formatter subclass or instance, resolved using
-        `vectorbtpro.utils.knowledge.formatting.resolve_formatter`."""
+        `vectorbtpro.utils.knowledge.formatting.resolve_formatter`.
+        
+        This formatter is used to format the content of the response.
+        
+        Returns:
+            MaybeType[ContentFormatter]: The resolved content formatter instance or subclass.
+        """
         return self._formatter
 
     @property
     def formatter_kwargs(self) -> tp.Kwargs:
         """Keyword arguments for `Completions.formatter` used to initialize or update a
-        `vectorbtpro.utils.knowledge.formatting.ContentFormatter` instance."""
+        `vectorbtpro.utils.knowledge.formatting.ContentFormatter` instance.
+        
+        Returns:
+            Kwargs: The keyword arguments for the content formatter.
+        """
         return self._formatter_kwargs
 
     @property
     def minimal_format(self) -> bool:
-        """Boolean indicating if the input is minimally formatted."""
+        """Boolean indicating if the input is minimally formatted.
+        
+        Returns:
+            bool: True if the input is minimally formatted, False otherwise.
+        """
         return self._minimal_format
 
     @property
     def quick_mode(self) -> bool:
-        """Boolean indicating whether quick mode is enabled."""
+        """Boolean indicating whether quick mode is enabled.
+        
+        Returns:
+            bool: True if quick mode is enabled, False otherwise.
+        """
         return self._quick_mode
 
     @property
     def silence_warnings(self) -> bool:
-        """Boolean indicating whether warnings are suppressed."""
+        """Boolean indicating whether warnings are suppressed.
+        
+        Returns:
+            bool: True if warnings are suppressed, False otherwise.
+        """
         return self._silence_warnings
 
     @property
     def template_context(self) -> tp.Kwargs:
-        """Context used for template substitution."""
+        """Context used for template substitution.
+
+        This context is used to replace variables in templates and prompts.
+        
+        Returns:
+            Kwargs: The template context for substitution.
+        """
         return self._template_context
 
     @property
     def model(self) -> tp.Optional[str]:
-        """Model name if specified; otherwise, None."""
+        """Model name.
+
+        Returns:
+            Optional[str]: The model name if specified; otherwise, None.
+        """
         return None
 
     def get_chat_response(self, messages: tp.ChatMessages, **kwargs) -> tp.Any:
@@ -1362,12 +1494,20 @@ class OpenAICompletions(Completions):
 
     @property
     def client(self) -> OpenAIT:
-        """OpenAI client instance used for API calls."""
+        """OpenAI client instance used for API calls.
+        
+        Returns:
+            OpenAI: The OpenAI client instance.
+        """
         return self._client
 
     @property
     def completions_kwargs(self) -> tp.Kwargs:
-        """Keyword arguments for the `openai.Completions.create` API call."""
+        """Keyword arguments for the `openai.Completions.create` API call.
+        
+        Returns:
+            Kwargs: The keyword arguments for the completion API call.
+        """
         return self._completions_kwargs
 
     def get_chat_response(self, messages: tp.ChatMessages) -> ChatCompletionT:
@@ -1449,7 +1589,11 @@ class LiteLLMCompletions(Completions):
 
     @property
     def completion_kwargs(self) -> tp.Kwargs:
-        """Keyword arguments for the `litellm.completion` API call."""
+        """Keyword arguments for the `litellm.completion` API call.
+        
+        Returns:
+            Kwargs: The keyword arguments for the completion API call.
+        """
         return self._completion_kwargs
 
     def get_chat_response(self, messages: tp.ChatMessages) -> ModelResponseT:
@@ -1595,7 +1739,11 @@ class LlamaIndexCompletions(Completions):
 
     @property
     def llm(self) -> LLMT:
-        """Initialized LLM instance used for generating completions."""
+        """Initialized LLM instance used for generating completions.
+        
+        Returns:
+            LLM: The initialized LLM instance.
+        """
         return self._llm
 
     def get_chat_response(self, messages: tp.ChatMessages) -> ChatResponseT:
@@ -1748,12 +1896,21 @@ class TextSplitter(Configured):
         """Template used for formatting text chunks.
 
         Can use the following context: `chunk_idx`, `chunk_start`, `chunk_end`, `chunk_text`, and `text`.
+
+        The template can be a string, a function, or an instance of `vectorbtpro.utils.template.CustomTemplate`.
+
+        Returns:
+            Kwargs: The context mapping used for expression evaluation.
         """
         return self._chunk_template
 
     @property
     def template_context(self) -> tp.Kwargs:
-        """Context dictionary for template substitution."""
+        """Context dictionary for template substitution.
+
+        Returns:
+            Kwargs: The context mapping used for expression evaluation.
+        """
         return self._template_context
 
     def split(self, text: str) -> tp.TSRangeChunks:
@@ -1864,7 +2021,11 @@ class TokenSplitter(TextSplitter):
 
     @property
     def chunk_size(self) -> int:
-        """Maximum number of tokens per chunk."""
+        """Maximum number of tokens per chunk.
+        
+        Returns:
+            int: The maximum number of tokens allowed in each chunk.
+        """
         return self._chunk_size
 
     @property
@@ -1872,12 +2033,19 @@ class TokenSplitter(TextSplitter):
         """Number of overlapping tokens between chunks.
 
         If specified as a float between 0 and 1, it is scaled by `TokenSplitter.chunk_size`.
+
+        Returns:
+            int: The number of overlapping tokens between chunks.
         """
         return self._chunk_overlap
 
     @property
     def tokenizer(self) -> Tokenizer:
-        """`Tokenizer` instance used to tokenize input text."""
+        """`Tokenizer` instance used to tokenize input text.
+
+        Returns:
+            Tokenizer: The tokenizer instance used for encoding and decoding.
+        """
         return self._tokenizer
 
     def split_into_tokens(self, text: str) -> tp.TSRangeChunks:
@@ -1983,18 +2151,30 @@ class SegmentSplitter(TokenSplitter):
 
     @property
     def separators(self) -> tp.List[tp.List[tp.Optional[str]]]:
-        """Nested list of separators grouped by layers."""
+        """Nested list of separators grouped by layers.
+        
+        Returns:
+            List[List[Optional[str]]]: The (nested) list of separators used for splitting text.
+        """
         return self._separators
 
     @property
     def min_chunk_size(self) -> int:
         """Minimum number of tokens per chunk. If provided as a float, it is interpreted relative to
-        `SegmentSplitter.chunk_size`."""
+        `SegmentSplitter.chunk_size`.
+        
+        Returns:
+            int: The minimum number of tokens required per chunk.
+        """
         return self._min_chunk_size
 
     @property
     def fixed_overlap(self) -> bool:
-        """Whether fixed overlap is applied."""
+        """Whether fixed overlap is applied.
+        
+        Returns:
+            bool: True if fixed overlap is applied, False otherwise.
+        """
         return self._fixed_overlap
 
     def split_into_segments(self, text: str, separator: tp.Optional[str] = None) -> tp.TSSegmentChunks:
@@ -2316,7 +2496,11 @@ class LlamaIndexSplitter(TextSplitter):
 
     @property
     def node_parser(self) -> NodeParserT:
-        """LlamaIndex node parser instance used for splitting text."""
+        """LlamaIndex node parser instance used for splitting text.
+        
+        Returns:
+            NodeParser: The node parser instance used for splitting text.
+        """
         return self._node_parser
 
     def split(self, text: str) -> tp.TSRangeChunks:
@@ -2526,7 +2710,8 @@ class TextDocument(StoreDocument, DefineMixin):
     excl_metadata: tp.Union[bool, tp.MaybeList[tp.PathLikeKey]] = define.field(default=False)
     """Indicates whether to exclude metadata or specify fields to exclude. 
     
-    If False, metadata includes all fields except text."""
+    If False, metadata includes all fields except text.
+    """
 
     excl_embed_metadata: tp.Union[None, bool, tp.MaybeList[tp.PathLikeKey]] = define.field(default=None)
     """Indicates whether to exclude metadata for embeddings; if None, defaults to `excl_metadata`."""
@@ -2724,7 +2909,8 @@ class ObjectStore(Configured, MutableMapping, metaclass=MetaObjectStore):
         template_context (KwargsLike): Additional context for template substitution.
         **kwargs: Keyword arguments for configuration.
 
-    For defaults, see `chat.obj_store_config` in `vectorbtpro._settings.knowledge`."""
+    For defaults, see `chat.obj_store_config` in `vectorbtpro._settings.knowledge`.
+    """
 
     _short_name: tp.ClassVar[tp.Optional[str]] = None
     """Short name identifier for the store class."""
@@ -2759,32 +2945,56 @@ class ObjectStore(Configured, MutableMapping, metaclass=MetaObjectStore):
 
     @property
     def store_id(self) -> str:
-        """Store identifier."""
+        """Store identifier.
+
+        Returns:
+            str: The unique identifier of the store.
+        """
         return self._store_id
 
     @property
     def purge_on_open(self) -> bool:
-        """Whether the store should be purged upon opening."""
+        """Flag indicating whether the store should be purged upon opening.
+
+        Returns:
+            bool: True if the store will be purged on open; otherwise, False.
+        """
         return self._purge_on_open
 
     @property
     def template_context(self) -> tp.Kwargs:
-        """Template context used for substitution."""
+        """Context dictionary used for template substitution.
+
+        Returns:
+            Kwargs: A dictionary mapping template keys to their values.
+        """
         return self._template_context
 
     @property
     def opened(self) -> bool:
-        """Whether the store is currently open."""
+        """Indicates whether the store is currently open.
+
+        Returns:
+            bool: True if the store is open; otherwise, False.
+        """
         return self._opened
 
     @property
     def enter_calls(self) -> int:
-        """Number of times the store has been entered."""
+        """Number of times the store has been entered.
+
+        Returns:
+            int: The count of how many times the store's context has been entered.
+        """
         return self._enter_calls
 
     @property
     def mirror_store_id(self) -> tp.Optional[str]:
-        """Mirror store identifier (None if not applicable)."""
+        """Mirror store identifier.
+
+        Returns:
+            Optional[str]: The mirror store ID if applicable; otherwise, None.
+        """
         return None
 
     def open(self) -> None:
@@ -2846,7 +3056,11 @@ class ObjectStore(Configured, MutableMapping, metaclass=MetaObjectStore):
 class DictStore(ObjectStore):
     """Store class based on a dictionary that holds objects in memory.
 
-    For defaults, see `chat.obj_store_configs.dict` in `vectorbtpro._settings.knowledge`."""
+    Args:
+        **kwargs: Keyword arguments passed to `ObjectStore`.
+
+    For defaults, see `chat.obj_store_configs.dict` in `vectorbtpro._settings.knowledge`.
+    """
 
     _short_name: tp.ClassVar[tp.Optional[str]] = "dict"
 
@@ -2859,7 +3073,11 @@ class DictStore(ObjectStore):
 
     @property
     def store(self) -> tp.Dict[str, StoreObjectT]:
-        """Underlying dictionary storing the objects."""
+        """Underlying dictionary storing the objects.
+        
+        Returns:
+            Dict[str, StoreObject]: The dictionary holding the objects.
+        """
         return self._store
 
     def purge(self) -> None:
@@ -2894,7 +3112,11 @@ memory_store: tp.Dict[str, tp.Dict[str, StoreObjectT]] = {}
 class MemoryStore(DictStore):
     """Store class for in-memory object storage that commits changes to `memory_store`.
 
-    For defaults, see `chat.obj_store_configs.memory` in `vectorbtpro._settings.knowledge`."""
+    Args:
+        **kwargs: Keyword arguments passed to `DictStore`.
+
+    For defaults, see `chat.obj_store_configs.memory` in `vectorbtpro._settings.knowledge`.
+    """
 
     _short_name: tp.ClassVar[tp.Optional[str]] = "memory"
 
@@ -2905,7 +3127,11 @@ class MemoryStore(DictStore):
 
     @property
     def store(self) -> tp.Dict[str, StoreObjectT]:
-        """In-memory dictionary storing the objects."""
+        """In-memory dictionary storing the objects.
+        
+        Returns:
+            Dict[str, StoreObject]: The dictionary holding the objects.
+        """
         return self._store
 
     def store_exists(self) -> bool:
@@ -3003,46 +3229,81 @@ class FileStore(DictStore):
 
     @property
     def dir_path(self) -> tp.Optional[tp.Path]:
-        """Directory path used for file storage."""
+        """Directory path used for file storage.
+
+        Returns:
+            Optional[Path]: The directory path, or None if not set.
+        """
         return self._dir_path
 
     @property
     def compression(self) -> tp.CompressionLike:
-        """Compression setting used for file operations."""
+        """Compression setting used for file operations.
+
+        Returns:
+            CompressionLike: The compression configuration used (e.g., None, True, or a specific compression type).
+        """
         return self._compression
 
     @property
     def save_kwargs(self) -> tp.Kwargs:
-        """Keyword arguments for saving objects using `vectorbtpro.utils.pickling.save`."""
+        """Keyword arguments for saving objects using `vectorbtpro.utils.pickling.save`.
+
+        Returns:
+            Kwargs: A dictionary of parameters used when saving objects.
+        """
         return self._save_kwargs
 
     @property
     def load_kwargs(self) -> tp.Kwargs:
-        """Keyword arguments for loading objects using `vectorbtpro.utils.pickling.load`."""
+        """Keyword arguments for loading objects using `vectorbtpro.utils.pickling.load`.
+
+        Returns:
+            Kwargs: A dictionary of parameters used when loading objects.
+        """
         return self._load_kwargs
 
     @property
     def use_patching(self) -> bool:
-        """Whether patch files are used instead of a single file."""
+        """Whether patch files are used instead of a single file.
+
+        Returns:
+            bool: True if patch files are used, otherwise False.
+        """
         return self._use_patching
 
     @property
     def consolidate(self) -> bool:
-        """Whether patch files should be consolidated."""
+        """Whether patch files should be consolidated.
+
+        Returns:
+            bool: True if patch consolidation is enabled, otherwise False.
+        """
         return self._consolidate
 
     @property
     def store_changes(self) -> tp.Dict[str, StoreObjectT]:
-        """Dictionary of newly added or modified objects."""
+        """Dictionary of newly added or modified objects.
+
+        Returns:
+            Dict[str, StoreObject]: A mapping of object keys to their associated updated objects.
+        """
         return self._store_changes
 
     @property
     def new_keys(self) -> tp.Set[str]:
-        """Set of keys representing objects not yet added to the main store."""
+        """Keys representing objects not yet added to the main store.
+
+        Returns:
+            Set[str]: A set of new object keys.
+        """
         return self._new_keys
 
     def reset_state(self) -> None:
-        """Reset the internal state tracking modifications and new keys."""
+        """Reset the internal state tracking modifications and new keys.
+
+        This method clears any tracked changes and resets consolidation status.
+        """
         self._consolidate = False
         self._store_changes = {}
         self._new_keys = set()
@@ -3051,8 +3312,11 @@ class FileStore(DictStore):
     def store_path(self) -> tp.Path:
         """Filesystem path to the store.
 
-        If patching is used, this path points to the directory containing patch files; otherwise,
-        it points to a single file.
+        If patching is used, the path points to the directory containing patch files;
+        otherwise, it points to a single file.
+
+        Returns:
+            Path: The complete filesystem path for the store.
         """
         dir_path = self.dir_path
         if dir_path is None:
@@ -3260,27 +3524,47 @@ class LMDBStore(ObjectStore):
 
     @property
     def dir_path(self) -> tp.Optional[tp.Path]:
-        """Directory path used for the LMDB store."""
+        """Directory path used for the LMDB store.
+
+        Returns:
+            Optional[Path]: The directory path for the LMDB store, or None if not set.
+        """
         return self._dir_path
 
     @property
     def mkdir_kwargs(self) -> tp.Kwargs:
-        """Keyword arguments used for directory creation via `vectorbtpro.utils.path_.check_mkdir`."""
+        """Keyword arguments used for directory creation via `vectorbtpro.utils.path_.check_mkdir`.
+
+        Returns:
+            Kwargs: A dictionary of parameters for directory creation.
+        """
         return self._mkdir_kwargs
 
     @property
     def dumps_kwargs(self) -> tp.Kwargs:
-        """Keyword arguments used for serializing objects via `vectorbtpro.utils.pickling.dumps`."""
+        """Keyword arguments used for serializing objects via `vectorbtpro.utils.pickling.dumps`.
+
+        Returns:
+            Kwargs: A dictionary of parameters for object serialization.
+        """
         return self._dumps_kwargs
 
     @property
     def loads_kwargs(self) -> tp.Kwargs:
-        """Keyword arguments used for deserializing objects via `vectorbtpro.utils.pickling.loads`."""
+        """Keyword arguments used for deserializing objects via `vectorbtpro.utils.pickling.loads`.
+
+        Returns:
+            Kwargs: A dictionary of parameters for object deserialization.
+        """
         return self._loads_kwargs
 
     @property
     def open_kwargs(self) -> tp.Kwargs:
-        """Keyword arguments used when opening the LMDB database via `lmdbm.lmdbm.Lmdb.open`."""
+        """Keyword arguments used when opening the LMDB database via `Lmdb.open`.
+
+        Returns:
+            Kwargs: A dictionary of parameters for opening the LMDB database.
+        """
         return self._open_kwargs
 
     @property
@@ -3288,6 +3572,9 @@ class LMDBStore(ObjectStore):
         """File system path to the LMDB database.
 
         Constructs the path by combining the directory (defaulting to "." if not set) with the store identifier.
+
+        Returns:
+            Path: The complete file system path pointing to the LMDB database.
         """
         dir_path = self.dir_path
         if dir_path is None:
@@ -3297,11 +3584,20 @@ class LMDBStore(ObjectStore):
 
     @property
     def mirror_store_id(self) -> str:
+        """Mirror store identifier.
+
+        Returns:
+            str: The string representation of the resolved LMDB database path.
+        """
         return str(self.db_path.resolve())
 
     @property
     def db(self) -> tp.Optional[LmdbT]:
-        """LMDB database instance if opened; otherwise, None."""
+        """LMDB database instance.
+
+        Returns:
+            Optional[Lmdb]: The LMDB database instance if the store is open; otherwise, None.
+        """
         return self._db
 
     def open(self) -> None:
@@ -3416,22 +3712,38 @@ class CachedStore(DictStore):
 
     @property
     def obj_store(self) -> ObjectStore:
-        """Underlying object store."""
+        """Underlying object store.
+        
+        Returns:
+            ObjectStore: The object store instance being cached.
+        """
         return self._obj_store
 
     @property
     def lazy_open(self) -> bool:
-        """Whether the store opens lazily."""
+        """Whether the store opens lazily.
+        
+        Returns:
+            bool: True if the store opens lazily; otherwise, False.
+        """
         return self._lazy_open
 
     @property
     def mirror(self) -> bool:
-        """Whether the store is mirrored in `memory_store`."""
+        """Whether the store is mirrored in `memory_store`.
+        
+        Returns:
+            bool: True if the store is mirrored; otherwise, False.
+        """
         return self._mirror
 
     @property
     def force_open(self) -> bool:
-        """Whether the store is forced open."""
+        """Whether the store is forced open.
+        
+        Returns:
+            bool: True if the store is forced open; otherwise, False.
+        """
         return self._force_open
 
     def open(self) -> None:
@@ -3792,44 +4104,76 @@ class DocumentRanker(Configured):
 
     @property
     def embeddings(self) -> Embeddings:
-        """Instance of `Embeddings`."""
+        """Instance of `Embeddings`.
+        
+        Returns:
+            Embeddings: The embeddings engine or class used for processing document embeddings.
+        """
         return self._embeddings
 
     @property
     def doc_store(self) -> ObjectStore:
-        """Instance of `ObjectStore` used for documents."""
+        """Instance of `ObjectStore` used for documents.
+        
+        Returns:
+            ObjectStore: The document store instance used for managing documents.
+        """
         return self._doc_store
 
     @property
     def emb_store(self) -> ObjectStore:
-        """Instance of `ObjectStore` used for embeddings."""
+        """Instance of `ObjectStore` used for embeddings.
+        
+        Returns:
+            ObjectStore: The embedding store instance used for managing embeddings.
+        """
         return self._emb_store
 
     @property
     def search_method(self) -> bool:
         """Search method used.
 
-        Supported values: "embeddings", "bm25", and "hybrid"."""
+        Supported values: "embeddings", "bm25", and "hybrid".
+        
+        Returns:
+            bool: The search method used for document retrieval.
+        """
         return self._search_method
 
     @property
     def bm25_tokenizer(self) -> tp.Optional[BM25TokenizerT]:
-        """BM25 tokenizer instance from `bm25s.tokenization.Tokenizer`."""
+        """BM25 tokenizer instance from `bm25s.tokenization.Tokenizer`.
+        
+        Returns:
+            Optional[BM25Tokenizer]: The BM25 tokenizer instance used for processing text; None if not set.
+        """
         return self._bm25_tokenizer
 
     @property
     def bm25_tokenize_kwargs(self) -> tp.Kwargs:
-        """Keyword arguments for the `tokenize` method of `bm25s.tokenization.Tokenizer`."""
+        """Keyword arguments for the `tokenize` method of `bm25s.tokenization.Tokenizer`.
+        
+        Returns:
+            Kwargs: The dictionary of parameters for the tokenization process.
+        """
         return self._bm25_tokenize_kwargs
 
     @property
     def bm25_retriever(self) -> tp.Optional[BM25T]:
-        """BM25 retriever instance from `bm25s.BM25`."""
+        """BM25 retriever instance from `bm25s.BM25`.
+        
+        Returns:
+            Optional[BM25]: The BM25 retriever instance used for document retrieval; None if not set.
+        """
         return self._bm25_retriever
 
     @property
     def bm25_retrieve_kwargs(self) -> tp.Kwargs:
-        """Keyword arguments for the `retrieve` method of `bm25s.BM25`."""
+        """Keyword arguments for the `retrieve` method of `bm25s.BM25`.
+        
+        Returns:
+            Kwargs: The dictionary of parameters for the retrieval process.
+        """
         return self._bm25_retrieve_kwargs
 
     @property
@@ -3837,39 +4181,67 @@ class DocumentRanker(Configured):
         """BM25 score weight.
 
         The embedding score weight is computed as 1 minus this value and is applied to
-        scores normalized to [0, 1]."""
+        scores normalized to [0, 1].
+        
+        Returns:
+            float: The BM25 score weight used in the scoring process.
+        """
         return self._bm25_score_weight
 
     @property
     def score_func(self) -> tp.Union[str, tp.Callable]:
         """Score function or its name used for computing document scores.
 
-        See `DocumentRanker.compute_score` for details."""
+        See `DocumentRanker.compute_score` for details.
+        
+        Returns:
+            Union[str, Callable]: The score function used for computing document scores.
+        """
         return self._score_func
 
     @property
     def score_agg_func(self) -> tp.Callable:
-        """Function used to aggregate scores."""
+        """Function used to aggregate scores.
+        
+        Returns:
+            Callable: The function used for aggregating scores.
+        """
         return self._score_agg_func
 
     @property
     def normalize_scores(self) -> bool:
-        """Whether scores should be normalized before filtering."""
+        """Whether scores should be normalized before filtering.
+        
+        Returns:
+            bool: True if scores should be normalized; otherwise, False.
+        """
         return self._normalize_scores
 
     @property
     def show_progress(self) -> tp.Optional[bool]:
-        """Whether to display a progress bar."""
+        """Whether to display a progress bar.
+        
+        Returns:
+            Optional[bool]: True if a progress bar should be shown; otherwise, False.
+        """
         return self._show_progress
 
     @property
     def pbar_kwargs(self) -> tp.Kwargs:
-        """Keyword arguments used for initializing `vectorbtpro.utils.pbar.ProgressBar`."""
+        """Keyword arguments used for initializing `vectorbtpro.utils.pbar.ProgressBar`.
+        
+        Returns:
+            Kwargs: The dictionary of parameters for the progress bar.
+        """
         return self._pbar_kwargs
 
     @property
     def template_context(self) -> tp.Kwargs:
-        """Context dictionary used for template substitution."""
+        """Context dictionary used for template substitution.
+        
+        Returns:
+            Kwargs: The dictionary of context variables for template substitution.
+        """
         return self._template_context
 
     def resolve_bm25_tokenizer(
@@ -3885,7 +4257,8 @@ class DocumentRanker(Configured):
             **kwargs: Additional configuration arguments for tokenization.
 
         Returns:
-            Tuple[BM25TokenizerT, Kwargs]: The resolved BM25 tokenizer and the tokenization keyword arguments."""
+            Tuple[BM25TokenizerT, Kwargs]: The resolved BM25 tokenizer and the tokenization keyword arguments.
+        """
         from vectorbtpro.utils.module_ import assert_can_import, check_installed
 
         assert_can_import("bm25s")
@@ -3933,7 +4306,8 @@ class DocumentRanker(Configured):
             **kwargs: Additional configuration arguments for retrieval.
 
         Returns:
-            Tuple[BM25T, Kwargs]: The resolved BM25 retriever and the retrieval keyword arguments."""
+            Tuple[BM25T, Kwargs]: The resolved BM25 retriever and the retrieval keyword arguments.
+        """
         from vectorbtpro.utils.module_ import assert_can_import
 
         assert_can_import("bm25s")
@@ -3986,7 +4360,8 @@ class DocumentRanker(Configured):
 
         Returns:
             Optional[EmbeddedDocuments]: Embedded documents or embeddings based on the specified return flags.
-            Returns None if both return flags are False.
+                
+                Returns None if both return flags are False.
         """
         if refresh_documents is None:
             refresh_documents = refresh

@@ -541,7 +541,8 @@ class RecInfo(DefineMixin):
 rec_info_registry = {}
 """Registry of `RecInfo` instances keyed by their `id_`.
 
-This registry is used during unpickling to reconstruct instances when needed."""
+This registry is used during unpickling to reconstruct instances when needed.
+"""
 
 
 def get_id_from_class(obj: tp.Any) -> tp.Optional[str]:
@@ -745,7 +746,7 @@ class Pickleable(Base):
             top_name (Optional[str]): The top-level section name.
             unpack_objects (bool): Flag to store a `Pickleable` object's reconstruction state in a separate section.
 
-                 Appends `@` and class name to the section name.
+                Appends `@` and class name to the section name.
             compress_unpacked (bool): Flag to compress empty values in the reconstruction state.
 
                 Keys in the reconstruction state will be appended with `~` to avoid collision with
@@ -1205,7 +1206,7 @@ class Pickleable(Base):
         """Resolve a file path ensuring valid file format and optional compression.
 
         File format and compression can be provided either via a suffix in `path`,
-         or via the argument `file_format` and `compression` respectively.
+        or via the argument `file_format` and `compression` respectively.
 
         Args:
             path (Optional[PathLike]): A file path, directory, or None.
@@ -1225,7 +1226,8 @@ class Pickleable(Base):
             files in the current directory.
 
         Returns:
-            Path: The resolved file path with the appropriate extensions."""
+            Path: The resolved file path with the appropriate extensions.
+        """
         from vectorbtpro._settings import settings
 
         pickling_cfg = settings["pickling"]
@@ -1386,7 +1388,8 @@ class Pickleable(Base):
             **kwargs: Keyword arguments passed for serialization.
 
         Returns:
-            Path: The file path where the instance was saved."""
+            Path: The file path where the instance was saved.
+        """
         if mkdir_kwargs is None:
             mkdir_kwargs = {}
 
@@ -1430,7 +1433,8 @@ class Pickleable(Base):
             **kwargs: Keyword arguments passed for deserialization.
 
         Returns:
-            Pickleable: The deserialized instance."""
+            Pickleable: The deserialized instance.
+        """
         path = cls.resolve_file_path(path=path, file_format=file_format, compression=compression)
         suffixes = [suffix[1:].lower() for suffix in path.suffixes]
         if suffixes[0] in get_serialization_extensions("pickle"):
@@ -1460,7 +1464,8 @@ class Pickleable(Base):
 
         Returns:
             Union[str, int]: The object's size as a human-readable string if `readable` is True,
-                otherwise as an integer in bytes."""
+                otherwise as an integer in bytes.
+        """
         if readable:
             return humanize.naturalsize(self.__sizeof__(), **kwargs)
         return self.__sizeof__()
@@ -1470,7 +1475,8 @@ class Pickleable(Base):
         """Reconstruction state for recreating the object.
 
         Returns:
-            Optional[RecState]: The reconstruction state used for object reconstruction."""
+            Optional[RecState]: The reconstruction state used for object reconstruction.
+        """
         return None
 
     @classmethod
@@ -1481,7 +1487,8 @@ class Pickleable(Base):
             rec_state (RecState): The original reconstruction state.
 
         Returns:
-            RecState: The modified reconstruction state."""
+            RecState: The modified reconstruction state.
+        """
         return rec_state
 
     def __reduce__(self) -> tp.Union[str, tp.Tuple]:
@@ -1508,7 +1515,11 @@ class pdict(Comparable, Pickleable, Prettified, dict):
         Args:
             path (Optional[PathLike]): File path to load data from.
             clear (bool): If True, clear the existing dictionary before updating.
-            **kwargs: Keyword arguments passed for loading."""
+            **kwargs: Keyword arguments passed for loading.
+
+        Returns:
+            None
+        """
         if clear:
             self.clear()
         self.update(self.load(path=path, **kwargs))
@@ -1518,8 +1529,9 @@ class pdict(Comparable, Pickleable, Prettified, dict):
         """Reconstruction state for recreating this dictionary instance.
 
         Returns:
-            RecState: The reconstruction state with initialization arguments and keyword arguments
-                derived from the dictionary contents."""
+            Optional[RecState]: The reconstruction state with initialization arguments and keyword arguments
+                derived from the dictionary contents.
+        """
         init_args = ()
         init_kwargs = dict(self)
         for k in list(init_kwargs):
@@ -1541,11 +1553,11 @@ class pdict(Comparable, Pickleable, Prettified, dict):
         Args:
             other (Any): The object to compare against.
             check_types (bool): Whether to verify types during comparison.
-            _key (Optional[str]): Internal key to use for comparison; defaults to the class name if not provided.
             **kwargs: Keyword arguments for deep comparison.
 
         Returns:
-            bool: True if the objects are deeply equal, otherwise False."""
+            bool: True if the objects are deeply equal, otherwise False.
+        """
         if _key is None:
             _key = type(self).__name__
         if "only_types" in kwargs:

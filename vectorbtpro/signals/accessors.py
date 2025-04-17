@@ -228,12 +228,20 @@ class SignalsAccessor(GenericAccessor):
 
     @hybrid_property
     def sr_accessor_cls(cls_or_self) -> tp.Type["SignalsSRAccessor"]:
-        """Accessor class for `pd.Series`."""
+        """Accessor class for `pd.Series`.
+        
+        Returns:
+            Type[SignalsSRAccessor]: The class of the Series accessor.
+        """
         return SignalsSRAccessor
 
     @hybrid_property
     def df_accessor_cls(cls_or_self) -> tp.Type["SignalsDFAccessor"]:
-        """Accessor class for `pd.DataFrame`."""
+        """Accessor class for `pd.DataFrame`.
+        
+        Returns:
+            Type[SignalsDFAccessor]: The class of the DataFrame accessor.
+        """
         return SignalsDFAccessor
 
     # ############# Overriding ############# #
@@ -3190,6 +3198,9 @@ class SignalsAccessor(GenericAccessor):
 
         Merges `vectorbtpro.generic.accessors.GenericAccessor.stats_defaults` with the
         `stats` configuration from `vectorbtpro._settings.signals`.
+
+        Returns:
+            Kwargs: A dictionary containing the default settings for stats.
         """
         from vectorbtpro._settings import settings
 
@@ -3428,8 +3439,8 @@ class SignalsAccessor(GenericAccessor):
         """Plot signals as entry markers.
 
         Args:
-            y (ArrayLike, optional): Y-axis values for entry markers.
-            column (hashable, optional): Column to plot.
+            y (Optional[ArrayLike]): Y-axis values for entry markers.
+            column (Optional[Label]): Column to plot.
             **kwargs: Additional keyword arguments passed to
                 `vectorbtpro.generic.accessors.GenericAccessor.scatterplot`.
 
@@ -3598,6 +3609,9 @@ class SignalsAccessor(GenericAccessor):
 
         Merges `vectorbtpro.generic.accessors.GenericAccessor.plots_defaults` with
         the plotting configuration from `vectorbtpro._settings.signals`.
+
+        Returns:
+            Kwargs: A dictionary containing the default settings for plots.
         """
         from vectorbtpro._settings import settings
 

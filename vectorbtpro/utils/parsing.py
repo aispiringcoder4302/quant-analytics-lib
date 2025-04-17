@@ -44,6 +44,9 @@ class Regex(DefineMixin):
 
         Args:
             string (str): The string to test.
+
+        Returns:
+            bool: True if the string matches the pattern, otherwise False.
         """
         return re.match(self.pattern, string, self.flags) is not None
 
@@ -122,6 +125,9 @@ def has_variable_args(func: tp.Callable) -> bool:
 
     Args:
         func (Callable): Function to check.
+
+    Returns:
+        bool: True if the function accepts variable positional arguments, otherwise False.
     """
     return get_variable_args_name(func) is not None
 
@@ -147,6 +153,9 @@ def has_variable_kwargs(func: tp.Callable) -> bool:
 
     Args:
         func (Callable): Function to check.
+
+    Returns:
+        bool: True if the function accepts variable keyword arguments, otherwise False.
     """
     return get_variable_kwargs_name(func) is not None
 
@@ -543,6 +552,9 @@ def match_and_set_flat_ann_arg(
         flat_ann_args (FlatAnnArgs): Flattened annotated arguments.
         query (AnnArgQuery): Query to identify the argument by index, name, or regular expression.
         new_value (Any): New value to assign to the matched argument(s).
+
+    Returns:
+        None: The function modifies `flat_ann_args` in place.
 
     !!! note
         All matching arguments are updated.

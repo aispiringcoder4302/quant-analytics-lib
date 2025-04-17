@@ -741,14 +741,14 @@ class DuckDBData(DBData):
 
                 Allowed values are "csv", "parquet", and "json".
                 Requires `read_path` to be set.
-            read_options (str or dict): Options used to read the file.
+            read_options (Union[None, str, dict]): Options used to read the file.
 
                 Requires both `read_path` and `read_format` to be set.
                 Uses `DuckDBData.format_read_options` to transform options into a string.
-            query (str or DuckDBPyRelation): Custom SQL query.
+            query (Union[None, str, DuckDBPyRelation]): Custom SQL query.
 
                 Cannot be used together with `catalog`, `schema`, or `table`.
-            connection (str or DuckDBPyConnection): Connection reference.
+            connection (Union[None, str, DuckDBPyConnection]): Connection reference.
 
                 See `DuckDBData.resolve_connection` for details.
             connection_config (KwargsLike): Additional configuration for the connection;
@@ -766,16 +766,16 @@ class DuckDBData(DBData):
 
                 Pulls one row using `LIMIT 1` and applies `SQLData.prepare_dt` to
                 determine the index configuration.
-            parse_dates (bool or Sequence[str]): Parameter for date parsing;
+            parse_dates (Optional[bool]): Parameter for date parsing;
 
                 See `DuckDBData.prepare_dt`.
-            to_utc (bool, str, or Sequence[str]): Parameter for converting dates to UTC;
+            to_utc (Optional[Union[None, bool, str, Sequence[str]]]): Parameter for converting dates to UTC;
 
                 See `DuckDBData.prepare_dt`.
             tz (TimezoneLike): Timezone to apply;
 
                 See `vectorbtpro.utils.datetime_.to_timezone`.
-            index_col (int, str, or list): Column(s) to use as the index.
+            index_col (Optional[MaybeSequence[IntStr]]): Column(s) to use as the index.
             squeeze (bool): Whether to squeeze a DataFrame with a single column into a Series.
             df_kwargs (KwargsLike): Keyword arguments for `relation.df` to convert a relation to a DataFrame.
             **sql_kwargs: Keyword arguments for `connection.execute` to run the SQL query.

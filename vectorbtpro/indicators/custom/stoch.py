@@ -89,17 +89,17 @@ class _STOCH(STOCH):
         """Plot `STOCH.slow_k` and `STOCH.slow_d`.
 
         Args:
-            column (str): The name of the column to select for plotting.
+            column (Optional[Label]): The name of the column to select for plotting.
             limits (Tuple[float, float]): Lower and upper y-axis limits for the filled range.
-            fast_k_trace_kwargs (dict): Additional keyword arguments for
+            fast_k_trace_kwargs (KwargsLike): Additional keyword arguments for
                 the `plotly.graph_objects.Scatter` trace of `STOCH.fast_k`.
-            slow_k_trace_kwargs (dict): Additional keyword arguments for
+            slow_k_trace_kwargs (KwargsLike): Additional keyword arguments for
                 the `plotly.graph_objects.Scatter` trace of `STOCH.slow_k`.
-            slow_d_trace_kwargs (dict): Additional keyword arguments for
+            slow_d_trace_kwargs (KwargsLike): Additional keyword arguments for
                 the `plotly.graph_objects.Scatter` trace of `STOCH.slow_d`.
-            add_shape_kwargs (dict): Additional keyword arguments for
+            add_shape_kwargs (KwargsLike): Additional keyword arguments for
                 `fig.add_shape` when adding the filled range.
-            add_trace_kwargs (dict): Additional keyword arguments for
+            add_trace_kwargs (KwargsLike): Additional keyword arguments for
                 `fig.add_trace` when adding each trace.
             fig (Optional[BaseFigure]): The figure to update; if None, a new figure is created.
             **layout_kwargs: Additional keyword arguments for configuring the figure layout.

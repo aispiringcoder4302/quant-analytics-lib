@@ -39,7 +39,8 @@ class _OHLCSTCX(OHLCSTCX):
     Generates a chain of `new_entries` and `exits` signals using `entries` and
     `vectorbtpro.signals.nb.ohlc_stop_place_nb`.
 
-    See `OHLCSTX` for notes on parameters."""
+    See `OHLCSTX` for notes on parameters.
+    """
     
     plot = _bind_ohlcstx_plot(OHLCSTCX, "new_entries")
 

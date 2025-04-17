@@ -77,7 +77,11 @@ class BaseIDXAccessor(Configured, IndexApplier):
 
     @property
     def obj(self) -> tp.Index:
-        """Pandas Index object."""
+        """Pandas Index object.
+        
+        Returns:
+            Index: The underlying Pandas Index object.
+        """
         return self._obj
 
     def get(self) -> tp.Index:
@@ -388,6 +392,9 @@ class BaseIDXAccessor(Configured, IndexApplier):
         """Return the index frequency excluding date offsets and numeric frequencies.
 
         Uses `BaseIDXAccessor.get_freq` with specific restrictions.
+
+        Returns:
+            Optional[PandasFrequency]: The frequency of the index, or None if not set.
         """
         return self.get_freq(allow_offset=True, allow_numeric=False)
 
@@ -396,6 +403,9 @@ class BaseIDXAccessor(Configured, IndexApplier):
         """Return the frequency of the index as a 64-bit integer in nanoseconds.
 
         Timestamps are converted to nanoseconds via Timedelta.
+
+        Returns:
+            Optional[int]: The frequency in nanoseconds, or None if not set.
         """
         freq = self.get_freq(allow_offset=False, allow_numeric=True)
         if freq is not None:
@@ -404,7 +414,11 @@ class BaseIDXAccessor(Configured, IndexApplier):
 
     @property
     def any_freq(self) -> tp.Union[None, float, tp.PandasFrequency]:
-        """Return the frequency of the index of any type using `BaseIDXAccessor.get_freq`."""
+        """Return the frequency of the index of any type using `BaseIDXAccessor.get_freq`.
+        
+        Returns:
+            Union[None, float, PandasFrequency]: The frequency of the index, or None if not set.
+        """
         return self.get_freq()
 
     @hybrid_method
@@ -1111,12 +1125,20 @@ class BaseAccessor(Wrapping):
 
     @hybrid_property
     def sr_accessor_cls(cls_or_self) -> tp.Type["BaseSRAccessor"]:
-        """Pandas Series accessor class."""
+        """Pandas Series accessor class.
+        
+        Returns:
+            Type[BaseSRAccessor]: The class of the Series accessor.
+        """
         return BaseSRAccessor
 
     @hybrid_property
     def df_accessor_cls(cls_or_self) -> tp.Type["BaseDFAccessor"]:
-        """Pandas DataFrame accessor class."""
+        """Pandas DataFrame accessor class.
+        
+        Returns:
+            Type[BaseDFAccessor]: The class of the DataFrame accessor.
+        """
         return BaseDFAccessor
 
     def indexing_func(self: BaseAccessorT, *args, wrapper_meta: tp.DictLike = None, **kwargs) -> BaseAccessorT:
@@ -1149,6 +1171,9 @@ class BaseAccessor(Wrapping):
         Args:
             pd_indexing_setter_func (Callable): The Pandas indexing setter function.
             **kwargs: Keyword arguments passed to the setter function.
+
+        Returns:
+            None
         """
         pd_indexing_setter_func(self._obj)
 
@@ -1200,6 +1225,9 @@ class BaseAccessor(Wrapping):
 
         * 1 corresponds to a Series.
         * 2 corresponds to a DataFrame.
+
+        Returns:
+            Optional[int]: The number of dimensions in the underlying object.
         """
         if isinstance(cls_or_self, type):
             return None
@@ -2047,10 +2075,10 @@ class BaseAccessor(Wrapping):
             keep_pd (bool): If True, retain inputs as pandas objects; otherwise, convert inputs to arrays.
             to_2d (bool): If True, convert input arrays to a two-dimensional format.
             keys (Optional[IndexLike]): Labels for the concatenated results along columns.
-            broadcast_named_args (Optional[dict]): Named arguments for broadcasting, merged with the object's data.
-            broadcast_kwargs (Optional[dict]): Keyword arguments for controlling the broadcasting.
-            template_context (Optional[dict]): Additional context for template substitutions.
-            wrap_kwargs (Optional[dict]): Keyword arguments for wrapping the final output.
+            broadcast_named_args (KwargsLike): Named arguments for broadcasting, merged with the object's data.
+            broadcast_kwargs (KwargsLike): Keyword arguments for controlling the broadcasting.
+            template_context (KwargsLike): Additional context for template substitutions.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the final output.
             **kwargs: Keyword arguments passed to `apply_func`.
 
         Returns:
@@ -2441,7 +2469,6 @@ class BaseSRAccessor(BaseAccessor):
     Args:
         wrapper (Union[ArrayWrapper, ArrayLike]): The primary array wrapper or array-like object.
         obj (Optional[ArrayLike]): An optional array-like object.
-        _full_init (bool): Indicates whether to perform full initialization.
         **kwargs: Additional keyword arguments.
     """
 
@@ -2483,7 +2510,6 @@ class BaseDFAccessor(BaseAccessor):
     Args:
         wrapper (Union[ArrayWrapper, ArrayLike]): The primary array wrapper or array-like object.
         obj (Optional[ArrayLike]): An optional array-like object.
-        _full_init (bool): Indicates whether to perform full initialization.
         **kwargs: Additional keyword arguments.
     """
 

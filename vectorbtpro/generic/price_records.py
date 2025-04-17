@@ -159,7 +159,7 @@ class PriceRecords(Records):
             kwargs: Keyword arguments passed for initialization.
 
         Returns:
-            dict: Resolved keyword arguments.
+            Kwargs: Resolved keyword arguments.
         """
         kwargs = Records.resolve_row_stack_kwargs(*objs, **kwargs)
         if len(objs) == 1:
@@ -205,7 +205,7 @@ class PriceRecords(Records):
             kwargs: Keyword arguments passed for initialization.
 
         Returns:
-            dict: Resolved keyword arguments.
+            Kwargs: Resolved keyword arguments.
         """
         kwargs = Records.resolve_column_stack_kwargs(*objs, reindex_kwargs=reindex_kwargs, **kwargs)
         kwargs.pop("reindex_kwargs", None)
@@ -358,7 +358,7 @@ class PriceRecords(Records):
         """Open price.
 
         Returns:
-            SeriesFrame or None: The open price data wrapped with the array wrapper, or None if not available.
+            Optional[SeriesFrame]: The wrapped open price data, or None if not available.
         """
         if self._open is None:
             return None
@@ -369,7 +369,7 @@ class PriceRecords(Records):
         """High price.
 
         Returns:
-            SeriesFrame or None: The high price data wrapped with the array wrapper, or None if not available.
+            Optional[SeriesFrame]: The wrapped high price data, or None if not available.
         """
         if self._high is None:
             return None
@@ -380,7 +380,7 @@ class PriceRecords(Records):
         """Low price.
 
         Returns:
-            SeriesFrame or None: The low price data wrapped with the array wrapper, or None if not available.
+            Optional[SeriesFrame]: The wrapped low price data, or None if not available.
         """
         if self._low is None:
             return None
@@ -391,7 +391,7 @@ class PriceRecords(Records):
         """Close price series.
 
         Returns:
-            Optional[SeriesFrame]: The wrapped close price data if available.
+            Optional[SeriesFrame]: The wrapped close price data, or None if not available.
         """
         if self._close is None:
             return None

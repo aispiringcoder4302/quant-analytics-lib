@@ -38,7 +38,8 @@ class Cacheable(Base):
     Required for registering `vectorbtpro.utils.decorators.cacheable_property` and
     `vectorbtpro.utils.decorators.cacheable_method`.
 
-    See `vectorbtpro.registries.ca_registry` for details on the caching procedure."""
+    See `vectorbtpro.registries.ca_registry` for details on the caching procedure.
+    """
 
     def __init__(self) -> None:
         from vectorbtpro._settings import settings
@@ -59,7 +60,8 @@ class Cacheable(Base):
         If called on a class, returns a `vectorbtpro.registries.ca_registry.CAClassSetup`.
 
         Returns:
-            Union[CAClassSetup, CAInstanceSetup]: The caching setup corresponding to the caller."""
+            Union[CAClassSetup, CAInstanceSetup]: The caching setup corresponding to the caller.
+        """
         from vectorbtpro.registries.ca_registry import CAClassSetup, CAInstanceSetup
 
         if isinstance(cls_or_self, type):

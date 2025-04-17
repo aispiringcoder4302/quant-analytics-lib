@@ -51,7 +51,11 @@ class ColumnMapper(Wrapping):
 
     @property
     def col_arr(self) -> tp.Array1d:
-        """Column array."""
+        """Column array.
+        
+        Returns:
+            Array1d: The column array.
+        """
         return self._col_arr
 
     @hybrid_method
@@ -263,6 +267,9 @@ class ColumnMapper(Wrapping):
         """Column lengths.
 
         Faster than `ColumnMapper.col_map` but only compatible with sorted columns.
+
+        Returns:
+            GroupLens: Column lengths.
         """
         func = jit_reg.resolve_option(nb.col_lens_nb, None)
         return func(self.col_arr, len(self.wrapper.columns))
@@ -290,6 +297,9 @@ class ColumnMapper(Wrapping):
         """Column map.
 
         More flexible than `ColumnMapper.col_lens` and more suited for mapped arrays.
+
+        Returns:
+            GroupMap: Column mapping.
         """
         func = jit_reg.resolve_option(nb.col_map_nb, None)
         return func(self.col_arr, len(self.wrapper.columns))
@@ -327,7 +337,11 @@ class ColumnMapper(Wrapping):
 
     @cached_property(whitelist=True)
     def new_id_arr(self) -> tp.Array1d:
-        """New ID array derived from the column array and the wrapper's 2D shape."""
+        """New ID array derived from the column array and the wrapper's 2D shape.
+        
+        Returns:
+            Array1d: New ID array.
+        """
         func = jit_reg.resolve_option(nb.generate_ids_nb, None)
         return func(self.col_arr, self.wrapper.shape_2d[1])
 

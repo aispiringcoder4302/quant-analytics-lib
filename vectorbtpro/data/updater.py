@@ -59,12 +59,19 @@ class DataUpdater(Configured):
         """Data instance associated with the updater.
 
         See `vectorbtpro.data.base.Data`.
+
+        Returns:
+            Data: The data instance.
         """
         return self._data
 
     @property
     def schedule_manager(self) -> ScheduleManager:
-        """`vectorbtpro.utils.schedule_.ScheduleManager` instance used for scheduling update jobs."""
+        """`vectorbtpro.utils.schedule_.ScheduleManager` instance used for scheduling update jobs.
+        
+        Returns:
+            ScheduleManager: The schedule manager instance.
+        """
         return self._schedule_manager
 
     @property
@@ -72,6 +79,9 @@ class DataUpdater(Configured):
         """Default keyword arguments for `DataSaver.update`.
 
         These arguments are merged with those provided during scheduled updates.
+
+        Returns:
+            KwargsLike: Default keyword arguments for data updates.
         """
         return self._update_kwargs
 
@@ -115,6 +125,9 @@ class DataUpdater(Configured):
             start (bool): If True, start the job immediately after scheduling.
             start_kwargs (KwargsLike): Keyword arguments for starting the scheduler.
             **update_kwargs: Keyword arguments passed to `DataUpdater.update`.
+
+        Returns:
+            None
         """
         if replace:
             self.schedule_manager.clear_jobs(tags)

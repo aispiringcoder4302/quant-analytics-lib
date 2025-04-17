@@ -38,6 +38,9 @@ def attach_nb_methods(config: Config) -> tp.ClassWrapper:
             * `wrap_kwargs` (KwargsLike): Keyword arguments for wrapping that
                 will be merged with user-supplied values.
 
+    Returns:
+        ClassWrapper: The decorated class with the new methods attached.
+
     The decorated class must be a subclass of `vectorbtpro.base.wrapping.Wrapping`.
     """
 
@@ -121,6 +124,9 @@ def attach_transform_methods(config: Config) -> tp.ClassWrapper:
             * `transformer` (Union[Type[Transformer], Transformer]): A transformer class or instance.
             * `docstring` (str): Docstring assigned to the generated method.
             * `replace_signature` (bool): Replaces the target method signature with that of the transformer.
+
+    Returns:
+        ClassWrapper: The decorated class with the new methods attached.
 
     The decorated class must be a subclass of `vectorbtpro.generic.accessors.GenericAccessor`.
     """

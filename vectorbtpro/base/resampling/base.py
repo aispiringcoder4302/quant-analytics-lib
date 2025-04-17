@@ -35,10 +35,10 @@ class Resampler(Configured):
     Args:
         source_index (index_like): Source index to be resampled.
         target_index (index_like): Target index produced by resampling.
-        source_freq (frequency_like or bool): Source index frequency or date offset.
+        source_freq (Union[None, bool, FrequencyLike]): Source index frequency or date offset.
 
             Set to False to disable automatic frequency inference.
-        target_freq (frequency_like or bool): Target index frequency or date offset.
+        target_freq (Union[None, bool, FrequencyLike]): Target index frequency or date offset.
 
             Set to False to disable automatic frequency inference.
         silence_warnings (bool): Flag indicating whether warnings should be silenced.
@@ -88,27 +88,47 @@ class Resampler(Configured):
 
     @property
     def source_index(self) -> tp.Index:
-        """Source index used for resampling."""
+        """Source index used for resampling.
+        
+        Returns:
+            Index: The source index.
+        """
         return self._source_index
 
     @property
     def target_index(self) -> tp.Index:
-        """Target index produced by resampling."""
+        """Target index produced by resampling.
+        
+        Returns:
+            Index: The target index.
+        """
         return self._target_index
 
     @property
     def source_freq(self) -> tp.AnyPandasFrequency:
-        """Source index frequency or date offset."""
+        """Source index frequency or date offset.
+        
+        Returns:
+            AnyPandasFrequency: The frequency of the source index.
+        """
         return self._source_freq
 
     @property
     def target_freq(self) -> tp.AnyPandasFrequency:
-        """Target index frequency or date offset."""
+        """Target index frequency or date offset.
+        
+        Returns:
+            AnyPandasFrequency: The frequency of the target index.
+        """
         return self._target_freq
 
     @property
     def silence_warnings(self) -> bool:
-        """Flag indicating whether warnings are silenced."""
+        """Flag indicating whether warnings are silenced.
+        
+        Returns:
+            bool: True if warnings are silenced, False otherwise.
+        """
         from vectorbtpro._settings import settings
 
         resampling_cfg = settings["resampling"]
@@ -294,22 +314,38 @@ class Resampler(Configured):
 
     @cached_property
     def source_lbound_index(self) -> tp.Index:
-        """Left bound of the source datetime index."""
+        """Left bound of the source datetime index.
+        
+        Returns:
+            Index: The left bound of the source index.
+        """
         return self.get_lbound_index(self.source_index, freq=self.source_freq)
 
     @cached_property
     def source_rbound_index(self) -> tp.Index:
-        """Right bound of the source datetime index."""
+        """Right bound of the source datetime index.
+        
+        Returns:
+            Index: The right bound of the source index.
+        """
         return self.get_rbound_index(self.source_index, freq=self.source_freq)
 
     @cached_property
     def target_lbound_index(self) -> tp.Index:
-        """Left bound of the target datetime index."""
+        """Left bound of the target datetime index.
+        
+        Returns:
+            Index: The left bound of the target index.
+        """
         return self.get_lbound_index(self.target_index, freq=self.target_freq)
 
     @cached_property
     def target_rbound_index(self) -> tp.Index:
-        """Right bound of the target datetime index."""
+        """Right bound of the target datetime index.
+        
+        Returns:
+            Index: The right bound of the target index.
+        """
         return self.get_rbound_index(self.target_index, freq=self.target_freq)
 
     def map_to_target_index(

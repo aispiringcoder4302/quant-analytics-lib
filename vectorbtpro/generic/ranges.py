@@ -532,18 +532,18 @@ class Ranges(PriceRecords):
         filter_mask = (self.get_field_arr("start_idx") == -1) | (self.get_field_arr("end_idx") == -1)
         return self.apply_mask(filter_mask, **kwargs)
 
-    def get_first_idx(self, **kwargs):
+    def get_first_idx(self, **kwargs) -> MappedArray:
         """Return the first index for each range.
 
         Args:
             **kwargs: Keyword arguments passed to `Ranges.map_field`.
 
         Returns:
-            The first index in each range.
+            MappedArray: The first index in each range as a mapped array.
         """
         return self.map_field("start_idx", **kwargs)
 
-    def get_last_idx(self, **kwargs):
+    def get_last_idx(self, **kwargs) -> MappedArray:
         """Return the last index for each range.
 
         Adjust the end index for ranges with a closed status by subtracting one.
@@ -552,7 +552,7 @@ class Ranges(PriceRecords):
             **kwargs: Keyword arguments passed to `Ranges.map_array`.
 
         Returns:
-            The adjusted last index for each range.
+            MappedArray: The adjusted last index for each range as a mapped array.
         """
         last_idx = self.get_field_arr("end_idx", copy=True)
         status = self.get_field_arr("status")
@@ -638,7 +638,7 @@ class Ranges(PriceRecords):
             **kwargs: Keyword arguments passed to `vectorbtpro.records.mapped_array.MappedArray.mean`.
 
         Returns:
-            tp.MaybeSeries: The average duration of the ranges in timedelta.
+            MaybeSeries: The average duration of the ranges in timedelta.
         """
         if real:
             duration = self.real_duration
@@ -671,7 +671,7 @@ class Ranges(PriceRecords):
             **kwargs: Keyword arguments passed to `vectorbtpro.records.mapped_array.MappedArray.max`.
 
         Returns:
-            tp.MaybeSeries: The maximum duration among the ranges in timedelta.
+            MaybeSeries: The maximum duration among the ranges in timedelta.
         """
         if real:
             duration = self.real_duration
@@ -704,7 +704,7 @@ class Ranges(PriceRecords):
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
 
         Returns:
-            tp.MaybeSeries: The computed coverage of the ranges.
+            MaybeSeries: The computed coverage of the ranges.
         """
         col_map = self.col_mapper.get_col_map(group_by=group_by)
         index_lens = self.wrapper.grouper.get_group_lens(group_by=group_by) * self.wrapper.shape[0]
@@ -783,8 +783,8 @@ class Ranges(PriceRecords):
 
         Returns:
             Union[Tuple[Array1d, Array2d], Frame]: If `return_raw` is True, returns a tuple with
-            a 1D array of record indices and a 2D array of projections, with each row corresponding to a range;
-            otherwise, returns a DataFrame with projections.
+                a 1D array of record indices and a 2D array of projections, with each row corresponding 
+                to a range; otherwise, returns a DataFrame with projections.
 
         !!! note
             As opposed to the Numba-compiled function, the returned DataFrame has projections
@@ -882,6 +882,9 @@ class Ranges(PriceRecords):
 
         Merges default keyword arguments from `vectorbtpro.records.base.Records.stats_defaults`
         with the `stats` settings from `vectorbtpro._settings.ranges`.
+
+        Returns:
+            Kwargs: Merged keyword arguments for statistics computation.
         """
         from vectorbtpro._settings import settings
 
@@ -1751,7 +1754,11 @@ class Ranges(PriceRecords):
         """Return default plotting configurations for `Ranges.plots`.
 
         Merge the defaults from `vectorbtpro.records.base.Records.plots_defaults` with the
-        plotting settings from `vectorbtpro._settings.ranges`."""
+        plotting settings from `vectorbtpro._settings.ranges`.
+        
+        Returns:
+            Kwargs: Merged default plotting configurations.
+        """
         from vectorbtpro._settings import settings
 
         ranges_plots_cfg = settings["ranges"]["plots"]
@@ -1787,23 +1794,27 @@ PatternRangesT = tp.TypeVar("PatternRangesT", bound="PatternRanges")
 class PSC(DefineMixin):
     """Class representing a pattern search configuration.
 
-    Every field is resolved into a format suitable for Numba."""
+    Every field is resolved into a format suitable for Numba.
+    """
 
     pattern: tp.Union[tp.ArrayLike] = define.required_field()
     """Flexible array representing the pattern to locate.
     
     Can be smaller or larger than the source array. In such cases, 
-    the smaller array is stretched using the interpolation mode specified by `PSC.interp_mode`."""
+    the smaller array is stretched using the interpolation mode specified by `PSC.interp_mode`.
+    """
 
     window: tp.Optional[int] = define.optional_field()
     """Base length of the rolling window for matching.
     
-    If None, defaults to the length of `PSC.pattern`."""
+    If None, defaults to the length of `PSC.pattern`.
+    """
 
     max_window: tp.Optional[int] = define.optional_field()
     """Maximum length of the rolling window for matching.
     
-    If None, defaults to `PSC.window`."""
+    If None, defaults to `PSC.window`.
+    """
 
     row_select_prob: tp.Union[float] = define.optional_field()
     """Probability of selecting a row."""
@@ -1817,12 +1828,14 @@ class PSC(DefineMixin):
     interp_mode: tp.Union[int, str] = define.optional_field()
     """Interpolation mode for mapping array values.
     
-    See `vectorbtpro.generic.enums.InterpMode` for options."""
+    See `vectorbtpro.generic.enums.InterpMode` for options.
+    """
 
     rescale_mode: tp.Union[int, str] = define.optional_field()
     """Rescaling mode for adjusting the ranges of `PSC.arr` and `PSC.pattern`.
     
-    See `vectorbtpro.generic.enums.RescaleMode` for options."""
+    See `vectorbtpro.generic.enums.RescaleMode` for options.
+    """
 
     vmin: tp.Union[float] = define.optional_field()
     """Minimum value used for rescaling `PSC.arr`.
@@ -1830,7 +1843,8 @@ class PSC(DefineMixin):
     Use only when the array has fixed bounds. Used in rescaling with `RescaleMode.MinMax`
     and for verifying `PSC.min_pct_change` and `PSC.max_pct_change`. 
     
-    If set to NaN, it is calculated dynamically."""
+    If set to NaN, it is calculated dynamically.
+    """
 
     vmax: tp.Union[float] = define.optional_field()
     """Maximum value used for rescaling `PSC.arr`.
@@ -1838,7 +1852,8 @@ class PSC(DefineMixin):
     Use only when the array has fixed bounds. Used in rescaling with `RescaleMode.MinMax` 
     and for verifying `PSC.min_pct_change` and `PSC.max_pct_change`. 
     
-    If set to NaN, it is calculated dynamically."""
+    If set to NaN, it is calculated dynamically.
+    """
 
     pmin: tp.Union[float] = define.optional_field()
     """Minimum value used for rescaling `PSC.pattern`.
@@ -1846,7 +1861,8 @@ class PSC(DefineMixin):
     Used in rescaling with `RescaleMode.MinMax` and for computing the maximum distance 
     at each point when `PSC.max_error_as_maxdist` is disabled.
     
-    If set to NaN, it is calculated dynamically."""
+    If set to NaN, it is calculated dynamically.
+    """
 
     pmax: tp.Union[float] = define.optional_field()
     """Maximum value used for rescaling `PSC.pattern`.
@@ -1854,7 +1870,8 @@ class PSC(DefineMixin):
     Used in rescaling with `RescaleMode.MinMax` and for computing the maximum distance 
     at each point when `PSC.max_error_as_maxdist` is disabled.
     
-    If set to NaN, it is calculated dynamically."""
+    If set to NaN, it is calculated dynamically.
+    """
 
     invert: tp.Union[bool] = define.optional_field()
     """Invert the pattern by reflecting its values."""
@@ -1862,31 +1879,36 @@ class PSC(DefineMixin):
     error_type: tp.Union[int, str] = define.optional_field()
     """Error computation mode.
 
-    See `vectorbtpro.generic.enums.ErrorType` for options."""
+    See `vectorbtpro.generic.enums.ErrorType` for options.
+    """
 
     distance_measure: tp.Union[int, str] = define.optional_field()
     """Method for measuring distance (e.g., MAE, MSE, RMSE).
 
-    See `vectorbtpro.generic.enums.DistanceMeasure` for options."""
+    See `vectorbtpro.generic.enums.DistanceMeasure` for options.
+    """
 
     max_error: tp.Union[tp.ArrayLike] = define.optional_field()
     """Maximum error threshold for normalization.
 
-    If provided as an array, it must match the size of the pattern and be on the same scale."""
+    If provided as an array, it must match the size of the pattern and be on the same scale.
+    """
 
     max_error_interp_mode: tp.Union[None, int, str] = define.optional_field()
     """Interpolation mode for `PSC.max_error`. 
     
     If None, defaults to `PSC.interp_mode`.
     
-    See `vectorbtpro.generic.enums.InterpMode` for options."""
+    See `vectorbtpro.generic.enums.InterpMode` for options.
+    """
 
     max_error_as_maxdist: tp.Union[bool] = define.optional_field()
     """Indicates whether `PSC.max_error` represents the maximum distance at each point.
     
     If False, exceeding `PSC.max_error` sets the distance to the maximum derived from 
     `PSC.pmin`, `PSC.pmax`, and the pattern value at that point. If True and any point 
-    in a window is NaN, that point is skipped."""
+    in a window is NaN, that point is skipped.
+    """
 
     max_error_strict: tp.Union[bool] = define.optional_field()
     """If True, any instance of exceeding `PSC.max_error` results in a similarity of NaN."""
@@ -1894,17 +1916,20 @@ class PSC(DefineMixin):
     min_pct_change: tp.Union[float] = define.optional_field()
     """Minimum percentage change required for a window to remain a search candidate.
 
-    Window similarity is set to NaN if this threshold is not met."""
+    Window similarity is set to NaN if this threshold is not met.
+    """
 
     max_pct_change: tp.Union[float] = define.optional_field()
     """Maximum percentage change allowed for a window to remain a search candidate.
     
-    Window similarity is set to NaN if this threshold is exceeded."""
+    Window similarity is set to NaN if this threshold is exceeded.
+    """
 
     min_similarity: tp.Union[float] = define.optional_field()
     """Minimum similarity threshold. 
         
-    If the computed similarity falls below this, returns NaN."""
+    If the computed similarity falls below this, returns NaN.
+    """
 
     minp: tp.Optional[int] = define.optional_field()
     """Minimum number of observations in the price window required to yield a value."""
@@ -1912,12 +1937,14 @@ class PSC(DefineMixin):
     overlap_mode: tp.Union[int, str] = define.optional_field()
     """Mode for handling overlapping matches. 
     
-    See `vectorbtpro.generic.enums.OverlapMode` for options."""
+    See `vectorbtpro.generic.enums.OverlapMode` for options.
+    """
 
     max_records: tp.Optional[int] = define.optional_field()
     """Maximum number of records to be filled.
 
-    If None, defaults to the number of rows in the source array."""
+    If None, defaults to the number of rows in the source array.
+    """
 
     name: tp.Optional[str] = define.field(default=None)
     """Optional name assigned to the configuration."""
@@ -1989,7 +2016,11 @@ class PatternRanges(Ranges):
 
     @property
     def search_configs(self) -> tp.List[PSC]:
-        """Return a list of `PSC` instances, one for each column."""
+        """Return a list of `PSC` instances, one for each column.
+        
+        Returns:
+            List[PSC]: List of `PSC` instances.
+        """
         return self._search_configs
 
     @property

@@ -12,7 +12,8 @@
 
 !!! warning
     Resolution is more flexible and may return None while preparation always returns NumPy arrays.
-    Thus, use preparation, not resolution, in Numba-parallel workflows."""
+    Thus, use preparation, not resolution, in Numba-parallel workflows.
+"""
 
 import numpy as np
 from numba import prange

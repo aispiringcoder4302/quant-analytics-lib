@@ -61,9 +61,9 @@ class _FSTD(FSTD):
 
         Args:
             column (Optional[Label]): The name of the column to plot.
-            fstd_trace_kwargs (dict): Additional keyword arguments passed to
+            fstd_trace_kwargs (KwargsLike): Additional keyword arguments passed to
                 `plotly.graph_objects.Scatter` for the `FSTD.fstd` indicator.
-            add_trace_kwargs (dict): Additional keyword arguments passed to
+            add_trace_kwargs (KwargsLike): Additional keyword arguments passed to
                 `fig.add_trace` when adding each trace.
             fig (Optional[BaseFigure]): The figure to update; if None, a new figure is created.
             **layout_kwargs: Additional keyword arguments for configuring the figure layout.

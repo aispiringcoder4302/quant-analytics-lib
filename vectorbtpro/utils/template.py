@@ -44,7 +44,8 @@ class CustomTemplate(Evaluable, DefineMixin):
     strict: tp.Optional[bool] = define.field(default=None)
     """Whether to raise an error if processing template fails.
 
-    If not None, overrides `strict` passed by `substitute_templates`."""
+    If not None, overrides `strict` passed by `substitute_templates`.
+    """
 
     context_merge_kwargs: tp.KwargsLike = define.field(default=None)
     """Keyword arguments passed to `vectorbtpro.utils.config.merge_dicts`."""
@@ -386,7 +387,11 @@ def has_templates(obj: tp.Any, **kwargs) -> tp.Any:
 
     Args:
         obj (Any): The object to search for template instances.
-        **kwargs: Additional parameters to override default search settings."""
+        **kwargs: Additional parameters to override default search settings.
+
+    Returns:
+        Any: The object containing template instances, or None if none are found.
+    """
     from vectorbtpro._settings import settings
 
     template_cfg = settings["template"]
@@ -426,6 +431,9 @@ def substitute_templates(
         strict (Optional[bool]): Flag to determine whether to raise an error if substitution fails.
         eval_id (Optional[Hashable]): An identifier used during template evaluation.
         **kwargs: Additional parameters to override default search settings.
+
+    Returns:
+        Any: The object with template instances replaced by their substituted values.
 
     Examples:
         ```pycon

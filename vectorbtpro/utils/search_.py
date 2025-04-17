@@ -496,6 +496,9 @@ def contains_in_obj(
         max_depth (Optional[int]): Maximum search depth.
         **kwargs: Keyword arguments passed to `match_func`.
 
+    Returns:
+        bool: True if any element matches the criteria, False otherwise.
+
     !!! note
         Refer to `find_in_obj` for additional argument details.
     """
@@ -683,7 +686,6 @@ def replace_in_obj(obj: tp.Any, path_dct: tp.PathDict, _key: tp.Optional[tp.Hash
     Args:
         obj (Any): The object in which to perform replacements.
         path_dct (PathDict): A mapping of path-like keys to replacement values.
-        _key (Optional[Hashable]): The current path key used internally during recursion.
 
     Returns:
         Any: The updated object with replacements applied.
@@ -1109,6 +1111,7 @@ def find_start(
             * "start": Returns a list with the starting index of the match.
             * "range": Returns a list with a tuple representing the match range.
             * "match": Returns a list containing the matched string.
+            
     Returns:
         Union[bool, List[Union[int, str]], List[Tuple[int, int]]]: The match result in the specified format.
     """

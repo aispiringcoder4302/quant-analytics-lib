@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Numba-compiled functions for iterative portfolio simulation."""
+"""Module providing Numba-compiled functions for iterative portfolio simulation."""
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.base.flex_indexing import flex_select_nb
@@ -30,7 +30,15 @@ def select_nb(
 ) -> tp.Scalar:
     """Get the current element using flexible indexing.
 
-    If any of the arguments are None, will use the respective value from the context."""
+    Args:
+        c (NamedTuple): Context providing current indices.
+        arr (FlexArray2d): Array used for element selection.
+        i (Optional[int]): Row index; if None, uses `c.i`.
+        col (Optional[int]): Column index; if None, uses `c.col`.
+
+    Returns:
+        Scalar: The selected element from the array.
+    """
     if i is None:
         _i = c.i
     else:
@@ -49,9 +57,17 @@ def select_from_col_nb(
     arr: tp.FlexArray2d,
     i: tp.Optional[int] = None,
 ) -> tp.Scalar:
-    """Get the current element from a specific column using flexible indexing.
+    """Get the current element from a specified column using flexible indexing.
 
-    If any of the arguments are None, will use the respective value from the context."""
+    Args:
+        c (NamedTuple): Context providing the current row index.
+        col (int): Column index.
+        arr (FlexArray2d): Array from which to select the element.
+        i (Optional[int]): Row index; if None, uses `c.i`.
+
+    Returns:
+        Scalar: The selected element from the array.
+    """
     if i is None:
         _i = c.i
     else:
@@ -67,9 +83,18 @@ def iter_above_nb(
     i: tp.Optional[int] = None,
     col: tp.Optional[int] = None,
 ) -> bool:
-    """Call `vectorbtpro.generic.nb.iter_.iter_above_nb` on the context.
+    """Call `vectorbtpro.generic.nb.iter_.iter_above_nb` using the provided context.
 
-    If any of the arguments are None, will use the respective value from the context."""
+    Args:
+        c (NamedTuple): Context containing current index and column information.
+        arr1 (FlexArray2d): First array for comparison.
+        arr2 (FlexArray2d): Second array for comparison.
+        i (Optional[int]): Row index; if None, uses `c.i`.
+        col (Optional[int]): Column index; if None, uses `c.col`.
+
+    Returns:
+        bool: Result of the above comparison.
+    """
     if i is None:
         _i = c.i
     else:
@@ -89,9 +114,18 @@ def iter_below_nb(
     i: tp.Optional[int] = None,
     col: tp.Optional[int] = None,
 ) -> bool:
-    """Call `vectorbtpro.generic.nb.iter_.iter_below_nb` on the context.
+    """Call `vectorbtpro.generic.nb.iter_.iter_below_nb` using the provided context.
 
-    If any of the arguments are None, will use the respective value from the context."""
+    Args:
+        c (NamedTuple): Context containing current index and column information.
+        arr1 (FlexArray2d): First array for comparison.
+        arr2 (FlexArray2d): Second array for comparison.
+        i (Optional[int]): Row index; if None, uses `c.i`.
+        col (Optional[int]): Column index; if None, uses `c.col`.
+
+    Returns:
+        bool: Result of the below comparison.
+    """
     if i is None:
         _i = c.i
     else:
@@ -111,9 +145,18 @@ def iter_crossed_above_nb(
     i: tp.Optional[int] = None,
     col: tp.Optional[int] = None,
 ) -> bool:
-    """Call `vectorbtpro.generic.nb.iter_.iter_crossed_above_nb` on the context.
+    """Call `vectorbtpro.generic.nb.iter_.iter_crossed_above_nb` using the provided context.
 
-    If any of the arguments are None, will use the respective value from the context."""
+    Args:
+        c (NamedTuple): Context containing current index and column information.
+        arr1 (FlexArray2d): First array for the crossing comparison.
+        arr2 (FlexArray2d): Second array for the crossing comparison.
+        i (Optional[int]): Row index; if None, uses `c.i`.
+        col (Optional[int]): Column index; if None, uses `c.col`.
+
+    Returns:
+        bool: True if `arr1` has crossed above `arr2`, otherwise False.
+    """
     if i is None:
         _i = c.i
     else:
@@ -133,9 +176,18 @@ def iter_crossed_below_nb(
     i: tp.Optional[int] = None,
     col: tp.Optional[int] = None,
 ) -> bool:
-    """Call `vectorbtpro.generic.nb.iter_.iter_crossed_below_nb` on the context.
+    """Call `vectorbtpro.generic.nb.iter_.iter_crossed_below_nb` using the provided context.
 
-    If any of the arguments are None, will use the respective value from the context."""
+    Args:
+        c (NamedTuple): Context containing current index and column information.
+        arr1 (FlexArray2d): First array for the crossing comparison.
+        arr2 (FlexArray2d): Second array for the crossing comparison.
+        i (Optional[int]): Row index; if None, uses `c.i`.
+        col (Optional[int]): Column index; if None, uses `c.col`.
+
+    Returns:
+        bool: True if `arr1` has crossed below `arr2`, otherwise False.
+    """
     if i is None:
         _i = c.i
     else:

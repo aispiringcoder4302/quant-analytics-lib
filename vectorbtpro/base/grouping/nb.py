@@ -28,11 +28,11 @@ def get_group_lens_nb(groups: tp.Array1d) -> tp.GroupLens:
     Args:
         groups (Array1d): Array of group identifiers sorted in non-decreasing order.
 
-    !!! note
-        Columns must form monolithic, sorted groups. For unsorted groups, use `get_group_map_nb`.
-
     Returns:
         GroupLens: An array of counts for each group.
+
+    !!! note
+        Columns must form monolithic, sorted groups. For unsorted groups, use `get_group_map_nb`.
     """
     result = np.empty(groups.shape[0], dtype=int_)
     j = 0

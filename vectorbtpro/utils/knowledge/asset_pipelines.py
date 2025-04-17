@@ -10,7 +10,8 @@
 
 """Module providing classes for creating and executing asset pipelines.
 
-See `vectorbtpro.utils.knowledge` for the toy dataset."""
+See `vectorbtpro.utils.knowledge` for the toy dataset.
+"""
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.utils.base import Base
@@ -31,7 +32,8 @@ __all__ = [
 class AssetPipeline(Base):
     """Abstract asset pipeline base class.
 
-    Provides functionality to resolve and execute tasks in an asset pipeline."""
+    Provides functionality to resolve and execute tasks in an asset pipeline.
+    """
 
     @classmethod
     def resolve_task(
@@ -57,7 +59,8 @@ class AssetPipeline(Base):
             **kwargs: Keyword arguments used during task resolution.
 
         Returns:
-            Task: A callable task resolved from the provided definition."""
+            Task: A callable task resolved from the provided definition.
+        """
         if isinstance(func, tuple):
             func = Task.from_tuple(func)
         if isinstance(func, Task):
@@ -164,7 +167,11 @@ class BasicAssetPipeline(AssetPipeline):
 
     @property
     def tasks(self) -> tp.List[tp.Task]:
-        """Tasks that have been added to the pipeline."""
+        """Tasks that have been added to the pipeline.
+        
+        Returns:
+            List[Task]: A list of tasks in the pipeline.
+        """
         return self._tasks
 
     def append(self, func: tp.AssetFuncLike, *args, **kwargs) -> None:
@@ -403,12 +410,20 @@ class ComplexAssetPipeline(AssetPipeline):
 
     @property
     def expression(self) -> str:
-        """Processed expression string for the pipeline."""
+        """Processed expression string for the pipeline.
+        
+        Returns:
+            str: The expression string after processing.
+        """
         return self._expression
 
     @property
     def context(self) -> tp.Kwargs:
-        """Updated context mapping for the pipeline."""
+        """Updated context mapping for the pipeline.
+        
+        Returns:
+            Kwargs: The context mapping used for expression evaluation.
+        """
         return self._context
 
     def run(self, d: tp.Any) -> tp.Any:

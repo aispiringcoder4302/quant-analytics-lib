@@ -1093,6 +1093,9 @@ def fill_drawdown_record_nb(
         valley_val (float): Value at the valley (lowest point) of the drawdown.
         end_val (float): Value at the end of the drawdown.
         status (int): Code representing the status of the drawdown.
+
+    Returns:
+        None: This function modifies `new_records` in place.
     """
     r = counts[col]
     new_records["id"][r, col] = r

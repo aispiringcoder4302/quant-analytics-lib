@@ -100,6 +100,9 @@ class CCXTData(RemoteData):
             *args: Positional arguments passed to `CCXTData.has_custom_settings`.
             exchange_name (Optional[str]): Name of the exchange used to form the sub-path.
             **kwargs: Keyword arguments passed to `CCXTData.has_custom_settings`.
+
+        Returns:
+            bool: True if custom exchange settings exist, False otherwise.
         """
         if exchange_name is not None:
             sub_path = "exchanges." + exchange_name
@@ -133,6 +136,9 @@ class CCXTData(RemoteData):
             *args: Positional arguments passed to `CCXTData.has_custom_setting`.
             exchange_name (Optional[str]): Name of the exchange used to form the sub-path.
             **kwargs: Keyword arguments passed to `CCXTData.has_custom_setting`.
+
+        Returns:
+            bool: True if the custom exchange setting exists, False otherwise.
         """
         if exchange_name is not None:
             sub_path = "exchanges." + exchange_name
@@ -166,6 +172,9 @@ class CCXTData(RemoteData):
             *args: Positional arguments passed to `CCXTData.set_custom_settings`.
             exchange_name (Optional[str]): Name of the exchange used to determine the sub-path.
             **kwargs: Keyword arguments passed to `CCXTData.set_custom_settings`.
+
+        Returns:
+            None
         """
         if exchange_name is not None:
             sub_path = "exchanges." + exchange_name

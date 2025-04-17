@@ -37,7 +37,8 @@ class _STCX(STCX):
     Generates a chain of `new_entries` and `exits` signals derived from `entries`
     using `vectorbtpro.signals.nb.stop_place_nb`.
 
-    See `STX` for parameter details."""
+    See `STX` for parameter details.
+    """
     
     pass
 

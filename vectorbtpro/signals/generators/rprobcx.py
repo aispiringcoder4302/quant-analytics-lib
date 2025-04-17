@@ -37,7 +37,8 @@ class _RPROBCX(RPROBCX):
     Generates a chain of `new_entries` and `exits` derived from input `entries`
     using `vectorbtpro.signals.nb.rand_by_prob_place_nb`.
 
-    See `RPROB` for parameter details."""
+    See `RPROB` for parameter details.
+    """
     pass
 
 

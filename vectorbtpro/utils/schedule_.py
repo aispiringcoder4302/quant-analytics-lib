@@ -59,19 +59,31 @@ class CustomJob(Job, Base):
 
     @property
     def zero_offset(self: CustomJobT) -> CustomJobT:
-        """Job instance with zero offset scheduling enabled."""
+        """Job instance with zero offset scheduling enabled.
+
+        Returns:
+            CustomJob: The current job instance with zero offset enabled.
+        """
         self._zero_offset = True
         return self
 
     @property
     def force_missed_run(self: CustomJobT) -> CustomJobT:
-        """Job instance with forced missed run scheduling enabled."""
+        """Job instance with forced missed run scheduling enabled.
+
+        Returns:
+            CustomJob: The current job instance with forced missed run enabled.
+        """
         self._force_missed_run = True
         return self
 
     @property
     def modulo(self) -> int:
-        """Return the remainder of the next scheduled run time's corresponding unit divided by the interval."""
+        """Returns the remainder of the next scheduled run time's corresponding unit divided by the interval.
+
+        Returns:
+            int: The remainder computed based on the time unit of the next run.
+        """
         if self.unit == "seconds":
             return self.next_run.second % self.interval
         if self.unit == "minutes":
@@ -133,7 +145,8 @@ class AsyncScheduler(CustomScheduler):
     async def async_run_pending(self) -> None:
         """Asynchronously run all pending jobs.
 
-        Identifies jobs that are ready to run and concurrently executes them."""
+        Identifies jobs that are ready to run and concurrently executes them.
+        """
         runnable_jobs = (job for job in self.jobs if job.should_run)
         await asyncio.gather(*[self._async_run_job(job) for job in runnable_jobs])
 
@@ -142,6 +155,9 @@ class AsyncScheduler(CustomScheduler):
 
         Args:
             delay_seconds (int): The delay in seconds between consecutive job executions.
+
+        Returns:
+            None
         """
         logger.info("Running *all* %i jobs with %is delay in-between", len(self.jobs), delay_seconds)
         for job in self.jobs[:]:
@@ -155,6 +171,9 @@ class AsyncScheduler(CustomScheduler):
 
         Args:
             job (AsyncJob): Asynchronous job.
+
+        Returns:
+            None
         """
         ret = await job.async_run()
         if isinstance(ret, CancelJob) or ret is CancelJob:
@@ -217,12 +236,20 @@ class ScheduleManager(Base):
 
     @property
     def scheduler(self) -> AsyncScheduler:
-        """AsyncScheduler: The scheduler instance used for scheduling jobs."""
+        """The scheduler instance used for scheduling jobs.
+        
+        Returns:
+            AsyncScheduler: The scheduler instance.
+        """
         return self._scheduler
 
     @property
     def async_task(self) -> tp.Optional[asyncio.Task]:
-        """Optional[asyncio.Task]: The current asynchronous task, if any."""
+        """The current asynchronous task, if any.
+        
+        Returns:
+            Optional[asyncio.Task]: The current asynchronous task.
+        """
         return self._async_task
 
     def every(
@@ -401,6 +428,9 @@ class ScheduleManager(Base):
         Args:
             sleep (int): Time in seconds to sleep between job checks.
             clear_after (bool): Clear scheduled jobs after stopping if True.
+
+        Returns:
+            None
         """
         logger.info("Starting schedule manager with jobs %s", str(self.scheduler.jobs))
         try:
@@ -418,6 +448,9 @@ class ScheduleManager(Base):
         Args:
             sleep (int): Time in seconds to sleep between job checks.
             clear_after (bool): Clear scheduled jobs after stopping if True.
+
+        Returns:
+            None
         """
         logger.info("Starting schedule manager in the background with jobs %s", str(self.scheduler.jobs))
         logger.info("Jobs: %s", str(self.scheduler.jobs))
@@ -435,6 +468,9 @@ class ScheduleManager(Base):
 
         Args:
             async_task (Task): The asynchronous task that has completed.
+
+        Returns:
+            None
         """
         logger.info(async_task)
 
@@ -443,6 +479,9 @@ class ScheduleManager(Base):
 
         Args:
             **kwargs: Keyword arguments passed to `ScheduleManager.async_start`.
+
+        Returns:
+            None
         """
         async_task = asyncio.create_task(self.async_start(**kwargs))
         async_task.add_done_callback(self.done_callback)
@@ -451,7 +490,11 @@ class ScheduleManager(Base):
 
     @property
     def async_task_running(self) -> bool:
-        """Indicates whether the asynchronous task is currently running."""
+        """Indicates whether the asynchronous task is currently running.
+        
+        Returns:
+            bool: True if the asynchronous task is running, False otherwise.
+        """
         return self.async_task is not None and not self.async_task.done()
 
     def stop(self) -> None:
@@ -464,6 +507,9 @@ class ScheduleManager(Base):
 
         Args:
             tags (Optional[Iterable[Hashable]]): Tags identifying jobs to delete.
+        
+        Returns:
+            None
         """
         if tags is None:
             self.scheduler.clear()

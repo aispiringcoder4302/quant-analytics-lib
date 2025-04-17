@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Numba-compiled functions for portfolio simulation based on orders."""
+"""Module providing numba-compiled functions for portfolio simulation based on orders."""
 
 from numba import prange
 
@@ -117,14 +117,172 @@ def from_orders_nb(
     max_order_records: tp.Optional[int] = None,
     max_log_records: tp.Optional[int] = 0,
 ) -> SimulationOutput:
-    """Creates on order out of each element.
+    """Generate simulation orders for each element in a column-major order using flexible broadcasting.
 
-    Iterates in the column-major order. Utilizes flexible broadcasting.
+    This function processes market data and portfolio inputs to create simulation orders and
+    update simulation state arrays.
 
-    !!! note
-        Should be only grouped if cash sharing is enabled.
+    Args:
+        target_shape (Shape): Target shape for simulation arrays.
+        group_lens (GroupLens): Array defining the number of columns in each group.
 
-        Single value must be passed as a 0-dim array (for example, by using `np.asarray(value)`).
+            !!! note
+                Should be grouped only if cash sharing is enabled.
+        open (FlexArray2dLike): Opening price. 
+        
+            Provided as a scalar, or per row and/or column.
+        high (FlexArray2dLike): High price. 
+        
+            Provided as a scalar, or per row and/or column.
+        low (FlexArray2dLike): Low price. 
+        
+            Provided as a scalar, or per row and/or column.
+        close (FlexArray2dLike): Closing price. 
+        
+            Provided as a scalar, or per row and/or column.
+        init_cash (FlexArray1dLike): Initial cash amount.
+
+            Provided as a scalar or per group.
+        init_position (FlexArray1dLike): Initial position value.
+
+            Provided as a scalar or per column.
+        init_price (FlexArray1dLike): Initial position price.
+
+            Provided as a scalar or per column.
+        cash_deposits (FlexArray2dLike): Cash deposits.
+
+            Provided as a scalar, or per row and/or group.
+
+            Applied at the beginning of each timestamp.
+        cash_earnings (FlexArray2dLike): Cash earnings. 
+        
+            Provided as a scalar, or per row and/or column.
+
+            Applied at the end of each timestamp.
+        cash_dividends (FlexArray2dLike): Cash dividends. 
+        
+            Provided as a scalar, or per row and/or column.
+
+            Applied at the end of each timestamp.
+        size (FlexArray2dLike): Order size. 
+        
+            Provided as a scalar, or per row and/or column.
+
+            See `vectorbtpro.portfolio.enums.Order.size` for more details.
+        price (FlexArray2dLike): Order price. 
+        
+            Provided as a scalar, or per row and/or column.
+
+            See `vectorbtpro.portfolio.enums.Order.price` for more details.
+        size_type (FlexArray2dLike): Order size type. 
+        
+            Provided as a scalar, or per row and/or column.
+
+            See `vectorbtpro.portfolio.enums.Order.size_type` for more details.
+        fees (FlexArray2dLike): Transaction fee rate. 
+        
+            Provided as a scalar, or per row and/or column.
+
+            See `vectorbtpro.portfolio.enums.Order.fees` for more details.
+        fixed_fees (FlexArray2dLike): Fixed fee amount. 
+        
+            Provided as a scalar, or per row and/or column.
+
+            See `vectorbtpro.portfolio.enums.Order.fixed_fees` for more details.
+        slippage (FlexArray2dLike): Slippage amount. 
+        
+            Provided as a scalar, or per row and/or column.
+
+            See `vectorbtpro.portfolio.enums.Order.slippage` for more details.
+        min_size (FlexArray2dLike): Minimum allowable order size. 
+        
+            Provided as a scalar, or per row and/or column.
+
+            See `vectorbtpro.portfolio.enums.Order.min_size` for more details.
+        max_size (FlexArray2dLike): Maximum allowable order size. 
+        
+            Provided as a scalar, or per row and/or column.
+
+            See `vectorbtpro.portfolio.enums.Order.max_size` for more details.
+        size_granularity (FlexArray2dLike): Granularity for order size. 
+        
+            Provided as a scalar, or per row and/or column.
+
+            See `vectorbtpro.portfolio.enums.Order.size_granularity` for more details.
+        leverage (FlexArray2dLike): Leverage factor. 
+        
+            Provided as a scalar, or per row and/or column.
+
+            See `vectorbtpro.portfolio.enums.Order.leverage` for more details.
+        leverage_mode (FlexArray2dLike): Mode for leverage calculation. 
+        
+            Provided as a scalar, or per row and/or column.
+
+            See `vectorbtpro.portfolio.enums.Order.leverage_mode` for more details.
+        reject_prob (FlexArray2dLike): Probability of order rejection. 
+        
+            Provided as a scalar, or per row and/or column.
+
+            See `vectorbtpro.portfolio.enums.Order.reject_prob` for more details.
+        price_area_vio_mode (FlexArray2dLike): Mode for handling price area violations. 
+        
+            Provided as a scalar, or per row and/or column.
+
+            See `vectorbtpro.portfolio.enums.Order.price_area_vio_mode` for more details.
+        allow_partial (FlexArray2dLike): Indicator whether partial orders are allowed. 
+        
+            Provided as a scalar, or per row and/or column.
+
+            See `vectorbtpro.portfolio.enums.Order.allow_partial` for more details.
+
+            Does not apply when the order size is `np.inf`.
+        raise_reject (FlexArray2dLike): Indicator whether to raise errors on order rejection. 
+        
+            Provided as a scalar, or per row and/or column.
+
+            See `vectorbtpro.portfolio.enums.Order.raise_reject` for more details.
+        log (FlexArray2dLike): Logging flag. 
+        
+            Provided as a scalar, or per row and/or column.
+
+            See `vectorbtpro.portfolio.enums.Order.log` for more details.
+        val_price (FlexArray2dLike): Valuation price. 
+        
+            Provided as a scalar, or per row and/or column.
+
+            See `vectorbtpro.portfolio.enums.ValPriceType` for more details.
+            
+            * Any `-np.inf` element is replaced by the latest valuation price 
+                (using `open` or a previously known value if `ffill_val_price` is True).
+            * Any `np.inf` element is replaced by the current order price.
+        from_ago (FlexArray2dLike): Lookback offset for price selection. 
+        
+            Provided as a scalar, or per row and/or column.
+
+            Negative values are converted to positive to avoid look-ahead bias.
+        sim_start (Optional[FlexArray1dLike]): Start indices of the simulation range.
+
+            Provided as a scalar or per group.
+        sim_end (Optional[FlexArray1dLike]): End indices of the simulation range.
+
+            Provided as a scalar or per group.
+        call_seq (Optional[Array2d]): Sequence array for call order.
+        auto_call_seq (bool): Flag to automatically determine call sequence.
+        ffill_val_price (bool): Flag to forward-fill valuation price.
+        update_value (bool): Flag to update portfolio value with each order.
+        save_state (bool): Flag to store simulation state arrays.
+        save_value (bool): Flag to record portfolio value.
+        save_returns (bool): Flag to record portfolio returns.
+        skip_empty (bool): Flag indicating whether to skip processing when order data is empty.
+        max_order_records (Optional[int]): Maximum number of records for orders.
+        max_log_records (Optional[int]): Maximum number of records for log entries.
+
+    Returns:
+        SimulationOutput: Simulation output containing order and log records, cash deposits,
+            earnings, and other aggregated metrics.
+
+    !!! tip
+        This function is parallelizable.
 
     Examples:
         Buy and hold using all cash and closing price (default):

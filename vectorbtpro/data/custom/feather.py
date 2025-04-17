@@ -80,7 +80,7 @@ class FeatherData(FileData):
             tz (TimezoneLike): Target timezone.
 
                 See `vectorbtpro.utils.datetime_.to_timezone` for conversion details.
-            index_col (int, str, or sequence): Column position(s) or name(s) to set as the index.
+            index_col (Optional[MaybeSequence[IntStr]]): Column position(s) or name(s) to set as the index.
 
                 Applies if the fetched data has a default index.
             squeeze (bool): Whether to squeeze a DataFrame with a single column into a Series.

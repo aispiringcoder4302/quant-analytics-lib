@@ -44,6 +44,9 @@ class CSVData(FileData):
 
         Args:
             path (PathLike): File path to check.
+
+        Returns:
+            bool: True if the file is a CSV or TSV file, False otherwise.
         """
         if not isinstance(path, Path):
             path = Path(path)

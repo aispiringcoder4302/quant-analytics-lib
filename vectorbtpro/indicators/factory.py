@@ -542,7 +542,12 @@ class IndicatorBase(Analyzable):
 
         If the indicator has only one output, return that output.
         Otherwise, return the output matching the indicator's short name (case sensitive or lower case).
-        If no suitable output is found, a ValueError is raised.
+
+        Returns:
+            SeriesFrame: The main output of the indicator.
+
+        Raises:
+            ValueError: If the indicator has no main output.
         """
         if len(self.output_names) == 1:
             return getattr(self, self.output_names[0])
@@ -1352,20 +1357,24 @@ class IndicatorBase(Analyzable):
     def _tuple_mapper(self) -> tp.Optional[pd.MultiIndex]:
         """MultiIndex mapping of multiple parameters.
 
-        If more than one parameter exists, returns a MultiIndex combining each parameter's mapper;
-        otherwise, returns None.
+        Returns:
+            Optional[pd.MultiIndex]: A MultiIndex object representing the mapping of multiple parameters, 
+                or None if only one parameter exists.
         """
         if len(self.param_names) <= 1:
             return None
         return pd.MultiIndex.from_arrays([getattr(self, f"_{name}_mapper") for name in self.param_names])
 
     @property
-    def _param_mapper(self) -> tp.Optional[pd.Index]:
+    def _param_mapper(self) -> tp.Optional[tp.Index]:
         """Index mapping of all parameters.
 
         For a single parameter, returns the corresponding mapper.
         For multiple parameters, returns the tuple mapper.
         Returns None if no parameters are present.
+
+        Returns:
+            Optional[Index]: The index mapping of parameters or None.
         """
         if len(self.param_names) == 0:
             return None
@@ -1374,12 +1383,15 @@ class IndicatorBase(Analyzable):
         return self._tuple_mapper
 
     @property
-    def _visible_param_mapper(self) -> tp.Optional[pd.Index]:
+    def _visible_param_mapper(self) -> tp.Optional[tp.Index]:
         """Index mapping of visible parameters.
 
         For a single parameter, returns its mapper if the mapper's name exists in the wrapper columns.
         For multiple parameters, returns a MultiIndex composed of levels corresponding to visible parameter names.
         Returns None if no visible parameters are found.
+
+        Returns:
+            Optional[Index]: The index mapping of visible parameters or None.
         """
         if len(self.param_names) == 0:
             return None
@@ -1476,42 +1488,74 @@ class IndicatorBase(Analyzable):
 
     @class_property
     def short_name(cls_or_self) -> str:
-        """Short name of the indicator."""
+        """Short name of the indicator.
+        
+        Returns:
+            str: The short name of the indicator.
+        """
         return cls_or_self._short_name
 
     @class_property
     def input_names(cls_or_self) -> tp.Tuple[str, ...]:
-        """Names of the input arrays."""
+        """Names of the input arrays.
+        
+        Returns:
+            Tuple[str, ...]: A tuple of input names.
+        """
         return cls_or_self._input_names
 
     @class_property
     def param_names(cls_or_self) -> tp.Tuple[str, ...]:
-        """Names of the parameters."""
+        """Names of the parameters.
+        
+        Returns:
+            Tuple[str, ...]: A tuple of parameter names.
+        """
         return cls_or_self._param_names
 
     @class_property
     def in_output_names(cls_or_self) -> tp.Tuple[str, ...]:
-        """Names of the in-place output arrays."""
+        """Names of the in-place output arrays.
+        
+        Returns:
+            Tuple[str, ...]: A tuple of in-place output names.
+        """
         return cls_or_self._in_output_names
 
     @class_property
     def output_names(cls_or_self) -> tp.Tuple[str, ...]:
-        """Names of the regular output arrays."""
+        """Names of the regular output arrays.
+        
+        Returns:
+            Tuple[str, ...]: A tuple of output names.
+        """
         return cls_or_self._output_names
 
     @class_property
     def lazy_output_names(cls_or_self) -> tp.Tuple[str, ...]:
-        """Names of the lazy output arrays."""
+        """Names of the lazy output arrays.
+        
+        Returns:
+            Tuple[str, ...]: A tuple of lazy output names.
+        """
         return cls_or_self._lazy_output_names
 
     @class_property
     def output_flags(cls_or_self) -> tp.Kwargs:
-        """Dictionary of output flags."""
+        """Dictionary of output flags.
+        
+        Returns:
+            Kwargs: A dictionary of output flags.
+        """
         return cls_or_self._output_flags
 
     @class_property
     def param_defaults(cls_or_self) -> tp.Dict[str, tp.Any]:
-        """Parameter defaults extracted from the signature of `IndicatorBase.run`."""
+        """Parameter defaults extracted from the signature of `IndicatorBase.run`.
+        
+        Returns:
+            Dict[str, Any]: A dictionary of parameter defaults.
+        """
         func_kwargs = get_func_kwargs(cls_or_self.run)
         out = {}
         for k, v in func_kwargs.items():
@@ -1523,8 +1567,12 @@ class IndicatorBase(Analyzable):
         return out
 
     @property
-    def level_names(self) -> tp.Tuple[str]:
-        """Column level names corresponding to each parameter."""
+    def level_names(self) -> tp.Tuple[str, ...]:
+        """Column level names corresponding to each parameter.
+        
+        Returns:
+            Tuple[str, ...]: A tuple of level names corresponding to each parameter.
+        """
         return self._level_names
 
     def unpack(self) -> tp.MaybeTuple[tp.SeriesFrame]:
@@ -1706,6 +1754,9 @@ class IndicatorBase(Analyzable):
 
         Args:
             __pdoc__ (dict): A dictionary mapping keys to their corresponding docstring descriptions.
+
+        Returns:
+            None
         """
         if hasattr(cls, "custom_func"):
             if cls.__name__ + ".custom_func" not in __pdoc__:
@@ -2267,87 +2318,155 @@ class IndicatorFactory(Configured):
 
     @property
     def class_name(self) -> str:
-        """Name of the created indicator class."""
+        """Name of the created indicator class.
+        
+        Returns:
+            str: The name of the created indicator class.
+        """
         return self._class_name
 
     @property
     def class_docstring(self) -> str:
-        """Docstring for the created indicator class."""
+        """Docstring for the created indicator class.
+        
+        Returns:
+            str: The docstring for the created indicator class.
+        """
         return self._class_docstring
 
     @property
     def module_name(self) -> str:
-        """Module name from which the class originates."""
+        """Module name from which the class originates.
+        
+        Returns:
+            str: The module name from which the class originates.
+        """
         return self._module_name
 
     @property
     def short_name(self) -> str:
-        """Concise name for the indicator."""
+        """Concise name for the indicator.
+        
+        Returns:
+            str: The concise name for the indicator.
+        """
         return self._short_name
 
     @property
     def prepend_name(self) -> bool:
-        """Whether `IndicatorFactory.short_name` should be prepended to each parameter level."""
+        """Whether `IndicatorFactory.short_name` should be prepended to each parameter level.
+        
+        Returns:
+            bool: True if `short_name` should be prepended to each parameter level, False otherwise.
+        """
         return self._prepend_name
 
     @property
     def input_names(self) -> tp.List[str]:
-        """List of input names."""
+        """List of input names.
+        
+        Returns:
+            List[str]: The list of input names.
+        """
         return self._input_names
 
     @property
     def param_names(self) -> tp.List[str]:
-        """List of parameter names."""
+        """List of parameter names.
+        
+        Returns:
+            List[str]: The list of parameter names.
+        """
         return self._param_names
 
     @property
     def in_output_names(self) -> tp.List[str]:
-        """List of in-output names."""
+        """List of in-output names.
+        
+        Returns:
+            List[str]: The list of in-output names.
+        """
         return self._in_output_names
 
     @property
     def output_names(self) -> tp.List[str]:
-        """List of output names."""
+        """List of output names.
+        
+        Returns:
+            List[str]: The list of output names.
+        """
         return self._output_names
 
     @property
     def output_flags(self) -> tp.Kwargs:
-        """Dictionary of flags for in-place and regular outputs."""
+        """Dictionary of flags for in-place and regular outputs.
+        
+        Returns:
+            Kwargs: Dictionary of flags for in-place and regular outputs.
+        """
         return self._output_flags
 
     @property
     def lazy_outputs(self) -> tp.Kwargs:
-        """Dictionary of user-defined functions converted into properties."""
+        """Dictionary of user-defined functions converted into properties.
+        
+        Returns:
+            Kwargs: Dictionary of user-defined functions converted into properties.
+        """
         return self._lazy_outputs
 
     @property
     def attr_settings(self) -> tp.Kwargs:
-        """Dictionary specifying attribute settings."""
+        """Dictionary specifying attribute settings.
+        
+        Returns:
+            Kwargs: Dictionary specifying attribute settings.
+        """
         return self._attr_settings
 
     @property
     def metrics(self) -> Config:
-        """Metrics supported by `vectorbtpro.generic.stats_builder.StatsBuilderMixin.stats`."""
+        """Metrics supported by `vectorbtpro.generic.stats_builder.StatsBuilderMixin.stats`.
+        
+        Returns:
+            Config: Metrics supported by the stats builder.
+        """
         return self._metrics
 
     @property
     def stats_defaults(self) -> tp.Kwargs:
-        """Defaults for `vectorbtpro.generic.stats_builder.StatsBuilderMixin.stats`."""
+        """Defaults for `vectorbtpro.generic.stats_builder.StatsBuilderMixin.stats`.
+        
+        Returns:
+            Kwargs: Defaults for the stats builder.
+        """
         return self._stats_defaults
 
     @property
     def subplots(self) -> Config:
-        """Subplots configuration supported by `vectorbtpro.generic.plots_builder.PlotsBuilderMixin.plots`."""
+        """Subplots configuration supported by `vectorbtpro.generic.plots_builder.PlotsBuilderMixin.plots`.
+        
+        Returns:
+            Config: Subplots configuration supported by the plots builder.
+        """
         return self._subplots
 
     @property
     def plots_defaults(self) -> tp.Kwargs:
-        """Defaults for `vectorbtpro.generic.plots_builder.PlotsBuilderMixin.plots`."""
+        """Defaults for `vectorbtpro.generic.plots_builder.PlotsBuilderMixin.plots`.
+        
+        Returns:
+            Kwargs: Defaults for the plots builder.
+        """
         return self._plots_defaults
 
     @property
     def Indicator(self) -> tp.Type[IndicatorBase]:
-        """Built indicator class."""
+        """Built indicator class.
+        
+        Returns:
+            Type[IndicatorBase]: The built indicator class.
+        """
         return self._Indicator
 
     # ############# Construction ############# #
@@ -2672,7 +2791,8 @@ Args:
     **kwargs: Additional keyword arguments passed to `{0}.run_pipeline`.
 
 Returns:
-    Indicator: An instance of the `{0}` indicator, or a tuple of additional objects if applicable.""".format(
+    Indicator: An instance of the `{0}` indicator, or a tuple of additional objects if applicable.
+""".format(
             _0,
             _1,
         )
@@ -3393,17 +3513,29 @@ Returns:
 
     @class_property
     def custom_indicators(cls) -> Config:
-        """Custom indicators keyed by their custom locations."""
+        """Custom indicators keyed by their custom locations.
+        
+        Returns:
+            Config: A dictionary-like object containing custom indicators.
+        """
         return cls._custom_indicators
 
     @classmethod
     def list_custom_locations(cls) -> tp.List[str]:
-        """List of custom indicator locations in the order they were registered."""
+        """List of custom indicator locations in the order they were registered.
+        
+        Returns:
+            List[str]: A list of custom indicator locations.
+        """
         return list(cls.custom_indicators.keys())
 
     @classmethod
     def list_builtin_locations(cls) -> tp.List[str]:
-        """List of built-in indicator locations in the order defined by the author."""
+        """List of built-in indicator locations in the order defined by the author.
+
+        Returns:
+            List[str]: A list of built-in indicator locations.
+        """
         return [
             "vbt",
             "talib_func",
@@ -3418,7 +3550,11 @@ Returns:
 
     @classmethod
     def list_locations(cls) -> tp.List[str]:
-        """List of all supported indicator locations, with custom locations listed before built-in locations."""
+        """List of all supported indicator locations, with custom locations listed before built-in locations.
+        
+        Returns:
+            List[str]: A list of all indicator locations.
+        """
         return [*cls.list_custom_locations(), *cls.list_builtin_locations()]
 
     @classmethod
@@ -3489,6 +3625,9 @@ Returns:
             location (Optional[str]): The custom location where the indicator should be registered.
             if_exists (str): The behavior if an indicator with the same name already exists;
                 must be "raise", "skip", or "override".
+
+        Returns:
+            None
         """
         if isinstance(indicator, str):
             indicator = cls.get_indicator(indicator)
@@ -3537,6 +3676,9 @@ Returns:
                 If None, all custom locations will be searched for the indicator.
             remove_location (bool): Whether to remove a location if it becomes empty
                 after the indicator is removed.
+
+        Returns:
+            None
         """
         if location is not None:
             matched_location = cls.match_location(location)
@@ -4345,7 +4487,7 @@ Returns:
         input names, parameter names, default values, and output names.
 
         Args:
-            ind_cls (IndicatorMixinT): The TA indicator class to parse.
+            ind_cls (IndicatorMixin): The TA indicator class to parse.
 
         Returns:
             dict: A dictionary containing:

@@ -39,6 +39,9 @@ class FileData(LocalData):
 
         Args:
             path (PathLike): The directory path to evaluate.
+
+        Returns:
+            bool: True if the directory matches the criteria, False otherwise.
         """
         return False
 
@@ -48,6 +51,9 @@ class FileData(LocalData):
 
         Args:
             path (PathLike): The file path to evaluate.
+
+        Returns:
+            bool: True if the file matches the criteria, False otherwise.
         """
         return True
 

@@ -40,6 +40,9 @@ class ParquetData(FileData):
 
         Args:
             path (PathLike): File path to be evaluated.
+
+        Returns:
+            bool: True if the path is a valid Parquet file, False otherwise.
         """
         if not isinstance(path, Path):
             path = Path(path)
@@ -54,6 +57,9 @@ class ParquetData(FileData):
 
         Args:
             path (PathLike): Directory path to check.
+
+        Returns:
+            bool: True if the path is a Parquet partition group directory, False otherwise.
 
         !!! note
             Assumes the Hive partitioning scheme.
@@ -75,6 +81,9 @@ class ParquetData(FileData):
 
         Args:
             path (PathLike): Directory path to check.
+
+        Returns:
+            bool: True if the path is a Parquet partition directory or contains such groups, False otherwise.
         """
         if cls.is_parquet_group_dir(path):
             return True
@@ -130,6 +139,9 @@ class ParquetData(FileData):
 
         Args:
             level (str): The partition column name.
+
+        Returns:
+            bool: True if the partition column name is a default partition column, False otherwise.
         """
         return re.match(r"^(\bgroup\b)|(group_\d+)", level) is not None
 

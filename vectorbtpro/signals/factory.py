@@ -202,9 +202,9 @@ class SignalFactory(IndicatorFactory):
                 exit_y (Optional[Union[str, ArrayLike]]): Y-axis values for plotting exit markers.
                 entry_types (Optional[ArrayLike]): Entry types in string format.
                 exit_types (Optional[ArrayLike]): Exit types in string format.
-                entry_trace_kwargs (dict): Additional keyword arguments for plotting entries, 
+                entry_trace_kwargs (KwargsLike): Additional keyword arguments for plotting entries, 
                     forwarded to `vectorbtpro.signals.accessors.SignalsSRAccessor.plot_as_entries` for `{0}.{1}`.
-                exit_trace_kwargs (dict): Additional keyword arguments for plotting exits, forwarded to 
+                exit_trace_kwargs (KwargsLike): Additional keyword arguments for plotting exits, forwarded to 
                     `vectorbtpro.signals.accessors.SignalsSRAccessor.plot_as_exits` for `{0}.exits`.
                 fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
                 **kwargs: Additional keyword arguments passed to 
@@ -221,11 +221,13 @@ class SignalFactory(IndicatorFactory):
         setattr(self.Indicator, "plot", plot)
 
     @property
-    def mode(self):
+    def mode(self) -> int:
         """Factory mode.
 
         Returns:
-            FactoryMode
+            FactoryMode: Factory mode.
+
+                See `vectorbtpro.signals.enums.FactoryMode` for available modes.
         """
         return self._mode
 
@@ -287,9 +289,9 @@ class SignalFactory(IndicatorFactory):
             Type[IndicatorBase]: A custom signal generator class configured with
                 the specified placement and generation functions.
 
-        The settings dictionary of each function can have the following attributes:
+        The settings dictionary of each function can have the following options:
 
-        Attributes:
+        Options:
             pass_inputs (List[str]): Names of inputs to pass to the placement function.
 
                 Order matters; each must be in `input_names`.
