@@ -8,11 +8,11 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Root Pandas accessors of vectorbtpro.
+"""Module providing root Pandas accessors.
 
-An accessor adds additional "namespace" to pandas objects.
+An accessor adds an additional namespace to pandas objects.
 
-The `vectorbtpro.accessors` registers a custom `vbt` accessor on top of each `pd.Index`, `pd.Series`,
+The `vectorbtpro.accessors` module registers a custom `vbt` accessor on each `pd.Index`, `pd.Series`,
 and `pd.DataFrame` object. It is the main entry point for all other accessors:
 
 ```plaintext
@@ -24,7 +24,7 @@ vbt.ohlcv.accessors.OHLCVDFAccessor            -> pd.DataFrame.vbt.ohlcv.*
 vbt.px.accessors.PXSR/DFAccessor               -> pd.Series/DataFrame.vbt.px.*
 ```
 
-Additionally, some accessors subclass other accessors building the following inheritance hiearchy:
+Additionally, some accessors subclass other accessors, forming the following inheritance hierarchy:
 
 ```plaintext
 vbt.base.accessors.BaseIDXAccessor
@@ -36,10 +36,10 @@ vbt.base.accessors.BaseSR/DFAccessor
     -> vbt.px.accessors.PXSR/DFAccessor
 ```
 
-So, for example, the method `pd.Series.vbt.to_2d_array` is also available as
+For example, the method `pd.Series.vbt.to_2d_array` is also available as
 `pd.Series.vbt.returns.to_2d_array`.
 
-Class methods of any accessor can be conveniently accessed using `pd_acc`, `sr_acc`, and `df_acc` shortcuts:
+Class methods of any accessor can be accessed using the shortcuts `pd_acc`, `sr_acc`, and `df_acc`:
 
 ```pycon
 >>> from vectorbtpro import *
@@ -49,8 +49,8 @@ Class methods of any accessor can be conveniently accessed using `pd_acc`, `sr_a
 ```
 
 !!! note
-    Accessors in vectorbtpro are not cached, so querying `df.vbt` twice will also call `Vbt_DFAccessor` twice.
-    You can change this in global settings.
+    Accessors in vectorbtpro are not cached, so querying `df.vbt` twice will invoke `Vbt_DFAccessor` twice.
+    This behavior can be changed in global settings.
 """
 
 import pandas as pd
@@ -80,7 +80,12 @@ AccessorT = tp.TypeVar("AccessorT", bound=object)
 
 
 class Accessor(Base):
-    """Accessor."""
+    """Class representing a custom accessor.
+
+    Args:
+        name (str): The name under which the accessor is registered.
+        accessor (Type[Accessor]): The accessor type for instantiation.
+    """
 
     def __init__(self, name: str, accessor: tp.Type[AccessorT]) -> None:
         self._name = name
@@ -99,7 +104,12 @@ class Accessor(Base):
 
 
 class CachedAccessor(Base):
-    """Cached accessor."""
+    """Class representing a cached accessor.
+
+    Args:
+        name (str): The name under which the accessor is registered.
+        accessor (Type[Accessor]): The accessor type for instantiation.
+    """
 
     def __init__(self, name: str, accessor: tp.Type[AccessorT]) -> None:
         self._name = name
@@ -121,7 +131,12 @@ class CachedAccessor(Base):
 def register_accessor(name: str, cls: tp.Type[DirNamesMixin]) -> tp.Callable:
     """Register a custom accessor.
 
-    `cls` must subclass `pandas.core.accessor.DirNamesMixin`.
+    Args:
+        name (str): The name to register the accessor under.
+        cls (Type[DirNamesMixin]): A class extending `DirNamesMixin`.
+
+    Returns:
+        Callable: A decorator function to register the custom accessor.
     """
 
     def decorator(accessor: tp.Type[AccessorT]) -> tp.Type[AccessorT]:
@@ -146,23 +161,49 @@ def register_accessor(name: str, cls: tp.Type[DirNamesMixin]) -> tp.Callable:
 
 
 def register_index_accessor(name: str) -> tp.Callable:
-    """Decorator to register a custom `pd.Index` accessor."""
+    """Decorator to register a custom `pd.Index` accessor.
+
+    Args:
+        name (str): The name to register the accessor under.
+
+    Returns:
+        Callable: A decorator for registering the custom accessor.
+    """
     return register_accessor(name, pd.Index)
 
 
 def register_series_accessor(name: str) -> tp.Callable:
-    """Decorator to register a custom `pd.Series` accessor."""
+    """Decorator to register a custom `pd.Series` accessor.
+
+    Args:
+        name (str): The name to register the accessor under.
+
+    Returns:
+        Callable: A decorator for registering the custom accessor.
+    """
     return register_accessor(name, pd.Series)
 
 
 def register_dataframe_accessor(name: str) -> tp.Callable:
-    """Decorator to register a custom `pd.DataFrame` accessor."""
+    """Decorator to register a custom `pd.DataFrame` accessor.
+
+    Args:
+        name (str): The name to register the accessor under.
+
+    Returns:
+        Callable: A decorator for registering the custom accessor.
+    """
     return register_accessor(name, pd.DataFrame)
 
 
 @register_index_accessor("vbt")
 class Vbt_IDXAccessor(DirNamesMixin, BaseIDXAccessor):
-    """The main vectorbtpro accessor for `pd.Index`."""
+    """Class representing the main vectorbtpro accessor for `pd.Index`.
+
+    Args:
+        obj (Index): The pandas Index object.
+        **kwargs: Keyword arguments passed to `vectorbtpro.base.accessors.BaseIDXAccessor`.
+    """
 
     def __init__(self, obj: tp.Index, **kwargs) -> None:
         self._obj = obj
@@ -178,7 +219,13 @@ __pdoc__["idx_acc"] = False
 
 
 class Vbt_Accessor(DirNamesMixin, GenericAccessor):
-    """The main vectorbtpro accessor for `pd.Series` and `pd.DataFrame`."""
+    """Class representing the main vectorbtpro accessor for `pd.Series` and `pd.DataFrame`.
+
+    Args:
+        wrapper (Union[ArrayWrapper, ArrayLike]): Array wrapper or array-like object.
+        obj (Optional[ArrayLike]): An optional object for initialization.
+        **kwargs: Keyword arguments passed to `vectorbtpro.generic.accessors.GenericAccessor`.
+    """
 
     def __init__(
         self,
@@ -198,7 +245,13 @@ __pdoc__["pd_acc"] = False
 
 @register_series_accessor("vbt")
 class Vbt_SRAccessor(DirNamesMixin, GenericSRAccessor):
-    """The main vectorbtpro accessor for `pd.Series`."""
+    """Class representing the main vectorbtpro accessor for `pd.Series`.
+
+    Args:
+        wrapper (Union[ArrayWrapper, ArrayLike]): Array wrapper or an array-like object.
+        obj (Optional[ArrayLike]): An optional object for initialization.
+        **kwargs: Keyword arguments passed to `vectorbtpro.generic.accessors.GenericSRAccessor`.
+    """
 
     def __init__(
         self,
@@ -218,7 +271,13 @@ __pdoc__["sr_acc"] = False
 
 @register_dataframe_accessor("vbt")
 class Vbt_DFAccessor(DirNamesMixin, GenericDFAccessor):
-    """The main vectorbtpro accessor for `pd.DataFrame`."""
+    """Class representing the main vectorbtpro accessor for `pd.DataFrame`.
+
+    Args:
+        wrapper (Union[ArrayWrapper, ArrayLike]): Array wrapper or array-like data.
+        obj (Optional[ArrayLike]): Optional data object.
+        **kwargs: Keyword arguments passed to `vectorbtpro.generic.accessors.GenericDFAccessor`.
+    """
 
     def __init__(
         self,
@@ -237,20 +296,52 @@ __pdoc__["df_acc"] = False
 
 
 def register_vbt_accessor(name: str, parent: tp.Type[DirNamesMixin] = Vbt_Accessor) -> tp.Callable:
-    """Decorator to register an accessor on top of a parent accessor."""
+    """Decorator to register an accessor on top of a parent accessor.
+
+    Args:
+        name (str): Name to register the accessor.
+        parent (Type[DirNamesMixin]): Parent accessor class to extend (e.g., `Vbt_Accessor`).
+
+    Returns:
+        Callable: A decorator function to register the accessor.
+    """
     return register_accessor(name, parent)
 
 
 def register_idx_vbt_accessor(name: str, parent: tp.Type[DirNamesMixin] = Vbt_IDXAccessor) -> tp.Callable:
-    """Decorator to register a `pd.Index` accessor on top of a parent accessor."""
+    """Decorator to register a `pd.Index` accessor.
+
+    Args:
+        name (str): Name to register the accessor.
+        parent (Type[DirNamesMixin]): Parent accessor class to extend (e.g., `Vbt_IDXAccessor`).
+
+    Returns:
+        Callable: A decorator function to register the accessor.
+    """
     return register_accessor(name, parent)
 
 
 def register_sr_vbt_accessor(name: str, parent: tp.Type[DirNamesMixin] = Vbt_SRAccessor) -> tp.Callable:
-    """Decorator to register a `pd.Series` accessor on top of a parent accessor."""
+    """Decorator to register a `pd.Series` accessor.
+
+    Args:
+        name (str): Name to register the accessor.
+        parent (Type[DirNamesMixin]): Parent accessor class to extend (e.g., `Vbt_SRAccessor`).
+
+    Returns:
+        Callable: A decorator function to register the accessor.
+    """
     return register_accessor(name, parent)
 
 
 def register_df_vbt_accessor(name: str, parent: tp.Type[DirNamesMixin] = Vbt_DFAccessor) -> tp.Callable:
-    """Decorator to register a `pd.DataFrame` accessor on top of a parent accessor."""
+    """Decorator to register a `pd.DataFrame` accessor.
+
+    Args:
+        name (str): Name to register the accessor.
+        parent (Type[DirNamesMixin]): Parent accessor class to extend (e.g., `Vbt_DFAccessor`).
+
+    Returns:
+        Callable: A decorator function to register the accessor.
+    """
     return register_accessor(name, parent)

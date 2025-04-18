@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module with a global registry for managing progress bar instances."""
+"""Module providing a global registry for managing progress bars."""
 
 import uuid
 

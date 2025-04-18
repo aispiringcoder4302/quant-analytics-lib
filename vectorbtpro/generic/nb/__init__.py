@@ -8,14 +8,14 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module providing Numba-compiled functions for generic data.
+"""Package providing Numba-compiled functions for generic data.
 
-This module offers a collection of functions compiled with Numba that are used by accessors
+This package offers a collection of functions compiled with Numba that are used by accessors
 and various parts of a backtesting pipeline, including technical indicators. All functions
 accept only NumPy arrays and other Numba-compatible types.
 
 !!! note
-    `vectorbtpro` treats matrices as first-class citizens and expects input arrays to be 2-dim,
+    Vectorbtpro treats matrices as first-class citizens and expects input arrays to be 2-dim,
     unless a function has the `_1d` suffix or is intended for use as input to another function.
     Data is processed along the index (axis 0).
 

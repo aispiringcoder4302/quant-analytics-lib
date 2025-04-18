@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module defining the `BOLB` indicator."""
+"""Module defining the `BOLB` generator class for breakout labels."""
 
 import numpy as np
 
@@ -43,9 +43,10 @@ BOLB = IndicatorFactory(
 
 
 class _BOLB(BOLB):
-    """Class representing the breakout label generator for the `BOLB` indicator.
+    """Class representing the look-ahead breakout label generator.
 
-    Generates breakout labels using `vectorbtpro.labels.nb.breakout_labels_nb`.
+    See:
+        * `vectorbtpro.labels.nb.breakout_labels_nb` for the underlying implementation.
     """
 
     def plot(self, column: tp.Optional[tp.Label] = None, **kwargs) -> tp.BaseFigure:
@@ -53,7 +54,7 @@ class _BOLB(BOLB):
 
         Args:
             column (Label): Column to select for plotting.
-            **kwargs: Additional keyword arguments passed to
+            **kwargs: Keyword arguments passed to
                 `vectorbtpro.generic.accessors.GenericAccessor.overlay_with_heatmap`.
 
         Returns:

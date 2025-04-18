@@ -8,10 +8,10 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module with Numba-compiled functions for calculating returns and portfolio performance metrics.
+"""Module providing Numba-compiled functions for calculating returns and portfolio performance metrics.
 
 !!! note
-    `vectorbtpro` treats matrices as first-class citizens and expects input arrays to be
+    Vectorbtpro treats matrices as first-class citizens and expects input arrays to be
     2-dim, unless the function has a `_1d` suffix or is intended as input to another function.
     Data is processed along index (axis 0).
 

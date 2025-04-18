@@ -41,7 +41,9 @@ class DuckDBData(DBData):
 
     This class provides methods to pull tables, execute queries, and read Parquet files.
 
-    See `DuckDBData.pull` and `DuckDBData.fetch_key` for details on parameters.
+    See:
+        * `DuckDBData.pull` for argument details.
+        * `DuckDBData.fetch_key` for argument details.
 
     Examples:
         Set up the connection settings globally (optional):

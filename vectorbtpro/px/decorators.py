@@ -90,9 +90,9 @@ def attach_px_methods(cls: tp.Type[tp.T]) -> tp.Type[tp.T]:
                 Plot using `{px_func.__module__ + '.' + px_func.__name__}`.
 
                 Args:
-                    *args: Additional positional arguments passed to the Plotly Express function.
+                    *args: Positional arguments passed to the Plotly Express function.
                     layout (KwargsLike): Layout configuration overrides.
-                    **kwargs: Additional keyword arguments passed to the Plotly Express function.
+                    **kwargs: Keyword arguments passed to the Plotly Express function.
 
                 Returns:
                     BaseFigure: A Plotly figure created by the Plotly Express function.

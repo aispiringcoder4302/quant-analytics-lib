@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module with class decorators for portfolio."""
+"""Module providing class decorators for portfolio."""
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.base.wrapping import ArrayWrapper
@@ -113,7 +113,7 @@ def attach_shortcut_properties(config: Config) -> tp.ClassWrapper:
                 for object types 'records' and 'red_array', otherwise 
                 `vectorbtpro.utils.decorators.cacheable_property`.
             * `docstring`: The docstring for the generated property.
-            * Additional keyword arguments for wrapping, indexing, resampling, stacking, etc.
+            * Keyword arguments for wrapping, indexing, resampling, stacking, etc.
 
     Returns:
         ClassWrapper: A decorator that attaches shortcut properties to the class.

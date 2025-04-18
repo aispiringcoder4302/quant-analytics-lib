@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module providing the `AVData` class."""
+"""Module providing the `AVData` class for fetching data from the Alpha Vantage API."""
 
 import re
 import urllib.parse
@@ -43,8 +43,6 @@ AVDataT = tp.TypeVar("AVDataT", bound="AVData")
 class AVData(RemoteData):
     """Data class for fetching data from the Alpha Vantage API.
 
-    Refer to https://www.alphavantage.co/documentation/ for API documentation.
-
     In addition to using the https://github.com/RomelTorres/alpha_vantage package,
     this class can parse the API documentation with `AVData.parse_api_meta` (using BeautifulSoup4)
     to dynamically build API queries (pass `use_parser=True`).
@@ -55,7 +53,9 @@ class AVData(RemoteData):
     If parsing fails, disable it and manually specify the required parameters by
     setting `function` and disabling `match_params`.
 
-    See `AVData.fetch_symbol` for available arguments.
+    See:
+        * https://www.alphavantage.co/documentation/ for API endpoints and parameters.
+        * `AVData.fetch_symbol` for argument details.
 
     Examples:
         Set up the API key globally (optional):

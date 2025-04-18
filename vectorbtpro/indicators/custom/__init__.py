@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Modules providing custom indicators built using the indicator factory.
+"""Package providing custom indicators built using the indicator factory.
 
 All indicators are accessible via `vbt.*`.
 

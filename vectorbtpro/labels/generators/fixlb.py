@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module providing the `FIXLB` indicator."""
+"""Module defining the `FIXLB` generator class for fixed labels."""
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.indicators.factory import IndicatorFactory
@@ -33,9 +33,10 @@ FIXLB = IndicatorFactory(
 
 
 class _FIXLB(FIXLB):
-    """Class representing the FIXLB label generator indicator.
+    """Class representing the look-ahead fixed label generator.
 
-    Uses `vectorbtpro.labels.nb.fixed_labels_nb` for generating fixed labels.
+    See:
+        * `vectorbtpro.labels.nb.fixed_labels_nb` for the underlying implementation.
     """
 
     def plot(self, column: tp.Optional[tp.Label] = None, **kwargs) -> tp.BaseFigure:
@@ -43,7 +44,7 @@ class _FIXLB(FIXLB):
 
         Args:
             column (Optional[Label]): The column to plot.
-            **kwargs: Additional keyword arguments passed to
+            **kwargs: Keyword arguments passed to
                 `vectorbtpro.generic.accessors.GenericAccessor.overlay_with_heatmap`.
 
         Returns:

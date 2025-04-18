@@ -58,19 +58,17 @@ class DataUpdater(Configured):
     def data(self) -> Data:
         """Data instance associated with the updater.
 
-        See `vectorbtpro.data.base.Data`.
-
         Returns:
-            Data: The data instance.
+            Data: An instance of `vectorbtpro.data.base.Data`.
         """
         return self._data
 
     @property
     def schedule_manager(self) -> ScheduleManager:
-        """`vectorbtpro.utils.schedule_.ScheduleManager` instance used for scheduling update jobs.
+        """Schedule manager instance used for scheduling update jobs.
         
         Returns:
-            ScheduleManager: The schedule manager instance.
+            ScheduleManager: An instance of `vectorbtpro.utils.schedule_.ScheduleManager`.
         """
         return self._schedule_manager
 

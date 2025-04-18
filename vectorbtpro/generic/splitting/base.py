@@ -78,7 +78,7 @@ class FixRange(DefineMixin):
 
 @define
 class RelRange(DefineMixin):
-    """Class for representing a relative range."""
+    """Class representing a relative range."""
 
     offset: tp.Union[int, float, tp.TimedeltaLike] = define.field(default=0)
     """Offset value.
@@ -331,7 +331,7 @@ class RelRange(DefineMixin):
 
 @define
 class Takeable(Evaluable, Annotatable, DefineMixin):
-    """Class for an object from which a range can be taken."""
+    """Class representing an object from which a range can be taken."""
 
     obj: tp.Any = define.required_field()
     """The object from which the range is taken."""
@@ -6072,6 +6072,14 @@ class Splitter(Analyzable):
 
         Returns:
             Frame: A DataFrame representing the computed overlap matrix, or a scalar if the result is squeezed.
+
+        See:
+            * `vectorbtpro.generic.splitting.nb.norm_split_overlap_matrix_nb` for `by="split"` and `normalize=True`.
+            * `vectorbtpro.generic.splitting.nb.split_overlap_matrix_nb` for `by="split"` and `normalize=False`.
+            * `vectorbtpro.generic.splitting.nb.norm_set_overlap_matrix_nb` for `by="set"` and `normalize=True`.
+            * `vectorbtpro.generic.splitting.nb.set_overlap_matrix_nb` for `by="set"` and `normalize=False`.
+            * `vectorbtpro.generic.splitting.nb.norm_range_overlap_matrix_nb` for `by="range"` and `normalize=True`.
+            * `vectorbtpro.generic.splitting.nb.range_overlap_matrix_nb` for `by="range"` and `normalize=False`.
         """
         split_group_by = self.get_split_grouper(split_group_by=split_group_by)
         split_labels = self.get_split_labels(split_group_by=split_group_by)

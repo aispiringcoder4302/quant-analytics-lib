@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module defining the `MA` indicator."""
+"""Module defining the `MA` class for calculating the moving average."""
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.generic import enums as generic_enums
@@ -46,12 +46,14 @@ MA = IndicatorFactory(
 
 
 class _MA(MA):
-    """Moving Average (MA).
+    """Class representing the Moving Average (MA) indicator.
 
     A moving average is a popular technical analysis indicator that smooths out price
     fluctuations by filtering out short-term noise from the price data.
 
-    See [Moving Average (MA)](https://www.investopedia.com/terms/m/movingaverage.asp).
+    See:
+        * https://www.investopedia.com/terms/m/movingaverage.asp for the definition of MA.
+        * `vectorbtpro.indicators.nb.ma_nb` for the underlying implementation.
     """
 
     def plot(
@@ -69,11 +71,11 @@ class _MA(MA):
         Args:
             column (Optional[Label]): Name of the column to select for plotting.
             plot_close (bool): Whether to include the close price trace in the plot.
-            close_trace_kwargs (KwargsLike): Additional keyword arguments for the `MA.close` scatter trace.
-            ma_trace_kwargs (KwargsLike): Additional keyword arguments for the `MA.ma` scatter trace.
-            add_trace_kwargs (KwargsLike): Additional keyword arguments for adding a trace using `fig.add_trace`.
+            close_trace_kwargs (KwargsLike): Keyword arguments for the `MA.close` scatter trace.
+            ma_trace_kwargs (KwargsLike): Keyword arguments for the `MA.ma` scatter trace.
+            add_trace_kwargs (KwargsLike): Keyword arguments for adding a trace using `fig.add_trace`.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
-            **layout_kwargs: Additional keyword arguments for configuring the figure layout.
+            **layout_kwargs: Keyword arguments for configuring the figure layout.
 
         Returns:
             BaseFigure: The figure with the plotted moving average and close price traces.

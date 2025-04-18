@@ -83,7 +83,7 @@ def attach_fields(*args, on_conflict: str = "raise") -> tp.FlexClassWrapper:
     * An error is raised if `on_conflict` is "raise".
 
     Args:
-        *args: Additional positional arguments representing either the decorated class
+        *args: Positional arguments representing either the decorated class
             or a configuration dictionary.
         on_conflict (str): Strategy for handling attribute name conflicts,
             which can be "raise", "ignore", or "override".

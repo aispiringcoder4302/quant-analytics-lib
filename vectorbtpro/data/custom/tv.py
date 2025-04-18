@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module providing TradingView data integration functionality through classes such as `TVClient` and `TVData`."""
+"""Module providing the `TVClient` and `TVData` classes for fetching data from TradingView."""
 
 import datetime
 import json
@@ -666,7 +666,10 @@ TVDataT = tp.TypeVar("TVDataT", bound="TVData")
 class TVData(RemoteData):
     """Data class for fetching data from TradingView.
 
-    Refer to `TVData.fetch_symbol` for details on available arguments.
+    See:
+        * https://www.tradingview.com/ for TradingView.
+        * `TVClient` for the client class used to fetch data.
+        * `TVData.fetch_symbol` for argument details.
 
     !!! note
         If you encounter the error "Please confirm that you are not a robot by clicking the captcha box."

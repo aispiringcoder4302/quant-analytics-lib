@@ -8,9 +8,9 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Modules for working with records.
+"""Package for working with records.
 
-Records provide a secondary data representation in `vectorbtpro` for efficiently storing sparse
+Records provide a secondary data representation in vectorbtpro for efficiently storing sparse
 event data—such as drawdowns, orders, trades, and positions—without converting them back to
 a matrix form, thereby reducing memory usage.
 """

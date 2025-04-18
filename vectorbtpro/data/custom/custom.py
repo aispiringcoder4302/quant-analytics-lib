@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module providing the `CustomData` class for accessing custom data."""
+"""Module providing the `CustomData` class for accessing custom data using a dedicated custom settings path."""
 
 import fnmatch
 import re
@@ -24,7 +24,7 @@ __pdoc__ = {}
 
 
 class CustomData(Data):
-    """Class for accessing custom data using a dedicated custom settings path."""
+    """Data class for accessing custom data using a dedicated custom settings path."""
 
     _settings_path: tp.SettingsPath = dict(custom=None)
 

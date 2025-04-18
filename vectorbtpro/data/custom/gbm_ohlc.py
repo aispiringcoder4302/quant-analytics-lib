@@ -8,8 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module providing the `GBMOHLCData` class for synthetic OHLC data generation using
-geometric Brownian motion simulation."""
+"""Module providing the `GBMOHLCData` class for generating synthetic OHLC data using geometric Brownian motion."""
 
 import numpy as np
 import pandas as pd
@@ -32,10 +31,10 @@ __pdoc__ = {}
 
 
 class GBMOHLCData(SyntheticData):
-    """Class for generating synthetic OHLC data using geometric Brownian motion.
+    """Data class for generating synthetic OHLC data using geometric Brownian motion.
 
-    Uses `vectorbtpro.data.nb.generate_gbm_data_1d_nb` to simulate price ticks and
-    `vectorbtpro.ohlcv.nb.ohlc_every_1d_nb` to aggregate ticks into OHLC bars.
+    See:
+        * `GBMOHLCData.generate_symbol` for argument details.
     """
 
     _settings_path: tp.SettingsPath = dict(custom="data.custom.gbm_ohlc")
@@ -75,6 +74,10 @@ class GBMOHLCData(SyntheticData):
 
         Returns:
             SymbolData: The generated data and a metadata dictionary.
+
+        See:
+            * `vectorbtpro.data.nb.generate_gbm_data_1d_nb` for generating ticks.
+            * `vectorbtpro.ohlcv.nb.ohlc_every_1d_nb` for aggregating ticks into OHLC bars.
 
         For defaults, see `custom.gbm` in `vectorbtpro._settings.data`.
 

@@ -8,7 +8,10 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module providing custom asset classes."""
+"""Module providing custom asset classes.
+
+See `vectorbtpro.utils.knowledge` for the toy dataset.
+"""
 
 import inspect
 import io
@@ -87,7 +90,8 @@ __pdoc__[
  
 ```python
 {class_abbr_config.prettify_doc()}
-```"""
+```
+"""
 
 
 class NoItemFoundError(Exception):
@@ -1307,7 +1311,7 @@ class VBTAsset(KnowledgeAsset):
             module (Union[None, str, ModuleType]): The module context for reference resolution.
             resolve (bool): Whether to resolve the object's reference.
             incl_base_attr (Optional[bool]): Include targets for base class attributes if applicable.
-            incl_shortcuts (Optional[bool]): Include shortcut forms from `vectorbtpro`.
+            incl_shortcuts (Optional[bool]): Include shortcut forms from vectorbtpro.
             incl_shortcut_access (Optional[bool]): Include attribute access forms when applicable.
             incl_shortcut_call (Optional[bool]): Include callable forms when applicable.
             incl_instances (Optional[bool]): Include common class abbreviation forms.

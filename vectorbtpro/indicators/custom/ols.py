@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module that provides the `OLS` indicator."""
+"""Module defining the `OLS` class for rolling Ordinary Least Squares regression analysis."""
 
 import numpy as np
 
@@ -63,12 +63,21 @@ OLS = IndicatorFactory(
 
 
 class _OLS(OLS):
-    """Rolling Ordinary Least Squares (OLS).
+    """Class representing the Rolling Ordinary Least Squares (OLS) indicator.
 
     The `OLS` indicator is used to detect changes in the relationship between stocks and
     the market or between different stocks by computing rolling linear regressions.
 
-    See [The Linear Regression of Time and Price](https://www.investopedia.com/articles/trading/09/linear-regression-time-price.asp).
+    See:
+        * https://www.investopedia.com/articles/trading/09/linear-regression-time-price.asp
+            for the definition of OLS.
+        * `vectorbtpro.indicators.nb.ols_nb` for the underlying implementation.
+        * `vectorbtpro.indicators.nb.ols_pred_nb` for the underlying implementation of
+            the `OLS.pred` property.
+        * `vectorbtpro.indicators.nb.ols_error_nb` for the underlying implementation of
+            the `OLS.error` property.
+        * `vectorbtpro.indicators.nb.ols_angle_nb` for the underlying implementation of
+            the `OLS.angle` property.
     """
 
     def plot(

@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module providing the `ATR` indicator."""
+"""Module defining the `ATR` class for calculating the Average True Range indicator."""
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.generic import enums as generic_enums
@@ -46,13 +46,15 @@ ATR = IndicatorFactory(
 
 
 class _ATR(ATR):
-    """Average True Range (ATR).
+    """Class representing the Average True Range (ATR) indicator.
 
     Calculates the average true range to measure price volatility.
     Large price movements that result in extensive trading ranges typically yield a higher ATR,
     indicating periods of increased market volatility.
 
-    See [Average True Range - ATR](https://www.investopedia.com/terms/a/atr.asp).
+    See:
+        * https://www.investopedia.com/terms/a/atr.asp for the definition of ATR.
+        * `vectorbtpro.indicators.nb.atr_nb` for the underlying implementation.
     """
 
     def plot(

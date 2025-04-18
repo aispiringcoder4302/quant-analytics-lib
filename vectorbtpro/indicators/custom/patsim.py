@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module implementing the `PATSIM` indicator."""
+"""Module defining the `PATSIM` indicator class for calculating rolling pattern similarity."""
 
 import numpy as np
 
@@ -102,9 +102,10 @@ PATSIM = IndicatorFactory(
 
 
 class _PATSIM(PATSIM):
-    """Rolling pattern similarity indicator.
+    """Class representing the rolling pattern similarity indicator.
 
-    It is based on `vectorbtpro.generic.nb.rolling.rolling_pattern_similarity_nb`.
+    See:
+        * `vectorbtpro.generic.nb.rolling.rolling_pattern_similarity_nb` for the underlying implementation.
     """
 
     def plot(
@@ -124,7 +125,7 @@ class _PATSIM(PATSIM):
                 `plotly.graph_objects.Scatter` for plotting `PATSIM.similarity`.
             add_trace_kwargs (KwargsLike): Keyword arguments passed to `fig.add_trace` when adding each trace.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
-            **layout_kwargs: Additional keyword arguments for configuring the figure layout.
+            **layout_kwargs: Keyword arguments for configuring the figure layout.
 
         Returns:
             BaseFigure: The updated or newly created figure with the similarity line plotted.
@@ -185,7 +186,7 @@ class _PATSIM(PATSIM):
             add_trace_kwargs (KwargsLike): Keyword arguments passed to 
                 `fig.add_trace` when adding each trace.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
-            **layout_kwargs: Additional keyword arguments for configuring the figure layout.
+            **layout_kwargs: Keyword arguments for configuring the figure layout.
 
         Returns:
             BaseFigure: The updated or newly created figure with the heatmap overlay on `PATSIM.close`.

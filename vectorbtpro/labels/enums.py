@@ -8,10 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module providing named tuples and enumerated types for label generation.
-
-Defines enumerations and schemas for `vectorbtpro.labels`.
-"""
+"""Module providing named tuples and enumerated types for label generation."""
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.utils.formatting import prettify_doc

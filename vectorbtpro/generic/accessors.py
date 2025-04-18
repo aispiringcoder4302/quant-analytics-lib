@@ -313,7 +313,7 @@ __pdoc__[
 
 @attach_nb_methods(nb_config)
 class GenericAccessor(BaseAccessor, Analyzable):
-    """Accessor on top of data of any type for both Series and DataFrames.
+    """Class representing an accessor for Series and DataFrames of any data type.
 
     Accessible via `pd.Series.vbt` and `pd.DataFrame.vbt`.
 
@@ -370,6 +370,12 @@ class GenericAccessor(BaseAccessor, Analyzable):
         """Resolve and return the mapping configuration based on the input.
 
         If `mapping` is set to False, mapping is disabled and the function returns None.
+
+        Args:
+            mapping (Union[None, bool, MappingLike]): The mapping configuration to resolve.
+
+        Returns:
+            Optional[Mapping]: The resolved mapping configuration.
         """
         if mapping is None:
             mapping = self.mapping
@@ -390,7 +396,12 @@ class GenericAccessor(BaseAccessor, Analyzable):
     def apply_mapping(self, mapping: tp.Union[None, bool, tp.MappingLike] = None, **kwargs) -> tp.SeriesFrame:
         """Apply the resolved mapping configuration to the data.
 
-        Delegates to `vectorbtpro.utils.mapping.apply_mapping`.
+        Args:
+            mapping (Union[None, bool, MappingLike]): The mapping configuration to apply.
+            **kwargs: Keyword arguments passed to `GenericAccessor.apply_mapping`.
+
+        Returns:
+            SeriesFrame: The data with the applied mapping.
         """
         mapping = self.resolve_mapping(mapping)
         return apply_mapping(self.obj, mapping, **kwargs)
@@ -404,7 +415,17 @@ class GenericAccessor(BaseAccessor, Analyzable):
         get_indexer_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> tp.SeriesFrame:
-        """Return a copy of the data with each value replaced by the value from `n` periods ago."""
+        """Return a copy of the data with each value replaced by the value from `n` periods ago.
+        
+        Args:
+            n (Union[int, FrequencyLike]): The number of periods to shift the data.
+            fill_value (Scalar): The value to fill in for missing data.
+            get_indexer_kwargs (KwargsLike): Additional arguments for `get_indexer`.
+            **kwargs: Keyword arguments passed to `GenericAccessor.fshift`.
+
+        Returns:
+            SeriesFrame: The data with the shifted values.
+        """
         if checks.is_int(n):
             return self.fshift(n, fill_value=fill_value, **kwargs)
         if get_indexer_kwargs is None:
@@ -418,7 +439,15 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
     def any_ago(self, n: tp.Union[int, tp.FrequencyLike], **kwargs) -> tp.SeriesFrame:
         """Return a boolean Series/DataFrame indicating if any value in a rolling window of
-        `n` previous periods is True."""
+        `n` previous periods is True.
+        
+        Args:
+            n (Union[int, FrequencyLike]): The number of periods to check for True values.
+            **kwargs: Keyword arguments passed to `GenericAccessor.rolling_any`.
+
+        Returns:
+            SeriesFrame: A boolean Series/DataFrame indicating if any value is True.
+        """
         wrap_kwargs = kwargs.pop("wrap_kwargs", {})
         wrap_kwargs = merge_dicts(dict(fillna=False, dtype=bool), wrap_kwargs)
         if checks.is_int(n):
@@ -427,7 +456,15 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
     def all_ago(self, n: tp.Union[int, tp.FrequencyLike], **kwargs) -> tp.SeriesFrame:
         """Return a boolean Series/DataFrame indicating if all values in a rolling window of
-        `n` previous periods are True."""
+        `n` previous periods are True.
+        
+        Args:
+            n (Union[int, FrequencyLike]): The number of periods to check for True values.
+            **kwargs: Keyword arguments passed to `GenericAccessor.rolling_all`.
+        
+        Returns:
+            SeriesFrame: A boolean Series/DataFrame indicating if all values are True.
+        """
         wrap_kwargs = kwargs.pop("wrap_kwargs", {})
         wrap_kwargs = merge_dicts(dict(fillna=False, dtype=bool), wrap_kwargs)
         if checks.is_int(n):
@@ -447,7 +484,22 @@ class GenericAccessor(BaseAccessor, Analyzable):
     ) -> tp.SeriesFrame:
         """Compute the index of the minimum value within each rolling window.
 
-        Delegates to `vectorbtpro.generic.nb.rolling.rolling_argmin_nb` for computation.
+        Args:
+            window (Optional[int]): Window size for computing the index of the minimum value.
+
+                If None, uses the full length of the data.
+            minp (Optional[int]): Minimum number of observations required within the window.
+            local (bool): If True, computes the index of the minimum value within the local window.
+            jitted (JittedOption): Option to control JIT compilation.
+            chunked (ChunkedOption): Option to control chunking.
+            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping the output.
+        
+        Returns:
+            SeriesFrame: A Series/DataFrame containing the indices of the minimum values
+                within the rolling windows.
+
+        See:
+            `vectorbtpro.generic.nb.rolling.rolling_argmin_nb`
         """
         if window is None:
             window = self.wrapper.shape[0]
@@ -460,7 +512,16 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
     def expanding_idxmin(self, minp: tp.Optional[int] = 1, **kwargs) -> tp.SeriesFrame:
         """Return the expanding index of the minimum value, equivalent to using the full-length
-        window as in `GenericAccessor.rolling_idxmin`."""
+        window as in `GenericAccessor.rolling_idxmin`.
+        
+        Args:
+            minp (Optional[int]): Minimum number of observations required within the window.
+            **kwargs: Keyword arguments passed to `GenericAccessor.rolling_idxmin`.
+        
+        Returns:
+            SeriesFrame: A Series/DataFrame containing the indices of the minimum values
+                within the expanding window.
+        """
         return self.rolling_idxmin(None, minp=minp, **kwargs)
 
     def rolling_idxmax(
@@ -474,7 +535,22 @@ class GenericAccessor(BaseAccessor, Analyzable):
     ) -> tp.SeriesFrame:
         """Compute the index of the maximum value within each rolling window.
 
-        Delegates to `vectorbtpro.generic.nb.rolling.rolling_argmax_nb` for computation.
+        Args:
+            window (Optional[int]): Window size for computing the index of the maximum value.
+
+                If None, uses the full length of the data.
+            minp (Optional[int]): Minimum number of observations required within the window.
+            local (bool): If True, computes the index of the maximum value within the local window.
+            jitted (JittedOption): Option to control JIT compilation.
+            chunked (ChunkedOption): Option to control chunking.
+            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping the output.
+        
+        Returns:
+            SeriesFrame: A Series/DataFrame containing the indices of the maximum values
+                within the rolling windows.
+
+        See:
+            `vectorbtpro.generic.nb.rolling.rolling_argmax_nb`
         """
         if window is None:
             window = self.wrapper.shape[0]
@@ -487,7 +563,16 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
     def expanding_idxmax(self, minp: tp.Optional[int] = 1, **kwargs) -> tp.SeriesFrame:
         """Return the expanding index of the maximum value, equivalent to using the full-length
-        window as in `GenericAccessor.rolling_idxmax`."""
+        window as in `GenericAccessor.rolling_idxmax`.
+        
+        Args:
+            minp (Optional[int]): Minimum number of observations required before computing the index.
+            **kwargs: Keyword arguments passed to `GenericAccessor.rolling_idxmax`.
+        
+        Returns:
+            SeriesFrame: A Series/DataFrame containing the indices of the maximum values
+                within the expanding window.
+        """
         return self.rolling_idxmax(None, minp=minp, **kwargs)
 
     def rolling_mean(
@@ -500,7 +585,20 @@ class GenericAccessor(BaseAccessor, Analyzable):
     ) -> tp.SeriesFrame:
         """Compute the rolling mean over a moving window.
 
-        Delegates to `vectorbtpro.generic.nb.rolling.rolling_mean_nb` for computation.
+        Args:
+            window (Optional[int]): Window size for computing the mean.
+
+                If None, uses the full length of the data.
+            minp (Optional[int]): Minimum number of observations required within the window.
+            jitted (JittedOption): Option to control JIT compilation.
+            chunked (ChunkedOption): Option to control chunked processing.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+            
+        Returns:
+            SeriesFrame: Calculated rolling mean values.
+
+        See:
+            `vectorbtpro.generic.nb.rolling.rolling_mean_nb`
         """
         if window is None:
             window = self.wrapper.shape[0]
@@ -511,7 +609,15 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
     def expanding_mean(self, minp: tp.Optional[int] = 1, **kwargs) -> tp.SeriesFrame:
         """Return the expanding mean computed over an increasing window, equivalent to using
-        the full-length window as in `GenericAccessor.rolling_mean`."""
+        the full-length window as in `GenericAccessor.rolling_mean`.
+        
+        Args:
+            minp (Optional[int]): Minimum number of observations required before computing the mean.
+            **kwargs: Keyword arguments passed to `GenericAccessor.rolling_mean`.
+        
+        Returns:
+            SeriesFrame: Calculated expanding mean values.
+        """
         return self.rolling_mean(None, minp=minp, **kwargs)
 
     def rolling_std(
@@ -525,7 +631,21 @@ class GenericAccessor(BaseAccessor, Analyzable):
     ) -> tp.SeriesFrame:
         """Compute the rolling standard deviation over a moving window.
 
-        Delegates to `vectorbtpro.generic.nb.rolling.rolling_std_nb` for computation.
+        Args:
+            window (Optional[int]): Window size for computing the standard deviation.
+
+                If None, uses the full length of the data.
+            minp (Optional[int]): Minimum number of observations required within the window.
+            ddof (int): Delta degrees of freedom.
+            jitted (JittedOption): Option to control JIT compilation.
+            chunked (ChunkedOption): Option to control chunked processing.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+        
+        Returns:
+            SeriesFrame: Calculated rolling standard deviation values.
+
+        See:
+            `vectorbtpro.generic.nb.rolling.rolling_std_nb`
         """
         if window is None:
             window = self.wrapper.shape[0]
@@ -536,7 +656,15 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
     def expanding_std(self, minp: tp.Optional[int] = 1, **kwargs) -> tp.SeriesFrame:
         """Return the expanding standard deviation computed over an increasing window,
-        equivalent to using the full-length window as in `GenericAccessor.rolling_std`."""
+        equivalent to using the full-length window as in `GenericAccessor.rolling_std`.
+        
+        Args:
+            minp (Optional[int]): Minimum number of observations required before computing the standard deviation.
+            **kwargs: Keyword arguments passed to `GenericAccessor.rolling_std`.
+        
+        Returns:
+            SeriesFrame: Calculated expanding standard deviation values.
+        """
         return self.rolling_std(None, minp=minp, **kwargs)
 
     def rolling_zscore(
@@ -562,6 +690,9 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
         Returns:
             SeriesFrame: Calculated rolling z-score values.
+
+        See:
+            `vectorbtpro.generic.nb.rolling.rolling_zscore_nb`
         """
         if window is None:
             window = self.wrapper.shape[0]
@@ -601,6 +732,9 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
         Returns:
             SeriesFrame: Calculated weighted moving mean values.
+
+        See:
+            `vectorbtpro.generic.nb.rolling.wm_mean_nb`
         """
         func = jit_reg.resolve_option(nb.wm_mean_nb, jitted)
         func = ch_reg.resolve_option(func, chunked)
@@ -628,6 +762,9 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
         Returns:
             SeriesFrame: Calculated exponentially weighted moving mean values.
+
+        See:
+            `vectorbtpro.generic.nb.rolling.ewm_mean_nb`
         """
         func = jit_reg.resolve_option(nb.ewm_mean_nb, jitted)
         func = ch_reg.resolve_option(func, chunked)
@@ -656,6 +793,9 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
         Returns:
             SeriesFrame: Calculated exponentially weighted moving standard deviation values.
+
+        See:
+            `vectorbtpro.generic.nb.rolling.ewm_std_nb`
         """
         func = jit_reg.resolve_option(nb.ewm_std_nb, jitted)
         func = ch_reg.resolve_option(func, chunked)
@@ -683,6 +823,9 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
         Returns:
             SeriesFrame: Calculated weighted window moving mean values.
+
+        See:
+            `vectorbtpro.generic.nb.rolling.wwm_mean_nb`
         """
         func = jit_reg.resolve_option(nb.wwm_mean_nb, jitted)
         func = ch_reg.resolve_option(func, chunked)
@@ -711,6 +854,9 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
         Returns:
             SeriesFrame: Calculated weighted window moving standard deviation values.
+
+        See:
+            `vectorbtpro.generic.nb.rolling.wwm_std_nb`
         """
         func = jit_reg.resolve_option(nb.wwm_std_nb, jitted)
         func = ch_reg.resolve_option(func, chunked)
@@ -737,6 +883,9 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
         Returns:
             SeriesFrame: Calculated VIDYA values.
+
+        See:
+            `vectorbtpro.generic.nb.rolling.vidya_nb`
         """
         func = jit_reg.resolve_option(nb.vidya_nb, jitted)
         func = ch_reg.resolve_option(func, chunked)
@@ -766,6 +915,9 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
         Returns:
             SeriesFrame: Calculated moving average values.
+
+        See:
+            `vectorbtpro.generic.nb.rolling.ma_nb`
         """
         if isinstance(wtype, str):
             wtype = map_enum_fields(wtype, WType)
@@ -800,6 +952,9 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
         Returns:
             SeriesFrame: Calculated moving standard deviation values.
+
+        See:
+            `vectorbtpro.generic.nb.rolling.msd_nb`
         """
         if isinstance(wtype, str):
             wtype = map_enum_fields(wtype, WType)
@@ -836,6 +991,9 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
         Returns:
             SeriesFrame: Calculated rolling covariance values.
+
+        See:
+            `vectorbtpro.generic.nb.rolling.rolling_cov_nb`
         """
         self_obj, other_obj = reshaping.broadcast(self.obj, other, **resolve_dict(broadcast_kwargs))
         if window is None:
@@ -869,8 +1027,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         chunked: tp.ChunkedOption = None,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.SeriesFrame:
-        """Compute rolling correlation using a moving window based on
-        `vectorbtpro.generic.nb.rolling.rolling_corr_nb`.
+        """Compute rolling correlation.
 
         Args:
             other (SeriesFrame): Second series or frame for computing correlation.
@@ -885,6 +1042,9 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
         Returns:
             SeriesFrame: The rolling correlation computed over the specified window.
+
+        See:
+            `vectorbtpro.generic.nb.rolling.rolling_corr_nb`
         """
         self_obj, other_obj = reshaping.broadcast(self.obj, other, **resolve_dict(broadcast_kwargs))
         if window is None:
@@ -917,8 +1077,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         chunked: tp.ChunkedOption = None,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.Tuple[tp.SeriesFrame, tp.SeriesFrame]:
-        """Compute rolling ordinary least squares regression using
-        `vectorbtpro.generic.nb.rolling.rolling_ols_nb`.
+        """Compute rolling ordinary least squares regression.
 
         Args:
             other (SeriesFrame): Second series or frame to perform regression against.
@@ -933,6 +1092,9 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
         Returns:
             Tuple[SeriesFrame, SeriesFrame]: A tuple containing the slope and intercept arrays.
+
+        See:
+            `vectorbtpro.generic.nb.rolling.rolling_ols_nb`
         """
         self_obj, other_obj = reshaping.broadcast(self.obj, other, **resolve_dict(broadcast_kwargs))
         if window is None:
@@ -956,8 +1118,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         minp: tp.Optional[int] = 1,
         **kwargs,
     ) -> tp.Tuple[tp.SeriesFrame, tp.SeriesFrame]:
-        """Compute expanding ordinary least squares regression by applying a growing window
-        via `GenericAccessor.rolling_ols`.
+        """Compute expanding ordinary least squares regression.
 
         Args:
             other (SeriesFrame): Second series or frame for regression.
@@ -978,7 +1139,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         chunked: tp.ChunkedOption = None,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.SeriesFrame:
-        """Compute rolling rank using `vectorbtpro.generic.nb.rolling.rolling_rank_nb`.
+        """Compute rolling rank.
 
         Args:
             window (Optional[int]): Size of the rolling window.
@@ -992,6 +1153,9 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
         Returns:
             SeriesFrame: The rolling rank result.
+
+        See:
+            `vectorbtpro.generic.nb.rolling.rolling_rank_nb`
         """
         if window is None:
             window = self.wrapper.shape[0]
@@ -1040,7 +1204,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         chunked: tp.ChunkedOption = None,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.SeriesFrame:
-        """Compute rolling pattern similarity using `vectorbtpro.generic.nb.rolling.rolling_pattern_similarity_nb`.
+        """Compute rolling pattern similarity.
 
         Args:
             pattern (ArrayLike): Reference pattern array for similarity comparison.
@@ -1079,6 +1243,9 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
         Returns:
             SeriesFrame: The rolling pattern similarity result.
+
+        See:
+            `vectorbtpro.generic.nb.rolling.rolling_pattern_similarity_nb`
         """
         if isinstance(interp_mode, str):
             interp_mode = map_enum_fields(interp_mode, InterpMode)
@@ -1142,7 +1309,6 @@ class GenericAccessor(BaseAccessor, Analyzable):
         This method applies the mapping function to the underlying 2D array of data and
         supports both regular and meta mapping operations. When invoked on a class,
         it performs broadcasting and template substitution and utilizes the meta mapping version.
-        For further details on the meta version, see `vectorbtpro.generic.nb.apply_reduce.map_meta_nb`.
 
         Args:
             map_func_nb (Union[str, MapFunc, MapMetaFunc]): The mapping function to apply.
@@ -1160,6 +1326,10 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
         Returns:
             SeriesFrame: The result of applying the mapping function to the input data, wrapped appropriately.
+
+        See:
+            * `vectorbtpro.generic.nb.apply_reduce.map_nb` for regular mapping.
+            * `vectorbtpro.generic.nb.apply_reduce.map_meta_nb` for meta mapping.
 
         Examples:
             Using regular function:
@@ -1275,11 +1445,6 @@ class GenericAccessor(BaseAccessor, Analyzable):
         """Apply a function along a specified axis with optional broadcasting,
         JIT compilation, and chunked processing.
 
-        * For non-meta operations, refer to `vectorbtpro.generic.nb.apply_reduce.apply_nb`
-            for axis=1 and `vectorbtpro.generic.nb.apply_reduce.row_apply_nb` for axis=0.
-        * For meta operations, refer to `vectorbtpro.generic.nb.apply_reduce.apply_meta_nb`
-            for axis=1 and `vectorbtpro.generic.nb.apply_reduce.row_apply_meta_nb` for axis=0.
-
         Args:
             apply_func_nb (Union[str, ApplyFunc, ApplyMetaFunc]): Function or string identifier
                 to apply along the specified axis.
@@ -1297,6 +1462,12 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
         Returns:
             SeriesFrame: The result of applying the function to the input data.
+
+        See:
+            * `vectorbtpro.generic.nb.apply_reduce.apply_nb` for non-meta operations and `axis=1`.
+            * `vectorbtpro.generic.nb.apply_reduce.row_apply_nb` for non-meta operations and `axis=0`.
+            * `vectorbtpro.generic.nb.apply_reduce.apply_meta_nb` for meta operations and `axis=1`.
+            * `vectorbtpro.generic.nb.apply_reduce.row_apply_meta_nb` for meta operations and `axis=0`.
 
         Examples:
             Using regular function:
@@ -1445,15 +1616,6 @@ class GenericAccessor(BaseAccessor, Analyzable):
     ) -> tp.SeriesFrame:
         """Apply a rolling reduction function over a specified window.
 
-        See `vectorbtpro.generic.nb.apply_reduce.rolling_reduce_nb` for integer windows and 
-        `vectorbtpro.generic.nb.apply_reduce.rolling_freq_reduce_nb` for frequency windows.
-
-        For the meta version, see `vectorbtpro.generic.nb.apply_reduce.rolling_reduce_meta_nb`
-        for integer windows and `vectorbtpro.generic.nb.apply_reduce.rolling_freq_reduce_meta_nb`
-        for frequency windows.
-
-        If `window` is None, an expanding window is used.
-
         Args:
             window (Optional[FrequencyLike]): Window size as an integer or a frequency string.
         
@@ -1472,6 +1634,12 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
         Returns:
             SeriesFrame: The result of the rolling reduction.
+
+        See:
+            * `vectorbtpro.generic.nb.apply_reduce.rolling_reduce_nb` for integer windows.
+            * `vectorbtpro.generic.nb.apply_reduce.rolling_freq_reduce_nb` for frequency windows.
+            * `vectorbtpro.generic.nb.apply_reduce.rolling_reduce_meta_nb` for meta functions and integer windows.
+            * `vectorbtpro.generic.nb.apply_reduce.rolling_freq_reduce_meta_nb` for meta functions and frequency windows.
 
         Examples:
             Using regular function:
@@ -1642,9 +1810,6 @@ class GenericAccessor(BaseAccessor, Analyzable):
     ) -> tp.SeriesFrame:
         """Apply a groupby reduction function on a wrapped 2D array.
 
-        See `vectorbtpro.generic.nb.apply_reduce.groupby_reduce_nb` for the standard version and
-        `vectorbtpro.generic.nb.apply_reduce.groupby_reduce_meta_nb` for the meta version.
-
         Args:
             by (AnyGroupByLike): Grouping key or object that defines groups.
 
@@ -1668,6 +1833,10 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
         Returns:
             SeriesFrame: The wrapped result after applying the groupby reduction.
+
+        See:
+            * `vectorbtpro.generic.nb.apply_reduce.groupby_reduce_nb` for the standard version.
+            * `vectorbtpro.generic.nb.apply_reduce.groupby_reduce_meta_nb` for the meta version.
 
         Examples:
             Using regular function:
@@ -1796,8 +1965,6 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
         This method applies a transformation function to each group defined by `by`.
         When invoked on a class, the meta version of the transformation function is used.
-        For further details, see `vectorbtpro.generic.nb.apply_reduce.groupby_transform_nb`
-        and `vectorbtpro.generic.nb.apply_reduce.groupby_transform_meta_nb`.
 
         Args:
             by (AnyGroupByLike): Grouping key or array for segmenting the data.
@@ -1819,6 +1986,10 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
         Returns:
             SeriesFrame: Transformed data as a Series or DataFrame.
+
+        See:
+            * `vectorbtpro.generic.nb.apply_reduce.groupby_transform_nb` for the standard version.
+            * `vectorbtpro.generic.nb.apply_reduce.groupby_transform_meta_nb` for the meta version.
 
         Examples:
             Using regular function:
@@ -2098,9 +2269,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         """Apply a function to an array and reduce its output.
 
         This method supports both direct and meta function application. When called on a class,
-        template substitution and broadcasting are applied. For details on the direct mode, see
-        `vectorbtpro.generic.nb.apply_reduce.apply_and_reduce_nb` and for the meta version, see
-        `vectorbtpro.generic.nb.apply_reduce.apply_and_reduce_meta_nb`.
+        template substitution and broadcasting are applied.
 
         Args:
             apply_func_nb (Union[str, ApplyFunc, ApplyMetaFunc]): Function or name of the apply function.
@@ -2117,6 +2286,10 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
         Returns:
             Series: The result of the apply and reduce operation.
+
+        See:
+            * `vectorbtpro.generic.nb.apply_reduce.apply_and_reduce_nb` for the standard version.
+            * `vectorbtpro.generic.nb.apply_reduce.apply_and_reduce_meta_nb` for the meta version.
 
         Examples:
             Using regular function:
@@ -2255,38 +2428,6 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
         The internal reduction function is chosen based on the grouping status and provided flags.
 
-        If the data is grouped and `flatten` is True:
-
-        * `vectorbtpro.generic.nb.apply_reduce.reduce_flat_grouped_to_array_nb` is used
-            when `returns_array` is True.
-        * `vectorbtpro.generic.nb.apply_reduce.reduce_flat_grouped_nb` is used
-            when `returns_array` is False.
-
-        If the data is grouped and `flatten` is False:
-
-        * `vectorbtpro.generic.nb.apply_reduce.reduce_grouped_to_array_nb` is used
-            when `returns_array` is True.
-        * `vectorbtpro.generic.nb.apply_reduce.reduce_grouped_nb` is used
-            when `returns_array` is False.
-
-        If the data is not grouped:
-
-        * `vectorbtpro.generic.nb.apply_reduce.reduce_to_array_nb` is used
-            when `returns_array` is True.
-        * `vectorbtpro.generic.nb.apply_reduce.reduce_nb` is used
-            when `returns_array` is False.
-
-        For meta reducing functions, the following internal functions are used:
-
-        * `vectorbtpro.generic.nb.apply_reduce.reduce_grouped_to_array_meta_nb` for grouped data
-            when `returns_array` is True.
-        * `vectorbtpro.generic.nb.apply_reduce.reduce_grouped_meta_nb` for grouped data
-            when `returns_array` is False.
-        * `vectorbtpro.generic.nb.apply_reduce.reduce_to_array_meta_nb` for non-grouped data
-            when `returns_array` is True.
-        * `vectorbtpro.generic.nb.apply_reduce.reduce_meta_nb` for non-grouped data
-            when `returns_array` is False.
-
         Args:
             reduce_func_nb (Union[str, ReduceFunc, ReduceMetaFunc, ReduceToArrayFunc, ReduceToArrayMetaFunc, ReduceGroupedFunc, ReduceGroupedMetaFunc, ReduceGroupedToArrayFunc, ReduceGroupedToArrayMetaFunc]):
                 The reducing function to apply.
@@ -2316,6 +2457,39 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
         Returns:
             MaybeSeriesFrame: The reduced data as a Series or DataFrame.
+
+        See:
+            If the data is grouped and `flatten` is True:
+
+            * `vectorbtpro.generic.nb.apply_reduce.reduce_flat_grouped_to_array_nb` is used
+                when `returns_array` is True.
+            * `vectorbtpro.generic.nb.apply_reduce.reduce_flat_grouped_nb` is used
+                when `returns_array` is False.
+
+            If the data is grouped and `flatten` is False:
+
+            * `vectorbtpro.generic.nb.apply_reduce.reduce_grouped_to_array_nb` is used
+                when `returns_array` is True.
+            * `vectorbtpro.generic.nb.apply_reduce.reduce_grouped_nb` is used
+                when `returns_array` is False.
+
+            If the data is not grouped:
+
+            * `vectorbtpro.generic.nb.apply_reduce.reduce_to_array_nb` is used
+                when `returns_array` is True.
+            * `vectorbtpro.generic.nb.apply_reduce.reduce_nb` is used
+                when `returns_array` is False.
+
+            For meta reducing functions, the following internal functions are used:
+
+            * `vectorbtpro.generic.nb.apply_reduce.reduce_grouped_to_array_meta_nb` for grouped data
+                when `returns_array` is True.
+            * `vectorbtpro.generic.nb.apply_reduce.reduce_grouped_meta_nb` for grouped data
+                when `returns_array` is False.
+            * `vectorbtpro.generic.nb.apply_reduce.reduce_to_array_meta_nb` for non-grouped data
+                when `returns_array` is True.
+            * `vectorbtpro.generic.nb.apply_reduce.reduce_meta_nb` for non-grouped data
+                when `returns_array` is False.
 
         Examples:
             Using regular function:
@@ -2533,10 +2707,6 @@ class GenericAccessor(BaseAccessor, Analyzable):
         """Apply proximity reduction on data using a sliding window.
 
         This method applies a reduction function on neighboring data blocks.
-        When invoked on a class, it performs a meta reduction
-        (see `vectorbtpro.generic.nb.apply_reduce.proximity_reduce_meta_nb`);
-        when called on an instance, it performs a standard reduction
-        (see `vectorbtpro.generic.nb.apply_reduce.proximity_reduce_nb`).
         The method supports broadcasting and template substitution to flexibly process input data.
 
         Args:
@@ -2553,6 +2723,10 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
         Returns:
             Frame: The resulting frame after applying the proximity reduction.
+
+        See:
+            * `vectorbtpro.generic.nb.apply_reduce.proximity_reduce_nb` for the standard version.
+            * `vectorbtpro.generic.nb.apply_reduce.proximity_reduce_meta_nb` for the meta version.
 
         Examples:
             Using regular function:
@@ -2678,9 +2852,6 @@ class GenericAccessor(BaseAccessor, Analyzable):
     ) -> tp.SeriesFrame:
         """Squeeze each group of columns into a single column.
 
-        See `vectorbtpro.generic.nb.apply_reduce.squeeze_grouped_nb` for the standard reduce version and
-        `vectorbtpro.generic.nb.apply_reduce.squeeze_grouped_meta_nb` for the meta function variant.
-
         Args:
             squeeze_func_nb (Union[str, ReduceFunc, GroupSqueezeMetaFunc]):
                 The squeeze function applied to each group.
@@ -2699,6 +2870,10 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
         Returns:
             MaybeSeriesFrame: The squeezed data as a Series or DataFrame.
+
+        See:
+            * `vectorbtpro.generic.nb.apply_reduce.squeeze_grouped_nb` for the standard version.
+            * `vectorbtpro.generic.nb.apply_reduce.squeeze_grouped_meta_nb` for the meta version.
 
         Examples:
             Using regular function:
@@ -2821,12 +2996,6 @@ class GenericAccessor(BaseAccessor, Analyzable):
     ) -> tp.SeriesFrame:
         """Flatten each group of columns in the associated data.
 
-        Uses the JIT-compiled function based on the grouping structure:
-
-        * If all groups have the same length, employs
-            `vectorbtpro.generic.nb.apply_reduce.flatten_uniform_grouped_nb`.
-        * Otherwise, employs `vectorbtpro.generic.nb.apply_reduce.flatten_grouped_nb`.
-
         Args:
             order (str): Order in which to flatten columns.
 
@@ -2837,6 +3006,10 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
         Returns:
             MaybeSeriesFrame: The flattened data as a Series or DataFrame.
+
+        See:
+            * `vectorbtpro.generic.nb.apply_reduce.flatten_uniform_grouped_nb` for uniform groups.
+            * `vectorbtpro.generic.nb.apply_reduce.flatten_grouped_nb` for non-uniform groups.
 
         !!! warning
             Ensure that the distribution of group lengths is nearly uniform. Otherwise,
@@ -2932,6 +3105,9 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
         Returns:
             MaybeSeriesFrame: Realigned data as a Series or DataFrame.
+
+        See:
+            `vectorbtpro.generic.nb.base.realign_nb`
 
         Examples:
             Downsampling:
@@ -3095,11 +3271,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
     ) -> tp.SeriesFrame:
         """Resample data to a specified target index.
 
-        Apply the reduction function on segments of the source data corresponding to index ranges derived
-        from the target index. This method calls `vectorbtpro.generic.nb.apply_reduce.reduce_index_ranges_nb`
-        for standard operations and `vectorbtpro.generic.nb.apply_reduce.reduce_index_ranges_meta_nb`
-        for meta operations, where index ranges are determined by
-        `vectorbtpro.base.resampling.nb.map_index_to_source_ranges_nb`.
+        This function applies the reduction function on segments of the source data corresponding to 
+        index ranges derived from the target index.
 
         Args:
             index (AnyRuleLike): Target index for resampling.
@@ -3119,6 +3292,10 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
         Returns:
             SeriesFrame: The resampled data as a pandas Series or DataFrame.
+
+        See:
+            * `vectorbtpro.generic.nb.apply_reduce.reduce_index_ranges_nb` for standard operations.
+            * `vectorbtpro.generic.nb.apply_reduce.reduce_index_ranges_meta_nb` for meta operations.
 
         Examples:
             Downsampling:
@@ -3299,10 +3476,6 @@ class GenericAccessor(BaseAccessor, Analyzable):
     ) -> tp.SeriesFrame:
         """Resample between target index bounds.
 
-        Applies `vectorbtpro.generic.nb.apply_reduce.reduce_index_ranges_nb` on index ranges derived from
-        `vectorbtpro.base.resampling.nb.map_bounds_to_source_ranges_nb`. For the meta version, refer to
-        `vectorbtpro.generic.nb.apply_reduce.reduce_index_ranges_meta_nb`.
-
         Args:
             target_lbound_index (IndexLike): Target lower bound index for resampling.
             target_rbound_index (IndexLike): Target upper bound index for resampling.
@@ -3325,6 +3498,10 @@ class GenericAccessor(BaseAccessor, Analyzable):
         Returns:
             SeriesFrame: A resampled series or frame with aggregated values,
                 wrapped based on the specified parameters.
+
+        See:
+            * `vectorbtpro.generic.nb.apply_reduce.reduce_index_ranges_nb` for standard operations.
+            * `vectorbtpro.generic.nb.apply_reduce.reduce_index_ranges_meta_nb` for meta operations.
 
         Examples:
             Using regular function:
@@ -3509,6 +3686,10 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
         Returns:
             MaybeSeries: The minimum value computed from non-NaN elements.
+
+        See:
+            * `vectorbtpro.generic.nb.apply_reduce.min_reduce_nb` for grouped operations.
+            * `vectorbtpro.generic.nb.base.nanmin_nb` for non-grouped operations.
         """
         wrap_kwargs = merge_dicts(dict(name_or_index="min"), wrap_kwargs)
         if self.wrapper.grouper.is_grouped(group_by=group_by):
@@ -3557,6 +3738,10 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
         Returns:
             MaybeSeries: The maximum value computed from non-NaN elements.
+
+        See:
+            * `vectorbtpro.generic.nb.apply_reduce.max_reduce_nb` for grouped operations.
+            * `vectorbtpro.generic.nb.base.nanmax_nb` for non-grouped operations.
         """
         wrap_kwargs = merge_dicts(dict(name_or_index="max"), wrap_kwargs)
         if self.wrapper.grouper.is_grouped(group_by=group_by):
@@ -3605,6 +3790,10 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
         Returns:
             MaybeSeries: The mean value computed from non-NaN elements.
+
+        See:
+            * `vectorbtpro.generic.nb.apply_reduce.mean_reduce_nb` for grouped operations.
+            * `vectorbtpro.generic.nb.base.nanmean_nb` for non-grouped operations.
         """
         wrap_kwargs = merge_dicts(dict(name_or_index="mean"), wrap_kwargs)
         if self.wrapper.grouper.is_grouped(group_by=group_by):
@@ -3653,6 +3842,10 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
         Returns:
             MaybeSeries: The median value computed from non-NaN elements.
+
+        See:
+            * `vectorbtpro.generic.nb.apply_reduce.median_reduce_nb` for grouped operations.
+            * `vectorbtpro.generic.nb.base.nanmedian_nb` for non-grouped operations.
         """
         wrap_kwargs = merge_dicts(dict(name_or_index="median"), wrap_kwargs)
         if self.wrapper.grouper.is_grouped(group_by=group_by):
@@ -3703,6 +3896,10 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
         Returns:
             MaybeSeries: The standard deviation computed from non-NaN elements.
+
+        See:
+            * `vectorbtpro.generic.nb.apply_reduce.std_reduce_nb` for grouped operations.
+            * `vectorbtpro.generic.nb.base.nanstd_nb` for non-grouped operations.
         """
         wrap_kwargs = merge_dicts(dict(name_or_index="std"), wrap_kwargs)
         if self.wrapper.grouper.is_grouped(group_by=group_by):
@@ -3752,6 +3949,10 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
         Returns:
             MaybeSeries: The sum computed from non-NaN elements.
+
+        See:
+            * `vectorbtpro.generic.nb.apply_reduce.sum_reduce_nb` for grouped operations.
+            * `vectorbtpro.generic.nb.base.nansum_nb` for non-grouped operations.
         """
         wrap_kwargs = merge_dicts(dict(name_or_index="sum"), wrap_kwargs)
         if self.wrapper.grouper.is_grouped(group_by=group_by):
@@ -3802,6 +4003,10 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
         Returns:
             MaybeSeries: The count computed from non-NaN elements.
+
+        See:
+            * `vectorbtpro.generic.nb.apply_reduce.count_reduce_nb` for grouped operations.
+            * `vectorbtpro.generic.nb.base.nancnt_nb` for non-grouped operations.
         """
         wrap_kwargs = merge_dicts(dict(name_or_index="count", dtype=int_), wrap_kwargs)
         if self.wrapper.grouper.is_grouped(group_by=group_by):
@@ -3851,6 +4056,10 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
         Returns:
             MaybeSeries: The covariance computed from non-NaN elements.
+
+        See:
+            * `vectorbtpro.generic.nb.apply_reduce.cov_reduce_nb` for grouped operations.
+            * `vectorbtpro.generic.nb.base.nancov_nb` for non-grouped operations.
         """
         self_obj, other_obj = reshaping.broadcast(self.obj, other, **resolve_dict(broadcast_kwargs))
         self_arr = reshaping.to_2d_array(self_obj)
@@ -3895,6 +4104,10 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
         Returns:
             MaybeSeries: The correlation coefficient computed from non-NaN elements.
+
+        See:
+            * `vectorbtpro.generic.nb.apply_reduce.corr_reduce_nb` for grouped operations.
+            * `vectorbtpro.generic.nb.base.nancorr_nb` for non-grouped operations.
         """
         self_obj, other_obj = reshaping.broadcast(self.obj, other, **resolve_dict(broadcast_kwargs))
         self_arr = reshaping.to_2d_array(self_obj)
@@ -3936,6 +4149,9 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
         Returns:
             SeriesFrame: The rank as a pandas Series or DataFrame.
+
+        See:
+            `vectorbtpro.generic.nb.base.rank_nb`
         """
         func = jit_reg.resolve_option(nb.rank_nb, jitted)
         func = ch_reg.resolve_option(func, chunked)
@@ -3963,6 +4179,9 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
         Returns:
             SeriesFrame: The labeled index as a pandas Series or DataFrame.
+
+        See:
+            `vectorbtpro.generic.nb.apply_reduce.argmin_reduce_nb`
         """
         wrap_kwargs = merge_dicts(dict(name_or_index="idxmin"), wrap_kwargs)
         if self.wrapper.grouper.is_grouped(group_by=group_by):
@@ -4007,6 +4226,9 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
         Returns:
             SeriesFrame: The labeled index as a pandas Series or DataFrame.
+
+        See:
+            `vectorbtpro.generic.nb.apply_reduce.argmax_reduce_nb`
         """
         wrap_kwargs = merge_dicts(dict(name_or_index="idxmax"), wrap_kwargs)
         if self.wrapper.grouper.is_grouped(group_by=group_by):
@@ -4048,8 +4270,6 @@ class GenericAccessor(BaseAccessor, Analyzable):
         `vectorbtpro.generic.nb.apply_reduce.describe_reduce_nb`.
         For details on the percentiles parameter, please refer to `pd.DataFrame.describe`.
 
-        See `vectorbtpro.generic.nb.base.value_counts_nb` for details.
-
         Args:
             percentiles (Optional[ArrayLike]): Percentiles to include in the summary.
             ddof (int): Delta degrees of freedom used in the computation of the standard deviation.
@@ -4060,6 +4280,9 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
         Returns:
             SeriesFrame: The descriptive statistics as a pandas Series or DataFrame.
+
+        See:
+            `vectorbtpro.generic.nb.apply_reduce.describe_reduce_nb`
 
         Examples:
             ```pycon
@@ -4228,6 +4451,11 @@ class GenericAccessor(BaseAccessor, Analyzable):
         Returns:
             SeriesFrame: A Series or DataFrame with counts of unique values.
 
+        See:
+            * `vectorbtpro.generic.nb.base.value_counts_per_row_nb` for `axis=0`.
+            * `vectorbtpro.generic.nb.base.value_counts_nb` for `axis=1`.
+            * `vectorbtpro.generic.nb.base.value_counts_1d_nb` for `axis=-1`.
+
         Examples:
             ```pycon
             >>> df.vbt.value_counts()
@@ -4379,8 +4607,6 @@ class GenericAccessor(BaseAccessor, Analyzable):
     ) -> tp.SeriesFrame:
         """Remove the mean value from the data array.
 
-        See `vectorbtpro.generic.nb.base.demean_nb` for details.
-
         Args:
             jitted (JittedOption): Option to control JIT compilation.
             chunked (ChunkedOption): Option to control chunked processing.
@@ -4391,6 +4617,9 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
         Returns:
             SeriesFrame: The demeaned data as a Series or DataFrame.
+
+        See:
+            `vectorbtpro.generic.nb.base.demean_nb`
         """
         func = jit_reg.resolve_option(nb.demean_nb, jitted)
         func = ch_reg.resolve_option(func, chunked)
@@ -4480,6 +4709,9 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
         Returns:
             SeriesFrame: The rebased data as a Series or DataFrame.
+
+        See:
+            `vectorbtpro.generic.nb.base.fbfill_nb`
         """
         func = jit_reg.resolve_option(nb.fbfill_nb, jitted)
         func = ch_reg.resolve_option(func, chunked)
@@ -4506,6 +4738,9 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
         Returns:
             SeriesFrame: The drawdown series as a Series or DataFrame.
+
+        See:
+            `vectorbtpro.generic.nb.records.drawdown_nb`
         """
         func = jit_reg.resolve_option(nb.drawdown_nb, jitted)
         func = ch_reg.resolve_option(func, chunked)
@@ -4718,8 +4953,6 @@ class GenericAccessor(BaseAccessor, Analyzable):
     ) -> tp.SeriesFrame:
         """Return a boolean series indicating where the caller crosses above the provided array.
 
-        Relies on `vectorbtpro.generic.nb.base.crossed_above_nb` for computation.
-
         Args:
             other (ArrayLike): Input array to compare against.
             wait (int): Number of periods to wait before confirming a cross.
@@ -4731,6 +4964,9 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
         Returns:
             SeriesFrame: Boolean series or dataframe indicating crossing events.
+
+        See:
+            `vectorbtpro.generic.nb.base.crossed_above_nb`
 
         Examples:
             ```pycon
@@ -4790,8 +5026,6 @@ class GenericAccessor(BaseAccessor, Analyzable):
     ) -> tp.SeriesFrame:
         """Return a boolean series indicating where the caller crosses below the provided array.
 
-        Computation relies on `vectorbtpro.generic.nb.base.crossed_below_nb`.
-
         See also `GenericAccessor.crossed_above` for similar examples.
 
         Args:
@@ -4805,6 +5039,9 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
         Returns:
             SeriesFrame: Boolean series or dataframe indicating crossing events.
+
+        See:
+            `vectorbtpro.generic.nb.base.crossed_below_nb`
         """
         broadcastable_args = dict(obj=self.obj, other=other)
         broadcast_kwargs = merge_dicts(dict(keep_flex=dict(obj=False, other=True)), broadcast_kwargs)
@@ -6317,7 +6554,7 @@ GenericAccessor.override_subplots_doc(__pdoc__)
 
 
 class GenericSRAccessor(GenericAccessor, BaseSRAccessor):
-    """Class for accessing Series data of any type.
+    """Class representing an accessor for Series of any data type.
 
     Accessible via `pd.Series.vbt`.
 
@@ -6507,7 +6744,7 @@ class GenericSRAccessor(GenericAccessor, BaseSRAccessor):
 
 
 class GenericDFAccessor(GenericAccessor, BaseDFAccessor):
-    """Accessor on top of data of any type for DataFrames only.
+    """Class representing an accessor for DataFrames of any data type.
 
     Accessible via `pd.DataFrame.vbt`.
 

@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module providing the `RANDNX` signal generator."""
+"""Module providing the `RANDNX` class for generating random entry and exit signals."""
 
 from vectorbtpro.indicators.configs import flex_col_param_config
 from vectorbtpro.signals.factory import SignalFactory
@@ -40,12 +40,11 @@ RANDNX = SignalFactory(
 
 
 class _RANDNX(RANDNX):
-    """Random entry and exit signal generator based on a specified signal count.
+    """Class representing a random entry and exit signal generator based on probabilities.
 
-    This class generates boolean arrays for `entries` and `exits` by leveraging
-    `vectorbtpro.signals.nb.rand_enex_apply_nb`.
-
-    See `RAND` for additional parameter notes.
+    See: 
+        * `vectorbtpro.signals.nb.rand_enex_apply_nb` for details on the entry and exit placement.
+        * `vectorbtpro.signals.generators.RAND` for parameter details.
 
     Examples:
         Test three different entry and exit signal configurations:

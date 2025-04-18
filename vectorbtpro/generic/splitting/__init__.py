@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Modules providing utilities for splitting."""
+"""Package providing utilities for splitting."""
 
 from typing import TYPE_CHECKING
 

@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module defining the `STOCH` indicator."""
+"""Module defining the `STOCH` class for calculating the Stochastic Oscillator indicator."""
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.generic import enums as generic_enums
@@ -65,13 +65,23 @@ STOCH = IndicatorFactory(
 
 
 class _STOCH(STOCH):
-    """Stochastic Oscillator (STOCH).
+    """Class representing the Stochastic Oscillator (STOCH) indicator.
 
     Implements a stochastic oscillator, a momentum indicator that compares a security's closing
     price to its price range over a specified period. It is used to identify overbought and oversold
     conditions with values typically bounded between 0 and 100.
 
     See [Investopedia – Stochastic Oscillator](https://www.investopedia.com/terms/s/stochasticoscillator.asp).
+
+    See:
+        * https://www.investopedia.com/terms/s/stochasticoscillator.asp for the definition of STOCH.
+        * `vectorbtpro.indicators.nb.stoch_nb` for the underlying implementation.
+        * `vectorbtpro.indicators.nb.stoch_fast_k_nb` for the underlying implementation of
+            the `STOCH.fast_k` property.
+        * `vectorbtpro.indicators.nb.stoch_slow_k_nb` for the underlying implementation of
+            the `STOCH.slow_k` property.
+        * `vectorbtpro.indicators.nb.stoch_slow_d_nb` for the underlying implementation of
+            the `STOCH.slow_d` property.
     """
 
     def plot(
@@ -91,18 +101,18 @@ class _STOCH(STOCH):
         Args:
             column (Optional[Label]): The name of the column to select for plotting.
             limits (Tuple[float, float]): Lower and upper y-axis limits for the filled range.
-            fast_k_trace_kwargs (KwargsLike): Additional keyword arguments for
+            fast_k_trace_kwargs (KwargsLike): Keyword arguments for
                 the `plotly.graph_objects.Scatter` trace of `STOCH.fast_k`.
-            slow_k_trace_kwargs (KwargsLike): Additional keyword arguments for
+            slow_k_trace_kwargs (KwargsLike): Keyword arguments for
                 the `plotly.graph_objects.Scatter` trace of `STOCH.slow_k`.
-            slow_d_trace_kwargs (KwargsLike): Additional keyword arguments for
+            slow_d_trace_kwargs (KwargsLike): Keyword arguments for
                 the `plotly.graph_objects.Scatter` trace of `STOCH.slow_d`.
-            add_shape_kwargs (KwargsLike): Additional keyword arguments for
+            add_shape_kwargs (KwargsLike): Keyword arguments for
                 `fig.add_shape` when adding the filled range.
-            add_trace_kwargs (KwargsLike): Additional keyword arguments for
+            add_trace_kwargs (KwargsLike): Keyword arguments for
                 `fig.add_trace` when adding each trace.
             fig (Optional[BaseFigure]): The figure to update; if None, a new figure is created.
-            **layout_kwargs: Additional keyword arguments for configuring the figure layout.
+            **layout_kwargs: Keyword arguments for configuring the figure layout.
 
         Returns:
             BaseFigure: The updated or newly created figure with the plotted STOCH traces and filled range.

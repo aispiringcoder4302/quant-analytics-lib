@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module providing the `PIVOTINFO` indicator."""
+"""Module defining the `PIVOTINFO` indicator class for analyzing pivot points."""
 
 import pandas as pd
 
@@ -79,7 +79,7 @@ PIVOTINFO = IndicatorFactory(
 
 
 class _PIVOTINFO(PIVOTINFO):
-    """Indicator returning various pivot analysis metrics based on predefined thresholds.
+    """Class representing the indicator returning various pivot analysis metrics based on predefined thresholds.
 
     Fields:
         `conf_pivot` (Pivot): Type of the latest confirmed pivot (running).
@@ -92,6 +92,15 @@ class _PIVOTINFO(PIVOTINFO):
             (looking ahead - use only for plotting).
         `modes` (TrendMode): Trend modes between confirmed pivot points
             (looking ahead - use only for plotting).
+
+    See:
+        * `vectorbtpro.indicators.nb.pivot_info_nb` for the underlying implementation.
+        * `vectorbtpro.indicators.nb.pivot_value_nb` for the underlying implementation of
+            the `PIVOTINFO.conf_value` and `PIVOTINFO.last_value` properties.
+        * `vectorbtpro.indicators.nb.pivots_nb` for the underlying implementation of
+            the `PIVOTINFO.pivots` property.
+        * `vectorbtpro.indicators.nb.modes_nb` for the underlying implementation of
+            the `PIVOTINFO.modes` property.
     """
 
     def plot(
@@ -114,7 +123,7 @@ class _PIVOTINFO(PIVOTINFO):
             add_trace_kwargs (KwargsLike): Keyword arguments passed to 
                 `fig.add_trace` when adding each trace.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
-            **layout_kwargs: Additional keyword arguments for configuring the figure layout.
+            **layout_kwargs: Keyword arguments for configuring the figure layout.
 
         Returns:
             BaseFigure: The updated figure with the plotted confirmed and last pivot values.
@@ -183,7 +192,7 @@ class _PIVOTINFO(PIVOTINFO):
             add_trace_kwargs (KwargsLike): Keyword arguments passed to 
                 `fig.add_trace` when adding each trace.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
-            **layout_kwargs: Additional keyword arguments for configuring the figure layout.
+            **layout_kwargs: Keyword arguments for configuring the figure layout.
 
         Returns:
             BaseFigure: The updated figure with the plotted zigzag line.

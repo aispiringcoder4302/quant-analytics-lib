@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module providing classes and utilities for grouping."""
+"""Package providing classes and utilities for grouping."""
 
 from typing import TYPE_CHECKING
 

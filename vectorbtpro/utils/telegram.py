@@ -119,7 +119,8 @@ if __version_info__ < (20, 0, 0, "alpha", 1):
 
 ```text
 {inspect.cleandoc(Handler.check_update.__doc__)}
-```"""
+```
+"""
 
     class TelegramBot(Configured):
         """Telegram bot class integrating with the python-telegram-bot library.
@@ -687,7 +688,8 @@ else:
             if __name__ == "__main__":
                 bot = MyTelegramBot(token='YOUR_TOKEN')
                 bot.start()
-            ```"""
+            ```
+            """
 
         _expected_keys_mode: tp.ExpectedKeysMode = "disable"
 

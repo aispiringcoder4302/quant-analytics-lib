@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module containing the definition and configuration of the `FSTD` indicator."""
+"""Module defining the `FSTD` generator class for the future standard deviation."""
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.generic import enums as generic_enums
@@ -47,7 +47,11 @@ FSTD = IndicatorFactory(
 
 
 class _FSTD(FSTD):
-    """Class implementing a look-ahead indicator based on `vectorbtpro.labels.nb.future_std_nb`."""
+    """Class representing the look-ahead future standard deviation generator.
+    
+    See:
+        * `vectorbtpro.indicators.nb.future_std_nb` for the underlying implementation.
+    """
 
     def plot(
         self,
@@ -61,12 +65,12 @@ class _FSTD(FSTD):
 
         Args:
             column (Optional[Label]): The name of the column to plot.
-            fstd_trace_kwargs (KwargsLike): Additional keyword arguments passed to
+            fstd_trace_kwargs (KwargsLike): Keyword arguments passed to
                 `plotly.graph_objects.Scatter` for the `FSTD.fstd` indicator.
-            add_trace_kwargs (KwargsLike): Additional keyword arguments passed to
+            add_trace_kwargs (KwargsLike): Keyword arguments passed to
                 `fig.add_trace` when adding each trace.
             fig (Optional[BaseFigure]): The figure to update; if None, a new figure is created.
-            **layout_kwargs: Additional keyword arguments for configuring the figure layout.
+            **layout_kwargs: Keyword arguments for configuring the figure layout.
 
         Returns:
             BaseFigure: The updated figure with the `FSTD.fstd` indicator plotted.

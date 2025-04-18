@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module providing the `RPROB` signal generator."""
+"""Module providing the `RPROB` class for generating random entry signals based on probabilities."""
 
 import numpy as np
 
@@ -44,7 +44,8 @@ RPROB = SignalFactory(
 class _RPROB(RPROB):
     """Class representing a random entry signal generator based on probabilities.
 
-    Uses `vectorbtpro.signals.nb.rand_by_prob_place_nb` to generate signal entries.
+    See:
+        * `vectorbtpro.signals.nb.rand_by_prob_place_nb` for details on the entry placement.
 
     !!! hint
         All parameters can be provided as a single value (per frame) or as a NumPy array

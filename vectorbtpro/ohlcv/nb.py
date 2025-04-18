@@ -8,10 +8,10 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module providing numba-compiled functions for processing OHLCV data.
+"""Module providing Numba-compiled functions for processing OHLCV data.
 
 !!! note
-    `vectorbtpro` treats matrices as first-class citizens and expects input arrays to be
+    Vectorbtpro treats matrices as first-class citizens and expects input arrays to be
     two-dimensional unless a function has a `_1d` suffix or is used as input to another function.
     Data is processed along the index (axis 0).
 """

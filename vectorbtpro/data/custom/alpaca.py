@@ -8,8 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module providing the `AlpacaData` class for retrieving and processing market data
-via the Alpaca REST API."""
+"""Module providing the `AlpacaData` class for fetching data from Alpaca."""
 
 import pandas as pd
 
@@ -34,9 +33,9 @@ AlpacaDataT = tp.TypeVar("AlpacaDataT", bound="AlpacaData")
 class AlpacaData(RemoteData):
     """Data class for fetching data from Alpaca.
 
-    API documentation is available at https://github.com/alpacahq/alpaca-py.
-
-    Refer to `AlpacaData.fetch_symbol` for detailed argument descriptions.
+    See:
+        * https://github.com/alpacahq/alpaca-py for Alpaca API.
+        * `AlpacaData.fetch_symbol` for argument details.
 
     Examples:
         Set up the API key globally (optional for crypto):

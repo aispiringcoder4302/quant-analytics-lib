@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module with a base class for managing drawdown records.
+"""Module providing the base class for managing drawdown records.
 
 Drawdown records capture critical information about drawdown intervals and are
 implemented as a subclass of `vectorbtpro.generic.ranges.Ranges`.
@@ -279,7 +279,7 @@ DrawdownsT = tp.TypeVar("DrawdownsT", bound="Drawdowns")
 @attach_fields(dd_attach_field_config)
 @override_field_config(dd_field_config)
 class Drawdowns(Ranges):
-    """Extends `vectorbtpro.generic.ranges.Ranges` for working with drawdown records.
+    """Class extending `vectorbtpro.generic.ranges.Ranges` for working with drawdown records.
 
     Requires `records_arr` to have all fields defined in `vectorbtpro.generic.enums.drawdown_dt`.
     """
@@ -323,6 +323,9 @@ class Drawdowns(Ranges):
 
         Returns:
             Drawdowns: A new instance of `Drawdowns` created from the provided price data.
+
+        See:
+            `vectorbtpro.generic.nb.records.get_drawdowns_nb`
         """
         if wrapper_kwargs is None:
             wrapper_kwargs = {}
@@ -434,7 +437,7 @@ class Drawdowns(Ranges):
     # ############# Drawdown ############# #
 
     def get_drawdown(self, jitted: tp.JittedOption = None, chunked: tp.ChunkedOption = None, **kwargs) -> MappedArray:
-        """Return the drawdown values computed using `vectorbtpro.generic.nb.records.dd_drawdown_nb`.
+        """Return the drawdown values.
 
         !!! note
             Both recovered and active drawdowns are considered.
@@ -446,6 +449,9 @@ class Drawdowns(Ranges):
 
         Returns:
             MappedArray: An array of computed drawdown values.
+
+        See:
+            `vectorbtpro.generic.nb.records.dd_drawdown_nb`
         """
         func = jit_reg.resolve_option(nb.dd_drawdown_nb, jitted)
         func = ch_reg.resolve_option(func, chunked)
@@ -506,7 +512,7 @@ class Drawdowns(Ranges):
         chunked: tp.ChunkedOption = None,
         **kwargs,
     ) -> MappedArray:
-        """Return the recovery return values computed using `vectorbtpro.generic.nb.records.dd_recovery_return_nb`.
+        """Return the recovery return values.
 
         !!! note
             Both recovered and active drawdowns are considered.
@@ -518,6 +524,9 @@ class Drawdowns(Ranges):
 
         Returns:
             MappedArray: An array containing the computed recovery return values.
+
+        See:
+            `vectorbtpro.generic.nb.records.dd_recovery_return_nb`
         """
         func = jit_reg.resolve_option(nb.dd_recovery_return_nb, jitted)
         func = ch_reg.resolve_option(func, chunked)
@@ -590,7 +599,7 @@ class Drawdowns(Ranges):
         chunked: tp.ChunkedOption = None,
         **kwargs,
     ) -> MappedArray:
-        """Call `vectorbtpro.generic.nb.records.dd_decline_duration_nb` to compute the decline duration.
+        """Compute the decline duration.
 
         Args:
             jitted (JittedOption): Option to control JIT compilation.
@@ -599,6 +608,9 @@ class Drawdowns(Ranges):
 
         Returns:
             MappedArray: The computed decline duration.
+
+        See:
+            `vectorbtpro.generic.nb.records.dd_decline_duration_nb`
 
         !!! note
             Calculation accounts for both recovered and active drawdowns.
@@ -614,7 +626,7 @@ class Drawdowns(Ranges):
         chunked: tp.ChunkedOption = None,
         **kwargs,
     ) -> MappedArray:
-        """Call `vectorbtpro.generic.nb.records.dd_recovery_duration_nb` to compute the recovery duration.
+        """Compute the recovery duration.
 
         Args:
             jitted (JittedOption): Option to control JIT compilation.
@@ -623,6 +635,9 @@ class Drawdowns(Ranges):
 
         Returns:
             MappedArray: The computed recovery duration.
+
+        See:
+            `vectorbtpro.generic.nb.records.dd_recovery_duration_nb`
 
         !!! note
             A value higher than 1 indicates that recovery was slower than the decline.
@@ -639,8 +654,7 @@ class Drawdowns(Ranges):
         chunked: tp.ChunkedOption = None,
         **kwargs,
     ) -> MappedArray:
-        """Call `vectorbtpro.generic.nb.records.dd_recovery_duration_ratio_nb` to compute 
-        the recovery duration ratio.
+        """Compute the recovery duration ratio.
 
         Args:
             jitted (JittedOption): Option to control JIT compilation.
@@ -649,6 +663,9 @@ class Drawdowns(Ranges):
 
         Returns:
             MappedArray: The computed recovery duration ratio.
+
+        See:
+            `vectorbtpro.generic.nb.records.dd_recovery_duration_ratio_nb`
 
         !!! note
             Calculation accounts for both recovered and active drawdowns.

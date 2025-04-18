@@ -57,7 +57,7 @@ BaseIDXAccessorT = tp.TypeVar("BaseIDXAccessorT", bound="BaseIDXAccessor")
 
 
 class BaseIDXAccessor(Configured, IndexApplier):
-    """Accessor on top of Index.
+    """Class representing an accessor on top of Index.
 
     Accessible via `pd.Index.vbt` and all child accessors.
 
@@ -819,7 +819,7 @@ BaseAccessorT = tp.TypeVar("BaseAccessorT", bound="BaseAccessor")
 @attach_binary_magic_methods(lambda self, other, np_func: self.combine(other, combine_func=np_func))
 @attach_unary_magic_methods(lambda self, np_func: self.apply(apply_func=np_func))
 class BaseAccessor(Wrapping):
-    """Base accessor for Series and DataFrame objects.
+    """Class representing a base accessor for Series and DataFrame objects.
 
     Accessible via `pd.Series.vbt` and `pd.DataFrame.vbt` and their descendants.
 
@@ -1608,7 +1608,7 @@ class BaseAccessor(Wrapping):
         Returns:
             SeriesFrame: The aligned object.
 
-        Examples:
+        Example:
             ```pycon
             >>> df1 = pd.DataFrame(
             ...     [[1, 2], [3, 4]],
@@ -1702,7 +1702,7 @@ class BaseAccessor(Wrapping):
         Returns:
             SeriesFrame: The cross aligned object.
 
-        Examples:
+        Example:
             ```pycon
             >>> df1 = pd.DataFrame(
             ...     [[1, 2, 3, 4], [5, 6, 7, 8]],
@@ -2019,7 +2019,7 @@ class BaseAccessor(Wrapping):
         Returns:
             Frame: The concatenated frame.
 
-        Examples:
+        Example:
             ```pycon
             >>> sr = pd.Series([1, 2], index=['x', 'y'])
             >>> df = pd.DataFrame([[3, 4], [5, 6]], index=['x', 'y'], columns=['a', 'b'])
@@ -2411,7 +2411,7 @@ class BaseAccessor(Wrapping):
         !!! note
             All required variables will broadcast against each other prior to the evaluation.
 
-        Examples:
+        Example:
             ```pycon
             >>> sr = pd.Series([1, 2, 3], index=['x', 'y', 'z'])
             >>> df = pd.DataFrame([[4, 5, 6]], index=['x', 'y', 'z'], columns=['a', 'b', 'c'])
@@ -2462,7 +2462,7 @@ class BaseAccessor(Wrapping):
 
 
 class BaseSRAccessor(BaseAccessor):
-    """Accessor for one-dimensional Series data.
+    """Class representing an accessor for one-dimensional Series data.
 
     Accessible via `pd.Series.vbt` and its child accessors.
 
@@ -2503,7 +2503,7 @@ class BaseSRAccessor(BaseAccessor):
 
 
 class BaseDFAccessor(BaseAccessor):
-    """Accessor for two-dimensional DataFrame data.
+    """Class representing an accessor for two-dimensional DataFrame data.
 
     Accessible via `pd.DataFrame.vbt` and its child accessors.
 

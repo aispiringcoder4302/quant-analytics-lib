@@ -125,7 +125,7 @@ OHLCVDFAccessorT = tp.TypeVar("OHLCVDFAccessorT", bound="OHLCVDFAccessor")
 
 @register_df_vbt_accessor("ohlcv")
 class OHLCVDFAccessor(OHLCDataMixin, GenericDFAccessor):
-    """Accessor on top of OHLCV data for pandas DataFrames.
+    """Class representing an accessor on top of OHLCV data for pandas DataFrames.
 
     Accessible via `pd.DataFrame.vbt.ohlcv`.
 
@@ -218,7 +218,7 @@ class OHLCVDFAccessor(OHLCDataMixin, GenericDFAccessor):
 
         Args:
             data_cls (Optional[Type[Data]]): Class used for data conversion.
-            **kwargs: Additional keyword arguments for data conversion.
+            **kwargs: Keyword arguments for data conversion.
 
         Returns:
             Data: A `vectorbtpro.data.base.Data` instance created from the underlying DataFrame.
@@ -254,6 +254,9 @@ class OHLCVDFAccessor(OHLCDataMixin, GenericDFAccessor):
 
         Returns:
             Frame: A DataFrame with mirrored OHLC features.
+
+        See:
+            `vectorbtpro.ohlcv.nb.mirror_ohlc_nb`
         """
         if isinstance(ref_feature, str):
             ref_feature = map_enum_fields(ref_feature, enums.PriceFeature)
@@ -299,7 +302,7 @@ class OHLCVDFAccessor(OHLCDataMixin, GenericDFAccessor):
         Args:
             *args: Positional arguments for resampling.
             wrapper_meta (DictLike): Metadata for resampling configuration.
-            **kwargs: Additional keyword arguments for resampling.
+            **kwargs: Keyword arguments for resampling.
 
         Returns:
             OHLCVDFAccessor: A new accessor instance with resampled OHLCV data.
@@ -454,7 +457,7 @@ class OHLCVDFAccessor(OHLCDataMixin, GenericDFAccessor):
                 `'ohlc'` or `'candlestick'`, or a Plotly trace class.
 
                 If None, the default trace type from settings is used.
-            trace_kwargs (KwargsLike): Additional keyword arguments for configuring the trace constructor.
+            trace_kwargs (KwargsLike): Keyword arguments for configuring the trace constructor.
             add_trace_kwargs (KwargsLike): Keyword arguments for adding traces to the figure.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
             **layout_kwargs: Keyword arguments for configuring the figure layout.
@@ -534,7 +537,7 @@ class OHLCVDFAccessor(OHLCDataMixin, GenericDFAccessor):
         """Plot volume data.
 
         Args:
-            trace_kwargs (KwargsLike): Additional keyword arguments for configuring
+            trace_kwargs (KwargsLike): Keyword arguments for configuring
                 the `plotly.graph_objects.Bar` trace.
             add_trace_kwargs (KwargsLike): Keyword arguments for adding traces to the figure.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
@@ -603,8 +606,8 @@ class OHLCVDFAccessor(OHLCDataMixin, GenericDFAccessor):
 
                 If None, the default trace type from settings is used.
             plot_volume (bool): Indicates whether to plot volume in a subplot below the OHLC chart.
-            ohlc_trace_kwargs (KwargsLike): Additional keyword arguments for configuring the OHLC trace.
-            volume_trace_kwargs (KwargsLike): Additional keyword arguments for configuring the volume
+            ohlc_trace_kwargs (KwargsLike): Keyword arguments for configuring the OHLC trace.
+            volume_trace_kwargs (KwargsLike): Keyword arguments for configuring the volume
                 trace using `plotly.graph_objects.Bar`.
             add_trace_kwargs (KwargsLike): Keyword arguments for adding traces to the figure.
             volume_add_trace_kwargs (KwargsLike): Keyword arguments for adding the volume trace to the figure.

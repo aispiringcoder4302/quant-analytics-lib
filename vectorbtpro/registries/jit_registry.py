@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module with a global registry for jittables.
+"""Module providing a global registry for jittable functions.
 
 Jitting refers to just-in-time compilation of functions to accelerate their execution.
 A jitter is a decorator that wraps a regular Python function and returns a decorated version,
@@ -661,7 +661,7 @@ class JITRegistry(Base):
             return_missing_task (bool): If True, returns `task_id_or_func` when the task is not registered.
             template_context (KwargsLike): A context dictionary for template substitution.
             tags (Optional[set]): Additional tags for the jitted setup.
-            **jitter_kwargs: Additional keyword arguments for configuring the jitter.
+            **jitter_kwargs: Keyword arguments for configuring the jitter.
 
         Returns:
             Union[Hashable, Callable]: Either the resolved jitted function or the original task
@@ -796,7 +796,7 @@ class JITRegistry(Base):
         
                 Specifies the task for which the option is applied.
             option (JittedOption): The option used to configure jitting.
-            **kwargs: Additional keyword arguments passed to `vectorbtpro.utils.jitting.resolve_jitted_kwargs`.
+            **kwargs: Keyword arguments passed to `vectorbtpro.utils.jitting.resolve_jitted_kwargs`.
 
         Returns:
             Union[Hashable, Callable]: The resolved jitted function or the original task identifier/function.
@@ -842,7 +842,7 @@ def register_jitted(
             from which the task identifier is derived.
         registry (JITRegistry): The registry used to register the decorated function.
         tags (Optional[set]): A set of tags associated with the function.
-        **options: Additional keyword arguments for configuration.
+        **options: Keyword arguments for configuration.
 
     Returns:
         Callable: The decorated function.

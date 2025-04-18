@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module providing `FeatherData` for fetching Feather data using PyArrow."""
+"""Module providing the `FeatherData` class for fetching Feather data using PyArrow."""
 
 from pathlib import Path
 
@@ -29,7 +29,11 @@ FeatherDataT = tp.TypeVar("FeatherDataT", bound="FeatherData")
 
 
 class FeatherData(FileData):
-    """Data class for fetching Feather data using PyArrow."""
+    """Data class class for fetching Feather data using PyArrow.
+    
+    See:
+        * `FeatherData.fetch_key` for argument details.
+    """
 
     _settings_path: tp.SettingsPath = dict(custom="data.custom.feather")
 

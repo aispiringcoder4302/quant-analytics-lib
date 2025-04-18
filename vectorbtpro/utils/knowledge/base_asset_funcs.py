@@ -8,7 +8,10 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module providing base asset function classes."""
+"""Module providing base asset function classes.
+
+See `vectorbtpro.utils.knowledge` for the toy dataset.
+"""
 
 import attr
 

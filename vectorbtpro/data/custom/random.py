@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module providing `RandomData`."""
+"""Module providing the `RandomData` class for generating synthetic data."""
 
 import pandas as pd
 
@@ -29,7 +29,11 @@ __pdoc__ = {}
 
 
 class RandomData(SyntheticData):
-    """Class for synthetic data generated using `vectorbtpro.data.nb.generate_random_data_nb`."""
+    """Data class for synthetic data generation.
+    
+    See:
+        * `RandomData.generate_key` for argument details.
+    """
 
     _settings_path: tp.SettingsPath = dict(custom="data.custom.random")
 
@@ -71,6 +75,9 @@ class RandomData(SyntheticData):
 
         Returns:
             KeyData: The generated data and a metadata dictionary.
+
+        See:
+            `vectorbtpro.data.nb.generate_random_data_nb`
 
         For defaults, refer to `custom.random` in `vectorbtpro._settings.data`.
         """

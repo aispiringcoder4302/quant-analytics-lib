@@ -31,7 +31,7 @@ __all__ = [
 
 
 class Timer(Base):
-    """Class for measuring execution time using `timeit`.
+    """Context manager for measuring execution time using `timeit`.
 
     Examples:
         ```pycon
@@ -253,9 +253,7 @@ def with_timeit(
 
 
 class MemTracer(Base):
-    """Class for tracing memory usage using `tracemalloc`.
-
-    This context manager starts tracing memory on entry and stops on exit, capturing the final and peak memory usage.
+    """Context manager for tracing peak and final memory usage using `tracemalloc`.
 
     Examples:
         ```pycon

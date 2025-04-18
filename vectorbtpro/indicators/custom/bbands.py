@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module containing the `BBANDS` indicator."""
+"""Module defining the `BBANDS` class for Bollinger Bands indicator."""
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.base.reshaping import to_2d_array
@@ -67,7 +67,7 @@ BBANDS = IndicatorFactory(
 
 
 class _BBANDS(BBANDS):
-    """Bollinger Bands (BBANDS).
+    """Class representing the Bollinger Bands (BBANDS) indicator.
 
     Bollinger Bands is a technical analysis tool that plots three lines:
 
@@ -77,7 +77,11 @@ class _BBANDS(BBANDS):
 
     These bands help identify market volatility and potential overbought or oversold conditions.
 
-    See [`Bollinger Band®`](https://www.investopedia.com/terms/b/bollingerbands.asp).
+    See:
+        * https://www.investopedia.com/terms/b/bollingerbands.asp for the definition of BBANDS.
+        * `vectorbtpro.indicators.nb.bbands_nb` for the underlying implementation.
+        * `vectorbtpro.indicators.nb.bbands_percent_b_nb` for the underlying implementation of `BBANDS.percent_b`.
+        * `vectorbtpro.indicators.nb.bbands_bandwidth_nb` for the underlying implementation of `BBANDS.bandwidth`.
     """
 
     def plot(
@@ -100,18 +104,18 @@ class _BBANDS(BBANDS):
         Args:
             column (Optional[Label]): Name of the column to plot.
             plot_close (bool): Flag indicating whether to include `BBANDS.close` in the plot.
-            close_trace_kwargs (KwargsLike): Additional keyword arguments passed to
+            close_trace_kwargs (KwargsLike): Keyword arguments passed to
                 `plotly.graph_objects.Scatter` for `BBANDS.close`.
-            upper_trace_kwargs (KwargsLike): Additional keyword arguments passed to
+            upper_trace_kwargs (KwargsLike): Keyword arguments passed to
                 `plotly.graph_objects.Scatter` for `BBANDS.upper`.
-            middle_trace_kwargs (KwargsLike): Additional keyword arguments passed to
+            middle_trace_kwargs (KwargsLike): Keyword arguments passed to
                 `plotly.graph_objects.Scatter` for `BBANDS.middle`.
-            lower_trace_kwargs (KwargsLike): Additional keyword arguments passed to
+            lower_trace_kwargs (KwargsLike): Keyword arguments passed to
                 `plotly.graph_objects.Scatter` for `BBANDS.lower`.
-            add_trace_kwargs (KwargsLike): Additional keyword arguments passed to
+            add_trace_kwargs (KwargsLike): Keyword arguments passed to
                 `fig.add_trace` when adding each trace.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
-            **layout_kwargs: Additional keyword arguments for configuring the figure layout.
+            **layout_kwargs: Keyword arguments for configuring the figure layout.
 
         Returns:
             BaseFigure: The updated figure with BBANDS traces.

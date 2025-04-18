@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module providing the `VWAP` indicator."""
+"""Module defining the `VWAP` class for calculating the Volume-Weighted Average Price indicator."""
 
 import numpy as np
 
@@ -62,14 +62,16 @@ VWAP = IndicatorFactory(
 
 
 class _VWAP(VWAP):
-    """Volume-Weighted Average Price (VWAP)
+    """Class representing the Volume-Weighted Average Price (VWAP) indicator.
 
     Calculates the volume-weighted average price commonly used in intraday charts.
     The calculation resets at the beginning of each trading session.
 
-    See [Volume-Weighted Average Price (VWAP)](https://www.investopedia.com/terms/v/vwap.asp).
-
     The `anchor` parameter specifies the grouping for when the VWAP resets and can be any valid index grouper.
+
+    See:
+        * https://www.investopedia.com/terms/v/vwap.asp for the definition of VWAP.
+        * `vectorbtpro.indicators.nb.vwap_nb` for the underlying implementation.
     """
 
     def plot(
@@ -87,11 +89,11 @@ class _VWAP(VWAP):
         Args:
             column (Optional[Label]): The name of the column to plot.
             plot_close (bool): Whether to include the `VWAP.close` values in the plot.
-            close_trace_kwargs (KwargsLike): Additional keyword arguments for
+            close_trace_kwargs (KwargsLike): Keyword arguments for
                 `plotly.graph_objects.Scatter` used to plot `VWAP.close`.
-            vwap_trace_kwargs (KwargsLike): Additional keyword arguments for
+            vwap_trace_kwargs (KwargsLike): Keyword arguments for
                 `plotly.graph_objects.Scatter` used to plot `VWAP.vwap`.
-            add_trace_kwargs (KwargsLike): Additional keyword arguments for `fig.add_trace` when adding each trace.
+            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` when adding each trace.
             fig (Optional[BaseFigure]): The figure to update; if None, a new figure is created.
             **layout_kwargs: Keyword arguments for configuring the figure layout.
         

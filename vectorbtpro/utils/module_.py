@@ -52,7 +52,8 @@ __pdoc__[
 
 ```python
 {package_shortcut_config.prettify_doc()}
-```"""
+```
+"""
 
 
 def get_module(obj: tp.Any) -> ModuleType:
@@ -685,7 +686,7 @@ def prepare_refname(
         obj (Any): The object or reference name to prepare.
         module (Union[None, str, ModuleType]): The module context used for resolving the object.
         resolve (bool): Whether to resolve the reference name.
-        vbt_only (bool): If True, limit resolution to objects within `vectorbtpro`.
+        vbt_only (bool): If True, limit resolution to objects within vectorbtpro.
         return_parts (bool): If True, return a tuple containing the reference name, module, and qualified name.
         raise_error (bool): Whether to raise an error if the reference name cannot be determined.
 
@@ -784,7 +785,7 @@ def get_api_ref(
         obj (Any): The object for which the API reference is constructed.
         module (Union[None, str, ModuleType]): The module context used for resolving the object.
         resolve (bool): Whether to resolve the object's reference name.
-        vbt_only (bool): If True, restrict reference resolution to objects within `vectorbtpro`.
+        vbt_only (bool): If True, restrict reference resolution to objects within vectorbtpro.
 
     Returns:
         str: The API reference URL for the given object.

@@ -2592,7 +2592,7 @@ def get_idxs(
 
 
 class index_dict(pdict):
-    """Dictionary mapping indexer objects to their corresponding values.
+    """Class representing a dictionary mapping indexer objects to their corresponding values.
 
     Each indexer object must be hashable.
 

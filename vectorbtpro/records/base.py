@@ -460,8 +460,7 @@ class MetaRecords(type(Analyzable)):
 
 
 class Records(Analyzable, metaclass=MetaRecords):
-    """Wraps the actual records array (such as trades) and exposes methods for mapping
-    it to an array of values (such as the PnL of each trade).
+    """Class for wrapping and analyzing record arrays.
 
     Args:
         wrapper (ArrayWrapper): Wrapper instance.
@@ -650,7 +649,7 @@ class Records(Analyzable, metaclass=MetaRecords):
         Args:
             *objs (Records): Additional `Records` instances to be stacked.
             wrapper_kwargs (KwargsLike): Keyword arguments for configuring the row stacking of wrappers.
-            **kwargs: Additional keyword arguments passed to the `Records` constructor and configuration resolvers.
+            **kwargs: Keyword arguments passed to the `Records` constructor and configuration resolvers.
 
         Returns:
             Records: A new `Records` instance representing the row-stacked result.
@@ -796,9 +795,9 @@ class Records(Analyzable, metaclass=MetaRecords):
 
         Args:
             *objs (MaybeTuple[Records]): `Records` instances to stack.
-            wrapper_kwargs (KwargsLike): Additional keyword arguments for configuring the wrapper.
-            get_indexer_kwargs (KwargsLike): Additional keyword arguments for index translation.
-            **kwargs: Additional keyword arguments for column stacking.
+            wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
+            get_indexer_kwargs (KwargsLike): Keyword arguments for index translation.
+            **kwargs: Keyword arguments for column stacking.
 
         Returns:
             Records: A new `Records` instance with column-stacked data.
@@ -842,12 +841,12 @@ class Records(Analyzable, metaclass=MetaRecords):
         return cls(**kwargs)
 
     def replace(self: RecordsT, **kwargs) -> RecordsT:
-        """See `vectorbtpro.utils.config.Configured.replace`.
+        """Replace the current `Records` instance with a new one, using the provided keyword arguments.
 
         Also ensures that `Records.col_mapper` is excluded from the new instance.
 
         Args:
-            **kwargs: Additional keyword arguments for configuration.
+            **kwargs: Keyword arguments for configuration.
 
         Returns:
             Records: A new `Records` instance with the updated configuration.
@@ -876,6 +875,10 @@ class Records(Analyzable, metaclass=MetaRecords):
 
         Returns:
             Tuple[Array1d, RecordArray]: A tuple containing the selected indices and the new record array.
+
+        See:
+            * `vectorbtpro.records.nb.record_col_lens_select_nb` if `Records.col_mapper` is sorted.
+            * `vectorbtpro.records.nb.record_col_map_select_nb` if `Records.col_mapper` is not sorted.
         """
         if len(self.values) == 0:
             return np.arange(len(self.values)), self.values
@@ -900,9 +903,9 @@ class Records(Analyzable, metaclass=MetaRecords):
         Set a field's `noindex` setting to True to exclude it from indexing.
 
         Args:
-            *args: Additional positional arguments for indexing.
+            *args: Positional arguments for indexing.
             wrapper_meta (DictLike): Optional metadata from the wrapper's indexing function.
-            **kwargs: Additional keyword arguments for indexing.
+            **kwargs: Keyword arguments for indexing.
 
         Returns:
             dict: A dictionary containing:
@@ -954,9 +957,9 @@ class Records(Analyzable, metaclass=MetaRecords):
         """Perform indexing on the `Records` instance.
 
         Args:
-            *args: Additional positional arguments for indexing.
+            *args: Positional arguments for indexing.
             records_meta (DictLike): Optional metadata dictionary returned by `Records.indexing_func_meta`.
-            **kwargs: Additional keyword arguments for indexing.
+            **kwargs: Keyword arguments for indexing.
 
         Returns:
             Records: A new `Records` instance with updated indexing.
@@ -1045,10 +1048,10 @@ class Records(Analyzable, metaclass=MetaRecords):
     def col_mapper(self) -> ColumnMapper:
         """Column mapper.
 
-        Provides a mapping of record columns. See `vectorbtpro.records.col_mapper.ColumnMapper`.
+        Provides a mapping of record columns.
 
         Returns:
-            ColumnMapper: The column mapper instance.
+            ColumnMapper: An instance of `vectorbtpro.records.col_mapper.ColumnMapper`.
         """
         return self._col_mapper
 
@@ -1227,7 +1230,7 @@ class Records(Analyzable, metaclass=MetaRecords):
 
         Args:
             field (str): The field identifier.
-            **kwargs: Additional keyword arguments passed to `Records.map_field`.
+            **kwargs: Keyword arguments passed to `Records.map_field`.
 
         Returns:
             MappedArray: The mapped array for the specified field.
@@ -1243,7 +1246,7 @@ class Records(Analyzable, metaclass=MetaRecords):
         Args:
             field (str): The field identifier.
             minus_one_to_zero (bool): Flag indicating whether to convert -1 values to 0.
-            **kwargs: Additional keyword arguments passed to `Records.get_map_field`.
+            **kwargs: Keyword arguments passed to `Records.get_map_field`.
 
         Returns:
             Index: The index derived from the mapped field.
@@ -1255,7 +1258,7 @@ class Records(Analyzable, metaclass=MetaRecords):
 
         Args:
             field (str): The field identifier.
-            **kwargs: Additional keyword arguments passed to `Records.get_map_field`.
+            **kwargs: Keyword arguments passed to `Records.get_map_field`.
 
         Returns:
             Index: The columns derived from the mapped field.
@@ -1267,8 +1270,8 @@ class Records(Analyzable, metaclass=MetaRecords):
 
         Args:
             field (str): The field identifier.
-            mapping_kwargs (KwargsLike): Additional keyword arguments for applying the mapping.
-            **kwargs: Additional keyword arguments passed to `Records.get_map_field`.
+            mapping_kwargs (KwargsLike): Keyword arguments for applying the mapping.
+            **kwargs: Keyword arguments passed to `Records.get_map_field`.
 
         Returns:
             Array1d: The array with the applied mapping for the field.
@@ -1285,8 +1288,8 @@ class Records(Analyzable, metaclass=MetaRecords):
 
         Args:
             field (str): The field identifier.
-            mapping_kwargs (KwargsLike): Additional keyword arguments for applying the mapping.
-            **kwargs: Additional keyword arguments passed to `Records.get_map_field`.
+            mapping_kwargs (KwargsLike): Keyword arguments for applying the mapping.
+            **kwargs: Keyword arguments passed to `Records.get_map_field`.
 
         Returns:
             Array1d: The stringified array with the applied mapping for the field.
@@ -1347,6 +1350,10 @@ class Records(Analyzable, metaclass=MetaRecords):
 
         Returns:
             bool: True if the records are sorted, False otherwise.
+
+        See:
+            * `vectorbtpro.records.nb.is_col_id_sorted_nb` for sorting with IDs.
+            * `vectorbtpro.records.nb.is_col_sorted_nb` for sorting without IDs.
         """
         if incl_id:
             func = jit_reg.resolve_option(nb.is_col_id_sorted_nb, jitted)
@@ -1409,6 +1416,9 @@ class Records(Analyzable, metaclass=MetaRecords):
 
         Returns:
             Records: A new instance containing the first N records per column.
+
+        See:
+            `vectorbtpro.records.nb.first_n_nb`
         """
         col_map = self.col_mapper.get_col_map(group_by=False)
         func = jit_reg.resolve_option(nb.first_n_nb, jitted)
@@ -1432,6 +1442,9 @@ class Records(Analyzable, metaclass=MetaRecords):
 
         Returns:
             Records: A new instance containing the last N records per column.
+
+        See:
+            `vectorbtpro.records.nb.last_n_nb`
         """
         col_map = self.col_mapper.get_col_map(group_by=False)
         func = jit_reg.resolve_option(nb.last_n_nb, jitted)
@@ -1457,6 +1470,9 @@ class Records(Analyzable, metaclass=MetaRecords):
 
         Returns:
             Records: A new instance containing the randomly selected records.
+
+        See:
+            `vectorbtpro.records.nb.random_n_nb`
         """
         if seed is not None:
             set_seed_nb(seed)
@@ -1550,6 +1566,10 @@ class Records(Analyzable, metaclass=MetaRecords):
 
         Returns:
             MappedArray: Mapped array with scalar values for each record.
+
+        See:
+            * `vectorbtpro.records.nb.map_records_nb` for regular application.
+            * `vectorbtpro.records.nb.map_records_meta_nb` for meta application.
         """
         if isinstance(cls_or_self, type):
             checks.assert_not_none(col_mapper, arg_name="col_mapper")
@@ -1597,6 +1617,10 @@ class Records(Analyzable, metaclass=MetaRecords):
 
         Returns:
             MappedArray: Mapped array resulting from applying the function to the records.
+
+        See:
+            * `vectorbtpro.records.nb.apply_nb` for regular application.
+            * `vectorbtpro.records.nb.apply_meta_nb` for meta application.
         """
         if isinstance(cls_or_self, type):
             checks.assert_not_none(col_mapper, arg_name="col_mapper")
@@ -1629,7 +1653,7 @@ class Records(Analyzable, metaclass=MetaRecords):
 
                 If None, `Records.idx_arr` is used.
             group_by (GroupByLike): Grouping specification to apply when generating the mask.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping the output mask.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the output mask.
 
         Returns:
             SeriesFrame: A Series or DataFrame representing the mask.

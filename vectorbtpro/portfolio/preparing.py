@@ -82,7 +82,7 @@ class PFPrepResult(Configured):
         target_func (Optional[Callable]): The target function.
         target_args (KwargsLike): Dictionary of arguments for the target function.
         pf_args (KwargsLike): Dictionary of portfolio configuration arguments.
-        **kwargs: Additional keyword arguments for further configuration.
+        **kwargs: Keyword arguments for further configuration.
     """
 
     def __init__(

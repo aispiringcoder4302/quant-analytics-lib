@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module providing the `BinanceData` class for accessing and processing Binance exchange data."""
+"""Module providing the `BinanceData` class for fetching data from Binance using the Python Binance API."""
 
 import time
 import traceback
@@ -42,9 +42,9 @@ BinanceDataT = tp.TypeVar("BinanceDataT", bound="BinanceData")
 class BinanceData(RemoteData):
     """Data class for fetching data from Binance using the Python Binance API.
 
-    See https://github.com/sammchardy/python-binance for API details.
-
-    See `BinanceData.fetch_symbol` for argument details.
+    See:
+        * https://github.com/sammchardy/python-binance for the API client.
+        * `BinanceData.fetch_symbol` for argument details.
 
     !!! note
         If using an exchange from the US, Japan, or another TLD, pass `tld="us"` in

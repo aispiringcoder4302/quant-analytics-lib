@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module providing the `RPROBCX` signal generator."""
+"""Module providing the `RPROBCX` class for generating random exit signals based on probabilities."""
 
 from vectorbtpro.signals.factory import SignalFactory
 from vectorbtpro.signals.generators.rprobx import rprobx_config, rprobx_func_config
@@ -34,10 +34,11 @@ RPROBCX = SignalFactory(
 class _RPROBCX(RPROBCX):
     """Class representing a random exit signal generator based on probabilities.
 
-    Generates a chain of `new_entries` and `exits` derived from input `entries`
-    using `vectorbtpro.signals.nb.rand_by_prob_place_nb`.
+    Generates a chain of `new_entries` and `exits` derived from input `entries`.
 
-    See `RPROB` for parameter details.
+    See: 
+        * `vectorbtpro.signals.nb.rand_by_prob_place_nb` for details on the exit placement.
+        * `vectorbtpro.signals.generators.RPROB` for parameter arguments.
     """
     pass
 

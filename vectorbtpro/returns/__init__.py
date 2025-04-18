@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Modules for working with returns.
+"""Package for working with returns.
 
 Provides common financial risk and performance metrics modeled after
 [empyrical](https://github.com/quantopian/empyrical), an adapter for quantstats,

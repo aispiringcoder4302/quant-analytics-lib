@@ -25,7 +25,8 @@ __all__ = [
 
 
 class SplitterCV(BaseCrossValidator, Base):
-    """Scikit-learn compatible cross-validator based on `vectorbtpro.generic.splitting.base.Splitter`.
+    """Class representing a scikit-learn compatible cross-validator based on 
+    `vectorbtpro.generic.splitting.base.Splitter`.
 
     Args:
         splitter (Union[None, str, Splitter, Callable]): The splitter instance, factory name,
@@ -129,23 +130,29 @@ class SplitterCV(BaseCrossValidator, Base):
 
     @property
     def split_group_by(self) -> tp.AnyGroupByLike:
-        """Group labels for splitting. See `vectorbtpro.base.accessors.BaseIDXAccessor.get_grouper`.
+        """Group labels for splitting.
 
         Not passed to the factory method.
 
         Returns:
             AnyGroupByLike: Group labels for splitting.
+
+        See:
+            `vectorbtpro.base.accessors.BaseIDXAccessor.get_grouper`
         """
         return self._split_group_by
 
     @property
     def set_group_by(self) -> tp.AnyGroupByLike:
-        """Group labels for setting. See `vectorbtpro.base.accessors.BaseIDXAccessor.get_grouper`.
+        """Group labels for setting.
 
         Not passed to the factory method.
 
         Returns:
             AnyGroupByLike: Group labels for setting.
+
+        See:
+            `vectorbtpro.base.accessors.BaseIDXAccessor.get_grouper`
         """
         return self._set_group_by
 

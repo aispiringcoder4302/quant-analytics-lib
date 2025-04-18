@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module providing numba-compiled functions for portfolio analysis."""
+"""Module providing Numba-compiled functions for portfolio analysis."""
 
 from numba import prange
 

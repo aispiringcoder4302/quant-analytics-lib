@@ -267,6 +267,9 @@ class Ranges(PriceRecords):
 
         Returns:
             Ranges: A new instance constructed from the array.
+
+        See:
+            `vectorbtpro.generic.nb.records.get_ranges_nb`
         """
         if wrapper_kwargs is None:
             wrapper_kwargs = {}
@@ -316,6 +319,9 @@ class Ranges(PriceRecords):
 
         Returns:
             Ranges: A new instance constructed based on the applied delta.
+
+        See:
+            `vectorbtpro.generic.nb.records.get_ranges_from_delta_nb`
         """
         if idx_field_or_arr is None:
             if isinstance(records_or_mapped, Records):
@@ -479,7 +485,7 @@ class Ranges(PriceRecords):
         """Generate a boolean mask for all ranges.
 
         This method converts range start and end indices, along with their statuses,
-        into a boolean mask using `vectorbtpro.generic.nb.records.ranges_to_mask_nb`.
+        into a boolean mask.
 
         Args:
             group_by (GroupByLike): Grouping specification.
@@ -489,6 +495,9 @@ class Ranges(PriceRecords):
 
         Returns:
             SeriesFrame: A boolean mask representing the ranges.
+
+        See:
+            `vectorbtpro.generic.nb.records.ranges_to_mask_nb`
         """
         col_map = self.col_mapper.get_col_map(group_by=group_by)
         func = jit_reg.resolve_option(nb.ranges_to_mask_nb, jitted)
@@ -576,6 +585,9 @@ class Ranges(PriceRecords):
 
         Returns:
             MappedArray: An array of effective durations for each range.
+
+        See:
+            `vectorbtpro.generic.nb.records.range_duration_nb`
         """
         func = jit_reg.resolve_option(nb.range_duration_nb, jitted)
         func = ch_reg.resolve_option(func, chunked)
@@ -605,6 +617,9 @@ class Ranges(PriceRecords):
 
         Returns:
             MappedArray: An array of durations for each range expressed as timedelta.
+
+        See:
+            `vectorbtpro.generic.nb.records.range_duration_nb`
         """
         func = jit_reg.resolve_option(nb.range_duration_nb, jitted)
         func = ch_reg.resolve_option(func, chunked)
@@ -693,8 +708,6 @@ class Ranges(PriceRecords):
     ) -> tp.MaybeSeries:
         """Return the coverage of ranges, defined as the total number of steps covered by all ranges.
 
-        See `vectorbtpro.generic.nb.records.range_coverage_nb` for details on the coverage computation.
-
         Args:
             overlapping (bool): Whether to consider overlapping ranges.
             normalize (bool): Whether to normalize the coverage.
@@ -705,6 +718,9 @@ class Ranges(PriceRecords):
 
         Returns:
             MaybeSeries: The computed coverage of the ranges.
+
+        See:
+            `vectorbtpro.generic.nb.records.range_coverage_nb`
         """
         col_map = self.col_mapper.get_col_map(group_by=group_by)
         index_lens = self.wrapper.grouper.get_group_lens(group_by=group_by) * self.wrapper.shape[0]
@@ -743,7 +759,6 @@ class Ranges(PriceRecords):
         """Generate projections for each range record.
 
         This method generates projections based on range records and provided close price data.
-        Internally, it calls `vectorbtpro.generic.nb.records.map_ranges_to_projections_nb`.
 
         Args:
             close (Optional[ArrayLike]): Array of close price values.
@@ -785,6 +800,9 @@ class Ranges(PriceRecords):
             Union[Tuple[Array1d, Array2d], Frame]: If `return_raw` is True, returns a tuple with
                 a 1D array of record indices and a 2D array of projections, with each row corresponding 
                 to a range; otherwise, returns a DataFrame with projections.
+
+        See:
+            `vectorbtpro.generic.nb.records.map_ranges_to_projections_nb`
 
         !!! note
             As opposed to the Numba-compiled function, the returned DataFrame has projections
@@ -1007,43 +1025,29 @@ class Ranges(PriceRecords):
 
                 Allows options such as "current_or_{option}", "mean", "min", "max", "median",
                 or a percentage like "50%" representing a quantile derived from closed ranges.
-            incl_end_idx (bool): Whether to include the end index in the projection.
-
-                See `Ranges.get_projections`.
-            extend (bool): Whether to extend the projection.
-
-                See `Ranges.get_projections`.
-            ffill (bool): Whether to forward fill the projection values.
-
-                See `Ranges.get_projections`.
+            incl_end_idx (bool): See `Ranges.get_projections`.
+            extend (bool): See `Ranges.get_projections`.
+            ffill (bool): See `Ranges.get_projections`.
             plot_past_period (Union[None, str, int, FrequencyLike]): Past period for plotting.
 
                 Accepts the same options as `proj_period` plus "proj_period" and "current_or_proj_period".
             plot_ohlc (Union[bool, DataFrame]): Flag or data specifying whether to plot OHLC.
             plot_close (Union[bool, Series]): Flag or data specifying whether to plot close prices.
-            plot_projections (bool): Plot each projection as a semi-transparent line if True.
-
+            plot_projections (bool): 
                 See `vectorbtpro.generic.accessors.GenericDFAccessor.plot_projections`
-            plot_bands (bool): Plot computed bands if True.
-
+            plot_bands (bool): 
                 See `vectorbtpro.generic.accessors.GenericDFAccessor.plot_projections`
-            plot_lower (Union[bool, str, Callable]): Specification for the lower band.
-
+            plot_lower (Union[bool, str, Callable]): 
                 See `vectorbtpro.generic.accessors.GenericDFAccessor.plot_projections`
-            plot_middle (Union[bool, str, Callable]): Specification for the middle band.
-
+            plot_middle (Union[bool, str, Callable]): 
                 See `vectorbtpro.generic.accessors.GenericDFAccessor.plot_projections`
-            plot_upper (Union[bool, str, Callable]): Specification for the upper band.
-
+            plot_upper (Union[bool, str, Callable]): 
                 See `vectorbtpro.generic.accessors.GenericDFAccessor.plot_projections`
-            plot_aux_middle (Union[bool, str, Callable]): Specification for an auxiliary middle band.
-
+            plot_aux_middle (Union[bool, str, Callable]): 
                 See `vectorbtpro.generic.accessors.GenericDFAccessor.plot_projections`
-            plot_fill (bool): Fill the area between band traces if True.
-
+            plot_fill (bool): 
                 See `vectorbtpro.generic.accessors.GenericDFAccessor.plot_projections`
-            colorize (Union[bool, str, Callable]): Strategy for colorizing projections or bands.
-
+            colorize (Union[bool, str, Callable]): 
                 See `vectorbtpro.generic.accessors.GenericDFAccessor.plot_projections`
             ohlc_type (Union[None, str, BaseTraceType]): Either 'OHLC', 'Candlestick',
                 or a Plotly trace; pass None to use the default.
@@ -1982,7 +1986,8 @@ __pdoc__[
 
 ```python
 {pattern_ranges_field_config.prettify_doc()}
-```"""
+```
+"""
 
 
 @attach_fields
@@ -1994,7 +1999,7 @@ class PatternRanges(Ranges):
         wrapper (ArrayWrapper): Wrapper instance.
         records_arr (RecordArray): Array of records.
         search_configs (List[PSC]): List of `PSC` instances.
-        **kwargs: Additional keyword arguments passed to `Ranges`.
+        **kwargs: Keyword arguments passed to `Ranges`.
     """
 
     def __init__(
@@ -2123,13 +2128,12 @@ class PatternRanges(Ranges):
         `vectorbtpro.utils.params.combine_params` into one or more search configurations. If no `Param`
         arguments are detected, a single search configuration is built from the given parameters.
         When `search_configs` is supplied, it is used directly without modification. For example,
-        passing `min_similarity` of 95% will use it in all search configurations except where i
-        t was explicitly overridden.
+        passing `min_similarity` of 95% will use it in all search configurations except where 
+        it was explicitly overridden.
 
-        Each search configuration is resolved using `PatternRanges.resolve_search_config` to prepare
-        arguments for Numba-compiled execution via `vectorbtpro.generic.nb.records.find_pattern_1d_nb`.
-        The configurations are executed with `vectorbtpro.utils.execution.execute`, the resulting records
-        arrays are concatenated, and the outcome is wrapped in a `PatternRanges` instance.
+        Each search configuration is resolved using `PatternRanges.resolve_search_config`.
+        The configurations are executed with `vectorbtpro.utils.execution.execute`, the resulting 
+        records arrays are concatenated, and the outcome is wrapped in a `PatternRanges` instance.
 
         Args:
             arr (ArrayLike): Input array for pattern search.
@@ -2173,6 +2177,9 @@ class PatternRanges(Ranges):
 
         Returns:
             PatternRanges: A new `PatternRanges` instance with found pattern ranges.
+
+        See:
+            `vectorbtpro.generic.nb.records.find_pattern_1d_nb`
         """
         if seed is not None:
             set_seed(seed)

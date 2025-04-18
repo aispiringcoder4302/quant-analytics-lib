@@ -154,7 +154,7 @@ ReturnsAccessorT = tp.TypeVar("ReturnsAccessorT", bound="ReturnsAccessor")
 
 @register_vbt_accessor("returns")
 class ReturnsAccessor(GenericAccessor, SimRangeMixin):
-    """Accessor on top of return series for both Pandas `Series` and `DataFrame`.
+    """Class representing an accessor on top of return series for both Pandas `Series` and `DataFrame`.
 
     Accessible via `pd.Series.vbt.returns` and `pd.DataFrame.vbt.returns`.
 
@@ -170,7 +170,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         defaults (KwargsLike): Overrides for default settings in `vectorbtpro._settings.returns`.
         sim_start (Optional[ArrayLike]): Simulation start, which can be a scalar or array-like.
         sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
-        **kwargs: Additional keyword arguments passed to `vectorbtpro.generic.accessors.GenericAccessor`.
+        **kwargs: Keyword arguments passed to `vectorbtpro.generic.accessors.GenericAccessor`.
     """
 
     def __init__(
@@ -230,12 +230,15 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             jitted (JittedOption): Option to control JIT compilation.
             chunked (ChunkedOption): Option to control chunked processing.
             wrapper (Optional[ArrayWrapper]): Wrapper instance for array operations.
-            wrapper_kwargs (KwargsLike): Additional keyword arguments to configure the wrapper.
+            wrapper_kwargs (KwargsLike): Keyword arguments to configure the wrapper.
             return_values (bool): If True, return wrapped return values instead of a `ReturnsAccessor` instance.
-            **kwargs: Additional keyword arguments for accessor initialization.
+            **kwargs: Keyword arguments for accessor initialization.
 
         Returns:
             Union[ReturnsAccessor, SeriesFrame]: A new accessor instance or wrapped return values.
+
+        See:
+            `vectorbtpro.returns.nb.returns_nb`
         """
         if wrapper_kwargs is None:
             wrapper_kwargs = {}
@@ -380,11 +383,11 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         """Perform indexing on a `ReturnsAccessor` instance.
 
         Args:
-            *args: Additional positional arguments for indexing.
+            *args: Positional arguments for indexing.
             wrapper_meta (DictLike): Indexing metadata.
 
                 If not provided, it is derived from the wrapper.
-            **kwargs: Additional keyword arguments for indexing.
+            **kwargs: Keyword arguments for indexing.
 
         Returns:
             ReturnsAccessor: A new accessor instance with the sliced data,
@@ -848,7 +851,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
             jitted (JittedOption): Option to control JIT compilation.
             chunked (ChunkedOption): Option to control chunked processing.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for configuring the wrapper.
+            wrap_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
 
         Returns:
             SeriesFrame: The mirrored returns.
@@ -888,7 +891,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
             jitted (JittedOption): Option to control JIT compilation.
             chunked (ChunkedOption): Option to control chunked processing.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapper configuration.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapper configuration.
 
         Returns:
             SeriesFrame: The cumulative returns.
@@ -925,7 +928,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             *args: Positional arguments defining resampling parameters.
             fill_with_zero (bool): Flag indicating whether to fill missing values with zero.
             wrapper_meta (DictLike): Metadata for creating the resampling wrapper.
-            **kwargs: Additional keyword arguments for resampling operations.
+            **kwargs: Keyword arguments for resampling operations.
 
         Returns:
             ReturnsAccessor: A new resampled returns accessor.
@@ -975,10 +978,13 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             rule (AnyRuleLike): The resampling rule or date offset.
             jitted (JittedOption): Option to control JIT compilation.
             chunked (ChunkedOption): Option for chunked processing.
-            **kwargs: Additional keyword arguments for resampling.
+            **kwargs: Keyword arguments for resampling.
 
         Returns:
             SeriesFrame: The resampled returns.
+
+        See:
+            `vectorbtpro.returns.nb.total_return_1d_nb`
         """
         checks.assert_instance_of(self.obj.index, dt.PandasDatetimeIndex)
 
@@ -1011,7 +1017,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         Args:
             jitted (JittedOption): Option to control JIT compilation.
             chunked (ChunkedOption): Option for chunked processing.
-            **kwargs: Additional keyword arguments for resampling returns.
+            **kwargs: Keyword arguments for resampling returns.
 
         Returns:
             SeriesFrame: The daily returns.
@@ -1029,7 +1035,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         Args:
             jitted (JittedOption): Option to control JIT compilation.
             chunked (ChunkedOption): Option for chunked processing.
-            **kwargs: Additional keyword arguments for resampling returns.
+            **kwargs: Keyword arguments for resampling returns.
 
         Returns:
             SeriesFrame: The annual returns.
@@ -1057,7 +1063,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
             jitted (JittedOption): Option to control JIT compilation.
             chunked (ChunkedOption): Option for chunked processing.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping the result.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             MaybeSeries: The final cumulative return value.
@@ -1110,7 +1116,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             sim_end (Optional[ArrayLike]): Simulation period end.
             jitted (JittedOption): Option for controlling JIT compilation.
             chunked (ChunkedOption): Option for controlling chunked processing.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping the result.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             SeriesFrame: The wrapped array of rolling final values.
@@ -1155,7 +1161,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             sim_end (Optional[ArrayLike]): Simulation period end.
             jitted (JittedOption): Option for controlling JIT compilation.
             chunked (ChunkedOption): Option for controlling chunked processing.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for result wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for result wrapping.
 
         Returns:
             MaybeSeries: The computed total return.
@@ -1201,7 +1207,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             sim_end (Optional[ArrayLike]): Simulation period end.
             jitted (JittedOption): Option for controlling JIT compilation.
             chunked (ChunkedOption): Option for controlling chunked processing.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping the result.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             SeriesFrame: The wrapped array of rolling total returns.
@@ -1246,7 +1252,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             sim_end (Optional[ArrayLike]): Simulation period end.
             jitted (JittedOption): Option for controlling JIT compilation.
             chunked (ChunkedOption): Option for controlling chunked processing.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for result wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for result wrapping.
 
         Returns:
             MaybeSeries: The computed annualized return.
@@ -1295,7 +1301,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             sim_end (Optional[ArrayLike]): Simulation period end.
             jitted (JittedOption): Option for controlling JIT compilation.
             chunked (ChunkedOption): Option for controlling chunked processing.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping the result.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             MaybeSeries: The computed rolling annualized return.
@@ -1346,7 +1352,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             sim_end (Optional[ArrayLike]): Simulation period end.
             jitted (JittedOption): Option for controlling JIT compilation.
             chunked (ChunkedOption): Option for controlling chunked processing.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for result wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for result wrapping.
 
         Returns:
             MaybeSeries: The computed annualized volatility.
@@ -1406,7 +1412,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
             jitted (JittedOption): Flag to control JIT compilation.
             chunked (ChunkedOption): Flag to control chunked processing.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping the output.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the output.
 
         Returns:
             MaybeSeries: A series of rolling annualized volatility values.
@@ -1457,7 +1463,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
             jitted (JittedOption): Flag to control JIT compilation.
             chunked (ChunkedOption): Flag to control chunked processing.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping the output.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the output.
 
         Returns:
             MaybeSeries: A series of Calmar ratio values.
@@ -1506,7 +1512,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
             jitted (JittedOption): Flag to control JIT compilation.
             chunked (ChunkedOption): Flag to control chunked processing.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping the output.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the output.
 
         Returns:
             MaybeSeries: A series of rolling Calmar ratio values.
@@ -1557,7 +1563,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
             jitted (JittedOption): Flag to control JIT compilation.
             chunked (ChunkedOption): Flag to control chunked processing.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping the output.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the output.
 
         Returns:
             MaybeSeries: A series of Omega ratio values.
@@ -1616,7 +1622,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
             jitted (JittedOption): Flag to control JIT compilation.
             chunked (ChunkedOption): Flag to control chunked processing.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping the output.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the output.
 
         Returns:
             MaybeSeries: A series of rolling Omega ratio values.
@@ -1673,7 +1679,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
             jitted (JittedOption): Flag to control JIT compilation.
             chunked (ChunkedOption): Flag to control chunked processing.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping the output.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the output.
 
         Returns:
             MaybeSeries: A series of Sharpe ratio values.
@@ -1743,7 +1749,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             stream_mode (bool): Indicates if stream mode processing is enabled.
             jitted (JittedOption): Option to control JIT compilation.
             chunked (ChunkedOption): Option to process data in chunks.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping the result.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             MaybeSeries: Series representing the rolling Sharpe ratio.
@@ -1800,7 +1806,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
             bias (bool): Indicates whether bias correction is applied for skewness and kurtosis.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping the result.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             MaybeSeries: Standard deviation of the Sharpe ratio estimation.
@@ -1848,7 +1854,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
             bias (bool): Flag indicating whether to apply bias correction for skewness and kurtosis.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping the result.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             MaybeSeries: The computed probabilistic Sharpe ratio.
@@ -1897,7 +1903,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
             bias (bool): Indicates whether bias correction for skewness and kurtosis should be applied.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping the result.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             MaybeSeries: The deflated Sharpe ratio.
@@ -1949,7 +1955,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
             jitted (JittedOption): Option to control JIT compilation.
             chunked (ChunkedOption): Option to process data in chunks.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping the result.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             MaybeSeries: The calculated downside risk.
@@ -2001,7 +2007,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
             jitted (JittedOption): Option to control JIT compilation.
             chunked (ChunkedOption): Option to control chunked processing.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping the output.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the output.
 
         Returns:
             MaybeSeries: The rolling downside risk series wrapped with the configured wrapper.
@@ -2050,7 +2056,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
             jitted (JittedOption): Option to control JIT compilation.
             chunked (ChunkedOption): Option for chunked processing.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping adjustments.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping adjustments.
 
         Returns:
             MaybeSeries: The sortino ratio values wrapped with the configured wrapper.
@@ -2103,7 +2109,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
             jitted (JittedOption): Option to control JIT compilation.
             chunked (ChunkedOption): Option for chunked processing.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
 
         Returns:
             MaybeSeries: The rolling sortino ratio series wrapped with the configured wrapper.
@@ -2156,7 +2162,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
             jitted (JittedOption): Option to control JIT compilation.
             chunked (ChunkedOption): Option for chunked processing.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping adjustments.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping adjustments.
 
         Returns:
             MaybeSeries: The information ratio series wrapped with the configured wrapper.
@@ -2217,7 +2223,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
             jitted (JittedOption): Option to control JIT compilation.
             chunked (ChunkedOption): Option for chunked processing.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
 
         Returns:
             MaybeSeries: The rolling information ratio series wrapped with the configured wrapper.
@@ -2274,7 +2280,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
             jitted (JittedOption): Option to control JIT compilation.
             chunked (ChunkedOption): Option for chunked processing.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping adjustments.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping adjustments.
 
         Returns:
             MaybeSeries: The beta values wrapped with the configured wrapper.
@@ -2335,7 +2341,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
             jitted (JittedOption): Option to control JIT compilation.
             chunked (ChunkedOption): Option to control chunked processing.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping the output value.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the output value.
 
         Returns:
             MaybeSeries: The computed rolling beta values.
@@ -2392,7 +2398,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
             jitted (JittedOption): Option to control JIT compilation.
             chunked (ChunkedOption): Option to control chunked processing.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping the output value.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the output value.
 
         Returns:
             MaybeSeries: The computed alpha values.
@@ -2453,7 +2459,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
             jitted (JittedOption): Option to control JIT compilation.
             chunked (ChunkedOption): Option to control chunked processing.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping the output value.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the output value.
 
         Returns:
             MaybeSeries: The computed rolling alpha values.
@@ -2504,7 +2510,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             noarr_mode (bool): Flag indicating whether to operate in no-array mode.
             jitted (JittedOption): Option to control JIT compilation.
             chunked (ChunkedOption): Option to control chunked processing.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping the output value.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the output value.
 
         Returns:
             MaybeSeries: The computed tail ratio values.
@@ -2552,7 +2558,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             noarr_mode (bool): Flag indicating whether to operate in no-array mode.
             jitted (JittedOption): Option to control JIT compilation.
             chunked (ChunkedOption): Option to control chunked processing.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping the output value.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the output value.
 
         Returns:
             MaybeSeries: The computed rolling tail ratio values.
@@ -2594,7 +2600,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
             jitted (JittedOption): Option to control JIT compilation.
             chunked (ChunkedOption): Option to control chunked processing.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping the output value.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the output value.
 
         Returns:
             MaybeSeries: The computed profit factor values.
@@ -2639,7 +2645,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
             jitted (JittedOption): Option to control JIT compilation.
             chunked (ChunkedOption): Option to control chunked processing.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping the result.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             MaybeSeries: The rolling profit factor.
@@ -2680,7 +2686,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
             jitted (JittedOption): Option to control JIT compilation.
             chunked (ChunkedOption): Option to control chunked processing.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping the result.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             MaybeSeries: The computed Common Sense Ratio.
@@ -2725,7 +2731,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
             jitted (JittedOption): Option to control JIT compilation.
             chunked (ChunkedOption): Option to control chunked processing.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping the result.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             MaybeSeries: The rolling Common Sense Ratio.
@@ -2772,7 +2778,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             noarr_mode (bool): Flag indicating whether to use non-array mode.
             jitted (JittedOption): Option to control JIT compilation.
             chunked (ChunkedOption): Option to control chunked processing.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping the result.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             MaybeSeries: The computed Value at Risk.
@@ -2827,7 +2833,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             noarr_mode (bool): Flag indicating whether to use non-array mode.
             jitted (JittedOption): Option to control JIT compilation.
             chunked (ChunkedOption): Option to control chunked processing.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping the result.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             MaybeSeries: The rolling Value at Risk.
@@ -2878,7 +2884,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             noarr_mode (bool): Flag indicating whether to use non-array mode.
             jitted (JittedOption): Option to control JIT compilation.
             chunked (ChunkedOption): Option to control chunked processing.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping the result.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             MaybeSeries: The computed Conditional Value at Risk.
@@ -2933,7 +2939,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             noarr_mode (bool): Flag to enable no-array mode.
             jitted (JittedOption): Option to control JIT compilation.
             chunked (ChunkedOption): Option to control chunked processing.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping the output.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the output.
 
         Returns:
             MaybeSeries: The rolling CVaR values.
@@ -2985,7 +2991,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
             jitted (JittedOption): Option to control JIT compilation.
             chunked (ChunkedOption): Option to control chunked processing.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping the reduced result.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the reduced result.
 
         Returns:
             MaybeSeries: The computed capture ratio.
@@ -3043,7 +3049,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
             jitted (JittedOption): Option to control JIT compilation.
             chunked (ChunkedOption): Option to control chunked processing.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping the output.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the output.
 
         Returns:
             MaybeSeries: The rolling capture ratio values.
@@ -3098,7 +3104,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
             jitted (JittedOption): Option to control JIT compilation.
             chunked (ChunkedOption): Option to control chunked processing.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping the reduced result.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the reduced result.
 
         Returns:
             MaybeSeries: The up-market capture ratio values.
@@ -3156,7 +3162,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
             jitted (JittedOption): Option to control JIT compilation.
             chunked (ChunkedOption): Option to control chunked processing.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping the output.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the output.
 
         Returns:
             MaybeSeries: The rolling up-market capture ratio values.
@@ -3211,7 +3217,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
             jitted (JittedOption): Option to control JIT compilation.
             chunked (ChunkedOption): Option to control chunked processing.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
 
         Returns:
             MaybeSeries: Wrapped series or DataFrame containing the down-market capture ratio.
@@ -3269,7 +3275,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
             jitted (JittedOption): Option to control JIT compilation.
             chunked (ChunkedOption): Option to control chunked processing.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
 
         Returns:
             MaybeSeries: Rolling down-market capture ratio values.
@@ -3317,7 +3323,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
             jitted (JittedOption): Option to control JIT compilation.
             chunked (ChunkedOption): Option to control chunked processing.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
 
         Returns:
             SeriesFrame: Series or DataFrame representing the relative drawdown.
@@ -3350,7 +3356,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
             jitted (JittedOption): Option to control JIT compilation.
             chunked (ChunkedOption): Option to control chunked processing.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
 
         Returns:
             MaybeSeries: Maximum drawdown values.
@@ -3396,7 +3402,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
             jitted (JittedOption): Option to control JIT compilation.
             chunked (ChunkedOption): Option to control chunked processing.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
 
         Returns:
             MaybeSeries: Rolling maximum drawdown values.
@@ -3447,7 +3453,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
             jitted (JittedOption): Option to control JIT compilation.
             chunked (ChunkedOption): Option to control chunked processing.
-            **kwargs: Additional keyword arguments forwarded to
+            **kwargs: Keyword arguments forwarded to
                 `vectorbtpro.generic.drawdowns.Drawdowns.from_price`.
 
         Returns:
@@ -3488,15 +3494,13 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         silence_warnings: bool = False,
     ) -> ReturnsAccessorT:
         """Resolve self.
-
-        See `vectorbtpro.base.wrapping.Wrapping.resolve_self`.
     
         If `year_freq` is provided in `cond_kwargs` and differs from the current instance,
         creates and returns a new instance with the updated `year_freq` and disabled caching,
         while warning the user if warnings are not silenced. Otherwise, returns the resolved instance.
     
         Args:
-            cond_kwargs (KwargsLike): Additional keyword arguments for condition overrides.
+            cond_kwargs (KwargsLike): Keyword arguments for condition overrides.
             custom_arg_names (Optional[Set[str]]): Set of custom attribute names to consider during resolution.
             impacts_caching (bool): Flag indicating whether the changes affect caching.
             silence_warnings (bool): If True, suppress warnings regarding object copying.
@@ -3746,7 +3750,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             fig (Optional[BaseFigure]): Figure to update.
 
                 If None, a new figure is created.
-            **layout_kwargs: Additional keyword arguments for configuring the figure layout.
+            **layout_kwargs: Keyword arguments for configuring the figure layout.
 
         Returns:
             BaseFigure: Figure displaying the cumulative returns plot.
@@ -3914,7 +3918,7 @@ ReturnsAccessor.override_subplots_doc(__pdoc__)
 
 @register_sr_vbt_accessor("returns")
 class ReturnsSRAccessor(ReturnsAccessor, GenericSRAccessor):
-    """Accessor on top of return series for Series only.
+    """Class representing an accessor on top of return series for Series only.
 
     Accessible via `pd.Series.vbt.returns`.
 
@@ -3926,7 +3930,7 @@ class ReturnsSRAccessor(ReturnsAccessor, GenericSRAccessor):
         defaults (KwargsLike): Default configuration parameters.
         sim_start (Optional[ArrayLike]): Simulation start, which can be a scalar or array-like.
         sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
-        **kwargs: Additional keyword arguments passed to `vectorbtpro.generic.accessors.GenericSRAccessor`.
+        **kwargs: Keyword arguments passed to `vectorbtpro.generic.accessors.GenericSRAccessor`.
     """
 
     def __init__(
@@ -3959,7 +3963,7 @@ class ReturnsSRAccessor(ReturnsAccessor, GenericSRAccessor):
 
 @register_df_vbt_accessor("returns")
 class ReturnsDFAccessor(ReturnsAccessor, GenericDFAccessor):
-    """Accessor on top of return series for DataFrames only.
+    """Class representing an accessor on top of return series for DataFrames only.
 
     Accessible via `pd.DataFrame.vbt.returns`.
 
@@ -3971,7 +3975,7 @@ class ReturnsDFAccessor(ReturnsAccessor, GenericDFAccessor):
         defaults (KwargsLike): Default configuration parameters.
         sim_start (Optional[ArrayLike]): Simulation start, which can be a scalar or array-like.
         sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
-        **kwargs: Additional keyword arguments passed to `vectorbtpro.generic.accessors.GenericSRAccessor`.
+        **kwargs: Keyword arguments passed to `vectorbtpro.generic.accessors.GenericSRAccessor`.
     """
 
     def __init__(

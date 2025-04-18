@@ -52,7 +52,7 @@ AllocRangesT = tp.TypeVar("AllocRangesT", bound="AllocRanges")
 
 @override_field_config(alloc_ranges_field_config)
 class AllocRanges(Ranges):
-    """Extends `vectorbtpro.generic.ranges.Ranges` for working with allocation range records."""
+    """Class extending `vectorbtpro.generic.ranges.Ranges` for working with allocation range records."""
 
     @property
     def field_config(self) -> Config:
@@ -89,7 +89,7 @@ AllocPointsT = tp.TypeVar("AllocPointsT", bound="AllocPoints")
 
 @override_field_config(alloc_points_field_config)
 class AllocPoints(Records):
-    """Extends `vectorbtpro.records.base.Records` for working with allocation point records."""
+    """Class extending `vectorbtpro.records.base.Records` for working with allocation point records."""
 
     @property
     def field_config(self) -> Config:

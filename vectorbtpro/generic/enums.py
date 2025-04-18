@@ -8,10 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module providing named tuples and enumerations for generic data.
-
-Defines enums and schemas for `vectorbtpro.generic`.
-"""
+"""Module providing named tuples and enumerations for generic data."""
 
 import numpy as np
 

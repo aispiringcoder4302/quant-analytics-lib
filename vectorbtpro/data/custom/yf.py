@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module providing `YFData` for fetching financial data from Yahoo Finance."""
+"""Module providing the `YFData` class for fetching financial data from Yahoo Finance."""
 
 import pandas as pd
 
@@ -27,11 +27,11 @@ __pdoc__ = {}
 
 
 class YFData(RemoteData):
-    """Class for fetching financial data from Yahoo Finance.
+    """Data class for fetching financial data from Yahoo Finance.
 
-    See https://github.com/ranaroussi/yfinance for API details.
-
-    See `YFData.fetch_symbol` for argument details.
+    See:
+        * https://github.com/ranaroussi/yfinance for the `yfinance` library.
+        * `YFData.fetch_symbol` for argument details.
 
     Examples:
         ```pycon

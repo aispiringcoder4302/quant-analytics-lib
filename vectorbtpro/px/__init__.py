@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Modules for plotting with Plotly Express."""
+"""Package for plotting with Plotly Express."""
 
 from typing import TYPE_CHECKING
 

@@ -911,7 +911,8 @@ def refine_source(
 
 ```{source_metadata_language}
 {source_metadata}
-```"""
+```
+"""
     if attach_imports is None:
         attach_imports = split
     if attach_imports:
@@ -923,7 +924,8 @@ def refine_source(
 
 ```python
 {source_imports}
-```"""
+```
+"""
     if attach_map is None:
         attach_map = split
     if attach_map:
@@ -937,7 +939,8 @@ def refine_source(
 
 ```{source_map_language}
 {source_map}
-```"""
+```
+"""
     if tokenize_kwargs is None:
         tokenize_kwargs = {}
     if copy_to_clipboard:
@@ -1145,7 +1148,7 @@ Your goal is to refine (rewrite for clarity, correctness, consistent format, and
 - **Omit sections** such as "Raises," "Attributes," "Methods," or default values.
 - If a function is primarily based on another function, add a section "See" with the reference to the original function. For example:
     ```
-    See: 
+    See:
         `vectorbtpro.signals.nb.generate_enex_nb`
     ```
 - If a function is decorated with `@register_chunkable` or `@register_jitted` with the `can_parallel` tag, add at the end of the docstring:
@@ -1179,7 +1182,7 @@ Your goal is to refine (rewrite for clarity, correctness, consistent format, and
 - For classes decorated with `@define`, treat them as if decorated with `@attr.s`.
     - **Do not duplicate fields and their descriptions** in the "Args" section unless the class defines its own `__init__`.
 - For module docstrings, retain the phrasing that **identifies them as a module** (e.g., "Module for/providing").
-- For `__init__.py` module docstrings (see the metadata of the current code context), retain the phrasing that **identifies them as multiple modules** (e.g., "Modules for/providing").
+- For `__init__.py` module docstrings (see the metadata of the current code context), retain the phrasing that **identifies them as a package** (e.g., "Package for/providing").
 - For class docstrings, retain the phrasing that **identifies them as a class** (e.g., "Class for/representing").
 - **Begin method docstrings with imperative verbs** (e.g., "Return," "Fetch," "Create").
 - **Properties** should describe what they represent rather than an action (e.g., instead of "Return a dictionary" use "Dictionary").
@@ -1250,7 +1253,7 @@ class Chatable(Configured):
     
     Args:
         formatter (ResponseFormatter): Response formatter of type `ResponseFormatter`.
-        **kwargs: Additional keyword arguments for configuration.
+        **kwargs: Keyword arguments for configuration.
         
     For defaults, see `chatting` in `vectorbtpro._settings`.
     \"\"\"

@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module defining the `PIVOTLB` indicator."""
+"""Module defining the `PIVOTLB` generator class for pivot labels."""
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.indicators.configs import flex_elem_param_config
@@ -37,9 +37,12 @@ PIVOTLB = IndicatorFactory(
 
 
 class _PIVOTLB(PIVOTLB):
-    """Label generator using `vectorbtpro.labels.nb.pivots_nb`.
+    """Class representing the look-ahead pivot label generator.
 
     This class generates labels based on pivot thresholds applied to high and low values.
+
+    See:
+        * `vectorbtpro.labels.nb.pivots_nb` for the underlying implementation.
     """
 
     def plot(self, column: tp.Optional[tp.Label] = None, **kwargs) -> tp.BaseFigure:
@@ -50,7 +53,7 @@ class _PIVOTLB(PIVOTLB):
 
         Args:
             column (Optional[Label]): Column to select from the indicator output.
-            **kwargs: Additional keyword arguments passed to
+            **kwargs: Keyword arguments passed to
                 `vectorbtpro.generic.accessors.GenericAccessor.overlay_with_heatmap`.
 
         Returns:

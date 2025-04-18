@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module with extensions for chunking of portfolio."""
+"""Module providing extensions for chunking of portfolio."""
 
 import numpy as np
 
@@ -115,7 +115,7 @@ def merge_sim_outs(
         ann_args (AnnArgs): Dictionary of annotation arguments.
         mapper (GroupLensMapper): Mapper for grouping and lens mapping.
         in_outputs_merge_func (Callable): Function to merge in-output objects.
-        **kwargs: Additional keyword arguments passed to `in_outputs_merge_func`.
+        **kwargs: Keyword arguments passed to `in_outputs_merge_func`.
 
     Returns:
         SimulationOutput: A merged simulation output instance.

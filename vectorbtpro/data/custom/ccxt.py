@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module providing the `CCXTData` class."""
+"""Module providing the `CCXTData` class for fetching data using the CCXT API."""
 
 import time
 import traceback
@@ -39,9 +39,10 @@ class CCXTData(RemoteData):
     """Data class for fetching data using CCXT.
 
     This class provides functionality to retrieve market data via the CCXT API.
-    See https://github.com/ccxt/ccxt for further API details.
 
-    For specific parameter details, refer to `CCXTData.fetch_symbol`.
+    See:
+        * https://github.com/ccxt/ccxt for more information on CCXT.
+        * `CCXTData.fetch_symbol` for argument details.
 
     Examples:
         Set up the API key globally (optional):

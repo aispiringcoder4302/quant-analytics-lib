@@ -712,7 +712,7 @@ PrintsSuppressedT = tp.TypeVar("PrintsSuppressedT", bound="PrintsSuppressed")
 
 
 class PrintsSuppressed(contextlib.redirect_stdout, Base):
-    """Context manager for suppressing printed output.
+    """Context manager to temporarily suppress printed output.
 
     Args:
         *args: Positional arguments passed to the context manager.

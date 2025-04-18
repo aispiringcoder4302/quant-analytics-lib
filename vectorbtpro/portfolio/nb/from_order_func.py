@@ -374,7 +374,7 @@ PostOrderFuncT = tp.Callable[[PostOrderContext, tp.VarArg()], None]
 # 
 #     Args:
 #         c (SimulationContext): The simulation context.
-#         *args: Additional positional arguments for simulation processing.
+#         *args: Positional arguments for simulation processing.
 # 
 #     Returns:
 #         Args: The forwarded positional arguments.
@@ -398,7 +398,7 @@ PostOrderFuncT = tp.Callable[[PostOrderContext, tp.VarArg()], None]
 # 
 #     Args:
 #         c (SimulationContext): The simulation context.
-#         *args: Additional positional arguments for simulation processing.
+#         *args: Positional arguments for simulation processing.
 #
 #     Returns:
 #         None
@@ -422,7 +422,7 @@ PostOrderFuncT = tp.Callable[[PostOrderContext, tp.VarArg()], None]
 # 
 #     Args:
 #         c (GroupContext): The group context.
-#         *args: Additional positional arguments for group processing.
+#         *args: Positional arguments for group processing.
 # 
 #     Returns:
 #         Args: The forwarded positional arguments.
@@ -446,7 +446,7 @@ PostOrderFuncT = tp.Callable[[PostOrderContext, tp.VarArg()], None]
 # 
 #     Args:
 #         c (GroupContext): The group context.
-#         *args: Additional positional arguments for group processing.
+#         *args: Positional arguments for group processing.
 #
 #     Returns:
 #         None
@@ -470,7 +470,7 @@ PostOrderFuncT = tp.Callable[[PostOrderContext, tp.VarArg()], None]
 # 
 #     Args:
 #         c (SegmentContext): The segment context.
-#         *args: Additional positional arguments for segment processing.
+#         *args: Positional arguments for segment processing.
 # 
 #     Returns:
 #         Args: The forwarded positional arguments.
@@ -494,7 +494,7 @@ PostOrderFuncT = tp.Callable[[PostOrderContext, tp.VarArg()], None]
 # 
 #     Args:
 #         c (SegmentContext): The segment context.
-#         *args: Additional positional arguments for segment processing.
+#         *args: Positional arguments for segment processing.
 #
 #     Returns:
 #         None
@@ -518,7 +518,7 @@ PostOrderFuncT = tp.Callable[[PostOrderContext, tp.VarArg()], None]
 # 
 #     Args:
 #         c (OrderContext): The order context.
-#         *args: Additional positional arguments for order creation.
+#         *args: Positional arguments for order creation.
 # 
 #     Returns:
 #         Order: The created order.
@@ -544,7 +544,7 @@ PostOrderFuncT = tp.Callable[[PostOrderContext, tp.VarArg()], None]
 # 
 #     Args:
 #         c (PostOrderContext): The post-order context.
-#         *args: Additional positional arguments for post-order processing.
+#         *args: Positional arguments for post-order processing.
 #
 #     Returns:
 #         None
@@ -857,7 +857,7 @@ def from_order_func_nb(  # %? line.replace("from_order_func_nb", new_func_name)
 
         ![](/assets/images/api/context_info.svg){: loading=lazy style="width:700px;" }
 
-    Example:
+    Examples:
         The example below demonstrates simulating a portfolio of three assets sharing $100,
         rebalanced every second tick, with all processing performed in Numba:
 
@@ -2084,9 +2084,6 @@ def from_order_func_rw_nb(  # %? line.replace("from_order_func_rw_nb", new_func_
     Returns:
         SimulationOutput: The simulation output containing order records, log records, and
             other simulation results.
-
-    See:
-        `vectorbtpro.portfolio.nb.from_order_func_nb`
 
     Call hierarchy:
         ```plaintext

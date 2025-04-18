@@ -8,7 +8,11 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""General types used across vectorbtpro."""
+"""Module providing general type definitions used across vectorbtpro.
+
+This module provides foundational type aliases, protocols, and utilities for common data structures 
+such as sequences, scalars, arrays, and datetime representations within vectorbtpro.
+"""
 
 from datetime import datetime, timedelta, tzinfo, date, time
 from enum import EnumMeta

@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module providing file data functionality through the `FileData` class."""
+"""Module providing the `FileData` class for handling file data."""
 
 import re
 from glob import glob

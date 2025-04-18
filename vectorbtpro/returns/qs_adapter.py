@@ -36,7 +36,7 @@ This is equivalent to:
 Using the adapter offers two advantages:
     
 * Parameters such as benchmark returns can be defined once rather than passed to every function.
-* `vectorbtpro` automatically translates parameters from `ReturnsAccessor` for QuantStats functions.
+* Vectorbtpro automatically translates parameters from `ReturnsAccessor` for QuantStats functions.
 
 ```pycon
 >>> # Defaults that vectorbtpro understands
@@ -250,7 +250,7 @@ class QSAdapter(Configured):
     Args:
         returns_acc (ReturnsAccessor): The returns accessor instance.
         defaults (KwargsLike): Default parameters.
-        **kwargs: Additional keyword arguments for configuration.
+        **kwargs: Keyword arguments for configuration.
     """
 
     def __init__(self, returns_acc: ReturnsAccessor, defaults: tp.KwargsLike = None, **kwargs) -> None:

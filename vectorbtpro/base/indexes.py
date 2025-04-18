@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module for index and column manipulations.
+"""Module providing functionality for index and column manipulations.
 
 Provides functions for stacking, combining, and cleansing pandas MultiIndex levels.
 

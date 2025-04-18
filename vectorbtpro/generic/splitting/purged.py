@@ -188,7 +188,7 @@ class BasePurgedCV(Base):
 
 
 class PurgedWalkForwardCV(BasePurgedCV):
-    """Purged walk-forward cross-validation.
+    """Class for purged walk-forward cross-validation.
 
     The samples are decomposed into `n_folds` folds with an equal number of samples or equal
     time intervals without shuffling. In each cross-validation round, `n_test_folds` contiguous
@@ -363,7 +363,7 @@ class PurgedWalkForwardCV(BasePurgedCV):
 
 
 class PurgedKFoldCV(BasePurgedCV):
-    """Purged and embargoed combinatorial cross-validation.
+    """Class for purged and embargoed combinatorial cross-validation.
 
     The samples are decomposed into `n_folds` folds containing equal numbers of samples,
     without shuffling. In each cross-validation round, `n_test_folds` folds are used as

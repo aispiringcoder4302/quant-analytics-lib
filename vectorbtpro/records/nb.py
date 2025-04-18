@@ -429,7 +429,7 @@ def map_records_nb(records: tp.RecordArray, map_func_nb: tp.RecordsMapFunc, *arg
     Args:
         records (RecordArray): Array of records.
         map_func_nb (RecordsMapFunc): Function that processes a single record with additional arguments.
-        *args: Additional positional arguments passed to the mapping function.
+        *args: Positional arguments passed to the mapping function.
 
     Returns:
         Array1d: Array containing the mapped values for each record.
@@ -457,7 +457,7 @@ def map_records_meta_nb(n_values: int, map_func_nb: tp.MappedReduceMetaFunc, *ar
         n_values (int): Total number of values to process.
         map_func_nb (MappedReduceMetaFunc): Function that accepts a record index and
             additional arguments to return a single value.
-        *args: Additional positional arguments passed to the mapping function.
+        *args: Positional arguments passed to the mapping function.
 
     Returns:
         Array1d: Array containing the meta-mapped values.
@@ -490,7 +490,7 @@ def apply_nb(arr: tp.Array1d, col_map: tp.GroupMap, apply_func_nb: tp.ApplyFunc,
         arr (Array1d): Array on which to apply the function.
         col_map (GroupMap): Tuple of column indices and column lengths defining groups.
         apply_func_nb (ApplyFunc): Function to apply on each group segment.
-        *args: Additional positional arguments passed to the apply function.
+        *args: Positional arguments passed to the apply function.
 
     Returns:
         Array1d: Array resulting from applying the function to each group, 
@@ -532,7 +532,7 @@ def apply_meta_nb(n_values: int, col_map: tp.GroupMap, apply_func_nb: tp.ApplyMe
         col_map (GroupMap): Tuple of column indices and column lengths defining groups.
         apply_func_nb (ApplyMetaFunc): Function that accepts indices, a column index, 
             and additional arguments to return an array.
-        *args: Additional positional arguments passed to the meta apply function.
+        *args: Positional arguments passed to the meta apply function.
 
     Returns:
         Array1d: Array resulting from applying the function to each group's meta information.
@@ -598,7 +598,7 @@ def reduce_mapped_segments_nb(
         col_map (GroupMap): Tuple containing column indices and column lengths.
         segment_arr (Array1d): Array indicating segment boundaries for mapped values.
         reduce_func_nb (ReduceFunc): Function to reduce a segment of values.
-        *args: Additional positional arguments for `reduce_func_nb`.
+        *args: Positional arguments for `reduce_func_nb`.
 
     Returns:
         Tuple[Array1d, Array1d, Array1d, Array1d]: A tuple containing the reduced values,
@@ -687,7 +687,7 @@ def reduce_mapped_nb(
         col_map (GroupMap): Tuple containing column indices and column lengths.
         fill_value (float): Fill value used to initialize the output array.
         reduce_func_nb (ReduceFunc): Reduction function applied to a slice of `mapped_arr`.
-        *args: Additional positional arguments for `reduce_func_nb`.
+        *args: Positional arguments for `reduce_func_nb`.
 
     Returns:
         Array1d: Array containing the reduced value for each column.
@@ -730,7 +730,7 @@ def reduce_mapped_meta_nb(
         col_map (GroupMap): Tuple containing column indices and column lengths.
         fill_value (float): Fill value used to initialize the output array.
         reduce_func_nb (MappedReduceMetaFunc): Reduction function for computing the meta value for a column.
-        *args: Additional positional arguments for `reduce_func_nb`.
+        *args: Positional arguments for `reduce_func_nb`.
 
     Returns:
         Array1d: Array containing the reduced meta value for each column.
@@ -786,7 +786,7 @@ def reduce_mapped_to_idx_nb(
         idx_arr (Array1d): Array of indices corresponding to mapped values.
         fill_value (float): Fill value used to initialize the output array.
         reduce_func_nb (ReduceFunc): Reduction function that computes an index from a slice of `mapped_arr`.
-        *args: Additional positional arguments for `reduce_func_nb`.
+        *args: Positional arguments for `reduce_func_nb`.
 
     Returns:
         Array1d: Array of computed indices.
@@ -835,7 +835,7 @@ def reduce_mapped_to_idx_meta_nb(
         idx_arr (Array1d): Array of indices corresponding to the groups.
         fill_value (float): Value to fill in the output for groups without data.
         reduce_func_nb (MappedReduceMetaFunc): Reduction function used for meta reduction.
-        *args: Additional positional arguments for the reduction function.
+        *args: Positional arguments for the reduction function.
 
     Returns:
         Array1d: Array containing the meta reduced values for each group.
@@ -884,7 +884,7 @@ def reduce_mapped_to_array_nb(
         col_map (GroupMap): Tuple of column indices and lengths.
         fill_value (float): Value used to initialize the output array.
         reduce_func_nb (ReduceToArrayFunc): Function to reduce the mapped array to an array.
-        *args: Additional positional arguments for the reduction function.
+        *args: Positional arguments for the reduction function.
 
     Returns:
         Array2d: 2D array with reduced values across columns, where each column corresponds to a group.
@@ -936,7 +936,7 @@ def reduce_mapped_to_array_meta_nb(
         col_map (GroupMap): Tuple of column indices and lengths.
         fill_value (float): Value used to fill the output array.
         reduce_func_nb (MappedReduceToArrayMetaFunc): Reduction function for meta conversion.
-        *args: Additional positional arguments for the reduction function.
+        *args: Positional arguments for the reduction function.
 
     Returns:
         Array2d: 2D array with meta-reduced values across columns.
@@ -999,7 +999,7 @@ def reduce_mapped_to_idx_array_nb(
         idx_arr (Array1d): Array of indices used to map reduced values to final indices.
         fill_value (float): Value used to initialize the output array.
         reduce_func_nb (ReduceToArrayFunc): Function to reduce the mapped array to an index array.
-        *args: Additional positional arguments for the reduction function.
+        *args: Positional arguments for the reduction function.
 
     Returns:
         Array2d: 2D array with indices corresponding to reduced values for each group.
@@ -1064,7 +1064,7 @@ def reduce_mapped_to_idx_array_meta_nb(
         idx_arr (Array1d): Array of indices used for reduction.
         fill_value (float): Fill value used to initialize the output array.
         reduce_func_nb (MappedReduceToArrayMetaFunc): Reduction function applied on sub-arrays.
-        *args: Additional positional arguments for the reduction function.
+        *args: Positional arguments for the reduction function.
 
     Returns:
         Array2d: 2D array with reduced values computed from the input indices.

@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module with Numba-compiled functions for portfolio optimization."""
+"""Module providing Numba-compiled functions for portfolio optimization."""
 
 import numpy as np
 from numba import prange
@@ -97,7 +97,7 @@ def optimize_meta_nb(
         
             It should accept an index, the corresponding start and end indices, 
             and any additional arguments.
-        *args: Additional positional arguments passed to `optimize_func_nb`.
+        *args: Positional arguments passed to `optimize_func_nb`.
 
     Returns:
         Array2d: 2D array where each row contains the optimized allocation for a range.
@@ -138,7 +138,7 @@ def allocate_meta_nb(
         allocate_func_nb (Callable): Function that computes allocation at a given point. 
         
             It should accept a point's index, the index value, and any additional arguments.
-        *args: Additional positional arguments passed to `allocate_func_nb`.
+        *args: Positional arguments passed to `allocate_func_nb`.
 
     Returns:
         Array2d: 2D array where each row represents the allocation for an index point.

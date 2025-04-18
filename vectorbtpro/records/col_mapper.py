@@ -8,10 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module for mapping column arrays.
-
-Contains the implementation of the `ColumnMapper` class.
-"""
+"""Module for mapping column arrays."""
 
 import numpy as np
 
@@ -32,13 +29,15 @@ ColumnMapperT = tp.TypeVar("ColumnMapperT", bound="ColumnMapper")
 
 
 class ColumnMapper(Wrapping):
-    """Used by `vectorbtpro.records.base.Records` and `vectorbtpro.records.mapped_array.MappedArray`
+    """Class for mapping column arrays.
+    
+    Used by `vectorbtpro.records.base.Records` and `vectorbtpro.records.mapped_array.MappedArray`
     classes to make use of column and group metadata.
 
     Args:
         wrapper (ArrayWrapper): The array wrapper instance.
         col_arr (Array1d): The column array.
-        **kwargs: Additional keyword arguments for configuration.
+        **kwargs: Keyword arguments for configuration.
     """
 
     def __init__(self, wrapper: ArrayWrapper, col_arr: tp.Array1d, **kwargs) -> None:
@@ -71,8 +70,8 @@ class ColumnMapper(Wrapping):
 
         Args:
             *objs (MaybeTuple[ColumnMapper]): Additional `ColumnMapper` instances to stack.
-            wrapper_kwargs (KwargsLike): Additional keyword arguments for configuring the wrapper.
-            **kwargs: Additional keyword arguments for the stacking operation.
+            wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
+            **kwargs: Keyword arguments for the stacking operation.
 
         Returns:
             ColumnMapper: A new column mapper instance with row-stacked wrappers and updated column metadata.
@@ -124,8 +123,8 @@ class ColumnMapper(Wrapping):
 
         Args:
             *objs (MaybeTuple[ColumnMapper]): Additional `ColumnMapper` instances to stack.
-            wrapper_kwargs (KwargsLike): Additional keyword arguments for configuring the wrapper.
-            **kwargs: Additional keyword arguments for the stacking operation.
+            wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
+            **kwargs: Keyword arguments for the stacking operation.
 
         Returns:
             ColumnMapper: A new column mapper instance with column-stacked wrappers and updated column metadata.
@@ -180,6 +179,10 @@ class ColumnMapper(Wrapping):
 
         Returns:
             Tuple[Array1d, Array1d]: A tuple containing the new indices and the updated column array.
+
+        See:
+            * `vectorbtpro.base.grouping.nb.group_lens_select_nb` if `ColumnMapper.is_sorted` returns True.
+            * `vectorbtpro.base.grouping.nb.group_map_select_nb` if `ColumnMapper.is_sorted` returns False.
         """
         if len(self.col_arr) == 0:
             return np.arange(len(self.col_arr)), self.col_arr
@@ -199,12 +202,12 @@ class ColumnMapper(Wrapping):
         """Perform indexing on `ColumnMapper` and return metadata.
 
         Args:
-            *args: Additional positional arguments for indexing.
+            *args: Positional arguments for indexing.
             wrapper_meta (DictLike): Optional metadata for the wrapper.
 
                 If not provided, it is derived from
                 `vectorbtpro.base.wrapping.ArrayWrapper.indexing_func_meta`.
-            **kwargs: Additional keyword arguments for indexing.
+            **kwargs: Keyword arguments for indexing.
 
         Returns:
             dict: A dictionary with the following keys:
@@ -231,9 +234,9 @@ class ColumnMapper(Wrapping):
         """Perform indexing on `ColumnMapper`.
 
         Args:
-            *args: Additional positional arguments for indexing.
+            *args: Positional arguments for indexing.
             col_mapper_meta (DictLike): Optional precomputed metadata for column mapping.
-            **kwargs: Additional keyword arguments for indexing.
+            **kwargs: Keyword arguments for indexing.
 
         Returns:
             ColumnMapper: A new column mapper instance with indexing applied.
@@ -270,6 +273,9 @@ class ColumnMapper(Wrapping):
 
         Returns:
             GroupLens: Column lengths.
+
+        See:
+            `vectorbtpro.records.nb.col_lens_nb`
         """
         func = jit_reg.resolve_option(nb.col_lens_nb, None)
         return func(self.col_arr, len(self.wrapper.columns))
@@ -284,6 +290,9 @@ class ColumnMapper(Wrapping):
 
         Returns:
             GroupLens: Group-aware column lengths.
+
+        See:
+            `vectorbtpro.records.nb.col_lens_nb`
         """
         if not self.wrapper.grouper.is_grouped(group_by=group_by):
             return self.col_lens
@@ -300,6 +309,9 @@ class ColumnMapper(Wrapping):
 
         Returns:
             GroupMap: Column mapping.
+
+        See:
+            `vectorbtpro.records.nb.col_map_nb`
         """
         func = jit_reg.resolve_option(nb.col_map_nb, None)
         return func(self.col_arr, len(self.wrapper.columns))
@@ -314,6 +326,9 @@ class ColumnMapper(Wrapping):
 
         Returns:
             GroupMap: Group-aware column mapping.
+
+        See:
+            `vectorbtpro.records.nb.col_map_nb`
         """
         if not self.wrapper.grouper.is_grouped(group_by=group_by):
             return self.col_map
@@ -331,6 +346,9 @@ class ColumnMapper(Wrapping):
 
         Returns:
             bool: True if the column array is sorted, otherwise False.
+
+        See:
+            `vectorbtpro.records.nb.is_col_sorted_nb`
         """
         func = jit_reg.resolve_option(nb.is_col_sorted_nb, jitted)
         return func(self.col_arr)
@@ -341,6 +359,9 @@ class ColumnMapper(Wrapping):
         
         Returns:
             Array1d: New ID array.
+
+        See:
+            `vectorbtpro.records.nb.generate_ids_nb`
         """
         func = jit_reg.resolve_option(nb.generate_ids_nb, None)
         return func(self.col_arr, self.wrapper.shape_2d[1])
@@ -358,6 +379,9 @@ class ColumnMapper(Wrapping):
 
         Returns:
             Array1d: New group-aware id array.
+
+        See:
+            `vectorbtpro.records.nb.generate_ids_nb`
         """
         group_arr = self.wrapper.grouper.get_groups(group_by=group_by)
         if group_arr is not None:

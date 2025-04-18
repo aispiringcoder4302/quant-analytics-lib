@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module providing `RandomOHLCData`."""
+"""Module providing the `RandomOHLCData` class for generating synthetic OHLC data."""
 
 import numpy as np
 import pandas as pd
@@ -31,10 +31,10 @@ __pdoc__ = {}
 
 
 class RandomOHLCData(SyntheticData):
-    """Class for synthetic OHLC data.
+    """Data class for synthetic OHLC data generation.
 
-    Data is generated using `vectorbtpro.data.nb.generate_random_data_1d_nb`
-    and then resampled using `vectorbtpro.ohlcv.nb.ohlc_every_1d_nb`.
+    See:
+        * `RandomOHLCData.generate_symbol` for argument details.
     """
 
     _settings_path: tp.SettingsPath = dict(custom="data.custom.random_ohlc")
@@ -83,6 +83,10 @@ class RandomOHLCData(SyntheticData):
 
         Returns:
             KeyData: The generated data and a metadata dictionary.
+
+        See:
+            * `vectorbtpro.data.nb.generate_random_data_1d_nb` for generating random data.
+            * `vectorbtpro.ohlcv.nb.ohlc_every_1d_nb` for aggregating ticks into OHLC bars.
 
         For defaults, see `custom.random_ohlc` in `vectorbtpro._settings.data`.
         """

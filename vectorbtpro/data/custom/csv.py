@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module providing the `CSVData` class."""
+"""Module providing the `CSVData` class for handling CSV and TSV data files."""
 
 from pathlib import Path
 
@@ -30,10 +30,13 @@ CSVDataT = tp.TypeVar("CSVDataT", bound="CSVData")
 
 
 class CSVData(FileData):
-    """Class for fetching CSV and TSV data files.
+    """Data class for fetching CSV and TSV data files.
 
     This class extends `FileData` and provides methods for verifying file types,
     resolving metadata keys, and reading CSV files using pandas.
+
+    See:
+        * `CSVData.fetch_key` for argument details.
     """
 
     _settings_path: tp.SettingsPath = dict(custom="data.custom.csv")

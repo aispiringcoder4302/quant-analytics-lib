@@ -8,7 +8,10 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module providing custom asset function classes."""
+"""Module providing custom asset function classes.
+
+See `vectorbtpro.utils.knowledge` for the toy dataset.
+"""
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.utils.config import flat_merge_dicts

@@ -8,10 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module for named tuples and enumerated types used in portfolio management.
-
-Defines enumerations and schema definitions for `vectorbtpro.portfolio`.
-"""
+"""Module for named tuples and enumerated types used in portfolio management."""
 
 import numpy as np
 
@@ -1224,7 +1221,7 @@ __pdoc__[
 
 A tuple with exactly two elements: the number of rows and columns.
 
-Example:
+Examples:
     One day of minute data for three assets yields a `target_shape` of `(1440, 3)`, 
     where the first axis corresponds to rows (minutes) and the second axis corresponds to columns (assets).
 """
@@ -1238,7 +1235,7 @@ If columns are not grouped, `group_lens` consists of ones (one column per group)
     Modifying this array may lead to results that are inconsistent with 
     those produced by `vectorbtpro.portfolio.base.Portfolio`.
 
-Example:
+Examples:
     In pairs trading, `group_lens` would be `np.array([2])`, whereas three independent columns 
     would be represented by `np.array([1, 1, 1])`.
 """
@@ -1258,7 +1255,7 @@ If not provided, this field is set to None.
 
     To modify the call sequence dynamically, change `SegmentContext.call_seq_now` in place.
     
-Example:
+Examples:
     The default call sequence for three data points and two groups with three columns each:
     
     ```python
@@ -1281,7 +1278,7 @@ or `(target_shape[1],)` otherwise.
     Modifying this array may yield results inconsistent with those produced 
     by `vectorbtpro.portfolio.base.Portfolio`.
 
-Example:
+Examples:
     For three columns each with $100 of starting capital, grouping them as one group of two columns and 
     one group of one column yields `init_cash` of `np.array([200, 100])` with cash sharing, and 
     `np.array([100, 100, 100])` without cash sharing.
@@ -1353,7 +1350,7 @@ The mask must broadcast to shape `(target_shape[0], group_lens.shape[0])`.
 !!! note
     To modify the array in place, ensure that an array of the full shape is constructed.
 
-Example:
+Examples:
     Consider two groups with two columns each and the following activity mask:
     
     ```python
@@ -1468,7 +1465,7 @@ conserve memory, or higher if multiple orders per element are expected.
 Use `SimulationContext.order_counts` to obtain the count of filled orders per column.
 To retrieve all order records filled thus far in a column, use `order_records[:order_counts[col], col]`.
 
-Example:
+Examples:
     Before filling, an order record appears as:
     
     ```python
@@ -1487,7 +1484,7 @@ __pdoc__[
 
 Corresponds to `SimulationContext.order_records` and has shape `(target_shape[1],)`.
 
-Example:
+Examples:
     `order_counts` of `np.array([2, 100, 0])` indicates that the latest filled order is 
     `order_records[1, 0]` in the first column, `order_records[99, 1]` in the second column, 
     and that no orders have been filled in the third column (`order_records[0, 2]` remains empty).
@@ -1600,7 +1597,7 @@ For example, a close value of `[1, 2, np.nan, np.nan, 5]` results in `[1, 2, 2, 
 !!! note
     Use only finite values; `-np.inf` and `np.inf` are not allowed.
 
-Example:
+Examples:
     Consider 10 units in column 1 and 20 units in column 2. The current opening price of them is 
     $40 and $50 respectively, which is also the default valuation price in the current row,
     available as `last_val_price` in `pre_segment_func_nb`. If both columns are in the same group 
@@ -1738,7 +1735,7 @@ describing the current group.
 
 Used in `pre_group_func_nb` and `post_group_func_nb`.
 
-Example:
+Examples:
     Consider a configuration with a group of three columns, one of two columns, and one standalone column:
     
     | group | group_len | from_col | to_col |
@@ -1936,7 +1933,7 @@ Processing always proceeds from left to right.
 
 You can override `call_seq_now` using `pre_segment_func_nb`.
 
-Example:
+Examples:
     `[2, 0, 1]` calls column 2 first, then column 0, and finally column 1.
 """
 

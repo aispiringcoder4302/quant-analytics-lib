@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module defining the `FMEAN` indicator."""
+"""Module defining the `FMEAN` generator class for the future mean."""
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.generic import enums as generic_enums
@@ -46,8 +46,11 @@ FMEAN = IndicatorFactory(
 
 
 class _FMEAN(FMEAN):
-    """Represents a look-ahead indicator that computes the future mean
-    using `vectorbtpro.labels.nb.future_mean_nb`."""
+    """Class representing the look-ahead future mean generator.
+    
+    See:
+        * `vectorbtpro.labels.nb.future_mean_nb` for the underlying implementation.
+    """
 
     def plot(
         self,
@@ -71,7 +74,7 @@ class _FMEAN(FMEAN):
             add_trace_kwargs (KwargsLike): Keyword arguments passed to 
                 `fig.add_trace` when adding each trace.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
-            **layout_kwargs: Additional keyword arguments for configuring the figure layout.
+            **layout_kwargs: Keyword arguments for configuring the figure layout.
 
         Returns:
             BaseFigure: The figure object with the plotted indicators.

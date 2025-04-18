@@ -45,14 +45,15 @@ __pdoc__[
 
 ```python
 {price_records_shortcut_config.prettify_doc()}
-```"""
+```
+"""
 
 PriceRecordsT = tp.TypeVar("PriceRecordsT", bound="PriceRecords")
 
 
 @attach_shortcut_properties(price_records_shortcut_config)
 class PriceRecords(Records):
-    """Extends `vectorbtpro.records.base.Records` for records that can make use of OHLC data.
+    """Class extending `vectorbtpro.records.base.Records` for records that can make use of OHLC data.
 
     Args:
         wrapper (ArrayWrapper): Wrapper instance.
@@ -61,7 +62,7 @@ class PriceRecords(Records):
         high (Optional[ArrayLike]): Array of high prices.
         low (Optional[ArrayLike]): Array of low prices.
         close (Optional[ArrayLike]): Array of close prices.
-        kwargs: Additional keyword arguments passed to `vectorbtpro.records.base.Records`.
+        kwargs: Keyword arguments passed to `vectorbtpro.records.base.Records`.
     """
 
     def __init__(

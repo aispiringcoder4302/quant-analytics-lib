@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module defining the `ADX` indicator."""
+"""Module defining the `ADX` class for calculating the Average Directional Index indicator."""
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.generic import enums as generic_enums
@@ -46,11 +46,13 @@ ADX = IndicatorFactory(
 
 
 class _ADX(ADX):
-    """Average Directional Movement Index (ADX) indicator.
+    """Class representing the Average Directional Movement Index (ADX) indicator.
 
     Measures trend strength to assist traders in assessing market conditions.
 
-    See [Average Directional Index (ADX)](https://www.investopedia.com/terms/a/adx.asp).
+    See:
+        * https://www.investopedia.com/terms/a/adx.asp for the definition of ADX.
+        * `vectorbtpro.indicators.nb.adx_nb` for the underlying implementation.
     """
 
     def plot(
@@ -67,15 +69,15 @@ class _ADX(ADX):
 
         Args:
             column (Optional[Label]): Column name to plot.
-            plus_di_trace_kwargs (KwargsLike): Additional keyword arguments for
+            plus_di_trace_kwargs (KwargsLike): Keyword arguments for
                 `plotly.graph_objects.Scatter` when plotting `ADX.plus_di`.
-            minus_di_trace_kwargs (KwargsLike): Additional keyword arguments for
+            minus_di_trace_kwargs (KwargsLike): Keyword arguments for
                 `plotly.graph_objects.Scatter` when plotting `ADX.minus_di`.
-            adx_trace_kwargs (KwargsLike): Additional keyword arguments for
+            adx_trace_kwargs (KwargsLike): Keyword arguments for
                 `plotly.graph_objects.Scatter` when plotting `ADX.adx`.
-            add_trace_kwargs (KwargsLike): Additional keyword arguments passed to `fig.add_trace` for each trace.
+            add_trace_kwargs (KwargsLike): Keyword arguments passed to `fig.add_trace` for each trace.
             fig (Optional[BaseFigure]): Figure to update. If None, a new figure is created.
-            **layout_kwargs: Additional keyword arguments for configuring the figure layout.
+            **layout_kwargs: Keyword arguments for configuring the figure layout.
 
         Returns:
             BaseFigure: Figure containing the plotted ADX traces.

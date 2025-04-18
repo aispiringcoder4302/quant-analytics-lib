@@ -96,9 +96,6 @@ def build_call_seq(
 
     Returns:
         Array2d: Call sequence array constructed based on the provided parameters.
-
-    See:
-        `vectorbtpro.portfolio.call_seq.build_call_seq_nb`
     """
     call_seq = np.full(target_shape[1], 1, dtype=int_)
     if call_seq_type == CallSeqType.Reversed:

@@ -84,8 +84,8 @@ class class_property(Base):
 
 
 class hybrid_property(Base):
-    """Hybrid property that binds the first parameter to the class when accessed via the class,
-    and to an instance when accessed via an instance.
+    """Class for defining a hybrid property that binds the first parameter to the class when accessed 
+    via the class, and to an instance when accessed via an instance.
     
     Args:
         func (Callable): The function to be wrapped as a hybrid property.
@@ -116,8 +116,8 @@ class hybrid_property(Base):
 
 
 class hybrid_method(classmethod, Base):
-    """Hybrid method decorator that binds the first parameter to the class when called as a class method,
-    and to the instance when called as an instance method."""
+    """Class for defining a hybrid method decorator that binds the first parameter to the class when 
+    called as a class method, and to the instance when called as an instance method."""
 
     def __get__(self, instance: object, owner: tp.Optional[tp.Type] = None) -> tp.Any:
         descr_get = super().__get__ if instance is None else self.__func__.__get__
@@ -130,7 +130,8 @@ custom_propertyT = tp.TypeVar("custom_propertyT", bound="custom_property")
 
 
 class custom_property(property, Base):
-    """Custom extensible property that stores the wrapped function and its configuration options as attributes.
+    """Class for defining a custom extensible property that stores the wrapped function and 
+    its configuration options as attributes.
 
     Args:
         func (Callable): The function to be wrapped as a property.
@@ -200,7 +201,7 @@ class custom_property(property, Base):
 
 
 class cacheable_property(custom_property):
-    """Cacheable property extending `custom_property` to support caching of computed values.
+    """Class for defining a cacheable property extending `custom_property` to support caching of computed values.
 
     Args:
         func (Callable): The function to be wrapped as a cacheable property.
@@ -265,7 +266,7 @@ class cacheable_property(custom_property):
 
 
 class cached_property(cacheable_property):
-    """Cached property, equivalent to using `cacheable_property` with `use_cache=True`.
+    """Class for defining a cached property, equivalent to using `cacheable_property` with `use_cache=True`.
     
     Args:
         func (Callable): The function to be wrapped as a cacheable property.

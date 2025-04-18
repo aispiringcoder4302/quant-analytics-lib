@@ -8,10 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module providing named tuples and enumerated types for signals.
-
-Defines enumerations and context schemas for `vectorbtpro.signals`.
-"""
+"""Module providing named tuples and enumerated types for signals."""
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.utils.formatting import prettify_doc

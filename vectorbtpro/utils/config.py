@@ -1948,7 +1948,7 @@ class MetaConfigured(type):
 
 
 class Configured(HasSettings, Cacheable, Comparable, Pickleable, Prettified, Chainable, metaclass=MetaConfigured):
-    """Class for a configured object.
+    """Class representing a configured object.
 
     All subclasses of `Configured` are initialized using `Config`, which facilitates
     pickling and configuration merging.

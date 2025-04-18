@@ -39,7 +39,7 @@ __all__ = [
 
 
 class SignalFactory(IndicatorFactory):
-    """A factory for building signal generators.
+    """Class representing a factory for building signal generators.
 
     Extends `vectorbtpro.indicators.factory.IndicatorFactory` with place functions.
 
@@ -49,13 +49,13 @@ class SignalFactory(IndicatorFactory):
     See `vectorbtpro.signals.enums.FactoryMode` for supported generation modes.
 
     Args:
-        *args: Additional positional arguments passed to `vectorbtpro.indicators.factory.IndicatorFactory`.
+        *args: Positional arguments passed to `vectorbtpro.indicators.factory.IndicatorFactory`.
         mode (Union[str, int]): Factory mode controlling generated outputs, mapped to a `FactoryMode` value.
         input_names (Optional[Sequence[str]]): Sequence of input names.
 
             Reserved names "entries" and "exits" are not allowed.
         attr_settings (KwargsLike): Settings for attributes, where each key maps to a dictionary of options.
-        **kwargs: Additional keyword arguments passed to `vectorbtpro.indicators.factory.IndicatorFactory`.
+        **kwargs: Keyword arguments passed to `vectorbtpro.indicators.factory.IndicatorFactory`.
     """
 
     def __init__(
@@ -202,12 +202,12 @@ class SignalFactory(IndicatorFactory):
                 exit_y (Optional[Union[str, ArrayLike]]): Y-axis values for plotting exit markers.
                 entry_types (Optional[ArrayLike]): Entry types in string format.
                 exit_types (Optional[ArrayLike]): Exit types in string format.
-                entry_trace_kwargs (KwargsLike): Additional keyword arguments for plotting entries, 
+                entry_trace_kwargs (KwargsLike): Keyword arguments for plotting entries, 
                     forwarded to `vectorbtpro.signals.accessors.SignalsSRAccessor.plot_as_entries` for `{0}.{1}`.
-                exit_trace_kwargs (KwargsLike): Additional keyword arguments for plotting exits, forwarded to 
+                exit_trace_kwargs (KwargsLike): Keyword arguments for plotting exits, forwarded to 
                     `vectorbtpro.signals.accessors.SignalsSRAccessor.plot_as_exits` for `{0}.exits`.
                 fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
-                **kwargs: Additional keyword arguments passed to 
+                **kwargs: Keyword arguments passed to 
                     `vectorbtpro.signals.accessors.SignalsSRAccessor.plot_as_markers`.
     
             Returns:
@@ -283,7 +283,7 @@ class SignalFactory(IndicatorFactory):
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
 
                 If the generation function is not jitted, the apply function will not be jitted.
-            **kwargs: Additional keyword arguments passed to `IndicatorFactory.with_custom_func`.
+            **kwargs: Keyword arguments passed to `IndicatorFactory.with_custom_func`.
 
         Returns:
             Type[IndicatorBase]: A custom signal generator class configured with

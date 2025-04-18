@@ -4812,6 +4812,9 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
 
         Returns:
             Data: A new data instance with mirrored OHLC features.
+
+        See:
+            `vectorbtpro.ohlcv.nb.mirror_ohlc_nb`
         """
         if isinstance(ref_feature, str):
             ref_feature = map_enum_fields(ref_feature, PriceFeature)

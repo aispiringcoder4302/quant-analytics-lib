@@ -4498,15 +4498,15 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
         
             It accepts a `vectorbtpro.portfolio.enums.SignalContext` and returns four signals: 
             long entry, long exit, short entry, and short exit.
-        signal_args (ArgsLike): Additional positional arguments for `signal_func_nb`
+        signal_args (ArgsLike): Positional arguments for `signal_func_nb`
         post_signal_func_nb (PostSignalFunc): Function to be called after processing an order.
         
             It accepts a `vectorbtpro.portfolio.enums.PostSignalContext` and returns nothing.
-        post_signal_args (ArgsLike): Additional positional arguments for `post_signal_func_nb`
+        post_signal_args (ArgsLike): Positional arguments for `post_signal_func_nb`
         post_segment_func_nb (PostSegmentFunc): Function to be called after processing a segment.
         
             It accepts a `vectorbtpro.portfolio.enums.SignalSegmentContext` and returns nothing.
-        post_segment_args (ArgsLike): Additional positional arguments for `post_segment_func_nb`.
+        post_segment_args (ArgsLike): Positional arguments for `post_segment_func_nb`.
         size (FlexArray2dLike): Order size. 
         
             Provided as a scalar, or per row and/or column.
@@ -7321,7 +7321,7 @@ def holding_enex_signal_func_nb(  # % line.replace("holding_enex_signal_func_nb"
             See `vectorbtpro.portfolio.enums.Direction` for more details.
         close_at_end (bool): Flag indicating whether to exit the position at the end of the period.
         adjust_func_nb (AdjustFunc): Function to adjust the context before signal generation.
-        adjust_args (Args): Additional positional arguments for `adjust_func_nb`.
+        adjust_args (Args): Positional arguments for `adjust_func_nb`.
 
     Returns:
         Tuple[bool, bool, bool, bool]: A tuple containing booleans representing:
@@ -7379,7 +7379,7 @@ def dir_signal_func_nb(  # % line.replace("dir_signal_func_nb", "signal_func_nb"
         direction (FlexArray2d): A 2D array specifying the trade direction.
         from_ago (FlexArray2d): A 2D array used to adjust the time index for signal lookup.
         adjust_func_nb (AdjustFunc): Function to adjust the context before signal generation.
-        adjust_args (Args): Additional positional arguments for `adjust_func_nb`.
+        adjust_args (Args): Positional arguments for `adjust_func_nb`.
 
     Returns:
         Tuple[bool, bool, bool, bool]: A tuple containing booleans representing:
@@ -7435,7 +7435,7 @@ def ls_signal_func_nb(  # % line.replace("ls_signal_func_nb", "signal_func_nb")
         short_exits (FlexArray2d): A 2D array of boolean short exit signals.
         from_ago (FlexArray2d): A 2D array used as a time offset for signal selection.
         adjust_func_nb (AdjustFunc): Function to adjust the context before signal generation.
-        adjust_args (Args): Additional positional arguments for `adjust_func_nb`.
+        adjust_args (Args): Positional arguments for `adjust_func_nb`.
 
     Returns:
         Tuple[bool, bool, bool, bool]: A tuple containing booleans representing:
@@ -7496,7 +7496,7 @@ def order_signal_func_nb(  # % line.replace("order_signal_func_nb", "signal_func
         val_price (FlexArray2d): 2D array of valuation prices for order evaluation.
         from_ago (FlexArray2d): 2D array determining the offset index for fetching order parameters.
         adjust_func_nb (AdjustFunc): Function to adjust the context before signal generation.
-        adjust_args (Args): Additional positional arguments for `adjust_func_nb`.
+        adjust_args (Args): Positional arguments for `adjust_func_nb`.
 
     Returns:
         Tuple[bool, bool, bool, bool]: A tuple containing booleans representing:

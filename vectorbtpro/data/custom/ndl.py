@@ -27,12 +27,13 @@ NDLDataT = tp.TypeVar("NDLDataT", bound="NDLData")
 
 
 class NDLData(RemoteData):
-    """Class for fetching data from Nasdaq Data Link.
+    """Data class for fetching data from Nasdaq Data Link.
 
     This class provides methods to pull data from Nasdaq Data Link using its API.
-    For API details, see https://github.com/Nasdaq/data-link-python.
 
-    See `NDLData.fetch_symbol` for details on available arguments.
+    See:
+        * https://github.com/Nasdaq/data-link-python for the official API documentation.
+        * `NDLData.fetch_symbol` for argument details.
 
     Examples:
         Set up the API key globally (optional):

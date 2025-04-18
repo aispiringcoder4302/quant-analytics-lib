@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module with a global registry for chunkable functions."""
+"""Module providing a global registry for chunkable functions."""
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.utils import checks
@@ -159,7 +159,7 @@ class ChunkableRegistry(Base):
             target_func (Optional[Callable]): An alternative function to decorate.
 
                 If omitted, the function from the setup is used.
-            **kwargs: Additional keyword arguments to merge with the setup's options.
+            **kwargs: Keyword arguments to merge with the setup's options.
 
         Returns:
             Callable: The decorated function with chunked processing applied.
@@ -191,7 +191,7 @@ class ChunkableRegistry(Base):
             setup_id_or_func (Union[Hashable, Callable]): The setup identifier or function.
             option (ChunkedOption): The chunking option to resolve.
             target_func (Optional[Callable]): An alternative function to apply the setup on.
-            **kwargs: Additional keyword arguments to merge with the setup's options.
+            **kwargs: Keyword arguments to merge with the setup's options.
 
         Returns:
             Callable: The function with the resolved chunking applied.

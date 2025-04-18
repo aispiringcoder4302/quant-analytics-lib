@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module providing the `MACD` indicator."""
+"""Module defining the `MACD` class for calculating the Moving Average Convergence Divergence indicator."""
 
 import numpy as np
 
@@ -81,7 +81,11 @@ class _MACD(MACD):
     This trend-following momentum indicator illustrates the relationship between
     two moving averages of price data.
 
-    See [Moving Average Convergence Divergence – MACD](https://www.investopedia.com/terms/m/macd.asp).
+    See:
+        * https://www.investopedia.com/terms/m/macd.asp the definition of MACD.
+        * `vectorbtpro.indicators.nb.macd_nb` for the underlying implementation.
+        * `vectorbtpro.indicators.nb.macd_hist_nb` for the underlying implementation of `MACD.hist`.
+        * `vectorbtpro.indicators.nb.macd_signal_nb` for the underlying implementation of `MACD.signal`.
     """
 
     def plot(
@@ -106,7 +110,7 @@ class _MACD(MACD):
                 `plotly.graph_objects.Bar` for plotting the `MACD.hist` as a histogram.
             add_trace_kwargs (KwargsLike): Keyword arguments passed to `fig.add_trace` when adding each trace.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
-            **layout_kwargs: Additional keyword arguments for configuring the figure layout.
+            **layout_kwargs: Keyword arguments for configuring the figure layout.
 
         Returns:
             BaseFigure: The updated figure with the MACD indicator plots.

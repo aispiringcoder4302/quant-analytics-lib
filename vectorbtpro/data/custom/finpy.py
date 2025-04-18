@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module providing the `FinPyData` class."""
+"""Module providing the `FinPyData` class for fetching financial data using the findatapy API."""
 
 from itertools import product
 
@@ -34,10 +34,11 @@ FinPyDataT = tp.TypeVar("FinPyDataT", bound="FinPyData")
 
 
 class FinPyData(RemoteData):
-    """Class for fetching financial data using the findatapy API.
+    """Data class for fetching financial data using the findatapy API.
 
-    See https://github.com/cuemacro/findatapy for API documentation.
-    See `FinPyData.fetch_symbol` for argument details.
+    See:
+        * https://github.com/cuemacro/findatapy for more information on findatapy.
+        * `FinPyData.fetch_symbol` for argument details.
 
     Examples:
         Pull data (keyword argument format):

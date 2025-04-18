@@ -8,9 +8,9 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Modules providing custom signal generators built using the signal factory.
+"""Package providing custom signal generators built using the signal factory.
 
-Access all indicators via `vbt.*`.
+All indicators are accessible via `vbt.*`.
 """
 
 from typing import TYPE_CHECKING

@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module providing the `STX` signal generator."""
+"""Module providing the `STX` class for generating stop signals."""
 
 import numpy as np
 
@@ -61,9 +61,10 @@ STX = SignalFactory(**stx_config).with_place_func(**stx_func_config)
 
 
 class _STX(STX):
-    """Exit signal generator based on stop values.
+    """Class representing an exit signal generator based on stop values.
 
-    Generates exit signals from entry signals using the `vectorbtpro.signals.nb.stop_place_nb` function.
+    See:
+        * `vectorbtpro.signals.nb.stop_place_nb` for details on the exit placement.
 
     !!! hint
         All parameter values can be specified as a single value (per frame) or as a NumPy array

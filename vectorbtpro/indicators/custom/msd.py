@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module defining the `MSD` indicator."""
+"""Module defining the `MSD` class for calculating the rolling squared deviation."""
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.generic import enums as generic_enums
@@ -47,10 +47,14 @@ MSD = IndicatorFactory(
 
 
 class _MSD(MSD):
-    """Moving Standard Deviation (MSD) indicator.
+    """Class representing the Moving Standard Deviation (MSD) indicator.
 
     This class represents the moving standard deviation (MSD) indicator that measures
     the magnitude of recent price movements to assess asset volatility.
+
+    See:
+        * https://en.wikipedia.org/wiki/Standard_deviation for the definition of standard deviation.
+        * `vectorbtpro.indicators.nb.msd_nb` for the underlying implementation.
     """
 
     def plot(
@@ -69,7 +73,7 @@ class _MSD(MSD):
                 the `plotly.graph_objects.Scatter` trace representing `MSD.msd`.
             add_trace_kwargs (KwargsLike): Keyword arguments passed to `fig.add_trace` when adding traces.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
-            **layout_kwargs: Additional keyword arguments for configuring the figure layout.
+            **layout_kwargs: Keyword arguments for configuring the figure layout.
 
         Returns:
             BaseFigure: The figure instance containing the plotted MSD indicator.

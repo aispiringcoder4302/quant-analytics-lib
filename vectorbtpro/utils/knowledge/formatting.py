@@ -479,8 +479,6 @@ def format_html(**kwargs) -> str:
 class ContentFormatter(Configured):
     """Class for formatting content.
 
-    This class formats content using various configurable settings.
-
     Args:
         output_to (Optional[Union[str, TextIO]]): Destination for output, which may be a file path or stream.
         flush_output (Optional[bool]): Whether to flush the output immediately after writing.

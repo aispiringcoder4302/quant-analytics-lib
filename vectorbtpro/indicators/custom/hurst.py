@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module defining the `HURST` indicator."""
+"""Module defining the `HURST` class for calculating the rolling Hurst exponent."""
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.indicators import nb
@@ -63,9 +63,13 @@ HURST = IndicatorFactory(
 
 
 class _HURST(HURST):
-    """Compute the moving Hurst exponent using a rolling window.
+    """Class representing the moving Hurst exponent indicator.
 
     This indicator measures the long-term memory of a time series.
+
+    See:
+        * https://de.wikipedia.org/wiki/Hurst-Exponent for the definition of the Hurst exponent.
+        * `vectorbtpro.indicators.nb.rolling_hurst_nb` for the underlying implementation.
     """
 
     def plot(

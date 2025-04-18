@@ -33,7 +33,7 @@ __all__ = [
 
 
 class ProgressBar(Base):
-    """Context manager class for managing a progress bar.
+    """Class for managing a progress bar.
 
     Args:
         iterable (Optional[Iterable]): Iterable for tracking progress.
@@ -775,7 +775,7 @@ class ProgressBar(Base):
 
 
 class ProgressHidden(Base):
-    """Context manager to hide progress.
+    """Context manager to temporarily hide progress globally.
 
     Args:
         disable_registry (bool): Flag to disable registry operations.
@@ -870,7 +870,7 @@ def with_progress_hidden(*args) -> tp.Callable:
 
 
 class ProgressShown(Base):
-    """Context manager to show progress.
+    """Context manager to temporarily show progress globally.
 
     Args:
         enable_registry (bool): Flag to enable registry operations.

@@ -161,7 +161,10 @@ else:
 
 
 def whats_imported():
-    """Print the names and values of all references imported via `from vectorbtpro import *`."""
+    """Prints a formatted table of names and values for all references imported with `from vectorbtpro import *`.
+
+    The table is constructed using a pandas Series and displayed via the `ptable` utility function.
+    """
     import pandas as pd
 
     from vectorbtpro.utils.formatting import ptable
@@ -188,8 +191,9 @@ __pdoc__["_opt_deps"] = True
 __pdoc__["_settings"] = True
 __pdoc__[
     "imported_star"
-] = f"""Modules and objects imported by default when using `from vectorbtpro import *`.
+] = f"""Modules and objects that are imported by default with `from vectorbtpro import *`.
 
 ```python
 {prettify_doc(imported_star)}
-```"""
+```
+"""

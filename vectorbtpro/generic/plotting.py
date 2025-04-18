@@ -154,7 +154,7 @@ class TraceUpdater(Base):
 
 
 class Gauge(TraceType, TraceUpdater):
-    """Gauge plot.
+    """Class for creating a gauge plot.
 
     Args:
         value (Optional[float]): The value to display on the gauge.
@@ -403,7 +403,7 @@ class Bar(TraceType, TraceUpdater):
 
 
 class Scatter(TraceType, TraceUpdater):
-    """Class for creating a scatter plot using Plotly.
+    """Class for creating a scatter plot.
 
     Args:
         data (Optional[ArrayLike]): Data values convertible to a NumPy array.
@@ -548,7 +548,7 @@ class Scatter(TraceType, TraceUpdater):
 
 
 class Histogram(TraceType, TraceUpdater):
-    """Histogram plot.
+    """Class for creating a histogram plot.
 
     Args:
         data (Optional[ArrayLike]): Data convertible to a NumPy array.
@@ -750,7 +750,7 @@ class Histogram(TraceType, TraceUpdater):
 
 
 class Box(TraceType, TraceUpdater):
-    """Box plot visualization.
+    """Class for creating a box plot.
 
     This class creates a box plot from the provided data and configuration parameters.
     For additional keyword arguments for trace customization, see `Histogram`.
@@ -948,7 +948,7 @@ class Box(TraceType, TraceUpdater):
 
 
 class Heatmap(TraceType, TraceUpdater):
-    """Class for creating heatmap plots.
+    """Class for creating a heatmap plot.
 
     Args:
         data (Optional[ArrayLike]): Data that can be converted to a NumPy array.
@@ -1077,7 +1077,7 @@ class Heatmap(TraceType, TraceUpdater):
 
 
 class Volume(TraceType, TraceUpdater):
-    """Class for volume plotting.
+    """Class for creating a volume plot.
 
     Args:
         data (Optional[ArrayLike]): Data that can be converted to a NumPy array.

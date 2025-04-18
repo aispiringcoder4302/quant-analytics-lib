@@ -8,12 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module providing the `SQLData` class for interfacing with SQL databases.
-
-This module defines a specialized data handler that extends `DBData` for executing SQL queries and
-processing the results into pandas DataFrames. It integrates SQLAlchemy for database connectivity
-and pandas for data manipulation.
-"""
+"""Module providing the `SQLData` class for fetching data from SQL databases using SQLAlchemy."""
 
 from typing import Iterator
 
@@ -43,11 +38,10 @@ SQLDataT = tp.TypeVar("SQLDataT", bound="SQLData")
 class SQLData(DBData):
     """Data class for fetching data from a database using SQLAlchemy.
 
-    For additional details, refer to:
-
-    * https://www.sqlalchemy.org/ for the SQLAlchemy API.
-    * https://pandas.pydata.org/docs/reference/api/pandas.read_sql_query.html for the pandas read method.
-    * `SQLData.pull` and `SQLData.fetch_key` for further arguments.
+    See:
+        * https://www.sqlalchemy.org/ for the SQLAlchemy API.
+        * https://pandas.pydata.org/docs/reference/api/pandas.read_sql_query.html for the pandas read method.
+        * `SQLData.pull` and `SQLData.fetch_key` for argument details.
 
     Examples:
         Set up the engine settings globally (optional):

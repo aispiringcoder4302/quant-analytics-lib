@@ -597,6 +597,9 @@ class Grouper(Configured):
 
         Raises:
             ValueError: If the grouping is not monolithic and sorted.
+
+        See:
+            `vectorbtpro.base.grouping.nb.get_group_lens_nb`
         """
         group_by = self.resolve_group_by(group_by=group_by, **kwargs)
         if group_by is None or group_by is False:  # no grouping
@@ -649,6 +652,9 @@ class Grouper(Configured):
 
         Returns:
             GroupMap: A tuple containing the group mapping.
+
+        See:
+            `vectorbtpro.base.grouping.nb.get_group_map_nb`
 
         !!! note
             If no grouping is applied, a default mapping is returned.
@@ -713,6 +719,10 @@ class Grouper(Configured):
 
                 * New group indices after selection.
                 * New group array corresponding to the selected indices.
+
+        See:
+            * `vectorbtpro.base.grouping.nb.group_lens_select_nb` if `Grouper.is_sorted` returns True.
+            * `vectorbtpro.base.grouping.nb.group_map_select_nb` if `Grouper.is_sorted` returns False.
 
         !!! note
             If `Grouper.is_sorted` returns True, selection is performed using group lengths (faster).

@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module providing the `HDFData` class."""
+"""Module providing the `HDFData` class for fetching HDF data using PyTables."""
 
 import re
 from glob import glob
@@ -46,7 +46,11 @@ HDFDataT = tp.TypeVar("HDFDataT", bound="HDFData")
 
 
 class HDFData(FileData):
-    """Data class for fetching HDF data using PyTables."""
+    """Data class for fetching HDF data using PyTables.
+    
+    See:
+        * `HDFData.fetch_key` for argument details.
+    """
 
     _settings_path: tp.SettingsPath = dict(custom="data.custom.hdf")
 

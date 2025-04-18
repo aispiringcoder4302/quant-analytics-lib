@@ -1,13 +1,23 @@
-"""Modules for numba-compiled functions used in portfolio simulation.
+# ==================================== VBTPROXYZ ====================================
+# Copyright (c) 2021-2025 Oleg Polakow. All rights reserved.
+#
+# This file is part of the proprietary VectorBT® PRO package and is licensed under
+# the VectorBT® PRO License available at https://vectorbt.pro/terms/software-license/
+#
+# Unauthorized publishing, distribution, sublicensing, or sale of this software
+# or its parts is strictly prohibited.
+# ===================================================================================
 
-Provides a suite of numba-compiled functions for portfolio simulation, including generating and
-filling orders. All functions accept only NumPy arrays and other numba-compatible types.
+"""Package providing Numba-compiled functions used in portfolio simulation.
+
+Provides a suite of Numba-compiled functions for portfolio simulation, including generating and
+filling orders. All functions accept only NumPy arrays and other Numba-compatible types.
 
 !!! note
-    `vectorbtpro` treats matrices as first-class citizens and expects input arrays to be 2-dimensional,
+    Vectorbtpro treats matrices as first-class citizens and expects input arrays to be 2-dimensional,
     unless a function has the `_1d` suffix or is used as input to another function.
 
-    All functions supplied as arguments must be numba-compiled.
+    All functions supplied as arguments must be Numba-compiled.
 
     Records preserve their original creation order.
 

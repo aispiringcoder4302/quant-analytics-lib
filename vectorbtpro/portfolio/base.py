@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module with the base class for simulating a portfolio and measuring its performance."""
+"""Module providing the base class for simulating a portfolio and measuring its performance."""
 
 import inspect
 import string
@@ -564,7 +564,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         weights (Union[None, bool, ArrayLike]): Asset weights.
 
             Applied to initial positions, cash, deposits, earnings, and orders.
-        **kwargs: Additional keyword arguments for configuration.
+        **kwargs: Keyword arguments for configuration.
 
     For defaults, see `vectorbtpro._settings.portfolio`.
 
@@ -843,7 +843,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
         Args:
             *objs (Portfolio): One or more `Portfolio` objects whose `in_outputs` attributes are to be stacked.
-            **kwargs: Additional keyword arguments passed to the stacking function.
+            **kwargs: Keyword arguments passed to the stacking function.
 
         Returns:
             Optional[NamedTuple]: A new named tuple with each field stacked row-wise, or 
@@ -938,7 +938,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
         Args:
             *objs (Portfolio): (Additional) `Portfolio` instances to stack.
-            wrapper_kwargs (KwargsLike): Additional keyword arguments for configuring the array wrapper.
+            wrapper_kwargs (KwargsLike): Keyword arguments for configuring the array wrapper.
             group_by (GroupByLike): Criteria for grouping during stacking.
             combine_init_cash (bool): If True, sums all initial cash arrays instead of using 
                 the first object's value.
@@ -946,7 +946,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
                 multiple objects have non-zero positions.
             combine_init_price (bool): If True, combines initial price arrays using 
                 a weighted average when stacking.
-            **kwargs: Additional keyword arguments passed to internal stacking functions and 
+            **kwargs: Keyword arguments passed to internal stacking functions and 
                 the resulting `Portfolio` constructor.
 
         Returns:
@@ -1199,7 +1199,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             column_stack_func (Optional[Callable]): Custom function for stacking columns. 
             
                 Must accept the portfolio class and all method arguments.
-            **kwargs: Additional keyword arguments passed to `column_stack_func`.
+            **kwargs: Keyword arguments passed to `column_stack_func`.
 
         Returns:
             Any: The result of stacking the objects along columns.
@@ -1287,7 +1287,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
         Args:
             *objs (MaybeTuple[PortfolioT]): Portfolio instances whose `in_outputs` will be stacked.
-            **kwargs: Additional keyword arguments passed to `Portfolio.column_stack_objs`.
+            **kwargs: Keyword arguments passed to `Portfolio.column_stack_objs`.
 
         Returns:
             Optional[NamedTuple]: A new in_outputs named tuple with fields stacked along columns, or 
@@ -1375,7 +1375,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             group_by (GroupByLike): Grouping specification for stacking arrays.
             ffill_close (bool): If True, forward-fill missing values in the `close` array.
             fbfill_close (bool): If True, backward-fill missing values in the `close` array.
-            **kwargs: Additional keyword arguments to pass to the `Portfolio` constructor.
+            **kwargs: Keyword arguments to pass to the `Portfolio` constructor.
 
         Returns:
             Portfolio: A new `Portfolio` instance created by stacking the input objects along columns.
@@ -1769,10 +1769,10 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             group_by (GroupByLike): Criteria for grouping used by the wrapper.
             wrap_func (Optional[Callable]): A custom wrapping function that takes the portfolio, 
                 object, and additional parameters.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for the wrapping function.
+            wrap_kwargs (KwargsLike): Keyword arguments for the wrapping function.
             force_wrapping (bool): If True, forces wrapping and raises an error when wrapping is not feasible.
             silence_warnings (bool): If True, suppresses warnings when wrapping cannot be determined.
-            **kwargs: Additional keyword arguments passed to the wrapping function.
+            **kwargs: Keyword arguments passed to the wrapping function.
 
         Returns:
             Any: The wrapped object, or the original object if no wrapping is applied.
@@ -2030,7 +2030,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
                 raising an error if it cannot be applied.
             silence_warnings (bool): If True, suppresses warnings when 
                 indexing decisions cannot be determined.
-            **kwargs: Additional keyword arguments for indexing.
+            **kwargs: Keyword arguments for indexing.
 
         Returns:
             Any: The resulting indexed object.
@@ -2160,7 +2160,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
         Args:
             wrapper_meta (dict): Metadata information required for indexing the outputs.
-            **kwargs: Additional keyword arguments passed to the indexing process.
+            **kwargs: Keyword arguments passed to the indexing process.
 
         Returns:
             Optional[NamedTuple]: A new named tuple with the indexed in-output fields, 
@@ -2217,7 +2217,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
         Args:
             *args: Additional positional arguments.
-            in_output_kwargs (KwargsLike): Additional keyword arguments for in-output configurations.
+            in_output_kwargs (KwargsLike): Keyword arguments for in-output configurations.
             wrapper_meta (DictLike): Metadata dictionary for the wrapper; computed if None.
             **kwargs: Additional keyword arguments.
 
@@ -2401,7 +2401,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             wrapper (ArrayWrapper): ArrayWrapper instance; if None, the portfolio's wrapper is used.
             group_by (GroupByLike): Grouping specification.
             resample_func (Union[None, str, Callable]): Function or name used for resampling.
-            resample_kwargs (KwargsLike): Additional keyword arguments for the resampling function.
+            resample_kwargs (KwargsLike): Keyword arguments for the resampling function.
             force_resampling (bool): Flag to force resampling if conditions are met.
             silence_warnings (bool): If True, suppresses warnings during resampling.
             **kwargs: Additional keyword arguments.
@@ -2467,7 +2467,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
         Args:
             resampler (Union[Resampler, PandasResampler]): Resampler instance used for down/up-sampling.
-            **kwargs: Additional keyword arguments for resampling.
+            **kwargs: Keyword arguments for resampling.
 
         Returns:
             Optional[NamedTuple]: A resampled in-outputs object created from the existing outputs,
@@ -2546,9 +2546,9 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
                 `vectorbtpro.base.wrapping.ArrayWrapper.resample_meta`.
             ffill_close (bool): Flag to apply forward-fill on the close prices after resampling.
             fbfill_close (bool): Flag to apply backward-fill on the close prices after resampling.
-            in_output_kwargs (KwargsLike): Additional keyword arguments for resampling in-outputs.
+            in_output_kwargs (KwargsLike): Keyword arguments for resampling in-outputs.
             wrapper_meta (DictLike): Metadata for resampling obtained from the portfolio's wrapper.
-            **kwargs: Additional keyword arguments passed to 
+            **kwargs: Keyword arguments passed to 
                 `vectorbtpro.base.wrapping.ArrayWrapper.resample_meta`.
 
         Returns:
@@ -2693,9 +2693,6 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         This method simulates portfolio evolution based on provided order inputs.
         Order parameters such as size, price, fees, and others are broadcast as necessary and processed
         to construct the resulting portfolio.
-
-        See:
-            `vectorbtpro.portfolio.nb.from_orders.from_orders_nb`
 
         For defaults, see `vectorbtpro._settings.portfolio`. These defaults are not used to fill NaN values 
         after reindexing; vectorbtpro uses its own defaults (typically NaN for floating arrays and preset 
@@ -2878,7 +2875,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             group_by (tp.GroupByLike): Grouping specification for columns.
             
                 See `vectorbtpro.base.grouping.base.Grouper` for details.
-            broadcast_kwargs (tp.KwargsLike): Additional keyword arguments to pass to 
+            broadcast_kwargs (tp.KwargsLike): Keyword arguments to pass to 
                 `vectorbtpro.base.reshaping.broadcast`.
             jitted (tp.JittedOption): Option to control JIT compilation.
             
@@ -2902,10 +2899,13 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
                 (`vectorbtpro.portfolio.preparing.PFPrepResult`).
             return_sim_out (bool): If True, returns the simulation output 
                 (`vectorbtpro.portfolio.enums.SimulationOutput`).
-            **kwargs: Additional keyword arguments passed to the `Portfolio` constructor.
+            **kwargs: Keyword arguments passed to the `Portfolio` constructor.
     
         Returns:
             PortfolioResult: The portfolio result.
+
+        See:
+            `vectorbtpro.portfolio.nb.from_orders.from_orders_nb`
 
         Examples:
             Buy 10 units each tick:
@@ -3215,10 +3215,9 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
     ) -> PortfolioResultT:
         """Simulate a portfolio based on provided entry and exit signals.
 
-        This method simulates a portfolio by interpreting various signal arrays and custom signal
-        functions. It supports several modes:
+        This method simulates a portfolio by interpreting various signal arrays and custom signal functions.
 
-        **Using `entries` and `exits`:**
+        Using `entries` and `exits`:
 
         * If an adjustment function is provided (non-cacheable), signals are processed via
             `vectorbtpro.portfolio.nb.from_signals.dir_signal_func_nb`.
@@ -3226,18 +3225,18 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             `vectorbtpro.portfolio.nb.from_signals.dir_to_ls_signals_nb` 
             and simulated statically (cacheable).
 
-        **Using `entries` (for long), `exits` (for long), `short_entries`, and `short_exits`:**
+        Using `entries` (for long), `exits` (for long), `short_entries`, and `short_exits`:
 
         * If an adjustment function is provided, the function 
             `vectorbtpro.portfolio.nb.from_signals.ls_signal_func_nb`
             is used; otherwise, simulation is executed statically.
 
-        **Order Mode (`order_mode=True`):**
+        Using `order_mode=True`:
 
         * Simulates without explicit signals using 
-        `vectorbtpro.portfolio.nb.from_signals.order_signal_func_nb` (non-cacheable).
+            `vectorbtpro.portfolio.nb.from_signals.order_signal_func_nb` (non-cacheable).
 
-        **Custom Signal Function:**
+        Using `signal_func_nb`:
 
         * When `signal_func_nb` and `signal_args` are provided, the custom signal 
             function is used (non-cacheable).
@@ -3636,7 +3635,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             broadcast_named_args (tp.KwargsLike): Dictionary of named arguments for broadcasting.
 
                 Allows substitution of argument names wrapped with `vectorbtpro.utils.template.Rep`.
-            broadcast_kwargs (tp.KwargsLike): Additional keyword arguments to pass to 
+            broadcast_kwargs (tp.KwargsLike): Keyword arguments to pass to 
                 `vectorbtpro.base.reshaping.broadcast`.
             template_context (tp.KwargsLike): Context for template substitution in arguments.
             jitted (tp.JittedOption): Option to control JIT compilation.
@@ -3666,10 +3665,15 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
                 (`vectorbtpro.portfolio.preparing.PFPrepResult`).
             return_sim_out (bool): If True, returns the simulation output 
                 (`vectorbtpro.portfolio.enums.SimulationOutput`).
-            **kwargs: Additional keyword arguments passed to the `Portfolio` constructor.
+            **kwargs: Keyword arguments passed to the `Portfolio` constructor.
 
         Returns:
             PortfolioResult: The portfolio result.
+
+        See:
+            * `vectorbtpro.portfolio.nb.from_signals.from_basic_signals_nb` for static simulation without complex orders.
+            * `vectorbtpro.portfolio.nb.from_signals.from_signals_nb` for static simulation with complex orders.
+            * `vectorbtpro.portfolio.nb.from_signals.from_signal_func_nb` for dynamic simulation.
 
         Examples:
             By default, if all signal arrays are None, `entries` is treated as True,
@@ -4166,7 +4170,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             
                 If None, the default is used.
             dynamic_mode (bool): Specifies whether to use dynamic mode for signal generation.
-            **kwargs: Additional keyword arguments forwarded to `Portfolio.from_signals`.
+            **kwargs: Keyword arguments forwarded to `Portfolio.from_signals`.
 
         Returns:
             PortfolioResult: The portfolio result.
@@ -4253,9 +4257,6 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         Generates random entry and exit signals based on either the number of signals or 
         the probability of encountering a signal.
 
-        * If `n` is provided, see `vectorbtpro.signals.generators.randnx.RANDNX`.
-        * If `prob` is provided, see `vectorbtpro.signals.generators.rprobnx.RPROBNX`.
-
         Based on `Portfolio.from_signals`.
 
         !!! note
@@ -4279,11 +4280,15 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             seed (Optional[int]): Random seed for signal generation. 
             
                 If None, the seed from portfolio settings is used.
-            run_kwargs (KwargsLike): Additional keyword arguments passed to the signal generator's run function.
-            **kwargs: Additional keyword arguments forwarded to `Portfolio.from_signals`.
+            run_kwargs (KwargsLike): Keyword arguments passed to the signal generator's run function.
+            **kwargs: Keyword arguments forwarded to `Portfolio.from_signals`.
 
         Returns:
             PortfolioResult: The portfolio result.
+
+        See:
+            * `vectorbtpro.signals.generators.randnx.RANDNX` if `n` is provided.
+            * `vectorbtpro.signals.generators.rprobnx.RPROBNX` if `prob` is provided.
 
         Examples:
             Test multiple combinations of random entries and exits:
@@ -4427,7 +4432,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             group_by (GroupByLike): Grouping specification for simulation. 
             
                 If None, derived from the optimizer wrapper.
-            **kwargs: Additional keyword arguments forwarded to the underlying simulation function.
+            **kwargs: Keyword arguments forwarded to the underlying simulation function.
 
         Returns:
             PortfolioResult: The portfolio result.
@@ -4589,13 +4594,6 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         !!! hint
             See `vectorbtpro.portfolio.nb.from_order_func.from_order_func_nb` for 
             illustrations and argument definitions.
-
-        For more details on individual simulation functions:
-
-        * `order_func_nb`: See `vectorbtpro.portfolio.nb.from_order_func.from_order_func_nb`
-        * `order_func_nb` and `row_wise`: See `vectorbtpro.portfolio.nb.from_order_func.from_order_func_rw_nb`
-        * `flex_order_func_nb`: See `vectorbtpro.portfolio.nb.from_order_func.from_flex_order_func_nb`
-        * `flex_order_func_nb` and `row_wise`: See `vectorbtpro.portfolio.nb.from_order_func.from_flex_order_func_rw_nb`
 
         Prepared by `vectorbtpro.portfolio.preparing.FOFPreparer`.
 
@@ -4774,7 +4772,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             broadcast_named_args (tp.KwargsLike): Dictionary of named arguments for broadcasting.
 
                 Allows substitution of argument names wrapped with `vectorbtpro.utils.template.Rep`.
-            broadcast_kwargs (tp.KwargsLike): Additional keyword arguments to pass to 
+            broadcast_kwargs (tp.KwargsLike): Keyword arguments to pass to 
                 `vectorbtpro.base.reshaping.broadcast`.
             template_context (tp.KwargsLike): Context for template substitution in arguments.
             keep_inout_flex (Optional[bool]): Whether to preserve raw, editable arrays during 
@@ -4817,10 +4815,16 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
                 (`vectorbtpro.portfolio.preparing.PFPrepResult`).
             return_sim_out (bool): If True, returns the simulation output 
                 (`vectorbtpro.portfolio.enums.SimulationOutput`).
-            **kwargs: Additional keyword arguments passed to the `Portfolio` constructor.
+            **kwargs: Keyword arguments passed to the `Portfolio` constructor.
 
         Returns:
             PortfolioResult: The portfolio result.
+
+        See:
+            * `vectorbtpro.portfolio.nb.from_order_func.from_order_func_nb` for `order_func_nb`
+            * `vectorbtpro.portfolio.nb.from_order_func.from_order_func_rw_nb` for `order_func_nb` and `row_wise=True`
+            * `vectorbtpro.portfolio.nb.from_order_func.from_flex_order_func_nb` for `flex_order_func_nb`
+            * `vectorbtpro.portfolio.nb.from_order_func.from_flex_order_func_rw_nb` for `flex_order_func_nb` and `row_wise=True`
 
         Examples:
             Buy 10 units each tick using closing price:
@@ -5378,7 +5382,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             broadcast_named_args (tp.KwargsLike): Dictionary of named arguments for broadcasting.
 
                 Allows substitution of argument names wrapped with `vectorbtpro.utils.template.Rep`.
-            broadcast_kwargs (tp.KwargsLike): Additional keyword arguments to pass to 
+            broadcast_kwargs (tp.KwargsLike): Keyword arguments to pass to 
                 `vectorbtpro.base.reshaping.broadcast`.
             chunked (tp.ChunkedOption): Option to control chunked processing.
             
@@ -5393,7 +5397,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
                 (`vectorbtpro.portfolio.preparing.PFPrepResult`).
             return_sim_out (bool): If True, returns the simulation output 
                 (`vectorbtpro.portfolio.enums.SimulationOutput`).
-            **kwargs: Additional keyword arguments for `Portfolio.from_order_func`.
+            **kwargs: Keyword arguments for `Portfolio.from_order_func`.
 
         Returns:
             PortfolioResult: The portfolio result.
@@ -5503,7 +5507,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
         Args:
             group_by (GroupByLike): Grouping key or specification.
-            **kwargs: Additional keyword arguments for grouping.
+            **kwargs: Keyword arguments for grouping.
 
         Returns:
             Portfolio: A new portfolio instance with the updated grouping.
@@ -5812,9 +5816,6 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
     ) -> tp.SeriesFrame:
         """Get forward and backward filled closing price.
     
-        See:
-            `vectorbtpro.generic.nb.base.fbfill_nb`
-    
         Args:
             close (Optional[SeriesFrame]): Price data to fill.
         
@@ -5828,6 +5829,9 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
     
         Returns:
             SeriesFrame: The forward and backward filled closing price data.
+
+        See:
+            `vectorbtpro.generic.nb.base.fbfill_nb`
         """
         if not isinstance(cls_or_self, type):
             if close is None:
@@ -5870,9 +5874,6 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
     ) -> tp.Union[None, bool, tp.SeriesFrame]:
         """Get forward and backward filled benchmark closing price.
     
-        See:
-            `vectorbtpro.generic.nb.base.fbfill_nb`
-    
         Args:
             bm_close (Optional[SeriesFrame]): Benchmark price data to fill.
         
@@ -5887,6 +5888,9 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         Returns:
             Union[None, bool, SeriesFrame]: The forward and backward filled benchmark closing price data, 
                 or the original boolean/None value.
+
+        See:
+            `vectorbtpro.generic.nb.base.fbfill_nb`
         """
         if not isinstance(cls_or_self, type):
             if bm_close is None:
@@ -5962,7 +5966,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             rescale (bool): If True, rescale weights relative to other weights in the same group.
             group_by (GroupByLike): Specification for grouping assets.
             apply_group_by (bool): Flag indicating whether to apply grouping based on `group_by`.
-            **kwargs: Additional keyword arguments passed to the replace method.
+            **kwargs: Keyword arguments passed to the replace method.
 
         Returns:
             Portfolio: Portfolio view with asset weights applied.
@@ -5988,7 +5992,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         """Get view of portfolio with asset weights disabled.
 
         Args:
-            **kwargs: Additional keyword arguments passed to the replace method.
+            **kwargs: Keyword arguments passed to the replace method.
 
         Returns:
             Portfolio: Portfolio view with asset weights disabled.
@@ -6024,7 +6028,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             rec_sim_range (bool): Flag indicating whether to record the simulation range.
             jitted (JittedOption): Option to control JIT compilation.
             chunked (ChunkedOption): Option to enable chunked processing.
-            **kwargs: Additional keyword arguments passed to the replace method.
+            **kwargs: Keyword arguments passed to the replace method.
 
         Returns:
             Portfolio: Portfolio view containing only long positions, with non-long positions 
@@ -6088,7 +6092,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             rec_sim_range (bool): Flag indicating whether to record the simulation range.
             jitted (JittedOption): Option to control JIT compilation.
             chunked (ChunkedOption): Option to enable chunked processing.
-            **kwargs: Additional keyword arguments passed to the replace method.
+            **kwargs: Keyword arguments passed to the replace method.
 
         Returns:
             Portfolio: Portfolio view containing only short positions, with non-short positions 
@@ -6182,10 +6186,14 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             jitted (JittedOption): Option to control JIT compilation.
             wrapper (Optional[ArrayWrapper]): Wrapper instance for processing records.
             group_by (GroupByLike): Grouping specification.
-            **kwargs: Additional keyword arguments for orders instantiation.
+            **kwargs: Keyword arguments for orders instantiation.
 
         Returns:
             Orders: An instance of `vectorbtpro.portfolio.orders.Orders` with order records.
+
+        See:
+            * `vectorbtpro.portfolio.nb.records.records_within_sim_range_nb` if simulation range is provided.
+            * `vectorbtpro.portfolio.nb.records.apply_weights_to_orders_nb` if weights are provided.
         """
         if not isinstance(cls_or_self, type):
             if order_records is None:
@@ -6295,10 +6303,13 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             jitted (JittedOption): Option to control JIT compilation.
             wrapper (Optional[ArrayWrapper]): Array wrapper for records.
             group_by (GroupByLike): Grouping specification.
-            **kwargs: Additional keyword arguments for the logs constructor.
+            **kwargs: Keyword arguments for the logs constructor.
 
         Returns:
             Logs: An instance of `vectorbtpro.portfolio.logs.Logs` with log records.
+
+        See:
+            * `vectorbtpro.portfolio.nb.records.records_within_sim_range_nb` if simulation range is provided.
         """
         if not isinstance(cls_or_self, type):
             if log_records is None:
@@ -6377,7 +6388,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             rec_sim_range (bool): Flag indicating whether simulation range should be recorded.
             wrapper (Optional[ArrayWrapper]): Array wrapper for formatting.
             group_by (GroupByLike): Grouping specification.
-            **kwargs: Additional keyword arguments for entry trades initialization.
+            **kwargs: Keyword arguments for entry trades initialization.
 
         Returns:
             EntryTrades: An instance of `vectorbtpro.portfolio.trades.EntryTrades` with entry trade records.
@@ -6460,7 +6471,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             rec_sim_range (bool): Flag indicating whether simulation range should be recorded.
             wrapper (Optional[ArrayWrapper]): Array wrapper for formatting.
             group_by (GroupByLike): Grouping specification.
-            **kwargs: Additional keyword arguments for exit trades initialization.
+            **kwargs: Keyword arguments for exit trades initialization.
 
         Returns:
             ExitTrades: An instance of `vectorbtpro.portfolio.trades.ExitTrades` with exit trade records.
@@ -6535,7 +6546,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             rec_sim_range (bool): Flag indicating whether simulation range should be recorded.
             wrapper (Optional[ArrayWrapper]): Array wrapper for formatting.
             group_by (GroupByLike): Grouping specification.
-            **kwargs: Additional keyword arguments for constructing positions.
+            **kwargs: Keyword arguments for constructing positions.
 
         Returns:
             Positions: An instance of `vectorbtpro.portfolio.trades.Positions` with position records.
@@ -6580,7 +6591,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             rec_sim_range (bool): Flag indicating whether to record the simulation range.
             wrapper (Optional[ArrayWrapper]): Optional wrapper instance for record transformation.
             group_by (GroupByLike): Grouping specification.
-            **kwargs: Additional keyword arguments passed to the resolve shortcut attribute.
+            **kwargs: Keyword arguments passed to the resolve shortcut attribute.
 
         Returns:
             Trades: Trade or position records corresponding to the specified trades type.
@@ -6874,7 +6885,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
                 Uses `Portfolio.drawdowns_cls` if not provided.
             wrapper (Optional[ArrayWrapper]): Array wrapper for formatting output. 
             group_by (GroupByLike): Grouping specification for the output.
-            **kwargs: Additional keyword arguments passed to the 
+            **kwargs: Keyword arguments passed to the 
                 `vectorbtpro.generic.drawdowns.Drawdowns.from_price` method.
 
         Returns:
@@ -6939,7 +6950,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             wrapper (Optional[ArrayWrapper]): Array wrapper used to shape and format the output. 
 
                 Uses `Portfolio.wrapper` if not provided.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping the result.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
             keep_flex (bool): If True, returns the broadcasted array without wrapping when 
                 weights are not applied.
 
@@ -7007,10 +7018,13 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             wrapper (Optional[ArrayWrapper]): Wrapper instance used for formatting the output array.
 
                 Uses `Portfolio.wrapper` if not provided.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for the wrapper.
+            wrap_kwargs (KwargsLike): Keyword arguments for the wrapper.
 
         Returns:
             SeriesFrame: Asset flow series representing the total transacted amount of assets.
+
+        See:
+            `vectorbtpro.portfolio.nb.analysis.asset_flow_nb`
         """
         if not isinstance(cls_or_self, type):
             if orders is None:
@@ -7089,10 +7103,13 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             wrapper (Optional[ArrayWrapper]): Wrapper instance used for formatting the output array.
 
                 Uses `Portfolio.wrapper` if not provided.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for the wrapper.
+            wrap_kwargs (KwargsLike): Keyword arguments for the wrapper.
 
         Returns:
             SeriesFrame: Asset series representing the position at each time step.
+
+        See:
+            `vectorbtpro.portfolio.nb.analysis.assets_nb`
         """
         if not isinstance(cls_or_self, type):
             if asset_flow is None:
@@ -7169,10 +7186,14 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 Uses `Portfolio.wrapper` if not provided.
             group_by (GroupByLike): Grouping specification to apply when creating the mask.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for the wrapper.
+            wrap_kwargs (KwargsLike): Keyword arguments for the wrapper.
 
         Returns:
             SeriesFrame: Boolean mask indicating the presence of a position at each time step.
+
+        See:
+            * `vectorbtpro.portfolio.nb.analysis.position_mask_grouped_nb` if grouping is enabled.
+            * `vectorbtpro.portfolio.nb.analysis.position_mask_nb` if grouping is disabled.
         """
         if not isinstance(cls_or_self, type):
             if assets is None:
@@ -7253,10 +7274,14 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 Uses `Portfolio.wrapper` if not provided.
             group_by (GroupByLike): Specification for grouping data.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for the wrapping process.
+            wrap_kwargs (KwargsLike): Keyword arguments for the wrapping process.
 
         Returns:
             MaybeSeries: Series representing the computed position coverage.
+
+        See:
+            * `vectorbtpro.portfolio.nb.analysis.position_coverage_grouped_nb` if grouping is enabled.
+            * `vectorbtpro.portfolio.nb.analysis.position_coverage_nb` if grouping is disabled.
         """
         if not isinstance(cls_or_self, type):
             if assets is None:
@@ -7339,10 +7364,13 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             wrapper (Optional[ArrayWrapper]): Array wrapper instance used for processing.
 
                 Uses `Portfolio.wrapper` if not provided.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for the wrapping procedure.
+            wrap_kwargs (KwargsLike): Keyword arguments for the wrapping procedure.
 
         Returns:
             SeriesFrame: A frame containing the computed entry prices per time step.
+
+        See:
+            `vectorbtpro.portfolio.nb.records.get_position_feature_nb`
         """
         if not isinstance(cls_or_self, type):
             if orders is None:
@@ -7437,10 +7465,13 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             wrapper (Optional[ArrayWrapper]): Array wrapper instance used for processing.
 
                 Uses `Portfolio.wrapper` if not provided.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for the wrapping process.
+            wrap_kwargs (KwargsLike): Keyword arguments for the wrapping process.
 
         Returns:
             SeriesFrame: A frame containing the computed exit prices per time step.
+
+        See:
+            `vectorbtpro.portfolio.nb.records.get_position_feature_nb`
         """
         if not isinstance(cls_or_self, type):
             if orders is None:
@@ -7541,10 +7572,14 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 Uses `Portfolio.wrapper` if not provided.
             group_by (GroupByLike): Specification for grouping.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
 
         Returns:
             Union[ArrayLike, MaybeSeries]: Cash deposit series, either as a raw array or a wrapped series.
+
+        See:
+            * `vectorbtpro.portfolio.nb.analysis.cash_deposits_grouped_nb` if grouping is enabled.
+            * `vectorbtpro.portfolio.nb.analysis.cash_deposits_nb` if grouping is disabled.
         """
         if not isinstance(cls_or_self, type):
             if cash_deposits_raw is None:
@@ -7647,7 +7682,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 Uses `Portfolio.wrapper` if not provided.
             group_by (GroupByLike): Specification for grouping.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
 
         Returns:
             ArrayLike: Total cash deposit series aggregated over columns.
@@ -7714,10 +7749,14 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 Uses `Portfolio.wrapper` if not provided.
             group_by (GroupByLike): Specification for grouping.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
 
         Returns:
             Union[ArrayLike, MaybeSeries]: Cash earnings series, either as a raw array or a wrapped series.
+
+        See:
+            * `vectorbtpro.portfolio.nb.analysis.cash_earnings_grouped_nb` if grouping is enabled.
+            * `vectorbtpro.portfolio.nb.analysis.cash_earnings_nb` if grouping is disabled.
         """
         if not isinstance(cls_or_self, type):
             if cash_earnings_raw is None:
@@ -7802,7 +7841,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 Uses `Portfolio.wrapper` if not provided.
             group_by (GroupByLike): Specification for grouping.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
         
         Returns:
             ArrayLike: Wrapped total cash earnings aggregated per column or group.
@@ -7877,10 +7916,14 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 Uses `Portfolio.wrapper` if not provided.
             group_by (GroupByLike): Grouping specification for the result.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
     
         Returns:
             SeriesFrame: Wrapped cash flow series per column or group.
+
+        See:
+            * `vectorbtpro.portfolio.nb.analysis.cash_flow_nb` regardless of grouping.
+            * `vectorbtpro.portfolio.nb.analysis.cash_flow_grouped_nb` if grouping is enabled.
         """
         if not isinstance(cls_or_self, type):
             if orders is None:
@@ -7989,10 +8032,15 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 Uses `Portfolio.wrapper` if not provided.
             group_by (GroupByLike): Grouping specification.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
 
         Returns:
             MaybeSeries: Wrapped series representing the initial cash.
+
+        See:
+            * `vectorbtpro.portfolio.nb.analysis.align_init_cash_nb` if `init_cash_raw` is an integer.
+            * `vectorbtpro.portfolio.nb.analysis.init_cash_grouped_nb` if grouping is enabled.
+            * `vectorbtpro.portfolio.nb.analysis.init_cash_nb` if grouping is disabled.
         """
         if not isinstance(cls_or_self, type):
             if init_cash_raw is None:
@@ -8118,10 +8166,13 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 Uses `Portfolio.wrapper` if not provided.
             group_by (GroupByLike): Grouping specification.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
 
         Returns:
             SeriesFrame: Wrapped series with the cash balance.
+
+        See:
+            `vectorbtpro.portfolio.nb.analysis.cash_nb`
         """
         if not isinstance(cls_or_self, type):
             if init_cash is None:
@@ -8200,7 +8251,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             wrapper (Optional[ArrayWrapper]): Array wrapper instance.
 
                 Uses `Portfolio.wrapper` if not provided.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
             keep_flex (bool): If True, returns the input as flexible data without broadcasting.
 
         Returns:
@@ -8247,10 +8298,14 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 Uses `Portfolio.wrapper` if not provided.
             group_by (GroupByLike): Specification for grouping columns.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
 
         Returns:
             MaybeSeries: The computed initial position value for each column.
+
+        See:
+            * `vectorbtpro.portfolio.nb.analysis.init_position_value_grouped_nb` if grouping is enabled.
+            * `vectorbtpro.portfolio.nb.analysis.init_position_value_nb` if grouping is disabled.
         """
         if not isinstance(cls_or_self, type):
             if init_position is None:
@@ -8328,10 +8383,13 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 Uses `Portfolio.wrapper` if not provided.
             group_by (GroupByLike): Specification for grouping columns.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
 
         Returns:
             MaybeSeries: The computed initial value per column or group.
+
+        See:
+            `vectorbtpro.portfolio.nb.analysis.init_value_nb`
         """
         if not isinstance(cls_or_self, type):
             if init_position_value is None:
@@ -8399,7 +8457,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 Uses `Portfolio.wrapper` if not provided.
             group_by (GroupByLike): Specification for grouping columns.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
 
         Returns:
             MaybeSeries: The aggregated total input value per column or group.
@@ -8480,10 +8538,14 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 Uses `Portfolio.wrapper` if not provided.
             group_by (GroupByLike): Specification for grouping columns.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
 
         Returns:
             SeriesFrame: The asset value series per column or group.
+
+        See:
+            * `vectorbtpro.portfolio.nb.analysis.asset_value_nb` regardless of grouping.
+            * `vectorbtpro.portfolio.nb.analysis.asset_value_grouped_nb` if grouping is enabled.
         """
         if not isinstance(cls_or_self, type):
             if close is None:
@@ -8568,10 +8630,13 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 Uses `Portfolio.wrapper` if not provided.
             group_by (GroupByLike): Grouping specification.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
 
         Returns:
             SeriesFrame: The computed portfolio value series.
+
+        See:
+            `vectorbtpro.portfolio.nb.analysis.value_nb`
         """
         if not isinstance(cls_or_self, type):
             if cash is None:
@@ -8655,10 +8720,13 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 Uses `Portfolio.wrapper` if not provided.
             group_by (GroupByLike): Grouping specification.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
 
         Returns:
             SeriesFrame: The computed gross exposure series.
+
+        See:
+            `vectorbtpro.portfolio.nb.analysis.gross_exposure_nb`
 
         !!! note
             When both directions, `asset_value` must include the addition of the absolute long-only and 
@@ -8768,10 +8836,13 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 Uses `Portfolio.wrapper` if not provided.
             group_by (GroupByLike): Grouping specification.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
 
         Returns:
             SeriesFrame: The computed net exposure series.
+
+        See:
+            `vectorbtpro.portfolio.nb.analysis.net_exposure_nb`
         """
         if not isinstance(cls_or_self, type):
             if long_exposure is None:
@@ -8857,10 +8928,13 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 Uses `Portfolio.wrapper` if not provided.
             group_by (GroupByLike): Specification for grouping the results.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping the result.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
     
         Returns:
             SeriesFrame: Portfolio allocation series per column.
+
+        See:
+            `vectorbtpro.portfolio.nb.analysis.allocations_nb`
         """
         if not isinstance(cls_or_self, type):
             if asset_value is None:
@@ -8954,10 +9028,14 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 Uses `Portfolio.wrapper` if not provided.
             group_by (GroupByLike): Specification for grouping profit aggregation.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping the result.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
     
         Returns:
             MaybeSeries: Total profit calculated from order records.
+
+        See:
+            * `vectorbtpro.portfolio.nb.analysis.total_profit_nb` regardless of grouping.
+            * `vectorbtpro.portfolio.nb.analysis.total_profit_grouped_nb` if grouping is enabled.
         """
         if not isinstance(cls_or_self, type):
             if close is None:
@@ -9072,7 +9150,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 Uses `Portfolio.wrapper` if not provided.
             group_by (GroupByLike): Specification for grouping the result.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping the result.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
     
         Returns:
             MaybeSeries: Final portfolio value after adding the total profit to the input value.
@@ -9143,7 +9221,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 Uses `Portfolio.wrapper` if not provided.
             group_by (tp.GroupByLike): Grouping specification for aggregating data.
-            wrap_kwargs (tp.KwargsLike): Additional keyword arguments for the wrapping process.
+            wrap_kwargs (tp.KwargsLike): Keyword arguments for the wrapping process.
 
         Returns:
             MaybeSeries: Wrapped total return computed as the total profit divided by the input value.
@@ -9226,10 +9304,13 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 Uses `Portfolio.wrapper` if not provided.
             group_by (tp.GroupByLike): Grouping specification for aggregating data.
-            wrap_kwargs (tp.KwargsLike): Additional keyword arguments for the wrapping process.
+            wrap_kwargs (tp.KwargsLike): Keyword arguments for the wrapping process.
 
         Returns:
             SeriesFrame: Wrapped return series based on portfolio value and cash adjustments.
+
+        See:
+            `vectorbtpro.portfolio.nb.analysis.returns_nb`
         """
         if not isinstance(cls_or_self, type):
             if init_value is None:
@@ -9333,10 +9414,13 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 Uses `Portfolio.wrapper` if not provided.
             group_by (tp.GroupByLike): Grouping specification for aggregating data.
-            wrap_kwargs (tp.KwargsLike): Additional keyword arguments for the wrapping process.
+            wrap_kwargs (tp.KwargsLike): Keyword arguments for the wrapping process.
 
         Returns:
             SeriesFrame: Wrapped asset PnL series combining both realized and unrealized profit and loss.
+
+        See:
+            `vectorbtpro.portfolio.nb.analysis.asset_pnl_nb`
         """
         if not isinstance(cls_or_self, type):
             if init_position_value is None:
@@ -9433,10 +9517,13 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 Uses `Portfolio.wrapper` if not provided.
             group_by (GroupByLike): Specification for grouping.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
         
         Returns:
             SeriesFrame: Computed asset return series.
+
+        See:
+            `vectorbtpro.portfolio.nb.analysis.asset_returns_nb`
         """
         if not isinstance(cls_or_self, type):
             if init_position_value is None:
@@ -9536,10 +9623,14 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 Uses `Portfolio.wrapper` if not provided.
             group_by (GroupByLike): Specification for grouping.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
         
         Returns:
             SeriesFrame: Computed market value series.
+
+        See:
+            * `vectorbtpro.portfolio.nb.analysis.market_value_grouped_nb` if grouping is enabled.
+            * `vectorbtpro.portfolio.nb.analysis.market_value_nb` if grouping is disabled.
         """
         if not isinstance(cls_or_self, type):
             if close is None:
@@ -9680,10 +9771,13 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 Uses `Portfolio.wrapper` if not provided.
             group_by (GroupByLike): Grouping specification for processing.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for the wrapper.
+            wrap_kwargs (KwargsLike): Keyword arguments for the wrapper.
 
         Returns:
             SeriesFrame: The computed market return series.
+
+        See:
+            `vectorbtpro.portfolio.nb.analysis.returns_nb`
         """
         if not isinstance(cls_or_self, type):
             if init_value is None:
@@ -9783,10 +9877,13 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 Uses `Portfolio.wrapper` if not provided.
             group_by (GroupByLike): Grouping specification for processing.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for the wrapper.
+            wrap_kwargs (KwargsLike): Keyword arguments for the wrapper.
 
         Returns:
             MaybeSeries: The total market return as a reduced value.
+
+        See:
+            `vectorbtpro.portfolio.nb.analysis.total_market_return_nb`
         """
         if not isinstance(cls_or_self, type):
             if input_value is None:
@@ -9862,7 +9959,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             chunked (ChunkedOption): Option to control chunked processing.
             wrapper (Optional[ArrayWrapper]): Array wrapper instance for processing.
             group_by (GroupByLike): Specification for grouping.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
 
         Returns:
             Optional[SeriesFrame]: A wrapped series of benchmark values per column or group, or 
@@ -9930,7 +10027,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             chunked (ChunkedOption): Option to control chunked processing.
             wrapper (Optional[ArrayWrapper]): Wrapper instance used to format the result.
             group_by (GroupByLike): Grouping specification for processing.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for the wrapper.
+            wrap_kwargs (KwargsLike): Keyword arguments for the wrapper.
 
         Returns:
             Optional[SeriesFrame]: Benchmark return series per column or group, or 
@@ -10019,7 +10116,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 Uses `Portfolio.wrapper` if not provided.
             group_by (GroupByLike): Grouping specification.
-            **kwargs: Additional keyword arguments for the returns accessor.
+            **kwargs: Keyword arguments for the returns accessor.
 
         Returns:
             ReturnsAccessor: Returns accessor instance.
@@ -10146,7 +10243,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             chunked (ChunkedOption): Option to control chunked processing.
             wrapper (Optional[ArrayWrapper]): Array wrapper instance.
             group_by (GroupByLike): Grouping specification.
-            **kwargs: Additional keyword arguments for the quantstats adapter.
+            **kwargs: Keyword arguments for the quantstats adapter.
 
         Returns:
             QSAdapter: Quantstats adapter instance.
@@ -10202,7 +10299,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
         Args:
             attr (str): The attribute name to be processed.
-            final_kwargs (KwargsLike): Additional keyword arguments that may influence attribute resolution.
+            final_kwargs (KwargsLike): Keyword arguments that may influence attribute resolution.
 
         Returns:
             str: The pre-processed attribute name.
@@ -10232,7 +10329,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         Args:
             attr (str): The attribute name being processed.
             out (Any): The resolved attribute value.
-            final_kwargs (KwargsLike, optional): Additional keyword arguments that may include `incl_open`
+            final_kwargs (KwargsLike): Keyword arguments that may include `incl_open`
                 to control the inclusion of open trades.
 
         Returns:
@@ -10254,7 +10351,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         Args:
             attr_name (str): The name of the attribute to resolve.
             *args: Additional positional arguments.
-            **kwargs: Additional keyword arguments for attribute resolution.
+            **kwargs: Keyword arguments for attribute resolution.
 
         Returns:
             Any: The resolved attribute value.
@@ -10567,7 +10664,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             chunked (ChunkedOption): Option to control chunked processing.
             wrapper (Optional[ArrayWrapper]): Array wrapper instance.
             group_by (GroupByLike): Grouping specification.
-            **kwargs: Additional keyword arguments passed to `vectorbtpro.returns.accessors.ReturnsAccessor.stats`.
+            **kwargs: Keyword arguments passed to `vectorbtpro.returns.accessors.ReturnsAccessor.stats`.
 
         Returns:
             SeriesFrame: A DataFrame or Series containing the computed return statistics.
@@ -10623,7 +10720,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             wrapper (Optional[ArrayWrapper]): Array wrapper used for data transformations.
             xref (Optional[str]): X-axis reference identifier; if None, it is derived from the figure.
             yref (Optional[str]): Y-axis reference identifier; if None, it is derived from the figure.
-            **kwargs: Additional keyword arguments passed to `vectorbtpro.portfolio.orders.Orders.plot`.
+            **kwargs: Keyword arguments passed to `vectorbtpro.portfolio.orders.Orders.plot`.
 
         Returns:
             BaseFigure: Plotly figure with the orders plot.
@@ -10687,7 +10784,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             wrapper (Optional[ArrayWrapper]): Array wrapper used for data transformations.
             xref (str): X-axis reference identifier.
             yref (str): Y-axis reference identifier.
-            **kwargs: Additional keyword arguments passed to `vectorbtpro.portfolio.trades.Trades.plot`.
+            **kwargs: Keyword arguments passed to `vectorbtpro.portfolio.trades.Trades.plot`.
 
         Returns:
             BaseFigure: Plotly figure with the trades plot.
@@ -10750,7 +10847,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             pct_scale (bool): Flag to display trade P&L on a percentage scale.
             xref (str): X-axis reference identifier.
             yref (str): Y-axis reference identifier.
-            **kwargs: Additional keyword arguments passed to `vectorbtpro.portfolio.trades.Trades.plot_pnl`.
+            **kwargs: Keyword arguments passed to `vectorbtpro.portfolio.trades.Trades.plot_pnl`.
 
         Returns:
             BaseFigure: Plotly figure with the trade P&L plot.
@@ -10832,17 +10929,17 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 * "zones" or True
                 * "lines"
-            long_entry_trace_kwargs (KwargsLike): Additional keyword arguments for plotting long entry trade traces.
-            short_entry_trace_kwargs (KwargsLike): Additional keyword arguments for plotting short entry trade traces.
-            long_exit_trace_kwargs (KwargsLike): Additional keyword arguments for plotting long exit trade traces.
-            short_exit_trace_kwargs (KwargsLike): Additional keyword arguments for plotting short exit trade traces.
-            long_shape_kwargs (KwargsLike): Additional keyword arguments for customizing long position shapes.
-            short_shape_kwargs (KwargsLike): Additional keyword arguments for customizing short position shapes.
-            add_trace_kwargs (KwargsLike): Additional keyword arguments for adding traces.
+            long_entry_trace_kwargs (KwargsLike): Keyword arguments for plotting long entry trade traces.
+            short_entry_trace_kwargs (KwargsLike): Keyword arguments for plotting short entry trade traces.
+            long_exit_trace_kwargs (KwargsLike): Keyword arguments for plotting long exit trade traces.
+            short_exit_trace_kwargs (KwargsLike): Keyword arguments for plotting short exit trade traces.
+            long_shape_kwargs (KwargsLike): Keyword arguments for customizing long position shapes.
+            short_shape_kwargs (KwargsLike): Keyword arguments for customizing short position shapes.
+            add_trace_kwargs (KwargsLike): Keyword arguments for adding traces.
             fig (Optional[BaseFigure]): Figure object to update; if None, a new figure is created.
             xref (Optional[str]): Reference for the x-axis to configure the plot layout.
             yref (Optional[str]): Reference for the y-axis to configure the plot layout.
-            **kwargs: Additional keyword arguments passed to inner plotting functions.
+            **kwargs: Keyword arguments passed to inner plotting functions.
 
         Returns:
             BaseFigure: Figure with plotted trade signals.
@@ -11004,7 +11101,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
     ) -> tp.BaseFigure:
         """Plot one column or group of cash flow.
 
-        Additional keyword arguments are passed to `vectorbtpro.generic.accessors.GenericAccessor.plot`.
+        Keyword arguments are passed to `vectorbtpro.generic.accessors.GenericAccessor.plot`.
 
         Args:
             column (Optional[Label]): Column label to select from the cash flow data.
@@ -11023,8 +11120,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             line_shape (str): Shape of the plotted line (e.g., "hv" for horizontal-vertical lines).
             xref (Optional[str]): X-axis reference for layout; if not provided, it is inferred from the figure.
             yref (Optional[str]): Y-axis reference for layout; if not provided, it is inferred from the figure.
-            hline_shape_kwargs (KwargsLike): Additional keyword arguments for customizing the horizontal line shape.
-            **kwargs: Additional keyword arguments passed to `GenericAccessor.plot`.
+            hline_shape_kwargs (KwargsLike): Keyword arguments for customizing the horizontal line shape.
+            **kwargs: Keyword arguments passed to `GenericAccessor.plot`.
 
         Returns:
             BaseFigure: Figure with the plotted cash flow.
@@ -11141,8 +11238,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             line_shape (str): Line shape style for the plot.
             xref (Optional[str]): Reference for the x-axis.
             yref (Optional[str]): Reference for the y-axis.
-            hline_shape_kwargs (KwargsLike): Additional keyword arguments for horizontal line shape.
-            **kwargs (KwargsLike): Additional keyword arguments passed to 
+            hline_shape_kwargs (KwargsLike): Keyword arguments for horizontal line shape.
+            **kwargs: Keyword arguments passed to 
                 `vectorbtpro.generic.accessors.GenericSRAccessor.plot_against`.
 
         Returns:
@@ -11276,8 +11373,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             line_shape (str): Line shape style for the plot.
             xref (Optional[str]): Reference for the x-axis.
             yref (Optional[str]): Reference for the y-axis.
-            hline_shape_kwargs (KwargsLike): Additional keyword arguments for horizontal line shape.
-            **kwargs (KwargsLike): Additional keyword arguments passed to 
+            hline_shape_kwargs (KwargsLike): Keyword arguments for horizontal line shape.
+            **kwargs: Keyword arguments passed to 
                 `vectorbtpro.generic.accessors.GenericAccessor.plot`.
 
         Returns:
@@ -11390,9 +11487,9 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             line_shape (str): Shape of the plot line (e.g. "hv").
             xref (Optional[str]): Reference for the x-axis. If None, inferred from the figure.
             yref (Optional[str]): Reference for the y-axis. If None, inferred from the figure.
-            hline_shape_kwargs (KwargsLike): Additional keyword arguments for 
+            hline_shape_kwargs (KwargsLike): Keyword arguments for 
                 customizing the horizontal line shape.
-            **kwargs: Additional keyword arguments for 
+            **kwargs: Keyword arguments for 
                 `vectorbtpro.generic.accessors.GenericSRAccessor.plot_against`.
 
         Returns:
@@ -11516,9 +11613,9 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             line_shape (str): Shape of the plot line (e.g. "hv").
             xref (Optional[str]): Reference for the x-axis. If None, inferred from the figure.
             yref (Optional[str]): Reference for the y-axis. If None, inferred from the figure.
-            hline_shape_kwargs (KwargsLike): Additional keyword arguments for 
+            hline_shape_kwargs (KwargsLike): Keyword arguments for 
                 customizing the horizontal line shape.
-            **kwargs: Additional keyword arguments for 
+            **kwargs: Keyword arguments for 
                 `vectorbtpro.generic.accessors.GenericSRAccessor.plot_against`.
 
         Returns:
@@ -11645,9 +11742,9 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             yref (Optional[str]): y-axis reference identifier. 
             
                 If None, it is inferred from the figure.
-            hline_shape_kwargs (KwargsLike): Additional keyword arguments for 
+            hline_shape_kwargs (KwargsLike): Keyword arguments for 
                 the horizontal line shape.
-            **kwargs: Additional keyword arguments passed to 
+            **kwargs: Keyword arguments passed to 
                 `vectorbtpro.generic.accessors.GenericSRAccessor.plot_against`.
 
         Returns:
@@ -11772,7 +11869,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             wrapper (Optional[ArrayWrapper]): Array wrapper instance used for data extraction.
             group_by (GroupByLike): Grouping specification to aggregate data.
             pct_scale (bool): Flag indicating whether to scale the returns as percentages.
-            **kwargs: Additional keyword arguments passed to 
+            **kwargs: Keyword arguments passed to 
                 `vectorbtpro.returns.accessors.ReturnsSRAccessor.plot_cumulative`.
 
         Returns:
@@ -11855,7 +11952,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             group_by (GroupByLike): Grouping specification to aggregate data.
             xref (str): x-axis reference identifier.
             yref (str): y-axis reference identifier.
-            **kwargs: Additional keyword arguments passed to 
+            **kwargs: Keyword arguments passed to 
                 `vectorbtpro.generic.drawdowns.Drawdowns.plot`.
 
         Returns:
@@ -11942,9 +12039,9 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             pct_scale (bool): If True, format the y-axis ticks as percentages.
             xref (str): Reference identifier for the x-axis.
             yref (str): Reference identifier for the y-axis.
-            hline_shape_kwargs (KwargsLike): Additional keyword arguments for 
+            hline_shape_kwargs (KwargsLike): Keyword arguments for 
                 customizing the horizontal line shape.
-            **kwargs: Additional keyword arguments passed to 
+            **kwargs: Keyword arguments passed to 
             `vectorbtpro.generic.accessors.GenericAccessor.plot`.
 
         Returns:
@@ -12078,9 +12175,9 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             line_shape (str): Plot line shape style, such as "hv".
             xref (Optional[str]): Reference identifier for the x-axis.
             yref (Optional[str]): Reference identifier for the y-axis.
-            hline_shape_kwargs (KwargsLike): Additional keyword arguments for 
+            hline_shape_kwargs (KwargsLike): Keyword arguments for 
                 customizing the horizontal line shape.
-            **kwargs: Additional keyword arguments passed to 
+            **kwargs: Keyword arguments passed to 
                 `vectorbtpro.generic.accessors.GenericSRAccessor.plot_against`.
 
         Returns:
@@ -12201,9 +12298,9 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             line_shape (str): Shape of the plot line (e.g., "hv").
             xref (Optional[str]): Reference for the x-axis; determined from the plot if not provided.
             yref (Optional[str]): Reference for the y-axis; determined from the plot if not provided.
-            hline_shape_kwargs (KwargsLike): Additional keyword arguments for 
+            hline_shape_kwargs (KwargsLike): Keyword arguments for 
                 configuring the horizontal line shape.
-            **kwargs (KwargsLike): Additional keyword arguments passed to 
+            **kwargs: Keyword arguments passed to 
                 `vectorbtpro.generic.accessors.GenericSRAccessor.plot_against`.
 
         Returns:
@@ -12326,7 +12423,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             colorway (Union[None, str, Sequence[str]]): Color scheme used for the plot.
             xref (Optional[str]): Reference for the x-axis; determined from the plot if not provided.
             yref (Optional[str]): Reference for the y-axis; determined from the plot if not provided.
-            **kwargs (KwargsLike): Additional keyword arguments passed to 
+            **kwargs: Keyword arguments passed to 
                 `vectorbtpro.generic.accessors.GenericAccessor.areaplot`.
 
         Returns:

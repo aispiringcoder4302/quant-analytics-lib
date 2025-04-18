@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module  for working with mapped arrays.
+"""Module for working with mapped arrays.
 
 The base class below stores a mapped data array along with its corresponding column and (optionally)
 index arrays, and provides methods to process the mapped array directly without converting it to
@@ -467,7 +467,9 @@ def combine_mapped_with_other(
 @attach_binary_magic_methods(combine_mapped_with_other)
 @attach_unary_magic_methods(lambda self, np_func: self.replace(mapped_arr=np_func(self.values)))
 class MappedArray(Analyzable):
-    """Class representing a mapped array for records derived from `vectorbtpro.records.base.Records`.
+    """Class for wrapping and analyzing mapped arrays.
+    
+    Represents a mapped array for records derived from `vectorbtpro.records.base.Records`.
 
     Args:
         wrapper (ArrayWrapper): Wrapper instance.
@@ -558,8 +560,8 @@ class MappedArray(Analyzable):
 
         Args:
             objs (MappedArray): Additional `MappedArray` instances to stack.
-            wrapper_kwargs (KwargsLike): Additional keyword arguments passed to `ArrayWrapper.row_stack`.
-            kwargs (KwargsLike): Additional keyword arguments for row stacking configuration.
+            wrapper_kwargs (KwargsLike): Keyword arguments passed to `ArrayWrapper.row_stack`.
+            kwargs (KwargsLike): Keyword arguments for row stacking configuration.
 
         Returns:
             MappedArray: A new instance with rows stacked from the provided `MappedArray` objects.
@@ -666,7 +668,7 @@ class MappedArray(Analyzable):
             wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
             get_indexer_kwargs (KwargsLike): Keyword arguments passed to `pandas.Index.get_indexer`
                 for index translation.
-            **kwargs: Additional keyword arguments for constructing the new instance.
+            **kwargs: Keyword arguments for constructing the new instance.
 
         Returns:
             MappedArray: A new instance with arrays stacked along columns.
@@ -745,7 +747,7 @@ class MappedArray(Analyzable):
         Ensures that `MappedArray.col_mapper` is omitted if the corresponding `wrapper` or `col_arr` differ.
 
         Args:
-            **kwargs: Additional keyword arguments passed to `vectorbtpro.utils.config.Configured.replace`.
+            **kwargs: Keyword arguments passed to `vectorbtpro.utils.config.Configured.replace`.
 
         Returns:
             MappedArray: The updated instance with replaced configuration.
@@ -766,10 +768,10 @@ class MappedArray(Analyzable):
         mapped array, column array, index array, and ID array based on the selection parameters.
 
         Args:
-            *args: Additional positional arguments for indexing.
+            *args: Positional arguments for indexing.
             wrapper_meta (dict): Metadata from the wrapper's indexing function;
                 if None, computed internally.
-            **kwargs: Additional keyword arguments for indexing.
+            **kwargs: Keyword arguments for indexing.
 
         Returns:
             dict: A dictionary containing:
@@ -818,10 +820,10 @@ class MappedArray(Analyzable):
         """Perform indexing on `MappedArray` and return a new instance with selected data.
 
         Args:
-            *args: Additional positional arguments for indexing.
+            *args: Positional arguments for indexing.
             mapped_meta (dict): Metadata produced by `MappedArray.indexing_func_meta`;
                 if not provided, computed internally.
-            **kwargs: Additional keyword arguments for indexing.
+            **kwargs: Keyword arguments for indexing.
 
         Returns:
             MappedArray: A new instance reflecting the indexing operation.
@@ -844,9 +846,9 @@ class MappedArray(Analyzable):
         on the resampled data.
 
         Args:
-            *args: Additional positional arguments for resampling.
+            *args: Positional arguments for resampling.
             wrapper_meta (dict): Metadata from the wrapper's resampling method; if None, computed internally.
-            **kwargs: Additional keyword arguments for resampling.
+            **kwargs: Keyword arguments for resampling.
 
         Returns:
             dict: A dictionary containing:
@@ -874,10 +876,10 @@ class MappedArray(Analyzable):
         replaced by the resampled index values.
 
         Args:
-            *args: Additional positional arguments for resampling.
+            *args: Positional arguments for resampling.
             mapped_meta (dict): Metadata produced by `MappedArray.resample_meta`;
                 if not provided, computed internally.
-            **kwargs: Additional keyword arguments for resampling.
+            **kwargs: Keyword arguments for resampling.
 
         Returns:
             MappedArray: A new instance with resampled data.
@@ -920,7 +922,7 @@ class MappedArray(Analyzable):
             title (str): Title for the values column.
             only_values (bool): Return only the mapped values as a Series when True.
             expand_columns (bool): Expand MultiIndex columns into separate columns if present.
-            **kwargs: Additional keyword arguments passed to `MappedArray.apply_mapping`.
+            **kwargs: Keyword arguments passed to `MappedArray.apply_mapping`.
 
         Returns:
             SeriesFrame: A Pandas Series or DataFrame with human-readable mapped values.
@@ -1019,6 +1021,10 @@ class MappedArray(Analyzable):
 
         Returns:
             bool: True if the mapped array is sorted; otherwise, False.
+
+        See:
+            * `vectorbtpro.records.nb.is_col_id_sorted_nb` for sorting with IDs.
+            * `vectorbtpro.records.nb.is_col_sorted_nb` for sorting without IDs.
         """
         if incl_id:
             func = jit_reg.resolve_option(nb.is_col_id_sorted_nb, jitted)
@@ -1039,7 +1045,7 @@ class MappedArray(Analyzable):
             incl_id (bool): If True, sort by both the column and id arrays.
             idx_arr (Array1d): Array of indices; if not provided, the instance's index array is used.
             group_by (GroupByLike): Grouping specification for regrouping the instance.
-            **kwargs: Additional keyword arguments passed to `MappedArray.replace`.
+            **kwargs: Keyword arguments passed to `MappedArray.replace`.
 
         Returns:
             MappedArray: A new sorted mapped array instance, regrouped according to `group_by`.
@@ -1076,7 +1082,7 @@ class MappedArray(Analyzable):
             idx_arr (Array1d): Array of indices for filtering;
                 if not provided, the instance's index array is used.
             group_by (GroupByLike): Grouping specification for regrouping after filtering.
-            **kwargs: Additional keyword arguments passed to `MappedArray.replace`.
+            **kwargs: Keyword arguments passed to `MappedArray.replace`.
 
         Returns:
             MappedArray: A new instance of the mapped array filtered by the mask.
@@ -1110,6 +1116,9 @@ class MappedArray(Analyzable):
 
         Returns:
             Array1d: Boolean mask array where True indicates selection of the top N elements.
+
+        See:
+            `vectorbtpro.records.nb.top_n_mapped_nb`
         """
         col_map = self.col_mapper.get_col_map(group_by=group_by)
         func = jit_reg.resolve_option(nb.top_n_mapped_nb, jitted)
@@ -1134,6 +1143,9 @@ class MappedArray(Analyzable):
 
         Returns:
             Array1d: Boolean mask array where True indicates selection of the bottom N elements.
+
+        See:
+            `vectorbtpro.records.nb.bottom_n_mapped_nb`
         """
         col_map = self.col_mapper.get_col_map(group_by=group_by)
         func = jit_reg.resolve_option(nb.bottom_n_mapped_nb, jitted)
@@ -1155,7 +1167,7 @@ class MappedArray(Analyzable):
             group_by (GroupByLike): Grouping specification for regrouping after filtering.
             jitted (JittedOption): Option to control JIT compilation.
             chunked (ChunkedOption): Option to control chunked processing.
-            **kwargs: Additional keyword arguments passed to `MappedArray.replace`.
+            **kwargs: Keyword arguments passed to `MappedArray.replace`.
 
         Returns:
             MappedArray: A new instance of the mapped array filtered to the top N elements.
@@ -1177,7 +1189,7 @@ class MappedArray(Analyzable):
             group_by (GroupByLike): Grouping specification for regrouping after filtering.
             jitted (JittedOption): Option to control JIT compilation.
             chunked (ChunkedOption): Option to control chunked processing.
-            **kwargs: Additional keyword arguments passed to `MappedArray.replace`.
+            **kwargs: Keyword arguments passed to `MappedArray.replace`.
 
         Returns:
             MappedArray: A new instance of the mapped array filtered to the bottom N elements.
@@ -1226,8 +1238,8 @@ class MappedArray(Analyzable):
         Args:
             mapping (Union[None, bool, MappingLike]): Mapping configuration;
                 if None or True, the instance's mapping is used.
-            mapping_kwargs (KwargsLike): Additional keyword arguments for configuring the mapping conversion.
-            **kwargs: Additional keyword arguments passed to `MappedArray.replace`.
+            mapping_kwargs (KwargsLike): Keyword arguments for configuring the mapping conversion.
+            **kwargs: Keyword arguments passed to `MappedArray.replace`.
 
         Returns:
             MappedArray: A new instance of the mapped array with the mapping applied.
@@ -1295,22 +1307,23 @@ class MappedArray(Analyzable):
 
         Applies the function on groups of columns if `apply_per_group` is True.
 
-        See `vectorbtpro.records.nb.apply_nb` for individual column application and
-        `vectorbtpro.records.nb.apply_meta_nb` for the meta version.
-
         Args:
             apply_func_nb (Union[ApplyFunc, ApplyMetaFunc]): Function to apply to the mapped array.
-            *args: Additional positional arguments forwarded to the computation function.
+            *args: Positional arguments forwarded to the computation function.
             group_by (GroupByLike): Grouping specification.
             apply_per_group (bool): If True, apply the function per group of columns.
             dtype (Optional[DTypeLike]): Data type for the resulting array.
             jitted (JittedOption): Option controlling JIT compilation.
             chunked (ChunkedOption): Option controlling chunked processing.
             col_mapper (Optional[ColumnMapper]): Column mapper used to obtain column mapping.
-            **kwargs: Additional keyword arguments passed to `MappedArray.replace`.
+            **kwargs: Keyword arguments passed to `MappedArray.replace`.
 
         Returns:
             MappedArray: The new mapped array after applying the function.
+
+        See:
+            * `vectorbtpro.records.nb.apply_nb` for applying a function to each column.
+            * `vectorbtpro.records.nb.apply_meta_nb` for applying a function to the entire array.
         """
         if isinstance(cls_or_self, type):
             checks.assert_not_none(col_mapper, arg_name="col_mapper")
@@ -1369,7 +1382,7 @@ class MappedArray(Analyzable):
 
                 If a string is provided, it represents the suffix of a function
                 from `vectorbtpro.generic.nb` (e.g., "sum" for `sum_reduce_nb`).
-            *args: Additional positional arguments for the reducing function.
+            *args: Positional arguments for the reducing function.
             idx_arr (Optional[Array1d]): Index array to use.
 
                 If not provided, the instance's `idx_arr` must be set.
@@ -1378,10 +1391,13 @@ class MappedArray(Analyzable):
             dtype (Optional[DTypeLike]): Data type for the resulting mapped array.
             jitted (JittedOption): Option controlling JIT compilation.
             chunked (ChunkedOption): Option controlling chunked processing.
-            **kwargs: Additional keyword arguments passed to `MappedArray.replace`.
+            **kwargs: Keyword arguments passed to `MappedArray.replace`.
 
         Returns:
             MappedArray: The new mapped array after applying the reduction function.
+
+        See:
+            `vectorbtpro.records.nb.reduce_mapped_segments_nb`
         """
         if idx_arr is None:
             if self.idx_arr is None:
@@ -1439,20 +1455,6 @@ class MappedArray(Analyzable):
     ) -> tp.MaybeSeriesFrame:
         """Reduce mapped array by column/group.
 
-        When invoked on a class:
-
-        * If `returns_array` is False and `returns_idx` is False, uses `vectorbtpro.records.nb.reduce_mapped_meta_nb`.
-        * If `returns_array` is False and `returns_idx` is True, uses `vectorbtpro.records.nb.reduce_mapped_to_idx_meta_nb`.
-        * If `returns_array` is True and `returns_idx` is False, uses `vectorbtpro.records.nb.reduce_mapped_to_array_meta_nb`.
-        * If `returns_array` is True and `returns_idx` is True, uses `vectorbtpro.records.nb.reduce_mapped_to_idx_array_meta_nb`.
-
-        When invoked on an instance:
-
-        * If `returns_array` is False and `returns_idx` is False, uses `vectorbtpro.records.nb.reduce_mapped_nb`.
-        * If `returns_array` is False and `returns_idx` is True, uses `vectorbtpro.records.nb.reduce_mapped_to_idx_nb`.
-        * If `returns_array` is True and `returns_idx` is False, uses `vectorbtpro.records.nb.reduce_mapped_to_array_nb`.
-        * If `returns_array` is True and `returns_idx` is True, uses `vectorbtpro.records.nb.reduce_mapped_to_idx_array_nb`.
-
         Args:
             reduce_func_nb (Union[ReduceFunc, MappedReduceMetaFunc, ReduceToArrayFunc, MappedReduceToArrayMetaFunc]):
                 Reduction function to apply.
@@ -1468,10 +1470,25 @@ class MappedArray(Analyzable):
             chunked (ChunkedOption): Option to control chunked processing.
             col_mapper (Optional[ColumnMapper]): Column mapper instance used when invoked on a class.
             group_by (GroupByLike): Grouping specification.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping the reduced result.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the reduced result.
 
         Returns:
             MaybeSeriesFrame: The reduced output wrapped in an appropriate structure.
+
+        See:
+            When invoked on a class:
+
+            * If `returns_array` is False and `returns_idx` is False, uses `vectorbtpro.records.nb.reduce_mapped_meta_nb`.
+            * If `returns_array` is False and `returns_idx` is True, uses `vectorbtpro.records.nb.reduce_mapped_to_idx_meta_nb`.
+            * If `returns_array` is True and `returns_idx` is False, uses `vectorbtpro.records.nb.reduce_mapped_to_array_meta_nb`.
+            * If `returns_array` is True and `returns_idx` is True, uses `vectorbtpro.records.nb.reduce_mapped_to_idx_array_meta_nb`.
+
+            When invoked on an instance:
+
+            * If `returns_array` is False and `returns_idx` is False, uses `vectorbtpro.records.nb.reduce_mapped_nb`.
+            * If `returns_array` is False and `returns_idx` is True, uses `vectorbtpro.records.nb.reduce_mapped_to_idx_nb`.
+            * If `returns_array` is True and `returns_idx` is False, uses `vectorbtpro.records.nb.reduce_mapped_to_array_nb`.
+            * If `returns_array` is True and `returns_idx` is True, uses `vectorbtpro.records.nb.reduce_mapped_to_idx_array_nb`.
         """
         if isinstance(cls_or_self, type):
             checks.assert_not_none(col_mapper, arg_name="col_mapper")
@@ -1554,11 +1571,14 @@ class MappedArray(Analyzable):
             group_by (GroupByLike): Grouping specification.
             jitted (JittedOption): Option to control JIT compilation.
             chunked (ChunkedOption): Option to control chunked execution.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping the result.
-            **kwargs: Additional keyword arguments forwarded to `MappedArray.reduce`.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            **kwargs: Keyword arguments forwarded to `MappedArray.reduce`.
 
         Returns:
             MaybeSeries: Series containing the n-th element for each column or group.
+
+        See:
+            `vectorbtpro.generic.nb.apply_reduce.nth_reduce_nb`
         """
         wrap_kwargs = merge_dicts(dict(name_or_index="nth"), wrap_kwargs)
         chunked = ch.specialize_chunked_option(
@@ -1598,11 +1618,14 @@ class MappedArray(Analyzable):
             group_by (GroupByLike): Grouping specification.
             jitted (JittedOption): Option to control JIT compilation.
             chunked (ChunkedOption): Option to control chunked execution.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping the result.
-            **kwargs: Additional keyword arguments forwarded to `MappedArray.reduce`.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            **kwargs: Keyword arguments forwarded to `MappedArray.reduce`.
 
         Returns:
             MaybeSeries: Series containing the index of the n-th element for each column or group.
+
+        See:
+            `vectorbtpro.generic.nb.apply_reduce.nth_index_reduce_nb`
         """
         wrap_kwargs = merge_dicts(dict(name_or_index="nth_index"), wrap_kwargs)
         chunked = ch.specialize_chunked_option(
@@ -1640,11 +1663,14 @@ class MappedArray(Analyzable):
             group_by (GroupByLike): Grouping specification.
             jitted (JittedOption): Option to control JIT compilation.
             chunked (ChunkedOption): Option to control chunked execution.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping the result.
-            **kwargs: Additional keyword arguments forwarded to `MappedArray.reduce`.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            **kwargs: Keyword arguments forwarded to `MappedArray.reduce`.
 
         Returns:
             MaybeSeries: Series containing the minimum values for each column or group.
+
+        See:
+            `vectorbtpro.generic.nb.apply_reduce.min_reduce_nb`
         """
         wrap_kwargs = merge_dicts(dict(name_or_index="min"), wrap_kwargs)
         return self.reduce(
@@ -1673,11 +1699,14 @@ class MappedArray(Analyzable):
             group_by (GroupByLike): Grouping specification.
             jitted (JittedOption): Option to control JIT compilation.
             chunked (ChunkedOption): Option to control chunked execution.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping the result.
-            **kwargs: Additional keyword arguments forwarded to `MappedArray.reduce`.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            **kwargs: Keyword arguments forwarded to `MappedArray.reduce`.
 
         Returns:
             MaybeSeries: Series containing the maximum values for each column or group.
+
+        See:
+            `vectorbtpro.generic.nb.apply_reduce.max_reduce_nb`
         """
         wrap_kwargs = merge_dicts(dict(name_or_index="max"), wrap_kwargs)
         return self.reduce(
@@ -1706,11 +1735,14 @@ class MappedArray(Analyzable):
             group_by (GroupByLike): Grouping specification.
             jitted (JittedOption): Option to control JIT compilation.
             chunked (ChunkedOption): Option for chunked processing.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for configuring the wrapper.
-            **kwargs: Additional keyword arguments forwarded to `MappedArray.reduce`.
+            wrap_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
+            **kwargs: Keyword arguments forwarded to `MappedArray.reduce`.
 
         Returns:
             MaybeSeries: Series with computed mean values.
+
+        See:
+            `vectorbtpro.generic.nb.apply_reduce.mean_reduce_nb`
         """
         wrap_kwargs = merge_dicts(dict(name_or_index="mean"), wrap_kwargs)
         return self.reduce(
@@ -1739,11 +1771,14 @@ class MappedArray(Analyzable):
             group_by (GroupByLike): Grouping specification.
             jitted (JittedOption): Option to control JIT compilation.
             chunked (ChunkedOption): Option for chunked processing.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for configuring the wrapper.
-            **kwargs: Additional keyword arguments forwarded to `MappedArray.reduce`.
+            wrap_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
+            **kwargs: Keyword arguments forwarded to `MappedArray.reduce`.
 
         Returns:
             MaybeSeries: Series with computed median values.
+
+        See:
+            `vectorbtpro.generic.nb.apply_reduce.median_reduce_nb`
         """
         wrap_kwargs = merge_dicts(dict(name_or_index="median"), wrap_kwargs)
         return self.reduce(
@@ -1774,11 +1809,14 @@ class MappedArray(Analyzable):
             group_by (GroupByLike): Grouping specification.
             jitted (JittedOption): Option to control JIT compilation.
             chunked (ChunkedOption): Option for chunked processing.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for configuring the wrapper.
-            **kwargs: Additional keyword arguments forwarded to `MappedArray.reduce`.
+            wrap_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
+            **kwargs: Keyword arguments forwarded to `MappedArray.reduce`.
 
         Returns:
             MaybeSeries: Series with computed standard deviation values.
+
+        See:
+            `vectorbtpro.generic.nb.apply_reduce.std_reduce_nb`
         """
         wrap_kwargs = merge_dicts(dict(name_or_index="std"), wrap_kwargs)
         chunked = ch.specialize_chunked_option(
@@ -1818,11 +1856,14 @@ class MappedArray(Analyzable):
             group_by (GroupByLike): Grouping specification.
             jitted (JittedOption): Option to control JIT compilation.
             chunked (ChunkedOption): Option for chunked processing.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for configuring the wrapper.
-            **kwargs: Additional keyword arguments forwarded to `MappedArray.reduce`.
+            wrap_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
+            **kwargs: Keyword arguments forwarded to `MappedArray.reduce`.
 
         Returns:
             MaybeSeries: Series with computed summation values.
+
+        See:
+            `vectorbtpro.generic.nb.apply_reduce.sum_reduce_nb`
         """
         wrap_kwargs = merge_dicts(dict(name_or_index="sum"), wrap_kwargs)
         return self.reduce(
@@ -1852,11 +1893,14 @@ class MappedArray(Analyzable):
             group_by (GroupByLike): Grouping specification.
             jitted (JittedOption): Option to control JIT compilation.
             chunked (ChunkedOption): Option for chunked processing.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for configuring the wrapper.
-            **kwargs: Additional keyword arguments forwarded to `MappedArray.reduce`.
+            wrap_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
+            **kwargs: Keyword arguments forwarded to `MappedArray.reduce`.
 
         Returns:
             MaybeSeries: Series with indices corresponding to the minimum values.
+
+        See:
+            `vectorbtpro.generic.nb.apply_reduce.argmin_reduce_nb`
         """
         wrap_kwargs = merge_dicts(dict(name_or_index="idxmin"), wrap_kwargs)
         return self.reduce(
@@ -1885,11 +1929,14 @@ class MappedArray(Analyzable):
             group_by (GroupByLike): Grouping specification.
             jitted (JittedOption): Option to control JIT compilation.
             chunked (ChunkedOption): Option for chunked processing.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for configuring the wrapper.
-            **kwargs: Additional keyword arguments forwarded to `MappedArray.reduce`.
+            wrap_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
+            **kwargs: Keyword arguments forwarded to `MappedArray.reduce`.
 
         Returns:
             MaybeSeries: Series with indices corresponding to the maximum values.
+
+        See:
+            `vectorbtpro.generic.nb.apply_reduce.argmax_reduce_nb`
         """
         wrap_kwargs = merge_dicts(dict(name_or_index="idxmax"), wrap_kwargs)
         return self.reduce(
@@ -1924,12 +1971,15 @@ class MappedArray(Analyzable):
             group_by (GroupByLike): Grouping specification.
             jitted (JittedOption): Option to control JIT compilation.
             chunked (ChunkedOption): Option for chunked processing.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for configuring the wrapper.
-            **kwargs: Additional keyword arguments forwarded to `MappedArray.reduce`.
+            wrap_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
+            **kwargs: Keyword arguments forwarded to `MappedArray.reduce`.
 
         Returns:
             SeriesFrame: DataFrame containing statistics such as count, mean,
                 standard deviation, min, percentiles, and max.
+
+        See:
+            `vectorbtpro.generic.nb.apply_reduce.describe_reduce_nb`
 
         !!! note
             The 0.5 percentile is always included in the calculation.
@@ -1974,7 +2024,7 @@ class MappedArray(Analyzable):
 
         Args:
             group_by (GroupByLike): Grouping specification.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for configuring the wrapper.
+            wrap_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
 
         Returns:
             MaybeSeries: Series with the count of values per column or group.
@@ -2028,11 +2078,16 @@ class MappedArray(Analyzable):
             incl_all_keys (bool): Include keys from `mapping` that are missing in the data with counts set to zero.
             jitted (JittedOption): Option to control JIT compilation.
             chunked (ChunkedOption): Option to control chunked processing.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping the output.
-            **kwargs: Additional keyword arguments applied to mapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the output.
+            **kwargs: Keyword arguments applied to mapping.
 
         Returns:
             SeriesFrame: A Series or DataFrame containing the counts of unique mapped values.
+
+        See:
+            * `vectorbtpro.records.nb.mapped_value_counts_per_row_nb` for `axis=0`.
+            * `vectorbtpro.records.nb.mapped_value_counts_per_col_nb` for `axis=1`.
+            * `vectorbtpro.records.nb.mapped_value_counts_nb` for `axis=-1`.
         """
         checks.assert_in(axis, (-1, 0, 1))
 
@@ -2132,6 +2187,9 @@ class MappedArray(Analyzable):
 
         Returns:
             bool: True if conflicts are detected, otherwise False.
+
+        See:
+            `vectorbtpro.records.nb.mapped_has_conflicts_nb`
         """
         if idx_arr is None:
             if self.idx_arr is None:
@@ -2160,10 +2218,13 @@ class MappedArray(Analyzable):
                 Uses `MappedArray.idx_arr` if not provided.
             group_by (GroupByLike): Grouping specification for selecting columns.
             jitted (JittedOption): Option to control JIT compilation.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping the output array.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the output array.
 
         Returns:
             SeriesFrame: A Series or DataFrame representing the coverage map.
+
+        See:
+            `vectorbtpro.records.nb.mapped_coverage_map_nb`
         """
         if idx_arr is None:
             if self.idx_arr is None:
@@ -2199,21 +2260,6 @@ class MappedArray(Analyzable):
         Transform the mapped array into a Series/DataFrame. When `reduce_func_nb` is provided,
         conflicting index segments are reduced using `MappedArray.reduce_segments`.
 
-        * If `ignore_index` is True, the original index is ignored and values are stacked vertically
-            in each column/group. See `vectorbtpro.records.nb.ignore_unstack_mapped_nb`.
-        * If `repeat_index` is True, indices are repeated for multiple values.
-            Otherwise, positional conflicts raise a warning and only the latest value is retained.
-            See `vectorbtpro.records.nb.repeat_unstack_mapped_nb`.
-        * Otherwise, processing follows `vectorbtpro.records.nb.unstack_mapped_nb`.
-
-        !!! note
-            Raises an error if multiple values map to the same position.
-            Set `ignore_index` to True to bypass this error.
-
-        !!! warning
-            Mapped arrays are optimized for memory.
-            Converting them back to pandas may consume significant memory if records are sparse.
-
         Args:
             idx_arr (Optional[Array1d]): Row index array.
 
@@ -2222,19 +2268,37 @@ class MappedArray(Analyzable):
                 conflicting index segments.
             reduce_args (ArgsLike): Additional arguments for the reduce function.
             dtype (Optional[DTypeLike]): Data type of the output.
-            ignore_index (bool): Whether to ignore the original index.
+            ignore_index (bool): Whether to ignore the original index and stack values vertically
+                in each column/group.
             repeat_index (bool): Whether to repeat indices when multiple values map to the same index.
+
+                Otherwise, positional conflicts raise a warning and only the latest value is retained.
             fill_value (float): Value used for positions with no data.
             mapping (Union[None, bool, MappingLike]): Mapping configuration for processing.
-            mapping_kwargs (KwargsLike): Additional keyword arguments for mapping.
+            mapping_kwargs (KwargsLike): Keyword arguments for mapping.
             group_by (GroupByLike): Grouping specification.
             jitted (JittedOption): Option to control JIT compilation.
             chunked (ChunkedOption): Option for chunked processing.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping the output.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the output.
             silence_warnings (bool): Whether to suppress warnings about index conflicts.
 
         Returns:
             SeriesFrame: A wrapped Series or DataFrame representing the unstacked mapped array.
+
+        See:
+            * `vectorbtpro.records.nb.ignore_unstack_mapped_nb` if `ignore_index=True`.
+            * `vectorbtpro.records.nb.mapped_coverage_map_nb` if has conflicts and `repeat_index=True`.
+            * `vectorbtpro.records.nb.unstack_index_nb` if has conflicts and `repeat_index=True`.
+            * `vectorbtpro.records.nb.repeat_unstack_mapped_nb` if has conflicts and `repeat_index=True`.
+            * `vectorbtpro.records.nb.unstack_mapped_nb` if has no conflicts or `repeat_index=False`.
+
+        !!! note
+            Raises an error if multiple values map to the same position.
+            Set `ignore_index` to True to bypass this error.
+
+        !!! warning
+            Mapped arrays are optimized for memory. Converting them back to pandas may consume 
+            significant memory if records are sparse.
         """
         if ignore_index:
             if self.wrapper.ndim == 1:
@@ -2314,7 +2378,7 @@ class MappedArray(Analyzable):
 
                 If None, uses `MappedArray.idx_arr`.
             group_by (GroupByLike): Grouping specification.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping the output.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the output.
 
         Returns:
             SeriesFrame: A wrapped mask array as a Series or DataFrame.
@@ -2423,7 +2487,7 @@ class MappedArray(Analyzable):
 
         Args:
             group_by (GroupByLike): Grouping specification.
-            **kwargs: Additional keyword arguments for creating the histogram.
+            **kwargs: Keyword arguments for creating the histogram.
 
         Returns:
             BaseFigure: The generated histogram figure.
@@ -2435,7 +2499,7 @@ class MappedArray(Analyzable):
 
         Args:
             group_by (GroupByLike): Grouping specification.
-            **kwargs: Additional keyword arguments for creating the box plot.
+            **kwargs: Keyword arguments for creating the box plot.
 
         Returns:
             BaseFigure: The generated box plot figure.

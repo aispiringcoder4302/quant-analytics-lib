@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Modules providing classes and utilities for portfolio optimization."""
+"""Package providing classes and utilities for portfolio optimization."""
 
 from typing import TYPE_CHECKING
 

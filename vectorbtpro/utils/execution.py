@@ -133,7 +133,7 @@ class Task(DefineMixin):
 
 
 class _NoResult(enum.Enum):
-    """Internal sentinel enumeration for representing no result."""
+    """Enum class representing a no-result sentinel value."""
 
     NoResult = enum.auto()
 
@@ -1137,7 +1137,7 @@ class RayEngine(ExecutionEngine):
 
 
 class _Dummy(enum.Enum):
-    """Enum representing a dummy sentinel value."""
+    """Enum class representing a dummy sentinel value."""
 
     DUMMY = enum.auto()
 

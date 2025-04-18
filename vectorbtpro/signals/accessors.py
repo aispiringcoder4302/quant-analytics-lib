@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module with custom Pandas accessors for signals.
+"""Module providing custom Pandas accessors for signals.
 
 This module provides custom Pandas accessors that extend `vectorbtpro.generic.accessors`.
 They allow access to signal-related methods on Pandas Series and DataFrames as follows:
@@ -206,14 +206,14 @@ __pdoc__ = {}
 
 @register_vbt_accessor("signals")
 class SignalsAccessor(GenericAccessor):
-    """Accessor on top of signal series for both Series and DataFrames.
+    """Class representing an accessor on top of signal series for both Series and DataFrames.
 
     Accessible via `pd.Series.vbt.signals` and `pd.DataFrame.vbt.signals`.
 
     Args:
         wrapper (Union[ArrayWrapper, ArrayLike]): Array wrapper instance or array-like input.
         obj (Optional[ArrayLike]): Underlying object.
-        **kwargs: Additional keyword arguments passed to `vectorbtpro.generic.accessors.GenericAccessor`.
+        **kwargs: Keyword arguments passed to `vectorbtpro.generic.accessors.GenericAccessor`.
     """
 
     def __init__(
@@ -254,7 +254,7 @@ class SignalsAccessor(GenericAccessor):
             *args: Positional arguments passed to
                 `vectorbtpro.generic.accessors.GenericAccessor.empty`.
             fill_value (bool): Fill value indicator.
-            **kwargs: Additional keyword arguments passed to
+            **kwargs: Keyword arguments passed to
                 `vectorbtpro.generic.accessors.GenericAccessor.empty`.
 
         Returns:
@@ -270,7 +270,7 @@ class SignalsAccessor(GenericAccessor):
             *args: Positional arguments passed to
                 `vectorbtpro.generic.accessors.GenericAccessor.empty_like`.
             fill_value (bool): Fill value indicator.
-            **kwargs: Additional keyword arguments passed to
+            **kwargs: Keyword arguments passed to
                 `vectorbtpro.generic.accessors.GenericAccessor.empty_like`.
 
         Returns:
@@ -324,7 +324,7 @@ class SignalsAccessor(GenericAccessor):
             chunked (ChunkedOption): Option to control chunked processing.
             wrapper (Optional[ArrayWrapper]): An `vectorbtpro.base.wrapping.ArrayWrapper`
                 instance to wrap the output.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
 
         Returns:
             SeriesFrame: A wrapped output containing generated signals with bool dtype.
@@ -431,7 +431,7 @@ class SignalsAccessor(GenericAccessor):
                 an `vectorbtpro.base.wrapping.ArrayWrapper` instance defining the target shape.
             entry_place_func_nb (PlaceFunc): Numba-jitted function for placing entry signals.
             exit_place_func_nb (PlaceFunc): Numba-jitted function for placing exit signals.
-            args: Additional positional arguments forwarded to both entry and exit functions if 
+            args: Positional arguments forwarded to both entry and exit functions if 
                 explicit arguments are not provided.
             entry_place_args (ArgsLike): Positional arguments passed to `entry_place_func_nb`.
             exit_place_args (ArgsLike): Positional arguments passed to `exit_place_func_nb`.
@@ -602,7 +602,7 @@ class SignalsAccessor(GenericAccessor):
 
         Args:
             exit_place_func_nb (PlaceFunc): A Numba-jitted function for placing exit signals.
-            *args: Additional positional arguments passed to the exit placement function.
+            *args: Positional arguments passed to the exit placement function.
             exit_place_args (ArgsLike): Additional arguments for the exit placement function.
 
                 Must not be provided together with positional arguments.
@@ -715,6 +715,9 @@ class SignalsAccessor(GenericAccessor):
         Returns:
             MaybeTuple[SeriesFrame]: Cleaned signal array if one is provided,
                 or a tuple of cleaned entries and exits if two arrays are provided.
+
+        See:
+            `vectorbtpro.signals.nb.clean_enex_nb`
         """
         if broadcast_kwargs is None:
             broadcast_kwargs = {}
@@ -768,9 +771,6 @@ class SignalsAccessor(GenericAccessor):
 
         Generates random signals based on either a fixed number of signals per column or a probability.
 
-        When `n` is provided, signals are generated using `vectorbtpro.signals.nb.rand_place_nb`.
-        When `prob` is provided, signals are generated using `vectorbtpro.signals.nb.rand_by_prob_place_nb`.
-
         Args:
             shape (Union[ShapeLike, ArrayWrapper]): Desired shape as a tuple or
                 an `vectorbtpro.base.wrapping.ArrayWrapper` instance.
@@ -794,6 +794,10 @@ class SignalsAccessor(GenericAccessor):
 
         Returns:
             SeriesFrame: A series or frame containing the generated signals.
+
+        See:
+            * `vectorbtpro.signals.nb.rand_place_nb` if `n` is provided.
+            * `vectorbtpro.signals.nb.rand_by_prob_place_nb` if `prob` is provided.
 
         Examples:
             For each column, generate a variable number of signals:
@@ -934,10 +938,14 @@ class SignalsAccessor(GenericAccessor):
             jitted (JittedOption): Option to control JIT compilation.
             chunked (ChunkedOption): Option to control chunked processing.
             wrapper (Optional[ArrayWrapper]): Optional wrapper used for wrapping the output arrays.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping the outputs.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the outputs.
 
         Returns:
             Tuple[SeriesFrame, SeriesFrame]: A tuple containing the wrapped entry and exit signal arrays.
+
+        See:
+            * `vectorbtpro.signals.nb.generate_rand_enex_nb` if `n` is provided.
+            * `vectorbtpro.signals.nb.rand_by_prob_place_nb` if `entry_prob` and `exit_prob` are provided.
 
         Examples:
             For each column, generate two entries and exits randomly:
@@ -1072,9 +1080,6 @@ class SignalsAccessor(GenericAccessor):
 
         Args:
             prob (Optional[ArrayLike]): Array-like parameter defining the probability of exit signals.
-
-                If `None`, exits are generated using `vectorbtpro.signals.nb.rand_place_nb`;
-                otherwise, `vectorbtpro.signals.nb.rand_by_prob_place_nb` is used.
             seed (Optional[int]): Seed for random number generation to ensure deterministic results.
             wait (int): Number of periods to wait after generating an exit signal.
             until_next (bool): Whether to place signals up to the next entry signal.
@@ -1087,6 +1092,10 @@ class SignalsAccessor(GenericAccessor):
 
         Returns:
             SeriesFrame: Generated exit signals.
+
+        See:
+            * `vectorbtpro.signals.nb.rand_place_nb` if `prob` is not provided.
+            * `vectorbtpro.signals.nb.rand_by_prob_place_nb` if `prob` is provided.
 
         Examples:
             After each entry in `mask`, generate exactly one exit:
@@ -1191,12 +1200,10 @@ class SignalsAccessor(GenericAccessor):
     ) -> tp.MaybeTuple[tp.SeriesFrame]:
         """Generate exits based on when `ts` hits the stop.
 
-        For arguments, see `vectorbtpro.signals.nb.stop_place_nb`.
-        If `chain` is True, uses `SignalsAccessor.generate_both`; otherwise,
-        uses `SignalsAccessor.generate_exits`.
+        If `chain` is True, uses `SignalsAccessor.generate_both`; otherwise, uses `SignalsAccessor.generate_exits`.
 
         Use `out_dict` as a dictionary to pass the computed `stop_ts` array.
-        You can also set `out_dict` to {} to produce this array automatically and still have access to it.
+        You can also set `out_dict` to `{}` to produce this array automatically and still have access to it.
 
         All array-like arguments, including stops and `out_dict`, will broadcast using
         `vectorbtpro.base.reshaping.broadcast` and `broadcast_kwargs`.
@@ -1219,15 +1226,19 @@ class SignalsAccessor(GenericAccessor):
                 Ignored when `until_next` is True.
             chain (bool): If True, chains signals by returning both new entries and exit signals
                 using `SignalsAccessor.generate_both`.
-            broadcast_kwargs (KwargsLike): Additional keyword arguments for broadcasting array-like inputs.
+            broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting array-like inputs.
             jitted (JittedOption): Option to control JIT compilation.
             chunked (ChunkedOption): Option to control chunked processing.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping output arrays.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping output arrays.
             **kwargs: Additional keyword arguments.
 
         Returns:
             MaybeTuple[SeriesFrame]: Exit signals array if `chain` is False, or
                 a tuple containing new entries and exit signals if `chain` is True.
+
+        See:
+            * `vectorbtpro.signals.nb.first_place_nb` as entry placement function.
+            * `vectorbtpro.signals.nb.stop_place_nb` as exit placement function.
 
         !!! hint
             Default arguments will generate an exit signal strictly between two entry signals.
@@ -1422,11 +1433,9 @@ class SignalsAccessor(GenericAccessor):
         If `out_dict` is provided, use it to pass the computed `stop_price` and `stop_type` arrays.
         Providing an empty dictionary for `out_dict` will automatically generate these arrays.
 
-        For parameter details used in the underlying computation, see
-        `vectorbtpro.signals.nb.ohlc_stop_place_nb`. If `chain` is True, this method utilizes
-        `SignalsAccessor.generate_both`; otherwise, it calls `SignalsAccessor.generate_exits`.
-        All array-like arguments, including stops and `out_dict`, are broadcasted using
-        `vectorbtpro.base.reshaping.broadcast` with `broadcast_kwargs`.
+        If `chain` is True, this method utilizes `SignalsAccessor.generate_both`; otherwise, 
+        it calls `SignalsAccessor.generate_exits`. All array-like arguments, including stops and 
+        `out_dict`, are broadcasted using `vectorbtpro.base.reshaping.broadcast` with `broadcast_kwargs`.
 
         Args:
             entry_price (ArrayLike): Entry price array.
@@ -1448,15 +1457,19 @@ class SignalsAccessor(GenericAccessor):
             until_next (bool): Whether to place signals up to the next entry signal.
             skip_until_exit (bool): Whether to skip processing entry signals until the next exit.
             chain (bool): If True, chain entries and exits, returning a tuple of new entries and exits.
-            broadcast_kwargs (KwargsLike): Additional keyword arguments for broadcasting parameters.
+            broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting parameters.
             jitted (JittedOption): Option to control JIT compilation.
             chunked (ChunkedOption): Option to control chunked processing.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for configuring the array wrapper.
+            wrap_kwargs (KwargsLike): Keyword arguments for configuring the array wrapper.
             **kwargs: Additional keyword arguments.
 
         Returns:
             MaybeTuple[SeriesFrame]: If `chain` is True, returns a tuple (`new_entries`, `exits`);
                 otherwise, returns an array of exit signals.
+
+        See:
+            * `vectorbtpro.signals.nb.first_place_nb` as entry placement function.
+            * `vectorbtpro.signals.nb.ohlc_stop_place_nb` as exit placement function.
 
         !!! hint
             Default arguments will generate an exit signal strictly between two entry signals.
@@ -1817,16 +1830,16 @@ class SignalsAccessor(GenericAccessor):
     ) -> tp.Union[tp.SeriesFrame, MappedArray]:
         """Compute signal ranks.
 
-        Calls `vectorbtpro.signals.nb.rank_nb` with the provided parameters to compute signal rankings
-        based on a boolean mask. Either positional arguments (`*args`) or tuple-based arguments
-        (`rank_args`) must be supplied for the ranking function, but not both. The input is
-        broadcast using `vectorbtpro.base.reshaping.broadcast` if `reset_by` is specified.
+        Either positional arguments (`*args`) or tuple-based arguments (`rank_args`) must be supplied 
+        for the ranking function, but not both. The input is broadcast using 
+        `vectorbtpro.base.reshaping.broadcast` if `reset_by` is specified.
+
         Optionally, the returned result can be converted to a
         `vectorbtpro.records.mapped_array.MappedArray` when `as_mapped` is True.
 
         Args:
             rank_func_nb (RankFunc): Function used for ranking.
-            *args: Additional positional arguments for `rank_func_nb`.
+            *args: Positional arguments for `rank_func_nb`.
             rank_args (ArgsLike): Tuple or list of arguments for `rank_func_nb`.
 
                 Must not be provided with `*args`.
@@ -1841,12 +1854,15 @@ class SignalsAccessor(GenericAccessor):
             template_context (KwargsLike): Context dictionary for template substitution.
             jitted (JittedOption): Option to control JIT compilation.
             chunked (ChunkedOption): Option for chunked processing.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping the output.
-            **kwargs: Additional keyword arguments passed to
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the output.
+            **kwargs: Keyword arguments passed to
                 `vectorbtpro.records.mapped_array.MappedArray.to_mapped` if `as_mapped` is True.
 
         Returns:
             Union[SeriesFrame, MappedArray]: Ranked positions as an array or a mapped array.
+
+        See:
+            `vectorbtpro.signals.nb.rank_nb`
         """
         if len(args) > 0 and rank_args is not None:
             raise ValueError("Must provide either *args or rank_args, not both")
@@ -1914,17 +1930,19 @@ class SignalsAccessor(GenericAccessor):
     ) -> tp.Union[tp.SeriesFrame, MappedArray]:
         """Compute signal position ranks.
 
-        Calls `SignalsAccessor.rank` with `vectorbtpro.signals.nb.sig_pos_rank_nb` to compute the position ranks
-        of signals in the mask. The ranking is performed partition-wise on True values.
+        The ranking is performed partition-wise on True values.
 
         Args:
             jitted (JittedOption): Option to control JIT compilation.
             chunked (ChunkedOption): Option for chunked processing.
             allow_gaps (bool): Indicates whether to allow gaps in ranking.
-            **kwargs: Additional keyword arguments passed to `SignalsAccessor.rank`.
+            **kwargs: Keyword arguments passed to `SignalsAccessor.rank`.
 
         Returns:
             Union[SeriesFrame, MappedArray]: Signal position ranks.
+
+        See:
+            `vectorbtpro.signals.nb.sig_pos_rank_nb`
 
         Examples:
             Rank each True value in each partition in `mask`:
@@ -1992,7 +2010,7 @@ class SignalsAccessor(GenericAccessor):
             reset_by (ArrayLike): Array indicating the reset points for ranking.
             after_reset (bool): If True, ranking starts after a reset signal.
             allow_gaps (bool): If True, gaps are allowed in the ranking.
-            **kwargs: Additional keyword arguments passed to `pos_rank`.
+            **kwargs: Keyword arguments passed to `pos_rank`.
 
         Returns:
             Union[SeriesFrame, MappedArray]: Signal position ranks after the reset.
@@ -2010,16 +2028,16 @@ class SignalsAccessor(GenericAccessor):
     ) -> tp.Union[tp.SeriesFrame, MappedArray]:
         """Compute partition position ranks.
 
-        Calls `SignalsAccessor.rank` with `vectorbtpro.signals.nb.part_pos_rank_nb`
-        to compute the ranking of partitions within the signal mask.
-
         Args:
             jitted (JittedOption): Option to control JIT compilation.
             chunked (ChunkedOption): Option for chunked processing.
-            **kwargs: Additional keyword arguments passed to `SignalsAccessor.rank`.
+            **kwargs: Keyword arguments passed to `SignalsAccessor.rank`.
 
         Returns:
             Union[SeriesFrame, MappedArray]: Partition position ranks.
+
+        See:
+            `vectorbtpro.signals.nb.part_pos_rank_nb`
 
         Examples:
             Rank each partition of True values in `mask`:
@@ -2062,7 +2080,7 @@ class SignalsAccessor(GenericAccessor):
 
         Args:
             reset_by (ArrayLike): Array indicating reset points for partition ranking.
-            **kwargs: Additional keyword arguments passed to `SignalsAccessor.partition_pos_rank`.
+            **kwargs: Keyword arguments passed to `SignalsAccessor.partition_pos_rank`.
 
         Returns:
             Union[SeriesFrame, MappedArray]: Partition position ranks after reset.
@@ -2079,8 +2097,8 @@ class SignalsAccessor(GenericAccessor):
         Uses `SignalsAccessor.pos_rank`.
 
         Args:
-            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping.
-            **kwargs: Additional keyword arguments forwarded to `SignalsAccessor.pos_rank`.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+            **kwargs: Keyword arguments forwarded to `SignalsAccessor.pos_rank`.
 
         Returns:
             SeriesFrame: A wrapped array of signals with `pos_rank == 0`.
@@ -2100,8 +2118,8 @@ class SignalsAccessor(GenericAccessor):
 
         Args:
             reset_by (ArrayLike): Array used to reset the position ranking.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping.
-            **kwargs: Additional keyword arguments forwarded to `SignalsAccessor.pos_rank_after`.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+            **kwargs: Keyword arguments forwarded to `SignalsAccessor.pos_rank_after`.
 
         Returns:
             SeriesFrame: A wrapped array of signals with `pos_rank == 0`.
@@ -2121,8 +2139,8 @@ class SignalsAccessor(GenericAccessor):
 
         Args:
             n (int): The specific position rank that signals must equal.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping.
-            **kwargs: Additional keyword arguments forwarded to `SignalsAccessor.pos_rank`.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+            **kwargs: Keyword arguments forwarded to `SignalsAccessor.pos_rank`.
 
         Returns:
             SeriesFrame: A wrapped array of signals with `pos_rank == n`.
@@ -2144,8 +2162,8 @@ class SignalsAccessor(GenericAccessor):
         Args:
             n (int): The specific position rank value.
             reset_by (ArrayLike): Array used to reset the position ranking.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping.
-            **kwargs: Additional keyword arguments forwarded to `SignalsAccessor.pos_rank_after`.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+            **kwargs: Keyword arguments forwarded to `SignalsAccessor.pos_rank_after`.
 
         Returns:
             SeriesFrame: A wrapped array of signals with `pos_rank == n`.
@@ -2165,8 +2183,8 @@ class SignalsAccessor(GenericAccessor):
 
         Args:
             n (int): The lower bound for the position rank.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping.
-            **kwargs: Additional keyword arguments forwarded to `SignalsAccessor.pos_rank`.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+            **kwargs: Keyword arguments forwarded to `SignalsAccessor.pos_rank`.
 
         Returns:
             SeriesFrame: A wrapped array of signals with `pos_rank >= n`.
@@ -2188,8 +2206,8 @@ class SignalsAccessor(GenericAccessor):
         Args:
             n (int): The lower bound for the position rank.
             reset_by (ArrayLike): Array used to reset the position ranking.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping.
-            **kwargs: Additional keyword arguments forwarded to `SignalsAccessor.pos_rank_after`.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+            **kwargs: Keyword arguments forwarded to `SignalsAccessor.pos_rank_after`.
 
         Returns:
             SeriesFrame: A wrapped array of signals with `pos_rank >= n`.
@@ -2209,8 +2227,8 @@ class SignalsAccessor(GenericAccessor):
 
         Args:
             n (int): The upper bound for the position rank (exclusive).
-            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping.
-            **kwargs: Additional keyword arguments forwarded to `SignalsAccessor.pos_rank`.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+            **kwargs: Keyword arguments forwarded to `SignalsAccessor.pos_rank`.
 
         Returns:
             SeriesFrame: A wrapped array of signals with `pos_rank < n`.
@@ -2232,8 +2250,8 @@ class SignalsAccessor(GenericAccessor):
         Args:
             n (int): The upper bound for the position rank (exclusive).
             reset_by (ArrayLike): Array used to reset the position ranking.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping.
-            **kwargs: Additional keyword arguments forwarded to `SignalsAccessor.pos_rank_after`.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+            **kwargs: Keyword arguments forwarded to `SignalsAccessor.pos_rank_after`.
 
         Returns:
             SeriesFrame: A wrapped array of signals with `pos_rank < n`.
@@ -2248,7 +2266,7 @@ class SignalsAccessor(GenericAccessor):
 
         Args:
             group_by (GroupByLike): Grouping specification.
-            **kwargs: Additional keyword arguments forwarded to `SignalsAccessor.pos_rank`.
+            **kwargs: Keyword arguments forwarded to `SignalsAccessor.pos_rank`.
 
         Returns:
             MappedArray: A mapped array of signal position ranks.
@@ -2262,7 +2280,7 @@ class SignalsAccessor(GenericAccessor):
 
         Args:
             group_by (GroupByLike): Grouping specification.
-            **kwargs: Additional keyword arguments forwarded to `SignalsAccessor.partition_pos_rank`.
+            **kwargs: Keyword arguments forwarded to `SignalsAccessor.partition_pos_rank`.
 
         Returns:
             MappedArray: A mapped array of partition position ranks.
@@ -2280,16 +2298,17 @@ class SignalsAccessor(GenericAccessor):
     ) -> tp.SeriesFrame:
         """Calculate the distance from the last signal occurrence.
 
-        See `vectorbtpro.signals.nb.distance_from_last_nb`.
-
         Args:
             nth (int): The nth signal from the end to compute the distance for.
             jitted (JittedOption): Option to control JIT compilation.
             chunked (ChunkedOption): Option to control chunked processing.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
 
         Returns:
             SeriesFrame: A wrapped array representing the distance from the nth last signal.
+
+        See:
+            `vectorbtpro.signals.nb.distance_from_last_nb`
 
         Examples:
             Get the distance to the last signal:
@@ -2335,7 +2354,7 @@ class SignalsAccessor(GenericAccessor):
 
         Args:
             group_by (GroupByLike): Grouping specification.
-            **kwargs: Additional keyword arguments forwarded to the
+            **kwargs: Keyword arguments forwarded to the
                 `vectorbtpro.records.mapped_array.MappedArray` constructor.
 
         Returns:
@@ -2396,7 +2415,7 @@ class SignalsAccessor(GenericAccessor):
         Args:
             delta (Union[str, int, FrequencyLike]): A delta value applied relative to each signal.
             group_by (GroupByLike): Grouping specification.
-            **kwargs: Additional keyword arguments forwarded to
+            **kwargs: Keyword arguments forwarded to
                 `vectorbtpro.generic.ranges.Ranges.from_delta`.
 
         Returns:
@@ -2418,28 +2437,24 @@ class SignalsAccessor(GenericAccessor):
     ) -> Ranges:
         """Build a record array of ranges between signals.
 
-        Wraps the result of `vectorbtpro.signals.nb.between_ranges_nb` with a
-        `vectorbtpro.generic.ranges.Ranges` object. If `target` is provided, uses
-        `vectorbtpro.signals.nb.between_two_ranges_nb` to compute the ranges.
-        Both functions broadcast inputs using `vectorbtpro.base.reshaping.broadcast`
-        with additional `broadcast_kwargs`.
-
         Args:
             target (Optional[ArrayLike]): An array-like target used for a two-range operation.
-
-                When provided, the method uses `vectorbtpro.signals.nb.between_two_ranges_nb`.
             relation (Union[int, str]): Relation type between ranges.
             incl_open (bool): Whether to include open ranges.
-            broadcast_kwargs (KwargsLike): Additional keyword arguments for broadcasting.
+            broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
             group_by (GroupByLike): Specification for grouping the resulting ranges.
             attach_target (bool): If True, the target array is attached to the result.
             jitted (JittedOption): Option to control JIT compilation.
             chunked (ChunkedOption): Option to control chunked processing.
-            **kwargs: Additional keyword arguments passed to
+            **kwargs: Keyword arguments passed to
                 `vectorbtpro.generic.ranges.Ranges.from_records`.
 
         Returns:
             Ranges: A `vectorbtpro.generic.ranges.Ranges` instance representing the computed ranges.
+
+        See:
+            * `vectorbtpro.signals.nb.between_ranges_nb` if `target` is not provided.
+            * `vectorbtpro.signals.nb.between_two_ranges_nb` if `target` is provided.
 
         Examples:
             One array:
@@ -2534,18 +2549,18 @@ class SignalsAccessor(GenericAccessor):
     ) -> Ranges:
         """Build a record array of ranges from signal partitions.
 
-        Wraps the result of `vectorbtpro.signals.nb.partition_ranges_nb` with a
-        `vectorbtpro.generic.ranges.Ranges` object.
-
         Args:
             group_by (GroupByLike): Specification for grouping the resulting ranges.
             jitted (JittedOption): Option to control JIT compilation.
             chunked (ChunkedOption): Option to control chunked processing.
-            **kwargs: Additional keyword arguments passed to
+            **kwargs: Keyword arguments passed to
                 `vectorbtpro.generic.ranges.Ranges.from_records`.
 
         Returns:
             Ranges: A `vectorbtpro.generic.ranges.Ranges` instance representing the partitioned ranges.
+
+        See:
+            `vectorbtpro.signals.nb.partition_ranges_nb`
 
         Examples:
             ```pycon
@@ -2571,18 +2586,18 @@ class SignalsAccessor(GenericAccessor):
     ) -> Ranges:
         """Build a record array of ranges between partitions.
 
-        Wraps the result of `vectorbtpro.signals.nb.between_partition_ranges_nb` with a
-        `vectorbtpro.generic.ranges.Ranges` object.
-
         Args:
             group_by (GroupByLike): Specification for grouping the resulting ranges.
             jitted (JittedOption): Option to control JIT compilation.
             chunked (ChunkedOption): Option to control chunked processing.
-            **kwargs: Additional keyword arguments passed to
+            **kwargs: Keyword arguments passed to
                 `vectorbtpro.generic.ranges.Ranges.from_records`.
 
         Returns:
             Ranges: A `vectorbtpro.generic.ranges.Ranges` instance representing the computed ranges.
+
+        See:
+            `vectorbtpro.signals.nb.between_partition_ranges_nb`
 
         Examples:
             ```pycon
@@ -2659,8 +2674,8 @@ class SignalsAccessor(GenericAccessor):
                 * "label(s)": Label identifying the signal in a column.
             signal_index_name (str): Name assigned to the signal index.
             jitted (JittedOption): Option for JIT compilation.
-            clean_index_kwargs (KwargsLike): Additional keyword arguments for index cleaning.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping the result.
+            clean_index_kwargs (KwargsLike): Keyword arguments for index cleaning.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             MaybeTuple[SeriesFrame]: The wrapped result containing the unraveled signals.
@@ -2720,8 +2735,6 @@ class SignalsAccessor(GenericAccessor):
         """Unravel signal pairs.
 
         Selects the appropriate unraveling method based on the number of input arrays.
-        If a single array is provided, see `vectorbtpro.signals.nb.unravel_between_nb`.
-        If two arrays are provided, see `vectorbtpro.signals.nb.unravel_between_two_nb`.
 
         Args:
             *objs: Variable length arrays representing signals.
@@ -2729,13 +2742,10 @@ class SignalsAccessor(GenericAccessor):
                 When one array is provided, it is treated as the primary signal array;
                 when two arrays are provided, they are treated as source and target signals respectively.
             relation (Union[int, str]): Relation mode for pairing signals.
-
-                See `vectorbtpro.signals.nb.unravel_between_nb` or
-                `vectorbtpro.signals.nb.unravel_between_two_nb` for details.
             incl_open_source (bool): Include open source signals.
             incl_open_target (bool): Include open target signals.
             incl_empty_cols (bool): Include empty columns.
-            broadcast_kwargs (KwargsLike): Additional keyword arguments for broadcasting.
+            broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
             force_signal_index (bool): Enforce the generation of a new signal index.
             signal_index_type (str): Type of signal index to generate. Valid values:
 
@@ -2751,14 +2761,18 @@ class SignalsAccessor(GenericAccessor):
                 * "target_label(s)": Label of signal in a target column.
             signal_index_name (str): Name for the signal index.
             jitted (JittedOption): Option to control JIT compilation.
-            clean_index_kwargs (KwargsLike): Additional keyword arguments for cleaning indices.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping output arrays.
+            clean_index_kwargs (KwargsLike): Keyword arguments for cleaning indices.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping output arrays.
 
         Returns:
             SeriesFrame or Tuple[SeriesFrame, SeriesFrame]:
                 * If one array is provided, returns a wrapped signal mask with an updated index.
                 * If two arrays are provided, returns a tuple of wrapped source and target
                     signal masks with updated indices.
+
+        See:
+            * `vectorbtpro.signals.nb.unravel_between_nb` for one array.
+            * `vectorbtpro.signals.nb.unravel_between_two_nb` for two arrays.
 
         Examples:
             One mask:
@@ -2950,15 +2964,16 @@ class SignalsAccessor(GenericAccessor):
     ) -> tp.SeriesFrame:
         """Ravel signals.
 
-        Calls `vectorbtpro.signals.nb.ravel_nb` to process and ravel the signal array.
-
         Args:
             group_by (GroupByLike): Grouping specification.
             jitted (JittedOption): Option to control JIT compilation.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
 
         Returns:
             SeriesFrame: A wrapped array of raveled signals.
+
+        See:
+            `vectorbtpro.signals.nb.ravel_nb`
 
         Examples:
             ```pycon
@@ -3000,10 +3015,14 @@ class SignalsAccessor(GenericAccessor):
             group_by (GroupByLike): Grouping specification.
             jitted (JittedOption): Option to control JIT compilation.
             chunked (ChunkedOption): Option to control chunked processing.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
 
         Returns:
             MaybeSeries: A series with the nth index for each column or group.
+
+        See:
+            * `vectorbtpro.signals.nb.nth_index_nb` regardless of grouping.
+            * `vectorbtpro.generic.nb.apply_reduce.any_reduce_nb` if grouping is enabled.
 
         Examples:
             ```pycon
@@ -3069,10 +3088,14 @@ class SignalsAccessor(GenericAccessor):
             group_by (GroupByLike): Grouping specification.
             jitted (JittedOption): Option to control JIT compilation.
             chunked (ChunkedOption): Option to control chunked processing.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
 
         Returns:
             MaybeSeries: A series with the normalized average index for each column or group.
+
+        See:
+            * `vectorbtpro.signals.nb.norm_avg_index_grouped_nb` if grouping is enabled.
+            * `vectorbtpro.signals.nb.norm_avg_index_nb` if grouping is disabled.
 
         Examples:
             ```pycon
@@ -3120,7 +3143,7 @@ class SignalsAccessor(GenericAccessor):
         """Return the total number of True signals in each column or group.
 
         Args:
-            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
             group_by (GroupByLike): Grouping specification.
 
         Returns:
@@ -3135,9 +3158,9 @@ class SignalsAccessor(GenericAccessor):
         The rate is computed as the total number of True signals divided by the total index length.
 
         Args:
-            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
             group_by (GroupByLike): Grouping specification.
-            **kwargs: Additional keyword arguments forwarded to `SignalsAccessor.total`.
+            **kwargs: Keyword arguments forwarded to `SignalsAccessor.total`.
 
         Returns:
             MaybeSeries: A series with the rate of True signals.
@@ -3156,9 +3179,9 @@ class SignalsAccessor(GenericAccessor):
         """Return the total number of partitions of True signals in each column or group.
 
         Args:
-            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
             group_by (GroupByLike): Grouping specification.
-            **kwargs: Additional keyword arguments forwarded to `SignalsAccessor.partition_ranges`.
+            **kwargs: Keyword arguments forwarded to `SignalsAccessor.partition_ranges`.
 
         Returns:
             MaybeSeries: A series with the count of True signal partitions.
@@ -3177,9 +3200,9 @@ class SignalsAccessor(GenericAccessor):
         The ratio is computed as `SignalsAccessor.total_partitions` divided by `SignalsAccessor.total`.
 
         Args:
-            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
             group_by (GroupByLike): Grouping specification.
-            **kwargs: Additional keyword arguments forwarded to
+            **kwargs: Keyword arguments forwarded to
                 `SignalsAccessor.total_partitions` and `SignalsAccessor.total`.
 
         Returns:
@@ -3331,7 +3354,7 @@ class SignalsAccessor(GenericAccessor):
         Args:
             yref (str): Y-axis reference string.
             column (hashable): Column to plot.
-            **kwargs: Additional keyword arguments passed to
+            **kwargs: Keyword arguments passed to
                 `vectorbtpro.generic.accessors.GenericAccessor.lineplot`.
 
         Returns:
@@ -3364,7 +3387,7 @@ class SignalsAccessor(GenericAccessor):
         Args:
             y (ArrayLike): Y-axis values to plot markers on.
             column (hashable): Column to plot.
-            **kwargs: Additional keyword arguments passed to
+            **kwargs: Keyword arguments passed to
                 `vectorbtpro.generic.accessors.GenericAccessor.scatterplot`.
 
         Returns:
@@ -3441,7 +3464,7 @@ class SignalsAccessor(GenericAccessor):
         Args:
             y (Optional[ArrayLike]): Y-axis values for entry markers.
             column (Optional[Label]): Column to plot.
-            **kwargs: Additional keyword arguments passed to
+            **kwargs: Keyword arguments passed to
                 `vectorbtpro.generic.accessors.GenericAccessor.scatterplot`.
 
         Returns:
@@ -3483,7 +3506,7 @@ class SignalsAccessor(GenericAccessor):
         Args:
             y (Optional[ArrayLike]): Array-like data for plotting exit signals.
             column (Optional[Label]): Label for the column to plot.
-            **kwargs: Additional keyword arguments passed to `SignalsAccessor.plot_as_markers`.
+            **kwargs: Keyword arguments passed to `SignalsAccessor.plot_as_markers`.
 
         Returns:
             Union[BaseFigure, TraceUpdater]: Figure or trace updater with plotted exit markers.
@@ -3524,7 +3547,7 @@ class SignalsAccessor(GenericAccessor):
         Args:
             y (Optional[ArrayLike]): Array-like data for plotting entry markers.
             column (Optional[Label]): Label for the column to plot.
-            **kwargs: Additional keyword arguments passed to `SignalsAccessor.plot_as_markers`.
+            **kwargs: Keyword arguments passed to `SignalsAccessor.plot_as_markers`.
 
         Returns:
             Union[BaseFigure, TraceUpdater]: Figure or trace updater with plotted entry markers.
@@ -3569,7 +3592,7 @@ class SignalsAccessor(GenericAccessor):
         Args:
             y (Optional[ArrayLike]): Array-like data for plotting exit markers.
             column (Optional[Label]): Label for the column to plot.
-            **kwargs: Additional keyword arguments passed to `SignalsAccessor.plot_as_markers`.
+            **kwargs: Keyword arguments passed to `SignalsAccessor.plot_as_markers`.
 
         Returns:
             Union[BaseFigure, tp.TraceUpdater]: Figure or trace updater with plotted exit markers.
@@ -3630,7 +3653,7 @@ SignalsAccessor.override_subplots_doc(__pdoc__)
 
 @register_sr_vbt_accessor("signals")
 class SignalsSRAccessor(SignalsAccessor, GenericSRAccessor):
-    """Accessor for signal series on pandas Series.
+    """Class representing an accessor for signal series on pandas Series.
 
     Provides access to signal-related functionalities for a pandas Series.
 
@@ -3639,7 +3662,7 @@ class SignalsSRAccessor(SignalsAccessor, GenericSRAccessor):
     Args:
         wrapper (Union[ArrayWrapper, ArrayLike]): Data wrapper or array-like object containing signal data.
         obj (Optional[ArrayLike]): Underlying series data.
-        **kwargs: Additional keyword arguments passed to the initializer.
+        **kwargs: Keyword arguments passed to the initializer.
     """
 
     def __init__(
@@ -3657,7 +3680,7 @@ class SignalsSRAccessor(SignalsAccessor, GenericSRAccessor):
 
 @register_df_vbt_accessor("signals")
 class SignalsDFAccessor(SignalsAccessor, GenericDFAccessor):
-    """Accessor for signal series on pandas DataFrame.
+    """Class representing an accessor for signal series on pandas DataFrame.
 
     Provides access to signal-related functionalities for a pandas DataFrame.
 
@@ -3666,7 +3689,7 @@ class SignalsDFAccessor(SignalsAccessor, GenericDFAccessor):
     Args:
         wrapper (Union[ArrayWrapper, ArrayLike]): Data wrapper or array-like object containing signal data.
         obj (Optional[ArrayLike]): Underlying DataFrame data.
-        **kwargs: Additional keyword arguments passed to the initializer.
+        **kwargs: Keyword arguments passed to the initializer.
     """
 
     def __init__(

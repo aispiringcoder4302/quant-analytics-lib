@@ -580,39 +580,47 @@ if _Figure.__init__.__doc__:
     Figure.__init__.__doc__ = f"""Docstring of `plotly.graph_objects.Figure`:
 ```text
 {inspect.cleandoc(_Figure.__init__.__doc__)}
-```"""
+```
+"""
 if _Figure.show.__doc__:
     Figure.show.__doc__ = f"""Docstring of `plotly.graph_objects.Figure.show`:
 ```text
 {inspect.cleandoc(_Figure.show.__doc__)}
-```"""
+```
+"""
 if _FigureWidget.__init__.__doc__:
     FigureWidget.__init__.__doc__ = f"""Docstring of `plotly.graph_objects.FigureWidget`:
 ```text
 {inspect.cleandoc(_FigureWidget.__init__.__doc__)}
-```"""
+```
+"""
 if _FigureWidget.show.__doc__:
     FigureWidget.show.__doc__ = f"""Docstring of `plotly.graph_objects.FigureWidget.show`:
 ```text
 {inspect.cleandoc(_FigureWidget.show.__doc__)}
-```"""
+```
+"""
 if _FigureResampler.__init__.__doc__:
     FigureResampler.__init__.__doc__ = f"""Docstring of `plotly_resampler.FigureResampler`:
 ```text
 {inspect.cleandoc(_FigureResampler.__init__.__doc__)}
-```"""
+```
+"""
 if _FigureResampler.show.__doc__:
     FigureResampler.show.__doc__ = f"""Docstring of `plotly_resampler.FigureResampler.show`:
 ```text
 {inspect.cleandoc(_FigureResampler.show.__doc__)}
-```"""
+```
+"""
 if _FigureWidgetResampler.__init__.__doc__:
     FigureWidgetResampler.__init__.__doc__ = f"""Docstring of `plotly_resampler.FigureWidgetResampler`:
 ```text
 {inspect.cleandoc(_FigureWidgetResampler.__init__.__doc__)}
-```"""
+```
+"""
 if _FigureWidgetResampler.show.__doc__:
     FigureWidgetResampler.show.__doc__ = f"""Docstring of `plotly_resampler.FigureWidgetResampler.show`:
 ```text
 {inspect.cleandoc(_FigureWidgetResampler.show.__doc__)}
-```"""
+```
+"""

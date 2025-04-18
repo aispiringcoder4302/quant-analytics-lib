@@ -10,7 +10,7 @@
 
 """Module providing base classes for managing knowledge assets.
 
-Refer to `vectorbtpro.utils.knowledge` for a toy dataset.
+See `vectorbtpro.utils.knowledge` for the toy dataset.
 """
 
 import hashlib
@@ -305,7 +305,8 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
              {'s': 'BCD', 'b': True, 'd2': {'c': 'blue', 'l': [3, 4]}},
              {'s': 'CDE', 'b': False, 'd2': {'c': 'green', 'l': [5, 6]}},
              {'s': 'DEF', 'b': False, 'd2': {'c': 'yellow', 'l': [7, 8]}}]
-            ```"""
+            ```
+            """
         if not isinstance(cls_or_self, type) and len(objs) == 0:
             if isinstance(cls_or_self[0], list):
                 return cls_or_self.merge_lists(**kwargs)
@@ -369,7 +370,8 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
              {'s': 'CDE', 'b': False, 'd2': {'c': 'green', 'l': [5, 6]}},
              {'s': 'DEF', 'b': False, 'd2': {'c': 'yellow', 'l': [7, 8]}},
              {'s': 'EFG', 'b': False, 'd2': {'c': 'black', 'l': [9, 10]}}]
-            ```"""
+            ```
+            """
         if not isinstance(cls_or_self, type) and len(objs) == 0:
             if isinstance(cls_or_self[0], list):
                 return cls_or_self.merge_lists(**kwargs)
@@ -1680,7 +1682,8 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
 
             >>> asset.find("xyz", in_dumps=True).get()
             [{'s': 'EFG', 'b': False, 'd2': {'c': 'black', 'l': [9, 10]}, 'xyz': 123}]
-            ```"""
+            ```
+            """
         found_asset = self.apply(
             "find",
             target=target,
@@ -1911,7 +1914,8 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
 
             >>> asset.find_replace(123, 456, path="xyz", skip_missing=True, changed_only=True).get()
             [{'s': 'EFG', 'b': False, 'd2': {'c': 'black', 'l': [9, 10]}, 'xyz': 456}]
-            ```"""
+            ```
+            """
         return self.apply(
             "find_replace",
             target=target,

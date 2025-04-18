@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module defining the `SUPERTREND` indicator."""
+"""Module defining the `SUPERTREND` class for calculating the Supertrend indicator."""
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.indicators import nb
@@ -32,12 +32,14 @@ SUPERTREND = IndicatorFactory(
 
 
 class _SUPERTREND(SUPERTREND):
-    """Supertrend indicator.
+    """Class representing the supertrend indicator.
 
     The supertrend indicator is a trend-following overlay that appears directly on price charts,
     providing clear buy and sell signals based on the underlying asset's price action and volatility.
 
-    See [Supertrend Indicator: What It Is and How It Works](https://www.investopedia.com/supertrend-indicator-7976167).
+    See:
+        * https://www.investopedia.com/supertrend-indicator-7976167 for the definition of the supertrend indicator.
+        * `vectorbtpro.indicators.nb.supertrend_nb` for the underlying implementation.
     """
 
     def plot(
@@ -64,7 +66,7 @@ class _SUPERTREND(SUPERTREND):
                 the `SUPERTREND.short` trace in `plotly.graph_objects.Scatter`.
             add_trace_kwargs (KwargsLike): Keyword arguments passed to `fig.add_trace` when adding each trace.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
-            **layout_kwargs: Additional keyword arguments for configuring the figure layout.
+            **layout_kwargs: Keyword arguments for configuring the figure layout.
 
         Returns:
             BaseFigure: The figure containing the plotted indicator traces.

@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Modules for portfolio management.
+"""Package for portfolio management.
 
 This package includes submodules that provide core functionality for portfolio
 management, including optimization, order sequencing, logging, and trade execution.

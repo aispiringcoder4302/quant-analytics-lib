@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Optional dependencies for internal use."""
+"""Module providing configuration for optional dependencies for internal use."""
 
 from vectorbtpro.utils.config import HybridConfig
 
@@ -251,7 +251,9 @@ opt_dep_config = HybridConfig(
 
 __pdoc__[
     "opt_dep_config"
-] = f"""Config for optional packages.
+] = f"""Configuration for optional dependencies used internally by vectorbtpro.
+
+Contains package metadata including download links, version requirements, and distribution names where applicable.
 
 ```python
 {opt_dep_config.prettify_doc()}

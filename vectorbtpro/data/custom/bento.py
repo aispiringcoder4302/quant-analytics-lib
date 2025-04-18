@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module providing the `BentoData` class."""
+"""Module providing the `BentoData` class for fetching data from Databento."""
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.data.custom.remote import RemoteData
@@ -27,11 +27,11 @@ __all__ = [
 
 
 class BentoData(RemoteData):
-    """Class for fetching data from Databento.
+    """Data class for fetching data from Databento.
 
-    See https://github.com/databento/databento-python for the API.
-
-    See `BentoData.fetch_symbol` for argument details.
+    See:
+        * https://github.com/databento/databento-python for the Databento Python client.
+        * `BentoData.fetch_symbol` for argument details.
 
     Examples:
         Set up the API key globally (optional):

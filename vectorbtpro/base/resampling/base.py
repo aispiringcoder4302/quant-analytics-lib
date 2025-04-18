@@ -358,8 +358,6 @@ class Resampler(Configured):
     ) -> tp.Union[tp.Array1d, tp.Index]:
         """Return the mapping from the source index to the target index.
 
-        See `vectorbtpro.base.resampling.nb.map_to_target_index_nb`.
-
         Args:
             before (bool): Map to the target index before the given value if True.
             raise_missing (bool): Raise an error if a target index value is missing.
@@ -369,6 +367,9 @@ class Resampler(Configured):
 
         Returns:
             Union[Array1d, Index]: The mapped index values.
+
+        See:
+            `vectorbtpro.base.resampling.nb.map_to_target_index_nb`
         """
         target_freq = self.get_np_target_freq(silence_warnings=silence_warnings)
         func = jit_reg.resolve_option(nb.map_to_target_index_nb, jitted)
@@ -399,8 +400,6 @@ class Resampler(Configured):
     ) -> tp.Union[tp.Array1d, tp.Index]:
         """Return the index difference mapping between the source and target indices.
 
-        See `vectorbtpro.base.resampling.nb.index_difference_nb`.
-
         Args:
             reverse (bool): Reverse the order of indices for difference calculation if True.
             return_index (bool): Return the target index mapping if True; otherwise, return a numpy array.
@@ -408,6 +407,9 @@ class Resampler(Configured):
 
         Returns:
             Union[Array1d, Index]: The computed index difference mapping.
+
+        See:
+            `vectorbtpro.base.resampling.nb.index_difference_nb`
         """
         func = jit_reg.resolve_option(nb.index_difference_nb, jitted)
         if reverse:
@@ -426,8 +428,6 @@ class Resampler(Configured):
     ) -> tp.Tuple[tp.Array1d, tp.Array1d]:
         """Return the mapping of source index ranges corresponding to the target index.
 
-        See `vectorbtpro.base.resampling.nb.map_index_to_source_ranges_nb`.
-
         Args:
             before (bool): Map to source ranges before the target index if True.
             jitted (JittedOption): Option to control JIT compilation.
@@ -435,6 +435,9 @@ class Resampler(Configured):
 
         Returns:
             Tuple[Array1d, Array1d]: A tuple with the start and end indices of the source ranges.
+
+        See:
+            `vectorbtpro.base.resampling.nb.map_index_to_source_ranges_nb`
 
         !!! note
             If `Resampler.target_freq` is a date offset, it is set to None and a warning is emitted.
@@ -464,8 +467,6 @@ class Resampler(Configured):
 
         Either `target_lbound_index` or `target_rbound_index` must be provided.
 
-        See `vectorbtpro.base.resampling.nb.map_bounds_to_source_ranges_nb`.
-
         Args:
             source_index (Optional[IndexLike]): A source datetime index.
             target_lbound_index (Optional[IndexLike]): The left bound of the target index.
@@ -481,6 +482,9 @@ class Resampler(Configured):
 
         Returns:
             Tuple[Array1d, Array1d]: A pair of arrays representing the mapping from target bounds to source ranges.
+
+        See:
+            `vectorbtpro.base.resampling.nb.map_bounds_to_source_ranges_nb`
         """
         if not isinstance(cls_or_self, type):
             if target_lbound_index is None and target_rbound_index is None:
@@ -525,8 +529,6 @@ class Resampler(Configured):
     ) -> tp.Array1d:
         """Return a resampled mask for the source index.
 
-        See `vectorbtpro.base.resampling.nb.resample_source_mask_nb`.
-
         Args:
             source_mask (ArrayLike): A boolean mask for the source index.
             jitted (JittedOption): Option to control JIT compilation.
@@ -534,6 +536,9 @@ class Resampler(Configured):
 
         Returns:
             Array1d: A resampled array corresponding to the source mask.
+
+        See:
+            `vectorbtpro.base.resampling.nb.resample_source_mask_nb`
         """
         from vectorbtpro.base.reshaping import broadcast_array_to
 
@@ -555,14 +560,15 @@ class Resampler(Configured):
     def last_before_target_index(self, incl_source: bool = True, jitted: tp.JittedOption = None) -> tp.Array1d:
         """Return the index of the last element before each target index.
 
-        See `vectorbtpro.base.resampling.nb.last_before_target_index_nb`.
-
         Args:
             incl_source (bool): Include the source index in the computation if True.
             jitted (JittedOption): Option to control JIT compilation.
 
         Returns:
             Array1d: An array of indices representing the last element before each target index.
+
+        See:
+            `vectorbtpro.base.resampling.nb.last_before_target_index_nb`
         """
         func = jit_reg.resolve_option(nb.last_before_target_index_nb, jitted)
         return func(self.source_index.values, self.target_index.values, incl_source=incl_source)

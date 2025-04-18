@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module defining the `FMAX` indicator."""
+"""Module defining the `FMAX` generator class for the future maximum."""
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.indicators.factory import IndicatorFactory
@@ -35,8 +35,11 @@ FMAX = IndicatorFactory(
 
 
 class _FMAX(FMAX):
-    """Class representing a look-ahead indicator that computes the future maximum value using
-    `vectorbtpro.labels.nb.future_max_nb`."""
+    """Class representing the look-ahead future maximum generator.
+    
+    See:
+        * `vectorbtpro.labels.nb.future_max_nb` for the underlying implementation.
+    """
 
     def plot(
         self,
@@ -60,7 +63,7 @@ class _FMAX(FMAX):
             add_trace_kwargs (KwargsLike): Keyword arguments passed to
                 `fig.add_trace` for adding each trace.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
-            **layout_kwargs: Additional keyword arguments for configuring the figure layout.
+            **layout_kwargs: Keyword arguments for configuring the figure layout.
 
         Returns:
             BaseFigure: The figure with the indicator traces plotted.

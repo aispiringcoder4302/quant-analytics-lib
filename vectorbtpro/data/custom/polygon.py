@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module providing the `PolygonData` class."""
+"""Module providing the `PolygonData` class for fetching data from Polygon's API."""
 
 import time
 import traceback
@@ -39,9 +39,9 @@ PolygonDataT = tp.TypeVar("PolygonDataT", bound="PolygonData")
 class PolygonData(RemoteData):
     """Data class for fetching data from Polygon's API.
 
-    See https://github.com/polygon-io/client-python for API details.
-
-    For arguments, see `PolygonData.fetch_symbol`.
+    See:
+        * https://github.com/polygon-io/client-python for the official Polygon Python client.
+        * `PolygonData.fetch_symbol` for argument details.
 
     Examples:
         Set up the API key globally:

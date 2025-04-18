@@ -30,7 +30,7 @@ __all__ = [
 
 
 class AssetPipeline(Base):
-    """Abstract asset pipeline base class.
+    """Abstract class representing an asset pipeline.
 
     Provides functionality to resolve and execute tasks in an asset pipeline.
     """
@@ -135,7 +135,7 @@ class AssetPipeline(Base):
 
 
 class BasicAssetPipeline(AssetPipeline):
-    """Basic asset pipeline class.
+    """Class representing a basic asset pipeline.
 
     Creates a composite function by resolving and chaining individual asset tasks.
 
@@ -153,7 +153,8 @@ class BasicAssetPipeline(AssetPipeline):
 
         >>> asset_pipeline(dataset[0])
         5
-        ```"""
+        ```
+        """
 
     def __init__(self, *args, **kwargs) -> None:
         if len(args) == 0:

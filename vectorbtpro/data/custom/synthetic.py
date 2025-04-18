@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module providing `SyntheticData` functionality."""
+"""Module providing the `SyntheticData` class for generating synthetic data."""
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.data.custom.custom import CustomData
@@ -23,7 +23,7 @@ __pdoc__ = {}
 
 
 class SyntheticData(CustomData):
-    """Class for generating synthetic data.
+    """Data class for generating synthetic data.
 
     Provides a framework for generating and updating synthetic data for features and symbols.
     Subclasses should implement the `generate_key` method, which is used by other class methods.

@@ -8,9 +8,9 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Modules for basic look-ahead indicators and label generators.
+"""Package providing basic look-ahead indicators and label generators.
 
-Provides indicators and label generators that can be accessed via `vbt.*`.
+All indicators are accessible via `vbt.*`.
 
 Run for the examples:
 

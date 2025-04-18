@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module providing numba-compiled functions for splitting."""
+"""Module providing Numba-compiled functions for splitting."""
 
 import numpy as np
 from numba import prange

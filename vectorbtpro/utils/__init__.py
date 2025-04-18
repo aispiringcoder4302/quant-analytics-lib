@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module providing utilities used throughout vectorbtpro."""
+"""Package providing utilities used throughout vectorbtpro."""
 
 from typing import TYPE_CHECKING
 

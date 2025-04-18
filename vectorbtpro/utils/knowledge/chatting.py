@@ -2901,7 +2901,7 @@ class MetaObjectStore(type(Configured), type(MutableMapping)):
 
 
 class ObjectStore(Configured, MutableMapping, metaclass=MetaObjectStore):
-    """Abstract class for managing an object store.
+    """Class for managing an object store.
 
     Args:
         store_id (Optional[str]): Identifier for the store.

@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module providing the `RSI` indicator."""
+"""Module defining the `RSI` class for calculating the Relative Strength Index indicator."""
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.generic import enums as generic_enums
@@ -46,7 +46,7 @@ RSI = IndicatorFactory(
 
 
 class _RSI(RSI):
-    """Relative Strength Index (RSI).
+    """Class representing the Relative Strength Index (RSI) indicator.
 
     Represents the Relative Strength Index indicator, which measures the speed
     and change of price movements of a security by comparing the magnitude of
@@ -54,6 +54,10 @@ class _RSI(RSI):
     identify overbought or oversold conditions.
 
     See [Relative Strength Index (RSI)](https://www.investopedia.com/terms/r/rsi.asp).
+
+    See:
+        * https://www.investopedia.com/terms/r/rsi.asp for the definition of RSI.
+        * `vectorbtpro.indicators.nb.rsi_nb` for the underlying implementation.
     """
 
     def plot(
@@ -78,7 +82,7 @@ class _RSI(RSI):
             add_trace_kwargs (KwargsLike): Keyword arguments for 
                 `fig.add_trace` when adding additional traces.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
-            **layout_kwargs: Additional keyword arguments for configuring the figure layout.
+            **layout_kwargs: Keyword arguments for configuring the figure layout.
 
         Returns:
             BaseFigure: A figure object containing the RSI line plot and

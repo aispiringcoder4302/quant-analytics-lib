@@ -105,7 +105,7 @@ def warn_stdout(func: tp.Callable) -> tp.Callable:
 
 
 class WarningsFiltered(warnings.catch_warnings, Base):
-    """Context manager for ignoring warnings.
+    """Context manager to temporarily ignore warnings globally.
 
     Args:
         entries (Optional[MaybeSequence[Union[str, Kwargs]]]): Simple entries to add to the warnings filters.

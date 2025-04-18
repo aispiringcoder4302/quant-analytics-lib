@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module for the `FMIN` indicator."""
+"""Module defining the `FMIN` generator class for the future minimum."""
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.indicators.factory import IndicatorFactory
@@ -35,7 +35,11 @@ FMIN = IndicatorFactory(
 
 
 class _FMIN(FMIN):
-    """Implements a look-ahead indicator based on `vectorbtpro.labels.nb.future_min_nb`."""
+    """Class representing the look-ahead future minimum generator.
+    
+    See:
+        * `vectorbtpro.labels.nb.future_min_nb` for the underlying implementation.
+    """
 
     def plot(
         self,
@@ -62,7 +66,7 @@ class _FMIN(FMIN):
                 These arguments are merged with default settings.
             add_trace_kwargs (KwargsLike): Keyword arguments passed to `fig.add_trace` when adding each trace.
             fig (Optional[BaseFigure]): Figure to update. If None, a new figure is created.
-            **layout_kwargs: Additional keyword arguments for configuring the figure layout.
+            **layout_kwargs: Keyword arguments for configuring the figure layout.
 
         Returns:
             BaseFigure: The updated figure object with the plotted traces.

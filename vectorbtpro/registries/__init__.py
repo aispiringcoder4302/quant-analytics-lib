@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Modules for registering objects across vectorbtpro."""
+"""Package for registering objects across vectorbtpro."""
 
 from typing import TYPE_CHECKING
 

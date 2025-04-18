@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module providing the `RPROBNX` signal generator."""
+"""Module providing the `RPROBNX` class for generating random entry and exit signals based on probabilities."""
 
 import numpy as np
 
@@ -48,11 +48,11 @@ RPROBNX = SignalFactory(
 
 
 class _RPROBNX(RPROBNX):
-    """Random entry and exit signal generator based on specified probabilities.
+    """Class representing a random entry and exit signal generator based on probabilities.
 
-    Generates signals for entries and exits using `vectorbtpro.signals.nb.rand_by_prob_place_nb`.
-
-    See `RPROB` for additional parameter notes.
+    See: 
+        * `vectorbtpro.signals.nb.rand_by_prob_place_nb` for details on the entry and exit placement.
+        * `vectorbtpro.signals.generators.RPROB` for parameter details.
 
     Examples:
         Test all probability combinations:

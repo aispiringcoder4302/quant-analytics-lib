@@ -21,7 +21,7 @@ __pdoc__ = {}
 
 
 class DBData(LocalData):
-    """Class for retrieving database data.
+    """Data class for retrieving database data.
 
     This class extends `vectorbtpro.data.custom.local.LocalData` and utilizes custom settings
     specified under the `data.custom.db` path.

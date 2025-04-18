@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module containing the `TRENDLB` indicator."""
+"""Module defining the `TRENDLB` generator class for trend labels."""
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.indicators.configs import flex_elem_param_config
@@ -43,14 +43,18 @@ TRENDLB = IndicatorFactory(
 
 
 class _TRENDLB(TRENDLB):
-    """Label generator for trend detection using `vectorbtpro.labels.nb.trend_labels_nb`."""
+    """Class representing the look-ahead trend label generator.
+    
+    See:
+        * `vectorbtpro.labels.nb.trend_labels_nb` for the underlying implementation.
+    """
 
     def plot(self, column: tp.Optional[tp.Label] = None, **kwargs) -> tp.BaseFigure:
         """Plot the median of `TRENDLB.high` and `TRENDLB.low` and overlay it with a heatmap of `TRENDLB.labels`.
         
         Args:
             column (Optional[Label]): The column from the indicator data to plot.
-            **kwargs: Additional keyword arguments passed to
+            **kwargs: Keyword arguments passed to
                 `vectorbtpro.generic.accessors.GenericAccessor.overlay_with_heatmap`.
         
         Returns:

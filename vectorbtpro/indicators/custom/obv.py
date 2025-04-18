@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module defining the `OBV` indicator."""
+"""Module defining the `OBV` class for calculating the on-balance volume indicator."""
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.indicators import nb
@@ -38,6 +38,10 @@ class _OBV(OBV):
     thereby relating price and volume in the stock market.
 
     See [On-Balance Volume (OBV)](https://www.investopedia.com/terms/o/onbalancevolume.asp).
+
+    See:
+        * https://www.investopedia.com/terms/o/onbalancevolume.asp for the definition of OBV.
+        * `vectorbtpro.indicators.nb.obv_nb` for the underlying implementation.
     """
 
     def plot(
@@ -57,13 +61,13 @@ class _OBV(OBV):
             add_trace_kwargs (KwargsLike): Keyword arguments passed to 
                 `fig.add_trace` when adding each trace.
             fig (Optional[BaseFigure]): The figure to update. If None, a new figure is created.
-            **layout_kwargs: Additional keyword arguments for configuring the figure layout.
+            **layout_kwargs: Keyword arguments for configuring the figure layout.
 
         Returns:
             BaseFigure: The updated figure displaying the plotted OBV data.
 
         Examples:
-            ```py
+            ```pycon
             >>> vbt.OBV.run(ohlcv['Close'], ohlcv['Volume']).plot().show()
             ```
 

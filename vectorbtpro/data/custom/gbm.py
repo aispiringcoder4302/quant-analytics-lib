@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module providing `GBMData` for generating synthetic geometric Brownian motion data."""
+"""Module providing the `GBMData` class for generating synthetic data using geometric Brownian motion."""
 
 import pandas as pd
 
@@ -29,8 +29,11 @@ __pdoc__ = {}
 
 
 class GBMData(SyntheticData):
-    """Class for synthetic data generated via geometric Brownian motion using
-    `vectorbtpro.data.nb.generate_gbm_data_nb`."""
+    """Data class for synthetic data generated via geometric Brownian motion.
+    
+    See:
+        * `GBMData.generate_key` for argument details.
+    """
 
     _settings_path: tp.SettingsPath = dict(custom="data.custom.gbm")
 
@@ -67,6 +70,9 @@ class GBMData(SyntheticData):
 
         Returns:
             KeyData: The generated data and a metadata dictionary.
+
+        See:
+            `vectorbtpro.data.nb.generate_gbm_data_nb`
 
         For defaults, refer to `custom.gbm` in `vectorbtpro._settings.data`.
 

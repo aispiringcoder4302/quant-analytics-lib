@@ -8,8 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module providing the ParquetData class for fetching and processing Parquet files
-using PyArrow or FastParquet."""
+"""Module providing the `ParquetData` class for fetching Parquet files using PyArrow or FastParquet."""
 
 import re
 from pathlib import Path
@@ -30,7 +29,11 @@ ParquetDataT = tp.TypeVar("ParquetDataT", bound="ParquetData")
 
 
 class ParquetData(FileData):
-    """Class for fetching and processing Parquet files using PyArrow or FastParquet."""
+    """Data class for fetching and processing Parquet files using PyArrow or FastParquet.
+    
+    See:
+        * `ParquetData.fetch_key` for argument details.
+    """
 
     _settings_path: tp.SettingsPath = dict(custom="data.custom.parquet")
 

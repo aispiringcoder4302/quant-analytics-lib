@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module providing the `MEANLB` indicator."""
+"""Module defining the `MEANLB` generator class for mean labels."""
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.generic import enums as generic_enums
@@ -45,7 +45,11 @@ MEANLB = IndicatorFactory(
 
 
 class _MEANLB(MEANLB):
-    """Class generating labels using `vectorbtpro.labels.nb.mean_labels_nb`."""
+    """Class representing the look-ahead mean label generator.
+    
+    See:
+        * `vectorbtpro.labels.nb.mean_labels_nb` for the underlying implementation.
+    """
 
     def plot(self, column: tp.Optional[tp.Label] = None, **kwargs) -> tp.BaseFigure:
         """Plot the `close` data and overlay it with a heatmap of `MEANLB.labels`.

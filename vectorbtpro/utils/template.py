@@ -457,7 +457,8 @@ def substitute_templates(
         NameError: name 'key' is not defined
         >>> vbt.substitute_templates(vbt.RepEval('key == 100', strict=False))
         <vectorbtpro.utils.template.RepEval at 0x7fe3ad2ab668>
-        ```"""
+        ```
+        """
     from vectorbtpro._settings import settings
 
     template_cfg = settings["template"]

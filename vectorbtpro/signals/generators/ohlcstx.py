@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module providing the `OHLCSTX` signal generator."""
+"""Module providing the `OHLCSTX` class for generating stop signals based on OHLC data."""
 
 import inspect
 
@@ -142,16 +142,16 @@ def _bind_ohlcstx_plot(base_cls: type, entries_attr: str) -> tp.Callable:
             column (Optional[Label]): Column label for data selection.
 
                 If None, a default column is used.
-            ohlc_kwargs (KwargsLike): Additional keyword arguments for plotting OHLC data using
+            ohlc_kwargs (KwargsLike): Keyword arguments for plotting OHLC data using
                 `vectorbtpro.ohlcv.accessors.OHLCVDFAccessor.plot`.
-            entry_price_kwargs (KwargsLike): Additional keyword arguments for plotting the entry price line.
-            entry_trace_kwargs (KwargsLike): Additional keyword arguments for plotting entry signals using
+            entry_price_kwargs (KwargsLike): Keyword arguments for plotting the entry price line.
+            entry_trace_kwargs (KwargsLike): Keyword arguments for plotting entry signals using
                 `vectorbtpro.signals.accessors.SignalsSRAccessor.plot_as_entries` for `{0}.{1}`.
-            exit_trace_kwargs (KwargsLike): Additional keyword arguments for plotting exit signals using
+            exit_trace_kwargs (KwargsLike): Keyword arguments for plotting exit signals using
                 `vectorbtpro.signals.accessors.SignalsSRAccessor.plot_as_exits` for `{0}.exits`.
-            add_trace_kwargs (KwargsLike): Additional keyword arguments for adding extra traces to the figure.
+            add_trace_kwargs (KwargsLike): Keyword arguments for adding extra traces to the figure.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
-            **layout_kwargs: Additional keyword arguments for configuring the figure layout.
+            **layout_kwargs: Keyword arguments for configuring the figure layout.
 
         Returns:
             BaseFigure: The updated or newly created figure.
@@ -173,10 +173,10 @@ def _bind_ohlcstx_plot(base_cls: type, entries_attr: str) -> tp.Callable:
 
 
 class _OHLCSTX(OHLCSTX):
-    """Exit signal generator based on OHLC and stop values.
+    """Class representing an exit signal generator based on OHLC data and stop values.
 
-    Generates exit signals from entry indicators using logic defined in
-    `vectorbtpro.signals.nb.ohlc_stop_place_nb`.
+    See:
+        * `vectorbtpro.signals.nb.ohlc_stop_place_nb` for details on the exit placement.
 
     !!! hint
         All parameters may be provided as a single value (per frame) or as a NumPy array

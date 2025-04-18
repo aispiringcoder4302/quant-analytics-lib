@@ -301,11 +301,11 @@ def talib_func(func_name: str) -> tp.Callable:
             wrapper (Optional[ArrayWrapper]): Optional instance used for wrapping inputs and outputs.
             skipna (bool): If True, apply the TA-Lib function only on non-NA values.
             silence_warnings (bool): If True, suppress warnings during frequency handling.
-            broadcast_kwargs (KwargsLike): Additional keyword arguments for broadcasting input arrays.
+            broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting input arrays.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping output arrays.
             wrap (Optional[bool]): Determines whether to wrap the outputs in a Pandas format.
             unpack_to (Optional[str]): If provided, unpacks the output into a dictionary or DataFrame.
-            **kwargs: Additional keyword arguments passed to the TA-Lib function.
+            **kwargs: Keyword arguments passed to the TA-Lib function.
         
         Returns:
             Union[MaybeTuple[AnyArray], Dict[str, AnyArray]]: The result from the TA-Lib indicator function. 
@@ -515,7 +515,7 @@ def talib_plot_func(func_name: str) -> tp.Callable:
         Args:
             {', '.join(output_names)} (ArrayLike): TA-Lib indicator output arrays corresponding to the respective outputs.
             wrapper (Optional[ArrayWrapper]): Optional wrapper instance used to convert raw output arrays.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping the output arrays.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the output arrays.
         
             column (Optional[Label]): Name of the column to plot.
             limits (Optional[Tuple[float, float]]): Tuple representing the lower and upper limits for the plot.
