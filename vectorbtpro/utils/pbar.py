@@ -8,7 +8,11 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module providing utilities for progress bars."""
+"""Module providing utilities for progress bars.
+
+!!! info
+    For default settings, see `vectorbtpro._settings.pbar`.
+"""
 
 from functools import wraps
 from numbers import Number
@@ -56,7 +60,8 @@ class ProgressBar(Base):
         silence_warnings (Optional[bool]): Flag to suppress warnings.
         **kwargs: Keyword arguments for progress bar initialization.
 
-    For default configurations, see `vectorbtpro._settings.pbar`.
+    !!! info
+        For default settings, see `vectorbtpro._settings.pbar`.
     """
 
     def __init__(
@@ -305,11 +310,19 @@ class ProgressBar(Base):
         self._bar = bar
 
     def remove_bar(self) -> None:
-        """Remove the current progress bar instance."""
+        """Remove the current progress bar instance.
+
+        Returns:
+            None
+        """
         self._bar = None
 
     def reset(self) -> None:
-        """Reset the progress bar instance by updating its configuration and refreshing parent progress bars."""
+        """Reset the progress bar instance by updating its configuration and refreshing parent progress bars.
+
+        Returns:
+            None
+        """
         for pbar in self.registry.get_parent_instances(self):
             if not pbar.disabled and not pbar.displayed:
                 pbar.refresh()  # refresh parents first
@@ -412,9 +425,9 @@ class ProgressBar(Base):
         """Indicates whether the progress bar is disabled.
 
         Returns:
-            bool: True if progress display is disabled, either by configuration or 
+            bool: True if progress display is disabled, either by configuration or
                 due to the underlying bar state; False if the progress bar is enabled and open.
-        
+
         Raises:
             ValueError: If the progress bar has not been opened when attempting to check its status.
         """
@@ -426,9 +439,7 @@ class ProgressBar(Base):
                     bar_id = f"'{self.bar_id}'"
                 else:
                     bar_id = self.bar_id
-                raise ValueError(
-                    f'Progress bar with bar id {bar_id} must be opened first. Use "with" statement.'
-                )
+                raise ValueError(f'Progress bar with bar id {bar_id} must be opened first. Use "with" statement.')
             else:
                 raise ValueError('Progress bar must be opened first. Use "with" statement.')
         if self.bar.disable:
@@ -440,7 +451,7 @@ class ProgressBar(Base):
         """Indicates whether the progress bar is currently displayed.
 
         Returns:
-            bool: True if the progress bar is enabled and has been refreshed or 
+            bool: True if the progress bar is enabled and has been refreshed or
                 immediately displayed (if delay is zero); otherwise, False.
         """
         if self.disabled:
@@ -457,7 +468,7 @@ class ProgressBar(Base):
         """Indicates whether the progress bar should be displayed based on its defined delay.
 
         Returns:
-            bool: True if the progress bar is enabled and either no delay is set or 
+            bool: True if the progress bar is enabled and either no delay is set or
                 the delay period has elapsed; otherwise, False.
         """
         if self.disabled:
@@ -470,12 +481,20 @@ class ProgressBar(Base):
         return False
 
     def refresh(self) -> None:
-        """Refresh the progress bar."""
+        """Refresh the progress bar.
+
+        Returns:
+            None
+        """
         self.bar.refresh()
         self._refresh_time = utc_time()
 
     def before_update(self) -> None:
-        """Execute necessary actions before updating the progress bar."""
+        """Execute necessary actions before updating the progress bar.
+
+        Returns:
+            None
+        """
         if self.disabled:
             return
         if self.registry is not None:
@@ -516,7 +535,11 @@ class ProgressBar(Base):
         self.update(n=n - self.bar.n)
 
     def after_update(self) -> None:
-        """Execute necessary actions after updating the progress bar."""
+        """Execute necessary actions after updating the progress bar.
+
+        Returns:
+            None
+        """
         if self.disabled:
             return
 
@@ -750,7 +773,11 @@ class ProgressBar(Base):
         return self.bar.__contains__(item)
 
     def iter(self) -> tp.Iterator:
-        """Return an iterator over the progress bar's iterable."""
+        """Return an iterator over the progress bar's iterable.
+
+        Yields:
+            Any: The next object in the iterable.
+        """
         for obj in self.iterable:
             yield obj
 
@@ -783,6 +810,9 @@ class ProgressHidden(Base):
 
     Returns:
         None
+
+    !!! info
+        For default settings, see `vectorbtpro._settings.pbar`.
     """
 
     def __init__(self, disable_registry: bool = True, disable_machinery: bool = True) -> None:
@@ -793,7 +823,7 @@ class ProgressHidden(Base):
     @property
     def disable_registry(self) -> bool:
         """Indicates whether registry operations are disabled.
-        
+
         Returns:
             bool: True if registry operations are disabled; otherwise, False.
         """
@@ -802,7 +832,7 @@ class ProgressHidden(Base):
     @property
     def disable_machinery(self) -> bool:
         """Indicates whether progress machinery is disabled.
-        
+
         Returns:
             bool: True if progress machinery is disabled; otherwise, False.
         """
@@ -811,7 +841,7 @@ class ProgressHidden(Base):
     @property
     def init_settings(self) -> tp.Kwargs:
         """Dictionary containing the initial progress settings captured upon entering the context.
-        
+
         Returns:
             Kwargs: A dictionary of keyword arguments containing the initial progress settings.
         """
@@ -875,6 +905,9 @@ class ProgressShown(Base):
     Args:
         enable_registry (bool): Flag to enable registry operations.
         enable_machinery (bool): Flag to enable progress machinery.
+
+    !!! info
+        For default settings, see `vectorbtpro._settings.pbar`.
     """
 
     def __init__(self, enable_registry: bool = True, enable_machinery: bool = True) -> None:
@@ -885,7 +918,7 @@ class ProgressShown(Base):
     @property
     def enable_registry(self) -> bool:
         """Indicates whether registry operations are enabled.
-        
+
         Returns:
             bool: True if registry operations are enabled; otherwise, False.
         """
@@ -894,7 +927,7 @@ class ProgressShown(Base):
     @property
     def enable_machinery(self) -> bool:
         """Indicates whether progress machinery is enabled.
-        
+
         Returns:
             bool: True if progress machinery is enabled; otherwise, False.
         """
@@ -903,7 +936,7 @@ class ProgressShown(Base):
     @property
     def init_settings(self) -> tp.Kwargs:
         """Dictionary containing the initial progress settings captured upon entering the context.
-        
+
         Returns:
             Kwargs: A dictionary of keyword arguments containing the initial progress settings.
         """

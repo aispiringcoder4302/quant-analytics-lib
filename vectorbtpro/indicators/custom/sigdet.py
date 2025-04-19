@@ -72,15 +72,18 @@ class _SIGDET(SIGDET):
 
         Args:
             column (Optional[Label]): Name of the column to plot.
-            signal_trace_kwargs (KwargsLike): Keyword arguments forwarded to 
+            signal_trace_kwargs (KwargsLike): Keyword arguments forwarded to
                 `plotly.graph_objects.Scatter` for plotting `SIGDET.signal`.
-            add_trace_kwargs (KwargsLike): Keyword arguments forwarded to 
+            add_trace_kwargs (KwargsLike): Keyword arguments forwarded to
                 `fig.add_trace` when adding the trace.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
             **layout_kwargs: Keyword arguments for configuring the figure layout.
 
         Returns:
             BaseFigure: Figure object containing the plotted signal.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
 
         Examples:
             ```pycon
@@ -120,25 +123,28 @@ class _SIGDET(SIGDET):
         fig: tp.Optional[tp.BaseFigure] = None,
         **layout_kwargs,
     ) -> tp.BaseFigure:
-        """Plot the upper and lower bands from `SIGDET.upper_band` and `SIGDET.lower_band` 
+        """Plot the upper and lower bands from `SIGDET.upper_band` and `SIGDET.lower_band`
         against the close values from `SIGDET.close`.
 
         Args:
             column (Optional[Label]): Name of the column to plot.
             plot_close (bool): Whether to plot `SIGDET.close`.
-            close_trace_kwargs (KwargsLike): Keyword arguments forwarded to 
+            close_trace_kwargs (KwargsLike): Keyword arguments forwarded to
                 `plotly.graph_objects.Scatter` for plotting `SIGDET.close`.
-            upper_band_trace_kwargs (KwargsLike): Keyword arguments forwarded to 
+            upper_band_trace_kwargs (KwargsLike): Keyword arguments forwarded to
                 `plotly.graph_objects.Scatter` for plotting `SIGDET.upper_band`.
-            lower_band_trace_kwargs (KwargsLike): Keyword arguments forwarded to 
+            lower_band_trace_kwargs (KwargsLike): Keyword arguments forwarded to
                 `plotly.graph_objects.Scatter` for plotting `SIGDET.lower_band`.
-            add_trace_kwargs (KwargsLike): Keyword arguments forwarded to 
+            add_trace_kwargs (KwargsLike): Keyword arguments forwarded to
                 `fig.add_trace` when adding each trace.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
             **layout_kwargs: Keyword arguments for configuring the figure layout.
 
         Returns:
             BaseFigure: Figure object containing the plotted bands (and close line if requested).
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
 
         Examples:
             ```pycon

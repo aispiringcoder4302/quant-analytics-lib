@@ -30,9 +30,12 @@ __pdoc__ = {}
 
 class RandomData(SyntheticData):
     """Data class for synthetic data generation.
-    
+
     See:
         * `RandomData.generate_key` for argument details.
+
+    !!! info
+        For default settings, see `custom.random` in `vectorbtpro._settings.data`.
     """
 
     _settings_path: tp.SettingsPath = dict(custom="data.custom.random")
@@ -78,8 +81,6 @@ class RandomData(SyntheticData):
 
         See:
             `vectorbtpro.data.nb.generate_random_data_nb`
-
-        For defaults, refer to `custom.random` in `vectorbtpro._settings.data`.
         """
         if checks.is_hashable(columns):
             columns = [columns]

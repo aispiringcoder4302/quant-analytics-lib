@@ -45,6 +45,9 @@ class DuckDBData(DBData):
         * `DuckDBData.pull` for argument details.
         * `DuckDBData.fetch_key` for argument details.
 
+    !!! info
+        For default settings, see `custom.duckdb` in `vectorbtpro._settings.data`.
+
     Examples:
         Set up the connection settings globally (optional):
 
@@ -784,8 +787,6 @@ class DuckDBData(DBData):
 
         Returns:
             KeyData: The fetched data and a metadata dictionary.
-
-        For defaults, see `custom.duckdb` in `vectorbtpro._settings.data`.
         """
         from vectorbtpro.utils.module_ import assert_can_import
 

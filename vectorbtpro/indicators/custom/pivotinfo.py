@@ -120,13 +120,16 @@ class _PIVOTINFO(PIVOTINFO):
                 `plotly.graph_objects.Scatter` for the `PIVOTINFO.conf_value` line.
             last_value_trace_kwargs (KwargsLike): Keyword arguments passed to
                 `plotly.graph_objects.Scatter` for the `PIVOTINFO.last_value` line.
-            add_trace_kwargs (KwargsLike): Keyword arguments passed to 
+            add_trace_kwargs (KwargsLike): Keyword arguments passed to
                 `fig.add_trace` when adding each trace.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
             **layout_kwargs: Keyword arguments for configuring the figure layout.
 
         Returns:
             BaseFigure: The updated figure with the plotted confirmed and last pivot values.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
 
         Examples:
             ```pycon
@@ -187,15 +190,18 @@ class _PIVOTINFO(PIVOTINFO):
         Args:
             column (Optional[Label]): Name of the column to plot.
 
-            zigzag_trace_kwargs (KwargsLike): Keyword arguments passed to 
+            zigzag_trace_kwargs (KwargsLike): Keyword arguments passed to
                 `plotly.graph_objects.Scatter` for the zigzag line.
-            add_trace_kwargs (KwargsLike): Keyword arguments passed to 
+            add_trace_kwargs (KwargsLike): Keyword arguments passed to
                 `fig.add_trace` when adding each trace.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
             **layout_kwargs: Keyword arguments for configuring the figure layout.
 
         Returns:
             BaseFigure: The updated figure with the plotted zigzag line.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
 
         Examples:
             ```pycon

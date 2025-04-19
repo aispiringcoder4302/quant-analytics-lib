@@ -8,7 +8,11 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module providing math utility functions."""
+"""Module providing math utility functions.
+
+!!! info
+    For default settings, see `vectorbtpro._settings.math`.
+"""
 
 import numpy as np
 

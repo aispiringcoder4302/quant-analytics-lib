@@ -93,6 +93,9 @@ class _HURST(HURST):
         Returns:
             BaseFigure: The figure updated with the Hurst exponent plot.
 
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
+
         Examples:
             ```pycon
             >>> ohlcv = vbt.YFData.pull(

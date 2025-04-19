@@ -528,6 +528,9 @@ def broadcast_shapes(
 
     Returns:
         Tuple[Shape, ...]: A tuple of broadcasted shapes.
+
+    !!! info
+        For default settings, see `vectorbtpro._settings.broadcasting`.
     """
     from vectorbtpro._settings import settings
 
@@ -593,6 +596,9 @@ def broadcast_array_to(
 
     Returns:
         Array: The broadcasted array.
+
+    !!! info
+        For default settings, see `vectorbtpro._settings.broadcasting`.
     """
     from vectorbtpro._settings import settings
 
@@ -702,7 +708,8 @@ def broadcast_index(
     Returns:
         Optional[Index]: Broadcasted index/columns, or None if original index/columns should be retained.
 
-    For defaults, see `vectorbtpro._settings.broadcasting`.
+    !!! info
+        For default settings, see `vectorbtpro._settings.broadcasting`.
 
     !!! note
         Series names are interpreted as columns with a single element but without a name.
@@ -1093,10 +1100,16 @@ def broadcast(
 
     See [Broadcasting](https://docs.scipy.org/doc/numpy/user/basics.broadcasting.html).
 
-    !!! important
-        The major difference to NumPy is that one-dimensional arrays always broadcast against the row axis!
-
     Supports broadcasting of Pandas objects by aligning their index and columns using `broadcast_index`.
+
+    Keyword arguments for object-specific parameters can be provided as follows:
+
+    * A constant applied to all objects.
+    * A sequence with a value for each object.
+    * A mapping with values for each object and a special key `_def` for the default.
+
+    Additionally, any object can be wrapped with `BCO` to override the corresponding
+    global arguments if its attributes are not None.
 
     Args:
         *objs (Any): Objects to broadcast.
@@ -1168,16 +1181,11 @@ def broadcast(
     Returns:
         Any: The broadcasted object(s) and the associated wrapper if `return_wrapper` is True.
 
-    For defaults, see `vectorbtpro._settings.broadcasting`.
+    !!! info
+        For default settings, see `vectorbtpro._settings.broadcasting`.
 
-    Keyword arguments for object-specific parameters can be provided as follows:
-
-    * A constant applied to all objects.
-    * A sequence with a value for each object.
-    * A mapping with values for each object and a special key `_def` for the default.
-
-    Additionally, any object can be wrapped with `BCO` to override the corresponding
-    global arguments if its attributes are not None.
+    !!! important
+        The major difference to NumPy is that one-dimensional arrays always broadcast against the row axis!
 
     Examples:
         Without broadcasting index and columns:

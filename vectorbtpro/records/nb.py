@@ -493,7 +493,7 @@ def apply_nb(arr: tp.Array1d, col_map: tp.GroupMap, apply_func_nb: tp.ApplyFunc,
         *args: Positional arguments passed to the apply function.
 
     Returns:
-        Array1d: Array resulting from applying the function to each group, 
+        Array1d: Array resulting from applying the function to each group,
             matching the shape of the input array.
 
     !!! tip
@@ -530,7 +530,7 @@ def apply_meta_nb(n_values: int, col_map: tp.GroupMap, apply_func_nb: tp.ApplyMe
     Args:
         n_values (int): Total number of values.
         col_map (GroupMap): Tuple of column indices and column lengths defining groups.
-        apply_func_nb (ApplyMetaFunc): Function that accepts indices, a column index, 
+        apply_func_nb (ApplyMetaFunc): Function that accepts indices, a column index,
             and additional arguments to return an array.
         *args: Positional arguments passed to the meta apply function.
 
@@ -587,10 +587,6 @@ def reduce_mapped_segments_nb(
     `reduce_func_nb` must accept the segment values and additional positional arguments,
     and return a single value.
 
-    !!! note
-        Groups must be in ascending order per column, and `idx_arr` and `id_arr` must be
-        in ascending order within each segment.
-
     Args:
         mapped_arr (Array1d): Array of mapped values.
         idx_arr (Array1d): Array of indices corresponding to each value in `mapped_arr`.
@@ -603,6 +599,13 @@ def reduce_mapped_segments_nb(
     Returns:
         Tuple[Array1d, Array1d, Array1d, Array1d]: A tuple containing the reduced values,
             column indices, indices, and id values.
+
+    !!! note
+        Groups must be in ascending order per column, and `idx_arr` and `id_arr` must be
+        in ascending order within each segment.
+
+    !!! tip
+        This function is parallelizable.
     """
     col_idxs, col_lens = col_map
     col_start_idxs = np.cumsum(col_lens) - col_lens
@@ -711,7 +714,12 @@ def reduce_mapped_nb(
 
 @register_chunkable(
     size=base_ch.GroupLensSizer(arg_query="col_map"),
-    arg_take_spec=dict(col_map=base_ch.GroupMapSlicer(), fill_value=None, reduce_func_nb=None, args=ch.ArgsTaker()),
+    arg_take_spec=dict(
+        col_map=base_ch.GroupMapSlicer(),
+        fill_value=None,
+        reduce_func_nb=None,
+        args=ch.ArgsTaker(),
+    ),
     merge_func="concat",
 )
 @register_jitted(tags={"can_parallel"})
@@ -777,9 +785,6 @@ def reduce_mapped_to_idx_nb(
 
     Same as `reduce_mapped_nb` but requires `idx_arr` to determine the index value.
 
-    !!! note
-        The reduction function must return an integer value or raise an exception.
-
     Args:
         mapped_arr (Array1d): Array of mapped values.
         col_map (GroupMap): Tuple containing column indices and column lengths.
@@ -790,6 +795,9 @@ def reduce_mapped_to_idx_nb(
 
     Returns:
         Array1d: Array of computed indices.
+
+    !!! note
+        The reduction function must return an integer value or raise an exception.
 
     !!! tip
         This function is parallelizable.
@@ -920,7 +928,12 @@ def reduce_mapped_to_array_nb(
 
 @register_chunkable(
     size=base_ch.GroupLensSizer(arg_query="col_map"),
-    arg_take_spec=dict(col_map=base_ch.GroupMapSlicer(), fill_value=None, reduce_func_nb=None, args=ch.ArgsTaker()),
+    arg_take_spec=dict(
+        col_map=base_ch.GroupMapSlicer(),
+        fill_value=None,
+        reduce_func_nb=None,
+        args=ch.ArgsTaker(),
+    ),
     merge_func="column_stack",
 )
 @register_jitted(tags={"can_parallel"})
@@ -1247,7 +1260,7 @@ def _unstack_mapped_nb(
         fill_value_dtype = np.array(fill_value).dtype
     dtype = np.promote_types(mapped_arr_dtype, fill_value_dtype)
 
-    def impl(mapped_arr, col_arr, idx_arr, target_shape, fill_value):
+    def _impl(mapped_arr, col_arr, idx_arr, target_shape, fill_value):
         out = np.full(target_shape, fill_value, dtype=dtype)
 
         for r in range(mapped_arr.shape[0]):
@@ -1255,9 +1268,9 @@ def _unstack_mapped_nb(
         return out
 
     if not nb_enabled:
-        return impl(mapped_arr, col_arr, idx_arr, target_shape, fill_value)
+        return _impl(mapped_arr, col_arr, idx_arr, target_shape, fill_value)
 
-    return impl
+    return _impl
 
 
 overload(_unstack_mapped_nb)(_unstack_mapped_nb)
@@ -1298,7 +1311,7 @@ def _ignore_unstack_mapped_nb(mapped_arr, col_map, fill_value):
         fill_value_dtype = np.array(fill_value).dtype
     dtype = np.promote_types(mapped_arr_dtype, fill_value_dtype)
 
-    def impl(mapped_arr, col_map, fill_value):
+    def _impl(mapped_arr, col_map, fill_value):
         col_idxs, col_lens = col_map
         col_start_idxs = np.cumsum(col_lens) - col_lens
         out = np.full((np.max(col_lens), col_lens.shape[0]), fill_value, dtype=dtype)
@@ -1314,9 +1327,9 @@ def _ignore_unstack_mapped_nb(mapped_arr, col_map, fill_value):
         return out
 
     if not nb_enabled:
-        return impl(mapped_arr, col_map, fill_value)
+        return _impl(mapped_arr, col_map, fill_value)
 
-    return impl
+    return _impl
 
 
 overload(_ignore_unstack_mapped_nb)(_ignore_unstack_mapped_nb)
@@ -1378,7 +1391,7 @@ def _repeat_unstack_mapped_nb(
         fill_value_dtype = np.array(fill_value).dtype
     dtype = np.promote_types(mapped_arr_dtype, fill_value_dtype)
 
-    def impl(mapped_arr, col_arr, idx_arr, repeat_cnt_arr, n_cols, fill_value):
+    def _impl(mapped_arr, col_arr, idx_arr, repeat_cnt_arr, n_cols, fill_value):
         index_start_arr = np.cumsum(repeat_cnt_arr) - repeat_cnt_arr
         out = np.full((np.sum(repeat_cnt_arr), n_cols), fill_value, dtype=dtype)
         temp = np.zeros((len(repeat_cnt_arr), n_cols), dtype=int_)
@@ -1389,9 +1402,9 @@ def _repeat_unstack_mapped_nb(
         return out
 
     if not nb_enabled:
-        return impl(mapped_arr, col_arr, idx_arr, repeat_cnt_arr, n_cols, fill_value)
+        return _impl(mapped_arr, col_arr, idx_arr, repeat_cnt_arr, n_cols, fill_value)
 
-    return impl
+    return _impl
 
 
 overload(_repeat_unstack_mapped_nb)(_repeat_unstack_mapped_nb)

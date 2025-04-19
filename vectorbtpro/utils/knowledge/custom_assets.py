@@ -113,7 +113,8 @@ class VBTAsset(KnowledgeAsset):
         release_name (Optional[str]): Release name.
         **kwargs: Additional keyword arguments.
 
-    For defaults, see `assets.vbt` in `vectorbtpro._settings.knowledge`.
+    !!! info
+        For default settings, see `assets.vbt` in `vectorbtpro._settings.knowledge`.
     """
 
     _settings_path: tp.SettingsPath = "knowledge.assets.vbt"
@@ -126,7 +127,7 @@ class VBTAsset(KnowledgeAsset):
     @property
     def release_name(self) -> tp.Optional[str]:
         """Return the release name of the asset.
-        
+
         Returns:
             Optional[str]: The release name of the asset, or None if not set.
         """
@@ -1625,7 +1626,8 @@ class PagesAsset(VBTAsset):
         obj_type (Optional[str]): API type of the represented object (e.g., "property").
         github_link (Optional[str]): URL to the source code of the represented object.
 
-    For defaults, see `assets.pages` in `vectorbtpro._settings.knowledge`.
+    !!! info
+        For default settings, see `assets.pages` in `vectorbtpro._settings.knowledge`.
     """
 
     _settings_path: tp.SettingsPath = "knowledge.assets.pages"
@@ -2823,7 +2825,8 @@ class MessagesAsset(VBTAsset):
             "content" (extracted file content).
         reactions (int): Total number of reactions received.
 
-    For defaults, see `assets.messages` in `vectorbtpro._settings.knowledge`.
+    !!! info
+        For default settings, see `assets.messages` in `vectorbtpro._settings.knowledge`.
     """
 
     _settings_path: tp.SettingsPath = "knowledge.assets.messages"
@@ -3664,9 +3667,9 @@ def find_assets(
         pull_kwargs (KwargsLike): Keyword arguments for pulling assets.
         aggregate_pages (bool): Whether to aggregate the pages asset.
         aggregate_pages_kwargs (KwargsLike): Keyword arguments for aggregating the pages asset.
-        aggregate_messages (Union[bool, str]): Whether to aggregate the messages asset; if a string,
-            specifies the grouping key.
-        aggregate_messages_kwargs (KwargsLike): Keyword arguments for aggregating the messages asset.
+        aggregate_messages (Union[bool, str]): Option to aggregate messages;
+            if a string, it specifies the aggregation key.
+        aggregate_messages_kwargs (KwargsLike): Keyword arguments for messages aggregation.
         latest_messages_first (bool): Whether to order messages with the latest first.
         shuffle_messages (bool): Whether to shuffle the order of messages.
         api_kwargs (KwargsLike): Keyword arguments for `find_api`.
@@ -3904,6 +3907,31 @@ def chat_about(
 
     If `shuffle` is True, shuffles the combined asset. By default, shuffles only messages (`shuffle=False`
     and `shuffle_messages=True`). If `shuffle` is False, shuffles neither messages nor combined asset.
+
+    Args:
+        obj (MaybeList): An object or list of objects to chat about.
+        message (str): The initial message to start the chat.
+        chat_history (ChatHistory): The history of the chat session.
+        asset_names (Optional[MaybeIterable[str]]): List specifying the order and selection of assets.
+
+            May include ellipsis (`...`) to adjust ordering. Allowed asset names are:
+
+            * `api`: Retrieved via `find_api` with `api_kwargs`.
+            * `docs`: Retrieved via `find_docs` with `docs_kwargs`.
+            * `messages`: Retrieved via `find_messages` with `messages_kwargs`.
+            * `examples`: Retrieved via `find_examples` with `examples_kwargs`.
+            * `all`: Includes all supported asset types.
+
+            For example, `["messages", ...]` puts "messages" at the beginning and all other assets
+            in their usual order at the end.
+        latest_messages_first (bool): If True, sorts messages in reverse chronological order.
+        shuffle_messages (Optional[bool]): If True, shuffles the order of messages.
+        shuffle (Optional[bool]): If True, shuffles the combined asset.
+        find_assets_kwargs (KwargsLike): Keyword arguments for the asset search.
+        **kwargs: Additional keyword arguments for the chat method.
+
+    Returns:
+        MaybeChatOutput: The output of the chat session, which may include the chat history and other information.
     """
     if shuffle is not None:
         if shuffle_messages is None:
@@ -3961,13 +3989,30 @@ def search(
     found in both signatures. In such a case, the key will be used for ranking. If this is not wanted,
     specify the `find_assets`-related arguments explicitly with `find_assets_kwargs`.
 
-    If `display` is True, displays the top results as static HTML pages with `VBTAsset.display`.
-    Pass an integer to display n top results. Will return the path to the temporary file.
-
     Metadata when aggregating messages will be minimized by default.
 
-    If `cache_documents` is True, will use an asset cache manager to store the generated text documents
-    in a local and/or disk cache after conversion. Running the same method again will use the cached documents.
+    Args:
+        query (str): The search query string.
+        cache_documents (bool): If True, will use an asset cache manager to store the generated
+            text documents in a local and/or disk cache after conversion.
+
+            Running the same method again will use the cached documents.
+        cache_key (Optional[str]): Identifier for cached documents.
+        asset_cache_manager (Optional[MaybeType[AssetCacheManager]]): Class or instance managing asset caching.
+        asset_cache_manager_kwargs (KwargsLike): Additional parameters for configuring the asset cache manager.
+        aggregate_messages (Union[bool, str]): Option to aggregate messages;
+            if a string, it specifies the aggregation key.
+        aggregate_messages_kwargs (KwargsLike): Keyword arguments for messages aggregation.
+        find_assets_kwargs (KwargsLike): Additional parameters for the `find_assets` function.
+        display (Union[bool, int]): If True, displays the top results as static HTML pages with `VBTAsset.display`.
+
+            Pass an integer to display n top results. Will return the path to the temporary file.
+        display_kwargs (KwargsLike): Keyword arguments passed to `VBTAsset.display`.
+        silence_warnings (bool): Suppress warnings during the search process.
+        **kwargs: Additional keyword arguments for the search and ranking process.
+
+    Returns:
+        Union[MaybeVBTAsset, Path]: The ranked asset or the path to the temporary file with displayed results.
     """
     find_arg_names = set(get_func_arg_names(find_assets))
     if find_assets_kwargs is None:
@@ -4080,8 +4125,9 @@ def chat(
         cache_key (Optional[str]): Identifier for cached documents.
         asset_cache_manager (Optional[MaybeType[AssetCacheManager]]): Class or instance managing asset caching.
         asset_cache_manager_kwargs (KwargsLike): Additional parameters for configuring the asset cache manager.
-        aggregate_messages (Union[bool, str]): Strategy for aggregating chat messages.
-        aggregate_messages_kwargs (KwargsLike): Extra arguments for message aggregation.
+        aggregate_messages (Union[bool, str]): Option to aggregate messages;
+            if a string, it specifies the aggregation key.
+        aggregate_messages_kwargs (KwargsLike): Keyword arguments for messages aggregation.
         find_assets_kwargs (KwargsLike): Additional parameters for the `find_assets` function.
         rank (Optional[bool]): Enable ranking of assets.
         top_k (TopKLike): Number of top items to consider for ranking.

@@ -220,7 +220,7 @@ def resolve_dir_conflict_nb(
             See `vectorbtpro.portfolio.enums.DirectionConflictMode` for options.
 
     Returns:
-        Tuple[bool, bool]: A tuple where the first element indicates whether the long entry signal 
+        Tuple[bool, bool]: A tuple where the first element indicates whether the long entry signal
             should be executed, and the second indicates whether the short entry signal should be executed.
     """
     if is_long_entry and is_short_entry:
@@ -262,7 +262,7 @@ def resolve_opposite_entry_nb(
     upon_opposite_entry: int,
     accumulate: int,
 ) -> tp.Tuple[bool, bool, bool, bool, int]:
-    """Resolve opposite entry signals by adjusting entry and exit flags based on the current 
+    """Resolve opposite entry signals by adjusting entry and exit flags based on the current
     position and specified mode.
 
     Args:
@@ -335,7 +335,7 @@ def signal_to_size_nb(
     size_type: int,
     accumulate: int,
 ) -> tp.Tuple[float, int, int]:
-    """Translate direction-aware trading signals into an order size, normalized size type, 
+    """Translate direction-aware trading signals into an order size, normalized size type,
     and trading direction.
 
     Args:
@@ -487,11 +487,11 @@ def prepare_fs_records_nb(
 
     Args:
         target_shape (tuple[int, int]): Base dimensions (rows, columns) for record arrays.
-        max_order_records (Optional[int]): Maximum number of order records. 
-        
+        max_order_records (Optional[int]): Maximum number of order records.
+
             Overrides the first dimension of target_shape if provided.
-        max_log_records (Optional[int]): Maximum number of log records. 
-        
+        max_log_records (Optional[int]): Maximum number of log records.
+
             Overrides the first dimension of target_shape if provided.
 
     Returns:
@@ -632,17 +632,17 @@ def from_basic_signals_nb(
 
             !!! note
                 Should be grouped only if cash sharing is enabled.
-        open (FlexArray2dLike): Opening price. 
-        
+        open (FlexArray2dLike): Opening price.
+
             Provided as a scalar, or per row and/or column.
-        high (FlexArray2dLike): High price. 
-        
+        high (FlexArray2dLike): High price.
+
             Provided as a scalar, or per row and/or column.
-        low (FlexArray2dLike): Low price. 
-        
+        low (FlexArray2dLike): Low price.
+
             Provided as a scalar, or per row and/or column.
-        close (FlexArray2dLike): Closing price. 
-        
+        close (FlexArray2dLike): Closing price.
+
             Provided as a scalar, or per row and/or column.
         init_cash (FlexArray1dLike): Initial cash amount.
 
@@ -656,151 +656,151 @@ def from_basic_signals_nb(
         cash_deposits (FlexArray2dLike): Cash deposits.
 
             Provided as a scalar, or per row and/or group.
-        cash_earnings (FlexArray2dLike): Cash earnings. 
-        
+        cash_earnings (FlexArray2dLike): Cash earnings.
+
             Provided as a scalar, or per row and/or column.
-        cash_dividends (FlexArray2dLike): Cash dividends. 
-        
+        cash_dividends (FlexArray2dLike): Cash dividends.
+
             Provided as a scalar, or per row and/or column.
-        long_entries (FlexArray2dLike): Boolean array indicating long entry signals. 
-        
+        long_entries (FlexArray2dLike): Boolean array indicating long entry signals.
+
             Provided as a scalar, or per row and/or column.
-        long_exits (FlexArray2dLike): Boolean array indicating long exit signals. 
-        
+        long_exits (FlexArray2dLike): Boolean array indicating long exit signals.
+
             Provided as a scalar, or per row and/or column.
-        short_entries (FlexArray2dLike): Boolean array indicating short entry signals. 
-        
+        short_entries (FlexArray2dLike): Boolean array indicating short entry signals.
+
             Provided as a scalar, or per row and/or column.
-        short_exits (FlexArray2dLike): Boolean array indicating short exit signals. 
-        
+        short_exits (FlexArray2dLike): Boolean array indicating short exit signals.
+
             Provided as a scalar, or per row and/or column.
-        size (FlexArray2dLike): Order size. 
-        
+        size (FlexArray2dLike): Order size.
+
             Provided as a scalar, or per row and/or column.
 
             See `vectorbtpro.portfolio.enums.Order.size` for more details.
 
             !!! note
                 Negative size is not allowed; use signals to express direction.
-        price (FlexArray2dLike): Order price. 
-        
+        price (FlexArray2dLike): Order price.
+
             Provided as a scalar, or per row and/or column.
 
             See `vectorbtpro.portfolio.enums.Order.price` for more details.
-        size_type (FlexArray2dLike): Order size type. 
-        
+        size_type (FlexArray2dLike): Order size type.
+
             Provided as a scalar, or per row and/or column.
 
             See `vectorbtpro.portfolio.enums.Order.size_type` for more details.
 
             Valid options include `SizeType.Amount`, `SizeType.Value`, `SizeType.Percent(100)`, and
             `SizeType.ValuePercent(100)`. Other types are incompatible with signals.
-        fees (FlexArray2dLike): Transaction fee rate. 
-        
+        fees (FlexArray2dLike): Transaction fee rate.
+
             Provided as a scalar, or per row and/or column.
 
             See `vectorbtpro.portfolio.enums.Order.fees` for more details.
-        fixed_fees (FlexArray2dLike): Fixed fee amount. 
-        
+        fixed_fees (FlexArray2dLike): Fixed fee amount.
+
             Provided as a scalar, or per row and/or column.
 
             See `vectorbtpro.portfolio.enums.Order.fixed_fees` for more details.
-        slippage (FlexArray2dLike): Slippage amount. 
-        
+        slippage (FlexArray2dLike): Slippage amount.
+
             Provided as a scalar, or per row and/or column.
 
             See `vectorbtpro.portfolio.enums.Order.slippage` for more details.
-        min_size (FlexArray2dLike): Minimum allowable order size. 
-        
+        min_size (FlexArray2dLike): Minimum allowable order size.
+
             Provided as a scalar, or per row and/or column.
 
             See `vectorbtpro.portfolio.enums.Order.min_size` for more details.
-        max_size (FlexArray2dLike): Maximum allowable order size. 
-        
+        max_size (FlexArray2dLike): Maximum allowable order size.
+
             Provided as a scalar, or per row and/or column.
 
             See `vectorbtpro.portfolio.enums.Order.max_size` for more details.
 
             !!! note
                 With accumulation enabled, a very low `max_size` might hinder proper position closure.
-        size_granularity (FlexArray2dLike): Granularity for order size. 
-        
+        size_granularity (FlexArray2dLike): Granularity for order size.
+
             Provided as a scalar, or per row and/or column.
 
             See `vectorbtpro.portfolio.enums.Order.size_granularity` for more details.
-        leverage (FlexArray2dLike): Leverage factor. 
-        
+        leverage (FlexArray2dLike): Leverage factor.
+
             Provided as a scalar, or per row and/or column.
 
             See `vectorbtpro.portfolio.enums.Order.leverage` for more details.
-        leverage_mode (FlexArray2dLike): Mode for leverage calculation. 
-        
+        leverage_mode (FlexArray2dLike): Mode for leverage calculation.
+
             Provided as a scalar, or per row and/or column.
 
             See `vectorbtpro.portfolio.enums.Order.leverage_mode` for more details.
-        reject_prob (FlexArray2dLike): Probability of order rejection. 
-        
+        reject_prob (FlexArray2dLike): Probability of order rejection.
+
             Provided as a scalar, or per row and/or column.
 
             See `vectorbtpro.portfolio.enums.Order.reject_prob` for more details.
-        price_area_vio_mode (FlexArray2dLike): Mode for handling price area violations. 
-        
+        price_area_vio_mode (FlexArray2dLike): Mode for handling price area violations.
+
             Provided as a scalar, or per row and/or column.
 
             See `vectorbtpro.portfolio.enums.Order.price_area_vio_mode` for more details.
-        allow_partial (FlexArray2dLike): Indicator whether partial orders are allowed. 
-        
+        allow_partial (FlexArray2dLike): Indicator whether partial orders are allowed.
+
             Provided as a scalar, or per row and/or column.
 
             See `vectorbtpro.portfolio.enums.Order.allow_partial` for more details.
 
             Does not apply when the order size is `np.inf`.
-        raise_reject (FlexArray2dLike): Indicator whether to raise errors on order rejection. 
-        
+        raise_reject (FlexArray2dLike): Indicator whether to raise errors on order rejection.
+
             Provided as a scalar, or per row and/or column.
 
             See `vectorbtpro.portfolio.enums.Order.raise_reject` for more details.
-        log (FlexArray2dLike): Logging flag. 
-        
+        log (FlexArray2dLike): Logging flag.
+
             Provided as a scalar, or per row and/or column.
 
             See `vectorbtpro.portfolio.enums.Order.log` for more details.
-        val_price (FlexArray2dLike): Valuation price. 
-        
+        val_price (FlexArray2dLike): Valuation price.
+
             Provided as a scalar, or per row and/or column.
 
             See `vectorbtpro.portfolio.enums.ValPriceType` for more details.
-            
-            * Any `-np.inf` element is replaced by the latest valuation price 
+
+            * Any `-np.inf` element is replaced by the latest valuation price
                 (using `open` or a previously known value if `ffill_val_price` is True).
             * Any `np.inf` element is replaced by the current order price.
         accumulate (FlexArray2dLike): Order accumulation mode.
-        
+
             Provided as a scalar, or per row and/or column.
 
             See `vectorbtpro.portfolio.enums.AccumulationMode` for more details.
         upon_long_conflict (FlexArray2dLike): Conflict resolution mode for long signals.
-        
+
             Provided as a scalar, or per row and/or column.
 
             See `vectorbtpro.portfolio.enums.ConflictMode` for more details.
         upon_short_conflict (FlexArray2dLike): Conflict resolution mode for short signals.
-        
+
             Provided as a scalar, or per row and/or column.
 
             See `vectorbtpro.portfolio.enums.ConflictMode` for more details.
         upon_dir_conflict (FlexArray2dLike): Signal direction conflict mode.
-        
+
             Provided as a scalar, or per row and/or column.
 
             See `vectorbtpro.portfolio.enums.DirectionConflictMode` for more details.
         upon_opposite_entry (FlexArray2dLike): Mode for handling opposite entry signals.
-        
+
             Provided as a scalar, or per row and/or column.
 
             See `vectorbtpro.portfolio.enums.OppositeEntryMode` for more details.
-        from_ago (FlexArray2dLike): Lookback offset for price selection. 
-        
+        from_ago (FlexArray2dLike): Lookback offset for price selection.
+
             Provided as a scalar, or per row and/or column.
 
             Negative values are converted to positive to avoid look-ahead bias.
@@ -976,8 +976,8 @@ def from_basic_signals_nb(
             if track_cash_deposits:
                 cash_deposits_out[i, group] += _cash_deposits
 
-            for c in range(group_len):
-                col = from_col + c
+            for ci in range(group_len):
+                col = from_col + ci
 
                 # Update valuation price using current open
                 _open = flex_select_nb(open_, i, col)
@@ -1017,8 +1017,8 @@ def from_basic_signals_nb(
 
             # Get signals
             skip = skip_empty
-            for c in range(group_len):
-                col = from_col + c
+            for ci in range(group_len):
+                col = from_col + ci
 
                 if flex_select_nb(log_, i, col):
                     skip = False
@@ -1044,8 +1044,8 @@ def from_basic_signals_nb(
 
             if not skip:
                 # Get size and value of each order
-                for c in range(group_len):
-                    col = from_col + c
+                for ci in range(group_len):
+                    col = from_col + ci
 
                     # Set defaults
                     main_info["bar_zone"][col] = -1
@@ -1178,8 +1178,8 @@ def from_basic_signals_nb(
                     bar_zone = -1
                     same_bar_zone = True
                     same_timing = True
-                    for c in range(group_len):
-                        col = from_col + c
+                    for ci in range(group_len):
+                        col = from_col + ci
                         if np.isnan(main_info["size"][col]):
                             continue
                         if bar_zone == -1:
@@ -1196,8 +1196,8 @@ def from_basic_signals_nb(
                     if cash_sharing:
                         # Dynamically sort by order value -> selling comes first to release funds early
                         if call_seq is None:
-                            for c in range(group_len):
-                                temp_call_seq[c] = c
+                            for ci in range(group_len):
+                                temp_call_seq[ci] = ci
                             call_seq_now = temp_call_seq[:group_len]
                         else:
                             call_seq_now = call_seq[i, from_col:to_col]
@@ -1205,10 +1205,10 @@ def from_basic_signals_nb(
                             # Sort by order value
                             if not same_timing:
                                 raise ValueError("Cannot sort orders by value if they are executed at different times")
-                            for c in range(group_len):
-                                if call_seq_now[c] != c:
+                            for ci in range(group_len):
+                                if call_seq_now[ci] != ci:
                                     raise ValueError("Call sequence must follow CallSeqType.Default")
-                                col = from_col + c
+                                col = from_col + ci
                                 if np.isnan(main_info["size"][col]):
                                     continue
                                 # Approximate order value
@@ -1221,7 +1221,7 @@ def from_basic_signals_nb(
                                     val_price=last_val_price[col],
                                     value=last_value[group] if cash_sharing else last_value[col],
                                 )
-                                temp_sort_by[c] = approx_order_value_nb(
+                                temp_sort_by[ci] = approx_order_value_nb(
                                     exec_state=exec_state,
                                     size=main_info["size"][col],
                                     size_type=main_info["size_type"][col],
@@ -1231,23 +1231,23 @@ def from_basic_signals_nb(
                         else:
                             if not same_bar_zone:
                                 # Sort by bar zone
-                                for c in range(group_len):
-                                    if call_seq_now[c] != c:
+                                for ci in range(group_len):
+                                    if call_seq_now[ci] != ci:
                                         raise ValueError("Call sequence must follow CallSeqType.Default")
-                                    col = from_col + c
+                                    col = from_col + ci
                                     if np.isnan(main_info["size"][col]):
                                         continue
-                                    temp_sort_by[c] = main_info["bar_zone"][col]
+                                    temp_sort_by[ci] = main_info["bar_zone"][col]
                                 insert_argsort_nb(temp_sort_by[:group_len], call_seq_now)
 
                     for k in range(group_len):
                         if cash_sharing:
-                            c = call_seq_now[k]
-                            if c >= group_len:
+                            ci = call_seq_now[k]
+                            if ci >= group_len:
                                 raise ValueError("Call index out of bounds of the group")
                         else:
-                            c = k
-                        col = from_col + c
+                            ci = k
+                        col = from_col + ci
                         if skip_empty and np.isnan(main_info["size"][col]):  # shortcut
                             continue
 
@@ -1600,23 +1600,23 @@ def from_signals_nb(
 
             !!! note
                 Should be grouped only if cash sharing is enabled.
-        open (FlexArray2dLike): Opening price. 
-        
+        open (FlexArray2dLike): Opening price.
+
             Provided as a scalar, or per row and/or column.
 
             For stop signals, `np.nan` is replaced with the corresponding close price.
-        high (FlexArray2dLike): High price. 
-        
+        high (FlexArray2dLike): High price.
+
             Provided as a scalar, or per row and/or column.
 
             For stop signals, `np.nan` is replaced with the maximum of open and close prices.
-        low (FlexArray2dLike): Low price. 
-        
+        low (FlexArray2dLike): Low price.
+
             Provided as a scalar, or per row and/or column.
 
             For stop signals, `np.nan` is replaced with the minimum of open and close prices.
-        close (FlexArray2dLike): Closing price. 
-        
+        close (FlexArray2dLike): Closing price.
+
             Provided as a scalar, or per row and/or column.
         init_cash (FlexArray1dLike): Initial cash amount.
 
@@ -1630,146 +1630,146 @@ def from_signals_nb(
         cash_deposits (FlexArray2dLike): Cash deposits.
 
             Provided as a scalar, or per row and/or group.
-        cash_earnings (FlexArray2dLike): Cash earnings. 
-        
+        cash_earnings (FlexArray2dLike): Cash earnings.
+
             Provided as a scalar, or per row and/or column.
-        cash_dividends (FlexArray2dLike): Cash dividends. 
-        
+        cash_dividends (FlexArray2dLike): Cash dividends.
+
             Provided as a scalar, or per row and/or column.
-        long_entries (FlexArray2dLike): Boolean array indicating long entry signals. 
-        
+        long_entries (FlexArray2dLike): Boolean array indicating long entry signals.
+
             Provided as a scalar, or per row and/or column.
-        long_exits (FlexArray2dLike): Boolean array indicating long exit signals. 
-        
+        long_exits (FlexArray2dLike): Boolean array indicating long exit signals.
+
             Provided as a scalar, or per row and/or column.
-        short_entries (FlexArray2dLike): Boolean array indicating short entry signals. 
-        
+        short_entries (FlexArray2dLike): Boolean array indicating short entry signals.
+
             Provided as a scalar, or per row and/or column.
-        short_exits (FlexArray2dLike): Boolean array indicating short exit signals. 
-        
+        short_exits (FlexArray2dLike): Boolean array indicating short exit signals.
+
             Provided as a scalar, or per row and/or column.
-        size (FlexArray2dLike): Order size. 
-        
+        size (FlexArray2dLike): Order size.
+
             Provided as a scalar, or per row and/or column.
 
             See `vectorbtpro.portfolio.enums.Order.size` for more details.
 
             !!! note
                 Negative size is not allowed; use signals to express direction.
-        price (FlexArray2dLike): Order price. 
-        
+        price (FlexArray2dLike): Order price.
+
             Provided as a scalar, or per row and/or column.
 
             See `vectorbtpro.portfolio.enums.Order.price` for more details.
-        size_type (FlexArray2dLike): Order size type. 
-        
+        size_type (FlexArray2dLike): Order size type.
+
             Provided as a scalar, or per row and/or column.
 
             See `vectorbtpro.portfolio.enums.Order.size_type` for more details.
 
             Valid options include `SizeType.Amount`, `SizeType.Value`, `SizeType.Percent(100)`, and
             `SizeType.ValuePercent(100)`. Other types are incompatible with signals.
-        fees (FlexArray2dLike): Transaction fee rate. 
-        
+        fees (FlexArray2dLike): Transaction fee rate.
+
             Provided as a scalar, or per row and/or column.
 
             See `vectorbtpro.portfolio.enums.Order.fees` for more details.
-        fixed_fees (FlexArray2dLike): Fixed fee amount. 
-        
+        fixed_fees (FlexArray2dLike): Fixed fee amount.
+
             Provided as a scalar, or per row and/or column.
 
             See `vectorbtpro.portfolio.enums.Order.fixed_fees` for more details.
-        slippage (FlexArray2dLike): Slippage amount. 
-        
+        slippage (FlexArray2dLike): Slippage amount.
+
             Provided as a scalar, or per row and/or column.
 
             See `vectorbtpro.portfolio.enums.Order.slippage` for more details.
-        min_size (FlexArray2dLike): Minimum allowable order size. 
-        
+        min_size (FlexArray2dLike): Minimum allowable order size.
+
             Provided as a scalar, or per row and/or column.
 
             See `vectorbtpro.portfolio.enums.Order.min_size` for more details.
-        max_size (FlexArray2dLike): Maximum allowable order size. 
-        
+        max_size (FlexArray2dLike): Maximum allowable order size.
+
             Provided as a scalar, or per row and/or column.
 
             See `vectorbtpro.portfolio.enums.Order.max_size` for more details.
 
             !!! note
                 With accumulation enabled, a very low `max_size` might hinder proper position closure.
-        size_granularity (FlexArray2dLike): Granularity for order size. 
-        
+        size_granularity (FlexArray2dLike): Granularity for order size.
+
             Provided as a scalar, or per row and/or column.
 
             See `vectorbtpro.portfolio.enums.Order.size_granularity` for more details.
-        leverage (FlexArray2dLike): Leverage factor. 
-        
+        leverage (FlexArray2dLike): Leverage factor.
+
             Provided as a scalar, or per row and/or column.
 
             See `vectorbtpro.portfolio.enums.Order.leverage` for more details.
-        leverage_mode (FlexArray2dLike): Mode for leverage calculation. 
-        
+        leverage_mode (FlexArray2dLike): Mode for leverage calculation.
+
             Provided as a scalar, or per row and/or column.
 
             See `vectorbtpro.portfolio.enums.Order.leverage_mode` for more details.
-        reject_prob (FlexArray2dLike): Probability of order rejection. 
-        
+        reject_prob (FlexArray2dLike): Probability of order rejection.
+
             Provided as a scalar, or per row and/or column.
 
             See `vectorbtpro.portfolio.enums.Order.reject_prob` for more details.
-        price_area_vio_mode (FlexArray2dLike): Mode for handling price area violations. 
-        
+        price_area_vio_mode (FlexArray2dLike): Mode for handling price area violations.
+
             Provided as a scalar, or per row and/or column.
 
             See `vectorbtpro.portfolio.enums.Order.price_area_vio_mode` for more details.
-        allow_partial (FlexArray2dLike): Indicator whether partial orders are allowed. 
-        
+        allow_partial (FlexArray2dLike): Indicator whether partial orders are allowed.
+
             Provided as a scalar, or per row and/or column.
 
             See `vectorbtpro.portfolio.enums.Order.allow_partial` for more details.
 
             Does not apply when the order size is `np.inf`.
-        raise_reject (FlexArray2dLike): Indicator whether to raise errors on order rejection. 
-        
+        raise_reject (FlexArray2dLike): Indicator whether to raise errors on order rejection.
+
             Provided as a scalar, or per row and/or column.
 
             See `vectorbtpro.portfolio.enums.Order.raise_reject` for more details.
-        log (FlexArray2dLike): Logging flag. 
-        
+        log (FlexArray2dLike): Logging flag.
+
             Provided as a scalar, or per row and/or column.
 
             See `vectorbtpro.portfolio.enums.Order.log` for more details.
-        val_price (FlexArray2dLike): Valuation price. 
-        
+        val_price (FlexArray2dLike): Valuation price.
+
             Provided as a scalar, or per row and/or column.
 
             See `vectorbtpro.portfolio.enums.ValPriceType` for more details.
-            
-            * Any `-np.inf` element is replaced by the latest valuation price 
+
+            * Any `-np.inf` element is replaced by the latest valuation price
                 (using `open` or a previously known value if `ffill_val_price` is True).
             * Any `np.inf` element is replaced by the current order price.
         accumulate (FlexArray2dLike): Order accumulation mode.
-        
+
             Provided as a scalar, or per row and/or column.
 
             See `vectorbtpro.portfolio.enums.AccumulationMode` for more details.
         upon_long_conflict (FlexArray2dLike): Conflict resolution mode for long signals.
-        
+
             Provided as a scalar, or per row and/or column.
 
             See `vectorbtpro.portfolio.enums.ConflictMode` for more details.
         upon_short_conflict (FlexArray2dLike): Conflict resolution mode for short signals.
-        
+
             Provided as a scalar, or per row and/or column.
 
             See `vectorbtpro.portfolio.enums.ConflictMode` for more details.
         upon_dir_conflict (FlexArray2dLike): Signal direction conflict mode.
-        
+
             Provided as a scalar, or per row and/or column.
 
             See `vectorbtpro.portfolio.enums.DirectionConflictMode` for more details.
         upon_opposite_entry (FlexArray2dLike): Mode for handling opposite entry signals.
-        
+
             Provided as a scalar, or per row and/or column.
 
             See `vectorbtpro.portfolio.enums.OppositeEntryMode` for more details.
@@ -1786,11 +1786,11 @@ def from_signals_nb(
             Provided as a scalar, or per row and/or column.
 
             If NaN, `price` is used directly. The delta adjusts based on trade direction:
-            
+
             * for buying, a positive delta decreases the limit price.
             * for selling, it increases the limit price.
 
-            Delta may be negative. Set an element to `np.nan` to disable. 
+            Delta may be negative. Set an element to `np.nan` to disable.
             Use `delta_format` to specify the format.
         limit_tif (FlexArray2dLike): Time in force for limit orders.
 
@@ -1807,13 +1807,13 @@ def from_signals_nb(
 
             Provided as a scalar, or per row and/or column.
 
-            If True, a buy/sell limit is compared against high/low (instead of low/high) and 
+            If True, a buy/sell limit is compared against high/low (instead of low/high) and
             the limit delta is inverted.
         limit_order_price (FlexArray2dLike): Price for limit orders.
 
             Provided as a scalar, or per row and/or column.
 
-            See `vectorbtpro.portfolio.enums.LimitOrderPrice` for more details. Positive values 
+            See `vectorbtpro.portfolio.enums.LimitOrderPrice` for more details. Positive values
             are used directly, while negative values are interpreted as enumerated options.
         upon_adj_limit_conflict (FlexArray2dLike): Conflict mode for adjacent limit and signal conflicts.
 
@@ -1829,13 +1829,13 @@ def from_signals_nb(
 
             Provided as a scalar, or per row and/or column.
 
-            If None, becomes True if any stop parameters are set or a non-default adjustment 
+            If None, becomes True if any stop parameters are set or a non-default adjustment
             function is used. Disable to speed up simple simulations.
         stop_ladder (int): Indicates whether to use stop laddering.
 
             Provided as a scalar, or per row and/or column.
 
-            See `vectorbtpro.portfolio.enums.StopLadderMode` for more details. 
+            See `vectorbtpro.portfolio.enums.StopLadderMode` for more details.
             If enabled, rows in the provided arrays become ladder steps.
             For price-based stops, pad with `np.nan`; for time-based stops, pad with -1.
         sl_stop (FlexArray2dLike): Stop loss level.
@@ -1888,7 +1888,7 @@ def from_signals_nb(
             Provided as a scalar, or per row and/or column.
 
             See `vectorbtpro.portfolio.enums.OrderType` for more details.
-        stop_limit_delta (FlexArray2dLike): Delta to compute the limit price for stop orders, 
+        stop_limit_delta (FlexArray2dLike): Delta to compute the limit price for stop orders,
             analogous to `limit_delta`.
 
             Provided as a scalar, or per row and/or column.
@@ -1918,8 +1918,8 @@ def from_signals_nb(
             Provided as a scalar, or per row and/or column.
 
             See `vectorbtpro.portfolio.enums.TimeDeltaFormat` for more details.
-        from_ago (FlexArray2dLike): Lookback offset for price selection. 
-        
+        from_ago (FlexArray2dLike): Lookback offset for price selection.
+
             Provided as a scalar, or per row and/or column.
         sim_start (Optional[FlexArray1dLike]): Start indices of the simulation range.
 
@@ -2230,8 +2230,8 @@ def from_signals_nb(
             if track_cash_deposits:
                 cash_deposits_out[i, group] += _cash_deposits
 
-            for c in range(group_len):
-                col = from_col + c
+            for ci in range(group_len):
+                col = from_col + ci
 
                 # Update valuation price using current open
                 _open = flex_select_nb(open_, i, col)
@@ -2251,8 +2251,8 @@ def from_signals_nb(
 
             # Get signals
             skip = skip_empty
-            for c in range(group_len):
-                col = from_col + c
+            for ci in range(group_len):
+                col = from_col + ci
 
                 if flex_select_nb(log_, i, col):
                     skip = False
@@ -2319,8 +2319,8 @@ def from_signals_nb(
 
             if not skip:
                 # Get size and value of each order
-                for c in range(group_len):
-                    col = from_col + c
+                for ci in range(group_len):
+                    col = from_col + ci
 
                     # Set defaults
                     main_info["bar_zone"][col] = -1
@@ -3407,8 +3407,8 @@ def from_signals_nb(
                     bar_zone = -1
                     same_bar_zone = True
                     same_timing = True
-                    for c in range(group_len):
-                        col = from_col + c
+                    for ci in range(group_len):
+                        col = from_col + ci
                         if np.isnan(main_info["size"][col]):
                             continue
                         if bar_zone == -1:
@@ -3425,8 +3425,8 @@ def from_signals_nb(
                     if cash_sharing:
                         # Dynamically sort by order value -> selling comes first to release funds early
                         if call_seq is None:
-                            for c in range(group_len):
-                                temp_call_seq[c] = c
+                            for ci in range(group_len):
+                                temp_call_seq[ci] = ci
                             call_seq_now = temp_call_seq[:group_len]
                         else:
                             call_seq_now = call_seq[i, from_col:to_col]
@@ -3434,10 +3434,10 @@ def from_signals_nb(
                             # Sort by order value
                             if not same_timing:
                                 raise ValueError("Cannot sort orders by value if they are executed at different times")
-                            for c in range(group_len):
-                                if call_seq_now[c] != c:
+                            for ci in range(group_len):
+                                if call_seq_now[ci] != ci:
                                     raise ValueError("Call sequence must follow CallSeqType.Default")
-                                col = from_col + c
+                                col = from_col + ci
                                 if np.isnan(main_info["size"][col]):
                                     continue
                                 # Approximate order value
@@ -3450,7 +3450,7 @@ def from_signals_nb(
                                     val_price=last_val_price[col],
                                     value=last_value[group] if cash_sharing else last_value[col],
                                 )
-                                temp_sort_by[c] = approx_order_value_nb(
+                                temp_sort_by[ci] = approx_order_value_nb(
                                     exec_state=exec_state,
                                     size=main_info["size"][col],
                                     size_type=main_info["size_type"][col],
@@ -3460,23 +3460,23 @@ def from_signals_nb(
                         else:
                             if not same_bar_zone:
                                 # Sort by bar zone
-                                for c in range(group_len):
-                                    if call_seq_now[c] != c:
+                                for ci in range(group_len):
+                                    if call_seq_now[ci] != ci:
                                         raise ValueError("Call sequence must follow CallSeqType.Default")
-                                    col = from_col + c
+                                    col = from_col + ci
                                     if np.isnan(main_info["size"][col]):
                                         continue
-                                    temp_sort_by[c] = main_info["bar_zone"][col]
+                                    temp_sort_by[ci] = main_info["bar_zone"][col]
                                 insert_argsort_nb(temp_sort_by[:group_len], call_seq_now)
 
                     for k in range(group_len):
                         if cash_sharing:
-                            c = call_seq_now[k]
-                            if c >= group_len:
+                            ci = call_seq_now[k]
+                            if ci >= group_len:
                                 raise ValueError("Call index out of bounds of the group")
                         else:
-                            c = k
-                        col = from_col + c
+                            ci = k
+                        col = from_col + ci
                         if skip_empty and np.isnan(main_info["size"][col]):  # shortcut
                             continue
 
@@ -4178,11 +4178,6 @@ def no_signal_func_nb(c: SignalContext, *args) -> tp.Tuple[bool, bool, bool, boo
     return False, False, False, False
 
 
-SignalFuncT = tp.Callable[[SignalContext, tp.VarArg()], tp.Tuple[bool, bool, bool, bool]]
-PostSignalFuncT = tp.Callable[[PostSignalContext, tp.VarArg()], None]
-PostSegmentFuncT = tp.Callable[[SignalSegmentContext, tp.VarArg()], None]
-
-
 # % <block signal_func_nb>
 # % <skip? skip_func(out_lines, "signal_func_nb")>
 # % <uncomment>
@@ -4191,10 +4186,10 @@ PostSegmentFuncT = tp.Callable[[SignalSegmentContext, tp.VarArg()], None]
 #     c: SignalContext,
 # ) -> tp.Tuple[bool, bool, bool, bool]:
 #     """Custom signal processing function.
-# 
+#
 #     Args:
 #         c (SignalContext): Signal context for generating signals.
-# 
+#
 #     Returns:
 #         Tuple[bool, bool, bool, bool]: A tuple containing booleans representing:
 #
@@ -4218,7 +4213,7 @@ PostSegmentFuncT = tp.Callable[[SignalSegmentContext, tp.VarArg()], None]
 #     c: PostSignalContext,
 # ) -> None:
 #     """Custom signal post-processing function.
-# 
+#
 #     Args:
 #         c (PostSignalContext): Post-signal context.
 #
@@ -4240,7 +4235,7 @@ PostSegmentFuncT = tp.Callable[[SignalSegmentContext, tp.VarArg()], None]
 #     c: SignalSegmentContext,
 # ) -> None:
 #     """Custom segment post-processing function.
-# 
+#
 #     Args:
 #         c (SignalSegmentContext): Post-segment context.
 #
@@ -4378,11 +4373,11 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
     cash_deposits: tp.FlexArray2dLike = 0.0,
     cash_earnings: tp.FlexArray2dLike = 0.0,
     cash_dividends: tp.FlexArray2dLike = 0.0,
-    signal_func_nb: SignalFuncT = no_signal_func_nb,  # % None
+    signal_func_nb: tp.SignalFunc = no_signal_func_nb,  # % None
     signal_args: tp.ArgsLike = (),
-    post_signal_func_nb: PostSignalFuncT = no_post_func_nb,  # % None
+    post_signal_func_nb: tp.PostSignalFunc = no_post_func_nb,  # % None
     post_signal_args: tp.ArgsLike = (),
-    post_segment_func_nb: PostSegmentFuncT = no_post_func_nb,  # % None
+    post_segment_func_nb: tp.PostSignalSegmentFunc = no_post_func_nb,  # % None
     post_segment_args: tp.ArgsLike = (),
     size: tp.FlexArray2dLike = np.inf,
     price: tp.FlexArray2dLike = np.inf,
@@ -4447,9 +4442,9 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
 ) -> SimulationOutput:
     """Simulate portfolio evolution with a user-defined signal function.
 
-    This function performs simulation over the provided price data by iterating in column-major order 
-    and leveraging flexible broadcasting. At each simulation step, the user-defined signal function 
-    is called to generate trading signals based on current market data. Additionally, custom post-signal 
+    This function performs simulation over the provided price data by iterating in column-major order
+    and leveraging flexible broadcasting. At each simulation step, the user-defined signal function
+    is called to generate trading signals based on current market data. Additionally, custom post-signal
     and post-segment functions can process order executions and update segment-level statistics.
 
     Args:
@@ -4458,23 +4453,23 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
         cash_sharing (bool): Indicator whether cash is shared among assets in a group.
         index (Optional[Array1d]): Array of timestamps or indices.
         freq (Optional[int]): Frequency of the data.
-        open (FlexArray2dLike): Opening price. 
-        
+        open (FlexArray2dLike): Opening price.
+
             Provided as a scalar, or per row and/or column.
 
             For stop signals, `np.nan` is replaced with the corresponding close price.
-        high (FlexArray2dLike): High price. 
-        
+        high (FlexArray2dLike): High price.
+
             Provided as a scalar, or per row and/or column.
 
             For stop signals, `np.nan` is replaced with the maximum of open and close prices.
-        low (FlexArray2dLike): Low price. 
-        
+        low (FlexArray2dLike): Low price.
+
             Provided as a scalar, or per row and/or column.
 
             For stop signals, `np.nan` is replaced with the minimum of open and close prices.
-        close (FlexArray2dLike): Closing price. 
-        
+        close (FlexArray2dLike): Closing price.
+
             Provided as a scalar, or per row and/or column.
         init_cash (FlexArray1dLike): Initial cash amount.
 
@@ -4488,147 +4483,147 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
         cash_deposits (FlexArray2dLike): Cash deposits.
 
             Provided as a scalar, or per row and/or per group with cash sharing or per column otherwise.
-        cash_earnings (FlexArray2dLike): Cash earnings. 
-        
+        cash_earnings (FlexArray2dLike): Cash earnings.
+
             Provided as a scalar, or per row and/or column.
-        cash_dividends (FlexArray2dLike): Cash dividends. 
-        
+        cash_dividends (FlexArray2dLike): Cash dividends.
+
             Provided as a scalar, or per row and/or column.
-        signal_func_nb (SignalFunc): Function to be called at each element to generate signals. 
-        
-            It accepts a `vectorbtpro.portfolio.enums.SignalContext` and returns four signals: 
+        signal_func_nb (SignalFunc): Function to be called at each element to generate signals.
+
+            It accepts a `vectorbtpro.portfolio.enums.SignalContext` and returns four signals:
             long entry, long exit, short entry, and short exit.
         signal_args (ArgsLike): Positional arguments for `signal_func_nb`
         post_signal_func_nb (PostSignalFunc): Function to be called after processing an order.
-        
+
             It accepts a `vectorbtpro.portfolio.enums.PostSignalContext` and returns nothing.
         post_signal_args (ArgsLike): Positional arguments for `post_signal_func_nb`
-        post_segment_func_nb (PostSegmentFunc): Function to be called after processing a segment.
-        
+        post_segment_func_nb (PostSignalSegmentFunc): Function to be called after processing a segment.
+
             It accepts a `vectorbtpro.portfolio.enums.SignalSegmentContext` and returns nothing.
         post_segment_args (ArgsLike): Positional arguments for `post_segment_func_nb`.
-        size (FlexArray2dLike): Order size. 
-        
+        size (FlexArray2dLike): Order size.
+
             Provided as a scalar, or per row and/or column.
 
             See `vectorbtpro.portfolio.enums.Order.size` for more details.
 
             !!! note
                 Negative size is not allowed; use signals to express direction.
-        price (FlexArray2dLike): Order price. 
-        
+        price (FlexArray2dLike): Order price.
+
             Provided as a scalar, or per row and/or column.
 
             See `vectorbtpro.portfolio.enums.Order.price` for more details.
-        size_type (FlexArray2dLike): Order size type. 
-        
+        size_type (FlexArray2dLike): Order size type.
+
             Provided as a scalar, or per row and/or column.
 
             See `vectorbtpro.portfolio.enums.Order.size_type` for more details.
 
             Valid options include `SizeType.Amount`, `SizeType.Value`, `SizeType.Percent(100)`, and
             `SizeType.ValuePercent(100)`. Other types are incompatible with signals.
-        fees (FlexArray2dLike): Transaction fee rate. 
-        
+        fees (FlexArray2dLike): Transaction fee rate.
+
             Provided as a scalar, or per row and/or column.
 
             See `vectorbtpro.portfolio.enums.Order.fees` for more details.
-        fixed_fees (FlexArray2dLike): Fixed fee amount. 
-        
+        fixed_fees (FlexArray2dLike): Fixed fee amount.
+
             Provided as a scalar, or per row and/or column.
 
             See `vectorbtpro.portfolio.enums.Order.fixed_fees` for more details.
-        slippage (FlexArray2dLike): Slippage amount. 
-        
+        slippage (FlexArray2dLike): Slippage amount.
+
             Provided as a scalar, or per row and/or column.
 
             See `vectorbtpro.portfolio.enums.Order.slippage` for more details.
-        min_size (FlexArray2dLike): Minimum allowable order size. 
-        
+        min_size (FlexArray2dLike): Minimum allowable order size.
+
             Provided as a scalar, or per row and/or column.
 
             See `vectorbtpro.portfolio.enums.Order.min_size` for more details.
-        max_size (FlexArray2dLike): Maximum allowable order size. 
-        
+        max_size (FlexArray2dLike): Maximum allowable order size.
+
             Provided as a scalar, or per row and/or column.
 
             See `vectorbtpro.portfolio.enums.Order.max_size` for more details.
 
             !!! note
                 With accumulation enabled, a very low `max_size` might hinder proper position closure.
-        size_granularity (FlexArray2dLike): Granularity for order size. 
-        
+        size_granularity (FlexArray2dLike): Granularity for order size.
+
             Provided as a scalar, or per row and/or column.
 
             See `vectorbtpro.portfolio.enums.Order.size_granularity` for more details.
-        leverage (FlexArray2dLike): Leverage factor. 
-        
+        leverage (FlexArray2dLike): Leverage factor.
+
             Provided as a scalar, or per row and/or column.
 
             See `vectorbtpro.portfolio.enums.Order.leverage` for more details.
-        leverage_mode (FlexArray2dLike): Mode for leverage calculation. 
-        
+        leverage_mode (FlexArray2dLike): Mode for leverage calculation.
+
             Provided as a scalar, or per row and/or column.
 
             See `vectorbtpro.portfolio.enums.Order.leverage_mode` for more details.
-        reject_prob (FlexArray2dLike): Probability of order rejection. 
-        
+        reject_prob (FlexArray2dLike): Probability of order rejection.
+
             Provided as a scalar, or per row and/or column.
 
             See `vectorbtpro.portfolio.enums.Order.reject_prob` for more details.
-        price_area_vio_mode (FlexArray2dLike): Mode for handling price area violations. 
-        
+        price_area_vio_mode (FlexArray2dLike): Mode for handling price area violations.
+
             Provided as a scalar, or per row and/or column.
 
             See `vectorbtpro.portfolio.enums.Order.price_area_vio_mode` for more details.
-        allow_partial (FlexArray2dLike): Indicator whether partial orders are allowed. 
-        
+        allow_partial (FlexArray2dLike): Indicator whether partial orders are allowed.
+
             Provided as a scalar, or per row and/or column.
 
             See `vectorbtpro.portfolio.enums.Order.allow_partial` for more details.
 
             Does not apply when the order size is `np.inf`.
-        raise_reject (FlexArray2dLike): Indicator whether to raise errors on order rejection. 
-        
+        raise_reject (FlexArray2dLike): Indicator whether to raise errors on order rejection.
+
             Provided as a scalar, or per row and/or column.
 
             See `vectorbtpro.portfolio.enums.Order.raise_reject` for more details.
-        log (FlexArray2dLike): Logging flag. 
-        
+        log (FlexArray2dLike): Logging flag.
+
             Provided as a scalar, or per row and/or column.
 
             See `vectorbtpro.portfolio.enums.Order.log` for more details.
-        val_price (FlexArray2dLike): Valuation price. 
-        
+        val_price (FlexArray2dLike): Valuation price.
+
             Provided as a scalar, or per row and/or column.
 
             See `vectorbtpro.portfolio.enums.ValPriceType` for more details.
-            
-            * Any `-np.inf` element is replaced by the latest valuation price 
+
+            * Any `-np.inf` element is replaced by the latest valuation price
                 (using `open` or a previously known value if `ffill_val_price` is True).
             * Any `np.inf` element is replaced by the current order price.
         accumulate (FlexArray2dLike): Order accumulation mode.
-        
+
             Provided as a scalar, or per row and/or column.
 
             See `vectorbtpro.portfolio.enums.AccumulationMode` for more details.
         upon_long_conflict (FlexArray2dLike): Conflict resolution mode for long signals.
-        
+
             Provided as a scalar, or per row and/or column.
 
             See `vectorbtpro.portfolio.enums.ConflictMode` for more details.
         upon_short_conflict (FlexArray2dLike): Conflict resolution mode for short signals.
-        
+
             Provided as a scalar, or per row and/or column.
 
             See `vectorbtpro.portfolio.enums.ConflictMode` for more details.
         upon_dir_conflict (FlexArray2dLike): Signal direction conflict mode.
-        
+
             Provided as a scalar, or per row and/or column.
 
             See `vectorbtpro.portfolio.enums.DirectionConflictMode` for more details.
         upon_opposite_entry (FlexArray2dLike): Mode for handling opposite entry signals.
-        
+
             Provided as a scalar, or per row and/or column.
 
             See `vectorbtpro.portfolio.enums.OppositeEntryMode` for more details.
@@ -4645,11 +4640,11 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
             Provided as a scalar, or per row and/or column.
 
             If NaN, `price` is used directly. The delta adjusts based on trade direction:
-            
+
             * for buying, a positive delta decreases the limit price.
             * for selling, it increases the limit price.
 
-            Delta may be negative. Set an element to `np.nan` to disable. 
+            Delta may be negative. Set an element to `np.nan` to disable.
             Use `delta_format` to specify the format.
         limit_tif (FlexArray2dLike): Time in force for limit orders.
 
@@ -4666,13 +4661,13 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
 
             Provided as a scalar, or per row and/or column.
 
-            If True, a buy/sell limit is compared against high/low (instead of low/high) and 
+            If True, a buy/sell limit is compared against high/low (instead of low/high) and
             the limit delta is inverted.
         limit_order_price (FlexArray2dLike): Price for limit orders.
 
             Provided as a scalar, or per row and/or column.
 
-            See `vectorbtpro.portfolio.enums.LimitOrderPrice` for more details. Positive values 
+            See `vectorbtpro.portfolio.enums.LimitOrderPrice` for more details. Positive values
             are used directly, while negative values are interpreted as enumerated options.
         upon_adj_limit_conflict (FlexArray2dLike): Conflict mode for adjacent limit and signal conflicts.
 
@@ -4688,13 +4683,13 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
 
             Provided as a scalar, or per row and/or column.
 
-            If None, becomes True if any stop parameters are set or a non-default adjustment 
+            If None, becomes True if any stop parameters are set or a non-default adjustment
             function is used. Disable to speed up simple simulations.
         stop_ladder (int): Indicates whether to use stop laddering.
 
             Provided as a scalar, or per row and/or column.
 
-            See `vectorbtpro.portfolio.enums.StopLadderMode` for more details. 
+            See `vectorbtpro.portfolio.enums.StopLadderMode` for more details.
             If enabled, rows in the provided arrays become ladder steps.
             For price-based stops, pad with `np.nan`; for time-based stops, pad with -1.
         sl_stop (FlexArray2dLike): Stop loss level.
@@ -4747,7 +4742,7 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
             Provided as a scalar, or per row and/or column.
 
             See `vectorbtpro.portfolio.enums.OrderType` for more details.
-        stop_limit_delta (FlexArray2dLike): Delta to compute the limit price for stop orders, 
+        stop_limit_delta (FlexArray2dLike): Delta to compute the limit price for stop orders,
             analogous to `limit_delta`.
 
             Provided as a scalar, or per row and/or column.
@@ -4777,8 +4772,8 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
             Provided as a scalar, or per row and/or column.
 
             See `vectorbtpro.portfolio.enums.TimeDeltaFormat` for more details.
-        from_ago (FlexArray2dLike): Lookback offset for price selection. 
-        
+        from_ago (FlexArray2dLike): Lookback offset for price selection.
+
             Provided as a scalar, or per row and/or column.
         sim_start (Optional[FlexArray1dLike]): Start indices of the simulation range.
 
@@ -5072,8 +5067,8 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                         cash_deposits_out[i, col] += _cash_deposits
 
             # Update valuation price using current open
-            for c in range(group_len):
-                col = from_col + c
+            for ci in range(group_len):
+                col = from_col + ci
                 _open = flex_select_nb(open_, i, col)
                 if not np.isnan(_open) or not ffill_val_price:
                     last_val_price[col] = _open
@@ -5107,8 +5102,8 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
 
             # Get signals
             skip = skip_empty
-            for c in range(group_len):
-                col = from_col + c
+            for ci in range(group_len):
+                col = from_col + ci
 
                 signal_ctx = SignalContext(
                     target_shape=target_shape,
@@ -5262,8 +5257,8 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                         )
 
                 # Get size and value of each order
-                for c in range(group_len):
-                    col = from_col + c
+                for ci in range(group_len):
+                    col = from_col + ci
 
                     # Set defaults
                     main_info["bar_zone"][col] = -1
@@ -6350,8 +6345,8 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                     bar_zone = -1
                     same_bar_zone = True
                     same_timing = True
-                    for c in range(group_len):
-                        col = from_col + c
+                    for ci in range(group_len):
+                        col = from_col + ci
                         if np.isnan(main_info["size"][col]):
                             continue
                         if bar_zone == -1:
@@ -6368,8 +6363,8 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                     if cash_sharing:
                         # Dynamically sort by order value -> selling comes first to release funds early
                         if call_seq is None:
-                            for c in range(group_len):
-                                temp_call_seq[c] = c
+                            for ci in range(group_len):
+                                temp_call_seq[ci] = ci
                             call_seq_now = temp_call_seq[:group_len]
                         else:
                             call_seq_now = call_seq[i, from_col:to_col]
@@ -6377,10 +6372,10 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                             # Sort by order value
                             if not same_timing:
                                 raise ValueError("Cannot sort orders by value if they are executed at different times")
-                            for c in range(group_len):
-                                if call_seq_now[c] != c:
+                            for ci in range(group_len):
+                                if call_seq_now[ci] != ci:
                                     raise ValueError("Call sequence must follow CallSeqType.Default")
-                                col = from_col + c
+                                col = from_col + ci
                                 if np.isnan(main_info["size"][col]):
                                     continue
                                 # Approximate order value
@@ -6393,7 +6388,7 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                                     val_price=last_val_price[col],
                                     value=last_value[group] if cash_sharing else last_value[col],
                                 )
-                                temp_sort_by[c] = approx_order_value_nb(
+                                temp_sort_by[ci] = approx_order_value_nb(
                                     exec_state=exec_state,
                                     size=main_info["size"][col],
                                     size_type=main_info["size_type"][col],
@@ -6403,23 +6398,23 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                         else:
                             if not same_bar_zone:
                                 # Sort by bar zone
-                                for c in range(group_len):
-                                    if call_seq_now[c] != c:
+                                for ci in range(group_len):
+                                    if call_seq_now[ci] != ci:
                                         raise ValueError("Call sequence must follow CallSeqType.Default")
-                                    col = from_col + c
+                                    col = from_col + ci
                                     if np.isnan(main_info["size"][col]):
                                         continue
-                                    temp_sort_by[c] = main_info["bar_zone"][col]
+                                    temp_sort_by[ci] = main_info["bar_zone"][col]
                                 insert_argsort_nb(temp_sort_by[:group_len], call_seq_now)
 
                     for k in range(group_len):
                         if cash_sharing:
-                            c = call_seq_now[k]
-                            if c >= group_len:
+                            ci = call_seq_now[k]
+                            if ci >= group_len:
                                 raise ValueError("Call index out of bounds of the group")
                         else:
-                            c = k
-                        col = from_col + c
+                            ci = k
+                        col = from_col + ci
                         if skip_empty and np.isnan(main_info["size"][col]):  # shortcut
                             continue
 
@@ -7256,9 +7251,6 @@ def dir_to_ls_signals_nb(
     return long_entries_out, long_exits_out, short_entries_out, short_exits_out
 
 
-AdjustFuncT = tp.Callable[[SignalContext, tp.VarArg()], None]
-
-
 @register_jitted
 def no_adjust_func_nb(c: SignalContext, *args) -> None:
     """Placeholder function that performs no adjustments.
@@ -7303,7 +7295,7 @@ def holding_enex_signal_func_nb(  # % line.replace("holding_enex_signal_func_nb"
     c: SignalContext,
     direction: int,
     close_at_end: bool,
-    adjust_func_nb: AdjustFuncT = no_adjust_func_nb,  # % None
+    adjust_func_nb: tp.AdjustFunc = no_adjust_func_nb,  # % None
     adjust_args: tp.Args = (),
 ) -> tp.Tuple[bool, bool, bool, bool]:
     """Generate direction-aware signals based on holding positions.
@@ -7311,7 +7303,7 @@ def holding_enex_signal_func_nb(  # % line.replace("holding_enex_signal_func_nb"
     This function determines trading signals using the current holding position from the signal context.
     It applies the specified adjustment function to update the context before evaluation.
     If the current position is neutral and there are no orders, it returns an entry signal
-    based on the given direction. If a position exists and closing is required at the end of the period, 
+    based on the given direction. If a position exists and closing is required at the end of the period,
     it returns an exit signal accordingly.
 
     Args:
@@ -7357,13 +7349,13 @@ def dir_signal_func_nb(  # % line.replace("dir_signal_func_nb", "signal_func_nb"
     exits: tp.FlexArray2d,
     direction: tp.FlexArray2d,
     from_ago: tp.FlexArray2d,
-    adjust_func_nb: AdjustFuncT = no_adjust_func_nb,  # % None
+    adjust_func_nb: tp.AdjustFunc = no_adjust_func_nb,  # % None
     adjust_args: tp.Args = (),
 ) -> tp.Tuple[bool, bool, bool, bool]:
     """Generate direction-aware signals by combining entry, exit, and direction arrays.
 
-    This function produces a set of boolean signals by taking the signals from the `entries` and 
-    `exits` arrays and routing them based on the corresponding direction found in the `direction` array. 
+    This function produces a set of boolean signals by taking the signals from the `entries` and
+    `exits` arrays and routing them based on the corresponding direction found in the `direction` array.
     The mapping is as follows:
 
     * For `Direction.LongOnly`: outputs (entry, exit, False, False).
@@ -7417,7 +7409,7 @@ def ls_signal_func_nb(  # % line.replace("ls_signal_func_nb", "signal_func_nb")
     short_entries: tp.FlexArray2d,
     short_exits: tp.FlexArray2d,
     from_ago: tp.FlexArray2d,
-    adjust_func_nb: AdjustFuncT = no_adjust_func_nb,  # % None
+    adjust_func_nb: tp.AdjustFunc = no_adjust_func_nb,  # % None
     adjust_args: tp.Args = (),
 ) -> tp.Tuple[bool, bool, bool, bool]:
     """Generate direction-aware signals from pre-computed long and short signal arrays.
@@ -7473,12 +7465,12 @@ def order_signal_func_nb(  # % line.replace("order_signal_func_nb", "signal_func
     max_size: tp.FlexArray2d,
     val_price: tp.FlexArray2d,
     from_ago: tp.FlexArray2d,
-    adjust_func_nb: AdjustFuncT = no_adjust_func_nb,  # % None
+    adjust_func_nb: tp.AdjustFunc = no_adjust_func_nb,  # % None
     adjust_args: tp.Args = (),
 ) -> tp.Tuple[bool, bool, bool, bool]:
     """Signal processing function that converts orders into direction-aware signals.
 
-    Ensure that `size`, `size_type`, `min_size`, and `max_size` are writable non-flexible arrays and 
+    Ensure that `size`, `size_type`, `min_size`, and `max_size` are writable non-flexible arrays and
     accumulation is enabled.
 
     Args:

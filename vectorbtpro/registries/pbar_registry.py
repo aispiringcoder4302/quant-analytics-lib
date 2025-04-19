@@ -207,7 +207,11 @@ class PBarRegistry(Base):
         return child_instances
 
     def clear_instances(self) -> None:
-        """Clear all registered progress bar instances."""
+        """Clear all registered progress bar instances.
+
+        Returns:
+            None
+        """
         self.instances.clear()
 
 

@@ -43,6 +43,11 @@ class SQLData(DBData):
         * https://pandas.pydata.org/docs/reference/api/pandas.read_sql_query.html for the pandas read method.
         * `SQLData.pull` and `SQLData.fetch_key` for argument details.
 
+    !!! info
+        For default settings, see `custom.sql` in `vectorbtpro._settings.data`.
+
+        Global settings can be provided per engine name using the `engines` dictionary.
+
     Examples:
         Set up the engine settings globally (optional):
 
@@ -835,16 +840,16 @@ class SQLData(DBData):
                 with `vectorbtpro.utils.datetime_.to_timestamp`.
 
                 For a multi-index, provide a tuple. Must not be used with `query`.
-            end (Optional[Any]): Ending value for filtering data. 
-            
-                If the index is datetime and `align_dates` is True, it is parsed with 
+            end (Optional[Any]): Ending value for filtering data.
+
+                If the index is datetime and `align_dates` is True, it is parsed with
                 `vectorbtpro.utils.datetime_.to_timestamp`.
 
                 For a multi-index, provide a tuple. Must not be used with `query`.
             align_dates (Optional[bool]): Indicates whether to align `start` and `end` to the index's timezone.
 
                 Retrieves one row (using `LIMIT 1`) and uses `SQLData.prepare_dt` to obtain the index.
-            parse_dates (Optional[Union[bool, List[IntStr], Dict[IntStr, Any]]]): 
+            parse_dates (Optional[Union[bool, List[IntStr], Dict[IntStr, Any]]]):
                 Configuration for parsing date columns.
 
                 If `query` is not used, it maps to column names; otherwise, integer values are disallowed.
@@ -887,13 +892,10 @@ class SQLData(DBData):
             squeeze (Optional[bool]): Determines whether to squeeze a DataFrame with one column into a Series.
             **read_sql_kwargs: Keyword arguments passed to `pd.read_sql_query`.
 
+                See https://pandas.pydata.org/docs/reference/api/pandas.read_sql_query.html for additional arguments.
+
         Returns:
             KeyData: The fetched data and a metadata dictionary.
-
-        See https://pandas.pydata.org/docs/reference/api/pandas.read_sql_query.html for additional arguments.
-
-        For defaults, see `custom.sql` in `vectorbtpro._settings.data`.
-        Global settings can be provided per engine name using the `engines` dictionary.
         """
         from vectorbtpro.utils.module_ import assert_can_import
 

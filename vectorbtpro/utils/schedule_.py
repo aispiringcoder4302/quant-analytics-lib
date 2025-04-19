@@ -146,6 +146,9 @@ class AsyncScheduler(CustomScheduler):
         """Asynchronously run all pending jobs.
 
         Identifies jobs that are ready to run and concurrently executes them.
+
+        Returns:
+            None
         """
         runnable_jobs = (job for job in self.jobs if job.should_run)
         await asyncio.gather(*[self._async_run_job(job) for job in runnable_jobs])
@@ -237,7 +240,7 @@ class ScheduleManager(Base):
     @property
     def scheduler(self) -> AsyncScheduler:
         """The scheduler instance used for scheduling jobs.
-        
+
         Returns:
             AsyncScheduler: The scheduler instance.
         """
@@ -246,7 +249,7 @@ class ScheduleManager(Base):
     @property
     def async_task(self) -> tp.Optional[asyncio.Task]:
         """The current asynchronous task, if any.
-        
+
         Returns:
             Optional[asyncio.Task]: The current asynchronous task.
         """
@@ -491,14 +494,18 @@ class ScheduleManager(Base):
     @property
     def async_task_running(self) -> bool:
         """Indicates whether the asynchronous task is currently running.
-        
+
         Returns:
             bool: True if the asynchronous task is running, False otherwise.
         """
         return self.async_task is not None and not self.async_task.done()
 
     def stop(self) -> None:
-        """Stop the asynchronous task if it is running."""
+        """Stop the asynchronous task if it is running.
+
+        Returns:
+            None
+        """
         if self.async_task_running:
             self.async_task.cancel()
 
@@ -507,7 +514,7 @@ class ScheduleManager(Base):
 
         Args:
             tags (Optional[Iterable[Hashable]]): Tags identifying jobs to delete.
-        
+
         Returns:
             None
         """

@@ -506,7 +506,7 @@ class AttrResolverMixin(Base):
     @property
     def self_aliases(self) -> tp.Set[str]:
         """Set of alias names associated with the object.
-        
+
         Returns:
             Set[str]: A set of alias names.
         """
@@ -563,7 +563,7 @@ class AttrResolverMixin(Base):
     @cachedproperty
     def cls_dir(self) -> tp.Set[str]:
         """Set of attribute names defined on the object's class.
-        
+
         Returns:
             Set[str]: A set of attribute names.
         """

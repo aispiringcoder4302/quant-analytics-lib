@@ -71,6 +71,9 @@ class _SUPERTREND(SUPERTREND):
         Returns:
             BaseFigure: The figure containing the plotted indicator traces.
 
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
+
         Examples:
             ```pycon
             >>> vbt.SUPERTREND.run(ohlcv['High'], ohlcv['Low'], ohlcv['Close']).plot().show()

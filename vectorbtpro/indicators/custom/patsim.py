@@ -130,6 +130,9 @@ class _PATSIM(PATSIM):
         Returns:
             BaseFigure: The updated or newly created figure with the similarity line plotted.
 
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
+
         Examples:
             ```pycon
             >>> vbt.PATSIM.run(ohlcv['Close'], np.array([1, 2, 3, 2, 1]), 30).plot().show()
@@ -179,17 +182,20 @@ class _PATSIM(PATSIM):
         Args:
             column (Optional[Label]): Name of the column to plot.
 
-            close_trace_kwargs (KwargsLike): Keyword arguments passed to 
+            close_trace_kwargs (KwargsLike): Keyword arguments passed to
                 `plotly.graph_objects.Scatter` for plotting `PATSIM.close`.
-            similarity_trace_kwargs (KwargsLike): Keyword arguments passed to 
+            similarity_trace_kwargs (KwargsLike): Keyword arguments passed to
                 `plotly.graph_objects.Heatmap` for plotting `PATSIM.similarity`.
-            add_trace_kwargs (KwargsLike): Keyword arguments passed to 
+            add_trace_kwargs (KwargsLike): Keyword arguments passed to
                 `fig.add_trace` when adding each trace.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
             **layout_kwargs: Keyword arguments for configuring the figure layout.
 
         Returns:
             BaseFigure: The updated or newly created figure with the heatmap overlay on `PATSIM.close`.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
 
         Examples:
             ```pycon

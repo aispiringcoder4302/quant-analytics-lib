@@ -8,7 +8,11 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module providing utilities for working with templates."""
+"""Module providing utilities for working with templates.
+
+!!! info
+    For default settings, see `vectorbtpro._settings.template`.
+"""
 
 from string import Template
 
@@ -69,6 +73,9 @@ class CustomTemplate(Evaluable, DefineMixin):
 
         Returns:
             Kwargs: Merged context mapping.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.template`.
         """
         from vectorbtpro._settings import settings
 
@@ -104,6 +111,9 @@ class CustomTemplate(Evaluable, DefineMixin):
 
         Returns:
             bool: The resolved strict flag.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.template`.
         """
         if strict is None:
             strict = self.strict
@@ -391,6 +401,9 @@ def has_templates(obj: tp.Any, **kwargs) -> tp.Any:
 
     Returns:
         Any: The object containing template instances, or None if none are found.
+
+    !!! info
+        For default settings, see `vectorbtpro._settings.template`.
     """
     from vectorbtpro._settings import settings
 
@@ -435,6 +448,9 @@ def substitute_templates(
     Returns:
         Any: The object with template instances replaced by their substituted values.
 
+    !!! info
+        For default settings, see `vectorbtpro._settings.template`.
+
     Examples:
         ```pycon
         >>> from vectorbtpro import *
@@ -458,7 +474,7 @@ def substitute_templates(
         >>> vbt.substitute_templates(vbt.RepEval('key == 100', strict=False))
         <vectorbtpro.utils.template.RepEval at 0x7fe3ad2ab668>
         ```
-        """
+    """
     from vectorbtpro._settings import settings
 
     template_cfg = settings["template"]

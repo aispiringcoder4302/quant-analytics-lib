@@ -1961,7 +1961,7 @@ def pivot_info_1d_nb(
 
     Returns:
         Tuple[Array1d, Array1d, Array1d, Array1d]: A tuple containing:
-        
+
             * Confirmed pivot types.
             * Indices of confirmed pivots.
             * Last pivot types.
@@ -2081,7 +2081,7 @@ def pivot_info_nb(
 
     Returns:
         Tuple[Array2d, Array2d, Array2d, Array2d]: A tuple containing:
-        
+
             * Confirmed pivot types.
             * Indices of confirmed pivots.
             * Last pivot types.
@@ -2223,14 +2223,14 @@ def pivots_nb(conf_pivot: tp.Array2d, conf_idx: tp.Array2d, last_pivot: tp.Array
 def modes_1d_nb(pivots: tp.Array1d) -> tp.Array1d:
     """Return mode values computed from pivot signals.
 
-    !!! warning
-        To be used in plotting only. Do not use it as an indicator!
-
     Args:
         pivots (Array1d): Array of pivot values.
 
     Returns:
         Array1d: An array containing mode values corresponding to each pivot entry.
+
+    !!! warning
+        To be used in plotting only. Do not use it as an indicator!
     """
     modes = np.empty(pivots.shape, dtype=int_)
     mode = 0
@@ -2557,7 +2557,7 @@ def signal_detection_1d_nb(
 
     Args:
         close (Array1d): Array of close prices.
-        
+
         lag (int): Window size for computing moving averages and standard deviations.
         factor (FlexArray1dLike): Factor(s) to determine the threshold for signal detection.
         influence (FlexArray1dLike): Influence factor(s) for updating the filtering process.
@@ -2979,19 +2979,11 @@ def get_hurst_nb(
 ) -> float:
     """Estimate the Hurst exponent using one of several computation methods.
 
-    Uses the following methods:
-
-    * `HurstMethod.Standard`: Calls `vectorbtpro.indicators.nb.get_standard_hurst_nb`.
-    * `HurstMethod.LogRS`: Calls `vectorbtpro.indicators.nb.get_log_rs_hurst_nb`.
-    * `HurstMethod.RS`: Calls `vectorbtpro.indicators.nb.get_rs_hurst_nb`.
-    * `HurstMethod.DMA`: Calls `vectorbtpro.indicators.nb.get_dma_hurst_nb`.
-    * `HurstMethod.DSOD`: Calls `vectorbtpro.indicators.nb.get_dsod_hurst_nb`.
-
     Args:
         close (Array1d): One-dimensional array of price data.
         method (int): Hurst exponent computation method.
 
-            See `vectorbtpro.indicators.enums.HurstMethod` for available options.
+            See `vectorbtpro.indicators.enums.HurstMethod` for details.
         max_lag (int): Maximum lag parameter for the standard computation.
         min_log (int): Minimum logarithmic scale for the LogRS method.
         max_log (int): Maximum logarithmic scale for the LogRS method.

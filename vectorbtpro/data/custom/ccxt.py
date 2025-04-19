@@ -44,6 +44,11 @@ class CCXTData(RemoteData):
         * https://github.com/ccxt/ccxt for more information on CCXT.
         * `CCXTData.fetch_symbol` for argument details.
 
+    !!! info
+        For default settings, see `custom.ccxt` in `vectorbtpro._settings.data`.
+
+        Global settings can be configured per exchange identifier using the `exchanges` dictionary.
+
     Examples:
         Set up the API key globally (optional):
 
@@ -269,14 +274,25 @@ class CCXTData(RemoteData):
         return exchange
 
     @staticmethod
-    def _find_earliest_date(
+    def fetch_find_earliest_date(
         fetch_func: tp.Callable,
         start: tp.DatetimeLike = 0,
         end: tp.DatetimeLike = "now",
         tz: tp.TimezoneLike = None,
         for_internal_use: bool = False,
     ) -> tp.Optional[pd.Timestamp]:
-        """Find the earliest date using binary search."""
+        """Find the earliest timestamp using binary search by calling the provided fetch function.
+
+        Args:
+            fetch_func (Callable): Function to fetch data.
+            start (DatetimeLike): Starting datetime for fetching data.
+            end (DatetimeLike): Ending datetime for fetching data.
+            tz (TimezoneLike): Timezone for conversion.
+            for_internal_use (bool): Flag indicating whether the search is for internal processing.
+
+        Returns:
+            Optional[pd.Timestamp]: The earliest timestamp if data is available, otherwise None.
+        """
         if start is not None:
             start_ts = dt.datetime_to_ms(dt.to_tzaware_datetime(start, naive_tz=tz, tz="utc"))
             fetched_data = fetch_func(start_ts, 1)
@@ -331,7 +347,7 @@ class CCXTData(RemoteData):
         Returns:
             Optional[pd.Timestamp]: The earliest timestamp if data is available, otherwise None.
         """
-        return cls._find_earliest_date(
+        return cls.fetch_find_earliest_date(
             **cls.fetch_symbol(symbol, return_fetch_method=True, **kwargs),
             for_internal_use=for_internal_use,
         )
@@ -399,9 +415,6 @@ class CCXTData(RemoteData):
         Returns:
             Union[dict, SymbolData]: If `return_params` is True, returns the metadata around the fetching function.
                 Otherwise, returns the fetched data and a metadata dictionary.
-
-        For defaults, see `custom.ccxt` in `vectorbtpro._settings.data`.
-        Global settings can be configured per exchange identifier using the `exchanges` dictionary.
         """
         from vectorbtpro.utils.module_ import assert_can_import
 
@@ -458,7 +471,7 @@ class CCXTData(RemoteData):
 
         def _retry(method):
             @wraps(method)
-            def retry_method(*args, **kwargs):
+            def retry_method(*args, **kwargs) -> tp.Any:
                 for i in range(retries):
                     try:
                         return method(*args, **kwargs)
@@ -487,7 +500,7 @@ class CCXTData(RemoteData):
 
         # Establish the timestamps
         if find_earliest_date and start is not None:
-            start = cls._find_earliest_date(_fetch, start=start, end=end, tz=tz, for_internal_use=True)
+            start = cls.fetch_find_earliest_date(_fetch, start=start, end=end, tz=tz, for_internal_use=True)
         if start is not None:
             start_ts = dt.datetime_to_ms(dt.to_tzaware_datetime(start, naive_tz=tz, tz="utc"))
         else:

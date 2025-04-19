@@ -62,8 +62,8 @@ def in_outputs_merge_func(
 ) -> tp.NamedTuple:
     """Merge chunks of in-output objects.
 
-    Concatenates 1-dimensional arrays, stacks columns of 2-dimensional arrays, and 
-    merges record arrays using `vectorbtpro.records.chunking.merge_records`. 
+    Concatenates 1-dimensional arrays, stacks columns of 2-dimensional arrays, and
+    merges record arrays using `vectorbtpro.records.chunking.merge_records`.
     Other object types will raise an error.
 
     Args:
@@ -106,7 +106,7 @@ def merge_sim_outs(
     """Merge chunks of `vectorbtpro.portfolio.enums.SimulationOutput` instances.
 
     Merges various components including order and log records, cash deposits, cash earnings, call sequence,
-    in-outputs, and simulation timing arrays. If `vectorbtpro.portfolio.enums.SimulationOutput.in_outputs` 
+    in-outputs, and simulation timing arrays. If `vectorbtpro.portfolio.enums.SimulationOutput.in_outputs`
     is provided, a merge function such as `in_outputs_merge_func` must be used.
 
     Args:

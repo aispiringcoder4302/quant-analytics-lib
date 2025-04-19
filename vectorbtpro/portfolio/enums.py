@@ -103,6 +103,7 @@ __pdoc__ = {}
 
 class RejectedOrderError(Exception):
     """Exception raised when an order is rejected."""
+
     pass
 
 
@@ -1023,22 +1024,22 @@ __pdoc__[
 
 Used together with `PriceAreaVioMode`.
 """
-__pdoc__["PriceArea.open"] = "Opening price of the time step."
+__pdoc__["PriceArea.open"] = "Opening price of the bar."
 __pdoc__[
     "PriceArea.high"
-] = """Highest price of the time step.
+] = """Highest price of the bar.
 
 A violation occurs when the adjusted price exceeds this value.
 """
 __pdoc__[
     "PriceArea.low"
-] = """Lowest price of the time step.
+] = """Lowest price of the bar.
 
 A violation is triggered when the adjusted price falls below this value.
 """
 __pdoc__[
     "PriceArea.close"
-] = """Closing price of the time step.
+] = """Closing price of the bar.
 
 A violation is triggered when the adjusted price goes beyond this value.
 """
@@ -1047,6 +1048,7 @@ NoPriceArea = PriceArea(open=np.nan, high=np.nan, low=np.nan, close=np.nan)
 """_"""
 
 __pdoc__["NoPriceArea"] = "A PriceArea instance with NaN values, representing the absence of a valid price area."
+
 
 class AccountState(tp.NamedTuple):
     cash: float
@@ -1088,6 +1090,7 @@ __pdoc__[
 Value is per group if cash sharing is enabled, or per column otherwise.
 """
 
+
 class ExecState(tp.NamedTuple):
     cash: float
     position: float
@@ -1106,6 +1109,7 @@ __pdoc__["ExecState.locked_cash"] = "See `AccountState.locked_cash`."
 __pdoc__["ExecState.free_cash"] = "See `AccountState.free_cash`."
 __pdoc__["ExecState.val_price"] = "Valuation price for the current column."
 __pdoc__["ExecState.value"] = "Value for the current column, or per group when cash sharing is enabled."
+
 
 class SimulationOutput(tp.NamedTuple):
     order_records: tp.RecordArray2d
@@ -1161,6 +1165,7 @@ Use `vectorbtpro.generic.nb.sim_range.prepare_ungrouped_sim_range_nb` to ungroup
 
 If not tracked, this value is None.
 """
+
 
 class SimulationContext(tp.NamedTuple):
     target_shape: tp.Shape
@@ -1360,9 +1365,9 @@ Examples:
     
     The first group is only executed in the first row and the second group is only executed in the second row.
 """
-__pdoc__[
-    "SimulationContext.call_pre_segment"
-] = """Indicates whether to call `pre_segment_func_nb` regardless of the `SimulationContext.segment_mask`."""
+__pdoc__["SimulationContext.call_pre_segment"] = (
+    """Indicates whether to call `pre_segment_func_nb` regardless of the `SimulationContext.segment_mask`."""
+)
 __pdoc__[
     "SimulationContext.call_post_segment"
 ] = """Indicates whether to call `post_segment_func_nb` regardless of `SimulationContext.segment_mask`.
@@ -1401,7 +1406,7 @@ Exhibits behavior similar to `SimulationContext.close`.
 """
 __pdoc__[
     "SimulationContext.close"
-] = """Closing price at each time step.
+] = """Closing price at each bar.
 
 Replaces `Order.price` when it is `np.inf`.
 
@@ -1416,7 +1421,7 @@ The array must broadcast to shape `SimulationContext.target_shape`.
 """
 __pdoc__[
     "SimulationContext.bm_close"
-] = """Benchmark closing price at each time step.
+] = """Benchmark closing price at each bar.
 
 The array must broadcast to shape `SimulationContext.target_shape`.
 """
@@ -1670,8 +1675,8 @@ __pdoc__[
 
 In-place modifications will affect the current simulation if the value is lower than the initial one.
 """
-    
-    
+
+
 class GroupContext(tp.NamedTuple):
     target_shape: tp.Shape
     group_lens: tp.GroupLens
@@ -1832,7 +1837,7 @@ __pdoc__[
     "RowContext"
 ] = """A named tuple representing the context of a row.
 
-A row corresponds to a time step during which segments are executed.
+A row corresponds to a bar during which segments are executed.
 
 Includes all fields from `SimulationContext` plus additional fields specific to the current row.
 

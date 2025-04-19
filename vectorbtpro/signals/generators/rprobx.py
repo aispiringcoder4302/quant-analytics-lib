@@ -53,10 +53,11 @@ RPROBX = SignalFactory(**rprobx_config).with_place_func(**rprobx_func_config)
 class _RPROBX(RPROBX):
     """Class representing a random exit signal generator based on probabilities.
 
-    See: 
+    See:
         * `vectorbtpro.signals.nb.rand_by_prob_place_nb` for details on the exit placement.
         * `vectorbtpro.signals.generators.RPROB` for parameter details.
     """
+
     pass
 
 

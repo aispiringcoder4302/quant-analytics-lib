@@ -39,7 +39,7 @@ RANDX = SignalFactory(
 class _RANDX(RANDX):
     """Class representing a random exit signal generator based on probabilities.
 
-    See: 
+    See:
         * `vectorbtpro.signals.nb.rand_place_nb` for details on the exit placement.
         * `vectorbtpro.signals.generators.RAND` for parameter notes.
 

@@ -35,6 +35,9 @@ class RandomOHLCData(SyntheticData):
 
     See:
         * `RandomOHLCData.generate_symbol` for argument details.
+
+    !!! info
+        For default settings, see `custom.random_ohlc` in `vectorbtpro._settings.data`.
     """
 
     _settings_path: tp.SettingsPath = dict(custom="data.custom.random_ohlc")
@@ -87,8 +90,6 @@ class RandomOHLCData(SyntheticData):
         See:
             * `vectorbtpro.data.nb.generate_random_data_1d_nb` for generating random data.
             * `vectorbtpro.ohlcv.nb.ohlc_every_1d_nb` for aggregating ticks into OHLC bars.
-
-        For defaults, see `custom.random_ohlc` in `vectorbtpro._settings.data`.
         """
         n_ticks = cls.resolve_custom_setting(n_ticks, "n_ticks")
         template_context = merge_dicts(dict(symbol=symbol, index=index), template_context)

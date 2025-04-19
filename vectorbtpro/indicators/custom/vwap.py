@@ -96,10 +96,13 @@ class _VWAP(VWAP):
             add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` when adding each trace.
             fig (Optional[BaseFigure]): The figure to update; if None, a new figure is created.
             **layout_kwargs: Keyword arguments for configuring the figure layout.
-        
+
         Returns:
             BaseFigure: The updated figure containing the plotted traces.
-        
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
+
         Examples:
             ```pycon
             >>> vbt.VWAP.run(
@@ -110,7 +113,7 @@ class _VWAP(VWAP):
             ...    anchor="W"
             ... ).plot().show()
             ```
-            
+
             ![](/assets/images/api/VWAP.light.svg#only-light){: .iimg loading=lazy }
             ![](/assets/images/api/VWAP.dark.svg#only-dark){: .iimg loading=lazy }
         """

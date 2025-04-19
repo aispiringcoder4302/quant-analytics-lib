@@ -64,7 +64,8 @@ def text_to_giphy_url(text: str, api_key: tp.Optional[str] = None, weirdness: tp
     Returns:
         str: The URL of the translated GIF.
 
-    See https://engineering.giphy.com/contextually-aware-search-giphy-gets-work-specific/
+    !!! info
+        For default settings, see `giphy` in `vectorbtpro._settings.telegram`.
     """
     from vectorbtpro._settings import settings
 

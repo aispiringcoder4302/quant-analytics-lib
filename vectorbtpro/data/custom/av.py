@@ -57,6 +57,9 @@ class AVData(RemoteData):
         * https://www.alphavantage.co/documentation/ for API endpoints and parameters.
         * `AVData.fetch_symbol` for argument details.
 
+    !!! info
+        For default settings, see `custom.av` in `vectorbtpro._settings.data`.
+
     Examples:
         Set up the API key globally (optional):
 
@@ -205,9 +208,6 @@ class AVData(RemoteData):
 
         See https://www.alphavantage.co/documentation/ for API endpoints and parameters.
 
-        !!! note
-            Supports the CSV format only.
-
         Args:
             symbol (str): Symbol.
 
@@ -269,7 +269,8 @@ class AVData(RemoteData):
         Returns:
             SymbolData: The fetched data and a metadata dictionary.
 
-        For default settings, see `custom.av` in `vectorbtpro._settings.data`.
+        !!! note
+            Supports the CSV format only.
         """
         use_parser = cls.resolve_custom_setting(use_parser, "use_parser")
         apikey = cls.resolve_custom_setting(apikey, "apikey")

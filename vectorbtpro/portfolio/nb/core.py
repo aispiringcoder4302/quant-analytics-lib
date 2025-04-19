@@ -49,7 +49,7 @@ def check_adj_price_nb(
         adj_price (float): The initial adjusted price.
         price_area (PriceArea): An object defining price boundaries.
         is_closing_price (bool): If True, enforce the price to match the closing price.
-        
+
             If the adjusted price differs from `PriceArea.close`, it may trigger an error or cap.
         price_area_vio_mode (int): Mode for handling price violations.
 
@@ -171,7 +171,7 @@ def long_buy_nb(
     is_closing_price: bool = False,
 ) -> tp.Tuple[OrderResult, AccountState]:
     """Open or increase a long position.
-    
+
     Args:
         account_state (AccountState): Current account state.
         size (float): Requested order size.
@@ -194,7 +194,7 @@ def long_buy_nb(
         price_area (PriceArea): Price area used to validate the adjusted price; see
             `vectorbtpro.portfolio.enums.PriceArea`.
         is_closing_price (bool): Indicates if the provided price is a closing price.
-    
+
     Returns:
         Tuple[OrderResult, AccountState]: A tuple containing the order result and the updated account state.
     """
@@ -320,16 +320,16 @@ def long_buy_nb(
 @register_jitted(cache=True)
 def approx_long_sell_value_nb(position: float, debt: float, val_price: float, size: float) -> float:
     """Approximate the value of a long-sell operation.
-    
+
     The computed value represents the spending amount for sorting purposes,
     where a positive value indicates spending.
-    
+
     Args:
         position (float): Current position size.
         debt (float): Current account debt.
         val_price (float): Valuation price for the asset.
         size (float): Requested order size for the long-sell operation.
-    
+
     Returns:
         float: The approximate value of the long-sell operation.
     """
@@ -629,7 +629,7 @@ def short_sell_nb(
 def approx_short_buy_value_nb(position: float, debt: float, locked_cash: float, val_price: float, size: float) -> float:
     """Approximate the cash value adjustment for a short-buy operation.
 
-    Computes the additional cash required or freed by comparing the released debt and locked cash 
+    Computes the additional cash required or freed by comparing the released debt and locked cash
     against the order value. A positive return value indicates a spending requirement.
 
     Args:
@@ -2509,7 +2509,7 @@ def update_pos_info_nb(
 
 
 @register_jitted(cache=True)
-def resolve_hl_nb(open, high, low, close):
+def resolve_hl_nb(open: float, high: float, low: float, close: float) -> tp.Tuple[float, float]:
     """Resolve the current high and low prices based on OHLC data.
 
     Args:
@@ -3673,7 +3673,7 @@ def clear_sl_info_nb(sl_info: tp.Record) -> None:
 
     Args:
         sl_info (Record): Record for SL order information to be cleared.
-    
+
     Returns:
         None: The function modifies the `sl_info` record in place.
     """

@@ -322,6 +322,9 @@ class GenericAccessor(BaseAccessor, Analyzable):
         obj (Optional[ArrayLike]): Object containing the data.
         mapping (Optional[MappingLike]): Mapping configuration for data transformation.
         **kwargs: Additional keyword arguments.
+
+    !!! info
+        For default settings, see `vectorbtpro._settings.generic`.
     """
 
     def __init__(
@@ -340,7 +343,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
     @hybrid_property
     def sr_accessor_cls(cls_or_self) -> tp.Type["GenericSRAccessor"]:
         """Return the accessor class for `pd.Series` objects.
-        
+
         Returns:
             Type[GenericSRAccessor]: The accessor class for Series objects.
         """
@@ -349,7 +352,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
     @hybrid_property
     def df_accessor_cls(cls_or_self) -> tp.Type["GenericDFAccessor"]:
         """Return the accessor class for `pd.DataFrame` objects.
-        
+
         Returns:
             Type[GenericDFAccessor]: The accessor class for DataFrame objects.
         """
@@ -360,7 +363,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
     @property
     def mapping(self) -> tp.Optional[tp.MappingLike]:
         """Return the mapping configuration.
-        
+
         Returns:
             Optional[MappingLike]: The mapping configuration.
         """
@@ -416,7 +419,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         **kwargs,
     ) -> tp.SeriesFrame:
         """Return a copy of the data with each value replaced by the value from `n` periods ago.
-        
+
         Args:
             n (Union[int, FrequencyLike]): The number of periods to shift the data.
             fill_value (Scalar): The value to fill in for missing data.
@@ -440,7 +443,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
     def any_ago(self, n: tp.Union[int, tp.FrequencyLike], **kwargs) -> tp.SeriesFrame:
         """Return a boolean Series/DataFrame indicating if any value in a rolling window of
         `n` previous periods is True.
-        
+
         Args:
             n (Union[int, FrequencyLike]): The number of periods to check for True values.
             **kwargs: Keyword arguments passed to `GenericAccessor.rolling_any`.
@@ -457,11 +460,11 @@ class GenericAccessor(BaseAccessor, Analyzable):
     def all_ago(self, n: tp.Union[int, tp.FrequencyLike], **kwargs) -> tp.SeriesFrame:
         """Return a boolean Series/DataFrame indicating if all values in a rolling window of
         `n` previous periods are True.
-        
+
         Args:
             n (Union[int, FrequencyLike]): The number of periods to check for True values.
             **kwargs: Keyword arguments passed to `GenericAccessor.rolling_all`.
-        
+
         Returns:
             SeriesFrame: A boolean Series/DataFrame indicating if all values are True.
         """
@@ -493,7 +496,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             jitted (JittedOption): Option to control JIT compilation.
             chunked (ChunkedOption): Option to control chunking.
             wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping the output.
-        
+
         Returns:
             SeriesFrame: A Series/DataFrame containing the indices of the minimum values
                 within the rolling windows.
@@ -513,11 +516,11 @@ class GenericAccessor(BaseAccessor, Analyzable):
     def expanding_idxmin(self, minp: tp.Optional[int] = 1, **kwargs) -> tp.SeriesFrame:
         """Return the expanding index of the minimum value, equivalent to using the full-length
         window as in `GenericAccessor.rolling_idxmin`.
-        
+
         Args:
             minp (Optional[int]): Minimum number of observations required within the window.
             **kwargs: Keyword arguments passed to `GenericAccessor.rolling_idxmin`.
-        
+
         Returns:
             SeriesFrame: A Series/DataFrame containing the indices of the minimum values
                 within the expanding window.
@@ -544,7 +547,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             jitted (JittedOption): Option to control JIT compilation.
             chunked (ChunkedOption): Option to control chunking.
             wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping the output.
-        
+
         Returns:
             SeriesFrame: A Series/DataFrame containing the indices of the maximum values
                 within the rolling windows.
@@ -564,11 +567,11 @@ class GenericAccessor(BaseAccessor, Analyzable):
     def expanding_idxmax(self, minp: tp.Optional[int] = 1, **kwargs) -> tp.SeriesFrame:
         """Return the expanding index of the maximum value, equivalent to using the full-length
         window as in `GenericAccessor.rolling_idxmax`.
-        
+
         Args:
             minp (Optional[int]): Minimum number of observations required before computing the index.
             **kwargs: Keyword arguments passed to `GenericAccessor.rolling_idxmax`.
-        
+
         Returns:
             SeriesFrame: A Series/DataFrame containing the indices of the maximum values
                 within the expanding window.
@@ -593,7 +596,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             jitted (JittedOption): Option to control JIT compilation.
             chunked (ChunkedOption): Option to control chunked processing.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
-            
+
         Returns:
             SeriesFrame: Calculated rolling mean values.
 
@@ -610,11 +613,11 @@ class GenericAccessor(BaseAccessor, Analyzable):
     def expanding_mean(self, minp: tp.Optional[int] = 1, **kwargs) -> tp.SeriesFrame:
         """Return the expanding mean computed over an increasing window, equivalent to using
         the full-length window as in `GenericAccessor.rolling_mean`.
-        
+
         Args:
             minp (Optional[int]): Minimum number of observations required before computing the mean.
             **kwargs: Keyword arguments passed to `GenericAccessor.rolling_mean`.
-        
+
         Returns:
             SeriesFrame: Calculated expanding mean values.
         """
@@ -640,7 +643,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             jitted (JittedOption): Option to control JIT compilation.
             chunked (ChunkedOption): Option to control chunked processing.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
-        
+
         Returns:
             SeriesFrame: Calculated rolling standard deviation values.
 
@@ -657,11 +660,11 @@ class GenericAccessor(BaseAccessor, Analyzable):
     def expanding_std(self, minp: tp.Optional[int] = 1, **kwargs) -> tp.SeriesFrame:
         """Return the expanding standard deviation computed over an increasing window,
         equivalent to using the full-length window as in `GenericAccessor.rolling_std`.
-        
+
         Args:
             minp (Optional[int]): Minimum number of observations required before computing the standard deviation.
             **kwargs: Keyword arguments passed to `GenericAccessor.rolling_std`.
-        
+
         Returns:
             SeriesFrame: Calculated expanding standard deviation values.
         """
@@ -2986,7 +2989,6 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
     # ############# Flattening ############# #
 
-
     def flatten_grouped(
         self,
         order: str = "C",
@@ -3240,15 +3242,15 @@ class GenericAccessor(BaseAccessor, Analyzable):
         This is a convenience wrapper around `GenericAccessor.realign` that creates a resampler
         and applies right-bound indexing to both the source and target.
 
-        !!! note
-            The timestamps in the source and target indexes should denote the open time.
-
         Args:
             *args: Positional arguments passed to `GenericAccessor.realign`.
             **kwargs: Keyword arguments passed to `GenericAccessor.realign`.
 
         Returns:
             MaybeSeriesFrame: Realigned data as a Series or DataFrame.
+
+        !!! note
+            The timestamps in the source and target indexes should denote the open time.
         """
         return self.realign(*args, source_rbound=True, target_rbound=True, **kwargs)
 
@@ -3690,6 +3692,9 @@ class GenericAccessor(BaseAccessor, Analyzable):
         See:
             * `vectorbtpro.generic.nb.apply_reduce.min_reduce_nb` for grouped operations.
             * `vectorbtpro.generic.nb.base.nanmin_nb` for non-grouped operations.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.generic`.
         """
         wrap_kwargs = merge_dicts(dict(name_or_index="min"), wrap_kwargs)
         if self.wrapper.grouper.is_grouped(group_by=group_by):
@@ -3742,6 +3747,9 @@ class GenericAccessor(BaseAccessor, Analyzable):
         See:
             * `vectorbtpro.generic.nb.apply_reduce.max_reduce_nb` for grouped operations.
             * `vectorbtpro.generic.nb.base.nanmax_nb` for non-grouped operations.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.generic`.
         """
         wrap_kwargs = merge_dicts(dict(name_or_index="max"), wrap_kwargs)
         if self.wrapper.grouper.is_grouped(group_by=group_by):
@@ -3794,6 +3802,9 @@ class GenericAccessor(BaseAccessor, Analyzable):
         See:
             * `vectorbtpro.generic.nb.apply_reduce.mean_reduce_nb` for grouped operations.
             * `vectorbtpro.generic.nb.base.nanmean_nb` for non-grouped operations.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.generic`.
         """
         wrap_kwargs = merge_dicts(dict(name_or_index="mean"), wrap_kwargs)
         if self.wrapper.grouper.is_grouped(group_by=group_by):
@@ -3846,6 +3857,9 @@ class GenericAccessor(BaseAccessor, Analyzable):
         See:
             * `vectorbtpro.generic.nb.apply_reduce.median_reduce_nb` for grouped operations.
             * `vectorbtpro.generic.nb.base.nanmedian_nb` for non-grouped operations.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.generic`.
         """
         wrap_kwargs = merge_dicts(dict(name_or_index="median"), wrap_kwargs)
         if self.wrapper.grouper.is_grouped(group_by=group_by):
@@ -3900,6 +3914,9 @@ class GenericAccessor(BaseAccessor, Analyzable):
         See:
             * `vectorbtpro.generic.nb.apply_reduce.std_reduce_nb` for grouped operations.
             * `vectorbtpro.generic.nb.base.nanstd_nb` for non-grouped operations.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.generic`.
         """
         wrap_kwargs = merge_dicts(dict(name_or_index="std"), wrap_kwargs)
         if self.wrapper.grouper.is_grouped(group_by=group_by):
@@ -3953,6 +3970,9 @@ class GenericAccessor(BaseAccessor, Analyzable):
         See:
             * `vectorbtpro.generic.nb.apply_reduce.sum_reduce_nb` for grouped operations.
             * `vectorbtpro.generic.nb.base.nansum_nb` for non-grouped operations.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.generic`.
         """
         wrap_kwargs = merge_dicts(dict(name_or_index="sum"), wrap_kwargs)
         if self.wrapper.grouper.is_grouped(group_by=group_by):
@@ -4007,6 +4027,9 @@ class GenericAccessor(BaseAccessor, Analyzable):
         See:
             * `vectorbtpro.generic.nb.apply_reduce.count_reduce_nb` for grouped operations.
             * `vectorbtpro.generic.nb.base.nancnt_nb` for non-grouped operations.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.generic`.
         """
         wrap_kwargs = merge_dicts(dict(name_or_index="count", dtype=int_), wrap_kwargs)
         if self.wrapper.grouper.is_grouped(group_by=group_by):
@@ -4196,15 +4219,15 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 wrap_kwargs=wrap_kwargs,
             )
 
-        def func(arr, index):
+        def _func(arr, index):
             out = np.full(arr.shape[1], np.nan, dtype=object)
             nan_mask = np.all(np.isnan(arr), axis=0)
             out[~nan_mask] = index[nanargmin(arr[:, ~nan_mask], axis=0)]
             return out
 
         chunked = ch.specialize_chunked_option(chunked, arg_take_spec=dict(index=None))
-        func = ch_reg.resolve_option(nb.nanmin_nb, chunked, target_func=func)
-        out = func(self.to_2d_array(), self.wrapper.index)
+        _func = ch_reg.resolve_option(nb.nanmin_nb, chunked, target_func=_func)
+        out = _func(self.to_2d_array(), self.wrapper.index)
         return self.wrapper.wrap_reduced(out, group_by=False, **wrap_kwargs)
 
     def idxmax(
@@ -4243,15 +4266,15 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 wrap_kwargs=wrap_kwargs,
             )
 
-        def func(arr, index):
+        def _func(arr, index):
             out = np.full(arr.shape[1], np.nan, dtype=object)
             nan_mask = np.all(np.isnan(arr), axis=0)
             out[~nan_mask] = index[nanargmax(arr[:, ~nan_mask], axis=0)]
             return out
 
         chunked = ch.specialize_chunked_option(chunked, arg_take_spec=dict(index=None))
-        func = ch_reg.resolve_option(nb.nanmax_nb, chunked, target_func=func)
-        out = func(self.to_2d_array(), self.wrapper.index)
+        _func = ch_reg.resolve_option(nb.nanmax_nb, chunked, target_func=_func)
+        out = _func(self.to_2d_array(), self.wrapper.index)
         return self.wrapper.wrap_reduced(out, group_by=False, **wrap_kwargs)
 
     def describe(
@@ -4766,7 +4789,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
     @property
     def ranges(self) -> Ranges:
         """Range records computed with default arguments by invoking `GenericAccessor.get_ranges`.
-        
+
         Returns:
             Ranges: The ranges generated from the data.
         """
@@ -4789,7 +4812,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
     @property
     def drawdowns(self) -> Drawdowns:
         """Drawdown records computed with default arguments by invoking `GenericAccessor.get_drawdowns`.
-        
+
         Returns:
             Drawdowns: Drawdown records computed with default arguments.
         """
@@ -4925,13 +4948,13 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
     def find_pattern(self, *args, **kwargs) -> PatternRanges:
         """Return pattern range records from the data.
-    
+
         Generate pattern range records using `vectorbtpro.generic.ranges.PatternRanges.from_pattern_search`.
-    
+
         Args:
-            *args: Positional arguments passed to 
+            *args: Positional arguments passed to
                 `vectorbtpro.generic.ranges.PatternRanges.from_pattern_search`.
-            **kwargs: Keyword arguments passed to 
+            **kwargs: Keyword arguments passed to
                 `vectorbtpro.generic.ranges.PatternRanges.from_pattern_search`.
 
         Returns:
@@ -5621,6 +5644,9 @@ class GenericAccessor(BaseAccessor, Analyzable):
         Returns:
             BaseFigure: A Plotly figure with the line plot and heatmap overlay.
 
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
+
         Examples:
             ```pycon
             >>> df['a'].vbt.overlay_with_heatmap(df['b']).show()
@@ -6296,6 +6322,9 @@ class GenericAccessor(BaseAccessor, Analyzable):
         Returns:
             BaseFigure: The figure object with the plotted pattern and error bands.
 
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
+
         Examples:
             ```pycon
             >>> sr = pd.Series([10, 11, 12, 13, 12, 13, 14, 15, 13, 14, 11])
@@ -6675,7 +6704,7 @@ class GenericSRAccessor(GenericAccessor, BaseSRAccessor):
         Returns:
             Union[Series, Tuple[Series, Series]]: The Renko series or a tuple containing
                 the Renko series and the uptrend series.
-"""
+        """
         func = jit_reg.resolve_option(nb.to_renko_1d_nb, jitted)
         arr_out, idx_out, uptrend_out = func(
             self.to_1d_array(),
@@ -6723,7 +6752,7 @@ class GenericSRAccessor(GenericAccessor, BaseSRAccessor):
         Returns:
             Frame: A DataFrame representing the OHLC Renko bars with columns
                 ["Open", "High", "Low", "Close"].
-"""
+        """
         func = jit_reg.resolve_option(nb.to_renko_ohlc_1d_nb, jitted)
         arr_out, idx_out = func(
             self.to_1d_array(),
@@ -6809,7 +6838,7 @@ class GenericDFAccessor(GenericAccessor, BaseDFAccessor):
                 q_readable = int(q_readable)
             band_title = f"Q={q_readable}% (proj)"
 
-            def band_func(df, _q=q):
+            def _band_func(df, _q=q):
                 return df.quantile(_q, axis=1)
 
         elif band_name.startswith("z="):
@@ -6819,7 +6848,7 @@ class GenericDFAccessor(GenericAccessor, BaseDFAccessor):
                 z_readable = int(z_readable)
             band_title = f"Z={z_readable} (proj)"
 
-            def band_func(df, _z=z):
+            def _band_func(df, _z=z):
                 return df.mean(axis=1) + _z * df.std(axis=1)
 
         elif band_name.startswith("p="):
@@ -6835,44 +6864,44 @@ class GenericDFAccessor(GenericAccessor, BaseDFAccessor):
             band_title = f"P={p_readable}% (proj)"
             z = st.norm.ppf(p)
 
-            def band_func(df, _z=z):
+            def _band_func(df, _z=z):
                 return df.mean(axis=1) + _z * df.std(axis=1)
 
         elif band_name == "mean":
             band_title = "Mean (proj)"
 
-            def band_func(df):
+            def _band_func(df):
                 return df.mean(axis=1)
 
         elif band_name == "min":
             band_title = "Min (proj)"
 
-            def band_func(df):
+            def _band_func(df):
                 return df.min(axis=1)
 
         elif band_name == "max":
             band_title = "Max (proj)"
 
-            def band_func(df):
+            def _band_func(df):
                 return df.max(axis=1)
 
         elif band_name == "lowest":
             band_title = "Lowest (proj)"
 
-            def band_func(df):
+            def _band_func(df):
                 return df[df.ffill().iloc[-1].idxmin()]
 
         elif band_name == "highest":
             band_title = "Highest (proj)"
 
-            def band_func(df):
+            def _band_func(df):
                 return df[df.ffill().iloc[-1].idxmax()]
 
         else:
             raise ValueError(f"Invalid band_name: '{band_name}'")
         if return_meta:
-            return dict(band_name=band_name, band_title=band_title, band_func=band_func)
-        return band_func(self.obj)
+            return dict(band_name=band_name, band_title=band_title, band_func=_band_func)
+        return _band_func(self.obj)
 
     def plot_projections(
         self,
@@ -6965,6 +6994,9 @@ class GenericDFAccessor(GenericAccessor, BaseDFAccessor):
             When using z-scores, the upper band should be positive, the middle computed as "mean", and
             the lower negative. For significance levels, the middle remains "mean" whereas the lower should be
             positive and lower than the upper (e.g., 25% and 75%).
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
 
         Examples:
             ```pycon

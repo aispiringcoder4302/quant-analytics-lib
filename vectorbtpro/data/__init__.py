@@ -8,7 +8,11 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Package providing interfaces for working with various data sources."""
+"""Package providing interfaces for working with various data sources.
+
+!!! info
+    For default settings, see `vectorbtpro._settings.data`.
+"""
 
 from typing import TYPE_CHECKING
 

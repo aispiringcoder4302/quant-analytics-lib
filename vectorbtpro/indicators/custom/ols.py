@@ -95,17 +95,20 @@ class _OLS(OLS):
         Args:
             column (Optional[Label]): Name of the column to plot.
             plot_y (bool): Whether to plot `OLS.y`.
-            y_trace_kwargs (KwargsLike): Keyword arguments passed to 
+            y_trace_kwargs (KwargsLike): Keyword arguments passed to
                 `plotly.graph_objects.Scatter` for `OLS.y`.
-            pred_trace_kwargs (KwargsLike): Keyword arguments passed to 
+            pred_trace_kwargs (KwargsLike): Keyword arguments passed to
                 `plotly.graph_objects.Scatter` for `OLS.pred`.
-            add_trace_kwargs (KwargsLike): Keyword arguments passed to 
+            add_trace_kwargs (KwargsLike): Keyword arguments passed to
                 `fig.add_trace` when adding each trace.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
             **layout_kwargs: Keyword arguments for configuring the figure layout.
 
         Returns:
             BaseFigure: Figure with plotted OLS predictions and actual values.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
 
         Examples:
             ```pycon
@@ -170,17 +173,20 @@ class _OLS(OLS):
             alpha (float): The alpha level for the confidence interval.
 
                 The default alpha value of 0.05 returns a 95% confidence interval.
-            zscore_trace_kwargs (KwargsLike): Keyword arguments passed to 
+            zscore_trace_kwargs (KwargsLike): Keyword arguments passed to
                 `plotly.graph_objects.Scatter` for `OLS.zscore`.
-            add_shape_kwargs (KwargsLike): Keyword arguments passed to 
+            add_shape_kwargs (KwargsLike): Keyword arguments passed to
                 `fig.add_shape` when adding the range between both confidence intervals.
-            add_trace_kwargs (KwargsLike): Keyword arguments passed to 
+            add_trace_kwargs (KwargsLike): Keyword arguments passed to
                 `fig.add_trace` when adding each trace.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
             **layout_kwargs: Keyword arguments for configuring the figure layout.
 
         Returns:
             BaseFigure: Figure with plotted OLS z-score and confidence intervals.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
 
         Examples:
             ```pycon

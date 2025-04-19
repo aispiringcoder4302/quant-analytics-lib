@@ -8,7 +8,11 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module providing utilities for working with dates and times."""
+"""Module providing utilities for working with dates and times.
+
+!!! info
+    For default settings, see `vectorbtpro._settings.datetime`.
+"""
 
 import re
 from collections import namedtuple
@@ -864,27 +868,44 @@ class DTC(DefineMixin):
         return False
 
     def has_date(self) -> bool:
-        """Return True if any date component (year, month, or day) is set; otherwise, return False."""
+        """Return whether any date component (year, month, or day) is set.
+
+        Returns:
+            bool: True if any date component is set; otherwise, False."""
         return self.year is not None or self.month is not None or self.day is not None
 
     def has_full_date(self) -> bool:
-        """Return True if all date components (year, month, and day) are set; otherwise, return False."""
+        """Return whether all date components (year, month, and day) are set.
+
+        Returns:
+            bool: True if all date components are set; otherwise, False.
+        """
         return self.year is not None and self.month is not None and self.day is not None
 
     def has_weekday(self) -> bool:
-        """Return True if the weekday component is set; otherwise, return False."""
+        """Return whether the weekday component is set.
+
+        Returns:
+            bool: True if the weekday component is set; otherwise, False.
+        """
         return self.weekday is not None
 
     def has_time(self) -> bool:
-        """Return True if any time component (hour, minute, second, or nanosecond) is set;
-        otherwise, return False."""
+        """Return whether any time component (hour, minute, second, or nanosecond) is set.
+
+        Returns:
+            bool: True if any time component is set; otherwise, False.
+        """
         return (
             self.hour is not None or self.minute is not None or self.second is not None or self.nanosecond is not None
         )
 
     def has_full_time(self) -> bool:
-        """Return True if all time components (hour, minute, second, and nanosecond) are set;
-        otherwise, return False."""
+        """Return whether all time components (hour, minute, second, and nanosecond) are set.
+
+        Returns:
+            bool: True if all time components are set; otherwise, False.
+        """
         return (
             self.hour is not None
             and self.minute is not None
@@ -893,13 +914,18 @@ class DTC(DefineMixin):
         )
 
     def has_full_datetime(self) -> bool:
-        """Return True if both all date components and all time components are set;
-        otherwise, return False."""
+        """Return whether all date and time components are set.
+
+        Returns:
+            bool: True if all date and time components are set; otherwise, False."""
         return self.has_full_date() and self.has_full_time()
 
     def is_not_none(self) -> bool:
-        """Return True if at least one component (date, weekday, or time) is set;
-        otherwise, return False."""
+        """Return whether any component (date, weekday, or time) is set.
+
+        Returns:
+            bool: True if any component is set; otherwise, False.
+        """
         return self.has_date() or self.has_weekday() or self.has_time()
 
     def to_time(self) -> time:
@@ -1089,6 +1115,9 @@ def to_timezone(
 
     Returns:
         tzinfo: The parsed timezone object.
+
+    !!! info
+        For default settings, see `vectorbtpro._settings.datetime`.
     """
     import dateparser
     from vectorbtpro._settings import settings
@@ -1156,6 +1185,9 @@ def to_timestamp(
 
     Returns:
         pd.Timestamp: The parsed and timezone-adjusted timestamp.
+
+    !!! info
+        For default settings, see `vectorbtpro._settings.datetime`.
     """
     from vectorbtpro._settings import settings
 
@@ -1262,6 +1294,9 @@ def to_tzaware_timestamp(
 
     Returns:
         pd.Timestamp: The timezone-aware timestamp.
+
+    !!! info
+        For default settings, see `vectorbtpro._settings.datetime`.
     """
     from vectorbtpro._settings import settings
 
@@ -1403,6 +1438,9 @@ def readable_datetime(
 
     Returns:
         str: The formatted human-readable datetime string.
+
+    !!! info
+        For default settings, see `vectorbtpro._settings.datetime`.
     """
     from vectorbtpro._settings import settings
 
@@ -1523,6 +1561,9 @@ def to_ns(obj: tp.ArrayLike, tz_naive_ns: tp.Optional[bool] = None) -> tp.ArrayL
 
     Returns:
         ArrayLike: The nanosecond representation of the input.
+
+    !!! info
+        For default settings, see `vectorbtpro._settings.datetime`.
     """
     from vectorbtpro._settings import settings
 
@@ -1599,6 +1640,18 @@ def date_range(
     * If both `end` and `periods` are None, sets `end` to the current datetime.
     * If `periods` is provided but both `start` and `end` are None, sets `start` to the Unix epoch start.
 
+    Args:
+        start (Optional[DatetimeLike]): The start of the date range.
+        end (Optional[DatetimeLike]): The end of the date range.
+        periods (Optional[int]): Number of periods to generate.
+        freq (Optional[FrequencyLike]): Frequency string or offset.
+        tz (Optional[TimezoneLike]): Timezone information.
+        inclusive (str): Whether to include the start and/or end date in the range.
+        timestamp_kwargs (KwargsLike): Keyword arguments for `to_timestamp`.
+        freq_kwargs (KwargsLike): Keyword arguments for `to_freq`.
+        timezone_kwargs (KwargsLike): Keyword arguments for `to_timezone`.
+        **kwargs: Additional keyword arguments passed to `pd.date_range`.
+
     Returns:
         pd.DatetimeIndex: The generated datetime index.
     """
@@ -1662,14 +1715,18 @@ def prepare_dt_index(
     If `index` has an object dtype and `parse_index` is enabled, it attempts parsing with `pd.to_datetime`.
     When `parse_with_dateparser` is True, a fallback using `dateparser.parse` is applied.
 
-    Passes:
-    * `dateparser_kwargs` to `dateparser.parse`.
-    * Keyword arguments to `pd.to_datetime`.
-
-    For default settings, see `vectorbtpro._settings.datetime`.
+    Args:
+        index (IndexLike): The input index to convert.
+        parse_index (Optional[bool]): Flag to enable parsing with `pd.to_datetime`.
+        parse_with_dateparser (Optional[bool]): Flag to enable parsing with the dateparser library.
+        dateparser_kwargs (KwargsLike): Keyword arguments for `dateparser.parse`.
+        **kwargs: Additional keyword arguments passed to `pd.to_datetime`.
 
     Returns:
         Index: The converted index, which will be a DatetimeIndex if conversion succeeded.
+
+    !!! info
+        For default settings, see `vectorbtpro._settings.datetime`.
     """
     import dateparser
     from vectorbtpro._settings import settings
@@ -1741,7 +1798,10 @@ def prepare_dt_index(
 def try_align_to_dt_index(source_index: tp.IndexLike, target_index: tp.Index, **kwargs) -> tp.Index:
     """Align `source_index` to the timezone of `target_index` if both are datetime indices.
 
-    Keyword arguments are forwarded to `prepare_dt_index`.
+    Args:
+        source_index (IndexLike): The source index to align.
+        target_index (Index): The target index to align to.
+        **kwargs: Additional keyword arguments for `prepare_dt_index`.
 
     Returns:
         Index: The aligned source index.
@@ -1758,7 +1818,10 @@ def try_align_to_dt_index(source_index: tp.IndexLike, target_index: tp.Index, **
 def try_align_dt_to_index(dt: tp.DatetimeLike, target_index: tp.Index, **kwargs) -> tp.DatetimeLike:
     """Align a datetime-like object to the timezone of a target datetime index.
 
-    Keyword arguments are passed to `to_timestamp`.
+    Args:
+        dt (DatetimeLike): The datetime-like object to align.
+        target_index (Index): The target index to align to.
+        **kwargs: Additional keyword arguments for `to_timestamp`.
 
     Returns:
         DatetimeLike: The aligned datetime-like object.
@@ -1779,6 +1842,9 @@ def auto_detect_freq(index: tp.Index) -> tp.Optional[tp.PandasFrequency]:
     If the minimal interval occurs in more than half of the transitions, returns that interval;
     otherwise, returns None.
 
+    Args:
+        index (Index): A pandas datetime index.
+
     Returns:
         Optional[PandasFrequency]: The detected frequency or None.
     """
@@ -1795,6 +1861,9 @@ def parse_index_freq(index: pd.DatetimeIndex) -> tp.Optional[tp.PandasFrequency]
 
     Checks the `freqstr` and `freq` attributes, and if necessary infers the frequency when the index
     has at least three elements.
+
+    Args:
+        index (DatetimeIndex): A pandas datetime index.
 
     Returns:
         Optional[PandasFrequency]: The parsed frequency or None if undetectable.
@@ -1814,6 +1883,9 @@ def freq_depends_on_index(freq: tp.FrequencyLike) -> bool:
     """Determine if the given frequency string indicates dependency on the index.
 
     Returns True if `freq` is "auto" or starts with "index_", otherwise returns False.
+
+    Args:
+        freq (FrequencyLike): The frequency string to check.
 
     Returns:
         bool: True if the frequency depends on the index, else False.
@@ -1845,8 +1917,6 @@ def infer_index_freq(
     If `freq_from_n` is an integer (positive or negative), the index is limited to the first or last
     N elements respectively.
 
-    Defaults are obtained from `vectorbtpro._settings.datetime`.
-
     Args:
         index (Index): A pandas datetime index.
         freq (Optional[FrequencyLike]): A frequency specification as a string or frequency-like object.
@@ -1856,6 +1926,9 @@ def infer_index_freq(
 
     Returns:
         Union[None, int, float, PandasFrequency]: The inferred or converted frequency.
+
+    !!! info
+        For default settings, see `vectorbtpro._settings.datetime`.
     """
     from vectorbtpro._settings import settings
 

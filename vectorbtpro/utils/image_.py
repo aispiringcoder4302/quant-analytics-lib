@@ -156,5 +156,5 @@ def save_animation(
                     next_j = index_steps[i + 1]
                     pbar.set_description("{} → {}".format(str(index[next_j]), str(index[next_j + delta - 1])))
                 pbar.update()
-                
+
     return fname

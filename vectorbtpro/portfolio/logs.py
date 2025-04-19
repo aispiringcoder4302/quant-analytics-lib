@@ -11,7 +11,7 @@
 """Module for working with log records.
 
 This module provides the base class for managing log records generated during portfolio simulations.
-Log records capture detailed information on simulation events and can be accessed via 
+Log records capture detailed information on simulation events and can be accessed via
 `vectorbtpro.portfolio.base.Portfolio.logs`.
 
 ```pycon
@@ -208,8 +208,11 @@ LogsT = tp.TypeVar("LogsT", bound="Logs")
 class Logs(PriceRecords):
     """Class for managing log records.
 
-    Extends `vectorbtpro.generic.price_records.PriceRecords` to integrate log-specific configurations, 
+    Extends `vectorbtpro.generic.price_records.PriceRecords` to integrate log-specific configurations,
     including statistics defaults, metrics, and plotting options.
+
+    !!! info
+        For default settings, see `vectorbtpro._settings.logs`.
     """
 
     @property
@@ -222,7 +225,7 @@ class Logs(PriceRecords):
     def stats_defaults(self) -> tp.Kwargs:
         """Default configuration for `Logs.stats`.
 
-        Merges the default statistics configuration from `PriceRecords.stats_defaults` with 
+        Merges the default statistics configuration from `PriceRecords.stats_defaults` with
         the log-specific settings from `vectorbtpro._settings.logs`.
 
         Returns:
@@ -282,7 +285,7 @@ class Logs(PriceRecords):
     def plots_defaults(self) -> tp.Kwargs:
         """Default configuration for `Logs.plots`.
 
-        Merges the default plotting settings from `PriceRecords.plots_defaults` with 
+        Merges the default plotting settings from `PriceRecords.plots_defaults` with
         the log-specific plot configuration from `vectorbtpro._settings.logs`.
 
         Returns:

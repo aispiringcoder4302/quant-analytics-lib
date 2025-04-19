@@ -37,6 +37,9 @@ class CSVData(FileData):
 
     See:
         * `CSVData.fetch_key` for argument details.
+
+    !!! info
+        For default settings, see `custom.csv` in `vectorbtpro._settings.data`.
     """
 
     _settings_path: tp.SettingsPath = dict(custom="data.custom.csv")
@@ -140,8 +143,6 @@ class CSVData(FileData):
 
         Returns:
             SymbolData: The fetched data and a metadata dictionary.
-
-        Defaults are specified in `custom.csv` within `vectorbtpro._settings.data`.
         """
         from pandas.io.parsers import TextFileReader
         from pandas.api.types import is_object_dtype

@@ -48,7 +48,7 @@ FSTD = IndicatorFactory(
 
 class _FSTD(FSTD):
     """Class representing the look-ahead future standard deviation generator.
-    
+
     See:
         * `vectorbtpro.indicators.nb.future_std_nb` for the underlying implementation.
     """
@@ -74,6 +74,9 @@ class _FSTD(FSTD):
 
         Returns:
             BaseFigure: The updated figure with the `FSTD.fstd` indicator plotted.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
 
         Examples:
             ```pycon

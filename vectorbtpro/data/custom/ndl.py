@@ -35,6 +35,9 @@ class NDLData(RemoteData):
         * https://github.com/Nasdaq/data-link-python for the official API documentation.
         * `NDLData.fetch_symbol` for argument details.
 
+    !!! info
+        For default settings, see `custom.ndl` in `vectorbtpro._settings.data`.
+
     Examples:
         Set up the API key globally (optional):
 
@@ -106,8 +109,6 @@ class NDLData(RemoteData):
 
         Returns:
             SymbolData: The fetched data and a metadata dictionary.
-
-        For defaults, refer to `vectorbtpro._settings.data.custom.ndl`.
         """
         from vectorbtpro.utils.module_ import assert_can_import
 

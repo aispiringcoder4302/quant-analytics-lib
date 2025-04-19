@@ -124,7 +124,7 @@ class LocBase(Base):
     @property
     def indexing_func(self) -> tp.Callable:
         """The function used to perform indexing operations on associated pandas objects.
-        
+
         Returns:
             Callable: The function used for indexing.
         """
@@ -133,7 +133,7 @@ class LocBase(Base):
     @property
     def indexing_setter_func(self) -> tp.Optional[tp.Callable]:
         """The function used to set values via indexing on associated pandas objects.
-        
+
         Returns:
             Optional[Callable]: The function used for setting indexed values.
         """
@@ -142,7 +142,7 @@ class LocBase(Base):
     @property
     def indexing_kwargs(self) -> dict:
         """Keyword arguments for the indexing function.
-        
+
         Returns:
             dict: A dictionary of keyword arguments for indexing.
         """
@@ -284,7 +284,7 @@ class PandasIndexer(IndexingBase):
     @property
     def iloc(self) -> iLoc:
         """Property providing integer-location based indexing via Pandas `iloc`.
-        
+
         Returns:
             iLoc: An instance of the `iLoc` accessor for integer-location based indexing.
         """
@@ -295,7 +295,7 @@ class PandasIndexer(IndexingBase):
     @property
     def loc(self) -> Loc:
         """Property providing label-based indexing via Pandas `loc`.
-        
+
         Returns:
             Loc: An instance of the `Loc` accessor for label-based indexing.
         """
@@ -377,7 +377,7 @@ class ExtPandasIndexer(PandasIndexer):
     @property
     def xloc(self) -> xLoc:
         """Property providing `Idxr`-based indexing functionality via `xLoc`.
-        
+
         Returns:
             xLoc: An instance of the `xLoc` accessor for `Idxr`-based indexing.
         """
@@ -438,7 +438,7 @@ class ParamLoc(LocBase):
         return self._level_name
 
     @classmethod
-    def encode_key(cls, key: tp.Any):
+    def encode_key(cls, key: tp.Any) -> str:
         """Encode the provided key for consistent mapping.
 
         Args:
@@ -2947,7 +2947,12 @@ class IdxSetterFactory(Base):
     """Class for constructing index setter instances."""
 
     def get(self) -> tp.Union[IdxSetter, tp.Dict[tp.Label, IdxSetter]]:
-        """Return an `IdxSetter` instance or a dictionary mapping array names to `IdxSetter` instances."""
+        """Return an `IdxSetter` instance or a dictionary mapping array names to `IdxSetter` instances.
+
+        Returns:
+            Union[IdxSetter, Dict[Label, IdxSetter]]: An `IdxSetter` instance or
+                a dictionary of `IdxSetter` instances.
+        """
         raise NotImplementedError
 
 

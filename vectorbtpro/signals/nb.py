@@ -16,9 +16,9 @@ These only accept NumPy arrays and other Numba-compatible types.
 
 !!! note
     vectorbtpro treats matrices as first-class citizens and expects input arrays to be
-    2-dim, unless function has suffix `_1d` or is meant to be input to another function. 
+    2-dim, unless function has suffix `_1d` or is meant to be input to another function.
     Data is processed along index (axis 0).
-    
+
     All functions passed as argument must be Numba-compiled.
 """
 
@@ -574,12 +574,6 @@ def stop_place_nb(
 ) -> int:
     """Place an exit signal when a threshold is reached, implementing `place_func_nb`.
 
-    !!! note
-        Waiting time cannot exceed 1.
-
-        * If waiting time is 0, `entry_ts` corresponds to the first value in the bar.
-        * If waiting time is 1, `entry_ts` corresponds to the last value in the bar.
-
     Args:
         c (Union[GenExContext, GenEnExContext]): Signal generation context.
         entry_ts (FlexArray2d): Entry price array.
@@ -604,6 +598,12 @@ def stop_place_nb(
 
     Returns:
         int: The relative index at which the exit signal was placed, or -1 if no exit signal occurred.
+
+    !!! note
+        Waiting time cannot exceed 1.
+
+        * If waiting time is 0, `entry_ts` corresponds to the first value in the bar.
+        * If waiting time is 1, `entry_ts` corresponds to the last value in the bar.
     """
     if c.wait > 1:
         raise ValueError("Wait must be either 0 or 1")
@@ -687,9 +687,6 @@ def ohlc_stop_place_nb(
     It simultaneously checks for trailing stop loss and take profit thresholds,
     tracking the hit price and corresponding stop type.
 
-    !!! note
-        The waiting time must not exceed 1.
-
     Args:
         c (Union[GenExContext, GenEnExContext]): Signal generation context.
         entry_price (FlexArray2d): Entry price array.
@@ -734,6 +731,9 @@ def ohlc_stop_place_nb(
     Returns:
         int: Index offset (relative to `c.from_i`) of the bar at which an exit signal was triggered,
             or -1 if no exit signal was generated.
+
+    !!! note
+        The waiting time must not exceed 1.
     """
     if c.wait > 1:
         raise ValueError("Wait must be either 0 or 1")
@@ -1253,7 +1253,7 @@ def relation_idxs_1d_nb(
 
     Returns:
         Tuple[Array1d, Array1d, Array1d, Array1d]: A tuple containing:
-        
+
             * `source_range`: Order positions for source signals.
             * `target_range`: Order positions for target signals.
             * `source_idxs`: Indices of True entries in the source mask.
@@ -2110,7 +2110,7 @@ def norm_avg_index_nb(mask: tp.Array2d) -> tp.Array1d:
     merge_func="concat",
 )
 @register_jitted(cache=True, tags={"can_parallel"})
-def norm_avg_index_grouped_nb(mask, group_lens):
+def norm_avg_index_grouped_nb(mask: tp.Array2d, group_lens: tp.Array1d) -> tp.Array1d:
     """Return normalized average indices for each group in a 2D boolean mask.
 
     Args:

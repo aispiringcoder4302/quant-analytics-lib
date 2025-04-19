@@ -33,11 +33,11 @@ except ImportError:
     import functools
 
     def get_raw_annotations(
-        obj: tp.Any, 
-        *, 
-        globals: tp.Optional[dict] = None, 
-        locals: tp.Optional[dict] = None, 
-        eval_str: bool = False
+        obj: tp.Any,
+        *,
+        globals: tp.Optional[dict] = None,
+        locals: tp.Optional[dict] = None,
+        eval_str: bool = False,
     ) -> dict:
         """Return raw annotations for a module, class, or callable.
 

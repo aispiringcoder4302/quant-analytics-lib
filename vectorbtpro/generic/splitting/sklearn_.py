@@ -25,7 +25,7 @@ __all__ = [
 
 
 class SplitterCV(BaseCrossValidator, Base):
-    """Class representing a scikit-learn compatible cross-validator based on 
+    """Class representing a scikit-learn compatible cross-validator based on
     `vectorbtpro.generic.splitting.base.Splitter`.
 
     Args:
@@ -122,7 +122,7 @@ class SplitterCV(BaseCrossValidator, Base):
     @property
     def splitter_kwargs(self) -> tp.KwargsLike:
         """Keyword arguments for the splitter factory method.
-        
+
         Returns:
             KwargsLike: Keyword arguments for the splitter factory method.
         """
@@ -159,7 +159,7 @@ class SplitterCV(BaseCrossValidator, Base):
     @property
     def template_context(self) -> tp.KwargsLike:
         """Mapping used for template substitution in ranges, passed to the splitter factory.
-        
+
         Returns:
             KwargsLike: Mapping for template substitution in ranges.
         """

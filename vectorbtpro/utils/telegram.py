@@ -8,7 +8,11 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module providing messaging functionality using Python Telegram Bot."""
+"""Module providing messaging functionality using Python Telegram Bot.
+
+!!! info
+    For default settings, see `vectorbtpro._settings.telegram`.
+"""
 
 from vectorbtpro.utils.module_ import assert_can_import
 
@@ -68,10 +72,10 @@ def self_decorator(self, func: tp.Callable) -> tp.Callable:
         Callable: The decorated command function with the bot instance provided.
     """
 
-    def command_func(update, context, *args, **kwargs):
+    def _command_func(update, context, *args, **kwargs):
         return func(self, update, context, *args, **kwargs)
 
-    return command_func
+    return _command_func
 
 
 try:
@@ -123,10 +127,9 @@ if __version_info__ < (20, 0, 0, "alpha", 1):
 """
 
     class TelegramBot(Configured):
-        """Telegram bot class integrating with the python-telegram-bot library.
+        """Telegram bot class integrating with the python-telegram-bot (PTB) library.
 
-        This bot loads its configuration from `vectorbtpro._settings.telegram` and uses keyword
-        arguments to override settings for `telegram.ext.updater.Updater`.
+        See https://github.com/python-telegram-bot/python-telegram-bot/wiki/ to get started.
 
         Args:
             giphy_kwargs (KwargsLike): Configuration options for Giphy, merged with default Giphy settings.
@@ -136,7 +139,8 @@ if __version_info__ < (20, 0, 0, "alpha", 1):
             **kwargs: Keyword arguments for configuring the updater;
                 they override settings for the bot.
 
-        See [Extensions – Your first Bot](https://github.com/python-telegram-bot/python-telegram-bot/wiki/Extensions-%E2%80%93-Your-first-Bot).
+        !!! info
+            For default settings, see `vectorbtpro._settings.telegram`.
 
         Examples:
             Let's extend `TelegramBot` to track cryptocurrency prices:
@@ -315,6 +319,9 @@ if __version_info__ < (20, 0, 0, "alpha", 1):
 
             Returns:
                 None
+
+            !!! info
+                For default settings, see `bot` in `vectorbtpro._settings.telegram`.
             """
             from vectorbtpro._settings import settings
 
@@ -340,6 +347,9 @@ if __version_info__ < (20, 0, 0, "alpha", 1):
             """Callback executed after the bot has started.
 
             Override this method to execute custom commands once the bot is online.
+
+            Returns:
+                None
             """
             self.send_message_to_all("I'm back online!")
 
@@ -441,7 +451,7 @@ if __version_info__ < (20, 0, 0, "alpha", 1):
                 *args: Positional arguments passed to `TelegramBot.send_to_all`.
                 giphy_kwargs (KwargsLike): Keyword arguments for generating the GIPHY URL.
                 **kwargs: Keyword arguments passed to `TelegramBot.send_to_all`.
-                
+
             Returns:
                 None
             """
@@ -456,7 +466,7 @@ if __version_info__ < (20, 0, 0, "alpha", 1):
             """Message to be sent in response to the `/start` command.
 
             Override this property to define a custom start message.
-            
+
             Returns:
                 str: The message.
             """
@@ -468,7 +478,7 @@ if __version_info__ < (20, 0, 0, "alpha", 1):
             Args:
                 update (object): The incoming update.
                 context (CallbackContext): The callback context containing additional data.
-                
+
             Returns:
                 None
             """
@@ -483,7 +493,7 @@ if __version_info__ < (20, 0, 0, "alpha", 1):
             """Message to be sent in response to the `/help` command.
 
             Override this property to define a custom help message.
-            
+
             Returns:
                 str: The message.
             """
@@ -509,7 +519,7 @@ if __version_info__ < (20, 0, 0, "alpha", 1):
             Args:
                 update (object): The incoming update.
                 context (CallbackContext): The callback context containing additional data.
-            
+
             Returns:
                 None
             """
@@ -527,7 +537,7 @@ if __version_info__ < (20, 0, 0, "alpha", 1):
             Args:
                 update (object): The incoming update.
                 context (CallbackContext): The callback context containing additional data.
-                
+
             Returns:
                 None
             """
@@ -556,7 +566,7 @@ if __version_info__ < (20, 0, 0, "alpha", 1):
             """Stop the bot.
 
             Logs an informational message and stops the updater.
-            
+
             Returns:
                 None
             """
@@ -566,7 +576,7 @@ if __version_info__ < (20, 0, 0, "alpha", 1):
         @property
         def running(self) -> bool:
             """Indicate whether the bot is currently running.
-            
+
             Returns:
                 bool: True if the bot is running, False otherwise.
             """
@@ -609,15 +619,20 @@ else:
             return None
 
     class TelegramBot(Configured):
-        """Telegram bot.
+        """Telegram bot class integrating with the python-telegram-bot library.
 
-        Implements a Telegram bot that handles commands, updates, and GIPHY configurations.
+        See https://github.com/python-telegram-bot/python-telegram-bot/wiki/ to get started.
 
         Args:
-            giphy_kwargs (KwargsLike): Keyword arguments for GIPHY configuration.
-            **kwargs: Additional configuration options passed to `TelegramBot.build_application`.
+            giphy_kwargs (KwargsLike): Configuration options for Giphy, merged with default Giphy settings.
 
-        See [Extensions – Your first Bot](https://github.com/python-telegram-bot/python-telegram-bot/wiki/Extensions-%E2%80%93-Your-first-Bot).
+                These settings are merged with the default configuration obtained from
+                `vectorbtpro._settings.telegram` under the giphy key.
+            **kwargs: Keyword arguments for configuring the updater;
+                they override settings for the bot.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.telegram`.
 
         !!! note
             If you get "RuntimeError: Cannot close a running event loop" when running in Jupyter,
@@ -689,7 +704,7 @@ else:
                 bot = MyTelegramBot(token='YOUR_TOKEN')
                 bot.start()
             ```
-            """
+        """
 
         _expected_keys_mode: tp.ExpectedKeysMode = "disable"
 
@@ -717,6 +732,9 @@ else:
 
             Returns:
                 Application: The constructed application instance.
+
+            !!! info
+                For default settings, see `bot` in `vectorbtpro._settings.telegram`.
             """
             from vectorbtpro._settings import settings
 
@@ -767,6 +785,9 @@ else:
 
             Register the log handler, start command, help command, custom handlers, migration handler,
             unknown command handler, and error handler with the application.
+
+            Returns:
+                None
             """
             self.application.add_handler(self.log_handler)
             self.application.add_handler(CommandHandler("start", self.start_callback))
@@ -878,7 +899,7 @@ else:
                 text (str): The text message to send.
                 *args: Positional arguments passed to `TelegramBot.send`.
                 **kwargs: Keyword arguments passed to `TelegramBot.send`.
-            
+
             Returns:
                 None
             """
@@ -946,6 +967,9 @@ else:
             """Execute post-start actions.
 
             Send a message to all chats indicating that the bot is active.
+
+            Returns:
+                None
             """
             await self.send_message_to_all("I'm back to life!")
 
@@ -953,6 +977,9 @@ else:
             """Execute pre-stop actions.
 
             Send a message to all chats indicating that the bot is shutting down.
+
+            Returns:
+                None
             """
             await self.send_message_to_all("Bye!")
 
@@ -1095,6 +1122,9 @@ else:
 
             Returns:
                 None
+
+            !!! info
+                For default settings, see `bot` in `vectorbtpro._settings.telegram`.
             """
             from vectorbtpro._settings import settings
 
@@ -1178,7 +1208,7 @@ else:
         @property
         def running(self) -> bool:
             """Bot running state.
-            
+
             Returns:
                 bool: True if the bot is running, False otherwise.
             """

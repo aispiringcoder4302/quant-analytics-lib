@@ -8,7 +8,11 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module providing utilities for jitting."""
+"""Module providing utilities for jitting.
+
+!!! info
+    For default settings, see `vectorbtpro._settings.jitting` and `vectorbtpro._settings.numba`.
+"""
 
 from numba import jit as nb_jit
 
@@ -33,9 +37,12 @@ class Jitter(Configured):
     @property
     def wrapping_disabled(self) -> bool:
         """Global flag indicating whether jitting wrapping is disabled.
-        
+
         Returns:
             bool: True if jitting wrapping is disabled, False otherwise.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.jitting`.
         """
         from vectorbtpro._settings import settings
 
@@ -208,6 +215,9 @@ def get_func_suffix(py_func: tp.Callable) -> tp.Optional[str]:
 
     Returns:
         Optional[str]: The suffix in lowercase if recognized; otherwise, None.
+
+    !!! info
+        For default settings, see `vectorbtpro._settings.jitting`.
     """
     from vectorbtpro._settings import settings
 
@@ -241,6 +251,9 @@ def resolve_jitter_type(
 
     Returns:
         Type[Jitter]: The resolved jitter class.
+
+    !!! info
+        For default settings, see `vectorbtpro._settings.jitting`.
     """
     from vectorbtpro._settings import settings
 
@@ -286,6 +299,9 @@ def get_id_of_jitter_type(jitter_type: tp.Type[Jitter]) -> tp.Optional[tp.Hashab
 
     Returns:
         Optional[Hashable]: The identifier if found; otherwise, None.
+
+    !!! info
+        For default settings, see `vectorbtpro._settings.jitting`.
     """
     from vectorbtpro._settings import settings
 
@@ -314,13 +330,14 @@ def resolve_jitted_option(option: tp.JittedOption = None) -> tp.KwargsLike:
     * str: Use the option as the jitter name.
     * dict: Interpret the option as a dictionary of keyword arguments for jitting.
 
-    Refer to the `option` in `vectorbtpro._settings.jitting` for default behavior.
-
     Args:
         option (JittedOption): The jitting option to resolve.
 
     Returns:
         KwargsLike: A dictionary of keyword arguments for jitting, or None if jitting is disabled.
+
+    !!! info
+        For default settings, see `vectorbtpro._settings.jitting`.
     """
     from vectorbtpro._settings import settings
 
@@ -369,6 +386,9 @@ def resolve_jitted_kwargs(option: tp.JittedOption = None, **kwargs) -> tp.Kwargs
 
     !!! note
         Keys in `option` have more priority than in `kwargs`.
+
+    !!! info
+        For default settings, see `vectorbtpro._settings.jitting`.
     """
     from vectorbtpro._settings import settings
 

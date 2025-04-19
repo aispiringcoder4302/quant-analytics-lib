@@ -36,6 +36,7 @@ def attach_returns_acc_methods(config: Config) -> tp.ClassWrapper:
     Returns:
         ClassWrapper: A decorator that attaches returns accessor methods to the class.
     """
+
     def wrapper(cls: tp.Type[tp.T]) -> tp.Type[tp.T]:
         checks.assert_subclass_of(cls, "Portfolio")
 
@@ -109,8 +110,8 @@ def attach_shortcut_properties(config: Config) -> tp.ClassWrapper:
             * `method_name`: The name of the source method. Defaults to the target name prefixed with "get_".
             * `use_in_outputs`: A boolean indicating whether the property can return an in-place output.
             * `method_kwargs`: Keyword arguments passed to the source method.
-            * `decorator`: The decorator to apply. Defaults to `vectorbtpro.utils.decorators.cached_property` 
-                for object types 'records' and 'red_array', otherwise 
+            * `decorator`: The decorator to apply. Defaults to `vectorbtpro.utils.decorators.cached_property`
+                for object types 'records' and 'red_array', otherwise
                 `vectorbtpro.utils.decorators.cacheable_property`.
             * `docstring`: The docstring for the generated property.
             * Keyword arguments for wrapping, indexing, resampling, stacking, etc.
@@ -118,6 +119,7 @@ def attach_shortcut_properties(config: Config) -> tp.ClassWrapper:
     Returns:
         ClassWrapper: A decorator that attaches shortcut properties to the class.
     """
+
     def wrapper(cls: tp.Type[tp.T]) -> tp.Type[tp.T]:
         checks.assert_subclass_of(cls, "Portfolio")
 

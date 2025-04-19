@@ -86,7 +86,9 @@ class MergeFunc(Evaluable, Annotatable, DefineMixin):
     def resolve_merge_func(self) -> tp.Optional[tp.Callable]:
         """Return the merging function with pre-bound keyword arguments after applying template substitutions.
 
-        If the merging function cannot be resolved, returns None.
+        Returns:
+            Optional[Callable]: The merging function with pre-bound keyword arguments,
+                or None if the merging function cannot be resolved.
         """
         from vectorbtpro.base.merging import resolve_merge_func
 

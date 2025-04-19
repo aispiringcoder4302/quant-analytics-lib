@@ -78,14 +78,18 @@ class BaseIDXAccessor(Configured, IndexApplier):
     @property
     def obj(self) -> tp.Index:
         """Pandas Index object.
-        
+
         Returns:
             Index: The underlying Pandas Index object.
         """
         return self._obj
 
     def get(self) -> tp.Index:
-        """Return the underlying Pandas Index object."""
+        """Return Pandas Index object.
+
+        Returns:
+            Index: The underlying Pandas Index object.
+        """
         return self.obj
 
     # ############# Index ############# #
@@ -94,6 +98,9 @@ class BaseIDXAccessor(Configured, IndexApplier):
         """Convert the index to a 64-bit integer array.
 
         Timestamps are converted to nanoseconds.
+
+        Returns:
+            Array1d: The resulting 64-bit integer array.
         """
         return dt.to_ns(self.obj)
 
@@ -367,6 +374,9 @@ class BaseIDXAccessor(Configured, IndexApplier):
 
         Returns:
             Union[None, float, PandasFrequency]: The inferred frequency, or None if conversion fails.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.wrapping`.
         """
         from vectorbtpro._settings import settings
 
@@ -415,7 +425,7 @@ class BaseIDXAccessor(Configured, IndexApplier):
     @property
     def any_freq(self) -> tp.Union[None, float, tp.PandasFrequency]:
         """Return the frequency of the index of any type using `BaseIDXAccessor.get_freq`.
-        
+
         Returns:
             Union[None, float, PandasFrequency]: The frequency of the index, or None if not set.
         """
@@ -463,6 +473,9 @@ class BaseIDXAccessor(Configured, IndexApplier):
 
         Returns:
             float: The calculated number of periods.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.wrapping`.
         """
         from vectorbtpro._settings import settings
 
@@ -518,6 +531,9 @@ class BaseIDXAccessor(Configured, IndexApplier):
 
         Returns:
             Union[pd.Index, MaybeArray]: The array converted to time durations.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.wrapping`.
         """
         from vectorbtpro._settings import settings
 
@@ -671,9 +687,6 @@ class BaseIDXAccessor(Configured, IndexApplier):
         """Return the result of splitting the Pandas object using
         `vectorbtpro.generic.splitting.base.Splitter.split_and_take`.
 
-        !!! note
-            Splits the Pandas object itself, not the accessor.
-
         Args:
             *args: Positional arguments passed to
                 `vectorbtpro.generic.splitting.base.Splitter.split_and_take`.
@@ -683,6 +696,9 @@ class BaseIDXAccessor(Configured, IndexApplier):
 
         Returns:
             Any: The result of the split operation.
+
+        !!! note
+            Splits the Pandas object itself, not the accessor.
         """
         from vectorbtpro.generic.splitting.base import Splitter
 
@@ -700,9 +716,6 @@ class BaseIDXAccessor(Configured, IndexApplier):
         """Return the result of splitting and applying a function using
         `vectorbtpro.generic.splitting.base.Splitter.split_and_apply`.
 
-        !!! note
-            Splits the Pandas object itself, not the accessor.
-
         Args:
             apply_func (Callable): The function to apply to each split.
             *args: Positional arguments passed to
@@ -713,6 +726,9 @@ class BaseIDXAccessor(Configured, IndexApplier):
 
         Returns:
             Any: The result after applying the split and apply operation.
+
+        !!! note
+            Splits the Pandas object itself, not the accessor.
         """
         from vectorbtpro.generic.splitting.base import Splitter, Takeable
 
@@ -1126,7 +1142,7 @@ class BaseAccessor(Wrapping):
     @hybrid_property
     def sr_accessor_cls(cls_or_self) -> tp.Type["BaseSRAccessor"]:
         """Pandas Series accessor class.
-        
+
         Returns:
             Type[BaseSRAccessor]: The class of the Series accessor.
         """
@@ -1135,7 +1151,7 @@ class BaseAccessor(Wrapping):
     @hybrid_property
     def df_accessor_cls(cls_or_self) -> tp.Type["BaseDFAccessor"]:
         """Pandas DataFrame accessor class.
-        
+
         Returns:
             Type[BaseDFAccessor]: The class of the DataFrame accessor.
         """
@@ -1235,14 +1251,22 @@ class BaseAccessor(Wrapping):
 
     @hybrid_method
     def is_series(cls_or_self) -> bool:
-        """Determine whether the underlying object is a Pandas Series."""
+        """Determine whether the underlying object is a Pandas Series.
+
+        Returns:
+            bool: True if the underlying object is a Series, False otherwise.
+        """
         if isinstance(cls_or_self, type):
             raise NotImplementedError
         return isinstance(cls_or_self.obj, pd.Series)
 
     @hybrid_method
     def is_frame(cls_or_self) -> bool:
-        """Determine whether the underlying object is a Pandas DataFrame."""
+        """Determine whether the underlying object is a Pandas DataFrame.
+
+        Returns:
+            bool: True if the underlying object is a DataFrame, False otherwise.
+        """
         if isinstance(cls_or_self, type):
             raise NotImplementedError
         return isinstance(cls_or_self.obj, pd.DataFrame)

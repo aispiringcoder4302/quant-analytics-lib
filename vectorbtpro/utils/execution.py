@@ -8,7 +8,11 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module providing engines for executing functions."""
+"""Module providing engines for executing functions.
+
+!!! info
+    For default settings, see `vectorbtpro._settings.execution`.
+"""
 
 import concurrent.futures
 import enum
@@ -236,7 +240,8 @@ class SerialEngine(ExecutionEngine):
         delay (Optional[float]): Number of seconds to pause after each function call.
         **kwargs: Keyword arguments passed to `ExecutionEngine`.
 
-    For defaults, see `engines.serial` in `vectorbtpro._settings.execution`.
+    !!! info
+        For default settings, see `engines.serial` in `vectorbtpro._settings.execution`.
     """
 
     _settings_path: tp.SettingsPath = "execution.engines.serial"
@@ -269,7 +274,7 @@ class SerialEngine(ExecutionEngine):
     @property
     def show_progress(self) -> bool:
         """Indicates whether the progress bar is displayed.
-        
+
         Returns:
             bool: True if the progress bar is shown, False otherwise.
         """
@@ -278,7 +283,7 @@ class SerialEngine(ExecutionEngine):
     @property
     def pbar_kwargs(self) -> tp.Kwargs:
         """Configuration keyword arguments for `vectorbtpro.utils.pbar.ProgressBar`.
-        
+
         Returns:
             Kwargs: Keyword arguments for the progress bar.
         """
@@ -289,7 +294,7 @@ class SerialEngine(ExecutionEngine):
         """Indicates whether to clear vectorbtpro's cache after each iteration.
 
         If provided as an integer, clears the cache every specified number of tasks.
-        
+
         Returns:
             Union[bool, int]: True to clear cache after each iteration, False to skip,
                 or an integer specifying the interval for clearing the cache.
@@ -301,7 +306,7 @@ class SerialEngine(ExecutionEngine):
         """Indicates whether to perform garbage collection after each iteration.
 
         If provided as an integer, collects garbage every specified number of tasks.
-        
+
         Returns:
             Union[bool, int]: True to collect garbage after each iteration, False to skip,
                 or an integer specifying the interval for collecting garbage.
@@ -311,7 +316,7 @@ class SerialEngine(ExecutionEngine):
     @property
     def delay(self) -> tp.Optional[float]:
         """Specifies the number of seconds to pause after each function call.
-        
+
         Returns:
             Optional[float]: Delay in seconds. If None, no delay is applied.
         """
@@ -383,7 +388,8 @@ class ThreadPoolEngine(ExecutionEngine):
         hide_inner_progress (Optional[bool]): Indicates whether inner progress bars are hidden.
         **kwargs: Keyword arguments passed to `ExecutionEngine`.
 
-    For defaults, see `engines.threadpool` in `vectorbtpro._settings.execution`.
+    !!! info
+        For default settings, see `engines.threadpool` in `vectorbtpro._settings.execution`.
     """
 
     _settings_path: tp.SettingsPath = "execution.engines.threadpool"
@@ -410,7 +416,7 @@ class ThreadPoolEngine(ExecutionEngine):
     @property
     def init_kwargs(self) -> tp.Kwargs:
         """Configuration keyword arguments for `concurrent.futures.ThreadPoolExecutor`.
-        
+
         Returns:
             Kwargs: Configuration keyword arguments.
         """
@@ -419,7 +425,7 @@ class ThreadPoolEngine(ExecutionEngine):
     @property
     def timeout(self) -> tp.Optional[int]:
         """Timeout for waiting on task results.
-        
+
         Returns:
             Optional[int]: Timeout in seconds, or None if no timeout is set.
         """
@@ -428,7 +434,7 @@ class ThreadPoolEngine(ExecutionEngine):
     @property
     def hide_inner_progress(self) -> bool:
         """Indicates whether progress bars within each thread are hidden.
-        
+
         Returns:
             bool: True if inner progress bars are hidden, False otherwise.
         """
@@ -465,7 +471,8 @@ class ProcessPoolEngine(ExecutionEngine):
         hide_inner_progress (Optional[bool]): Indicates whether inner progress bars are hidden.
         **kwargs: Keyword arguments passed to `ExecutionEngine`.
 
-    For defaults, see `engines.processpool` in `vectorbtpro._settings.execution`.
+    !!! info
+        For default settings, see `engines.processpool` in `vectorbtpro._settings.execution`.
     """
 
     _settings_path: tp.SettingsPath = "execution.engines.processpool"
@@ -492,7 +499,7 @@ class ProcessPoolEngine(ExecutionEngine):
     @property
     def init_kwargs(self) -> tp.Kwargs:
         """Configuration keyword arguments for `concurrent.futures.ProcessPoolExecutor`.
-        
+
         Returns:
             Kwargs: Configuration keyword arguments.
         """
@@ -501,7 +508,7 @@ class ProcessPoolEngine(ExecutionEngine):
     @property
     def timeout(self) -> tp.Optional[int]:
         """Timeout for waiting on task results.
-        
+
         Returns:
             Optional[int]: Timeout in seconds, or None if no timeout is set.
         """
@@ -510,7 +517,7 @@ class ProcessPoolEngine(ExecutionEngine):
     @property
     def hide_inner_progress(self) -> bool:
         """Indicates whether progress bars within each thread are hidden.
-        
+
         Returns:
             bool: True if inner progress bars are hidden, False otherwise.
         """
@@ -538,10 +545,18 @@ class ProcessPoolEngine(ExecutionEngine):
                 return results
 
 
-def pass_kwargs_as_args(func, args, kwargs):
+def pass_kwargs_as_args(func: tp.Callable, args: tp.Args, kwargs: tp.Kwargs) -> tp.Any:
     """Return the result of calling `func` with the supplied arguments and keyword arguments.
 
     Used for compatibility with `pathos.pools.ParallelPool`.
+
+    Args:
+        func (Callable): The function to execute.
+        args (Args): Positional arguments for the function.
+        kwargs (Kwargs): Keyword arguments for the function.
+
+    Returns:
+        Any: The result of executing the function.
     """
     return func(*args, **kwargs)
 
@@ -562,7 +577,8 @@ class PathosEngine(ExecutionEngine):
         join_pool (Optional[bool]): Flag indicating whether the pool should be joined after execution.
         **kwargs: Keyword arguments passed to `ExecutionEngine`.
 
-    For defaults, see `engines.pathos` in `vectorbtpro._settings.execution`.
+    !!! info
+        For default settings, see `engines.pathos` in `vectorbtpro._settings.execution`.
     """
 
     _settings_path: tp.SettingsPath = "execution.engines.pathos"
@@ -604,7 +620,7 @@ class PathosEngine(ExecutionEngine):
     @property
     def pool_type(self) -> str:
         """Pool type used for parallel execution.
-        
+
         Returns:
             str: Pool type, one of 'thread', 'process', or 'parallel'.
         """
@@ -613,7 +629,7 @@ class PathosEngine(ExecutionEngine):
     @property
     def init_kwargs(self) -> tp.Kwargs:
         """Keyword arguments used for initializing the pool.
-        
+
         Returns:
             Kwargs: Configuration keyword arguments.
         """
@@ -622,7 +638,7 @@ class PathosEngine(ExecutionEngine):
     @property
     def timeout(self) -> tp.Optional[int]:
         """Maximum duration in seconds before execution is interrupted.
-        
+
         Returns:
             Optional[int]: Timeout in seconds, or None if no timeout is set.
         """
@@ -631,7 +647,7 @@ class PathosEngine(ExecutionEngine):
     @property
     def check_delay(self) -> tp.Optional[float]:
         """Delay in seconds between successive task status checks.
-        
+
         Returns:
             Optional[float]: The delay in seconds between task status checks.
         """
@@ -640,7 +656,7 @@ class PathosEngine(ExecutionEngine):
     @property
     def show_progress(self) -> bool:
         """Flag indicating whether to display the progress bar.
-        
+
         Returns:
             bool: True if the progress bar is shown, False otherwise.
         """
@@ -649,7 +665,7 @@ class PathosEngine(ExecutionEngine):
     @property
     def pbar_kwargs(self) -> tp.Kwargs:
         """Keyword arguments for initializing `vectorbtpro.utils.pbar.ProgressBar`.
-        
+
         Returns:
             Kwargs: Configuration keyword arguments.
         """
@@ -658,7 +674,7 @@ class PathosEngine(ExecutionEngine):
     @property
     def hide_inner_progress(self) -> bool:
         """Flag indicating whether to hide progress bars within individual threads.
-        
+
         Returns:
             bool: True if inner progress bars are hidden, False otherwise.
         """
@@ -667,7 +683,7 @@ class PathosEngine(ExecutionEngine):
     @property
     def join_pool(self) -> bool:
         """Flag indicating whether the pool should be joined after execution.
-        
+
         Returns:
             bool: True if the pool should be joined, False otherwise.
         """
@@ -748,7 +764,8 @@ class MpireEngine(ExecutionEngine):
         hide_inner_progress (Optional[bool]): Flag indicating whether inner progress bars should be hidden.
         **kwargs: Keyword arguments passed to `ExecutionEngine`.
 
-    For defaults, see `engines.mpire` in `vectorbtpro._settings.execution`.
+    !!! info
+        For default settings, see `engines.mpire` in `vectorbtpro._settings.execution`.
     """
 
     _settings_path: tp.SettingsPath = "execution.engines.mpire"
@@ -775,7 +792,7 @@ class MpireEngine(ExecutionEngine):
     @property
     def init_kwargs(self) -> tp.Kwargs:
         """Keyword arguments used for initializing `mpire.WorkerPool`.
-        
+
         Returns:
             Kwargs: Configuration keyword arguments.
         """
@@ -784,7 +801,7 @@ class MpireEngine(ExecutionEngine):
     @property
     def apply_kwargs(self) -> tp.Kwargs:
         """Keyword arguments passed to `mpire.WorkerPool.async_apply`.
-        
+
         Returns:
             Kwargs: Configuration keyword arguments.
         """
@@ -793,7 +810,7 @@ class MpireEngine(ExecutionEngine):
     @property
     def hide_inner_progress(self) -> bool:
         """Flag indicating whether inner progress bars are hidden.
-        
+
         Returns:
             bool: True if inner progress bars are hidden, False otherwise.
         """
@@ -833,7 +850,8 @@ class DaskEngine(ExecutionEngine):
             hidden within each thread.
         **kwargs: Keyword arguments passed to `ExecutionEngine`.
 
-    For defaults, see `engines.dask` in `vectorbtpro._settings.execution`.
+    !!! info
+        For default settings, see `engines.dask` in `vectorbtpro._settings.execution`.
 
     !!! note
         Use multi-threading primarily for numeric code that releases the GIL
@@ -861,7 +879,7 @@ class DaskEngine(ExecutionEngine):
     @property
     def compute_kwargs(self) -> tp.Kwargs:
         """Keyword arguments for `dask.compute`.
-        
+
         Returns:
             Kwargs: Configuration keyword arguments.
         """
@@ -870,7 +888,7 @@ class DaskEngine(ExecutionEngine):
     @property
     def hide_inner_progress(self) -> bool:
         """Flag indicating whether progress bars should be hidden within each thread.
-        
+
         Returns:
             bool: True if inner progress bars are hidden, False otherwise.
         """
@@ -912,7 +930,8 @@ class RayEngine(ExecutionEngine):
         hide_inner_progress (Optional[bool]): Flag indicating if progress bars should be hidden within each thread.
         **kwargs: Additional keyword arguments.
 
-    For defaults, see `engines.ray` in `vectorbtpro._settings.execution`.
+    !!! info
+        For default settings, see `engines.ray` in `vectorbtpro._settings.execution`.
 
     !!! note
         Ray spawns multiple processes rather than threads, so each argument and keyword argument must
@@ -956,7 +975,7 @@ class RayEngine(ExecutionEngine):
     @property
     def restart(self) -> bool:
         """Flag indicating if the Ray runtime should be terminated and reinitialized.
-        
+
         Returns:
             bool: True if the Ray runtime is restarted, False otherwise.
         """
@@ -966,7 +985,7 @@ class RayEngine(ExecutionEngine):
     def reuse_refs(self) -> bool:
         """Flag indicating if function and object references are reused so that each
         unique object is stored only once.
-        
+
         Returns:
             bool: True if references are reused, False otherwise.
         """
@@ -975,7 +994,7 @@ class RayEngine(ExecutionEngine):
     @property
     def del_refs(self) -> bool:
         """Flag indicating if result object references should be explicitly deleted.
-        
+
         Returns:
             bool: True if result references are deleted, False otherwise.
         """
@@ -984,7 +1003,7 @@ class RayEngine(ExecutionEngine):
     @property
     def shutdown(self) -> bool:
         """Flag indicating if the Ray runtime should be shut down upon job completion.
-        
+
         Returns:
             bool: True if the Ray runtime is shut down, False otherwise.
         """
@@ -993,7 +1012,7 @@ class RayEngine(ExecutionEngine):
     @property
     def init_kwargs(self) -> tp.Kwargs:
         """Keyword arguments for `ray.init`.
-        
+
         Returns:
             Kwargs: Configuration keyword arguments.
         """
@@ -1002,7 +1021,7 @@ class RayEngine(ExecutionEngine):
     @property
     def remote_kwargs(self) -> tp.Kwargs:
         """Keyword arguments for `ray.remote`.
-        
+
         Returns:
             Kwargs: Configuration keyword arguments.
         """
@@ -1011,7 +1030,7 @@ class RayEngine(ExecutionEngine):
     @property
     def hide_inner_progress(self) -> bool:
         """Flag indicating if progress bars should be hidden within each thread.
-        
+
         Returns:
             bool: True if inner progress bars are hidden, False otherwise.
         """
@@ -1189,6 +1208,9 @@ class Executor(Configured):
         results or new execution results. Templates in `pre_chunk_kwargs` and `post_chunk_kwargs` are
         substituted and passed as keyword arguments.
 
+    !!! note
+        Both callbacks are effective only when `distribute` is "tasks" and chunking is enabled.
+
     Additional context includes:
 
     * `chunk_idx`: Current chunk index.
@@ -1196,9 +1218,6 @@ class Executor(Configured):
     * `chunk_cache`: Call results from caching (for `pre_chunk_func`).
     * `call_results`: Execution results (for `post_chunk_func`).
     * `chunk_executed`: Indicates if the chunk was executed (for `post_chunk_func`).
-
-    !!! note
-        Both callbacks are effective only when `distribute` is "tasks" and chunking is enabled.
 
     Optional overall execution callbacks:
 
@@ -1208,9 +1227,6 @@ class Executor(Configured):
         results or new results. Its context includes the number of chunks (`n_chunks`) and the flattened
         list of results (`results`). If `post_execute_on_sorted` is True, this callback is executed after
         sorting the call indices.
-
-    !!! info
-        Chunks are processed sequentially, while functions within each chunk may be processed in parallel.
 
     Args:
         engine (Optional[ExecutionEngineLike]): Execution engine.
@@ -1251,7 +1267,8 @@ class Executor(Configured):
         pbar_kwargs (KwargsLike): Keyword arguments for the progress bar.
         **kwargs: Additional keyword arguments.
 
-    For default settings, refer to `vectorbtpro._settings.execution`.
+    !!! info
+        For default settings, see `vectorbtpro._settings.execution`.
     """
 
     _settings_path: tp.SettingsPath = "execution"
@@ -1532,7 +1549,7 @@ class Executor(Configured):
     @property
     def engine(self) -> tp.Union[ExecutionEngine, tp.Callable]:
         """Engine resolved using `Executor.resolve_engine`.
-        
+
         Returns:
             Union[ExecutionEngine, Callable]: The configured execution engine.
         """
@@ -1541,7 +1558,7 @@ class Executor(Configured):
     @property
     def min_size(self) -> tp.Optional[int]:
         """Minimum chunk size used by `vectorbtpro.utils.chunking.iter_chunk_meta`.
-        
+
         Returns:
             Optional[int]: Minimum chunk size, if provided; otherwise, None.
         """
@@ -1550,7 +1567,7 @@ class Executor(Configured):
     @property
     def n_chunks(self) -> tp.Union[None, int, str]:
         """Specification for the number of chunks as defined in `vectorbtpro.utils.chunking.iter_chunk_meta`.
-        
+
         Returns:
             Union[None, int, str]: Number of chunks or mode, if provided; otherwise, None.
         """
@@ -1559,7 +1576,7 @@ class Executor(Configured):
     @property
     def chunk_len(self) -> tp.Union[None, int, str]:
         """Chunk length specification as defined in `vectorbtpro.utils.chunking.iter_chunk_meta`.
-        
+
         Returns:
             Union[None, int, str]: Chunk length or mode, if provided; otherwise, None.
         """
@@ -1568,7 +1585,7 @@ class Executor(Configured):
     @property
     def chunk_meta(self) -> tp.Optional[tp.ChunkMetaLike]:
         """Metadata for chunks as defined in `vectorbtpro.utils.chunking.iter_chunk_meta`.
-        
+
         Returns:
             Optional[ChunkMetaLike]: Metadata for chunks, if provided; otherwise, None.
         """
@@ -1577,7 +1594,7 @@ class Executor(Configured):
     @property
     def distribute(self) -> str:
         """Distribution mode.
-        
+
         * "tasks": Distributes tasks within each chunk.
         * "chunks": Distributes chunks.
 
@@ -1589,9 +1606,9 @@ class Executor(Configured):
     @property
     def warmup(self) -> bool:
         """Boolean flag indicating whether to execute the first task as a warmup before distribution.
-        
+
         This is useful for engines that require a warmup run to optimize performance.
-        
+
         Returns:
             bool: True if warmup is enabled, False otherwise.
         """
@@ -1602,7 +1619,7 @@ class Executor(Configured):
         """Boolean flag that determines whether results are returned in the order specified by `chunk_meta`.
 
         Otherwise, results follow the order of `tasks`.
-        
+
         Returns:
             bool: True if results are in chunk order, False otherwise.
         """
@@ -1611,7 +1628,7 @@ class Executor(Configured):
     @property
     def cache_chunks(self) -> bool:
         """Boolean flag indicating whether chunks should be cached.
-        
+
         Returns:
             bool: True if chunks are cached, False otherwise.
         """
@@ -1620,7 +1637,7 @@ class Executor(Configured):
     @property
     def chunk_cache_dir(self) -> tp.PathLike:
         """Directory for storing chunk cache files.
-        
+
         Returns:
             PathLike: The directory for chunk cache files.
         """
@@ -1629,7 +1646,7 @@ class Executor(Configured):
     @property
     def chunk_cache_save_kwargs(self) -> tp.Kwargs:
         """Keyword arguments forwarded to `vectorbtpro.utils.pickling.save` during chunk caching.
-        
+
         Returns:
             Kwargs: Configuration keyword arguments.
         """
@@ -1638,7 +1655,7 @@ class Executor(Configured):
     @property
     def chunk_cache_load_kwargs(self) -> tp.Kwargs:
         """Keyword arguments forwarded to `vectorbtpro.utils.pickling.load` during chunk caching.
-        
+
         Returns:
             Kwargs: Configuration keyword arguments.
         """
@@ -1647,7 +1664,7 @@ class Executor(Configured):
     @property
     def pre_clear_chunk_cache(self) -> bool:
         """Boolean flag indicating if the chunk cache directory should be removed before execution.
-        
+
         Returns:
             bool: True if the chunk cache directory is removed before execution, False otherwise.
         """
@@ -1656,7 +1673,7 @@ class Executor(Configured):
     @property
     def post_clear_chunk_cache(self) -> bool:
         """Boolean flag indicating if the chunk cache directory should be removed after execution.
-        
+
         Returns:
             bool: True if the chunk cache directory should be removed after execution, False otherwise.
         """
@@ -1666,7 +1683,7 @@ class Executor(Configured):
     def release_chunk_cache(self) -> bool:
         """Boolean flag that replaces the chunk cache with dummy objects after execution and loads
         the full cache after all chunks complete.
-        
+
         Returns:
             bool: True if the chunk cache is replaced with dummy objects, False otherwise.
         """
@@ -1676,7 +1693,7 @@ class Executor(Configured):
     def chunk_clear_cache(self) -> tp.Union[bool, int]:
         """Boolean or integer specifying if the global cache should be cleared after each chunk
         or every n chunks.
-        
+
         Returns:
             Union[bool, int]: Number of chunks after which the cache is cleared (True for every chunk).
         """
@@ -1686,7 +1703,7 @@ class Executor(Configured):
     def chunk_collect_garbage(self) -> tp.Union[bool, int]:
         """Boolean or integer specifying if garbage collection should be performed after each
         chunk or every n chunks.
-        
+
         Returns:
             Union[bool, int]: Number of chunks after which garbage collection is performed (True for every chunk).
         """
@@ -1695,7 +1712,7 @@ class Executor(Configured):
     @property
     def chunk_delay(self) -> tp.Optional[float]:
         """Optional float specifying the delay in seconds after processing each chunk.
-        
+
         Returns:
             Optional[float]: Delay in seconds after processing each chunk; None if not set.
         """
@@ -1704,7 +1721,7 @@ class Executor(Configured):
     @property
     def pre_execute_func(self) -> tp.Optional[tp.Callable]:
         """Callable to be executed before processing all tasks.
-        
+
         Returns:
             Optional[Callable]: A callable to be executed before processing all tasks; None if not set.
         """
@@ -1713,7 +1730,7 @@ class Executor(Configured):
     @property
     def pre_execute_kwargs(self) -> tp.Kwargs:
         """Keyword arguments forwarded to `Executor.pre_execute_func`.
-        
+
         Returns:
             Kwargs: Configuration keyword arguments.
         """
@@ -1725,7 +1742,7 @@ class Executor(Configured):
 
         If the callable returns a value other than None, its return value is appended to
         the results and the chunk is skipped.
-        
+
         Returns:
             Optional[Callable]: A callable executed before processing each chunk; None if not set.
         """
@@ -1734,7 +1751,7 @@ class Executor(Configured):
     @property
     def pre_chunk_kwargs(self) -> tp.Kwargs:
         """Keyword arguments forwarded to `Executor.pre_chunk_func`.
-        
+
         Returns:
             Kwargs: Configuration keyword arguments.
         """
@@ -1746,7 +1763,7 @@ class Executor(Configured):
 
         If it returns None, the existing chunk results are retained; otherwise, its return
         value replaces them.
-        
+
         Returns:
             Optional[Callable]: A callable executed after processing each chunk; None if not set.
         """
@@ -1755,7 +1772,7 @@ class Executor(Configured):
     @property
     def post_chunk_kwargs(self) -> tp.Kwargs:
         """Keyword arguments forwarded to `Executor.post_chunk_func`.
-        
+
         Returns:
             Kwargs: Configuration keyword arguments.
         """
@@ -1766,7 +1783,7 @@ class Executor(Configured):
         """Callable executed after processing all tasks.
 
         If it returns None, the default results are preserved; otherwise, its return value replaces them.
-        
+
         Returns:
             Optional[Callable]: A callable executed after processing all tasks; None if not set.
         """
@@ -1775,7 +1792,7 @@ class Executor(Configured):
     @property
     def post_execute_kwargs(self) -> tp.Kwargs:
         """Keyword arguments forwarded to `Executor.post_execute_func`.
-        
+
         Returns:
             Kwargs: Configuration keyword arguments.
         """
@@ -1785,7 +1802,7 @@ class Executor(Configured):
     def post_execute_on_sorted(self) -> bool:
         """Boolean flag indicating whether `Executor.post_execute_func` should be invoked
         after sorting call indices.
-        
+
         Returns:
             bool: True if `post_execute_func` is invoked after sorting call indices, False otherwise.
         """
@@ -1794,7 +1811,7 @@ class Executor(Configured):
     @property
     def filter_results(self) -> bool:
         """Boolean flag determining if results equal to `NoResult` should be filtered out.
-        
+
         Returns:
             bool: True if results are filtered, False otherwise.
         """
@@ -1806,7 +1823,7 @@ class Executor(Configured):
 
         This flag applies only when `Executor.filter_results` is True and is forwarded to the merging
         function if pre-configured.
-        
+
         Returns:
             bool: True if a `NoResultsException` is raised, False otherwise.
         """
@@ -1815,7 +1832,7 @@ class Executor(Configured):
     @property
     def merge_func(self) -> tp.Optional[tp.MergeFuncLike]:
         """Callable for merging results, resolved using `vectorbtpro.base.merging.resolve_merge_func`.
-        
+
         Returns:
             Optional[MergeFuncLike]: A callable for merging results; None if not set.
         """
@@ -1824,7 +1841,7 @@ class Executor(Configured):
     @property
     def merge_kwargs(self) -> tp.Kwargs:
         """Keyword arguments forwarded to the merging function.
-        
+
         Returns:
             Kwargs: Configuration keyword arguments.
         """
@@ -1833,7 +1850,7 @@ class Executor(Configured):
     @property
     def template_context(self) -> tp.Kwargs:
         """Dictionary representing the context for template substitution.
-        
+
         Returns:
             Kwargs: Configuration keyword arguments.
         """
@@ -1845,7 +1862,7 @@ class Executor(Configured):
 
         If `Executor.engine` accepts `show_progress` and the key is absent in `engine_config`,
         it is forwarded to the engine.
-        
+
         Returns:
             bool: True if a progress bar is displayed, False otherwise.
         """
@@ -1854,7 +1871,7 @@ class Executor(Configured):
     @property
     def pbar_kwargs(self) -> tp.Kwargs:
         """Keyword arguments forwarded to `vectorbtpro.utils.pbar.ProgressBar`.
-        
+
         Returns:
             Kwargs: Configuration keyword arguments.
         """
@@ -2011,6 +2028,9 @@ class Executor(Configured):
         Returns:
             Tuple[Union[ExecutionEngine, Callable], Optional[str]]: A tuple containing
                 the resolved engine and its name.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.execution`.
         """
         from vectorbtpro._settings import settings
 
@@ -2093,6 +2113,13 @@ class Executor(Configured):
 
         Iterates over each task, resolves functions and their arguments using `id_objs`,
         and returns a list of results.
+
+        Args:
+            tasks (TasksLike): List of tasks to be executed.
+            id_objs (Dict[int, Any]): Dictionary mapping IDs to objects.
+
+        Returns:
+            ExecResults: List of results from executing the tasks.
         """
         results = []
         for func, args, kwargs in tasks:
@@ -2104,7 +2131,14 @@ class Executor(Configured):
 
     @classmethod
     def build_serial_chunk(cls, tasks: tp.TasksLike) -> Task:
-        """Construct a serial execution chunk from the provided tasks."""
+        """Construct a serial execution chunk from the provided tasks.
+
+        Args:
+            tasks (TasksLike): List of tasks to be executed
+
+        Returns:
+            Task: A task object representing the serial execution of the provided tasks.
+        """
         ref_ids = dict()
         id_objs = dict()
 
@@ -3095,6 +3129,9 @@ def execute(
 
     Returns:
         MergeableResults: The merged results from executing the tasks.
+
+    !!! info
+        For default settings, see `vectorbtpro._settings.execution`.
     """
     from vectorbtpro._settings import settings
 
@@ -3240,6 +3277,9 @@ def iterated(
 
     Returns:
         Callable: The wrapper function that executes the original function iteratively.
+
+    !!! info
+        For default settings, see `vectorbtpro._settings.execution`.
     """
 
     def decorator(func: tp.Callable) -> tp.Callable:

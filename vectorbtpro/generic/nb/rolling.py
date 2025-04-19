@@ -819,7 +819,7 @@ def ewm_mean_1d_nb(arr: tp.Array1d, span: int, minp: tp.Optional[int] = None, ad
     """Compute the exponential weighted moving average for a 1D array using `ewm_mean_acc_nb`.
 
     This function serves as a Numba equivalent to:
-    `pd.Series(arr).ewm(span=span, min_periods=minp, adjust=adjust).mean()`, and is adapted from 
+    `pd.Series(arr).ewm(span=span, min_periods=minp, adjust=adjust).mean()`, and is adapted from
     `pd._libs.window.aggregations.window_aggregations.ewma` with default arguments.
 
     Args:

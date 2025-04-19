@@ -47,9 +47,12 @@ HDFDataT = tp.TypeVar("HDFDataT", bound="HDFData")
 
 class HDFData(FileData):
     """Data class for fetching HDF data using PyTables.
-    
+
     See:
         * `HDFData.fetch_key` for argument details.
+
+    !!! info
+        For default settings, see `custom.hdf` in `vectorbtpro._settings.data`.
     """
 
     _settings_path: tp.SettingsPath = dict(custom="data.custom.hdf")
@@ -272,11 +275,10 @@ class HDFData(FileData):
                 Called only if the iterator or chunksize is set.
             **read_kwargs: Keyword arguments passed to `pd.read_hdf`.
 
+                See https://pandas.pydata.org/docs/reference/api/pandas.read_hdf.html for additional arguments.
+
         Returns:
             KeyData: The fetched data and a metadata dictionary.
-
-        See https://pandas.pydata.org/docs/reference/api/pandas.read_hdf.html for additional arguments.
-        For defaults, see `custom.hdf` in `vectorbtpro._settings.data`.
         """
         from vectorbtpro.utils.module_ import assert_can_import
 

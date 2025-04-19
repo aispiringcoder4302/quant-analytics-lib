@@ -77,7 +77,7 @@ class BasePurgedCV(Base):
     @property
     def n_folds(self) -> int:
         """Number of folds used in cross-validation.
-        
+
         Returns:
             int: Number of folds.
         """
@@ -86,7 +86,7 @@ class BasePurgedCV(Base):
     @property
     def purge_td(self) -> pd.Timedelta:
         """Timedelta period added to evaluation times for purging training samples.
-        
+
         Returns:
             Timedelta: Purge period.
         """
@@ -95,7 +95,7 @@ class BasePurgedCV(Base):
     @property
     def pred_times(self) -> tp.Optional[tp.Series]:
         """Time stamps at which predictions are made for each sample.
-        
+
         Returns:
             Optional[Series]: Prediction times.
         """
@@ -104,7 +104,7 @@ class BasePurgedCV(Base):
     @property
     def eval_times(self) -> tp.Optional[tp.Series]:
         """Time stamps at which responses become available for error computation.
-        
+
         Returns:
             Optional[Series]: Evaluation times.
         """
@@ -113,7 +113,7 @@ class BasePurgedCV(Base):
     @property
     def indices(self) -> tp.Optional[tp.Array1d]:
         """Array of indices corresponding to the dataset samples.
-        
+
         Returns:
             Optional[Array1d]: Array of indices.
         """
@@ -241,7 +241,7 @@ class PurgedWalkForwardCV(BasePurgedCV):
     @property
     def n_test_folds(self) -> int:
         """Number of folds used as the test set.
-        
+
         Returns:
             int: Number of test folds.
         """
@@ -250,7 +250,7 @@ class PurgedWalkForwardCV(BasePurgedCV):
     @property
     def min_train_folds(self) -> int:
         """Minimum number of folds for the training set.
-        
+
         Returns:
             int: Minimum number of training folds.
         """
@@ -259,7 +259,7 @@ class PurgedWalkForwardCV(BasePurgedCV):
     @property
     def max_train_folds(self) -> int:
         """Maximum number of folds for the training set.
-        
+
         Returns:
             int: Maximum number of training folds.
         """
@@ -279,7 +279,7 @@ class PurgedWalkForwardCV(BasePurgedCV):
     @property
     def fold_bounds(self) -> tp.List[int]:
         """List of indices representing the left boundaries of folds.
-        
+
         Returns:
             List[int]: List of indices representing the left boundaries of folds.
         """
@@ -402,7 +402,7 @@ class PurgedKFoldCV(BasePurgedCV):
     @property
     def n_test_folds(self) -> int:
         """Number of folds reserved for testing in each cross-validation round.
-        
+
         Returns:
             int: Number of test folds.
         """
@@ -412,7 +412,7 @@ class PurgedKFoldCV(BasePurgedCV):
     def embargo_td(self) -> pd.Timedelta:
         """Embargo period duration enforcing a minimum gap between test set evaluation times
         and training set prediction times.
-        
+
         Returns:
             Timedelta: Embargo period.
         """

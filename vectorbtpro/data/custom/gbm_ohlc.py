@@ -35,6 +35,9 @@ class GBMOHLCData(SyntheticData):
 
     See:
         * `GBMOHLCData.generate_symbol` for argument details.
+
+    !!! info
+        For default settings, see `custom.gbm_ohlc` in `vectorbtpro._settings.data`.
     """
 
     _settings_path: tp.SettingsPath = dict(custom="data.custom.gbm_ohlc")
@@ -78,8 +81,6 @@ class GBMOHLCData(SyntheticData):
         See:
             * `vectorbtpro.data.nb.generate_gbm_data_1d_nb` for generating ticks.
             * `vectorbtpro.ohlcv.nb.ohlc_every_1d_nb` for aggregating ticks into OHLC bars.
-
-        For defaults, see `custom.gbm` in `vectorbtpro._settings.data`.
 
         !!! note
             When setting a seed, provide a seed per symbol using `vectorbtpro.data.base.symbol_dict`.

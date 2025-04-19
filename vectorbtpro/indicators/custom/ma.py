@@ -80,6 +80,9 @@ class _MA(MA):
         Returns:
             BaseFigure: The figure with the plotted moving average and close price traces.
 
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
+
         Examples:
             ```pycon
             >>> vbt.MA.run(ohlcv['Close']).plot().show()

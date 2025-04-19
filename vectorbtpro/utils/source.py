@@ -551,7 +551,7 @@ def get_source_imports(source: str, global_only: bool = False) -> str:
         return ""
     imports = set()
 
-    def process_import_node(node):
+    def _process_import_node(node):
         if isinstance(node, ast.Import):
             for alias in node.names:
                 if alias.asname:
@@ -570,11 +570,11 @@ def get_source_imports(source: str, global_only: bool = False) -> str:
     if global_only:
         for node in tree.body:
             if isinstance(node, (ast.Import, ast.ImportFrom)):
-                process_import_node(node)
+                _process_import_node(node)
     else:
         for node in ast.walk(tree):
             if isinstance(node, (ast.Import, ast.ImportFrom)):
-                process_import_node(node)
+                _process_import_node(node)
 
     return "\n".join(sorted(imports)) if imports else ""
 
@@ -1255,7 +1255,8 @@ class Chatable(Configured):
         formatter (ResponseFormatter): Response formatter of type `ResponseFormatter`.
         **kwargs: Keyword arguments for configuration.
         
-    For defaults, see `chatting` in `vectorbtpro._settings`.
+    !!! info
+        For default settings, see `vectorbtpro._settings.chatting`.
     \"\"\"
     
     def __init__(self, formatter: ResponseFormatter, **kwargs) -> None:
@@ -1303,7 +1304,8 @@ class Chatable(Configured):
         Returns:
             MaybeChatOutput: The completion response or a tuple of the response and the chat instance.
             
-        For defaults, see `chat` in `vectorbtpro._settings.knowledge`.
+        !!! info
+            For default settings, see `chat` in `vectorbtpro._settings.chatting`.
     
         !!! note
             Context is recalculated each time this method is invoked. For multiple turns,

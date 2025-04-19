@@ -100,7 +100,7 @@ def asset_flow_nb(
 ) -> tp.Array2d:
     """Compute asset flow series per column.
 
-    Calculates the total transacted asset amount at each time step based on the order records.
+    Calculates the total transacted asset amount at each bar based on the order records.
     The asset flow is determined by computing changes in position from the orders and may be filtered
     by direction using the `direction` parameter.
 
@@ -116,7 +116,7 @@ def asset_flow_nb(
         sim_end (Optional[FlexArray1dLike]): End indices for simulation per column.
 
     Returns:
-        Array2d: Array representing asset flow at each time step per column.
+        Array2d: Array representing asset flow at each bar per column.
 
     !!! tip
         This function is parallelizable.
@@ -192,7 +192,7 @@ def assets_nb(
 ) -> tp.Array2d:
     """Compute asset series per column.
 
-    Calculates the current asset position at each time step by cumulatively summing the asset flow.
+    Calculates the current asset position at each bar by cumulatively summing the asset flow.
     Positions are adjusted based on the specified `direction`, which filters long or short exposures.
 
     Args:
@@ -205,7 +205,7 @@ def assets_nb(
         sim_end (Optional[FlexArray1dLike]): End indices for simulation per column.
 
     Returns:
-        Array2d: Array containing the updated asset position at each time step per column.
+        Array2d: Array containing the updated asset position at each bar per column.
 
     !!! tip
         This function is parallelizable.
@@ -257,7 +257,7 @@ def position_mask_nb(
 ) -> tp.Array2d:
     """Compute position mask per column.
 
-    Generates a boolean mask that indicates whether a non-zero asset position exists at each time step.
+    Generates a boolean mask that indicates whether a non-zero asset position exists at each bar.
     The mask is computed within the simulation range defined by `sim_start` and `sim_end`.
 
     Args:
@@ -266,7 +266,7 @@ def position_mask_nb(
         sim_end (Optional[FlexArray1dLike]): End indices for simulation per column.
 
     Returns:
-        Array2d: Boolean array indicating the presence of an asset position per column at each time step.
+        Array2d: Boolean array indicating the presence of an asset position per column at each bar.
 
     !!! tip
         This function is parallelizable.
@@ -316,7 +316,7 @@ def position_mask_grouped_nb(
         sim_end (Optional[FlexArray1dLike]): Ending simulation index for each asset column.
 
     Returns:
-        Array2d: Boolean array of shape (number of time steps, number of groups) where True indicates
+        Array2d: Boolean array of shape (number of bars, number of groups) where True indicates
             at least one active position in the corresponding group.
 
     !!! tip
@@ -428,7 +428,7 @@ def position_coverage_grouped_nb(
     Returns:
         Array1d: Array of coverage ratios for each group.
 
-            Each ratio is the fraction of time steps with active positions within
+            Each ratio is the fraction of bars with active positions within
             the aggregated simulation range, or NaN if no valid simulation range exists.
 
     !!! tip
@@ -734,17 +734,17 @@ def cash_earnings_nb(
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array2d:
     """Calculate cash earning series per column by applying weight adjustments and simulation range filters.
-    
+
     Args:
         target_shape (Shape): The shape of the target output array.
         cash_earnings_raw (FlexArray2dLike): Raw cash earnings data, converted internally to a 2D array.
         weights (FlexArray1dLike): Weight factors for scaling cash earnings per column.
         sim_start (FlexArray1dLike): Start indices of the simulation range for each column.
         sim_end (FlexArray1dLike): End indices of the simulation range for each column.
-        
+
     Returns:
         Array2d: A 2D array with calculated cash earnings per column.
-    
+
     !!! tip
         This function is parallelizable.
     """
@@ -799,7 +799,7 @@ def cash_earnings_grouped_nb(
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array2d:
     """Calculate aggregated cash earning series per group by summing weighted cash earnings of grouped columns.
-    
+
     Args:
         target_shape (Shape): The shape of the target output array.
         group_lens (GroupLens): Lengths defining the groups of columns.
@@ -807,10 +807,10 @@ def cash_earnings_grouped_nb(
         weights (FlexArray1dLike): Weight factors applied to cash earnings per column.
         sim_start (FlexArray1dLike): Start indices of the simulation range for each column.
         sim_end (FlexArray1dLike): End indices of the simulation range for each column.
-        
+
     Returns:
         Array2d: A 2D array with aggregated cash earnings per group.
-    
+
     !!! tip
         This function is parallelizable.
     """
@@ -860,14 +860,14 @@ def get_free_cash_diff_nb(
     fees: float,
 ) -> tp.Tuple[float, float]:
     """Calculate updated debt and free cash difference after a position change.
-    
+
     Args:
         position_before (float): The position amount before the transaction.
         position_now (float): The position amount after the transaction.
         debt_now (float): The current debt amount.
         price (float): The asset price used for computing the transaction value.
         fees (float): The fees incurred during the transaction.
-        
+
     Returns:
         Tuple[float, float]: A tuple containing the updated debt and the free cash difference.
     """
@@ -1155,14 +1155,14 @@ def init_cash_nb(
     weights: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array1d:
     """Compute initial cash for each column based on initial cash values, group lengths, cash sharing, and weights.
-    
+
     Args:
         init_cash_raw (FlexArray1d): Raw initial cash values.
         group_lens (GroupLens): Array indicating the length of each group.
         cash_sharing (bool): Flag specifying whether cash is shared among columns.
         split_shared (bool): If True, split shared cash equally among columns in a group.
         weights (Optional[FlexArray1dLike]): Optional weights to adjust the initial cash.
-    
+
     Returns:
         Array1d: Computed initial cash values per column.
     """
@@ -1210,13 +1210,13 @@ def init_cash_grouped_nb(
     weights: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array1d:
     """Compute initial cash for each group based on raw initial cash values, group lengths, cash sharing, and weights.
-    
+
     Args:
         init_cash_raw (FlexArray1d): Raw initial cash values.
         group_lens (GroupLens): Array of group lengths.
         cash_sharing (bool): Boolean flag indicating if cash sharing is applied across columns within a group.
         weights (Optional[FlexArray1dLike]): Optional weights to adjust the initial cash.
-    
+
     Returns:
         Array1d: Computed initial cash values per group.
     """
@@ -1283,17 +1283,17 @@ def cash_nb(
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array2d:
     """Compute cash series per column or group using cash flow, initial cash, cash deposits, and simulation range.
-    
+
     Args:
         cash_flow (Array2d): 2D array of cash flow values.
         init_cash (FlexArray1d): Initial cash amounts per column.
         cash_deposits (FlexArray2dLike): Cash deposit values over time for each column.
         sim_start (Optional[FlexArray1dLike]): Simulation start indices for each column.
         sim_end (Optional[FlexArray1dLike]): Simulation end indices for each column.
-    
+
     Returns:
         Array2d: 2D array of computed cash series.
-    
+
     !!! tip
         This function is parallelizable.
     """
@@ -1330,12 +1330,12 @@ def init_position_value_nb(
     init_price: tp.FlexArray1dLike = np.nan,
 ) -> tp.Array1d:
     """Compute the initial position value for each column as the product of initial position and initial price.
-    
+
     Args:
         n_cols (int): Number of columns.
         init_position (FlexArray1dLike): Initial positions for each column.
         init_price (FlexArray1dLike): Initial prices for each column.
-    
+
     Returns:
         Array1d: Computed initial position values per column.
     """
@@ -1361,12 +1361,12 @@ def init_position_value_grouped_nb(
     init_price: tp.FlexArray1dLike = np.nan,
 ) -> tp.Array1d:
     """Compute the aggregated initial position value per group as the sum of the product of initial position and price for columns within the group.
-    
+
     Args:
         group_lens (GroupLens): Array specifying the number of columns in each group.
         init_position (FlexArray1dLike): Initial positions for each column.
         init_price (FlexArray1dLike): Initial prices for each column.
-    
+
     Returns:
         Array1d: Computed initial position values per group.
     """
@@ -1392,11 +1392,11 @@ def init_position_value_grouped_nb(
 @register_jitted(cache=True)
 def init_value_nb(init_position_value: tp.Array1d, init_cash: tp.FlexArray1d) -> tp.Array1d:
     """Compute the total initial value per column or group by summing initial cash and initial position value.
-    
+
     Args:
         init_position_value (Array1d): Initial position values per column.
         init_cash (FlexArray1d): Initial cash amounts per column.
-    
+
     Returns:
         Array1d: Computed total initial values per column or group.
     """
@@ -2143,9 +2143,9 @@ def market_value_nb(
     """Compute market value for each column based on asset prices and cash deposits.
 
     Args:
-        close (Array2d): Asset prices with rows as time steps and columns as assets.
+        close (Array2d): Asset prices with rows as bars and columns as assets.
         init_value (FlexArray1d): Initial market values for each asset.
-        cash_deposits (FlexArray2dLike): Cash deposits applied at each time step.
+        cash_deposits (FlexArray2dLike): Cash deposits applied at each bar.
         sim_start (Optional[FlexArray1dLike]): Simulation start indices per asset.
         sim_end (Optional[FlexArray1dLike]): Simulation end indices per asset.
 
@@ -2204,10 +2204,10 @@ def market_value_grouped_nb(
     asset prices, and cash deposits.
 
     Args:
-        close (Array2d): Asset prices with rows as time steps and columns as individual assets.
+        close (Array2d): Asset prices with rows as bars and columns as individual assets.
         group_lens (GroupLens): Lengths of asset groups for aggregation.
         init_value (FlexArray1d): Initial market values for each asset.
-        cash_deposits (FlexArray2dLike): Cash deposits applied at each time step for each asset.
+        cash_deposits (FlexArray2dLike): Cash deposits applied at each bar for each asset.
         sim_start (Optional[FlexArray1dLike]): Simulation start indices per asset.
         sim_end (Optional[FlexArray1dLike]): Simulation end indices per asset.
 

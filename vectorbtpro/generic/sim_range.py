@@ -539,7 +539,7 @@ class SimRangeMixin(Base):
     @property
     def sim_start(self) -> tp.Series:
         """Simulation start value computed using default parameters from `SimRangeMixin.get_sim_start`.
-        
+
         Returns:
             Series: The simulation start series.
         """
@@ -590,7 +590,7 @@ class SimRangeMixin(Base):
     @property
     def sim_end(self) -> tp.Series:
         """Simulation end value computed using default parameters from `SimRangeMixin.get_sim_end`.
-        
+
         Returns:
             Series: The simulation end series.
         """
@@ -651,7 +651,7 @@ class SimRangeMixin(Base):
     @property
     def sim_start_index(self) -> tp.Series:
         """Return the simulation start index using default arguments via `SimRangeMixin.get_sim_start_index`.
-        
+
         Returns:
             Series: The simulation start index series.
         """
@@ -723,7 +723,7 @@ class SimRangeMixin(Base):
     @property
     def sim_end_index(self) -> tp.Series:
         """Return the simulation end index using default arguments via `SimRangeMixin.get_sim_end_index`.
-        
+
         Returns:
             Series: The simulation end index series.
         """
@@ -775,7 +775,7 @@ class SimRangeMixin(Base):
     @property
     def sim_duration(self) -> tp.Series:
         """Return the simulation duration using default arguments via `SimRangeMixin.get_sim_duration`.
-        
+
         Returns:
             Series: The simulation duration series.
         """

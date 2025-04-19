@@ -66,7 +66,7 @@ class DataUpdater(Configured):
     @property
     def schedule_manager(self) -> ScheduleManager:
         """Schedule manager instance used for scheduling update jobs.
-        
+
         Returns:
             ScheduleManager: An instance of `vectorbtpro.utils.schedule_.ScheduleManager`.
         """
@@ -89,6 +89,12 @@ class DataUpdater(Configured):
         Override this method to incorporate any pre- or post-processing steps during the update.
 
         To cancel further scheduled updates, raise `vectorbtpro.utils.schedule_.CancelledError`.
+
+        Args:
+            **kwargs: Keyword arguments for the `vectorbtpro.data.base.Data.update` method.
+
+        Returns:
+            None
         """
         # In case the method was called by the user
         kwargs = merge_dicts(self.update_kwargs, kwargs)

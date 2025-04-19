@@ -229,6 +229,9 @@ class Ranges(PriceRecords):
     """Class for handling range records that extends `vectorbtpro.generic.price_records.PriceRecords`.
 
     Requires `records_arr` to include all fields defined in `vectorbtpro.generic.enums.range_dt`.
+
+    !!! info
+        For default settings, see `vectorbtpro._settings.ranges`.
     """
 
     @property
@@ -292,7 +295,7 @@ class Ranges(PriceRecords):
 
     @classmethod
     def from_delta(
-        cls: tp.Type[RangesT],
+        cls,
         records_or_mapped: tp.Union[Records, MappedArray],
         delta: tp.Union[str, int, tp.FrequencyLike],
         shift: tp.Optional[int] = None,
@@ -300,7 +303,7 @@ class Ranges(PriceRecords):
         jitted: tp.JittedOption = None,
         chunked: tp.ChunkedOption = None,
         **kwargs,
-    ) -> RangesT:
+    ) -> "Ranges":
         """Build `Ranges` from a record or mapped array with an applied time delta on its index.
 
         This method applies a time delta to the index field of the input records. When `delta`
@@ -375,7 +378,7 @@ class Ranges(PriceRecords):
             )
         return Ranges.from_records(records_or_mapped.wrapper, new_records_arr, **kwargs)
 
-    def with_delta(self, *args, **kwargs):
+    def with_delta(self, *args, **kwargs) -> "Ranges":
         """Call `Ranges.from_delta` using the current instance.
 
         Args:
@@ -387,7 +390,7 @@ class Ranges(PriceRecords):
         """
         return Ranges.from_delta(self, *args, **kwargs)
 
-    def crop(self) -> RangesT:
+    def crop(self: RangesT) -> RangesT:
         """Crop the range records to the valid index span.
 
         Trims the data to include only records between the minimum start index and
@@ -798,7 +801,7 @@ class Ranges(PriceRecords):
 
         Returns:
             Union[Tuple[Array1d, Array2d], Frame]: If `return_raw` is True, returns a tuple with
-                a 1D array of record indices and a 2D array of projections, with each row corresponding 
+                a 1D array of record indices and a 2D array of projections, with each row corresponding
                 to a range; otherwise, returns a DataFrame with projections.
 
         See:
@@ -1033,21 +1036,21 @@ class Ranges(PriceRecords):
                 Accepts the same options as `proj_period` plus "proj_period" and "current_or_proj_period".
             plot_ohlc (Union[bool, DataFrame]): Flag or data specifying whether to plot OHLC.
             plot_close (Union[bool, Series]): Flag or data specifying whether to plot close prices.
-            plot_projections (bool): 
+            plot_projections (bool):
                 See `vectorbtpro.generic.accessors.GenericDFAccessor.plot_projections`
-            plot_bands (bool): 
+            plot_bands (bool):
                 See `vectorbtpro.generic.accessors.GenericDFAccessor.plot_projections`
-            plot_lower (Union[bool, str, Callable]): 
+            plot_lower (Union[bool, str, Callable]):
                 See `vectorbtpro.generic.accessors.GenericDFAccessor.plot_projections`
-            plot_middle (Union[bool, str, Callable]): 
+            plot_middle (Union[bool, str, Callable]):
                 See `vectorbtpro.generic.accessors.GenericDFAccessor.plot_projections`
-            plot_upper (Union[bool, str, Callable]): 
+            plot_upper (Union[bool, str, Callable]):
                 See `vectorbtpro.generic.accessors.GenericDFAccessor.plot_projections`
-            plot_aux_middle (Union[bool, str, Callable]): 
+            plot_aux_middle (Union[bool, str, Callable]):
                 See `vectorbtpro.generic.accessors.GenericDFAccessor.plot_projections`
-            plot_fill (bool): 
+            plot_fill (bool):
                 See `vectorbtpro.generic.accessors.GenericDFAccessor.plot_projections`
-            colorize (Union[bool, str, Callable]): 
+            colorize (Union[bool, str, Callable]):
                 See `vectorbtpro.generic.accessors.GenericDFAccessor.plot_projections`
             ohlc_type (Union[None, str, BaseTraceType]): Either 'OHLC', 'Candlestick',
                 or a Plotly trace; pass None to use the default.
@@ -1070,6 +1073,9 @@ class Ranges(PriceRecords):
 
         Returns:
             BaseFigure: A figure object containing the plotted projections and price data.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
 
         Examples:
             ```pycon
@@ -1332,6 +1338,9 @@ class Ranges(PriceRecords):
         Returns:
             BaseFigure: A figure object containing the plotted shapes.
 
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
+
         Examples:
             Plot zones colored by duration:
 
@@ -1527,6 +1536,9 @@ class Ranges(PriceRecords):
 
         Returns:
             BaseFigure: A figure object containing the plotted ranges.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
 
         Examples:
             ```pycon
@@ -1759,7 +1771,7 @@ class Ranges(PriceRecords):
 
         Merge the defaults from `vectorbtpro.records.base.Records.plots_defaults` with the
         plotting settings from `vectorbtpro._settings.ranges`.
-        
+
         Returns:
             Kwargs: Merged default plotting configurations.
         """
@@ -2022,7 +2034,7 @@ class PatternRanges(Ranges):
     @property
     def search_configs(self) -> tp.List[PSC]:
         """Return a list of `PSC` instances, one for each column.
-        
+
         Returns:
             List[PSC]: List of `PSC` instances.
         """
@@ -2128,11 +2140,11 @@ class PatternRanges(Ranges):
         `vectorbtpro.utils.params.combine_params` into one or more search configurations. If no `Param`
         arguments are detected, a single search configuration is built from the given parameters.
         When `search_configs` is supplied, it is used directly without modification. For example,
-        passing `min_similarity` of 95% will use it in all search configurations except where 
+        passing `min_similarity` of 95% will use it in all search configurations except where
         it was explicitly overridden.
 
         Each search configuration is resolved using `PatternRanges.resolve_search_config`.
-        The configurations are executed with `vectorbtpro.utils.execution.execute`, the resulting 
+        The configurations are executed with `vectorbtpro.utils.execution.execute`, the resulting
         records arrays are concatenated, and the outcome is wrapped in a `PatternRanges` instance.
 
         Args:
@@ -2344,7 +2356,7 @@ class PatternRanges(Ranges):
             kwargs["close"] = tile(kwargs["close"], len(wrapper.columns) // kwargs["close"].shape[1])
         return cls(wrapper, records_arr, new_search_configs, **kwargs)
 
-    def with_delta(self, *args, **kwargs):
+    def with_delta(self, *args, **kwargs) -> Ranges:
         """Return a new range by calling `Ranges.from_delta` with the instance's index set to its last index.
 
         Args:
@@ -2527,6 +2539,9 @@ class PatternRanges(Ranges):
 
         Returns:
             BaseFigure: Figure with plotted pattern ranges.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
         """
         from vectorbtpro._settings import settings
 

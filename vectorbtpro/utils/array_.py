@@ -65,7 +65,7 @@ def is_range_nb(arr: tp.Array1d) -> bool:
 
     Args:
         arr (Array1d): The input array.
-    
+
     Returns:
         bool: True if the array is a consecutive integer sequence, False otherwise.
     """

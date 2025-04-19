@@ -21,6 +21,10 @@ __pdoc__ = {}
 
 
 class LocalData(CustomData):
-    """Data class for fetching local data."""
+    """Data class for fetching local data.
+
+    !!! info
+        For default settings, see `custom.local` in `vectorbtpro._settings.data`.
+    """
 
     _settings_path: tp.SettingsPath = dict(custom="data.custom.local")

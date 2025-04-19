@@ -53,18 +53,25 @@ class Prettified(Base):
     def prettify(self, **kwargs) -> str:
         """Prettify the object.
 
+        Returns:
+            str: A prettified representation of the object.
+
         !!! warning
             Calling `prettify` can lead to an infinite recursion.
             Make sure to pre-process this object.
-
-        Returns:
-            str: A prettified representation of the object.
         """
         raise NotImplementedError
 
     def prettify_doc(self, **kwargs) -> str:
         """Prettify the object for documentation, equivalent to using
-        `Prettified.prettify` with `repr_doc` as `repr_`."""
+        `Prettified.prettify` with `repr_doc` as `repr_`.
+
+        Args:
+            **kwargs: Keyword arguments passed to `prettify`.
+
+        Returns:
+            str: A prettified representation of the object.
+        """
         return self.prettify(repr_=repr_doc, **kwargs)
 
     def pprint(self, **kwargs) -> None:
@@ -398,8 +405,16 @@ def repr_doc(obj: tp.Any) -> str:
     return obj_repr
 
 
-def prettify_doc(*args, **kwargs):
-    """Prettify for documentation, equivalent to using `prettify` with `repr_doc` as `repr_`."""
+def prettify_doc(*args, **kwargs) -> str:
+    """Prettify for documentation, equivalent to using `prettify` with `repr_doc` as `repr_`.
+
+    Args:
+        *args: Positional arguments passed to `prettify`.
+        **kwargs: Keyword arguments passed to `prettify`.
+
+    Returns:
+        str: A prettified representation of the object.
+    """
     return prettify(*args, repr_=repr_doc, **kwargs)
 
 
@@ -698,7 +713,7 @@ def dump(obj: tp.Any, dump_engine: str = "prettify", **kwargs) -> str:
         assert_can_import("yaml")
         import yaml
 
-        def multiline_str_representer(dumper, data):
+        def _multiline_str_representer(dumper, data):
             if isinstance(data, str) and "\n" in data:
                 return dumper.represent_scalar("tag:yaml.org,2002:str", data, style="|")
             return dumper.represent_str(data)
@@ -706,7 +721,7 @@ def dump(obj: tp.Any, dump_engine: str = "prettify", **kwargs) -> str:
         class CustomDumper(yaml.SafeDumper):
             pass
 
-        CustomDumper.add_representer(str, multiline_str_representer)
+        CustomDumper.add_representer(str, _multiline_str_representer)
 
         if "Dumper" not in kwargs:
             kwargs["Dumper"] = CustomDumper
@@ -718,7 +733,7 @@ def dump(obj: tp.Any, dump_engine: str = "prettify", **kwargs) -> str:
         from ruamel.yaml import YAML
         from ruamel.yaml.representer import RoundTripRepresenter
 
-        def multiline_str_representer(dumper, data):
+        def _multiline_str_representer(dumper, data):
             if isinstance(data, str) and "\n" in data:
                 return dumper.represent_scalar("tag:yaml.org,2002:str", data, style="|")
             return dumper.represent_str(data)
@@ -726,7 +741,7 @@ def dump(obj: tp.Any, dump_engine: str = "prettify", **kwargs) -> str:
         class CustomRepresenter(RoundTripRepresenter):
             pass
 
-        CustomRepresenter.add_representer(str, multiline_str_representer)
+        CustomRepresenter.add_representer(str, _multiline_str_representer)
 
         yaml = YAML(
             typ=kwargs.pop("typ", None),

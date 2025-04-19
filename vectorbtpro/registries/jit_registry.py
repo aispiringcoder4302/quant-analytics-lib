@@ -344,6 +344,9 @@ non-precise type pyobject
 
     This custom jitter cannot be used to decorate Numba functions that are intended to be called
     from within other Numba functions, as the conversion is performed in Python.
+
+!!! info
+    For default settings, see `vectorbtpro._settings.jitting`.
 """
 
 from vectorbtpro import _typing as tp
@@ -429,7 +432,7 @@ class JittedSetup(DefineMixin):
 
     jitted_func: tp.Callable = define.field()
     """Function decorated using JIT."""
-    
+
     @staticmethod
     def get_hash(jitter: Jitter) -> int:
         return hash(tuple(sorted(jitter.config.items())))
@@ -638,13 +641,6 @@ class JITRegistry(Base):
         * `jitter.your_jitter.tasks.your_task.resolve_kwargs` in `vectorbtpro._settings.jitting`
         * `jitter_kwargs`
 
-        !!! note
-            The `disable` parameter is used only by `JITRegistry` and not by `vectorbtpro.utils.jitting`.
-
-        !!! note
-            If multiple jitted setups are registered for a single task id, the `jitter` parameter
-            must be explicitly provided.
-
         If no jitted setup of type `JittedSetup` is found and `allow_new` is True, the function
         is decorated and returned instead of raising an error. If `return_missing_task` is True,
         `task_id_or_func` is returned when the task id is not found in `JITRegistry.jitable_setups`.
@@ -666,6 +662,16 @@ class JITRegistry(Base):
         Returns:
             Union[Hashable, Callable]: Either the resolved jitted function or the original task
                 identifier/function based on the resolution process.
+
+        !!! note
+            The `disable` parameter is used only by `JITRegistry` and not by `vectorbtpro.utils.jitting`.
+
+        !!! note
+            If multiple jitted setups are registered for a single task id, the `jitter` parameter
+            must be explicitly provided.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.jitting`.
         """
         from vectorbtpro._settings import settings
 
@@ -793,7 +799,7 @@ class JITRegistry(Base):
 
         Args:
             task_id (Union[Hashable, Callable]): A task identifier or a function.
-        
+
                 Specifies the task for which the option is applied.
             option (JittedOption): The option used to configure jitting.
             **kwargs: Keyword arguments passed to `vectorbtpro.utils.jitting.resolve_jitted_kwargs`.
@@ -846,7 +852,11 @@ def register_jitted(
 
     Returns:
         Callable: The decorated function.
+
+    !!! info
+        For default settings, see `vectorbtpro._settings.jitting`.
     """
+
     def decorator(_py_func: tp.Callable) -> tp.Callable:
         nonlocal options
 

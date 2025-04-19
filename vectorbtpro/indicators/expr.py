@@ -44,6 +44,7 @@ __all__ = []
 
 # ############# Delay ############# #
 
+
 def delay(x: tp.Array2d, d: float) -> tp.Array2d:
     """Return the value of `x` from `d` days ago.
 
@@ -71,6 +72,7 @@ def delta(x: tp.Array2d, d: float) -> tp.Array2d:
 
 
 # ############# Cross-section ############# #
+
 
 def cs_rescale(x: tp.Array2d) -> tp.Array2d:
     """Rescale `x` such that the sum of its absolute values equals 1.
@@ -112,6 +114,7 @@ def cs_demean(x: tp.Array2d, g: tp.GroupByLike, context: tp.KwargsLike = None) -
 
 
 # ############# Rolling ############# #
+
 
 def ts_min(x: tp.Array2d, d: float) -> tp.Array2d:
     """Return the rolling minimum value over a window defined by `d` days.
@@ -297,6 +300,7 @@ def adv(d: float, context: tp.KwargsLike = None) -> tp.Array2d:
 
 
 # ############# Substitutions ############# #
+
 
 def returns(context: tp.KwargsLike = None) -> tp.Array2d:
     """Return the daily close-to-close returns.

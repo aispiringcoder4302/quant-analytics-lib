@@ -452,7 +452,7 @@ class MetaRecords(type(Analyzable)):
     @property
     def field_config(cls) -> Config:
         """Field configuration.
-        
+
         Returns:
             Config: The field configuration for the `Records` class.
         """
@@ -467,7 +467,7 @@ class Records(Analyzable, metaclass=MetaRecords):
 
             See `vectorbtpro.base.wrapping.ArrayWrapper`.
         records_arr (array_like): A structured NumPy array of records.
-            
+
             Must contain the fields `id` (record index) and `col` (column index).
         col_mapper (ColumnMapper): Column mapper if already known.
 
@@ -477,8 +477,11 @@ class Records(Analyzable, metaclass=MetaRecords):
 
                 `Records.replace` handles this automatically.
         **kwargs: Custom keyword arguments passed to the config.
-            
+
             Useful for extending the configuration in subclasses.
+
+    !!! info
+        For default settings, see `vectorbtpro._settings.records`.
     """
 
     _writeable_attrs: tp.WriteableAttrs = {"_field_config"}
@@ -789,8 +792,8 @@ class Records(Analyzable, metaclass=MetaRecords):
     ) -> RecordsT:
         """Stack multiple `Records` instances along columns.
 
-        Uses `vectorbtpro.base.wrapping.ArrayWrapper.column_stack` to stack the wrappers and 
-        `Records.column_stack_records_arrs` to combine the record arrays. The `get_indexer_kwargs` 
+        Uses `vectorbtpro.base.wrapping.ArrayWrapper.column_stack` to stack the wrappers and
+        `Records.column_stack_records_arrs` to combine the record arrays. The `get_indexer_kwargs`
         are passed to `pandas.Index.get_indexer` to map old indices to new ones after reindexing.
 
         Args:
@@ -899,7 +902,7 @@ class Records(Analyzable, metaclass=MetaRecords):
     def indexing_func_meta(self, *args, wrapper_meta: tp.DictLike = None, **kwargs) -> dict:
         """Perform indexing on the `Records` instance and return corresponding metadata.
 
-        By default, all fields mapped to an index are processed. 
+        By default, all fields mapped to an index are processed.
         Set a field's `noindex` setting to True to exclude it from indexing.
 
         Args:
@@ -1140,7 +1143,7 @@ class Records(Analyzable, metaclass=MetaRecords):
                     else:
                         new_columns.append(pd.Series(self.get_apply_mapping_arr(field_name), name=title))
                 else:
-                    new_columns.append(pd.Series(self.values[field_name], name=field_name))
+                    new_columns.append(pd.Series(self.values[field_name], name=title))
             else:
                 new_columns.append(pd.Series(self.values[field_name], name=field_name))
         records_readable = pd.concat(new_columns, axis=1)
@@ -1318,7 +1321,6 @@ class Records(Analyzable, metaclass=MetaRecords):
 
         Array of column identifiers extracted from the record array.
 
-
         Returns:
             Array1d: The array of column identifiers.
         """
@@ -1364,9 +1366,6 @@ class Records(Analyzable, metaclass=MetaRecords):
     def sort(self: RecordsT, incl_id: bool = False, group_by: tp.GroupByLike = None, **kwargs) -> RecordsT:
         """Sort records by column values with an optional secondary sort by record ids.
 
-        !!! note
-            Sorting is expensive. It is more efficient to append records that are already in the correct order.
-
         Args:
             incl_id (bool): If True, include record ids in the sorting criteria.
             group_by (GroupByLike): Grouping specification to regroup records after sorting.
@@ -1374,6 +1373,9 @@ class Records(Analyzable, metaclass=MetaRecords):
 
         Returns:
             Records: A new instance with sorted records.
+
+        !!! note
+            Sorting is expensive. It is more efficient to append records that are already in the correct order.
         """
         if self.is_sorted(incl_id=incl_id):
             return self.replace(**kwargs).regroup(group_by)
@@ -1674,7 +1676,7 @@ class Records(Analyzable, metaclass=MetaRecords):
     def pd_mask(self) -> tp.SeriesFrame:
         """Return the mask as a SeriesFrame produced by invoking
         `vectorbtpro.records.mapped_array.MappedArray.get_pd_mask` with default arguments.
-        
+
         Returns:
             SeriesFrame: A Series or DataFrame representing the mask.
         """

@@ -43,6 +43,9 @@ class PolygonData(RemoteData):
         * https://github.com/polygon-io/client-python for the official Polygon Python client.
         * `PolygonData.fetch_symbol` for argument details.
 
+    !!! info
+        For default settings, see `custom.polygon` in `vectorbtpro._settings.data`.
+
     Examples:
         Set up the API key globally:
 
@@ -215,8 +218,6 @@ class PolygonData(RemoteData):
         Returns:
             SymbolData: The updated data and a metadata dictionary.
 
-        For default settings, see `custom.polygon` in `vectorbtpro._settings.data`.
-
         !!! note
             If you're using a free plan with a rate limit of several requests per minute,
             set `delay` to a higher value (e.g., 12 to allow 5 requests per minute).
@@ -275,7 +276,7 @@ class PolygonData(RemoteData):
 
         def _retry(method):
             @wraps(method)
-            def retry_method(*args, **kwargs):
+            def retry_method(*args, **kwargs) -> tp.Any:
                 for i in range(retries):
                     try:
                         return method(*args, **kwargs)

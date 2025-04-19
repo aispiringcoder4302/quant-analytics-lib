@@ -84,6 +84,7 @@ class _RPROB(RPROB):
         Name: array_0, dtype: bool
         ```
     """
+
     pass
 
 

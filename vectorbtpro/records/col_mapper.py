@@ -30,7 +30,7 @@ ColumnMapperT = tp.TypeVar("ColumnMapperT", bound="ColumnMapper")
 
 class ColumnMapper(Wrapping):
     """Class for mapping column arrays.
-    
+
     Used by `vectorbtpro.records.base.Records` and `vectorbtpro.records.mapped_array.MappedArray`
     classes to make use of column and group metadata.
 
@@ -51,7 +51,7 @@ class ColumnMapper(Wrapping):
     @property
     def col_arr(self) -> tp.Array1d:
         """Column array.
-        
+
         Returns:
             Array1d: The column array.
         """
@@ -356,7 +356,7 @@ class ColumnMapper(Wrapping):
     @cached_property(whitelist=True)
     def new_id_arr(self) -> tp.Array1d:
         """New ID array derived from the column array and the wrapper's 2D shape.
-        
+
         Returns:
             Array1d: New ID array.
 

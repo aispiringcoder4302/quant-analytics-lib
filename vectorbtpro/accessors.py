@@ -137,6 +137,9 @@ def register_accessor(name: str, cls: tp.Type[DirNamesMixin]) -> tp.Callable:
 
     Returns:
         Callable: A decorator function to register the custom accessor.
+
+    !!! info
+        For default settings, see `vectorbtpro._settings.caching`.
     """
 
     def decorator(accessor: tp.Type[AccessorT]) -> tp.Type[AccessorT]:

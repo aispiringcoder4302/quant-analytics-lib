@@ -24,7 +24,11 @@ __pdoc__ = {}
 
 
 class CustomData(Data):
-    """Data class for accessing custom data using a dedicated custom settings path."""
+    """Data class for accessing custom data using a dedicated custom settings path.
+
+    !!! info
+        For default settings, see `custom` in `vectorbtpro._settings.data`.
+    """
 
     _settings_path: tp.SettingsPath = dict(custom=None)
 

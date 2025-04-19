@@ -8,7 +8,11 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module providing utilities for constructing and displaying figures."""
+"""Module providing utilities for constructing and displaying figures.
+
+!!! info
+    For default settings, see `vectorbtpro._settings.plotting`.
+"""
 
 from vectorbtpro.utils.module_ import assert_can_import
 
@@ -286,6 +290,9 @@ class FigureMixin(Base):
 
         Returns:
             Tuple[Args, Kwargs]: A tuple containing the resolved positional and keyword arguments.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
         """
         from vectorbtpro._settings import settings
 
@@ -314,6 +321,13 @@ class FigureMixin(Base):
         """Display the figure.
 
         This method should be overridden by subclasses.
+
+        Args:
+            *args: Positional arguments for displaying the figure.
+            **kwargs: Keyword arguments for displaying the figure.
+
+        Returns:
+            None
         """
         raise NotImplementedError
 
@@ -321,6 +335,13 @@ class FigureMixin(Base):
         """Write the figure to disk.
 
         This method should be overridden by subclasses.
+
+        Args:
+            *args: Positional arguments for writing the figure.
+            **kwargs: Keyword arguments for writing the figure.
+
+        Returns:
+            None
         """
         raise NotImplementedError
 
@@ -328,6 +349,13 @@ class FigureMixin(Base):
         """Update layout of the figure.
 
         This method should be overridden by subclasses.
+
+        Args:
+            *args: Positional arguments for updating the layout.
+            **kwargs: Keyword arguments for updating the layout.
+
+        Returns:
+            None
         """
         raise NotImplementedError
 
@@ -402,6 +430,9 @@ class Figure(_Figure, FigureMixin):
         *args: Additional positional arguments.
         empty_layout (bool): If True, use an empty layout; otherwise merge default plotting settings.
         **kwargs: Additional keyword arguments.
+
+    !!! info
+        For default settings, see `vectorbtpro._settings.plotting`.
     """
 
     def __init__(self, *args, empty_layout: bool = False, **kwargs) -> None:
@@ -430,6 +461,9 @@ class FigureWidget(_FigureWidget, FigureMixin):
         *args: Additional positional arguments.
         empty_layout (bool): If True, use an empty layout; otherwise merge default plotting settings.
         **kwargs: Additional keyword arguments.
+
+    !!! info
+        For default settings, see `vectorbtpro._settings.plotting`.
     """
 
     def __init__(self, *args, empty_layout: bool = False, **kwargs) -> None:
@@ -461,6 +495,9 @@ try:
             *args: Additional positional arguments.
             empty_layout (bool): If True, use an empty layout; otherwise merge default plotting settings.
             **kwargs: Additional keyword arguments.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
         """
 
         def __init__(self, *args, empty_layout: bool = False, **kwargs) -> None:
@@ -488,6 +525,9 @@ try:
             *args: Additional positional arguments.
             empty_layout (bool): If True, use an empty layout; otherwise merge default plotting settings.
             **kwargs: Additional keyword arguments.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
         """
 
         def __init__(self, *args, empty_layout: bool = False, **kwargs) -> None:
@@ -531,6 +571,9 @@ def make_figure(
 
     Returns:
         BaseFigure: A Plotly figure instance.
+
+    !!! info
+        For default settings, see `vectorbtpro._settings.plotting`.
     """
     from vectorbtpro._settings import settings
 

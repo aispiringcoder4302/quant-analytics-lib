@@ -10,7 +10,7 @@
 
 """Module providing general type definitions used across vectorbtpro.
 
-This module provides foundational type aliases, protocols, and utilities for common data structures 
+This module provides foundational type aliases, protocols, and utilities for common data structures
 such as sequences, scalars, arrays, and datetime representations within vectorbtpro.
 """
 
@@ -54,7 +54,13 @@ except ImportError:
 if TYPE_CHECKING:
     from vectorbtpro.utils.parsing import Regex
     from vectorbtpro.utils.execution import Task, ExecutionEngine
-    from vectorbtpro.utils.chunking import Sizer, NotChunked, ChunkTaker, ChunkMeta, ChunkMetaGenerator
+    from vectorbtpro.utils.chunking import (
+        Sizer,
+        NotChunked,
+        ChunkTaker,
+        ChunkMeta,
+        ChunkMetaGenerator,
+    )
     from vectorbtpro.utils.jitting import Jitter
     from vectorbtpro.utils.template import CustomTemplate
     from vectorbtpro.utils.datetime_ import DTC, DTCNT
@@ -73,7 +79,11 @@ if TYPE_CHECKING:
         EmbeddedDocument,
         ScoredDocument,
     )
-    from vectorbtpro.utils.knowledge.custom_assets import VBTAsset, PagesAsset, MessagesAsset
+    from vectorbtpro.utils.knowledge.custom_assets import (
+        VBTAsset,
+        PagesAsset,
+        MessagesAsset,
+    )
     from vectorbtpro.utils.knowledge.formatting import ContentFormatter
     from vectorbtpro.base.indexing import hslice
     from vectorbtpro.base.grouping.base import Grouper
@@ -82,6 +92,19 @@ if TYPE_CHECKING:
     from vectorbtpro.data.base import Data
     from vectorbtpro.generic.splitting.base import FixRange, RelRange
     from vectorbtpro.indicators.factory import IndicatorBase
+    from vectorbtpro.portfolio.enums import (
+        SignalContext,
+        PostSignalContext,
+        SignalSegmentContext,
+        SimulationContext,
+        GroupContext,
+        RowContext,
+        SegmentContext,
+        OrderContext,
+        FlexOrderContext,
+        PostOrderContext,
+        Order,
+    )
 else:
     Regex = "Regex"
     Task = "Task"
@@ -122,6 +145,17 @@ else:
     FixRange = "FixRange"
     RelRange = "RelRange"
     IndicatorBase = "IndicatorBase"
+    SignalContext = "SignalContext"
+    PostSignalContext = "PostSignalContext"
+    SignalSegmentContext = "SignalSegmentContext"
+    SimulationContext = "SimulationContext"
+    GroupContext = "GroupContext"
+    RowContext = "RowContext"
+    SegmentContext = "SegmentContext"
+    OrderContext = "OrderContext"
+    FlexOrderContext = "FlexOrderContext"
+    PostOrderContext = "PostOrderContext"
+    Order = "Order"
 
 __all__ = []
 
@@ -384,6 +418,8 @@ ChunkedOption = Union[None, bool, str, Callable, Kwargs]
 # Decorators
 ClassWrapper = Callable[[Type[T]], Type[T]]
 FlexClassWrapper = Union[Callable[[Type[T]], Type[T]], Type[T]]
+UnaryTranslateFunc = Callable[[Any, Callable], Any]
+BinaryTranslateFunc = Callable[[Any, Any, Callable], Any]
 
 # Splitting
 FixRangeLike = Union[Slice, Sequence[int], Sequence[bool], Callable, CustomTemplate, FixRange]
@@ -447,3 +483,20 @@ SourceChunk = Union[str, Tuple[str, int, int], Tuple[str, int], Tuple[str, int, 
 SourceChunks = List[SourceChunk]
 RefineSourceOutput = Union[None, str, Path, Tuple[str, Path], Tuple[Path, Path]]
 RefineSourceOutputs = List[Tuple[Any, RefineSourceOutput]]
+
+# Simulation
+SignalFunc = Callable[[SignalContext, VarArg()], Tuple[bool, bool, bool, bool]]
+PostSignalFunc = Callable[[PostSignalContext, VarArg()], None]
+PostSignalSegmentFunc = Callable[[SignalSegmentContext, VarArg()], None]
+AdjustFunc = Callable[[SignalContext, VarArg()], None]
+PreSimFunc = Callable[[SimulationContext, VarArg()], Args]
+PostSimFunc = Callable[[SimulationContext, VarArg()], None]
+PreGroupFunc = Callable[[GroupContext, VarArg()], Args]
+PostGroupFunc = Callable[[GroupContext, VarArg()], None]
+PreRowFunc = Callable[[RowContext, VarArg()], Args]
+PostRowFunc = Callable[[RowContext, VarArg()], None]
+PreSegmentFunc = Callable[[SegmentContext, VarArg()], Args]
+PostSegmentFunc = Callable[[SegmentContext, VarArg()], None]
+OrderFunc = Callable[[OrderContext, VarArg()], Order]
+FlexOrderFunc = Callable[[FlexOrderContext, VarArg()], Tuple[int, Order]]
+PostOrderFunc = Callable[[PostOrderContext, VarArg()], None]

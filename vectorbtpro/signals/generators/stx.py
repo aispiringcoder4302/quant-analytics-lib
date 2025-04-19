@@ -70,6 +70,7 @@ class _STX(STX):
         All parameter values can be specified as a single value (per frame) or as a NumPy array
         (per row, column, or element). To generate multiple combinations, pass them as lists.
     """
+
     pass
 
 

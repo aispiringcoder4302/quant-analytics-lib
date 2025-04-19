@@ -38,6 +38,9 @@ def attach_px_methods(cls: tp.Type[tp.T]) -> tp.Type[tp.T]:
 
     Returns:
         Type: The decorated class with Plotly Express methods attached.
+
+    !!! info
+        For default settings, see `vectorbtpro._settings.plotting`.
     """
     for px_func_name, px_func in inspect.getmembers(px, inspect.isfunction):
         if checks.func_accepts_arg(px_func, "data_frame") or px_func_name == "imshow":

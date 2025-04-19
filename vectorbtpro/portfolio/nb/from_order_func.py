@@ -115,13 +115,13 @@ def sort_call_seq_out_1d_nb(
 
     group_value_now = calc_ctx_group_value_nb(c)
     group_len = c.to_col - c.from_col
-    for c in range(group_len):
-        if call_seq_out[c] != c:
+    for ci in range(group_len):
+        if call_seq_out[ci] != ci:
             raise ValueError("call_seq_out must follow CallSeqType.Default")
-        col = c.from_col + c
-        _size = flex_select_1d_pc_nb(size, c)
-        _size_type = flex_select_1d_pc_nb(size_type, c)
-        _direction = flex_select_1d_pc_nb(direction, c)
+        col = c.from_col + ci
+        _size = flex_select_1d_pc_nb(size, ci)
+        _size_type = flex_select_1d_pc_nb(size_type, ci)
+        _direction = flex_select_1d_pc_nb(direction, ci)
         if c.cash_sharing:
             cash_now = c.last_cash[c.group]
             free_cash_now = c.last_free_cash[c.group]
@@ -137,7 +137,7 @@ def sort_call_seq_out_1d_nb(
             val_price=c.last_val_price[col],
             value=group_value_now,
         )
-        order_value_out[c] = approx_order_value_nb(
+        order_value_out[ci] = approx_order_value_nb(
             exec_state,
             _size,
             _size_type,
@@ -216,10 +216,10 @@ def sort_call_seq_out_nb(
 
     group_value_now = calc_ctx_group_value_nb(c)
     group_len = c.to_col - c.from_col
-    for c in range(group_len):
-        if call_seq_out[c] != c:
+    for ci in range(group_len):
+        if call_seq_out[ci] != ci:
             raise ValueError("call_seq_out must follow CallSeqType.Default")
-        col = c.from_col + c
+        col = c.from_col + ci
         _size = select_from_col_nb(c, col, size)
         _size_type = select_from_col_nb(c, col, size_type)
         _direction = select_from_col_nb(c, col, direction)
@@ -238,7 +238,7 @@ def sort_call_seq_out_nb(
             val_price=c.last_val_price[col],
             value=group_value_now,
         )
-        order_value_out[c] = approx_order_value_nb(
+        order_value_out[ci] = approx_order_value_nb(
             exec_state,
             _size,
             _size_type,
@@ -352,16 +352,6 @@ def no_post_func_nb(c: tp.NamedTuple, *args) -> None:
     return None
 
 
-PreSimFuncT = tp.Callable[[SimulationContext, tp.VarArg()], tp.Args]
-PostSimFuncT = tp.Callable[[SimulationContext, tp.VarArg()], None]
-PreGroupFuncT = tp.Callable[[GroupContext, tp.VarArg()], tp.Args]
-PostGroupFuncT = tp.Callable[[GroupContext, tp.VarArg()], None]
-PreSegmentFuncT = tp.Callable[[SegmentContext, tp.VarArg()], tp.Args]
-PostSegmentFuncT = tp.Callable[[SegmentContext, tp.VarArg()], None]
-OrderFuncT = tp.Callable[[OrderContext, tp.VarArg()], Order]
-PostOrderFuncT = tp.Callable[[PostOrderContext, tp.VarArg()], None]
-
-
 # % <block pre_sim_func_nb>
 # % <skip? skip_func(out_lines, "pre_sim_func_nb")>
 # % <uncomment>
@@ -371,11 +361,11 @@ PostOrderFuncT = tp.Callable[[PostOrderContext, tp.VarArg()], None]
 #     *args,
 # ) -> tp.Args:
 #     """Custom simulation pre-processing function.
-# 
+#
 #     Args:
 #         c (SimulationContext): The simulation context.
 #         *args: Positional arguments for simulation processing.
-# 
+#
 #     Returns:
 #         Args: The forwarded positional arguments.
 #     """
@@ -395,7 +385,7 @@ PostOrderFuncT = tp.Callable[[PostOrderContext, tp.VarArg()], None]
 #     *args,
 # ) -> None:
 #     """Custom simulation post-processing function.
-# 
+#
 #     Args:
 #         c (SimulationContext): The simulation context.
 #         *args: Positional arguments for simulation processing.
@@ -419,11 +409,11 @@ PostOrderFuncT = tp.Callable[[PostOrderContext, tp.VarArg()], None]
 #     *args,
 # ) -> tp.Args:
 #     """Custom group pre-processing function.
-# 
+#
 #     Args:
 #         c (GroupContext): The group context.
 #         *args: Positional arguments for group processing.
-# 
+#
 #     Returns:
 #         Args: The forwarded positional arguments.
 #     """
@@ -443,7 +433,7 @@ PostOrderFuncT = tp.Callable[[PostOrderContext, tp.VarArg()], None]
 #     *args,
 # ) -> None:
 #     """Custom group post-processing function.
-# 
+#
 #     Args:
 #         c (GroupContext): The group context.
 #         *args: Positional arguments for group processing.
@@ -467,11 +457,11 @@ PostOrderFuncT = tp.Callable[[PostOrderContext, tp.VarArg()], None]
 #     *args,
 # ) -> tp.Args:
 #     """Custom segment pre-processing function.
-# 
+#
 #     Args:
 #         c (SegmentContext): The segment context.
 #         *args: Positional arguments for segment processing.
-# 
+#
 #     Returns:
 #         Args: The forwarded positional arguments.
 #     """
@@ -491,7 +481,7 @@ PostOrderFuncT = tp.Callable[[PostOrderContext, tp.VarArg()], None]
 #     *args,
 # ) -> None:
 #     """Custom segment post-processing function.
-# 
+#
 #     Args:
 #         c (SegmentContext): The segment context.
 #         *args: Positional arguments for segment processing.
@@ -515,11 +505,11 @@ PostOrderFuncT = tp.Callable[[PostOrderContext, tp.VarArg()], None]
 #     *args,
 # ) -> Order:
 #     """Custom order processing function.
-# 
+#
 #     Args:
 #         c (OrderContext): The order context.
 #         *args: Positional arguments for order creation.
-# 
+#
 #     Returns:
 #         Order: The created order.
 #
@@ -541,7 +531,7 @@ PostOrderFuncT = tp.Callable[[PostOrderContext, tp.VarArg()], None]
 #     *args,
 # ) -> None:
 #     """Custom order post-processing function.
-# 
+#
 #     Args:
 #         c (PostOrderContext): The post-order context.
 #         *args: Positional arguments for post-order processing.
@@ -650,21 +640,21 @@ def from_order_func_nb(  # %? line.replace("from_order_func_nb", new_func_name)
     segment_mask: tp.FlexArray2dLike = True,
     call_pre_segment: bool = False,
     call_post_segment: bool = False,
-    pre_sim_func_nb: PreSimFuncT = no_pre_func_nb,  # % None
+    pre_sim_func_nb: tp.PreSimFunc = no_pre_func_nb,  # % None
     pre_sim_args: tp.Args = (),
-    post_sim_func_nb: PostSimFuncT = no_post_func_nb,  # % None
+    post_sim_func_nb: tp.PostSimFunc = no_post_func_nb,  # % None
     post_sim_args: tp.Args = (),
-    pre_group_func_nb: PreGroupFuncT = no_pre_func_nb,  # % None
+    pre_group_func_nb: tp.PreGroupFunc = no_pre_func_nb,  # % None
     pre_group_args: tp.Args = (),
-    post_group_func_nb: PostGroupFuncT = no_post_func_nb,  # % None
+    post_group_func_nb: tp.PostGroupFunc = no_post_func_nb,  # % None
     post_group_args: tp.Args = (),
-    pre_segment_func_nb: PreSegmentFuncT = no_pre_func_nb,  # % None
+    pre_segment_func_nb: tp.PreSegmentFunc = no_pre_func_nb,  # % None
     pre_segment_args: tp.Args = (),
-    post_segment_func_nb: PostSegmentFuncT = no_post_func_nb,  # % None
+    post_segment_func_nb: tp.PostSegmentFunc = no_post_func_nb,  # % None
     post_segment_args: tp.Args = (),
-    order_func_nb: OrderFuncT = no_order_func_nb,  # % None
+    order_func_nb: tp.OrderFunc = no_order_func_nb,  # % None
     order_args: tp.Args = (),
-    post_order_func_nb: PostOrderFuncT = no_post_func_nb,  # % None
+    post_order_func_nb: tp.PostOrderFunc = no_post_func_nb,  # % None
     post_order_args: tp.Args = (),
     index: tp.Optional[tp.Array1d] = None,
     freq: tp.Optional[int] = None,
@@ -695,15 +685,6 @@ def from_order_func_nb(  # %? line.replace("from_order_func_nb", new_func_name)
     Unlike `from_order_func_rw_nb`, order processing is performed in column-major order
     (i.e. processing the entire column or group across all rows before moving to the next).
     See [Row- and column-major order](https://en.wikipedia.org/wiki/Row-_and_column-major_order).
-
-    !!! note
-        Indexing of 2D arrays in vectorbtpro follows the pandas convention: `a[i, col]`.
-
-    !!! warning
-        You can only safely access data from columns left of the current group and rows above the
-        current row within the same group. Other data points may have not been processed yet.
-        Accessing unprocessed data may not trigger any errors or warnings but yield arbitrary values
-        (see [np.empty](https://numpy.org/doc/stable/reference/generated/numpy.empty.html)).
 
     Args:
         target_shape (Shape): See `vectorbtpro.portfolio.enums.SimulationContext.target_shape`.
@@ -771,7 +752,7 @@ def from_order_func_nb(  # %? line.replace("from_order_func_nb", new_func_name)
         order_func_nb (OrderFunc): Function that generates an order.
 
             Used for generating or skipping an order. Must accept an `vectorbtpro.portfolio.enums.OrderContext`,
-            the unpacked output from `pre_segment_func_nb`, and `*order_args`, and return 
+            the unpacked output from `pre_segment_func_nb`, and `*order_args`, and return
             an `vectorbtpro.portfolio.enums.Order`.
 
             !!! note
@@ -804,23 +785,35 @@ def from_order_func_nb(  # %? line.replace("from_order_func_nb", new_func_name)
         SimulationOutput: The simulation output containing order records, log records, and
             other simulation results.
 
+    !!! note
+        Indexing of 2D arrays in vectorbtpro follows the pandas convention: `a[i, col]`.
+
+    !!! warning
+        You can only safely access data from columns left of the current group and rows above the
+        current row within the same group. Other data points may have not been processed yet.
+        Accessing unprocessed data may not trigger any errors or warnings but yield arbitrary values
+        (see [np.empty](https://numpy.org/doc/stable/reference/generated/numpy.empty.html)).
+
+    !!! tip
+        This function is parallelizable.
+
     Call hierarchy:
         Simulation is carried out by iterating over an imaginary frame with dimensions representing
         time (rows) and assets/features (columns). Each element of this frame is a potential order
         generated by an order function.
 
         There are two processing patterns:
-        
+
         * Column-major (used by `from_order_func_nb`): Processes all rows in a column/group
             before moving to the next.
         * Row-major (used by `from_order_func_rw_nb`): Processes all columns in a row
             before moving to the next row.
-        
+
         This choice affects the data available during order generation.
 
         The frame is subdivided into blocks (columns, groups, rows, segments, elements). Columns can be
         grouped into groups that may or may not share the same capital. Regardless of capital sharing,
-        each collection of elements within a group and a time step is called a segment, which simply
+        each collection of elements within a group and a bar is called a segment, which simply
         defines a single context (such as shared capital) for one or multiple orders. Each segment
         can also define a custom sequence (a so-called call sequence) in which orders are executed.
 
@@ -1013,9 +1006,6 @@ def from_order_func_nb(  # %? line.replace("from_order_func_nb", new_func_name)
 
         Note that the last order in a group with cash sharing is always disadvantaged
         because it receives slightly fewer funds due to costs not accounted for during valuation.
-
-    !!! tip
-        This function is parallelizable.
     """
     check_group_lens_nb(group_lens, target_shape[1])
 
@@ -1184,8 +1174,8 @@ def from_order_func_nb(  # %? line.replace("from_order_func_nb", new_func_name)
         for i in range(_sim_start, _sim_end):
 
             if call_seq is None:
-                for c in range(group_len):
-                    temp_call_seq[c] = c
+                for ci in range(group_len):
+                    temp_call_seq[ci] = ci
                 call_seq_now = temp_call_seq[:group_len]
             else:
                 call_seq_now = call_seq[i, from_col:to_col]
@@ -1320,12 +1310,12 @@ def from_order_func_nb(  # %? line.replace("from_order_func_nb", new_func_name)
             if is_segment_active:
                 for k in range(group_len):
                     if cash_sharing:
-                        c = call_seq_now[k]
-                        if c >= group_len:
+                        ci = call_seq_now[k]
+                        if ci >= group_len:
                             raise ValueError("Call index out of bounds of the group")
                     else:
-                        c = k
-                    col = from_col + c
+                        ci = k
+                    col = from_col + ci
 
                     # Get current values
                     position_now = last_position[col]
@@ -1789,9 +1779,6 @@ def from_order_func_nb(  # %? line.replace("from_order_func_nb", new_func_name)
 
 # % </section>
 
-PreRowFuncT = tp.Callable[[RowContext, tp.VarArg()], tp.Args]
-PostRowFuncT = tp.Callable[[RowContext, tp.VarArg()], None]
-
 
 # % <block pre_row_func_nb>
 # % <skip? skip_func(out_lines, "pre_row_func_nb")>
@@ -1802,11 +1789,11 @@ PostRowFuncT = tp.Callable[[RowContext, tp.VarArg()], None]
 #     *args,
 # ) -> tp.Args:
 #     """Custom row pre-processing function.
-# 
+#
 #     Args:
 #         c (RowContext): The row context.
 #         *args: Additional positional arguments.
-# 
+#
 #     Returns:
 #         Args: A tuple of the positional arguments.
 #     """
@@ -1826,7 +1813,7 @@ PostRowFuncT = tp.Callable[[RowContext, tp.VarArg()], None]
 #     *args,
 # ) -> None:
 #     """Custom row post-processing function.
-# 
+#
 #     Args:
 #         c (RowContext): The row context.
 #         *args: Additional positional arguments.
@@ -1935,21 +1922,21 @@ def from_order_func_rw_nb(  # %? line.replace("from_order_func_rw_nb", new_func_
     segment_mask: tp.FlexArray2dLike = True,
     call_pre_segment: bool = False,
     call_post_segment: bool = False,
-    pre_sim_func_nb: PreSimFuncT = no_pre_func_nb,  # % None
+    pre_sim_func_nb: tp.PreSimFunc = no_pre_func_nb,  # % None
     pre_sim_args: tp.Args = (),
-    post_sim_func_nb: PostSimFuncT = no_post_func_nb,  # % None
+    post_sim_func_nb: tp.PostSimFunc = no_post_func_nb,  # % None
     post_sim_args: tp.Args = (),
-    pre_row_func_nb: PreRowFuncT = no_pre_func_nb,  # % None
+    pre_row_func_nb: tp.PreRowFunc = no_pre_func_nb,  # % None
     pre_row_args: tp.Args = (),
-    post_row_func_nb: PostRowFuncT = no_post_func_nb,  # % None
+    post_row_func_nb: tp.PostRowFunc = no_post_func_nb,  # % None
     post_row_args: tp.Args = (),
-    pre_segment_func_nb: PreSegmentFuncT = no_pre_func_nb,  # % None
+    pre_segment_func_nb: tp.PreSegmentFunc = no_pre_func_nb,  # % None
     pre_segment_args: tp.Args = (),
-    post_segment_func_nb: PostSegmentFuncT = no_post_func_nb,  # % None
+    post_segment_func_nb: tp.PostSegmentFunc = no_post_func_nb,  # % None
     post_segment_args: tp.Args = (),
-    order_func_nb: OrderFuncT = no_order_func_nb,  # % None
+    order_func_nb: tp.OrderFunc = no_order_func_nb,  # % None
     order_args: tp.Args = (),
-    post_order_func_nb: PostOrderFuncT = no_post_func_nb,  # % None
+    post_order_func_nb: tp.PostOrderFunc = no_post_func_nb,  # % None
     post_order_args: tp.Args = (),
     index: tp.Optional[tp.Array1d] = None,
     freq: tp.Optional[int] = None,
@@ -1972,19 +1959,9 @@ def from_order_func_rw_nb(  # %? line.replace("from_order_func_rw_nb", new_func_
 
     Row-major order processes each row (i.e., all groups/columns) entirely before moving to the next row.
 
-    The primary difference from `from_order_func_nb` is that it exposes `pre_row_func_nb` instead 
-    of `pre_group_func_nb`. The `pre_row_func_nb` function is executed for each entire row and must 
+    The primary difference from `from_order_func_nb` is that it exposes `pre_row_func_nb` instead
+    of `pre_group_func_nb`. The `pre_row_func_nb` function is executed for each entire row and must
     accept a `vectorbtpro.portfolio.enums.RowContext`.
-
-    !!! note
-        The `pre_row_func_nb` function is only invoked if there is at least one active segment in the row. 
-        Similarly, `pre_segment_func_nb` and `order_func_nb` are only called if their corresponding segment 
-        is active. To ensure `pre_row_func_nb` is invoked when its primary task is to manage segment 
-        activation, all segments should be activated by default.
-
-    !!! warning
-        You can only safely access data points that are to the left of the current group and 
-        rows that are above the current row.
 
     Args:
         target_shape (Shape): See `vectorbtpro.portfolio.enums.SimulationContext.target_shape`.
@@ -2052,7 +2029,7 @@ def from_order_func_rw_nb(  # %? line.replace("from_order_func_rw_nb", new_func_
         order_func_nb (OrderFunc): Function that generates an order.
 
             Used for generating or skipping an order. Must accept an `vectorbtpro.portfolio.enums.OrderContext`,
-            the unpacked output from `pre_segment_func_nb`, and `*order_args`, and return 
+            the unpacked output from `pre_segment_func_nb`, and `*order_args`, and return
             an vectorbtpro.portfolio.enums..
 
             !!! note
@@ -2085,17 +2062,30 @@ def from_order_func_rw_nb(  # %? line.replace("from_order_func_rw_nb", new_func_
         SimulationOutput: The simulation output containing order records, log records, and
             other simulation results.
 
+    !!! note
+        The `pre_row_func_nb` function is only invoked if there is at least one active segment in the row.
+        Similarly, `pre_segment_func_nb` and `order_func_nb` are only called if their corresponding segment
+        is active. To ensure `pre_row_func_nb` is invoked when its primary task is to manage segment
+        activation, all segments should be activated by default.
+
+    !!! warning
+        You can only safely access data points that are to the left of the current group and
+        rows that are above the current row.
+
+    !!! tip
+        This function is parallelizable.
+
     Call hierarchy:
         ```plaintext
         1. pre_sim_out = pre_sim_func_nb(SimulationContext, *pre_sim_args)
             2. pre_row_out = pre_row_func_nb(RowContext, *pre_sim_out, *pre_row_args)
-                3. if call_pre_segment or segment_mask: 
+                3. if call_pre_segment or segment_mask:
                     pre_segment_out = pre_segment_func_nb(SegmentContext, *pre_row_out, *pre_segment_args)
-                    4. if segment_mask: 
+                    4. if segment_mask:
                         order = order_func_nb(OrderContext, *pre_segment_out, *order_args)
-                    5. if order exists: 
+                    5. if order exists:
                         post_order_func_nb(PostOrderContext, *pre_segment_out, *post_order_args)
-                6. if call_post_segment or segment_mask: 
+                6. if call_post_segment or segment_mask:
                     post_segment_func_nb(SegmentContext, *pre_row_out, *post_segment_args)
             7. post_row_func_nb(RowContext, *pre_sim_out, *post_row_args)
         8. post_sim_func_nb(SimulationContext, *post_sim_args)
@@ -2173,9 +2163,6 @@ def from_order_func_rw_nb(  # %? line.replace("from_order_func_rw_nb", new_func_
             after row 4
         after simulation
         ```
-
-    !!! tip
-        This function is parallelizable.
     """
     check_group_lens_nb(group_lens, target_shape[1])
 
@@ -2344,8 +2331,8 @@ def from_order_func_rw_nb(  # %? line.replace("from_order_func_rw_nb", new_func_
             group_len = to_col - from_col
 
             if call_seq is None:
-                for c in range(group_len):
-                    temp_call_seq[c] = c
+                for ci in range(group_len):
+                    temp_call_seq[ci] = ci
                 call_seq_now = temp_call_seq[:group_len]
             else:
                 call_seq_now = call_seq[i, from_col:to_col]
@@ -2480,12 +2467,12 @@ def from_order_func_rw_nb(  # %? line.replace("from_order_func_rw_nb", new_func_
             if is_segment_active:
                 for k in range(group_len):
                     if cash_sharing:
-                        c = call_seq_now[k]
-                        if c >= group_len:
+                        ci = call_seq_now[k]
+                        if ci >= group_len:
                             raise ValueError("Call index out of bounds of the group")
                     else:
-                        c = k
-                    col = from_col + c
+                        ci = k
+                    col = from_col + ci
 
                     # Get current values
                     position_now = last_position[col]
@@ -2956,7 +2943,7 @@ def from_order_func_rw_nb(  # %? line.replace("from_order_func_rw_nb", new_func_
 def no_flex_order_func_nb(c: FlexOrderContext, *args) -> tp.Tuple[int, Order]:
     """Placeholder flexible order processing function.
 
-    This function acts as a dummy flexible order function by always returning a break indicator (-1) and 
+    This function acts as a dummy flexible order function by always returning a break indicator (-1) and
     `vectorbtpro.portfolio.enums.NoOrder`.
 
     Args:
@@ -2964,13 +2951,10 @@ def no_flex_order_func_nb(c: FlexOrderContext, *args) -> tp.Tuple[int, Order]:
         *args: Additional positional arguments.
 
     Returns:
-        Tuple[int, Order]: A tuple containing the break column indicator (-1) and 
+        Tuple[int, Order]: A tuple containing the break column indicator (-1) and
             `vectorbtpro.portfolio.enums.NoOrder`.
     """
     return -1, NoOrder
-
-
-FlexOrderFuncT = tp.Callable[[FlexOrderContext, tp.VarArg()], tp.Tuple[int, Order]]
 
 
 # % <block flex_order_func_nb>
@@ -2982,16 +2966,16 @@ FlexOrderFuncT = tp.Callable[[FlexOrderContext, tp.VarArg()], tp.Tuple[int, Orde
 #     *args,
 # ) -> tp.Tuple[int, Order]:
 #     """Custom flexible order processing function.
-# 
-#     Implements custom flexible order processing by returning a break indicator (-1) and 
+#
+#     Implements custom flexible order processing by returning a break indicator (-1) and
 #   `vectorbtpro.portfolio.enums.NoOrder`.
-# 
+#
 #     Args:
 #         c (FlexOrderContext): Flexible order context.
 #         *args: Additional positional arguments.
-# 
+#
 #     Returns:
-#         Tuple[int, Order]: A tuple with the break column indicator (-1) and 
+#         Tuple[int, Order]: A tuple with the break column indicator (-1) and
 #               `vectorbtpro.portfolio.enums.NoOrder`.
 #     """
 #     return -1, NoOrder
@@ -3093,21 +3077,21 @@ def from_flex_order_func_nb(  # %? line.replace("from_flex_order_func_nb", new_f
     segment_mask: tp.FlexArray2dLike = True,
     call_pre_segment: bool = False,
     call_post_segment: bool = False,
-    pre_sim_func_nb: PreSimFuncT = no_pre_func_nb,  # % None
+    pre_sim_func_nb: tp.PreSimFunc = no_pre_func_nb,  # % None
     pre_sim_args: tp.Args = (),
-    post_sim_func_nb: PostSimFuncT = no_post_func_nb,  # % None
+    post_sim_func_nb: tp.PostSimFunc = no_post_func_nb,  # % None
     post_sim_args: tp.Args = (),
-    pre_group_func_nb: PreGroupFuncT = no_pre_func_nb,  # % None
+    pre_group_func_nb: tp.PreGroupFunc = no_pre_func_nb,  # % None
     pre_group_args: tp.Args = (),
-    post_group_func_nb: PostGroupFuncT = no_post_func_nb,  # % None
+    post_group_func_nb: tp.PostGroupFunc = no_post_func_nb,  # % None
     post_group_args: tp.Args = (),
-    pre_segment_func_nb: PreSegmentFuncT = no_pre_func_nb,  # % None
+    pre_segment_func_nb: tp.PreSegmentFunc = no_pre_func_nb,  # % None
     pre_segment_args: tp.Args = (),
-    post_segment_func_nb: PostSegmentFuncT = no_post_func_nb,  # % None
+    post_segment_func_nb: tp.PostSegmentFunc = no_post_func_nb,  # % None
     post_segment_args: tp.Args = (),
-    flex_order_func_nb: FlexOrderFuncT = no_flex_order_func_nb,  # % None
+    flex_order_func_nb: tp.FlexOrderFunc = no_flex_order_func_nb,  # % None
     flex_order_args: tp.Args = (),
-    post_order_func_nb: PostOrderFuncT = no_post_func_nb,  # % None
+    post_order_func_nb: tp.PostOrderFunc = no_post_func_nb,  # % None
     post_order_args: tp.Args = (),
     index: tp.Optional[tp.Array1d] = None,
     freq: tp.Optional[int] = None,
@@ -3130,18 +3114,13 @@ def from_flex_order_func_nb(  # %? line.replace("from_flex_order_func_nb", new_f
 
     In contrast to `from_order_func_nb`, the `post_order_func_nb` in this function is a segment-level
     order function that returns both a column index and an order, and is repeatedly called until a break
-    condition is met. This design enables multiple orders to be issued within a single element in 
+    condition is met. This design enables multiple orders to be issued within a single element in
     an arbitrary order.
 
-    The order function must accept a `vectorbtpro.portfolio.enums.FlexOrderContext`, an unpacked 
-    tuple output from `pre_segment_func_nb`, and additional positional arguments from `flex_order_args`. 
-    It should return a tuple of (column, order), where returning a column index of -1 signals to 
+    The order function must accept a `vectorbtpro.portfolio.enums.FlexOrderContext`, an unpacked
+    tuple output from `pre_segment_func_nb`, and additional positional arguments from `flex_order_args`.
+    It should return a tuple of (column, order), where returning a column index of -1 signals to
     exit the order loop.
-
-    !!! note
-        Since multiple orders can be generated per element, an "order_records index out of range" 
-        exception may occur. In such cases, increase `max_order_records` manually to avoid 
-        performance degradation.
 
     Args:
         target_shape (Shape): See `vectorbtpro.portfolio.enums.SimulationContext.target_shape`.
@@ -3209,7 +3188,7 @@ def from_flex_order_func_nb(  # %? line.replace("from_flex_order_func_nb", new_f
         flex_order_func_nb (FlexOrderFunc): Function repeatedly called to generate orders for a segment.
 
             Used for generating an order in a column. Must accept an `vectorbtpro.portfolio.enums.FlexOrderContext`,
-            the unpacked output from `pre_segment_func_nb`, and `*order_args`, and return a tuple of 
+            the unpacked output from `pre_segment_func_nb`, and `*order_args`, and return a tuple of
             (column, `vectorbtpro.portfolio.enums.Order`).
         flex_order_args (Args): Arguments passed to `flex_order_func_nb`.
         post_order_func_nb (PostOrderFunc): Callback function called after an order is processed.
@@ -3238,18 +3217,26 @@ def from_flex_order_func_nb(  # %? line.replace("from_flex_order_func_nb", new_f
         SimulationOutput: The simulation output containing order records, log records, and
             other simulation results.
 
+    !!! note
+        Since multiple orders can be generated per element, an "order_records index out of range"
+        exception may occur. In such cases, increase `max_order_records` manually to avoid
+        performance degradation.
+
+    !!! tip
+        This function is parallelizable.
+
     Call hierarchy:
         ```plaintext
         1. pre_sim_out = pre_sim_func_nb(SimulationContext, *pre_sim_args)
             2. pre_group_out = pre_group_func_nb(GroupContext, *pre_sim_out, *pre_group_args)
-                3. if call_pre_segment or segment_mask: 
+                3. if call_pre_segment or segment_mask:
                     pre_segment_out = pre_segment_func_nb(SegmentContext, *pre_group_out, *pre_segment_args)
                     while col != -1:
-                        4. if segment_mask: 
+                        4. if segment_mask:
                             col, order = flex_order_func_nb(FlexOrderContext, *pre_segment_out, *flex_order_args)
-                        5. if order exists: 
+                        5. if order exists:
                             post_order_func_nb(PostOrderContext, *pre_segment_out, *post_order_args)
-                6. if call_post_segment or segment_mask: 
+                6. if call_post_segment or segment_mask:
                     post_segment_func_nb(SegmentContext, *pre_group_out, *post_segment_args)
             7. post_group_func_nb(GroupContext, *pre_sim_out, *post_group_args)
         8. post_sim_func_nb(SimulationContext, *post_sim_args)
@@ -4253,21 +4240,21 @@ def from_flex_order_func_rw_nb(  # %? line.replace("from_flex_order_func_rw_nb",
     segment_mask: tp.FlexArray2dLike = True,
     call_pre_segment: bool = False,
     call_post_segment: bool = False,
-    pre_sim_func_nb: PreSimFuncT = no_pre_func_nb,  # % None
+    pre_sim_func_nb: tp.PreSimFunc = no_pre_func_nb,  # % None
     pre_sim_args: tp.Args = (),
-    post_sim_func_nb: PostSimFuncT = no_post_func_nb,  # % None
+    post_sim_func_nb: tp.PostSimFunc = no_post_func_nb,  # % None
     post_sim_args: tp.Args = (),
-    pre_row_func_nb: PreRowFuncT = no_pre_func_nb,  # % None
+    pre_row_func_nb: tp.PreRowFunc = no_pre_func_nb,  # % None
     pre_row_args: tp.Args = (),
-    post_row_func_nb: PostRowFuncT = no_post_func_nb,  # % None
+    post_row_func_nb: tp.PostRowFunc = no_post_func_nb,  # % None
     post_row_args: tp.Args = (),
-    pre_segment_func_nb: PreSegmentFuncT = no_pre_func_nb,  # % None
+    pre_segment_func_nb: tp.PreSegmentFunc = no_pre_func_nb,  # % None
     pre_segment_args: tp.Args = (),
-    post_segment_func_nb: PostSegmentFuncT = no_post_func_nb,  # % None
+    post_segment_func_nb: tp.PostSegmentFunc = no_post_func_nb,  # % None
     post_segment_args: tp.Args = (),
-    flex_order_func_nb: FlexOrderFuncT = no_flex_order_func_nb,  # % None
+    flex_order_func_nb: tp.FlexOrderFunc = no_flex_order_func_nb,  # % None
     flex_order_args: tp.Args = (),
-    post_order_func_nb: PostOrderFuncT = no_post_func_nb,  # % None
+    post_order_func_nb: tp.PostOrderFunc = no_post_func_nb,  # % None
     post_order_args: tp.Args = (),
     index: tp.Optional[tp.Array1d] = None,
     freq: tp.Optional[int] = None,
@@ -4286,7 +4273,7 @@ def from_flex_order_func_rw_nb(  # %? line.replace("from_flex_order_func_rw_nb",
     max_log_records: tp.Optional[int] = 0,
     in_outputs: tp.Optional[tp.NamedTuple] = None,
 ) -> SimulationOutput:
-    """Same as `from_flex_order_func_nb`, but iterates in row-major order with rows changing fastest 
+    """Same as `from_flex_order_func_nb`, but iterates in row-major order with rows changing fastest
     and columns/groups changing slowest.
 
     Args:
@@ -4355,7 +4342,7 @@ def from_flex_order_func_rw_nb(  # %? line.replace("from_flex_order_func_rw_nb",
         flex_order_func_nb (FlexOrderFunc): Function repeatedly called to generate orders for a segment.
 
             Used for generating an order in a column. Must accept an `vectorbtpro.portfolio.enums.FlexOrderContext`,
-            the unpacked output from `pre_segment_func_nb`, and `*order_args`, and return a tuple of 
+            the unpacked output from `pre_segment_func_nb`, and `*order_args`, and return a tuple of
             (column, `vectorbtpro.portfolio.enums.Order`).
         flex_order_args (Args): Arguments passed to `flex_order_func_nb`.
         post_order_func_nb (PostOrderFunc): Callback function called after an order is processed.
@@ -4384,18 +4371,21 @@ def from_flex_order_func_rw_nb(  # %? line.replace("from_flex_order_func_rw_nb",
         SimulationOutput: The simulation output containing order records, log records, and
             other simulation results.
 
+    !!! tip
+        This function is parallelizable.
+
     Call hierarchy:
         ```plaintext
         1. pre_sim_out = pre_sim_func_nb(SimulationContext, *pre_sim_args)
             2. pre_row_out = pre_row_func_nb(RowContext, *pre_sim_out, *pre_row_args)
-                3. if call_pre_segment or segment_mask: 
+                3. if call_pre_segment or segment_mask:
                     pre_segment_out = pre_segment_func_nb(SegmentContext, *pre_row_out, *pre_segment_args)
                     while col != -1:
-                        4. if segment_mask: 
+                        4. if segment_mask:
                             col, order = flex_order_func_nb(FlexOrderContext, *pre_segment_out, *flex_order_args)
-                        5. if order: 
+                        5. if order:
                             post_order_func_nb(PostOrderContext, *pre_segment_out, *post_order_args)
-                6. if call_post_segment or segment_mask: 
+                6. if call_post_segment or segment_mask:
                     post_segment_func_nb(SegmentContext, *pre_row_out, *post_segment_args)
             7. post_row_func_nb(RowContext, *pre_sim_out, *post_row_args)
         8. post_sim_func_nb(SimulationContext, *post_sim_args)
@@ -4433,9 +4423,6 @@ def from_flex_order_func_rw_nb(  # %? line.replace("from_flex_order_func_rw_nb",
         ```
 
         ![](/assets/images/api/from_flex_order_func_rw_nb.svg){: loading=lazy style="width:800px;" }
-
-    !!! tip
-        This function is parallelizable.
     """
     check_group_lens_nb(group_lens, target_shape[1])
 
@@ -5372,8 +5359,8 @@ def def_flex_pre_segment_func_nb(  # % line.replace("def_flex_pre_segment_func_n
 ) -> tp.Args:
     """Custom flexible segment pre-processing function that sets valuation price and returns a call sequence.
 
-    Sets the valuation price in the segment context using the provided arrays and computes 
-    a flexible call sequence array. If `auto_call_seq` is True, the function sorts the call 
+    Sets the valuation price in the segment context using the provided arrays and computes
+    a flexible call sequence array. If `auto_call_seq` is True, the function sorts the call
     sequence using trade size parameters.
 
     Args:

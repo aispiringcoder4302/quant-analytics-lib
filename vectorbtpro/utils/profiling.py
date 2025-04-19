@@ -55,7 +55,7 @@ class Timer(Base):
     @property
     def start_time(self) -> float:
         """Start time of the timer.
-        
+
         Returns:
             float: The start time of the timer.
         """
@@ -64,7 +64,7 @@ class Timer(Base):
     @property
     def end_time(self) -> float:
         """End time of the timer. If the timer is still running, returns the current time.
-        
+
         Returns:
             float: The end time of the timer or the current time if the timer is still running.
         """

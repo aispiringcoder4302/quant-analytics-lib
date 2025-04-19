@@ -19,11 +19,11 @@ The `settings` config is also accessible via `vectorbtpro.settings`.
 
 The `settings` config has the following properties:
 
-* It is a nested configuration consisting of multiple sub-configs, each corresponding 
+* It is a nested configuration consisting of multiple sub-configs, each corresponding
     to a sub-package (e.g., `data`), module (e.g., `wrapping`), or class (e.g., `configured`).
-* It uses frozen keys, which means you cannot add or remove sub-configs, 
+* It uses frozen keys, which means you cannot add or remove sub-configs,
     although you can modify their values.
-* Sub-configs can be either `frozen_cfg` or `flex_cfg`, with the latter allowing 
+* Sub-configs can be either `frozen_cfg` or `flex_cfg`, with the latter allowing
     the addition of new keys (e.g., `plotting.layout`).
 
 For example, you can modify the default plot dimensions:
@@ -61,21 +61,21 @@ vectorbtpro._settings.flex_cfg
 Given these behaviors, it is recommended to always use bracket notation.
 
 !!! note
-    The immediate effect of updating a setting depends on where it is accessed. 
-    For example, changing `wrapping.freq` takes effect immediately as it is resolved each time 
-    `vectorbtpro.base.wrapping.ArrayWrapper.freq` is accessed, whereas updating 
+    The immediate effect of updating a setting depends on where it is accessed.
+    For example, changing `wrapping.freq` takes effect immediately as it is resolved each time
+    `vectorbtpro.base.wrapping.ArrayWrapper.freq` is accessed, whereas updating
     `portfolio.fillna_close` affects only future `vectorbtpro.portfolio.base.Portfolio` instances.
     Additionally, some settings (like `jitting.jit_decorator`) are read only at import time.
     Always verify that the intended updates have been applied.
 
 ## Saving and loading
 
-Settings, as subclasses of `vectorbtpro.utils.config.Config`, can be persisted to disk, reloaded, 
+Settings, as subclasses of `vectorbtpro.utils.config.Config`, can be persisted to disk, reloaded,
 and updated in place. There are several methods to update settings:
 
 ### Binary file
 
-Pickling serializes the entire settings object to a binary file. Supported file extensions 
+Pickling serializes the entire settings object to a binary file. Supported file extensions
 are "pickle" and "pkl".
 
 ```pycon
@@ -90,12 +90,12 @@ False
 ```
 
 !!! note
-    Using `clear=True` replaces the entire settings object. To update only 
+    Using `clear=True` replaces the entire settings object. To update only
     a subset of settings, omit this option.
 
 ### Config file
 
-Settings can be encoded into a text-based config file, making them easy to edit. 
+Settings can be encoded into a text-based config file, making them easy to edit.
 Supported file extensions include "config", "cfg", and "ini".
 
 ```pycon
@@ -111,13 +111,13 @@ False
 
 ### On import
 
-Certain settings (e.g., those related to Numba) are applied only at import time, so runtime modifications 
+Certain settings (e.g., those related to Numba) are applied only at import time, so runtime modifications
 may not be effective. To update these settings, save the changes to disk, then either:
 
 * Rename the file to "vbt" and place it in the working directory, or
 * Set the environment variable `VBT_SETTINGS_PATH` with the file's full path.
 
-You can also use the environment variable `VBT_SETTINGS_NAME` to specify a different recognized 
+You can also use the environment variable `VBT_SETTINGS_NAME` to specify a different recognized
 file name (default is "vbt").
 
 !!! note
@@ -1474,7 +1474,7 @@ ohlcv = frozen_cfg(
 """_"""
 
 __pdoc__["ohlcv"] = Sub(
-    """Sub-configuration with settings applied across `vectorbtpro.ohlcv`.
+    """Sub-configuration with settings applied to `vectorbtpro.ohlcv.accessors.OHLCVDFAccessor`.
 
 ```python
 ${config_doc}
@@ -2845,7 +2845,11 @@ class SettingsConfig(Config):
             pio.templates["vbt_" + theme] = go.layout.Template(template)
 
     def register_templates(self) -> None:
-        """Register templates for all available themes."""
+        """Register templates for all available themes.
+
+        Returns:
+            None
+        """
         for theme in self["plotting"]["themes"]:
             self.register_template(theme)
 
@@ -2863,7 +2867,11 @@ class SettingsConfig(Config):
         self["plotting"]["layout"]["template"] = "vbt_" + theme
 
     def reset_theme(self) -> None:
-        """Reset the plotting theme to the default setting."""
+        """Reset the plotting theme to the default setting.
+
+        Returns:
+            None
+        """
         self.set_theme(self["plotting"]["default_theme"])
 
     def substitute_sub_config_docs(self, __pdoc__: dict, prettify_kwargs: tp.KwargsLike = None) -> None:

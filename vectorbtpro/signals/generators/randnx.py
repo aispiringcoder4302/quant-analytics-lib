@@ -42,7 +42,7 @@ RANDNX = SignalFactory(
 class _RANDNX(RANDNX):
     """Class representing a random entry and exit signal generator based on probabilities.
 
-    See: 
+    See:
         * `vectorbtpro.signals.nb.rand_enex_apply_nb` for details on the entry and exit placement.
         * `vectorbtpro.signals.generators.RAND` for parameter details.
 
@@ -51,12 +51,12 @@ class _RANDNX(RANDNX):
 
         ```pycon
         >>> from vectorbtpro import *
-        
+
         >>> randnx = vbt.RANDNX.run(
         ...     input_shape=(6,),
         ...     n=[1, 2, 3],
         ...     seed=42)
-        
+
         >>> randnx.entries
         randnx_n      1      2      3
         0          True   True   True
@@ -65,7 +65,7 @@ class _RANDNX(RANDNX):
         3         False  False  False
         4         False  False   True
         5         False  False  False
-        
+
         >>> randnx.exits
         randnx_n      1      2      3
         0         False  False  False

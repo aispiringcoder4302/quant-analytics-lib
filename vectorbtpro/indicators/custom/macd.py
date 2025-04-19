@@ -115,6 +115,9 @@ class _MACD(MACD):
         Returns:
             BaseFigure: The updated figure with the MACD indicator plots.
 
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
+
         Examples:
             ```pycon
             >>> vbt.MACD.run(ohlcv['Close']).plot().show()

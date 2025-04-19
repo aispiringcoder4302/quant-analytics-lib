@@ -295,7 +295,7 @@ array([10., 11., 12., 13., 14., 15.])
 !!! note
     Changing the index (time axis) is not supported. Treat the object as a Series rather than a DataFrame;
     for example, use `some_field.iloc[0]` instead of `some_field.iloc[:, 0]` to access the first column.
-    
+
     Indexing behavior is governed by `vectorbtpro.base.wrapping.ArrayWrapper`. If `group_select` is enabled,
     indexing is applied to groups; otherwise, indexing operates on individual columns.
 
@@ -468,32 +468,35 @@ def combine_mapped_with_other(
 @attach_unary_magic_methods(lambda self, np_func: self.replace(mapped_arr=np_func(self.values)))
 class MappedArray(Analyzable):
     """Class for wrapping and analyzing mapped arrays.
-    
+
     Represents a mapped array for records derived from `vectorbtpro.records.base.Records`.
 
     Args:
         wrapper (ArrayWrapper): Wrapper instance.
-        
+
             See `vectorbtpro.base.wrapping.ArrayWrapper`.
         mapped_arr (ArrayLike): One-dimensional array of mapped record values.
         col_arr (ArrayLike): One-dimensional column array.
-        
+
             Must be the same size as `mapped_arr`.
         id_arr (Optional[ArrayLike]): One-dimensional id array.
-        
+
             Must be the same size as `mapped_arr` and defaults to a simple range.
         idx_arr (Optional[ArrayLike]): One-dimensional index array.
-        
+
             Must be the same size as `mapped_arr`.
         mapping (Optional[MappingLike]): Mapping.
         col_mapper (Optional[ColumnMapper]): Column mapper if already known.
-        
+
             !!! note
                 Depends on `wrapper` and `col_arr`. Invalidate `col_mapper` if
                 `wrapper` or `col_arr` is modified. `MappedArray.replace` does this automatically.
         **kwargs: Custom keyword arguments passed to the config.
-        
+
             Useful for subclass-specific extensions.
+
+    !!! info
+        For default settings, see `vectorbtpro._settings.mapped_array`.
     """
 
     def __init__(
@@ -555,9 +558,6 @@ class MappedArray(Analyzable):
 
         Uses `vectorbtpro.base.wrapping.ArrayWrapper.row_stack` to stack the wrappers.
 
-        !!! note
-            Will produce a column-sorted array.
-
         Args:
             objs (MappedArray): Additional `MappedArray` instances to stack.
             wrapper_kwargs (KwargsLike): Keyword arguments passed to `ArrayWrapper.row_stack`.
@@ -565,6 +565,9 @@ class MappedArray(Analyzable):
 
         Returns:
             MappedArray: A new instance with rows stacked from the provided `MappedArray` objects.
+
+        !!! note
+            Will produce a column-sorted array.
         """
         if not isinstance(cls_or_self, type):
             objs = (cls_or_self, *objs)
@@ -660,9 +663,6 @@ class MappedArray(Analyzable):
         [`pandas.Index.get_indexer`](https://pandas.pydata.org/docs/reference/api/pandas.Index.get_indexer.html)
         for translating old indices to new ones after reindexing.
 
-        !!! note
-            Produces a column-sorted array.
-
         Args:
             *objs (tuple[MappedArray]): One or more `MappedArray` instances to stack.
             wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
@@ -672,6 +672,9 @@ class MappedArray(Analyzable):
 
         Returns:
             MappedArray: A new instance with arrays stacked along columns.
+
+        !!! note
+            Produces a column-sorted array.
         """
         if not isinstance(cls_or_self, type):
             objs = (cls_or_self, *objs)
@@ -894,7 +897,7 @@ class MappedArray(Analyzable):
     @property
     def mapped_arr(self) -> tp.Array1d:
         """Mapped array.
-        
+
         Returns:
             Array1d: The mapped array.
         """
@@ -903,7 +906,7 @@ class MappedArray(Analyzable):
     @property
     def values(self) -> tp.Array1d:
         """1D array of mapped values.
-        
+
         Returns:
             Array1d: The mapped values.
         """
@@ -951,7 +954,7 @@ class MappedArray(Analyzable):
     def mapped_readable(self) -> tp.SeriesFrame:
         """Mapped data in a human-readable format using default parameters,
         equivalent to calling `MappedArray.to_readable`.
-        
+
         Returns:
             SeriesFrame: A Pandas Series or DataFrame with human-readable mapped values.
         """
@@ -965,7 +968,7 @@ class MappedArray(Analyzable):
     @property
     def col_arr(self) -> tp.Array1d:
         """Column array of indices corresponding to the mapped array columns.
-        
+
         Returns:
             Array1d: The column array.
         """
@@ -985,7 +988,7 @@ class MappedArray(Analyzable):
     @property
     def idx_arr(self) -> tp.Optional[tp.Array1d]:
         """Index array mapping each element to its corresponding index in the wrapper.
-        
+
         Returns:
             Optional[Array1d]: The index array mapping each element if available; otherwise, None.
         """
@@ -994,7 +997,7 @@ class MappedArray(Analyzable):
     @property
     def id_arr(self) -> tp.Array1d:
         """1D array of element identifiers.
-        
+
         Returns:
             Array1d: The ID array.
         """
@@ -1003,7 +1006,7 @@ class MappedArray(Analyzable):
     @property
     def mapping(self) -> tp.Optional[tp.MappingLike]:
         """Mapping used for value conversion.
-        
+
         Returns:
             Optional[MappingLike]: The mapping dictionary or None.
         """
@@ -1365,14 +1368,6 @@ class MappedArray(Analyzable):
         If `reduce_func_nb` is provided as a string, it refers to the suffix of a reducing function
         from `vectorbtpro.generic.nb` (e.g., "sum" corresponds to `sum_reduce_nb`).
 
-        !!! warning
-            Each segment or combination in `segment_arr` is assumed to be coherent and non-repeating.
-            For instance, `np.array([0, 1, 0])` for a single column is interpreted as three distinct segments,
-            not two. See `vectorbtpro.utils.array_.index_repeating_rows_nb`.
-
-        !!! hint
-            Use `MappedArray.sort` to order the mapped array appropriately before reduction if needed.
-
         Args:
             segment_arr (Union[str, tuple[Array1d]]): Array of integers indicating segment
                 boundaries per column, or a tuple of such arrays.
@@ -1398,6 +1393,14 @@ class MappedArray(Analyzable):
 
         See:
             `vectorbtpro.records.nb.reduce_mapped_segments_nb`
+
+        !!! warning
+            Each segment or combination in `segment_arr` is assumed to be coherent and non-repeating.
+            For instance, `np.array([0, 1, 0])` for a single column is interpreted as three distinct segments,
+            not two. See `vectorbtpro.utils.array_.index_repeating_rows_nb`.
+
+        !!! hint
+            Use `MappedArray.sort` to order the mapped array appropriately before reduction if needed.
         """
         if idx_arr is None:
             if self.idx_arr is None:
@@ -2297,7 +2300,7 @@ class MappedArray(Analyzable):
             Set `ignore_index` to True to bypass this error.
 
         !!! warning
-            Mapped arrays are optimized for memory. Converting them back to pandas may consume 
+            Mapped arrays are optimized for memory. Converting them back to pandas may consume
             significant memory if records are sparse.
         """
         if ignore_index:
@@ -2396,7 +2399,7 @@ class MappedArray(Analyzable):
     @property
     def pd_mask(self) -> tp.SeriesFrame:
         """Series/DataFrame mask produced by `MappedArray.get_pd_mask` with default arguments.
-        
+
         Returns:
             SeriesFrame: A wrapped mask array as a Series or DataFrame.
         """

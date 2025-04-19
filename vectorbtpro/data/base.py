@@ -110,7 +110,7 @@ class BaseDataMixin(Base):
     @property
     def feature_wrapper(self) -> ArrayWrapper:
         """Column wrapper for feature data.
-        
+
         Returns:
             ArrayWrapper: The column wrapper for feature data.
         """
@@ -119,7 +119,7 @@ class BaseDataMixin(Base):
     @property
     def symbol_wrapper(self) -> ArrayWrapper:
         """Column wrapper for symbol data.
-        
+
         Returns:
             ArrayWrapper: The column wrapper for symbol data.
         """
@@ -128,7 +128,7 @@ class BaseDataMixin(Base):
     @property
     def features(self) -> tp.List[tp.Feature]:
         """List of features obtained from the feature wrapper columns.
-        
+
         Returns:
             List[Feature]: The list of features.
         """
@@ -137,7 +137,7 @@ class BaseDataMixin(Base):
     @property
     def symbols(self) -> tp.List[tp.Symbol]:
         """List of symbols obtained from the symbol wrapper columns.
-        
+
         Returns:
             List[Symbol]: The list of symbols.
         """
@@ -420,7 +420,7 @@ class OHLCDataMixin(BaseDataMixin):
     @property
     def open(self) -> tp.Optional[tp.SeriesFrame]:
         """Series representing the open prices.
-        
+
         Returns:
             Optional[SeriesFrame]: The open prices for the data if available; otherwise, None.
         """
@@ -429,7 +429,7 @@ class OHLCDataMixin(BaseDataMixin):
     @property
     def high(self) -> tp.Optional[tp.SeriesFrame]:
         """Series representing the high prices.
-        
+
         Returns:
             Optional[SeriesFrame]: The high prices for the data if available; otherwise, None.
         """
@@ -438,7 +438,7 @@ class OHLCDataMixin(BaseDataMixin):
     @property
     def low(self) -> tp.Optional[tp.SeriesFrame]:
         """Series representing the low prices.
-        
+
         Returns:
             Optional[SeriesFrame]: The low prices for the data if available; otherwise, None.
         """
@@ -447,7 +447,7 @@ class OHLCDataMixin(BaseDataMixin):
     @property
     def close(self) -> tp.Optional[tp.SeriesFrame]:
         """Series representing the close prices.
-        
+
         Returns:
             Optional[SeriesFrame]: The close prices for the data if available; otherwise, None.
         """
@@ -456,7 +456,7 @@ class OHLCDataMixin(BaseDataMixin):
     @property
     def volume(self) -> tp.Optional[tp.SeriesFrame]:
         """Series representing the volume data.
-        
+
         Returns:
             Optional[SeriesFrame]: The volume data for the data if available; otherwise, None.
         """
@@ -465,7 +465,7 @@ class OHLCDataMixin(BaseDataMixin):
     @property
     def trade_count(self) -> tp.Optional[tp.SeriesFrame]:
         """Series representing the trade count.
-        
+
         Returns:
             Optional[SeriesFrame]: The trade count for the data if available; otherwise, None.
         """
@@ -474,7 +474,7 @@ class OHLCDataMixin(BaseDataMixin):
     @property
     def vwap(self) -> tp.Optional[tp.SeriesFrame]:
         """Series representing the volume-weighted average price (VWAP) data.
-        
+
         Returns:
             Optional[SeriesFrame]: The volume-weighted average price for the data if available; otherwise, None.
         """
@@ -483,7 +483,7 @@ class OHLCDataMixin(BaseDataMixin):
     @property
     def hlc3(self) -> tp.SeriesFrame:
         """Series computed as the arithmetic mean of the high, low, and close prices.
-        
+
         Returns:
             SeriesFrame: The arithmetic mean of the high, low, and close prices.
         """
@@ -495,7 +495,7 @@ class OHLCDataMixin(BaseDataMixin):
     @property
     def ohlc4(self) -> tp.SeriesFrame:
         """Series computed as the arithmetic mean of the open, high, low, and close prices.
-        
+
         Returns:
             SeriesFrame: The arithmetic mean of the open, high, low, and close prices.
         """
@@ -508,7 +508,7 @@ class OHLCDataMixin(BaseDataMixin):
     @property
     def has_any_ohlc(self) -> bool:
         """Boolean flag indicating if any OHLC feature (open, high, low, or close) is present.
-        
+
         Returns:
             bool: True if any OHLC feature is present, False otherwise.
         """
@@ -519,7 +519,7 @@ class OHLCDataMixin(BaseDataMixin):
     @property
     def has_ohlc(self) -> bool:
         """Boolean flag indicating if all OHLC features (open, high, low, and close) are present.
-        
+
         Returns:
             bool: True if all OHLC features are present, False otherwise.
         """
@@ -533,7 +533,7 @@ class OHLCDataMixin(BaseDataMixin):
     @property
     def has_any_ohlcv(self) -> bool:
         """Boolean flag indicating if any OHLCV feature (OHLC or volume) is available.
-        
+
         Returns:
             bool: True if any OHLCV feature is present, False otherwise.
         """
@@ -542,7 +542,7 @@ class OHLCDataMixin(BaseDataMixin):
     @property
     def has_ohlcv(self) -> bool:
         """Boolean flag indicating if all OHLCV features (open, high, low, close, and volume) are present.
-        
+
         Returns:
             bool: True if all OHLCV features are present, False otherwise.
         """
@@ -551,7 +551,7 @@ class OHLCDataMixin(BaseDataMixin):
     @property
     def ohlc(self: OHLCDataMixinT) -> OHLCDataMixinT:
         """New `OHLCDataMixin` instance containing only OHLC features (open, high, low, and close).
-        
+
         Returns:
             OHLCDataMixin: A new instance containing only OHLC features.
         """
@@ -564,7 +564,7 @@ class OHLCDataMixin(BaseDataMixin):
     @property
     def ohlcv(self: OHLCDataMixinT) -> OHLCDataMixinT:
         """New `OHLCDataMixin` instance containing only OHLCV features (open, high, low, close, and volume).
-        
+
         Returns:
             OHLCDataMixin: A new instance containing only OHLCV features.
         """
@@ -595,7 +595,7 @@ class OHLCDataMixin(BaseDataMixin):
     @property
     def returns_acc(self) -> ReturnsAccessor:
         """Returns a `ReturnsAccessor` using default parameters from `OHLCDataMixin.get_returns_acc`.
-        
+
         Returns:
             ReturnsAccessor: An accessor for return calculations using the close price.
         """
@@ -621,7 +621,7 @@ class OHLCDataMixin(BaseDataMixin):
     @property
     def returns(self) -> tp.SeriesFrame:
         """Returns computed return values using default parameters from `OHLCDataMixin.get_returns`.
-        
+
         Returns:
             SeriesFrame: Computed returns from the close price.
         """
@@ -648,7 +648,7 @@ class OHLCDataMixin(BaseDataMixin):
     @property
     def log_returns(self) -> tp.SeriesFrame:
         """Returns logarithmic return values using default parameters from `OHLCDataMixin.get_log_returns`.
-        
+
         Returns:
             SeriesFrame: Computed logarithmic returns from the close price.
         """
@@ -674,7 +674,7 @@ class OHLCDataMixin(BaseDataMixin):
     @property
     def daily_returns(self) -> tp.SeriesFrame:
         """Returns daily computed returns using default parameters from `OHLCDataMixin.get_daily_returns`.
-        
+
         Returns:
             SeriesFrame: Daily computed returns from the close price.
         """
@@ -702,7 +702,7 @@ class OHLCDataMixin(BaseDataMixin):
     def daily_log_returns(self) -> tp.SeriesFrame:
         """Returns daily computed logarithmic returns using default parameters from
         `OHLCDataMixin.get_daily_log_returns`.
-        
+
         Returns:
             SeriesFrame: Daily computed logarithmic returns from the close price.
         """
@@ -729,7 +729,7 @@ class OHLCDataMixin(BaseDataMixin):
     @property
     def drawdowns(self) -> Drawdowns:
         """Returns drawdown records using default parameters from `OHLCDataMixin.get_drawdowns`.
-        
+
         Returns:
             Drawdowns: Drawdown records generated using open, high, low, and close prices.
         """
@@ -772,6 +772,9 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         missing_index (Optional[str]): Identifier for missing index scenarios.
         missing_columns (Optional[str]): Identifier for missing columns scenarios.
         **kwargs: Additional keyword arguments.
+
+    !!! info
+        For default settings, see `vectorbtpro._settings.data`.
     """
 
     _settings_path: tp.SettingsPath = dict(base="data")
@@ -990,7 +993,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
     @property
     def classes(self) -> tp.Union[feature_dict, symbol_dict]:
         """Class definitions for the keys in the data dictionary.
-        
+
         Returns:
             Type[Union[feature_dict, symbol_dict]]: The type of the data dictionary.
         """
@@ -1129,7 +1132,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
     @property
     def fetch_kwargs(self) -> tp.Union[feature_dict, symbol_dict]:
         """Keyword arguments originally passed to `Data.fetch_symbol`, maintained as a `symbol_dict`.
-        
+
         Returns:
             Union[feature_dict, symbol_dict]: The keyword arguments for fetching data.
         """
@@ -1138,7 +1141,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
     @property
     def returned_kwargs(self) -> tp.Union[feature_dict, symbol_dict]:
         """Keyword arguments returned by `Data.fetch_symbol`, stored as a `symbol_dict`.
-        
+
         Returns:
             Union[feature_dict, symbol_dict]: The keyword arguments returned from fetching data.
         """
@@ -1147,7 +1150,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
     @property
     def last_index(self) -> tp.Union[feature_dict, symbol_dict]:
         """Last fetched index for each symbol, maintained as a `symbol_dict`.
-        
+
         Returns:
             Union[feature_dict, symbol_dict]: The last index for each symbol.
         """
@@ -1156,7 +1159,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
     @property
     def delisted(self) -> tp.Union[feature_dict, symbol_dict]:
         """Delisting status for each symbol, stored as a `symbol_dict`.
-        
+
         Returns:
             Union[feature_dict, symbol_dict]: The delisting status for each symbol.
         """
@@ -1165,7 +1168,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
     @property
     def tz_localize(self) -> tp.Union[None, bool, tp.TimezoneLike]:
         """Timezone for localizing a datetime-naive index, initially provided to `Data.pull`.
-        
+
         Returns:
             Union[None, bool, TimezoneLike]: The timezone for localizing the index.
         """
@@ -1174,7 +1177,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
     @property
     def tz_convert(self) -> tp.Union[None, bool, tp.TimezoneLike]:
         """Timezone for converting a datetime-aware index, initially provided to `Data.pull`.
-        
+
         Returns:
             Union[None, bool, TimezoneLike]: The timezone for converting the index.
         """
@@ -1183,7 +1186,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
     @property
     def missing_index(self) -> tp.Optional[str]:
         """The `missing` argument provided to `Data.align_index`.
-        
+
         Returns:
             Optional[str]: The missing index argument.
         """
@@ -1192,7 +1195,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
     @property
     def missing_columns(self) -> tp.Optional[str]:
         """The `missing` argument provided to `Data.align_columns`.
-        
+
         Returns:
             Optional[str]: The missing columns argument.
         """
@@ -1202,32 +1205,80 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
 
     @classmethod
     def get_base_settings(cls, *args, **kwargs) -> dict:
-        """Retrieve base settings using `CustomData.get_settings` with `path_id="base"`."""
+        """Retrieve base settings using `CustomData.get_settings` with `path_id="base"`.
+
+        Args:
+            *args: Positional arguments passed to `Data.get_settings`.
+            **kwargs: Keyword arguments passed to `Data.get_settings`.
+
+        Returns:
+            dict: The base settings.
+        """
         return cls.get_settings(*args, path_id="base", **kwargs)
 
     @classmethod
     def has_base_settings(cls, *args, **kwargs) -> bool:
-        """Determine whether base settings exist by invoking `CustomData.has_settings` with `path_id="base"`."""
+        """Determine whether base settings exist by invoking `CustomData.has_settings` with `path_id="base"`.
+
+        Args:
+            *args: Positional arguments passed to `Data.has_settings`.
+            **kwargs: Keyword arguments passed to `Data.has_settings`.
+
+        Returns:
+            bool: True if base settings exist, False otherwise.
+        """
         return cls.has_settings(*args, path_id="base", **kwargs)
 
     @classmethod
     def get_base_setting(cls, *args, **kwargs) -> tp.Any:
-        """Fetch a base setting using `CustomData.get_setting` with `path_id="base"`."""
+        """Fetch a base setting using `CustomData.get_setting` with `path_id="base"`.
+
+        Args:
+            *args: Positional arguments passed to `Data.get_setting`.
+            **kwargs: Keyword arguments passed to `Data.get_setting`.
+
+        Returns:
+            Any: The requested base setting.
+        """
         return cls.get_setting(*args, path_id="base", **kwargs)
 
     @classmethod
     def has_base_setting(cls, *args, **kwargs) -> bool:
-        """Check for the presence of a base setting by using `CustomData.has_setting` with `path_id="base"`."""
+        """Check for the presence of a base setting by using `CustomData.has_setting` with `path_id="base"`.
+
+        Args:
+            *args: Positional arguments passed to `Data.has_setting`.
+            **kwargs: Keyword arguments passed to `Data.has_setting`.
+
+        Returns:
+            bool: True if the base setting exists, False otherwise.
+        """
         return cls.has_setting(*args, path_id="base", **kwargs)
 
     @classmethod
     def resolve_base_setting(cls, *args, **kwargs) -> tp.Any:
-        """Resolve a base setting by calling `CustomData.resolve_setting` with `path_id="base"`."""
+        """Resolve a base setting by calling `CustomData.resolve_setting` with `path_id="base"`.
+
+        Args:
+            *args: Positional arguments passed to `Data.resolve_setting`.
+            **kwargs: Keyword arguments passed to `Data.resolve_setting`.
+
+        Returns:
+            Any: The resolved base setting.
+        """
         return cls.resolve_setting(*args, path_id="base", **kwargs)
 
     @classmethod
     def set_base_settings(cls, *args, **kwargs) -> None:
-        """Apply base settings by invoking `CustomData.set_settings` with `path_id="base"`."""
+        """Apply base settings by invoking `CustomData.set_settings` with `path_id="base"`.
+
+        Args:
+            *args: Positional arguments passed to `Data.set_settings`.
+            **kwargs: Keyword arguments passed to `Data.set_settings`.
+
+        Returns:
+            None
+        """
         cls.set_settings(*args, path_id="base", **kwargs)
 
     # ############# Config ############# #
@@ -1245,14 +1296,21 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
 
         To change fields, modify the configuration in-place, override this property, or replace the
         instance variable `${cls_name}._feature_config`.
-        
+
         Returns:
             Config: The feature configuration for the class.
         """
         return self._feature_config
 
     def use_feature_config_of(self, cls: tp.Type[DataT]) -> None:
-        """Copy the feature configuration from another `Data` class."""
+        """Copy the feature configuration from another `Data` class.
+
+        Args:
+            cls (Type[Data]): The class from which to copy the feature configuration.
+
+        Returns:
+            None
+        """
         self._feature_config = cls.feature_config.copy()
 
     @classmethod
@@ -1815,7 +1873,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
     @property
     def ndim(self) -> int:
         """Number of dimensions based on the default symbol wrapper.
-        
+
         Returns:
             int: The number of dimensions of the default symbol wrapper.
         """
@@ -1824,7 +1882,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
     @property
     def shape(self) -> tp.Shape:
         """Shape determined from the default symbol wrapper.
-        
+
         Returns:
             Shape: The shape of the default symbol wrapper.
         """
@@ -1833,7 +1891,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
     @property
     def shape_2d(self) -> tp.Shape:
         """Shape as if the object were two-dimensional, based on the default symbol wrapper.
-        
+
         Returns:
             Shape: The two-dimensional shape of the default symbol wrapper.
         """
@@ -1842,7 +1900,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
     @property
     def columns(self) -> tp.Index:
         """Column index based on the default symbol wrapper.
-        
+
         Returns:
             Index: The column index of the default symbol wrapper.
         """
@@ -1851,7 +1909,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
     @property
     def index(self) -> tp.Index:
         """Index based on the default symbol wrapper.
-        
+
         Returns:
             Index: The index of the default symbol wrapper.
         """
@@ -1860,7 +1918,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
     @property
     def freq(self) -> tp.Optional[tp.PandasFrequency]:
         """Frequency based on the default symbol wrapper.
-        
+
         Returns:
             Optional[PandasFrequency]: The frequency of the default symbol wrapper.
         """
@@ -2395,8 +2453,8 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         Returns:
             SeriesFrame: The object with a timezone-aware index.
 
-        !!! note
-            For defaults, see `vectorbtpro._settings.data`.
+        !!! info
+            For default settings, see `vectorbtpro._settings.data`.
         """
         obj = obj.copy(deep=False)
         tz_localize = cls.resolve_base_setting(tz_localize, "tz_localize")
@@ -2441,8 +2499,8 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         Returns:
             dict: A dictionary with all data reindexed to a common index.
 
-        !!! note
-            For defaults, see `vectorbtpro._settings.data`.
+        !!! info
+            For default settings, see `vectorbtpro._settings.data`.
         """
         missing = cls.resolve_base_setting(missing, "missing_index")
         silence_warnings = cls.resolve_base_setting(silence_warnings, "silence_warnings")
@@ -2770,7 +2828,8 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         Returns:
             Data: A new `Data` instance constructed from the provided data.
 
-        For default values, refer to `vectorbtpro._settings.data`.
+        !!! info
+            For default settings, see `vectorbtpro._settings.data`.
         """
         if wrapper_kwargs is None:
             wrapper_kwargs = {}
@@ -4030,7 +4089,8 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         Returns:
             PullOutput: A `Data` instance or a list of execution outputs if `return_raw` is True.
 
-        For defaults, see `vectorbtpro._settings.data`.
+        !!! info
+            For default settings, see `vectorbtpro._settings.data`.
         """
         keys_meta = cls.resolve_keys_meta(
             keys=keys,
@@ -4616,14 +4676,6 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         is aligned using `Data.align_data`. If the output is not a Pandas object, it is broadcast to match
         the original data using `broadcast_kwargs`.
 
-        !!! note
-            The returned object retains the same type and dimensionality as the input.
-
-            * The number and names of columns remain unchanged.
-            * To remove columns, use indexing or `Data.select`.
-            * To add columns, use column stacking or `Data.merge`.
-            * The index may change freely.
-
         Args:
             transform_func (Callable): The function to apply to the data.
             *args: Positional arguments passed to `transform_func`.
@@ -4637,6 +4689,14 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
 
         Returns:
             Data: A new instance with the transformed data.
+
+        !!! note
+            The returned object retains the same type and dimensionality as the input.
+
+            * The number and names of columns remain unchanged.
+            * To remove columns, use indexing or `Data.select`.
+            * To add columns, use column stacking or `Data.merge`.
+            * The index may change freely.
         """
         if key_wrapper_kwargs is None:
             key_wrapper_kwargs = {}

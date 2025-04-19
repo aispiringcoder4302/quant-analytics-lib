@@ -33,11 +33,11 @@ __all__ = []
 
 class MetaStatsBuilderMixin(type):
     """Metaclass for `StatsBuilderMixin` that provides access to performance metrics configuration."""
-    
+
     @property
     def metrics(cls) -> Config:
         """Return the performance metrics configuration used by `StatsBuilderMixin.stats`.
-        
+
         Returns:
             Config: The performance metrics configuration.
         """
@@ -48,6 +48,9 @@ class StatsBuilderMixin(Base, metaclass=MetaStatsBuilderMixin):
     """Mixin class that provides the implementation for `StatsBuilderMixin.stats`.
 
     Requires subclassing of `vectorbtpro.base.wrapping.Wrapping`.
+
+    !!! info
+        For default settings, see `vectorbtpro._settings.stats_builder`.
     """
 
     _writeable_attrs: tp.WriteableAttrs = {"_metrics"}
@@ -61,7 +64,7 @@ class StatsBuilderMixin(Base, metaclass=MetaStatsBuilderMixin):
     @property
     def stats_defaults(self) -> tp.Kwargs:
         """Return default settings for `StatsBuilderMixin.stats`.
-        
+
         Returns:
             Kwargs: Default settings for the stats method.
         """
@@ -82,6 +85,9 @@ class StatsBuilderMixin(Base, metaclass=MetaStatsBuilderMixin):
 
         Returns:
             Any: The resolved configuration setting.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.stats_builder`.
         """
         from vectorbtpro._settings import settings as _settings
 
@@ -286,9 +292,10 @@ class StatsBuilderMixin(Base, metaclass=MetaStatsBuilderMixin):
             Optional[SeriesFrame]: The computed metrics as a pandas Series
                 (for single-dimensional output) or DataFrame (for multi-dimensional output).
 
-        Refer to `vectorbtpro.utils.template` for template logic.
+        !!! info
+            For default settings, see `vectorbtpro._settings.stats_builder` and `StatsBuilderMixin.stats_defaults`.
 
-        For default settings, see `vectorbtpro._settings.stats_builder` and `StatsBuilderMixin.stats_defaults`.
+            Refer to `vectorbtpro.utils.template` for template logic.
 
         !!! hint
             Optional (resolution) arguments are passed only if they appear in the function's signature,

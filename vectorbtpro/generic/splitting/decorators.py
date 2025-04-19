@@ -331,8 +331,6 @@ def split(
     raise ValueError("Either function or keyword arguments must be passed")
 
 
-
-
 def cv_split(
     *args,
     parameterized_kwargs: tp.KwargsLike = None,
@@ -344,20 +342,20 @@ def cv_split(
     **split_kwargs,
 ) -> tp.Callable:
     """Combine cross-validation splitting and parameterized execution for decorated functions.
-    
+
     Decorator that integrates `split` and `vectorbtpro.utils.params.parameterized`
     to facilitate cross-validation. For each split/set range, the decorated function is applied as follows:
-    
+
     * In the training set, the function is parameterized across the entire grid of parameters
         and its results are stored.
     * For testing sets, the stored grid results are used to evaluate a selection
         that determines the best parameter combination, which is then executed.
     * Optionally, grid results can be returned in addition to the selection,
         controlled by `return_grid`.
-    
+
     Handles errors by either skipping an iteration (if `skip_errored` is True or a
     `NoResultsException` is raised) or propagating the exception based on `raise_no_results`.
-    
+
     Args:
         *args: Positional arguments.
 
@@ -381,14 +379,14 @@ def cv_split(
         template_context (KwargsLike): Additional context for template substitution.
         **split_kwargs: Keyword arguments for the splitting functionality from
             `vectorbtpro.generic.splitting.base.Splitter.apply`.
-    
+
     Returns:
         Callable: A decorated function that applies cross-validation via splitting and parameterized execution.
-    
+
     Examples:
         Permutate a series and pick the first value. Make the seed parameterizable.
         Cross-validate based on the highest picked value:
-    
+
         ```pycon
         >>> from vectorbtpro import *
 
@@ -415,9 +413,9 @@ def cv_split(
              set_1  43       0
         dtype: int64
         ```
-    
+
         Extend the example above to also return the grid results of each set:
-    
+
         ```pycon
         >>> f(sr, vbt.Param([41, 42, 43]), _return_grid="all")
         (split  set    seed
@@ -450,11 +448,11 @@ def cv_split(
          dtype: int64)
         ```
     """
-    
+
     def decorator(func: tp.Callable) -> tp.Callable:
         if getattr(func, "is_split", False) or getattr(func, "is_parameterized", False):
             raise ValueError("Function is already decorated with split or parameterized")
-    
+
         @wraps(func)
         def wrapper(*args, **kwargs) -> tp.Any:
             parameterized_kwargs = merge_dicts(
@@ -485,12 +483,14 @@ def cv_split(
                 parameterized_kwargs["merge_func"] = split_kwargs["merge_func"]
             if "show_progress" not in parameterized_kwargs:
                 parameterized_kwargs["show_progress"] = False
-    
+
             all_grid_results = []
-    
+
             @wraps(func)
-            def apply_wrapper(*_args, __template_context=None, **_kwargs):
+            def apply_wrapper(*_args, __template_context: tp.KwargsLike = None, **_kwargs) -> tp.Any:
                 try:
+                    if __template_context is None:
+                        __template_context = {}
                     __template_context = dict(__template_context)
                     __template_context["all_grid_results"] = all_grid_results
                     _parameterized_kwargs = substitute_templates(
@@ -538,7 +538,7 @@ def cv_split(
                     if skip_errored or isinstance(e, NoResultsException):
                         return NoResult
                     raise e
-    
+
             signature = inspect.signature(apply_wrapper)
             lists_var_kwargs = False
             for k, v in signature.parameters.items():
@@ -551,7 +551,7 @@ def cv_split(
                 apply_wrapper.__signature__ = signature.replace(parameters=new_parameters)
             split_func = split(apply_wrapper, template_context=template_context, **split_kwargs)
             return split_func(*args, __template_context=Rep("context", eval_id="apply_kwargs"), **kwargs)
-    
+
         wrapper.func = func
         wrapper.name = func.__name__
         wrapper.is_parameterized = True
@@ -574,9 +574,9 @@ def cv_split(
             var_kwargs_param = inspect.Parameter("kwargs", inspect.Parameter.VAR_KEYWORD)
             new_parameters = tuple(signature.parameters.values()) + (var_kwargs_param,)
             wrapper.__signature__ = signature.replace(parameters=new_parameters)
-    
+
         return wrapper
-    
+
     if len(args) == 0:
         return decorator
     elif len(args) == 1:

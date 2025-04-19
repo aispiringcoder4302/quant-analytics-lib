@@ -36,7 +36,7 @@ FMAX = IndicatorFactory(
 
 class _FMAX(FMAX):
     """Class representing the look-ahead future maximum generator.
-    
+
     See:
         * `vectorbtpro.labels.nb.future_max_nb` for the underlying implementation.
     """
@@ -67,6 +67,9 @@ class _FMAX(FMAX):
 
         Returns:
             BaseFigure: The figure with the indicator traces plotted.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
 
         Examples:
             ```pycon

@@ -11,7 +11,7 @@
 """Module for working with order records.
 
 This module provides the base functionality for capturing and managing order records, which store details
-of filled orders during portfolio simulation. Order records can be accessed via 
+of filled orders during portfolio simulation. Order records can be accessed via
 `vectorbtpro.portfolio.base.Portfolio.orders`.
 
 ```pycon
@@ -198,8 +198,11 @@ OrdersT = tp.TypeVar("OrdersT", bound="Orders")
 class Orders(PriceRecords):
     """Class for representing and manipulating order records.
 
-    Extends `vectorbtpro.generic.price_records.PriceRecords` to provide functionalities for 
+    Extends `vectorbtpro.generic.price_records.PriceRecords` to provide functionalities for
     transforming orders, computing order statistics, and generating various views of the order records.
+
+    !!! info
+        For default settings, see `vectorbtpro._settings.orders`.
     """
 
     @property
@@ -280,7 +283,7 @@ class Orders(PriceRecords):
         Computes order sizes by negating values for sell orders.
 
         Args:
-            **kwargs: Keyword arguments passed to 
+            **kwargs: Keyword arguments passed to
                 `vectorbtpro.records.mapped_array.MappedArray.map_array`.
 
         Returns:
@@ -296,7 +299,7 @@ class Orders(PriceRecords):
         Calculates the order value as the product of the signed size and price values.
 
         Args:
-            **kwargs: Keyword arguments passed to 
+            **kwargs: Keyword arguments passed to
                 `vectorbtpro.records.mapped_array.MappedArray.map_array`.
 
         Returns:
@@ -321,7 +324,7 @@ class Orders(PriceRecords):
             jitted (JittedOption): Option for controlling JIT compilation.
             chunked (ChunkedOption): Option for controlling chunked processing.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            **kwargs: Keyword arguments passed to 
+            **kwargs: Keyword arguments passed to
                 `vectorbtpro.records.mapped_array.MappedArray.reduce`.
 
         Returns:
@@ -343,7 +346,7 @@ class Orders(PriceRecords):
     def get_price_status(self, **kwargs) -> MappedArray:
         """Return the price status for each order.
 
-        Applies `vectorbtpro.portfolio.nb.records.price_status_nb` to determine the price status 
+        Applies `vectorbtpro.portfolio.nb.records.price_status_nb` to determine the price status
         based on high and low prices.
 
         Args:
@@ -466,23 +469,26 @@ class Orders(PriceRecords):
             column (Optional[Label]): Name of the column to plot.
             plot_ohlc (bool): Whether to plot OHLC data.
             plot_close (bool): Whether to plot the close price if OHLC data is unavailable.
-            ohlc_type (Union[None, str, BaseTraceType]): Specifies the type of OHLC plot. 
-            
+            ohlc_type (Union[None, str, BaseTraceType]): Specifies the type of OHLC plot.
+
                 Either `OHLC`, `Candlestick`, or a Plotly trace.
             ohlc_trace_kwargs (KwargsLike): Keyword arguments for the OHLC trace.
-            close_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` 
+            close_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter`
                 used for plotting the close price.
-            buy_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` 
+            buy_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter`
                 to plot buy markers.
-            sell_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` 
+            sell_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter`
                 to plot sell markers.
-            add_trace_kwargs (KwargsLike): Keyword arguments to pass to `add_trace` 
+            add_trace_kwargs (KwargsLike): Keyword arguments to pass to `add_trace`
                 when adding a trace to the figure.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
             **layout_kwargs: Keyword arguments for configuring the figure layout.
 
         Returns:
             BaseFigure: The updated Plotly figure with the plotted orders.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
 
         Examples:
             ```pycon
@@ -741,7 +747,7 @@ class FSOrders(Orders):
     def field_config(self) -> Config:
         return self._field_config
 
-    def get_stop_orders(self, **kwargs):
+    def get_stop_orders(self: FSOrdersT, **kwargs) -> FSOrdersT:
         """Return stop orders filtered by valid stop type.
 
         Args:
@@ -828,7 +834,7 @@ class FSOrders(Orders):
         )
 
     def get_signal_to_creation_duration(self, **kwargs) -> MappedArray:
-        """Return the duration between signal and creation indices as a 
+        """Return the duration between signal and creation indices as a
         `vectorbtpro.generic.mapped_array.MappedArray`.
 
         Args:
@@ -841,7 +847,7 @@ class FSOrders(Orders):
         return self.map_array(duration, **kwargs)
 
     def get_creation_to_fill_duration(self, **kwargs) -> MappedArray:
-        """Return the duration between creation and fill indices as a 
+        """Return the duration between creation and fill indices as a
         `vectorbtpro.generic.mapped_array.MappedArray`.
 
         Args:
@@ -854,7 +860,7 @@ class FSOrders(Orders):
         return self.map_array(duration, **kwargs)
 
     def get_signal_to_fill_duration(self, **kwargs) -> MappedArray:
-        """Return the duration between signal and fill indices as a 
+        """Return the duration between signal and fill indices as a
         `vectorbtpro.generic.mapped_array.MappedArray`.
 
         Args:

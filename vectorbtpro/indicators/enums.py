@@ -140,4 +140,3 @@ __pdoc__[
     "SuperTrendAOS"
 ] = """A named tuple representing the output state for the Super Trend indicator calculation in 
 `vectorbtpro.indicators.nb.supertrend_acc_nb`."""
-

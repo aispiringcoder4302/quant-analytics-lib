@@ -13,7 +13,7 @@
 !!! note
     The accessors in this module do not utilize caching.
 """
-    
+
 from vectorbtpro.utils.module_ import assert_can_import
 
 assert_can_import("plotly")

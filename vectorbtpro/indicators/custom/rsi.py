@@ -75,11 +75,11 @@ class _RSI(RSI):
         Args:
             column (Optional[Label]): Label of the column to plot.
             limits (Tuple[float, float]): A tuple representing the lower and upper boundaries for the RSI plot.
-            rsi_trace_kwargs (KwargsLike): Keyword arguments for 
+            rsi_trace_kwargs (KwargsLike): Keyword arguments for
                 configuring the `RSI.rsi` trace, passed to `plotly.graph_objects.Scatter`.
-            add_shape_kwargs (KwargsLike): Keyword arguments for 
+            add_shape_kwargs (KwargsLike): Keyword arguments for
                 `fig.add_shape` when drawing the area between the limits.
-            add_trace_kwargs (KwargsLike): Keyword arguments for 
+            add_trace_kwargs (KwargsLike): Keyword arguments for
                 `fig.add_trace` when adding additional traces.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
             **layout_kwargs: Keyword arguments for configuring the figure layout.
@@ -87,6 +87,9 @@ class _RSI(RSI):
         Returns:
             BaseFigure: A figure object containing the RSI line plot and
                 the shaded area between the specified limits.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
 
         Examples:
             ```pycon

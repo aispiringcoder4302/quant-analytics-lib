@@ -33,6 +33,9 @@ class BentoData(RemoteData):
         * https://github.com/databento/databento-python for the Databento Python client.
         * `BentoData.fetch_symbol` for argument details.
 
+    !!! info
+        For default settings, see `custom.bento` in `vectorbtpro._settings.data`.
+
     Examples:
         Set up the API key globally (optional):
 
@@ -190,8 +193,6 @@ class BentoData(RemoteData):
         Returns:
             Union[float, SymbolData]: If `return_params` is True, returns the client and final parameters.
                 Otherwise, returns the fetched data and a metadata dictionary.
-
-        For defaults, see `custom.bento` in `vectorbtpro._settings.data`.
         """
         from vectorbtpro.utils.module_ import assert_can_import
 

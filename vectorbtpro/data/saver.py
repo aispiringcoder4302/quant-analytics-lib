@@ -62,7 +62,7 @@ class DataSaver(DataUpdater):
     @property
     def save_kwargs(self) -> tp.KwargsLike:
         """Property providing keyword arguments for data saving via `DataSaver.save_data`.
-        
+
         Returns:
             KwargsLike: Keyword arguments for data saving.
         """
@@ -71,7 +71,7 @@ class DataSaver(DataUpdater):
     @property
     def init_save_kwargs(self) -> tp.KwargsLike:
         """Property providing keyword arguments for initial data saving via `DataSaver.init_save_data`.
-        
+
         Returns:
             KwargsLike: Keyword arguments for initial data saving.
         """
@@ -81,6 +81,12 @@ class DataSaver(DataUpdater):
         """Perform an initial data save.
 
         This method must be overridden in subclasses with custom logic.
+
+        Args:
+            **kwargs: Keyword arguments for data saving.
+
+        Returns:
+            None
         """
         raise NotImplementedError
 
@@ -88,6 +94,12 @@ class DataSaver(DataUpdater):
         """Perform a data save.
 
         This method must be overridden in subclasses to implement custom saving logic.
+
+        Args:
+            **kwargs: Keyword arguments for data saving.
+
+        Returns:
+            None
         """
         raise NotImplementedError
 
@@ -98,6 +110,13 @@ class DataSaver(DataUpdater):
         Override to add pre- and postprocessing behavior.
 
         To cancel subsequent updates, raise `vectorbtpro.utils.schedule_.CancelledError`.
+
+        Args:
+            save_kwargs (KwargsLike): Keyword arguments for `DataSaver.save_data`.
+            **kwargs: Keyword arguments for data updating.
+
+        Returns:
+            None
         """
         # In case the method was called by the user
         kwargs = merge_dicts(
@@ -125,6 +144,16 @@ class DataSaver(DataUpdater):
 
         If `init_save` is True, an initial data save is performed via `DataSaver.init_save_data`.
         Overrides `vectorbtpro.data.updater.DataUpdater.update_every` to incorporate this step.
+
+        Args:
+            *args: Positional arguments for `vectorbtpro.data.updater.DataUpdater.update_every`.
+            save_kwargs (KwargsLike): Keyword arguments for `DataSaver.save_data`.
+            init_save (bool): Flag indicating whether to perform an initial data save.
+            init_save_kwargs (KwargsLike): Keyword arguments for `DataSaver.init_save_data`.
+            **kwargs: Keyword arguments for `vectorbtpro.data.updater.DataUpdater.update_every`.
+
+        Returns:
+            None
         """
         if init_save:
             init_save_kwargs = merge_dicts(
@@ -138,10 +167,17 @@ class DataSaver(DataUpdater):
 
 
 class CSVDataSaver(DataSaver):
-    """Class for saving data to CSV using `vectorbtpro.data.base.Data.to_csv`."""
+    """Class for saving data to CSV."""
 
     def init_save_data(self, **to_csv_kwargs) -> None:
-        """Perform an initial data save to a CSV file."""
+        """Perform an initial data save to a CSV file.
+
+        Args:
+            **to_csv_kwargs: Keyword arguments for `vectorbtpro.data.base.Data.to_csv`.
+
+        Returns:
+            None
+        """
         # In case the method was called by the user
         to_csv_kwargs = merge_dicts(
             self.save_kwargs,
@@ -154,7 +190,14 @@ class CSVDataSaver(DataSaver):
         logger.info(f"Saved initial {len(new_index)} rows from {new_index[0]} to {new_index[-1]}")
 
     def save_data(self, **to_csv_kwargs) -> None:
-        """Append new data to a CSV file, omitting the header by default."""
+        """Append new data to a CSV file, omitting the header by default.
+
+        Args:
+            **to_csv_kwargs: Keyword arguments for `vectorbtpro.data.base.Data.to_csv`.
+
+        Returns:
+            None
+        """
         # In case the method was called by the user
         to_csv_kwargs = merge_dicts(
             dict(mode="a", header=False),
@@ -168,10 +211,17 @@ class CSVDataSaver(DataSaver):
 
 
 class HDFDataSaver(DataSaver):
-    """Class for saving data to HDF format using `vectorbtpro.data.base.Data.to_hdf`."""
+    """Class for saving data to HDF format."""
 
     def init_save_data(self, **to_hdf_kwargs) -> None:
-        """Perform an initial data save to an HDF file."""
+        """Perform an initial data save to an HDF file.
+
+        Args:
+            **to_hdf_kwargs: Keyword arguments for `vectorbtpro.data.base.Data.to_hdf`.
+
+        Returns:
+            None
+        """
         # In case the method was called by the user
         to_hdf_kwargs = merge_dicts(
             self.save_kwargs,
@@ -184,7 +234,14 @@ class HDFDataSaver(DataSaver):
         logger.info(f"Saved initial {len(new_index)} rows from {new_index[0]} to {new_index[-1]}")
 
     def save_data(self, **to_hdf_kwargs) -> None:
-        """Append new data to an HDF file in table format."""
+        """Append new data to an HDF file in table format.
+
+        Args:
+            **to_hdf_kwargs: Keyword arguments for `vectorbtpro.data.base.Data.to_hdf`.
+
+        Returns:
+            None
+        """
         # In case the method was called by the user
         to_hdf_kwargs = merge_dicts(
             dict(mode="a", append=True),
@@ -198,10 +255,17 @@ class HDFDataSaver(DataSaver):
 
 
 class SQLDataSaver(DataSaver):
-    """Class for saving data to a SQL database using `vectorbtpro.data.base.Data.to_sql`."""
+    """Class for saving data to a SQL database."""
 
     def init_save_data(self, **to_sql_kwargs) -> None:
-        """Perform an initial data save to a SQL database."""
+        """Perform an initial data save to a SQL database.
+
+        Args:
+            **to_sql_kwargs: Keyword arguments for `vectorbtpro.data.base.Data.to_sql`.
+
+        Returns:
+            None
+        """
         # In case the method was called by the user
         to_sql_kwargs = merge_dicts(
             self.save_kwargs,
@@ -214,7 +278,14 @@ class SQLDataSaver(DataSaver):
         logger.info(f"Saved initial {len(new_index)} rows from {new_index[0]} to {new_index[-1]}")
 
     def save_data(self, **to_sql_kwargs) -> None:
-        """Append new data to a SQL database table, omitting the header by default."""
+        """Append new data to a SQL database table, omitting the header by default.
+
+        Args:
+            **to_sql_kwargs: Keyword arguments for `vectorbtpro.data.base.Data.to_sql`.
+
+        Returns:
+            None
+        """
         # In case the method was called by the user
         to_sql_kwargs = merge_dicts(
             dict(if_exists="append"),
@@ -228,10 +299,17 @@ class SQLDataSaver(DataSaver):
 
 
 class DuckDBDataSaver(DataSaver):
-    """Class for saving data to a DuckDB database using `vectorbtpro.data.base.Data.to_duckdb`."""
+    """Class for saving data to a DuckDB database."""
 
     def init_save_data(self, **to_duckdb_kwargs) -> None:
-        """Perform an initial data save to a DuckDB database."""
+        """Perform an initial data save to a DuckDB database.
+
+        Args:
+            **to_duckdb_kwargs: Keyword arguments for `vectorbtpro.data.base.Data.to_duckdb`.
+
+        Returns:
+            None
+        """
         # In case the method was called by the user
         to_duckdb_kwargs = merge_dicts(
             self.save_kwargs,
@@ -244,7 +322,14 @@ class DuckDBDataSaver(DataSaver):
         logger.info(f"Saved initial {len(new_index)} rows from {new_index[0]} to {new_index[-1]}")
 
     def save_data(self, **to_duckdb_kwargs) -> None:
-        """Append new data to a DuckDB database, omitting the header by default."""
+        """Append new data to a DuckDB database, omitting the header by default.
+
+        Args:
+            **to_duckdb_kwargs: Keyword arguments for `vectorbtpro.data.base.Data.to_duckdb`.
+
+        Returns:
+            None
+        """
         # In case the method was called by the user
         to_duckdb_kwargs = merge_dicts(
             dict(if_exists="append"),

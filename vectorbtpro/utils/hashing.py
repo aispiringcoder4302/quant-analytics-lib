@@ -37,7 +37,7 @@ class Hashable(Base):
     @property
     def hash_key(self) -> tuple:
         """Unique key used for computing the instance's hash.
-        
+
         Returns:
             tuple: A unique key for hash computation.
         """
@@ -46,7 +46,7 @@ class Hashable(Base):
     @cachedproperty
     def hash(self) -> int:
         """Computed hash value of the instance based on its hash key.
-        
+
         Returns:
             int: The computed hash value.
         """

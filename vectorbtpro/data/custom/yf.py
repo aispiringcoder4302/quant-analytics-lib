@@ -33,6 +33,9 @@ class YFData(RemoteData):
         * https://github.com/ranaroussi/yfinance for the `yfinance` library.
         * `YFData.fetch_symbol` for argument details.
 
+    !!! info
+        For default settings, see `custom.yf` in `vectorbtpro._settings.data`.
+
     Examples:
         ```pycon
         >>> from vectorbtpro import *
@@ -105,8 +108,6 @@ class YFData(RemoteData):
 
         Returns:
             SymbolData: The fetched data and a metadata dictionary.
-
-        For default settings, see `custom.yf` in `vectorbtpro._settings.data`.
 
         !!! warning
             Data from Yahoo Finance may be unstable. Yahoo may modify data, introduce noise, or omit data points

@@ -101,7 +101,7 @@ class Grouper(Configured):
     @property
     def index(self) -> tp.Index:
         """Original pandas Index used for grouping.
-        
+
         Returns:
             Index: The original pandas Index.
         """
@@ -110,7 +110,7 @@ class Grouper(Configured):
     @property
     def group_by(self) -> tp.GroupBy:
         """Group-by mapping generated from the provided grouping criteria.
-        
+
         Returns:
             GroupBy: The group-by mapping generated from the provided grouping criteria.
         """
@@ -119,7 +119,7 @@ class Grouper(Configured):
     @property
     def def_lvl_name(self) -> tp.Hashable:
         """Default group level name.
-        
+
         Returns:
             Hashable: The default level name for groups.
         """
@@ -128,7 +128,7 @@ class Grouper(Configured):
     @property
     def allow_enable(self) -> bool:
         """Indicates if enabling grouping is permitted.
-        
+
         Returns:
             bool: True if enabling grouping is allowed, False otherwise.
         """
@@ -137,7 +137,7 @@ class Grouper(Configured):
     @property
     def allow_disable(self) -> bool:
         """Indicates if disabling grouping is permitted.
-        
+
         Returns:
             bool: True if disabling grouping is allowed, False otherwise.
         """
@@ -146,7 +146,7 @@ class Grouper(Configured):
     @property
     def allow_modify(self) -> bool:
         """Indicates if modifying groups is allowed.
-        
+
         Returns:
             bool: True if modifying groups is allowed, False otherwise.
         """

@@ -29,7 +29,11 @@ FileDataT = tp.TypeVar("FileDataT", bound="FileData")
 
 
 class FileData(LocalData):
-    """Data class for fetching file data from the filesystem via `LocalData`."""
+    """Data class for fetching file data from the filesystem via `LocalData`.
+
+    !!! info
+        For default settings, see `custom.file` in `vectorbtpro._settings.data`.
+    """
 
     _settings_path: tp.SettingsPath = dict(custom="data.custom.file")
 
@@ -173,9 +177,6 @@ class FileData(LocalData):
 
         Set `match_paths` to False to bypass path parsing and perform a standard pull operation from
         `vectorbtpro.data.base.Data`.
-
-        !!! note
-            Defaults are defined in `vectorbtpro._settings.data.custom.local`.
 
         Args:
             keys (MaybeKeys): Identifier(s) for features or symbols.

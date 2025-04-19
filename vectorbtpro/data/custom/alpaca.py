@@ -37,6 +37,11 @@ class AlpacaData(RemoteData):
         * https://github.com/alpacahq/alpaca-py for Alpaca API.
         * `AlpacaData.fetch_symbol` for argument details.
 
+    !!! info
+        For default settings, see `custom.alpaca` in `vectorbtpro._settings.data`.
+
+        Global settings can be provided per exchange id using the `exchanges` dictionary.
+
     Examples:
         Set up the API key globally (optional for crypto):
 
@@ -257,10 +262,6 @@ class AlpacaData(RemoteData):
 
         Returns:
             SymbolData: The fetched data and a metadata dictionary.
-
-        For defaults, see `custom.alpaca` in `vectorbtpro._settings.data`.
-
-        Global settings can be provided per exchange id using the `exchanges` dictionary.
         """
         from vectorbtpro.utils.module_ import assert_can_import
 

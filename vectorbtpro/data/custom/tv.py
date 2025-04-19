@@ -190,7 +190,6 @@ class TVClient(Configured):
         auth_token: tp.Optional[str] = None,
         **kwargs,
     ) -> None:
-        """"""
         Configured.__init__(
             self,
             username=username,
@@ -212,7 +211,7 @@ class TVClient(Configured):
     @property
     def auth_token(self) -> str:
         """Authentication token used for client authentication.
-        
+
         Returns:
             str: Authentication token used for client authentication.
         """
@@ -221,7 +220,7 @@ class TVClient(Configured):
     @property
     def ws(self) -> WebSocket:
         """WebSocket connection instance used for real-time communication.
-        
+
         Returns:
             WebSocket: WebSocket connection instance used for real-time communication.
         """
@@ -230,7 +229,7 @@ class TVClient(Configured):
     @property
     def session(self) -> str:
         """Unique session identifier for quote sessions.
-        
+
         Returns:
             str: Unique session identifier for quote sessions.
         """
@@ -239,7 +238,7 @@ class TVClient(Configured):
     @property
     def chart_session(self) -> str:
         """Unique session identifier for chart data.
-        
+
         Returns:
             str: Unique session identifier for chart data.
         """
@@ -671,6 +670,9 @@ class TVData(RemoteData):
         * `TVClient` for the client class used to fetch data.
         * `TVData.fetch_symbol` for argument details.
 
+    !!! info
+        For default settings, see `custom.tv` in `vectorbtpro._settings.data`.
+
     !!! note
         If you encounter the error "Please confirm that you are not a robot by clicking the captcha box."
         during authentication, use the `auth_token` parameter instead of `username` and `password`.
@@ -1057,8 +1059,6 @@ class TVData(RemoteData):
 
         Returns:
             SymbolData: The fetched data and a metadata dictionary.
-
-        For defaults, see `custom.tv` in `vectorbtpro._settings.data`.
         """
         if client_config is None:
             client_config = {}

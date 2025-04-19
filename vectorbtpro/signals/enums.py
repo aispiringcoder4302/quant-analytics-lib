@@ -228,22 +228,42 @@ class RankContext(tp.NamedTuple):
 __pdoc__["RankContext"] = "Named tuple representing the context for ranking signals."
 __pdoc__["RankContext.mask"] = "Source mask."
 __pdoc__["RankContext.reset_by"] = "Mask used for resetting."
-__pdoc__["RankContext.after_false"] = """Indicates whether to disregard the first partition of True values when no preceding False value exists."""
-__pdoc__["RankContext.after_reset"] = """Indicates whether to disregard the first partition of True values that occur before the first reset signal."""
+__pdoc__["RankContext.after_false"] = (
+    """Indicates whether to disregard the first partition of True values when no preceding False value exists."""
+)
+__pdoc__["RankContext.after_reset"] = (
+    """Indicates whether to disregard the first partition of True values that occur before the first reset signal."""
+)
 __pdoc__["RankContext.reset_wait"] = "Number of ticks to wait before resetting the current partition."
 __pdoc__["RankContext.col"] = "Current column."
 __pdoc__["RankContext.i"] = "Current row."
 __pdoc__["RankContext.last_false_i"] = "Row of the last False value in the main mask."
-__pdoc__["RankContext.last_reset_i"] = """Row index of the last True value in the resetting mask.
+__pdoc__[
+    "RankContext.last_reset_i"
+] = """Row index of the last True value in the resetting mask.
 
 Does not account for `reset_wait`.
 """
 __pdoc__["RankContext.all_sig_cnt"] = """Total number of signals encountered, including the current one."""
 __pdoc__["RankContext.all_part_cnt"] = """Total number of partitions encountered, including the current partition."""
-__pdoc__["RankContext.all_sig_in_part_cnt"] = """Total number of signals encountered in the current partition, including the current signal."""
-__pdoc__["RankContext.nonres_sig_cnt"] = """Total number of non-resetting signals encountered, including the current one."""
-__pdoc__["RankContext.nonres_part_cnt"] = """Total number of non-resetting partitions encountered, including the current partition."""
-__pdoc__["RankContext.nonres_sig_in_part_cnt"] = """Total number of signals encountered in the current non-resetting partition, including the current signal."""
-__pdoc__["RankContext.sig_cnt"] = """Total number of valid and resetting signals encountered, including the current one."""
-__pdoc__["RankContext.part_cnt"] = """Total number of valid and resetting partitions encountered, including the current partition."""
-__pdoc__["RankContext.sig_in_part_cnt"] = """Total number of signals encountered in the current valid and resetting partition, including the current signal."""
+__pdoc__["RankContext.all_sig_in_part_cnt"] = (
+    """Total number of signals encountered in the current partition, including the current signal."""
+)
+__pdoc__["RankContext.nonres_sig_cnt"] = (
+    """Total number of non-resetting signals encountered, including the current one."""
+)
+__pdoc__["RankContext.nonres_part_cnt"] = (
+    """Total number of non-resetting partitions encountered, including the current partition."""
+)
+__pdoc__["RankContext.nonres_sig_in_part_cnt"] = (
+    """Total number of signals encountered in the current non-resetting partition, including the current signal."""
+)
+__pdoc__["RankContext.sig_cnt"] = (
+    """Total number of valid and resetting signals encountered, including the current one."""
+)
+__pdoc__["RankContext.part_cnt"] = (
+    """Total number of valid and resetting partitions encountered, including the current partition."""
+)
+__pdoc__["RankContext.sig_in_part_cnt"] = (
+    """Total number of signals encountered in the current valid and resetting partition, including the current signal."""
+)

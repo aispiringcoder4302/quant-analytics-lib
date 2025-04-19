@@ -366,6 +366,9 @@ def get_entry_trades_nb(
     Returns:
         RecordArray: Array of entry trade records aggregated from order records.
 
+    !!! tip
+        This function is parallelizable.
+
     Examples:
         ```pycon
         >>> from vectorbtpro import *
@@ -433,9 +436,6 @@ def get_entry_trades_nb(
         6          1       1          1
         7          0       0          2
         ```
-
-    !!! tip
-        This function is parallelizable.
     """
     close_ = to_2d_array_nb(np.asarray(close))
     init_position_ = to_1d_array_nb(np.asarray(init_position))
@@ -659,8 +659,6 @@ def get_entry_trades_nb(
     return generic_nb.repartition_nb(new_records, counts)
 
 
-
-
 @register_chunkable(
     size=base_ch.GroupLensSizer(arg_query="col_map"),
     arg_take_spec=dict(
@@ -715,6 +713,9 @@ def get_exit_trades_nb(
     Returns:
         RecordArray: Array of aggregated exit trade records.
 
+    !!! tip
+        This function is parallelizable.
+
     Examples:
         Building upon the example in `get_exit_trades_nb`:
 
@@ -751,9 +752,6 @@ def get_exit_trades_nb(
         6          1       1          1
         7          0       0          2
         ```
-
-    !!! tip
-        This function is parallelizable.
     """
     close_ = to_2d_array_nb(np.asarray(close))
     init_position_ = to_1d_array_nb(np.asarray(init_position))
@@ -1092,6 +1090,9 @@ def get_positions_nb(trade_records: tp.RecordArray, col_map: tp.GroupMap) -> tp.
     Returns:
         RecordArray: Array of aggregated position records after repartitioning based on group counts.
 
+    !!! tip
+        This function is parallelizable.
+
     Examples:
         Building upon the example in `get_exit_trades_nb`:
 
@@ -1123,9 +1124,6 @@ def get_positions_nb(trade_records: tp.RecordArray, col_map: tp.GroupMap) -> tp.
         4          1       1          1
         5          0       0          2
         ```
-
-    !!! tip
-        This function is parallelizable.
     """
     col_idxs, col_lens = col_map
     col_start_idxs = np.cumsum(col_lens) - col_lens
@@ -1545,7 +1543,7 @@ def get_position_feature_nb(
     sim_start: tp.Optional[tp.FlexArray1dLike] = None,
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array2d:
-    """Compute the position feature at each time step.
+    """Compute the position feature at each bar.
 
     Computes the specified position feature (either entry price or exit price) using order records
     and closing prices across multiple groups. The calculation adapts based on the selected

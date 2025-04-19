@@ -90,7 +90,7 @@ def clean_data(data: tp.Any) -> tp.Any:
 
 
 class TraceType(Configured):
-    """Class representing a trace type configuration for Plotly visualizations.""" 
+    """Class representing a trace type configuration for Plotly visualizations."""
 
     _expected_keys_mode: tp.ExpectedKeysMode = "disable"
 
@@ -110,7 +110,7 @@ class TraceUpdater(Base):
     @property
     def fig(self) -> tp.BaseFigure:
         """Plotly figure widget containing the traces.
-        
+
         Returns:
             BaseFigure: The Plotly figure widget.
         """
@@ -119,7 +119,7 @@ class TraceUpdater(Base):
     @property
     def traces(self) -> tp.Tuple[BaseTraceType, ...]:
         """A tuple of Plotly trace objects that will be updated.
-        
+
         Returns:
             Tuple[BaseTraceType, ...]: The tuple of Plotly trace objects.
         """
@@ -168,6 +168,9 @@ class Gauge(TraceType, TraceUpdater):
         make_figure_kwargs (KwargsLike): Keyword arguments for `vectorbtpro.utils.figure.make_figure`.
         fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
         **layout_kwargs: Keyword arguments for configuring the figure layout.
+
+    !!! info
+        For default settings, see `vectorbtpro._settings.plotting`.
 
     Examples:
         ```pycon
@@ -246,7 +249,7 @@ class Gauge(TraceType, TraceUpdater):
     @property
     def value_range(self) -> tp.Tuple[float, float]:
         """The value range of the gauge as a tuple of minimum and maximum values.
-        
+
         Returns:
             Tuple[float, float]: The value range of the gauge.
         """
@@ -255,7 +258,7 @@ class Gauge(TraceType, TraceUpdater):
     @property
     def cmap_name(self) -> str:
         """The name of the matplotlib-compatible colormap used for the gauge.
-        
+
         Returns:
             str: The name of the colormap.
         """
@@ -422,6 +425,9 @@ class Scatter(TraceType, TraceUpdater):
             Defaults to the global setting. If the global configuration is None and the data has
             more than 10,000 points, this flag is set to True.
         **layout_kwargs: Keyword arguments for configuring the figure layout.
+
+    !!! info
+        For default settings, see `vectorbtpro._settings.plotting`.
 
     Examples:
         ```pycon
@@ -671,7 +677,7 @@ class Histogram(TraceType, TraceUpdater):
     @property
     def horizontal(self) -> bool:
         """Indicates whether the histogram is plotted horizontally.
-        
+
         Returns:
             bool: True if the histogram is horizontal, False otherwise.
         """
@@ -680,7 +686,7 @@ class Histogram(TraceType, TraceUpdater):
     @property
     def remove_nan(self) -> bool:
         """Indicates whether NaN values are removed from the data.
-        
+
         Returns:
             bool: True if NaN values are removed, False otherwise.
         """
@@ -689,7 +695,7 @@ class Histogram(TraceType, TraceUpdater):
     @property
     def from_quantile(self) -> float:
         """Specifies the lower quantile threshold used to filter out data points.
-        
+
         Returns:
             float: The lower quantile threshold.
         """
@@ -698,7 +704,7 @@ class Histogram(TraceType, TraceUpdater):
     @property
     def to_quantile(self) -> float:
         """Specifies the upper quantile threshold used to filter out data points.
-        
+
         Returns:
             float: The upper quantile threshold.
         """
@@ -869,7 +875,7 @@ class Box(TraceType, TraceUpdater):
     @property
     def horizontal(self) -> bool:
         """Indicates if the box plot is oriented horizontally.
-        
+
         Returns:
             bool: True if the box plot is horizontal, False otherwise.
         """
@@ -878,7 +884,7 @@ class Box(TraceType, TraceUpdater):
     @property
     def remove_nan(self) -> bool:
         """Specifies whether NaN values are removed from the data.
-        
+
         Returns:
             bool: True if NaN values are removed, False otherwise.
         """
@@ -887,7 +893,7 @@ class Box(TraceType, TraceUpdater):
     @property
     def from_quantile(self) -> float:
         """Specifies the lower quantile threshold; data points below this value are excluded.
-        
+
         Returns:
             float: The lower quantile threshold.
         """
@@ -896,7 +902,7 @@ class Box(TraceType, TraceUpdater):
     @property
     def to_quantile(self) -> float:
         """Specifies the upper quantile threshold; data points above this value are excluded.
-        
+
         Returns:
             float: The upper quantile threshold.
         """
@@ -963,6 +969,9 @@ class Heatmap(TraceType, TraceUpdater):
         make_figure_kwargs (KwargsLike): Keyword arguments for `vectorbtpro.utils.figure.make_figure`.
         fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
         **layout_kwargs: Keyword arguments for configuring the figure layout.
+
+    !!! info
+        For default settings, see `vectorbtpro._settings.plotting`.
 
     Examples:
         ```pycon
@@ -1095,6 +1104,9 @@ class Volume(TraceType, TraceUpdater):
 
     !!! note
         Figure widgets currently have issues displaying NaNs. Use the `.show()` method for rendering.
+
+    !!! info
+        For default settings, see `vectorbtpro._settings.plotting`.
 
     Examples:
         ```pycon

@@ -34,16 +34,16 @@ __all__ = [
 
 def talib_func(func_name: str) -> tp.Callable:
     """Get a TA-Lib indicator function.
-    
+
     Verifies the availability of TA-Lib and returns a callable that applies the specified TA-Lib
     indicator on provided data. The returned function handles input arrays in various formats and
     optionally performs broadcasting, resampling, and output wrapping.
-    
+
     Args:
         func_name (str): Name of the TA-Lib indicator function.
 
             Case is ignored.
-        
+
     Returns:
         Callable: A function that executes `talib.<FUNC_NAME>` on NumPy arrays, Pandas Series, or DataFrames.
     """
@@ -328,6 +328,9 @@ def talib_plot_func(func_name: str) -> tp.Callable:
 
     Returns:
         Callable: A plotting function for the TA-Lib indicator.
+
+    !!! info
+        For default settings, see `vectorbtpro._settings.plotting`.
     """
     from vectorbtpro.utils.module_ import assert_can_import
 

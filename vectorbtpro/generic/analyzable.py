@@ -22,6 +22,7 @@ __all__ = [
 
 class MetaAnalyzable(type(Wrapping), type(StatsBuilderMixin), type(PlotsBuilderMixin)):
     """Metaclass for the `Analyzable` class."""
+
     pass
 
 

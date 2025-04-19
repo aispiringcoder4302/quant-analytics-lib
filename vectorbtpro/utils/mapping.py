@@ -133,7 +133,7 @@ def apply_mapping(
     if mapping_like is None:
         return obj
 
-    def key_func(x):
+    def _key_func(x):
         if ignore_case:
             x = x.lower()
         if ignore_underscores:
@@ -153,7 +153,7 @@ def apply_mapping(
             na_sentinel = v
         else:
             if isinstance(k, str):
-                k = key_func(k)
+                k = _key_func(k)
             new_mapping[k] = v
 
     def _compatible_types(x_type: type, item: tp.Any = None) -> bool:
@@ -183,7 +183,7 @@ def apply_mapping(
         if pd.isnull(x):
             return na_sentinel
         if isinstance(x, str):
-            x = key_func(x)
+            x = _key_func(x)
         if ignore_missing:
             try:
                 return new_mapping[x]

@@ -282,6 +282,9 @@ class Drawdowns(Ranges):
     """Class extending `vectorbtpro.generic.ranges.Ranges` for working with drawdown records.
 
     Requires `records_arr` to have all fields defined in `vectorbtpro.generic.enums.drawdown_dt`.
+
+    !!! info
+        For default settings, see `vectorbtpro._settings.drawdowns`.
     """
 
     @property
@@ -439,9 +442,6 @@ class Drawdowns(Ranges):
     def get_drawdown(self, jitted: tp.JittedOption = None, chunked: tp.ChunkedOption = None, **kwargs) -> MappedArray:
         """Return the drawdown values.
 
-        !!! note
-            Both recovered and active drawdowns are considered.
-
         Args:
             jitted (JittedOption): Option to control JIT compilation.
             chunked (ChunkedOption): Option to control chunked processing.
@@ -452,6 +452,9 @@ class Drawdowns(Ranges):
 
         See:
             `vectorbtpro.generic.nb.records.dd_drawdown_nb`
+
+        !!! note
+            Both recovered and active drawdowns are considered.
         """
         func = jit_reg.resolve_option(nb.dd_drawdown_nb, jitted)
         func = ch_reg.resolve_option(func, chunked)
@@ -1058,6 +1061,9 @@ class Drawdowns(Ranges):
         Returns:
             BaseFigure: A figure object containing the plotted drawdowns and price data.
 
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
+
         Examples:
             ```pycon
             >>> index = pd.date_range("2020", periods=8)
@@ -1378,7 +1384,7 @@ class Drawdowns(Ranges):
 
         Merges defaults from `vectorbtpro.generic.ranges.Ranges.plots_defaults`
         with the `plots` configuration from `vectorbtpro._settings.drawdowns`.
-        
+
         Returns:
             Kwargs: The default plot settings.
         """

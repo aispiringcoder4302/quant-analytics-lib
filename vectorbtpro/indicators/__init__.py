@@ -10,10 +10,8 @@
 
 """Package for building and running technical indicators.
 
-Technical indicators help analyze historical trends and anticipate future market movements.
-
-See:
-    https://www.investopedia.com/articles/trading/11/indicators-and-strategies-explained.asp
+[Technical indicators](https://www.investopedia.com/articles/trading/11/indicators-and-strategies-explained.asp)
+help analyze historical trends and anticipate future market movements.
 """
 
 from typing import TYPE_CHECKING

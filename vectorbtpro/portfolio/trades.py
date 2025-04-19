@@ -657,7 +657,11 @@ TradesT = tp.TypeVar("TradesT", bound="Trades")
 @attach_fields(trades_attach_field_config)
 @override_field_config(trades_field_config)
 class Trades(Ranges):
-    """Class for representing trade-like records, including entry trades, exit trades, and positions."""
+    """Class for representing trade-like records, including entry trades, exit trades, and positions.
+
+    !!! info
+        For default settings, see `vectorbtpro._settings.trades`.
+    """
 
     @property
     def field_config(self) -> Config:
@@ -787,7 +791,7 @@ class Trades(Ranges):
             group_by (GroupByLike): Grouping specification.
             jitted (JittedOption): Option to control JIT compilation.
             chunked (ChunkedOption): Option for chunked processing.
-            wrap_kwargs (KwargsLike): Keyword arguments passed to 
+            wrap_kwargs (KwargsLike): Keyword arguments passed to
                 `vectorbtpro.records.mapped_array.MappedArray.reduce`.
             **kwargs: Additional keyword arguments.
 
@@ -821,7 +825,7 @@ class Trades(Ranges):
             jitted (JittedOption): Option to control JIT compilation.
             chunked (ChunkedOption): Option for chunked processing.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
-            **kwargs: Keyword arguments passed to 
+            **kwargs: Keyword arguments passed to
                 `vectorbtpro.records.mapped_array.MappedArray.reduce`.
 
         Returns:
@@ -1370,9 +1374,9 @@ class Trades(Ranges):
         rolling standard deviation is used.
 
         Args:
-            volatility (Optional[ArrayLike]): Volatility measure. 
-            
-                If None, a 14-period ATR is computed when high and low are available; 
+            volatility (Optional[ArrayLike]): Volatility measure.
+
+                If None, a 14-period ATR is computed when high and low are available;
                 otherwise, a 14-period rolling standard deviation is used.
             entry_price_open (bool): Include the open price of the entry bar when evaluating prices.
             exit_price_close (bool): Include the close price of the exit bar when evaluating prices.
@@ -1454,9 +1458,9 @@ class Trades(Ranges):
         14-period rolling standard deviation is used.
 
         Args:
-            volatility (Optional[ArrayLike]): Volatility measure. 
-            
-                If None, a 14-period ATR is computed when high and low are available; 
+            volatility (Optional[ArrayLike]): Volatility measure.
+
+                If None, a 14-period ATR is computed when high and low are available;
                 otherwise, a 14-period rolling standard deviation is used.
             entry_price_open (bool): Include the open price of the entry bar when evaluating prices.
             exit_price_close (bool): Include the close price of the exit bar when evaluating prices.
@@ -1704,22 +1708,22 @@ class Trades(Ranges):
 
         Args:
             column (Optional[Label]): Name of the column to plot.
-            group_by (GroupByLike): Grouping specification for columns. 
-            
+            group_by (GroupByLike): Grouping specification for columns.
+
                 See `vectorbtpro.base.grouping.base.Grouper`.
-            pct_scale (bool): If True, sets the y-axis to display trade returns in percentage format; 
+            pct_scale (bool): If True, sets the y-axis to display trade returns in percentage format;
                 if False, displays PnL.
             marker_size_range (Tuple[float, float]): Range for marker sizes.
             opacity_range (Tuple[float, float]): Range for marker opacities.
-            closed_trace_kwargs (KwargsLike): Keyword arguments for 
+            closed_trace_kwargs (KwargsLike): Keyword arguments for
                 the `plotly.graph_objects.Scatter` trace of closed trades.
-            closed_profit_trace_kwargs (KwargsLike): Keyword arguments for 
+            closed_profit_trace_kwargs (KwargsLike): Keyword arguments for
                 the `plotly.graph_objects.Scatter` trace of closed trades with profit.
-            closed_loss_trace_kwargs (KwargsLike): Keyword arguments for 
+            closed_loss_trace_kwargs (KwargsLike): Keyword arguments for
                 the `plotly.graph_objects.Scatter` trace of closed trades with loss.
-            open_trace_kwargs (KwargsLike): Keyword arguments for 
+            open_trace_kwargs (KwargsLike): Keyword arguments for
                 the `plotly.graph_objects.Scatter` trace of open trades.
-            hline_shape_kwargs (KwargsLike): Keyword arguments for 
+            hline_shape_kwargs (KwargsLike): Keyword arguments for
                 the horizontal zero line shape added via `plotly.graph_objects.Figure.add_shape`.
             add_trace_kwargs (KwargsLike): Keyword arguments for adding traces to the figure.
             xref (str): Reference for the x-axis.
@@ -1729,6 +1733,9 @@ class Trades(Ranges):
 
         Returns:
             BaseFigure: Plotly figure object containing the plot of trade PnL or returns.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
 
         Examples:
             ```pycon
@@ -1920,22 +1927,22 @@ class Trades(Ranges):
                 The field can be specified as a string, a mapped array, or a 1-dimensional array.
             field_label (Optional[str]): Label for the field.
             column (Optional[Label]): Name of the column to plot.
-            group_by (GroupByLike): Specification for grouping columns. 
-            
+            group_by (GroupByLike): Specification for grouping columns.
+
                 See `vectorbtpro.base.grouping.base.Grouper`.
             pct_scale (bool): If True, set the x-axis to use returns; otherwise, use PnL.
             field_pct_scale (bool): If True, format the y-axis values as percentages.
-            closed_trace_kwargs (KwargsLike): Keyword arguments for 
+            closed_trace_kwargs (KwargsLike): Keyword arguments for
                 `plotly.graph_objects.Scatter` for "Closed" markers.
-            closed_profit_trace_kwargs (KwargsLike): Keyword arguments for 
+            closed_profit_trace_kwargs (KwargsLike): Keyword arguments for
                 `plotly.graph_objects.Scatter` for "Closed - Profit" markers.
-            closed_loss_trace_kwargs (KwargsLike): Keyword arguments for 
+            closed_loss_trace_kwargs (KwargsLike): Keyword arguments for
                 `plotly.graph_objects.Scatter` for "Closed - Loss" markers.
-            open_trace_kwargs (KwargsLike): Keyword arguments for 
+            open_trace_kwargs (KwargsLike): Keyword arguments for
                 `plotly.graph_objects.Scatter` for "Open" markers.
-            hline_shape_kwargs (KwargsLike): Keyword arguments for 
+            hline_shape_kwargs (KwargsLike): Keyword arguments for
                 `plotly.graph_objects.Figure.add_shape` for the horizontal zeroline.
-            vline_shape_kwargs (KwargsLike): Keyword arguments for 
+            vline_shape_kwargs (KwargsLike): Keyword arguments for
                 `plotly.graph_objects.Figure.add_shape` for the vertical zeroline.
             add_trace_kwargs (KwargsLike): Keyword arguments for adding a trace.
             xref (str): Reference for the x-axis.
@@ -1945,6 +1952,9 @@ class Trades(Ranges):
 
         Returns:
             BaseFigure: The updated figure with the plotted field against PnL or returns.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
 
         Examples:
             ```pycon
@@ -2210,19 +2220,19 @@ class Trades(Ranges):
                 Can also be provided as a two-dimensional array.
             field_label (Optional[str]): The label for the field.
             column (Optional[Label]): The column name to plot.
-            group_by (GroupByLike): Grouping specification. 
-            
+            group_by (GroupByLike): Grouping specification.
+
                 See `vectorbtpro.base.grouping.base.Grouper`.
-            plot_bands (bool): Controls whether to plot bands. 
-            
+            plot_bands (bool): Controls whether to plot bands.
+
                 See `vectorbtpro.generic.accessors.GenericDFAccessor.plot_projections`.
-            colorize (Union[bool, str, Callable]): Colorizing strategy. 
-            
+            colorize (Union[bool, str, Callable]): Colorizing strategy.
+
                 See `vectorbtpro.generic.accessors.GenericDFAccessor.plot_projections`.
             field_pct_scale (bool): If True, sets the y-axis to a percentage scale.
             add_trace_kwargs (KwargsLike): Keyword arguments for adding traces.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
-            **kwargs: Keyword arguments for 
+            **kwargs: Keyword arguments for
                 `vectorbtpro.generic.accessors.GenericDFAccessor.plot_projections`.
 
         Returns:
@@ -2373,7 +2383,7 @@ class Trades(Ranges):
             xref (str): Reference identifier for the x-axis.
             yref (str): Reference identifier for the y-axis.
             hline_shape_kwargs (KwargsLike): Keyword arguments for configuring the horizontal line shape.
-            **kwargs: Keyword arguments passed to 
+            **kwargs: Keyword arguments passed to
                 `vectorbtpro.generic.accessors.GenericSRAccessor.plot_against`.
 
         Returns:
@@ -2462,21 +2472,21 @@ class Trades(Ranges):
 
                 Use None to apply the default type.
             ohlc_trace_kwargs (KwargsLike): Keyword arguments for configuring the OHLC trace.
-            close_trace_kwargs (KwargsLike): Keyword arguments for configuring 
+            close_trace_kwargs (KwargsLike): Keyword arguments for configuring
                 the close price line via `plotly.graph_objects.Scatter` for `Trades.close`.
-            entry_trace_kwargs (KwargsLike): Keyword arguments for configuring 
+            entry_trace_kwargs (KwargsLike): Keyword arguments for configuring
                 entry markers via `plotly.graph_objects.Scatter`.
-            exit_trace_kwargs (KwargsLike): Keyword arguments for configuring 
+            exit_trace_kwargs (KwargsLike): Keyword arguments for configuring
                 exit markers via `plotly.graph_objects.Scatter`.
-            exit_profit_trace_kwargs (KwargsLike): Keyword arguments for configuring 
+            exit_profit_trace_kwargs (KwargsLike): Keyword arguments for configuring
                 exit markers for profitable trades.
-            exit_loss_trace_kwargs (KwargsLike): Keyword arguments for configuring 
+            exit_loss_trace_kwargs (KwargsLike): Keyword arguments for configuring
                 exit markers for losing trades.
-            active_trace_kwargs (KwargsLike): Keyword arguments for configuring 
+            active_trace_kwargs (KwargsLike): Keyword arguments for configuring
                 active trade markers.
-            profit_shape_kwargs (KwargsLike): Keyword arguments for configuring 
+            profit_shape_kwargs (KwargsLike): Keyword arguments for configuring
                 profit zone shapes via `plotly.graph_objects.Figure.add_shape`.
-            loss_shape_kwargs (KwargsLike): Keyword arguments for configuring 
+            loss_shape_kwargs (KwargsLike): Keyword arguments for configuring
                 loss zone shapes via `plotly.graph_objects.Figure.add_shape`.
             add_trace_kwargs (KwargsLike): Keyword arguments for adding traces to the figure.
             xref (str): Reference for x-axis coordinates.
@@ -2486,6 +2496,9 @@ class Trades(Ranges):
 
         Returns:
             BaseFigure: The updated Plotly figure with the plotted trades.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
 
         Examples:
             ```pycon
@@ -2841,7 +2854,7 @@ EntryTradesT = tp.TypeVar("EntryTradesT", bound="EntryTrades")
 @override_field_config(entry_trades_field_config)
 class EntryTrades(Trades):
     """Class representing entry trade records, extending `Trades`.
-    
+
     Field configuration is overridden using `entry_trades_field_config`.
     """
 
@@ -2869,17 +2882,17 @@ class EntryTrades(Trades):
 
         Args:
             orders (vectorbtpro.portfolio.orders.Orders): Orders instance from which to derive entry trades.
-            open (Optional[ArrayLike]): Open prices. 
-            
+            open (Optional[ArrayLike]): Open prices.
+
                 If None, uses `orders._open`.
-            high (Optional[ArrayLike]): High prices. 
-            
+            high (Optional[ArrayLike]): High prices.
+
                 If None, uses `orders._high`.
-            low (Optional[ArrayLike]): Low prices. 
-            
+            low (Optional[ArrayLike]): Low prices.
+
                 If None, uses `orders._low`.
-            close (Optional[ArrayLike]): Close prices. 
-            
+            close (Optional[ArrayLike]): Close prices.
+
                 If None, uses `orders._close`.
             init_position (ArrayLike): Initial position.
             init_price (ArrayLike): Initial price.
@@ -2945,14 +2958,14 @@ class EntryTrades(Trades):
             plot_ohlc (bool): Whether to plot OHLC data.
             plot_close (bool): Whether to plot close prices if OHLC is not plotted.
             ohlc_type (Union[None, str, BaseTraceType]): Either 'OHLC', 'Candlestick', or a Plotly trace type.
-            
+
                 Pass None to use the default.
             ohlc_trace_kwargs (KwargsLike): Keyword arguments for the OHLC trace.
-            close_trace_kwargs (KwargsLike): Keyword arguments for the close price trace in 
+            close_trace_kwargs (KwargsLike): Keyword arguments for the close price trace in
                 `plotly.graph_objects.Scatter`.
-            long_entry_trace_kwargs (KwargsLike): Keyword arguments for plotting long entry markers in 
+            long_entry_trace_kwargs (KwargsLike): Keyword arguments for plotting long entry markers in
                 `plotly.graph_objects.Scatter`.
-            short_entry_trace_kwargs (KwargsLike): Keyword arguments for plotting short entry markers in 
+            short_entry_trace_kwargs (KwargsLike): Keyword arguments for plotting short entry markers in
                 `plotly.graph_objects.Scatter`.
             add_trace_kwargs (KwargsLike): Keyword arguments passed to `add_trace`.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
@@ -2960,6 +2973,9 @@ class EntryTrades(Trades):
 
         Returns:
             BaseFigure: The updated or newly created figure.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
 
         Examples:
             ```pycon
@@ -3123,7 +3139,7 @@ ExitTradesT = tp.TypeVar("ExitTradesT", bound="ExitTrades")
 @override_field_config(exit_trades_field_config)
 class ExitTrades(Trades):
     """Class representing exit trade records, extending `Trades`.
-    
+
     Field configuration is overridden using `exit_trades_field_config`.
     """
 
@@ -3151,17 +3167,17 @@ class ExitTrades(Trades):
 
         Args:
             orders (vectorbtpro.portfolio.orders.Orders): Orders instance from which to derive exit trades.
-            open (Optional[ArrayLike]): Open prices. 
-            
+            open (Optional[ArrayLike]): Open prices.
+
                 If None, uses `orders._open`.
-            high (Optional[ArrayLike]): High prices. 
-            
+            high (Optional[ArrayLike]): High prices.
+
                 If None, uses `orders._high`.
-            low (Optional[ArrayLike]): Low prices. 
-            
+            low (Optional[ArrayLike]): Low prices.
+
                 If None, uses `orders._low`.
-            close (Optional[ArrayLike]): Close prices. 
-            
+            close (Optional[ArrayLike]): Close prices.
+
                 If None, uses `orders._close`.
             init_position (ArrayLike): Initial position.
             init_price (ArrayLike): Initial price.
@@ -3227,14 +3243,14 @@ class ExitTrades(Trades):
             plot_ohlc (bool): Whether to plot OHLC data.
             plot_close (bool): Whether to plot close prices if OHLC is not plotted.
             ohlc_type (Union[None, str, BaseTraceType]): Either 'OHLC', 'Candlestick', or a Plotly trace type.
-            
+
                 Pass None to use the default.
             ohlc_trace_kwargs (KwargsLike): Keyword arguments for the OHLC trace.
-            close_trace_kwargs (KwargsLike): Keyword arguments for the close price trace in 
+            close_trace_kwargs (KwargsLike): Keyword arguments for the close price trace in
                 `plotly.graph_objects.Scatter`.
-            long_exit_trace_kwargs (KwargsLike): Keyword arguments for plotting long exit markers in 
+            long_exit_trace_kwargs (KwargsLike): Keyword arguments for plotting long exit markers in
                 `plotly.graph_objects.Scatter`.
-            short_exit_trace_kwargs (KwargsLike): Keyword arguments for plotting short exit markers in 
+            short_exit_trace_kwargs (KwargsLike): Keyword arguments for plotting short exit markers in
                 `plotly.graph_objects.Scatter`.
             add_trace_kwargs (KwargsLike): Keyword arguments passed to `add_trace`.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
@@ -3242,6 +3258,9 @@ class ExitTrades(Trades):
 
         Returns:
             BaseFigure: A Plotly figure with exit trade signals plotted.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
 
         Examples:
             ```pycon
@@ -3430,17 +3449,17 @@ class Positions(Trades):
 
         Args:
             trades (Trades): The source trades instance from which positions are derived.
-            open (Optional[ArrayLike]): Open prices. 
-            
+            open (Optional[ArrayLike]): Open prices.
+
                 If None, uses `trades._open`.
-            high (Optional[ArrayLike]): High prices. 
-            
+            high (Optional[ArrayLike]): High prices.
+
                 If None, uses `trades._high`.
-            low (Optional[ArrayLike]): Low prices. 
-            
+            low (Optional[ArrayLike]): Low prices.
+
                 If None, uses `trades._low`.
-            close (Optional[ArrayLike]): Close prices. 
-            
+            close (Optional[ArrayLike]): Close prices.
+
                 If None, uses `trades._close`.
             init_position (ArrayLike): Initial position.
             init_price (ArrayLike): Initial price.

@@ -9,7 +9,11 @@
 # ===================================================================================
 
 """Module providing utilities for caching operations, including clearing Python cache directories
-and bytecode files, and managing cacheable properties and methods."""
+and bytecode files, and managing cacheable properties and methods.
+
+!!! info
+    For default settings, see `vectorbtpro._settings.caching`.
+"""
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.utils.base import Base
@@ -22,8 +26,12 @@ __all__ = [
 ]
 
 
-def clear_pycache():
-    """Clear `__pycache__` directories and Python bytecode files (.pyc) from the project directory."""
+def clear_pycache() -> None:
+    """Clear `__pycache__` directories and Python bytecode files (.pyc) from the project directory.
+
+    Returns:
+        None
+    """
     import pathlib
 
     for p in pathlib.Path(__file__).parent.parent.rglob("__pycache__"):
@@ -39,6 +47,9 @@ class Cacheable(Base):
     `vectorbtpro.utils.decorators.cacheable_method`.
 
     See `vectorbtpro.registries.ca_registry` for details on the caching procedure.
+
+    !!! info
+        For default settings, see `vectorbtpro._settings.caching`.
     """
 
     def __init__(self) -> None:

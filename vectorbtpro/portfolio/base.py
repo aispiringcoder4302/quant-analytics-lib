@@ -481,7 +481,7 @@ class MetaPortfolio(type(Analyzable)):
     @property
     def in_output_config(cls) -> Config:
         """In-output configuration settings.
-        
+
         Returns:
             Config: The configuration settings for in-outputs.
         """
@@ -497,18 +497,18 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         wrapper (ArrayWrapper): Wrapper instance.
 
             See `vectorbtpro.base.wrapping.ArrayWrapper`.
-        order_records (Union[RecordArray, SimulationOutput]): Structured NumPy array of order records, or 
+        order_records (Union[RecordArray, SimulationOutput]): Structured NumPy array of order records, or
             a `vectorbtpro.portfolio.enums.SimulationOutput` object.
-        close (ArrayLike): Last asset price at each time step.
+        close (ArrayLike): Last asset price at each bar.
 
             Provided in a format that supports flexible indexing.
-        open (Optional[ArrayLike]): Opening price of each time step.
+        open (Optional[ArrayLike]): Opening price of each bar.
 
             Provided in a format that supports flexible indexing.
-        high (Optional[ArrayLike]): Highest price of each time step.
+        high (Optional[ArrayLike]): Highest price of each bar.
 
             Provided in a format that supports flexible indexing.
-        low (Optional[ArrayLike]): Lowest price of each time step.
+        low (Optional[ArrayLike]): Lowest price of each bar.
 
             Provided in a format that supports flexible indexing.
         log_records (Optional[RecordArray]): Structured NumPy array of log records.
@@ -518,9 +518,9 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             Provided in a format that supports flexible indexing.
 
             See `vectorbtpro.portfolio.enums.InitCashMode` for more options.
-            
+
             !!! note
-                When using `InitCashMode.AutoAlign`, initial cash values are synchronized 
+                When using `InitCashMode.AutoAlign`, initial cash values are synchronized
                 across columns/groups after initialization.
         init_position (ArrayLike): Initial asset positions.
 
@@ -542,7 +542,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             Provide pre-broadcasted and grouped objects to substitute default `Portfolio` attributes.
             See `Portfolio.in_outputs_indexing_func` for indexing details.
         use_in_outputs (Optional[bool]): Indicates whether to return in-output objects when accessing properties.
-        bm_close (Optional[ArrayLike]): Last benchmark asset price at each time step.
+        bm_close (Optional[ArrayLike]): Last benchmark asset price at each bar.
 
             Provided in a format that supports flexible indexing.
         fillna_close (Optional[bool]): Whether to forward-backward fill NaN values in `Portfolio.close`.
@@ -566,7 +566,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             Applied to initial positions, cash, deposits, earnings, and orders.
         **kwargs: Keyword arguments for configuration.
 
-    For defaults, see `vectorbtpro._settings.portfolio`.
+    !!! info
+        For default settings, see `vectorbtpro._settings.portfolio`.
 
     !!! note
         Use class methods with the `from_` prefix to build a portfolio.
@@ -575,7 +576,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
     !!! note
         This class is immutable. To change any attribute, use `Portfolio.replace`.
     """
-    
+
     _writeable_attrs: tp.WriteableAttrs = {"_in_output_config"}
 
     def __init__(
@@ -760,16 +761,16 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         Args:
             objs (Sequence[Any]): Sequence of objects to be stacked.
             wrappers (Sequence[ArrayWrapper]): Sequence of wrapper instances associated with the objects.
-            grouping (str): Strategy for grouping objects. 
-            
+            grouping (str): Strategy for grouping objects.
+
                 Supported options include "columns_or_groups", "columns", "groups", and "cash_sharing".
             obj_name (Optional[str]): Identifier for the object.
             obj_type (Optional[str]): Expected type of the object, which influences the stacking logic.
             wrapper (Optional[ArrayWrapper]): Target array wrapper used for performing the stacking.
             cash_sharing (bool): Flag indicating whether cash sharing is enabled.
-            row_stack_func (Optional[Callable]): Custom function for row stacking that must accept the 
-                portfolio class and all provided arguments. 
-                
+            row_stack_func (Optional[Callable]): Custom function for row stacking that must accept the
+                portfolio class and all provided arguments.
+
                 If unused, it should accept additional arguments via `**kwargs`.
             **kwargs: Additional keyword arguments.
 
@@ -836,9 +837,9 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         """Stack `Portfolio.in_outputs` fields along rows.
 
         This method stacks the `in_outputs` named tuples from multiple `Portfolio` instances row-wise.
-        All `in_outputs` must either be None or contain identical fields. For each field, stacking options 
-        are determined by merging options from `Portfolio.parse_field_options` and 
-        `Portfolio.in_output_config`. The stacking is then performed on each field using 
+        All `in_outputs` must either be None or contain identical fields. For each field, stacking options
+        are determined by merging options from `Portfolio.parse_field_options` and
+        `Portfolio.in_output_config`. The stacking is then performed on each field using
         `Portfolio.row_stack_objs`.
 
         Args:
@@ -846,7 +847,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             **kwargs: Keyword arguments passed to the stacking function.
 
         Returns:
-            Optional[NamedTuple]: A new named tuple with each field stacked row-wise, or 
+            Optional[NamedTuple]: A new named tuple with each field stacked row-wise, or
                 None if all `in_outputs` are None.
         """
         if len(objs) == 1:
@@ -915,42 +916,42 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         """Stack multiple `Portfolio` instances along rows.
 
         Stacks multiple `Portfolio` instances by merging their underlying data arrays along rows.
-        This method leverages `vectorbtpro.base.wrapping.ArrayWrapper.row_stack` to combine wrappers 
-        and applies specialized stacking functions for two-dimensional arrays such as close prices, 
+        This method leverages `vectorbtpro.base.wrapping.ArrayWrapper.row_stack` to combine wrappers
+        and applies specialized stacking functions for two-dimensional arrays such as close prices,
         benchmark close, cash deposits, cash earnings, and call sequences. Records are merged using
         `vectorbtpro.records.base.Records.row_stack_records_arrs`.
 
-        If an object's initial cash is specified as one of the options in `vectorbtpro.portfolio.enums.InitCashMode`, 
-        it is retained in the final portfolio. When an object defines its initial cash as an absolute amount 
-        or an array, the first object's value is used by default, and subsequent non-zero values are treated 
+        If an object's initial cash is specified as one of the options in `vectorbtpro.portfolio.enums.InitCashMode`,
+        it is retained in the final portfolio. When an object defines its initial cash as an absolute amount
+        or an array, the first object's value is used by default, and subsequent non-zero values are treated
         as cash deposits. Set `combine_init_cash` to True to sum all initial cash arrays.
 
         The initial position is copied from the first object if it is the only one with a positive value;
         otherwise, stacking is disallowed unless `combine_init_position` is True, which will sum the positions.
-        For initial price, stacking occurs only if non-NaN values are found across objects; otherwise, 
-        the first object's initial price is used. When `combine_init_price` is enabled, a weighted average 
+        For initial price, stacking occurs only if non-NaN values are found across objects; otherwise,
+        the first object's initial price is used. When `combine_init_price` is enabled, a weighted average
         is computed based on the initial positions.
-
-        !!! note
-            When possible, avoid including initial position and price in portfolios to be stacked, 
-            as their stacking order might not correctly reflect the simulation chronology and could 
-            lead to inaccurate results.
 
         Args:
             *objs (Portfolio): (Additional) `Portfolio` instances to stack.
             wrapper_kwargs (KwargsLike): Keyword arguments for configuring the array wrapper.
             group_by (GroupByLike): Criteria for grouping during stacking.
-            combine_init_cash (bool): If True, sums all initial cash arrays instead of using 
+            combine_init_cash (bool): If True, sums all initial cash arrays instead of using
                 the first object's value.
-            combine_init_position (bool): If True, sums initial position arrays when 
+            combine_init_position (bool): If True, sums initial position arrays when
                 multiple objects have non-zero positions.
-            combine_init_price (bool): If True, combines initial price arrays using 
+            combine_init_price (bool): If True, combines initial price arrays using
                 a weighted average when stacking.
-            **kwargs: Keyword arguments passed to internal stacking functions and 
+            **kwargs: Keyword arguments passed to internal stacking functions and
                 the resulting `Portfolio` constructor.
 
         Returns:
             Portfolio: A new `Portfolio` instance resulting from stacking the input objects along rows.
+
+        !!! note
+            When possible, avoid including initial position and price in portfolios to be stacked,
+            as their stacking order might not correctly reflect the simulation chronology and could
+            lead to inaccurate results.
         """
         if not isinstance(cls_or_self, type):
             objs = (cls_or_self, *objs)
@@ -1189,15 +1190,15 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         Args:
             objs (Sequence[Any]): Objects to be stacked.
             wrappers (Sequence[ArrayWrapper]): Wrappers corresponding to the objects.
-            grouping (str): Grouping method to use. 
-            
+            grouping (str): Grouping method to use.
+
                 Supported options include "columns_or_groups", "columns", "groups", and "cash_sharing".
             obj_name (Optional[str]): Name of the object, used for error messages.
             obj_type (Optional[str]): Type of the object (e.g., "array" or "red_array").
             wrapper (Optional[ArrayWrapper]): Wrapper to be used for stacking.
             cash_sharing (bool): Flag indicating whether cash sharing mode is enabled.
-            column_stack_func (Optional[Callable]): Custom function for stacking columns. 
-            
+            column_stack_func (Optional[Callable]): Custom function for stacking columns.
+
                 Must accept the portfolio class and all method arguments.
             **kwargs: Keyword arguments passed to `column_stack_func`.
 
@@ -1281,16 +1282,16 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         Merge the `in_outputs` from multiple `Portfolio` instances by stacking corresponding fields.
         All in-output tuples must either be None or have identical fields.
 
-        If a field is also defined as an attribute of the `Portfolio` class, its options are used 
-        to determine the required type and layout by merging results from `Portfolio.parse_field_options` 
+        If a field is also defined as an attribute of the `Portfolio` class, its options are used
+        to determine the required type and layout by merging results from `Portfolio.parse_field_options`
         and `Portfolio.in_output_config`. Stacking for each field is performed using `Portfolio.column_stack_objs`.
 
         Args:
-            *objs (MaybeTuple[PortfolioT]): Portfolio instances whose `in_outputs` will be stacked.
+            *objs (MaybeTuple[Portfolio]): Portfolio instances whose `in_outputs` will be stacked.
             **kwargs: Keyword arguments passed to `Portfolio.column_stack_objs`.
 
         Returns:
-            Optional[NamedTuple]: A new in_outputs named tuple with fields stacked along columns, or 
+            Optional[NamedTuple]: A new in_outputs named tuple with fields stacked along columns, or
                 None if all `in_outputs` are None.
         """
         if len(objs) == 1:
@@ -1608,12 +1609,12 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         ```
 
         Returns:
-            Config: A hybrid-copied in-output configuration from `${cls_name}._in_output_config`. 
-                
+            Config: A hybrid-copied in-output configuration from `${cls_name}._in_output_config`.
+
                 Changing this instance's configuration does not affect the class-level configuration.
 
         !!! note
-            To modify in_outputs, change the configuration in-place, override this property, or 
+            To modify in_outputs, change the configuration in-place, override this property, or
             assign a new value to `${cls_name}._in_output_config`.
         """
         return self._in_output_config
@@ -1622,7 +1623,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
     def parse_field_options(cls, field: str) -> tp.Kwargs:
         """Parse options from a field name.
 
-        Extracts suffixes from the field name to determine the grouping and object type, 
+        Extracts suffixes from the field name to determine the grouping and object type,
         and returns a cleaned field name.
 
         Suffixes for grouping:
@@ -1681,19 +1682,19 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
     ) -> bool:
         """Determine if a field's options meet the required criteria.
 
-        This method checks whether the field's parsed options match the expected object type 
-        and grouping configuration. The evaluation also considers the portfolio's current grouping 
-        state and cash sharing setting. If an option is absent from the provided options, it is assumed 
+        This method checks whether the field's parsed options match the expected object type
+        and grouping configuration. The evaluation also considers the portfolio's current grouping
+        state and cash sharing setting. If an option is absent from the provided options, it is assumed
         to satisfy the requirement.
 
         Args:
             options (Kwargs): Dictionary of parsed field options.
-            obj_type (Optional[str]): Expected object type. 
-            
+            obj_type (Optional[str]): Expected object type.
+
                 If provided, the field's object type must match.
             group_by_aware (bool): Flag indicating whether to account for grouping awareness.
-            wrapper (Optional[ArrayWrapper]): Wrapper used to determine grouping. 
-            
+            wrapper (Optional[ArrayWrapper]): Wrapper used to determine grouping.
+
                 If None, the instance's wrapper is used.
             group_by (GroupByLike): Grouping specification for the evaluation.
 
@@ -1750,8 +1751,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
     ) -> tp.Any:
         """Wrap an object.
 
-        Wraps the provided object according to the specified object type, grouping strategy, 
-        and wrapping function. If `wrap_func` is provided, it is called with the portfolio (`Portfolio`), 
+        Wraps the provided object according to the specified object type, grouping strategy,
+        and wrapping function. If `wrap_func` is provided, it is called with the portfolio (`Portfolio`),
         the object, and all other arguments. If the object is None or a boolean, it is returned unchanged.
 
         Args:
@@ -1761,13 +1762,13 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 Supported options include "columns_or_groups", "columns", "groups", and "cash_sharing".
             obj_type (Optional[str]): The type of the object.
-            
+
                 Supported options include "records", "array", and "red_array".
-            wrapper (Optional[ArrayWrapper]): The wrapper instance to use. 
-            
+            wrapper (Optional[ArrayWrapper]): The wrapper instance to use.
+
                 Defaults to `Portfolio.wrapper` if not provided.
             group_by (GroupByLike): Criteria for grouping used by the wrapper.
-            wrap_func (Optional[Callable]): A custom wrapping function that takes the portfolio, 
+            wrap_func (Optional[Callable]): A custom wrapping function that takes the portfolio,
                 object, and additional parameters.
             wrap_kwargs (KwargsLike): Keyword arguments for the wrapping function.
             force_wrapping (bool): If True, forces wrapping and raises an error when wrapping is not feasible.
@@ -1778,7 +1779,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             Any: The wrapped object, or the original object if no wrapping is applied.
 
         !!! note
-            The wrapping process considers the object type, its dimensionality, and 
+            The wrapping process considers the object type, its dimensionality, and
             the specified grouping or cash sharing settings.
         """
         if obj is None or isinstance(obj, bool):
@@ -2007,28 +2008,28 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
     ) -> tp.Any:
         """Perform indexing on an object.
 
-        Indexes an object based on the provided metadata, type, and grouping parameters. 
+        Indexes an object based on the provided metadata, type, and grouping parameters.
         If the object is None, a boolean, or an empty array, it is returned as-is.
 
         Args:
             obj (Any): The object to index.
             wrapper_meta (dict): Metadata dictionary used to compute index positions.
             obj_name (Optional[str]): Name of the object for identification in warnings.
-            grouping (str): Specifies the grouping scheme for indexing. 
-            
+            grouping (str): Specifies the grouping scheme for indexing.
+
                 Possible values include "columns_or_groups", "cash_sharing", "groups", and "columns".
             obj_type (Optional[str]): Specifies the type of the object (e.g., "records", "array", "red_array").
-            wrapper (Optional[ArrayWrapper]): The array wrapper instance. 
-            
+            wrapper (Optional[ArrayWrapper]): The array wrapper instance.
+
                 If None, defaults to `Portfolio.wrapper`.
             group_by (tp.GroupByLike): Determines the grouping structure to check if the object is grouped.
             indexing_func (Optional[Callable]): Custom indexing function that must accept `Portfolio`,
-                the object, wrapper_meta, and the remaining arguments, including `**kwargs`. 
-                
+                the object, wrapper_meta, and the remaining arguments, including `**kwargs`.
+
                 If unused, leave as None.
-            force_indexing (bool): Indicates if indexing should be forced, 
+            force_indexing (bool): Indicates if indexing should be forced,
                 raising an error if it cannot be applied.
-            silence_warnings (bool): If True, suppresses warnings when 
+            silence_warnings (bool): If True, suppresses warnings when
                 indexing decisions cannot be determined.
             **kwargs: Keyword arguments for indexing.
 
@@ -2153,9 +2154,9 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
     def in_outputs_indexing_func(self, wrapper_meta: dict, **kwargs) -> tp.Optional[tp.NamedTuple]:
         """Perform indexing on `Portfolio.in_outputs`.
 
-        Processes each field in `Portfolio.in_outputs` by determining the field's configuration 
-        from attribute options, parsed field options via `Portfolio.parse_field_options`, and 
-        the indexing configuration in `Portfolio.in_output_config`. Each field is then indexed 
+        Processes each field in `Portfolio.in_outputs` by determining the field's configuration
+        from attribute options, parsed field options via `Portfolio.parse_field_options`, and
+        the indexing configuration in `Portfolio.in_output_config`. Each field is then indexed
         using the `Portfolio.index_obj` method.
 
         Args:
@@ -2163,7 +2164,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             **kwargs: Keyword arguments passed to the indexing process.
 
         Returns:
-            Optional[NamedTuple]: A new named tuple with the indexed in-output fields, 
+            Optional[NamedTuple]: A new named tuple with the indexed in-output fields,
                 or None if `Portfolio.in_outputs` is None.
         """
         if self.in_outputs is None:
@@ -2527,32 +2528,32 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         using methods provided by the portfolio's wrapper, with optional forward-fill or backward-fill
         applied to the close prices.
 
-        !!! warning
-            Downsampling is associated with information loss:
-
-            * Cash deposits and earnings are assumed to be added/removed at the beginning of each time step.
-                Imagine depositing $100 and using them up in the same bar, and then depositing another $100
-                and using them up. Downsampling both bars into a single bar will aggregate cash deposits
-                and earnings, and assign both to the beginning of the new bar, even though the second 
-                deposit was made later.
-            * Market/benchmark returns are computed by applying the initial close price of the first bar
-                and tracking the price change to simulate holding. Moving the close price of the first bar 
-                further into the future will affect this computation and likely produce different market 
-                values and returns. To mitigate this, ensure that the downsampled index's first bar contains 
-                only the first bar from the original timeframe.
-
         Args:
-            *args: Positional arguments passed to 
+            *args: Positional arguments passed to
                 `vectorbtpro.base.wrapping.ArrayWrapper.resample_meta`.
             ffill_close (bool): Flag to apply forward-fill on the close prices after resampling.
             fbfill_close (bool): Flag to apply backward-fill on the close prices after resampling.
             in_output_kwargs (KwargsLike): Keyword arguments for resampling in-outputs.
             wrapper_meta (DictLike): Metadata for resampling obtained from the portfolio's wrapper.
-            **kwargs: Keyword arguments passed to 
+            **kwargs: Keyword arguments passed to
                 `vectorbtpro.base.wrapping.ArrayWrapper.resample_meta`.
 
         Returns:
             Portfolio: A new resampled `Portfolio` instance.
+
+        !!! warning
+            Downsampling is associated with information loss:
+
+            * Cash deposits and earnings are assumed to be added/removed at the beginning of each bar.
+                Imagine depositing $100 and using them up in the same bar, and then depositing another $100
+                and using them up. Downsampling both bars into a single bar will aggregate cash deposits
+                and earnings, and assign both to the beginning of the new bar, even though the second
+                deposit was made later.
+            * Market/benchmark returns are computed by applying the initial close price of the first bar
+                and tracking the price change to simulate holding. Moving the close price of the first bar
+                further into the future will affect this computation and likely produce different market
+                values and returns. To mitigate this, ensure that the downsampled index's first bar contains
+                only the first bar from the original timeframe.
         """
         _self = self.disable_weights()
 
@@ -2694,56 +2695,42 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         Order parameters such as size, price, fees, and others are broadcast as necessary and processed
         to construct the resulting portfolio.
 
-        For defaults, see `vectorbtpro._settings.portfolio`. These defaults are not used to fill NaN values 
-        after reindexing; vectorbtpro uses its own defaults (typically NaN for floating arrays and preset 
-        flags for integer arrays). Use `vectorbtpro.base.reshaping.BCO` with `fill_value` to override.
-
-        !!! note
-            When `call_seq` is not set to `CallSeqType.Auto`, the processing order within a group strictly
-            follows the specified `call_seq`. This means the last asset in the sequence is processed only after
-            the others, which can affect rebalancing. Use `CallSeqType.Auto` for dynamic execution order.
-
-        !!! hint
-            All broadcastable arguments are handled using `vectorbtpro.base.reshaping.broadcast` 
-            to preserve their original shapes for flexible indexing and memory efficiency. 
-            Each can be provided per frame, series, row, column, or individual element.
-    
         Args:
-            close (Union[ArrayLike, OHLCDataMixin, FOPreparer, PFPrepResult]): The close prices or 
+            close (Union[ArrayLike, OHLCDataMixin, FOPreparer, PFPrepResult]): The close prices or
                 OHLC data used for portfolio simulation.
-                
+
                 Broadcasts.
-            
+
                 * If an instance of `vectorbtpro.data.base.OHLCDataMixin`, extracts open, high, low, and close prices.
                 * If an instance of `vectorbtpro.portfolio.preparing.FOPreparer`, it is used as a preparer.
                 * If an instance of `vectorbtpro.portfolio.preparing.PFPrepResult`, it is used as a preparer result.
-            size (Optional[ArrayLike]): Size to order. 
-            
-                Broadcasts. See `vectorbtpro.portfolio.enums.Order.size`. 
-            size_type (Optional[ArrayLike]): Order size type. 
-            
-                Broadcasts. See `vectorbtpro.portfolio.enums.SizeType` and 
-                `vectorbtpro.portfolio.enums.Order.size_type`. 
-            direction (Optional[ArrayLike]): Order direction. 
-            
-                Broadcasts. See `vectorbtpro.portfolio.enums.Direction` and 
+            size (Optional[ArrayLike]): Size to order.
+
+                Broadcasts. See `vectorbtpro.portfolio.enums.Order.size`.
+            size_type (Optional[ArrayLike]): Order size type.
+
+                Broadcasts. See `vectorbtpro.portfolio.enums.SizeType` and
+                `vectorbtpro.portfolio.enums.Order.size_type`.
+            direction (Optional[ArrayLike]): Order direction.
+
+                Broadcasts. See `vectorbtpro.portfolio.enums.Direction` and
                 `vectorbtpro.portfolio.enums.Order.direction`.
             price (Optional[ArrayLike]): Order price.
 
-                Broadcasts. See `vectorbtpro.portfolio.enums.Order.price` and 
+                Broadcasts. See `vectorbtpro.portfolio.enums.Order.price` and
                 `vectorbtpro.portfolio.enums.PriceType`.
-            
-                Options such as `PriceType.NextOpen` and `PriceType.NextClose` apply per column and 
+
+                Options such as `PriceType.NextOpen` and `PriceType.NextClose` apply per column and
                 require `from_ago` to be None.
             fees (Optional[ArrayLike]): Fees as a percentage of the order value.
 
-                Broadcasts. See `vectorbtpro.portfolio.enums.Order.fees`. 
+                Broadcasts. See `vectorbtpro.portfolio.enums.Order.fees`.
             fixed_fees (Optional[ArrayLike]): Fixed fee amount per order.
 
-                Broadcasts. See `vectorbtpro.portfolio.enums.Order.fixed_fees`. 
+                Broadcasts. See `vectorbtpro.portfolio.enums.Order.fixed_fees`.
             slippage (Optional[ArrayLike]): Slippage percentage of the order price.
 
-                Broadcasts. See `vectorbtpro.portfolio.enums.Order.slippage`. 
+                Broadcasts. See `vectorbtpro.portfolio.enums.Order.slippage`.
             min_size (Optional[ArrayLike]): Minimum order size.
 
                 Broadcasts. See `vectorbtpro.portfolio.enums.Order.min_size`.
@@ -2775,137 +2762,154 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 Broadcasts. See `vectorbtpro.portfolio.enums.Order.log`.
             val_price (Optional[ArrayLike]): Asset valuation price used in decision making.
-            
+
                 Broadcasts. Can also be provided as `vectorbtpro.portfolio.enums.ValPriceType`.
-            
-                * Any `-np.inf` element is replaced by the latest valuation price 
+
+                * Any `-np.inf` element is replaced by the latest valuation price
                     (using `open` or a previously known value if `ffill_val_price` is True).
                 * Any `np.inf` element is replaced by the current order price.
-            
+
                 !!! note
                     Unlike `Portfolio.from_order_func`, the order price is effectively predetermined,
-                    so `val_price` defaults to the current order price when using `np.inf`. 
+                    so `val_price` defaults to the current order price when using `np.inf`.
                     To use the previous close, set it in the settings to `-np.inf`.
-            
+
                 !!! note
-                    Ensure that the timestamp associated with `val_price` precedes all order 
+                    Ensure that the timestamp associated with `val_price` precedes all order
                     timestamps in a cash-sharing group.
-            open (Optional[ArrayLike]): Opening asset price at each time step.
+            open (Optional[ArrayLike]): Opening asset price at each bar.
 
                 Broadcasts. Used as a price boundary (see `vectorbtpro.portfolio.enums.PriceArea`).
-            high (Optional[ArrayLike]): Highest asset price at each time step.
+            high (Optional[ArrayLike]): Highest asset price at each bar.
 
                 Broadcasts. Used as a price boundary (see `vectorbtpro.portfolio.enums.PriceArea`).
-            low (Optional[ArrayLike]): Lowest asset price at each time step.
+            low (Optional[ArrayLike]): Lowest asset price at each bar.
 
                 Broadcasts. Used as a price boundary (see `vectorbtpro.portfolio.enums.PriceArea`).
             init_cash (Optional[ArrayLike]): Initial capital.
-            
-                Broadcasts to the final number of columns, or to the number of groups if 
+
+                Broadcasts to the final number of columns, or to the number of groups if
                 cash sharing is enabled. See `vectorbtpro.portfolio.enums.InitCashMode` for guidance.
-            
+
                 !!! note
-                    When using `InitCashMode.AutoAlign`, initial cash values are synchronized across 
+                    When using `InitCashMode.AutoAlign`, initial cash values are synchronized across
                     columns/groups after initialization.
-            init_position (Optional[ArrayLike]): Initial position. 
-            
+            init_position (Optional[ArrayLike]): Initial position.
+
                 Broadcasts to match the final number of columns.
-            init_price (Optional[ArrayLike]): Initial position price. 
-            
+            init_price (Optional[ArrayLike]): Initial position price.
+
                 Broadcasts to match the final number of columns.
             cash_deposits (Optional[ArrayLike]): Cash deposits or withdrawals at the beginning of each timestamp.
-            
+
                 Broadcasts to match the shape of `init_cash`.
             cash_earnings (Optional[ArrayLike]): Cash earnings added at the end of each timestamp.
-            
+
                 Broadcasts.
             cash_dividends (Optional[ArrayLike]): Cash dividends added at the end of each timestamp.
-            
+
                 Broadcasts, are multiplied by the position, and then added to `cash_earnings`.
             cash_sharing (Optional[bool]): Indicates whether cash is shared among assets within the same group.
-            
+
                 If `group_by` is None and this is True, all assets are grouped together for cash sharing.
-            
+
                 !!! warning
-                    Enables cross-asset dependencies by assuming that all orders in a cash-sharing group 
+                    Enables cross-asset dependencies by assuming that all orders in a cash-sharing group
                     execute in the same tick and retain their price.
-            from_ago (Optional[ArrayLike]): Number of time steps to look back for order information.
-            
+            from_ago (Optional[ArrayLike]): Number of bars to look back for order information.
+
                 Negative values are converted to positive to avoid look-ahead bias.
             sim_start (Optional[ArrayLike]): Simulation start row or index (inclusive).
-            
+
                 Can be "auto" to automatically select the first non-NA size value.
             sim_end (Optional[ArrayLike]): Simulation end row or index (exclusive).
-            
+
                 Can be "auto" to automatically select the first non-NA size value.
-            call_seq (Optional[ArrayLike]): Sequence dictating the order in which columns are 
+            call_seq (Optional[ArrayLike]): Sequence dictating the order in which columns are
                 processed per row and group.
-            
+
                 Each element specifies the position of a column in the processing order.
                 Options include:
-            
+
                 * None: Generates a default call sequence.
                 * A value from `vectorbtpro.portfolio.enums.CallSeqType`: Creates a full array of the specified type.
                 * Custom array: Specifies a user-defined call sequence.
-            
-                If set to `CallSeqType.Auto`, orders are rearranged dynamically so that sell orders are 
+
+                If set to `CallSeqType.Auto`, orders are rearranged dynamically so that sell orders are
                 processed before buy orders.
-            
+
                 !!! warning
-                    `CallSeqType.Auto` assumes predetermined order prices and flexible execution, 
+                    `CallSeqType.Auto` assumes predetermined order prices and flexible execution,
                     which may not accurately reflect real-time conditions.
                     For stricter control, use `Portfolio.from_order_func`.
-            attach_call_seq (Optional[bool]): Indicates whether to attach the computed call sequence 
+            attach_call_seq (Optional[bool]): Indicates whether to attach the computed call sequence
                 to the portfolio instance.
-            ffill_val_price (Optional[bool]): If True, tracks the valuation price only when available 
+            ffill_val_price (Optional[bool]): If True, tracks the valuation price only when available
                 to prevent propagation of NaN values.
             update_value (Optional[bool]): If True, updates the group value after each filled order.
-            save_state (Optional[bool]): If True, saves state arrays 
+            save_state (Optional[bool]): If True, saves state arrays
                 (such as `cash`, `position`, `debt`, `locked_cash`, and `free_cash`) in in-outputs.
             save_value (Optional[bool]): If True, saves the portfolio value in in-outputs.
             save_returns (Optional[bool]): If True, saves the returns array in in-outputs.
             skip_empty (Optional[bool]): If True, skips processing rows that do not contain any orders.
             max_order_records (Optional[int]): Maximum number of order records expected per column.
-            
+
                 Set to a lower number to conserve memory, or 0 to disable order record collection.
             max_log_records (Optional[int]): Maximum number of log records expected per column.
-            
+
                 Set to a lower number to conserve memory, or 0 to disable logging.
             seed (Optional[int]): Seed value for generating the call sequence and initializing the simulation.
             group_by (tp.GroupByLike): Grouping specification for columns.
-            
+
                 See `vectorbtpro.base.grouping.base.Grouper` for details.
-            broadcast_kwargs (tp.KwargsLike): Keyword arguments to pass to 
+            broadcast_kwargs (tp.KwargsLike): Keyword arguments to pass to
                 `vectorbtpro.base.reshaping.broadcast`.
             jitted (tp.JittedOption): Option to control JIT compilation.
-            
+
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
             chunked (tp.ChunkedOption): Option to control chunked processing.
-            
+
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
-            bm_close (Optional[ArrayLike]): Benchmark asset price at each time step.
-            
+            bm_close (Optional[ArrayLike]): Benchmark asset price at each bar.
+
                 Broadcasts. If not provided, `close` is used; if set to False, benchmarking is disabled.
             records (Optional[tp.RecordsLike]): Records used to construct arrays.
-            
+
                 See `vectorbtpro.base.indexing.IdxRecords`.
-            return_preparer (bool): If True, returns the preparer instance 
+            return_preparer (bool): If True, returns the preparer instance
                 (`vectorbtpro.portfolio.preparing.FOPreparer`).
-            
+
                 !!! note
-                    In this case, the seed is not automatically set; 
+                    In this case, the seed is not automatically set;
                     invoke `preparer.set_seed()` explicitly if needed.
-            return_prep_result (bool): If True, returns the preparer result 
+            return_prep_result (bool): If True, returns the preparer result
                 (`vectorbtpro.portfolio.preparing.PFPrepResult`).
-            return_sim_out (bool): If True, returns the simulation output 
+            return_sim_out (bool): If True, returns the simulation output
                 (`vectorbtpro.portfolio.enums.SimulationOutput`).
             **kwargs: Keyword arguments passed to the `Portfolio` constructor.
-    
+
         Returns:
             PortfolioResult: The portfolio result.
 
         See:
             `vectorbtpro.portfolio.nb.from_orders.from_orders_nb`
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.portfolio`.
+
+            These defaults are not used to fill NaN values after reindexing; vectorbtpro uses its own
+            defaults (typically NaN for floating arrays and preset flags for integer arrays).
+            Use `vectorbtpro.base.reshaping.BCO` with `fill_value` to override.
+
+        !!! note
+            When `call_seq` is not set to `CallSeqType.Auto`, the processing order within a group strictly
+            follows the specified `call_seq`. This means the last asset in the sequence is processed only after
+            the others, which can affect rebalancing. Use `CallSeqType.Auto` for dynamic execution order.
+
+        !!! hint
+            All broadcastable arguments are handled using `vectorbtpro.base.reshaping.broadcast`
+            to preserve their original shapes for flexible indexing and memory efficiency.
+            Each can be provided per frame, series, row, column, or individual element.
 
         Examples:
             Buy 10 units each tick:
@@ -3118,11 +3122,13 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         long_exits: tp.Optional[tp.ArrayLike] = None,
         short_entries: tp.Optional[tp.ArrayLike] = None,
         short_exits: tp.Optional[tp.ArrayLike] = None,
-        adjust_func_nb: tp.Union[None, tp.PathLike, nb.AdjustFuncT] = None,
+        adjust_func_nb: tp.Union[None, tp.PathLike, tp.AdjustFunc] = None,
         adjust_args: tp.Args = (),
-        signal_func_nb: tp.Union[None, tp.PathLike, nb.SignalFuncT] = None,
+        signal_func_nb: tp.Union[None, tp.PathLike, tp.SignalFunc] = None,
         signal_args: tp.ArgsLike = (),
-        post_segment_func_nb: tp.Union[None, tp.PathLike, nb.PostSegmentFuncT] = None,
+        post_signal_func_nb: tp.Union[None, tp.PathLike, tp.PostSignalFunc] = None,
+        post_signal_args: tp.ArgsLike = (),
+        post_segment_func_nb: tp.Union[None, tp.PathLike, tp.PostSignalSegmentFunc] = None,
         post_segment_args: tp.ArgsLike = (),
         order_mode: bool = False,
         size: tp.Optional[tp.ArrayLike] = None,
@@ -3221,94 +3227,85 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
         * If an adjustment function is provided (non-cacheable), signals are processed via
             `vectorbtpro.portfolio.nb.from_signals.dir_signal_func_nb`.
-        * Otherwise, signals are translated using 
-            `vectorbtpro.portfolio.nb.from_signals.dir_to_ls_signals_nb` 
+        * Otherwise, signals are translated using
+            `vectorbtpro.portfolio.nb.from_signals.dir_to_ls_signals_nb`
             and simulated statically (cacheable).
 
         Using `entries` (for long), `exits` (for long), `short_entries`, and `short_exits`:
 
-        * If an adjustment function is provided, the function 
+        * If an adjustment function is provided, the function
             `vectorbtpro.portfolio.nb.from_signals.ls_signal_func_nb`
             is used; otherwise, simulation is executed statically.
 
         Using `order_mode=True`:
 
-        * Simulates without explicit signals using 
+        * Simulates without explicit signals using
             `vectorbtpro.portfolio.nb.from_signals.order_signal_func_nb` (non-cacheable).
 
         Using `signal_func_nb`:
 
-        * When `signal_func_nb` and `signal_args` are provided, the custom signal 
+        * When `signal_func_nb` and `signal_args` are provided, the custom signal
             function is used (non-cacheable).
 
         Prepared using `vectorbtpro.portfolio.preparing.FSPreparer`.
 
-        For defaults, see `vectorbtpro._settings.portfolio`. These defaults are not used to fill NaN values 
-        after reindexing; vectorbtpro uses its own defaults (typically NaN for floating arrays and preset 
-        flags for integer arrays). Use `vectorbtpro.base.reshaping.BCO` with `fill_value` to override.
-
-        !!! note
-            When `call_seq` is not set to `CallSeqType.Auto`, the processing order within a group strictly
-            follows the specified `call_seq`. This means the last asset in the sequence is processed only after
-            the others, which can affect rebalancing. Use `CallSeqType.Auto` for dynamic execution order.
-
-        !!! hint
-            All broadcastable arguments are handled using `vectorbtpro.base.reshaping.broadcast` 
-            to preserve their original shapes for flexible indexing and memory efficiency. 
-            Each can be provided per frame, series, row, column, or individual element.
-
         Args:
-            close (Union[ArrayLike, OHLCDataMixin, FSPreparer, PFPrepResult]): The close prices or 
+            close (Union[ArrayLike, OHLCDataMixin, FSPreparer, PFPrepResult]): The close prices or
                 OHLC data used for portfolio simulation.
 
                 Broadcasts.
-            
+
                 * If an instance of `vectorbtpro.data.base.OHLCDataMixin`, extracts open, high, low, and close prices.
                 * If an instance of `vectorbtpro.portfolio.preparing.FOPreparer`, it is used as a preparer.
                 * If an instance of `vectorbtpro.portfolio.preparing.PFPrepResult`, it is used as a preparer result.
             entries (Optional[ArrayLike]): Boolean array of entry signals.
 
                 Broadcasts. If all other signal arrays are missing, treated as True; otherwise, as False.
-            
-                * When `short_entries` and `short_exits` are not provided, acts as a long signal 
+
+                * When `short_entries` and `short_exits` are not provided, acts as a long signal
                     if `direction` is 'all' or 'longonly', otherwise as a short signal.
                 * If `short_entries` or `short_exits` are provided, interpreted as `long_entries`.
             exits (Optional[ArrayLike]): Boolean array of exit signals.
 
                 Broadcasts. If all other signal arrays are missing, treated as False.
-            
-                * When `short_entries` and `short_exits` are not provided, acts as a short signal 
+
+                * When `short_entries` and `short_exits` are not provided, acts as a short signal
                     if `direction` is 'all' or 'longonly', otherwise as a long signal.
                 * If `short_entries` or `short_exits` are provided, interpreted as `long_exits`.
             direction (Optional[ArrayLike]): Trading direction.
 
-                Broadcasts. See `vectorbtpro.portfolio.enums.Direction` and 
+                Broadcasts. See `vectorbtpro.portfolio.enums.Direction` and
                 `vectorbtpro.portfolio.enums.Order.direction`.
-                
+
                 Takes effect only if `short_entries` and `short_exits` are not provided.
-            long_entries (Optional[ArrayLike]): Boolean array of long entry signals. 
-            
+            long_entries (Optional[ArrayLike]): Boolean array of long entry signals.
+
                 Broadcasts.
-            long_exits (Optional[ArrayLike]): Boolean array of long exit signals. 
-                
+            long_exits (Optional[ArrayLike]): Boolean array of long exit signals.
+
                 Broadcasts.
-            short_entries (Optional[ArrayLike]): Boolean array of short entry signals. 
-            
+            short_entries (Optional[ArrayLike]): Boolean array of short entry signals.
+
                 Broadcasts.
-            short_exits (Optional[ArrayLike]): Boolean array of short exit signals. 
-            
+            short_exits (Optional[ArrayLike]): Boolean array of short exit signals.
+
                 Broadcasts.
-            adjust_func_nb (Union[None, PathLike, AdjustFuncT]): User-defined function to adjust 
+            adjust_func_nb (Union[None, PathLike, AdjustFunc]): User-defined function to adjust
                 the simulation state.
-                
+
                 Passed to the corresponding signal function. Can be provided as a module path when staticizing.
             adjust_args (Args): Arguments to pass to `adjust_func_nb`.
-            signal_func_nb (Union[None, PathLike, SignalFuncT]): Function to generate signals.
+            signal_func_nb (Union[None, PathLike, SignalFunc]): Function to generate signals.
 
                 See `vectorbtpro.portfolio.nb.from_signals.from_signal_func_nb`.
                 Can be given as a module path when staticizing.
             signal_args (Args): Arguments to pass to `signal_func_nb`.
-            post_segment_func_nb (Union[None, PathLike, PostSegmentFuncT]): Post-segment function.
+            post_signal_func_nb (Union[None, PathLike, PostSignalFunc]): Post-signal function.
+
+                See `vectorbtpro.portfolio.nb.from_signals.from_signal_func_nb`.
+                Can be given as a module path when staticizing.
+            post_signal_args (Args): Arguments to pass to `post_signal_func_nb`.
+            post_segment_func_nb (Union[None, PathLike, PostSignalSegmentFunc]): Post-segment function.
 
                 See `vectorbtpro.portfolio.nb.from_signals.from_signal_func_nb`.
                 Can be provided as a module path when staticizing.
@@ -3316,37 +3313,37 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             order_mode (bool): If True, simulates in order mode without explicit signals.
             size (Optional[ArrayLike]): Trade size.
 
-                Broadcasts. See `vectorbtpro.portfolio.enums.Order.size`. 
-            
+                Broadcasts. See `vectorbtpro.portfolio.enums.Order.size`.
+
                 !!! note
                     Negative size is not allowed; use signals to express direction.
             size_type (Optional[ArrayLike]): Type of size.
 
-                Broadcasts. See `vectorbtpro.portfolio.enums.SizeType` and 
-                `vectorbtpro.portfolio.enums.Order.size_type`. 
+                Broadcasts. See `vectorbtpro.portfolio.enums.SizeType` and
+                `vectorbtpro.portfolio.enums.Order.size_type`.
 
                 Valid options include `SizeType.Amount`, `SizeType.Value`, `SizeType.Percent(100)`, and
                 `SizeType.ValuePercent(100)`. Other types are incompatible with signals.
-            
+
                 !!! note
-                    `SizeType.Percent(100)` does not support position reversal unless the position 
+                    `SizeType.Percent(100)` does not support position reversal unless the position
                     is closed first. See warning in `Portfolio.from_orders`.
             price (Optional[ArrayLike]): Order price.
 
-                Broadcasts. See `vectorbtpro.portfolio.enums.Order.price` and 
+                Broadcasts. See `vectorbtpro.portfolio.enums.Order.price` and
                 `vectorbtpro.portfolio.enums.PriceType`.
-            
-                Options such as `PriceType.NextOpen` and `PriceType.NextClose` apply per column and 
+
+                Options such as `PriceType.NextOpen` and `PriceType.NextClose` apply per column and
                 require `from_ago` to be None.
             fees (Optional[ArrayLike]): Fees as a percentage of the order value.
 
-                Broadcasts. See `vectorbtpro.portfolio.enums.Order.fees`. 
+                Broadcasts. See `vectorbtpro.portfolio.enums.Order.fees`.
             fixed_fees (Optional[ArrayLike]): Fixed fee amount per order.
 
-                Broadcasts. See `vectorbtpro.portfolio.enums.Order.fixed_fees`. 
+                Broadcasts. See `vectorbtpro.portfolio.enums.Order.fixed_fees`.
             slippage (Optional[ArrayLike]): Slippage percentage of the order price.
 
-                Broadcasts. See `vectorbtpro.portfolio.enums.Order.slippage`. 
+                Broadcasts. See `vectorbtpro.portfolio.enums.Order.slippage`.
             min_size (Optional[ArrayLike]): Minimum order size.
 
                 Broadcasts. See `vectorbtpro.portfolio.enums.Order.min_size`.
@@ -3354,7 +3351,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 Broadcasts. See `vectorbtpro.portfolio.enums.Order.max_size`.
 
-                If exceeded, orders may be partially filled. With accumulation enabled, 
+                If exceeded, orders may be partially filled. With accumulation enabled,
                 a very low `max_size` might hinder proper position closure.
             size_granularity (Optional[ArrayLike]): Granularity of the order size.
 
@@ -3381,20 +3378,20 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 Broadcasts. See `vectorbtpro.portfolio.enums.Order.log`.
             val_price (Optional[ArrayLike]): Asset valuation price used in decision making.
-            
+
                 Broadcasts. Can also be provided as `vectorbtpro.portfolio.enums.ValPriceType`.
-            
-                * Any `-np.inf` element is replaced by the latest valuation price 
+
+                * Any `-np.inf` element is replaced by the latest valuation price
                     (using `open` or a previously known value if `ffill_val_price` is True).
                 * Any `np.inf` element is replaced by the current order price.
-            
+
                 !!! note
                     Unlike `Portfolio.from_order_func`, the order price is effectively predetermined,
-                    so `val_price` defaults to the current order price when using `np.inf`. 
+                    so `val_price` defaults to the current order price when using `np.inf`.
                     To use the previous close, set it in the settings to `-np.inf`.
-            
+
                 !!! note
-                    Ensure that the timestamp associated with `val_price` precedes all order 
+                    Ensure that the timestamp associated with `val_price` precedes all order
                     timestamps in a cash-sharing group.
             accumulate (Optional[ArrayLike]): Accumulation mode.
 
@@ -3420,12 +3417,12 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             limit_delta (Optional[ArrayLike]): Delta to compute the limit price from `price`.
 
                 Broadcasts. If NaN, `price` is used directly. The delta adjusts based on trade direction:
-                for buying, a positive delta decreases the limit price; for selling, it increases 
+                for buying, a positive delta decreases the limit price; for selling, it increases
                 the limit price. Delta may be negative. Set an element to `np.nan` to disable.
                 Use `delta_format` to specify the format.
             limit_tif (Optional[ArrayLike]): Time in force for limit orders.
 
-                Broadcasts. Accepts frequency-like objects converted via `vectorbtpro.utils.datetime_.to_timedelta64`. 
+                Broadcasts. Accepts frequency-like objects converted via `vectorbtpro.utils.datetime_.to_timedelta64`.
                 Set an element to -1 to disable. Use `time_delta_format` to specify the format.
 
                 Measured as the duration from the signal bar's open time. If the expiration time happens
@@ -3437,7 +3434,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             limit_expiry (Optional[ArrayLike]): Expiration time for limit orders.
 
                 Broadcasts. Accepts frequency-like objects or datetimes, similar to `limit_tif`.
-                Set an element to -1 or `pd.Timestamp.max` to disable. 
+                Set an element to -1 or `pd.Timestamp.max` to disable.
                 Use `time_delta_format` to specify the format.
 
                 Any frequency-like object is used to build a period index, such that each timestamp in the original
@@ -3448,13 +3445,13 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
                 be removed automatically (as done on the index).
             limit_reverse (Optional[ArrayLike]): Flag to reverse price hit detection.
 
-                Broadcasts. If True, a buy/sell limit is compared against high/low (instead of low/high) 
+                Broadcasts. If True, a buy/sell limit is compared against high/low (instead of low/high)
                 and the limit delta is inverted.
             limit_order_price (Optional[ArrayLike]): Price for limit orders.
 
-                Broadcasts. See `vectorbtpro.portfolio.enums.LimitOrderPrice`. Positive values are 
+                Broadcasts. See `vectorbtpro.portfolio.enums.LimitOrderPrice`. Positive values are
                 used directly, while negative values are interpreted as enumerated options.
-                If provided on the per-element basis, gets applied upon order creation. 
+                If provided on the per-element basis, gets applied upon order creation.
             upon_adj_limit_conflict (Optional[ArrayLike]): Conflict mode for adjacent limit and signal conflicts.
 
                 Broadcasts. See `vectorbtpro.portfolio.enums.PendingConflictMode`.
@@ -3463,12 +3460,12 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
                 Broadcasts. See `vectorbtpro.portfolio.enums.PendingConflictMode`.
             use_stops (bool): Flag indicating whether to enable stop orders.
 
-                Broadcasts. If None, becomes True if any stop parameters are set or a non-default adjustment 
+                Broadcasts. If None, becomes True if any stop parameters are set or a non-default adjustment
                 function is used. Disable to speed up simple simulations.
             stop_ladder (Optional[bool]): Indicates whether to use stop laddering.
 
-                Broadcasts to match the number of columns. See `vectorbtpro.portfolio.enums.StopLadderMode`. 
-                If enabled, rows in the provided arrays become ladder steps. For price-based stops, 
+                Broadcasts to match the number of columns. See `vectorbtpro.portfolio.enums.StopLadderMode`.
+                If enabled, rows in the provided arrays become ladder steps. For price-based stops,
                 pad with `np.nan`; for time-based stops, pad with -1. Applied to all stop types.
             sl_stop (Optional[ArrayLike]): Stop loss levels.
 
@@ -3491,25 +3488,25 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             stop_entry_price (Optional[ArrayLike]): Entry price for stop orders.
 
                 Broadcasts. See `vectorbtpro.portfolio.enums.StopEntryPrice`.
-                If provided on the per-element basis, gets applied upon entry. 
+                If provided on the per-element basis, gets applied upon entry.
             stop_exit_price (Optional[ArrayLike]): Exit price for stop orders.
 
                 Broadcasts. See `vectorbtpro.portfolio.enums.StopExitPrice`.
-                If provided on the per-element basis, gets applied upon entry. 
+                If provided on the per-element basis, gets applied upon entry.
             stop_exit_type (Optional[ArrayLike]): Stop exit type.
 
                 Broadcasts. See `vectorbtpro.portfolio.enums.StopExitType`.
-                If provided on the per-element basis, gets applied upon entry. 
+                If provided on the per-element basis, gets applied upon entry.
             stop_order_type (Optional[ArrayLike]): Order type for stop orders.
 
                 Broadcasts. Similar to `order_type`, but applies to stop orders.
-                If provided on the per-element basis, gets applied upon entry. 
+                If provided on the per-element basis, gets applied upon entry.
             stop_limit_delta (Optional[ArrayLike]): Delta for stop orders, analogous to `limit_delta`.
 
-                Broadcasts. 
+                Broadcasts.
             upon_stop_update (Optional[ArrayLike]): Stop update mode.
 
-                Broadcasts. See `vectorbtpro.portfolio.enums.StopUpdateMode`. Effective only if 
+                Broadcasts. See `vectorbtpro.portfolio.enums.StopUpdateMode`. Effective only if
                 accumulation is enabled. If provided on the per-element basis, gets applied upon repeated entry.
             upon_adj_stop_conflict (Optional[ArrayLike]): Conflict mode for adjacent stop and signal conflicts.
 
@@ -3539,37 +3536,37 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 For stop signals, `np.nan` is replaced with the minimum of open and close prices.
             init_cash (Optional[ArrayLike]): Initial capital.
-            
-                Broadcasts to the final number of columns, or to the number of groups if 
+
+                Broadcasts to the final number of columns, or to the number of groups if
                 cash sharing is enabled. See `vectorbtpro.portfolio.enums.InitCashMode` for guidance.
-            
+
                 !!! note
-                    When using `InitCashMode.AutoAlign`, initial cash values are synchronized across 
+                    When using `InitCashMode.AutoAlign`, initial cash values are synchronized across
                     columns/groups after initialization.
-            init_position (Optional[ArrayLike]): Initial position. 
-            
+            init_position (Optional[ArrayLike]): Initial position.
+
                 Broadcasts to match the final number of columns.
-            init_price (Optional[ArrayLike]): Initial position price. 
-            
+            init_price (Optional[ArrayLike]): Initial position price.
+
                 Broadcasts to match the final number of columns.
             cash_deposits (Optional[ArrayLike]): Cash deposits or withdrawals at the beginning of each timestamp.
-            
+
                 Broadcasts to match the shape of `init_cash`.
             cash_earnings (Optional[ArrayLike]): Cash earnings added at the end of each timestamp.
-            
+
                 Broadcasts.
             cash_dividends (Optional[ArrayLike]): Cash dividends added at the end of each timestamp.
-            
+
                 Broadcasts, are multiplied by the position, and then added to `cash_earnings`.
             cash_sharing (Optional[bool]): Indicates whether cash is shared among assets within the same group.
-            
+
                 If `group_by` is None and this is True, all assets are grouped together for cash sharing.
-            
+
                 !!! warning
-                    Enables cross-asset dependencies by assuming that all orders in a cash-sharing group 
+                    Enables cross-asset dependencies by assuming that all orders in a cash-sharing group
                     execute in the same tick and retain their price.
-            from_ago (Optional[ArrayLike]): Number of time steps to look back for order information.
-            
+            from_ago (Optional[ArrayLike]): Number of bars to look back for order information.
+
                 Negative values are converted to positive to avoid look-ahead bias.
             sim_start (Optional[ArrayLike]): Simulation start (inclusive).
 
@@ -3579,91 +3576,91 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 Can be "auto", which will be substituted by the index of the last signal across
                 long and short entries and long and short exits.
-            call_seq (Optional[ArrayLike]): Sequence dictating the order in which columns are 
+            call_seq (Optional[ArrayLike]): Sequence dictating the order in which columns are
                 processed per row and group.
-            
+
                 Each element specifies the position of a column in the processing order.
                 Options include:
-            
+
                 * None: Generates a default call sequence.
                 * A value from `vectorbtpro.portfolio.enums.CallSeqType`: Creates a full array of the specified type.
                 * Custom array: Specifies a user-defined call sequence.
-            
-                If set to `CallSeqType.Auto`, orders are rearranged dynamically so that sell orders are 
+
+                If set to `CallSeqType.Auto`, orders are rearranged dynamically so that sell orders are
                 processed before buy orders.
-            
+
                 !!! warning
-                    `CallSeqType.Auto` assumes predetermined order prices and flexible execution, 
+                    `CallSeqType.Auto` assumes predetermined order prices and flexible execution,
                     which may not accurately reflect real-time conditions.
                     For stricter control, use `Portfolio.from_order_func`.
-            attach_call_seq (Optional[bool]): Indicates whether to attach the computed call sequence 
+            attach_call_seq (Optional[bool]): Indicates whether to attach the computed call sequence
                 to the portfolio instance.
-            ffill_val_price (Optional[bool]): If True, tracks the valuation price only when available 
+            ffill_val_price (Optional[bool]): If True, tracks the valuation price only when available
                 to prevent propagation of NaN values.
             update_value (Optional[bool]): If True, updates the group value after each filled order.
             fill_pos_info (Optional[bool]): Whether to fill position records.
 
                 Disabling this may speed up simulation for simple cases.
-            save_state (Optional[bool]): If True, saves state arrays 
+            save_state (Optional[bool]): If True, saves state arrays
                 (such as `cash`, `position`, `debt`, `locked_cash`, and `free_cash`) in in-outputs.
             save_value (Optional[bool]): If True, saves the portfolio value in in-outputs.
             save_returns (Optional[bool]): If True, saves the returns array in in-outputs.
             skip_empty (Optional[bool]): If True, skips processing rows that do not contain any orders.
             max_order_records (Optional[int]): Maximum number of order records expected per column.
-            
+
                 Set to a lower number to conserve memory, or 0 to disable order record collection.
             max_log_records (Optional[int]): Maximum number of log records expected per column.
-            
+
                 Set to a lower number to conserve memory, or 0 to disable logging.
             in_outputs (Optional[tp.MappingLike]): Mapping of in-output objects for flexible mode.
 
                 These objects become available via `Portfolio.in_outputs` as a named tuple.
-            
-                * To substitute `Portfolio` attributes, provide broadcasted and grouped objects 
+
+                * To substitute `Portfolio` attributes, provide broadcasted and grouped objects
                     (e.g., via `broadcast_named_args` and templates).
                 * When chunking, supply the chunk specification and merging function.
-                
+
                 See `vectorbtpro.portfolio.chunking.merge_sim_outs`.
-            
+
                 !!! note
-                    When using Numba below 0.54, `in_outputs` must be a globally defined 
+                    When using Numba below 0.54, `in_outputs` must be a globally defined
                     named tuple rather than a mapping.
             seed (Optional[int]): Seed value for generating the call sequence and initializing the simulation.
             group_by (tp.GroupByLike): Grouping specification for columns.
-            
+
                 See `vectorbtpro.base.grouping.base.Grouper` for details.
             broadcast_named_args (tp.KwargsLike): Dictionary of named arguments for broadcasting.
 
                 Allows substitution of argument names wrapped with `vectorbtpro.utils.template.Rep`.
-            broadcast_kwargs (tp.KwargsLike): Keyword arguments to pass to 
+            broadcast_kwargs (tp.KwargsLike): Keyword arguments to pass to
                 `vectorbtpro.base.reshaping.broadcast`.
             template_context (tp.KwargsLike): Context for template substitution in arguments.
             jitted (tp.JittedOption): Option to control JIT compilation.
-            
+
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
             chunked (tp.ChunkedOption): Option to control chunked processing.
-            
+
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             staticized (tp.StaticizedOption): Keyword arguments or a task id for staticizing.
-            
-                If True or a dict, these are passed to `vectorbtpro.utils.cutting.cut_and_save_func` 
-                to cache the simulator. If a hashable or callable, it is used as a task id for an already 
+
+                If True or a dict, these are passed to `vectorbtpro.utils.cutting.cut_and_save_func`
+                to cache the simulator. If a hashable or callable, it is used as a task id for an already
                 registered simulator. The dict may include options like `override` and `reload`.
-            bm_close (Optional[ArrayLike]): Benchmark asset price at each time step.
-            
+            bm_close (Optional[ArrayLike]): Benchmark asset price at each bar.
+
                 Broadcasts. If not provided, `close` is used; if set to False, benchmarking is disabled.
             records (Optional[tp.RecordsLike]): Records used to construct arrays.
-            
+
                 See `vectorbtpro.base.indexing.IdxRecords`.
-            return_preparer (bool): If True, returns the preparer instance 
+            return_preparer (bool): If True, returns the preparer instance
                 (`vectorbtpro.portfolio.preparing.FSPreparer`).
-            
+
                 !!! note
-                    In this case, the seed is not automatically set; 
+                    In this case, the seed is not automatically set;
                     invoke `preparer.set_seed()` explicitly if needed.
-            return_prep_result (bool): If True, returns the preparer result 
+            return_prep_result (bool): If True, returns the preparer result
                 (`vectorbtpro.portfolio.preparing.PFPrepResult`).
-            return_sim_out (bool): If True, returns the simulation output 
+            return_sim_out (bool): If True, returns the simulation output
                 (`vectorbtpro.portfolio.enums.SimulationOutput`).
             **kwargs: Keyword arguments passed to the `Portfolio` constructor.
 
@@ -3674,6 +3671,23 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             * `vectorbtpro.portfolio.nb.from_signals.from_basic_signals_nb` for static simulation without complex orders.
             * `vectorbtpro.portfolio.nb.from_signals.from_signals_nb` for static simulation with complex orders.
             * `vectorbtpro.portfolio.nb.from_signals.from_signal_func_nb` for dynamic simulation.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.portfolio`.
+
+            These defaults are not used to fill NaN values after reindexing; vectorbtpro uses its own
+            defaults (typically NaN for floating arrays and preset flags for integer arrays).
+            Use `vectorbtpro.base.reshaping.BCO` with `fill_value` to override.
+
+        !!! note
+            When `call_seq` is not set to `CallSeqType.Auto`, the processing order within a group strictly
+            follows the specified `call_seq`. This means the last asset in the sequence is processed only after
+            the others, which can affect rebalancing. Use `CallSeqType.Auto` for dynamic execution order.
+
+        !!! hint
+            All broadcastable arguments are handled using `vectorbtpro.base.reshaping.broadcast`
+            to preserve their original shapes for flexible indexing and memory efficiency.
+            Each can be provided per frame, series, row, column, or individual element.
 
         Examples:
             By default, if all signal arrays are None, `entries` is treated as True,
@@ -4047,7 +4061,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             This works because `pd.Index` automatically translates into `vectorbtpro.base.reshaping.BCO`
             with `product` set to True.
 
-            We can implement our own stop loss or take profit, or adjust the existing one at each time step.
+            We can implement our own stop loss or take profit, or adjust the existing one at each bar.
             Let's implement [stepped stop-loss](https://www.freqtrade.io/en/stable/strategy-advanced/#stepped-stoploss):
 
             ```pycon
@@ -4162,18 +4176,21 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
         Args:
             close (Union[ArrayLike, OHLCDataMixin]): The close prices or OHLC data used for portfolio simulation.
-            direction (Optional[int]): Holding direction. 
-            
+            direction (Optional[int]): Holding direction.
+
                 If None, the default hold direction from portfolio settings is used.
             at_first_valid_in (Optional[str]): Column name for determining the first valid entry signal.
-            close_at_end (Optional[bool]): Flag indicating whether to place an exit signal at the end. 
-            
+            close_at_end (Optional[bool]): Flag indicating whether to place an exit signal at the end.
+
                 If None, the default is used.
             dynamic_mode (bool): Specifies whether to use dynamic mode for signal generation.
             **kwargs: Keyword arguments forwarded to `Portfolio.from_signals`.
 
         Returns:
             PortfolioResult: The portfolio result.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.portfolio`.
         """
         from vectorbtpro._settings import settings
 
@@ -4254,31 +4271,27 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
     ) -> PortfolioResultT:
         """Simulate portfolio from random entry and exit signals.
 
-        Generates random entry and exit signals based on either the number of signals or 
+        Generates random entry and exit signals based on either the number of signals or
         the probability of encountering a signal.
 
         Based on `Portfolio.from_signals`.
 
-        !!! note
-            To generate random signals, the shape of `close` is used. Broadcasting with other arrays 
-            occurs after signal generation.
-
         Args:
             close (Union[ArrayLike, OHLCDataMixin]): The close prices or OHLC data used for portfolio simulation.
-            n (Optional[ArrayLike]): Number of signals to generate. 
-            
+            n (Optional[ArrayLike]): Number of signals to generate.
+
                 Mutually exclusive with `entry_prob` and `exit_prob`.
-            prob (Optional[ArrayLike]): Probability of encountering a signal, used for both entries and exits 
+            prob (Optional[ArrayLike]): Probability of encountering a signal, used for both entries and exits
                 if specific probabilities are not provided.
-            entry_prob (Optional[ArrayLike]): Probability for generating an entry signal. 
-            
+            entry_prob (Optional[ArrayLike]): Probability for generating an entry signal.
+
                 Defaults to `prob` if not specified.
-            exit_prob (Optional[ArrayLike]): Probability for generating an exit signal. 
-            
+            exit_prob (Optional[ArrayLike]): Probability for generating an exit signal.
+
                 Defaults to `prob` if not specified.
             param_product (bool): Flag to generate the Cartesian product of signal parameters.
-            seed (Optional[int]): Random seed for signal generation. 
-            
+            seed (Optional[int]): Random seed for signal generation.
+
                 If None, the seed from portfolio settings is used.
             run_kwargs (KwargsLike): Keyword arguments passed to the signal generator's run function.
             **kwargs: Keyword arguments forwarded to `Portfolio.from_signals`.
@@ -4289,6 +4302,13 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         See:
             * `vectorbtpro.signals.generators.randnx.RANDNX` if `n` is provided.
             * `vectorbtpro.signals.generators.rprobnx.RPROBNX` if `prob` is provided.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.portfolio`.
+
+        !!! note
+            To generate random signals, the shape of `close` is used. Broadcasting with other arrays
+            occurs after signal generation.
 
         Examples:
             Test multiple combinations of random entries and exits:
@@ -4425,12 +4445,12 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             squeeze_groups (bool): Whether to squeeze groups in the optimizer's allocation output.
             dropna (Optional[str]): Strategy for handling missing allocation values during filling.
             fill_value (Scalar): Value used to fill missing allocation entries.
-            size_type (ArrayLike): Order size type. 
+            size_type (ArrayLike): Order size type.
             direction (Optional[ArrayLike]): Order direction; if None, determined automatically from allocations.
             cash_sharing (Optional[bool]): Flag indicating if cash is shared across assets.
             call_seq (Optional[ArrayLike]): Call sequence configuration, defaults to "auto".
-            group_by (GroupByLike): Grouping specification for simulation. 
-            
+            group_by (GroupByLike): Grouping specification for simulation.
+
                 If None, derived from the optimizer wrapper.
             **kwargs: Keyword arguments forwarded to the underlying simulation function.
 
@@ -4540,27 +4560,27 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         segment_mask: tp.Optional[tp.ArrayLike] = None,
         call_pre_segment: tp.Optional[bool] = None,
         call_post_segment: tp.Optional[bool] = None,
-        pre_sim_func_nb: tp.Optional[nb.PreSimFuncT] = None,
+        pre_sim_func_nb: tp.Optional[tp.PreSimFunc] = None,
         pre_sim_args: tp.Args = (),
-        post_sim_func_nb: tp.Optional[nb.PostSimFuncT] = None,
+        post_sim_func_nb: tp.Optional[tp.PostSimFunc] = None,
         post_sim_args: tp.Args = (),
-        pre_group_func_nb: tp.Optional[nb.PreGroupFuncT] = None,
+        pre_group_func_nb: tp.Optional[tp.PreGroupFunc] = None,
         pre_group_args: tp.Args = (),
-        post_group_func_nb: tp.Optional[nb.PostGroupFuncT] = None,
+        post_group_func_nb: tp.Optional[tp.PostGroupFunc] = None,
         post_group_args: tp.Args = (),
-        pre_row_func_nb: tp.Optional[nb.PreRowFuncT] = None,
+        pre_row_func_nb: tp.Optional[tp.PreRowFunc] = None,
         pre_row_args: tp.Args = (),
-        post_row_func_nb: tp.Optional[nb.PostRowFuncT] = None,
+        post_row_func_nb: tp.Optional[tp.PostRowFunc] = None,
         post_row_args: tp.Args = (),
-        pre_segment_func_nb: tp.Optional[nb.PreSegmentFuncT] = None,
+        pre_segment_func_nb: tp.Optional[tp.PreSegmentFunc] = None,
         pre_segment_args: tp.Args = (),
-        post_segment_func_nb: tp.Optional[nb.PostSegmentFuncT] = None,
+        post_segment_func_nb: tp.Optional[tp.PostSegmentFunc] = None,
         post_segment_args: tp.Args = (),
-        order_func_nb: tp.Optional[nb.OrderFuncT] = None,
+        order_func_nb: tp.Optional[tp.OrderFunc] = None,
         order_args: tp.Args = (),
-        flex_order_func_nb: tp.Optional[nb.FlexOrderFuncT] = None,
+        flex_order_func_nb: tp.Optional[tp.FlexOrderFunc] = None,
         flex_order_args: tp.Args = (),
-        post_order_func_nb: tp.Optional[nb.PostOrderFuncT] = None,
+        post_order_func_nb: tp.Optional[tp.PostOrderFunc] = None,
         post_order_args: tp.Args = (),
         open: tp.Optional[tp.ArrayLike] = None,
         high: tp.Optional[tp.ArrayLike] = None,
@@ -4592,134 +4612,116 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         """Build a portfolio using a custom order function.
 
         !!! hint
-            See `vectorbtpro.portfolio.nb.from_order_func.from_order_func_nb` for 
+            See `vectorbtpro.portfolio.nb.from_order_func.from_order_func_nb` for
             illustrations and argument definitions.
 
         Prepared by `vectorbtpro.portfolio.preparing.FOFPreparer`.
 
-        For defaults, see `vectorbtpro._settings.portfolio`. These defaults are not used to fill NaN values 
-        after reindexing; vectorbtpro uses its own defaults (typically NaN for floating arrays and preset 
-        flags for integer arrays). Use `vectorbtpro.base.reshaping.BCO` with `fill_value` to override.
-
-        !!! hint
-            All broadcastable arguments are handled using `vectorbtpro.base.reshaping.broadcast` 
-            to preserve their original shapes for flexible indexing and memory efficiency. 
-            Each can be provided per frame, series, row, column, or individual element.
-
-        !!! note
-            All provided functions must be Numba-compiled if Numba is enabled. 
-            Also see the notes in `Portfolio.from_orders`.
-
-        !!! note
-            Unlike other methods, the valuation price is taken from the previous `close` rather than 
-            the order price, since an order's price is unknown until execution. You can override 
-            the valuation price in `pre_segment_func_nb`.
-
         Args:
-            close (Union[ArrayLike, OHLCDataMixin, FOFPreparer, PFPrepResult]): The close prices or 
+            close (Union[ArrayLike, OHLCDataMixin, FOFPreparer, PFPrepResult]): The close prices or
                 OHLC data used for portfolio simulation.
 
                 Broadcasts.
-            
+
                 * If an instance of `vectorbtpro.data.base.OHLCDataMixin`, extracts open, high, low, and close prices.
                 * If an instance of `vectorbtpro.portfolio.preparing.FOPreparer`, it is used as a preparer.
                 * If an instance of `vectorbtpro.portfolio.preparing.PFPrepResult`, it is used as a preparer result.
             init_cash (Optional[ArrayLike]): Initial capital.
-            
-                Broadcasts to the final number of columns, or to the number of groups if 
+
+                Broadcasts to the final number of columns, or to the number of groups if
                 cash sharing is enabled. See `vectorbtpro.portfolio.enums.InitCashMode` for guidance.
-            
+
                 !!! note
-                    When using `InitCashMode.AutoAlign`, initial cash values are synchronized across 
+                    When using `InitCashMode.AutoAlign`, initial cash values are synchronized across
                     columns/groups after initialization.
-            init_position (Optional[ArrayLike]): Initial position. 
-            
+            init_position (Optional[ArrayLike]): Initial position.
+
                 Broadcasts to match the final number of columns.
-            init_price (Optional[ArrayLike]): Initial position price. 
-            
+            init_price (Optional[ArrayLike]): Initial position price.
+
                 Broadcasts to match the final number of columns.
             cash_deposits (Optional[ArrayLike]): Cash deposits or withdrawals at the beginning of each timestamp.
-            
+
                 Broadcasts to match the shape of `init_cash`.
             cash_earnings (Optional[ArrayLike]): Cash earnings added at the end of each timestamp.
-            
+
                 Broadcasts.
             cash_dividends (Optional[ArrayLike]): Cash dividends added at the end of each timestamp.
-            
+
                 Broadcasts, are multiplied by the position, and then added to `cash_earnings`.
             cash_sharing (Optional[bool]): Indicates whether cash is shared among assets within the same group.
-            
+
                 If `group_by` is None and this is True, all assets are grouped together for cash sharing.
-            
+
                 !!! warning
-                    Enables cross-asset dependencies by assuming that all orders in a cash-sharing group 
+                    Enables cross-asset dependencies by assuming that all orders in a cash-sharing group
                     execute in the same tick and retain their price.
             sim_start (Optional[ArrayLike]): Simulation start index (inclusive).
             sim_end (Optional[ArrayLike]): Simulation end index (exclusive).
-            call_seq (Optional[ArrayLike]): Sequence dictating the order in which columns are 
+            call_seq (Optional[ArrayLike]): Sequence dictating the order in which columns are
                 processed per row and group.
-            
+
                 Each element specifies the position of a column in the processing order.
                 Options include:
-            
+
                 * None: Generates a default call sequence.
                 * A value from `vectorbtpro.portfolio.enums.CallSeqType`: Creates a full array of the specified type.
                 * Custom array: Specifies a user-defined call sequence.
-            
+
                 !!! note
-                    `CallSeqType.Auto` must be implemented manually. Use 
-                    `vectorbtpro.portfolio.nb.from_order_func.sort_call_seq_1d_nb` or 
+                    `CallSeqType.Auto` must be implemented manually. Use
+                    `vectorbtpro.portfolio.nb.from_order_func.sort_call_seq_1d_nb` or
                     `vectorbtpro.portfolio.nb.from_order_func.sort_call_seq_out_1d_nb` in `pre_segment_func_nb`.
-            attach_call_seq (Optional[bool]): Indicates whether to attach the computed call sequence 
+            attach_call_seq (Optional[bool]): Indicates whether to attach the computed call sequence
                 to the portfolio instance.
             segment_mask (Optional[ArrayLike]): Mask that indicates whether a segment should be executed.
-            
-                An integer activates every n-th row, while a boolean or an array of booleans broadcasts 
-                to the number of rows and groups. It does not broadcast together with `close` and 
+
+                An integer activates every n-th row, while a boolean or an array of booleans broadcasts
+                to the number of rows and groups. It does not broadcast together with `close` and
                 `broadcast_named_args`, only against the final shape.
             call_pre_segment (Optional[bool]): Whether to call `pre_segment_func_nb` regardless of `segment_mask`.
             call_post_segment (Optional[bool]): Whether to call `post_segment_func_nb` regardless of `segment_mask`.
-            pre_sim_func_nb (Optional[PreSimFuncT]): Function called before simulation.
-            
+            pre_sim_func_nb (Optional[PreSimFunc]): Function called before simulation.
+
                 Defaults to `vectorbtpro.portfolio.nb.from_order_func.no_pre_func_nb`.
             pre_sim_args (Args): Arguments passed to `pre_sim_func_nb`.
-            post_sim_func_nb (Optional[PostSimFuncT]): Function called after simulation.
-            
+            post_sim_func_nb (Optional[PostSimFunc]): Function called after simulation.
+
                 Defaults to `vectorbtpro.portfolio.nb.from_order_func.no_post_func_nb`.
             post_sim_args (Args): Arguments passed to `post_sim_func_nb`.
-            pre_group_func_nb (Optional[PreGroupFuncT]): Function called before each group.
-            
-                Defaults to `vectorbtpro.portfolio.nb.from_order_func.no_pre_func_nb` and 
+            pre_group_func_nb (Optional[PreGroupFunc]): Function called before each group.
+
+                Defaults to `vectorbtpro.portfolio.nb.from_order_func.no_pre_func_nb` and
                 is used only when `row_wise` is False.
             pre_group_args (Args): Arguments passed to `pre_group_func_nb`.
-            post_group_func_nb (Optional[PostGroupFuncT]): Function called after each group.
-            
-                Defaults to `vectorbtpro.portfolio.nb.from_order_func.no_post_func_nb` and 
+            post_group_func_nb (Optional[PostGroupFunc]): Function called after each group.
+
+                Defaults to `vectorbtpro.portfolio.nb.from_order_func.no_post_func_nb` and
                 is used only when `row_wise` is False.
             post_group_args (Args): Arguments passed to `post_group_func_nb`.
-            pre_row_func_nb (Optional[PreRowFuncT]): Function called before each row.
-            
-                Defaults to `vectorbtpro.portfolio.nb.from_order_func.no_pre_func_nb` and 
+            pre_row_func_nb (Optional[PreRowFunc]): Function called before each row.
+
+                Defaults to `vectorbtpro.portfolio.nb.from_order_func.no_pre_func_nb` and
                 is used only when `row_wise` is True.
             pre_row_args (Args): Arguments passed to `pre_row_func_nb`.
-            post_row_func_nb (Optional[PostRowFuncT]): Function called after each row.
-            
-                Defaults to `vectorbtpro.portfolio.nb.from_order_func.no_post_func_nb` and 
+            post_row_func_nb (Optional[PostRowFunc]): Function called after each row.
+
+                Defaults to `vectorbtpro.portfolio.nb.from_order_func.no_post_func_nb` and
                 is used only when `row_wise` is True.
             post_row_args (Args): Arguments passed to `post_row_func_nb`.
-            pre_segment_func_nb (Optional[PreSegmentFuncT]): Function called before each segment.
-            
+            pre_segment_func_nb (Optional[PreSegmentFunc]): Function called before each segment.
+
                 Defaults to `vectorbtpro.portfolio.nb.from_order_func.no_pre_func_nb`.
             pre_segment_args (Args): Arguments passed to `pre_segment_func_nb`.
-            post_segment_func_nb (Optional[PostSegmentFuncT]): Function called after each segment.
-            
+            post_segment_func_nb (Optional[PostSegmentFunc]): Function called after each segment.
+
                 Defaults to `vectorbtpro.portfolio.nb.from_order_func.no_post_func_nb`.
             post_segment_args (Args): Arguments passed to `post_segment_func_nb`.
-            order_func_nb (Optional[OrderFuncT]): Order generation function.
+            order_func_nb (Optional[OrderFunc]): Order generation function.
             order_args (Args): Arguments passed to `order_func_nb`.
-            flex_order_func_nb (Optional[FlexOrderFuncT]): Flexible order generation function.
+            flex_order_func_nb (Optional[FlexOrderFunc]): Flexible order generation function.
             flex_order_args (Args): Arguments passed to `flex_order_func_nb`.
-            post_order_func_nb (Optional[PostOrderFuncT]): Callback invoked after processing an order.
+            post_order_func_nb (Optional[PostOrderFunc]): Callback invoked after processing an order.
             post_order_args (Args): Arguments passed to `post_order_func_nb`.
             open (Optional[ArrayLike]): Open prices.
 
@@ -4736,84 +4738,84 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
                 Broadcasts. Used as a price boundary (see `vectorbtpro.portfolio.enums.PriceArea`).
 
                 For stop signals, `np.nan` is replaced with the minimum of open and close prices.
-            ffill_val_price (Optional[bool]): If True, valuation price is tracked only when known; 
+            ffill_val_price (Optional[bool]): If True, valuation price is tracked only when known;
                 otherwise, an unknown `close` may lead to NaN.
             update_value (Optional[bool]): Whether to update group value after each filled order.
             fill_pos_info (Optional[bool]): Whether to fill the position record.
-            
+
                 Disable to improve simulation speed in simple cases.
             track_value (Optional[bool]): Whether to track metrics such as current valuation price, value, and return.
-            
+
                 Disable to improve simulation speed in simple cases.
             row_wise (Optional[bool]): Whether to iterate over rows instead of by columns/groups.
             max_order_records (Optional[int]): Maximum number of order records expected per column.
-            
-                Defaults to the number of rows in the broadcasted shape. Set to 0 to disable, 
+
+                Defaults to the number of rows in the broadcasted shape. Set to 0 to disable,
                 lower to reduce memory usage, or higher if multiple orders per timestamp are expected.
             max_log_records (Optional[int]): Maximum number of log records expected per column.
-            
-                Defaults to the number of rows in the broadcasted shape. Set to 0 to disable, lower to 
+
+                Defaults to the number of rows in the broadcasted shape. Set to 0 to disable, lower to
                 reduce memory usage, or higher if multiple logs per timestamp are expected.
-            in_outputs (Optional[tp.MappingLike]): Mapping of in-output objects available via 
+            in_outputs (Optional[tp.MappingLike]): Mapping of in-output objects available via
                 `Portfolio.in_outputs` as a named tuple.
-            
-                To override `Portfolio` attributes, provide objects that are already broadcasted and grouped 
-                (e.g. using `broadcast_named_args` and templates). Also see `Portfolio.in_outputs_indexing_func` 
-                for indexing details. When chunking, supply the chunk specification and merging function as per 
+
+                To override `Portfolio` attributes, provide objects that are already broadcasted and grouped
+                (e.g. using `broadcast_named_args` and templates). Also see `Portfolio.in_outputs_indexing_func`
+                for indexing details. When chunking, supply the chunk specification and merging function as per
                 `vectorbtpro.portfolio.chunking.merge_sim_outs`.
-            
+
                 !!! note
-                    For Numba versions below 0.54, `in_outputs` must be a globally defined named tuple 
+                    For Numba versions below 0.54, `in_outputs` must be a globally defined named tuple
                     rather than a mapping.
             seed (Optional[int]): Seed value for generating the call sequence and initializing the simulation.
             group_by (tp.GroupByLike): Grouping specification for columns.
-            
+
                 See `vectorbtpro.base.grouping.base.Grouper` for details.
             broadcast_named_args (tp.KwargsLike): Dictionary of named arguments for broadcasting.
 
                 Allows substitution of argument names wrapped with `vectorbtpro.utils.template.Rep`.
-            broadcast_kwargs (tp.KwargsLike): Keyword arguments to pass to 
+            broadcast_kwargs (tp.KwargsLike): Keyword arguments to pass to
                 `vectorbtpro.base.reshaping.broadcast`.
             template_context (tp.KwargsLike): Context for template substitution in arguments.
-            keep_inout_flex (Optional[bool]): Whether to preserve raw, editable arrays during 
+            keep_inout_flex (Optional[bool]): Whether to preserve raw, editable arrays during
                 broadcasting for in-outputs.
-            
+
                 Disable to allow editing of `segment_mask`, `cash_deposits`, and `cash_earnings` during simulation.
             jitted (tp.JittedOption): Option to control JIT compilation.
-            
+
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
-            
+
                 !!! note
-                    Disabling jitting affects only the main simulation function. 
-                    To disable compilation entirely, ensure that all functions are uncompiled 
-                    (e.g. via the `py_func` attribute or by setting `os.environ['NUMBA_DISABLE_JIT'] = '1'` 
+                    Disabling jitting affects only the main simulation function.
+                    To disable compilation entirely, ensure that all functions are uncompiled
+                    (e.g. via the `py_func` attribute or by setting `os.environ['NUMBA_DISABLE_JIT'] = '1'`
                     before importing vectorbtpro).
-            
+
                 !!! warning
                     Parallelization assumes that groups are independent with no data flow between them.
             chunked (tp.ChunkedOption): Option to control chunked processing.
-            
+
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             staticized (tp.StaticizedOption): Keyword arguments or a task id for staticizing.
-            
-                If True or a dict, these are passed to `vectorbtpro.utils.cutting.cut_and_save_func` 
-                to cache the simulator. If a hashable or callable, it is used as a task id for an already 
+
+                If True or a dict, these are passed to `vectorbtpro.utils.cutting.cut_and_save_func`
+                to cache the simulator. If a hashable or callable, it is used as a task id for an already
                 registered simulator. The dict may include options like `override` and `reload`.
-            bm_close (Optional[ArrayLike]): Benchmark asset price at each time step.
-            
+            bm_close (Optional[ArrayLike]): Benchmark asset price at each bar.
+
                 Broadcasts. If not provided, `close` is used; if set to False, benchmarking is disabled.
             records (Optional[tp.RecordsLike]): Records used to construct arrays.
-            
+
                 See `vectorbtpro.base.indexing.IdxRecords`.
-            return_preparer (bool): If True, returns the preparer instance 
+            return_preparer (bool): If True, returns the preparer instance
                 (`vectorbtpro.portfolio.preparing.FOFPreparer`).
-            
+
                 !!! note
-                    In this case, the seed is not automatically set; 
+                    In this case, the seed is not automatically set;
                     invoke `preparer.set_seed()` explicitly if needed.
-            return_prep_result (bool): If True, returns the preparer result 
+            return_prep_result (bool): If True, returns the preparer result
                 (`vectorbtpro.portfolio.preparing.PFPrepResult`).
-            return_sim_out (bool): If True, returns the simulation output 
+            return_sim_out (bool): If True, returns the simulation output
                 (`vectorbtpro.portfolio.enums.SimulationOutput`).
             **kwargs: Keyword arguments passed to the `Portfolio` constructor.
 
@@ -4825,6 +4827,27 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             * `vectorbtpro.portfolio.nb.from_order_func.from_order_func_rw_nb` for `order_func_nb` and `row_wise=True`
             * `vectorbtpro.portfolio.nb.from_order_func.from_flex_order_func_nb` for `flex_order_func_nb`
             * `vectorbtpro.portfolio.nb.from_order_func.from_flex_order_func_rw_nb` for `flex_order_func_nb` and `row_wise=True`
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.portfolio`.
+
+            These defaults are not used to fill NaN values after reindexing; vectorbtpro uses its own
+            defaults (typically NaN for floating arrays and preset flags for integer arrays).
+            Use `vectorbtpro.base.reshaping.BCO` with `fill_value` to override.
+
+        !!! hint
+            All broadcastable arguments are handled using `vectorbtpro.base.reshaping.broadcast`
+            to preserve their original shapes for flexible indexing and memory efficiency.
+            Each can be provided per frame, series, row, column, or individual element.
+
+        !!! note
+            All provided functions must be Numba-compiled if Numba is enabled.
+            Also see the notes in `Portfolio.from_orders`.
+
+        !!! note
+            Unlike other methods, the valuation price is taken from the previous `close` rather than
+            the order price, since an order's price is unknown until execution. You can override
+            the valuation price in `pre_segment_func_nb`.
 
         Examples:
             Buy 10 units each tick using closing price:
@@ -4900,7 +4923,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             dtype: float64
             ```
 
-            Equal-weighted portfolio as in the example under 
+            Equal-weighted portfolio as in the example under
             `vectorbtpro.portfolio.nb.from_order_func.from_order_func_nb`:
 
             ```pycon
@@ -4971,9 +4994,9 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             ![](/assets/images/api/from_order_func.light.svg#only-light){: .iimg loading=lazy }
             ![](/assets/images/api/from_order_func.dark.svg#only-dark){: .iimg loading=lazy }
 
-            Templates are a powerful tool to prepare custom arguments after broadcasting and before passing 
-            them to simulation functions. In the above example, `broadcast_named_args` broadcasts arguments 
-            and templates pass them to callbacks. An evaluation template is used to compute position size 
+            Templates are a powerful tool to prepare custom arguments after broadcasting and before passing
+            them to simulation functions. In the above example, `broadcast_named_args` broadcasts arguments
+            and templates pass them to callbacks. An evaluation template is used to compute position size
             based on the number of assets in each group.
 
             You may ask: why should we bother using broadcasting and templates if we could just pass `size=1/3`?
@@ -5088,8 +5111,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             4     0.0
             dtype: float64
             ```
-            The stop of 10% does not trigger an order at the second time step because it occurs simultaneously 
-            with entry; it must wait until no entry is present. To exit regardless of an entry, replace "elif" 
+            The stop of 10% does not trigger an order at the second bar because it occurs simultaneously
+            with entry; it must wait until no entry is present. To exit regardless of an entry, replace "elif"
             with "if" (similar to using `ConflictMode.Opposite` in `Portfolio.from_signals`).
 
             Multiple parameter combinations can be tested at once via broadcasting using
@@ -5162,8 +5185,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             ```
 
             !!! warning
-                Each bar is treated as a black box—price movements within a bar are unknown. 
-                Since order processing must mirror real-world conditions, only the opening and 
+                Each bar is treated as a black box—price movements within a bar are unknown.
+                Since order processing must mirror real-world conditions, only the opening and
                 closing prices remain reliably ordered.
         """
         if isinstance(close, FOFPreparer):
@@ -5220,9 +5243,9 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         allow_partial: tp.Optional[tp.ArrayLike] = None,
         raise_reject: tp.Optional[tp.ArrayLike] = None,
         log: tp.Optional[tp.ArrayLike] = None,
-        pre_segment_func_nb: tp.Optional[nb.PreSegmentFuncT] = None,
-        order_func_nb: tp.Optional[nb.OrderFuncT] = None,
-        flex_order_func_nb: tp.Optional[nb.FlexOrderFuncT] = None,
+        pre_segment_func_nb: tp.Optional[tp.PreSegmentFunc] = None,
+        order_func_nb: tp.Optional[tp.OrderFunc] = None,
+        flex_order_func_nb: tp.Optional[tp.FlexOrderFunc] = None,
         val_price: tp.Optional[tp.ArrayLike] = None,
         sim_start: tp.Optional[tp.ArrayLike] = None,
         sim_end: tp.Optional[tp.ArrayLike] = None,
@@ -5257,55 +5280,42 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
         Prepared by `vectorbtpro.portfolio.preparing.FDOFPreparer`.
 
-        For defaults, see `vectorbtpro._settings.portfolio`. These defaults are not used to fill NaN values 
-        after reindexing; vectorbtpro uses its own defaults (typically NaN for floating arrays and preset 
-        flags for integer arrays). Use `vectorbtpro.base.reshaping.BCO` with `fill_value` to override.
-
-        !!! hint
-            All broadcastable arguments are handled using `vectorbtpro.base.reshaping.broadcast` 
-            to preserve their original shapes for flexible indexing and memory efficiency. 
-            Each can be provided per frame, series, row, column, or individual element.
-
-        !!! note
-            All provided functions must be Numba-compiled if Numba is enabled. 
-            Also see the notes in `Portfolio.from_orders`.
-
         Args:
-            close (Union[ArrayLike, OHLCDataMixin, FDOFPreparer, PFPrepResult]): The close prices or 
+            close (Union[ArrayLike, OHLCDataMixin, FDOFPreparer, PFPrepResult]): The close prices or
                 OHLC data used for portfolio simulation.
 
                 Broadcasts.
-            
+
                 * If an instance of `vectorbtpro.data.base.OHLCDataMixin`, extracts open, high, low, and close prices.
                 * If an instance of `vectorbtpro.portfolio.preparing.FOPreparer`, it is used as a preparer.
                 * If an instance of `vectorbtpro.portfolio.preparing.PFPrepResult`, it is used as a preparer result.
-            size (Optional[ArrayLike]): Size to order. 
-            
-                Broadcasts. See `vectorbtpro.portfolio.enums.Order.size`. 
-            size_type (Optional[ArrayLike]): Order size type. 
-            
-                Broadcasts. See `vectorbtpro.portfolio.enums.SizeType` and 
-                `vectorbtpro.portfolio.enums.Order.size_type`. 
-            direction (Optional[ArrayLike]): Order direction. 
-            
-                Broadcasts. See `vectorbtpro.portfolio.enums.Direction` and 
+            size (Optional[ArrayLike]): Size to order.
+
+                Broadcasts. See `vectorbtpro.portfolio.enums.Order.size`.
+            size_type (Optional[ArrayLike]): Order size type.
+
+                Broadcasts. See `vectorbtpro.portfolio.enums.SizeType` and
+                `vectorbtpro.portfolio.enums.Order.size_type`.
+            direction (Optional[ArrayLike]): Order direction.
+
+                Broadcasts. See `vectorbtpro.portfolio.enums.Direction` and
                 `vectorbtpro.portfolio.enums.Order.direction`.
             price (Optional[ArrayLike]): Order price.
 
-                Broadcasts. See `vectorbtpro.portfolio.enums.Order.price` and 
+                Broadcasts. See `vectorbtpro.portfolio.enums.Order.price` and
                 `vectorbtpro.portfolio.enums.PriceType`.
-            
-                Options such as `PriceType.NextOpen` and `PriceType.NextClose` apply per column and 
+
+                Options such as `PriceType.NextOpen` and `PriceType.NextClose` apply per column and
                 require `from_ago` to be None.
             fees (Optional[ArrayLike]): Fees as a percentage of the order value.
 
-                Broadcasts. See `vectorbtpro.portfolio.enums.Order.fees`. 
+                Broadcasts. See `vectorbtpro.portfolio.enums.Order.fees`.
             fixed_fees (Optional[ArrayLike]): Fixed fee amount per order.
 
-                Broadcasts. See `vectorbtpro.portfolio.enums.Order.fixed_fees`. 
+                Broadcasts. See `vectorbtpro.portfolio.enums.Order.fixed_fees`.
             slippage (Optional[ArrayLike]): Slippage percentage of the order price.
 
-                Broadcasts. See `vectorbtpro.portfolio.enums.Order.slippage`. 
+                Broadcasts. See `vectorbtpro.portfolio.enums.Order.slippage`.
             min_size (Optional[ArrayLike]): Minimum order size.
 
                 Broadcasts. See `vectorbtpro.portfolio.enums.Order.min_size`.
@@ -5336,71 +5346,87 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             log (Optional[ArrayLike]): Flag indicating whether to log orders.
 
                 Broadcasts. See `vectorbtpro.portfolio.enums.Order.log`.
-            pre_segment_func_nb (Optional[PreSegmentFuncT]): Function called before each segment.
-            order_func_nb (Optional[OrderFuncT]): Order generation function.
-            flex_order_func_nb (Optional[FlexOrderFuncT]): Flexible order generation function.
+            pre_segment_func_nb (Optional[PreSegmentFunc]): Function called before each segment.
+            order_func_nb (Optional[OrderFunc]): Order generation function.
+            flex_order_func_nb (Optional[FlexOrderFunc]): Flexible order generation function.
             val_price (Optional[ArrayLike]): Asset valuation price used in decision making.
-            
+
                 Broadcasts. Can also be provided as `vectorbtpro.portfolio.enums.ValPriceType`.
-            
-                * Any `-np.inf` element is replaced by the latest valuation price 
+
+                * Any `-np.inf` element is replaced by the latest valuation price
                     (using `open` or a previously known value if `ffill_val_price` is True).
                 * Any `np.inf` element is replaced by the current order price.
-            
+
                 !!! note
                     Unlike `Portfolio.from_order_func`, the order price is effectively predetermined,
-                    so `val_price` defaults to the current order price when using `np.inf`. 
+                    so `val_price` defaults to the current order price when using `np.inf`.
                     To use the previous close, set it in the settings to `-np.inf`.
-            
+
                 !!! note
-                    Ensure that the timestamp associated with `val_price` precedes all order 
+                    Ensure that the timestamp associated with `val_price` precedes all order
                     timestamps in a cash-sharing group.
             sim_start (Optional[ArrayLike]): Simulation start row or index (inclusive).
-            
+
                 Can be "auto" to automatically select the first non-NA size value.
             sim_end (Optional[ArrayLike]): Simulation end row or index (exclusive).
-            
+
                 Can be "auto" to automatically select the first non-NA size value.
-            call_seq (Optional[ArrayLike]): Sequence dictating the order in which columns are 
+            call_seq (Optional[ArrayLike]): Sequence dictating the order in which columns are
                 processed per row and group.
-            
+
                 Each element specifies the position of a column in the processing order.
                 Options include:
-            
+
                 * None: Generates a default call sequence.
                 * A value from `vectorbtpro.portfolio.enums.CallSeqType`: Creates a full array of the specified type.
                 * Custom array: Specifies a user-defined call sequence.
-            
-                If set to `CallSeqType.Auto`, orders are rearranged dynamically so that sell orders are 
+
+                If set to `CallSeqType.Auto`, orders are rearranged dynamically so that sell orders are
                 processed before buy orders.
-            
+
                 !!! warning
-                    `CallSeqType.Auto` assumes predetermined order prices and flexible execution, 
+                    `CallSeqType.Auto` assumes predetermined order prices and flexible execution,
                     which may not accurately reflect real-time conditions.
                     For stricter control, use `Portfolio.from_order_func`.
             flexible (bool): Whether to apply flexible processing.
             broadcast_named_args (tp.KwargsLike): Dictionary of named arguments for broadcasting.
 
                 Allows substitution of argument names wrapped with `vectorbtpro.utils.template.Rep`.
-            broadcast_kwargs (tp.KwargsLike): Keyword arguments to pass to 
+            broadcast_kwargs (tp.KwargsLike): Keyword arguments to pass to
                 `vectorbtpro.base.reshaping.broadcast`.
             chunked (tp.ChunkedOption): Option to control chunked processing.
-            
+
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
-            return_preparer (bool): If True, returns the preparer instance 
+            return_preparer (bool): If True, returns the preparer instance
                 (`vectorbtpro.portfolio.preparing.FPreparer`).
-            
+
                 !!! note
-                    In this case, the seed is not automatically set; 
+                    In this case, the seed is not automatically set;
                     invoke `preparer.set_seed()` explicitly if needed.
-            return_prep_result (bool): If True, returns the preparer result 
+            return_prep_result (bool): If True, returns the preparer result
                 (`vectorbtpro.portfolio.preparing.PFPrepResult`).
-            return_sim_out (bool): If True, returns the simulation output 
+            return_sim_out (bool): If True, returns the simulation output
                 (`vectorbtpro.portfolio.enums.SimulationOutput`).
             **kwargs: Keyword arguments for `Portfolio.from_order_func`.
 
         Returns:
             PortfolioResult: The portfolio result.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.portfolio`.
+
+            These defaults are not used to fill NaN values after reindexing; vectorbtpro uses its own
+            defaults (typically NaN for floating arrays and preset flags for integer arrays).
+            Use `vectorbtpro.base.reshaping.BCO` with `fill_value` to override.
+
+        !!! hint
+            All broadcastable arguments are handled using `vectorbtpro.base.reshaping.broadcast`
+            to preserve their original shapes for flexible indexing and memory efficiency.
+            Each can be provided per frame, series, row, column, or individual element.
+
+        !!! note
+            All provided functions must be Numba-compiled if Numba is enabled.
+            Also see the notes in `Portfolio.from_orders`.
 
         Examples:
             Working with `Portfolio.from_def_order_func` is similar to using `Portfolio.from_orders`:
@@ -5425,7 +5451,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             dtype: float64
             ```
 
-            Equal-weighted portfolio as in the example under `Portfolio.from_order_func` but 
+            Equal-weighted portfolio as in the example under `Portfolio.from_order_func` but
             much less verbose and with pre-computed asset values during simulation for enhanced performance:
 
             ```pycon
@@ -5502,15 +5528,15 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         This method reassigns the grouping of the portfolio. See
         `vectorbtpro.base.wrapping.Wrapping.regroup` for further details.
 
-        !!! note
-            All cached objects will be lost.
-
         Args:
             group_by (GroupByLike): Grouping key or specification.
             **kwargs: Keyword arguments for grouping.
 
         Returns:
             Portfolio: A new portfolio instance with the updated grouping.
+
+        !!! note
+            All cached objects will be lost.
         """
         if self.cash_sharing:
             if self.wrapper.grouper.is_grouping_modified(group_by=group_by):
@@ -5551,7 +5577,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         """Whether to forward-backward fill NaN values in `Portfolio.close`.
 
         Returns:
-            bool: True if NaN values in the close price series should be filled both forward 
+            bool: True if NaN values in the close price series should be filled both forward
                 and backward, False otherwise.
         """
         return self._fillna_close
@@ -5561,7 +5587,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         """Year frequency derived from the portfolio's index.
 
         Returns:
-            Optional[PandasFrequency]: The inferred yearly frequency based on the portfolio's index, 
+            Optional[PandasFrequency]: The inferred yearly frequency based on the portfolio's index,
                 or None if it cannot be determined.
         """
         return ReturnsAccessor.get_year_freq(
@@ -5593,8 +5619,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         """Order records wrapper class.
 
         Returns:
-            Type: The class used to wrap order records. 
-            
+            Type: The class used to wrap order records.
+
                 Defaults to `vectorbtpro.portfolio.orders.Orders` if not explicitly set.
         """
         if self._orders_cls is None:
@@ -5606,8 +5632,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         """Log records wrapper class.
 
         Returns:
-            Type: The class used to wrap log records. 
-            
+            Type: The class used to wrap log records.
+
                 Defaults to `vectorbtpro.portfolio.logs.Logs` if not explicitly specified.
         """
         if self._logs_cls is None:
@@ -5619,8 +5645,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         """Trade records wrapper class.
 
         Returns:
-            Type: The class used to wrap trade records. 
-            
+            Type: The class used to wrap trade records.
+
                 Defaults to `vectorbtpro.portfolio.trades.Trades` if not explicitly configured.
         """
         if self._trades_cls is None:
@@ -5684,7 +5710,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         """Sequence of call identifiers per row and group.
 
         Returns:
-            Optional[SeriesFrame]: A pandas Series or DataFrame representing the sequence of call 
+            Optional[SeriesFrame]: A pandas Series or DataFrame representing the sequence of call
                 identifiers, or None if no call sequence exists.
         """
         if self.use_in_outputs and self.in_outputs is not None and hasattr(self.in_outputs, "call_seq"):
@@ -5762,10 +5788,10 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
     @custom_property(group_by_aware=False, resample_func="first")
     def open(self) -> tp.Optional[tp.SeriesFrame]:
-        """Open price of each time step.
+        """Open price of each bar.
 
         Returns:
-            Optional[SeriesFrame]: A SeriesFrame containing the open prices for each time step, 
+            Optional[SeriesFrame]: A SeriesFrame containing the open prices for each bar,
                 or None if open price data is not provided.
         """
         if self.open_flex is None:
@@ -5774,10 +5800,10 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
     @custom_property(group_by_aware=False, resample_func="max")
     def high(self) -> tp.Optional[tp.SeriesFrame]:
-        """High price of each time step.
+        """High price of each bar.
 
         Returns:
-            Optional[SeriesFrame]: A SeriesFrame containing the high prices for each time step, 
+            Optional[SeriesFrame]: A SeriesFrame containing the high prices for each bar,
                 or None if high price data is missing.
         """
         if self.high_flex is None:
@@ -5786,10 +5812,10 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
     @custom_property(group_by_aware=False, resample_func="min")
     def low(self) -> tp.Optional[tp.SeriesFrame]:
-        """Low price of each time step.
+        """Low price of each bar.
 
         Returns:
-            Optional[SeriesFrame]: A SeriesFrame of the low prices for each time step, 
+            Optional[SeriesFrame]: A SeriesFrame of the low prices for each bar,
                 or None if low price data is not provided.
         """
         if self.low_flex is None:
@@ -5798,10 +5824,10 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
     @custom_property(group_by_aware=False, resample_func="last")
     def close(self) -> tp.SeriesFrame:
-        """Last asset price at each time step.
+        """Last asset price at each bar.
 
         Returns:
-            SeriesFrame: A SeriesFrame containing the close prices for each time step.
+            SeriesFrame: A SeriesFrame containing the close prices for each bar.
         """
         return self.wrapper.wrap(self.close_flex, group_by=False)
 
@@ -5815,10 +5841,10 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.SeriesFrame:
         """Get forward and backward filled closing price.
-    
+
         Args:
             close (Optional[SeriesFrame]): Price data to fill.
-        
+
                 Uses `Portfolio.close` if not provided.
             jitted (JittedOption): Option controlling JIT compilation.
             chunked (ChunkedOption): Option controlling chunked processing.
@@ -5826,7 +5852,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 Uses `Portfolio.wrapper` if not provided.
             wrap_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
-    
+
         Returns:
             SeriesFrame: The forward and backward filled closing price data.
 
@@ -5850,7 +5876,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
     @custom_property(group_by_aware=False, resample_func="last")
     def bm_close(self) -> tp.Union[None, bool, tp.SeriesFrame]:
         """Benchmark price per unit series.
-    
+
         Returns:
             Union[None, bool, SeriesFrame]
         """
@@ -5873,10 +5899,10 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.Union[None, bool, tp.SeriesFrame]:
         """Get forward and backward filled benchmark closing price.
-    
+
         Args:
             bm_close (Optional[SeriesFrame]): Benchmark price data to fill.
-        
+
                 Uses `Portfolio.bm_close` if not provided.
             jitted (JittedOption): Option controlling JIT compilation.
             chunked (ChunkedOption): Option controlling chunked processing.
@@ -5884,9 +5910,9 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 Uses `Portfolio.wrapper` if not provided.
             wrap_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
-    
+
         Returns:
-            Union[None, bool, SeriesFrame]: The forward and backward filled benchmark closing price data, 
+            Union[None, bool, SeriesFrame]: The forward and backward filled benchmark closing price data,
                 or the original boolean/None value.
 
         See:
@@ -5915,17 +5941,17 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         wrapper: tp.Optional[ArrayWrapper] = None,
     ) -> tp.Union[None, tp.ArrayLike, tp.Series]:
         """Get asset weights.
-    
+
         Args:
             weights (Union[None, bool, ArrayLike]): The asset weights data.
 
                 Uses `Portfolio._weights` if not provided.
-        
+
                 If None or False, the function returns None.
             wrapper (Optional[ArrayWrapper]): Wrapper instance.
 
                 Uses `Portfolio.wrapper` if not provided.
-    
+
         Returns:
             Union[None, ArrayLike, Series]: The wrapped asset weights, or None if weights are not provided.
         """
@@ -5958,10 +5984,10 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         weights 0.7 and 0.3 are rescaled to 1.4 and 0.6, respectively.
 
         Args:
-            weights (Union[None, bool, ArrayLike]): Asset weights to apply. 
+            weights (Union[None, bool, ArrayLike]): Asset weights to apply.
 
                 Uses `Portfolio.get_weights` if not provided.
-            
+
                 Passing None or False disables weights.
             rescale (bool): If True, rescale weights relative to other weights in the same group.
             group_by (GroupByLike): Specification for grouping assets.
@@ -6014,8 +6040,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         """Get view of portfolio with long positions only.
 
         Args:
-            orders (Optional[Orders]): Orders to generate the long view. 
-            
+            orders (Optional[Orders]): Orders to generate the long view.
+
                 Uses `Portfolio.get_orders` if not provided.
             init_position (Optional[ArrayLike]): Initial positions.
 
@@ -6031,7 +6057,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             **kwargs: Keyword arguments passed to the replace method.
 
         Returns:
-            Portfolio: Portfolio view containing only long positions, with non-long positions 
+            Portfolio: Portfolio view containing only long positions, with non-long positions
                 set to zero and price values updated accordingly.
         """
         if orders is None:
@@ -6078,8 +6104,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         """Get view of portfolio with short positions only.
 
         Args:
-            orders (Optional[Orders]): Orders to generate the short view. 
-            
+            orders (Optional[Orders]): Orders to generate the short view.
+
                 Uses `Portfolio.get_orders` if not provided.
             init_position (Optional[ArrayLike]): Initial positions.
 
@@ -6095,7 +6121,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             **kwargs: Keyword arguments passed to the replace method.
 
         Returns:
-            Portfolio: Portfolio view containing only short positions, with non-short positions 
+            Portfolio: Portfolio view containing only short positions, with non-short positions
                 set to zero and price values updated accordingly.
         """
         if orders is None:
@@ -6174,8 +6200,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             close (Optional[SeriesFrame]): Array of close prices.
 
                 Uses `Portfolio.close_flex` if not provided.
-            orders_cls (Optional[type]): Class to instantiate orders. 
-            
+            orders_cls (Optional[type]): Class to instantiate orders.
+
                 Uses `Portfolio.orders_cls` if not provided.
             sim_start (Optional[ArrayLike]): Simulation start time.
             sim_end (Optional[ArrayLike]): Simulation end time.
@@ -6279,11 +6305,11 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         """Return log records.
 
         Args:
-            log_records (Optional[RecordArray]): Log records data. 
-            
+            log_records (Optional[RecordArray]): Log records data.
+
                 Uses `Portfolio.log_records` if not provided.
-            open (Optional[SeriesFrame]): Open price data. 
-            
+            open (Optional[SeriesFrame]): Open price data.
+
                 Uses `Portfolio.open_flex` if not provided.
             high (Optional[SeriesFrame]): High price data.
 
@@ -6380,8 +6406,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             init_price (Optional[ArrayLike]): Initial price data.
 
                 Uses `Portfolio.get_init_price` with `keep_flex=True` or NaN if not provided.
-            entry_trades_cls (Optional[type]): Class used to generate entry trades. 
-            
+            entry_trades_cls (Optional[type]): Class used to generate entry trades.
+
                 Uses `Portfolio.entry_trades_cls` if not provided.
             sim_start (Optional[ArrayLike]): Simulation start time.
             sim_end (Optional[ArrayLike]): Simulation end time.
@@ -6463,8 +6489,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             init_price (Optional[ArrayLike]): Initial price data.
 
                 Uses `Portfolio.get_init_price` with `keep_flex=True` or NaN if not provided.
-            exit_trades_cls (Optional[type]): Class used to generate exit trades. 
-            
+            exit_trades_cls (Optional[type]): Class used to generate exit trades.
+
                 Uses `Portfolio.exit_trades_cls` if not provided.
             sim_start (Optional[ArrayLike]): Simulation start time.
             sim_end (Optional[ArrayLike]): Simulation end time.
@@ -6535,11 +6561,11 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         """Return position records.
 
         Args:
-            trades (Optional[Trades]): Trade records used for constructing positions. 
-            
+            trades (Optional[Trades]): Trade records used for constructing positions.
+
                 Uses `Portfolio.get_exit_trades` if not provided.
-            positions_cls (Optional[type]): Class used to represent positions. 
-            
+            positions_cls (Optional[type]): Class used to represent positions.
+
                 Uses `Portfolio.positions_cls` if not provided.
             sim_start (Optional[ArrayLike]): Simulation start time.
             sim_end (Optional[ArrayLike]): Simulation end time.
@@ -6648,14 +6674,14 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         """Return a readable DataFrame merging order history with entry and exit trade records.
 
         Args:
-            orders (Optional[Orders]): Orders instance. 
-            
+            orders (Optional[Orders]): Orders instance.
+
                 Uses `Portfolio.get_orders` if not provided.
-            entry_trades (Optional[EntryTrades]): Entry trade records. 
-            
+            entry_trades (Optional[EntryTrades]): Entry trade records.
+
                 Uses `Portfolio.get_entry_trades` if not provided.
-            exit_trades (Optional[ExitTrades]): Exit trade records. 
-            
+            exit_trades (Optional[ExitTrades]): Exit trade records.
+
                 Uses `Portfolio.get_exit_trades` if not provided.
             sim_start (Optional[ArrayLike]): The simulation start index.
             sim_end (Optional[ArrayLike]): The simulation end index.
@@ -6667,10 +6693,10 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             DataFrame: A readable DataFrame merging order history with entry and exit trade records.
 
         !!! note
-            The P&L and return aggregated across the DataFrame may not match the actual total 
-            P&L and return, as the DataFrame annotates entry and exit orders with performance 
-            relative to their respective trade types. For accurate total statistics, aggregate 
-            only statistics of a single trade type. Additionally, entry orders include open 
+            The P&L and return aggregated across the DataFrame may not match the actual total
+            P&L and return, as the DataFrame annotates entry and exit orders with performance
+            relative to their respective trade types. For accurate total statistics, aggregate
+            only statistics of a single trade type. Additionally, entry orders include open
             statistics, whereas exit orders do not.
         """
         if not isinstance(cls_or_self, type):
@@ -6759,23 +6785,23 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
     ) -> tp.Tuple[tp.SeriesFrame, tp.SeriesFrame, tp.SeriesFrame, tp.SeriesFrame]:
         """Return signals for long and short entries and exits.
 
-        Compute boolean signals indicating the occurrence of long entry orders, long exit orders, 
-        short entry orders, and short exit orders. Signals are computed per group if grouping is enabled. 
+        Compute boolean signals indicating the occurrence of long entry orders, long exit orders,
+        short entry orders, and short exit orders. Signals are computed per group if grouping is enabled.
         Pass `group_by=False` to disable grouping.
 
         Args:
-            orders (Optional[Orders]): Order records used to determine signals. 
+            orders (Optional[Orders]): Order records used to determine signals.
 
                 Uses `Portfolio.get_orders` if not provided.
-            entry_trades (Optional[EntryTrades]): Entry trade records used to determine signals. 
+            entry_trades (Optional[EntryTrades]): Entry trade records used to determine signals.
 
                 Uses `Portfolio.get_entry_trades` if not provided.
-            exit_trades (Optional[ExitTrades]): Exit trade records used to determine signals. 
+            exit_trades (Optional[ExitTrades]): Exit trade records used to determine signals.
 
                 Uses `Portfolio.get_exit_trades` if not provided.
-            idx_arr (Union[None, str, Array1d]): Key or index array used to map order indices. 
+            idx_arr (Union[None, str, Array1d]): Key or index array used to map order indices.
 
-                If a string, it is used with `vectorbtpro.records.base.Records.map_field`; 
+                If a string, it is used with `vectorbtpro.records.base.Records.map_field`;
                 otherwise, with `vectorbtpro.records.base.Records.map_array`.
             sim_start (Optional[ArrayLike]): Simulation start dates passed to shortcut resolution.
             sim_end (Optional[ArrayLike]): Simulation end dates passed to shortcut resolution.
@@ -6784,7 +6810,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             group_by (GroupByLike): Grouping parameter; set to False to disable grouping.
 
         Returns:
-            Tuple[SeriesFrame, SeriesFrame, SeriesFrame, SeriesFrame]: 
+            Tuple[SeriesFrame, SeriesFrame, SeriesFrame, SeriesFrame]:
                 Signals for long entries, long exits, short entries, and short exits.
         """
         if not isinstance(cls_or_self, type):
@@ -6870,22 +6896,22 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
     ) -> Drawdowns:
         """Return drawdown records computed from portfolio value.
 
-        The drawdown records are calculated using the provided price series through the 
+        The drawdown records are calculated using the provided price series through the
         `vectorbtpro.generic.drawdowns.Drawdowns.from_price` method of the designated drawdowns class.
 
         Args:
-            value (Optional[SeriesFrame]): Price series used to compute drawdowns. 
+            value (Optional[SeriesFrame]): Price series used to compute drawdowns.
 
                 Uses `Portfolio.get_value` if not provided.
             sim_start (Optional[ArrayLike]): Simulation start dates passed to shortcut resolution.
             sim_end (Optional[ArrayLike]): Simulation end dates passed to shortcut resolution.
             rec_sim_range (bool): Whether to recalculate the simulation range.
-            drawdowns_cls (Optional[type]): Class for creating drawdown records. 
+            drawdowns_cls (Optional[type]): Class for creating drawdown records.
 
                 Uses `Portfolio.drawdowns_cls` if not provided.
-            wrapper (Optional[ArrayWrapper]): Array wrapper for formatting output. 
+            wrapper (Optional[ArrayWrapper]): Array wrapper for formatting output.
             group_by (GroupByLike): Grouping specification for the output.
-            **kwargs: Keyword arguments passed to the 
+            **kwargs: Keyword arguments passed to the
                 `vectorbtpro.generic.drawdowns.Drawdowns.from_price` method.
 
         Returns:
@@ -6935,23 +6961,23 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
     ) -> tp.Union[tp.ArrayLike, tp.MaybeSeries]:
         """Return initial position per column.
 
-        Compute and return the initial position for each column. The initial position is 
+        Compute and return the initial position for each column. The initial position is
         optionally weighted and broadcasted to a 2D shape based on the provided array wrapper.
 
         Args:
-            init_position_raw (Optional[ArrayLike]): Raw initial position values. 
+            init_position_raw (Optional[ArrayLike]): Raw initial position values.
 
                 Uses `Portfolio._init_position` if not provided.
-            weights (Union[None, bool, ArrayLike]): Weights applied to the initial positions. 
+            weights (Union[None, bool, ArrayLike]): Weights applied to the initial positions.
 
                 Uses `Portfolio.get_weights` if not provided.
-            
+
                 If False, weights are ignored.
-            wrapper (Optional[ArrayWrapper]): Array wrapper used to shape and format the output. 
+            wrapper (Optional[ArrayWrapper]): Array wrapper used to shape and format the output.
 
                 Uses `Portfolio.wrapper` if not provided.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            keep_flex (bool): If True, returns the broadcasted array without wrapping when 
+            keep_flex (bool): If True, returns the broadcasted array without wrapping when
                 weights are not applied.
 
         Returns:
@@ -6998,14 +7024,14 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
     ) -> tp.SeriesFrame:
         """Get asset flow series per column.
 
-        Returns the total transacted amount of assets at each time step.
+        Returns the total transacted amount of assets at each bar.
 
         Args:
             direction (Union[str, int]): Direction for filtering asset flows.
 
                 See `vectorbtpro.portfolio.enums.Direction` for options.
-            orders (Optional[Orders]): Orders instance containing order data. 
-            
+            orders (Optional[Orders]): Orders instance containing order data.
+
                 Uses `Portfolio.get_orders` if not provided.
             init_position (Optional[ArrayLike]): Initial position values used at the start of the simulation.
 
@@ -7083,11 +7109,11 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
     ) -> tp.SeriesFrame:
         """Get asset series per column.
 
-        Returns the position (asset series) at each time step.
+        Returns the position (asset series) at each bar.
 
         Args:
             direction (Union[str, int]): Direction for filtering asset data.
-        
+
                 See `vectorbtpro.portfolio.enums.Direction` for options.
             asset_flow (Optional[SeriesFrame]): Asset flow series.
 
@@ -7106,7 +7132,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             wrap_kwargs (KwargsLike): Keyword arguments for the wrapper.
 
         Returns:
-            SeriesFrame: Asset series representing the position at each time step.
+            SeriesFrame: Asset series representing the position at each bar.
 
         See:
             `vectorbtpro.portfolio.nb.analysis.assets_nb`
@@ -7168,14 +7194,14 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
     ) -> tp.SeriesFrame:
         """Get position mask per column or group.
 
-        Creates a boolean mask where each element is True if a position exists at the corresponding time step.
+        Creates a boolean mask where each element is True if a position exists at the corresponding bar.
 
         Args:
             direction (Union[str, int]): Direction for filtering asset positions.
-        
+
                 See `vectorbtpro.portfolio.enums.Direction` for options.
-            assets (Optional[SeriesFrame]): Asset series data to generate the mask. 
-            
+            assets (Optional[SeriesFrame]): Asset series data to generate the mask.
+
                 Uses `Portfolio.get_assets` if not provided.
             sim_start (Optional[ArrayLike]): Start time of the simulation.
             sim_end (Optional[ArrayLike]): End time of the simulation.
@@ -7189,7 +7215,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             wrap_kwargs (KwargsLike): Keyword arguments for the wrapper.
 
         Returns:
-            SeriesFrame: Boolean mask indicating the presence of a position at each time step.
+            SeriesFrame: Boolean mask indicating the presence of a position at each bar.
 
         See:
             * `vectorbtpro.portfolio.nb.analysis.position_mask_grouped_nb` if grouping is enabled.
@@ -7252,12 +7278,11 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
     ) -> tp.MaybeSeries:
         """Get position coverage per column or group.
 
-        Calculates the proportion of time steps with a held position relative to the total number
-        of time steps.
+        Calculates the proportion of bars with a held position relative to the total number of bars.
 
         Args:
-            direction (Union[str, int]): Direction identifier for the position. 
-            
+            direction (Union[str, int]): Direction identifier for the position.
+
                 Use "both" to analyze both long and short.
 
                 See `vectorbtpro.portfolio.enums.Direction` for options.
@@ -7340,9 +7365,9 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         wrapper: tp.Optional[ArrayWrapper] = None,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.SeriesFrame:
-        """Get the position's entry price at each time step.
+        """Get the position's entry price at each bar.
 
-        Calculates the entry price applied to each time step based on provided orders and initial values.
+        Calculates the entry price applied to each bar based on provided orders and initial values.
 
         Args:
             orders (Optional[Orders]): Order data used for computing entry prices.
@@ -7367,7 +7392,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             wrap_kwargs (KwargsLike): Keyword arguments for the wrapping procedure.
 
         Returns:
-            SeriesFrame: A frame containing the computed entry prices per time step.
+            SeriesFrame: A frame containing the computed entry prices per bar.
 
         See:
             `vectorbtpro.portfolio.nb.records.get_position_feature_nb`
@@ -7439,9 +7464,9 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         wrapper: tp.Optional[ArrayWrapper] = None,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.SeriesFrame:
-        """Get the position's exit price at each time step.
+        """Get the position's exit price at each bar.
 
-        Determines the exit price for each time step based on order data and initial conditions.
+        Determines the exit price for each bar based on order data and initial conditions.
 
         Args:
             orders (Optional[Orders]): Order data used for computing entry prices.
@@ -7468,7 +7493,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             wrap_kwargs (KwargsLike): Keyword arguments for the wrapping process.
 
         Returns:
-            SeriesFrame: A frame containing the computed exit prices per time step.
+            SeriesFrame: A frame containing the computed exit prices per bar.
 
         See:
             `vectorbtpro.portfolio.nb.records.get_position_feature_nb`
@@ -7563,7 +7588,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             weights (Union[None, bool, ArrayLike]): Weights for scaling cash deposits.
 
                 Uses `Portfolio.get_weights` if not provided.
-            
+
                 If False, weights are ignored.
             keep_flex (bool): If True, returns the output in a flexible format.
             jitted (JittedOption): Option to control just-in-time compilation.
@@ -7674,7 +7699,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             weights (Union[None, bool, ArrayLike]): Weights for scaling cash deposits.
 
                 Uses `Portfolio.get_weights` if not provided.
-            
+
                 If False, weights are ignored.
             jitted (JittedOption): Option to control just-in-time compilation.
             chunked (ChunkedOption): Option to control chunked processing.
@@ -7740,7 +7765,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             weights (Union[None, bool, ArrayLike]): Weights for scaling cash earnings.
 
                 Uses `Portfolio.get_weights` if not provided.
-            
+
                 If False, weights are ignored.
             keep_flex (bool): If True, returns the output in a flexible format.
             jitted (JittedOption): Option to control just-in-time compilation.
@@ -7822,7 +7847,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.ArrayLike:
         """Get total cash earnings series aggregated per column or group.
-    
+
         Args:
             cash_earnings_raw (Optional[ArrayLike]): Raw cash earnings data.
 
@@ -7833,7 +7858,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             weights (Union[None, bool, ArrayLike]): Weights for scaling cash earnings.
 
                 Uses `Portfolio.get_weights` if not provided.
-            
+
                 If False, weights are ignored.
             jitted (JittedOption): Option to control just-in-time compilation.
             chunked (ChunkedOption): Option to control chunked processing.
@@ -7842,7 +7867,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
                 Uses `Portfolio.wrapper` if not provided.
             group_by (GroupByLike): Specification for grouping.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
-        
+
         Returns:
             ArrayLike: Wrapped total cash earnings aggregated per column or group.
         """
@@ -7884,16 +7909,10 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.SeriesFrame:
         """Get cash flow series per column or group.
-    
-        Use `free` to return the flow of free cash that does not exceed the initial level 
+
+        Use `free` to return the flow of free cash that does not exceed the initial level
         since any operation incurs a cost.
-    
-        !!! note
-            Does not include cash deposits, but includes earnings.
-        
-            Using `free` yields the same result as during simulation only when `leverage=1`. 
-            For other cases, prefill the state instead of reconstructing it.
-    
+
         Args:
             free (bool): Flag indicating whether to calculate free cash flow.
             orders (Optional[Orders]): Orders instance used for computing cash flow.
@@ -7908,7 +7927,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             weights (Union[None, bool, ArrayLike]): Weights used for calculations.
 
                 Uses `Portfolio.get_weights` if not provided.
-            
+
                 If False, weights are ignored.
             jitted (JittedOption): Option to control JIT compilation.
             chunked (ChunkedOption): Option to enable chunked processing.
@@ -7917,13 +7936,19 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
                 Uses `Portfolio.wrapper` if not provided.
             group_by (GroupByLike): Grouping specification for the result.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
-    
+
         Returns:
             SeriesFrame: Wrapped cash flow series per column or group.
 
         See:
             * `vectorbtpro.portfolio.nb.analysis.cash_flow_nb` regardless of grouping.
             * `vectorbtpro.portfolio.nb.analysis.cash_flow_grouped_nb` if grouping is enabled.
+
+        !!! note
+            Does not include cash deposits, but includes earnings.
+
+            Using `free` yields the same result as during simulation only when `leverage=1`.
+            For other cases, prefill the state instead of reconstructing it.
         """
         if not isinstance(cls_or_self, type):
             if orders is None:
@@ -8006,7 +8031,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
         Args:
             init_cash_raw (Optional[ArrayLike]): Initial cash amount or mode identifier.
-            
+
                 Uses `Portfolio._init_cash` if not provided.
             cash_deposits (Optional[ArrayLike]): Cash deposits to apply.
 
@@ -8024,7 +8049,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             weights (Union[None, bool, ArrayLike]): Weighting factor; if set to False, weights are ignored.
 
                 Uses `Portfolio.get_weights` if not provided.
-            
+
                 If False, weights are ignored.
             jitted (JittedOption): Option to control JIT compilation.
             chunked (ChunkedOption): Option to control chunked processing.
@@ -8146,7 +8171,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
         Args:
             free (bool): Flag indicating whether free cash flow is used.
-            
+
                 For details, see `Portfolio.get_cash_flow`.
             init_cash (Optional[ArrayLike]): Initial cash amount.
 
@@ -8367,11 +8392,11 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         Combines initial cash with the value of the initial position.
 
         Args:
-            init_position_value (Optional[MaybeSeries]): The initial position value per column. 
+            init_position_value (Optional[MaybeSeries]): The initial position value per column.
 
                 Uses `Portfolio.get_init_position` if not provided.
             init_cash (Optional[MaybeSeries]): The initial cash per column.
-            
+
                 Uses `Portfolio.get_init_cash` if not provided.
             split_shared (bool): Indicates whether to split shared cash among columns.
             sim_start (Optional[ArrayLike]): Simulation start time.
@@ -8514,19 +8539,19 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
     ) -> tp.SeriesFrame:
         """Return asset value series per column or group.
 
-        Computes asset values based on close prices and asset quantities. 
+        Computes asset values based on close prices and asset quantities.
         If grouping is active, grouped calculations are applied.
 
         Args:
-            direction (Union[str, int]): Specifies the asset direction. 
-            
+            direction (Union[str, int]): Specifies the asset direction.
+
                 Typically "both" is used to consider all directions.
 
                 See `vectorbtpro.portfolio.enums.Direction` for options.
-            close (Optional[SeriesFrame]): Series or DataFrame of close prices. 
-            
+            close (Optional[SeriesFrame]): Series or DataFrame of close prices.
+
                 If not provided, uses `Portfolio.filled_close` if available; otherwise, uses `Portfolio.close`.
-            assets (Optional[SeriesFrame]): Series or DataFrame of asset amounts. 
+            assets (Optional[SeriesFrame]): Series or DataFrame of asset amounts.
 
                 Uses `Portfolio.get_assets` if not provided.
             sim_start (Optional[ArrayLike]): Simulation start time.
@@ -8609,9 +8634,9 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
     ) -> tp.SeriesFrame:
         """Get portfolio value series per column or group.
 
-        Calculates the portfolio value series for each asset or group based on the provided 
-        cash flows and asset values. By default, each asset's portfolio value is computed 
-        independently with the initial cash balance and positions representing the entire group. 
+        Calculates the portfolio value series for each asset or group based on the provided
+        cash flows and asset values. By default, each asset's portfolio value is computed
+        independently with the initial cash balance and positions representing the entire group.
         This functionality is useful for generating returns and comparing assets within the same group.
 
         Args:
@@ -8697,13 +8722,13 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
     ) -> tp.SeriesFrame:
         """Get gross exposure.
 
-        Calculates the gross exposure for the portfolio by combining asset values and 
-        portfolio value. When both directions are considered, ensure that `asset_value` 
+        Calculates the gross exposure for the portfolio by combining asset values and
+        portfolio value. When both directions are considered, ensure that `asset_value`
         represents the sum of absolute long-only and short-only asset values.
 
         Args:
-            direction (Union[str, int]): Direction indicating the exposure type. 
-            
+            direction (Union[str, int]): Direction indicating the exposure type.
+
                 See `vectorbtpro.portfolio.enums.Direction` for options.
             asset_value (Optional[SeriesFrame]): Asset value series used in the exposure calculation.
 
@@ -8729,7 +8754,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             `vectorbtpro.portfolio.nb.analysis.gross_exposure_nb`
 
         !!! note
-            When both directions, `asset_value` must include the addition of the absolute long-only and 
+            When both directions, `asset_value` must include the addition of the absolute long-only and
             short-only asset values.
         """
         direction = map_enum_fields(direction, enums.Direction)
@@ -8904,11 +8929,11 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.SeriesFrame:
         """Return portfolio allocation series per column.
-    
-        Calculate the portfolio allocation series using the provided asset and 
-        portfolio value data. If called on an instance and asset_value or value 
+
+        Calculate the portfolio allocation series using the provided asset and
+        portfolio value data. If called on an instance and asset_value or value
         is not provided, they are derived from shortcut attributes.
-    
+
         Args:
             direction (Union[str, int]): Direction for allocation calculation.
 
@@ -8929,7 +8954,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
                 Uses `Portfolio.wrapper` if not provided.
             group_by (GroupByLike): Specification for grouping the results.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-    
+
         Returns:
             SeriesFrame: Portfolio allocation series per column.
 
@@ -8999,10 +9024,10 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.MaybeSeries:
         """Return total profit per column or group.
-    
+
         Compute the total profit from order records using an efficient calculation pathway.
         For instance-level calls, if various inputs are not provided, they are derived using shortcut attributes.
-    
+
         Args:
             close (Optional[SeriesFrame]): Price series (close prices) used for profit calculation.
 
@@ -9029,7 +9054,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
                 Uses `Portfolio.wrapper` if not provided.
             group_by (GroupByLike): Specification for grouping profit aggregation.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-    
+
         Returns:
             MaybeSeries: Total profit calculated from order records.
 
@@ -9131,9 +9156,9 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.MaybeSeries:
         """Return final portfolio value per column or group.
-    
+
         Calculate the final portfolio value by summing the input value and the total profit.
-    
+
         Args:
             input_value (Optional[MaybeSeries]): Initial portfolio or input value used for calculation.
 
@@ -9151,7 +9176,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
                 Uses `Portfolio.wrapper` if not provided.
             group_by (GroupByLike): Specification for grouping the result.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-    
+
         Returns:
             MaybeSeries: Final portfolio value after adding the total profit to the input value.
         """
@@ -9518,7 +9543,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
                 Uses `Portfolio.wrapper` if not provided.
             group_by (GroupByLike): Specification for grouping.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
-        
+
         Returns:
             SeriesFrame: Computed asset return series.
 
@@ -9600,9 +9625,6 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         Computes the market value based on close prices, initial portfolio value, and cash deposits.
         When grouping is applied, the initial cash is evenly distributed among the assets in the group.
 
-        !!! note
-            Does not account for fees and slippage. For accurate results, create a separate portfolio.
-
         Args:
             close (Optional[SeriesFrame]): Price data used for market value computation.
 
@@ -9612,7 +9634,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
                 Uses `Portfolio.get_init_value` with `group_by=False` if not provided.
             cash_deposits (Optional[ArrayLike]): Cash deposit values.
 
-                Uses `Portfolio.get_cash_deposits` with `split_shared=True`, `keep_flex=True`, 
+                Uses `Portfolio.get_cash_deposits` with `split_shared=True`, `keep_flex=True`,
                 and `group_by=False` or 0 if not provided.
             sim_start (Optional[ArrayLike]): Simulation start date or index.
             sim_end (Optional[ArrayLike]): Simulation end date or index.
@@ -9624,13 +9646,16 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
                 Uses `Portfolio.wrapper` if not provided.
             group_by (GroupByLike): Specification for grouping.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
-        
+
         Returns:
             SeriesFrame: Computed market value series.
 
         See:
             * `vectorbtpro.portfolio.nb.analysis.market_value_grouped_nb` if grouping is enabled.
             * `vectorbtpro.portfolio.nb.analysis.market_value_nb` if grouping is disabled.
+
+        !!! note
+            Does not account for fees and slippage. For accurate results, create a separate portfolio.
         """
         if not isinstance(cls_or_self, type):
             if close is None:
@@ -9962,7 +9987,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
 
         Returns:
-            Optional[SeriesFrame]: A wrapped series of benchmark values per column or group, or 
+            Optional[SeriesFrame]: A wrapped series of benchmark values per column or group, or
                 None if benchmarking is disabled.
         """
         if not isinstance(cls_or_self, type):
@@ -10030,7 +10055,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             wrap_kwargs (KwargsLike): Keyword arguments for the wrapper.
 
         Returns:
-            Optional[SeriesFrame]: Benchmark return series per column or group, or 
+            Optional[SeriesFrame]: Benchmark return series per column or group, or
                 None if benchmarking is disabled.
         """
         if not isinstance(cls_or_self, type):
@@ -10085,7 +10110,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
     ) -> ReturnsAccessor:
         """Get returns accessor of type `vectorbtpro.returns.accessors.ReturnsAccessor`.
 
-        Retrieve the returns accessor for the portfolio. If the return series is not provided, 
+        Retrieve the returns accessor for the portfolio. If the return series is not provided,
         it is resolved based on the `use_asset_returns` flag and other parameters.
 
         Args:
@@ -10292,9 +10317,9 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
     def pre_resolve_attr(self, attr: str, final_kwargs: tp.KwargsLike = None) -> str:
         """Pre-process an attribute before resolution.
 
-        Apply modifications based on the provided keyword arguments. Specifically, if `use_asset_returns` 
-        is set in `final_kwargs` and the attribute is "returns", it is changed to "asset_returns". 
-        Similarly, if `trades_type` is provided, the attribute may be modified to "entry_trades", 
+        Apply modifications based on the provided keyword arguments. Specifically, if `use_asset_returns`
+        is set in `final_kwargs` and the attribute is "returns", it is changed to "asset_returns".
+        Similarly, if `trades_type` is provided, the attribute may be modified to "entry_trades",
         "exit_trades", or "positions" based on the trade type.
 
         Args:
@@ -10916,7 +10941,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 Uses `Portfolio.get_exit_trades` if not provided.
             positions (Optional[Positions]): Positions data for plotting position shapes.
-            
+
                 Uses `Portfolio.get_positions` if not provided.
             sim_start (Optional[ArrayLike]): Simulation start index.
             sim_end (Optional[ArrayLike]): Simulation end index.
@@ -10943,6 +10968,9 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
         Returns:
             BaseFigure: Figure with plotted trade signals.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
         """
         from vectorbtpro._settings import settings
 
@@ -11125,6 +11153,9 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
         Returns:
             BaseFigure: Figure with the plotted cash flow.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
         """
         from vectorbtpro.utils.figure import get_domain
         from vectorbtpro._settings import settings
@@ -11239,11 +11270,14 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             xref (Optional[str]): Reference for the x-axis.
             yref (Optional[str]): Reference for the y-axis.
             hline_shape_kwargs (KwargsLike): Keyword arguments for horizontal line shape.
-            **kwargs: Keyword arguments passed to 
+            **kwargs: Keyword arguments passed to
                 `vectorbtpro.generic.accessors.GenericSRAccessor.plot_against`.
 
         Returns:
             BaseFigure: Figure object with the depicted cash balance.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
         """
         from vectorbtpro.utils.figure import get_domain
         from vectorbtpro._settings import settings
@@ -11374,11 +11408,14 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             xref (Optional[str]): Reference for the x-axis.
             yref (Optional[str]): Reference for the y-axis.
             hline_shape_kwargs (KwargsLike): Keyword arguments for horizontal line shape.
-            **kwargs: Keyword arguments passed to 
+            **kwargs: Keyword arguments passed to
                 `vectorbtpro.generic.accessors.GenericAccessor.plot`.
 
         Returns:
             BaseFigure: Figure object with the depicted asset flow.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
         """
         from vectorbtpro.utils.figure import get_domain
         from vectorbtpro._settings import settings
@@ -11487,13 +11524,16 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             line_shape (str): Shape of the plot line (e.g. "hv").
             xref (Optional[str]): Reference for the x-axis. If None, inferred from the figure.
             yref (Optional[str]): Reference for the y-axis. If None, inferred from the figure.
-            hline_shape_kwargs (KwargsLike): Keyword arguments for 
+            hline_shape_kwargs (KwargsLike): Keyword arguments for
                 customizing the horizontal line shape.
-            **kwargs: Keyword arguments for 
+            **kwargs: Keyword arguments for
                 `vectorbtpro.generic.accessors.GenericSRAccessor.plot_against`.
 
         Returns:
             BaseFigure: Figure object with the plotted asset data.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
         """
         from vectorbtpro.utils.figure import get_domain
         from vectorbtpro._settings import settings
@@ -11613,13 +11653,16 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             line_shape (str): Shape of the plot line (e.g. "hv").
             xref (Optional[str]): Reference for the x-axis. If None, inferred from the figure.
             yref (Optional[str]): Reference for the y-axis. If None, inferred from the figure.
-            hline_shape_kwargs (KwargsLike): Keyword arguments for 
+            hline_shape_kwargs (KwargsLike): Keyword arguments for
                 customizing the horizontal line shape.
-            **kwargs: Keyword arguments for 
+            **kwargs: Keyword arguments for
                 `vectorbtpro.generic.accessors.GenericSRAccessor.plot_against`.
 
         Returns:
             BaseFigure: Figure object with the plotted asset value data.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
         """
         from vectorbtpro.utils.figure import get_domain
         from vectorbtpro._settings import settings
@@ -11736,19 +11779,22 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 Uses `Portfolio.wrapper` if not provided.
             group_by (GroupByLike): Grouping specification to aggregate data.
-            xref (Optional[str]): x-axis reference identifier. 
-            
+            xref (Optional[str]): x-axis reference identifier.
+
                 If None, it is inferred from the figure.
-            yref (Optional[str]): y-axis reference identifier. 
-            
+            yref (Optional[str]): y-axis reference identifier.
+
                 If None, it is inferred from the figure.
-            hline_shape_kwargs (KwargsLike): Keyword arguments for 
+            hline_shape_kwargs (KwargsLike): Keyword arguments for
                 the horizontal line shape.
-            **kwargs: Keyword arguments passed to 
+            **kwargs: Keyword arguments passed to
                 `vectorbtpro.generic.accessors.GenericSRAccessor.plot_against`.
 
         Returns:
             BaseFigure: The figure displaying the plotted value.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
         """
         from vectorbtpro.utils.figure import get_domain
         from vectorbtpro._settings import settings
@@ -11869,11 +11915,14 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             wrapper (Optional[ArrayWrapper]): Array wrapper instance used for data extraction.
             group_by (GroupByLike): Grouping specification to aggregate data.
             pct_scale (bool): Flag indicating whether to scale the returns as percentages.
-            **kwargs: Keyword arguments passed to 
+            **kwargs: Keyword arguments passed to
                 `vectorbtpro.returns.accessors.ReturnsSRAccessor.plot_cumulative`.
 
         Returns:
             BaseFigure: The figure displaying cumulative returns.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
         """
         from vectorbtpro._settings import settings
 
@@ -11942,7 +11991,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         Args:
             column (Optional[Label]): Column label for selecting drawdown data.
             drawdowns (Optional[Drawdowns]): Drawdowns instance.
-            
+
                 Uses `Portfolio.get_drawdowns` if not provided.
             sim_start (Optional[ArrayLike]): Simulation start index or date.
             sim_end (Optional[ArrayLike]): Simulation end index or date.
@@ -11952,11 +12001,14 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             group_by (GroupByLike): Grouping specification to aggregate data.
             xref (str): x-axis reference identifier.
             yref (str): y-axis reference identifier.
-            **kwargs: Keyword arguments passed to 
+            **kwargs: Keyword arguments passed to
                 `vectorbtpro.generic.drawdowns.Drawdowns.plot`.
 
         Returns:
             BaseFigure: The figure displaying the plotted drawdowns.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
         """
         from vectorbtpro._settings import settings
 
@@ -12021,7 +12073,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
         Args:
             column (Optional[Label]): Column label for selecting a specific sub-data.
-            init_value (Optional[MaybeSeries]): Initial portfolio value used for 
+            init_value (Optional[MaybeSeries]): Initial portfolio value used for
                 scaling when `pct_scale` is False.
 
                 Uses `Portfolio.get_init_value` if not provided.
@@ -12039,13 +12091,16 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             pct_scale (bool): If True, format the y-axis ticks as percentages.
             xref (str): Reference identifier for the x-axis.
             yref (str): Reference identifier for the y-axis.
-            hline_shape_kwargs (KwargsLike): Keyword arguments for 
+            hline_shape_kwargs (KwargsLike): Keyword arguments for
                 customizing the horizontal line shape.
-            **kwargs: Keyword arguments passed to 
+            **kwargs: Keyword arguments passed to
             `vectorbtpro.generic.accessors.GenericAccessor.plot`.
 
         Returns:
             BaseFigure: A figure object containing the underwater plot.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
         """
         from vectorbtpro.utils.figure import get_domain
         from vectorbtpro._settings import settings
@@ -12157,7 +12212,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
         Args:
             column (Optional[Label]): Column label for selecting a specific sub-data.
-            direction (Union[str, int]): Indicator for the exposure direction 
+            direction (Union[str, int]): Indicator for the exposure direction
                 (e.g., "both" for combined exposure).
 
                 See `vectorbtpro.portfolio.enums.Direction` for options.
@@ -12175,13 +12230,16 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             line_shape (str): Plot line shape style, such as "hv".
             xref (Optional[str]): Reference identifier for the x-axis.
             yref (Optional[str]): Reference identifier for the y-axis.
-            hline_shape_kwargs (KwargsLike): Keyword arguments for 
+            hline_shape_kwargs (KwargsLike): Keyword arguments for
                 customizing the horizontal line shape.
-            **kwargs: Keyword arguments passed to 
+            **kwargs: Keyword arguments passed to
                 `vectorbtpro.generic.accessors.GenericSRAccessor.plot_against`.
 
         Returns:
             BaseFigure: A figure object containing the gross exposure plot.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
         """
         from vectorbtpro.utils.figure import get_domain
         from vectorbtpro._settings import settings
@@ -12298,13 +12356,16 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             line_shape (str): Shape of the plot line (e.g., "hv").
             xref (Optional[str]): Reference for the x-axis; determined from the plot if not provided.
             yref (Optional[str]): Reference for the y-axis; determined from the plot if not provided.
-            hline_shape_kwargs (KwargsLike): Keyword arguments for 
+            hline_shape_kwargs (KwargsLike): Keyword arguments for
                 configuring the horizontal line shape.
-            **kwargs: Keyword arguments passed to 
+            **kwargs: Keyword arguments passed to
                 `vectorbtpro.generic.accessors.GenericSRAccessor.plot_against`.
 
         Returns:
             BaseFigure: Figure instance representing the net exposure plot.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
         """
         from vectorbtpro.utils.figure import get_domain
         from vectorbtpro._settings import settings
@@ -12423,7 +12484,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             colorway (Union[None, str, Sequence[str]]): Color scheme used for the plot.
             xref (Optional[str]): Reference for the x-axis; determined from the plot if not provided.
             yref (Optional[str]): Reference for the y-axis; determined from the plot if not provided.
-            **kwargs: Keyword arguments passed to 
+            **kwargs: Keyword arguments passed to
                 `vectorbtpro.generic.accessors.GenericAccessor.areaplot`.
 
         Returns:
@@ -12662,7 +12723,9 @@ Portfolio.override_in_output_config_doc(__pdoc__)
 Portfolio.override_metrics_doc(__pdoc__)
 Portfolio.override_subplots_doc(__pdoc__)
 
-__pdoc__["Portfolio.plot"] = """Refer to `vectorbtpro.generic.plots_builder.PlotsBuilderMixin.plots` 
+__pdoc__[
+    "Portfolio.plot"
+] = """Refer to `vectorbtpro.generic.plots_builder.PlotsBuilderMixin.plots` 
 for additional details."""
 
 PF = Portfolio

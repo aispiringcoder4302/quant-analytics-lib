@@ -214,6 +214,9 @@ class SignalsAccessor(GenericAccessor):
         wrapper (Union[ArrayWrapper, ArrayLike]): Array wrapper instance or array-like input.
         obj (Optional[ArrayLike]): Underlying object.
         **kwargs: Keyword arguments passed to `vectorbtpro.generic.accessors.GenericAccessor`.
+
+    !!! info
+        For default settings, see `vectorbtpro._settings.signals`.
     """
 
     def __init__(
@@ -229,7 +232,7 @@ class SignalsAccessor(GenericAccessor):
     @hybrid_property
     def sr_accessor_cls(cls_or_self) -> tp.Type["SignalsSRAccessor"]:
         """Accessor class for `pd.Series`.
-        
+
         Returns:
             Type[SignalsSRAccessor]: The class of the Series accessor.
         """
@@ -238,7 +241,7 @@ class SignalsAccessor(GenericAccessor):
     @hybrid_property
     def df_accessor_cls(cls_or_self) -> tp.Type["SignalsDFAccessor"]:
         """Accessor class for `pd.DataFrame`.
-        
+
         Returns:
             Type[SignalsDFAccessor]: The class of the DataFrame accessor.
         """
@@ -310,7 +313,7 @@ class SignalsAccessor(GenericAccessor):
         Arguments to `place_func_nb` can be passed either as `*args` or using `place_args` (but not both).
 
         Args:
-            shape (Union[ShapeLike, ArrayWrapper]): A shape-like tuple representing dimensions 
+            shape (Union[ShapeLike, ArrayWrapper]): A shape-like tuple representing dimensions
                 or an `vectorbtpro.base.wrapping.ArrayWrapper` instance.
             place_func_nb (PlaceFunc): A Numba function for placing signals.
             *args: Positional arguments for `place_func_nb`.
@@ -422,16 +425,16 @@ class SignalsAccessor(GenericAccessor):
         `vectorbtpro.base.wrapping.ArrayWrapper` instance; if an instance is provided,
         it is used as the output wrapper.
 
-        Arguments to `entry_place_func_nb` can be supplied using either positional arguments or 
-        `entry_place_args`, and similarly for `exit_place_func_nb` with `exit_place_args`. 
+        Arguments to `entry_place_func_nb` can be supplied using either positional arguments or
+        `entry_place_args`, and similarly for `exit_place_func_nb` with `exit_place_args`.
         They should not be provided for both functions simultaneously.
 
         Args:
-            shape (Union[ShapeLike, ArrayWrapper]): A shape-like tuple or 
+            shape (Union[ShapeLike, ArrayWrapper]): A shape-like tuple or
                 an `vectorbtpro.base.wrapping.ArrayWrapper` instance defining the target shape.
             entry_place_func_nb (PlaceFunc): Numba-jitted function for placing entry signals.
             exit_place_func_nb (PlaceFunc): Numba-jitted function for placing exit signals.
-            args: Positional arguments forwarded to both entry and exit functions if 
+            args: Positional arguments forwarded to both entry and exit functions if
                 explicit arguments are not provided.
             entry_place_args (ArgsLike): Positional arguments passed to `entry_place_func_nb`.
             exit_place_args (ArgsLike): Positional arguments passed to `exit_place_func_nb`.
@@ -439,7 +442,7 @@ class SignalsAccessor(GenericAccessor):
             exit_wait (int): Number of periods to wait before an exit signal is triggered.
             broadcast_named_args (KwargsLike): Named arguments for broadcasting to the target shape.
             broadcast_kwargs (KwargsLike): Keyword arguments passed to the broadcast function.
-            template_context (KwargsLike): Additional context for template substitution in 
+            template_context (KwargsLike): Additional context for template substitution in
                 the entry and exit arguments.
             jitted (JittedOption): Option to control JIT compilation.
             chunked (ChunkedOption): Option to control chunked processing.
@@ -447,7 +450,7 @@ class SignalsAccessor(GenericAccessor):
             wrap_kwargs (KwargsLike): Keyword arguments for configuring the output wrapper.
 
         Returns:
-            Tuple[SeriesFrame, SeriesFrame]: A tuple containing the entry signals and 
+            Tuple[SeriesFrame, SeriesFrame]: A tuple containing the entry signals and
                 exit signals as wrapped arrays.
 
         See:
@@ -820,7 +823,7 @@ class SignalsAccessor(GenericAccessor):
             2020-01-05  False  False   True
             ```
 
-            For each column and time step, pick a signal with 50% probability:
+            For each row and column, pick a signal with 50% probability:
 
             ```pycon
             >>> vbt.pd_acc.signals.generate_random(
@@ -976,7 +979,7 @@ class SignalsAccessor(GenericAccessor):
             2020-01-05   True   True   True
             ```
 
-            For each column and time step, pick entry with 50% probability and exit right after:
+            For each row and column, pick entry with 50% probability and exit right after:
 
             ```pycon
             >>> en, ex = vbt.pd_acc.signals.generate_random_both(
@@ -1110,7 +1113,7 @@ class SignalsAccessor(GenericAccessor):
             2020-01-05  False  False   True
             ```
 
-            After each entry in `mask` and at each time step, generate exit with 50% probability:
+            After each entry in `mask` and at each row, generate exit with 50% probability:
 
             ```pycon
             >>> mask.vbt.signals.generate_random_exits(prob=0.5, seed=42)
@@ -1830,8 +1833,8 @@ class SignalsAccessor(GenericAccessor):
     ) -> tp.Union[tp.SeriesFrame, MappedArray]:
         """Compute signal ranks.
 
-        Either positional arguments (`*args`) or tuple-based arguments (`rank_args`) must be supplied 
-        for the ranking function, but not both. The input is broadcast using 
+        Either positional arguments (`*args`) or tuple-based arguments (`rank_args`) must be supplied
+        for the ranking function, but not both. The input is broadcast using
         `vectorbtpro.base.reshaping.broadcast` if `reset_by` is specified.
 
         Optionally, the returned result can be converted to a
@@ -2094,8 +2097,6 @@ class SignalsAccessor(GenericAccessor):
     ) -> tp.SeriesFrame:
         """Select signals that satisfy the condition `pos_rank == 0`.
 
-        Uses `SignalsAccessor.pos_rank`.
-
         Args:
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
             **kwargs: Keyword arguments forwarded to `SignalsAccessor.pos_rank`.
@@ -2113,8 +2114,6 @@ class SignalsAccessor(GenericAccessor):
         **kwargs,
     ) -> tp.SeriesFrame:
         """Select signals that satisfy the condition `pos_rank == 0`.
-
-        Uses `SignalsAccessor.pos_rank_after`.
 
         Args:
             reset_by (ArrayLike): Array used to reset the position ranking.
@@ -2134,8 +2133,6 @@ class SignalsAccessor(GenericAccessor):
         **kwargs,
     ) -> tp.SeriesFrame:
         """Select signals that satisfy the condition `pos_rank == n`.
-
-        Uses `SignalsAccessor.pos_rank`.
 
         Args:
             n (int): The specific position rank that signals must equal.
@@ -2157,8 +2154,6 @@ class SignalsAccessor(GenericAccessor):
     ) -> tp.SeriesFrame:
         """Select signals that satisfy the condition `pos_rank == n`.
 
-        Uses `SignalsAccessor.pos_rank_after`.
-
         Args:
             n (int): The specific position rank value.
             reset_by (ArrayLike): Array used to reset the position ranking.
@@ -2178,8 +2173,6 @@ class SignalsAccessor(GenericAccessor):
         **kwargs,
     ) -> tp.SeriesFrame:
         """Select signals that satisfy the condition `pos_rank >= n`.
-
-        Uses `SignalsAccessor.pos_rank`.
 
         Args:
             n (int): The lower bound for the position rank.
@@ -2201,8 +2194,6 @@ class SignalsAccessor(GenericAccessor):
     ) -> tp.SeriesFrame:
         """Select signals that satisfy the condition `pos_rank >= n`.
 
-        Uses `SignalsAccessor.pos_rank_after`.
-
         Args:
             n (int): The lower bound for the position rank.
             reset_by (ArrayLike): Array used to reset the position ranking.
@@ -2222,8 +2213,6 @@ class SignalsAccessor(GenericAccessor):
         **kwargs,
     ) -> tp.SeriesFrame:
         """Select signals that satisfy the condition `pos_rank < n`.
-
-        Uses `SignalsAccessor.pos_rank`.
 
         Args:
             n (int): The upper bound for the position rank (exclusive).
@@ -2245,8 +2234,6 @@ class SignalsAccessor(GenericAccessor):
     ) -> tp.SeriesFrame:
         """Select signals that satisfy the condition `pos_rank < n`.
 
-        Uses `SignalsAccessor.pos_rank_after`.
-
         Args:
             n (int): The upper bound for the position rank (exclusive).
             reset_by (ArrayLike): Array used to reset the position ranking.
@@ -2262,8 +2249,6 @@ class SignalsAccessor(GenericAccessor):
     def pos_rank_mapped(self, group_by: tp.GroupByLike = None, **kwargs) -> MappedArray:
         """Get a mapped array of signal position ranks.
 
-        Uses `SignalsAccessor.pos_rank`.
-
         Args:
             group_by (GroupByLike): Grouping specification.
             **kwargs: Keyword arguments forwarded to `SignalsAccessor.pos_rank`.
@@ -2275,8 +2260,6 @@ class SignalsAccessor(GenericAccessor):
 
     def partition_pos_rank_mapped(self, group_by: tp.GroupByLike = None, **kwargs) -> MappedArray:
         """Get a mapped array of partition position ranks.
-
-        Uses `SignalsAccessor.partition_pos_rank`.
 
         Args:
             group_by (GroupByLike): Grouping specification.
@@ -2668,7 +2651,7 @@ class SignalsAccessor(GenericAccessor):
             signal_index_type (str): Type for generating the signal index.
 
                 Allowed values:
-            
+
                 * "range": Basic signal counter in a column.
                 * "position(s)": Row index of the signal in a column.
                 * "label(s)": Label identifying the signal in a column.
@@ -3075,7 +3058,7 @@ class SignalsAccessor(GenericAccessor):
 
         This function computes the average signal position relative to the middle of the column.
         The result indicates the signal distribution:
-    
+
         * `-1.0`: Only the first signal is set.
         * `1.0`: Only the last signal is set.
         * `0.0`: Symmetric distribution around the middle.
@@ -3393,6 +3376,9 @@ class SignalsAccessor(GenericAccessor):
         Returns:
             Union[BaseFigure, TraceUpdater]: A figure or trace updater instance produced by the scatter plot.
 
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
+
         Examples:
             ```pycon
             >>> ts = pd.Series([1, 2, 3, 2, 1], index=mask.index)
@@ -3472,6 +3458,9 @@ class SignalsAccessor(GenericAccessor):
 
         See:
             `SignalsSRAccessor.plot_as_markers`
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
         """
         from vectorbtpro._settings import settings
 
@@ -3513,6 +3502,9 @@ class SignalsAccessor(GenericAccessor):
 
         See:
             `SignalsSRAccessor.plot_as_markers`
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
         """
         from vectorbtpro._settings import settings
 
@@ -3554,6 +3546,9 @@ class SignalsAccessor(GenericAccessor):
 
         See:
             `SignalsSRAccessor.plot_as_markers`
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
         """
         from vectorbtpro._settings import settings
 
@@ -3599,6 +3594,9 @@ class SignalsAccessor(GenericAccessor):
 
         See:
             `SignalsSRAccessor.plot_as_markers`
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
         """
         from vectorbtpro._settings import settings
 

@@ -16,6 +16,9 @@
     Data is processed along index (axis 0).
 
     All functions passed as arguments must be Numba-compiled.
+
+!!! info
+    For default settings, see `vectorbtpro._settings.returns`.
 """
 
 import numpy as np
@@ -632,7 +635,7 @@ def annualized_return_1d_nb(
         ann_factor (float): Factor used for annualization.
         log_returns (bool): Flag indicating whether returns are logarithmic.
         periods (Optional[float]): Number of periods for the return calculation.
-            
+
             If None, the period is determined by the length of the returns array.
 
     Returns:
@@ -674,7 +677,7 @@ def annualized_return_nb(
         ann_factor (float): Annualization factor.
         log_returns (bool): Flag indicating whether returns are logarithmic.
         periods (Optional[FlexArray1dLike]): Array-like specifying the number of periods for each column.
-            
+
             If None, periods are determined from the simulation range.
         sim_start (Optional[FlexArray1dLike]): Array-like of simulation start indices for each column.
         sim_end (Optional[FlexArray1dLike]): Array-like of simulation end indices for each column.
@@ -1637,7 +1640,7 @@ def rolling_sharpe_ratio_nb(
     Args:
         returns (Array2d): Two-dimensional array of returns.
         window (int): Rolling window size.
-        
+
             Determines the number of observations used in each rolling calculation.
         ann_factor (float): Annualization factor applied to the returns.
         ddof (int): Degrees of freedom for Sharpe ratio calculation.
@@ -1691,7 +1694,7 @@ def rolling_sharpe_ratio_nb(
 def downside_risk_1d_nb(returns: tp.Array1d, ann_factor: float) -> float:
     """Calculate downside deviation for a 1D returns array.
 
-    Computes the square root of the mean squared negative returns multiplied by the 
+    Computes the square root of the mean squared negative returns multiplied by the
     square root of the annualization factor, representing the downside risk.
 
     Args:
@@ -1832,8 +1835,8 @@ def rolling_downside_risk_nb(
 def sortino_ratio_1d_nb(returns: tp.Array1d, ann_factor: float) -> float:
     """Compute the Sortino ratio for a 1D returns array.
 
-    Calculates the ratio of the mean annualized return to the downside risk. 
-    Returns `np.nan` if insufficient data or `np.inf` if the downside risk is zero but 
+    Calculates the ratio of the mean annualized return to the downside risk.
+    Returns `np.nan` if insufficient data or `np.inf` if the downside risk is zero but
     the average return is non-zero.
 
     Args:
@@ -2576,10 +2579,10 @@ def profit_factor_nb(
     Args:
         returns (Array2d): 2D array of returns where each column represents a distinct series.
         sim_start (Optional[FlexArray1dLike]): Array of start indices for the simulation period for each column.
-        
+
             Defines the beginning of the computation range.
         sim_end (Optional[FlexArray1dLike]): Array of end indices for the simulation period for each column.
-        
+
             Defines the end of the computation range.
 
     Returns:
@@ -2631,10 +2634,10 @@ def rolling_profit_factor_nb(
         window (int): Window size for the rolling computation.
         minp (Optional[int]): Minimum number of periods required for a valid result.
         sim_start (Optional[FlexArray1dLike]): Array of start indices for the simulation period for each column.
-        
+
             Defines the beginning of the computation range.
         sim_end (Optional[FlexArray1dLike]): Array of end indices for the simulation period for each column.
-        
+
             Defines the end of the computation range.
 
     Returns:
@@ -2702,10 +2705,10 @@ def common_sense_ratio_nb(
     Args:
         returns (Array2d): 2D array of returns where each column represents a distinct series.
         sim_start (Optional[FlexArray1dLike]): Array of start indices for the simulation period for each column.
-        
+
             Defines the beginning of the computation period.
         sim_end (Optional[FlexArray1dLike]): Array of end indices for the simulation period for each column.
-        
+
             Defines the end of the computation period.
 
     Returns:
@@ -2757,10 +2760,10 @@ def rolling_common_sense_ratio_nb(
         window (int): Window size for the rolling computation.
         minp (Optional[int]): Minimum number of periods required for a valid result.
         sim_start (Optional[FlexArray1dLike]): Array of start indices for the simulation period for each column.
-        
+
             Defines the beginning of the computation range.
         sim_end (Optional[FlexArray1dLike]): Array of end indices for the simulation period for each column.
-        
+
             Defines the end of the computation range.
 
     Returns:
@@ -2847,13 +2850,13 @@ def value_at_risk_nb(
         returns (Array2d): 2D array of returns where each column represents a distinct series.
         cutoff (float): Cutoff probability for VaR calculation expressed as a percentile (e.g., 0.05).
         sim_start (Optional[FlexArray1dLike]): Array of start indices for the simulation period for each column.
-        
+
             Defines the beginning of the computation window.
         sim_end (Optional[FlexArray1dLike]): Array of end indices for the simulation period for each column.
-        
+
             Defines the end of the computation window.
         noarr_mode (bool): Flag indicating whether to use the no-array allocation method.
-        
+
             If True, uses `value_at_risk_noarr_1d_nb`; otherwise, uses `value_at_risk_1d_nb`.
 
     Returns:
@@ -3189,7 +3192,7 @@ def capture_ratio_nb(
         ann_factor (float): Annualization factor.
         log_returns (bool): Flag indicating whether returns are logarithmic.
         periods (Optional[FlexArray1dLike]): Periods used for adjustment.
-            
+
             If None, computed as the difference between simulation end and simulation start.
         sim_start (Optional[FlexArray1dLike]): Simulation start indices per asset.
         sim_end (Optional[FlexArray1dLike]): Simulation end indices per asset.
@@ -3312,7 +3315,7 @@ def up_capture_ratio_1d_nb(
         ann_factor (float): Annualization factor.
         log_returns (bool): Flag indicating whether returns are logarithmic.
         periods (Optional[float]): Number of periods to consider.
-            
+
             If None, defaults to the length of the returns array.
 
     Returns:
@@ -3381,14 +3384,14 @@ def up_capture_ratio_nb(
         ann_factor (float): Annualization factor.
         log_returns (bool): Flag indicating whether returns are logarithmic.
         periods (Optional[FlexArray1dLike]): Periods used for adjustment.
-            
+
             If None, computed as the difference between simulation end and simulation start.
         sim_start (Optional[FlexArray1dLike]): Simulation start indices per asset.
         sim_end (Optional[FlexArray1dLike]): Simulation end indices per asset.
 
     Returns:
         Array1d: Up capture ratios computed for each series.
-        
+
     !!! tip
         This function is parallelizable.
     """
@@ -3497,20 +3500,20 @@ def down_capture_ratio_1d_nb(
     periods: tp.Optional[float] = None,
 ) -> float:
     """Compute the down capture ratio for periods with negative benchmark returns.
-    
+
     This function computes the ratio of the asset's annualized negative return
     to the benchmark's annualized negative return. Only periods where the benchmark
     return is negative are considered.
-    
+
     Args:
         returns (Array1d): 1-dimensional array of asset returns.
         bm_returns (Array1d): 1-dimensional array of benchmark returns.
         ann_factor (float): Annualization factor used for scaling the computed return.
         log_returns (bool): Flag indicating whether returns are logarithmic.
         periods (Optional[float]): Number of periods for annualization.
-        
+
             If None, the function uses the length of the returns array.
-    
+
     Returns:
         float: The computed down capture ratio.
 
@@ -3573,27 +3576,27 @@ def down_capture_ratio_nb(
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array1d:
     """Compute the down capture ratio for each column using 2-dimensional arrays.
-    
+
     This function calculates the down capture ratio for each column by computing the ratio of the
     asset's annualized negative return to the benchmark's annualized negative return.
     Only periods with negative benchmark returns are considered.
-    
+
     Args:
         returns (Array2d): 2-dimensional array of asset returns.
         bm_returns (Array2d): 2-dimensional array of benchmark returns.
         ann_factor (float): Annualization factor used for scaling the computed return.
         log_returns (bool): Flag indicating whether returns are logarithmic.
         periods (Optional[FlexArray1dLike]): Array-like specifying the number of periods for each column.
-        
+
             If None, periods are computed as `sim_end` minus `sim_start`.
         sim_start (Optional[FlexArray1dLike]): Array-like defining the starting indices for simulation ranges.
         sim_end (Optional[FlexArray1dLike]): Array-like defining the ending indices for simulation ranges.
-    
+
     Returns:
         Array1d: Array of down capture ratios for each column.
 
             Each element is `np.nan` or `np.inf` if the computation is invalid for that column.
-    
+
     !!! tip
         This function is parallelizable.
     """
@@ -3651,11 +3654,11 @@ def rolling_down_capture_ratio_nb(
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array2d:
     """Compute the rolling down capture ratio over a moving window for each column.
-    
+
     This function calculates the down capture ratio over a rolling window by applying the computation
     to segments of the asset and benchmark returns. It returns a 2-dimensional array where each column
     contains the rolling down capture ratio.
-    
+
     Args:
         returns (Array2d): 2-dimensional array of asset returns.
         bm_returns (Array2d): 2-dimensional array of benchmark returns.
@@ -3665,11 +3668,11 @@ def rolling_down_capture_ratio_nb(
         minp (Optional[int]): Minimum number of periods required to compute a valid rolling result.
         sim_start (Optional[FlexArray1dLike]): Array-like defining the starting indices for simulation ranges.
         sim_end (Optional[FlexArray1dLike]): Array-like defining the ending indices for simulation ranges.
-    
+
     Returns:
         Array2d: 2-dimensional array of rolling down capture ratios for each column,
             with invalid computations represented by `np.nan`.
-    
+
     !!! tip
         This function is parallelizable.
     """

@@ -21,6 +21,10 @@ __pdoc__ = {}
 
 
 class RemoteData(CustomData):
-    """Data class for fetching remote data."""
+    """Data class for fetching remote data.
+
+    !!! info
+        For default settings, see `custom.remote` in `vectorbtpro._settings.data`.
+    """
 
     _settings_path: tp.SettingsPath = dict(custom="data.custom.remote")

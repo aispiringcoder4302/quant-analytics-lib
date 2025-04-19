@@ -171,6 +171,9 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         sim_start (Optional[ArrayLike]): Simulation start, which can be a scalar or array-like.
         sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
         **kwargs: Keyword arguments passed to `vectorbtpro.generic.accessors.GenericAccessor`.
+
+    !!! info
+        For default settings, see `vectorbtpro._settings.returns`.
     """
 
     def __init__(
@@ -359,7 +362,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
     @hybrid_property
     def sr_accessor_cls(cls_or_self) -> tp.Type["ReturnsSRAccessor"]:
         """Accessor class for `pd.Series`.
-        
+
         Returns:
             Type[ReturnsSRAccessor]: The accessor class for Series.
         """
@@ -368,7 +371,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
     @hybrid_property
     def df_accessor_cls(cls_or_self) -> tp.Type["ReturnsDFAccessor"]:
         """Accessor class for `pd.DataFrame`.
-        
+
         Returns:
             Type[ReturnsDFAccessor]: The accessor class for DataFrame.
         """
@@ -435,9 +438,12 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
     @property
     def bm_returns(self) -> tp.Optional[tp.SeriesFrame]:
         """Return benchmark returns wrapped using the assigned array wrapper.
-    
+
         Returns:
             Optional[SeriesFrame]: The benchmark returns if available; otherwise, None.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.returns`.
         """
         from vectorbtpro._settings import settings
 
@@ -457,14 +463,14 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         sim_end: tp.Optional[tp.ArrayLike] = None,
     ) -> tp.Optional[ReturnsAccessorT]:
         """Return a returns accessor for benchmark returns based on provided data and simulation range.
-    
+
         Args:
             bm_returns (Optional[ArrayLike]): Benchmark returns data.
 
                 If not provided, the `bm_returns` property is used.
             sim_start (Optional[ArrayLike]): Simulation start, which can be a scalar or array-like.
             sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
-    
+
         Returns:
             Optional[ReturnsAccessorT]: A returns accessor instance for benchmark returns,
                 or None if benchmark returns are unavailable.
@@ -485,7 +491,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
     @property
     def bm_returns_acc(self) -> tp.Optional[ReturnsAccessorT]:
         """Benchmark returns accessor using default arguments.
-        
+
         Returns:
             Optional[ReturnsAccessor]: A returns accessor instance for benchmark returns,
                 or None if benchmark returns are unavailable.
@@ -495,7 +501,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
     @property
     def log_returns(self) -> bool:
         """Flag indicating if returns and benchmark returns are provided as log returns.
-        
+
         Returns:
             bool: True if returns are log returns; otherwise, False.
         """
@@ -504,10 +510,10 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
     @classmethod
     def auto_detect_ann_factor(cls, index: pd.DatetimeIndex) -> tp.Optional[float]:
         """Auto-detect the annualization factor using a datetime index.
-    
+
         Args:
             index (DatetimeIndex): Datetime index used for computing the annualization factor.
-    
+
         Returns:
             Optional[float]: The computed annualization factor, or None if indeterminable.
         """
@@ -526,11 +532,11 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
     @classmethod
     def parse_ann_factor(cls, index: pd.DatetimeIndex, method_name: str = "max") -> tp.Optional[float]:
         """Parse the annualization factor from a datetime index using a specified method.
-    
+
         Args:
             index (DatetimeIndex): Datetime index used to determine the annualization factor.
             method_name (str): Method name to apply on yearly counts (e.g., "max").
-    
+
         Returns:
             Optional[float]: The parsed annualization factor, or None if not determinable.
         """
@@ -553,12 +559,12 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         method_name: tp.Optional[str] = None,
     ) -> tp.PandasFrequency:
         """Convert an annualization factor into a year frequency.
-    
+
         Args:
             ann_factor (float): The annualization factor.
             freq (PandasFrequency): Data frequency to be scaled.
             method_name (Optional[str]): Name of the NumPy method to apply to the annualization factor.
-    
+
         Returns:
             PandasFrequency: The resulting year frequency.
         """
@@ -576,10 +582,10 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
     @classmethod
     def year_freq_depends_on_index(cls, year_freq: tp.FrequencyLike) -> bool:
         """Determine whether the specified year frequency depends on the index.
-    
+
         Args:
             year_freq (FrequencyLike): The year frequency specification.
-    
+
         Returns:
             bool: True if the frequency depends on the index; otherwise, False.
         """
@@ -599,19 +605,22 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         freq: tp.Optional[tp.PandasFrequency] = None,
     ) -> tp.Optional[tp.PandasFrequency]:
         """Resolve and return the year frequency based on provided input and index information.
-    
+
         If `year_freq` is a string starting with "auto", the annualization factor is auto-detected using
         `ReturnsAccessor.auto_detect_ann_factor`. If it has the form "auto_[method_name]", the corresponding
         NumPy method is applied to the annualization factor. Similarly, if `year_freq` starts with "index_", the
         annualization factor is parsed using `ReturnsAccessor.parse_ann_factor`.
-    
+
         Args:
             year_freq (Optional[FrequencyLike]): Year frequency specification.
             index (Optional[Index]): Datetime index used for annualization factor detection.
             freq (Optional[PandasFrequency]): Data frequency corresponding to the index.
-    
+
         Returns:
             Optional[PandasFrequency]: The resolved year frequency, or None if it cannot be determined.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.returns`.
         """
         if not isinstance(cls_or_self, type):
             if year_freq is None:
@@ -661,7 +670,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
     @property
     def year_freq(self) -> tp.Optional[tp.PandasFrequency]:
         """Year frequency.
-        
+
         Returns:
             Optional[PandasFrequency]: The year frequency if available; otherwise, None.
         """
@@ -675,14 +684,17 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         raise_error: bool = False,
     ) -> tp.Optional[float]:
         """Return the annualization factor based on the given year frequency and data frequency.
-    
+
         Args:
             year_freq (Optional[FrequencyLike]): Year frequency specification.
             freq (Optional[FrequencyLike]): Data frequency specification.
             raise_error (bool): Flag indicating whether to raise an error if the frequencies are None.
-    
+
         Returns:
             Optional[float]: The computed annualization factor, or None if not determinable.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.returns` and `vectorbtpro._settings.wrapping`.
         """
         if isinstance(cls_or_self, type):
             from vectorbtpro._settings import settings
@@ -722,7 +734,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
     @property
     def ann_factor(self) -> float:
         """Annualization factor.
-        
+
         Returns:
             float: The annualization factor.
         """
@@ -802,7 +814,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
     @property
     def periods(self) -> tp.Optional[tp.ArrayLike]:
         """Periods computed for the returns accessor.
-        
+
         Returns:
             Optional[ArrayLike]: The periods array, or None if not applicable.
         """
@@ -827,6 +839,9 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
         Returns:
             Kwargs: Merged defaults dictionary.
+
+        !!! info
+            For default settings, see `defaults` in `vectorbtpro._settings.returns`.
         """
         from vectorbtpro._settings import settings
 
@@ -855,7 +870,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
         Returns:
             SeriesFrame: The mirrored returns.
-        
+
         See:
             `vectorbtpro.returns.nb.mirror_returns_nb`
         """
@@ -895,7 +910,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
         Returns:
             SeriesFrame: The cumulative returns.
-        
+
         See:
             `vectorbtpro.returns.nb.cumulative_returns_nb`
         """
@@ -1067,7 +1082,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
         Returns:
             MaybeSeries: The final cumulative return value.
-        
+
         See:
             `vectorbtpro.returns.nb.final_value_nb`
         """
@@ -1197,11 +1212,11 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         """Compute rolling total return.
 
         Args:
-            window (Optional[int]): Rolling window size. 
-            
+            window (Optional[int]): Rolling window size.
+
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
-            minp (Optional[int]): Minimum number of periods required. 
-            
+            minp (Optional[int]): Minimum number of periods required.
+
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
             sim_start (Optional[ArrayLike]): Simulation period start.
             sim_end (Optional[ArrayLike]): Simulation period end.
@@ -2036,7 +2051,6 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         )
         return self.wrapper.wrap(out, group_by=False, **resolve_dict(wrap_kwargs))
 
-
     def sortino_ratio(
         self,
         required_return: tp.Optional[float] = None,
@@ -2079,7 +2093,6 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         )
         wrap_kwargs = merge_dicts(dict(name_or_index="sortino_ratio"), wrap_kwargs)
         return self.wrapper.wrap_reduced(out, group_by=False, **wrap_kwargs)
-
 
     def rolling_sortino_ratio(
         self,
@@ -2138,7 +2151,6 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         )
         return self.wrapper.wrap(out, group_by=False, **resolve_dict(wrap_kwargs))
 
-
     def information_ratio(
         self,
         bm_returns: tp.Optional[tp.ArrayLike] = None,
@@ -2189,7 +2201,6 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         )
         wrap_kwargs = merge_dicts(dict(name_or_index="information_ratio"), wrap_kwargs)
         return self.wrapper.wrap_reduced(out, group_by=False, **wrap_kwargs)
-
 
     def rolling_information_ratio(
         self,
@@ -2255,7 +2266,6 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             sim_end=sim_end,
         )
         return self.wrapper.wrap(out, group_by=False, **resolve_dict(wrap_kwargs))
-
 
     def beta(
         self,
@@ -3432,7 +3442,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
     @property
     def drawdowns(self) -> Drawdowns:
         """Drawdowns computed from cumulative returns using default arguments.
-        
+
         Returns:
             Drawdowns: An instance containing drawdown records.
         """
@@ -3478,7 +3488,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
     @property
     def qs(self) -> "QSAdapter":
         """Quantstats adapter for performance analysis.
-        
+
         Returns:
             QSAdapter: An instance of `vectorbtpro.returns.qs_adapter.QSAdapter`.
         """
@@ -3494,17 +3504,17 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         silence_warnings: bool = False,
     ) -> ReturnsAccessorT:
         """Resolve self.
-    
+
         If `year_freq` is provided in `cond_kwargs` and differs from the current instance,
         creates and returns a new instance with the updated `year_freq` and disabled caching,
         while warning the user if warnings are not silenced. Otherwise, returns the resolved instance.
-    
+
         Args:
             cond_kwargs (KwargsLike): Keyword arguments for condition overrides.
             custom_arg_names (Optional[Set[str]]): Set of custom attribute names to consider during resolution.
             impacts_caching (bool): Flag indicating whether the changes affect caching.
             silence_warnings (bool): If True, suppress warnings regarding object copying.
-    
+
         Returns:
             ReturnsAccessor: The resolved instance.
         """
@@ -3543,7 +3553,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
     @property
     def stats_defaults(self) -> tp.Kwargs:
         """Default settings for `ReturnsAccessor.stats`.
-    
+
         Merges defaults from:
 
         * `vectorbtpro.generic.accessors.GenericAccessor.stats_defaults`
@@ -3754,6 +3764,9 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
         Returns:
             BaseFigure: Figure displaying the cumulative returns plot.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
 
         Examples:
             ```pycon

@@ -12,7 +12,7 @@
 
 The functions in this module combine two or more arrays using a custom function and
 stack the results horizontally. This is essential for concatenating outputs from various
-hyper-parameter combinations in the VectorBT® PRO package. All functions are available
+hyper-parameter combinations in the vectorbtpro package. All functions are available
 in both Python and Numba-compiled forms.
 """
 
@@ -55,8 +55,6 @@ def apply_and_concat_none_nb(
 ) -> None:
     """Execute the JIT-compiled function multiple times for in-place operations.
 
-    Uses `custom_apply_and_concat_none_nb`.
-
     Args:
         ntimes (int): The number of times to execute `apply_func_nb`.
         apply_func_nb (Callable): Function invoked for each index that returns nothing.
@@ -64,6 +62,9 @@ def apply_and_concat_none_nb(
 
     Returns:
         None
+
+    See:
+        `custom_apply_and_concat_none_nb`
     """
     custom_apply_and_concat_none_nb(np.arange(ntimes), apply_func_nb, *args)
 
@@ -130,6 +131,9 @@ def apply_and_concat_one_nb(
 
     Returns:
         Array2d: A concatenated 2D array of the outputs from each function call.
+
+    See:
+        `custom_apply_and_concat_one_nb`
     """
     return custom_apply_and_concat_one_nb(np.arange(ntimes), apply_func_nb, *args)
 
@@ -203,6 +207,9 @@ def apply_and_concat_multiple_nb(
     Returns:
         List[Array2d]: A list of 2D arrays, each representing the concatenated outputs for
             one of the multiple return arrays.
+
+    See:
+        `custom_apply_and_concat_multiple_nb`
     """
     return custom_apply_and_concat_multiple_nb(np.arange(ntimes), apply_func_nb, *args)
 
@@ -286,6 +293,11 @@ def apply_and_concat(
             * None if no outputs are produced.
             * A 2D array if a single output is produced.
             * A list of 2D arrays if multiple outputs are produced.
+
+    See:
+        * `custom_apply_and_concat_none_nb` if `jitted_loop` is True and `n_outputs` is 0
+        * `custom_apply_and_concat_one_nb` if `jitted_loop` is True and `n_outputs` is 1
+        * `custom_apply_and_concat_multiple_nb` if `jitted_loop` is True and `n_outputs` > 1
 
     !!! note
         When `jitted_loop` is True, `n_outputs` must be provided as Numba does not support
@@ -372,6 +384,9 @@ def combine_and_concat_nb(
 
     Returns:
         Array2d: The concatenated result obtained by combining the objects.
+
+    See:
+        `apply_and_concat_one_nb`
     """
     return apply_and_concat_one_nb(len(others), select_and_combine_nb, obj, others, combine_func_nb, *args)
 
@@ -423,9 +438,8 @@ def combine_and_concat(
     Returns:
         Array2d: The concatenated result obtained after combining the objects.
 
-    !!! note
-        When `jitted_loop` is True, the function resolves `select_and_combine_nb` using
-        `vectorbtpro.registries.jit_registry.JITRegistry.resolve`.
+    See:
+        * `select_and_combine_nb` if `jitted_loop` is True
     """
     if jitted_loop:
         apply_func = jit_reg.resolve(select_and_combine_nb)
@@ -485,12 +499,11 @@ def combine_multiple(
     Returns:
         Any: The combined result after pairwise merging of the objects.
 
-    !!! note
-        Numba doesn't support variable keyword arguments.
+    See:
+        * `combine_multiple_nb` if `jitted_loop` is True
 
     !!! note
-        If `jitted_loop` is True, the function resolves `combine_multiple_nb` using
-        `vectorbtpro.registries.jit_registry.JITRegistry.resolve`.
+        Numba doesn't support variable keyword arguments.
     """
     if jitted_loop:
         func = jit_reg.resolve(combine_multiple_nb)

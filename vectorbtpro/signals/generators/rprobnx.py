@@ -50,7 +50,7 @@ RPROBNX = SignalFactory(
 class _RPROBNX(RPROBNX):
     """Class representing a random entry and exit signal generator based on probabilities.
 
-    See: 
+    See:
         * `vectorbtpro.signals.nb.rand_by_prob_place_nb` for details on the entry and exit placement.
         * `vectorbtpro.signals.generators.RPROB` for parameter details.
 

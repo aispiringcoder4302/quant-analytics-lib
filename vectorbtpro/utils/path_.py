@@ -8,7 +8,11 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module providing utilities for working with file and directory paths."""
+"""Module providing utilities for working with file and directory paths.
+
+!!! info
+    For default settings, see `vectorbtpro._settings.path`.
+"""
 
 import os
 import shutil
@@ -189,7 +193,8 @@ def check_mkdir(
     Returns:
         None
 
-    For defaults, see `mkdir` in `vectorbtpro._settings.path`.
+    !!! info
+        For default settings, see `mkdir` in `vectorbtpro._settings.path`.
     """
     from vectorbtpro._settings import settings
 

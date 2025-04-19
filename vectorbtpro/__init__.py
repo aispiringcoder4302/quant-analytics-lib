@@ -160,10 +160,13 @@ else:
     raise ValueError(f"Invalid star import: '{star_import}'")
 
 
-def whats_imported():
+def whats_imported() -> None:
     """Prints a formatted table of names and values for all references imported with `from vectorbtpro import *`.
 
     The table is constructed using a pandas Series and displayed via the `ptable` utility function.
+
+    Returns:
+        None
     """
     import pandas as pd
 

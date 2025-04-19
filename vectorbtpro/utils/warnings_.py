@@ -93,9 +93,9 @@ def warn_stdout(func: tp.Callable) -> tp.Callable:
     """
 
     @wraps(func)
-    def wrapper(*a, **ka):
+    def wrapper(*args, **kwargs) -> tp.Any:
         with redirect_stdout(io.StringIO()) as f:
-            out = func(*a, **ka)
+            out = func(*args, **kwargs)
         s = f.getvalue()
         if len(s) > 0:
             warn(s)
@@ -119,7 +119,7 @@ class WarningsFiltered(warnings.catch_warnings, Base):
     @property
     def entries(self) -> tp.Optional[tp.MaybeSequence[tp.Union[str, tp.Kwargs]]]:
         """Simple entries to add to the warnings filters.
-        
+
         Returns:
             Optional[MaybeSequence[Union[str, Kwargs]]]: The entries for the warnings filters.
         """

@@ -8,7 +8,11 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module providing classes and functions for flexible indexing."""
+"""Module providing classes and functions for flexible indexing.
+
+!!! info
+    For default settings, see `vectorbtpro._settings.indexing`.
+"""
 
 from vectorbtpro import _typing as tp
 from vectorbtpro._settings import settings

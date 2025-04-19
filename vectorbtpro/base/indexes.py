@@ -162,6 +162,9 @@ def repeat_index(index: tp.IndexLike, n: int, ignore_ranges: tp.Optional[bool] =
 
     Returns:
         Index: A new index with each element repeated n times.
+
+    !!! info
+        For default settings, see `vectorbtpro._settings.broadcasting`.
     """
     from vectorbtpro._settings import settings
 
@@ -190,6 +193,9 @@ def tile_index(index: tp.IndexLike, n: int, ignore_ranges: tp.Optional[bool] = N
         Index: The tiled index.
 
             If the input is a MultiIndex, the resulting index is a MultiIndex with tiled levels.
+
+    !!! info
+        For default settings, see `vectorbtpro._settings.broadcasting`.
     """
     from vectorbtpro._settings import settings
 
@@ -224,6 +230,9 @@ def clean_index(
 
     Returns:
         Index: The cleaned index.
+
+    !!! info
+        For default settings, see `vectorbtpro._settings.broadcasting`.
     """
     from vectorbtpro._settings import settings
 
@@ -738,6 +747,9 @@ def drop_duplicate_levels(index: tp.Index, keep: tp.Optional[str] = None) -> tp.
 
     Returns:
         Index: The index with duplicate levels dropped.
+
+    !!! info
+        For default settings, see `vectorbtpro._settings.broadcasting`.
     """
     from vectorbtpro._settings import settings
 

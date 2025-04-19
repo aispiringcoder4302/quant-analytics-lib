@@ -134,6 +134,9 @@ class OHLCVDFAccessor(OHLCDataMixin, GenericDFAccessor):
         obj (Optional[ArrayLike]): The underlying data object.
         feature_map (KwargsLike): Mapping for OHLCV features.
         **kwargs: Additional keyword arguments.
+
+    !!! info
+        For default settings, see `vectorbtpro._settings.ohlcv`.
     """
 
     def __init__(
@@ -150,7 +153,7 @@ class OHLCVDFAccessor(OHLCDataMixin, GenericDFAccessor):
     @hybrid_property
     def df_accessor_cls(cls_or_self) -> tp.Type["OHLCVDFAccessor"]:
         """Accessor class for pandas DataFrames.
-        
+
         Returns:
             Type[OHLCVDFAccessor]: The accessor class.
         """
@@ -464,6 +467,9 @@ class OHLCVDFAccessor(OHLCDataMixin, GenericDFAccessor):
 
         Returns:
             BaseFigure: The updated figure containing the OHLC plot.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.ohlcv` and `vectorbtpro._settings.plotting`.
         """
         from vectorbtpro.utils.module_ import assert_can_import
 
@@ -545,6 +551,9 @@ class OHLCVDFAccessor(OHLCDataMixin, GenericDFAccessor):
 
         Returns:
             BaseFigure: The updated figure with the volume bar plot.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
         """
         from vectorbtpro.utils.module_ import assert_can_import
 

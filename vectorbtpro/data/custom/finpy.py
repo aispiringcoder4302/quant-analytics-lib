@@ -40,6 +40,11 @@ class FinPyData(RemoteData):
         * https://github.com/cuemacro/findatapy for more information on findatapy.
         * `FinPyData.fetch_symbol` for argument details.
 
+    !!! info
+        For default settings, see `custom.finpy` in `vectorbtpro._settings.data`.
+
+        Global settings can be provided per exchange id using the `exchanges` dictionary.
+
     Examples:
         Pull data (keyword argument format):
 
@@ -276,9 +281,6 @@ class FinPyData(RemoteData):
 
         Returns:
             SymbolData: The fetched data and a metadata dictionary.
-
-        For defaults, see `custom.finpy` in `vectorbtpro._settings.data`.
-        Global settings can be provided per exchange id using the `exchanges` dictionary.
         """
         from vectorbtpro.utils.module_ import assert_can_import
 

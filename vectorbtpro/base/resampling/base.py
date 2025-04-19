@@ -89,7 +89,7 @@ class Resampler(Configured):
     @property
     def source_index(self) -> tp.Index:
         """Source index used for resampling.
-        
+
         Returns:
             Index: The source index.
         """
@@ -98,7 +98,7 @@ class Resampler(Configured):
     @property
     def target_index(self) -> tp.Index:
         """Target index produced by resampling.
-        
+
         Returns:
             Index: The target index.
         """
@@ -107,7 +107,7 @@ class Resampler(Configured):
     @property
     def source_freq(self) -> tp.AnyPandasFrequency:
         """Source index frequency or date offset.
-        
+
         Returns:
             AnyPandasFrequency: The frequency of the source index.
         """
@@ -116,7 +116,7 @@ class Resampler(Configured):
     @property
     def target_freq(self) -> tp.AnyPandasFrequency:
         """Target index frequency or date offset.
-        
+
         Returns:
             AnyPandasFrequency: The frequency of the target index.
         """
@@ -125,9 +125,12 @@ class Resampler(Configured):
     @property
     def silence_warnings(self) -> bool:
         """Flag indicating whether warnings are silenced.
-        
+
         Returns:
             bool: True if warnings are silenced, False otherwise.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.resampling`.
         """
         from vectorbtpro._settings import settings
 
@@ -315,7 +318,7 @@ class Resampler(Configured):
     @cached_property
     def source_lbound_index(self) -> tp.Index:
         """Left bound of the source datetime index.
-        
+
         Returns:
             Index: The left bound of the source index.
         """
@@ -324,7 +327,7 @@ class Resampler(Configured):
     @cached_property
     def source_rbound_index(self) -> tp.Index:
         """Right bound of the source datetime index.
-        
+
         Returns:
             Index: The right bound of the source index.
         """
@@ -333,7 +336,7 @@ class Resampler(Configured):
     @cached_property
     def target_lbound_index(self) -> tp.Index:
         """Left bound of the target datetime index.
-        
+
         Returns:
             Index: The left bound of the target index.
         """
@@ -342,7 +345,7 @@ class Resampler(Configured):
     @cached_property
     def target_rbound_index(self) -> tp.Index:
         """Right bound of the target datetime index.
-        
+
         Returns:
             Index: The right bound of the target index.
         """

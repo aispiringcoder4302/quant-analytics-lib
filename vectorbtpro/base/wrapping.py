@@ -8,7 +8,11 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module providing classes for wrapping NumPy arrays into pandas Series and DataFrames."""
+"""Module providing classes for wrapping NumPy arrays into pandas Series and DataFrames.
+
+!!! info
+    For default settings, see `vectorbtpro._settings.wrapping`.
+"""
 
 import numpy as np
 import pandas as pd
@@ -55,7 +59,7 @@ class HasWrapper(ExtPandasIndexer, ItemParamable):
     @property
     def unwrapped(self) -> tp.Any:
         """Underlying unwrapped object.
-        
+
         Returns:
             Any: The unwrapped object.
         """
@@ -63,13 +67,16 @@ class HasWrapper(ExtPandasIndexer, ItemParamable):
 
     @hybrid_method
     def should_wrap(cls_or_self) -> bool:
-        """Return whether wrapping should be applied."""
+        """Return whether wrapping should be applied.
+
+        Returns:
+            bool: True if wrapping is needed, False otherwise."""
         return True
 
     @property
     def wrapper(self) -> "ArrayWrapper":
         """Underlying array wrapper of type `ArrayWrapper` used for data manipulation.
-        
+
         Returns:
             ArrayWrapper: The array wrapper instance.
         """
@@ -78,7 +85,7 @@ class HasWrapper(ExtPandasIndexer, ItemParamable):
     @property
     def column_only_select(self) -> bool:
         """Indicates whether indexing is restricted to columns.
-        
+
         Returns:
             bool: True if indexing is limited to columns, False otherwise.
         """
@@ -87,7 +94,7 @@ class HasWrapper(ExtPandasIndexer, ItemParamable):
     @property
     def range_only_select(self) -> bool:
         """Indicates whether row indexing should be performed using slices only.
-        
+
         Returns:
             bool: True if row indexing is limited to slices, False otherwise.
         """
@@ -96,7 +103,7 @@ class HasWrapper(ExtPandasIndexer, ItemParamable):
     @property
     def group_select(self) -> bool:
         """Indicates whether indexing operations can be performed on groups.
-        
+
         Returns:
             bool: True if indexing operations can be performed on groups, False otherwise.
         """
@@ -1547,7 +1554,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
     @property
     def index(self) -> tp.Index:
         """The index associated with the wrapped array.
-        
+
         Returns:
             Index: The index of the wrapped array.
         """
@@ -1568,7 +1575,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
     @property
     def ns_index(self) -> tp.Array1d:
         """Nanosecond index representation obtained from `vectorbtpro.base.accessors.BaseIDXAccessor.to_ns`.
-        
+
         Returns:
             Array1d: The nanosecond index.
         """
@@ -1592,7 +1599,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
     @property
     def columns(self) -> tp.Index:
         """The columns associated with the wrapped array.
-        
+
         Returns:
             Index: The columns of the wrapped array.
         """
@@ -1636,7 +1643,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
     @property
     def ndim(self) -> int:
         """The number of dimensions of the wrapped array.
-        
+
         Returns:
             int: The number of dimensions.
         """
@@ -1713,7 +1720,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
     def freq(self) -> tp.Optional[tp.PandasFrequency]:
         """Frequency associated with the `ArrayWrapper` as defined by
         `vectorbtpro.base.accessors.BaseIDXAccessor.freq`.
-        
+
         Returns:
             Optional[PandasFrequency]: The frequency of the index.
         """
@@ -1723,7 +1730,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
     def ns_freq(self) -> tp.Optional[int]:
         """Nanosecond frequency associated with the `ArrayWrapper` from
         `vectorbtpro.base.accessors.BaseIDXAccessor.ns_freq`.
-        
+
         Returns:
             Optional[int]: The nanosecond frequency of the index.
         """
@@ -1732,7 +1739,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
     @property
     def any_freq(self) -> tp.Union[None, float, tp.PandasFrequency]:
         """Frequency value determined by `vectorbtpro.base.accessors.BaseIDXAccessor.any_freq`.
-        
+
         Returns:
             Union[None, float, PandasFrequency]: The frequency of the index.
         """
@@ -1741,7 +1748,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
     @property
     def periods(self) -> int:
         """The number of periods defined by `vectorbtpro.base.accessors.BaseIDXAccessor.periods`.
-        
+
         Returns:
             int: The number of periods in the index.
         """
@@ -1750,7 +1757,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
     @property
     def dt_periods(self) -> float:
         """Time-based periods derived from `vectorbtpro.base.accessors.BaseIDXAccessor.dt_periods`.
-        
+
         Returns:
             float: The number of periods in the index as a float.
         """
@@ -1776,7 +1783,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
         """Flag indicating whether to convert the index to a datetime index.
 
         Applied during initialization via `vectorbtpro.utils.datetime_.prepare_dt_index`.
-        
+
         Returns:
             Optional[bool]: True if the index should be parsed; otherwise, False.
         """
@@ -1818,7 +1825,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
     @property
     def grouper(self) -> Grouper:
         """The `vectorbtpro.base.grouping.base.Grouper` instance used for grouping columns.
-        
+
         Returns:
             Grouper: The grouper instance.
         """
@@ -1829,7 +1836,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
         """The number of dimensions after applying column grouping.
 
         If not explicitly set, it is derived from the grouper's state.
-        
+
         Returns:
             int: The number of dimensions after grouping.
         """
@@ -1969,6 +1976,9 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
 
         Returns:
             SeriesFrame: The wrapped pandas Series or DataFrame with applied metadata.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.wrapping`.
         """
         from vectorbtpro._settings import settings
 
@@ -2088,6 +2098,9 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
 
         Returns:
             MaybeSeriesFrame: Wrapped series or DataFrame resulting from the reduction operation.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.wrapping`.
 
         !!! note
             Refer to `ArrayWrapper.wrap` for details on the wrapping pipeline.
@@ -2933,6 +2946,9 @@ class Wrapping(Configured, HasWrapper, IndexApplier, AttrResolverMixin):
             AttrResolverMixin: The resolved instance.
 
                 A new copy is created if the frequency is altered.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.wrapping`.
         """
         from vectorbtpro._settings import settings
 

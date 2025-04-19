@@ -27,6 +27,12 @@ class SyntheticData(CustomData):
 
     Provides a framework for generating and updating synthetic data for features and symbols.
     Subclasses should implement the `generate_key` method, which is used by other class methods.
+
+    See:
+        * `SyntheticData.fetch_key` for argument details.
+
+    !!! info
+        For default settings, see `custom.synthetic` in `vectorbtpro._settings.data`.
     """
 
     _settings_path: tp.SettingsPath = dict(custom="data.custom.synthetic")
@@ -113,8 +119,6 @@ class SyntheticData(CustomData):
 
         Returns:
             SymbolData: The fetched data and a metadata dictionary.
-
-        For default values, see `custom.synthetic` in `vectorbtpro._settings.data`.
         """
         start = cls.resolve_custom_setting(start, "start")
         end = cls.resolve_custom_setting(end, "end")

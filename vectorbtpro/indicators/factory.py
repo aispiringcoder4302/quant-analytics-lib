@@ -646,7 +646,7 @@ class IndicatorBase(Analyzable):
             in_output_settings (Optional[MappingSequence[KwargsLike]]): Settings for each in-place output.
 
                 If provided as a mapping, keys should correspond to those in `in_outputs`. Accepted keys:
-            
+
                 * `dtype`: Data type to use when creating the array with `np.empty`.
             broadcast_named_args (KwargsLike): Named arguments to broadcast along with inputs.
 
@@ -665,7 +665,7 @@ class IndicatorBase(Analyzable):
             param_settings (Optional[MappingSequence[KwargsLike]]): Settings for each parameter.
 
                 If provided as a mapping, keys should correspond to those in `params`. Accepted keys:
-            
+
                 * `dtype`: Used for converting a string parameter value based on an enumerated type.
                 * `dtype_kwargs`: Keyword arguments for processing the data type,
                     used by `vectorbtpro.utils.enum_.map_enum_fields` for enumerated types.
@@ -1165,10 +1165,6 @@ class IndicatorBase(Analyzable):
 
     @classmethod
     def _run(cls: tp.Type[IndicatorBaseT], *args, **kwargs) -> tp.IFRunOutput:
-        """Internal run method.
-
-        Must be implemented by subclasses.
-        """
         raise NotImplementedError
 
     @classmethod
@@ -1188,10 +1184,6 @@ class IndicatorBase(Analyzable):
 
     @classmethod
     def _run_combs(cls: tp.Type[IndicatorBaseT], *args, **kwargs) -> tp.IFRunCombsOutput:
-        """Internal run combinations method.
-
-        Must be implemented by subclasses.
-        """
         raise NotImplementedError
 
     @classmethod
@@ -1357,27 +1349,12 @@ class IndicatorBase(Analyzable):
 
     @property
     def _tuple_mapper(self) -> tp.Optional[pd.MultiIndex]:
-        """MultiIndex mapping of multiple parameters.
-
-        Returns:
-            Optional[pd.MultiIndex]: A MultiIndex object representing the mapping of multiple parameters, 
-                or None if only one parameter exists.
-        """
         if len(self.param_names) <= 1:
             return None
         return pd.MultiIndex.from_arrays([getattr(self, f"_{name}_mapper") for name in self.param_names])
 
     @property
     def _param_mapper(self) -> tp.Optional[tp.Index]:
-        """Index mapping of all parameters.
-
-        For a single parameter, returns the corresponding mapper.
-        For multiple parameters, returns the tuple mapper.
-        Returns None if no parameters are present.
-
-        Returns:
-            Optional[Index]: The index mapping of parameters or None.
-        """
         if len(self.param_names) == 0:
             return None
         if len(self.param_names) == 1:
@@ -1386,15 +1363,6 @@ class IndicatorBase(Analyzable):
 
     @property
     def _visible_param_mapper(self) -> tp.Optional[tp.Index]:
-        """Index mapping of visible parameters.
-
-        For a single parameter, returns its mapper if the mapper's name exists in the wrapper columns.
-        For multiple parameters, returns a MultiIndex composed of levels corresponding to visible parameter names.
-        Returns None if no visible parameters are found.
-
-        Returns:
-            Optional[Index]: The index mapping of visible parameters or None.
-        """
         if len(self.param_names) == 0:
             return None
         if len(self.param_names) == 1:
@@ -1491,7 +1459,7 @@ class IndicatorBase(Analyzable):
     @class_property
     def short_name(cls_or_self) -> str:
         """Short name of the indicator.
-        
+
         Returns:
             str: The short name of the indicator.
         """
@@ -1500,7 +1468,7 @@ class IndicatorBase(Analyzable):
     @class_property
     def input_names(cls_or_self) -> tp.Tuple[str, ...]:
         """Names of the input arrays.
-        
+
         Returns:
             Tuple[str, ...]: A tuple of input names.
         """
@@ -1509,7 +1477,7 @@ class IndicatorBase(Analyzable):
     @class_property
     def param_names(cls_or_self) -> tp.Tuple[str, ...]:
         """Names of the parameters.
-        
+
         Returns:
             Tuple[str, ...]: A tuple of parameter names.
         """
@@ -1518,7 +1486,7 @@ class IndicatorBase(Analyzable):
     @class_property
     def in_output_names(cls_or_self) -> tp.Tuple[str, ...]:
         """Names of the in-place output arrays.
-        
+
         Returns:
             Tuple[str, ...]: A tuple of in-place output names.
         """
@@ -1527,7 +1495,7 @@ class IndicatorBase(Analyzable):
     @class_property
     def output_names(cls_or_self) -> tp.Tuple[str, ...]:
         """Names of the regular output arrays.
-        
+
         Returns:
             Tuple[str, ...]: A tuple of output names.
         """
@@ -1536,7 +1504,7 @@ class IndicatorBase(Analyzable):
     @class_property
     def lazy_output_names(cls_or_self) -> tp.Tuple[str, ...]:
         """Names of the lazy output arrays.
-        
+
         Returns:
             Tuple[str, ...]: A tuple of lazy output names.
         """
@@ -1545,7 +1513,7 @@ class IndicatorBase(Analyzable):
     @class_property
     def output_flags(cls_or_self) -> tp.Kwargs:
         """Dictionary of output flags.
-        
+
         Returns:
             Kwargs: A dictionary of output flags.
         """
@@ -1554,7 +1522,7 @@ class IndicatorBase(Analyzable):
     @class_property
     def param_defaults(cls_or_self) -> tp.Dict[str, tp.Any]:
         """Parameter defaults extracted from the signature of `IndicatorBase.run`.
-        
+
         Returns:
             Dict[str, Any]: A dictionary of parameter defaults.
         """
@@ -1571,7 +1539,7 @@ class IndicatorBase(Analyzable):
     @property
     def level_names(self) -> tp.Tuple[str, ...]:
         """Column level names corresponding to each parameter.
-        
+
         Returns:
             Tuple[str, ...]: A tuple of level names corresponding to each parameter.
         """
@@ -1691,6 +1659,7 @@ class IndicatorBase(Analyzable):
             mapper = getattr(new_self, f"_{param_name}_mapper")
             new_mapper_list.append(mapper.rename(new_level_names[i]))
         return new_self.replace(mapper_list=new_mapper_list, level_names=new_level_names)
+
     # ############# Iteration ############# #
 
     def items(
@@ -2323,7 +2292,7 @@ class IndicatorFactory(Configured):
     @property
     def class_name(self) -> str:
         """Name of the created indicator class.
-        
+
         Returns:
             str: The name of the created indicator class.
         """
@@ -2332,7 +2301,7 @@ class IndicatorFactory(Configured):
     @property
     def class_docstring(self) -> str:
         """Docstring for the created indicator class.
-        
+
         Returns:
             str: The docstring for the created indicator class.
         """
@@ -2341,7 +2310,7 @@ class IndicatorFactory(Configured):
     @property
     def module_name(self) -> str:
         """Module name from which the class originates.
-        
+
         Returns:
             str: The module name from which the class originates.
         """
@@ -2350,7 +2319,7 @@ class IndicatorFactory(Configured):
     @property
     def short_name(self) -> str:
         """Concise name for the indicator.
-        
+
         Returns:
             str: The concise name for the indicator.
         """
@@ -2359,7 +2328,7 @@ class IndicatorFactory(Configured):
     @property
     def prepend_name(self) -> bool:
         """Whether `IndicatorFactory.short_name` should be prepended to each parameter level.
-        
+
         Returns:
             bool: True if `short_name` should be prepended to each parameter level, False otherwise.
         """
@@ -2368,7 +2337,7 @@ class IndicatorFactory(Configured):
     @property
     def input_names(self) -> tp.List[str]:
         """List of input names.
-        
+
         Returns:
             List[str]: The list of input names.
         """
@@ -2377,7 +2346,7 @@ class IndicatorFactory(Configured):
     @property
     def param_names(self) -> tp.List[str]:
         """List of parameter names.
-        
+
         Returns:
             List[str]: The list of parameter names.
         """
@@ -2386,7 +2355,7 @@ class IndicatorFactory(Configured):
     @property
     def in_output_names(self) -> tp.List[str]:
         """List of in-output names.
-        
+
         Returns:
             List[str]: The list of in-output names.
         """
@@ -2395,7 +2364,7 @@ class IndicatorFactory(Configured):
     @property
     def output_names(self) -> tp.List[str]:
         """List of output names.
-        
+
         Returns:
             List[str]: The list of output names.
         """
@@ -2404,7 +2373,7 @@ class IndicatorFactory(Configured):
     @property
     def output_flags(self) -> tp.Kwargs:
         """Dictionary of flags for in-place and regular outputs.
-        
+
         Returns:
             Kwargs: Dictionary of flags for in-place and regular outputs.
         """
@@ -2413,7 +2382,7 @@ class IndicatorFactory(Configured):
     @property
     def lazy_outputs(self) -> tp.Kwargs:
         """Dictionary of user-defined functions converted into properties.
-        
+
         Returns:
             Kwargs: Dictionary of user-defined functions converted into properties.
         """
@@ -2422,7 +2391,7 @@ class IndicatorFactory(Configured):
     @property
     def attr_settings(self) -> tp.Kwargs:
         """Dictionary specifying attribute settings.
-        
+
         Returns:
             Kwargs: Dictionary specifying attribute settings.
         """
@@ -2431,7 +2400,7 @@ class IndicatorFactory(Configured):
     @property
     def metrics(self) -> Config:
         """Metrics supported by `vectorbtpro.generic.stats_builder.StatsBuilderMixin.stats`.
-        
+
         Returns:
             Config: Metrics supported by the stats builder.
         """
@@ -2440,7 +2409,7 @@ class IndicatorFactory(Configured):
     @property
     def stats_defaults(self) -> tp.Kwargs:
         """Defaults for `vectorbtpro.generic.stats_builder.StatsBuilderMixin.stats`.
-        
+
         Returns:
             Kwargs: Defaults for the stats builder.
         """
@@ -2449,7 +2418,7 @@ class IndicatorFactory(Configured):
     @property
     def subplots(self) -> Config:
         """Subplots configuration supported by `vectorbtpro.generic.plots_builder.PlotsBuilderMixin.plots`.
-        
+
         Returns:
             Config: Subplots configuration supported by the plots builder.
         """
@@ -2458,7 +2427,7 @@ class IndicatorFactory(Configured):
     @property
     def plots_defaults(self) -> tp.Kwargs:
         """Defaults for `vectorbtpro.generic.plots_builder.PlotsBuilderMixin.plots`.
-        
+
         Returns:
             Kwargs: Defaults for the plots builder.
         """
@@ -2467,7 +2436,7 @@ class IndicatorFactory(Configured):
     @property
     def Indicator(self) -> tp.Type[IndicatorBase]:
         """Built indicator class.
-        
+
         Returns:
             Type[IndicatorBase]: The built indicator class.
         """
@@ -2575,14 +2544,14 @@ class IndicatorFactory(Configured):
             2020-01-04  224.0  212.0  232.0  216.0
             2020-01-05  230.0  206.0  240.0  208.0
             ```
-        
+
             The primary difference between `apply_func_nb` in this example and in
             `IndicatorFactory.with_apply_func` is that here the function receives an index for
             the current parameter combination, which can be used for parameter selection.
-        
+
             Alternatively, you can omit the separate `apply_func_nb` function and implement your
             logic directly in `custom_func` (which need not be Numba-compiled):
-        
+
             ```pycon
             >>> @njit
             ... def custom_func(ts1, ts2, p1, p2, arg1, arg2):
@@ -2941,7 +2910,6 @@ Returns:
 
         return Indicator
 
-
     def with_apply_func(
         self,
         apply_func: tp.Callable,
@@ -2966,24 +2934,12 @@ Returns:
 
         The computation and concatenation are executed using `vectorbtpro.base.combining.apply_and_concat_each`.
 
-        !!! note
-            If `apply_func` is a Numba-compiled function:
-
-            * All inputs are automatically converted to NumPy arrays.
-            * Each positional argument must be of a Numba-compatible type.
-            * Keyword arguments cannot be passed.
-            * The output arrays must have identical shapes, data types, and data orders.
-
-        !!! note
-            Reserved arguments such as `per_column` are passed as positional arguments when
-            `jitted_loop` is True, and as keyword arguments otherwise.
-
         Args:
             apply_func (Callable): A function that receives inputs, a selection of parameters,
                 and additional arguments, and performs calculations.
-            
+
                 Arguments are passed in the following order:
-            
+
                 * `i`, the index of the parameter combination, if `select_params` is False.
                 * `input_shape` if `pass_input_shape` is True and `input_shape` is not in `kwargs_as_args`.
                 * Input arrays corresponding to `input_names`, passed as a tuple if `pass_packed` is True,
@@ -3002,7 +2958,7 @@ Returns:
                 * Positional arguments listed in `kwargs_as_args`.
                 * Other keyword arguments if `jitted_loop` is False, also including `takes_1d` and `per_column`
                     if needed.
-            
+
                 !!! note
                     The shape of each output must match the corresponding input.
             cache_func (Optional[Callable]): A function to preprocess inputs via caching
@@ -3021,7 +2977,7 @@ Returns:
             forward_skipna (bool): Whether to forward the `skipna` argument to the apply function.
             kwargs_as_args (Optional[Iterable[str]]): Names of keyword arguments from `**kwargs`
                 to pass as positional arguments to the apply function.
-            
+
                 Should be used with `jitted_loop=True` as Numba does not support variable keyword arguments.
             jit_kwargs (KwargsLike): Keyword arguments passed to the `@njit` decorator of the parameter
                 selection function.
@@ -3032,6 +2988,18 @@ Returns:
 
         Returns:
             Indicator: An indicator class constructed around the provided apply function.
+
+        !!! note
+            If `apply_func` is a Numba-compiled function:
+
+            * All inputs are automatically converted to NumPy arrays.
+            * Each positional argument must be of a Numba-compatible type.
+            * Keyword arguments cannot be passed.
+            * The output arrays must have identical shapes, data types, and data orders.
+
+        !!! note
+            Reserved arguments such as `per_column` are passed as positional arguments when
+            `jitted_loop` is True, and as keyword arguments otherwise.
 
         Examples:
             The following example produces the same indicator as the `IndicatorFactory.with_custom_func` example.
@@ -3200,7 +3168,7 @@ Returns:
             Returns:
                 Union[None, IFCacheOutput, Array2d, List[Array2d]]:
                     The result of applying `apply_func`, which may be:
-                
+
                     * The cache output if `return_cache` is True.
                     * A 2D array.
                     * A list of 2D arrays.
@@ -3401,7 +3369,7 @@ Returns:
                 _input_tuple = new_input_tuple
                 if any_nan:
 
-                    def post_execute_func(outputs, nan_masks):
+                    def _post_execute_func(outputs, nan_masks):
                         new_outputs = []
                         for i, output in enumerate(outputs):
                             if isinstance(output, (tuple, list, List)):
@@ -3413,7 +3381,7 @@ Returns:
 
                     if "post_execute_func" in execute_kwargs:
                         raise ValueError("Cannot use custom post_execute_func when skipna=True")
-                    execute_kwargs["post_execute_func"] = post_execute_func
+                    execute_kwargs["post_execute_func"] = _post_execute_func
                     if "post_execute_kwargs" in execute_kwargs:
                         raise ValueError("Cannot use custom post_execute_kwargs when skipna=True")
                     execute_kwargs["post_execute_kwargs"] = dict(outputs=Rep("results"), nan_masks=nan_masks)
@@ -3518,7 +3486,7 @@ Returns:
     @class_property
     def custom_indicators(cls) -> Config:
         """Custom indicators keyed by their custom locations.
-        
+
         Returns:
             Config: A dictionary-like object containing custom indicators.
         """
@@ -3527,7 +3495,7 @@ Returns:
     @classmethod
     def list_custom_locations(cls) -> tp.List[str]:
         """List of custom indicator locations in the order they were registered.
-        
+
         Returns:
             List[str]: A list of custom indicator locations.
         """
@@ -3555,7 +3523,7 @@ Returns:
     @classmethod
     def list_locations(cls) -> tp.List[str]:
         """List of all supported indicator locations, with custom locations listed before built-in locations.
-        
+
         Returns:
             List[str]: A list of all indicator locations.
         """
@@ -4024,7 +3992,7 @@ Returns:
         Args:
             func_name (str): The name of the TA-Lib function to wrap.
             factory_kwargs (KwargsLike): Keyword arguments passed to `IndicatorFactory`.
-            
+
                 Additional configuration for creating the indicator class.
             **kwargs: Keyword arguments passed to `IndicatorFactory.with_apply_func`.
 
@@ -4197,12 +4165,12 @@ Returns:
         **kwargs,
     ) -> tp.Kwargs:
         """Parse the configuration of a Pandas TA indicator.
-    
+
         This class method inspects the signature of the provided indicator function to determine
         its inputs, parameters, and outputs. It creates a test DataFrame using random data, passes
         it to the function, and parses the output to extract column names. The resulting configuration
         dictionary encapsulates details required for further processing.
-    
+
         Args:
             func (Callable): The Pandas TA indicator function to parse.
 
@@ -4213,7 +4181,7 @@ Returns:
             test_index_len (int): The number of rows in the generated test DataFrame.
             silence_warnings (bool): Flag to suppress warnings during output parsing.
             **kwargs: Keyword arguments passed to the indicator function.
-    
+
         Returns:
             Kwargs: A dictionary containing the following keys:
 
@@ -4300,18 +4268,18 @@ Returns:
     @classmethod
     def list_pandas_ta_indicators(cls, silence_warnings: bool = True, **kwargs) -> tp.List[str]:
         """List all parseable indicators in Pandas TA.
-    
+
         This class method iterates over the indicator functions available in Pandas TA and
         attempts to parse each one's configuration using `IndicatorFactory.parse_pandas_ta_config`.
         Only indicator functions that are successfully parsed are included in the final list.
-    
+
         Args:
             silence_warnings (bool): Flag indicating whether to suppress warnings during parsing.
             **kwargs: Keyword arguments passed to `IndicatorFactory.parse_pandas_ta_config`.
-    
+
         Returns:
             List[str]: A sorted list of indicator names in uppercase that were successfully parsed.
-    
+
         !!! note
             Returns only the indicators that have been successfully parsed.
         """
@@ -4995,6 +4963,9 @@ Returns:
 
             Returns:
                 BaseFigure: The updated figure with plotted buy and sell traces.
+
+            !!! info
+                For default settings, see `vectorbtpro._settings.plotting`.
             """
             from vectorbtpro.utils.figure import make_figure
             from vectorbtpro._settings import settings
@@ -5332,33 +5303,33 @@ Returns:
 
         Args:
             expr (str): Expression string.
-            
+
                 Must contain valid Python code and can be single-line or multi-line.
             parse_annotations (bool): Flag to parse annotations starting with `@`.
             factory_kwargs (KwargsLike): Keyword arguments for `IndicatorFactory`.
-            
+
                 Applied only when invoking the class method.
             magnet_inputs (Iterable[str]): Names to be recognized as input variables.
-            
+
                 Defaults to `open`, `high`, `low`, `close`, and `volume`.
             magnet_in_outputs (Iterable[str]): Names to be recognized as in-output variables.
-            
+
                 Defaults to an empty list.
             magnet_params (Iterable[str]): Names to be recognized as parameter variables.
-            
+
                 Defaults to an empty list.
             func_mapping (KwargsLike): Mapping to merge with `vectorbtpro.indicators.expr.expr_func_config`.
-            
+
                 Each key is a function name with a dictionary value containing a `func` entry and optionally
                 `magnet_inputs`, `magnet_in_outputs`, and `magnet_params`.
             res_func_mapping (KwargsLike): Mapping to merge with `vectorbtpro.indicators.expr.expr_res_func_config`.
-            
+
                 Each key is a function name with a dictionary value containing a `func` entry and optionally
                 `magnet_inputs`, `magnet_in_outputs`, and `magnet_params`.
             use_pd_eval (Optional[bool]): Whether to use `pd.eval` for evaluation.
-            
+
                 Defaults to False. Otherwise, uses `vectorbtpro.utils.eval_.evaluate`.
-            
+
                 !!! hint
                     By default, operates on NumPy objects using NumExpr.
                     If you want to operate on Pandas objects, set `keep_pd` to True.

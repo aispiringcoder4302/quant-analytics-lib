@@ -36,7 +36,7 @@ FMIN = IndicatorFactory(
 
 class _FMIN(FMIN):
     """Class representing the look-ahead future minimum generator.
-    
+
     See:
         * `vectorbtpro.labels.nb.future_min_nb` for the underlying implementation.
     """
@@ -70,6 +70,9 @@ class _FMIN(FMIN):
 
         Returns:
             BaseFigure: The updated figure object with the plotted traces.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
 
         Examples:
             ```pycon

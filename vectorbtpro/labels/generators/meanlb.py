@@ -46,7 +46,7 @@ MEANLB = IndicatorFactory(
 
 class _MEANLB(MEANLB):
     """Class representing the look-ahead mean label generator.
-    
+
     See:
         * `vectorbtpro.labels.nb.mean_labels_nb` for the underlying implementation.
     """

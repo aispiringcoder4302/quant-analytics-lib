@@ -34,7 +34,7 @@ This is equivalent to:
 ```
 
 Using the adapter offers two advantages:
-    
+
 * Parameters such as benchmark returns can be defined once rather than passed to every function.
 * Vectorbtpro automatically translates parameters from `ReturnsAccessor` for QuantStats functions.
 
@@ -131,6 +131,9 @@ def attach_qs_methods(cls: tp.Type[tp.T], replace_signature: bool = True) -> tp.
 
     Returns:
         Type[T]: The decorated class with QuantStats methods attached.
+
+    !!! info
+        For default settings, see `vectorbtpro._settings.qs_adapter`.
     """
     import quantstats as qs
 
@@ -275,9 +278,9 @@ class QSAdapter(Configured):
     @property
     def returns_acc(self) -> ReturnsAccessor:
         """Returns accessor instance.
-        
+
         This is the main entry point for accessing returns-related methods and properties.
-        
+
         Returns:
             ReturnsAccessor: The returns accessor instance.
         """
@@ -287,10 +290,10 @@ class QSAdapter(Configured):
     def defaults_mapping(self) -> tp.Dict[str, str]:
         """Mapping of common quantstats argument names to
         `vectorbtpro.returns.accessors.ReturnsAccessor.defaults`.
-        
+
         This mapping is used to translate parameters from `ReturnsAccessor` to
         QuantStats functions.
-        
+
         Returns:
             Dict[str, str]: A dictionary mapping common argument names to their corresponding defaults.
         """
@@ -300,11 +303,14 @@ class QSAdapter(Configured):
     def defaults(self) -> tp.Kwargs:
         """Merged default parameters for `QSAdapter`.
 
-        Merges defaults from `vectorbtpro._settings.qs_adapter`, mapped values from 
+        Merges defaults from `vectorbtpro._settings.qs_adapter`, mapped values from
         `vectorbtpro.returns.accessors.ReturnsAccessor.defaults`, and user-provided defaults.
-        
+
         Returns:
             Kwargs: Merged default settings for plots.
+
+        !!! info
+            For default settings, see `defaults` in `vectorbtpro._settings.qs_adapter`.
         """
         from vectorbtpro._settings import settings
 

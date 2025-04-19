@@ -97,7 +97,7 @@ def is_method(obj: tp.Any) -> bool:
 
 def is_numba_enabled() -> bool:
     """Return whether Numba is globally enabled.
-    
+
     Returns:
         bool: True if Numba is enabled, False otherwise.
     """
@@ -109,9 +109,12 @@ def is_numba_func(obj: tp.Any) -> bool:
 
     Args:
         obj (Any): The object to check.
-    
+
     Returns:
         bool: True if the object is a Numba-compiled function, False otherwise.
+
+    !!! info
+        For default settings, see `vectorbtpro._settings.numba`.
     """
     from vectorbtpro._settings import settings
 
@@ -133,7 +136,7 @@ def is_function(obj: tp.Any) -> bool:
 
     Args:
         obj (Any): The object to check.
-    
+
     Returns:
         bool: True if the object is a function, False otherwise.
     """
@@ -145,7 +148,7 @@ def is_bool(obj: tp.Any) -> bool:
 
     Args:
         obj (Any): The object to check.
-    
+
     Returns:
         bool: True if the object is a boolean, False otherwise.
     """
@@ -157,7 +160,7 @@ def is_int(obj: tp.Any) -> bool:
 
     Args:
         obj (Any): The object to check.
-    
+
     Returns:
         bool: True if the object is an integer, False otherwise.
     """
@@ -169,7 +172,7 @@ def is_float(obj: tp.Any) -> bool:
 
     Args:
         obj (Any): The object to check.
-    
+
     Returns:
         bool: True if the object is a float, False otherwise.
     """
@@ -181,7 +184,7 @@ def is_number(obj: tp.Any) -> bool:
 
     Args:
         obj (Any): The object to check.
-    
+
     Returns:
         bool: True if the object is a number, False otherwise.
     """
@@ -193,7 +196,7 @@ def is_np_scalar(obj: tp.Any) -> bool:
 
     Args:
         obj (Any): The object to check.
-    
+
     Returns:
         bool: True if the object is a NumPy scalar, False otherwise.
     """
@@ -205,7 +208,7 @@ def is_td(obj: tp.Any) -> bool:
 
     Args:
         obj (Any): The object to check.
-    
+
     Returns:
         bool: True if the object is a timedelta, False otherwise.
     """
@@ -217,7 +220,7 @@ def is_td_like(obj: tp.Any) -> bool:
 
     Args:
         obj (Any): The object to check.
-    
+
     Returns:
         bool: True if the object is timedelta-like, False otherwise.
     """
@@ -229,7 +232,7 @@ def is_frequency(obj: tp.Any) -> bool:
 
     Args:
         obj (Any): The object to check.
-    
+
     Returns:
         bool: True if the object is a frequency object, False otherwise.
     """
@@ -241,7 +244,7 @@ def is_frequency_like(obj: tp.Any) -> bool:
 
     Args:
         obj (Any): The object to check.
-    
+
     Returns:
         bool: True if the object is frequency-like, False otherwise.
     """
@@ -253,7 +256,7 @@ def is_dt(obj: tp.Any) -> bool:
 
     Args:
         obj (Any): The object to check.
-    
+
     Returns:
         bool: True if the object is a datetime, False otherwise.
     """
@@ -265,7 +268,7 @@ def is_dt_like(obj: tp.Any) -> bool:
 
     Args:
         obj (Any): The object to check.
-    
+
     Returns:
         bool: True if the object is datetime-like, False otherwise.
     """
@@ -277,7 +280,7 @@ def is_time(obj: tp.Any) -> bool:
 
     Args:
         obj (Any): The object to check.
-    
+
     Returns:
         bool: True if the object is a time, False otherwise.
     """
@@ -289,7 +292,7 @@ def is_time_like(obj: tp.Any) -> bool:
 
     Args:
         obj (Any): The object to check.
-    
+
     Returns:
         bool: True if the object is time-like, False otherwise.
     """
@@ -301,7 +304,7 @@ def is_np_array(obj: tp.Any) -> bool:
 
     Args:
         obj (Any): The object to check.
-    
+
     Returns:
         bool: True if the object is a NumPy array, False otherwise.
     """
@@ -313,7 +316,7 @@ def is_record_array(obj: tp.Any) -> bool:
 
     Args:
         obj (Any): The object to check.
-    
+
     Returns:
         bool: True if the object is a structured NumPy array, False otherwise.
     """
@@ -325,7 +328,7 @@ def is_series(obj: tp.Any) -> bool:
 
     Args:
         obj (Any): The object to check.
-    
+
     Returns:
         bool: True if the object is a pandas Series, False otherwise.
     """
@@ -337,7 +340,7 @@ def is_index(obj: tp.Any) -> bool:
 
     Args:
         obj (Any): The object to check.
-    
+
     Returns:
         bool: True if the object is a pandas Index, False otherwise.
     """
@@ -349,7 +352,7 @@ def is_multi_index(obj: tp.Any) -> bool:
 
     Args:
         obj (Any): The object to check.
-    
+
     Returns:
         bool: True if the object is a pandas MultiIndex, False otherwise.
     """
@@ -361,7 +364,7 @@ def is_frame(obj: tp.Any) -> bool:
 
     Args:
         obj (Any): The object to check.
-    
+
     Returns:
         bool: True if the object is a pandas DataFrame, False otherwise.
     """
@@ -373,7 +376,7 @@ def is_pandas(obj: tp.Any) -> bool:
 
     Args:
         obj (Any): The object to check.
-    
+
     Returns:
         bool: True if the object is a pandas object, False otherwise.
     """
@@ -385,18 +388,18 @@ def is_any_array(obj: tp.Any) -> bool:
 
     Args:
         obj (Any): The object to check.
-    
+
     Returns:
         bool: True if the object is any array-like object, False otherwise.
     """
     return is_pandas(obj) or isinstance(obj, np.ndarray)
 
 
-def _to_any_array(obj: tp.ArrayLike) -> tp.AnyArray:
+def to_any_array(obj: tp.ArrayLike) -> tp.AnyArray:
     """Convert any array-like object to an array.
 
     Pandas objects are kept as-is.
-    
+
     Args:
         obj (ArrayLike): The object to convert.
 
@@ -413,7 +416,7 @@ def is_collection(obj: tp.Any) -> bool:
 
     Args:
         obj (Any): The object to check.
-    
+
     Returns:
         bool: True if the object is a collection, False otherwise.
     """
@@ -432,7 +435,7 @@ def is_complex_collection(obj: tp.Any) -> bool:
 
     Args:
         obj (Any): The object to check.
-    
+
     Returns:
         bool: True if the object is a complex collection, False otherwise.
     """
@@ -446,7 +449,7 @@ def is_iterable(obj: tp.Any) -> bool:
 
     Args:
         obj (Any): The object to check.
-    
+
     Returns:
         bool: True if the object is iterable, False otherwise.
     """
@@ -479,7 +482,7 @@ def is_sequence(obj: tp.Any) -> bool:
 
     Args:
         obj (Any): The object to check.
-    
+
     Returns:
         bool: True if the object is a sequence, False otherwise.
     """
@@ -499,7 +502,7 @@ def is_complex_sequence(obj: tp.Any) -> bool:
 
     Args:
         obj (Any): The object to check.
-    
+
     Returns:
         bool: True if the object is a complex sequence, False otherwise.
     """
@@ -513,7 +516,7 @@ def is_hashable(obj: tp.Any) -> bool:
 
     Args:
         obj (Any): The object to check.
-    
+
     Returns:
         bool: True if the object is hashable, False otherwise.
 
@@ -937,7 +940,7 @@ def in_notebook() -> bool:
     """Return True if executing in a Jupyter notebook environment.
 
     This function checks the IPython configuration to determine if the code is running in a notebook.
-    
+
     Returns:
         bool: True if executing in a Jupyter notebook, False otherwise.
     """
@@ -1171,7 +1174,7 @@ def assert_dtype(obj: tp.ArrayLike, dtype: tp.MaybeTuple[tp.DTypeLike], arg_name
         x = "Data type"
     else:
         x = f"Data type of '{arg_name}'"
-    obj = _to_any_array(obj)
+    obj = to_any_array(obj)
     if isinstance(dtype, tuple):
         if isinstance(obj, pd.DataFrame):
             for i, col_dtype in enumerate(obj.dtypes):
@@ -1210,7 +1213,7 @@ def assert_subdtype(obj: tp.ArrayLike, dtype: tp.MaybeTuple[tp.DTypeLike], arg_n
         x = "Data type"
     else:
         x = f"Data type of '{arg_name}'"
-    obj = _to_any_array(obj)
+    obj = to_any_array(obj)
     if isinstance(dtype, tuple):
         if isinstance(obj, pd.DataFrame):
             for i, col_dtype in enumerate(obj.dtypes):
@@ -1242,8 +1245,8 @@ def assert_dtype_equal(obj1: tp.ArrayLike, obj2: tp.ArrayLike) -> None:
     Raises:
         AssertionError: If the data types of `obj1` and `obj2` do not match.
     """
-    obj1 = _to_any_array(obj1)
-    obj2 = _to_any_array(obj2)
+    obj1 = to_any_array(obj1)
+    obj2 = to_any_array(obj2)
     if isinstance(obj1, pd.DataFrame):
         dtypes1 = obj1.dtypes.to_numpy()
     else:
@@ -1274,7 +1277,7 @@ def assert_ndim(obj: tp.ArrayLike, ndims: tp.MaybeTuple[int]) -> None:
     Raises:
         AssertionError: If the number of dimensions of `obj` does not match `ndims`.
     """
-    obj = _to_any_array(obj)
+    obj = to_any_array(obj)
     if isinstance(ndims, tuple):
         if obj.ndim not in ndims:
             raise AssertionError(f"Number of dimensions must be one of {ndims}, not {obj.ndim}")
@@ -1325,8 +1328,8 @@ def assert_shape_equal(
     Raises:
         AssertionError: If the shapes of `obj1` and `obj2` do not match along the specified axis.
     """
-    obj1 = _to_any_array(obj1)
-    obj2 = _to_any_array(obj2)
+    obj1 = to_any_array(obj1)
+    obj2 = to_any_array(obj2)
     if axis is None:
         if obj1.shape != obj2.shape:
             raise AssertionError(f"Shapes {obj1.shape} and {obj2.shape} do not match")
@@ -1396,8 +1399,8 @@ def assert_meta_equal(obj1: tp.ArrayLike, obj2: tp.ArrayLike, axis: tp.Optional[
     Raises:
         AssertionError: If the metadata of `obj1` and `obj2` do not match.
     """
-    obj1 = _to_any_array(obj1)
-    obj2 = _to_any_array(obj2)
+    obj1 = to_any_array(obj1)
+    obj2 = to_any_array(obj2)
     assert_type_equal(obj1, obj2)
     if axis is not None:
         assert_shape_equal(obj1, obj2, axis=axis)
@@ -1431,8 +1434,8 @@ def assert_array_equal(obj1: tp.ArrayLike, obj2: tp.ArrayLike) -> None:
     Raises:
         AssertionError: If the metadata or values of `obj1` and `obj2` do not match.
     """
-    obj1 = _to_any_array(obj1)
-    obj2 = _to_any_array(obj2)
+    obj1 = to_any_array(obj1)
+    obj2 = to_any_array(obj2)
     assert_meta_equal(obj1, obj2)
     if is_pandas(obj1) and is_pandas(obj2):
         if obj1.equals(obj2):

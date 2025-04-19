@@ -8,7 +8,11 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module providing utilities for working with parameters."""
+"""Module providing utilities for working with parameters.
+
+!!! info
+    For default settings, see `vectorbtpro._settings.params`.
+"""
 
 import inspect
 from collections import OrderedDict
@@ -1135,8 +1139,6 @@ class Parameterizer(Configured):
     If `vectorbtpro.utils.execution.NoResult` is returned, the current iteration is skipped and removed
     from the final index.
 
-    For defaults, see `vectorbtpro._settings.params`.
-
     Args:
         param_search_kwargs (KwargsLike): Keyword arguments for parameter search settings.
         skip_single_comb (Optional[bool]): Flag indicating direct execution when only one
@@ -1170,6 +1172,9 @@ class Parameterizer(Configured):
         return_param_index (Optional[bool]): Flag indicating if the parameter index should be included in the result.
         execute_kwargs (KwargsLike): Keyword arguments passed to the execution handler.
         **kwargs: Additional keyword arguments.
+
+    !!! info
+        For default settings, see `vectorbtpro._settings.params`.
     """
 
     _settings_path: tp.SettingsPath = "params"
@@ -1303,7 +1308,7 @@ class Parameterizer(Configured):
         """Build grid flag from parameter combination.
 
         Returns:
-            Optional[bool]: True if the full parameter grid should be built, False if not, 
+            Optional[bool]: True if the full parameter grid should be built, False if not,
                 or None for default behavior.
         """
         return self._build_grid
@@ -1448,7 +1453,7 @@ class Parameterizer(Configured):
         """Reduction configuration for parameters.
 
         Returns:
-            Union[bool, Kwargs]: The configuration determining if mono-chunks should be reduced, 
+            Union[bool, Kwargs]: The configuration determining if mono-chunks should be reduced,
                 or a dictionary of settings.
         """
         return self._mono_reduce
@@ -1458,7 +1463,7 @@ class Parameterizer(Configured):
         """Merging function configuration for parameters.
 
         Returns:
-            Union[MergeFuncLike, Dict[str, MergeFuncLike]]: The merging function or mapping used to 
+            Union[MergeFuncLike, Dict[str, MergeFuncLike]]: The merging function or mapping used to
                 combine parameter values.
         """
         return self._mono_merge_func
@@ -1477,7 +1482,7 @@ class Parameterizer(Configured):
         """Flag indicating whether to filter `vectorbtpro.utils.execution.NoResult` results during execution.
 
         Returns:
-            bool: True if results marked as `vectorbtpro.utils.execution.NoResult` 
+            bool: True if results marked as `vectorbtpro.utils.execution.NoResult`
                 should be filtered out; otherwise False.
         """
         return self._filter_results
@@ -1487,7 +1492,7 @@ class Parameterizer(Configured):
         """Flag indicating whether to raise an exception when no results are produced.
 
         Returns:
-            bool: True if a `vectorbtpro.utils.execution.NoResultsException` should be raised 
+            bool: True if a `vectorbtpro.utils.execution.NoResultsException` should be raised
                 when there are no results; otherwise False.
         """
         return self._raise_no_results
@@ -1538,19 +1543,23 @@ class Parameterizer(Configured):
         return self._execute_kwargs
 
     @classmethod
-    def find_params_in_obj(cls, obj: tp.Any, eval_id: tp.Optional[tp.Hashable] = None, **kwargs) -> dict:
+    def find_params_in_obj(cls, obj: tp.Any, eval_id: tp.Optional[tp.Hashable] = None, **kwargs) -> tp.PathDict:
         """Return a dictionary of `Param`-wrapped values found recursively within the provided object.
-
-        Uses `vectorbtpro.utils.search_.find_in_obj`.
 
         Only parameters meeting the specified evaluation identifier are included.
 
-        Keyword arguments are passed to `vectorbtpro.utils.search_.find_in_obj`.
+        Args:
+            obj (Any): The object to search for `Param` instances.
+            eval_id (Optional[Hashable]): Evaluation identifier to filter parameters.
+            **kwargs: Additional keyword arguments to `vectorbtpro.utils.search_.find_in_obj`.
+
+        Returns:
+            PathDict: A dictionary containing the paths to `Param` instances found in the object.
         """
         return find_in_obj(obj, lambda k, v: isinstance(v, Param) and v.meets_eval_id(eval_id), **kwargs)
 
     @classmethod
-    def param_product_to_objs(cls, obj: tp.Any, param_product: dict) -> tp.List[dict]:
+    def param_product_to_objs(cls, obj: tp.Any, param_product: dict) -> tp.List[tp.Any]:
         """Return a list of objects produced by resolving the parameter product in the original object.
 
         If the parameter product is empty, returns an empty list.
@@ -1558,6 +1567,13 @@ class Parameterizer(Configured):
         Uses `vectorbtpro.utils.search_.replace_in_obj` to replace parameter templates in the object.
 
         Iterates over each combination of parameter values to generate a new object.
+
+        Args:
+            obj (Any): The original object containing parameter templates.
+            param_product (dict): A dictionary of parameter combinations.
+
+        Returns:
+            List[Any]: A list of objects with parameter values replaced in the original object.
         """
         if len(param_product) == 0:
             return []
@@ -1581,6 +1597,13 @@ class Parameterizer(Configured):
         instance that meets the evaluation identifier, updates or merges the corresponding value.
 
         Processes function annotations to correctly parse and inject parameter values.
+
+        Args:
+            flat_ann_args (FlatAnnArgs): The dictionary of flattened annotated arguments.
+            eval_id (Optional[Hashable]): Evaluation identifier to filter parameters.
+
+        Returns:
+            FlatAnnArgs: A dictionary of flattened annotated arguments with injected `Param` instances.
         """
         new_flat_ann_args = dict()
         for k, v in flat_ann_args.items():
@@ -1603,6 +1626,12 @@ class Parameterizer(Configured):
 
         Iterates over the annotations and extracts the names for parameters of kind
         `VAR_POSITIONAL` and `VAR_KEYWORD`.
+
+        Args:
+            ann_args (AnnArgs): The dictionary of annotated arguments.
+
+        Returns:
+            Tuple[str, str]: A tuple containing the names of variable positional and keyword arguments.
         """
         var_args_name = None
         var_kwargs_name = None
@@ -2288,6 +2317,9 @@ def parameterized(
 
     Returns:
         Callable: A new function with the same signature as the provided function.
+
+    !!! info
+        For default settings, see `vectorbtpro._settings.params`.
 
     Examples:
         No parameters, no parameter configs:

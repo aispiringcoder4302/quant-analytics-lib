@@ -77,7 +77,7 @@ class MetaBasePreparer(type(Configured)):
     @property
     def arg_config(cls) -> Config:
         """Class-level argument configuration.
-        
+
         Returns:
             Config: The class-level argument configuration.
         """
@@ -493,7 +493,7 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
             if arg_name in self.post_args:
                 arg = self.post_args[arg_name]
             else:
-                arg = getattr(self, "_pre_" + arg_name)
+                arg = getattr(self, "pre__" + arg_name)
         else:
             arg = value
         if arg is not None:
@@ -614,7 +614,11 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
         return func
 
     def set_seed(self) -> None:
-        """Set the random seed using the object's seed attribute."""
+        """Set the random seed using the object's seed attribute.
+
+        Returns:
+            None
+        """
         seed = self.seed
         if seed is not None:
             set_seed(seed)
@@ -622,9 +626,9 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
     # ############# Before broadcasting ############# #
 
     @cachedproperty
-    def _pre_template_context(self) -> tp.Kwargs:
+    def pre__template_context(self) -> tp.Kwargs:
         """Argument `template_context` before broadcasting.
-        
+
         Returns:
             Kwargs: The template context before broadcasting.
         """
@@ -636,7 +640,7 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
     def pre_args(self) -> tp.Kwargs:
         """Dictionary of pre-broadcast arguments.
 
-        Iterates over `BasePreparer.arg_config` and retrieves each corresponding `_pre_` attribute
+        Iterates over `BasePreparer.arg_config` and retrieves each corresponding `pre__` attribute
         for keys with broadcasting enabled.
 
         Returns:
@@ -645,7 +649,7 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
         pre_args = dict()
         for k, v in self.arg_config.items():
             if v.get("broadcast", False):
-                pre_args[k] = getattr(self, "_pre_" + k)
+                pre_args[k] = getattr(self, "pre__" + k)
         return pre_args
 
     @cachedproperty
@@ -673,11 +677,11 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
             to_pd=False,
             keep_flex=dict(cash_earnings=self.keep_inout_flex, _def=True),
             wrapper_kwargs=dict(
-                freq=self._pre_freq,
+                freq=self.pre__freq,
                 group_by=self.group_by,
             ),
             return_wrapper=True,
-            template_context=self._pre_template_context,
+            template_context=self.pre__template_context,
         )
 
     @cachedproperty
@@ -792,7 +796,7 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
     @cachedproperty
     def index(self) -> tp.Array1d:
         """Index in nanosecond format from the array wrapper.
-        
+
         Returns:
             Array1d: The index of the array wrapper in nanoseconds.
         """
@@ -801,7 +805,7 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
     @cachedproperty
     def freq(self) -> int:
         """Frequency in nanosecond format from the array wrapper.
-        
+
         Returns:
             int: The frequency of the array wrapper in nanoseconds.
         """
@@ -833,7 +837,7 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
             ),
             builtin_args,
             self.post_broadcast_named_args,
-            self._pre_template_context,
+            self.pre__template_context,
         )
 
     # ############# Result ############# #

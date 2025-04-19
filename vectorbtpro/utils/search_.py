@@ -8,7 +8,11 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module providing utilities for searching nested objects using path-like keys."""
+"""Module providing utilities for searching nested objects using path-like keys.
+
+!!! info
+    For default settings, see `vectorbtpro._settings.search`.
+"""
 
 import re
 from collections import deque
@@ -430,6 +434,7 @@ def remove_pathlike_key(
     prev_key_tokens = []
     for prev_key in prev_keys:
         prev_key_tokens.append(resolve_pathlike_key(prev_key))
+    new_value = None
     for i, (parent, token) in enumerate(reversed(parents)):
         i = len(parents) - 1 - i
         if make_copy:
@@ -485,15 +490,22 @@ def contains_in_obj(
 
     Args:
         obj (Any): The object to search.
-        match_func (Callable): A function to test each key and associated value.
+        match_func (Callable): A function that accepts a key and a value and returns True
+            if the element is a match and False otherwise.
         traversal (Optional[str]): The search strategy.
 
             * "DFS" for depth-first search.
             * "BFS" for breadth-first search.
-        excl_types (Union[None, bool, MaybeSequence[type]]): Types to exclude from the search.
-        incl_types (Union[None, bool, MaybeSequence[type]]): Types to include in the search.
-        max_len (Optional[int]): Maximum number of elements allowed in a container.
-        max_depth (Optional[int]): Maximum search depth.
+        excl_types (Union[None, bool, MaybeSequence[type]]): Type(s) to exclude from traversal.
+
+            If an element matches, it is not processed further unless overridden by `incl_types`.
+            Uses `vectorbtpro.utils.checks.is_instance_of` to check.
+        incl_types (Union[None, bool, MaybeSequence[type]]): Type(s) to explicitly include in traversal,
+            taking precedence over `excl_types`.
+
+            Uses `vectorbtpro.utils.checks.is_instance_of` to check.
+        max_len (Optional[int]): Limit processing to objects with a length not exceeding this value.
+        max_depth (Optional[int]): Limit recursion to the specified depth (0 disables traversal of iterables).
         **kwargs: Keyword arguments passed to `match_func`.
 
     Returns:
@@ -501,6 +513,9 @@ def contains_in_obj(
 
     !!! note
         Refer to `find_in_obj` for additional argument details.
+
+    !!! info
+        For default settings, see `vectorbtpro._settings.search`.
     """
     from vectorbtpro._settings import settings
 
@@ -584,7 +599,7 @@ def find_in_obj(
     Args:
         obj (Any): The object to search within.
         match_func (Callable): A function that accepts a key and a value and returns True
-            if the element is a match.
+            if the element is a match and False otherwise.
         traversal (Optional[str]): The traversal strategy.
 
             * "DFS" for depth-first search.
@@ -605,7 +620,8 @@ def find_in_obj(
     Returns:
         PathDict: A mapping of path-like keys (using tuples for nested levels) to their corresponding values.
 
-    Refer to `vectorbtpro._settings.search` for default configuration.
+    !!! info
+        For default settings, see `vectorbtpro._settings.search`.
     """
     from vectorbtpro._settings import settings
 
@@ -757,10 +773,35 @@ def find_and_replace_in_obj(
 
     Refer to `find_in_obj` for details on arguments.
 
+    Args:
+        obj (Any): The object to search and replace within.
+        match_func (Callable): A function that accepts a key and a value and returns True
+            if the element is a match and False otherwise.
+        replace_func (Callable): A function to replace the matched value.
+        excl_types (Union[None, bool, MaybeSequence[type]]): Type(s) to exclude from traversal.
+
+            If an element matches, it is not processed further unless overridden by `incl_types`.
+            Uses `vectorbtpro.utils.checks.is_instance_of` to check.
+        incl_types (Union[None, bool, MaybeSequence[type]]): Type(s) to explicitly include in traversal,
+            taking precedence over `excl_types`.
+
+            Uses `vectorbtpro.utils.checks.is_instance_of` to check.
+        max_len (Optional[int]): Limit processing to objects with a length not exceeding this value.
+        max_depth (Optional[int]): Limit recursion to the specified depth (0 disables traversal of iterables).
+        make_copy (bool): Flag to indicate whether to modify a copy of the object.
+        check_any_first (bool): If True, checks if any element matches before processing.
+        **kwargs: Keyword arguments passed to `match_func` and `replace_func`.
+
+    Returns:
+        Any: The modified object with replacements applied.
+
     !!! note
         When processing nested structures (e.g., dictionaries or lists), finding a match triggers the creation
         of a copy of the object, which loses the original reference. To ensure consistent behavior, either
         operate on a deep or hybrid copy or disable `make_copy` to modify in place.
+
+    !!! info
+        For default settings, see `vectorbtpro._settings.search`.
     """
     from vectorbtpro._settings import settings
 
@@ -890,12 +931,30 @@ def flatten_obj(
 ) -> tp.PathDict:
     """Recursively flatten a nested object into a dictionary mapping path keys to corresponding values.
 
-    The `traversal` argument determines the order of traversal:
+    Args:
+        obj (Any): The object to search within.
+        traversal (Optional[str]): The traversal strategy.
 
-    * "DFS" for depth-first search.
-    * "BFS" for breadth-first search.
+            * "DFS" for depth-first search.
+            * "BFS" for breadth-first search.
+        annotate_all (bool): If True, annotate all objects with their type.
+        excl_types (Union[None, bool, MaybeSequence[type]]): Type(s) to exclude from traversal.
 
-    Refer to `find_in_obj` for details on additional arguments.
+            If an element matches, it is not processed further unless overridden by `incl_types`.
+            Uses `vectorbtpro.utils.checks.is_instance_of` to check.
+        incl_types (Union[None, bool, MaybeSequence[type]]): Type(s) to explicitly include in traversal,
+            taking precedence over `excl_types`.
+
+            Uses `vectorbtpro.utils.checks.is_instance_of` to check.
+        stringify_keys (bool): If True, convert path keys to a string representation.
+        max_len (Optional[int]): Limit processing to objects with a length not exceeding this value.
+        max_depth (Optional[int]): Limit recursion to the specified depth (0 disables traversal of iterables).
+
+    Returns:
+        PathDict: A mapping of path-like keys (using tuples for nested levels) to their corresponding values.
+
+    !!! info
+        For default settings, see `vectorbtpro._settings.search`.
     """
     from vectorbtpro._settings import settings
 
@@ -1111,7 +1170,7 @@ def find_start(
             * "start": Returns a list with the starting index of the match.
             * "range": Returns a list with a tuple representing the match range.
             * "match": Returns a list containing the matched string.
-            
+
     Returns:
         Union[bool, List[Union[int, str]], List[Tuple[int, int]]]: The match result in the specified format.
     """

@@ -47,7 +47,7 @@ FMEAN = IndicatorFactory(
 
 class _FMEAN(FMEAN):
     """Class representing the look-ahead future mean generator.
-    
+
     See:
         * `vectorbtpro.labels.nb.future_mean_nb` for the underlying implementation.
     """
@@ -67,17 +67,20 @@ class _FMEAN(FMEAN):
         Args:
             column (Optional[Label]): Name of the column to plot.
             plot_close (bool): Flag indicating whether to include `FMEAN.close` in the plot.
-            close_trace_kwargs (KwargsLike): Keyword arguments for 
+            close_trace_kwargs (KwargsLike): Keyword arguments for
                 `plotly.graph_objects.Scatter` for `FMEAN.close`.
-            fmean_trace_kwargs (KwargsLike): Keyword arguments for 
+            fmean_trace_kwargs (KwargsLike): Keyword arguments for
                 `plotly.graph_objects.Scatter` for `FMEAN.fmean`.
-            add_trace_kwargs (KwargsLike): Keyword arguments passed to 
+            add_trace_kwargs (KwargsLike): Keyword arguments passed to
                 `fig.add_trace` when adding each trace.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
             **layout_kwargs: Keyword arguments for configuring the figure layout.
 
         Returns:
             BaseFigure: The figure object with the plotted indicators.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
 
         Examples:
             ```pycon

@@ -61,7 +61,8 @@ class AssetCacheManager(Configured):
         template_context (KwargsLike): Additional context for template substitution.
         **kwargs: Keyword arguments for configuration.
 
-    For default settings, see `vectorbtpro._settings.knowledge`.
+    !!! info
+        For default settings, see `vectorbtpro._settings.knowledge`.
     """
 
     _settings_path: tp.SettingsPath = "knowledge"
@@ -128,7 +129,7 @@ class AssetCacheManager(Configured):
     @property
     def persist_cache(self) -> bool:
         """Whether cache persistence to disk is enabled.
-        
+
         Returns:
             bool: True if cache persistence is enabled, otherwise False.
         """
@@ -137,7 +138,7 @@ class AssetCacheManager(Configured):
     @property
     def cache_dir(self) -> tp.Path:
         """Path of the directory used for caching assets.
-        
+
         Returns:
             Path: The path of the cache directory.
         """
@@ -146,7 +147,7 @@ class AssetCacheManager(Configured):
     @property
     def max_cache_count(self) -> tp.Optional[int]:
         """Maximum number of assets to be cached; older assets are evicted based on usage.
-        
+
         Returns:
             Optional[int]: The maximum number of assets to retain in the cache.
         """
@@ -155,7 +156,7 @@ class AssetCacheManager(Configured):
     @property
     def save_cache_kwargs(self) -> tp.Kwargs:
         """Keyword arguments for `vectorbtpro.utils.pickling.save`.
-        
+
         Returns:
             Kwargs: The keyword arguments used for saving assets to disk.
         """
@@ -164,7 +165,7 @@ class AssetCacheManager(Configured):
     @property
     def load_cache_kwargs(self) -> tp.Kwargs:
         """Keyword arguments for `vectorbtpro.utils.pickling.load`.
-        
+
         Returns:
             Kwargs: The keyword arguments used for loading assets from disk.
         """
@@ -204,7 +205,11 @@ class AssetCacheManager(Configured):
             return load(asset_cache_file, **self.load_cache_kwargs)
 
     def cleanup_cache_dir(self) -> None:
-        """Remove older cached assets, retaining only the most recent ones based on modification time."""
+        """Remove older cached assets, retaining only the most recent ones based on modification time.
+
+        Returns:
+            None
+        """
         if not self.max_cache_count:
             return
         files = [f for f in self.cache_dir.iterdir() if f.is_file()]
@@ -256,7 +261,8 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         single_item (bool): Indicates whether the asset holds a single data item.
         **kwargs: Keyword arguments for configuration.
 
-    For defaults, see `vectorbtpro._settings.knowledge`.
+    !!! info
+        For default settings, see `vectorbtpro._settings.knowledge`.
     """
 
     _settings_path: tp.SettingsPath = "knowledge"
@@ -306,7 +312,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
              {'s': 'CDE', 'b': False, 'd2': {'c': 'green', 'l': [5, 6]}},
              {'s': 'DEF', 'b': False, 'd2': {'c': 'yellow', 'l': [7, 8]}}]
             ```
-            """
+        """
         if not isinstance(cls_or_self, type) and len(objs) == 0:
             if isinstance(cls_or_self[0], list):
                 return cls_or_self.merge_lists(**kwargs)
@@ -371,7 +377,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
              {'s': 'DEF', 'b': False, 'd2': {'c': 'yellow', 'l': [7, 8]}},
              {'s': 'EFG', 'b': False, 'd2': {'c': 'black', 'l': [9, 10]}}]
             ```
-            """
+        """
         if not isinstance(cls_or_self, type) and len(objs) == 0:
             if isinstance(cls_or_self[0], list):
                 return cls_or_self.merge_lists(**kwargs)
@@ -475,7 +481,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
     @property
     def data(self) -> tp.List[tp.Any]:
         """List of data items in the asset.
-        
+
         Returns:
             List[Any]: The data items contained in the asset.
         """
@@ -484,14 +490,18 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
     @property
     def single_item(self) -> bool:
         """Whether the asset holds a single item.
-        
+
         Returns:
             bool: True if the asset contains a single item, otherwise False.
         """
         return self._single_item
 
     def modify_data(self, data: tp.List[tp.Any]) -> None:
-        """Update the asset's data in place and synchronize its configuration."""
+        """Update the asset's data in place and synchronize its configuration.
+
+        Returns:
+            None
+        """
         if len(data) > 1:
             single_item = False
         else:
@@ -1683,7 +1693,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
             >>> asset.find("xyz", in_dumps=True).get()
             [{'s': 'EFG', 'b': False, 'd2': {'c': 'black', 'l': [9, 10]}, 'xyz': 123}]
             ```
-            """
+        """
         found_asset = self.apply(
             "find",
             target=target,
@@ -1750,7 +1760,8 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         Returns:
             MaybeKnowledgeAsset: A new asset with segments that match the search criteria.
 
-        For defaults, see `code` in `vectorbtpro._settings.knowledge`.
+        !!! info
+            For default settings, see `code` in `vectorbtpro._settings.knowledge`.
         """
         language = self.resolve_setting(language, "language", sub_path="code")
         in_blocks = self.resolve_setting(in_blocks, "in_blocks", sub_path="code")
@@ -1915,7 +1926,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
             >>> asset.find_replace(123, 456, path="xyz", skip_missing=True, changed_only=True).get()
             [{'s': 'EFG', 'b': False, 'd2': {'c': 'black', 'l': [9, 10]}, 'xyz': 456}]
             ```
-            """
+        """
         return self.apply(
             "find_replace",
             target=target,
@@ -1981,6 +1992,12 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
 
         This method uses a predefined emptiness check via
         `vectorbtpro.utils.knowledge.base_asset_funcs.FindRemoveAssetFunc.is_empty_func` to remove empty objects.
+
+        Args:
+            **kwargs: Keyword arguments passed to `KnowledgeAsset.find_remove`.
+
+        Returns:
+            MaybeKnowledgeAsset: A new asset with empty objects removed.
         """
         from vectorbtpro.utils.knowledge.base_asset_funcs import FindRemoveAssetFunc
 
@@ -2894,5 +2911,12 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
 
         Calls `KnowledgeAsset.to_context` with provided arguments to generate a context string,
         which is then printed.
+
+        Args:
+            *args: Positional arguments passed to `KnowledgeAsset.to_context`.
+            **kwargs: Keyword arguments passed to `KnowledgeAsset.to_context`.
+
+        Returns:
+            None
         """
         print(self.to_context(*args, **kwargs))

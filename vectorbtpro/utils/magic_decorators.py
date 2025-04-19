@@ -63,17 +63,15 @@ __pdoc__[
 ```
 """
 
-BinaryTranslateFuncT = tp.Callable[[tp.Any, tp.Any, tp.Callable], tp.Any]
-
 
 def attach_binary_magic_methods(
-    translate_func: BinaryTranslateFuncT,
+    translate_func: tp.BinaryTranslateFunc,
     config: tp.Optional[Config] = None,
 ) -> tp.ClassWrapper:
     """Attach binary magic methods to a class.
 
     Args:
-        translate_func (Callable[[Any, Any, Callable], Any]): A function that takes the instance,
+        translate_func (BinaryTranslateFunc): A function that takes the instance,
             another operand, and a binary operator function, performs the operation, and returns the result.
         config (Optional[Config]): A configuration mapping of magic method names to settings.
 
@@ -92,7 +90,7 @@ def attach_binary_magic_methods(
             def new_method(
                 self,
                 other: tp.Any,
-                _translate_func: BinaryTranslateFuncT = translate_func,
+                _translate_func: tp.BinaryTranslateFunc = translate_func,
                 _func: tp.Callable = func,
             ) -> tp.SeriesFrame:
                 return _translate_func(self, other, _func)
@@ -125,17 +123,15 @@ __pdoc__[
 ```
 """
 
-UnaryTranslateFuncT = tp.Callable[[tp.Any, tp.Callable], tp.Any]
-
 
 def attach_unary_magic_methods(
-    translate_func: UnaryTranslateFuncT,
+    translate_func: tp.UnaryTranslateFunc,
     config: tp.Optional[Config] = None,
 ) -> tp.ClassWrapper:
     """Attach unary magic methods to a class.
 
     Args:
-        translate_func (Callable[[Any, Callable], Any]): A function that takes the instance and a unary
+        translate_func (UnaryTranslateFunc): A function that takes the instance and a unary
             operator function, performs the operation, and returns the result.
         config (Optional[Config]): A configuration mapping of magic method names to settings.
 
@@ -153,7 +149,7 @@ def attach_unary_magic_methods(
 
             def new_method(
                 self,
-                _translate_func: UnaryTranslateFuncT = translate_func,
+                _translate_func: tp.UnaryTranslateFunc = translate_func,
                 _func: tp.Callable = func,
             ) -> tp.SeriesFrame:
                 return _translate_func(self, _func)

@@ -701,9 +701,9 @@ def suppress_stdout(func: tp.Callable) -> tp.Callable:
     """
 
     @wraps(func)
-    def wrapper(*a, **ka):
+    def wrapper(*args, **kwargs) -> tp.Any:
         with contextlib.redirect_stdout(io.StringIO()):
-            return func(*a, **ka)
+            return func(*args, **kwargs)
 
     return wrapper
 

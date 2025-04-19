@@ -244,7 +244,7 @@ opt_dep_config = HybridConfig(
         ),
         pyperclip=dict(
             link="https://pypi.org/project/pyperclip/",
-        )
+        ),
     )
 )
 """_"""

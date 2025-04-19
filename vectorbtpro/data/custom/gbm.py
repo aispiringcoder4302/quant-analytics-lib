@@ -30,9 +30,12 @@ __pdoc__ = {}
 
 class GBMData(SyntheticData):
     """Data class for synthetic data generated via geometric Brownian motion.
-    
+
     See:
         * `GBMData.generate_key` for argument details.
+
+    !!! info
+        For default settings, see `custom.gbm` in `vectorbtpro._settings.data`.
     """
 
     _settings_path: tp.SettingsPath = dict(custom="data.custom.gbm")
@@ -73,8 +76,6 @@ class GBMData(SyntheticData):
 
         See:
             `vectorbtpro.data.nb.generate_gbm_data_nb`
-
-        For defaults, refer to `custom.gbm` in `vectorbtpro._settings.data`.
 
         !!! note
             When setting a seed, pass a seed per feature or symbol using

@@ -93,9 +93,9 @@ def optimize_meta_nb(
         n_cols (int): Number of columns for the output allocation.
         range_starts (Array1d): Array of starting indices for each range.
         range_ends (Array1d): Array of ending indices for each range.
-        optimize_func_nb (Callable): Function that optimizes a given range. 
-        
-            It should accept an index, the corresponding start and end indices, 
+        optimize_func_nb (Callable): Function that optimizes a given range.
+
+            It should accept an index, the corresponding start and end indices,
             and any additional arguments.
         *args: Positional arguments passed to `optimize_func_nb`.
 
@@ -135,8 +135,8 @@ def allocate_meta_nb(
     Args:
         n_cols (int): Number of columns for the allocation.
         index_points (Array1d): Array of index points for allocation.
-        allocate_func_nb (Callable): Function that computes allocation at a given point. 
-        
+        allocate_func_nb (Callable): Function that computes allocation at a given point.
+
             It should accept a point's index, the index value, and any additional arguments.
         *args: Positional arguments passed to `allocate_func_nb`.
 
@@ -192,22 +192,22 @@ def random_allocate_func_nb(
 ) -> tp.Array1d:
     """Generate a random normalized allocation.
 
-    The function creates an allocation array with random weights for each column. 
-    Weights are generated using a uniform distribution and are assigned signs based 
-    on the specified `direction`. If `n` is provided, a random subset of columns is 
-    selected for weight assignment; otherwise, every column is assigned a weight. 
-    The weights for positive and negative values are normalized separately to sum up to one. 
+    The function creates an allocation array with random weights for each column.
+    Weights are generated using a uniform distribution and are assigned signs based
+    on the specified `direction`. If `n` is provided, a random subset of columns is
+    selected for weight assignment; otherwise, every column is assigned a weight.
+    The weights for positive and negative values are normalized separately to sum up to one.
     Any unassigned weights are set to 0.
 
     Args:
         i (int): The iteration index.
         index_point (int): A reference index point (unused in allocation computation).
         n_cols (int): Number of columns for the allocation.
-        direction (int): Direction for weight assignment. 
-        
+        direction (int): Direction for weight assignment.
+
             See `vectorbtpro.portfolio.enums.Direction` for possible values.
-        n (Optional[int]): Number of columns to assign random weights. 
-        
+        n (Optional[int]): Number of columns to assign random weights.
+
             If None, assign weights to all columns.
 
     Returns:
@@ -264,8 +264,8 @@ def prepare_alloc_points_nb(
 ) -> tp.Tuple[tp.RecordArray, tp.Array2d]:
     """Prepare allocation points from index points and allocation values.
 
-    Iterate over allocation rows, skipping rows where all values are NaN. 
-    If consecutive rows share the same index point, update the allocation at 
+    Iterate over allocation rows, skipping rows where all values are NaN.
+    If consecutive rows share the same index point, update the allocation at
     the previous record with the new values; otherwise, register a new allocation point.
 
     Args:

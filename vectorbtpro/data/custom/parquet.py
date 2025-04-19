@@ -30,9 +30,12 @@ ParquetDataT = tp.TypeVar("ParquetDataT", bound="ParquetData")
 
 class ParquetData(FileData):
     """Data class for fetching and processing Parquet files using PyArrow or FastParquet.
-    
+
     See:
         * `ParquetData.fetch_key` for argument details.
+
+    !!! info
+        For default settings, see `custom.parquet` in `vectorbtpro._settings.data`.
     """
 
     _settings_path: tp.SettingsPath = dict(custom="data.custom.parquet")
@@ -195,12 +198,10 @@ class ParquetData(FileData):
                 Refer to `pd.read_parquet` for details.
             **read_kwargs: Keyword arguments passed to `pd.read_parquet`.
 
+                See https://pandas.pydata.org/docs/reference/api/pandas.read_parquet.html for additional arguments.
+
         Returns:
             KeyData: The fetched data and a metadata dictionary.
-
-        See https://pandas.pydata.org/docs/reference/api/pandas.read_parquet.html for additional arguments.
-
-        For defaults, see `custom.parquet` in `vectorbtpro._settings.data`.
         """
         from vectorbtpro.utils.module_ import assert_can_import, assert_can_import_any
 

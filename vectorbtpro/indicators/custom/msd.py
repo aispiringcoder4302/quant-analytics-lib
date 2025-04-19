@@ -78,6 +78,9 @@ class _MSD(MSD):
         Returns:
             BaseFigure: The figure instance containing the plotted MSD indicator.
 
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
+
         Examples:
             ```pycon
             >>> vbt.MSD.run(ohlcv['Close']).plot().show()

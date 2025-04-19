@@ -8,7 +8,11 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module providing default data types."""
+"""Module providing default data types.
+
+!!! info
+    For default settings, see `vectorbtpro._settings.numpy`.
+"""
 
 from vectorbtpro._settings import settings
 

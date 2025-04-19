@@ -8,7 +8,11 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module providing a global registry for chunkable functions."""
+"""Module providing a global registry for chunkable functions.
+
+!!! info
+    For default settings, see `vectorbtpro._settings.chunking`.
+"""
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.utils import checks
@@ -63,7 +67,7 @@ class ChunkableRegistry(Base):
     @property
     def setups(self) -> tp.Dict[tp.Hashable, ChunkedSetup]:
         """Dictionary mapping setup IDs to registered `ChunkedSetup` instances.
-        
+
         Returns:
             Dict[Hashable, ChunkedSetup]: The dictionary of registered setups.
         """
@@ -236,13 +240,6 @@ def register_chunkable(
     * `override_options` from `vectorbtpro._settings.chunking`
     * `override_setup_options.{setup_id}` from `vectorbtpro._settings.chunking`
 
-    !!! note
-        Calling the `register_chunkable` decorator before (or below) the
-        `vectorbtpro.registries.jit_registry.register_jitted` decorator with `return_wrapped` set
-        to True won't work. Using it after (or above) `vectorbtpro.registries.jit_registry.register_jitted`
-        works for Python calls but not for Numba. Generally, avoid wrapping immediately and use
-        `ChunkableRegistry.decorate` for decoration.
-
     Args:
         func (Optional[Callable]): The function to register.
 
@@ -257,7 +254,18 @@ def register_chunkable(
 
     Returns:
         Callable: The registered function, optionally wrapped with chunking.
+
+    !!! note
+        Calling the `register_chunkable` decorator before (or below) the
+        `vectorbtpro.registries.jit_registry.register_jitted` decorator with `return_wrapped` set
+        to True won't work. Using it after (or above) `vectorbtpro.registries.jit_registry.register_jitted`
+        works for Python calls but not for Numba. Generally, avoid wrapping immediately and use
+        `ChunkableRegistry.decorate` for decoration.
+
+    !!! info
+        For default settings, see `vectorbtpro._settings.chunking`.
     """
+
     def decorator(_func: tp.Callable) -> tp.Callable:
         nonlocal setup_id, options
 

@@ -36,7 +36,7 @@ def _select_indices_1d_nb(arr, indices, fill_value):
         value_dtype = np.array(fill_value).dtype
     dtype = np.promote_types(a_dtype, value_dtype)
 
-    def impl(arr, indices, fill_value):
+    def _impl(arr, indices, fill_value):
         out = np.empty(indices.shape, dtype=dtype)
         for i in range(indices.shape[0]):
             if 0 <= indices[i] <= arr.shape[0] - 1:
@@ -46,9 +46,9 @@ def _select_indices_1d_nb(arr, indices, fill_value):
         return out
 
     if not nb_enabled:
-        return impl(arr, indices, fill_value)
+        return _impl(arr, indices, fill_value)
 
-    return impl
+    return _impl
 
 
 overload(_select_indices_1d_nb)(_select_indices_1d_nb)
@@ -79,7 +79,7 @@ def _select_indices_nb(arr, indices, fill_value):
         value_dtype = np.array(fill_value).dtype
     dtype = np.promote_types(a_dtype, value_dtype)
 
-    def impl(arr, indices, fill_value):
+    def _impl(arr, indices, fill_value):
         out = np.empty(indices.shape, dtype=dtype)
         for col in range(indices.shape[1]):
             for i in range(indices.shape[0]):
@@ -90,9 +90,9 @@ def _select_indices_nb(arr, indices, fill_value):
         return out
 
     if not nb_enabled:
-        return impl(arr, indices, fill_value)
+        return _impl(arr, indices, fill_value)
 
-    return impl
+    return _impl
 
 
 overload(_select_indices_nb)(_select_indices_nb)
@@ -167,15 +167,15 @@ def _set_by_mask_1d_nb(arr, mask, value):
         value_dtype = np.array(value).dtype
     dtype = np.promote_types(a_dtype, value_dtype)
 
-    def impl(arr, mask, value):
+    def _impl(arr, mask, value):
         out = arr.astype(dtype)
         out[mask] = value
         return out
 
     if not nb_enabled:
-        return impl(arr, mask, value)
+        return _impl(arr, mask, value)
 
-    return impl
+    return _impl
 
 
 overload(_set_by_mask_1d_nb)(_set_by_mask_1d_nb)
@@ -206,16 +206,16 @@ def _set_by_mask_nb(arr, mask, value):
         value_dtype = np.array(value).dtype
     dtype = np.promote_types(a_dtype, value_dtype)
 
-    def impl(arr, mask, value):
+    def _impl(arr, mask, value):
         out = arr.astype(dtype)
         for col in range(arr.shape[1]):
             out[mask[:, col], col] = value
         return out
 
     if not nb_enabled:
-        return impl(arr, mask, value)
+        return _impl(arr, mask, value)
 
-    return impl
+    return _impl
 
 
 overload(_set_by_mask_nb)(_set_by_mask_nb)
@@ -246,15 +246,15 @@ def _set_by_mask_mult_1d_nb(arr, mask, values):
         value_dtype = values.dtype
     dtype = np.promote_types(a_dtype, value_dtype)
 
-    def impl(arr, mask, values):
+    def _impl(arr, mask, values):
         out = arr.astype(dtype)
         out[mask] = values[mask]
         return out
 
     if not nb_enabled:
-        return impl(arr, mask, values)
+        return _impl(arr, mask, values)
 
-    return impl
+    return _impl
 
 
 overload(_set_by_mask_mult_1d_nb)(_set_by_mask_mult_1d_nb)
@@ -285,16 +285,16 @@ def _set_by_mask_mult_nb(arr, mask, values):
         value_dtype = values.dtype
     dtype = np.promote_types(a_dtype, value_dtype)
 
-    def impl(arr, mask, values):
+    def _impl(arr, mask, values):
         out = arr.astype(dtype)
         for col in range(arr.shape[1]):
             out[mask[:, col], col] = values[mask[:, col], col]
         return out
 
     if not nb_enabled:
-        return impl(arr, mask, values)
+        return _impl(arr, mask, values)
 
-    return impl
+    return _impl
 
 
 overload(_set_by_mask_mult_nb)(_set_by_mask_mult_nb)
@@ -333,7 +333,7 @@ def first_valid_index_1d_nb(arr: tp.Array1d, check_inf: bool = True) -> int:
 
 
 @register_jitted(cache=True)
-def first_valid_index_nb(arr, check_inf: bool = True):
+def first_valid_index_nb(arr: tp.Array2d, check_inf: bool = True) -> tp.Array1d:
     """Return an array of indices for the first valid elements from each column in a 2D array.
 
     Args:
@@ -368,7 +368,7 @@ def last_valid_index_1d_nb(arr: tp.Array1d, check_inf: bool = True) -> int:
 
 
 @register_jitted(cache=True)
-def last_valid_index_nb(arr, check_inf: bool = True):
+def last_valid_index_nb(arr: tp.Array2d, check_inf: bool = True) -> tp.Array1d:
     """Return an array of indices for the last valid elements from each column in a 2D array.
 
     Args:
@@ -487,7 +487,7 @@ def _bshift_1d_nb(arr, n, fill_value):
         fill_value_dtype = np.array(fill_value).dtype
     dtype = np.promote_types(a_dtype, fill_value_dtype)
 
-    def impl(arr, n, fill_value):
+    def _impl(arr, n, fill_value):
         out = np.empty(arr.shape[0], dtype=dtype)
         for i in range(out.shape[0]):
             if i + n <= out.shape[0] - 1:
@@ -497,9 +497,9 @@ def _bshift_1d_nb(arr, n, fill_value):
         return out
 
     if not nb_enabled:
-        return impl(arr, n, fill_value)
+        return _impl(arr, n, fill_value)
 
-    return impl
+    return _impl
 
 
 overload(_bshift_1d_nb)(_bshift_1d_nb)
@@ -538,16 +538,16 @@ def _bshift_nb(arr, n, fill_value):
         fill_value_dtype = np.array(fill_value).dtype
     dtype = np.promote_types(a_dtype, fill_value_dtype)
 
-    def impl(arr, n, fill_value):
+    def _impl(arr, n, fill_value):
         out = np.empty_like(arr, dtype=dtype)
         for col in range(arr.shape[1]):
             out[:, col] = bshift_1d_nb(arr[:, col], n=n, fill_value=fill_value)
         return out
 
     if not nb_enabled:
-        return impl(arr, n, fill_value)
+        return _impl(arr, n, fill_value)
 
-    return impl
+    return _impl
 
 
 overload(_bshift_nb)(_bshift_nb)
@@ -590,7 +590,7 @@ def _fshift_1d_nb(arr, n, fill_value):
         fill_value_dtype = np.array(fill_value).dtype
     dtype = np.promote_types(a_dtype, fill_value_dtype)
 
-    def impl(arr, n, fill_value):
+    def _impl(arr, n, fill_value):
         out = np.empty(arr.shape[0], dtype=dtype)
         for i in range(out.shape[0]):
             if i - n >= 0:
@@ -600,9 +600,9 @@ def _fshift_1d_nb(arr, n, fill_value):
         return out
 
     if not nb_enabled:
-        return impl(arr, n, fill_value)
+        return _impl(arr, n, fill_value)
 
-    return impl
+    return _impl
 
 
 overload(_fshift_1d_nb)(_fshift_1d_nb)
@@ -638,16 +638,16 @@ def _fshift_nb(arr, n, fill_value):
         fill_value_dtype = np.array(fill_value).dtype
     dtype = np.promote_types(a_dtype, fill_value_dtype)
 
-    def impl(arr, n, fill_value):
+    def _impl(arr, n, fill_value):
         out = np.empty_like(arr, dtype=dtype)
         for col in range(arr.shape[1]):
             out[:, col] = fshift_1d_nb(arr[:, col], n=n, fill_value=fill_value)
         return out
 
     if not nb_enabled:
-        return impl(arr, n, fill_value)
+        return _impl(arr, n, fill_value)
 
-    return impl
+    return _impl
 
 
 overload(_fshift_nb)(_fshift_nb)
@@ -877,16 +877,16 @@ def _nanprod_nb(arr):
         a_dtype = arr.dtype
     dtype = np.promote_types(a_dtype, int)
 
-    def impl(arr):
+    def _impl(arr):
         out = np.empty(arr.shape[1], dtype=dtype)
         for col in prange(arr.shape[1]):
             out[col] = np.nanprod(arr[:, col])
         return out
 
     if not nb_enabled:
-        return impl(arr)
+        return _impl(arr)
 
-    return impl
+    return _impl
 
 
 overload(_nanprod_nb)(_nanprod_nb)
@@ -922,16 +922,16 @@ def _nancumsum_nb(arr):
         a_dtype = arr.dtype
     dtype = np.promote_types(a_dtype, int)
 
-    def impl(arr):
+    def _impl(arr):
         out = np.empty(arr.shape, dtype=dtype)
         for col in prange(arr.shape[1]):
             out[:, col] = np.nancumsum(arr[:, col])
         return out
 
     if not nb_enabled:
-        return impl(arr)
+        return _impl(arr)
 
-    return impl
+    return _impl
 
 
 overload(_nancumsum_nb)(_nancumsum_nb)
@@ -967,16 +967,16 @@ def _nancumprod_nb(arr):
         a_dtype = arr.dtype
     dtype = np.promote_types(a_dtype, int)
 
-    def impl(arr):
+    def _impl(arr):
         out = np.empty(arr.shape, dtype=dtype)
         for col in prange(arr.shape[1]):
             out[:, col] = np.nancumprod(arr[:, col])
         return out
 
     if not nb_enabled:
-        return impl(arr)
+        return _impl(arr)
 
-    return impl
+    return _impl
 
 
 overload(_nancumprod_nb)(_nancumprod_nb)
@@ -1012,16 +1012,16 @@ def _nansum_nb(arr):
         a_dtype = arr.dtype
     dtype = np.promote_types(a_dtype, int)
 
-    def impl(arr):
+    def _impl(arr):
         out = np.empty(arr.shape[1], dtype=dtype)
         for col in prange(arr.shape[1]):
             out[col] = np.nansum(arr[:, col])
         return out
 
     if not nb_enabled:
-        return impl(arr)
+        return _impl(arr)
 
-    return impl
+    return _impl
 
 
 overload(_nansum_nb)(_nansum_nb)
@@ -2185,7 +2185,7 @@ def _realign_1d_nb(
         value_dtype = np.array(nan_value).dtype
     dtype = np.promote_types(a_dtype, value_dtype)
 
-    def impl(
+    def _impl(
         arr,
         source_index,
         target_index,
@@ -2276,7 +2276,7 @@ def _realign_1d_nb(
         return out
 
     if not nb_enabled:
-        return impl(
+        return _impl(
             arr,
             source_index,
             target_index,
@@ -2288,7 +2288,7 @@ def _realign_1d_nb(
             ffill,
         )
 
-    return impl
+    return _impl
 
 
 overload(_realign_1d_nb)(_realign_1d_nb)
@@ -2365,7 +2365,7 @@ def _realign_nb(
         value_dtype = np.array(nan_value).dtype
     dtype = np.promote_types(a_dtype, value_dtype)
 
-    def impl(
+    def _impl(
         arr,
         source_index,
         target_index,
@@ -2392,7 +2392,7 @@ def _realign_nb(
         return out
 
     if not nb_enabled:
-        return impl(
+        return _impl(
             arr,
             source_index,
             target_index,
@@ -2404,7 +2404,7 @@ def _realign_nb(
             ffill,
         )
 
-    return impl
+    return _impl
 
 
 overload(_realign_nb)(_realign_nb)

@@ -8,7 +8,11 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module providing functions to compress, decompress, and manage pickling configurations."""
+"""Module providing functions to compress, decompress, and manage pickling configurations.
+
+!!! info
+    For default settings, see `vectorbtpro._settings.pickling`.
+"""
 
 import ast
 import io
@@ -47,7 +51,7 @@ __all__ = [
 
 
 def get_serialization_extensions(cls_name: tp.Optional[str] = None) -> tp.Set[str]:
-    """Return all supported serialization extensions from `vectorbtpro._settings.pickling`.
+    """Return all supported serialization extensions.
 
     Args:
         cls_name (Optional[str]): Class name to retrieve specific serialization extensions.
@@ -55,6 +59,9 @@ def get_serialization_extensions(cls_name: tp.Optional[str] = None) -> tp.Set[st
 
     Returns:
         Set[str]: A set of serialization file extensions.
+
+    !!! info
+        For default settings, see `vectorbtpro._settings.pickling`.
     """
     from vectorbtpro._settings import settings
 
@@ -66,7 +73,7 @@ def get_serialization_extensions(cls_name: tp.Optional[str] = None) -> tp.Set[st
 
 
 def get_compression_extensions(cls_name: tp.Optional[str] = None) -> tp.Set[str]:
-    """Return all supported compression extensions from `vectorbtpro._settings.pickling`.
+    """Return all supported compression extensions.
 
     Args:
         cls_name (Optional[str]): Class name to retrieve specific compression extensions.
@@ -74,6 +81,9 @@ def get_compression_extensions(cls_name: tp.Optional[str] = None) -> tp.Set[str]
 
     Returns:
         Set[str]: A set of compression file extensions.
+
+    !!! info
+        For default settings, see `vectorbtpro._settings.pickling`.
     """
     from vectorbtpro._settings import settings
 
@@ -103,9 +113,8 @@ def compress(
     Returns:
         bytes: Compressed data.
 
-    !!! note
-        For available compression options, refer to `vectorbtpro._settings.pickling`
-        under "extensions.compression".
+    !!! info
+        For default settings, see `extensions.compression` in `vectorbtpro._settings.pickling`.
     """
     from vectorbtpro.utils.module_ import (
         assert_can_import,
@@ -200,9 +209,8 @@ def decompress(
     Returns:
         bytes: Decompressed data.
 
-    !!! note
-        For available compression options, refer to `vectorbtpro._settings.pickling`
-        under "extensions.compression".
+    !!! info
+        For default settings, see `extensions.compression` in `vectorbtpro._settings.pickling`.
     """
     from vectorbtpro.utils.module_ import (
         assert_can_import,
@@ -534,7 +542,11 @@ class RecInfo(DefineMixin):
     """Optional callback that modifies the reconstruction state."""
 
     def register(self) -> None:
-        """Register this instance in `rec_info_registry` using its identifier."""
+        """Register this instance in `rec_info_registry` using its identifier.
+
+        Returns:
+            None
+        """
         rec_info_registry[self.id_] = self
 
 
@@ -739,9 +751,6 @@ class Pickleable(Base):
         It uses the instance's `rec_state` property and raises an error if it is None. If an object cannot be
         represented as a string, it is serialized using `dumps`.
 
-        !!! note
-            The initial order of keys can be preserved only by using references.
-
         Args:
             top_name (Optional[str]): The top-level section name.
             unpack_objects (bool): Flag to store a `Pickleable` object's reconstruction state in a separate section.
@@ -765,6 +774,9 @@ class Pickleable(Base):
 
         Returns:
             str: The encoded configuration string.
+
+        !!! note
+            The initial order of keys can be preserved only by using references.
         """
         import configparser
         from io import StringIO
@@ -919,10 +931,6 @@ class Pickleable(Base):
         the section `a` explicitly, it will automatically become the outermost key.
         Sections containing only a single pair (`_ = _`) are treated as empty dictionaries.
 
-        !!! warning
-            Unpickling byte streams and running code has important security implications. Don't attempt
-            to parse configs coming from untrusted sources as those can contain malicious code!
-
         Args:
             cls (Type[Pickleable]): The class to use for decoding the configuration.
             str_ (str): The configuration string to decode.
@@ -946,6 +954,10 @@ class Pickleable(Base):
 
         Returns:
             Pickleable: The decoded instance.
+
+        !!! warning
+            Unpickling byte streams and running code has important security implications. Don't attempt
+            to parse configs coming from untrusted sources as those can contain malicious code!
 
         Examples:
             File `types.ini`:
@@ -1227,6 +1239,9 @@ class Pickleable(Base):
 
         Returns:
             Path: The resolved file path with the appropriate extensions.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.pickling`.
         """
         from vectorbtpro._settings import settings
 

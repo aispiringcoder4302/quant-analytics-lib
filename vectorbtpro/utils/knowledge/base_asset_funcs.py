@@ -71,7 +71,7 @@ class AssetFunc(Base):
         raise NotImplementedError
 
     @classmethod
-    def prepare_and_call(cls, d: tp.Any, *args, **kwargs):
+    def prepare_and_call(cls, d: tp.Any, *args, **kwargs) -> tp.Any:
         """Prepare arguments and invoke the asset function.
 
         Args:
@@ -1435,7 +1435,14 @@ class FindRemoveAssetFunc(FindAssetFunc):
 
     @classmethod
     def is_empty_func(cls, d: tp.Any) -> bool:
-        """Return whether the given object is empty."""
+        """Return whether the given object is empty.
+
+        Args:
+            d (Any): The data item to check for emptiness.
+
+        Returns:
+            bool: True if the data item is empty, False otherwise.
+        """
         if d is None:
             return True
         if checks.is_collection(d) and len(d) == 0:
@@ -1652,7 +1659,16 @@ class DumpAssetFunc(AssetFunc):
         **kwargs,
     ) -> tp.Kwargs:
         """Resolve and merge dumping-related keyword arguments based on asset
-        settings and the provided dump engine."""
+        settings and the provided dump engine.
+
+        Args:
+            dump_engine (Optional[str]): The name of the dump engine to use.
+            asset_cls (Optional[Type[KnowledgeAsset]]): The asset class to use for resolving settings.
+            **kwargs: Additional keyword arguments to merge with the resolved settings.
+
+        Returns:
+            Kwargs: A dictionary containing the resolved dumping-related keyword arguments.
+        """
         if asset_cls is None:
             from vectorbtpro.utils.knowledge.base_assets import KnowledgeAsset
 
@@ -1873,7 +1889,7 @@ class ReduceAssetFunc(AssetFunc):
         raise NotImplementedError
 
     @classmethod
-    def prepare_and_call(cls, d1: tp.Any, d2: tp.Any, *args, **kwargs):
+    def prepare_and_call(cls, d1: tp.Any, d2: tp.Any, *args, **kwargs) -> tp.Any:
         args, kwargs = cls.prepare(*args, **kwargs)
         return cls.call(d1, d2, *args, **kwargs)
 
@@ -1903,7 +1919,15 @@ class CollectAssetFunc(ReduceAssetFunc):
 
     @classmethod
     def sort_key(cls, k: tp.Any) -> tuple:
-        """Return a tuple used as a sorting key; returns (0, k) if k is a string, otherwise (1, k)."""
+        """Return a tuple used as a sorting key.
+
+        Args:
+            k (Any): The key to be sorted.
+
+        Returns:
+            tuple: A tuple used for sorting, where the first element is 0 if `k` is a string,
+                otherwise 1, and the second element is `k` itself.
+        """
         return (0, k) if isinstance(k, str) else (1, k)
 
     @classmethod

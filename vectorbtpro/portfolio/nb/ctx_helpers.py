@@ -46,7 +46,7 @@ def get_position_nb(
     """Return the position of the current column based on the provided context.
 
     Args:
-        c (Union[OrderContext, PostOrderContext, SignalContext, PostSignalContext]): 
+        c (Union[OrderContext, PostOrderContext, SignalContext, PostSignalContext]):
             Context object containing the current column index and position array.
 
     Returns:
@@ -82,7 +82,7 @@ def in_position_nb(
     """Return whether the current column is in a position.
 
     Args:
-        c (Union[OrderContext, PostOrderContext, SignalContext, PostSignalContext]): 
+        c (Union[OrderContext, PostOrderContext, SignalContext, PostSignalContext]):
             Context object with the current column and its position index.
 
     Returns:
@@ -118,7 +118,7 @@ def in_long_position_nb(
     """Return whether the current column is in a long position.
 
     Args:
-        c (Union[OrderContext, PostOrderContext, SignalContext, PostSignalContext]): 
+        c (Union[OrderContext, PostOrderContext, SignalContext, PostSignalContext]):
             Context object with the current column and its position information.
 
     Returns:
@@ -154,7 +154,7 @@ def in_short_position_nb(
     """Return whether the current column is in a short position.
 
     Args:
-        c (Union[OrderContext, PostOrderContext, SignalContext, PostSignalContext]): 
+        c (Union[OrderContext, PostOrderContext, SignalContext, PostSignalContext]):
             Context object with the current column index and position data.
 
     Returns:
@@ -180,7 +180,7 @@ def get_n_active_positions_nb(
     """Return the number of active positions in the current group or across all groups.
 
     Args:
-        c (Union[GroupContext, SegmentContext, OrderContext, PostOrderContext, FlexOrderContext, SignalSegmentContext, SignalContext, PostSignalContext]): 
+        c (Union[GroupContext, SegmentContext, OrderContext, PostOrderContext, FlexOrderContext, SignalSegmentContext, SignalContext, PostSignalContext]):
             Context object containing position and grouping information.
         all_groups (bool): Flag indicating whether to count active positions across all groups.
 
@@ -259,7 +259,7 @@ def get_cash_nb(
     """Return the cash for the current column or group based on cash sharing.
 
     Args:
-        c (Union[OrderContext, PostOrderContext, SignalContext, PostSignalContext]): 
+        c (Union[OrderContext, PostOrderContext, SignalContext, PostSignalContext]):
             Context object with current column, group, and cash sharing attributes.
 
     Returns:
@@ -300,7 +300,7 @@ def get_debt_nb(
     """Return the debt for the current column.
 
     Args:
-        c (Union[OrderContext, PostOrderContext, SignalContext, PostSignalContext]): 
+        c (Union[OrderContext, PostOrderContext, SignalContext, PostSignalContext]):
             Context object with the current column index and debt array.
 
     Returns:
@@ -338,7 +338,7 @@ def get_locked_cash_nb(
     """Return the locked cash for the current column.
 
     Args:
-        c (Union[OrderContext, PostOrderContext, SignalContext, PostSignalContext]): 
+        c (Union[OrderContext, PostOrderContext, SignalContext, PostSignalContext]):
             Context object with the current column index and locked cash data.
 
     Returns:
@@ -409,7 +409,7 @@ def get_free_cash_nb(
     """Return the free cash for the current column or group based on cash sharing.
 
     Args:
-        c (Union[OrderContext, PostOrderContext, SignalContext, PostSignalContext]): 
+        c (Union[OrderContext, PostOrderContext, SignalContext, PostSignalContext]):
             Context object with the current column index and cash sharing attributes.
 
     Returns:
@@ -461,7 +461,7 @@ def has_free_cash_nb(
     """Return whether the current column or group with cash sharing has free cash available.
 
     Args:
-        c (Union[OrderContext, PostOrderContext, SignalContext, PostSignalContext]): 
+        c (Union[OrderContext, PostOrderContext, SignalContext, PostSignalContext]):
             Context object containing the current column index, group index, and cash sharing attribute.
 
     Returns:
@@ -501,7 +501,7 @@ def get_val_price_nb(
     """Return the valuation price for the current column.
 
     Args:
-        c (Union[OrderContext, PostOrderContext, SignalContext, PostSignalContext]): 
+        c (Union[OrderContext, PostOrderContext, SignalContext, PostSignalContext]):
             Context object with the current column index and valuation price data.
 
     Returns:

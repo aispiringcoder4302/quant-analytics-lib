@@ -69,7 +69,7 @@ def attach_arg_properties(cls: tp.Type[tp.T]) -> tp.Type[tp.T]:
                 return_type = tp.ArrayLike
             else:
                 return_type = object
-            target_pre_name = "_pre_" + arg_name
+            target_pre_name = "pre__" + arg_name
             if not hasattr(cls, target_pre_name):
 
                 def pre_arg_prop(self, _arg_name: str = arg_name) -> return_type:
@@ -89,7 +89,7 @@ def attach_arg_properties(cls: tp.Type[tp.T]) -> tp.Type[tp.T]:
                 setattr(cls, pre_arg_prop.__name__, cachedproperty(pre_arg_prop))
                 getattr(cls, pre_arg_prop.__name__).__set_name__(cls, pre_arg_prop.__name__)
 
-            target_post_name = "_post_" + arg_name
+            target_post_name = "post__" + arg_name
             if not hasattr(cls, target_post_name):
 
                 def post_arg_prop(self, _arg_name: str = arg_name) -> return_type:

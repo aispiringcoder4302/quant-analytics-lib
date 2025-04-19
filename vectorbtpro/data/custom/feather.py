@@ -30,9 +30,12 @@ FeatherDataT = tp.TypeVar("FeatherDataT", bound="FeatherData")
 
 class FeatherData(FileData):
     """Data class class for fetching Feather data using PyArrow.
-    
+
     See:
         * `FeatherData.fetch_key` for argument details.
+
+    !!! info
+        For default settings, see `custom.feather` in `vectorbtpro._settings.data`.
     """
 
     _settings_path: tp.SettingsPath = dict(custom="data.custom.feather")
@@ -90,12 +93,10 @@ class FeatherData(FileData):
             squeeze (bool): Whether to squeeze a DataFrame with a single column into a Series.
             **read_kwargs: Keyword arguments passed to `pd.read_feather`.
 
+                See https://pandas.pydata.org/docs/reference/api/pandas.read_feather.html for additional arguments.
+
         Returns:
             KeyData: The fetched data and a metadata dictionary.
-
-        See https://pandas.pydata.org/docs/reference/api/pandas.read_feather.html for additional arguments.
-
-        For defaults, see `custom.feather` in `vectorbtpro._settings.data`.
         """
         from vectorbtpro.utils.module_ import assert_can_import
 

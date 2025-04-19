@@ -35,7 +35,7 @@ class MetaPlotsBuilderMixin(type):
     @property
     def subplots(cls) -> Config:
         """Subplots configuration used by `PlotsBuilderMixin.plots`.
-        
+
         Returns:
             Config: A dictionary containing the default subplots configuration.
         """
@@ -46,6 +46,9 @@ class PlotsBuilderMixin(Base, metaclass=MetaPlotsBuilderMixin):
     """Mixin class that provides plotting configurations via the `plots` functionality.
 
     This mixin requires that the class is a subclass of `vectorbtpro.base.wrapping.Wrapping`.
+
+    !!! info
+        For default settings, see `vectorbtpro._settings.plots_builder`.
     """
 
     _writeable_attrs: tp.WriteableAttrs = {"_subplots"}
@@ -237,6 +240,9 @@ class PlotsBuilderMixin(Base, metaclass=MetaPlotsBuilderMixin):
             * `subplot_settings` vs `metric_settings`
 
             See further details in `vectorbtpro.generic.stats_builder.StatsBuilderMixin`.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
         """
         # Plot per column
         if column is None:

@@ -117,6 +117,9 @@ class _STOCH(STOCH):
         Returns:
             BaseFigure: The updated or newly created figure with the plotted STOCH traces and filled range.
 
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
+
         Examples:
             ```pycon
             >>> vbt.STOCH.run(ohlcv['High'], ohlcv['Low'], ohlcv['Close']).plot().show()

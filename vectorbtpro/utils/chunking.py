@@ -8,7 +8,11 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module providing utilities for chunking."""
+"""Module providing utilities for chunking.
+
+!!! info
+    For default settings, see `vectorbtpro._settings.chunking`.
+"""
 
 import inspect
 import multiprocessing
@@ -524,13 +528,26 @@ class ChunkTaker(Evaluable, Annotatable, DefineMixin):
     """Identifier(s) at which to evaluate this instance."""
 
     def get_size(self, obj: tp.Any, **kwargs) -> int:
-        """Return the actual size of the given object."""
+        """Return the actual size of the given object.
+
+        Args:
+            obj (Any): The input object.
+            **kwargs: Additional keyword arguments.
+
+        Returns:
+            int: The size of the object.
+        """
         raise NotImplementedError
 
     def suggest_size(self, obj: tp.Any, **kwargs) -> tp.Optional[int]:
         """Return a suggested global size derived from the given object.
 
-        If a mapper is configured, returns None.
+        Args:
+            obj (Any): The input object.
+            **kwargs: Additional keyword arguments.
+
+        Returns:
+            Optional[int]: The suggested size of the object, or None if a mapper is configured.
         """
         if self.mapper is not None:
             return None
@@ -539,9 +556,16 @@ class ChunkTaker(Evaluable, Annotatable, DefineMixin):
     def should_take(self, obj: tp.Any, chunk_meta: ChunkMeta, **kwargs) -> bool:
         """Determine whether to extract a chunk from the given object based on the chunk metadata.
 
-        * Returns False if the object is None and `ignore_none` is True.
-        * Returns False if the object is an instance of `single_type`.
-        * Otherwise, returns True.
+        Args:
+            obj (Any): The input object.
+            chunk_meta (ChunkMeta): Metadata specifying the chunk boundaries.
+            **kwargs: Additional keyword arguments.
+
+        Returns:
+            bool:
+                * Returns False if the object is None and `ignore_none` is True.
+                * Returns False if the object is an instance of `single_type`.
+                * Otherwise, returns True.
         """
         if self.ignore_none and obj is None:
             return False
@@ -799,7 +823,11 @@ class ContainerTaker(ChunkTaker, DefineMixin):
         raise NotImplementedError
 
     def check_cont_take_spec(self) -> None:
-        """Check that `ContainerTaker.cont_take_spec` is provided."""
+        """Check that `ContainerTaker.cont_take_spec` is provided.
+
+        Returns:
+            None
+        """
         if self.cont_take_spec is None:
             raise ValueError("Please provide cont_take_spec")
 
@@ -818,6 +846,12 @@ class SequenceTaker(ContainerTaker):
 
         If the last element is an ellipsis, replace it by repeating the preceding specification
         to match the sequence length.
+
+        Args:
+            obj (Sequence): The sequence object.
+
+        Returns:
+            ContainerTakeSpec: The adapted container take specification.
         """
         cont_take_spec = list(self.cont_take_spec)
         if len(cont_take_spec) >= 2:
@@ -904,6 +938,12 @@ class MappingTaker(ContainerTaker):
         """Adapt the container take specification for the given mapping.
 
         If an ellipsis key is present, assign its corresponding specification to any missing keys.
+
+        Args:
+            obj (Mapping): The mapping object.
+
+        Returns:
+            ContainerTakeSpec: The adapted container take specification.
         """
         cont_take_spec = dict(self.cont_take_spec)
         ellipsis_take_spec = None
@@ -983,7 +1023,7 @@ class MappingTaker(ContainerTaker):
 
 class ArgsTaker(SequenceTaker):
     """Class for taking items from a variable-length positional arguments container.
-    
+
     Args:
         *args: Additional positional arguments.
         single_type (Optional[TypeLike]): Type or tuple of types that should be treated as a single value.
@@ -1009,7 +1049,7 @@ class ArgsTaker(SequenceTaker):
 
 class KwargsTaker(MappingTaker):
     """Class for taking items from a variable-length keyword arguments container.
-    
+
     Args:
         single_type (Optional[TypeLike]): Type or tuple of types that should be treated as a single value.
         ignore_none (bool): Indicates whether None values should be ignored.
@@ -1040,11 +1080,19 @@ class Chunkable(Evaluable, Annotatable):
     """Abstract class representing a value with an associated chunk-taking specification."""
 
     def get_value(self) -> tp.Any:
-        """Return the encapsulated value."""
+        """Return the encapsulated value.
+
+        Returns:
+            Any: The encapsulated value.
+        """
         raise NotImplementedError
 
     def get_take_spec(self) -> tp.TakeSpec:
-        """Return the associated chunk-taking specification."""
+        """Return the associated chunk-taking specification.
+
+        Returns:
+            TakeSpec: The chunk-taking specification.
+        """
         raise NotImplementedError
 
 
@@ -1114,7 +1162,7 @@ class Chunked(Chunkable, DefineMixin):
     @property
     def take_spec_missing(self) -> bool:
         """Boolean flag indicating whether `take_spec` is missing.
-        
+
         Returns:
             bool: True if `take_spec` is missing, False otherwise.
         """
@@ -1222,8 +1270,6 @@ class Chunker(Configured):
     3. Executes all chunks by passing `**execute_kwargs` to `vectorbtpro.utils.execution.execute`.
     4. Optionally, post-processes and merges the results by passing them and `**merge_kwargs` to `merge_func`.
 
-    For defaults, see `vectorbtpro._settings.chunking`.
-
     Args:
         size (Optional[int]): Chunk size for splitting function arguments.
         min_size (Optional[int]): Minimum allowed chunk size.
@@ -1246,6 +1292,9 @@ class Chunker(Configured):
             for executing chunks.
         disable (Optional[bool]): Specifies whether chunking is disabled.
         **kwargs: Keyword arguments passed for configuration.
+
+    !!! info
+        For default settings, see `vectorbtpro._settings.chunking`.
     """
 
     _settings_path: tp.SettingsPath = "chunking"
@@ -2247,6 +2296,9 @@ def chunked(
     Returns:
         Callable: The decorated function with chunking capability.
 
+    !!! info
+        For default settings, see `vectorbtpro._settings.chunking`.
+
     Examples:
         For testing purposes, let's divide the input array into 2 chunks and compute
         the mean in a sequential manner:
@@ -2587,7 +2639,8 @@ def resolve_chunked_option(option: tp.ChunkedOption = None) -> tp.KwargsLike:
     Returns:
         KwargsLike: A dictionary of keyword arguments for chunking configuration, or None if chunking is disabled.
 
-    For defaults, see `option` in `vectorbtpro._settings.chunking`.
+    !!! info
+        For default settings, see `vectorbtpro._settings.chunking`.
     """
     from vectorbtpro._settings import settings
 
@@ -2634,6 +2687,9 @@ def resolve_chunked(func: tp.Callable, option: tp.ChunkedOption = None, **kwargs
     Returns:
         Callable: The decorated function with chunked processing applied if enabled;
             otherwise, the original function.
+
+    !!! info
+        For default settings, see `vectorbtpro._settings.chunking`.
     """
     from vectorbtpro._settings import settings
 

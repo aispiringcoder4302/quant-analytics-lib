@@ -82,6 +82,9 @@ class _ADX(ADX):
         Returns:
             BaseFigure: Figure containing the plotted ADX traces.
 
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
+
         Examples:
             ```pycon
             >>> vbt.ADX.run(ohlcv['High'], ohlcv['Low'], ohlcv['Close']).plot().show()

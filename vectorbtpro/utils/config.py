@@ -576,10 +576,11 @@ class Config(pdict):
             Defaults to True if `frozen_keys` or `readonly` is True, otherwise False.
         override_keys (Set[str]): Specifies keys that can override attribute names when `as_attrs` is True.
 
-    Defaults can be overridden using settings from `vectorbtpro._settings.config`.
+    !!! info
+        For default settings, see `options` in `vectorbtpro._settings.config`.
 
-    If another configuration is provided, its properties will be copied, but they can be overridden
-    by arguments passed during initialization.
+        If another configuration is provided, its properties will be copied, but they can be overridden
+        by arguments passed during initialization.
 
     !!! note
         All arguments are applied only once during initialization.
@@ -706,9 +707,9 @@ class Config(pdict):
     @property
     def options_(self) -> dict:
         """Configuration options dictionary.
-        
+
         This dictionary contains various settings that control the behavior of the configuration.
-        
+
         Returns:
             dict: The configuration options dictionary.
         """
@@ -1128,7 +1129,7 @@ class AtomicConfig(Config, atomic_dict):
 
 class FrozenConfig(Config):
     """Configuration class with the `frozen_keys` flag enabled.
-    
+
     Args:
         *args: Additional positional arguments.
         **kwargs: Additional keyword arguments.
@@ -1148,7 +1149,7 @@ class FrozenConfig(Config):
 
 class ReadonlyConfig(Config):
     """Configuration class with the `readonly` flag enabled.
-    
+
     Args:
         *args: Additional positional arguments.
         **kwargs: Additional keyword arguments.
@@ -1168,7 +1169,7 @@ class ReadonlyConfig(Config):
 
 class HybridConfig(Config):
     """Configuration class with `copy_kwargs` configured to use `copy_mode='hybrid'`.
-    
+
     Args:
         *args: Additional positional arguments.
         **kwargs: Additional keyword arguments.
@@ -1225,7 +1226,7 @@ Stores tuples of class names and their associated settings paths by unique ident
 
 class ExtSettingsPath(Base):
     """Context manager to temporarily add extensional settings paths.
-    
+
     Args:
         ext_settings_paths (ExtSettingsPaths): Dictionary of extensional settings paths.
     """
@@ -1237,7 +1238,7 @@ class ExtSettingsPath(Base):
     @property
     def unique_id(self) -> str:
         """Unique identifier for this extensional settings path instance.
-        
+
         Returns:
             str: The unique identifier.
         """
@@ -1246,7 +1247,7 @@ class ExtSettingsPath(Base):
     @property
     def ext_settings_paths(self) -> tp.ExtSettingsPaths:
         """Dictionary containing extensional settings paths.
-        
+
         Returns:
             ExtSettingsPaths: The dictionary of extensional settings paths.
         """
@@ -1281,7 +1282,7 @@ For instance, a relationship `knowledge` -> `pages` will also consider `pages` s
 
 class SpecSettingsPath(Base):
     """Context manager to temporarily add specialized settings paths.
-    
+
     Args:
         spec_settings_paths (SpecSettingsPaths): Dictionary of specialized settings paths.
     """
@@ -1293,7 +1294,7 @@ class SpecSettingsPath(Base):
     @property
     def unique_id(self) -> str:
         """Unique identifier for this specialized settings path instance.
-        
+
         Returns:
             str: The unique identifier.
         """
@@ -1302,7 +1303,7 @@ class SpecSettingsPath(Base):
     @property
     def spec_settings_paths(self) -> tp.SpecSettingsPaths:
         """Dictionary containing specialized settings paths.
-        
+
         Returns:
             SpecSettingsPaths: The dictionary of specialized settings paths.
         """
@@ -1953,10 +1954,11 @@ class Configured(HasSettings, Cacheable, Comparable, Pickleable, Prettified, Cha
     All subclasses of `Configured` are initialized using `Config`, which facilitates
     pickling and configuration merging.
 
-    Settings are defined under `vectorbtpro._settings.configured`.
-
     Args:
         **config: Keyword arguments for initialization configuration.
+
+    !!! info
+        For default settings, see `vectorbtpro._settings.configured`.
 
     !!! warning
         If any attribute is overwritten that is not listed in `Configured._writeable_attrs`,
@@ -2010,7 +2012,7 @@ class Configured(HasSettings, Cacheable, Comparable, Pickleable, Prettified, Cha
     @property
     def config(self) -> Config:
         """Configuration instance set during initialization.
-        
+
         Returns:
             Config: The configuration instance.
         """
