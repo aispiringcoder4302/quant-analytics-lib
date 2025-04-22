@@ -7308,7 +7308,7 @@ def holding_enex_signal_func_nb(  # % line.replace("holding_enex_signal_func_nb"
 
     Args:
         c (SignalContext): The signal context holding trading information.
-        direction (int): An integer representing the trade direction.
+        direction (int): An integer representing the signal direction.
 
             See `vectorbtpro.portfolio.enums.Direction` for more details.
         close_at_end (bool): Flag indicating whether to exit the position at the end of the period.

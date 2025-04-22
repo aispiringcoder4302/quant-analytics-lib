@@ -1337,7 +1337,7 @@ def reduce_grouped_nb(
 
     Args:
         arr (Array2d): 2-dimensional array containing the columns to be grouped.
-        group_map (GroupMap): Mapping that specifies the groups of column indices and their lengths.
+        group_map (GroupMap): Tuple containing the groups of column indices and their lengths.
         reduce_func_nb (ReduceGroupedFunc): Function that reduces a 2-dimensional array slice corresponding
             to a group into a single value.
         *args: Positional arguments passed to `reduce_func_nb`.
@@ -1377,7 +1377,7 @@ def reduce_grouped_meta_nb(group_map: tp.GroupMap, reduce_func_nb: tp.ReduceGrou
     """Meta version of `reduce_grouped_nb` that reduces groups based on metadata.
 
     Args:
-        group_map (GroupMap): Mapping specifying groups of column indices and their lengths.
+        group_map (GroupMap): Tuple containing the groups of column indices and their lengths.
         reduce_func_nb (ReduceGroupedMetaFunc): Function that reduces a group by accepting the column indices,
             the group index, and additional arguments.
         *args: Positional arguments passed to `reduce_func_nb`.

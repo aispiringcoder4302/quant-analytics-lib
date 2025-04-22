@@ -758,7 +758,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         Args:
             span (int): Window span for computing the exponentially weighted moving mean.
             minp (Optional[int]): Minimum number of observations required.
-            adjust (bool): Whether to adjust the weights.
+            adjust (bool): Flag indicating whether to adjust weights.
             jitted (JittedOption): Option to control JIT compilation.
             chunked (ChunkedOption): Option to control chunked processing.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
@@ -789,7 +789,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         Args:
             span (int): Window span for computing the exponentially weighted moving standard deviation.
             minp (Optional[int]): Minimum number of observations required.
-            adjust (bool): Whether to adjust the weights.
+            adjust (bool): Flag indicating whether to adjust weights.
             jitted (JittedOption): Option to control JIT compilation.
             chunked (ChunkedOption): Option to control chunked processing.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
@@ -819,7 +819,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         Args:
             period (int): Window period for computing the moving mean.
             minp (Optional[int]): Minimum number of observations required.
-            adjust (bool): Whether to adjust the weights.
+            adjust (bool): Flag indicating whether to adjust weights.
             jitted (JittedOption): Option to control JIT compilation.
             chunked (ChunkedOption): Option to control chunked processing.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
@@ -850,7 +850,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         Args:
             period (int): Window period for computing the moving standard deviation.
             minp (Optional[int]): Minimum number of observations required.
-            adjust (bool): Whether to adjust the weights.
+            adjust (bool): Flag indicating whether to adjust weights.
             jitted (JittedOption): Option to control JIT compilation.
             chunked (ChunkedOption): Option to control chunked processing.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
@@ -911,7 +911,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             window (int): Window size for computing the moving average.
             wtype (Union[int, str]): Type of weighting to use for the moving average.
             minp (Optional[int]): Minimum number of observations required within the window.
-            adjust (bool): Whether to adjust the weights during computation.
+            adjust (bool): Flag indicating whether to adjust weights.
             jitted (JittedOption): Option to control JIT compilation.
             chunked (ChunkedOption): Option to control chunked processing.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
@@ -947,7 +947,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             window (int): Window size for computing the moving standard deviation.
             wtype (Union[int, str]): Type of weighting to use for the moving standard deviation.
             minp (Optional[int]): Minimum number of observations required within the window.
-            adjust (bool): Whether to adjust the weights during computation.
+            adjust (bool): Flag indicating whether to adjust weights.
             ddof (int): Delta degrees of freedom.
             jitted (JittedOption): Option to control JIT compilation.
             chunked (ChunkedOption): Option to control chunked processing.

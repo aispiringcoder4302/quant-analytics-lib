@@ -447,7 +447,7 @@ class SignalsAccessor(GenericAccessor):
             jitted (JittedOption): Option to control JIT compilation.
             chunked (ChunkedOption): Option to control chunked processing.
             wrapper (Optional[ArrayWrapper]): Output wrapper instance used to wrap the resulting signals.
-            wrap_kwargs (KwargsLike): Keyword arguments for configuring the output wrapper.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping. the output wrapper.
 
         Returns:
             Tuple[SeriesFrame, SeriesFrame]: A tuple containing the entry signals and
@@ -617,7 +617,7 @@ class SignalsAccessor(GenericAccessor):
             template_context (KwargsLike): Additional context for template substitution.
             jitted (JittedOption): Option to control JIT compilation.
             chunked (ChunkedOption): Option to control chunked processing.
-            wrap_kwargs (KwargsLike): Keyword arguments for configuring the array wrapper.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping. the array wrapper.
 
         Returns:
             SeriesFrame: A boolean DataFrame or Series indicating the generated exit signals.
@@ -713,7 +713,7 @@ class SignalsAccessor(GenericAccessor):
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
             jitted (JittedOption): Option to control JIT compilation.
             chunked (ChunkedOption): Option to control chunked processing.
-            wrap_kwargs (KwargsLike): Keyword arguments for configuring the array wrapper.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping. the array wrapper.
 
         Returns:
             MaybeTuple[SeriesFrame]: Cleaned signal array if one is provided,
@@ -1463,7 +1463,7 @@ class SignalsAccessor(GenericAccessor):
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting parameters.
             jitted (JittedOption): Option to control JIT compilation.
             chunked (ChunkedOption): Option to control chunked processing.
-            wrap_kwargs (KwargsLike): Keyword arguments for configuring the array wrapper.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping. the array wrapper.
             **kwargs: Additional keyword arguments.
 
         Returns:

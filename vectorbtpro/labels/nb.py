@@ -443,7 +443,7 @@ def mean_labels_1d_nb(
             Refer to `vectorbtpro.generic.enums.WType` for available options.
         wait (FlexArray1dLike): Number(s) of periods to wait before applying the window.
         minp (Optional[int]): Minimum number of valid observations required.
-        adjust (bool): Flag indicating whether to apply an adjustment to the computed average.
+        adjust (bool): Flag indicating whether to adjust weights.
 
     Returns:
         Array1d: An array of computed percentage changes.
@@ -484,7 +484,7 @@ def mean_labels_nb(
             Refer to `vectorbtpro.generic.enums.WType` for available options.
         wait (FlexArray1dLike): Number(s) of periods to wait before applying the window.
         minp (Optional[int]): Minimum number of valid observations required.
-        adjust (bool): Flag indicating whether to adjust the computed average.
+        adjust (bool): Flag indicating whether to adjust weights.
 
     Returns:
         Array2d: A two-dimensional array where each column contains the computed percentage changes.

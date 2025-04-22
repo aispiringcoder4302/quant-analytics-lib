@@ -866,7 +866,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
             jitted (JittedOption): Option to control JIT compilation.
             chunked (ChunkedOption): Option to control chunked processing.
-            wrap_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
 
         Returns:
             SeriesFrame: The mirrored returns.
@@ -906,7 +906,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
             jitted (JittedOption): Option to control JIT compilation.
             chunked (ChunkedOption): Option to control chunked processing.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapper configuration.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
 
         Returns:
             SeriesFrame: The cumulative returns.

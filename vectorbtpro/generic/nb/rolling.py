@@ -826,7 +826,7 @@ def ewm_mean_1d_nb(arr: tp.Array1d, span: int, minp: tp.Optional[int] = None, ad
         arr (Array1d): Input 1D array.
         span (int): Span used to define the decay for the exponential moving average.
         minp (Optional[int]): Minimum number of observations required.
-        adjust (bool): Flag to determine if the weights should be adjusted.
+        adjust (bool): Flag indicating whether to adjust weights.
 
     Returns:
         Array1d: Array of computed exponential weighted moving averages.
@@ -885,7 +885,7 @@ def ewm_mean_nb(arr: tp.Array2d, span: int, minp: tp.Optional[int] = None, adjus
         arr (Array2d): Input 2-dimensional data array.
         span (int): Span for the exponential weighting.
         minp (Optional[int]): Minimum number of observations required.
-        adjust (bool): Whether to adjust weights.
+        adjust (bool): Flag indicating whether to adjust weights.
 
     Returns:
         Array2d: Computed 2-dimensional exponential weighted moving average.
@@ -1002,7 +1002,7 @@ def ewm_std_1d_nb(arr: tp.Array1d, span: int, minp: tp.Optional[int] = None, adj
         arr (Array1d): Input data array.
         span (int): Window span for the exponential weighting.
         minp (Optional[int]): Minimum number of observations required.
-        adjust (bool): Whether to adjust weights.
+        adjust (bool): Flag indicating whether to adjust weights.
 
     Returns:
         Array1d: Computed exponential weighted moving standard deviation.
@@ -1073,7 +1073,7 @@ def ewm_std_nb(arr: tp.Array2d, span: int, minp: tp.Optional[int] = None, adjust
         arr (Array2d): Input 2-dimensional data array.
         span (int): Span for the exponential weighting.
         minp (Optional[int]): Minimum number of observations required.
-        adjust (bool): Whether to adjust weights.
+        adjust (bool): Flag indicating whether to adjust weights.
 
     Returns:
         Array2d: Computed 2-dimensional exponential weighted moving standard deviation.
@@ -1097,7 +1097,7 @@ def wwm_mean_1d_nb(arr: tp.Array1d, period: int, minp: tp.Optional[int] = None, 
         arr (Array1d): Input data array.
         period (int): Period used for the moving average computation.
         minp (Optional[int]): Minimum number of observations required.
-        adjust (bool): Whether to adjust weights.
+        adjust (bool): Flag indicating whether to adjust weights.
 
     Returns:
         Array1d: Wilder's exponential weighted moving average.
@@ -1121,7 +1121,7 @@ def wwm_mean_nb(arr: tp.Array2d, period: int, minp: tp.Optional[int] = None, adj
         arr (Array2d): Input 2-dimensional data array.
         period (int): Period used for the moving average computation.
         minp (Optional[int]): Minimum number of observations required.
-        adjust (bool): Whether to adjust weights.
+        adjust (bool): Flag indicating whether to adjust weights.
 
     Returns:
         Array2d: Computed 2-dimensional Wilder's exponential weighted moving average.
@@ -1143,7 +1143,7 @@ def wwm_std_1d_nb(arr: tp.Array1d, period: int, minp: tp.Optional[int] = None, a
         arr (Array1d): 1-dimensional input array.
         period (int): The period used for computing the standard deviation.
         minp (Optional[int]): Minimum number of observations required in the computation.
-        adjust (bool): Flag to adjust the calculation method.
+        adjust (bool): Flag indicating whether to adjust weights.
 
     Returns:
         Array1d: An array containing the computed standard deviations.
@@ -1166,7 +1166,7 @@ def wwm_std_nb(arr: tp.Array2d, period: int, minp: tp.Optional[int] = None, adju
         arr (Array2d): 2-dimensional input array.
         period (int): The period used for computing the standard deviation.
         minp (Optional[int]): Minimum number of observations required in the computation.
-        adjust (bool): Flag to adjust the calculation method.
+        adjust (bool): Flag indicating whether to adjust weights.
 
     Returns:
         Array2d: A 2-dimensional array containing the computed standard deviations.
@@ -1345,7 +1345,7 @@ def ma_1d_nb(
 
             Expected values are defined in `vectorbtpro.generic.enums.WType`.
         minp (Optional[int]): Minimum number of observations required for the calculation.
-        adjust (bool): Flag to specify whether to adjust the calculation.
+        adjust (bool): Flag indicating whether to adjust weights.
 
     Returns:
         Array1d: An array containing the computed moving average values.
@@ -1385,7 +1385,7 @@ def ma_nb(
 
             Expected values are defined in `vectorbtpro.generic.enums.WType`.
         minp (Optional[int]): Minimum number of observations required for the calculation.
-        adjust (bool): Flag to specify whether to adjust the calculation.
+        adjust (bool): Flag indicating whether to adjust weights.
 
     Returns:
         Array2d: A 2-dimensional array containing the computed moving average values.
@@ -1415,7 +1415,7 @@ def msd_1d_nb(
         window (int): Window size for computation.
         wtype (int): Type of moving window from `vectorbtpro.generic.enums.WType`.
         minp (Optional[int]): Minimum number of observations required in the window.
-        adjust (bool): Whether to apply bias adjustment.
+        adjust (bool): Flag indicating whether to adjust weights.
         ddof (int): Delta degrees of freedom for standard deviation calculation.
 
     Returns:
@@ -1453,7 +1453,7 @@ def msd_nb(
         window (int): Window size for computation.
         wtype (int): Type of moving window from `vectorbtpro.generic.enums.WType`.
         minp (Optional[int]): Minimum number of observations required in the window.
-        adjust (bool): Whether to apply bias adjustment.
+        adjust (bool): Flag indicating whether to adjust weights.
         ddof (int): Delta degrees of freedom for standard deviation calculation.
 
     Returns:

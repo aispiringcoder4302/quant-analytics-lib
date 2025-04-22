@@ -829,9 +829,9 @@ def approx_buy_value_nb(
         locked_cash (float): Amount of cash locked in orders.
         val_price (float): Valuation price of the asset.
         size (float): Requested order size.
-        direction (int): Indicator of trade direction.
+        direction (int): Order direction.
 
-            See `vectorbtpro.portfolio.enums.Direction` for options.
+            See `vectorbtpro.portfolio.enums.Direction`.
 
     Returns:
         float: Approximate order value representing the spending amount.
@@ -875,7 +875,9 @@ def buy_nb(
         account_state (AccountState): Current state of the account.
         size (float): Order size.
         price (float): Execution price for the order.
-        direction (int): Direction flag; see `vectorbtpro.portfolio.enums.Direction` for options.
+        direction (int): Order direction.
+
+            See `vectorbtpro.portfolio.enums.Direction`.
         fees (float): Trading fees.
         fixed_fees (float): Fixed fee charges.
         slippage (float): Slippage applied to the order.
@@ -1026,7 +1028,9 @@ def approx_sell_value_nb(
         debt (float): Debt associated with the asset.
         val_price (float): Valuation price of the asset.
         size (float): Size of the sell order.
-        direction (int): Direction flag for the sell order; see `vectorbtpro.portfolio.enums.Direction`.
+        direction (int): Order direction.
+
+            See `vectorbtpro.portfolio.enums.Direction`.
 
     Returns:
         float: The approximate value of the sell operation.
@@ -1073,8 +1077,9 @@ def sell_nb(
         account_state (AccountState): Current account state.
         size (float): Order size.
         price (float): Order price.
-        direction (int): Direction restriction for the sell order; see
-            `vectorbtpro.portfolio.enums.Direction`.
+        direction (int): Order direction.
+
+            See `vectorbtpro.portfolio.enums.Direction`.
         fees (float): Fee associated with the order.
         fixed_fees (float): Fixed fee amount.
         slippage (float): Allowed price slippage.
@@ -1248,7 +1253,7 @@ def get_diraware_size_nb(size: float, direction: int) -> float:
 
     Args:
         size (float): Base size value.
-        direction (int): Direction indicator; if equal to `Direction.ShortOnly`, the size is negated.
+        direction (int): Order direction; if equal to `Direction.ShortOnly`, the size is negated.
 
             See `vectorbtpro.portfolio.enums.Direction` for options.
 

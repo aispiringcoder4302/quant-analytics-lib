@@ -52,7 +52,7 @@ def ma_1d_nb(
 
             See `vectorbtpro.generic.enums.WType`.
         minp (Optional[int]): Minimum number of data points required for the calculation.
-        adjust (bool): Flag indicating whether to apply adjustment during computation.
+        adjust (bool): Flag indicating whether to adjust weights.
 
     Returns:
         Array1d: The calculated moving average.
@@ -90,7 +90,7 @@ def ma_nb(
 
             See `vectorbtpro.generic.enums.WType`.
         minp (Optional[int]): Minimum required observations.
-        adjust (bool): Flag indicating whether to apply adjustment during computation.
+        adjust (bool): Flag indicating whether to adjust weights.
 
     Returns:
         Array2d: A 2D array of moving average values.
@@ -136,7 +136,7 @@ def msd_1d_nb(
 
             See `vectorbtpro.generic.enums.WType`.
         minp (Optional[int]): Minimum number of elements required for the computation.
-        adjust (bool): Flag indicating whether to adjust the calculation.
+        adjust (bool): Flag indicating whether to adjust weights.
         ddof (int): Delta degrees of freedom used in the standard deviation computation.
 
     Returns:
@@ -177,7 +177,7 @@ def msd_nb(
 
             See `vectorbtpro.generic.enums.WType`.
         minp (Optional[int]): Minimum required observations.
-        adjust (bool): Flag indicating whether to adjust the computation.
+        adjust (bool): Flag indicating whether to adjust weights.
         ddof (int): Delta degrees of freedom for the standard deviation.
 
     Returns:
@@ -227,7 +227,7 @@ def bbands_1d_nb(
             See `vectorbtpro.generic.enums.WType`.
         alpha (float): Multiplier for the moving standard deviation to determine the band width.
         minp (Optional[int]): Minimum data points required for the computation.
-        adjust (bool): Flag indicating whether to apply adjustment during calculation.
+        adjust (bool): Flag indicating whether to adjust weights.
         ddof (int): Delta degrees of freedom for the standard deviation calculation.
 
     Returns:
@@ -276,7 +276,7 @@ def bbands_nb(
             See `vectorbtpro.generic.enums.WType`.
         alpha (FlexArray1dLike): Multiplier(s) for the standard deviation.
         minp (Optional[int]): Minimum required observations.
-        adjust (bool): Flag indicating whether to adjust the calculation.
+        adjust (bool): Flag indicating whether to adjust weights.
         ddof (int): Delta degrees of freedom for the standard deviation calculation.
 
     Returns:
@@ -422,7 +422,7 @@ def avg_gain_1d_nb(
         window (int): Window size for the moving average.
         wtype (int): Weighting type; see `vectorbtpro.generic.enums.WType` for options.
         minp (Optional[int]): Minimum periods for computation.
-        adjust (bool): Whether to adjust the moving average calculation.
+        adjust (bool): Flag indicating whether to adjust weights.
 
     Returns:
         Array1d: Array of average gain values.
@@ -470,7 +470,7 @@ def avg_gain_nb(
         window (FlexArray1dLike): Window size(s) for the moving average.
         wtype (FlexArray1dLike): Weighting type(s); refer to `vectorbtpro.generic.enums.WType`.
         minp (Optional[int]): Minimum periods for computation.
-        adjust (bool): Whether to adjust the moving average calculation.
+        adjust (bool): Flag indicating whether to adjust weights.
 
     Returns:
         Array2d: 2-dimensional array of average gain values for each column.
@@ -511,7 +511,7 @@ def avg_loss_1d_nb(
         window (int): Window size for the moving average.
         wtype (int): Weighting type; see `vectorbtpro.generic.enums.WType` for options.
         minp (Optional[int]): Minimum periods for computation.
-        adjust (bool): Whether to adjust the moving average calculation.
+        adjust (bool): Flag indicating whether to adjust weights.
 
     Returns:
         Array1d: Array of average loss values.
@@ -559,7 +559,7 @@ def avg_loss_nb(
         window (FlexArray1dLike): Window size(s) for the moving average.
         wtype (FlexArray1dLike): Weighting type(s); refer to `vectorbtpro.generic.enums.WType`.
         minp (Optional[int]): Minimum periods for computation.
-        adjust (bool): Whether to adjust the moving average calculation.
+        adjust (bool): Flag indicating whether to adjust weights.
 
     Returns:
         Array2d: 2-dimensional array of average loss values for each column.
@@ -599,7 +599,7 @@ def rsi_1d_nb(
         window (int): Window size for average gain and loss calculations.
         wtype (int): Weighting type; see `vectorbtpro.generic.enums.WType` for the options.
         minp (Optional[int]): Minimum periods for computation.
-        adjust (bool): Whether to adjust the moving average calculations.
+        adjust (bool): Flag indicating whether to adjust weights.
 
     Returns:
         Array1d: Array of RSI values.
@@ -637,7 +637,7 @@ def rsi_nb(
         window (FlexArray1dLike): Window size(s) for RSI calculation.
         wtype (FlexArray1dLike): Weighting type(s); see `vectorbtpro.generic.enums.WType` for available options.
         minp (Optional[int]): Minimum periods for computation.
-        adjust (bool): Whether to adjust the moving average calculations.
+        adjust (bool): Flag indicating whether to adjust weights.
 
     Returns:
         Array2d: Array of computed RSI values for each column.
@@ -786,7 +786,7 @@ def stoch_1d_nb(
         slow_d_minp (Optional[int]): Minimum periods for slow %D calculation.
 
             Falls back to `minp` if not specified.
-        adjust (bool): Whether to adjust the moving average calculations.
+        adjust (bool): Flag indicating whether to adjust weights.
         slow_k_adjust (Optional[bool]): Flag for adjusting the slow %K moving average.
 
             Defaults to `adjust` if not provided.
@@ -902,7 +902,7 @@ def stoch_nb(
         slow_d_minp (Optional[int]): Minimum periods for slow %D calculation.
 
             Falls back to `minp` if not specified.
-        adjust (bool): Whether to adjust the moving average calculations.
+        adjust (bool): Flag indicating whether to adjust weights.
         slow_k_adjust (Optional[bool]): Flag for adjusting the slow %K moving average.
 
             Defaults to `adjust` if not provided.
@@ -999,7 +999,7 @@ def macd_1d_nb(
         signal_minp (Optional[int]): Minimum period for the signal moving average.
 
             Uses `minp` if not provided.
-        adjust (bool): Flag indicating whether to use the adjusted moving average.
+        adjust (bool): Flag indicating whether to adjust weights.
         macd_adjust (Optional[bool]): Alternative flag for MACD moving average adjustment.
 
             Uses `adjust` if not provided.
@@ -1103,7 +1103,7 @@ def macd_nb(
         signal_minp (Optional[int]): Minimum period for the signal moving average.
 
             Uses `minp` if not provided.
-        adjust (bool): Flag indicating whether to use the adjusted moving average.
+        adjust (bool): Flag indicating whether to adjust weights.
         macd_adjust (Optional[bool]): Alternative flag for MACD moving average adjustment.
 
             Uses `adjust` if not provided.
@@ -1299,7 +1299,7 @@ def atr_1d_nb(
 
             See `vectorbtpro.generic.enums.WType`.
         minp (Optional[int]): Minimum periods required.
-        adjust (bool): Flag to control adjustments.
+        adjust (bool): Flag indicating whether to adjust weights.
 
     Returns:
         Tuple[Array1d, Array1d]: The True Range and Average True Range.
@@ -1345,7 +1345,7 @@ def atr_nb(
 
             See `vectorbtpro.generic.enums.WType`.
         minp (Optional[int]): Minimum periods required.
-        adjust (bool): Flag to determine adjustments.
+        adjust (bool): Flag indicating whether to adjust weights.
 
     Returns:
         Tuple[Array2d, Array2d]: The True Range and Average True Range for each column.
@@ -1398,7 +1398,7 @@ def adx_1d_nb(
 
             See `vectorbtpro.generic.enums.WType`.
         minp (Optional[int]): Minimum periods required.
-        adjust (bool): Flag to indicate if adjustments are applied.
+        adjust (bool): Flag indicating whether to adjust weights.
 
     Returns:
         Tuple[Array1d, Array1d, Array1d, Array1d]: The +DI, -DI, DX, and ADX values.
@@ -1471,7 +1471,7 @@ def adx_nb(
 
             See `vectorbtpro.generic.enums.WType`.
         minp (Optional[int]): Minimum periods required.
-        adjust (bool): Flag to control adjustments.
+        adjust (bool): Flag indicating whether to adjust weights.
 
     Returns:
         Tuple[Array2d, Array2d, Array2d, Array2d]: The +DI, -DI, DX, and ADX values for each column.

@@ -1678,7 +1678,7 @@ def value_counts_nb(codes: tp.Array2d, n_uniques: int, group_map: tp.GroupMap) -
     Args:
         codes (Array2d): A 2-dimensional array of code values.
         n_uniques (int): Number of unique values.
-        group_map (GroupMap): Mapping of groups with indices and lengths.
+        group_map (GroupMap): Tuple containing group indices and group lengths.
 
     Returns:
         Array2d: A 2-dimensional array of counts with shape (n_uniques, number of groups).

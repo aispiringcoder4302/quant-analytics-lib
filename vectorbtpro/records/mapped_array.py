@@ -1738,7 +1738,7 @@ class MappedArray(Analyzable):
             group_by (GroupByLike): Grouping specification.
             jitted (JittedOption): Option to control JIT compilation.
             chunked (ChunkedOption): Option for chunked processing.
-            wrap_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
             **kwargs: Keyword arguments forwarded to `MappedArray.reduce`.
 
         Returns:
@@ -1774,7 +1774,7 @@ class MappedArray(Analyzable):
             group_by (GroupByLike): Grouping specification.
             jitted (JittedOption): Option to control JIT compilation.
             chunked (ChunkedOption): Option for chunked processing.
-            wrap_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
             **kwargs: Keyword arguments forwarded to `MappedArray.reduce`.
 
         Returns:
@@ -1812,7 +1812,7 @@ class MappedArray(Analyzable):
             group_by (GroupByLike): Grouping specification.
             jitted (JittedOption): Option to control JIT compilation.
             chunked (ChunkedOption): Option for chunked processing.
-            wrap_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
             **kwargs: Keyword arguments forwarded to `MappedArray.reduce`.
 
         Returns:
@@ -1859,7 +1859,7 @@ class MappedArray(Analyzable):
             group_by (GroupByLike): Grouping specification.
             jitted (JittedOption): Option to control JIT compilation.
             chunked (ChunkedOption): Option for chunked processing.
-            wrap_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
             **kwargs: Keyword arguments forwarded to `MappedArray.reduce`.
 
         Returns:
@@ -1896,7 +1896,7 @@ class MappedArray(Analyzable):
             group_by (GroupByLike): Grouping specification.
             jitted (JittedOption): Option to control JIT compilation.
             chunked (ChunkedOption): Option for chunked processing.
-            wrap_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
             **kwargs: Keyword arguments forwarded to `MappedArray.reduce`.
 
         Returns:
@@ -1932,7 +1932,7 @@ class MappedArray(Analyzable):
             group_by (GroupByLike): Grouping specification.
             jitted (JittedOption): Option to control JIT compilation.
             chunked (ChunkedOption): Option for chunked processing.
-            wrap_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
             **kwargs: Keyword arguments forwarded to `MappedArray.reduce`.
 
         Returns:
@@ -1974,7 +1974,7 @@ class MappedArray(Analyzable):
             group_by (GroupByLike): Grouping specification.
             jitted (JittedOption): Option to control JIT compilation.
             chunked (ChunkedOption): Option for chunked processing.
-            wrap_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
             **kwargs: Keyword arguments forwarded to `MappedArray.reduce`.
 
         Returns:
@@ -2027,7 +2027,7 @@ class MappedArray(Analyzable):
 
         Args:
             group_by (GroupByLike): Grouping specification.
-            wrap_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
 
         Returns:
             MaybeSeries: Series with the count of values per column or group.

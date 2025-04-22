@@ -167,6 +167,8 @@ def fill_trade_record_nb(
         exit_price (float): Exit price.
         exit_fees (float): Exit fees.
         direction (int): Trade direction.
+
+            See `vectorbtpro.portfolio.enums.TradeDirection` for details.
         status (int): Trade status.
         parent_id (int): Identifier linking the trade to its parent order.
 
@@ -238,7 +240,9 @@ def fill_entry_trades_in_position_nb(
         exit_size_sum (float): Total size of exit orders.
         exit_gross_sum (float): Gross sum used to compute the weighted exit price.
         exit_fees_sum (float): Total exit fees for proportional allocation.
-        direction (int): Trade direction, indicating long or short.
+        direction (int): Trade direction.
+
+            See `vectorbtpro.portfolio.enums.TradeDirection` for details.
         status (int): Trade status indicating whether the position is closed.
         parent_id (int): Identifier linking orders to a parent trade.
         new_records (RecordArray): Array where filled trade records are stored.
@@ -2462,7 +2466,9 @@ def trade_mfe_nb(
 
     Args:
         size (float): Trade size used in the profit calculation.
-        direction (int): Trade direction indicator.
+        direction (int): Trade direction.
+
+            See `vectorbtpro.portfolio.enums.TradeDirection` for details.
         entry_price (float): Price at trade entry.
         best_price (float): Best price reached during the trade.
         use_returns (bool): Flag indicating whether to compute using return-based values.
@@ -2541,7 +2547,9 @@ def trade_mae_nb(
 
     Args:
         size (float): Trade size used in the loss calculation.
-        direction (int): Trade direction indicator.
+        direction (int): Trade direction.
+
+            See `vectorbtpro.portfolio.enums.TradeDirection` for details.
         entry_price (float): Price at trade entry.
         worst_price (float): Worst price reached during the trade.
         use_returns (bool): Flag indicating whether to compute using return-based values.
