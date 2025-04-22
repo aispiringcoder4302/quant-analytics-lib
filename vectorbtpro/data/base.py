@@ -1750,7 +1750,9 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
 
                 If None, defaults to the object's keys.
             attach_classes (bool): Whether to attach classes from `Data.classes`.
-            clean_index_kwargs (KwargsLike): Arguments for cleaning the index when stacking.
+            clean_index_kwargs (KwargsLike): Keyword arguments for cleaning MultiIndex levels.
+
+                See `vectorbtpro.base.indexes.clean_index` for details.
             group_by (GroupByLike): Grouping specification.
             **kwargs: Keyword arguments passed to the wrapper constructor.
 
@@ -2095,7 +2097,9 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
 
                 If not provided, uses `Data.keys`.
             attach_classes (bool): Whether to attach classes to the data using the key wrapper.
-            clean_index_kwargs (KwargsLike): Keyword arguments for cleaning the index.
+            clean_index_kwargs (KwargsLike): Keyword arguments for cleaning MultiIndex levels.
+
+                See `vectorbtpro.base.indexes.clean_index` for details.
             **kwargs: Keyword arguments passed to `Data.get_key_wrapper`.
 
         Returns:
@@ -4079,7 +4083,9 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             silence_warnings (Optional[bool]): Silence all warnings.
 
                 This flag is also forwarded to `Data.fetch_feature`/`Data.fetch_symbol` if applicable.
-            execute_kwargs (KwargsLike): Keyword arguments passed to `vectorbtpro.utils.execution.execute`.
+            execute_kwargs (KwargsLike): Keyword arguments passed to the execution handler.
+
+                See `vectorbtpro.utils.execution.execute` for details.
             return_raw (bool): Return the raw outputs if True.
             **kwargs: Keyword arguments passed to `Data.fetch_feature`/`Data.fetch_symbol`.
 
@@ -4440,7 +4446,9 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
 
                 Also passed to `Data.update_feature` or `Data.update_symbol` if accepted by
                 `Data.fetch_feature` or `Data.fetch_symbol`.
-            execute_kwargs (KwargsLike): Keyword arguments for `vectorbtpro.utils.execution.execute`.
+            execute_kwargs (KwargsLike): Keyword arguments passed to the execution handler.
+
+                See `vectorbtpro.utils.execution.execute` for details.
             return_raw (bool): Whether to return the raw outputs from update operations.
             **kwargs: Keyword arguments passed to `Data.update_feature` or `Data.update_symbol`.
 
@@ -4864,6 +4872,8 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
 
         Args:
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
             start_value (ArrayLike): Initial value for the transformation.
             ref_feature (ArrayLike): The reference feature used for mirroring.
@@ -5232,7 +5242,9 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             data_kwargs (KwargsLike): Keyword arguments for data processing.
             silence_warnings (bool): If True, suppresses warnings during execution.
             raise_errors (bool): If True, raises any exceptions encountered.
-            execute_kwargs (KwargsLike): Keyword arguments for the execution routine.
+            execute_kwargs (KwargsLike): Keyword arguments passed to the execution handler.
+
+                See `vectorbtpro.utils.execution.execute` for details.
             filter_results (bool): If True, filters out function calls that yield no results.
             raise_no_results (bool): If True, raises an exception when no results are obtained.
             merge_func (MergeFuncLike): Function to merge results from multiple function calls.

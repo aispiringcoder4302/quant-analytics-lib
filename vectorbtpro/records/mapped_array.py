@@ -1022,6 +1022,8 @@ class MappedArray(Analyzable):
             incl_id (bool): If True, check sorting on both the column and id arrays.
             jitted (JittedOption): Option to control JIT compilation.
 
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
+
         Returns:
             bool: True if the mapped array is sorted; otherwise, False.
 
@@ -1115,6 +1117,8 @@ class MappedArray(Analyzable):
             group_by (GroupByLike): Grouping specification;
                 if provided, selection is performed per group.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
 
         Returns:
@@ -1142,6 +1146,8 @@ class MappedArray(Analyzable):
             group_by (GroupByLike): Grouping specification;
                 if provided, selection is performed per group.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
 
         Returns:
@@ -1169,6 +1175,8 @@ class MappedArray(Analyzable):
             n (int): The number of top elements to select.
             group_by (GroupByLike): Grouping specification for regrouping after filtering.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
             **kwargs: Keyword arguments passed to `MappedArray.replace`.
 
@@ -1191,6 +1199,8 @@ class MappedArray(Analyzable):
             n (int): The number of bottom elements to select.
             group_by (GroupByLike): Grouping specification for regrouping after filtering.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
             **kwargs: Keyword arguments passed to `MappedArray.replace`.
 
@@ -1316,7 +1326,9 @@ class MappedArray(Analyzable):
             group_by (GroupByLike): Grouping specification.
             apply_per_group (bool): If True, apply the function per group of columns.
             dtype (Optional[DTypeLike]): Data type for the resulting array.
-            jitted (JittedOption): Option controlling JIT compilation.
+            jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option controlling chunked processing.
             col_mapper (Optional[ColumnMapper]): Column mapper used to obtain column mapping.
             **kwargs: Keyword arguments passed to `MappedArray.replace`.
@@ -1384,7 +1396,9 @@ class MappedArray(Analyzable):
             group_by (GroupByLike): Grouping specification.
             apply_per_group (bool): If True, apply the reduction per group of columns.
             dtype (Optional[DTypeLike]): Data type for the resulting mapped array.
-            jitted (JittedOption): Option controlling JIT compilation.
+            jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option controlling chunked processing.
             **kwargs: Keyword arguments passed to `MappedArray.replace`.
 
@@ -1470,6 +1484,8 @@ class MappedArray(Analyzable):
             to_index (bool): Flag to convert positions to labels.
             fill_value (Scalar): Value to use when a reduction cannot be computed.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
             col_mapper (Optional[ColumnMapper]): Column mapper instance used when invoked on a class.
             group_by (GroupByLike): Grouping specification.
@@ -1573,6 +1589,8 @@ class MappedArray(Analyzable):
             n (int): The index of the element to return.
             group_by (GroupByLike): Grouping specification.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked execution.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
             **kwargs: Keyword arguments forwarded to `MappedArray.reduce`.
@@ -1620,6 +1638,8 @@ class MappedArray(Analyzable):
             n (int): The index of the element whose position is to be returned.
             group_by (GroupByLike): Grouping specification.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked execution.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
             **kwargs: Keyword arguments forwarded to `MappedArray.reduce`.
@@ -1665,6 +1685,8 @@ class MappedArray(Analyzable):
         Args:
             group_by (GroupByLike): Grouping specification.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked execution.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
             **kwargs: Keyword arguments forwarded to `MappedArray.reduce`.
@@ -1701,6 +1723,8 @@ class MappedArray(Analyzable):
         Args:
             group_by (GroupByLike): Grouping specification.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked execution.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
             **kwargs: Keyword arguments forwarded to `MappedArray.reduce`.
@@ -1737,6 +1761,8 @@ class MappedArray(Analyzable):
         Args:
             group_by (GroupByLike): Grouping specification.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option for chunked processing.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
             **kwargs: Keyword arguments forwarded to `MappedArray.reduce`.
@@ -1773,6 +1799,8 @@ class MappedArray(Analyzable):
         Args:
             group_by (GroupByLike): Grouping specification.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option for chunked processing.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
             **kwargs: Keyword arguments forwarded to `MappedArray.reduce`.
@@ -1811,6 +1839,8 @@ class MappedArray(Analyzable):
             ddof (int): Delta degrees of freedom.
             group_by (GroupByLike): Grouping specification.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option for chunked processing.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
             **kwargs: Keyword arguments forwarded to `MappedArray.reduce`.
@@ -1858,6 +1888,8 @@ class MappedArray(Analyzable):
             fill_value (Scalar): Value to use for filling missing data.
             group_by (GroupByLike): Grouping specification.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option for chunked processing.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
             **kwargs: Keyword arguments forwarded to `MappedArray.reduce`.
@@ -1895,6 +1927,8 @@ class MappedArray(Analyzable):
         Args:
             group_by (GroupByLike): Grouping specification.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option for chunked processing.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
             **kwargs: Keyword arguments forwarded to `MappedArray.reduce`.
@@ -1931,6 +1965,8 @@ class MappedArray(Analyzable):
         Args:
             group_by (GroupByLike): Grouping specification.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option for chunked processing.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
             **kwargs: Keyword arguments forwarded to `MappedArray.reduce`.
@@ -1973,6 +2009,8 @@ class MappedArray(Analyzable):
             ddof (int): Delta degrees of freedom for standard deviation calculation.
             group_by (GroupByLike): Grouping specification.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option for chunked processing.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
             **kwargs: Keyword arguments forwarded to `MappedArray.reduce`.
@@ -2080,6 +2118,8 @@ class MappedArray(Analyzable):
             mapping (Union[None, bool, MappingLike]): Mapping used to resolve unique value representations.
             incl_all_keys (bool): Include keys from `mapping` that are missing in the data with counts set to zero.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the output.
             **kwargs: Keyword arguments applied to mapping.
@@ -2188,6 +2228,8 @@ class MappedArray(Analyzable):
             group_by (GroupByLike): Grouping specification for selecting the appropriate columns.
             jitted (JittedOption): Option to control JIT compilation.
 
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
+
         Returns:
             bool: True if conflicts are detected, otherwise False.
 
@@ -2221,6 +2263,8 @@ class MappedArray(Analyzable):
                 Uses `MappedArray.idx_arr` if not provided.
             group_by (GroupByLike): Grouping specification for selecting columns.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the output array.
 
         Returns:
@@ -2281,6 +2325,8 @@ class MappedArray(Analyzable):
             mapping_kwargs (KwargsLike): Keyword arguments for mapping.
             group_by (GroupByLike): Grouping specification.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option for chunked processing.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the output.
             silence_warnings (bool): Whether to suppress warnings about index conflicts.

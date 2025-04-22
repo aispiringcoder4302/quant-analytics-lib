@@ -430,7 +430,9 @@ class HasWrapper(ExtPandasIndexer, ItemParamable):
             *args: Positional arguments passed to the function.
             chunk_kwargs (KwargsLike): Keyword arguments controlling the chunking process.
                 Refer to `Wrapping.chunk` for details.
-            execute_kwargs (KwargsLike): Keyword arguments for executing the tasks.
+            execute_kwargs (KwargsLike): Keyword arguments passed to the execution handler.
+
+                See `vectorbtpro.utils.execution.execute` for details.
             **kwargs: Keyword arguments passed to the function.
 
         Returns:
@@ -841,7 +843,9 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
             stack_columns (bool): Whether to stack differing column levels from wrappers.
             index_concat_method (MaybeTuple[Union[str, Callable]]): Method used for concatenating indexes.
             keys (Optional[IndexLike]): Keys used during index concatenation.
-            clean_index_kwargs (KwargsLike): Keyword arguments for cleaning indexes.
+            clean_index_kwargs (KwargsLike): Keyword arguments for cleaning MultiIndex levels.
+
+                See `vectorbtpro.base.indexes.clean_index` for details.
             verify_integrity (bool): Flag to verify the integrity of the concatenated index.
             kwargs: Keyword arguments for `ArrayWrapper` initialization.
 
@@ -991,7 +995,9 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
             col_concat_method (MaybeTuple[Union[str, Callable]]): Method used to concatenate column indexes.
             group_concat_method (MaybeTuple[Union[str, Callable]]): Method used to concatenate group indexes.
             keys (Optional[IndexLike]): Keys used for concatenating indexes.
-            clean_index_kwargs (KwargsLike): Keyword arguments for cleaning indexes.
+            clean_index_kwargs (KwargsLike): Keyword arguments for cleaning MultiIndex levels.
+
+                See `vectorbtpro.base.indexes.clean_index` for details.
             verify_integrity (bool): Whether to verify integrity conditions such as index uniqueness.
             **kwargs: Keyword arguments passed for initializing the resulting `ArrayWrapper`.
 

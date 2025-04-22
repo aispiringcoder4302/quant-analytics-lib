@@ -1001,7 +1001,7 @@ def trend_labels_1d_nb(
         low (Array1d): 1D array of low prices.
         up_th (FlexArray1dLike): Upper threshold(s).
         down_th (FlexArray1dLike): Lower threshold(s).
-        mode (int): Trend mode selected from `TrendLabelMode`.
+        mode (int): Trend mode selected from `vectorbtpro.labels.enums.TrendLabelMode`.
 
     Returns:
         Array2d: 2D array of trend labels determined by the specified mode.

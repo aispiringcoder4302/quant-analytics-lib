@@ -1175,7 +1175,9 @@ def broadcast(
         ignore_sr_names (Optional[bool]): Whether to ignore Series names during broadcasting via `broadcast_index`.
         ignore_ranges (Optional[bool]): Whether to ignore range attributes during broadcasting via `broadcast_index`.
         check_index_names (Optional[bool]): Whether to check index names during broadcasting via `broadcast_index`.
-        clean_index_kwargs (KwargsLike): Keyword arguments for `vectorbtpro.base.indexes.clean_index`.
+        clean_index_kwargs (KwargsLike): Keyword arguments for cleaning MultiIndex levels.
+
+            See `vectorbtpro.base.indexes.clean_index` for details.
         template_context (KwargsLike): Additional context for template substitution.
 
     Returns:

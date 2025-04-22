@@ -52,6 +52,8 @@ def build_call_seq_nb(
         group_lens (GroupLens): Sequence of group lengths defining segments.
         call_seq_type (int): Identifier for the type of call sequence construction.
 
+            See `vectorbtpro.portfolio.enums.CallSeqType` for options.
+
     Returns:
         Array2d: Call sequence array constructed based on the provided parameters.
     """
@@ -93,6 +95,8 @@ def build_call_seq(
         target_shape (Shape): Desired shape of the output call sequence array.
         group_lens (GroupLens): Sequence of group lengths defining segments.
         call_seq_type (int): Identifier for the type of call sequence construction.
+
+            See `vectorbtpro.portfolio.enums.CallSeqType` for options.
 
     Returns:
         Array2d: Call sequence array constructed based on the provided parameters.

@@ -3410,6 +3410,8 @@ class Splitter(Analyzable):
             target_freq (Optional[FrequencyLike]): The frequency for the target index.
             template_context (KwargsLike): Additional context for template substitution.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             silence_warnings (bool): Flag to silence warnings during resampling.
             index (Optional[IndexLike]): The source index associated with the range.
             freq (Optional[FrequencyLike]): The frequency corresponding to the source index.
@@ -3491,6 +3493,8 @@ class Splitter(Analyzable):
             obj_freq (Optional[FrequencyLike]): The frequency corresponding to the target index.
             template_context (KwargsLike): Additional context for template substitution.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             silence_warnings (bool): Flag to silence warnings during processing.
             index (Optional[IndexLike]): The source index associated with the range.
             freq (Optional[FrequencyLike]): The frequency corresponding to the source index.
@@ -4192,8 +4196,9 @@ class Splitter(Analyzable):
             iteration (str): Iteration mode over ranges.
 
                 Options: "split_major", "set_major", "split_wise", "set_wise".
-            execute_kwargs (KwargsLike): Extra keyword arguments passed to
-                `vectorbtpro.utils.execution.execute`.
+            execute_kwargs (KwargsLike): Keyword arguments passed to the execution handler.
+
+                See `vectorbtpro.utils.execution.execute` for details.
             filter_results (bool): Whether to filter out results that are `NoResult`.
             raise_no_results (bool): Whether to raise an exception if no valid results are produced.
             merge_func (Union[None, str, tuple, Callable]): Function or specification used
@@ -6066,6 +6071,8 @@ class Splitter(Analyzable):
             split_group_by (AnyGroupByLike): Grouping parameter for defining splits.
             set_group_by (AnyGroupByLike): Grouping parameter for defining sets.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             squeeze_one_split (bool): If True, squeeze the result when there is only one split.
             squeeze_one_set (bool): If True, squeeze the result when there is only one set.
             index_combine_kwargs (KwargsLike): Keyword arguments for combining indexes.

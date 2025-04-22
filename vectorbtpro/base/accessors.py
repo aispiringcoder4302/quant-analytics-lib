@@ -800,7 +800,9 @@ class BaseIDXAccessor(Configured, IndexApplier):
             apply_func (Union[str, Callable]): Function or method name to apply to each chunk.
             *args: Positional arguments passed to `apply_func`.
             chunk_kwargs (KwargsLike): Keyword arguments for the chunking process.
-            execute_kwargs (KwargsLike): Keyword arguments for the execution process.
+            execute_kwargs (KwargsLike): Keyword arguments passed to the execution handler.
+
+                See `vectorbtpro.utils.execution.execute` for details.
             **kwargs: Keyword arguments passed to `apply_func`.
 
         Returns:

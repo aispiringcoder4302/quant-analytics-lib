@@ -3162,7 +3162,9 @@ Returns:
                 param_index (Optional[Index]): Index for parameter combinations.
                 final_index (Optional[Index]): Final index used for the output.
                 single_comb (bool): Whether to combine outputs into a single result.
-                execute_kwargs (KwargsLike): Keyword arguments for controlling execution.
+                execute_kwargs (KwargsLike): Keyword arguments passed to the execution handler.
+
+                    See `vectorbtpro.utils.execution.execute` for details.
                 **kwargs_: Additional keyword arguments.
 
             Returns:

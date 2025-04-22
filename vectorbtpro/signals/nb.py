@@ -1878,6 +1878,8 @@ def unravel_between_two_nb(
         source_mask (Array2d): 2D boolean mask for source signals.
         target_mask (Array2d): 2D boolean mask for target signals.
         relation (int): Signal relation used for pairing values.
+
+            See `vectorbtpro.signals.enums.SignalRelation`.
         incl_open_source (bool): Include open source signals when a matching target is not found.
         incl_open_target (bool): Include open target signals when a matching source is not found.
         incl_empty_cols (bool): Include columns that contain no resolved pairs.

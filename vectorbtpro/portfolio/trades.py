@@ -790,6 +790,8 @@ class Trades(Ranges):
         Args:
             group_by (GroupByLike): Grouping specification.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option for chunked processing.
             wrap_kwargs (KwargsLike): Keyword arguments passed to
                 `vectorbtpro.records.mapped_array.MappedArray.reduce`.
@@ -823,6 +825,8 @@ class Trades(Ranges):
             use_returns (bool): Whether to use trade returns instead of profit and loss.
             group_by (GroupByLike): Grouping specification.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option for chunked processing.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
             **kwargs: Keyword arguments passed to
@@ -860,6 +864,8 @@ class Trades(Ranges):
             use_returns (bool): Whether to use trade returns instead of profit and loss.
             group_by (GroupByLike): Grouping specification.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option for chunked processing.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
             **kwargs: Keyword arguments passed to
@@ -899,6 +905,8 @@ class Trades(Ranges):
             use_returns (bool): Whether to use trade returns instead of profit and loss.
             group_by (GroupByLike): Grouping specification.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option for chunked processing.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
             **kwargs: Keyword arguments passed to
@@ -1080,7 +1088,11 @@ class Trades(Ranges):
             exit_price_close (bool): Include the close price of the exit bar when evaluating prices.
             max_duration (Optional[int]): Maximum number of bars to evaluate price movements.
             jitted (JittedOption): Option to control JIT compilation.
-            clean_index_kwargs (KwargsLike): Keyword arguments for index cleaning.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
+            clean_index_kwargs (KwargsLike): Keyword arguments for cleaning MultiIndex levels.
+
+                See `vectorbtpro.base.indexes.clean_index` for details.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the output.
 
         Returns:
@@ -1133,7 +1145,11 @@ class Trades(Ranges):
             exit_price_close (bool): Include the close price of the exit bar when evaluating prices.
             max_duration (Optional[int]): Maximum number of bars to evaluate price movements.
             jitted (JittedOption): Option to control JIT compilation.
-            clean_index_kwargs (KwargsLike): Keyword arguments for index cleaning.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
+            clean_index_kwargs (KwargsLike): Keyword arguments for cleaning MultiIndex levels.
+
+                See `vectorbtpro.base.indexes.clean_index` for details.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the output.
 
         Returns:
@@ -1188,6 +1204,8 @@ class Trades(Ranges):
             max_duration (Optional[int]): Maximum number of bars to evaluate price movements.
             use_returns (bool): If True, compute MFE as returns instead of absolute price differences.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
             **kwargs: Keyword arguments passed to `Trades.map_array`.
 
@@ -1236,6 +1254,8 @@ class Trades(Ranges):
             max_duration (Optional[int]): Maximum number of bars to evaluate price movements.
             use_returns (bool): If True, compute MAE as returns instead of absolute price differences.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
             **kwargs: Keyword arguments passed to `Trades.map_array`.
 
@@ -1284,6 +1304,8 @@ class Trades(Ranges):
             max_duration (Optional[int]): Maximum number of bars to evaluate price movements.
             use_returns (bool): If True, compute MFE as returns instead of absolute price differences.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
             **kwargs: Keyword arguments used when resolving the expanding best price.
 
@@ -1330,6 +1352,8 @@ class Trades(Ranges):
             max_duration (Optional[int]): Maximum number of bars to evaluate price movements.
             use_returns (bool): If True, compute MAE as returns instead of absolute price differences.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
             **kwargs: Keyword arguments used when resolving the expanding worst price.
 
@@ -1382,7 +1406,9 @@ class Trades(Ranges):
             exit_price_close (bool): Include the close price of the exit bar when evaluating prices.
             max_duration (Optional[int]): Maximum number of bars to evaluate price movements.
             group_by (GroupByLike): Grouping parameters for data.
-            jitted (JittedOption): JIT compilation option.
+            jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Chunked processing option.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the output.
 
@@ -1467,7 +1493,9 @@ class Trades(Ranges):
             max_duration (Optional[int]): Maximum number of bars to evaluate price movements.
             incl_shorter (bool): Include trades with shorter durations if True.
             group_by (GroupByLike): Grouping parameters for data.
-            jitted (JittedOption): JIT compilation option.
+            jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the output.
 
         Returns:
@@ -2380,6 +2408,8 @@ class Trades(Ranges):
             incl_shorter (bool): Whether to include trades shorter than the maximum duration.
             group_by (GroupByLike): Grouping specification.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             xref (str): Reference identifier for the x-axis.
             yref (str): Reference identifier for the y-axis.
             hline_shape_kwargs (KwargsLike): Keyword arguments for configuring the horizontal line shape.
@@ -2898,7 +2928,9 @@ class EntryTrades(Trades):
             init_price (ArrayLike): Initial price.
             sim_start (Optional[ArrayLike]): Simulation start time.
             sim_end (Optional[ArrayLike]): Simulation end time.
-            jitted (JittedOption): JIT compilation option.
+            jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Chunked processing option.
             **kwargs: Keyword arguments passed to `EntryTrades.from_records`.
 
@@ -3183,7 +3215,9 @@ class ExitTrades(Trades):
             init_price (ArrayLike): Initial price.
             sim_start (Optional[ArrayLike]): Simulation start time.
             sim_end (Optional[ArrayLike]): Simulation end time.
-            jitted (JittedOption): JIT compilation option.
+            jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Chunked processing option.
             **kwargs: Keyword arguments passed to `ExitTrades.from_records`.
 
@@ -3465,7 +3499,9 @@ class Positions(Trades):
             init_price (ArrayLike): Initial price.
             sim_start (Optional[ArrayLike]): Simulation start time.
             sim_end (Optional[ArrayLike]): Simulation end time.
-            jitted (JittedOption): JIT compilation option.
+            jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Chunked processing option.
             **kwargs: Keyword arguments passed to `Positions.from_records`.
 

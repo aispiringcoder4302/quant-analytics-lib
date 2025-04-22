@@ -231,7 +231,9 @@ def apply_and_concat_each(
     Args:
         tasks (TasksLike): A collection of tasks, each encapsulating a function and its arguments.
         n_outputs (Optional[int]): The expected number of outputs produced by each task.
-        execute_kwargs (KwargsLike): Keyword arguments passed to the execution function.
+        execute_kwargs (KwargsLike): Keyword arguments passed to the execution handler.
+
+            See `vectorbtpro.utils.execution.execute` for details.
 
     Returns:
         Union[None, Array2d, List[Array2d]]:
@@ -285,7 +287,9 @@ def apply_and_concat(
         n_outputs (Optional[int]): The number of arrays returned by each function call.
         jitted_loop (bool): If True, use a JIT-compiled loop for execution.
         jitted_warmup (bool): If True, perform a warm-up call for the JIT-compiled function.
-        execute_kwargs (KwargsLike): Keyword arguments passed to the execution function.
+        execute_kwargs (KwargsLike): Keyword arguments passed to the execution handler.
+
+            See `vectorbtpro.utils.execution.execute` for details.
         **kwargs: Keyword arguments passed to `apply_func` when not using a JIT-compiled loop.
 
     Returns:

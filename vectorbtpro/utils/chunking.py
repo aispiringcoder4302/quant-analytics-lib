@@ -1288,8 +1288,9 @@ class Chunker(Configured):
         silence_warnings (Optional[bool]): Indicates whether to suppress warnings.
         forward_kwargs_as (KwargsLike): Mapping for renaming keyword arguments, including variables
             from the scope of `Chunker.run`.
-        execute_kwargs (KwargsLike): Keyword arguments passed to `vectorbtpro.utils.execution.execute`
-            for executing chunks.
+        execute_kwargs (KwargsLike): Keyword arguments passed to the execution handler.
+
+            See `vectorbtpro.utils.execution.execute` for details.
         disable (Optional[bool]): Specifies whether chunking is disabled.
         **kwargs: Keyword arguments passed for configuration.
 

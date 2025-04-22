@@ -2285,12 +2285,18 @@ class PortfolioOptimizer(Analyzable):
             pre_group_func (Optional[Callable]): Function applied before processing each group.
             jitted_loop (bool): Indicates whether to use a Numba-compiled loop for iterating over allocation groups.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
             template_context (KwargsLike): Additional context for template substitution.
             group_execute_kwargs (KwargsLike): Keyword arguments for executing allocation groups.
-            execute_kwargs (KwargsLike): Keyword arguments for task execution.
+            execute_kwargs (KwargsLike): Keyword arguments passed to the execution handler.
+
+                See `vectorbtpro.utils.execution.execute` for details.
             random_subset (Optional[int]): Limit for randomly selecting a subset of parameters.
-            clean_index_kwargs (KwargsLike): Arguments for cleaning index hierarchies.
+            clean_index_kwargs (KwargsLike): Keyword arguments for cleaning MultiIndex levels.
+
+                See `vectorbtpro.base.indexes.clean_index` for details.
             wrapper_kwargs (KwargsLike): Keyword arguments for configuring the output
                 `vectorbtpro.base.wrapping.ArrayWrapper`.
             **kwargs: Keyword arguments passed to the allocation function.
@@ -3334,12 +3340,18 @@ class PortfolioOptimizer(Analyzable):
             eval_id (Optional[Hashable]): Identifier for the evaluation.
             jitted_loop (bool): Indicates whether to use a Numba-compiled loop for iterating over optimization groups.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
             template_context (KwargsLike): Additional context for template substitution.
             group_execute_kwargs (KwargsLike): Keyword arguments for executing optimization groups.
-            execute_kwargs (KwargsLike): Keyword arguments for task execution.
+            execute_kwargs (KwargsLike): Keyword arguments passed to the execution handler.
+
+                See `vectorbtpro.utils.execution.execute` for details.
             random_subset (Optional[int]): Limit for randomly selecting a subset of parameters.
-            clean_index_kwargs (KwargsLike): Arguments for cleaning index hierarchies.
+            clean_index_kwargs (KwargsLike): Keyword arguments for cleaning MultiIndex levels.
+
+                See `vectorbtpro.base.indexes.clean_index` for details.
             wrapper_kwargs (KwargsLike): Keyword arguments for configuring the output
                 `vectorbtpro.base.wrapping.ArrayWrapper`.
             **kwargs: Keyword arguments passed to the allocation function.

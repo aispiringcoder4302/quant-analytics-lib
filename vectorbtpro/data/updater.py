@@ -107,7 +107,7 @@ class DataUpdater(Configured):
     def update_every(
         self,
         *args,
-        to: int = None,
+        to: tp.Optional[int] = None,
         tags: tp.Optional[tp.Iterable[tp.Hashable]] = None,
         in_background: bool = False,
         replace: bool = True,

@@ -874,7 +874,9 @@ class Records(Analyzable, metaclass=MetaRecords):
 
         Args:
             col_idxs (MaybeIndexArray): Column indices or slice to select.
-            jitted (JittedOption): JIT compilation control; if provided, a compiled selection method is used.
+            jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
 
         Returns:
             Tuple[Array1d, RecordArray]: A tuple containing the selected indices and the new record array.
@@ -1348,7 +1350,9 @@ class Records(Analyzable, metaclass=MetaRecords):
 
         Args:
             incl_id (bool): If True, check sorting using both column and id arrays.
-            jitted (JittedOption): Option to control JIT compilation for sorting.
+            jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
 
         Returns:
             bool: True if the records are sorted, False otherwise.
@@ -1413,6 +1417,8 @@ class Records(Analyzable, metaclass=MetaRecords):
         Args:
             n (int): Number of records to retain from the beginning of each column.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
             **kwargs: Additional arguments passed to record replacement.
 
@@ -1439,6 +1445,8 @@ class Records(Analyzable, metaclass=MetaRecords):
         Args:
             n (int): Number of records to retain from the end of each column.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
             **kwargs: Additional arguments passed to record replacement.
 
@@ -1467,6 +1475,8 @@ class Records(Analyzable, metaclass=MetaRecords):
             n (int): Number of random records to select per column.
             seed (Optional[int]): Seed for random number generation.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
             **kwargs: Additional arguments passed to record replacement.
 
@@ -1562,6 +1572,8 @@ class Records(Analyzable, metaclass=MetaRecords):
             *args: Positional arguments passed to the mapping function.
             dtype (Optional[DTypeLike]): Data type for the resulting mapped array.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
             col_mapper (Optional[ColumnMapper]): Column mapper for the meta version.
             **kwargs: Additional arguments passed to `Records.map_array`.
@@ -1613,6 +1625,8 @@ class Records(Analyzable, metaclass=MetaRecords):
             apply_per_group (bool): If True, apply the function to each group individually.
             dtype (Optional[DTypeLike]): Data type for the resulting mapped array.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
             col_mapper (Optional[ColumnMapper]): Column mapper for the meta version.
             **kwargs: Additional arguments passed to `Records.map_array`.

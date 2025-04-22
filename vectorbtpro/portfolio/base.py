@@ -5846,7 +5846,9 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             close (Optional[SeriesFrame]): Price data to fill.
 
                 Defaults to `Portfolio.close` if not provided.
-            jitted (JittedOption): Option controlling JIT compilation.
+            jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option controlling chunked processing.
             wrapper (Optional[ArrayWrapper]): Wrapper instance.
 
@@ -5904,7 +5906,9 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             bm_close (Optional[SeriesFrame]): Benchmark price data to fill.
 
                 Defaults to `Portfolio.bm_close` if not provided.
-            jitted (JittedOption): Option controlling JIT compilation.
+            jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option controlling chunked processing.
             wrapper (Optional[ArrayWrapper]): Wrapper instance.
 
@@ -6053,6 +6057,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             sim_end (Optional[ArrayLike]): Simulation end time.
             rec_sim_range (bool): Flag indicating whether to apply the simulation range recursively.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to enable chunked processing.
             **kwargs: Keyword arguments passed to the replace method.
 
@@ -6117,6 +6123,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             sim_end (Optional[ArrayLike]): Simulation end time.
             rec_sim_range (bool): Flag indicating whether to apply the simulation range recursively.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to enable chunked processing.
             **kwargs: Keyword arguments passed to the replace method.
 
@@ -6210,6 +6218,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 Defaults to `Portfolio.get_weights` if not provided.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             wrapper (Optional[ArrayWrapper]): Wrapper instance for processing records.
             group_by (GroupByLike): Grouping specification.
             **kwargs: Keyword arguments for orders instantiation.
@@ -6327,6 +6337,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             sim_end (Optional[ArrayLike]): Simulation end time.
             rec_sim_range (bool): Flag indicating whether to apply the simulation range recursively.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             wrapper (Optional[ArrayWrapper]): Array wrapper for records.
             group_by (GroupByLike): Grouping specification.
             **kwargs: Keyword arguments for the logs constructor.
@@ -7040,6 +7052,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             sim_end (Optional[ArrayLike]): End time of the simulation.
             rec_sim_range (bool): Flag indicating whether to apply the simulation range recursively.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
             wrapper (Optional[ArrayWrapper]): Wrapper instance used for formatting the output array.
 
@@ -7125,6 +7139,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             sim_end (Optional[ArrayLike]): End time of the simulation.
             rec_sim_range (bool): Flag indicating whether to apply the simulation range recursively.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
             wrapper (Optional[ArrayWrapper]): Wrapper instance used for formatting the output array.
 
@@ -7207,6 +7223,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             sim_end (Optional[ArrayLike]): End time of the simulation.
             rec_sim_range (bool): Flag indicating whether to apply the simulation range recursively.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
             wrapper (Optional[ArrayWrapper]): Wrapper instance used for formatting the output array.
 
@@ -7294,6 +7312,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             sim_end (Optional[ArrayLike]): Simulation end index.
             rec_sim_range (bool): Flag indicating whether to apply the simulation range recursively.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked execution.
             wrapper (Optional[ArrayWrapper]): Array wrapper instance used for post-processing.
 
@@ -7385,6 +7405,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             sim_end (Optional[ArrayLike]): Simulation end index.
             rec_sim_range (bool): Flag indicating whether to apply the simulation range recursively.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked execution.
             wrapper (Optional[ArrayWrapper]): Array wrapper instance used for processing.
 
@@ -7486,6 +7508,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             sim_end (Optional[ArrayLike]): Simulation end index.
             rec_sim_range (bool): Flag indicating whether to apply the simulation range recursively.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked execution.
             wrapper (Optional[ArrayWrapper]): Array wrapper instance used for processing.
 
@@ -7591,7 +7615,9 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 If False, weights are ignored.
             keep_flex (bool): If True, returns the output in a flexible format.
-            jitted (JittedOption): Option to control just-in-time compilation.
+            jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
             wrapper (Optional[ArrayWrapper]): Wrapper instance for formatting the output.
 
@@ -7701,7 +7727,9 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
                 Defaults to `Portfolio.get_weights` if not provided.
 
                 If False, weights are ignored.
-            jitted (JittedOption): Option to control just-in-time compilation.
+            jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
             wrapper (Optional[ArrayWrapper]): Wrapper instance for formatting the output.
 
@@ -7768,7 +7796,9 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 If False, weights are ignored.
             keep_flex (bool): If True, returns the output in a flexible format.
-            jitted (JittedOption): Option to control just-in-time compilation.
+            jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
             wrapper (Optional[ArrayWrapper]): Wrapper instance for formatting the output.
 
@@ -7860,7 +7890,9 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
                 Defaults to `Portfolio.get_weights` if not provided.
 
                 If False, weights are ignored.
-            jitted (JittedOption): Option to control just-in-time compilation.
+            jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
             wrapper (Optional[ArrayWrapper]): Wrapper instance for formatting the output.
 
@@ -7930,6 +7962,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 If False, weights are ignored.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to enable chunked processing.
             wrapper (Optional[ArrayWrapper]): Instance used to wrap the resulting array.
 
@@ -8052,6 +8086,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 If False, weights are ignored.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
             wrapper (Optional[ArrayWrapper]): Array wrapper instance.
 
@@ -8185,7 +8221,9 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             sim_start (Optional[ArrayLike]): Simulation start date or index.
             sim_end (Optional[ArrayLike]): Simulation end date or index.
             rec_sim_range (bool): Flag indicating whether to apply the simulation range recursively.
-            jitted (JittedOption): Option for JIT compilation.
+            jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option for chunked processing.
             wrapper (Optional[ArrayWrapper]): Array wrapper instance.
 
@@ -8319,6 +8357,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 Defaults to `Portfolio.get_init_price` with `keep_flex=True` or NaN if not provided.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             wrapper (Optional[ArrayWrapper]): Wrapper instance for output formatting.
 
                 Defaults to `Portfolio.wrapper` if not provided.
@@ -8403,6 +8443,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             sim_end (Optional[ArrayLike]): Simulation end time.
             rec_sim_range (bool): Flag indicating whether to apply the simulation range recursively.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
             wrapper (Optional[ArrayWrapper]): Wrapper instance for output formatting.
 
@@ -8477,6 +8519,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             sim_end (Optional[ArrayLike]): Simulation end time for resolving deposits and value.
             rec_sim_range (bool): Flag indicating whether to apply the simulation range recursively.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
             wrapper (Optional[ArrayWrapper]): Wrapper instance for output formatting.
 
@@ -8558,6 +8602,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             sim_end (Optional[ArrayLike]): Simulation end time.
             rec_sim_range (bool): Flag indicating whether to apply the simulation range recursively.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
             wrapper (Optional[ArrayWrapper]): Wrapper instance for output formatting.
 
@@ -8649,7 +8695,9 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             sim_start (Optional[ArrayLike]): Start indices for simulation.
             sim_end (Optional[ArrayLike]): End indices for simulation.
             rec_sim_range (bool): Flag indicating whether to apply the simulation range recursively.
-            jitted (JittedOption): Option controlling JIT compilation.
+            jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option controlling chunked processing.
             wrapper (Optional[ArrayWrapper]): Array wrapper instance.
 
@@ -8739,7 +8787,9 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             sim_start (Optional[ArrayLike]): Start indices for simulation.
             sim_end (Optional[ArrayLike]): End indices for simulation.
             rec_sim_range (bool): Flag indicating whether to apply the simulation range recursively.
-            jitted (JittedOption): Option controlling JIT compilation.
+            jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option controlling chunked processing.
             wrapper (Optional[ArrayWrapper]): Array wrapper instance.
 
@@ -8855,7 +8905,9 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             sim_start (Optional[ArrayLike]): Start indices for simulation.
             sim_end (Optional[ArrayLike]): End indices for simulation.
             rec_sim_range (bool): Flag indicating whether to apply the simulation range recursively.
-            jitted (JittedOption): Option controlling JIT compilation.
+            jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option controlling chunked processing.
             wrapper (Optional[ArrayWrapper]): Array wrapper instance.
 
@@ -8948,6 +9000,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             sim_end (Optional[ArrayLike]): Simulation end index.
             rec_sim_range (bool): Flag indicating whether to apply the simulation range recursively.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
             wrapper (Optional[ArrayWrapper]): Array wrapper instance for formatting the output.
 
@@ -9048,6 +9102,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             sim_end (Optional[ArrayLike]): Simulation end index.
             rec_sim_range (bool): Flag indicating whether to apply the simulation range recursively.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
             wrapper (Optional[ArrayWrapper]): Array wrapper instance for formatting the output.
 
@@ -9170,6 +9226,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             sim_end (Optional[ArrayLike]): Simulation end index.
             rec_sim_range (bool): Flag indicating whether to apply the simulation range recursively.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
             wrapper (Optional[ArrayWrapper]): Array wrapper instance for formatting the output.
 
@@ -9241,6 +9299,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             sim_end (Optional[ArrayLike]): Simulation end time.
             rec_sim_range (bool): Flag indicating whether to apply the simulation range recursively.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
             wrapper (Optional[ArrayWrapper]): Array wrapper instance used to wrap the result.
 
@@ -9324,6 +9384,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             sim_end (Optional[ArrayLike]): Simulation end time.
             rec_sim_range (bool): Flag indicating whether to apply the simulation range recursively.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
             wrapper (Optional[ArrayWrapper]): Array wrapper instance used to wrap the output.
 
@@ -9434,6 +9496,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             sim_end (Optional[ArrayLike]): Simulation end time.
             rec_sim_range (bool): Flag indicating whether to apply the simulation range recursively.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
             wrapper (Optional[ArrayWrapper]): Array wrapper instance used to wrap the result.
 
@@ -9537,6 +9601,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             sim_end (Optional[ArrayLike]): Simulation end date or index.
             rec_sim_range (bool): Flag indicating whether to apply the simulation range recursively.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
             wrapper (Optional[ArrayWrapper]): Array wrapper instance for processing.
 
@@ -9640,6 +9706,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             sim_end (Optional[ArrayLike]): Simulation end date or index.
             rec_sim_range (bool): Flag indicating whether to apply the simulation range recursively.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
             wrapper (Optional[ArrayWrapper]): Array wrapper instance for processing.
 
@@ -9791,6 +9859,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             sim_end (Optional[ArrayLike]): Simulation end date or index.
             rec_sim_range (bool): Flag indicating whether to apply the simulation range recursively.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
             wrapper (Optional[ArrayWrapper]): Wrapper instance used to format the result.
 
@@ -9897,6 +9967,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             sim_end (Optional[ArrayLike]): Simulation end date or index.
             rec_sim_range (bool): Flag indicating whether to apply the simulation range recursively.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
             wrapper (Optional[ArrayWrapper]): Wrapper instance for formatting the result.
 
@@ -9981,6 +10053,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             sim_end (Optional[ArrayLike]): Simulation end date or index.
             rec_sim_range (bool): Flag indicating whether to apply the simulation range recursively.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
             wrapper (Optional[ArrayWrapper]): Array wrapper instance for processing.
             group_by (GroupByLike): Specification for grouping.
@@ -10049,6 +10123,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             sim_end (Optional[ArrayLike]): Simulation end date or index.
             rec_sim_range (bool): Flag indicating whether to apply the simulation range recursively.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
             wrapper (Optional[ArrayWrapper]): Wrapper instance used to format the result.
             group_by (GroupByLike): Grouping specification for processing.
@@ -10136,6 +10212,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 Merges with `Portfolio.returns_acc_defaults`.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
             wrapper (Optional[ArrayWrapper]): Array wrapper instance.
 
@@ -10265,6 +10343,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             year_freq (Optional[FrequencyLike]): Yearly frequency for returns calculation.
             defaults (KwargsLike): Dictionary of default parameters.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
             wrapper (Optional[ArrayWrapper]): Array wrapper instance.
             group_by (GroupByLike): Grouping specification.
@@ -10686,6 +10766,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             year_freq (Optional[FrequencyLike]): Yearly frequency for returns calculation.
             defaults (KwargsLike): Dictionary of default parameters.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
             wrapper (Optional[ArrayWrapper]): Array wrapper instance.
             group_by (GroupByLike): Grouping specification.

@@ -223,7 +223,9 @@ class Orders(PriceRecords):
         Args:
             init_position (ArrayLike): Initial position(s).
             init_price (ArrayLike): Initial price(s).
-            jitted (JittedOption): Option for controlling JIT compilation.
+            jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option for controlling chunked processing.
 
         Returns:
@@ -255,7 +257,9 @@ class Orders(PriceRecords):
         Args:
             init_position (ArrayLike): Initial position(s).
             init_price (ArrayLike): Initial price(s).
-            jitted (JittedOption): Option for controlling JIT compilation.
+            jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option for controlling chunked processing.
 
         Returns:
@@ -321,7 +325,9 @@ class Orders(PriceRecords):
 
         Args:
             group_by (GroupByLike): Grouping specification.
-            jitted (JittedOption): Option for controlling JIT compilation.
+            jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option for controlling chunked processing.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
             **kwargs: Keyword arguments passed to

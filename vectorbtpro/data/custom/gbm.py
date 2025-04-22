@@ -71,6 +71,8 @@ class GBMData(SyntheticData):
             seed (Optional[int]): Seed to ensure deterministic output.
             jitted (JittedOption): Option to control JIT compilation.
 
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
+
         Returns:
             KeyData: The generated data and a metadata dictionary.
 

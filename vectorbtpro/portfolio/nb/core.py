@@ -2121,7 +2121,7 @@ def prepare_last_cash_nb(
     Args:
         target_shape (Shape): Target shape used to determine dimensions.
         group_lens (GroupLens): Array of group lengths.
-        cash_sharing (bool): Indicates whether cash is shared across groups.
+        cash_sharing (bool): Indicates whether cash is shared across columns within each group.
         init_cash (FlexArray1d): Array of initial cash values.
 
     Returns:
@@ -2169,7 +2169,7 @@ def prepare_last_value_nb(
     Args:
         target_shape (Shape): Target shape used to determine the output dimensions.
         group_lens (GroupLens): Array of group lengths.
-        cash_sharing (bool): Indicates if cash is shared among groups.
+        cash_sharing (bool): Indicates if cash is shared among columns within each group.
         init_cash (FlexArray1d): Array of initial cash values.
         init_position (FlexArray1d): Array of initial position values.
         init_price (FlexArray1d): Array of initial prices corresponding to positions.

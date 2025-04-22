@@ -545,7 +545,9 @@ def combine_params(
         max_misses (Union[None, int, float]): Maximum number of misses allowed in the search for a valid
             combination (applies when not building the full grid).
         seed (Optional[int]): Seed for random number generation.
-        clean_index_kwargs (KwargsLike): Keyword arguments for `vectorbtpro.base.indexes.clean_index`.
+        clean_index_kwargs (KwargsLike): Keyword arguments for cleaning MultiIndex levels.
+
+            See `vectorbtpro.base.indexes.clean_index` for details.
         name_tuple_to_str (Union[None, bool, Callable]): If True or a callable, converts tuple
             parameter names to strings.
         build_product (bool): If True, compute the Cartesian product of parameter values.
@@ -1152,7 +1154,9 @@ class Parameterizer(Configured):
         max_guesses (Union[None, int, float]): Maximum number of parameter guesses.
         max_misses (Union[None, int, float]): Maximum allowed misses during parameter search.
         seed (Optional[int]): Random seed for reproducibility.
-        clean_index_kwargs (KwargsLike): Keyword arguments for cleaning the index.
+        clean_index_kwargs (KwargsLike): Keyword arguments for cleaning MultiIndex levels.
+
+            See `vectorbtpro.base.indexes.clean_index` for details.
         name_tuple_to_str (Union[None, bool, Callable]): Flag or function to convert name tuples to strings.
         selection (Optional[Selection]): Template or criteria to select specific parameter indices.
         forward_kwargs_as (KwargsLike): Mapping to forward keyword arguments.
@@ -1171,6 +1175,8 @@ class Parameterizer(Configured):
         return_meta (Optional[bool]): Flag indicating if additional metadata should be returned.
         return_param_index (Optional[bool]): Flag indicating if the parameter index should be included in the result.
         execute_kwargs (KwargsLike): Keyword arguments passed to the execution handler.
+
+            See `vectorbtpro.utils.execution.execute` for details.
         **kwargs: Additional keyword arguments.
 
     !!! info

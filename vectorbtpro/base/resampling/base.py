@@ -366,6 +366,8 @@ class Resampler(Configured):
             raise_missing (bool): Raise an error if a target index value is missing.
             return_index (bool): Return a pandas Index if True; otherwise, return a numpy array.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             silence_warnings (Optional[bool]): Whether to silence warnings.
 
         Returns:
@@ -408,6 +410,8 @@ class Resampler(Configured):
             return_index (bool): Return the target index mapping if True; otherwise, return a numpy array.
             jitted (JittedOption): Option to control JIT compilation.
 
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
+
         Returns:
             Union[Array1d, Index]: The computed index difference mapping.
 
@@ -434,6 +438,8 @@ class Resampler(Configured):
         Args:
             before (bool): Map to source ranges before the target index if True.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             silence_warnings (Optional[bool]): Whether to silence warnings.
 
         Returns:
@@ -482,6 +488,8 @@ class Resampler(Configured):
             closed_rbound (bool): Specify whether the right bound is closed.
             skip_not_found (bool): If True, skip mapping for indices that are not found.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
 
         Returns:
             Tuple[Array1d, Array1d]: A pair of arrays representing the mapping from target bounds to source ranges.
@@ -535,6 +543,8 @@ class Resampler(Configured):
         Args:
             source_mask (ArrayLike): A boolean mask for the source index.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             silence_warnings (Optional[bool]): Whether to silence warnings.
 
         Returns:
@@ -566,6 +576,8 @@ class Resampler(Configured):
         Args:
             incl_source (bool): Include the source index in the computation if True.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
 
         Returns:
             Array1d: An array of indices representing the last element before each target index.

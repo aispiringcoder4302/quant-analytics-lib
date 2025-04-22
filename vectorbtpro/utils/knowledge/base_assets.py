@@ -925,7 +925,9 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         Args:
             func (MaybeList[Union[AssetFuncLike, AssetPipeline]]): Function, pipeline, or expression to apply.
             *args: Positional arguments for the function.
-            execute_kwargs (KwargsLike): Keyword arguments for the execution engine.
+            execute_kwargs (KwargsLike): Keyword arguments passed to the execution handler.
+
+                See `vectorbtpro.utils.execution.execute` for details.
             wrap (Optional[bool]): If True, return the result wrapped as an asset.
             single_item (Optional[bool]): Determines if data items are treated as single items.
             return_iterator (bool): If True, return an iterator instead of executing tasks.
@@ -2462,7 +2464,9 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
             by (Optional[PathLikeKey]): Key or path used to group data items.
             uniform_groups (Optional[bool]): Whether to group only contiguous identical key values.
             get_kwargs (KwargsLike): Extra keyword arguments for retrieving keys via `KnowledgeAsset.get`.
-            execute_kwargs (KwargsLike): Extra keyword arguments for task execution.
+            execute_kwargs (KwargsLike): Keyword arguments passed to the execution handler.
+
+                See `vectorbtpro.utils.execution.execute` for details.
             return_group_keys (bool): If True, returns a dictionary mapping group keys to reduction results.
             **kwargs: Keyword arguments for `KnowledgeAsset.reduce`.
 

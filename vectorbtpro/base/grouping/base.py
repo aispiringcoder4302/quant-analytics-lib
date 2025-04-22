@@ -590,6 +590,8 @@ class Grouper(Configured):
 
                 If not provided, uses `Grouper.group_by`.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             **kwargs: Keyword arguments passed to `Grouper.resolve_group_by`.
 
         Returns:
@@ -648,6 +650,8 @@ class Grouper(Configured):
 
                 If not provided, uses `Grouper.group_by`.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             **kwargs: Keyword arguments passed to `Grouper.resolve_group_by`.
 
         Returns:
@@ -713,6 +717,8 @@ class Grouper(Configured):
         Args:
             group_idxs (Array1d): Array of group indices to be selected.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
 
         Returns:
             Tuple[Array1d, Array1d]: A tuple containing:

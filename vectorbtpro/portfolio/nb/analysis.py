@@ -526,7 +526,7 @@ def cash_deposits_nb(
     Args:
         target_shape (Shape): Target shape of the output cash deposit array.
         group_lens (GroupLens): Lengths of groups for processing.
-        cash_sharing (bool): Indicates whether cash is shared among columns.
+        cash_sharing (bool): Indicates whether cash is shared among columns within each group.
         cash_deposits_raw (FlexArray2dLike): Raw cash deposit values.
         split_shared (bool): If cash is shared, determines whether to split the deposits evenly across columns.
         weights (Optional[FlexArray1dLike]): Weights applied to cash deposits per column.
@@ -1159,7 +1159,7 @@ def init_cash_nb(
     Args:
         init_cash_raw (FlexArray1d): Raw initial cash values.
         group_lens (GroupLens): Array indicating the length of each group.
-        cash_sharing (bool): Flag specifying whether cash is shared among columns.
+        cash_sharing (bool): Flag specifying whether cash is shared among columns in a group.
         split_shared (bool): If True, split shared cash equally among columns in a group.
         weights (Optional[FlexArray1dLike]): Optional weights to adjust the initial cash.
 

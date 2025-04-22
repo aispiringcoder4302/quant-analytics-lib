@@ -494,6 +494,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
             minp (Optional[int]): Minimum number of observations required within the window.
             local (bool): If True, computes the index of the minimum value within the local window.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunking.
             wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping the output.
 
@@ -545,6 +547,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
             minp (Optional[int]): Minimum number of observations required within the window.
             local (bool): If True, computes the index of the maximum value within the local window.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunking.
             wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping the output.
 
@@ -594,6 +598,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 If None, uses the full length of the data.
             minp (Optional[int]): Minimum number of observations required within the window.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
 
@@ -641,6 +647,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
             minp (Optional[int]): Minimum number of observations required within the window.
             ddof (int): Delta degrees of freedom.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
 
@@ -688,6 +696,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
             minp (Optional[int]): Minimum number of observations required within the window.
             ddof (int): Delta degrees of freedom.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
 
@@ -730,6 +740,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
             span (int): Window span for computing the weighted moving mean.
             minp (Optional[int]): Minimum number of observations required within the span.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
 
@@ -760,6 +772,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
             minp (Optional[int]): Minimum number of observations required.
             adjust (bool): Flag indicating whether to adjust weights.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
 
@@ -791,6 +805,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
             minp (Optional[int]): Minimum number of observations required.
             adjust (bool): Flag indicating whether to adjust weights.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
 
@@ -821,6 +837,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
             minp (Optional[int]): Minimum number of observations required.
             adjust (bool): Flag indicating whether to adjust weights.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
 
@@ -852,6 +870,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
             minp (Optional[int]): Minimum number of observations required.
             adjust (bool): Flag indicating whether to adjust weights.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
 
@@ -881,6 +901,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
             window (int): Window size for computing VIDYA.
             minp (Optional[int]): Minimum number of observations required within the window.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
 
@@ -910,9 +932,13 @@ class GenericAccessor(BaseAccessor, Analyzable):
         Args:
             window (int): Window size for computing the moving average.
             wtype (Union[int, str]): Type of weighting to use for the moving average.
+
+                See `vectorbtpro.generic.enums.WType` for available options.
             minp (Optional[int]): Minimum number of observations required within the window.
             adjust (bool): Flag indicating whether to adjust weights.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
 
@@ -946,10 +972,14 @@ class GenericAccessor(BaseAccessor, Analyzable):
         Args:
             window (int): Window size for computing the moving standard deviation.
             wtype (Union[int, str]): Type of weighting to use for the moving standard deviation.
+
+                See `vectorbtpro.generic.enums.WType` for available options.
             minp (Optional[int]): Minimum number of observations required within the window.
             adjust (bool): Flag indicating whether to adjust weights.
             ddof (int): Delta degrees of freedom.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
 
@@ -989,6 +1019,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
             ddof (int): Delta degrees of freedom.
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
 
@@ -1040,6 +1072,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
             minp (Optional[int]): Minimum number of observations required in each window.
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
 
@@ -1090,6 +1124,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
             minp (Optional[int]): Minimum number of observations required per window.
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
 
@@ -1151,6 +1187,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
             minp (Optional[int]): Minimum number of observations required per window.
             pct (bool): If True, compute percentile rank; otherwise, compute ordinal rank.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
 
@@ -1241,6 +1279,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 falls below this, returns NaN.
             minp (Optional[int]): Minimum number of valid data points required for computation.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
 
@@ -1323,6 +1363,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
             template_context (KwargsLike): Additional context for template substitution.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
             wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
@@ -1459,6 +1501,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
             template_context (KwargsLike): Additional context for template substitution.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
             wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
@@ -1631,6 +1675,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
             template_context (KwargsLike): Additional context for template substitution.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
             wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
@@ -1830,6 +1876,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
             template_context (KwargsLike): Additional context for template substitution.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
             wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
@@ -1984,6 +2032,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
             template_context (KwargsLike): Additional context for template substitution.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
 
@@ -2283,6 +2333,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
             template_context (KwargsLike): Additional context for template substitution.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
             wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
@@ -2453,6 +2505,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
             template_context (KwargsLike): Additional context for template substitution.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
             wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
             group_by (GroupByLike): Grouping specification.
@@ -2721,6 +2775,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
             template_context (KwargsLike): Additional context for template substitution.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
 
@@ -2866,6 +2922,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
             template_context (KwargsLike): Additional context for template substitution.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
             wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
             group_by (GroupByLike): Grouping specification.
@@ -3003,6 +3061,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 Accepts 'C' or 'F'.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             group_by (GroupByLike): Grouping specification.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
 
@@ -3101,6 +3161,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 If set to a string "pandas", the resampler uses the pandas-defined right bound.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
             silence_warnings (Optional[bool]): Flag to suppress warnings during resampling.
@@ -3287,6 +3349,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
             template_context (KwargsLike): Additional context for template substitution.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
             wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
@@ -3492,6 +3556,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
             template_context (KwargsLike): Additional context for template substitution.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
             wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
             wrap_with_lbound (Optional[bool]): Determines if the lower bound index is used for wrapping the output.
@@ -3682,6 +3748,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
         Args:
             use_jitted (Optional[bool]): Whether to use jitted execution.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
             group_by (GroupByLike): Grouping specification.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
@@ -3737,6 +3805,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
         Args:
             use_jitted (Optional[bool]): Whether to use jitted execution.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
             group_by (GroupByLike): Grouping specification.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
@@ -3792,6 +3862,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
         Args:
             use_jitted (Optional[bool]): Whether to use jitted execution.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
             group_by (GroupByLike): Grouping specification.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
@@ -3847,6 +3919,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
         Args:
             use_jitted (Optional[bool]): Whether to use jitted execution.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
             group_by (GroupByLike): Grouping specification.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
@@ -3904,6 +3978,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
             ddof (int): Delta degrees of freedom for standard deviation calculation.
             use_jitted (Optional[bool]): Whether to use jitted execution.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
             group_by (GroupByLike): Grouping specification.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
@@ -3960,6 +4036,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
         Args:
             use_jitted (Optional[bool]): Whether to use jitted execution.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
             group_by (GroupByLike): Grouping specification.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
@@ -4017,6 +4095,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 If unspecified, the default setting is used.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
             group_by (GroupByLike): Grouping specification.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
@@ -4073,6 +4153,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
             ddof (int): Degrees of freedom for the covariance calculation.
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
             group_by (GroupByLike): Grouping specification.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
@@ -4121,6 +4203,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
             other (SeriesFrame): Series or frame to compute correlation with.
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
             group_by (GroupByLike): Grouping specification.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
@@ -4167,6 +4251,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
         Args:
             pct (bool): Flag to compute percentile ranks instead of raw rank values.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
 
@@ -4196,6 +4282,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
         Args:
             order (str): Memory order for processing the array.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
             group_by (GroupByLike): Grouping specification.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
@@ -4243,6 +4331,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
         Args:
             order (str): Memory order for processing the array.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
             group_by (GroupByLike): Grouping specification.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
@@ -4297,6 +4387,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
             percentiles (Optional[ArrayLike]): Percentiles to include in the summary.
             ddof (int): Delta degrees of freedom used in the computation of the standard deviation.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
             group_by (GroupByLike): Grouping specification.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
@@ -4467,6 +4559,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
             mapping (Union[None, bool, MappingLike]): Mapping to relabel unique values.
             incl_all_keys (bool): If True, include all keys from the mapping even if they are absent in the data.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
             **kwargs: Keyword arguments passed to `vectorbtpro.utils.mapping.apply_mapping`.
@@ -4632,6 +4726,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
         Args:
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
             group_by (GroupByLike): Grouping specification.
 
@@ -4727,6 +4823,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
         Args:
             base (float): The base value to rebase the series.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
 
@@ -4756,6 +4854,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
         Args:
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
 
@@ -4982,6 +5082,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
             dropna (bool): Flag to determine whether to handle missing values.
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
 
@@ -5057,6 +5159,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
             dropna (bool): Flag to determine whether to handle missing values.
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
 
@@ -6642,6 +6746,8 @@ class GenericSRAccessor(GenericAccessor, BaseSRAccessor):
                 mapped using `vectorbtpro.generic.enums.InterpMode` if provided.
             jitted (JittedOption): Option to control JIT compilation.
 
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
+
         Returns:
             Tuple[Series, Series]: A tuple containing the fitted pattern series and the maximum error series.
         """
@@ -6699,6 +6805,8 @@ class GenericSRAccessor(GenericAccessor, BaseSRAccessor):
             reset_index (bool): Whether to reset the index of the resulting series.
             return_uptrend (bool): Whether to return the uptrend series along with the Renko series.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
 
         Returns:
@@ -6747,6 +6855,8 @@ class GenericSRAccessor(GenericAccessor, BaseSRAccessor):
             max_out_len (Optional[int]): Maximum length of the output.
             reset_index (bool): Whether to reset the index of the resulting DataFrame.
             jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
 
         Returns:

@@ -743,7 +743,9 @@ class SignalFactory(IndicatorFactory):
                     including arguments from `pass_kwargs`.
                 return_cache (bool): Indicates whether to return only the cache.
                 use_cache (Optional[IFCacheOutput]): Cache to use.
-                execute_kwargs (KwargsLike): Keyword arguments passed to `vectorbtpro.utils.execution.execute`.
+                execute_kwargs (KwargsLike): Keyword arguments passed to the execution handler.
+
+                    See `vectorbtpro.utils.execution.execute` for details.
                 **kwargs: Default keyword arguments based on the mode.
 
             Returns:

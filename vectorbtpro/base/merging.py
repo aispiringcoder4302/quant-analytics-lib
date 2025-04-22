@@ -135,7 +135,9 @@ def concat_merge(
             If None, the value is inferred from the presence of `wrapper`, `keys`, or `wrap_kwargs`.
         wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
         wrap_kwargs (KwargsLikeSequence): Keyword arguments for wrapping arrays.
-        clean_index_kwargs (KwargsLike): Keyword arguments for cleaning the merged index.
+        clean_index_kwargs (KwargsLike): Keyword arguments for cleaning MultiIndex levels.
+
+            See `vectorbtpro.base.indexes.clean_index` for details.
         **kwargs: Keyword arguments passed to `pd.concat`.
 
     Returns:
