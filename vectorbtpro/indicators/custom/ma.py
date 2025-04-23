@@ -73,7 +73,7 @@ class _MA(MA):
             plot_close (bool): Whether to include the close price trace in the plot.
             close_trace_kwargs (KwargsLike): Keyword arguments for the `MA.close` scatter trace.
             ma_trace_kwargs (KwargsLike): Keyword arguments for the `MA.ma` scatter trace.
-            add_trace_kwargs (KwargsLike): Keyword arguments for adding a trace using `fig.add_trace`.
+            add_trace_kwargs (KwargsLike): Keyword arguments passed to `fig.add_trace` for each trace.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
             **layout_kwargs: Keyword arguments for configuring the figure layout.
 

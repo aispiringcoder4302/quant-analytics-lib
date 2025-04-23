@@ -1489,7 +1489,7 @@ class MappedArray(Analyzable):
             chunked (ChunkedOption): Option to control chunked processing.
             col_mapper (Optional[ColumnMapper]): Column mapper instance used when invoked on a class.
             group_by (GroupByLike): Grouping specification.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the reduced result.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             MaybeSeriesFrame: The reduced output wrapped in an appropriate structure.
@@ -1764,7 +1764,7 @@ class MappedArray(Analyzable):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option for chunked processing.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
             **kwargs: Keyword arguments forwarded to `MappedArray.reduce`.
 
         Returns:
@@ -1802,7 +1802,7 @@ class MappedArray(Analyzable):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option for chunked processing.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
             **kwargs: Keyword arguments forwarded to `MappedArray.reduce`.
 
         Returns:
@@ -1842,7 +1842,7 @@ class MappedArray(Analyzable):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option for chunked processing.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
             **kwargs: Keyword arguments forwarded to `MappedArray.reduce`.
 
         Returns:
@@ -1891,7 +1891,7 @@ class MappedArray(Analyzable):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option for chunked processing.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
             **kwargs: Keyword arguments forwarded to `MappedArray.reduce`.
 
         Returns:
@@ -1930,7 +1930,7 @@ class MappedArray(Analyzable):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option for chunked processing.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
             **kwargs: Keyword arguments forwarded to `MappedArray.reduce`.
 
         Returns:
@@ -1968,7 +1968,7 @@ class MappedArray(Analyzable):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option for chunked processing.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
             **kwargs: Keyword arguments forwarded to `MappedArray.reduce`.
 
         Returns:
@@ -2012,7 +2012,7 @@ class MappedArray(Analyzable):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option for chunked processing.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
             **kwargs: Keyword arguments forwarded to `MappedArray.reduce`.
 
         Returns:
@@ -2065,7 +2065,7 @@ class MappedArray(Analyzable):
 
         Args:
             group_by (GroupByLike): Grouping specification.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             MaybeSeries: Series with the count of values per column or group.
@@ -2121,7 +2121,7 @@ class MappedArray(Analyzable):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the output.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
             **kwargs: Keyword arguments applied to mapping.
 
         Returns:
@@ -2265,7 +2265,7 @@ class MappedArray(Analyzable):
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the output array.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             SeriesFrame: A Series or DataFrame representing the coverage map.
@@ -2328,7 +2328,7 @@ class MappedArray(Analyzable):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option for chunked processing.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the output.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
             silence_warnings (bool): Whether to suppress warnings about index conflicts.
 
         Returns:
@@ -2427,7 +2427,7 @@ class MappedArray(Analyzable):
 
                 If None, uses `MappedArray.idx_arr`.
             group_by (GroupByLike): Grouping specification.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the output.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             SeriesFrame: A wrapped mask array as a Series or DataFrame.

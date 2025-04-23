@@ -6380,7 +6380,7 @@ class Splitter(Analyzable):
                 `plotly.graph_objects.Heatmap`.
 
                 Can be a sequence, one per set.
-            add_trace_kwargs (KwargsLike): Keyword arguments for adding traces to the figure.
+            add_trace_kwargs (KwargsLike): Keyword arguments passed to `fig.add_trace` for each trace.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
             **layout_kwargs: Keyword arguments for configuring the figure layout.
 
@@ -6484,7 +6484,7 @@ class Splitter(Analyzable):
             trace_kwargs (KwargsLikeSequence): Keyword arguments for `plotly.graph_objects.Scatter`.
 
                 If provided as a sequence, each set uses its corresponding settings.
-            add_trace_kwargs (KwargsLike): Keyword arguments for adding traces to the figure.
+            add_trace_kwargs (KwargsLike): Keyword arguments passed to `fig.add_trace` for each trace.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
             **layout_kwargs: Keyword arguments for configuring the figure layout.
 

@@ -497,7 +497,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunking.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping the output.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             SeriesFrame: A Series/DataFrame containing the indices of the minimum values
@@ -550,7 +550,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunking.
-            wrap_kwargs (KwargsLike): Additional keyword arguments for wrapping the output.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             SeriesFrame: A Series/DataFrame containing the indices of the maximum values
@@ -601,7 +601,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             SeriesFrame: Calculated rolling mean values.
@@ -650,7 +650,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             SeriesFrame: Calculated rolling standard deviation values.
@@ -699,7 +699,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             SeriesFrame: Calculated rolling z-score values.
@@ -743,7 +743,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             SeriesFrame: Calculated weighted moving mean values.
@@ -775,7 +775,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             SeriesFrame: Calculated exponentially weighted moving mean values.
@@ -808,7 +808,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             SeriesFrame: Calculated exponentially weighted moving standard deviation values.
@@ -840,7 +840,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             SeriesFrame: Calculated weighted window moving mean values.
@@ -873,7 +873,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             SeriesFrame: Calculated weighted window moving standard deviation values.
@@ -904,7 +904,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             SeriesFrame: Calculated VIDYA values.
@@ -940,7 +940,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             SeriesFrame: Calculated moving average values.
@@ -981,7 +981,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             SeriesFrame: Calculated moving standard deviation values.
@@ -1024,7 +1024,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             SeriesFrame: Calculated rolling covariance values.
@@ -1079,7 +1079,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             SeriesFrame: The rolling correlation computed over the specified window.
@@ -1133,7 +1133,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             Tuple[SeriesFrame, SeriesFrame]: A tuple containing the slope and intercept arrays.
@@ -1196,7 +1196,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             SeriesFrame: The rolling rank result.
@@ -1288,7 +1288,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             SeriesFrame: The rolling pattern similarity result.
@@ -1375,7 +1375,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
             wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             SeriesFrame: The result of applying the mapping function to the input data, wrapped appropriately.
@@ -1515,7 +1515,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
             wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             SeriesFrame: The result of applying the function to the input data.
@@ -1691,7 +1691,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
             wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             SeriesFrame: The result of the rolling reduction.
@@ -1894,7 +1894,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
             wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             SeriesFrame: The wrapped result after applying the groupby reduction.
@@ -2051,7 +2051,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             SeriesFrame: Transformed data as a Series or DataFrame.
@@ -2184,7 +2184,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 See `vectorbtpro.base.reshaping.broadcast` for details.
             template_context (KwargsLike): Additional context for template substitution.
             wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
             **kwargs: Keyword arguments passed to the reduction function.
 
         Returns:
@@ -2357,7 +2357,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
             wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             Series: The result of the apply and reduce operation.
@@ -2532,7 +2532,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             chunked (ChunkedOption): Option to control chunked processing.
             wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
             group_by (GroupByLike): Grouping specification.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             MaybeSeriesFrame: The reduced data as a Series or DataFrame.
@@ -2802,7 +2802,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             Frame: The resulting frame after applying the proximity reduction.
@@ -2953,7 +2953,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             chunked (ChunkedOption): Option to control chunked processing.
             wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
             group_by (GroupByLike): Grouping specification.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             MaybeSeriesFrame: The squeezed data as a Series or DataFrame.
@@ -3090,7 +3090,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             group_by (GroupByLike): Grouping specification.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             MaybeSeriesFrame: The flattened data as a Series or DataFrame.
@@ -3190,7 +3190,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
             silence_warnings (Optional[bool]): Flag to suppress warnings during resampling.
 
         Returns:
@@ -3381,7 +3381,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
             wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
             silence_warnings (Optional[bool]): If True, suppress warnings during resampling.
 
         Returns:
@@ -3591,7 +3591,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             chunked (ChunkedOption): Option to control chunked processing.
             wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
             wrap_with_lbound (Optional[bool]): Determines if the lower bound index is used for wrapping the output.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             SeriesFrame: A resampled series or frame with aggregated values,
@@ -3782,7 +3782,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
             group_by (GroupByLike): Grouping specification.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             MaybeSeries: The minimum value computed from non-NaN elements.
@@ -3839,7 +3839,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
             group_by (GroupByLike): Grouping specification.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             MaybeSeries: The maximum value computed from non-NaN elements.
@@ -3896,7 +3896,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
             group_by (GroupByLike): Grouping specification.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             MaybeSeries: The mean value computed from non-NaN elements.
@@ -3953,7 +3953,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
             group_by (GroupByLike): Grouping specification.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             MaybeSeries: The median value computed from non-NaN elements.
@@ -4012,7 +4012,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
             group_by (GroupByLike): Grouping specification.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             MaybeSeries: The standard deviation computed from non-NaN elements.
@@ -4070,7 +4070,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
             group_by (GroupByLike): Grouping specification.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             MaybeSeries: The sum computed from non-NaN elements.
@@ -4129,7 +4129,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
             group_by (GroupByLike): Grouping specification.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             MaybeSeries: The count computed from non-NaN elements.
@@ -4189,7 +4189,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
             group_by (GroupByLike): Grouping specification.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             MaybeSeries: The covariance computed from non-NaN elements.
@@ -4241,7 +4241,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
             group_by (GroupByLike): Grouping specification.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             MaybeSeries: The correlation coefficient computed from non-NaN elements.
@@ -4288,7 +4288,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             SeriesFrame: The rank as a pandas Series or DataFrame.
@@ -4320,7 +4320,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
             group_by (GroupByLike): Grouping specification.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             SeriesFrame: The labeled index as a pandas Series or DataFrame.
@@ -4369,7 +4369,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
             group_by (GroupByLike): Grouping specification.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             SeriesFrame: The labeled index as a pandas Series or DataFrame.
@@ -4425,7 +4425,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
             group_by (GroupByLike): Grouping specification.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             SeriesFrame: The descriptive statistics as a pandas Series or DataFrame.
@@ -4501,7 +4501,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             right (bool): Whether to treat the bins as right-inclusive.
             return_mapping (bool): Whether to return a mapping of bin indices to bin
                 intervals along with the digitized data.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             Union[SeriesFrame, Tuple[SeriesFrame, dict]]: The digitized data.
@@ -4596,7 +4596,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
             **kwargs: Keyword arguments passed to `vectorbtpro.utils.mapping.apply_mapping`.
 
         Returns:
@@ -4766,7 +4766,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             group_by (GroupByLike): Grouping specification.
 
                 If provided, the data is demeaned separately for each group.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             SeriesFrame: The demeaned data as a Series or DataFrame.
@@ -4792,7 +4792,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
         Args:
             transformer (Transformer): An instance with `transform` and `fit_transform` methods.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
             **kwargs: Keyword arguments passed to the transformer methods.
 
         Returns:
@@ -4860,7 +4860,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             SeriesFrame: The rebased data as a Series or DataFrame.
@@ -4891,7 +4891,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             SeriesFrame: The drawdown series as a Series or DataFrame.
@@ -5121,7 +5121,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             SeriesFrame: Boolean series or dataframe indicating crossing events.
@@ -5200,7 +5200,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             SeriesFrame: Boolean series or dataframe indicating crossing events.
@@ -5627,7 +5627,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             pos_trace_kwargs (KwargsLike): Keyword arguments for plotting the positive area between the series.
             neg_trace_kwargs (KwargsLike): Keyword arguments for plotting the negative area between the series.
             hidden_trace_kwargs (KwargsLike): Keyword arguments for plotting hidden lines.
-            add_trace_kwargs (KwargsLike): Keyword arguments for adding traces to the figure.
+            add_trace_kwargs (KwargsLike): Keyword arguments passed to `fig.add_trace` for each trace.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
             **layout_kwargs: Keyword arguments for configuring the figure layout.
 
@@ -5779,7 +5779,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 used to plot the line.
             heatmap_kwargs (KwargsLike): Keyword arguments for `GenericDFAccessor.heatmap`
                 used to generate the heatmap.
-            add_trace_kwargs (KwargsLike): Keyword arguments for adding traces to the figure.
+            add_trace_kwargs (KwargsLike): Keyword arguments passed to `fig.add_trace` for each trace.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
             **layout_kwargs: Keyword arguments for configuring the figure layout.
 
@@ -6311,7 +6311,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             colorway (Union[None, str, Sequence[str]]): Name of a built-in qualitative
                 color palette or a sequence of colors.
             trace_kwargs (KwargsLike): Keyword arguments for configuring each `plotly.graph_objects.Scatter` trace.
-            add_trace_kwargs (KwargsLike): Keyword arguments for adding traces to the figure.
+            add_trace_kwargs (KwargsLike): Keyword arguments passed to `fig.add_trace` for each trace.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
             **layout_kwargs: Keyword arguments for configuring the figure layout.
 
@@ -6457,7 +6457,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             pattern_trace_kwargs (KwargsLike): Keyword arguments for the pattern trace.
             lower_max_error_trace_kwargs (KwargsLike): Keyword arguments for the lower error bound trace.
             upper_max_error_trace_kwargs (KwargsLike): Keyword arguments for the upper error bound trace.
-            add_trace_kwargs (KwargsLike): Keyword arguments for adding traces to the figure.
+            add_trace_kwargs (KwargsLike): Keyword arguments passed to `fig.add_trace` for each trace.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
             **layout_kwargs: Keyword arguments for configuring the figure layout.
 
@@ -6845,7 +6845,7 @@ class GenericSRAccessor(GenericAccessor, BaseSRAccessor):
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             Union[Series, Tuple[Series, Series]]: The Renko series or a tuple containing
@@ -6895,7 +6895,7 @@ class GenericSRAccessor(GenericAccessor, BaseSRAccessor):
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             Frame: A DataFrame representing the OHLC Renko bars with columns
@@ -7131,7 +7131,7 @@ class GenericDFAccessor(GenericAccessor, BaseDFAccessor):
             middle_trace_kwargs (KwargsLike): Keyword arguments for the middle band trace.
             lower_trace_kwargs (KwargsLike): Keyword arguments for the lower band trace.
             aux_middle_trace_kwargs (KwargsLike): Keyword arguments for the auxiliary middle band trace.
-            add_trace_kwargs (KwargsLike): Keyword arguments for adding traces to the figure.
+            add_trace_kwargs (KwargsLike): Keyword arguments passed to `fig.add_trace` for each trace.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
             **layout_kwargs: Keyword arguments for configuring the figure layout.
 

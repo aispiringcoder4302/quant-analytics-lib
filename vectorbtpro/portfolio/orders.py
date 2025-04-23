@@ -485,8 +485,7 @@ class Orders(PriceRecords):
                 to plot buy markers.
             sell_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter`
                 to plot sell markers.
-            add_trace_kwargs (KwargsLike): Keyword arguments to pass to `add_trace`
-                when adding a trace to the figure.
+            add_trace_kwargs (KwargsLike): Keyword arguments passed to `fig.add_trace` for each trace.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
             **layout_kwargs: Keyword arguments for configuring the figure layout.
 

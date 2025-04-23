@@ -512,7 +512,7 @@ class SimRangeMixin(Base):
             allow_none (bool): Flag indicating whether None is allowed as a simulation start value.
             wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
             group_by (GroupByLike): Grouping specification.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             Union[None, Array1d, Series]: The final simulation start result, either wrapped or raw.
@@ -563,7 +563,7 @@ class SimRangeMixin(Base):
             allow_none (bool): Flag indicating whether None is allowed as a simulation end value.
             wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
             group_by (GroupByLike): Grouping specification.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             Union[None, Array1d, Series]: The final simulation end result, either wrapped or raw.
@@ -612,7 +612,7 @@ class SimRangeMixin(Base):
             allow_none (bool): Indicates whether None is allowed for the simulation start.
             wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
             group_by (GroupByLike): Grouping specification.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             Optional[Series]: The resolved simulation start index, or None.
@@ -675,7 +675,7 @@ class SimRangeMixin(Base):
             inclusive (bool): Determines if the simulation end should be treated as inclusive.
             wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
             group_by (GroupByLike): Grouping specification.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             Optional[Series]: The resolved simulation end index, or None.
@@ -745,7 +745,7 @@ class SimRangeMixin(Base):
             sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
             wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
             group_by (GroupByLike): Grouping specification.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             Optional[Series]: The duration of the simulation range.

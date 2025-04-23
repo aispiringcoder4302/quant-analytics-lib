@@ -3307,7 +3307,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             pull_kwargs (KwargsLike): Keyword arguments passed to `Data.pull`.
             reuse_fetch_kwargs (bool): Whether to reuse fetch kwargs from the current instance.
             run_kwargs (KwargsLike): Keyword arguments passed to `Data.run`.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
             merge_kwargs (KwargsLike): Keyword arguments passed to `Data.merge`.
             **kwargs: Keyword arguments for key dictionary attribute processing.
 

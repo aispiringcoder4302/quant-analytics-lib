@@ -1669,7 +1669,7 @@ class Records(Analyzable, metaclass=MetaRecords):
 
                 If None, `Records.idx_arr` is used.
             group_by (GroupByLike): Grouping specification to apply when generating the mask.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the output mask.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             SeriesFrame: A Series or DataFrame representing the mask.
@@ -1704,7 +1704,7 @@ class Records(Analyzable, metaclass=MetaRecords):
 
         Args:
             group_by (GroupByLike): Grouping specification.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             MaybeSeries: Series containing the count by column.

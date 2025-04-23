@@ -60,8 +60,7 @@ class _FMAX(FMAX):
                 `plotly.graph_objects.Scatter` for plotting `FMAX.close`.
             fmax_trace_kwargs (KwargsLike): Keyword arguments passed to
                 `plotly.graph_objects.Scatter` for plotting `FMAX.fmax`.
-            add_trace_kwargs (KwargsLike): Keyword arguments passed to
-                `fig.add_trace` for adding each trace.
+            add_trace_kwargs (KwargsLike): Keyword arguments passed to `fig.add_trace` for each trace.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
             **layout_kwargs: Keyword arguments for configuring the figure layout.
 

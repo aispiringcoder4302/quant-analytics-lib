@@ -74,8 +74,7 @@ class _SIGDET(SIGDET):
             column (Optional[Label]): Name of the column to plot.
             signal_trace_kwargs (KwargsLike): Keyword arguments forwarded to
                 `plotly.graph_objects.Scatter` for plotting `SIGDET.signal`.
-            add_trace_kwargs (KwargsLike): Keyword arguments forwarded to
-                `fig.add_trace` when adding the trace.
+            add_trace_kwargs (KwargsLike): Keyword arguments passed to `fig.add_trace` for each trace.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
             **layout_kwargs: Keyword arguments for configuring the figure layout.
 
@@ -135,8 +134,7 @@ class _SIGDET(SIGDET):
                 `plotly.graph_objects.Scatter` for plotting `SIGDET.upper_band`.
             lower_band_trace_kwargs (KwargsLike): Keyword arguments forwarded to
                 `plotly.graph_objects.Scatter` for plotting `SIGDET.lower_band`.
-            add_trace_kwargs (KwargsLike): Keyword arguments forwarded to
-                `fig.add_trace` when adding each trace.
+            add_trace_kwargs (KwargsLike): Keyword arguments passed to `fig.add_trace` for each trace.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
             **layout_kwargs: Keyword arguments for configuring the figure layout.
 

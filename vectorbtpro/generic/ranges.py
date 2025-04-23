@@ -500,7 +500,7 @@ class Ranges(PriceRecords):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             SeriesFrame: A boolean mask representing the ranges.
@@ -664,7 +664,7 @@ class Ranges(PriceRecords):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
             **kwargs: Keyword arguments passed to `vectorbtpro.records.mapped_array.MappedArray.mean`.
 
         Returns:
@@ -699,7 +699,7 @@ class Ranges(PriceRecords):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
             **kwargs: Keyword arguments passed to `vectorbtpro.records.mapped_array.MappedArray.max`.
 
         Returns:
@@ -733,7 +733,7 @@ class Ranges(PriceRecords):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             MaybeSeries: The computed coverage of the ranges.
@@ -814,7 +814,7 @@ class Ranges(PriceRecords):
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
             clean_index_kwargs (KwargsLike): Keyword arguments for cleaning MultiIndex levels.
 
                 See `vectorbtpro.base.indexes.clean_index` for details.
@@ -1087,7 +1087,7 @@ class Ranges(PriceRecords):
                 `plotly.graph_objects.Scatter` for the upper band.
             aux_middle_trace_kwargs (KwargsLike): Keyword arguments
                 for `plotly.graph_objects.Scatter` for the auxiliary middle band.
-            add_trace_kwargs (KwargsLike): Keyword arguments for adding traces to the figure.
+            add_trace_kwargs (KwargsLike): Keyword arguments passed to `fig.add_trace` for each trace.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
             **layout_kwargs: Keyword arguments for configuring the figure layout.
 
@@ -1349,7 +1349,7 @@ class Ranges(PriceRecords):
             close_trace_kwargs (KwargsLike): Keyword arguments passed to `plotly.graph_objects.Scatter`
                 for plotting close values.
             shape_kwargs (KwargsLike): Keyword arguments for creating shapes via `plotly.graph_objects.Figure.add_shape`.
-            add_trace_kwargs (KwargsLike): Keyword arguments for adding traces to the figure.
+            add_trace_kwargs (KwargsLike): Keyword arguments passed to `fig.add_trace` for each trace.
             xref (str): Reference for the x-axis.
             yref (str): Reference for the y-axis (e.g., "y", "y2").
             fig (BaseFigure): Figure object to which traces are added.
@@ -1547,7 +1547,7 @@ class Ranges(PriceRecords):
                 the `plotly.graph_objects.Figure.add_shape` for open zones.
             closed_shape_kwargs (KwargsLike): Keyword arguments for configuring
                 the `plotly.graph_objects.Figure.add_shape` for closed zones.
-            add_trace_kwargs (KwargsLike): Keyword arguments for adding traces to the figure.
+            add_trace_kwargs (KwargsLike): Keyword arguments passed to `fig.add_trace` for each trace.
             xref (str): X-axis reference identifier.
             yref (str): Reference for the y-axis (e.g., "y", "y2").
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
@@ -2557,7 +2557,7 @@ class PatternRanges(Ranges):
                 `plotly.graph_objects.Scatter` for lower max error.
             upper_max_error_trace_kwargs (KwargsLike): Keyword arguments passed to
                 `plotly.graph_objects.Scatter` for upper max error.
-            add_trace_kwargs (KwargsLike): Keyword arguments for adding traces to the figure.
+            add_trace_kwargs (KwargsLike): Keyword arguments passed to `fig.add_trace` for each trace.
             xref (str): Specifies the X coordinate axis.
             yref (str): Reference for the y-axis (e.g., "y", "y2").
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.

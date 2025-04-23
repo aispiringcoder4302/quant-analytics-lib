@@ -123,7 +123,7 @@ class _PATSIM(PATSIM):
 
             similarity_trace_kwargs (KwargsLike): Keyword arguments passed to
                 `plotly.graph_objects.Scatter` for plotting `PATSIM.similarity`.
-            add_trace_kwargs (KwargsLike): Keyword arguments passed to `fig.add_trace` when adding each trace.
+            add_trace_kwargs (KwargsLike): Keyword arguments passed to `fig.add_trace` for each trace.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
             **layout_kwargs: Keyword arguments for configuring the figure layout.
 
@@ -186,8 +186,7 @@ class _PATSIM(PATSIM):
                 `plotly.graph_objects.Scatter` for plotting `PATSIM.close`.
             similarity_trace_kwargs (KwargsLike): Keyword arguments passed to
                 `plotly.graph_objects.Heatmap` for plotting `PATSIM.similarity`.
-            add_trace_kwargs (KwargsLike): Keyword arguments passed to
-                `fig.add_trace` when adding each trace.
+            add_trace_kwargs (KwargsLike): Keyword arguments passed to `fig.add_trace` for each trace.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
             **layout_kwargs: Keyword arguments for configuring the figure layout.
 

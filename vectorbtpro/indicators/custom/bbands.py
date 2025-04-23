@@ -112,8 +112,7 @@ class _BBANDS(BBANDS):
                 `plotly.graph_objects.Scatter` for `BBANDS.middle`.
             lower_trace_kwargs (KwargsLike): Keyword arguments passed to
                 `plotly.graph_objects.Scatter` for `BBANDS.lower`.
-            add_trace_kwargs (KwargsLike): Keyword arguments passed to
-                `fig.add_trace` when adding each trace.
+            add_trace_kwargs (KwargsLike): Keyword arguments passed to `fig.add_trace` for each trace.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
             **layout_kwargs: Keyword arguments for configuring the figure layout.
 

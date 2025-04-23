@@ -71,8 +71,7 @@ class _FMEAN(FMEAN):
                 `plotly.graph_objects.Scatter` for `FMEAN.close`.
             fmean_trace_kwargs (KwargsLike): Keyword arguments for
                 `plotly.graph_objects.Scatter` for `FMEAN.fmean`.
-            add_trace_kwargs (KwargsLike): Keyword arguments passed to
-                `fig.add_trace` when adding each trace.
+            add_trace_kwargs (KwargsLike): Keyword arguments passed to `fig.add_trace` for each trace.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
             **layout_kwargs: Keyword arguments for configuring the figure layout.
 

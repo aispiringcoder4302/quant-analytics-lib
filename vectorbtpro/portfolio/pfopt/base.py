@@ -3864,7 +3864,7 @@ class PortfolioOptimizer(Analyzable):
         Args:
             dropna (Optional[str]): Strategy for removing rows, either "all" or "head".
             fill_value (Scalar): Value used to fill empty DataFrame entries.
-            wrap_kwargs (KwargsLike): Keyword arguments for data wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
             squeeze_groups (bool): Determines whether to squeeze group levels when appropriate.
 
         Returns:
@@ -4021,8 +4021,8 @@ class PortfolioOptimizer(Analyzable):
 
                 Defaults to True if there are no more than 20 rebalancing dates.
             trace_kwargs (KwargsLikeSequence): Keyword arguments passed to `plotly.graph_objects.Scatter`.
-            add_shape_kwargs (KwargsLike): Keyword arguments passed to `fig.add_shape` for rebalancing dates.
-            add_trace_kwargs (KwargsLike): Keyword arguments passed to `fig.add_trace`.
+            add_shape_kwargs (KwargsLike): Keyword arguments passed to `fig.add_trace` for each shape.
+            add_trace_kwargs (KwargsLike): Keyword arguments passed to `fig.add_trace` for each trace.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
             **layout_kwargs: Keyword arguments for configuring the figure layout.
 

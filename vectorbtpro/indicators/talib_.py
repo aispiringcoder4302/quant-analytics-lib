@@ -523,7 +523,7 @@ def talib_plot_func(func_name: str) -> tp.Callable:
             column (Optional[Label]): Name of the column to plot.
             limits (Optional[Tuple[float, float]]): Tuple representing the lower and upper limits for the plot.
             {output_trace_kwargs_docstring}
-            add_shape_kwargs (KwargsLike): Keyword arguments passed to `fig.add_shape` when adding the range between limits.
+            add_shape_kwargs (KwargsLike): Keyword arguments passed to `fig.add_shape` for each shape.
             add_trace_kwargs (KwargsLike): Keyword arguments passed to `fig.add_trace` for each trace.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
             **layout_kwargs: Keyword arguments for configuring the figure layout.

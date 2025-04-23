@@ -1770,7 +1770,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             group_by (GroupByLike): Criteria for grouping used by the wrapper.
             wrap_func (Optional[Callable]): A custom wrapping function that takes the portfolio,
                 object, and additional parameters.
-            wrap_kwargs (KwargsLike): Keyword arguments for the wrapping function.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
             force_wrapping (bool): If True, forces wrapping and raises an error when wrapping is not feasible.
             silence_warnings (bool): If True, suppresses warnings when wrapping cannot be determined.
             **kwargs: Keyword arguments passed to the wrapping function.
@@ -5853,7 +5853,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             wrapper (Optional[ArrayWrapper]): Wrapper instance.
 
                 Defaults to `Portfolio.wrapper` if not provided.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             SeriesFrame: The forward and backward filled closing price data.
@@ -5913,7 +5913,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             wrapper (Optional[ArrayWrapper]): Wrapper instance.
 
                 Defaults to `Portfolio.wrapper` if not provided.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             Union[None, bool, SeriesFrame]: The forward and backward filled benchmark closing price data,
@@ -7058,7 +7058,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             wrapper (Optional[ArrayWrapper]): Wrapper instance used for formatting the output array.
 
                 Defaults to `Portfolio.wrapper` if not provided.
-            wrap_kwargs (KwargsLike): Keyword arguments for the wrapper.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             SeriesFrame: Asset flow series representing the total transacted amount of assets.
@@ -7145,7 +7145,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             wrapper (Optional[ArrayWrapper]): Wrapper instance used for formatting the output array.
 
                 Defaults to `Portfolio.wrapper` if not provided.
-            wrap_kwargs (KwargsLike): Keyword arguments for the wrapper.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             SeriesFrame: Asset series representing the position at each bar.
@@ -7230,7 +7230,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 Defaults to `Portfolio.wrapper` if not provided.
             group_by (GroupByLike): Grouping specification to apply when creating the mask.
-            wrap_kwargs (KwargsLike): Keyword arguments for the wrapper.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             SeriesFrame: Boolean mask indicating the presence of a position at each bar.
@@ -7319,7 +7319,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 Defaults to `Portfolio.wrapper` if not provided.
             group_by (GroupByLike): Specification for grouping data.
-            wrap_kwargs (KwargsLike): Keyword arguments for the wrapping process.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             MaybeSeries: Series representing the computed position coverage.
@@ -7411,7 +7411,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             wrapper (Optional[ArrayWrapper]): Array wrapper instance used for processing.
 
                 Defaults to `Portfolio.wrapper` if not provided.
-            wrap_kwargs (KwargsLike): Keyword arguments for the wrapping procedure.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             SeriesFrame: A frame containing the computed entry prices per bar.
@@ -7514,7 +7514,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             wrapper (Optional[ArrayWrapper]): Array wrapper instance used for processing.
 
                 Defaults to `Portfolio.wrapper` if not provided.
-            wrap_kwargs (KwargsLike): Keyword arguments for the wrapping process.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             SeriesFrame: A frame containing the computed exit prices per bar.
@@ -7623,7 +7623,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 Defaults to `Portfolio.wrapper` if not provided.
             group_by (GroupByLike): Specification for grouping.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             Union[ArrayLike, MaybeSeries]: Cash deposit series, either as a raw array or a wrapped series.
@@ -7735,7 +7735,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 Defaults to `Portfolio.wrapper` if not provided.
             group_by (GroupByLike): Specification for grouping.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             ArrayLike: Total cash deposit series aggregated over columns.
@@ -7804,7 +7804,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 Defaults to `Portfolio.wrapper` if not provided.
             group_by (GroupByLike): Specification for grouping.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             Union[ArrayLike, MaybeSeries]: Cash earnings series, either as a raw array or a wrapped series.
@@ -7898,7 +7898,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 Defaults to `Portfolio.wrapper` if not provided.
             group_by (GroupByLike): Specification for grouping.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             ArrayLike: Wrapped total cash earnings aggregated per column or group.
@@ -7969,7 +7969,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 Defaults to `Portfolio.wrapper` if not provided.
             group_by (GroupByLike): Grouping specification for the result.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             SeriesFrame: Wrapped cash flow series per column or group.
@@ -8093,7 +8093,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 Defaults to `Portfolio.wrapper` if not provided.
             group_by (GroupByLike): Grouping specification.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             MaybeSeries: Wrapped series representing the initial cash.
@@ -8229,7 +8229,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 Defaults to `Portfolio.wrapper` if not provided.
             group_by (GroupByLike): Grouping specification.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             SeriesFrame: Wrapped series with the cash balance.
@@ -8314,7 +8314,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             wrapper (Optional[ArrayWrapper]): Array wrapper instance.
 
                 Defaults to `Portfolio.wrapper` if not provided.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
             keep_flex (bool): If True, returns the input as flexible data without broadcasting.
 
         Returns:
@@ -8363,7 +8363,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 Defaults to `Portfolio.wrapper` if not provided.
             group_by (GroupByLike): Specification for grouping columns.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             MaybeSeries: The computed initial position value for each column.
@@ -8450,7 +8450,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 Defaults to `Portfolio.wrapper` if not provided.
             group_by (GroupByLike): Specification for grouping columns.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             MaybeSeries: The computed initial value per column or group.
@@ -8526,7 +8526,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 Defaults to `Portfolio.wrapper` if not provided.
             group_by (GroupByLike): Specification for grouping columns.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             MaybeSeries: The aggregated total input value per column or group.
@@ -8609,7 +8609,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 Defaults to `Portfolio.wrapper` if not provided.
             group_by (GroupByLike): Specification for grouping columns.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             SeriesFrame: The asset value series per column or group.
@@ -8703,7 +8703,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 Defaults to `Portfolio.wrapper` if not provided.
             group_by (GroupByLike): Grouping specification.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             SeriesFrame: The computed portfolio value series.
@@ -8795,7 +8795,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 Defaults to `Portfolio.wrapper` if not provided.
             group_by (GroupByLike): Grouping specification.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             SeriesFrame: The computed gross exposure series.
@@ -8913,7 +8913,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 Defaults to `Portfolio.wrapper` if not provided.
             group_by (GroupByLike): Grouping specification.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             SeriesFrame: The computed net exposure series.
@@ -9608,7 +9608,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 Defaults to `Portfolio.wrapper` if not provided.
             group_by (GroupByLike): Specification for grouping.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             SeriesFrame: Computed asset return series.
@@ -9713,7 +9713,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 Defaults to `Portfolio.wrapper` if not provided.
             group_by (GroupByLike): Specification for grouping.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             SeriesFrame: Computed market value series.
@@ -9866,7 +9866,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 Defaults to `Portfolio.wrapper` if not provided.
             group_by (GroupByLike): Grouping specification for processing.
-            wrap_kwargs (KwargsLike): Keyword arguments for the wrapper.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             SeriesFrame: The computed market return series.
@@ -9974,7 +9974,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 Defaults to `Portfolio.wrapper` if not provided.
             group_by (GroupByLike): Grouping specification for processing.
-            wrap_kwargs (KwargsLike): Keyword arguments for the wrapper.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             MaybeSeries: The total market return as a reduced value.
@@ -10058,7 +10058,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             chunked (ChunkedOption): Option to control chunked processing.
             wrapper (Optional[ArrayWrapper]): Array wrapper instance for processing.
             group_by (GroupByLike): Specification for grouping.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             Optional[SeriesFrame]: A wrapped series of benchmark values per column or group, or
@@ -10128,7 +10128,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             chunked (ChunkedOption): Option to control chunked processing.
             wrapper (Optional[ArrayWrapper]): Wrapper instance used to format the result.
             group_by (GroupByLike): Grouping specification for processing.
-            wrap_kwargs (KwargsLike): Keyword arguments for the wrapper.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             Optional[SeriesFrame]: Benchmark return series per column or group, or
@@ -10826,7 +10826,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             fit_sim_range (bool): Flag specifying whether to adjust the figure to the simulation range.
             wrapper (Optional[ArrayWrapper]): Array wrapper used for data transformations.
             xref (Optional[str]): Reference for the x-axis (e.g., "x", "x2").
-            
+
                 If None, it is inferred from the figure.
             yref (Optional[str]): Reference for the y-axis (e.g., "y", "y2").
 
@@ -11046,10 +11046,10 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             short_exit_trace_kwargs (KwargsLike): Keyword arguments for plotting short exit trade traces.
             long_shape_kwargs (KwargsLike): Keyword arguments for customizing long position shapes.
             short_shape_kwargs (KwargsLike): Keyword arguments for customizing short position shapes.
-            add_trace_kwargs (KwargsLike): Keyword arguments for adding traces.
+            add_trace_kwargs (KwargsLike): Keyword arguments passed to `fig.add_trace` for each trace.
             fig (Optional[BaseFigure]): Figure object to update; if None, a new figure is created.
             xref (Optional[str]): Reference for the x-axis (e.g., "x", "x2").
-                
+
                 If None, it is inferred from the figure.
             yref (Optional[str]): Reference for the y-axis (e.g., "y", "y2").
 
@@ -11237,7 +11237,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             group_by (GroupByLike): Grouping specification for selecting columns.
             line_shape (str): Shape of the plotted line (e.g., "hv" for horizontal-vertical lines).
             xref (Optional[str]): Reference for the x-axis (e.g., "x", "x2").
-            
+
                 If None, it is inferred from the figure.
             yref (Optional[str]): Reference for the y-axis (e.g., "y", "y2").
 
@@ -11362,7 +11362,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             group_by (GroupByLike): Grouping specification for column selection.
             line_shape (str): Line shape style for the plot.
             xref (Optional[str]): Reference for the x-axis (e.g., "x", "x2").
-            
+
                 If None, it is inferred from the figure.
             yref (Optional[str]): Reference for the y-axis (e.g., "y", "y2").
 
@@ -11504,7 +11504,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
                 Defaults to `Portfolio.wrapper` if not provided.
             line_shape (str): Line shape style for the plot.
             xref (Optional[str]): Reference for the x-axis (e.g., "x", "x2").
-            
+
                 If None, it is inferred from the figure.
             yref (Optional[str]): Reference for the y-axis (e.g., "y", "y2").
 
@@ -11625,7 +11625,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
                 Defaults to `Portfolio.wrapper` if not provided.
             line_shape (str): Shape of the plot line (e.g. "hv").
             xref (Optional[str]): Reference for the x-axis (e.g., "x", "x2").
-            
+
                 If None, it is inferred from the figure.
             yref (Optional[str]): Reference for the y-axis (e.g., "y", "y2").
 
@@ -11758,7 +11758,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             group_by (GroupByLike): Grouping specification for column selection.
             line_shape (str): Shape of the plot line (e.g. "hv").
             xref (Optional[str]): Reference for the x-axis (e.g., "x", "x2").
-            
+
                 If None, it is inferred from the figure.
             yref (Optional[str]): Reference for the y-axis (e.g., "y", "y2").
 
@@ -11890,7 +11890,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
                 Defaults to `Portfolio.wrapper` if not provided.
             group_by (GroupByLike): Grouping specification to aggregate data.
             xref (Optional[str]): Reference for the x-axis (e.g., "x", "x2").
-            
+
                 If None, it is inferred from the figure.
             yref (Optional[str]): Reference for the y-axis (e.g., "y", "y2").
 
@@ -12339,7 +12339,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             group_by (GroupByLike): Specification for grouping data.
             line_shape (str): Plot line shape style, such as "hv".
             xref (Optional[str]): Reference for the x-axis (e.g., "x", "x2").
-            
+
                 If None, it is inferred from the figure.
             yref (Optional[str]): Reference for the y-axis (e.g., "y", "y2").
 
@@ -12469,7 +12469,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             group_by (GroupByLike): Grouping specification for the data.
             line_shape (str): Shape of the plot line (e.g., "hv").
             xref (Optional[str]): Reference for the x-axis (e.g., "x", "x2").
-            
+
                 If None, it is inferred from the figure.
             yref (Optional[str]): Reference for the y-axis (e.g., "y", "y2").
 
@@ -12601,7 +12601,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             line_visible (bool): Determines if plot lines are visible.
             colorway (Union[None, str, Sequence[str]]): Color scheme used for the plot.
             xref (Optional[str]): Reference for the x-axis (e.g., "x", "x2").
-            
+
                 If None, it is inferred from the figure.
             yref (Optional[str]): Reference for the y-axis (e.g., "y", "y2").
 

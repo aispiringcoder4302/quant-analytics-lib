@@ -870,7 +870,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             SeriesFrame: The mirrored returns.
@@ -912,7 +912,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             SeriesFrame: The cumulative returns.
@@ -1194,7 +1194,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option for controlling chunked processing.
-            wrap_kwargs (KwargsLike): Keyword arguments for result wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             MaybeSeries: The computed total return.
@@ -1289,7 +1289,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option for controlling chunked processing.
-            wrap_kwargs (KwargsLike): Keyword arguments for result wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             MaybeSeries: The computed annualized return.
@@ -1393,7 +1393,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option for controlling chunked processing.
-            wrap_kwargs (KwargsLike): Keyword arguments for result wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             MaybeSeries: The computed annualized volatility.
@@ -1455,7 +1455,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Flag to control chunked processing.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the output.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             MaybeSeries: A series of rolling annualized volatility values.
@@ -1508,7 +1508,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Flag to control chunked processing.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the output.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             MaybeSeries: A series of Calmar ratio values.
@@ -1559,7 +1559,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Flag to control chunked processing.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the output.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             MaybeSeries: A series of rolling Calmar ratio values.
@@ -1612,7 +1612,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Flag to control chunked processing.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the output.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             MaybeSeries: A series of Omega ratio values.
@@ -1673,7 +1673,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Flag to control chunked processing.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the output.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             MaybeSeries: A series of rolling Omega ratio values.
@@ -1732,7 +1732,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Flag to control chunked processing.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the output.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             MaybeSeries: A series of Sharpe ratio values.
@@ -2066,7 +2066,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the output.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             MaybeSeries: The rolling downside risk series wrapped with the configured wrapper.
@@ -2116,7 +2116,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option for chunked processing.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping adjustments.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             MaybeSeries: The sortino ratio values wrapped with the configured wrapper.
@@ -2170,7 +2170,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option for chunked processing.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             MaybeSeries: The rolling sortino ratio series wrapped with the configured wrapper.
@@ -2224,7 +2224,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option for chunked processing.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping adjustments.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             MaybeSeries: The information ratio series wrapped with the configured wrapper.
@@ -2286,7 +2286,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option for chunked processing.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             MaybeSeries: The rolling information ratio series wrapped with the configured wrapper.
@@ -2344,7 +2344,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option for chunked processing.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping adjustments.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             MaybeSeries: The beta values wrapped with the configured wrapper.
@@ -2407,7 +2407,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the output value.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             MaybeSeries: The computed rolling beta values.
@@ -2466,7 +2466,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the output value.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             MaybeSeries: The computed alpha values.
@@ -2529,7 +2529,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the output value.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             MaybeSeries: The computed rolling alpha values.
@@ -2582,7 +2582,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the output value.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             MaybeSeries: The computed tail ratio values.
@@ -2632,7 +2632,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the output value.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             MaybeSeries: The computed rolling tail ratio values.
@@ -2676,7 +2676,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the output value.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             MaybeSeries: The computed profit factor values.
@@ -3029,7 +3029,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the output.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             MaybeSeries: The rolling CVaR values.
@@ -3083,7 +3083,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the reduced result.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             MaybeSeries: The computed capture ratio.
@@ -3143,7 +3143,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the output.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             MaybeSeries: The rolling capture ratio values.
@@ -3200,7 +3200,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the reduced result.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             MaybeSeries: The up-market capture ratio values.
@@ -3260,7 +3260,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the output.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             MaybeSeries: The rolling up-market capture ratio values.
@@ -3317,7 +3317,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             MaybeSeries: Wrapped series or DataFrame containing the down-market capture ratio.
@@ -3377,7 +3377,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             MaybeSeries: Rolling down-market capture ratio values.
@@ -3427,7 +3427,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             SeriesFrame: Series or DataFrame representing the relative drawdown.
@@ -3462,7 +3462,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             MaybeSeries: Maximum drawdown values.
@@ -3510,7 +3510,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             MaybeSeries: Rolling maximum drawdown values.
@@ -3854,7 +3854,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             pct_scale (bool): Use percentage scale for the y-axis.
             hline_shape_kwargs (KwargsLike): Keyword arguments for configuring the horizontal
                 line at the start value, passed to `plotly.graph_objects.Figure.add_shape`.
-            add_trace_kwargs (KwargsLike): Keyword arguments passed to `add_trace`.
+            add_trace_kwargs (KwargsLike): Keyword arguments passed to `fig.add_trace` for each trace.
             xref (str): Reference for the x-axis.
             yref (str): Reference for the y-axis (e.g., "y", "y2").
             fig (Optional[BaseFigure]): Figure to update.

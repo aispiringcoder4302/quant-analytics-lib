@@ -1562,7 +1562,7 @@ class BaseAccessor(Wrapping):
             n (int): Number of times to tile the data.
             keys (Optional[IndexLike]): Outer-level keys used to combine indexes.
             axis (int): Axis along which to tile the data (1 for columns, 0 for index).
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             SeriesFrame: The tiled data, with updated index or columns if `keys` is provided.
@@ -1600,7 +1600,7 @@ class BaseAccessor(Wrapping):
             n (int): Number of times to repeat the data.
             keys (Optional[IndexLike]): Outer-level keys used to combine indexes.
             axis (int): Axis along which to repeat the data (1 for columns, 0 for index).
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             SeriesFrame: The repeated data, with updated index or columns if `keys` is provided.
@@ -1628,7 +1628,7 @@ class BaseAccessor(Wrapping):
             other (SeriesFrame): Object to align to.
 
                 Must be a `pd.Series` or `pd.DataFrame`.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
             **kwargs: Keyword arguments passed to `vectorbtpro.base.indexes.align_index_to`.
 
         Returns:
@@ -1723,7 +1723,7 @@ class BaseAccessor(Wrapping):
 
         Args:
             other (SeriesFrame): Object to cross align with. Must be a `pd.Series` or `pd.DataFrame`.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             SeriesFrame: The cross aligned object.
@@ -1968,7 +1968,7 @@ class BaseAccessor(Wrapping):
 
                 See `vectorbtpro.base.reshaping.broadcast` for details.
             template_context (KwargsLike): Additional context for template substitution.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
             **kwargs: Keyword arguments passed to `apply_func`.
 
         Returns:
@@ -2110,7 +2110,7 @@ class BaseAccessor(Wrapping):
 
                 See `vectorbtpro.base.reshaping.broadcast` for details.
             template_context (KwargsLike): Additional context for template substitution.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the final output.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
             **kwargs: Keyword arguments passed to `apply_func`.
 
         Returns:
@@ -2255,7 +2255,7 @@ class BaseAccessor(Wrapping):
 
                 See `vectorbtpro.base.reshaping.broadcast` for details.
             template_context (KwargsLike): Additional context for template substitution.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
             **kwargs: Keyword arguments passed to `combine_func`.
 
         Returns:
@@ -2439,7 +2439,7 @@ class BaseAccessor(Wrapping):
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
 
                 See `vectorbtpro.base.reshaping.broadcast` for details.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
             Any: Evaluated expression wrapped using the broadcast wrapper.

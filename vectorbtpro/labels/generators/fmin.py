@@ -64,7 +64,7 @@ class _FMIN(FMIN):
                 `plotly.graph_objects.Scatter` for plotting `FMIN.fmin`.
 
                 These arguments are merged with default settings.
-            add_trace_kwargs (KwargsLike): Keyword arguments passed to `fig.add_trace` when adding each trace.
+            add_trace_kwargs (KwargsLike): Keyword arguments passed to `fig.add_trace` for each trace.
             fig (Optional[BaseFigure]): Figure to update. If None, a new figure is created.
             **layout_kwargs: Keyword arguments for configuring the figure layout.
 

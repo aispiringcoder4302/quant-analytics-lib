@@ -108,7 +108,7 @@ class _MACD(MACD):
                 `plotly.graph_objects.Scatter` for plotting the `MACD.signal` line.
             hist_trace_kwargs (KwargsLike): Keyword arguments passed to
                 `plotly.graph_objects.Bar` for plotting the `MACD.hist` as a histogram.
-            add_trace_kwargs (KwargsLike): Keyword arguments passed to `fig.add_trace` when adding each trace.
+            add_trace_kwargs (KwargsLike): Keyword arguments passed to `fig.add_trace` for each trace.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
             **layout_kwargs: Keyword arguments for configuring the figure layout.
 

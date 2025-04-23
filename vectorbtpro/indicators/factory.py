@@ -4145,8 +4145,8 @@ Returns:
                 column (Optional[Label]): Column label to select data for plotting.
                 
                     If provided, selects the corresponding column from the indicator output.
-                add_shape_kwargs (KwargsLike): Keyword arguments for shape configuration.
-                add_trace_kwargs (KwargsLike): Keyword arguments for trace configuration.
+                add_shape_kwargs (KwargsLike): Keyword arguments passed to `fig.add_shape` for each shape.
+                add_trace_kwargs (KwargsLike): Keyword arguments passed to `fig.add_trace` for each trace.
                 fig (Optional[BaseFigure]): A figure instance to update; if None, a new figure is created.
                 **kwargs: Keyword arguments passed to the plotting function.
     
@@ -4959,8 +4959,7 @@ Returns:
                     `plotly.graph_objects.Scatter` for the buy trace.
                 sell_trace_kwargs (KwargsLike): Keyword arguments passed to
                     `plotly.graph_objects.Scatter` for the sell trace.
-                add_trace_kwargs (KwargsLike): Keyword arguments passed to
-                    `fig.add_trace` when adding each trace.
+                add_trace_kwargs (KwargsLike): Keyword arguments passed to `fig.add_trace` for each trace.
                 fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
                 **layout_kwargs: Keyword arguments for configuring the figure layout.
 
