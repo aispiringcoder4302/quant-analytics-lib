@@ -5849,7 +5849,9 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
-            chunked (ChunkedOption): Option controlling chunked processing.
+            chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             wrapper (Optional[ArrayWrapper]): Wrapper instance.
 
                 Defaults to `Portfolio.wrapper` if not provided.
@@ -5909,7 +5911,9 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
-            chunked (ChunkedOption): Option controlling chunked processing.
+            chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             wrapper (Optional[ArrayWrapper]): Wrapper instance.
 
                 Defaults to `Portfolio.wrapper` if not provided.
@@ -6059,7 +6063,9 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
-            chunked (ChunkedOption): Option to enable chunked processing.
+            chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             **kwargs: Keyword arguments passed to the replace method.
 
         Returns:
@@ -6125,7 +6131,9 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
-            chunked (ChunkedOption): Option to enable chunked processing.
+            chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             **kwargs: Keyword arguments passed to the replace method.
 
         Returns:
@@ -7055,6 +7063,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             wrapper (Optional[ArrayWrapper]): Wrapper instance used for formatting the output array.
 
                 Defaults to `Portfolio.wrapper` if not provided.
@@ -7142,6 +7152,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             wrapper (Optional[ArrayWrapper]): Wrapper instance used for formatting the output array.
 
                 Defaults to `Portfolio.wrapper` if not provided.
@@ -7226,6 +7238,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             wrapper (Optional[ArrayWrapper]): Wrapper instance used for formatting the output array.
 
                 Defaults to `Portfolio.wrapper` if not provided.
@@ -7314,7 +7328,9 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
-            chunked (ChunkedOption): Option to control chunked execution.
+            chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             wrapper (Optional[ArrayWrapper]): Array wrapper instance used for post-processing.
 
                 Defaults to `Portfolio.wrapper` if not provided.
@@ -7407,7 +7423,9 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
-            chunked (ChunkedOption): Option to control chunked execution.
+            chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             wrapper (Optional[ArrayWrapper]): Array wrapper instance used for processing.
 
                 Defaults to `Portfolio.wrapper` if not provided.
@@ -7510,7 +7528,9 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
-            chunked (ChunkedOption): Option to control chunked execution.
+            chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             wrapper (Optional[ArrayWrapper]): Array wrapper instance used for processing.
 
                 Defaults to `Portfolio.wrapper` if not provided.
@@ -7619,6 +7639,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             wrapper (Optional[ArrayWrapper]): Wrapper instance for formatting the output.
 
                 Defaults to `Portfolio.wrapper` if not provided.
@@ -7731,6 +7753,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             wrapper (Optional[ArrayWrapper]): Wrapper instance for formatting the output.
 
                 Defaults to `Portfolio.wrapper` if not provided.
@@ -7800,6 +7824,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             wrapper (Optional[ArrayWrapper]): Wrapper instance for formatting the output.
 
                 Defaults to `Portfolio.wrapper` if not provided.
@@ -7894,6 +7920,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             wrapper (Optional[ArrayWrapper]): Wrapper instance for formatting the output.
 
                 Defaults to `Portfolio.wrapper` if not provided.
@@ -7964,7 +7992,9 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
-            chunked (ChunkedOption): Option to enable chunked processing.
+            chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             wrapper (Optional[ArrayWrapper]): Instance used to wrap the resulting array.
 
                 Defaults to `Portfolio.wrapper` if not provided.
@@ -8089,6 +8119,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             wrapper (Optional[ArrayWrapper]): Array wrapper instance.
 
                 Defaults to `Portfolio.wrapper` if not provided.
@@ -8224,7 +8256,9 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
-            chunked (ChunkedOption): Option for chunked processing.
+            chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             wrapper (Optional[ArrayWrapper]): Array wrapper instance.
 
                 Defaults to `Portfolio.wrapper` if not provided.
@@ -8446,6 +8480,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             wrapper (Optional[ArrayWrapper]): Wrapper instance for output formatting.
 
                 Defaults to `Portfolio.wrapper` if not provided.
@@ -8522,6 +8558,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             wrapper (Optional[ArrayWrapper]): Wrapper instance for output formatting.
 
                 Defaults to `Portfolio.wrapper` if not provided.
@@ -8605,6 +8643,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             wrapper (Optional[ArrayWrapper]): Wrapper instance for output formatting.
 
                 Defaults to `Portfolio.wrapper` if not provided.
@@ -8698,7 +8738,9 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
-            chunked (ChunkedOption): Option controlling chunked processing.
+            chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             wrapper (Optional[ArrayWrapper]): Array wrapper instance.
 
                 Defaults to `Portfolio.wrapper` if not provided.
@@ -8790,7 +8832,9 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
-            chunked (ChunkedOption): Option controlling chunked processing.
+            chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             wrapper (Optional[ArrayWrapper]): Array wrapper instance.
 
                 Defaults to `Portfolio.wrapper` if not provided.
@@ -8908,7 +8952,9 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
-            chunked (ChunkedOption): Option controlling chunked processing.
+            chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             wrapper (Optional[ArrayWrapper]): Array wrapper instance.
 
                 Defaults to `Portfolio.wrapper` if not provided.
@@ -9003,6 +9049,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             wrapper (Optional[ArrayWrapper]): Array wrapper instance for formatting the output.
 
                 Defaults to `Portfolio.wrapper` if not provided.
@@ -9105,6 +9153,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             wrapper (Optional[ArrayWrapper]): Array wrapper instance for formatting the output.
 
                 Defaults to `Portfolio.wrapper` if not provided.
@@ -9229,6 +9279,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             wrapper (Optional[ArrayWrapper]): Array wrapper instance for formatting the output.
 
                 Defaults to `Portfolio.wrapper` if not provided.
@@ -9302,6 +9354,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             wrapper (Optional[ArrayWrapper]): Array wrapper instance used to wrap the result.
 
                 Defaults to `Portfolio.wrapper` if not provided.
@@ -9387,6 +9441,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             wrapper (Optional[ArrayWrapper]): Array wrapper instance used to wrap the output.
 
                 Defaults to `Portfolio.wrapper` if not provided.
@@ -9499,6 +9555,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             wrapper (Optional[ArrayWrapper]): Array wrapper instance used to wrap the result.
 
                 Defaults to `Portfolio.wrapper` if not provided.
@@ -9604,6 +9662,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             wrapper (Optional[ArrayWrapper]): Array wrapper instance for processing.
 
                 Defaults to `Portfolio.wrapper` if not provided.
@@ -9709,6 +9769,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             wrapper (Optional[ArrayWrapper]): Array wrapper instance for processing.
 
                 Defaults to `Portfolio.wrapper` if not provided.
@@ -9862,6 +9924,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             wrapper (Optional[ArrayWrapper]): Wrapper instance used to format the result.
 
                 Defaults to `Portfolio.wrapper` if not provided.
@@ -9970,6 +10034,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             wrapper (Optional[ArrayWrapper]): Wrapper instance for formatting the result.
 
                 Defaults to `Portfolio.wrapper` if not provided.
@@ -10056,6 +10122,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             wrapper (Optional[ArrayWrapper]): Array wrapper instance for processing.
             group_by (GroupByLike): Specification for grouping.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
@@ -10126,6 +10194,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             wrapper (Optional[ArrayWrapper]): Wrapper instance used to format the result.
             group_by (GroupByLike): Grouping specification for processing.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
@@ -10215,6 +10285,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             wrapper (Optional[ArrayWrapper]): Array wrapper instance.
 
                 Defaults to `Portfolio.wrapper` if not provided.
@@ -10346,6 +10418,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             wrapper (Optional[ArrayWrapper]): Array wrapper instance.
             group_by (GroupByLike): Grouping specification.
             **kwargs: Keyword arguments for the quantstats adapter.
@@ -10769,6 +10843,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             wrapper (Optional[ArrayWrapper]): Array wrapper instance.
             group_by (GroupByLike): Grouping specification.
             **kwargs: Keyword arguments passed to `vectorbtpro.returns.accessors.ReturnsAccessor.stats`.
@@ -11044,8 +11120,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             short_entry_trace_kwargs (KwargsLike): Keyword arguments for plotting short entry trade traces.
             long_exit_trace_kwargs (KwargsLike): Keyword arguments for plotting long exit trade traces.
             short_exit_trace_kwargs (KwargsLike): Keyword arguments for plotting short exit trade traces.
-            long_shape_kwargs (KwargsLike): Keyword arguments for customizing long position shapes.
-            short_shape_kwargs (KwargsLike): Keyword arguments for customizing short position shapes.
+            long_shape_kwargs (KwargsLike): Keyword arguments passed to `fig.add_shape` for long position shapes.
+            short_shape_kwargs (KwargsLike): Keyword arguments passed to `fig.add_shape` for short position shapes.
             add_trace_kwargs (KwargsLike): Keyword arguments passed to `fig.add_trace` for each trace.
             fig (Optional[BaseFigure]): Figure object to update; if None, a new figure is created.
             xref (Optional[str]): Reference for the x-axis (e.g., "x", "x2").
@@ -11171,7 +11247,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
                 column=column,
                 plot_ohlc=False,
                 plot_close=False,
-                shape_kwargs=long_shape_kwargs,
+                add_shape_kwargs=long_shape_kwargs,
                 add_trace_kwargs=add_trace_kwargs,
                 xref=xref,
                 yref=yref,
@@ -11181,7 +11257,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
                 column=column,
                 plot_ohlc=False,
                 plot_close=False,
-                shape_kwargs=short_shape_kwargs,
+                add_shape_kwargs=short_shape_kwargs,
                 add_trace_kwargs=add_trace_kwargs,
                 xref=xref,
                 yref=yref,
@@ -11242,7 +11318,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             yref (Optional[str]): Reference for the y-axis (e.g., "y", "y2").
 
                 If None, it is inferred from the figure.
-            hline_shape_kwargs (KwargsLike): Keyword arguments for customizing the horizontal line shape.
+            hline_shape_kwargs (KwargsLike): Keyword arguments passed to `fig.add_shape` for the horizontal line.
             **kwargs: Keyword arguments passed to `GenericAccessor.plot`.
 
         Returns:
@@ -11367,9 +11443,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             yref (Optional[str]): Reference for the y-axis (e.g., "y", "y2").
 
                 If None, it is inferred from the figure.
-            hline_shape_kwargs (KwargsLike): Keyword arguments for horizontal line shape.
-            **kwargs: Keyword arguments passed to
-                `vectorbtpro.generic.accessors.GenericSRAccessor.plot_against`.
+            hline_shape_kwargs (KwargsLike): Keyword arguments passed to `fig.add_shape` for the horizontal line.
+            **kwargs: Keyword arguments passed to `vectorbtpro.generic.accessors.GenericSRAccessor.plot_against`.
 
         Returns:
             BaseFigure: Figure object with the depicted cash balance.
@@ -11509,9 +11584,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             yref (Optional[str]): Reference for the y-axis (e.g., "y", "y2").
 
                 If None, it is inferred from the figure.
-            hline_shape_kwargs (KwargsLike): Keyword arguments for horizontal line shape.
-            **kwargs: Keyword arguments passed to
-                `vectorbtpro.generic.accessors.GenericAccessor.plot`.
+            hline_shape_kwargs (KwargsLike): Keyword arguments passed to `fig.add_shape` for the horizontal line.
+            **kwargs: Keyword arguments passed to `vectorbtpro.generic.accessors.GenericAccessor.plot`.
 
         Returns:
             BaseFigure: Figure object with the depicted asset flow.
@@ -11630,10 +11704,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             yref (Optional[str]): Reference for the y-axis (e.g., "y", "y2").
 
                 If None, it is inferred from the figure.
-            hline_shape_kwargs (KwargsLike): Keyword arguments for
-                customizing the horizontal line shape.
-            **kwargs: Keyword arguments for
-                `vectorbtpro.generic.accessors.GenericSRAccessor.plot_against`.
+            hline_shape_kwargs (KwargsLike): Keyword arguments passed to `fig.add_shape` for the horizontal line.
+            **kwargs: Keyword arguments for `vectorbtpro.generic.accessors.GenericSRAccessor.plot_against`.
 
         Returns:
             BaseFigure: Figure object with the plotted asset data.
@@ -11763,10 +11835,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             yref (Optional[str]): Reference for the y-axis (e.g., "y", "y2").
 
                 If None, it is inferred from the figure.
-            hline_shape_kwargs (KwargsLike): Keyword arguments for
-                customizing the horizontal line shape.
-            **kwargs: Keyword arguments for
-                `vectorbtpro.generic.accessors.GenericSRAccessor.plot_against`.
+            hline_shape_kwargs (KwargsLike): Keyword arguments passed to `fig.add_shape` for the horizontal line.
+            **kwargs: Keyword arguments for `vectorbtpro.generic.accessors.GenericSRAccessor.plot_against`.
 
         Returns:
             BaseFigure: Figure object with the plotted asset value data.
@@ -11895,10 +11965,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             yref (Optional[str]): Reference for the y-axis (e.g., "y", "y2").
 
                 If None, it is inferred from the figure.
-            hline_shape_kwargs (KwargsLike): Keyword arguments for
-                the horizontal line shape.
-            **kwargs: Keyword arguments passed to
-                `vectorbtpro.generic.accessors.GenericSRAccessor.plot_against`.
+            hline_shape_kwargs (KwargsLike): Keyword arguments passed to `fig.add_shape` for the horizontal line.
+            **kwargs: Keyword arguments passed to `vectorbtpro.generic.accessors.GenericSRAccessor.plot_against`.
 
         Returns:
             BaseFigure: The figure displaying the plotted value.
@@ -12201,10 +12269,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             pct_scale (bool): If True, format the y-axis ticks as percentages.
             xref (str): Reference identifier for the x-axis.
             yref (str): Reference for the y-axis (e.g., "y", "y2").
-            hline_shape_kwargs (KwargsLike): Keyword arguments for
-                customizing the horizontal line shape.
-            **kwargs: Keyword arguments passed to
-            `vectorbtpro.generic.accessors.GenericAccessor.plot`.
+            hline_shape_kwargs (KwargsLike): Keyword arguments passed to `fig.add_shape` for the horizontal line.
+            **kwargs: Keyword arguments passed to `vectorbtpro.generic.accessors.GenericAccessor.plot`.
 
         Returns:
             BaseFigure: A figure object containing the underwater plot.
@@ -12344,10 +12410,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             yref (Optional[str]): Reference for the y-axis (e.g., "y", "y2").
 
                 If None, it is inferred from the figure.
-            hline_shape_kwargs (KwargsLike): Keyword arguments for
-                customizing the horizontal line shape.
-            **kwargs: Keyword arguments passed to
-                `vectorbtpro.generic.accessors.GenericSRAccessor.plot_against`.
+            hline_shape_kwargs (KwargsLike): Keyword arguments passed to `fig.add_shape` for the horizontal line.
+            **kwargs: Keyword arguments passed to `vectorbtpro.generic.accessors.GenericSRAccessor.plot_against`.
 
         Returns:
             BaseFigure: A figure object containing the gross exposure plot.
@@ -12474,10 +12538,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             yref (Optional[str]): Reference for the y-axis (e.g., "y", "y2").
 
                 If None, it is inferred from the figure.
-            hline_shape_kwargs (KwargsLike): Keyword arguments for
-                configuring the horizontal line shape.
-            **kwargs: Keyword arguments passed to
-                `vectorbtpro.generic.accessors.GenericSRAccessor.plot_against`.
+            hline_shape_kwargs (KwargsLike): Keyword arguments passed to `fig.add_shape` for the horizontal line.
+            **kwargs: Keyword arguments passed to `vectorbtpro.generic.accessors.GenericSRAccessor.plot_against`.
 
         Returns:
             BaseFigure: Figure instance representing the net exposure plot.

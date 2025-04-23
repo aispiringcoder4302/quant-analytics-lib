@@ -2288,6 +2288,8 @@ class PortfolioOptimizer(Analyzable):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             template_context (KwargsLike): Additional context for template substitution.
             group_execute_kwargs (KwargsLike): Keyword arguments for executing allocation groups.
             execute_kwargs (KwargsLike): Keyword arguments passed to the execution handler.
@@ -3343,6 +3345,8 @@ class PortfolioOptimizer(Analyzable):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             template_context (KwargsLike): Additional context for template substitution.
             group_execute_kwargs (KwargsLike): Keyword arguments for executing optimization groups.
             execute_kwargs (KwargsLike): Keyword arguments passed to the execution handler.

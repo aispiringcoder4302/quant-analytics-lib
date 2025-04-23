@@ -1121,6 +1121,8 @@ class MappedArray(Analyzable):
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
 
+                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
+
         Returns:
             Array1d: Boolean mask array where True indicates selection of the top N elements.
 
@@ -1150,6 +1152,8 @@ class MappedArray(Analyzable):
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
 
+                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
+
         Returns:
             Array1d: Boolean mask array where True indicates selection of the bottom N elements.
 
@@ -1178,6 +1182,8 @@ class MappedArray(Analyzable):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             **kwargs: Keyword arguments passed to `MappedArray.replace`.
 
         Returns:
@@ -1202,6 +1208,8 @@ class MappedArray(Analyzable):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             **kwargs: Keyword arguments passed to `MappedArray.replace`.
 
         Returns:
@@ -1329,7 +1337,9 @@ class MappedArray(Analyzable):
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
-            chunked (ChunkedOption): Option controlling chunked processing.
+            chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             col_mapper (Optional[ColumnMapper]): Column mapper used to obtain column mapping.
             **kwargs: Keyword arguments passed to `MappedArray.replace`.
 
@@ -1399,7 +1409,9 @@ class MappedArray(Analyzable):
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
-            chunked (ChunkedOption): Option controlling chunked processing.
+            chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             **kwargs: Keyword arguments passed to `MappedArray.replace`.
 
         Returns:
@@ -1487,6 +1499,8 @@ class MappedArray(Analyzable):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             col_mapper (Optional[ColumnMapper]): Column mapper instance used when invoked on a class.
             group_by (GroupByLike): Grouping specification.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
@@ -1591,7 +1605,9 @@ class MappedArray(Analyzable):
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
-            chunked (ChunkedOption): Option to control chunked execution.
+            chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
             **kwargs: Keyword arguments forwarded to `MappedArray.reduce`.
 
@@ -1640,7 +1656,9 @@ class MappedArray(Analyzable):
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
-            chunked (ChunkedOption): Option to control chunked execution.
+            chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
             **kwargs: Keyword arguments forwarded to `MappedArray.reduce`.
 
@@ -1687,7 +1705,9 @@ class MappedArray(Analyzable):
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
-            chunked (ChunkedOption): Option to control chunked execution.
+            chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
             **kwargs: Keyword arguments forwarded to `MappedArray.reduce`.
 
@@ -1725,7 +1745,9 @@ class MappedArray(Analyzable):
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
-            chunked (ChunkedOption): Option to control chunked execution.
+            chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
             **kwargs: Keyword arguments forwarded to `MappedArray.reduce`.
 
@@ -1763,7 +1785,9 @@ class MappedArray(Analyzable):
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
-            chunked (ChunkedOption): Option for chunked processing.
+            chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
             **kwargs: Keyword arguments forwarded to `MappedArray.reduce`.
 
@@ -1801,7 +1825,9 @@ class MappedArray(Analyzable):
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
-            chunked (ChunkedOption): Option for chunked processing.
+            chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
             **kwargs: Keyword arguments forwarded to `MappedArray.reduce`.
 
@@ -1841,7 +1867,9 @@ class MappedArray(Analyzable):
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
-            chunked (ChunkedOption): Option for chunked processing.
+            chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
             **kwargs: Keyword arguments forwarded to `MappedArray.reduce`.
 
@@ -1890,7 +1918,9 @@ class MappedArray(Analyzable):
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
-            chunked (ChunkedOption): Option for chunked processing.
+            chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
             **kwargs: Keyword arguments forwarded to `MappedArray.reduce`.
 
@@ -1929,7 +1959,9 @@ class MappedArray(Analyzable):
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
-            chunked (ChunkedOption): Option for chunked processing.
+            chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
             **kwargs: Keyword arguments forwarded to `MappedArray.reduce`.
 
@@ -1967,7 +1999,9 @@ class MappedArray(Analyzable):
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
-            chunked (ChunkedOption): Option for chunked processing.
+            chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
             **kwargs: Keyword arguments forwarded to `MappedArray.reduce`.
 
@@ -2011,7 +2045,9 @@ class MappedArray(Analyzable):
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
-            chunked (ChunkedOption): Option for chunked processing.
+            chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
             **kwargs: Keyword arguments forwarded to `MappedArray.reduce`.
 
@@ -2121,6 +2157,8 @@ class MappedArray(Analyzable):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
             **kwargs: Keyword arguments applied to mapping.
 
@@ -2327,7 +2365,9 @@ class MappedArray(Analyzable):
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
-            chunked (ChunkedOption): Option for chunked processing.
+            chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
             silence_warnings (bool): Whether to suppress warnings about index conflicts.
 

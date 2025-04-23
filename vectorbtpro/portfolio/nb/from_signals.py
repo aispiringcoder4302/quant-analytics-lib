@@ -80,7 +80,7 @@ def generate_stop_signal_nb(
     """Generate stop signals and adjust accumulation mode based on the current position and stop exit type.
 
     Args:
-        position_now (float): The current position value.
+        position_now (float): Current position size.
         stop_exit_type (int): Stop exit type determining how to process the stop condition.
 
             See `vectorbtpro.portfolio.enums.StopExitType` for options.
@@ -141,7 +141,7 @@ def resolve_signal_conflict_nb(
     """Resolve a conflict between simultaneous entry and exit signals.
 
     Args:
-        position_now (float): The current position value.
+        position_now (float): Current position size.
         is_entry (bool): Flag indicating the presence of an entry signal.
         is_exit (bool): Flag indicating the presence of an exit signal.
         direction (int): Direction indicator for the signal.
@@ -212,7 +212,7 @@ def resolve_dir_conflict_nb(
     """Resolve conflicts when both long and short entry signals are present.
 
     Args:
-        position_now (float): The current position value.
+        position_now (float): Current position size.
         is_long_entry (bool): Flag indicating a long entry signal.
         is_short_entry (bool): Flag indicating a short entry signal.
         upon_dir_conflict (int): Mode for resolving direction conflicts.
@@ -266,7 +266,7 @@ def resolve_opposite_entry_nb(
     position and specified mode.
 
     Args:
-        position_now (float): The current position value.
+        position_now (float): Current position size.
         is_long_entry (bool): Flag indicating whether a long entry signal is active.
         is_long_exit (bool): Flag indicating whether a long exit signal is active.
         is_short_entry (bool): Flag indicating whether a short entry signal is active.
@@ -339,7 +339,7 @@ def signal_to_size_nb(
     and trading direction.
 
     Args:
-        position_now (float): The current position size.
+        position_now (float): Current position size.
         val_price_now (float): The current asset price used for value-based calculations.
         value_now (float): The current total portfolio value.
         is_long_entry (bool): True to indicate a long entry signal.

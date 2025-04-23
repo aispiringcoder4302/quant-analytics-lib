@@ -4877,6 +4877,8 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             start_value (ArrayLike): Initial value for the transformation.
             ref_feature (ArrayLike): The reference feature used for mirroring.
 

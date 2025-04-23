@@ -226,7 +226,9 @@ class Orders(PriceRecords):
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
-            chunked (ChunkedOption): Option for controlling chunked processing.
+            chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
 
         Returns:
             Orders: A new instance with long view orders.
@@ -260,7 +262,9 @@ class Orders(PriceRecords):
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
-            chunked (ChunkedOption): Option for controlling chunked processing.
+            chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
 
         Returns:
             Orders: A new instance with short view orders.
@@ -328,7 +332,9 @@ class Orders(PriceRecords):
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
-            chunked (ChunkedOption): Option for controlling chunked processing.
+            chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
             **kwargs: Keyword arguments passed to
                 `vectorbtpro.records.mapped_array.MappedArray.reduce`.

@@ -267,6 +267,8 @@ class Ranges(PriceRecords):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
             **kwargs: Keyword arguments passed to `Ranges`.
 
@@ -322,6 +324,8 @@ class Ranges(PriceRecords):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             **kwargs: Keyword arguments passed to `Ranges`.
 
         Returns:
@@ -500,6 +504,8 @@ class Ranges(PriceRecords):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
@@ -592,6 +598,8 @@ class Ranges(PriceRecords):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             **kwargs: Keyword arguments passed to `Ranges.map_array`.
 
         Returns:
@@ -626,6 +634,8 @@ class Ranges(PriceRecords):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             **kwargs: Keyword arguments passed to `Ranges.map_array`.
 
         Returns:
@@ -664,6 +674,8 @@ class Ranges(PriceRecords):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
             **kwargs: Keyword arguments passed to `vectorbtpro.records.mapped_array.MappedArray.mean`.
 
@@ -699,6 +711,8 @@ class Ranges(PriceRecords):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
             **kwargs: Keyword arguments passed to `vectorbtpro.records.mapped_array.MappedArray.max`.
 
@@ -733,6 +747,8 @@ class Ranges(PriceRecords):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
@@ -1329,7 +1345,7 @@ class Ranges(PriceRecords):
         ohlc_type: tp.Union[None, str, tp.BaseTraceType] = None,
         ohlc_trace_kwargs: tp.KwargsLike = None,
         close_trace_kwargs: tp.KwargsLike = None,
-        shape_kwargs: tp.KwargsLike = None,
+        add_shape_kwargs: tp.KwargsLike = None,
         add_trace_kwargs: tp.KwargsLike = None,
         xref: str = "x",
         yref: str = "y",
@@ -1348,7 +1364,7 @@ class Ranges(PriceRecords):
             ohlc_trace_kwargs (KwargsLike): Keyword arguments passed to `ohlc_type`.
             close_trace_kwargs (KwargsLike): Keyword arguments passed to `plotly.graph_objects.Scatter`
                 for plotting close values.
-            shape_kwargs (KwargsLike): Keyword arguments for creating shapes via `plotly.graph_objects.Figure.add_shape`.
+            add_shape_kwargs (KwargsLike): Keyword arguments passed to `fig.add_shape` for each shape.
             add_trace_kwargs (KwargsLike): Keyword arguments passed to `fig.add_trace` for each trace.
             xref (str): Reference for the x-axis.
             yref (str): Reference for the y-axis (e.g., "y", "y2").
@@ -1375,7 +1391,7 @@ class Ranges(PriceRecords):
             ...     return real_duration[i] / real_duration.max() * 0.5
 
             >>> vbt.Ranges.from_array(price >= 2).plot_shapes(
-            ...     shape_kwargs=dict(fillcolor="teal", opacity=vbt.RepFunc(get_opacity))
+            ...     add_shape_kwargs=dict(fillcolor="teal", opacity=vbt.RepFunc(get_opacity))
             ... ).show()
             ```
 
@@ -1400,8 +1416,8 @@ class Ranges(PriceRecords):
             dict(line=dict(color=plotting_cfg["color_schema"]["blue"]), name="Close"),
             close_trace_kwargs,
         )
-        if shape_kwargs is None:
-            shape_kwargs = {}
+        if add_shape_kwargs is None:
+            add_shape_kwargs = {}
         if add_trace_kwargs is None:
             add_trace_kwargs = {}
         if isinstance(plot_ohlc, bool):
@@ -1464,7 +1480,7 @@ class Ranges(PriceRecords):
                 start_index = start_idx[i]
                 end_index = end_idx[i]
                 _shape_kwargs = substitute_templates(
-                    shape_kwargs,
+                    add_shape_kwargs,
                     context=dict(
                         self_col=self_col,
                         i=i,
@@ -1478,7 +1494,7 @@ class Ranges(PriceRecords):
                         close=close,
                         ohlc=ohlc,
                     ),
-                    eval_id="shape_kwargs",
+                    eval_id="add_shape_kwargs",
                 )
                 _shape_kwargs = merge_dicts(
                     dict(
@@ -1543,10 +1559,8 @@ class Ranges(PriceRecords):
                 the `plotly.graph_objects.Scatter` trace for start markers.
             end_trace_kwargs (KwargsLike): Keyword arguments for configuring
                 the `plotly.graph_objects.Scatter` trace for end markers.
-            open_shape_kwargs (KwargsLike): Keyword arguments for configuring
-                the `plotly.graph_objects.Figure.add_shape` for open zones.
-            closed_shape_kwargs (KwargsLike): Keyword arguments for configuring
-                the `plotly.graph_objects.Figure.add_shape` for closed zones.
+            open_shape_kwargs (KwargsLike): Keyword arguments passed to `fig.add_trace` for open zones.
+            closed_shape_kwargs (KwargsLike): Keyword arguments passed to `fig.add_trace` for closed zones.
             add_trace_kwargs (KwargsLike): Keyword arguments passed to `fig.add_trace` for each trace.
             xref (str): X-axis reference identifier.
             yref (str): Reference for the y-axis (e.g., "y", "y2").
@@ -1757,7 +1771,7 @@ class Ranges(PriceRecords):
                 self_col.status_closed.plot_shapes(
                     plot_ohlc=False,
                     plot_close=False,
-                    shape_kwargs=merge_dicts(
+                    add_shape_kwargs=merge_dicts(
                         dict(fillcolor=plotting_cfg["contrast_color_schema"]["green"]),
                         closed_shape_kwargs,
                     ),
@@ -1771,7 +1785,7 @@ class Ranges(PriceRecords):
                 self_col.status_open.plot_shapes(
                     plot_ohlc=False,
                     plot_close=False,
-                    shape_kwargs=merge_dicts(
+                    add_shape_kwargs=merge_dicts(
                         dict(fillcolor=plotting_cfg["contrast_color_schema"]["orange"]),
                         open_shape_kwargs,
                     ),

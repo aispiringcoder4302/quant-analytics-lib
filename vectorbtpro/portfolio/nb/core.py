@@ -1235,7 +1235,7 @@ def update_value_nb(
         cash_before (float): Cash amount before the update.
         cash_now (float): Current cash amount.
         position_before (float): Asset position before the update.
-        position_now (float): Current asset position.
+        position_now (float): Current position size.
         val_price_before (float): Valuation price before the update.
         val_price_now (float): Current valuation price.
         value_before (float): Portfolio value before the update.
@@ -2385,7 +2385,7 @@ def fill_init_pos_info_nb(record: tp.Record, col: int, position_now: float, pric
     Args:
         record (Record): The position record to populate.
         col (int): Current column index.
-        position_now (float): The initial position size.
+        position_now (float): Current position size.
         price (float): The initial price.
 
     Returns:
@@ -2430,7 +2430,7 @@ def update_pos_info_nb(
         i (int): Current row index.
         col (int): Current column index.
         position_before (float): Position size before the order execution.
-        position_now (float): Position size after the order execution.
+        position_now (float): Current position size.
         order_result (OrderResult): Object containing order execution details.
         order_id (int): Identifier of the executed order.
 
@@ -4051,7 +4051,7 @@ def get_sl_info_target_price_nb(sl_info: tp.Record, position_now: float) -> floa
 
     Args:
         sl_info (Record): Record with stop loss (SL) order details.
-        position_now (float): Current position used to determine the hit direction.
+        position_now (float): Current position size.
 
     Returns:
         float: The target stop loss price if the SL order is active; otherwise, NaN.
@@ -4073,8 +4073,7 @@ def get_tsl_info_target_price_nb(tsl_info: tp.Record, position_now: float) -> fl
 
     Args:
         tsl_info (Record): Trailing stop loss order information.
-        position_now (float): Current position size, used to determine whether
-            the stop should be applied below the peak.
+        position_now (float): Current position size.
 
     Returns:
         float: The computed target price based on TSL information.
@@ -4098,8 +4097,7 @@ def get_tp_info_target_price_nb(tp_info: tp.Record, position_now: float) -> floa
 
     Args:
         tp_info (Record): Take profit order information.
-        position_now (float): Current position size, used to determine whether
-            the stop should be applied below the initial price.
+        position_now (float): Current position size.
 
     Returns:
         float: The computed target price based on TP information.

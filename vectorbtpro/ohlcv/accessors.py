@@ -252,6 +252,8 @@ class OHLCVDFAccessor(OHLCDataMixin, GenericDFAccessor):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             start_value (ArrayLike): Starting value used in the mirror operation.
             ref_feature (ArrayLike): Reference feature for mirroring.
 

@@ -792,7 +792,9 @@ class Trades(Ranges):
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
-            chunked (ChunkedOption): Option for chunked processing.
+            chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
             **kwargs: Keyword arguments passed to
                 `vectorbtpro.records.mapped_array.MappedArray.reduce`.
@@ -827,7 +829,9 @@ class Trades(Ranges):
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
-            chunked (ChunkedOption): Option for chunked processing.
+            chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
             **kwargs: Keyword arguments passed to
                 `vectorbtpro.records.mapped_array.MappedArray.reduce`.
@@ -866,7 +870,9 @@ class Trades(Ranges):
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
-            chunked (ChunkedOption): Option for chunked processing.
+            chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
             **kwargs: Keyword arguments passed to
                 `vectorbtpro.records.mapped_array.MappedArray.reduce`.
@@ -907,7 +913,9 @@ class Trades(Ranges):
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
-            chunked (ChunkedOption): Option for chunked processing.
+            chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
             **kwargs: Keyword arguments passed to
                 `vectorbtpro.records.mapped_array.MappedArray.reduce`.
@@ -1207,6 +1215,8 @@ class Trades(Ranges):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             **kwargs: Keyword arguments passed to `Trades.map_array`.
 
         Returns:
@@ -1257,6 +1267,8 @@ class Trades(Ranges):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             **kwargs: Keyword arguments passed to `Trades.map_array`.
 
         Returns:
@@ -1307,6 +1319,8 @@ class Trades(Ranges):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             **kwargs: Keyword arguments used when resolving the expanding best price.
 
         Returns:
@@ -1355,6 +1369,8 @@ class Trades(Ranges):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             **kwargs: Keyword arguments used when resolving the expanding worst price.
 
         Returns:
@@ -1409,7 +1425,9 @@ class Trades(Ranges):
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
-            chunked (ChunkedOption): Chunked processing option.
+            chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
@@ -1751,8 +1769,7 @@ class Trades(Ranges):
                 the `plotly.graph_objects.Scatter` trace of closed trades with loss.
             open_trace_kwargs (KwargsLike): Keyword arguments for
                 the `plotly.graph_objects.Scatter` trace of open trades.
-            hline_shape_kwargs (KwargsLike): Keyword arguments for
-                the horizontal zero line shape added via `plotly.graph_objects.Figure.add_shape`.
+            hline_shape_kwargs (KwargsLike): Keyword arguments passed to `fig.add_shape` for the horizontal line.
             add_trace_kwargs (KwargsLike): Keyword arguments passed to `fig.add_trace` for each trace.
             xref (str): Reference for the x-axis.
             yref (str): Reference for the y-axis (e.g., "y", "y2").
@@ -1968,10 +1985,8 @@ class Trades(Ranges):
                 `plotly.graph_objects.Scatter` for "Closed - Loss" markers.
             open_trace_kwargs (KwargsLike): Keyword arguments for
                 `plotly.graph_objects.Scatter` for "Open" markers.
-            hline_shape_kwargs (KwargsLike): Keyword arguments for
-                `plotly.graph_objects.Figure.add_shape` for the horizontal zeroline.
-            vline_shape_kwargs (KwargsLike): Keyword arguments for
-                `plotly.graph_objects.Figure.add_shape` for the vertical zeroline.
+            hline_shape_kwargs (KwargsLike): Keyword arguments passed to `fig.add_shape` for the horizontal line.
+            vline_shape_kwargs (KwargsLike): Keyword arguments passed to `fig.add_shape` for the vertical line.
             add_trace_kwargs (KwargsLike): Keyword arguments passed to `fig.add_trace` for each trace.
             xref (str): Reference for the x-axis.
             yref (str): Reference for the y-axis (e.g., "y", "y2").
@@ -2412,9 +2427,8 @@ class Trades(Ranges):
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             xref (str): Reference identifier for the x-axis.
             yref (str): Reference for the y-axis (e.g., "y", "y2").
-            hline_shape_kwargs (KwargsLike): Keyword arguments for configuring the horizontal line shape.
-            **kwargs: Keyword arguments passed to
-                `vectorbtpro.generic.accessors.GenericSRAccessor.plot_against`.
+            hline_shape_kwargs (KwargsLike): Keyword arguments passed to `fig.add_shape` for the horizontal line.
+            **kwargs: Keyword arguments passed to `vectorbtpro.generic.accessors.GenericSRAccessor.plot_against`.
 
         Returns:
             BaseFigure: The figure object with the plotted running edge ratio.
@@ -2514,10 +2528,8 @@ class Trades(Ranges):
                 exit markers for losing trades.
             active_trace_kwargs (KwargsLike): Keyword arguments for configuring
                 active trade markers.
-            profit_shape_kwargs (KwargsLike): Keyword arguments for configuring
-                profit zone shapes via `plotly.graph_objects.Figure.add_shape`.
-            loss_shape_kwargs (KwargsLike): Keyword arguments for configuring
-                loss zone shapes via `plotly.graph_objects.Figure.add_shape`.
+            profit_shape_kwargs (KwargsLike): Keyword arguments passed to `fig.add_shape` for profit zone shapes.
+            loss_shape_kwargs (KwargsLike): Keyword arguments passed to `fig.add_shape` for loss zone shapes.
             add_trace_kwargs (KwargsLike): Keyword arguments passed to `fig.add_trace` for each trace.
             xref (str): Reference for x-axis coordinates.
             yref (str): Reference for the y-axis (e.g., "y", "y2").
@@ -2782,7 +2794,7 @@ class Trades(Ranges):
                 self_col.winning.plot_shapes(
                     plot_ohlc=False,
                     plot_close=False,
-                    shape_kwargs=merge_dicts(
+                    add_shape_kwargs=merge_dicts(
                         dict(
                             yref=Rep("yref"),
                             y0=RepFunc(lambda record: record["entry_price"]),
@@ -2801,7 +2813,7 @@ class Trades(Ranges):
                 self_col.losing.plot_shapes(
                     plot_ohlc=False,
                     plot_close=False,
-                    shape_kwargs=merge_dicts(
+                    add_shape_kwargs=merge_dicts(
                         dict(
                             yref=Rep("yref"),
                             y0=RepFunc(lambda record: record["entry_price"]),
@@ -2931,7 +2943,9 @@ class EntryTrades(Trades):
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
-            chunked (ChunkedOption): Chunked processing option.
+            chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             **kwargs: Keyword arguments passed to `EntryTrades.from_records`.
 
         Returns:
@@ -3218,7 +3232,9 @@ class ExitTrades(Trades):
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
-            chunked (ChunkedOption): Chunked processing option.
+            chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             **kwargs: Keyword arguments passed to `ExitTrades.from_records`.
 
         Returns:
@@ -3502,7 +3518,9 @@ class Positions(Trades):
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
-            chunked (ChunkedOption): Chunked processing option.
+            chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             **kwargs: Keyword arguments passed to `Positions.from_records`.
 
         Returns:

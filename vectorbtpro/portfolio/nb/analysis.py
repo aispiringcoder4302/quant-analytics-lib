@@ -37,7 +37,7 @@ def get_long_size_nb(position_before: float, position_now: float) -> float:
 
     Args:
         position_before (float): The asset position before the trade.
-        position_now (float): The asset position after the trade.
+        position_now (float): Current position size.
 
     Returns:
         float: The computed change in long size.
@@ -61,7 +61,7 @@ def get_short_size_nb(position_before: float, position_now: float) -> float:
 
     Args:
         position_before (float): The asset position before the trade.
-        position_now (float): The asset position after the trade.
+        position_now (float): Current position size.
 
     Returns:
         float: The computed change in short size.
@@ -863,7 +863,7 @@ def get_free_cash_diff_nb(
 
     Args:
         position_before (float): The position amount before the transaction.
-        position_now (float): The position amount after the transaction.
+        position_now (float): Current position size.
         debt_now (float): The current debt amount.
         price (float): The asset price used for computing the transaction value.
         fees (float): The fees incurred during the transaction.

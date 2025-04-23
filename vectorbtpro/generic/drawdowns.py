@@ -322,6 +322,8 @@ class Drawdowns(Ranges):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
             wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
             **kwargs: Keyword arguments passed to `Drawdowns`.
@@ -449,6 +451,8 @@ class Drawdowns(Ranges):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             **kwargs: Keyword arguments passed to `Drawdowns.map_array`.
 
         Returns:
@@ -481,6 +485,8 @@ class Drawdowns(Ranges):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
             **kwargs: Keyword arguments passed to `vectorbtpro.records.mapped_array.MappedArray.mean`.
 
@@ -506,6 +512,8 @@ class Drawdowns(Ranges):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
             **kwargs: Keyword arguments passed to `vectorbtpro.records.mapped_array.MappedArray.min`.
 
@@ -533,6 +541,8 @@ class Drawdowns(Ranges):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             **kwargs: Keyword arguments passed to `Drawdowns.map_array`.
 
         Returns:
@@ -562,6 +572,8 @@ class Drawdowns(Ranges):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
             **kwargs: Keyword arguments passed to `vectorbtpro.records.mapped_array.MappedArray.mean`.
 
@@ -593,6 +605,8 @@ class Drawdowns(Ranges):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
             **kwargs: Keyword arguments passed to `vectorbtpro.records.mapped_array.MappedArray.max`.
 
@@ -623,6 +637,8 @@ class Drawdowns(Ranges):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             **kwargs: Keyword arguments passed to `Drawdowns.map_array`.
 
         Returns:
@@ -652,6 +668,8 @@ class Drawdowns(Ranges):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             **kwargs: Keyword arguments passed to `Drawdowns.map_array`.
 
         Returns:
@@ -682,6 +700,8 @@ class Drawdowns(Ranges):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             **kwargs: Keyword arguments passed to `Drawdowns.map_array`.
 
         Returns:
@@ -719,6 +739,8 @@ class Drawdowns(Ranges):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
@@ -752,6 +774,8 @@ class Drawdowns(Ranges):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
             **kwargs: Keyword arguments passed to `vectorbtpro.records.mapped_array.MappedArray.nth`.
 
@@ -788,6 +812,8 @@ class Drawdowns(Ranges):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
@@ -822,6 +848,8 @@ class Drawdowns(Ranges):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
             **kwargs: Keyword arguments passed to `vectorbtpro.records.mapped_array.MappedArray.nth`.
 
@@ -859,6 +887,8 @@ class Drawdowns(Ranges):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
             **kwargs: Keyword arguments passed to `vectorbtpro.records.mapped_array.MappedArray.nth`.
 
@@ -1076,12 +1106,12 @@ class Drawdowns(Ranges):
                 when plotting recovery markers.
             active_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter`
                 when plotting active recovery markers.
-            decline_shape_kwargs (KwargsLike): Keyword arguments for shapes representing decline zones
-                in `plotly.graph_objects.Figure.add_shape`.
-            recovery_shape_kwargs (KwargsLike): Keyword arguments for shapes representing recovery zones
-                in `plotly.graph_objects.Figure.add_shape`.
-            active_shape_kwargs (KwargsLike): Keyword arguments for shapes representing active recovery zones
-                in `plotly.graph_objects.Figure.add_shape`.
+            decline_shape_kwargs (KwargsLike): Keyword arguments passed to `fig.add_shape` for
+                shapes representing decline zones.
+            recovery_shape_kwargs (KwargsLike): Keyword arguments passed to `fig.add_shape` for
+                shapes representing recovery zones.
+            active_shape_kwargs (KwargsLike): Keyword arguments passed to `fig.add_shape` for
+                shapes representing active recovery zones
             add_trace_kwargs (KwargsLike): Keyword arguments passed to `fig.add_trace` for each trace.
             xref (str): X-axis reference.
             yref (str): Reference for the y-axis (e.g., "y", "y2").
@@ -1356,7 +1386,7 @@ class Drawdowns(Ranges):
                 self_col.status_recovered.plot_shapes(
                     plot_ohlc=False,
                     plot_close=False,
-                    shape_kwargs=merge_dicts(
+                    add_shape_kwargs=merge_dicts(
                         dict(
                             x0=RepFunc(lambda i: start_idx[recovered_mask][i]),
                             x1=RepFunc(lambda i: valley_idx[recovered_mask][i]),
@@ -1374,7 +1404,7 @@ class Drawdowns(Ranges):
                 self_col.status_recovered.plot_shapes(
                     plot_ohlc=False,
                     plot_close=False,
-                    shape_kwargs=merge_dicts(
+                    add_shape_kwargs=merge_dicts(
                         dict(
                             x0=RepFunc(lambda i: valley_idx[recovered_mask][i]),
                             x1=RepFunc(lambda i: end_idx[recovered_mask][i]),
@@ -1392,7 +1422,7 @@ class Drawdowns(Ranges):
                 self_col.status_active.plot_shapes(
                     plot_ohlc=False,
                     plot_close=False,
-                    shape_kwargs=merge_dicts(
+                    add_shape_kwargs=merge_dicts(
                         dict(
                             x0=RepFunc(lambda i: start_idx[active_mask][i]),
                             x1=RepFunc(lambda i: end_idx[active_mask][i]),

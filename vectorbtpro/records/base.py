@@ -1420,6 +1420,8 @@ class Records(Analyzable, metaclass=MetaRecords):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             **kwargs: Additional arguments passed to record replacement.
 
         Returns:
@@ -1448,6 +1450,8 @@ class Records(Analyzable, metaclass=MetaRecords):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             **kwargs: Additional arguments passed to record replacement.
 
         Returns:
@@ -1478,6 +1482,8 @@ class Records(Analyzable, metaclass=MetaRecords):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             **kwargs: Additional arguments passed to record replacement.
 
         Returns:
@@ -1575,6 +1581,8 @@ class Records(Analyzable, metaclass=MetaRecords):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             col_mapper (Optional[ColumnMapper]): Column mapper for the meta version.
             **kwargs: Additional arguments passed to `Records.map_array`.
 
@@ -1628,6 +1636,8 @@ class Records(Analyzable, metaclass=MetaRecords):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             col_mapper (Optional[ColumnMapper]): Column mapper for the meta version.
             **kwargs: Additional arguments passed to `Records.map_array`.
 
