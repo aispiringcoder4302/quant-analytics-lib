@@ -801,7 +801,7 @@ class SimRangeMixin(Base):
             sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
             wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
             group_by (GroupByLike): Grouping specification.
-            xref (Optional[str]): X-axis reference for figure update.
+            xref (Optional[str]): Reference for the x-axis (e.g., "x", "x2")
 
         Returns:
             BaseFigure: The updated figure with an adjusted x-axis range.

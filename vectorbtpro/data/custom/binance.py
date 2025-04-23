@@ -223,9 +223,9 @@ class BinanceData(RemoteData):
             limit (int): Maximum number of klines to retrieve per API call.
             delay (float): Delay in seconds after each request.
             show_progress (bool): Display a progress bar during data fetching.
-            pbar_kwargs (KwargsLike): Keyword arguments for the progress bar.
+            pbar_kwargs (KwargsLike): Keyword arguments for configuring the progress bar.
 
-                Passed to `vectorbtpro.utils.pbar.ProgressBar`.
+                See `vectorbtpro.utils.pbar.ProgressBar` for details.
             silence_warnings (bool): Silence warnings if True.
             **get_klines_kwargs: Keyword arguments for `binance.client.Client.get_klines`.
 

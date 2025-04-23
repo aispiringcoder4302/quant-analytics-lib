@@ -48,9 +48,9 @@ def ma_1d_nb(
     Args:
         close (Array1d): 1D array of numerical values.
         window (int): The number of elements to include in each calculation window.
-        wtype (int): Weight type for the moving average.
+        wtype (int): Weighting type.
 
-            See `vectorbtpro.generic.enums.WType`.
+            See `vectorbtpro.generic.enums.WType` for available types.
         minp (Optional[int]): Minimum number of data points required for the calculation.
         adjust (bool): Flag indicating whether to adjust weights.
 
@@ -132,9 +132,9 @@ def msd_1d_nb(
     Args:
         close (Array1d): 1D array of numerical values.
         window (int): The window size used for the calculation.
-        wtype (int): Weight type for the moving standard deviation.
+        wtype (int): Weighting type.
 
-            See `vectorbtpro.generic.enums.WType`.
+            See `vectorbtpro.generic.enums.WType` for available types.
         minp (Optional[int]): Minimum number of elements required for the computation.
         adjust (bool): Flag indicating whether to adjust weights.
         ddof (int): Delta degrees of freedom used in the standard deviation computation.
@@ -222,9 +222,9 @@ def bbands_1d_nb(
     Args:
         close (Array1d): 1D array of numerical values.
         window (int): The number of observations used for computing the moving average.
-        wtype (int): Weight type for the moving average.
+        wtype (int): Weighting type.
 
-            See `vectorbtpro.generic.enums.WType`.
+            See `vectorbtpro.generic.enums.WType` for available types.
         alpha (float): Multiplier for the moving standard deviation to determine the band width.
         minp (Optional[int]): Minimum data points required for the computation.
         adjust (bool): Flag indicating whether to adjust weights.
@@ -420,7 +420,9 @@ def avg_gain_1d_nb(
     Args:
         close (Array1d): 1-dimensional array of closing prices.
         window (int): Window size for the moving average.
-        wtype (int): Weighting type; see `vectorbtpro.generic.enums.WType` for options.
+        wtype (int): Weighting type.
+
+            See `vectorbtpro.generic.enums.WType` for available types.
         minp (Optional[int]): Minimum periods for computation.
         adjust (bool): Flag indicating whether to adjust weights.
 
@@ -509,7 +511,9 @@ def avg_loss_1d_nb(
     Args:
         close (Array1d): 1-dimensional array of closing prices.
         window (int): Window size for the moving average.
-        wtype (int): Weighting type; see `vectorbtpro.generic.enums.WType` for options.
+        wtype (int): Weighting type.
+
+            See `vectorbtpro.generic.enums.WType` for available types.
         minp (Optional[int]): Minimum periods for computation.
         adjust (bool): Flag indicating whether to adjust weights.
 
@@ -597,7 +601,9 @@ def rsi_1d_nb(
     Args:
         close (Array1d): 1-dimensional array of closing prices.
         window (int): Window size for average gain and loss calculations.
-        wtype (int): Weighting type; see `vectorbtpro.generic.enums.WType` for the options.
+        wtype (int): Weighting type.
+
+            See `vectorbtpro.generic.enums.WType` for available types.
         minp (Optional[int]): Minimum periods for computation.
         adjust (bool): Flag indicating whether to adjust weights.
 
@@ -767,9 +773,9 @@ def stoch_1d_nb(
         fast_k_window (int): Lookback window for fast %K calculation.
         slow_k_window (int): Window for the slow %K moving average.
         slow_d_window (int): Window for the slow %D moving average.
-        wtype (int): Weight type for moving average calculations.
+        wtype (int): Weighting type.
 
-            See `vectorbtpro.generic.enums.WType`.
+            See `vectorbtpro.generic.enums.WType` for available types.
         slow_k_wtype (Optional[int]): Weight type for the slow %K moving average.
 
             Defaults to `wtype` if not provided.
@@ -983,9 +989,9 @@ def macd_1d_nb(
         fast_window (int): Window size for computing the fast moving average.
         slow_window (int): Window size for computing the slow moving average.
         signal_window (int): Window size for computing the signal moving average.
-        wtype (int): Weighting type for moving average calculation.
+        wtype (int): Weighting type.
 
-            See `vectorbtpro.generic.enums.WType`.
+            See `vectorbtpro.generic.enums.WType` for available types.
         macd_wtype (Optional[int]): Alternative weighting type for MACD computation.
 
             Uses `wtype` if not provided.
@@ -1295,9 +1301,9 @@ def atr_1d_nb(
         low (Array1d): Array of low prices.
         close (Array1d): Array of close prices.
         window (int): Window size for moving average calculation.
-        wtype (int): Weight type for moving average computation.
+        wtype (int): Weighting type.
 
-            See `vectorbtpro.generic.enums.WType`.
+            See `vectorbtpro.generic.enums.WType` for available types.
         minp (Optional[int]): Minimum periods required.
         adjust (bool): Flag indicating whether to adjust weights.
 
@@ -1394,9 +1400,9 @@ def adx_1d_nb(
         low (Array1d): Array of low prices.
         close (Array1d): Array of close prices.
         window (int): Window size for calculation.
-        wtype (int): Weight type for moving average computation.
+        wtype (int): Weighting type.
 
-            See `vectorbtpro.generic.enums.WType`.
+            See `vectorbtpro.generic.enums.WType` for available types.
         minp (Optional[int]): Minimum periods required.
         adjust (bool): Flag indicating whether to adjust weights.
 

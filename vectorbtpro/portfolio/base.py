@@ -10825,7 +10825,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             rec_sim_range (bool): Flag indicating whether to apply the simulation range recursively.
             fit_sim_range (bool): Flag specifying whether to adjust the figure to the simulation range.
             wrapper (Optional[ArrayWrapper]): Array wrapper used for data transformations.
-            xref (Optional[str]): X-axis reference identifier; if None, it is derived from the figure.
+            xref (Optional[str]): Reference for the x-axis (e.g., "x", "x2")
             yref (Optional[str]): Y-axis reference identifier; if None, it is derived from the figure.
             **kwargs: Keyword arguments passed to `vectorbtpro.portfolio.orders.Orders.plot`.
 
@@ -11044,7 +11044,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             short_shape_kwargs (KwargsLike): Keyword arguments for customizing short position shapes.
             add_trace_kwargs (KwargsLike): Keyword arguments for adding traces.
             fig (Optional[BaseFigure]): Figure object to update; if None, a new figure is created.
-            xref (Optional[str]): Reference for the x-axis to configure the plot layout.
+            xref (Optional[str]): Reference for the x-axis (e.g., "x", "x2")
             yref (Optional[str]): Reference for the y-axis to configure the plot layout.
             **kwargs: Keyword arguments passed to inner plotting functions.
 
@@ -11228,7 +11228,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
                 Defaults to `Portfolio.wrapper` if not provided.
             group_by (GroupByLike): Grouping specification for selecting columns.
             line_shape (str): Shape of the plotted line (e.g., "hv" for horizontal-vertical lines).
-            xref (Optional[str]): X-axis reference for layout; if not provided, it is inferred from the figure.
+            xref (Optional[str]): Reference for the x-axis (e.g., "x", "x2")
             yref (Optional[str]): Y-axis reference for layout; if not provided, it is inferred from the figure.
             hline_shape_kwargs (KwargsLike): Keyword arguments for customizing the horizontal line shape.
             **kwargs: Keyword arguments passed to `GenericAccessor.plot`.
@@ -11349,7 +11349,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
                 Defaults to `Portfolio.wrapper` if not provided.
             group_by (GroupByLike): Grouping specification for column selection.
             line_shape (str): Line shape style for the plot.
-            xref (Optional[str]): Reference for the x-axis.
+            xref (Optional[str]): Reference for the x-axis (e.g., "x", "x2")
             yref (Optional[str]): Reference for the y-axis.
             hline_shape_kwargs (KwargsLike): Keyword arguments for horizontal line shape.
             **kwargs: Keyword arguments passed to
@@ -11487,7 +11487,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 Defaults to `Portfolio.wrapper` if not provided.
             line_shape (str): Line shape style for the plot.
-            xref (Optional[str]): Reference for the x-axis.
+            xref (Optional[str]): Reference for the x-axis (e.g., "x", "x2")
             yref (Optional[str]): Reference for the y-axis.
             hline_shape_kwargs (KwargsLike): Keyword arguments for horizontal line shape.
             **kwargs: Keyword arguments passed to
@@ -11604,7 +11604,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 Defaults to `Portfolio.wrapper` if not provided.
             line_shape (str): Shape of the plot line (e.g. "hv").
-            xref (Optional[str]): Reference for the x-axis. If None, inferred from the figure.
+            xref (Optional[str]): Reference for the x-axis (e.g., "x", "x2")
             yref (Optional[str]): Reference for the y-axis. If None, inferred from the figure.
             hline_shape_kwargs (KwargsLike): Keyword arguments for
                 customizing the horizontal line shape.
@@ -11733,7 +11733,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
                 Defaults to `Portfolio.wrapper` if not provided.
             group_by (GroupByLike): Grouping specification for column selection.
             line_shape (str): Shape of the plot line (e.g. "hv").
-            xref (Optional[str]): Reference for the x-axis. If None, inferred from the figure.
+            xref (Optional[str]): Reference for the x-axis (e.g., "x", "x2")
             yref (Optional[str]): Reference for the y-axis. If None, inferred from the figure.
             hline_shape_kwargs (KwargsLike): Keyword arguments for
                 customizing the horizontal line shape.
@@ -11861,9 +11861,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 Defaults to `Portfolio.wrapper` if not provided.
             group_by (GroupByLike): Grouping specification to aggregate data.
-            xref (Optional[str]): x-axis reference identifier.
-
-                If None, it is inferred from the figure.
+            xref (Optional[str]): Reference for the x-axis (e.g., "x", "x2")
             yref (Optional[str]): y-axis reference identifier.
 
                 If None, it is inferred from the figure.
@@ -12310,7 +12308,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
                 Defaults to `Portfolio.wrapper` if not provided.
             group_by (GroupByLike): Specification for grouping data.
             line_shape (str): Plot line shape style, such as "hv".
-            xref (Optional[str]): Reference identifier for the x-axis.
+            xref (Optional[str]): Reference for the x-axis (e.g., "x", "x2")
             yref (Optional[str]): Reference identifier for the y-axis.
             hline_shape_kwargs (KwargsLike): Keyword arguments for
                 customizing the horizontal line shape.
@@ -12436,7 +12434,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
                 Defaults to `Portfolio.wrapper` if not provided.
             group_by (GroupByLike): Grouping specification for the data.
             line_shape (str): Shape of the plot line (e.g., "hv").
-            xref (Optional[str]): Reference for the x-axis; determined from the plot if not provided.
+            xref (Optional[str]): Reference for the x-axis (e.g., "x", "x2")
             yref (Optional[str]): Reference for the y-axis; determined from the plot if not provided.
             hline_shape_kwargs (KwargsLike): Keyword arguments for
                 configuring the horizontal line shape.
@@ -12564,7 +12562,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             line_shape (str): Shape of the plot lines (e.g., "hv").
             line_visible (bool): Determines if plot lines are visible.
             colorway (Union[None, str, Sequence[str]]): Color scheme used for the plot.
-            xref (Optional[str]): Reference for the x-axis; determined from the plot if not provided.
+            xref (Optional[str]): Reference for the x-axis (e.g., "x", "x2")
             yref (Optional[str]): Reference for the y-axis; determined from the plot if not provided.
             **kwargs: Keyword arguments passed to
                 `vectorbtpro.generic.accessors.GenericAccessor.areaplot`.

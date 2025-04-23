@@ -2103,7 +2103,7 @@ class BaseAccessor(Wrapping):
             keys (Optional[IndexLike]): Labels for the concatenated results along columns.
             broadcast_named_args (KwargsLike): Named arguments for broadcasting, merged with the object's data.
             broadcast_kwargs (KwargsLike): Keyword arguments for controlling the broadcasting.
-            template_context (KwargsLike): Additional context for template substitutions.
+            template_context (KwargsLike): Additional context for template substitution.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the final output.
             **kwargs: Keyword arguments passed to `apply_func`.
 

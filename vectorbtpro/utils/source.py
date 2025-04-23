@@ -710,7 +710,9 @@ def refine_source(
         tokenize_kwargs (KwargsLike): Keyword arguments for
             `vectorbtpro.utils.knowledge.chatting.tokenize`.
         show_progress (Optional[bool]): Whether to display progress during chunk processing.
-        pbar_kwargs (KwargsLike): Keyword arguments for `vectorbtpro.utils.pbar.ProgressBar`.
+        pbar_kwargs (KwargsLike): Keyword arguments for configuring the progress bar.
+
+            See `vectorbtpro.utils.pbar.ProgressBar` for details.
         mult_show_progress (Optional[bool]): Whether to display progress when processing multiple sources.
 
             If not provided, defaults to `show_progress`.

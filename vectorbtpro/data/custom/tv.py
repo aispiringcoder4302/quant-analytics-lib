@@ -573,6 +573,8 @@ class TVClient(Configured):
             show_progress (bool): Flag indicating whether to display a progress bar during symbol fetching.
             pbar_kwargs (KwargsLike): Keyword arguments for configuring the progress bar.
 
+                See `vectorbtpro.utils.pbar.ProgressBar` for details.
+
         Returns:
             List[dict]: A list of dictionaries representing the fetched symbols.
         """
@@ -766,7 +768,9 @@ class TVData(RemoteData):
             delay (Optional[int]): Delay between requests during symbol search.
             retries (Optional[int]): Number of retry attempts for symbol search requests.
             show_progress (Optional[bool]): Whether to display a progress bar during symbol search.
-            pbar_kwargs (KwargsLike): Keyword arguments for the progress bar.
+            pbar_kwargs (KwargsLike): Keyword arguments for configuring the progress bar.
+
+                See `vectorbtpro.utils.pbar.ProgressBar` for details.
             market (Optional[str]): Market to filter symbols in the market scanner.
 
                 Defaults to "global" if no search-specific parameters are provided.

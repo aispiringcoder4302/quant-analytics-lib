@@ -4003,6 +4003,8 @@ class DocumentRanker(Configured):
         normalize_scores (Optional[bool]): Flag to indicate whether to normalize scores.
         show_progress (Optional[bool]): Flag to display progress during operations.
         pbar_kwargs (KwargsLike): Keyword arguments for configuring the progress bar.
+
+            See `vectorbtpro.utils.pbar.ProgressBar` for details.
         template_context (KwargsLike): Additional context for template substitution.
         **kwargs: Keyword arguments for configuration.
 

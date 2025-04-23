@@ -108,7 +108,7 @@ class GroupLensSlicer(ChunkSlicer):
 
         Args:
             obj (Union[GroupLens, GroupMap]): Group lengths array or a group map tuple.
-            chunk_meta (ChunkMeta): Metadata specifying the start and end indices.
+            chunk_meta (ChunkMeta): Metadata specifying the chunk boundaries.
             **kwargs: Additional keyword arguments.
 
         Returns:
@@ -135,7 +135,7 @@ def get_group_lens_slice(group_lens: tp.GroupLens, chunk_meta: ChunkMeta) -> sli
 
     Args:
         group_lens (GroupLens): Array of group lengths.
-        chunk_meta (ChunkMeta): Metadata specifying the segment boundaries.
+        chunk_meta (ChunkMeta): Metadata specifying the chunk boundaries.
 
     Returns:
         slice: A slice object representing the group lengths segment.
@@ -157,7 +157,7 @@ class GroupLensMapper(ChunkMapper, ArgGetter, DefineMixin):
         """Map chunk metadata to corresponding per-group column lengths using group lengths data.
 
         Args:
-            chunk_meta (ChunkMeta): Metadata specifying the chunk parameters.
+            chunk_meta (ChunkMeta): Metadata specifying the chunk boundaries.
             ann_args (Optional[AnnArgs]): Annotated arguments from which group lengths are extracted.
             **kwargs: Additional keyword arguments.
 
@@ -201,7 +201,7 @@ class GroupMapSlicer(ChunkSlicer):
 
         Args:
             obj (GroupMap): Tuple containing group indices and group lengths.
-            chunk_meta (ChunkMeta): Metadata specifying the slice boundaries.
+            chunk_meta (ChunkMeta): Metadata specifying the chunk boundaries.
             **kwargs: Additional keyword arguments.
 
         Returns:

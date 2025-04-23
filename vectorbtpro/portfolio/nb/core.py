@@ -47,7 +47,9 @@ def check_adj_price_nb(
 
     Args:
         adj_price (float): The initial adjusted price.
-        price_area (PriceArea): An object defining price boundaries.
+        price_area (PriceArea): Price area constraint.
+
+            See `vectorbtpro.portfolio.enums.PriceArea`.
         is_closing_price (bool): If True, enforce the price to match the closing price.
 
             If the adjusted price differs from `PriceArea.close`, it may trigger an error or cap.
@@ -191,8 +193,9 @@ def long_buy_nb(
             See `vectorbtpro.portfolio.enums.PriceAreaVioMode` for options.
         allow_partial (bool): Determines whether partial order execution is permitted.
         percent (float): Fraction of free cash to consider for the order.
-        price_area (PriceArea): Price area used to validate the adjusted price; see
-            `vectorbtpro.portfolio.enums.PriceArea`.
+        price_area (PriceArea): Price area constraint.
+
+            See `vectorbtpro.portfolio.enums.PriceArea`.
         is_closing_price (bool): Indicates if the provided price is a closing price.
 
     Returns:
@@ -378,8 +381,9 @@ def long_sell_nb(
             See `vectorbtpro.portfolio.enums.PriceAreaVioMode` for options.
         allow_partial (bool): Indicator whether a partial fill of the order is permitted.
         percent (float): Percentage factor to adjust the order size relative to the current position.
-        price_area (PriceArea): Permissible price area; see
-            `vectorbtpro.portfolio.enums.PriceArea`.
+        price_area (PriceArea): Price area constraint.
+
+            See `vectorbtpro.portfolio.enums.PriceArea`.
         is_closing_price (bool): Flag indicating if the provided price is derived from a closing value.
 
     Returns:
@@ -522,8 +526,9 @@ def short_sell_nb(
             See `vectorbtpro.portfolio.enums.PriceAreaVioMode` for options.
         allow_partial (bool): Indicates whether a partial fill is permitted.
         percent (float): Fraction of free cash to allocate for the order.
-        price_area (PriceArea): Price area specification; see
-            `vectorbtpro.portfolio.enums.PriceArea`.
+        price_area (PriceArea): Price area constraint.
+
+            See `vectorbtpro.portfolio.enums.PriceArea`.
         is_closing_price (bool): Indicates if the provided price is a closing price.
 
     Returns:
@@ -691,8 +696,9 @@ def short_buy_nb(
             `vectorbtpro.portfolio.enums.PriceAreaVioMode`.
         allow_partial (bool): Whether to allow a partial fill if the full size cannot be executed.
         percent (float): Scaling factor to restrict the allowed order size.
-        price_area (PriceArea): Price area constraint for order execution; see
-            `vectorbtpro.portfolio.enums.PriceArea`.
+        price_area (PriceArea): Price area constraint.
+
+            See `vectorbtpro.portfolio.enums.PriceArea`.
         is_closing_price (bool): Indicates if the provided price is to be treated as a closing price.
 
     Returns:
@@ -889,7 +895,9 @@ def buy_nb(
         price_area_vio_mode (int): Price area violation mode; see `vectorbtpro.portfolio.enums.PriceAreaVioMode`.
         allow_partial (bool): Flag permitting partial order fills.
         percent (float): Percentage parameter used in order calculations, may be NaN.
-        price_area (PriceArea): Constraint for the price area; see `vectorbtpro.portfolio.enums.PriceArea`.
+        price_area (PriceArea): Price area constraint.
+
+            See `vectorbtpro.portfolio.enums.PriceArea`.
         is_closing_price (bool): Indicates whether the provided price is for closing positions.
 
     Returns:
@@ -1091,7 +1099,9 @@ def sell_nb(
             `vectorbtpro.portfolio.enums.PriceAreaVioMode`.
         allow_partial (bool): Whether partial fills are permitted.
         percent (float): Order size as a percentage.
-        price_area (PriceArea): Price area constraint; see `vectorbtpro.portfolio.enums.PriceArea`.
+        price_area (PriceArea): Price area constraint.
+
+            See `vectorbtpro.portfolio.enums.PriceArea`.
         is_closing_price (bool): Flag indicating if the price is a closing price.
 
     Returns:
@@ -1440,7 +1450,7 @@ def execute_order_nb(
         order (Order): The order to execute.
 
             See `vectorbtpro.portfolio.enums.Order`.
-        price_area (PriceArea): Price area information.
+        price_area (PriceArea): Price area constraint.
 
             See `vectorbtpro.portfolio.enums.PriceArea`.
         update_value (bool): Update the account value after executing the order.
@@ -1706,7 +1716,9 @@ def fill_log_record_nb(
         group (int): The current group index.
         col (int): The current column index.
         i (int): The current row index.
-        price_area (PriceArea): Price area data with attributes `open`, `high`, `low`, and `close`.
+        price_area (PriceArea): Price area constraint.
+
+            See `vectorbtpro.portfolio.enums.PriceArea`.
         exec_state (ExecState): The execution state before executing the order.
         order (Order): The order details including size, price, fees, and other parameters.
         order_result (OrderResult): The result of the order execution.
@@ -1852,7 +1864,9 @@ def process_order_nb(
         i (int): The current row index.
         exec_state (ExecState): The current execution state before processing the order.
         order (Order): The order details to be processed.
-        price_area (PriceArea): The price area data used in order execution.
+        price_area (PriceArea): Price area constraint.
+
+            See `vectorbtpro.portfolio.enums.PriceArea`.
         update_value (bool): Flag indicating whether to update the portfolio value.
         order_records (Optional[RecordArray2d]): The array to store order record details.
         order_counts (Optional[Array1d]): Counters for order records per column.

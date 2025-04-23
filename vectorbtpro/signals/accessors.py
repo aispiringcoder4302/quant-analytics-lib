@@ -444,8 +444,7 @@ class SignalsAccessor(GenericAccessor):
             exit_wait (int): Number of periods to wait before an exit signal is triggered.
             broadcast_named_args (KwargsLike): Named arguments for broadcasting to the target shape.
             broadcast_kwargs (KwargsLike): Keyword arguments passed to the broadcast function.
-            template_context (KwargsLike): Additional context for template substitution in
-                the entry and exit arguments.
+            template_context (KwargsLike): Additional context for template substitution.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
@@ -1872,7 +1871,7 @@ class SignalsAccessor(GenericAccessor):
                 `vectorbtpro.records.mapped_array.MappedArray` instance.
             broadcast_named_args (KwargsLike): Additional named arguments for broadcasting.
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting configuration.
-            template_context (KwargsLike): Context dictionary for template substitution.
+            template_context (KwargsLike): Additional context for template substitution.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.

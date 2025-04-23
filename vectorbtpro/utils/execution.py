@@ -229,7 +229,9 @@ class SerialEngine(ExecutionEngine):
 
     Args:
         show_progress (Optional[bool]): Determines whether to display the progress bar.
-        pbar_kwargs (KwargsLike): Keyword arguments for configuring `vectorbtpro.utils.pbar.ProgressBar`.
+        pbar_kwargs (KwargsLike): Keyword arguments for configuring the progress bar.
+
+            See `vectorbtpro.utils.pbar.ProgressBar` for details.
         clear_cache (Union[None, bool, int]): Indicates whether to clear vectorbtpro's cache after each iteration.
 
             If provided as an integer, clears the cache every specified number of tasks.
@@ -570,8 +572,9 @@ class PathosEngine(ExecutionEngine):
         timeout (Optional[int]): Maximum duration in seconds before execution is interrupted.
         check_delay (Optional[float]): Delay in seconds between successive task status checks.
         show_progress (Optional[bool]): Flag indicating whether to display the progress bar.
-        pbar_kwargs (KwargsLike): Keyword arguments for initializing
-            `vectorbtpro.utils.pbar.ProgressBar`.
+        pbar_kwargs (KwargsLike): Keyword arguments for configuring the progress bar.
+
+            See `vectorbtpro.utils.pbar.ProgressBar` for details.
         hide_inner_progress (Optional[bool]): Flag indicating whether to hide progress bars
             within individual threads.
         join_pool (Optional[bool]): Flag indicating whether the pool should be joined after execution.
@@ -1262,9 +1265,11 @@ class Executor(Configured):
         raise_no_results (Optional[bool]): Flag indicating if an exception should be raised when no results are found.
         merge_func (Optional[MergeFuncLike]): Function to merge results.
         merge_kwargs (KwargsLike): Keyword arguments for the merge function.
-        template_context (KwargsLike): Context for template substitution.
+        template_context (KwargsLike): Additional context for template substitution.
         show_progress (Optional[bool]): Flag indicating if a progress bar should be shown.
-        pbar_kwargs (KwargsLike): Keyword arguments for the progress bar.
+        pbar_kwargs (KwargsLike): Keyword arguments for configuring the progress bar.
+
+            See `vectorbtpro.utils.pbar.ProgressBar` for details.
         **kwargs: Additional keyword arguments.
 
     !!! info
@@ -2022,7 +2027,9 @@ class Executor(Configured):
             engine (ExecutionEngineLike): Engine specification which can be a string,
                 subclass, instance, or callable.
             show_progress (Optional[bool]): Flag to enable progress display.
-            pbar_kwargs (KwargsLike): Keyword arguments for the progress bar.
+            pbar_kwargs (KwargsLike): Keyword arguments for configuring the progress bar.
+
+                See `vectorbtpro.utils.pbar.ProgressBar` for details.
             **engine_config: Additional engine configuration parameters.
 
         Returns:

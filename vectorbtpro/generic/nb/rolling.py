@@ -1343,7 +1343,7 @@ def ma_1d_nb(
         window (int): The window size for the moving average calculation.
         wtype (int): Weighting type.
 
-            Expected values are defined in `vectorbtpro.generic.enums.WType`.
+            See `vectorbtpro.generic.enums.WType` for available types.
         minp (Optional[int]): Minimum number of observations required for the calculation.
         adjust (bool): Flag indicating whether to adjust weights.
 
@@ -1381,9 +1381,9 @@ def ma_nb(
     Args:
         arr (Array2d): 2-dimensional input array.
         window (int): The window size for the moving average calculation.
-        wtype (int): Mode for the moving average.
+        wtype (int): Weighting type.
 
-            Expected values are defined in `vectorbtpro.generic.enums.WType`.
+            See `vectorbtpro.generic.enums.WType` for available types.
         minp (Optional[int]): Minimum number of observations required for the calculation.
         adjust (bool): Flag indicating whether to adjust weights.
 
@@ -1413,7 +1413,9 @@ def msd_1d_nb(
     Args:
         arr (Array1d): Input array of numerical values.
         window (int): Window size for computation.
-        wtype (int): Type of moving window from `vectorbtpro.generic.enums.WType`.
+        wtype (int): Weighting type.
+
+            See `vectorbtpro.generic.enums.WType` for available types.
         minp (Optional[int]): Minimum number of observations required in the window.
         adjust (bool): Flag indicating whether to adjust weights.
         ddof (int): Delta degrees of freedom for standard deviation calculation.
@@ -1451,7 +1453,9 @@ def msd_nb(
     Args:
         arr (Array2d): 2-dimensional input array of numerical values.
         window (int): Window size for computation.
-        wtype (int): Type of moving window from `vectorbtpro.generic.enums.WType`.
+        wtype (int): Weighting type.
+
+            See `vectorbtpro.generic.enums.WType` for available types.
         minp (Optional[int]): Minimum number of observations required in the window.
         adjust (bool): Flag indicating whether to adjust weights.
         ddof (int): Delta degrees of freedom for standard deviation calculation.

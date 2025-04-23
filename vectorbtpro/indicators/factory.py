@@ -654,7 +654,7 @@ class IndicatorBase(Analyzable):
                 with their broadcasted values.
             broadcast_kwargs (KwargsLike): Keyword arguments passed to `vectorbtpro.base.reshaping.broadcast`
                 for broadcasting inputs.
-            template_context (KwargsLike): Context used for substituting templates in additional arguments.
+            template_context (KwargsLike): Additional context for template substitution.
             params (Optional[MaybeParams]): Parameters provided as a mapping or sequence.
 
                 If given as a sequence, it is converted to a mapping with keys formatted as `param_{i}`.

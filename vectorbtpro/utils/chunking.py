@@ -431,7 +431,7 @@ def get_chunk_meta_key(chunk_meta: ChunkMeta) -> tp.Any:
     Returns `MISSING` if no valid key can be determined.
 
     Args:
-        chunk_meta (ChunkMeta): Chunk metadata.
+        chunk_meta (ChunkMeta): Metadata specifying the chunk boundaries.
 
     Returns:
         Any: The key representing the chunk metadata.
@@ -469,7 +469,7 @@ class ChunkMapper(DefineMixin):
         """Apply the chunk mapper to the given `ChunkMeta`.
 
         Args:
-            chunk_meta (ChunkMeta): Input chunk metadata.
+            chunk_meta (ChunkMeta): Metadata specifying the chunk boundaries.
             **kwargs: Keyword arguments for mapping.
 
         Returns:
@@ -487,7 +487,7 @@ class ChunkMapper(DefineMixin):
         """Map the input `ChunkMeta` to a new `ChunkMeta`.
 
         Args:
-            chunk_meta (ChunkMeta): The input chunk metadata to map.
+            chunk_meta (ChunkMeta): Metadata specifying the chunk boundaries.
             **kwargs: Keyword arguments for mapping.
 
         Returns:
@@ -600,7 +600,7 @@ class ChunkTaker(Evaluable, Annotatable, DefineMixin):
 
         Args:
             obj (Any): The input object from which to extract data.
-            chunk_meta (ChunkMeta): Metadata detailing the chunk boundaries (index, start, and end).
+            chunk_meta (ChunkMeta): Metadata specifying the chunk boundaries.
             **kwargs: Additional keyword arguments.
 
         Returns:
@@ -1624,7 +1624,7 @@ class Chunker(Configured):
             take_spec (TakeSpec): The chunk-taking specification.
 
                 If None or a `NotChunked` instance, the original argument is returned.
-            chunk_meta (ChunkMeta): Metadata for chunking.
+            chunk_meta (ChunkMeta): Metadata specifying the chunk boundaries.
             eval_id (Optional[Hashable]): Evaluation identifier.
             **kwargs: Keyword arguments passed to `ChunkTaker.apply`.
 
@@ -1716,7 +1716,7 @@ class Chunker(Configured):
         Args:
             ann_args (AnnArgs): Annotated arguments from `vectorbtpro.utils.parsing.annotate_args`.
             arg_take_spec (ArgTakeSpec): Mapping specifying the extraction rules for each argument.
-            chunk_meta (ChunkMeta): Metadata for chunking.
+            chunk_meta (ChunkMeta): Metadata specifying the chunk boundaries.
             silence_warnings (bool): Indicator to suppress warnings when a specification is missing.
             eval_id (Optional[Hashable]): Evaluation identifier.
             **kwargs: Keyword arguments passed to `Chunker.take_from_arg`.

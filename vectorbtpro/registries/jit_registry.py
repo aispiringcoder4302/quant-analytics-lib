@@ -655,7 +655,7 @@ class JITRegistry(Base):
             allow_new (Optional[bool]): A flag to allow creating a new jitted setup if none is found.
             register_new (Optional[bool]): A flag to register a new jitted setup.
             return_missing_task (bool): If True, returns `task_id_or_func` when the task is not registered.
-            template_context (KwargsLike): A context dictionary for template substitution.
+            template_context (KwargsLike): Additional context for template substitution.
             tags (Optional[set]): Additional tags for the jitted setup.
             **jitter_kwargs: Keyword arguments for configuring the jitter.
 

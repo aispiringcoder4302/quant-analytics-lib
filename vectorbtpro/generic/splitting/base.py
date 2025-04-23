@@ -2465,7 +2465,9 @@ class Splitter(Analyzable):
         """Return a grouper for splits based on the provided grouping parameter.
 
         Args:
-            split_group_by (AnyGroupByLike): Parameter to generate a split grouper.
+            split_group_by (AnyGroupByLike): Grouping specification for defining splits.
+
+                See `vectorbtpro.base.accessors.BaseIDXAccessor.get_grouper` for details.
 
         Returns:
             Optional[Grouper]: A grouper for splits if applicable, otherwise None.
@@ -2480,7 +2482,9 @@ class Splitter(Analyzable):
         """Return a grouper for sets based on the provided grouping parameter.
 
         Args:
-            set_group_by (AnyGroupByLike): Parameter to generate a set grouper.
+            set_group_by (AnyGroupByLike): Grouping specification for defining sets.
+
+                See `vectorbtpro.base.accessors.BaseIDXAccessor.get_grouper` for details.
 
         Returns:
             Optional[Grouper]: A grouper for sets if applicable, otherwise None.
@@ -2495,7 +2499,9 @@ class Splitter(Analyzable):
         """Return the number of splits, optionally considering grouping.
 
         Args:
-            split_group_by (AnyGroupByLike): Parameter for grouping splits.
+            split_group_by (AnyGroupByLike): Grouping specification for defining splits.
+
+                See `vectorbtpro.base.accessors.BaseIDXAccessor.get_grouper` for details.
 
         Returns:
             int: The count of splits after applying grouping.
@@ -2509,7 +2515,9 @@ class Splitter(Analyzable):
         """Return the number of sets, optionally considering grouping.
 
         Args:
-            set_group_by (AnyGroupByLike): Parameter for grouping sets.
+            set_group_by (AnyGroupByLike): Grouping specification for defining sets.
+
+                See `vectorbtpro.base.accessors.BaseIDXAccessor.get_grouper` for details.
 
         Returns:
             int: The count of sets after applying grouping.
@@ -2523,7 +2531,9 @@ class Splitter(Analyzable):
         """Return split labels, optionally modified by a grouper.
 
         Args:
-            split_group_by (AnyGroupByLike): Parameter for grouping split labels.
+            split_group_by (AnyGroupByLike): Grouping specification for defining splits.
+
+                See `vectorbtpro.base.accessors.BaseIDXAccessor.get_grouper` for details.
 
         Returns:
             Index: The split labels, potentially modified by the grouper.
@@ -2537,7 +2547,9 @@ class Splitter(Analyzable):
         """Return set labels, optionally modified by a grouper.
 
         Args:
-            set_group_by (AnyGroupByLike): Parameter for grouping set labels.
+            set_group_by (AnyGroupByLike): Grouping specification for defining sets.
+
+                See `vectorbtpro.base.accessors.BaseIDXAccessor.get_grouper` for details.
 
         Returns:
             Index: The set labels, potentially modified by the grouper.
@@ -2594,8 +2606,12 @@ class Splitter(Analyzable):
         Args:
             split (Optional[Selection]): Selection for filtering the split side.
             set_ (Optional[Selection]): Selection for filtering the set side.
-            split_group_by (AnyGroupByLike): Parameter used to determine grouping for split ranges.
-            set_group_by (AnyGroupByLike): Parameter used to determine grouping for set ranges.
+            split_group_by (AnyGroupByLike): Grouping specification for defining splits.
+
+                See `vectorbtpro.base.accessors.BaseIDXAccessor.get_grouper` for details.
+            set_group_by (AnyGroupByLike): Grouping specification for defining sets.
+
+                See `vectorbtpro.base.accessors.BaseIDXAccessor.get_grouper` for details.
             merge_split_kwargs (KwargsLike): Additional options for merging split ranges.
             **kwargs: Keyword arguments passed to `Splitter.replace`.
 
@@ -3229,8 +3245,12 @@ class Splitter(Analyzable):
         Args:
             split (Optional[Selection]): Selection criteria for splits.
             set_ (Optional[Selection]): Selection criteria for sets.
-            split_group_by (AnyGroupByLike): Grouping parameter for splits, defining groups for split indices.
-            set_group_by (AnyGroupByLike): Grouping parameter for sets, defining groups for set indices.
+            split_group_by (AnyGroupByLike): Grouping specification for defining splits.
+
+                See `vectorbtpro.base.accessors.BaseIDXAccessor.get_grouper` for details.
+            set_group_by (AnyGroupByLike): Grouping specification for defining sets.
+
+                See `vectorbtpro.base.accessors.BaseIDXAccessor.get_grouper` for details.
 
         Returns:
             Tuple[Array1d, Array1d, Array1d, Array1d]: A tuple containing:
@@ -3701,8 +3721,12 @@ class Splitter(Analyzable):
             obj (Any): The array-like object from which to extract ranges.
             split (Optional[Selection]): Selection of splits.
             set_ (Optional[Selection]): Selection of sets.
-            split_group_by (AnyGroupByLike): Grouping criteria for defining splits.
-            set_group_by (AnyGroupByLike): Grouping criteria for defining sets.
+            split_group_by (AnyGroupByLike): Grouping specification for defining splits.
+
+                See `vectorbtpro.base.accessors.BaseIDXAccessor.get_grouper` for details.
+            set_group_by (AnyGroupByLike): Grouping specification for defining sets.
+
+                See `vectorbtpro.base.accessors.BaseIDXAccessor.get_grouper` for details.
             squeeze_one_split (bool): Compress output when only one split is present.
             squeeze_one_set (bool): Compress output when only one set is present.
             into (Optional[str]): Specifies the output format.
@@ -4176,8 +4200,12 @@ class Splitter(Analyzable):
             *apply_args: Positional arguments passed to `apply_func`.
             split (Optional[Selection]): Selection specifying which splits to use.
             set_ (Optional[Selection]): Selection specifying which sets to use.
-            split_group_by (AnyGroupByLike): Criteria to group splits.
-            set_group_by (AnyGroupByLike): Criteria to group sets.
+            split_group_by (AnyGroupByLike): Grouping specification for defining splits.
+
+                See `vectorbtpro.base.accessors.BaseIDXAccessor.get_grouper` for details.
+            set_group_by (AnyGroupByLike): Grouping specification for defining sets.
+
+                See `vectorbtpro.base.accessors.BaseIDXAccessor.get_grouper` for details.
             squeeze_one_split (bool): Whether to squeeze the output if only one split exists.
             squeeze_one_set (bool): Whether to squeeze the output if only one set exists.
             remap_to_obj (bool): Whether to remap the range to the object's index for takeable arguments.
@@ -5363,8 +5391,12 @@ class Splitter(Analyzable):
         Args:
             index_bounds (bool): If True, use the index's data type for the bounds.
             right_inclusive (bool): If True, treat the right bound as inclusive in computations.
-            split_group_by (AnyGroupByLike): Grouping criteria for defining splits.
-            set_group_by (AnyGroupByLike): Grouping criteria for defining sets.
+            split_group_by (AnyGroupByLike): Grouping specification for defining splits.
+
+                See `vectorbtpro.base.accessors.BaseIDXAccessor.get_grouper` for details.
+            set_group_by (AnyGroupByLike): Grouping specification for defining sets.
+
+                See `vectorbtpro.base.accessors.BaseIDXAccessor.get_grouper` for details.
             template_context (KwargsLike): Additional context for template substitution.
             **range_bounds_kwargs: Keyword arguments passed to `Splitter.get_range_bounds`.
 
@@ -5430,8 +5462,12 @@ class Splitter(Analyzable):
         Args:
             index_bounds (bool): If True, compute bounds using the index.
             right_inclusive (bool): If True, treat the right boundary as inclusive.
-            split_group_by (AnyGroupByLike): Grouping criterion for defining splits.
-            set_group_by (AnyGroupByLike): Grouping criterion for defining sets.
+            split_group_by (AnyGroupByLike): Grouping specification for defining splits.
+
+                See `vectorbtpro.base.accessors.BaseIDXAccessor.get_grouper` for details.
+            set_group_by (AnyGroupByLike): Grouping specification for defining sets.
+
+                See `vectorbtpro.base.accessors.BaseIDXAccessor.get_grouper` for details.
             squeeze_one_split (bool): If True and only one split exists, simplify the result.
             squeeze_one_set (bool): If True and only one set exists, simplify the result.
             index_combine_kwargs (KwargsLike): Keyword arguments for combining indexes.
@@ -5569,8 +5605,12 @@ class Splitter(Analyzable):
         Each array has rows representing sets and columns representing index positions.
 
         Args:
-            split_group_by (AnyGroupByLike): Grouping criterion for defining splits.
-            set_group_by (AnyGroupByLike): Grouping criterion for defining sets.
+            split_group_by (AnyGroupByLike): Grouping specification for defining splits.
+
+                See `vectorbtpro.base.accessors.BaseIDXAccessor.get_grouper` for details.
+            set_group_by (AnyGroupByLike): Grouping specification for defining sets.
+
+                See `vectorbtpro.base.accessors.BaseIDXAccessor.get_grouper` for details.
             template_context (KwargsLike): Additional context for template substitution.
             **kwargs: Keyword arguments passed to `Splitter.get_range_mask`.
 
@@ -5616,8 +5656,12 @@ class Splitter(Analyzable):
         Each array has rows representing splits and columns representing index positions.
 
         Args:
-            split_group_by (AnyGroupByLike): Grouping criterion for defining splits.
-            set_group_by (AnyGroupByLike): Grouping criterion for defining sets.
+            split_group_by (AnyGroupByLike): Grouping specification for defining splits.
+
+                See `vectorbtpro.base.accessors.BaseIDXAccessor.get_grouper` for details.
+            set_group_by (AnyGroupByLike): Grouping specification for defining sets.
+
+                See `vectorbtpro.base.accessors.BaseIDXAccessor.get_grouper` for details.
             template_context (KwargsLike): Additional context for template substitution.
             **kwargs: Keyword arguments passed to `Splitter.get_range_mask`.
 
@@ -5663,8 +5707,12 @@ class Splitter(Analyzable):
         appropriate index and set labels.
 
         Args:
-            split_group_by (AnyGroupByLike): Grouping criterion for defining splits.
-            set_group_by (AnyGroupByLike): Grouping criterion for defining sets.
+            split_group_by (AnyGroupByLike): Grouping specification for defining splits.
+
+                See `vectorbtpro.base.accessors.BaseIDXAccessor.get_grouper` for details.
+            set_group_by (AnyGroupByLike): Grouping specification for defining sets.
+
+                See `vectorbtpro.base.accessors.BaseIDXAccessor.get_grouper` for details.
             **kwargs: Keyword arguments passed to `Splitter.get_iter_split_mask_arrs`.
 
         Returns:
@@ -5702,8 +5750,12 @@ class Splitter(Analyzable):
         applying appropriate index and split labels.
 
         Args:
-            split_group_by (AnyGroupByLike): Grouping criterion for defining splits.
-            set_group_by (AnyGroupByLike): Grouping criterion for defining sets.
+            split_group_by (AnyGroupByLike): Grouping specification for defining splits.
+
+                See `vectorbtpro.base.accessors.BaseIDXAccessor.get_grouper` for details.
+            set_group_by (AnyGroupByLike): Grouping specification for defining sets.
+
+                See `vectorbtpro.base.accessors.BaseIDXAccessor.get_grouper` for details.
             **kwargs: Keyword arguments passed to `Splitter.get_iter_set_mask_arrs`.
 
         Returns:
@@ -5741,8 +5793,12 @@ class Splitter(Analyzable):
         The first dimension corresponds to splits, the second to sets, and the third to the index.
 
         Args:
-            split_group_by (AnyGroupByLike): Grouping parameter for defining splits.
-            set_group_by (AnyGroupByLike): Grouping parameter for defining sets.
+            split_group_by (AnyGroupByLike): Grouping specification for defining splits.
+
+                See `vectorbtpro.base.accessors.BaseIDXAccessor.get_grouper` for details.
+            set_group_by (AnyGroupByLike): Grouping specification for defining sets.
+
+                See `vectorbtpro.base.accessors.BaseIDXAccessor.get_grouper` for details.
             template_context (KwargsLike): Additional context for template substitution.
             **kwargs: Keyword arguments passed to `Splitter.get_iter_split_mask_arrs`.
 
@@ -5783,8 +5839,12 @@ class Splitter(Analyzable):
         The returned object uses `Splitter.index` as the index and contains the splits as columns.
 
         Args:
-            split_group_by (AnyGroupByLike): Grouping parameter for defining splits.
-            set_group_by (AnyGroupByLike): Grouping parameter for defining sets.
+            split_group_by (AnyGroupByLike): Grouping specification for defining splits.
+
+                See `vectorbtpro.base.accessors.BaseIDXAccessor.get_grouper` for details.
+            set_group_by (AnyGroupByLike): Grouping specification for defining sets.
+
+                See `vectorbtpro.base.accessors.BaseIDXAccessor.get_grouper` for details.
             squeeze_one_split (bool): Whether to squeeze the output if only one split is present.
             squeeze_one_set (bool): Whether to squeeze the output if only one set is present.
             index_combine_kwargs (KwargsLike): Keyword arguments for combining indexes.
@@ -5848,8 +5908,12 @@ class Splitter(Analyzable):
             overlapping (bool): Whether to compute overlapping True values between sets.
             normalize (bool): Whether to normalize the coverage by the index length.
             relative (bool): When normalized, whether to compute coverage relative to the overall True count.
-            split_group_by (AnyGroupByLike): Grouping parameter for defining splits.
-            set_group_by (AnyGroupByLike): Grouping parameter for defining sets.
+            split_group_by (AnyGroupByLike): Grouping specification for defining splits.
+
+                See `vectorbtpro.base.accessors.BaseIDXAccessor.get_grouper` for details.
+            set_group_by (AnyGroupByLike): Grouping specification for defining sets.
+
+                See `vectorbtpro.base.accessors.BaseIDXAccessor.get_grouper` for details.
             squeeze_one_split (bool): Whether to return a scalar value if a single split is present.
             **kwargs: Keyword arguments passed to `Splitter.get_mask_arr`.
 
@@ -5911,8 +5975,12 @@ class Splitter(Analyzable):
             overlapping (bool): Whether to compute overlapping True values between splits.
             normalize (bool): Whether to normalize the coverage by the index length.
             relative (bool): When normalized, whether to compute coverage relative to the overall True count.
-            split_group_by (AnyGroupByLike): Grouping parameter for defining splits.
-            set_group_by (AnyGroupByLike): Grouping parameter for defining sets.
+            split_group_by (AnyGroupByLike): Grouping specification for defining splits.
+
+                See `vectorbtpro.base.accessors.BaseIDXAccessor.get_grouper` for details.
+            set_group_by (AnyGroupByLike): Grouping specification for defining sets.
+
+                See `vectorbtpro.base.accessors.BaseIDXAccessor.get_grouper` for details.
             squeeze_one_set (bool): Whether to return a scalar value if a single set is present.
             **kwargs: Keyword arguments passed to `Splitter.get_mask_arr`.
 
@@ -5968,8 +6036,12 @@ class Splitter(Analyzable):
                 relative to the index length.
             relative (bool): If True and normalization is enabled, compute coverage relative
                 to the total True values in its split.
-            split_group_by (AnyGroupByLike): Grouping parameter for defining splits.
-            set_group_by (AnyGroupByLike): Grouping parameter for defining sets.
+            split_group_by (AnyGroupByLike): Grouping specification for defining splits.
+
+                See `vectorbtpro.base.accessors.BaseIDXAccessor.get_grouper` for details.
+            set_group_by (AnyGroupByLike): Grouping specification for defining sets.
+
+                See `vectorbtpro.base.accessors.BaseIDXAccessor.get_grouper` for details.
             squeeze_one_split (bool): If True, squeeze output when there is only one split.
             squeeze_one_set (bool): If True, squeeze output when there is only one set.
             index_combine_kwargs (KwargsLike): Keyword arguments for combining indexes.
@@ -6025,8 +6097,12 @@ class Splitter(Analyzable):
         Args:
             overlapping (bool): Flag to compute overlapping coverage by counting overlapping True values.
             normalize (bool): Flag to normalize the coverage relative to the index length.
-            split_group_by (AnyGroupByLike): Grouping parameter for defining splits.
-            set_group_by (AnyGroupByLike): Grouping parameter for defining sets.
+            split_group_by (AnyGroupByLike): Grouping specification for defining splits.
+
+                See `vectorbtpro.base.accessors.BaseIDXAccessor.get_grouper` for details.
+            set_group_by (AnyGroupByLike): Grouping specification for defining sets.
+
+                See `vectorbtpro.base.accessors.BaseIDXAccessor.get_grouper` for details.
             **kwargs: Keyword arguments passed to `Splitter.get_mask_arr`.
 
         Returns:
@@ -6068,8 +6144,12 @@ class Splitter(Analyzable):
             by (str): Specifies which overlap matrix to compute; must be one of "split", "set", or "range".
             normalize (bool): Flag indicating whether to normalize overlaps relative to the
                 total True values in both ranges.
-            split_group_by (AnyGroupByLike): Grouping parameter for defining splits.
-            set_group_by (AnyGroupByLike): Grouping parameter for defining sets.
+            split_group_by (AnyGroupByLike): Grouping specification for defining splits.
+
+                See `vectorbtpro.base.accessors.BaseIDXAccessor.get_grouper` for details.
+            set_group_by (AnyGroupByLike): Grouping specification for defining sets.
+
+                See `vectorbtpro.base.accessors.BaseIDXAccessor.get_grouper` for details.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
@@ -6291,9 +6371,9 @@ class Splitter(Analyzable):
             split_group_by (AnyGroupByLike): Grouping to define splits.
 
                 See `vectorbtpro.base.accessors.BaseIDXAccessor.get_grouper`.
-            set_group_by (AnyGroupByLike): Grouping to define sets.
+            set_group_by (AnyGroupByLike): Grouping specification for defining sets.
 
-                See `vectorbtpro.base.accessors.BaseIDXAccessor.get_grouper`.
+                See `vectorbtpro.base.accessors.BaseIDXAccessor.get_grouper` for details.
             mask_kwargs (KwargsLike): Keyword arguments passed to
                 `Splitter.get_iter_set_masks`.
             trace_kwargs (KwargsLikeSequence): Keyword arguments passed to
@@ -6397,9 +6477,9 @@ class Splitter(Analyzable):
             split_group_by (AnyGroupByLike): Grouping key for defining splits.
 
                 See `vectorbtpro.base.accessors.BaseIDXAccessor.get_grouper`.
-            set_group_by (AnyGroupByLike): Grouping key for defining sets.
+            set_group_by (AnyGroupByLike): Grouping specification for defining sets.
 
-                See `vectorbtpro.base.accessors.BaseIDXAccessor.get_grouper`.
+                See `vectorbtpro.base.accessors.BaseIDXAccessor.get_grouper` for details.
             mask_kwargs (KwargsLike): Keyword arguments for `Splitter.get_iter_set_masks`.
             trace_kwargs (KwargsLikeSequence): Keyword arguments for `plotly.graph_objects.Scatter`.
 
