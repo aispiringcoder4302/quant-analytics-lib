@@ -1018,6 +1018,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
             minp (Optional[int]): Minimum number of observations required within the window.
             ddof (int): Delta degrees of freedom.
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
+
+                See `vectorbtpro.base.reshaping.broadcast` for details.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
@@ -1071,6 +1073,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 If None, uses the full data length.
             minp (Optional[int]): Minimum number of observations required in each window.
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
+
+                See `vectorbtpro.base.reshaping.broadcast` for details.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
@@ -1123,6 +1127,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 If None, uses the full series length.
             minp (Optional[int]): Minimum number of observations required per window.
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
+
+                See `vectorbtpro.base.reshaping.broadcast` for details.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
@@ -1361,6 +1367,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
             *args: Positional arguments passed to the mapping function.
             broadcast_named_args (KwargsLike): Additional named arguments for broadcasting.
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
+
+                See `vectorbtpro.base.reshaping.broadcast` for details.
             template_context (KwargsLike): Additional context for template substitution.
             jitted (JittedOption): Option to control JIT compilation.
 
@@ -1499,6 +1507,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 Use 1 for column-wise and 0 for row-wise operations.
             broadcast_named_args (KwargsLike): Additional named arguments for broadcasting.
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
+
+                See `vectorbtpro.base.reshaping.broadcast` for details.
             template_context (KwargsLike): Additional context for template substitution.
             jitted (JittedOption): Option to control JIT compilation.
 
@@ -1673,6 +1683,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
             minp (Optional[int]): Minimum number of observations required in the window.
             broadcast_named_args (KwargsLike): Additional named arguments for broadcasting.
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
+
+                See `vectorbtpro.base.reshaping.broadcast` for details.
             template_context (KwargsLike): Additional context for template substitution.
             jitted (JittedOption): Option to control JIT compilation.
 
@@ -1874,6 +1886,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 using `pd.DataFrame.groupby`.
             broadcast_named_args (KwargsLike): Additional named arguments for broadcasting.
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
+
+                See `vectorbtpro.base.reshaping.broadcast` for details.
             template_context (KwargsLike): Additional context for template substitution.
             jitted (JittedOption): Option to control JIT compilation.
 
@@ -2030,6 +2044,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
             groupby_kwargs (KwargsLike): Keyword arguments for the groupby operation.
             broadcast_named_args (KwargsLike): Additional named arguments for broadcasting.
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
+
+                See `vectorbtpro.base.reshaping.broadcast` for details.
             template_context (KwargsLike): Additional context for template substitution.
             jitted (JittedOption): Option to control JIT compilation.
 
@@ -2164,6 +2180,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
             resample_kwargs (KwargsLike): Keyword arguments for the `pd.DataFrame.resample` method.
             broadcast_named_args (KwargsLike): Additional named arguments for broadcasting.
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
+
+                See `vectorbtpro.base.reshaping.broadcast` for details.
             template_context (KwargsLike): Additional context for template substitution.
             wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
@@ -2331,6 +2349,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
             reduce_args (Optional[tuple]): Arguments passed to the reduce function.
             broadcast_named_args (KwargsLike): Additional named arguments for broadcasting.
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
+
+                See `vectorbtpro.base.reshaping.broadcast` for details.
             template_context (KwargsLike): Additional context for template substitution.
             jitted (JittedOption): Option to control JIT compilation.
 
@@ -2503,6 +2523,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
             to_index (bool): True to convert positions to index labels when `returns_idx` is True.
             broadcast_named_args (KwargsLike): Additional named arguments for broadcasting.
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
+
+                See `vectorbtpro.base.reshaping.broadcast` for details.
             template_context (KwargsLike): Additional context for template substitution.
             jitted (JittedOption): Option to control JIT compilation.
 
@@ -2773,6 +2795,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
             *args: Positional arguments for the reduction function.
             broadcast_named_args (KwargsLike): Additional named arguments for broadcasting.
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
+
+                See `vectorbtpro.base.reshaping.broadcast` for details.
             template_context (KwargsLike): Additional context for template substitution.
             jitted (JittedOption): Option to control JIT compilation.
 
@@ -2920,6 +2944,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
             *args: Positional arguments passed to the squeeze function.
             broadcast_named_args (KwargsLike): Additional named arguments for broadcasting.
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
+
+                See `vectorbtpro.base.reshaping.broadcast` for details.
             template_context (KwargsLike): Additional context for template substitution.
             jitted (JittedOption): Option to control JIT compilation.
 
@@ -3347,6 +3373,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
             before (bool): If True, use index ranges preceding the target index.
             broadcast_named_args (KwargsLike): Additional named arguments for broadcasting.
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
+
+                See `vectorbtpro.base.reshaping.broadcast` for details.
             template_context (KwargsLike): Additional context for template substitution.
             jitted (JittedOption): Option to control JIT compilation.
 
@@ -3554,6 +3582,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
             closed_rbound (bool): Indicates if the upper bound of the interval is inclusive.
             broadcast_named_args (KwargsLike): Additional named arguments for broadcasting.
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
+
+                See `vectorbtpro.base.reshaping.broadcast` for details.
             template_context (KwargsLike): Additional context for template substitution.
             jitted (JittedOption): Option to control JIT compilation.
 
@@ -4152,6 +4182,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
             other (SeriesFrame): Series or frame to compute covariance with.
             ddof (int): Degrees of freedom for the covariance calculation.
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
+
+                See `vectorbtpro.base.reshaping.broadcast` for details.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
@@ -4202,6 +4234,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
         Args:
             other (SeriesFrame): Series or frame to compute correlation with.
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
+
+                See `vectorbtpro.base.reshaping.broadcast` for details.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
@@ -5081,6 +5115,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
             wait (int): Number of periods to wait before confirming a cross.
             dropna (bool): Flag to determine whether to handle missing values.
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
+
+                See `vectorbtpro.base.reshaping.broadcast` for details.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
@@ -5158,6 +5194,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
             wait (int): Number of periods to wait before confirming a cross.
             dropna (bool): Flag to determine whether to handle missing values.
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
+
+                See `vectorbtpro.base.reshaping.broadcast` for details.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
@@ -6220,7 +6258,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             plot_line (bool): Whether to add a fitted reference line based on the probability plot.
             line_shape_kwargs (KwargsLike): Keyword arguments for customizing the reference line.
             xref (str): X-axis reference for the added line shape.
-            yref (str): Y-axis reference for the added line shape.
+            yref (str): Reference for the y-axis (e.g., "y", "y2").
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
             **kwargs: Keyword arguments passed to `GenericAccessor.scatterplot`.
 

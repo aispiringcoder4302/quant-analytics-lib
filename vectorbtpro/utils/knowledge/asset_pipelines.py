@@ -148,9 +148,9 @@ class BasicAssetPipeline(AssetPipeline):
     Creates a composite function by resolving and chaining individual asset tasks.
 
     Args:
-        args (Any): The first positional argument can be a task or list of tasks;
+        *args: The first positional argument can be a task or list of tasks;
             subsequent positional arguments are used in task resolution.
-        kwargs (Any): Keyword arguments for task resolution.
+        **kwargs: Keyword arguments for task resolution.
 
     Examples:
         ```pycon

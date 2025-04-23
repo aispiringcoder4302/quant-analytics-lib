@@ -62,7 +62,7 @@ class PriceRecords(Records):
         high (Optional[ArrayLike]): Array of high prices.
         low (Optional[ArrayLike]): Array of low prices.
         close (Optional[ArrayLike]): Array of close prices.
-        kwargs: Keyword arguments passed to `vectorbtpro.records.base.Records`.
+        **kwargs: Keyword arguments passed to `vectorbtpro.records.base.Records`.
     """
 
     def __init__(
@@ -124,7 +124,7 @@ class PriceRecords(Records):
             low (Optional[ArrayLike]): Array of low prices.
             close (Optional[ArrayLike]): Array of close prices.
             attach_data (bool): Flag indicating whether to attach the OHLC data.
-            kwargs: Keyword arguments passed to `PriceRecords`.
+            **kwargs: Keyword arguments passed to `PriceRecords`.
 
         Returns:
             PriceRecords: A new instance of `PriceRecords`.
@@ -156,8 +156,8 @@ class PriceRecords(Records):
         """Resolve keyword arguments for initializing `PriceRecords` after stacking along columns.
 
         Args:
-            objs (MaybeTuple[PriceRecords]): Additional `PriceRecords` instances to merge.
-            kwargs: Keyword arguments passed for initialization.
+            *objs (MaybeTuple[PriceRecords]): Additional `PriceRecords` instances to merge.
+            **kwargs: Keyword arguments passed for initialization.
 
         Returns:
             Kwargs: Resolved keyword arguments.
@@ -199,11 +199,11 @@ class PriceRecords(Records):
         """Resolve keyword arguments for initializing `PriceRecords` after stacking along columns.
 
         Args:
-            objs (MaybeTuple[PriceRecords]): Additional `PriceRecords` instances to merge.
+            *objs (MaybeTuple[PriceRecords]): Additional `PriceRecords` instances to merge.
             reindex_kwargs (KwargsLike): Keyword arguments for reindexing.
             ffill_close (bool): Flag to forward fill close prices.
             fbfill_close (bool): Flag to backward fill close prices.
-            kwargs: Keyword arguments passed for initialization.
+            **kwargs: Keyword arguments passed for initialization.
 
         Returns:
             Kwargs: Resolved keyword arguments.
@@ -245,9 +245,9 @@ class PriceRecords(Records):
         """Perform indexing on `PriceRecords` and return updated metadata.
 
         Args:
-            args: Positional arguments used for indexing.
+            *args: Positional arguments used for indexing.
             records_meta (DictLike): Metadata dictionary to update.
-            kwargs: Keyword arguments used for indexing.
+            **kwargs: Keyword arguments used for indexing.
 
         Returns:
             dict: A dictionary containing updated indexing metadata and OHLC arrays.
@@ -273,9 +273,9 @@ class PriceRecords(Records):
         """Perform indexing on `PriceRecords`.
 
         Args:
-            args: Positional arguments for indexing.
+            *args: Positional arguments for indexing.
             price_records_meta (DictLike): Metadata dictionary produced by indexing.
-            kwargs: Keyword arguments for indexing.
+            **kwargs: Keyword arguments for indexing.
 
         Returns:
             PriceRecords: A new `PriceRecords` instance after indexing.
@@ -302,11 +302,11 @@ class PriceRecords(Records):
         """Perform resampling on `PriceRecords`.
 
         Args:
-            args: Positional arguments for resampling.
+            *args: Positional arguments for resampling.
             ffill_close (bool): Flag to forward fill close prices.
             fbfill_close (bool): Flag to backward fill close prices.
             records_meta (DictLike): Metadata dictionary for resampling.
-            kwargs: Keyword arguments for resampling.
+            **kwargs: Keyword arguments for resampling.
 
         Returns:
             PriceRecords: A new `PriceRecords` instance after resampling.

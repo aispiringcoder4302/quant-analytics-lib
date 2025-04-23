@@ -1872,10 +1872,10 @@ class PortfolioOptimizer(Analyzable):
         Uses `vectorbtpro.base.wrapping.ArrayWrapper.row_stack` to stack the wrappers.
 
         Args:
-            objs (PortfolioOptimizer): Additional `PortfolioOptimizer` instances to stack along rows.
+            *objs (PortfolioOptimizer): Additional `PortfolioOptimizer` instances to stack along rows.
             wrapper_kwargs (KwargsLike): Keyword arguments for configuring
                 `vectorbtpro.base.wrapping.ArrayWrapper.row_stack`.
-            kwargs (KwargsLike): Keyword arguments for constructing the stacked instance.
+            **kwargs (KwargsLike): Keyword arguments for constructing the stacked instance.
 
         Returns:
             PortfolioOptimizer: A new `PortfolioOptimizer` instance with row-stacked attributes.
@@ -1933,10 +1933,10 @@ class PortfolioOptimizer(Analyzable):
         Uses `vectorbtpro.base.wrapping.ArrayWrapper.column_stack` to stack the wrappers.
 
         Args:
-            objs (PortfolioOptimizer): Additional `PortfolioOptimizer` instances to stack along columns.
+            *objs (PortfolioOptimizer): Additional `PortfolioOptimizer` instances to stack along columns.
             wrapper_kwargs (KwargsLike): Keyword arguments for configuring
                 `vectorbtpro.base.wrapping.ArrayWrapper.column_stack`.
-            kwargs (KwargsLike): Keyword arguments for constructing the stacked instance.
+            **kwargs (KwargsLike): Keyword arguments for constructing the stacked instance.
 
         Returns:
             PortfolioOptimizer: A new `PortfolioOptimizer` instance with column-stacked attributes.
@@ -1993,11 +1993,11 @@ class PortfolioOptimizer(Analyzable):
         """Perform indexing on a `PortfolioOptimizer` instance.
 
         Args:
-            args: Positional arguments for indexing.
+            *args: Positional arguments for indexing.
             wrapper_meta (DictLike): Metadata for the wrapper's indexing function.
             alloc_wrapper_meta (DictLike): Metadata for the allocation wrapper indexing.
             alloc_records_meta (DictLike): Metadata for the allocation records indexing.
-            kwargs (KwargsLike): Keyword arguments for indexing.
+            **kwargs (KwargsLike): Keyword arguments for indexing.
 
         Returns:
             PortfolioOptimizer: A new `PortfolioOptimizer` instance with updated indexing.
@@ -2026,8 +2026,8 @@ class PortfolioOptimizer(Analyzable):
         """Perform resampling on a `PortfolioOptimizer` instance.
 
         Args:
-            args: Positional arguments for resampling.
-            kwargs (KwargsLike): Keyword arguments for resampling.
+            *args: Positional arguments for resampling.
+            **kwargs (KwargsLike): Keyword arguments for resampling.
 
         Returns:
             PortfolioOptimizer: A new `PortfolioOptimizer` instance with resampled attributes.

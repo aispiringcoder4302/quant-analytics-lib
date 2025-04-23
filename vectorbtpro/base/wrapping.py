@@ -760,9 +760,9 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
         """Resolve keyword arguments for initializing `ArrayWrapper` after stacking.
 
         Args:
-            wrappers (MaybeTuple[ArrayWrapper]): One or more `ArrayWrapper` instances used to
+            *wrappers (MaybeTuple[ArrayWrapper]): One or more `ArrayWrapper` instances used to
                 infer shared configuration.
-            kwargs (Kwargs): Keyword arguments to override configuration parameters.
+            **kwargs (Kwargs): Keyword arguments to override configuration parameters.
 
         Returns:
             Kwargs: A dictionary of resolved keyword arguments for `ArrayWrapper` initialization.
@@ -831,7 +831,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
         to have compatible configuration values, except where explicitly overridden via `kwargs`.
 
         Args:
-            wrappers (MaybeTuple[ArrayWrapper]): Additional `ArrayWrapper` instances to stack.
+            *wrappers (MaybeTuple[ArrayWrapper]): Additional `ArrayWrapper` instances to stack.
             index (Optional[IndexLike]): Custom index for the stacked result.
 
                 If not provided, indexes are concatenated.
@@ -847,7 +847,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
 
                 See `vectorbtpro.base.indexes.clean_index` for details.
             verify_integrity (bool): Flag to verify the integrity of the concatenated index.
-            kwargs: Keyword arguments for `ArrayWrapper` initialization.
+            **kwargs: Keyword arguments for `ArrayWrapper` initialization.
 
         Returns:
             ArrayWrapper: A new `ArrayWrapper` instance representing the row-stacked result.

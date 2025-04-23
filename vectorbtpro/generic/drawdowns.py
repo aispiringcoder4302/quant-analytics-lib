@@ -1084,7 +1084,7 @@ class Drawdowns(Ranges):
                 in `plotly.graph_objects.Figure.add_shape`.
             add_trace_kwargs (KwargsLike): Keyword arguments for adding traces to the figure.
             xref (str): X-axis reference.
-            yref (str): Y-axis reference.
+            yref (str): Reference for the y-axis (e.g., "y", "y2").
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
             **layout_kwargs: Keyword arguments for configuring the figure layout.
 

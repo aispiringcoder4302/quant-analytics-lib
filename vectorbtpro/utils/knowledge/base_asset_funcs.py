@@ -1244,7 +1244,7 @@ class FindReplaceAssetFunc(FindAssetFunc):
             d (Any): The original value to evaluate for a match.
             target (MaybeList[Any]): The target value or callable to determine if a match occurs.
             replacement (MaybeList[Any]): The replacement value or callable to apply when a match is found.
-            kwargs: Keyword arguments for text replacement processing.
+            **kwargs: Keyword arguments for text replacement processing.
 
         Returns:
             Any: The resulting value after replacement if a match is found; otherwise, the original value.

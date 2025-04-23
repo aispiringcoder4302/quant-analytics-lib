@@ -1351,7 +1351,7 @@ class Ranges(PriceRecords):
             shape_kwargs (KwargsLike): Keyword arguments for creating shapes via `plotly.graph_objects.Figure.add_shape`.
             add_trace_kwargs (KwargsLike): Keyword arguments for adding traces to the figure.
             xref (str): Reference for the x-axis.
-            yref (str): Reference for the y-axis.
+            yref (str): Reference for the y-axis (e.g., "y", "y2").
             fig (BaseFigure): Figure object to which traces are added.
             **layout_kwargs: Keyword arguments for configuring the figure layout.
 
@@ -1549,7 +1549,7 @@ class Ranges(PriceRecords):
                 the `plotly.graph_objects.Figure.add_shape` for closed zones.
             add_trace_kwargs (KwargsLike): Keyword arguments for adding traces to the figure.
             xref (str): X-axis reference identifier.
-            yref (str): Y-axis reference identifier.
+            yref (str): Reference for the y-axis (e.g., "y", "y2").
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
             return_close (bool): Whether to return the close Series along with the figure.
             **layout_kwargs: Keyword arguments for configuring the figure layout.
@@ -2559,7 +2559,7 @@ class PatternRanges(Ranges):
                 `plotly.graph_objects.Scatter` for upper max error.
             add_trace_kwargs (KwargsLike): Keyword arguments for adding traces to the figure.
             xref (str): Specifies the X coordinate axis.
-            yref (str): Specifies the Y coordinate axis.
+            yref (str): Reference for the y-axis (e.g., "y", "y2").
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
             **kwargs: Keyword arguments passed to `Ranges.plot`.
 

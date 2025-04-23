@@ -559,9 +559,9 @@ class MappedArray(Analyzable):
         Uses `vectorbtpro.base.wrapping.ArrayWrapper.row_stack` to stack the wrappers.
 
         Args:
-            objs (MappedArray): Additional `MappedArray` instances to stack.
+            *objs (MappedArray): Additional `MappedArray` instances to stack.
             wrapper_kwargs (KwargsLike): Keyword arguments passed to `ArrayWrapper.row_stack`.
-            kwargs (KwargsLike): Keyword arguments for row stacking configuration.
+            **kwargs (KwargsLike): Keyword arguments for row stacking configuration.
 
         Returns:
             MappedArray: A new instance with rows stacked from the provided `MappedArray` objects.

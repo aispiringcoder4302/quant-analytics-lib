@@ -1755,7 +1755,7 @@ class Trades(Ranges):
                 the horizontal zero line shape added via `plotly.graph_objects.Figure.add_shape`.
             add_trace_kwargs (KwargsLike): Keyword arguments for adding traces to the figure.
             xref (str): Reference for the x-axis.
-            yref (str): Reference for the y-axis.
+            yref (str): Reference for the y-axis (e.g., "y", "y2").
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
             **layout_kwargs: Keyword arguments for figure layout configuration.
 
@@ -1974,7 +1974,7 @@ class Trades(Ranges):
                 `plotly.graph_objects.Figure.add_shape` for the vertical zeroline.
             add_trace_kwargs (KwargsLike): Keyword arguments for adding a trace.
             xref (str): Reference for the x-axis.
-            yref (str): Reference for the y-axis.
+            yref (str): Reference for the y-axis (e.g., "y", "y2").
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
             **layout_kwargs: Keyword arguments for configuring the figure layout.
 
@@ -2411,7 +2411,7 @@ class Trades(Ranges):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             xref (str): Reference identifier for the x-axis.
-            yref (str): Reference identifier for the y-axis.
+            yref (str): Reference for the y-axis (e.g., "y", "y2").
             hline_shape_kwargs (KwargsLike): Keyword arguments for configuring the horizontal line shape.
             **kwargs: Keyword arguments passed to
                 `vectorbtpro.generic.accessors.GenericSRAccessor.plot_against`.
@@ -2520,7 +2520,7 @@ class Trades(Ranges):
                 loss zone shapes via `plotly.graph_objects.Figure.add_shape`.
             add_trace_kwargs (KwargsLike): Keyword arguments for adding traces to the figure.
             xref (str): Reference for x-axis coordinates.
-            yref (str): Reference for y-axis coordinates.
+            yref (str): Reference for the y-axis (e.g., "y", "y2").
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
             **layout_kwargs: Keyword arguments for configuring the figure layout.
 

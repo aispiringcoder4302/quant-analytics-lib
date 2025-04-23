@@ -50,8 +50,12 @@ def resolve_axis_refs(
 
     Args:
         add_trace_kwargs (KwargsLike): Keyword arguments for adding traces to the figure.
-        xref (Optional[str]): Reference for the x-axis (e.g., "x", "x2")
-        yref (Optional[str]): Custom reference for the y-axis.
+        xref (Optional[str]): Reference for the x-axis (e.g., "x", "x2").
+        
+            If None, it is inferred from the figure.
+        yref (Optional[str]): Reference for the y-axis (e.g., "y", "y2").
+
+            If None, it is inferred from the figure.
 
     Returns:
         tuple[str, str]: Calculated x-axis and y-axis references.

@@ -321,7 +321,9 @@ class SignalsAccessor(GenericAccessor):
             only_once (bool): Indicates whether signals should be placed only once.
             wait (int): The waiting period before signal placement.
             broadcast_named_args (KwargsLike): Additional named arguments for broadcasting.
-            broadcast_kwargs (KwargsLike): Keyword arguments used in broadcasting.
+            broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
+
+                See `vectorbtpro.base.reshaping.broadcast` for details.
             template_context (KwargsLike): Additional context for template substitution.
             jitted (JittedOption): Option to control JIT compilation.
 
@@ -443,7 +445,9 @@ class SignalsAccessor(GenericAccessor):
             entry_wait (int): Number of periods to wait before an entry signal is triggered.
             exit_wait (int): Number of periods to wait before an exit signal is triggered.
             broadcast_named_args (KwargsLike): Named arguments for broadcasting to the target shape.
-            broadcast_kwargs (KwargsLike): Keyword arguments passed to the broadcast function.
+            broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
+
+                See `vectorbtpro.base.reshaping.broadcast` for details.
             template_context (KwargsLike): Additional context for template substitution.
             jitted (JittedOption): Option to control JIT compilation.
 
@@ -617,6 +621,8 @@ class SignalsAccessor(GenericAccessor):
             skip_until_exit (bool): Whether to skip processing entry signals until the next exit.
             broadcast_named_args (KwargsLike): Additional named arguments for broadcasting.
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
+
+                See `vectorbtpro.base.reshaping.broadcast` for details.
             template_context (KwargsLike): Additional context for template substitution.
             jitted (JittedOption): Option to control JIT compilation.
 
@@ -716,6 +722,8 @@ class SignalsAccessor(GenericAccessor):
             keep_conflicts (bool): Preserve conflicting signals.
             reverse_order (bool): Process signals in reverse order.
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
+
+                See `vectorbtpro.base.reshaping.broadcast` for details.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
@@ -1099,6 +1107,8 @@ class SignalsAccessor(GenericAccessor):
             until_next (bool): Whether to place signals up to the next entry signal.
             skip_until_exit (bool): Whether to skip processing entry signals until the next exit.
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
+
+                See `vectorbtpro.base.reshaping.broadcast` for details.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
@@ -1242,7 +1252,9 @@ class SignalsAccessor(GenericAccessor):
                 Ignored when `until_next` is True.
             chain (bool): If True, chains signals by returning both new entries and exit signals
                 using `SignalsAccessor.generate_both`.
-            broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting array-like inputs.
+            broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
+
+                See `vectorbtpro.base.reshaping.broadcast` for details.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
@@ -1475,7 +1487,9 @@ class SignalsAccessor(GenericAccessor):
             until_next (bool): Whether to place signals up to the next entry signal.
             skip_until_exit (bool): Whether to skip processing entry signals until the next exit.
             chain (bool): If True, chain entries and exits, returning a tuple of new entries and exits.
-            broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting parameters.
+            broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
+
+                See `vectorbtpro.base.reshaping.broadcast` for details.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
@@ -1870,7 +1884,9 @@ class SignalsAccessor(GenericAccessor):
             as_mapped (bool): If True, return the result as a
                 `vectorbtpro.records.mapped_array.MappedArray` instance.
             broadcast_named_args (KwargsLike): Additional named arguments for broadcasting.
-            broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting configuration.
+            broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
+
+                See `vectorbtpro.base.reshaping.broadcast` for details.
             template_context (KwargsLike): Additional context for template substitution.
             jitted (JittedOption): Option to control JIT compilation.
 
@@ -2452,6 +2468,8 @@ class SignalsAccessor(GenericAccessor):
                 See `vectorbtpro.signals.enums.SignalRelation` for options.
             incl_open (bool): Whether to include open ranges.
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
+
+                See `vectorbtpro.base.reshaping.broadcast` for details.
             group_by (GroupByLike): Specification for grouping the resulting ranges.
             attach_target (bool): If True, the target array is attached to the result.
             jitted (JittedOption): Option to control JIT compilation.
@@ -2768,6 +2786,8 @@ class SignalsAccessor(GenericAccessor):
             incl_open_target (bool): Include open target signals.
             incl_empty_cols (bool): Include empty columns.
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
+
+                See `vectorbtpro.base.reshaping.broadcast` for details.
             force_signal_index (bool): Enforce the generation of a new signal index.
             signal_index_type (str): Type of signal index to generate. Valid values:
 
@@ -3384,7 +3404,7 @@ class SignalsAccessor(GenericAccessor):
         """Plot signals.
 
         Args:
-            yref (str): Y-axis reference string.
+            yref (str): Reference for the y-axis (e.g., "y", "y2").
             column (hashable): Column to plot.
             **kwargs: Keyword arguments passed to
                 `vectorbtpro.generic.accessors.GenericAccessor.lineplot`.

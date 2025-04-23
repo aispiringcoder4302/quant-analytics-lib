@@ -4692,6 +4692,8 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             pass_frame (bool): Pass a one-column DataFrame instead of a Series when processing individual keys.
             key_wrapper_kwargs (KwargsLike): Keyword arguments for `Data.get_key_wrapper`.
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
+
+                See `vectorbtpro.base.reshaping.broadcast` for details.
             template_context (KwargsLike): Additional context for template substitution.
             **kwargs: Keyword arguments passed to `transform_func`.
 

@@ -3856,7 +3856,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
                 line at the start value, passed to `plotly.graph_objects.Figure.add_shape`.
             add_trace_kwargs (KwargsLike): Keyword arguments passed to `add_trace`.
             xref (str): Reference for the x-axis.
-            yref (str): Reference for the y-axis.
+            yref (str): Reference for the y-axis (e.g., "y", "y2").
             fig (Optional[BaseFigure]): Figure to update.
 
                 If None, a new figure is created.
