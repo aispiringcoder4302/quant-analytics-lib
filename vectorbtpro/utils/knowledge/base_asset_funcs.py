@@ -76,8 +76,8 @@ class AssetFunc(Base):
 
         Args:
             d: The input data.
-            *args: Additional positional arguments.
-            **kwargs: Additional keyword arguments.
+            *args: Positional arguments for `AssetFunc.prepare` and ultimately to `AssetFunc.call`.
+            **kwargs: Keyword arguments for `AssetFunc.prepare` and ultimately to `AssetFunc.call`.
 
         Returns:
             Any: The result returned by the asset function.
@@ -849,7 +849,7 @@ class FindAssetFunc(AssetFunc):
             target (MaybeList[Any]): The matching criterion, either a function or a
                 `vectorbtpro.utils.search_.Not` instance.
             find_all (bool): Flag specifying if all targets should be evaluated.
-            **kwargs: Keyword arguments for the matching process.
+            **kwargs: Keyword arguments for `vectorbtpro.utils.search_.find`.
 
         Returns:
             bool: True if the data item matches the target criteria, False otherwise.
@@ -1244,7 +1244,7 @@ class FindReplaceAssetFunc(FindAssetFunc):
             d (Any): The original value to evaluate for a match.
             target (MaybeList[Any]): The target value or callable to determine if a match occurs.
             replacement (MaybeList[Any]): The replacement value or callable to apply when a match is found.
-            **kwargs: Keyword arguments for text replacement processing.
+            **kwargs: Keyword arguments for `vectorbtpro.utils.search_.replace`.
 
         Returns:
             Any: The resulting value after replacement if a match is found; otherwise, the original value.

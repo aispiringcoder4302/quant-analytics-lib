@@ -38,7 +38,7 @@ def custom_apply_and_concat_none_nb(
     Args:
         indices (Array1d): 1D array of indices to iterate over.
         apply_func_nb (Callable): Function that accepts an index and additional arguments, returning nothing.
-        *args: Positional arguments passed to `apply_func_nb`.
+        *args: Positional arguments for `apply_func_nb`.
 
     Returns:
         None
@@ -58,7 +58,7 @@ def apply_and_concat_none_nb(
     Args:
         ntimes (int): The number of times to execute `apply_func_nb`.
         apply_func_nb (Callable): Function invoked for each index that returns nothing.
-        *args: Positional arguments passed to `apply_func_nb`.
+        *args: Positional arguments for `apply_func_nb`.
 
     Returns:
         None
@@ -98,7 +98,7 @@ def custom_apply_and_concat_one_nb(
         indices (Array1d): 1D array of indices to iterate over.
         apply_func_nb (Callable): Function that returns an array for a given index
             and additional arguments.
-        *args: Positional arguments passed to `apply_func_nb`.
+        *args: Positional arguments for `apply_func_nb`.
 
     Returns:
         Array2d: A 2D array created by horizontally concatenating the arrays returned for each index.
@@ -127,7 +127,7 @@ def apply_and_concat_one_nb(
         ntimes (int): The number of times to execute `apply_func_nb`.
         apply_func_nb (Callable): Function that returns an array when called with
             an index and additional arguments.
-        *args: Positional arguments passed to `apply_func_nb`.
+        *args: Positional arguments for `apply_func_nb`.
 
     Returns:
         Array2d: A concatenated 2D array of the outputs from each function call.
@@ -167,7 +167,7 @@ def custom_apply_and_concat_multiple_nb(
         indices (Array1d): 1D array of indices to iterate over.
         apply_func_nb (Callable): Function that returns multiple arrays for a
             given index and additional arguments.
-        *args: Positional arguments passed to `apply_func_nb`.
+        *args: Positional arguments for `apply_func_nb`.
 
     Returns:
         List[Array2d]: A list of 2D arrays, each resulting from horizontally
@@ -202,7 +202,7 @@ def apply_and_concat_multiple_nb(
         ntimes (int): The number of times to execute `apply_func_nb`.
         apply_func_nb (Callable): Function that returns multiple arrays when provided with
             an index and additional arguments.
-        *args: Positional arguments passed to `apply_func_nb`.
+        *args: Positional arguments for `apply_func_nb`.
 
     Returns:
         List[Array2d]: A list of 2D arrays, each representing the concatenated outputs for
@@ -231,7 +231,7 @@ def apply_and_concat_each(
     Args:
         tasks (TasksLike): A collection of tasks, each encapsulating a function and its arguments.
         n_outputs (Optional[int]): The expected number of outputs produced by each task.
-        execute_kwargs (KwargsLike): Keyword arguments passed to the execution handler.
+        execute_kwargs (KwargsLike): Keyword arguments for the execution handler.
 
             See `vectorbtpro.utils.execution.execute` for details.
 
@@ -283,14 +283,14 @@ def apply_and_concat(
     Args:
         ntimes (int): The number of times to execute `apply_func`.
         apply_func (Callable): The function to be executed for each iteration.
-        *args: Positional arguments passed to `apply_func`.
+        *args: Positional arguments for `apply_func`.
         n_outputs (Optional[int]): The number of arrays returned by each function call.
         jitted_loop (bool): If True, use a JIT-compiled loop for execution.
         jitted_warmup (bool): If True, perform a warm-up call for the JIT-compiled function.
-        execute_kwargs (KwargsLike): Keyword arguments passed to the execution handler.
+        execute_kwargs (KwargsLike): Keyword arguments for the execution handler.
 
             See `vectorbtpro.utils.execution.execute` for details.
-        **kwargs: Keyword arguments passed to `apply_func` when not using a JIT-compiled loop.
+        **kwargs: Keyword arguments for `apply_func` when not using a JIT-compiled loop.
 
     Returns:
         Union[None, Array2d, List[Array2d]]:
@@ -362,7 +362,7 @@ def select_and_combine_nb(
         obj (Any): The primary object to combine.
         others (Sequence): A sequence of objects available for combination.
         combine_func_nb (Callable): A JIT-compiled function to combine `obj` and the selected element.
-        *args: Positional arguments passed to `combine_func_nb`.
+        *args: Positional arguments for `combine_func_nb`.
 
     Returns:
         AnyArray: The result of combining `obj` with the selected element.
@@ -435,9 +435,9 @@ def combine_and_concat(
         obj (Any): The primary object to combine.
         others (Sequence): A sequence of objects to combine with.
         combine_func (Callable): A function to combine two objects.
-        *args: Positional arguments for the combination function.
+        *args: Positional arguments for `combine_func`.
         jitted_loop (bool): Flag indicating whether to use a JIT-compiled loop.
-        **kwargs: Keyword arguments for the combination function.
+        **kwargs: Keyword arguments for `combine_func`.
 
     Returns:
         Array2d: The concatenated result obtained after combining the objects.
@@ -473,7 +473,7 @@ def combine_multiple_nb(
     Args:
         objs (Sequence): A sequence of objects to combine.
         combine_func_nb (Callable): A Numba-compiled function that combines two objects.
-        *args: Positional arguments for the combination function.
+        *args: Positional arguments for `combine_func_nb`.
 
     Returns:
         Any: The result obtained by pairwise combining all objects in the sequence.
@@ -496,9 +496,9 @@ def combine_multiple(
     Args:
         objs (Sequence): A sequence of objects to combine.
         combine_func (Callable): A function to combine two objects.
-        *args: Positional arguments for the combination function.
+        *args: Positional arguments for `combine_func`.
         jitted_loop (bool): Flag indicating whether to use the Numba JIT-compiled version.
-        **kwargs: Keyword arguments for the combination function.
+        **kwargs: Keyword arguments for `combine_func`.
 
     Returns:
         Any: The combined result after pairwise merging of the objects.

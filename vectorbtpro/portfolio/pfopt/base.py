@@ -365,7 +365,7 @@ def resolve_pypfopt_func_call(pypfopt_func: tp.Callable, **kwargs) -> tp.Any:
 
     Args:
         pypfopt_func (Callable): The PyPortfolioOpt function to be called.
-        **kwargs: Keyword arguments passed to `resolve_pypfopt_func_kwargs`.
+        **kwargs: Keyword arguments for `resolve_pypfopt_func_kwargs`.
 
     Returns:
         Any: The result of calling `pypfopt_func` with the resolved keyword arguments.
@@ -380,21 +380,20 @@ def resolve_pypfopt_expected_returns(
     """Resolve the expected returns.
 
     This function resolves the expected returns for portfolio optimization using pypfopt.
-    The input `expected_returns` is interpreted as follows:
-
-    * If an array, it is returned unchanged.
-    * If a callable, it is executed via `resolve_pypfopt_func_call`.
-    * If a string, it selects one of the following models:
-        * `mean_historical_return`: resolved from `pypfopt.expected_returns.mean_historical_return`
-        *  `ema_historical_return`: resolved from `pypfopt.expected_returns.ema_historical_return`
-        *  `capm_return`: resolved from `pypfopt.expected_returns.capm_return`
-        *  `bl_returns`: resolved from `pypfopt.black_litterman.BlackLittermanModel.bl_returns`
 
     Any provided function is invoked using `resolve_pypfopt_func_call`.
 
     Args:
         expected_returns (Union[Callable, AnyArray, str]): Expected returns indicator, function, or array.
-        **kwargs: Keyword arguments passed to the expected returns function.
+
+            * If an array, it is returned unchanged.
+            * If a callable, it is executed via `resolve_pypfopt_func_call`.
+            * If a string, it selects one of the following models:
+                * `mean_historical_return`: resolved from `pypfopt.expected_returns.mean_historical_return`
+                *  `ema_historical_return`: resolved from `pypfopt.expected_returns.ema_historical_return`
+                *  `capm_return`: resolved from `pypfopt.expected_returns.capm_return`
+                *  `bl_returns`: resolved from `pypfopt.black_litterman.BlackLittermanModel.bl_returns`
+        **kwargs: Keyword arguments for the expected returns function.
 
     Returns:
         AnyArray: The computed expected returns.
@@ -441,28 +440,27 @@ def resolve_pypfopt_cov_matrix(
     """Resolve the covariance matrix.
 
     This function resolves the covariance matrix for portfolio optimization using pypfopt.
-    The input `cov_matrix` is interpreted as follows:
-
-    * If an array, it is returned unchanged.
-    * If a callable, it is executed via `resolve_pypfopt_func_call`.
-    * If a string, it selects one of the following risk models:
-        * `sample_cov`: resolved from `pypfopt.risk_models.sample_cov`
-        * `semicovariance` or `semivariance`: resolved from `pypfopt.risk_models.semicovariance`
-        * `exp_cov`: resolved from `pypfopt.risk_models.exp_cov`
-        * `ledoit_wolf` or `ledoit_wolf_constant_variance`: resolved from
-            `pypfopt.risk_models.CovarianceShrinkage.ledoit_wolf` with constant variance shrinkage
-        * `ledoit_wolf_single_factor`: resolved from
-            `pypfopt.risk_models.CovarianceShrinkage.ledoit_wolf` with single factor shrinkage
-        * `ledoit_wolf_constant_correlation`: resolved from
-            `pypfopt.risk_models.CovarianceShrinkage.ledoit_wolf` with constant correlation shrinkage
-        * `oracle_approximating`: resolved from
-            `pypfopt.risk_models.CovarianceShrinkage.ledoit_wolf` with oracle approximating shrinkage
 
     Any provided function is invoked using `resolve_pypfopt_func_call`.
 
     Args:
         cov_matrix (Union[Callable, AnyArray, str]): Covariance matrix indicator, function, or array.
-        **kwargs: Keyword arguments passed to the covariance model function.
+
+            * If an array, it is returned unchanged.
+            * If a callable, it is executed via `resolve_pypfopt_func_call`.
+            * If a string, it selects one of the following risk models:
+                * `sample_cov`: resolved from `pypfopt.risk_models.sample_cov`
+                * `semicovariance` or `semivariance`: resolved from `pypfopt.risk_models.semicovariance`
+                * `exp_cov`: resolved from `pypfopt.risk_models.exp_cov`
+                * `ledoit_wolf` or `ledoit_wolf_constant_variance`: resolved from
+                    `pypfopt.risk_models.CovarianceShrinkage.ledoit_wolf` with constant variance shrinkage
+                * `ledoit_wolf_single_factor`: resolved from
+                    `pypfopt.risk_models.CovarianceShrinkage.ledoit_wolf` with single factor shrinkage
+                * `ledoit_wolf_constant_correlation`: resolved from
+                    `pypfopt.risk_models.CovarianceShrinkage.ledoit_wolf` with constant correlation shrinkage
+                * `oracle_approximating`: resolved from
+                    `pypfopt.risk_models.CovarianceShrinkage.ledoit_wolf` with oracle approximating shrinkage
+        **kwargs: Keyword arguments for the covariance model function.
 
     Returns:
         AnyArray: The computed covariance matrix.
@@ -526,6 +524,7 @@ def resolve_pypfopt_optimizer(
     Args:
         optimizer (Union[Callable, BaseOptimizerT, str]):
             Either an instance, callable, or subclass of `pypfopt.base_optimizer.BaseOptimizer`.
+
             Alternatively, one of the following string identifiers is supported:
 
             * 'efficient_frontier': `pypfopt.efficient_frontier.EfficientFrontier`
@@ -535,7 +534,7 @@ def resolve_pypfopt_optimizer(
             * 'black_litterman' or 'bl': `pypfopt.black_litterman.BlackLittermanModel`
             * 'hierarchical_portfolio', 'hrpopt', or 'hrp': `pypfopt.hierarchical_portfolio.HRPOpt`
             * 'cla': `pypfopt.cla.CLA`
-        **kwargs: Keyword arguments for optimizer configuration.
+        **kwargs: Keyword arguments for the optimization function.
 
     Returns:
         BaseOptimizer: An instance of `pypfopt.base_optimizer.BaseOptimizer`.
@@ -662,7 +661,8 @@ def pypfopt_optimize(
         silence_warnings (Optional[bool]): Suppress warnings if True.
         ignore_opt_errors (Optional[bool]): Ignore errors related to target optimization if True.
         ignore_errors (Optional[bool]): Ignore all errors if True.
-        **kwargs: Additional arguments forwarded to underlying functions.
+        **kwargs: Keyword arguments for PyPortfolioOpt functions through
+            `resolve_pypfopt_func_kwargs` and `resolve_pypfopt_func_call`.
 
     Returns:
         Dict[str, float]: Dictionary mapping asset symbols to their allocated weights.
@@ -1345,7 +1345,7 @@ def riskfolio_optimize(
         silence_warnings (Optional[bool]): Whether to silence all warnings.
         return_port (Optional[bool]): Whether to return the portfolio along with the allocation weights.
         ignore_errors (Optional[bool]): Whether to ignore errors and return an empty dictionary.
-        **kwargs: Keyword arguments passed to any Riskfolio-Lib function that requires them.
+        **kwargs: Keyword arguments for Riskfolio-Lib functions through `resolve_riskfolio_func_kwargs`.
 
     Returns:
         Union[Dict[str, float], Tuple[Dict[str, float], Union[RPortfolio, RHCPortfolio]]]:
@@ -1836,7 +1836,7 @@ class PortfolioOptimizer(Analyzable):
         wrapper (ArrayWrapper): The array wrapper instance.
         alloc_records (Union[AllocRanges, AllocPoints]): Allocation records associated with the portfolio.
         allocations (Array2d): A 2D array containing allocation values.
-        **kwargs: Keyword arguments for configuration.
+        **kwargs: Keyword arguments for `vectorbtpro.generic.analyzable.Analyzable`.
     """
 
     def __init__(
@@ -1863,7 +1863,7 @@ class PortfolioOptimizer(Analyzable):
     @hybrid_method
     def row_stack(
         cls_or_self: tp.MaybeType[PortfolioOptimizerT],
-        *objs: tp.MaybeTuple[PortfolioOptimizerT],
+        *objs: tp.MaybeSequence[PortfolioOptimizerT],
         wrapper_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> PortfolioOptimizerT:
@@ -1872,10 +1872,11 @@ class PortfolioOptimizer(Analyzable):
         Uses `vectorbtpro.base.wrapping.ArrayWrapper.row_stack` to stack the wrappers.
 
         Args:
-            *objs (PortfolioOptimizer): Additional `PortfolioOptimizer` instances to stack along rows.
+            *objs (MaybeSequence[PortfolioOptimizer]): (Additional) `PortfolioOptimizer` instances to stack.
             wrapper_kwargs (KwargsLike): Keyword arguments for configuring
                 `vectorbtpro.base.wrapping.ArrayWrapper.row_stack`.
-            **kwargs (KwargsLike): Keyword arguments for constructing the stacked instance.
+            **kwargs: Keyword arguments for `PortfolioOptimizer` through
+                `PortfolioOptimizer.resolve_row_stack_kwargs` and `PortfolioOptimizer.resolve_stack_kwargs`.
 
         Returns:
             PortfolioOptimizer: A new `PortfolioOptimizer` instance with row-stacked attributes.
@@ -1924,7 +1925,7 @@ class PortfolioOptimizer(Analyzable):
     @hybrid_method
     def column_stack(
         cls_or_self: tp.MaybeType[PortfolioOptimizerT],
-        *objs: tp.MaybeTuple[PortfolioOptimizerT],
+        *objs: tp.MaybeSequence[PortfolioOptimizerT],
         wrapper_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> PortfolioOptimizerT:
@@ -1933,10 +1934,11 @@ class PortfolioOptimizer(Analyzable):
         Uses `vectorbtpro.base.wrapping.ArrayWrapper.column_stack` to stack the wrappers.
 
         Args:
-            *objs (PortfolioOptimizer): Additional `PortfolioOptimizer` instances to stack along columns.
+            *objs (MaybeSequence[PortfolioOptimizer]): (Additional) `PortfolioOptimizer` instances to stack.
             wrapper_kwargs (KwargsLike): Keyword arguments for configuring
                 `vectorbtpro.base.wrapping.ArrayWrapper.column_stack`.
-            **kwargs (KwargsLike): Keyword arguments for constructing the stacked instance.
+            **kwargs: Keyword arguments for `PortfolioOptimizer` through
+                `PortfolioOptimizer.resolve_column_stack_kwargs` and `PortfolioOptimizer.resolve_stack_kwargs`.
 
         Returns:
             PortfolioOptimizer: A new `PortfolioOptimizer` instance with column-stacked attributes.
@@ -1993,11 +1995,11 @@ class PortfolioOptimizer(Analyzable):
         """Perform indexing on a `PortfolioOptimizer` instance.
 
         Args:
-            *args: Positional arguments for indexing.
+            *args: Positional arguments for `vectorbtpro.base.wrapping.ArrayWrapper.indexing_func_meta`.
             wrapper_meta (DictLike): Metadata for the wrapper's indexing function.
             alloc_wrapper_meta (DictLike): Metadata for the allocation wrapper indexing.
             alloc_records_meta (DictLike): Metadata for the allocation records indexing.
-            **kwargs (KwargsLike): Keyword arguments for indexing.
+            **kwargs: Keyword arguments for `vectorbtpro.base.wrapping.ArrayWrapper.indexing_func_meta`.
 
         Returns:
             PortfolioOptimizer: A new `PortfolioOptimizer` instance with updated indexing.
@@ -2026,8 +2028,8 @@ class PortfolioOptimizer(Analyzable):
         """Perform resampling on a `PortfolioOptimizer` instance.
 
         Args:
-            *args: Positional arguments for resampling.
-            **kwargs (KwargsLike): Keyword arguments for resampling.
+            *args: Positional arguments for `vectorbtpro.base.wrapping.ArrayWrapper.resample`.
+            **kwargs: Keyword arguments for `vectorbtpro.base.wrapping.ArrayWrapper.resample`.
 
         Returns:
             PortfolioOptimizer: A new `PortfolioOptimizer` instance with resampled attributes.
@@ -2262,7 +2264,7 @@ class PortfolioOptimizer(Analyzable):
             wrapper (ArrayWrapper): An instance of `vectorbtpro.base.wrapping.ArrayWrapper`
                 containing the data and column configuration.
             allocate_func (Callable): The function that computes allocations.
-            *args: Positional arguments passed to the allocation function.
+            *args: Positional arguments for `allocate_func`.
             every (Union[None, FrequencyLike, Param]): See `vectorbtpro.base.indexing.PointIdxr.every`.
             normalize_every (Union[bool, Param]): See `vectorbtpro.base.indexing.PointIdxr.normalize_every`.
             at_time (Union[None, TimeLike, Param]): See `vectorbtpro.base.indexing.PointIdxr.at_time`.
@@ -2292,7 +2294,7 @@ class PortfolioOptimizer(Analyzable):
                 See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             template_context (KwargsLike): Additional context for template substitution.
             group_execute_kwargs (KwargsLike): Keyword arguments for executing allocation groups.
-            execute_kwargs (KwargsLike): Keyword arguments passed to the execution handler.
+            execute_kwargs (KwargsLike): Keyword arguments for the execution handler.
 
                 See `vectorbtpro.utils.execution.execute` for details.
             random_subset (Optional[int]): Limit for randomly selecting a subset of parameters.
@@ -2301,7 +2303,7 @@ class PortfolioOptimizer(Analyzable):
                 See `vectorbtpro.base.indexes.clean_index` for details.
             wrapper_kwargs (KwargsLike): Keyword arguments for configuring the output
                 `vectorbtpro.base.wrapping.ArrayWrapper`.
-            **kwargs: Keyword arguments passed to the allocation function.
+            **kwargs: Keyword arguments for `allocate_func`.
 
         Returns:
             PortfolioOptimizer: An instance of portfolio optimizer containing allocation points and allocations.
@@ -2658,7 +2660,7 @@ class PortfolioOptimizer(Analyzable):
         Args:
             wrapper (ArrayWrapper): The array wrapper instance.
             allocations (ArrayLike): The flexible array containing allocation data.
-            **kwargs: Keyword arguments for allocation configuration.
+            **kwargs: Keyword arguments for `PortfolioOptimizer.from_allocate_func`.
 
         Returns:
             PortfolioOptimizer: An instance of the portfolio optimizer with the specified allocations.
@@ -2719,7 +2721,7 @@ class PortfolioOptimizer(Analyzable):
         Args:
             wrapper (ArrayWrapper): The array wrapper instance.
             allocations (ArrayLike): The flexible array containing allocation data.
-            **kwargs: Keyword arguments for allocation configuration.
+            **kwargs: Keyword arguments for `PortfolioOptimizer.from_allocations`.
 
         Returns:
             PortfolioOptimizer: An instance of the portfolio optimizer with the initial allocation
@@ -2751,7 +2753,7 @@ class PortfolioOptimizer(Analyzable):
             wrapper (Optional[ArrayWrapper]): The array wrapper instance.
 
                 Required if allocations is not a DataFrame.
-            **kwargs: Keyword arguments for allocation configuration.
+            **kwargs: Keyword arguments for `PortfolioOptimizer.from_allocate_func`.
 
         Returns:
             PortfolioOptimizer: An instance of the portfolio optimizer with the filled allocations.
@@ -2788,7 +2790,7 @@ class PortfolioOptimizer(Analyzable):
 
         Args:
             wrapper (ArrayWrapper): The array wrapper instance.
-            **kwargs: Keyword arguments for allocation configuration.
+            **kwargs: Keyword arguments for `PortfolioOptimizer.from_allocate_func`.
 
         Returns:
             PortfolioOptimizer: An instance of the portfolio optimizer with uniform allocations.
@@ -2820,7 +2822,7 @@ class PortfolioOptimizer(Analyzable):
                 See `vectorbtpro.portfolio.enums.Direction` for available options.
             n (Optional[int]): Number of random allocations to generate.
             seed (Optional[int]): Seed for random number generation.
-            **kwargs: Keyword arguments for allocation configuration.
+            **kwargs: Keyword arguments for `PortfolioOptimizer.from_allocate_func`.
 
         Returns:
             PortfolioOptimizer: An instance of the portfolio optimizer with random allocations.
@@ -2876,7 +2878,7 @@ class PortfolioOptimizer(Analyzable):
             wrapper (Optional[ArrayWrapper]): The array wrapper instance.
 
                 Required if `S` is not a DataFrame.
-            **kwargs: Keyword arguments for allocation configuration.
+            **kwargs: Keyword arguments for `PortfolioOptimizer.from_allocate_func`.
 
         Returns:
             PortfolioOptimizer: An instance of the portfolio optimizer with allocations generated
@@ -3312,7 +3314,7 @@ class PortfolioOptimizer(Analyzable):
             wrapper (ArrayWrapper): The array wrapper containing data used for optimization.
             optimize_func (Callable): The optimization function that computes asset allocations
                 based on a given date range.
-            *args: Positional arguments passed to the optimization function.
+            *args: Positional arguments for `optimize_func`.
             every (Union[None, FrequencyLike, Param]): See `vectorbtpro.base.indexing.RangeIdxr.every`.
             normalize_every (Union[bool, Param]): See `vectorbtpro.base.indexing.RangeIdxr.normalize_every`.
             split_every (Union[bool, Param]): See `vectorbtpro.base.indexing.RangeIdxr.split_every`.
@@ -3349,7 +3351,7 @@ class PortfolioOptimizer(Analyzable):
                 See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             template_context (KwargsLike): Additional context for template substitution.
             group_execute_kwargs (KwargsLike): Keyword arguments for executing optimization groups.
-            execute_kwargs (KwargsLike): Keyword arguments passed to the execution handler.
+            execute_kwargs (KwargsLike): Keyword arguments for the execution handler.
 
                 See `vectorbtpro.utils.execution.execute` for details.
             random_subset (Optional[int]): Limit for randomly selecting a subset of parameters.
@@ -3358,7 +3360,7 @@ class PortfolioOptimizer(Analyzable):
                 See `vectorbtpro.base.indexes.clean_index` for details.
             wrapper_kwargs (KwargsLike): Keyword arguments for configuring the output
                 `vectorbtpro.base.wrapping.ArrayWrapper`.
-            **kwargs: Keyword arguments passed to the allocation function.
+            **kwargs: Keyword arguments for `optimize_func`.
 
         Returns:
             PortfolioOptimizer: A new instance of `PortfolioOptimizer` with generated allocation results.
@@ -3743,8 +3745,7 @@ class PortfolioOptimizer(Analyzable):
                 `vectorbtpro.base.wrapping.ArrayWrapper` used for data handling.
 
                 Must be provided if `prices` and `returns` arguments are not available.
-            **kwargs: Keyword arguments forwarded to both
-                `PortfolioOptimizer.from_optimize_func` and `pypfopt_optimize`.
+            **kwargs: Keyword arguments for `PortfolioOptimizer.from_optimize_func` and `pypfopt_optimize`.
 
         Returns:
             PortfolioOptimizer: A portfolio optimizer instance.
@@ -3780,8 +3781,7 @@ class PortfolioOptimizer(Analyzable):
                 `vectorbtpro.base.wrapping.ArrayWrapper` used for data handling.
 
                 Must be provided if `returns` is a template.
-            **kwargs: Keyword arguments forwarded to both
-                `PortfolioOptimizer.from_optimize_func` and `riskfolio_optimize`.
+            **kwargs: Keyword arguments for `PortfolioOptimizer.from_optimize_func` and `riskfolio_optimize`.
 
         Returns:
             PortfolioOptimizer: A portfolio optimizer instance.
@@ -3922,8 +3922,7 @@ class PortfolioOptimizer(Analyzable):
 
         Args:
             close (Union[ArrayLike, Data]): Asset closing price data used for simulation.
-            **kwargs: Keyword arguments passed to
-                `vectorbtpro.portfolio.base.Portfolio.from_optimizer`.
+            **kwargs: Keyword arguments for `vectorbtpro.portfolio.base.Portfolio.from_optimizer`.
 
         Returns:
             Portfolio: A simulated portfolio instance.
@@ -4024,11 +4023,11 @@ class PortfolioOptimizer(Analyzable):
             plot_rb_dates (Optional[bool]): Whether to plot rebalancing dates.
 
                 Defaults to True if there are no more than 20 rebalancing dates.
-            trace_kwargs (KwargsLikeSequence): Keyword arguments passed to `plotly.graph_objects.Scatter`.
-            add_shape_kwargs (KwargsLike): Keyword arguments passed to `fig.add_trace` for each shape.
-            add_trace_kwargs (KwargsLike): Keyword arguments passed to `fig.add_trace` for each trace.
+            trace_kwargs (KwargsLikeSequence): Keyword arguments for `plotly.graph_objects.Scatter`.
+            add_shape_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each shape.
+            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
-            **layout_kwargs: Keyword arguments for configuring the figure layout.
+            **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
         Returns:
             BaseFigure: The figure containing the allocation plot.

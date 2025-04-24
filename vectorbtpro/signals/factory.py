@@ -49,13 +49,13 @@ class SignalFactory(IndicatorFactory):
     See `vectorbtpro.signals.enums.FactoryMode` for supported generation modes.
 
     Args:
-        *args: Positional arguments passed to `vectorbtpro.indicators.factory.IndicatorFactory`.
+        *args: Positional arguments for `vectorbtpro.indicators.factory.IndicatorFactory`.
         mode (Union[str, int]): Factory mode controlling generated outputs, mapped to a `FactoryMode` value.
         input_names (Optional[Sequence[str]]): Sequence of input names.
 
             Reserved names "entries" and "exits" are not allowed.
         attr_settings (KwargsLike): Settings for attributes, where each key maps to a dictionary of options.
-        **kwargs: Keyword arguments passed to `vectorbtpro.indicators.factory.IndicatorFactory`.
+        **kwargs: Keyword arguments for `vectorbtpro.indicators.factory.IndicatorFactory`.
     """
 
     def __init__(
@@ -207,8 +207,7 @@ class SignalFactory(IndicatorFactory):
                 exit_trace_kwargs (KwargsLike): Keyword arguments for plotting exits, forwarded to 
                     `vectorbtpro.signals.accessors.SignalsSRAccessor.plot_as_exits` for `{0}.exits`.
                 fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
-                **kwargs: Keyword arguments passed to 
-                    `vectorbtpro.signals.accessors.SignalsSRAccessor.plot_as_markers`.
+                **kwargs: Keyword arguments for `vectorbtpro.signals.accessors.SignalsSRAccessor.plot_as_markers`.
     
             Returns:
                 BaseFigure: Updated figure with plotted signals.
@@ -274,7 +273,7 @@ class SignalFactory(IndicatorFactory):
             entry_settings (KwargsLike): Settings dictionary for the entry placement function.
             exit_settings (KwargsLike): Settings dictionary for the exit placement function.
             cache_settings (KwargsLike): Settings dictionary for the cache function.
-            jit_kwargs (KwargsLike): Keyword arguments passed to the `@njit` decorator of the parameter
+            jit_kwargs (KwargsLike): Keyword arguments for the `@njit` decorator of the parameter
                 selection function.
 
                 By default, sets `nogil` to True.
@@ -283,7 +282,7 @@ class SignalFactory(IndicatorFactory):
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
 
                 If the generation function is not jitted, the apply function will not be jitted.
-            **kwargs: Keyword arguments passed to `IndicatorFactory.with_custom_func`.
+            **kwargs: Keyword arguments for `IndicatorFactory.with_custom_func`.
 
         Returns:
             Type[IndicatorBase]: A custom signal generator class configured with
@@ -743,7 +742,7 @@ class SignalFactory(IndicatorFactory):
                     including arguments from `pass_kwargs`.
                 return_cache (bool): Indicates whether to return only the cache.
                 use_cache (Optional[IFCacheOutput]): Cache to use.
-                execute_kwargs (KwargsLike): Keyword arguments passed to the execution handler.
+                execute_kwargs (KwargsLike): Keyword arguments for the execution handler.
 
                     See `vectorbtpro.utils.execution.execute` for details.
                 **kwargs: Default keyword arguments based on the mode.

@@ -58,7 +58,7 @@ class ProgressBar(Base):
         desc_kwargs (KwargsLike): Keyword arguments for customizing the description.
         registry (Optional[PBarRegistry]): Registry for managing progress bar instances.
         silence_warnings (Optional[bool]): Flag to suppress warnings.
-        **kwargs: Keyword arguments for progress bar initialization.
+        **kwargs: Keyword arguments for the progress bar constructor.
 
     !!! info
         For default settings, see `vectorbtpro._settings.pbar`.
@@ -740,7 +740,7 @@ class ProgressBar(Base):
         the provided keyword arguments.
 
         Args:
-            **kwargs: Keyword arguments passed to `ProgressBar.open`.
+            **kwargs: Keyword arguments for `ProgressBar.open`.
 
         Returns:
             Self: The progress bar instance.
@@ -756,7 +756,7 @@ class ProgressBar(Base):
         """Exit the progress bar.
 
         Args:
-            **kwargs: Keyword arguments passed to `ProgressBar.close`.
+            **kwargs: Keyword arguments for `ProgressBar.close`.
 
         Returns:
             None
@@ -878,7 +878,7 @@ def with_progress_hidden(*args) -> tp.Callable:
     """Return a decorator that runs a function within a `ProgressHidden` context.
 
     Args:
-        *args: Positional arguments passed to the decorator.
+        func (Callable): Function to be decorated.
 
     Returns:
         Callable: A decorated function that executes with progress hidden.
@@ -973,7 +973,7 @@ def with_progress_shown(*args) -> tp.Callable:
     """Return a decorator that runs a function within a `ProgressShown` context.
 
     Args:
-        *args: Positional arguments passed to the decorator.
+        func (Callable): Function to be decorated.
 
     Returns:
         Callable: A decorated function that executes with progress shown.

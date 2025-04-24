@@ -253,7 +253,7 @@ class QSAdapter(Configured):
     Args:
         returns_acc (ReturnsAccessor): The returns accessor instance.
         defaults (KwargsLike): Default parameters.
-        **kwargs: Keyword arguments for configuration.
+        **kwargs: Keyword arguments for `vectorbtpro.utils.config.Configured`.
     """
 
     def __init__(self, returns_acc: ReturnsAccessor, defaults: tp.KwargsLike = None, **kwargs) -> None:
@@ -268,7 +268,7 @@ class QSAdapter(Configured):
         """Call the instance to update its configuration.
 
         Args:
-            **kwargs: Additional keyword arguments.
+            **kwargs: Keyword arguments for `QSAdapter.replace`.
 
         Returns:
             QSAdapter: A new instance with updated configuration.

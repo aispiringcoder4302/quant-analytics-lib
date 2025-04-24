@@ -205,7 +205,7 @@ class Vbt_IDXAccessor(DirNamesMixin, BaseIDXAccessor):
 
     Args:
         obj (Index): The pandas Index object.
-        **kwargs: Keyword arguments passed to `vectorbtpro.base.accessors.BaseIDXAccessor`.
+        **kwargs: Keyword arguments for `vectorbtpro.base.accessors.BaseIDXAccessor`.
     """
 
     def __init__(self, obj: tp.Index, **kwargs) -> None:
@@ -227,7 +227,7 @@ class Vbt_Accessor(DirNamesMixin, GenericAccessor):
     Args:
         wrapper (Union[ArrayWrapper, ArrayLike]): Array wrapper or array-like object.
         obj (Optional[ArrayLike]): An optional object for initialization.
-        **kwargs: Keyword arguments passed to `vectorbtpro.generic.accessors.GenericAccessor`.
+        **kwargs: Keyword arguments for `vectorbtpro.generic.accessors.GenericAccessor`.
     """
 
     def __init__(
@@ -253,7 +253,7 @@ class Vbt_SRAccessor(DirNamesMixin, GenericSRAccessor):
     Args:
         wrapper (Union[ArrayWrapper, ArrayLike]): Array wrapper or an array-like object.
         obj (Optional[ArrayLike]): An optional object for initialization.
-        **kwargs: Keyword arguments passed to `vectorbtpro.generic.accessors.GenericSRAccessor`.
+        **kwargs: Keyword arguments for `vectorbtpro.generic.accessors.GenericSRAccessor`.
     """
 
     def __init__(
@@ -279,7 +279,7 @@ class Vbt_DFAccessor(DirNamesMixin, GenericDFAccessor):
     Args:
         wrapper (Union[ArrayWrapper, ArrayLike]): Array wrapper or array-like data.
         obj (Optional[ArrayLike]): Optional data object.
-        **kwargs: Keyword arguments passed to `vectorbtpro.generic.accessors.GenericDFAccessor`.
+        **kwargs: Keyword arguments for `vectorbtpro.generic.accessors.GenericDFAccessor`.
     """
 
     def __init__(

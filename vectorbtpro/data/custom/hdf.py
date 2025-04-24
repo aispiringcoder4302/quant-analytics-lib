@@ -131,14 +131,14 @@ class HDFData(FileData):
     ) -> tp.List[Path]:
         """Return a list of HDF paths matching the provided path.
 
-        Overrides `FileData.match_path` to locate HDF files and extract HDF keys.
+        Overrides `vectorbtpro.data.custom.file.FileData.match_path` to locate HDF files and extract HDF keys.
 
         Args:
             path (PathLike): The base path to search for HDF files.
             match_regex (Optional[str]): A regular expression to filter matching paths.
             sort_paths (bool): Flag indicating whether to sort the resulting paths.
             recursive (bool): Flag indicating whether to search directories recursively.
-            **kwargs: Keyword arguments for the matching process.
+            **kwargs: Keyword arguments for `HDFData.match_path`.
 
         Returns:
             List[Path]: A list of HDF paths, where each path represents a file with its HDF key appended.
@@ -273,7 +273,7 @@ class HDFData(FileData):
             chunk_func (Optional[Callable]): Function to process and concatenate chunks from `TableIterator`.
 
                 Called only if the iterator or chunksize is set.
-            **read_kwargs: Keyword arguments passed to `pd.read_hdf`.
+            **read_kwargs: Keyword arguments for `pd.read_hdf`.
 
                 See https://pandas.pydata.org/docs/reference/api/pandas.read_hdf.html for additional arguments.
 
@@ -351,8 +351,6 @@ class HDFData(FileData):
     def fetch_feature(cls, feature: tp.Feature, **kwargs) -> tp.FeatureData:
         """Fetch the HDF object for a feature.
 
-        Uses `HDFData.fetch_key`.
-
         Args:
             feature (Feature): Feature identifier.
             **kwargs: Keyword arguments for `HDFData.fetch_key`.
@@ -365,8 +363,6 @@ class HDFData(FileData):
     @classmethod
     def fetch_symbol(cls, symbol: tp.Symbol, **kwargs) -> tp.SymbolData:
         """Fetch the HDF object for a symbol.
-
-        Uses `HDFData.fetch_key`.
 
         Args:
             symbol (Symbol): Symbol identifier.
@@ -383,7 +379,7 @@ class HDFData(FileData):
         Args:
             key (Key): Feature or symbol identifier.
             key_is_feature (bool): Indicator whether the key represents a feature.
-            **kwargs: Keyword arguments for fetching data.
+            **kwargs: Keyword arguments for `HDFData.fetch_feature` or `HDFData.fetch_symbol`.
 
         Returns:
             KeyData: The updated data and a metadata dictionary.

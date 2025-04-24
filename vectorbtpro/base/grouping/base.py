@@ -60,7 +60,7 @@ class Grouper(Configured):
         allow_enable (bool): Indicates if enabling grouping is permitted when group_by is None.
         allow_disable (bool): Indicates if disabling grouping is permitted when group_by is not None.
         allow_modify (bool): Indicates if modifying groups is allowed.
-        **kwargs: Keyword arguments for configuration.
+        **kwargs: Keyword arguments for `vectorbtpro.utils.config.Configured`.
     """
 
     def __init__(
@@ -297,7 +297,7 @@ class Grouper(Configured):
             cls (Type[Grouper]): The `Grouper` class.
             pd_group_by (PandasGroupByLike): A pandas `GroupBy` or
                 `vectorbtpro.base.resampling.base.Resampler` object.
-            **kwargs: Keyword arguments passed to the constructor.
+            **kwargs: Keyword arguments for `Grouper`.
 
         Returns:
             Grouper: A new instance of `Grouper`.
@@ -475,7 +475,7 @@ class Grouper(Configured):
             group_by (GroupByLike): Grouping specification.
 
                 If not provided, uses `Grouper.group_by`.
-            **kwargs: Keyword arguments passed to `Grouper.check_group_by`.
+            **kwargs: Keyword arguments for `Grouper.check_group_by`.
 
         Returns:
             GroupBy: The resolved grouping index.
@@ -495,7 +495,7 @@ class Grouper(Configured):
             group_by (GroupByLike): Grouping specification.
 
                 If not provided, uses `Grouper.group_by`.
-            **kwargs: Keyword arguments passed to `Grouper.resolve_group_by`.
+            **kwargs: Keyword arguments for `Grouper.resolve_group_by`.
 
         Returns:
             Tuple[Array1d, Index]: A tuple containing the groups array and the grouped index.
@@ -507,7 +507,7 @@ class Grouper(Configured):
         """Return the groups array.
 
         Args:
-            **kwargs: Keyword arguments passed to `Grouper.get_groups_and_index`.
+            **kwargs: Keyword arguments for `Grouper.get_groups_and_index`.
 
         Returns:
             Array1d: An array representing group labels for each index entry.
@@ -518,7 +518,7 @@ class Grouper(Configured):
         """Return the grouped index.
 
         Args:
-            **kwargs: Keyword arguments passed to `Grouper.get_groups_and_index`.
+            **kwargs: Keyword arguments for `Grouper.get_groups_and_index`.
 
         Returns:
             Index: The grouped index.
@@ -540,7 +540,7 @@ class Grouper(Configured):
         """Return the stretched index, computed by applying the groups mapping to the index.
 
         Args:
-            **kwargs: Keyword arguments passed to `Grouper.get_groups_and_index`.
+            **kwargs: Keyword arguments for `Grouper.get_groups_and_index`.
 
         Returns:
             Index: The stretched index.
@@ -552,7 +552,7 @@ class Grouper(Configured):
         """Return the number of groups computed from the grouped index.
 
         Args:
-            **kwargs: Keyword arguments passed to `Grouper.get_index`.
+            **kwargs: Keyword arguments for `Grouper.get_index`.
 
         Returns:
             int: The number of groups.
@@ -567,7 +567,7 @@ class Grouper(Configured):
             group_by (GroupByLike): Grouping specification.
 
                 If not provided, uses `Grouper.group_by`.
-            **kwargs: Keyword arguments passed to `Grouper.resolve_group_by`.
+            **kwargs: Keyword arguments for `Grouper.resolve_group_by`.
 
         Returns:
             bool: True if groups are monolithic and sorted, False otherwise.
@@ -592,7 +592,7 @@ class Grouper(Configured):
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
-            **kwargs: Keyword arguments passed to `Grouper.resolve_group_by`.
+            **kwargs: Keyword arguments for `Grouper.resolve_group_by`.
 
         Returns:
             GroupLens: An array containing the length of each group.
@@ -616,7 +616,7 @@ class Grouper(Configured):
         """Return the starting indices of each group.
 
         Args:
-            **kwargs: Keyword arguments passed to `Grouper.get_group_lens`.
+            **kwargs: Keyword arguments for `Grouper.get_group_lens`.
 
         Returns:
             Array1d: An array containing the first index of each group.
@@ -628,7 +628,7 @@ class Grouper(Configured):
         """Return the ending indices of each group.
 
         Args:
-            **kwargs: Keyword arguments passed to `Grouper.get_group_lens`.
+            **kwargs: Keyword arguments for `Grouper.get_group_lens`.
 
         Returns:
             Array1d: An array containing the end index for each group.
@@ -652,7 +652,7 @@ class Grouper(Configured):
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
-            **kwargs: Keyword arguments passed to `Grouper.resolve_group_by`.
+            **kwargs: Keyword arguments for `Grouper.resolve_group_by`.
 
         Returns:
             GroupMap: A tuple containing the group mapping.
@@ -674,7 +674,7 @@ class Grouper(Configured):
         """Iterate over the indices corresponding to each group.
 
         Args:
-            **kwargs: Keyword arguments passed to `Grouper.get_group_map`.
+            **kwargs: Keyword arguments for `Grouper.get_group_map`.
 
         Returns:
             Iterator[GroupIdxs]: An iterator over the indices for each group.
@@ -692,7 +692,7 @@ class Grouper(Configured):
         Args:
             key_as_index (bool): If True, returns the group key as a subset of the index.
 
-            **kwargs: Keyword arguments passed to `Grouper.get_index` and `Grouper.iter_group_idxs`.
+            **kwargs: Keyword arguments for `Grouper.get_index` and `Grouper.iter_group_idxs`.
 
         Yields:
             Iterator[Tuple[Union[Hashable, Index], GroupIdxs]]: A tuple containing:

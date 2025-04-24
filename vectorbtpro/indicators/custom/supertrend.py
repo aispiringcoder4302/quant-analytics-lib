@@ -64,9 +64,9 @@ class _SUPERTREND(SUPERTREND):
                 the `SUPERTREND.long` trace in `plotly.graph_objects.Scatter`.
             supers_trace_kwargs (KwargsLike): Keyword arguments for configuring
                 the `SUPERTREND.short` trace in `plotly.graph_objects.Scatter`.
-            add_trace_kwargs (KwargsLike): Keyword arguments passed to `fig.add_trace` for each trace.
+            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
-            **layout_kwargs: Keyword arguments for configuring the figure layout.
+            **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
         Returns:
             BaseFigure: The figure containing the plotted indicator traces.

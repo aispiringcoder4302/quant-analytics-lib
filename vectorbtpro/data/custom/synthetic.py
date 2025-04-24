@@ -56,16 +56,15 @@ class SyntheticData(CustomData):
     def generate_feature(cls, feature: tp.Feature, index: tp.Index, **kwargs) -> tp.FeatureData:
         """Abstract method to generate synthetic data for a feature.
 
+        Calls `SyntheticData.generate_key` with `key_is_feature=True`.
+
         Args:
             feature (Feature): Identifier of the feature.
             index (Index): Datetime index over which synthetic data is generated.
-            **kwargs: Additional keyword arguments.
+            **kwargs: Keyword arguments for `SyntheticData.generate_key`.
 
         Returns:
             FeatureData: The generated data and a metadata dictionary.
-
-        !!! note
-            Calls `SyntheticData.generate_key` with `key_is_feature=True`.
         """
         return cls.generate_key(feature, index, key_is_feature=True, **kwargs)
 
@@ -73,16 +72,15 @@ class SyntheticData(CustomData):
     def generate_symbol(cls, symbol: tp.Symbol, index: tp.Index, **kwargs) -> tp.SymbolData:
         """Abstract method to generate synthetic data for a symbol.
 
+        Calls `SyntheticData.generate_key` with `key_is_feature=False`.
+
         Args:
             symbol (Symbol): Identifier of the symbol.
             index (Index): Datetime index over which synthetic data is generated.
-            **kwargs: Additional keyword arguments.
+            **kwargs: Keyword arguments for `SyntheticData.generate_key`.
 
         Returns:
             SymbolData: The generated data and a metadata dictionary.
-
-        !!! note
-            Calls `SyntheticData.generate_key` with `key_is_feature=False`.
         """
         return cls.generate_key(symbol, index, key_is_feature=False, **kwargs)
 
@@ -102,8 +100,7 @@ class SyntheticData(CustomData):
     ) -> tp.KeyData:
         """Generate synthetic data for a given key (feature or symbol).
 
-        Generates a datetime index using `vectorbtpro.utils.datetime_.date_range` and passes it to
-        `SyntheticData.generate_key` to produce synthetic data.
+        Generates a datetime index using `vectorbtpro.utils.datetime_.date_range`.
 
         Args:
             key (Symbol): Identifier of the feature or symbol.
@@ -115,7 +112,8 @@ class SyntheticData(CustomData):
             tz (TimezoneLike): Timezone for the generated data.
             normalize (Optional[bool]): If True, normalizes the datetime index.
             inclusive (Optional[str]): Inclusivity setting for the datetime range.
-            **kwargs: Additional keyword arguments.
+            **kwargs: Keyword arguments for `SyntheticData.generate_feature` or
+                `SyntheticData.generate_symbol`.
 
         Returns:
             SymbolData: The fetched data and a metadata dictionary.
@@ -151,7 +149,7 @@ class SyntheticData(CustomData):
 
         Args:
             feature (Feature): Identifier of the feature.
-            **kwargs: Additional keyword arguments.
+            **kwargs: Keyword arguments for `SyntheticData.fetch_key`.
 
         Returns:
             FeatureData: The fetched data and a metadata dictionary.
@@ -166,7 +164,7 @@ class SyntheticData(CustomData):
 
         Args:
             symbol (Symbol): Identifier of the symbol.
-            **kwargs: Additional keyword arguments.
+            **kwargs: Keyword arguments for `SyntheticData.fetch_key`.
 
         Returns:
             SymbolData: The fetched data and a metadata dictionary.
@@ -177,12 +175,12 @@ class SyntheticData(CustomData):
         """Update synthetic data for a given key (feature or symbol).
 
         Fetches the latest start datetime from the object's settings, merges it with additional arguments,
-        and updates the synthetic data by invoking either `fetch_feature` or `fetch_symbol`.
+        and updates the synthetic data.
 
         Args:
             key (Key): Identifier of the feature or symbol.
             key_is_feature (bool): Specifies if the key represents a feature (True) or a symbol (False).
-            **kwargs: Additional keyword arguments.
+            **kwargs: Keyword arguments for `SyntheticData.fetch_feature` or `SyntheticData.fetch_symbol`.
 
         Returns:
             KeyData: The updated data and a metadata dictionary.
@@ -201,7 +199,7 @@ class SyntheticData(CustomData):
 
         Args:
             feature (Feature): Identifier of the feature.
-            **kwargs: Additional keyword arguments.
+            **kwargs: Keyword arguments for `SyntheticData.update_key`.
 
         Returns:
             FeatureData: The updated data and a metadata dictionary.
@@ -215,7 +213,7 @@ class SyntheticData(CustomData):
 
         Args:
             symbol (Symbol): Identifier of the symbol.
-            **kwargs: Additional keyword arguments.
+            **kwargs: Keyword arguments for `SyntheticData.update_key`.
 
         Returns:
             SymbolData: The updated data and a metadata dictionary.

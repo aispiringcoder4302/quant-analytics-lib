@@ -213,7 +213,7 @@ class SignalsAccessor(GenericAccessor):
     Args:
         wrapper (Union[ArrayWrapper, ArrayLike]): Array wrapper instance or array-like input.
         obj (Optional[ArrayLike]): Underlying object.
-        **kwargs: Keyword arguments passed to `vectorbtpro.generic.accessors.GenericAccessor`.
+        **kwargs: Keyword arguments for `vectorbtpro.generic.accessors.GenericAccessor`.
 
     !!! info
         For default settings, see `vectorbtpro._settings.signals`.
@@ -254,11 +254,9 @@ class SignalsAccessor(GenericAccessor):
         """Return an empty Series or DataFrame with bool dtype.
 
         Args:
-            *args: Positional arguments passed to
-                `vectorbtpro.generic.accessors.GenericAccessor.empty`.
+            *args: Positional arguments for `vectorbtpro.generic.accessors.GenericAccessor.empty`.
             fill_value (bool): Fill value indicator.
-            **kwargs: Keyword arguments passed to
-                `vectorbtpro.generic.accessors.GenericAccessor.empty`.
+            **kwargs: Keyword arguments for `vectorbtpro.generic.accessors.GenericAccessor.empty`.
 
         Returns:
             SeriesFrame: An empty Series or DataFrame with bool dtype.
@@ -270,11 +268,9 @@ class SignalsAccessor(GenericAccessor):
         """Return an empty-like Series or DataFrame with bool dtype.
 
         Args:
-            *args: Positional arguments passed to
-                `vectorbtpro.generic.accessors.GenericAccessor.empty_like`.
+            *args: Positional arguments for `vectorbtpro.generic.accessors.GenericAccessor.empty_like`.
             fill_value (bool): Fill value indicator.
-            **kwargs: Keyword arguments passed to
-                `vectorbtpro.generic.accessors.GenericAccessor.empty_like`.
+            **kwargs: Keyword arguments for `vectorbtpro.generic.accessors.GenericAccessor.empty_like`.
 
         Returns:
             SeriesFrame: A Series or DataFrame with the same shape and bool dtype.
@@ -442,8 +438,8 @@ class SignalsAccessor(GenericAccessor):
             exit_place_func_nb (PlaceFunc): Numba-jitted function for placing exit signals.
             args: Positional arguments forwarded to both entry and exit functions if
                 explicit arguments are not provided.
-            entry_place_args (ArgsLike): Positional arguments passed to `entry_place_func_nb`.
-            exit_place_args (ArgsLike): Positional arguments passed to `exit_place_func_nb`.
+            entry_place_args (ArgsLike): Positional arguments for `entry_place_func_nb`.
+            exit_place_args (ArgsLike): Positional arguments for `exit_place_func_nb`.
             entry_wait (int): Number of periods to wait before an entry signal is triggered.
             exit_wait (int): Number of periods to wait before an exit signal is triggered.
             broadcast_named_args (KwargsLike): Named arguments for broadcasting to the target shape.
@@ -616,7 +612,7 @@ class SignalsAccessor(GenericAccessor):
 
         Args:
             exit_place_func_nb (PlaceFunc): A Numba-jitted function for placing exit signals.
-            *args: Positional arguments passed to the exit placement function.
+            *args: Positional arguments for `exit_place_args`.
             exit_place_args (ArgsLike): Additional arguments for the exit placement function.
 
                 Must not be provided together with positional arguments.
@@ -818,9 +814,7 @@ class SignalsAccessor(GenericAccessor):
             chunked (ChunkedOption): Option to control chunked processing.
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
-            **kwargs: Additional keyword arguments.
-
-                See `SignalsAccessor.generate` for details.
+            **kwargs: Keyword arguments for `SignalsAccessor.generate`.
 
         Returns:
             SeriesFrame: A series or frame containing the generated signals.
@@ -1128,7 +1122,7 @@ class SignalsAccessor(GenericAccessor):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            **kwargs: Additional keyword arguments.
+            **kwargs: Keyword arguments for `SignalsAccessor.generate_exits`.
 
         Returns:
             SeriesFrame: Generated exit signals.
@@ -1276,7 +1270,8 @@ class SignalsAccessor(GenericAccessor):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            **kwargs: Additional keyword arguments.
+            **kwargs: Keyword arguments for `SignalsAccessor.generate_both` or
+                `SignalsAccessor.generate_exits`.
 
         Returns:
             MaybeTuple[SeriesFrame]: Exit signals array if `chain` is False, or
@@ -1513,7 +1508,8 @@ class SignalsAccessor(GenericAccessor):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            **kwargs: Additional keyword arguments.
+            **kwargs: Keyword arguments for `SignalsAccessor.generate_both` or
+                `SignalsAccessor.generate_exits`.
 
         Returns:
             MaybeTuple[SeriesFrame]: If `chain` is True, returns a tuple (`new_entries`, `exits`);
@@ -1913,8 +1909,7 @@ class SignalsAccessor(GenericAccessor):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            **kwargs: Keyword arguments passed to
-                `vectorbtpro.records.mapped_array.MappedArray.to_mapped` if `as_mapped` is True.
+            **kwargs: Keyword arguments for `vectorbtpro.records.mapped_array.MappedArray.to_mapped`.
 
         Returns:
             Union[SeriesFrame, MappedArray]: Ranked positions as an array or a mapped array.
@@ -1998,7 +1993,7 @@ class SignalsAccessor(GenericAccessor):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             allow_gaps (bool): Indicates whether to allow gaps in ranking.
-            **kwargs: Keyword arguments passed to `SignalsAccessor.rank`.
+            **kwargs: Keyword arguments for `SignalsAccessor.rank`.
 
         Returns:
             Union[SeriesFrame, MappedArray]: Signal position ranks.
@@ -2072,7 +2067,7 @@ class SignalsAccessor(GenericAccessor):
             reset_by (ArrayLike): Array indicating the reset points for ranking.
             after_reset (bool): If True, ranking starts after a reset signal.
             allow_gaps (bool): If True, gaps are allowed in the ranking.
-            **kwargs: Keyword arguments passed to `pos_rank`.
+            **kwargs: Keyword arguments for `pos_rank`.
 
         Returns:
             Union[SeriesFrame, MappedArray]: Signal position ranks after the reset.
@@ -2097,7 +2092,7 @@ class SignalsAccessor(GenericAccessor):
             chunked (ChunkedOption): Option to control chunked processing.
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
-            **kwargs: Keyword arguments passed to `SignalsAccessor.rank`.
+            **kwargs: Keyword arguments for `SignalsAccessor.rank`.
 
         Returns:
             Union[SeriesFrame, MappedArray]: Partition position ranks.
@@ -2146,7 +2141,7 @@ class SignalsAccessor(GenericAccessor):
 
         Args:
             reset_by (ArrayLike): Array indicating reset points for partition ranking.
-            **kwargs: Keyword arguments passed to `SignalsAccessor.partition_pos_rank`.
+            **kwargs: Keyword arguments for `SignalsAccessor.partition_pos_rank`.
 
         Returns:
             Union[SeriesFrame, MappedArray]: Partition position ranks after reset.
@@ -2162,7 +2157,7 @@ class SignalsAccessor(GenericAccessor):
 
         Args:
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            **kwargs: Keyword arguments forwarded to `SignalsAccessor.pos_rank`.
+            **kwargs: Keyword arguments for `SignalsAccessor.pos_rank`.
 
         Returns:
             SeriesFrame: A wrapped array of signals with `pos_rank == 0`.
@@ -2181,7 +2176,7 @@ class SignalsAccessor(GenericAccessor):
         Args:
             reset_by (ArrayLike): Array used to reset the position ranking.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            **kwargs: Keyword arguments forwarded to `SignalsAccessor.pos_rank_after`.
+            **kwargs: Keyword arguments for `SignalsAccessor.pos_rank_after`.
 
         Returns:
             SeriesFrame: A wrapped array of signals with `pos_rank == 0`.
@@ -2200,7 +2195,7 @@ class SignalsAccessor(GenericAccessor):
         Args:
             n (int): The specific position rank that signals must equal.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            **kwargs: Keyword arguments forwarded to `SignalsAccessor.pos_rank`.
+            **kwargs: Keyword arguments for `SignalsAccessor.pos_rank`.
 
         Returns:
             SeriesFrame: A wrapped array of signals with `pos_rank == n`.
@@ -2221,7 +2216,7 @@ class SignalsAccessor(GenericAccessor):
             n (int): The specific position rank value.
             reset_by (ArrayLike): Array used to reset the position ranking.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            **kwargs: Keyword arguments forwarded to `SignalsAccessor.pos_rank_after`.
+            **kwargs: Keyword arguments for `SignalsAccessor.pos_rank_after`.
 
         Returns:
             SeriesFrame: A wrapped array of signals with `pos_rank == n`.
@@ -2240,7 +2235,7 @@ class SignalsAccessor(GenericAccessor):
         Args:
             n (int): The lower bound for the position rank.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            **kwargs: Keyword arguments forwarded to `SignalsAccessor.pos_rank`.
+            **kwargs: Keyword arguments for `SignalsAccessor.pos_rank`.
 
         Returns:
             SeriesFrame: A wrapped array of signals with `pos_rank >= n`.
@@ -2261,7 +2256,7 @@ class SignalsAccessor(GenericAccessor):
             n (int): The lower bound for the position rank.
             reset_by (ArrayLike): Array used to reset the position ranking.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            **kwargs: Keyword arguments forwarded to `SignalsAccessor.pos_rank_after`.
+            **kwargs: Keyword arguments for `SignalsAccessor.pos_rank_after`.
 
         Returns:
             SeriesFrame: A wrapped array of signals with `pos_rank >= n`.
@@ -2280,7 +2275,7 @@ class SignalsAccessor(GenericAccessor):
         Args:
             n (int): The upper bound for the position rank (exclusive).
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            **kwargs: Keyword arguments forwarded to `SignalsAccessor.pos_rank`.
+            **kwargs: Keyword arguments for `SignalsAccessor.pos_rank`.
 
         Returns:
             SeriesFrame: A wrapped array of signals with `pos_rank < n`.
@@ -2301,7 +2296,7 @@ class SignalsAccessor(GenericAccessor):
             n (int): The upper bound for the position rank (exclusive).
             reset_by (ArrayLike): Array used to reset the position ranking.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            **kwargs: Keyword arguments forwarded to `SignalsAccessor.pos_rank_after`.
+            **kwargs: Keyword arguments for `SignalsAccessor.pos_rank_after`.
 
         Returns:
             SeriesFrame: A wrapped array of signals with `pos_rank < n`.
@@ -2314,7 +2309,7 @@ class SignalsAccessor(GenericAccessor):
 
         Args:
             group_by (GroupByLike): Grouping specification.
-            **kwargs: Keyword arguments forwarded to `SignalsAccessor.pos_rank`.
+            **kwargs: Keyword arguments for `SignalsAccessor.pos_rank`.
 
         Returns:
             MappedArray: A mapped array of signal position ranks.
@@ -2326,7 +2321,7 @@ class SignalsAccessor(GenericAccessor):
 
         Args:
             group_by (GroupByLike): Grouping specification.
-            **kwargs: Keyword arguments forwarded to `SignalsAccessor.partition_pos_rank`.
+            **kwargs: Keyword arguments for `SignalsAccessor.partition_pos_rank`.
 
         Returns:
             MappedArray: A mapped array of partition position ranks.
@@ -2404,8 +2399,7 @@ class SignalsAccessor(GenericAccessor):
 
         Args:
             group_by (GroupByLike): Grouping specification.
-            **kwargs: Keyword arguments forwarded to the
-                `vectorbtpro.records.mapped_array.MappedArray` constructor.
+            **kwargs: Keyword arguments for `vectorbtpro.records.mapped_array.MappedArray`.
 
         Returns:
             MappedArray: A regrouped mapped array of signals.
@@ -2465,8 +2459,7 @@ class SignalsAccessor(GenericAccessor):
         Args:
             delta (Union[str, int, FrequencyLike]): A delta value applied relative to each signal.
             group_by (GroupByLike): Grouping specification.
-            **kwargs: Keyword arguments forwarded to
-                `vectorbtpro.generic.ranges.Ranges.from_delta`.
+            **kwargs: Keyword arguments for `vectorbtpro.generic.ranges.Ranges.from_delta`.
 
         Returns:
             Ranges: A regrouped record array representing the ranges.
@@ -2504,8 +2497,7 @@ class SignalsAccessor(GenericAccessor):
             chunked (ChunkedOption): Option to control chunked processing.
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
-            **kwargs: Keyword arguments passed to
-                `vectorbtpro.generic.ranges.Ranges.from_records`.
+            **kwargs: Keyword arguments for `vectorbtpro.generic.ranges.Ranges.from_records`.
 
         Returns:
             Ranges: A `vectorbtpro.generic.ranges.Ranges` instance representing the computed ranges.
@@ -2615,8 +2607,7 @@ class SignalsAccessor(GenericAccessor):
             chunked (ChunkedOption): Option to control chunked processing.
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
-            **kwargs: Keyword arguments passed to
-                `vectorbtpro.generic.ranges.Ranges.from_records`.
+            **kwargs: Keyword arguments for `vectorbtpro.generic.ranges.Ranges.from_records`.
 
         Returns:
             Ranges: A `vectorbtpro.generic.ranges.Ranges` instance representing the partitioned ranges.
@@ -2656,8 +2647,7 @@ class SignalsAccessor(GenericAccessor):
             chunked (ChunkedOption): Option to control chunked processing.
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
-            **kwargs: Keyword arguments passed to
-                `vectorbtpro.generic.ranges.Ranges.from_records`.
+            **kwargs: Keyword arguments for `vectorbtpro.generic.ranges.Ranges.from_records`.
 
         Returns:
             Ranges: A `vectorbtpro.generic.ranges.Ranges` instance representing the computed ranges.
@@ -2807,7 +2797,7 @@ class SignalsAccessor(GenericAccessor):
         Selects the appropriate unraveling method based on the number of input arrays.
 
         Args:
-            *objs: Variable length arrays representing signals.
+            *objs: One or two array-like objects representing signal data.
 
                 When one array is provided, it is treated as the primary signal array;
                 when two arrays are provided, they are treated as source and target signals respectively.
@@ -3212,11 +3202,11 @@ class SignalsAccessor(GenericAccessor):
     def index_mapped(self, group_by: tp.GroupByLike = None, **kwargs) -> MappedArray:
         """Get a mapped array of indices based on the current signals.
 
-        Calls `vectorbtpro.generic.accessors.GenericAccessor.to_mapped` and considers only True values.
+        Considers only True values.
 
         Args:
             group_by (GroupByLike): Grouping specification.
-            **kwargs: Additional keyword arguments.
+            **kwargs: Keyword arguments for `vectorbtpro.generic.accessors.GenericAccessor.to_mapped`.
 
         Returns:
             MappedArray: A mapped array of indices where only True values are considered.
@@ -3248,7 +3238,7 @@ class SignalsAccessor(GenericAccessor):
         Args:
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
             group_by (GroupByLike): Grouping specification.
-            **kwargs: Keyword arguments forwarded to `SignalsAccessor.total`.
+            **kwargs: Keyword arguments for `SignalsAccessor.total`.
 
         Returns:
             MaybeSeries: A series with the rate of True signals.
@@ -3269,7 +3259,7 @@ class SignalsAccessor(GenericAccessor):
         Args:
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
             group_by (GroupByLike): Grouping specification.
-            **kwargs: Keyword arguments forwarded to `SignalsAccessor.partition_ranges`.
+            **kwargs: Keyword arguments for `SignalsAccessor.partition_ranges`.
 
         Returns:
             MaybeSeries: A series with the count of True signal partitions.
@@ -3290,8 +3280,7 @@ class SignalsAccessor(GenericAccessor):
         Args:
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
             group_by (GroupByLike): Grouping specification.
-            **kwargs: Keyword arguments forwarded to
-                `SignalsAccessor.total_partitions` and `SignalsAccessor.total`.
+            **kwargs: Keyword arguments for `SignalsAccessor.total_partitions` and `SignalsAccessor.total`.
 
         Returns:
             MaybeSeries: A series with the partition rate.
@@ -3442,8 +3431,7 @@ class SignalsAccessor(GenericAccessor):
         Args:
             yref (str): Reference for the y-axis (e.g., "y", "y2").
             column (hashable): Column to plot.
-            **kwargs: Keyword arguments passed to
-                `vectorbtpro.generic.accessors.GenericAccessor.lineplot`.
+            **kwargs: Keyword arguments for `vectorbtpro.generic.accessors.GenericAccessor.lineplot`.
 
         Returns:
             Union[BaseFigure, TraceUpdater]: A figure or trace updater instance produced by the line plot.
@@ -3475,8 +3463,7 @@ class SignalsAccessor(GenericAccessor):
         Args:
             y (ArrayLike): Y-axis values to plot markers on.
             column (hashable): Column to plot.
-            **kwargs: Keyword arguments passed to
-                `vectorbtpro.generic.accessors.GenericAccessor.scatterplot`.
+            **kwargs: Keyword arguments for `vectorbtpro.generic.accessors.GenericAccessor.scatterplot`.
 
         Returns:
             Union[BaseFigure, TraceUpdater]: A figure or trace updater instance produced by the scatter plot.
@@ -3555,8 +3542,7 @@ class SignalsAccessor(GenericAccessor):
         Args:
             y (Optional[ArrayLike]): Y-axis values for entry markers.
             column (Optional[Label]): Column to plot.
-            **kwargs: Keyword arguments passed to
-                `vectorbtpro.generic.accessors.GenericAccessor.scatterplot`.
+            **kwargs: Keyword arguments for `vectorbtpro.generic.accessors.GenericAccessor.scatterplot`.
 
         Returns:
             Union[BaseFigure, TraceUpdater]: A figure or trace updater instance representing the entry markers.
@@ -3600,7 +3586,7 @@ class SignalsAccessor(GenericAccessor):
         Args:
             y (Optional[ArrayLike]): Array-like data for plotting exit signals.
             column (Optional[Label]): Label for the column to plot.
-            **kwargs: Keyword arguments passed to `SignalsAccessor.plot_as_markers`.
+            **kwargs: Keyword arguments for `SignalsAccessor.plot_as_markers`.
 
         Returns:
             Union[BaseFigure, TraceUpdater]: Figure or trace updater with plotted exit markers.
@@ -3644,7 +3630,7 @@ class SignalsAccessor(GenericAccessor):
         Args:
             y (Optional[ArrayLike]): Array-like data for plotting entry markers.
             column (Optional[Label]): Label for the column to plot.
-            **kwargs: Keyword arguments passed to `SignalsAccessor.plot_as_markers`.
+            **kwargs: Keyword arguments for `SignalsAccessor.plot_as_markers`.
 
         Returns:
             Union[BaseFigure, TraceUpdater]: Figure or trace updater with plotted entry markers.
@@ -3692,7 +3678,7 @@ class SignalsAccessor(GenericAccessor):
         Args:
             y (Optional[ArrayLike]): Array-like data for plotting exit markers.
             column (Optional[Label]): Label for the column to plot.
-            **kwargs: Keyword arguments passed to `SignalsAccessor.plot_as_markers`.
+            **kwargs: Keyword arguments for `SignalsAccessor.plot_as_markers`.
 
         Returns:
             Union[BaseFigure, tp.TraceUpdater]: Figure or trace updater with plotted exit markers.
@@ -3765,7 +3751,7 @@ class SignalsSRAccessor(SignalsAccessor, GenericSRAccessor):
     Args:
         wrapper (Union[ArrayWrapper, ArrayLike]): Data wrapper or array-like object containing signal data.
         obj (Optional[ArrayLike]): Underlying series data.
-        **kwargs: Keyword arguments passed to the initializer.
+        **kwargs: Keyword arguments for `vectorbtpro.generic.accessors.GenericSRAccessor` and `SignalsAccessor`.
     """
 
     def __init__(
@@ -3792,7 +3778,7 @@ class SignalsDFAccessor(SignalsAccessor, GenericDFAccessor):
     Args:
         wrapper (Union[ArrayWrapper, ArrayLike]): Data wrapper or array-like object containing signal data.
         obj (Optional[ArrayLike]): Underlying DataFrame data.
-        **kwargs: Keyword arguments passed to the initializer.
+        **kwargs: Keyword arguments for `vectorbtpro.generic.accessors.GenericDFAccessor` and `SignalsAccessor`.
     """
 
     def __init__(

@@ -115,7 +115,7 @@ def merge_sim_outs(
         ann_args (AnnArgs): Dictionary of annotation arguments.
         mapper (GroupLensMapper): Mapper for grouping and lens mapping.
         in_outputs_merge_func (Callable): Function to merge in-output objects.
-        **kwargs: Keyword arguments passed to `in_outputs_merge_func`.
+        **kwargs: Keyword arguments for `in_outputs_merge_func`.
 
     Returns:
         SimulationOutput: A merged simulation output instance.

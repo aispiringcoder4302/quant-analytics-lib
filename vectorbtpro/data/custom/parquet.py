@@ -196,7 +196,7 @@ class ParquetData(FileData):
             engine (Optional[str]): Parquet engine to use.
 
                 Refer to `pd.read_parquet` for details.
-            **read_kwargs: Keyword arguments passed to `pd.read_parquet`.
+            **read_kwargs: Keyword arguments for `pd.read_parquet`.
 
                 See https://pandas.pydata.org/docs/reference/api/pandas.read_parquet.html for additional arguments.
 
@@ -273,7 +273,7 @@ class ParquetData(FileData):
         Args:
             key (hashable): The feature or symbol identifier.
             key_is_feature (bool): Indicator whether the key represents a feature.
-            **kwargs: Keyword arguments passed to the fetch methods.
+            **kwargs: Keyword arguments for `ParquetData.fetch_feature` or `ParquetData.fetch_symbol`.
 
         Returns:
             KeyData: The updated data and a metadata dictionary.
@@ -289,7 +289,7 @@ class ParquetData(FileData):
 
         Args:
             feature (hashable): The feature identifier.
-            **kwargs: Keyword arguments passed to `ParquetData.update_key`.
+            **kwargs: Keyword arguments for `ParquetData.update_key`.
 
         Returns:
             FeatureData: The updated data and a metadata dictionary.
@@ -301,7 +301,7 @@ class ParquetData(FileData):
 
         Args:
             symbol (hashable): The symbol identifier.
-            **kwargs: Keyword arguments passed to `ParquetData.update_key`.
+            **kwargs: Keyword arguments for `ParquetData.update_key`.
 
         Returns:
             SymbolData: The updated data and a metadata dictionary.

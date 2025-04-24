@@ -48,7 +48,7 @@ class ToMarkdown(Configured):
         remove_code_title (Optional[bool]): Whether to remove the code block title and display it above the block.
         even_indentation (Optional[bool]): Whether to adjust leading spaces to even numbers.
         newline_before_list (Optional[bool]): Whether to insert a newline before list items.
-        **kwargs: Keyword arguments for configuration.
+        **kwargs: Keyword arguments for `vectorbtpro.utils.config.Configured`.
 
     !!! info
         For default settings, see `vectorbtpro._settings.knowledge` and its sub-configuration `formatting`.
@@ -153,7 +153,7 @@ def to_markdown(text: str, **kwargs) -> str:
 
     Args:
         text (str): The text to convert to Markdown.
-        **kwargs: Keyword arguments for `ToMarkdown` initialization.
+        **kwargs: Keyword arguments for `ToMarkdown`.
 
     Returns:
         str: The converted Markdown text.
@@ -220,7 +220,7 @@ class ToHTML(Configured):
 
     @property
     def markdown_kwargs(self) -> tp.Kwargs:
-        """Keyword arguments passed to `markdown.markdown` for conversion.
+        """Keyword arguments for `markdown.markdown` for conversion.
 
         Returns:
             Kwargs: Dictionary of keyword arguments for Markdown conversion.
@@ -287,7 +287,7 @@ def to_html(text: str, **kwargs) -> str:
 
     Args:
         text (str): The Markdown text to convert to HTML.
-        **kwargs: Keyword arguments for `ToHTML` initialization.
+        **kwargs: Keyword arguments for `ToHTML`.
 
     Returns:
         str: The converted HTML text.
@@ -317,7 +317,7 @@ class FormatHTML(Configured):
         use_pygments (Optional[bool]): Flag to enable code highlighting with Pygments.
         pygments_kwargs (KwargsLike): Arguments passed to `pygments.formatters.HtmlFormatter`.
         template_context (KwargsLike): Additional context for template substitution.
-        **kwargs: Keyword arguments for configuration.
+        **kwargs: Keyword arguments for `vectorbtpro.utils.config.Configured`.
 
     !!! info
         For default settings, see `vectorbtpro._settings.knowledge` and its sub-configuration `formatting`.
@@ -501,7 +501,7 @@ def format_html(**kwargs) -> str:
     instantiates a `FormatHTML` object, and returns the resulting formatted HTML.
 
     Args:
-        **kwargs: Keyword arguments for `FormatHTML` initialization and HTML formatting.
+        **kwargs: Keyword arguments for `FormatHTML` and `FormatHTML.format_html`.
 
     Returns:
         str: The resulting formatted HTML string.
@@ -526,7 +526,7 @@ class ContentFormatter(Configured):
         update_interval (Optional[float]): Time interval in seconds for updates.
         minimal_format (Optional[bool]): Whether to apply minimal formatting to the content.
         template_context (KwargsLike): Additional context for template substitution.
-        **kwargs: Keyword arguments for configuration.
+        **kwargs: Keyword arguments for `vectorbtpro.utils.config.Configured`.
 
     !!! info
         For default settings, see `vectorbtpro._settings.knowledge` and
@@ -897,8 +897,8 @@ class IPythonFormatter(ContentFormatter):
     """Class for formatting plain content in IPython.
 
     Args:
-        *args: Positional arguments passed to `ContentFormatter`.
-        **kwargs: Keyword arguments passed to `ContentFormatter`.
+        *args: Positional arguments for `ContentFormatter`.
+        **kwargs: Keyword arguments for `ContentFormatter`.
 
     !!! info
         For default settings, see `formatting.formatter_configs.ipython` in `vectorbtpro._settings.knowledge`.
@@ -949,9 +949,9 @@ class IPythonMarkdownFormatter(IPythonFormatter):
     """Class for formatting Markdown content in IPython.
 
     Args:
-        *args: Positional arguments passed to `IPythonFormatter`.
+        *args: Positional arguments for `IPythonFormatter`.
         to_markdown_kwargs (KwargsLike): Keyword arguments forwarded to `to_markdown`.
-        **kwargs: Keyword arguments passed to `IPythonFormatter`.
+        **kwargs: Keyword arguments for `IPythonFormatter`.
 
     !!! info
         For default settings, see `formatting.formatter_configs.ipython_markdown` in `vectorbtpro._settings.knowledge`.
@@ -1003,10 +1003,10 @@ class IPythonHTMLFormatter(IPythonFormatter):
     """Class for formatting HTML content in IPython.
 
     Args:
-        *args: Positional arguments passed to `IPythonFormatter`.
+        *args: Positional arguments for `IPythonFormatter`.
         to_markdown_kwargs (KwargsLike): Keyword arguments for converting content to Markdown.
         to_html_kwargs (KwargsLike): Keyword arguments for converting Markdown content to HTML.
-        **kwargs: Keyword arguments passed to `IPythonFormatter`.
+        **kwargs: Keyword arguments for `IPythonFormatter`.
 
     !!! info
         For default settings, see `formatting.formatter_configs.ipython_html` in `vectorbtpro._settings.knowledge`.
@@ -1080,7 +1080,7 @@ class HTMLFileFormatter(ContentFormatter):
     """Class for formatting static HTML files.
 
     Args:
-        *args: Positional arguments passed to `ContentFormatter`.
+        *args: Positional arguments for `ContentFormatter`.
         page_title (str): Title of the HTML page.
         refresh_page (Optional[bool]): Determines whether the HTML page should refresh.
         dir_path (Optional[PathLike]): Directory path for saving HTML files.
@@ -1094,7 +1094,7 @@ class HTMLFileFormatter(ContentFormatter):
         to_markdown_kwargs (KwargsLike): Keyword arguments for converting content to Markdown.
         to_html_kwargs (KwargsLike): Keyword arguments for converting Markdown to HTML.
         format_html_kwargs (KwargsLike): Keyword arguments for HTML formatting.
-        **kwargs: Keyword arguments passed to `ContentFormatter`.
+        **kwargs: Keyword arguments for `ContentFormatter`.
 
     !!! info
         For default settings, see `formatting.formatter_configs.html` in `vectorbtpro._settings.knowledge`.

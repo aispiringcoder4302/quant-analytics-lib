@@ -522,7 +522,7 @@ def broadcast_shapes(
     """Broadcast shape-like objects following vectorbtpro's broadcasting rules.
 
     Args:
-        *shapes (ArrayLike): One or more shape-like objects.
+        *shapes (ArrayLike): Shape-like objects to broadcast.
         axis (Optional[MaybeSequence[int]]): Axis specification to adjust the resulting shape.
         expand_axis (Optional[MaybeSequence[int]]): Axis used for expanding dimensions during broadcasting.
 
@@ -637,7 +637,7 @@ def broadcast_arrays(
     """Broadcast multiple array-like objects following vectorbtpro's broadcasting rules.
 
     Args:
-        *arrs (ArrayLike): Two or more array-like objects.
+        *arrs (ArrayLike): Array-like objects to broadcast.
         target_shape (Optional[ShapeLike]): The target shape to which arrays should be broadcasted.
         axis (Optional[MaybeSequence[int]]): Axis specification for broadcasting.
         expand_axis (Optional[MaybeSequence[int]]): Axis used for expanding dimensions if necessary.
@@ -866,7 +866,7 @@ def align_pd_arrays(
     """Align Pandas arrays by reindexing their index and/or columns to a common level.
 
     Args:
-        *objs (AnyArray): Additional arrays to be aligned.
+        *objs (AnyArray): Pandas arrays to align.
         align_index (bool): Whether to align array indices.
         align_columns (bool): Whether to align DataFrame columns.
         to_index (Optional[Index]): Target index for alignment.
@@ -2028,7 +2028,7 @@ def broadcast_to(
             if None, uses the index of `arg2`.
         columns_from (Optional[IndexFromLike]): Columns to use for the output;
             if None, uses the columns of `arg2`.
-        **kwargs: Keyword arguments passed to `broadcast`.
+        **kwargs: Keyword arguments for `broadcast`.
 
     Returns:
         Any: Broadcasted structure, either as an array or a pandas object depending on `to_pd`.
@@ -2164,10 +2164,10 @@ def broadcast_combs(
     """Align the given arrays along a specified axis using a combinatorial function and broadcast their indexes.
 
     Args:
-        *objs (ArrayLike): Array-like objects to combine; at least two are required.
+        *objs (ArrayLike): Array-like objects to combine.
         axis (int): Axis along which to align and broadcast the arrays.
         comb_func (Callable): Combinatorial function applied to indices (e.g., `itertools.product`).
-        **broadcast_kwargs: Keyword arguments passed to `broadcast`.
+        **broadcast_kwargs: Keyword arguments for `broadcast`.
 
     Returns:
         Any: Tuple of broadcasted arrays aligned based on the combinatorial indices.

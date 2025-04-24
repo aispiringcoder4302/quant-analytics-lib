@@ -109,9 +109,9 @@ class VBTAsset(KnowledgeAsset):
     """Class for working with VBT content.
 
     Args:
-        *args: Additional positional arguments.
+        *args: Positional arguments for `vectorbtpro.utils.knowledge.base_assets.KnowledgeAsset`.
         release_name (Optional[str]): Release name.
-        **kwargs: Additional keyword arguments.
+        **kwargs: Keyword arguments for `vectorbtpro.utils.knowledge.base_assets.KnowledgeAsset`.
 
     !!! info
         For default settings, see `assets.vbt` in `vectorbtpro._settings.knowledge`.
@@ -180,7 +180,7 @@ class VBTAsset(KnowledgeAsset):
 
                 See `vectorbtpro.utils.pbar.ProgressBar` for details.
             template_context (KwargsLike): Additional context for template substitution.
-            **kwargs: Keyword arguments passed to the asset loading process.
+            **kwargs: Keyword arguments for `VBTAsset.from_json_file` or `VBTAsset.from_json_bytes`.
 
         Returns:
             VBTAsset: A new VBT asset built from the downloaded JSON asset.
@@ -401,7 +401,7 @@ class VBTAsset(KnowledgeAsset):
             single_item (bool): Indicates if only a single matching item is expected.
             consolidate (bool): If True, consolidates matches sharing the same top parent link.
             allow_empty (bool): If True, returns an empty result when no match is found.
-            **kwargs: Keyword arguments passed to `VBTAsset.find`.
+            **kwargs: Keyword arguments for `VBTAsset.find`.
 
         Returns:
             MaybeVBTAsset: A new VBT asset with matching asset item(s).
@@ -504,7 +504,7 @@ class VBTAsset(KnowledgeAsset):
 
         Args:
             link (str): The link identifying the reference item.
-            **kwargs: Keyword arguments passed to `VBTAsset.find_link`.
+            **kwargs: Keyword arguments for `VBTAsset.find_link`.
 
         Returns:
             VBTAsset: A new VBT asset containing the previous data item.
@@ -521,7 +521,7 @@ class VBTAsset(KnowledgeAsset):
 
         Args:
             link (str): The link identifying the reference item.
-            **kwargs: Keyword arguments passed to `VBTAsset.find_link`.
+            **kwargs: Keyword arguments for `VBTAsset.find_link`.
 
         Returns:
             VBTAsset: A new VBT asset containing the next data item.
@@ -552,7 +552,7 @@ class VBTAsset(KnowledgeAsset):
                 passed to `vectorbtpro.utils.knowledge.base_asset_funcs.FindRemoveAssetFunc`.
             dump_metadata_kwargs (KwargsLike): Keyword arguments for dumping metadata,
                 passed to `vectorbtpro.utils.knowledge.base_asset_funcs.DumpAssetFunc`.
-            **kwargs: Additional options passed to `vectorbtpro.utils.knowledge.formatting.to_markdown`.
+            **kwargs: Keyword arguments for `vectorbtpro.utils.knowledge.formatting.to_markdown`.
 
         Returns:
             MaybeVBTAsset: A new VBT asset converted to Markdown.
@@ -661,8 +661,7 @@ class VBTAsset(KnowledgeAsset):
 
                 See `vectorbtpro.utils.pbar.ProgressBar` for details.
             template_context (KwargsLike): Additional context for template substitution.
-            **kwargs: Extra keyword arguments passed to
-                `vectorbtpro.utils.knowledge.custom_asset_funcs.ToMarkdownAssetFunc`
+            **kwargs: Keyword arguments for `vectorbtpro.utils.knowledge.custom_asset_funcs.ToMarkdownAssetFunc`
                 and forwarded to `vectorbtpro.utils.knowledge.formatting.to_markdown`.
 
         Returns:
@@ -748,7 +747,7 @@ class VBTAsset(KnowledgeAsset):
             to_markdown_kwargs (KwargsLike): Keyword arguments for the markdown conversion process.
             format_html_kwargs (KwargsLike): Positional arguments for HTML formatting passed to
                 `vectorbtpro.utils.knowledge.formatting.format_html`.
-            **kwargs: Extra keyword arguments passed to `vectorbtpro.utils.knowledge.formatting.to_html`.
+            **kwargs: Keyword arguments for `vectorbtpro.utils.knowledge.formatting.to_html`.
 
         Returns:
             MaybeVBTAsset: A new VBT asset converted into HTML format.
@@ -858,8 +857,7 @@ class VBTAsset(KnowledgeAsset):
             template_context (KwargsLike): Additional context for template substitution.
             return_url_map (bool): If True, also return a mapping of links to file paths along
                 with the HTML directory path.
-            **kwargs: Extra keyword arguments passed to
-                `vectorbtpro.utils.knowledge.custom_asset_funcs.ToHTMLAssetFunc`.
+            **kwargs: Keyword arguments for `vectorbtpro.utils.knowledge.custom_asset_funcs.ToHTMLAssetFunc`.
 
         Returns:
             Union[Path, Tuple[Path, dict]]: The directory where HTML files are stored, and optionally
@@ -1019,7 +1017,7 @@ class VBTAsset(KnowledgeAsset):
             invert_colors (Optional[bool]): Flag to invert the color scheme.
             title (str): Title of the HTML page.
             template_context (KwargsLike): Additional context for template substitution.
-            **kwargs: Keyword arguments for `to_html`.
+            **kwargs: Keyword arguments for `VBTAsset.to_html`.
 
         Returns:
             Path: The file path of the generated HTML file.
@@ -1474,7 +1472,7 @@ class VBTAsset(KnowledgeAsset):
             per_path (bool): Whether to perform the search per specified path.
             path (Optional[MaybeList[PathLikeKey]]): One or more paths to search within.
             return_type (Optional[str]): The type of result to return.
-            **kwargs: Additional keyword arguments.
+            **kwargs: Keyword arguments for `VBTAsset.find` or `VBTAsset.find_code`.
 
         Returns:
             MaybeVBTAsset: A new VBT asset containing the found mentions.
@@ -1645,7 +1643,7 @@ class PagesAsset(VBTAsset):
 
         Args:
             links (List[str]): A list of link strings to process.
-            **kwargs: Keyword arguments passed to `replace`.
+            **kwargs: Keyword arguments for `replace`.
 
         Returns:
             PagesAsset: A new pages asset with redundant links removed.
@@ -1678,7 +1676,7 @@ class PagesAsset(VBTAsset):
         Args:
             links (List[str]): A list of link strings to aggregate.
             aggregate_kwargs (KwargsLike): Additional parameters for aggregation.
-            **kwargs: Keyword arguments passed to `replace`.
+            **kwargs: Keyword arguments for `replace`.
 
         Returns:
             PagesAsset: A new pages asset with aggregated links.
@@ -1721,7 +1719,7 @@ class PagesAsset(VBTAsset):
             aggregate_kwargs (KwargsLike): Additional parameters for aggregation.
             incl_descendants (bool): Whether to include descendant headings.
             single_item (bool): Whether to return a single item.
-            **kwargs: Keyword arguments for link search.
+            **kwargs: Keyword arguments for `VBTAsset.find_link`.
 
         Returns:
             MaybePagesAsset: A new pages asset with the found pages or headings.
@@ -1753,7 +1751,7 @@ class PagesAsset(VBTAsset):
 
         Args:
             refname (MaybeList[str]): A reference name or list of reference names.
-            **kwargs: Keyword arguments for page search.
+            **kwargs: Keyword arguments for `VBTAsset.find_page`.
 
         Returns:
             MaybePagesAsset: A new pages asset corresponding to the reference name.
@@ -1783,7 +1781,7 @@ class PagesAsset(VBTAsset):
             attr (Optional[str]): Attribute name to append to the object reference.
             module (Union[None, str, ModuleType]): Module information for reference resolution.
             resolve (bool): Whether to resolve the object reference.
-            **kwargs: Keyword arguments for page search.
+            **kwargs: Keyword arguments for `VBTAsset.find_refname`.
 
         Returns:
             MaybePagesAsset: A new pages asset corresponding to the object or reference name.
@@ -2308,7 +2306,7 @@ class PagesAsset(VBTAsset):
             up_aggregate_pages (Optional[bool]): Whether to aggregate pages.
             aggregate (Optional[bool]): Whether to perform aggregation on matched items.
             aggregate_kwargs (KwargsLike): Keyword arguments for aggregation.
-            **kwargs: Keyword arguments passed to `PagesAsset.find_obj_mentions`.
+            **kwargs: Keyword arguments for `PagesAsset.find_obj_mentions`.
 
         Returns:
             MaybePagesAsset: A new pages asset with the found documentation pages or headings.
@@ -2571,7 +2569,7 @@ class PagesAsset(VBTAsset):
         Args:
             link (str): The unique identifier of the page.
             incl_link (bool): Include the specified page in the results.
-            **kwargs: Additional parameters for page lookup.
+            **kwargs: Keyword arguments for `PagesAsset.find_page`.
 
         Returns:
             PagesAsset: A new pages asset containing the sibling pages.
@@ -2597,7 +2595,7 @@ class PagesAsset(VBTAsset):
         Args:
             link (str): The link identifying the starting page.
             incl_link (bool): Include the starting page in the results.
-            **kwargs: Additional parameters for page lookup.
+            **kwargs: Keyword arguments for `PagesAsset.find_page`.
 
         Returns:
             PagesAsset: A new pages asset containing the descendant pages.
@@ -2625,7 +2623,7 @@ class PagesAsset(VBTAsset):
 
         Args:
             link (str): The link identifying the starting page.
-            **kwargs: Additional parameters for descendant selection.
+            **kwargs: Keyword arguments for `PagesAsset.select_descendants`.
 
         Returns:
             PagesAsset: A new pages asset containing the branch pages.
@@ -2638,7 +2636,7 @@ class PagesAsset(VBTAsset):
         Args:
             link (str): The link identifying the target page.
             incl_link (bool): Include the target page in the results.
-            **kwargs: Additional parameters for page lookup.
+            **kwargs: Keyword arguments for `PagesAsset.find_page`.
 
         Returns:
             PagesAsset: A new pages asset containing the ancestor pages.
@@ -2665,7 +2663,7 @@ class PagesAsset(VBTAsset):
         Args:
             link (str): The link identifying the target page.
             incl_link (bool): Include the target page in the results.
-            **kwargs: Additional parameters for page lookup.
+            **kwargs: Keyword arguments for `PagesAsset.find_page`.
 
         Returns:
             PagesAsset: A new pages asset containing the parent page information.
@@ -2693,7 +2691,7 @@ class PagesAsset(VBTAsset):
         Args:
             link (str): The link identifying the base page.
             incl_link (bool): Include the base page in the results if it is a heading.
-            **kwargs: Additional parameters for page lookup.
+            **kwargs: Keyword arguments for `PagesAsset.find_page`.
 
         Returns:
             PagesAsset: A new pages asset containing the descendant heading pages.
@@ -2735,8 +2733,7 @@ class PagesAsset(VBTAsset):
             append_obj_type (bool): Append the object type to each displayed name when available.
             structure_fragments (bool): Organize link fragments into a hierarchical structure.
             split_fragments (bool): Display fragments as continuations of their parent links.
-            **dir_tree_kwargs: Additional parameters for `KnowledgeAsset.describe` and
-                `vectorbtpro.utils.path_.dir_tree_from_paths`.
+            **dir_tree_kwargs: Keyword arguments for `vectorbtpro.utils.path_.dir_tree_from_paths`.
 
         Returns:
             None
@@ -2841,7 +2838,7 @@ class MessagesAsset(VBTAsset):
         """Return messages sorted by descending timestamp.
 
         Args:
-            **kwargs: Keyword arguments for sorting.
+            **kwargs: Keyword arguments for `MessagesAsset.sort`.
 
         Returns:
             MaybeMessagesAsset: A new messages asset sorted with the latest messages first.
@@ -2871,7 +2868,7 @@ class MessagesAsset(VBTAsset):
             clean_metadata_kwargs (KwargsLike): Keyword arguments for cleaning metadata.
             dump_metadata_kwargs (KwargsLike): Keyword arguments for dumping metadata.
             to_markdown_kwargs (KwargsLike): Keyword arguments for converting messages to markdown.
-            **kwargs: Additional keyword arguments.
+            **kwargs: Keyword arguments for `MessagesAsset.apply`.
 
         Returns:
             MaybeMessagesAsset: A new messages asset with aggregated messages.
@@ -2918,7 +2915,7 @@ class MessagesAsset(VBTAsset):
             clean_metadata_kwargs (KwargsLike): Keyword arguments for cleaning metadata.
             dump_metadata_kwargs (KwargsLike): Keyword arguments for dumping metadata.
             to_markdown_kwargs (KwargsLike): Keyword arguments for converting messages to markdown.
-            **kwargs: Additional keyword arguments.
+            **kwargs: Keyword arguments for `MessagesAsset.apply`.
 
         Returns:
             MaybeMessagesAsset: A new messages asset with messages aggregated by block.
@@ -2973,7 +2970,7 @@ class MessagesAsset(VBTAsset):
             clean_metadata_kwargs (KwargsLike): Keyword arguments for cleaning metadata.
             dump_metadata_kwargs (KwargsLike): Keyword arguments for dumping metadata.
             to_markdown_kwargs (KwargsLike): Keyword arguments for converting messages to markdown.
-            **kwargs: Additional keyword arguments.
+            **kwargs: Keyword arguments for `MessagesAsset.apply`.
 
         Returns:
             MaybeMessagesAsset: A new messages asset with messages aggregated by thread.
@@ -3028,7 +3025,7 @@ class MessagesAsset(VBTAsset):
             clean_metadata_kwargs (KwargsLike): Keyword arguments for cleaning metadata.
             dump_metadata_kwargs (KwargsLike): Keyword arguments for dumping metadata.
             to_markdown_kwargs (KwargsLike): Keyword arguments for converting messages to markdown.
-            **kwargs: Additional keyword arguments.
+            **kwargs: Keyword arguments for `MessagesAsset.apply`.
 
         Returns:
             MaybeMessagesAsset: A new messages asset with messages aggregated by channel.
@@ -3129,7 +3126,7 @@ class MessagesAsset(VBTAsset):
 
         Args:
             by (str): The aggregation level or a special keyword ("lowest" or "highest").
-            **kwargs: Keyword arguments passed to the aggregation method.
+            **kwargs: Keyword arguments for the aggregation method.
 
         Returns:
             MessagesAsset: A new messages asset with aggregated messages.
@@ -3152,7 +3149,7 @@ class MessagesAsset(VBTAsset):
 
         Args:
             link (str): The link used to identify the base message.
-            **kwargs: Keyword arguments passed to `VBTAsset.find_link`.
+            **kwargs: Keyword arguments for `VBTAsset.find_link`.
 
         Returns:
             MessagesAsset: A new messages asset containing the reference message.
@@ -3175,7 +3172,7 @@ class MessagesAsset(VBTAsset):
 
         Args:
             link (str): The link used to find the base message.
-            **kwargs: Keyword arguments passed to `VBTAsset.find_link`.
+            **kwargs: Keyword arguments for `VBTAsset.find_link`.
 
         Returns:
             MessagesAsset: A new messages asset containing the reply messages.
@@ -3205,7 +3202,7 @@ class MessagesAsset(VBTAsset):
         Args:
             link (str): The link used to determine the target block.
             incl_link (bool): Indicates whether to include the message corresponding to `link`.
-            **kwargs: Keyword arguments passed to `VBTAsset.find_link`.
+            **kwargs: Keyword arguments for `VBTAsset.find_link`.
 
         Returns:
             MessagesAsset: A new messages asset containing messages from the same block.
@@ -3227,7 +3224,7 @@ class MessagesAsset(VBTAsset):
         Args:
             link (str): The link used to determine the target thread.
             incl_link (bool): Indicates whether to include the message corresponding to `link`.
-            **kwargs: Keyword arguments passed to `VBTAsset.find_link`.
+            **kwargs: Keyword arguments for `VBTAsset.find_link`.
 
         Returns:
             MessagesAsset: A new messages asset containing messages from the same thread.
@@ -3249,7 +3246,7 @@ class MessagesAsset(VBTAsset):
         Args:
             link (str): The link used to determine the target channel.
             incl_link (bool): Indicates whether to include the message corresponding to `link`.
-            **kwargs: Keyword arguments passed to `VBTAsset.find_link`.
+            **kwargs: Keyword arguments for `VBTAsset.find_link`.
 
         Returns:
             MessagesAsset: A new messages asset containing messages from the same channel.
@@ -3280,7 +3277,7 @@ class MessagesAsset(VBTAsset):
             attr (Optional[str]): An attribute to refine the search.
             module (Optional[Union[str, ModuleType]]): The module context to constrain the search.
             resolve (bool): Whether to resolve object references.
-            **kwargs: Keyword arguments for the search method.
+            **kwargs: Keyword arguments for `MessagesAsset.find_obj_mentions`.
 
         Returns:
             MaybeMessagesAsset: A new messages asset containing messages related to the specified object(s).
@@ -3334,7 +3331,7 @@ def find_api(
         pull_kwargs (KwargsLike): Keyword arguments for pulling pages.
         aggregate (bool): Whether to aggregate the pages.
         aggregate_kwargs (KwargsLike): Keyword arguments for aggregation.
-        **kwargs: Keyword arguments for further refining the lookup.
+        **kwargs: Keyword arguments for `PagesAsset.find_obj_api` or `PagesAsset.rank`.
 
     Returns:
         MaybePagesAsset: A new pages asset containing API pages and headings relevant to the input.
@@ -3392,7 +3389,7 @@ def find_docs(
         pull_kwargs (KwargsLike): Keyword arguments for pulling documentation pages.
         aggregate (bool): Whether to aggregate the pages.
         aggregate_kwargs (KwargsLike): Keyword arguments for aggregation.
-        **kwargs: Keyword arguments for further refining the lookup.
+        **kwargs: Keyword arguments for `PagesAsset.find_obj_docs` or `PagesAsset.rank`.
 
     Returns:
         MaybePagesAsset: A new pages asset containing documentation pages and headings relevant to the input.
@@ -3452,7 +3449,7 @@ def find_messages(
         aggregate_kwargs (KwargsLike): Keyword arguments for message aggregation.
         latest_first (bool): If True, sorts messages in reverse chronological order.
         shuffle (bool): If True, shuffles the order of messages.
-        **kwargs: Extra keyword arguments for underlying methods.
+        **kwargs: Keyword arguments for `MessagesAsset.find_obj_messages` or `MessagesAsset.rank`.
 
     Returns:
         MaybeMessagesAsset: A new messages asset of messages processed according to the specified parameters.
@@ -3534,7 +3531,7 @@ def find_examples(
         latest_messages_first (bool): If True, orders messages from most recent to oldest.
         shuffle_messages (bool): If True, shuffles the order of messages.
         find_kwargs (KwargsLike): Keyword arguments specifically for the find method.
-        **kwargs: Extra keyword arguments distributed between the find and rank methods.
+        **kwargs: Keyword arguments for `VBTAsset.find`, `VBTAsset.find_code`, or `VBTAsset.rank`.
 
     Returns:
         MaybeVBTAsset: A new VBT asset containing code examples processed according to the specified parameters.
@@ -3696,7 +3693,7 @@ def find_assets(
         combine (bool): Whether to combine all found assets into a single asset using
             `vectorbtpro.utils.knowledge.base_assets.KnowledgeAsset.combine`.
         combine_kwargs (KwargsLike): Keyword arguments for combining assets.
-        **kwargs: Keyword arguments passed to asset functions (except for `find_api`
+        **kwargs: Keyword arguments for asset functions (except for `find_api`
             when `obj_or_query` is an object; if both `combine` and `as_query` are True, these are
             instead passed to `VBTAsset.rank`).
 
@@ -3934,7 +3931,7 @@ def chat_about(
         shuffle_messages (Optional[bool]): If True, shuffles the order of messages.
         shuffle (Optional[bool]): If True, shuffles the combined asset.
         find_assets_kwargs (KwargsLike): Keyword arguments for the asset search.
-        **kwargs: Additional keyword arguments for the chat method.
+        **kwargs: Keyword arguments for `find_assets` or `VBTAsset.chat`.
 
     Returns:
         MaybeChatOutput: The output of the chat session, which may include the chat history and other information.
@@ -4013,9 +4010,9 @@ def search(
         display (Union[bool, int]): If True, displays the top results as static HTML pages with `VBTAsset.display`.
 
             Pass an integer to display n top results. Will return the path to the temporary file.
-        display_kwargs (KwargsLike): Keyword arguments passed to `VBTAsset.display`.
+        display_kwargs (KwargsLike): Keyword arguments for `VBTAsset.display`.
         silence_warnings (bool): Suppress warnings during the search process.
-        **kwargs: Additional keyword arguments for the search and ranking process.
+        **kwargs: Keyword arguments for `find_assets` or `VBTAsset.rank`.
 
     Returns:
         Union[MaybeVBTAsset, Path]: The ranked asset or the path to the temporary file with displayed results.
@@ -4089,7 +4086,15 @@ def search(
 
 
 def quick_search(*args, **kwargs) -> tp.Union[tp.MaybeVBTAsset, tp.Path]:
-    """Invoke `search` with `search_method` preset to "bm25"."""
+    """Invoke `search` with `search_method` preset to "bm25".
+
+    Args:
+        *args: Positional arguments for `search`.
+        **kwargs: Keyword arguments for `search`.
+
+    Returns:
+        Union[MaybeVBTAsset, Path]: The ranked asset or the path to the temporary file with displayed results.
+    """
     return search(*args, search_method="bm25", **kwargs)
 
 
@@ -4144,7 +4149,7 @@ def chat(
         rank_kwargs (KwargsLike): Additional parameters for ranking.
         wrap_documents (Optional[bool]): Wrap documents during processing if True.
         silence_warnings (bool): Suppress caching warnings.
-        **kwargs: Extra keyword arguments distributed to `find_assets` and the chat method.
+        **kwargs: Keyword arguments for `find_assets` or `VBTAsset.chat`.
 
     Returns:
         MaybeChatOutput: The chat response generated by the asset's chat method.
@@ -4231,11 +4236,11 @@ def quick_chat(
     `quick_mode=True`. Positional and keyword arguments are forwarded to `chat`.
 
     Args:
-        *args: Positional arguments to pass to `chat`.
+        *args: Positional arguments for `chat`.
         min_top_k (TopKLike): Minimum number of top items for ranking.
         max_top_k (TopKLike): Maximum number of top items for ranking.
         rank_kwargs (KwargsLike): Additional ranking parameters.
-        **kwargs: Extra keyword arguments to pass to `chat`.
+        **kwargs: Keyword arguments for `chat`.
 
     Returns:
         MaybeChatOutput: The chat response generated by `chat`.

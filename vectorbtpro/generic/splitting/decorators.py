@@ -67,7 +67,7 @@ def split(
     An error is raised if both `splitter_kwargs` and `apply_kwargs` are explicitly set.
 
     Args:
-        *args: Positional arguments passed to the decorator.
+        func (Callable): Function to be decorated.
         splitter (Union[None, str, Splitter, Callable]): Splitter instance, the name of a factory method
             (e.g. "from_n_rolling"), or the factory method itself.
 
@@ -357,9 +357,7 @@ def cv_split(
     `NoResultsException` is raised) or propagating the exception based on `raise_no_results`.
 
     Args:
-        *args: Positional arguments.
-
-            If a single argument is provided, it is taken as the function to decorate.
+        func (Callable): Function to be decorated.
         parameterized_kwargs (KwargsLike): Keyword arguments for `vectorbtpro.utils.params.parameterized`.
 
             Their templates are substituted with a context that includes split-related information

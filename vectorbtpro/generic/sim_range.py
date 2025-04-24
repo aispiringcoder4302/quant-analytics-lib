@@ -52,13 +52,13 @@ class SimRangeMixin(Base):
     def row_stack_sim_start(
         cls,
         new_wrapper: ArrayWrapper,
-        *objs: tp.MaybeTuple[SimRangeMixinT],
+        *objs: tp.MaybeSequence[SimRangeMixinT],
     ) -> tp.Optional[tp.ArrayLike]:
         """Row-stack simulation start.
 
         Args:
             new_wrapper (ArrayWrapper): New array wrapper.
-            *objs (MaybeTuple[SimRangeMixin]): Simulation range mixin objects to merge.
+            *objs (MaybeSequence[SimRangeMixin]): Simulation range mixin objects to merge.
 
                 The first object's simulation start is used, and all subsequent
                 objects must have it set to None.
@@ -83,13 +83,13 @@ class SimRangeMixin(Base):
     def row_stack_sim_end(
         cls,
         new_wrapper: ArrayWrapper,
-        *objs: tp.MaybeTuple[SimRangeMixinT],
+        *objs: tp.MaybeSequence[SimRangeMixinT],
     ) -> tp.Optional[tp.ArrayLike]:
         """Row-stack simulation end.
 
         Args:
             new_wrapper (ArrayWrapper): New array wrapper.
-            *objs (MaybeTuple[SimRangeMixin]): Simulation range mixin objects to merge.
+            *objs (MaybeSequence[SimRangeMixin]): Simulation range mixin objects to merge.
 
                 The last object's simulation end is used, and all preceding objects must have it set to None.
 
@@ -114,13 +114,13 @@ class SimRangeMixin(Base):
     def column_stack_sim_start(
         cls,
         new_wrapper: ArrayWrapper,
-        *objs: tp.MaybeTuple[SimRangeMixinT],
+        *objs: tp.MaybeSequence[SimRangeMixinT],
     ) -> tp.Optional[tp.ArrayLike]:
         """Column-stack simulation start.
 
         Args:
             new_wrapper (ArrayWrapper): New array wrapper.
-            *objs (MaybeTuple[SimRangeMixin]): Simulation range mixin objects to merge.
+            *objs (MaybeSequence[SimRangeMixin]): Simulation range mixin objects to merge.
 
         Returns:
             Optional[ArrayLike]: The computed simulation start array for column stacking, or None.
@@ -158,13 +158,13 @@ class SimRangeMixin(Base):
     def column_stack_sim_end(
         cls,
         new_wrapper: ArrayWrapper,
-        *objs: tp.MaybeTuple[SimRangeMixinT],
+        *objs: tp.MaybeSequence[SimRangeMixinT],
     ) -> tp.Optional[tp.ArrayLike]:
         """Column-stack simulation end.
 
         Args:
             new_wrapper (ArrayWrapper): New array wrapper.
-            *objs (MaybeTuple[SimRangeMixin]): Simulation range mixin objects to merge.
+            *objs (MaybeSequence[SimRangeMixin]): Simulation range mixin objects to merge.
 
         Returns:
             Optional[ArrayLike]: The computed simulation end array for column stacking, or None.

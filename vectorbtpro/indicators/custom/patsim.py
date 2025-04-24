@@ -121,11 +121,11 @@ class _PATSIM(PATSIM):
         Args:
             column (Optional[Label]): Name of the column to plot.
 
-            similarity_trace_kwargs (KwargsLike): Keyword arguments passed to
+            similarity_trace_kwargs (KwargsLike): Keyword arguments for
                 `plotly.graph_objects.Scatter` for plotting `PATSIM.similarity`.
-            add_trace_kwargs (KwargsLike): Keyword arguments passed to `fig.add_trace` for each trace.
+            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
-            **layout_kwargs: Keyword arguments for configuring the figure layout.
+            **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
         Returns:
             BaseFigure: The updated or newly created figure with the similarity line plotted.
@@ -182,13 +182,13 @@ class _PATSIM(PATSIM):
         Args:
             column (Optional[Label]): Name of the column to plot.
 
-            close_trace_kwargs (KwargsLike): Keyword arguments passed to
+            close_trace_kwargs (KwargsLike): Keyword arguments for
                 `plotly.graph_objects.Scatter` for plotting `PATSIM.close`.
-            similarity_trace_kwargs (KwargsLike): Keyword arguments passed to
+            similarity_trace_kwargs (KwargsLike): Keyword arguments for
                 `plotly.graph_objects.Heatmap` for plotting `PATSIM.similarity`.
-            add_trace_kwargs (KwargsLike): Keyword arguments passed to `fig.add_trace` for each trace.
+            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
-            **layout_kwargs: Keyword arguments for configuring the figure layout.
+            **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
         Returns:
             BaseFigure: The updated or newly created figure with the heatmap overlay on `PATSIM.close`.

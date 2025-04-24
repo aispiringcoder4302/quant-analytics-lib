@@ -107,10 +107,10 @@ class _STOCH(STOCH):
                 the `plotly.graph_objects.Scatter` trace of `STOCH.slow_k`.
             slow_d_trace_kwargs (KwargsLike): Keyword arguments for
                 the `plotly.graph_objects.Scatter` trace of `STOCH.slow_d`.
-            add_shape_kwargs (KwargsLike): Keyword arguments passed to `fig.add_shape` for each shape.
-            add_trace_kwargs (KwargsLike): Keyword arguments passed to `fig.add_trace` for each trace.
+            add_shape_kwargs (KwargsLike): Keyword arguments for `fig.add_shape` for each shape.
+            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace.
             fig (Optional[BaseFigure]): The figure to update; if None, a new figure is created.
-            **layout_kwargs: Keyword arguments for configuring the figure layout.
+            **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
         Returns:
             BaseFigure: The updated or newly created figure with the plotted STOCH traces and filled range.

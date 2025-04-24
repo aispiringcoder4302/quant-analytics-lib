@@ -676,7 +676,7 @@ class Trades(Ranges):
         """Return trade records as a `vectorbtpro.generic.ranges.Ranges` instance.
 
         Args:
-            **kwargs: Additional keyword arguments.
+            **kwargs: Keyword arguments for `vectorbtpro.generic.ranges.Ranges.from_records`.
 
         Returns:
             Ranges: A new instance of `vectorbtpro.generic.ranges.Ranges` constructed from trade record fields.
@@ -703,7 +703,7 @@ class Trades(Ranges):
         """Return trade records filtered for long trades.
 
         Args:
-            **kwargs: Keyword arguments passed to `Trades.apply_mask`.
+            **kwargs: Keyword arguments for `Trades.apply_mask`.
 
         Returns:
             Trades: A new instance of trade records containing only long trades.
@@ -715,7 +715,7 @@ class Trades(Ranges):
         """Return trade records filtered for short trades.
 
         Args:
-            **kwargs: Keyword arguments passed to `Trades.apply_mask`.
+            **kwargs: Keyword arguments for `Trades.apply_mask`.
 
         Returns:
             Trades: A new instance of trade records containing only short trades.
@@ -729,7 +729,7 @@ class Trades(Ranges):
         """Return winning trades with positive profit and loss.
 
         Args:
-            **kwargs: Keyword arguments passed to `Trades.apply_mask`.
+            **kwargs: Keyword arguments for `Trades.apply_mask`.
 
         Returns:
             Trades: Trade records where profit and loss (pnl) is greater than 0.
@@ -741,7 +741,7 @@ class Trades(Ranges):
         """Return losing trades with negative profit and loss.
 
         Args:
-            **kwargs: Keyword arguments passed to `Trades.apply_mask`.
+            **kwargs: Keyword arguments for `Trades.apply_mask`.
 
         Returns:
             Trades: Trade records where profit and loss (pnl) is less than 0.
@@ -753,7 +753,7 @@ class Trades(Ranges):
         """Return the winning streak count for each trade in the current column.
 
         Args:
-            **kwargs: Keyword arguments passed to `Trades.apply`.
+            **kwargs: Keyword arguments for `Trades.apply`.
 
         Returns:
             MappedArray: Array of winning streak counts for each trade.
@@ -767,7 +767,7 @@ class Trades(Ranges):
         """Return the losing streak count for each trade in the current column.
 
         Args:
-            **kwargs: Keyword arguments passed to `Trades.apply`.
+            **kwargs: Keyword arguments for `Trades.apply`.
 
         Returns:
             MappedArray: Array of losing streak counts for each trade.
@@ -796,8 +796,7 @@ class Trades(Ranges):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            **kwargs: Keyword arguments passed to
-                `vectorbtpro.records.mapped_array.MappedArray.reduce`.
+            **kwargs: Keyword arguments for `vectorbtpro.records.mapped_array.MappedArray.reduce`.
 
         Returns:
             MaybeSeries: Series containing the winning trade rates.
@@ -833,8 +832,7 @@ class Trades(Ranges):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            **kwargs: Keyword arguments passed to
-                `vectorbtpro.records.mapped_array.MappedArray.reduce`.
+            **kwargs: Keyword arguments for `vectorbtpro.records.mapped_array.MappedArray.reduce`.
 
         Returns:
             MaybeSeries: Series containing profit factor values.
@@ -874,8 +872,7 @@ class Trades(Ranges):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            **kwargs: Keyword arguments passed to
-                `vectorbtpro.records.mapped_array.MappedArray.reduce`.
+            **kwargs: Keyword arguments for `vectorbtpro.records.mapped_array.MappedArray.reduce`.
 
         Returns:
             MaybeSeries: Series containing expectancy values.
@@ -917,8 +914,7 @@ class Trades(Ranges):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            **kwargs: Keyword arguments passed to
-                `vectorbtpro.records.mapped_array.MappedArray.reduce`.
+            **kwargs: Keyword arguments for `vectorbtpro.records.mapped_array.MappedArray.reduce`.
 
         Returns:
             MaybeSeries: Series containing SQN values.
@@ -951,7 +947,7 @@ class Trades(Ranges):
             entry_price_open (bool): Include the open price of the entry bar when evaluating prices.
             exit_price_close (bool): Include the close price of the exit bar when evaluating prices.
             max_duration (Optional[int]): Maximum number of bars to evaluate price movements.
-            **kwargs: Keyword arguments passed to `Trades.apply`.
+            **kwargs: Keyword arguments for `Trades.apply`.
 
         Returns:
             MappedArray: Array of best prices.
@@ -984,7 +980,7 @@ class Trades(Ranges):
             entry_price_open (bool): Include the open price of the entry bar when evaluating prices.
             exit_price_close (bool): Include the close price of the exit bar when evaluating prices.
             max_duration (Optional[int]): Maximum number of bars to evaluate price movements.
-            **kwargs: Keyword arguments passed to `Trades.apply`.
+            **kwargs: Keyword arguments for `Trades.apply`.
 
         Returns:
             MappedArray: Array of worst prices.
@@ -1019,7 +1015,7 @@ class Trades(Ranges):
             exit_price_close (bool): Include the close price of the exit bar when evaluating prices.
             max_duration (Optional[int]): Maximum number of bars to evaluate price movements.
             relative (bool): Whether to return a relative index.
-            **kwargs: Keyword arguments passed to `Trades.apply`.
+            **kwargs: Keyword arguments for `Trades.apply`.
 
         Returns:
             MappedArray: Array of indices for the best price locations.
@@ -1056,7 +1052,7 @@ class Trades(Ranges):
             exit_price_close (bool): Include the close price of the exit bar when evaluating prices.
             max_duration (Optional[int]): Maximum number of bars to evaluate price movements.
             relative (bool): Whether to return a relative index.
-            **kwargs: Keyword arguments passed to `Trades.apply`.
+            **kwargs: Keyword arguments for `Trades.apply`.
 
         Returns:
             MappedArray: Array of indices for the worst price locations.
@@ -1217,7 +1213,7 @@ class Trades(Ranges):
             chunked (ChunkedOption): Option to control chunked processing.
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
-            **kwargs: Keyword arguments passed to `Trades.map_array`.
+            **kwargs: Keyword arguments for `Trades.map_array`.
 
         Returns:
             MappedArray: Mapped array containing the computed MFE values.
@@ -1269,7 +1265,7 @@ class Trades(Ranges):
             chunked (ChunkedOption): Option to control chunked processing.
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
-            **kwargs: Keyword arguments passed to `Trades.map_array`.
+            **kwargs: Keyword arguments for `Trades.map_array`.
 
         Returns:
             MappedArray: Mapped array containing the computed MAE values.
@@ -1321,7 +1317,7 @@ class Trades(Ranges):
             chunked (ChunkedOption): Option to control chunked processing.
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
-            **kwargs: Keyword arguments used when resolving the expanding best price.
+            **kwargs: Keyword arguments for `Trades.get_expanding_best_price`.
 
         Returns:
             SeriesFrame: Wrapped series frame containing the computed expanding MFE values.
@@ -1371,7 +1367,7 @@ class Trades(Ranges):
             chunked (ChunkedOption): Option to control chunked processing.
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
-            **kwargs: Keyword arguments used when resolving the expanding worst price.
+            **kwargs: Keyword arguments for `Trades.get_expanding_worst_price`.
 
         Returns:
             SeriesFrame: Wrapped series frame containing the computed expanding MAE values.
@@ -1769,8 +1765,8 @@ class Trades(Ranges):
                 the `plotly.graph_objects.Scatter` trace of closed trades with loss.
             open_trace_kwargs (KwargsLike): Keyword arguments for
                 the `plotly.graph_objects.Scatter` trace of open trades.
-            hline_shape_kwargs (KwargsLike): Keyword arguments passed to `fig.add_shape` for the horizontal line.
-            add_trace_kwargs (KwargsLike): Keyword arguments passed to `fig.add_trace` for each trace.
+            hline_shape_kwargs (KwargsLike): Keyword arguments for `fig.add_shape` for the horizontal line.
+            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace.
             xref (str): Reference for the x-axis.
             yref (str): Reference for the y-axis (e.g., "y", "y2").
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
@@ -1932,8 +1928,8 @@ class Trades(Ranges):
         """Plot trade returns using `Trades.plot_pnl`.
 
         Args:
-            *args: Positional arguments passed to `Trades.plot_pnl`.
-            **kwargs: Keyword arguments passed to `Trades.plot_pnl`.
+            *args: Positional arguments for `Trades.plot_pnl`.
+            **kwargs: Keyword arguments for `Trades.plot_pnl`.
 
         Returns:
             BaseFigure: Plotly figure object containing the plot of trade returns.
@@ -1985,13 +1981,13 @@ class Trades(Ranges):
                 `plotly.graph_objects.Scatter` for "Closed - Loss" markers.
             open_trace_kwargs (KwargsLike): Keyword arguments for
                 `plotly.graph_objects.Scatter` for "Open" markers.
-            hline_shape_kwargs (KwargsLike): Keyword arguments passed to `fig.add_shape` for the horizontal line.
-            vline_shape_kwargs (KwargsLike): Keyword arguments passed to `fig.add_shape` for the vertical line.
-            add_trace_kwargs (KwargsLike): Keyword arguments passed to `fig.add_trace` for each trace.
+            hline_shape_kwargs (KwargsLike): Keyword arguments for `fig.add_shape` for the horizontal line.
+            vline_shape_kwargs (KwargsLike): Keyword arguments for `fig.add_shape` for the vertical line.
+            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace.
             xref (str): Reference for the x-axis.
             yref (str): Reference for the y-axis (e.g., "y", "y2").
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
-            **layout_kwargs: Keyword arguments for configuring the figure layout.
+            **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
         Returns:
             BaseFigure: The updated figure with the plotted field against PnL or returns.
@@ -2171,11 +2167,11 @@ class Trades(Ranges):
         return fig
 
     def plot_mfe(self, *args, **kwargs) -> tp.BaseFigure:
-        """Plot MFE using `Trades.plot_against_pnl`.
+        """Plot MFE.
 
         Args:
-            *args: Additional positional arguments.
-            **kwargs: Additional keyword arguments.
+            *args: Positional arguments for `Trades.plot_against_pnl`.
+            **kwargs: Keyword arguments for `Trades.plot_against_pnl`.
 
         Returns:
             BaseFigure: The updated figure with the MFE plot.
@@ -2188,11 +2184,11 @@ class Trades(Ranges):
         )
 
     def plot_mfe_returns(self, *args, **kwargs) -> tp.BaseFigure:
-        """Plot MFE returns using `Trades.plot_against_pnl`.
+        """Plot MFE returns.
 
         Args:
-            *args: Additional positional arguments.
-            **kwargs: Additional keyword arguments.
+            *args: Positional arguments for `Trades.plot_against_pnl`.
+            **kwargs: Keyword arguments for `Trades.plot_against_pnl`.
 
         Returns:
             BaseFigure: The figure object with the plotted MFE returns.
@@ -2207,11 +2203,11 @@ class Trades(Ranges):
         )
 
     def plot_mae(self, *args, **kwargs) -> tp.BaseFigure:
-        """Plot MAE using `Trades.plot_against_pnl`.
+        """Plot MAE.
 
         Args:
-            *args: Additional positional arguments.
-            **kwargs: Additional keyword arguments.
+            *args: Positional arguments for `Trades.plot_against_pnl`.
+            **kwargs: Keyword arguments for `Trades.plot_against_pnl`.
 
         Returns:
             BaseFigure: The figure object with the plotted MAE.
@@ -2224,11 +2220,11 @@ class Trades(Ranges):
         )
 
     def plot_mae_returns(self, *args, **kwargs) -> tp.BaseFigure:
-        """Plot MAE returns using `Trades.plot_against_pnl`.
+        """Plot MAE returns.
 
         Args:
-            *args: Additional positional arguments.
-            **kwargs: Additional keyword arguments.
+            *args: Positional arguments for `Trades.plot_against_pnl`.
+            **kwargs: Keyword arguments for `Trades.plot_against_pnl`.
 
         Returns:
             BaseFigure: The figure object with the plotted MAE returns.
@@ -2273,10 +2269,9 @@ class Trades(Ranges):
 
                 See `vectorbtpro.generic.accessors.GenericDFAccessor.plot_projections`.
             field_pct_scale (bool): If True, sets the y-axis to a percentage scale.
-            add_trace_kwargs (KwargsLike): Keyword arguments passed to `fig.add_trace` for each trace.
+            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
-            **kwargs: Keyword arguments for
-                `vectorbtpro.generic.accessors.GenericDFAccessor.plot_projections`.
+            **kwargs: Keyword arguments for `vectorbtpro.generic.accessors.GenericDFAccessor.plot_projections`.
 
         Returns:
             BaseFigure: The figure object with the plotted expanding field projections.
@@ -2328,11 +2323,11 @@ class Trades(Ranges):
         return fig
 
     def plot_expanding_mfe(self, *args, **kwargs) -> tp.BaseFigure:
-        """Plot expanding MFE using `Trades.plot_expanding`.
+        """Plot expanding MFE.
 
         Args:
-            *args: Additional positional arguments.
-            **kwargs: Additional keyword arguments.
+            *args: Positional arguments for `Trades.plot_expanding`.
+            **kwargs: Keyword arguments for `Trades.plot_expanding`.
 
         Returns:
             BaseFigure: The figure object with the plotted expanding MFE.
@@ -2345,11 +2340,11 @@ class Trades(Ranges):
         )
 
     def plot_expanding_mfe_returns(self, *args, **kwargs) -> tp.BaseFigure:
-        """Plot expanding MFE returns using `Trades.plot_expanding`.
+        """Plot expanding MFE returns.
 
         Args:
-            *args: Additional positional arguments.
-            **kwargs: Additional keyword arguments.
+            *args: Positional arguments for `Trades.plot_expanding`.
+            **kwargs: Keyword arguments for `Trades.plot_expanding`.
 
         Returns:
             BaseFigure: The figure object with the plotted expanding MFE returns.
@@ -2363,11 +2358,11 @@ class Trades(Ranges):
         )
 
     def plot_expanding_mae(self, *args, **kwargs) -> tp.BaseFigure:
-        """Plot expanding MAE using `Trades.plot_expanding`.
+        """Plot expanding MAE.
 
         Args:
-            *args: Additional positional arguments.
-            **kwargs: Additional keyword arguments.
+            *args: Positional arguments for `Trades.plot_expanding`.
+            **kwargs: Keyword arguments for `Trades.plot_expanding`.
 
         Returns:
             BaseFigure: The figure object with the plotted expanding MAE.
@@ -2380,11 +2375,11 @@ class Trades(Ranges):
         )
 
     def plot_expanding_mae_returns(self, *args, **kwargs) -> tp.BaseFigure:
-        """Plot expanding MAE returns using `Trades.plot_expanding`.
+        """Plot expanding MAE returns.
 
         Args:
-            *args: Additional positional arguments.
-            **kwargs: Additional keyword arguments.
+            *args: Positional arguments for `Trades.plot_expanding`.
+            **kwargs: Keyword arguments for `Trades.plot_expanding`.
 
         Returns:
             BaseFigure: The figure object with the plotted expanding MAE returns.
@@ -2427,8 +2422,8 @@ class Trades(Ranges):
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
             xref (str): Reference identifier for the x-axis.
             yref (str): Reference for the y-axis (e.g., "y", "y2").
-            hline_shape_kwargs (KwargsLike): Keyword arguments passed to `fig.add_shape` for the horizontal line.
-            **kwargs: Keyword arguments passed to `vectorbtpro.generic.accessors.GenericSRAccessor.plot_against`.
+            hline_shape_kwargs (KwargsLike): Keyword arguments for `fig.add_shape` for the horizontal line.
+            **kwargs: Keyword arguments for `vectorbtpro.generic.accessors.GenericSRAccessor.plot_against`.
 
         Returns:
             BaseFigure: The figure object with the plotted running edge ratio.
@@ -2528,13 +2523,13 @@ class Trades(Ranges):
                 exit markers for losing trades.
             active_trace_kwargs (KwargsLike): Keyword arguments for configuring
                 active trade markers.
-            profit_shape_kwargs (KwargsLike): Keyword arguments passed to `fig.add_shape` for profit zone shapes.
-            loss_shape_kwargs (KwargsLike): Keyword arguments passed to `fig.add_shape` for loss zone shapes.
-            add_trace_kwargs (KwargsLike): Keyword arguments passed to `fig.add_trace` for each trace.
+            profit_shape_kwargs (KwargsLike): Keyword arguments for `fig.add_shape` for profit zone shapes.
+            loss_shape_kwargs (KwargsLike): Keyword arguments for `fig.add_shape` for loss zone shapes.
+            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace.
             xref (str): Reference for x-axis coordinates.
             yref (str): Reference for the y-axis (e.g., "y", "y2").
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
-            **layout_kwargs: Keyword arguments for configuring the figure layout.
+            **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
         Returns:
             BaseFigure: The updated Plotly figure with the plotted trades.
@@ -2946,7 +2941,7 @@ class EntryTrades(Trades):
             chunked (ChunkedOption): Option to control chunked processing.
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
-            **kwargs: Keyword arguments passed to `EntryTrades.from_records`.
+            **kwargs: Keyword arguments for `EntryTrades.from_records`.
 
         Returns:
             EntryTrades: Constructed `EntryTrades` instance.
@@ -3013,9 +3008,9 @@ class EntryTrades(Trades):
                 `plotly.graph_objects.Scatter`.
             short_entry_trace_kwargs (KwargsLike): Keyword arguments for plotting short entry markers in
                 `plotly.graph_objects.Scatter`.
-            add_trace_kwargs (KwargsLike): Keyword arguments passed to `fig.add_trace` for each trace.
+            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
-            **layout_kwargs: Keyword arguments for configuring the figure layout.
+            **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
         Returns:
             BaseFigure: The updated or newly created figure.
@@ -3235,7 +3230,7 @@ class ExitTrades(Trades):
             chunked (ChunkedOption): Option to control chunked processing.
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
-            **kwargs: Keyword arguments passed to `ExitTrades.from_records`.
+            **kwargs: Keyword arguments for `ExitTrades.from_records`.
 
         Returns:
             ExitTrades: An `ExitTrades` instance generated from the provided orders.
@@ -3302,9 +3297,9 @@ class ExitTrades(Trades):
                 `plotly.graph_objects.Scatter`.
             short_exit_trace_kwargs (KwargsLike): Keyword arguments for plotting short exit markers in
                 `plotly.graph_objects.Scatter`.
-            add_trace_kwargs (KwargsLike): Keyword arguments passed to `fig.add_trace` for each trace.
+            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
-            **layout_kwargs: Keyword arguments for configuring the figure layout.
+            **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
         Returns:
             BaseFigure: A Plotly figure with exit trade signals plotted.
@@ -3521,7 +3516,7 @@ class Positions(Trades):
             chunked (ChunkedOption): Option to control chunked processing.
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
-            **kwargs: Keyword arguments passed to `Positions.from_records`.
+            **kwargs: Keyword arguments for `Positions.from_records`.
 
         Returns:
             Positions: A new instance of `Positions` created from the source trades.

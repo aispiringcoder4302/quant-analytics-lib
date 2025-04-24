@@ -91,7 +91,7 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
 
     Args:
         arg_config (KwargsLike): Optional configuration for target function arguments.
-        **kwargs: Keyword arguments passed for configuration.
+        **kwargs: Keyword arguments for `vectorbtpro.utils.config.Configured`.
 
     !!! warning
         Most properties are force-cached - create a new instance to override any attribute.
@@ -133,7 +133,8 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
         Args:
             value (ArrayLike): The input value or container of values to map.
             look_for_type (Optional[type]): Type to search for within value to apply mapping.
-            **kwargs: Keyword arguments for enumeration mapping.
+            **kwargs: Keyword arguments for `vectorbtpro.utils.enum_.map_enum_fields` or
+                `BasePreparer.map_enum_value`.
 
         Returns:
             ArrayLike: The mapped value(s).

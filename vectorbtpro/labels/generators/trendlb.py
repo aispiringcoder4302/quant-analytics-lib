@@ -54,8 +54,7 @@ class _TRENDLB(TRENDLB):
 
         Args:
             column (Optional[Label]): The column from the indicator data to plot.
-            **kwargs: Keyword arguments passed to
-                `vectorbtpro.generic.accessors.GenericAccessor.overlay_with_heatmap`.
+            **kwargs: Keyword arguments for `vectorbtpro.generic.accessors.GenericAccessor.overlay_with_heatmap`.
 
         Returns:
             BaseFigure: A figure object displaying the overlay of the median and heatmap.

@@ -127,8 +127,8 @@ def get_annotations(*args, **kwargs) -> tp.Annotations:
     """Return annotations for an object with union types resolved.
 
     Args:
-        *args: Positional arguments passed to `get_raw_annotations`.
-        **kwargs: Keyword arguments passed to `get_raw_annotations`.
+        *args: Positional arguments for `get_raw_annotations`.
+        **kwargs: Keyword arguments for `get_raw_annotations`.
 
     Returns:
         Annotations: A dictionary of annotations with union types resolved.

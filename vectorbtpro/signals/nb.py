@@ -917,7 +917,7 @@ def rank_nb(
     Args:
         mask (Array2d): A boolean mask array indicating positions of signals.
         rank_func_nb (RankFunc): Function that computes the rank for a signal using a rank context.
-        rank_args (Args): Additional arguments passed to `rank_func_nb`.
+        rank_args (Args): Additional arguments for `rank_func_nb`.
         reset_by (Optional[Array2d]): A boolean array indicating reset positions.
         after_false (bool): If True, disregards the first True partition with no preceding False.
         after_reset (bool): If True, disregards the first True partition before a reset signal.

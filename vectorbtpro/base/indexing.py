@@ -108,7 +108,7 @@ class LocBase(Base):
     Args:
         indexing_func (Callable): Function to perform indexing operations.
         indexing_setter_func (Optional[Callable]): Function to set values via indexing.
-        **kwargs: Keyword arguments for the indexing functions.
+        **kwargs: Keyword arguments for indexing operations.
     """
 
     def __init__(
@@ -229,7 +229,7 @@ class PandasIndexer(IndexingBase):
     """Class for indexing Pandas objects using `iloc`, `loc`, `xs`, and `__getitem__`.
 
     Args:
-        **kwargs: Keyword arguments for configuring indexing operations.
+        **kwargs: Keyword arguments for indexing operations.
 
     Examples:
         ```pycon
@@ -307,8 +307,8 @@ class PandasIndexer(IndexingBase):
         """Forward the `xs` operation to each Pandas object and return a new instance.
 
         Args:
-            *args: Positional arguments passed to the Pandas `xs` method.
-            **kwargs: Keyword arguments passed to the Pandas `xs` method.
+            *args: Positional arguments for the Pandas `xs` method.
+            **kwargs: Keyword arguments for the Pandas `xs` method.
 
         Returns:
             PandasIndexer: A new instance of the class with the result of the `xs` operation.
@@ -367,7 +367,7 @@ class ExtPandasIndexer(PandasIndexer):
     `xLoc` for `Idxr`-based indexing.
 
     Args:
-        **kwargs: Keyword arguments for indexing configuration.
+        **kwargs: Keyword arguments for indexing operations.
     """
 
     def __init__(self, **kwargs) -> None:
@@ -396,7 +396,7 @@ class ParamLoc(LocBase):
         indexing_func (Callable): Function used to perform indexing.
         indexing_setter_func (Optional[Callable]): Function used for setting indexed values.
         level_name (Level): Name of the column level to adjust after selection.
-        **kwargs: Keyword arguments for indexing.
+        **kwargs: Keyword arguments for indexing operations.
     """
 
     def __init__(
@@ -601,7 +601,7 @@ def build_param_indexer(
         Args:
             param_mappers (Sequence[Series]): List of parameter mapping Series.
             level_names (Optional[Sequence[str]]): List of level names for parameter mappings.
-            **kwargs: Additional keyword arguments.
+            **kwargs: Keyword arguments for indexing operations.
         """
 
         def __init__(
@@ -1133,7 +1133,7 @@ class DTCIdxr(UniIdxr, DefineMixin):
     """One or more datetime-like components."""
 
     parse_kwargs: tp.KwargsLike = define.field(default=None)
-    """Keyword arguments passed to `vectorbtpro.utils.datetime_.DTC.parse`."""
+    """Keyword arguments for `vectorbtpro.utils.datetime_.DTC.parse`."""
 
     closed_start: bool = define.field(default=True)
     """Whether slice start should be inclusive."""
@@ -2410,7 +2410,7 @@ class RowIdxr(IdxrBase, DefineMixin):
     Args:
         idxr (object): Indexer that can be an instance of `UniIdxr`, a custom template,
             or a value to be wrapped with `AutoIdxr`.
-        **idxr_kwargs: Keyword arguments for initializing the indexer using `AutoIdxr`.
+        **idxr_kwargs: Keyword arguments for `AutoIdxr`.
     """
 
     idxr: object = define.field()
@@ -2449,7 +2449,7 @@ class ColIdxr(IdxrBase, DefineMixin):
     Args:
         idxr (object): Indexer that can be an instance of `UniIdxr`,
             a custom template, or a value to be wrapped with `AutoIdxr`.
-        **idxr_kwargs: Keyword arguments for initializing the indexer using `AutoIdxr`.
+        **idxr_kwargs: Keyword arguments for `AutoIdxr`.
     """
 
     idxr: object = define.field()
@@ -2492,7 +2492,7 @@ class Idxr(IdxrBase, DefineMixin):
             * If two indexers are provided, they are interpreted as row and column
                 indexers respectively, either as instances of `RowIdxr` and `ColIdxr`
                 or as values to be wrapped with `RowIdxr` and `ColIdxr`.
-        **idxr_kwargs: Keyword arguments for initializing `RowIdxr` and `ColIdxr`.
+        **idxr_kwargs: Keyword arguments for `RowIdxr` and `ColIdxr`.
     """
 
     idxrs: tp.Tuple[object, ...] = define.field()
@@ -2581,7 +2581,7 @@ def get_idxs(
         columns (Optional[Index]): Optional column index.
         freq (Optional[FrequencyLike]): Optional frequency for row indices.
         template_context (KwargsLike): Additional context for template substitution.
-        **kwargs: Keyword arguments passed to `Idxr`.
+        **kwargs: Keyword arguments for `Idxr`.
 
     Returns:
         Tuple[MaybeIndexArray, MaybeIndexArray]: A tuple containing row and column indices.
@@ -3111,10 +3111,10 @@ class IdxRecords(IdxSetterFactory, DefineMixin):
     """
 
     rowidx_kwargs: tp.KwargsLike = define.field(default=None)
-    """Keyword arguments passed to `rowidx` if the indexer is not an instance of `RowIdxr`."""
+    """Keyword arguments for `rowidx` if the indexer is not an instance of `RowIdxr`."""
 
     colidx_kwargs: tp.KwargsLike = define.field(default=None)
-    """Keyword arguments passed to `colidx` if the indexer is not an instance of `ColIdxr`."""
+    """Keyword arguments for `colidx` if the indexer is not an instance of `ColIdxr`."""
 
     def get(self) -> tp.Union[IdxSetter, tp.Dict[tp.Label, IdxSetter]]:
         records = self.records

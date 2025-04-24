@@ -291,8 +291,7 @@ class Orders(PriceRecords):
         Computes order sizes by negating values for sell orders.
 
         Args:
-            **kwargs: Keyword arguments passed to
-                `vectorbtpro.records.mapped_array.MappedArray.map_array`.
+            **kwargs: Keyword arguments for `vectorbtpro.records.mapped_array.MappedArray.map_array`.
 
         Returns:
             MaybeSeries: A series representing the signed sizes.
@@ -307,8 +306,7 @@ class Orders(PriceRecords):
         Calculates the order value as the product of the signed size and price values.
 
         Args:
-            **kwargs: Keyword arguments passed to
-                `vectorbtpro.records.mapped_array.MappedArray.map_array`.
+            **kwargs: Keyword arguments for `vectorbtpro.records.mapped_array.MappedArray.map_array`.
 
         Returns:
             MaybeSeries: A series representing the computed order values.
@@ -336,8 +334,7 @@ class Orders(PriceRecords):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            **kwargs: Keyword arguments passed to
-                `vectorbtpro.records.mapped_array.MappedArray.reduce`.
+            **kwargs: Keyword arguments for `vectorbtpro.records.mapped_array.MappedArray.reduce`.
 
         Returns:
             MaybeSeries: A series containing the weighted average prices.
@@ -362,7 +359,7 @@ class Orders(PriceRecords):
         based on high and low prices.
 
         Args:
-            **kwargs: Keyword arguments passed to `Orders.apply`.
+            **kwargs: Keyword arguments for `Orders.apply`.
 
         Returns:
             MappedArray: A mapped array representing the price status of orders.
@@ -491,9 +488,9 @@ class Orders(PriceRecords):
                 to plot buy markers.
             sell_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter`
                 to plot sell markers.
-            add_trace_kwargs (KwargsLike): Keyword arguments passed to `fig.add_trace` for each trace.
+            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
-            **layout_kwargs: Keyword arguments for configuring the figure layout.
+            **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
         Returns:
             BaseFigure: The updated Plotly figure with the plotted orders.
@@ -762,7 +759,7 @@ class FSOrders(Orders):
         """Return stop orders filtered by valid stop type.
 
         Args:
-            **kwargs: Keyword arguments to pass to `FSOrders.apply_mask`.
+            **kwargs: Keyword arguments for `FSOrders.apply_mask`.
 
         Returns:
             FSOrders: A filtered orders instance containing only stop orders.
@@ -849,7 +846,7 @@ class FSOrders(Orders):
         `vectorbtpro.generic.mapped_array.MappedArray`.
 
         Args:
-            **kwargs: Keyword arguments to pass to `FSOrders.map_array`.
+            **kwargs: Keyword arguments for `FSOrders.map_array`.
 
         Returns:
             MappedArray: A mapped array representing the duration between signal and creation.
@@ -862,7 +859,7 @@ class FSOrders(Orders):
         `vectorbtpro.generic.mapped_array.MappedArray`.
 
         Args:
-            **kwargs: Keyword arguments to pass to `FSOrders.map_array`.
+            **kwargs: Keyword arguments for `FSOrders.map_array`.
 
         Returns:
             MappedArray: A mapped array representing the duration between creation and fill.
@@ -875,7 +872,7 @@ class FSOrders(Orders):
         `vectorbtpro.generic.mapped_array.MappedArray`.
 
         Args:
-            **kwargs: Keyword arguments to pass to `FSOrders.map_array`.
+            **kwargs: Keyword arguments for `FSOrders.map_array`.
 
         Returns:
             MappedArray: A mapped array representing the duration between signal and fill.

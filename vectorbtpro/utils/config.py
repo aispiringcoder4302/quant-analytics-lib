@@ -499,7 +499,7 @@ def flat_merge_dicts(*dicts: tp.DictLike, **kwargs) -> dict:
 
     Args:
         *dicts (DictLike): Dictionaries to merge.
-        **kwargs: Keyword arguments passed to `merge_dicts`.
+        **kwargs: Keyword arguments for `merge_dicts`.
 
     Returns:
         dict: The merged dictionary.
@@ -524,9 +524,11 @@ class Config(pdict):
     including nested updates, freezing, and resetting.
 
     Args:
-        *args: Positional arguments to initialize the dictionary.
-        options_ (KwargsLike): Configuration options. See details below.
-        **kwargs: Keyword arguments to initialize the dictionary.
+        *args: Positional arguments for `dict`.
+        options_ (KwargsLike): Configuration options.
+
+            See details below.
+        **kwargs: Keyword arguments for `dict`.
 
     Options:
         copy_kwargs (dict): Keyword arguments used by `copy_dict` when copying the main
@@ -841,10 +843,10 @@ class Config(pdict):
         """Update the config with the provided key-value pairs using `update_dict`.
 
         Args:
-            *args: Positional arguments to form a dictionary.
+            *args: Positional arguments for `dict`.
             nested (Optional[bool]): Whether to perform a nested update.
             force (bool): Bypass configuration restrictions if True.
-            **kwargs: Additional keyword arguments.
+            **kwargs: Keyword arguments for `dict`.
 
         Returns:
             None: The config is updated in place.
@@ -954,7 +956,7 @@ class Config(pdict):
             other (DictLike): A dictionary to merge.
             copy_mode (Optional[str]): The copy mode for merging.
             nested (Optional[bool]): Whether to perform a nested merge.
-            **kwargs: Keyword arguments for merging.
+            **kwargs: Keyword arguments for `merge_dicts`.
 
         Returns:
             dict: The merged dictionary.
@@ -1025,7 +1027,7 @@ class Config(pdict):
             clear (bool): Clear the current config before updating if True.
             update_options (bool): Update configuration options if True.
             nested (Optional[bool]): Whether to apply a nested update.
-            **kwargs: Keyword arguments for loading.
+            **kwargs: Keyword arguments for `Config.load`.
 
         Returns:
             None: The config is updated in place.
@@ -1131,8 +1133,8 @@ class FrozenConfig(Config):
     """Configuration class with the `frozen_keys` flag enabled.
 
     Args:
-        *args: Additional positional arguments.
-        **kwargs: Additional keyword arguments.
+        *args: Positional arguments for `Config`.
+        **kwargs: Keyword arguments for `Config`.
     """
 
     def __init__(
@@ -1151,8 +1153,8 @@ class ReadonlyConfig(Config):
     """Configuration class with the `readonly` flag enabled.
 
     Args:
-        *args: Additional positional arguments.
-        **kwargs: Additional keyword arguments.
+        *args: Positional arguments for `Config`.
+        **kwargs: Keyword arguments for `Config`.
     """
 
     def __init__(
@@ -1171,8 +1173,8 @@ class HybridConfig(Config):
     """Configuration class with `copy_kwargs` configured to use `copy_mode='hybrid'`.
 
     Args:
-        *args: Additional positional arguments.
-        **kwargs: Additional keyword arguments.
+        *args: Positional arguments for `Config`.
+        **kwargs: Keyword arguments for `Config`.
     """
 
     def __init__(
@@ -2038,16 +2040,16 @@ class Configured(HasSettings, Cacheable, Comparable, Pickleable, Prettified, Cha
     @classmethod
     def resolve_merge_kwargs(
         cls,
-        *configs: tp.MaybeTuple[ConfigT],
+        *configs: tp.MaybeSequence[ConfigT],
         on_merge_conflict: tp.Union[str, dict] = "error",
         **kwargs,
     ) -> tp.Kwargs:
         """Resolve keyword arguments for initializing a `Configured` instance after merging configurations.
 
         Args:
-            *configs (MaybeTuple[Config]): Configuration objects to merge.
+            *configs (MaybeSequence[Config]): Configuration objects to merge.
             on_merge_conflict (Union[str, dict]): Strategy for handling merge conflicts.
-            **kwargs: Keyword arguments for resolving merge.
+            **kwargs: Keyword arguments for initialization.
 
         Returns:
             Kwargs: Resolved keyword arguments for initialization.
@@ -2183,7 +2185,7 @@ class Configured(HasSettings, Cacheable, Comparable, Pickleable, Prettified, Cha
             check_types (bool): Whether to compare types.
             check_attrs (bool): Whether to compare writable attributes.
             check_options (bool): Whether to compare configuration options.
-            **kwargs: Keyword arguments for comparison.
+            **kwargs: Keyword arguments for `vectorbtpro.utils.checks.is_deep_equal` and `Config.equals`.
 
         Returns:
             bool: True if the objects are equal, False otherwise.
@@ -2228,8 +2230,8 @@ class Configured(HasSettings, Cacheable, Comparable, Pickleable, Prettified, Cha
         """Force-update the configuration.
 
         Args:
-            *args: Positional arguments passed to `Config.update`.
-            **kwargs: Keyword arguments passed to `Config.update`.
+            *args: Positional arguments for `Config.update`.
+            **kwargs: Keyword arguments for `Config.update`.
 
         Returns:
             None: The configuration is updated in place.

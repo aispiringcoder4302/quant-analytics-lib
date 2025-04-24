@@ -83,7 +83,8 @@ class ToMarkdownAssetFunc(AssetFunc):
         dump_metadata_kwargs: tp.KwargsLike = None,
         **to_markdown_kwargs,
     ) -> str:
-        """Return metadata in Markdown format from asset data.
+        """Return Markdown formatted metadata by converting data to markdown using
+        `vectorbtpro.utils.knowledge.formatting.to_markdown`.
 
         Args:
             d (dict): Asset data dictionary.
@@ -94,7 +95,7 @@ class ToMarkdownAssetFunc(AssetFunc):
             clean_metadata (bool): If True, clean the metadata to remove empty or irrelevant values.
             clean_metadata_kwargs (KwargsLike): Keyword arguments for cleaning metadata.
             dump_metadata_kwargs (KwargsLike): Keyword arguments for dumping metadata.
-            **to_markdown_kwargs: Keyword arguments for Markdown conversion.
+            **to_markdown_kwargs: Keyword arguments for `vectorbtpro.utils.knowledge.formatting.to_markdown`.
 
         Returns:
             str: Markdown formatted metadata string.
@@ -129,11 +130,12 @@ class ToMarkdownAssetFunc(AssetFunc):
 
     @classmethod
     def get_markdown_content(cls, d: dict, **kwargs) -> str:
-        """Return content in Markdown format from asset data.
+        """Return Markdown formatted content by converting data to markdown using
+        `vectorbtpro.utils.knowledge.formatting.to_markdown`.
 
         Args:
             d (dict): Asset data dictionary containing the 'content' key.
-            **kwargs: Keyword arguments for Markdown conversion.
+            **kwargs: Keyword arguments for `vectorbtpro.utils.knowledge.formatting.to_markdown`.
 
         Returns:
             str: Markdown formatted content string.
@@ -257,7 +259,7 @@ class ToHTMLAssetFunc(ToMarkdownAssetFunc):
             clean_metadata_kwargs (KwargsLike): Keyword arguments for cleaning metadata.
             dump_metadata_kwargs (KwargsLike): Keyword arguments for dumping metadata.
             to_markdown_kwargs (KwargsLike): Keyword arguments for markdown conversion.
-            **to_html_kwargs: Keyword arguments for HTML conversion.
+            **to_html_kwargs: Keyword arguments for `vectorbtpro.utils.knowledge.formatting.to_html`.
 
         Returns:
             str: HTML formatted metadata.
@@ -288,7 +290,7 @@ class ToHTMLAssetFunc(ToMarkdownAssetFunc):
         Args:
             d (dict): Data dictionary containing content information.
             to_markdown_kwargs (KwargsLike): Keyword arguments for markdown conversion.
-            **kwargs: Keyword arguments for HTML conversion.
+            **kwargs: Keyword arguments for `vectorbtpro.utils.knowledge.formatting.to_html`.
 
         Returns:
             str: HTML formatted content.

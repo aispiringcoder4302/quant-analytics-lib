@@ -67,7 +67,7 @@ class Prettified(Base):
         `Prettified.prettify` with `repr_doc` as `repr_`.
 
         Args:
-            **kwargs: Keyword arguments passed to `prettify`.
+            **kwargs: Keyword arguments for `prettify`.
 
         Returns:
             str: A prettified representation of the object.
@@ -78,7 +78,7 @@ class Prettified(Base):
         """Pretty-print the object.
 
         Args:
-            **kwargs: Keyword arguments passed to `prettify`.
+            **kwargs: Keyword arguments for `prettify`.
 
         Returns:
             None
@@ -409,8 +409,8 @@ def prettify_doc(*args, **kwargs) -> str:
     """Prettify for documentation, equivalent to using `prettify` with `repr_doc` as `repr_`.
 
     Args:
-        *args: Positional arguments passed to `prettify`.
-        **kwargs: Keyword arguments passed to `prettify`.
+        *args: Positional arguments for `prettify`.
+        **kwargs: Keyword arguments for `prettify`.
 
     Returns:
         str: A prettified representation of the object.
@@ -422,8 +422,8 @@ def pprint(*args, **kwargs) -> None:
     """Print the prettified representation of the given arguments.
 
     Args:
-        *args: Positional arguments passed to `prettify`.
-        **kwargs: Keyword arguments passed to `prettify`.
+        *args: Positional arguments for `prettify`.
+        **kwargs: Keyword arguments for `prettify`.
 
     Returns:
         None

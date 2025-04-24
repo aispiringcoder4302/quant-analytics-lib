@@ -187,7 +187,7 @@ class BentoData(RemoteData):
             return_params (bool): If True, return the client and resolved parameters instead of fetched data.
 
                 Used by `BentoData.get_cost`.
-            df_kwargs (KwargsLike): Keyword arguments passed to `databento.common.dbnstore.DBNStore.to_df`.
+            df_kwargs (KwargsLike): Keyword arguments for `databento.common.dbnstore.DBNStore.to_df`.
             **params: Keyword arguments for `databento.historical.client.Historical.get_range`.
 
         Returns:

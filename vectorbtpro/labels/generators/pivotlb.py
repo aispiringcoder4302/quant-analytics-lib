@@ -53,8 +53,7 @@ class _PIVOTLB(PIVOTLB):
 
         Args:
             column (Optional[Label]): Column to select from the indicator output.
-            **kwargs: Keyword arguments passed to
-                `vectorbtpro.generic.accessors.GenericAccessor.overlay_with_heatmap`.
+            **kwargs: Keyword arguments for `vectorbtpro.generic.accessors.GenericAccessor.overlay_with_heatmap`.
 
         Returns:
             BaseFigure: A figure object displaying the plot.

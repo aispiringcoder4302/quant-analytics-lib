@@ -263,7 +263,7 @@ class AVData(RemoteData):
 
                 Otherwise, only the resolved `function`, `apikey`, `datatype="csv"`, and `params` are used.
             params (KwargsLike): Keyword arguments passed as key/value pairs in the URL.
-            read_csv_kwargs (KwargsLike): Keyword arguments passed to `pd.read_csv`.
+            read_csv_kwargs (KwargsLike): Keyword arguments for `pd.read_csv`.
             silence_warnings (Optional[bool]): Whether to silence warnings.
 
         Returns:

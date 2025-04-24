@@ -802,7 +802,7 @@ class JITRegistry(Base):
 
                 Specifies the task for which the option is applied.
             option (JittedOption): The option used to configure jitting.
-            **kwargs: Keyword arguments passed to `vectorbtpro.utils.jitting.resolve_jitted_kwargs`.
+            **kwargs: Keyword arguments for `vectorbtpro.utils.jitting.resolve_jitted_kwargs`.
 
         Returns:
             Union[Hashable, Callable]: The resolved jitted function or the original task identifier/function.

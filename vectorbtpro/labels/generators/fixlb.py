@@ -44,8 +44,7 @@ class _FIXLB(FIXLB):
 
         Args:
             column (Optional[Label]): The column to plot.
-            **kwargs: Keyword arguments passed to
-                `vectorbtpro.generic.accessors.GenericAccessor.overlay_with_heatmap`.
+            **kwargs: Keyword arguments for `vectorbtpro.generic.accessors.GenericAccessor.overlay_with_heatmap`.
 
         Returns:
             BaseFigure: The resulting figure object.

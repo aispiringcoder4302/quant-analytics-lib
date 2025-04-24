@@ -133,7 +133,7 @@ class OHLCVDFAccessor(OHLCDataMixin, GenericDFAccessor):
         wrapper (Union[ArrayWrapper, ArrayLike]): The array wrapper or array-like object.
         obj (Optional[ArrayLike]): The underlying data object.
         feature_map (KwargsLike): Mapping for OHLCV features.
-        **kwargs: Additional keyword arguments.
+        **kwargs: Keyword arguments for `vectorbtpro.generic.accessors.GenericDFAccessor`.
 
     !!! info
         For default settings, see `vectorbtpro._settings.ohlcv`.
@@ -221,7 +221,7 @@ class OHLCVDFAccessor(OHLCDataMixin, GenericDFAccessor):
 
         Args:
             data_cls (Optional[Type[Data]]): Class used for data conversion.
-            **kwargs: Keyword arguments for data conversion.
+            **kwargs: Keyword arguments for `vectorbtpro.data.base.Data.from_data` of `data_cls`.
 
         Returns:
             Data: A `vectorbtpro.data.base.Data` instance created from the underlying DataFrame.
@@ -307,9 +307,9 @@ class OHLCVDFAccessor(OHLCDataMixin, GenericDFAccessor):
         * For "volume", applies the sum.
 
         Args:
-            *args: Positional arguments for resampling.
+            *args: Positional arguments for `vectorbtpro.base.wrapping.ArrayWrapper.resample_meta`.
             wrapper_meta (DictLike): Metadata for resampling configuration.
-            **kwargs: Keyword arguments for resampling.
+            **kwargs: Keyword arguments for `vectorbtpro.base.wrapping.ArrayWrapper.resample_meta`.
 
         Returns:
             OHLCVDFAccessor: A new accessor instance with resampled OHLCV data.
@@ -465,9 +465,9 @@ class OHLCVDFAccessor(OHLCDataMixin, GenericDFAccessor):
 
                 If None, the default trace type from settings is used.
             trace_kwargs (KwargsLike): Keyword arguments for configuring the trace constructor.
-            add_trace_kwargs (KwargsLike): Keyword arguments passed to `fig.add_trace` for each trace.
+            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
-            **layout_kwargs: Keyword arguments for configuring the figure layout.
+            **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
         Returns:
             BaseFigure: The updated figure containing the OHLC plot.
@@ -549,9 +549,9 @@ class OHLCVDFAccessor(OHLCDataMixin, GenericDFAccessor):
         Args:
             trace_kwargs (KwargsLike): Keyword arguments for configuring
                 the `plotly.graph_objects.Bar` trace.
-            add_trace_kwargs (KwargsLike): Keyword arguments passed to `fig.add_trace` for each trace.
+            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
-            **layout_kwargs: Keyword arguments for configuring the figure layout.
+            **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
         Returns:
             BaseFigure: The updated figure with the volume bar plot.
@@ -622,10 +622,10 @@ class OHLCVDFAccessor(OHLCDataMixin, GenericDFAccessor):
             ohlc_trace_kwargs (KwargsLike): Keyword arguments for configuring the OHLC trace.
             volume_trace_kwargs (KwargsLike): Keyword arguments for configuring the volume
                 trace using `plotly.graph_objects.Bar`.
-            add_trace_kwargs (KwargsLike): Keyword arguments passed to `fig.add_trace` for each trace.
+            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace.
             volume_add_trace_kwargs (KwargsLike): Keyword arguments for adding the volume trace to the figure.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
-            **layout_kwargs: Keyword arguments for configuring the figure layout.
+            **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
         Returns:
             BaseFigure: The updated figure with the OHLC(V) plot.

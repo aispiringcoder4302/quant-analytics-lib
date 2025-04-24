@@ -43,7 +43,7 @@ class PXAccessor(BaseAccessor):
     Args:
         wrapper (Union[ArrayWrapper, ArrayLike]): The wrapper or array-like object to be wrapped.
         obj (Optional[ArrayLike]): The object to be wrapped.
-        **kwargs: Keyword arguments passed to `vectorbtpro.base.accessors.BaseAccessor`.
+        **kwargs: Keyword arguments for `vectorbtpro.base.accessors.BaseAccessor`.
 
     Examples:
         ```pycon
@@ -74,7 +74,7 @@ class PXSRAccessor(PXAccessor, BaseSRAccessor):
     Args:
         wrapper (Union[ArrayWrapper, ArrayLike]): The wrapper or array-like object to be wrapped.
         obj (Optional[ArrayLike]): The object to be wrapped.
-        **kwargs: Keyword arguments passed to `vectorbtpro.base.accessors.BaseAccessor`.
+        **kwargs: Keyword arguments for `vectorbtpro.base.accessors.BaseAccessor`.
     """
 
     def __init__(
@@ -99,7 +99,7 @@ class PXDFAccessor(PXAccessor, BaseDFAccessor):
     Args:
         wrapper (Union[ArrayWrapper, ArrayLike]): The wrapper or array-like object to be wrapped.
         obj (Optional[ArrayLike]): The object to be wrapped.
-        **kwargs: Keyword arguments passed to `vectorbtpro.base.accessors.BaseAccessor`.
+        **kwargs: Keyword arguments for `vectorbtpro.base.accessors.BaseAccessor`.
     """
 
     def __init__(

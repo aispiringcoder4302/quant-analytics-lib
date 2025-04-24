@@ -34,7 +34,7 @@ class Analyzable(Wrapping, StatsBuilderMixin, PlotsBuilderMixin, metaclass=MetaA
 
     Args:
         wrapper (ArrayWrapper): Wrapper instance.
-        **kwargs: Keyword arguments passed to the constructor.
+        **kwargs: Keyword arguments for `vectorbtpro.base.wrapping.Wrapping`.
     """
 
     def __init__(self, wrapper: ArrayWrapper, **kwargs) -> None:

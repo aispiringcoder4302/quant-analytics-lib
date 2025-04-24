@@ -104,17 +104,17 @@ class _BBANDS(BBANDS):
         Args:
             column (Optional[Label]): Name of the column to plot.
             plot_close (bool): Flag indicating whether to include `BBANDS.close` in the plot.
-            close_trace_kwargs (KwargsLike): Keyword arguments passed to
+            close_trace_kwargs (KwargsLike): Keyword arguments for
                 `plotly.graph_objects.Scatter` for `BBANDS.close`.
-            upper_trace_kwargs (KwargsLike): Keyword arguments passed to
+            upper_trace_kwargs (KwargsLike): Keyword arguments for
                 `plotly.graph_objects.Scatter` for `BBANDS.upper`.
-            middle_trace_kwargs (KwargsLike): Keyword arguments passed to
+            middle_trace_kwargs (KwargsLike): Keyword arguments for
                 `plotly.graph_objects.Scatter` for `BBANDS.middle`.
-            lower_trace_kwargs (KwargsLike): Keyword arguments passed to
+            lower_trace_kwargs (KwargsLike): Keyword arguments for
                 `plotly.graph_objects.Scatter` for `BBANDS.lower`.
-            add_trace_kwargs (KwargsLike): Keyword arguments passed to `fig.add_trace` for each trace.
+            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
-            **layout_kwargs: Keyword arguments for configuring the figure layout.
+            **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
         Returns:
             BaseFigure: The updated figure with BBANDS traces.

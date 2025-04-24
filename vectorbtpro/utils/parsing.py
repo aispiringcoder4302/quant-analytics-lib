@@ -614,8 +614,8 @@ def hash_args(
 
     Args:
         func (Callable): The function whose arguments are processed.
-        args (Args): Positional arguments passed to `func`.
-        kwargs (Kwargs): Keyword arguments passed to `func`.
+        args (Args): Positional arguments for `func`.
+        kwargs (Kwargs): Keyword arguments for `func`.
         ignore_args (Optional[Iterable[AnnArgQuery]]): A sequence of queries for arguments to ignore.
 
     Returns:
@@ -697,7 +697,7 @@ def suppress_stdout(func: tp.Callable) -> tp.Callable:
         func (Callable): The function whose printed output will be suppressed.
 
     Returns:
-        Callable: The wrapped function with stdout redirection.
+        Callable: The decorated function with stdout redirection.
     """
 
     @wraps(func)
@@ -715,8 +715,8 @@ class PrintsSuppressed(contextlib.redirect_stdout, Base):
     """Context manager to temporarily suppress printed output.
 
     Args:
-        *args: Positional arguments passed to the context manager.
-        **kwargs: Keyword arguments passed to the context manager.
+        *args: Positional arguments for `contextlib.redirect_stdout`.
+        **kwargs: Keyword arguments for `contextlib.redirect_stdout`.
     """
 
     def __new__(cls, *args, **kwargs) -> PrintsSuppressedT:

@@ -109,7 +109,7 @@ def column_stack_arrays(*arrs: tp.MaybeSequence[tp.AnyArray], expand_axis: int =
 
 
 def concat_merge(
-    *objs,
+    *objs: tp.MaybeSequence[tp.MaybeTuple[tp.Any]],
     keys: tp.Optional[tp.Index] = None,
     filter_results: bool = True,
     raise_no_results: bool = True,
@@ -124,7 +124,7 @@ def concat_merge(
     If each object is a tuple, merging is applied element-wise across the tuples.
 
     Args:
-        *objs (Any): Array-like objects to merge.
+        *objs (MaybeSequence[MaybeTuple[Any]]): Array-like objects to merge.
 
             May also be provided as a sequence of tuples.
         keys (Optional[Index]): An index or sequence of index objects to assign to the merged result.
@@ -138,7 +138,7 @@ def concat_merge(
         clean_index_kwargs (KwargsLike): Keyword arguments for cleaning MultiIndex levels.
 
             See `vectorbtpro.base.indexes.clean_index` for details.
-        **kwargs: Keyword arguments passed to `pd.concat`.
+        **kwargs: Keyword arguments for `pd.concat`.
 
     Returns:
         MaybeTuple[AnyArray]: The merged array-like object, which may be a Pandas Series,
@@ -262,7 +262,7 @@ def concat_merge(
 
 
 def row_stack_merge(
-    *objs,
+    *objs: tp.MaybeSequence[tp.MaybeTuple[tp.Any]],
     keys: tp.Optional[tp.Index] = None,
     filter_results: bool = True,
     raise_no_results: bool = True,
@@ -278,7 +278,7 @@ def row_stack_merge(
     separately. If wrapping is disabled, arrays remain unmodified and are merged using `row_stack_arrays`.
 
     Args:
-        *objs: Array-like objects or wrappers to merge.
+        *objs (MaybeSequence[MaybeTuple[Any]]): Array-like or wrapping objects to merge.
         keys (Optional[Index]): Keys used for concatenating arrays along the row axis.
         filter_results (bool): Whether to filter out objects with no results.
         raise_no_results (bool): Whether to raise an exception if no valid results are found.
@@ -295,7 +295,7 @@ def row_stack_merge(
             can be a dictionary or a list of dictionaries.
         clean_index_kwargs (KwargsLikeSequence): Keyword arguments for cleaning
             the concatenated index.
-        **kwargs: Keyword arguments passed to `pd.concat` and
+        **kwargs: Keyword arguments for `pd.concat` and
             `vectorbtpro.base.wrapping.Wrapping.row_stack`.
 
     Returns:
@@ -419,7 +419,7 @@ def row_stack_merge(
 
 
 def column_stack_merge(
-    *objs,
+    *objs: tp.MaybeSequence[tp.MaybeTuple[tp.Any]],
     reset_index: tp.Union[None, bool, str] = None,
     fill_value: tp.Scalar = np.nan,
     keys: tp.Optional[tp.Index] = None,
@@ -437,7 +437,7 @@ def column_stack_merge(
     If wrapping is disabled (`wrap` is False), the arrays are merged using `column_stack_arrays`.
 
     Args:
-        *objs: One or more array-like or `vectorbtpro.base.wrapping.Wrapping` objects to merge.
+        *objs (MaybeSequence[MaybeTuple[Any]]): Array-like or wrapping objects to merge.
         reset_index (Union[None, bool, str]): Option to reset indexes in each object.
 
             * False or None: Retain the original index.
@@ -461,7 +461,7 @@ def column_stack_merge(
             mapping or sequence of mappings.
         clean_index_kwargs (KwargsLikeSequence): Keyword arguments for cleaning
             column indexes via `clean_index`.
-        **kwargs: Keyword arguments passed to `pd.concat` and
+        **kwargs: Keyword arguments for `pd.concat` and
             `vectorbtpro.base.wrapping.Wrapping.column_stack`.
 
     Returns:
@@ -653,7 +653,7 @@ def column_stack_merge(
 
 
 def imageio_merge(
-    *objs,
+    *objs: tp.MaybeSequence[tp.MaybeTuple[tp.Any]],
     keys: tp.Optional[tp.Index] = None,
     filter_results: bool = True,
     raise_no_results: bool = True,
@@ -664,7 +664,7 @@ def imageio_merge(
     """Merge multiple figure-like objects into a single image using `imageio`.
 
     Args:
-        *objs: Additional figure-like objects to merge.
+        *objs (MaybeSequence[MaybeTuple[Any]]): Figure-like objects to merge.
         keys (Optional[Index]): Not used.
         filter_results (bool): If True, filter out objects without valid results.
         raise_no_results (bool): If True, raise an error when no valid results are found.
@@ -744,7 +744,7 @@ def imageio_merge(
 
 
 def mixed_merge(
-    *objs,
+    *objs: tp.MaybeSequence[tp.Tuple[tp.Any]],
     merge_funcs: tp.Optional[tp.MergeFuncLike] = None,
     mixed_kwargs: tp.Optional[tp.Sequence[tp.KwargsLike]] = None,
     **kwargs,
@@ -752,7 +752,7 @@ def mixed_merge(
     """Merge objects of mixed types element-wise using specified merging functions.
 
     Args:
-        *objs: Tuples of objects to merge.
+        *objs (MaybeSequence[Tuple[Any]]): Tuples of objects to merge.
 
             Each tuple should have the same length, and merging is performed
             element-wise across these tuples.
@@ -760,8 +760,7 @@ def mixed_merge(
             (or their names) to apply to each group of objects.
         mixed_kwargs (Optional[Sequence[KwargsLike]]): A sequence of keyword argument dictionaries
             for each merging function.
-        **kwargs: Keyword arguments passed to the merging functions
-            if not overridden by `mixed_kwargs`.
+        **kwargs: Keyword arguments for the merging functions if not overridden by `mixed_kwargs`.
 
     Returns:
         MaybeTuple[AnyArray]: A tuple containing the merged result for each group of objects.

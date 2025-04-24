@@ -491,9 +491,7 @@ class MappedArray(Analyzable):
             !!! note
                 Depends on `wrapper` and `col_arr`. Invalidate `col_mapper` if
                 `wrapper` or `col_arr` is modified. `MappedArray.replace` does this automatically.
-        **kwargs: Custom keyword arguments passed to the config.
-
-            Useful for subclass-specific extensions.
+        **kwargs: Keyword arguments for `vectorbtpro.generic.analyzable.Analyzable`.
 
     !!! info
         For default settings, see `vectorbtpro._settings.mapped_array`.
@@ -550,7 +548,7 @@ class MappedArray(Analyzable):
     @hybrid_method
     def row_stack(
         cls_or_self: tp.MaybeType[MappedArrayT],
-        *objs: tp.MaybeTuple[MappedArrayT],
+        *objs: tp.MaybeSequence[MappedArrayT],
         wrapper_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> MappedArrayT:
@@ -559,9 +557,10 @@ class MappedArray(Analyzable):
         Uses `vectorbtpro.base.wrapping.ArrayWrapper.row_stack` to stack the wrappers.
 
         Args:
-            *objs (MappedArray): Additional `MappedArray` instances to stack.
-            wrapper_kwargs (KwargsLike): Keyword arguments passed to `ArrayWrapper.row_stack`.
-            **kwargs (KwargsLike): Keyword arguments for row stacking configuration.
+            *objs (MaybeSequence[MappedArray]): (Additional) `MappedArray` instances to stack.
+            wrapper_kwargs (KwargsLike): Keyword arguments for `ArrayWrapper.row_stack`.
+            **kwargs: Keyword arguments for `MappedArray` through
+                `MappedArray.resolve_row_stack_kwargs` and `MappedArray.resolve_stack_kwargs`.
 
         Returns:
             MappedArray: A new instance with rows stacked from the provided `MappedArray` objects.
@@ -651,7 +650,7 @@ class MappedArray(Analyzable):
     @hybrid_method
     def column_stack(
         cls_or_self: tp.MaybeType[MappedArrayT],
-        *objs: tp.MaybeTuple[MappedArrayT],
+        *objs: tp.MaybeSequence[MappedArrayT],
         wrapper_kwargs: tp.KwargsLike = None,
         get_indexer_kwargs: tp.KwargsLike = None,
         **kwargs,
@@ -664,11 +663,12 @@ class MappedArray(Analyzable):
         for translating old indices to new ones after reindexing.
 
         Args:
-            *objs (tuple[MappedArray]): One or more `MappedArray` instances to stack.
+            *objs (MaybeSequence[MappedArray]): (Additional) `MappedArray` instances to stack.
             wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
-            get_indexer_kwargs (KwargsLike): Keyword arguments passed to `pandas.Index.get_indexer`
+            get_indexer_kwargs (KwargsLike): Keyword arguments for `pandas.Index.get_indexer`
                 for index translation.
-            **kwargs: Keyword arguments for constructing the new instance.
+            **kwargs: Keyword arguments for `MappedArray` through
+                `MappedArray.resolve_column_stack_kwargs` and `MappedArray.resolve_stack_kwargs`.
 
         Returns:
             MappedArray: A new instance with arrays stacked along columns.
@@ -750,7 +750,7 @@ class MappedArray(Analyzable):
         Ensures that `MappedArray.col_mapper` is omitted if the corresponding `wrapper` or `col_arr` differ.
 
         Args:
-            **kwargs: Keyword arguments passed to `vectorbtpro.utils.config.Configured.replace`.
+            **kwargs: Keyword arguments for `vectorbtpro.utils.config.Configured.replace`.
 
         Returns:
             MappedArray: The updated instance with replaced configuration.
@@ -771,10 +771,10 @@ class MappedArray(Analyzable):
         mapped array, column array, index array, and ID array based on the selection parameters.
 
         Args:
-            *args: Positional arguments for indexing.
-            wrapper_meta (dict): Metadata from the wrapper's indexing function;
+            *args: Positional arguments for `vectorbtpro.base.wrapping.ArrayWrapper.indexing_func_meta`.
+            wrapper_meta (DictLike): Metadata from the wrapper's indexing function;
                 if None, computed internally.
-            **kwargs: Keyword arguments for indexing.
+            **kwargs: Keyword arguments for `vectorbtpro.base.wrapping.ArrayWrapper.indexing_func_meta`.
 
         Returns:
             dict: A dictionary containing:
@@ -823,10 +823,10 @@ class MappedArray(Analyzable):
         """Perform indexing on `MappedArray` and return a new instance with selected data.
 
         Args:
-            *args: Positional arguments for indexing.
-            mapped_meta (dict): Metadata produced by `MappedArray.indexing_func_meta`;
+            *args: Positional arguments for `MappedArray.indexing_func_meta`.
+            mapped_meta (DictLike): Metadata produced by `MappedArray.indexing_func_meta`;
                 if not provided, computed internally.
-            **kwargs: Keyword arguments for indexing.
+            **kwargs: Keyword arguments for `MappedArray.indexing_func_meta`.
 
         Returns:
             MappedArray: A new instance reflecting the indexing operation.
@@ -849,9 +849,9 @@ class MappedArray(Analyzable):
         on the resampled data.
 
         Args:
-            *args: Positional arguments for resampling.
-            wrapper_meta (dict): Metadata from the wrapper's resampling method; if None, computed internally.
-            **kwargs: Keyword arguments for resampling.
+            *args: Positional arguments for `vectorbtpro.base.wrapping.ArrayWrapper.resample_meta`.
+            wrapper_meta (DictLike): Metadata from the wrapper's resampling method; if None, computed internally.
+            **kwargs: Keyword arguments for `vectorbtpro.base.wrapping.ArrayWrapper.resample_meta`.
 
         Returns:
             dict: A dictionary containing:
@@ -879,10 +879,10 @@ class MappedArray(Analyzable):
         replaced by the resampled index values.
 
         Args:
-            *args: Positional arguments for resampling.
-            mapped_meta (dict): Metadata produced by `MappedArray.resample_meta`;
+            *args: Positional arguments for `MappedArray.resample_meta`.
+            mapped_meta (DictLike): Metadata produced by `MappedArray.resample_meta`;
                 if not provided, computed internally.
-            **kwargs: Keyword arguments for resampling.
+            **kwargs: Keyword arguments for `MappedArray.resample_meta`.
 
         Returns:
             MappedArray: A new instance with resampled data.
@@ -925,7 +925,7 @@ class MappedArray(Analyzable):
             title (str): Title for the values column.
             only_values (bool): Return only the mapped values as a Series when True.
             expand_columns (bool): Expand MultiIndex columns into separate columns if present.
-            **kwargs: Keyword arguments passed to `MappedArray.apply_mapping`.
+            **kwargs: Keyword arguments for `MappedArray.apply_mapping`.
 
         Returns:
             SeriesFrame: A Pandas Series or DataFrame with human-readable mapped values.
@@ -1050,7 +1050,7 @@ class MappedArray(Analyzable):
             incl_id (bool): If True, sort by both the column and id arrays.
             idx_arr (Array1d): Array of indices; if not provided, the instance's index array is used.
             group_by (GroupByLike): Grouping specification for regrouping the instance.
-            **kwargs: Keyword arguments passed to `MappedArray.replace`.
+            **kwargs: Keyword arguments for `MappedArray.replace`.
 
         Returns:
             MappedArray: A new sorted mapped array instance, regrouped according to `group_by`.
@@ -1087,7 +1087,7 @@ class MappedArray(Analyzable):
             idx_arr (Array1d): Array of indices for filtering;
                 if not provided, the instance's index array is used.
             group_by (GroupByLike): Grouping specification for regrouping after filtering.
-            **kwargs: Keyword arguments passed to `MappedArray.replace`.
+            **kwargs: Keyword arguments for `MappedArray.replace`.
 
         Returns:
             MappedArray: A new instance of the mapped array filtered by the mask.
@@ -1184,7 +1184,7 @@ class MappedArray(Analyzable):
             chunked (ChunkedOption): Option to control chunked processing.
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
-            **kwargs: Keyword arguments passed to `MappedArray.replace`.
+            **kwargs: Keyword arguments for `MappedArray.replace`.
 
         Returns:
             MappedArray: A new instance of the mapped array filtered to the top N elements.
@@ -1210,7 +1210,7 @@ class MappedArray(Analyzable):
             chunked (ChunkedOption): Option to control chunked processing.
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
-            **kwargs: Keyword arguments passed to `MappedArray.replace`.
+            **kwargs: Keyword arguments for `MappedArray.replace`.
 
         Returns:
             MappedArray: A new instance of the mapped array filtered to the bottom N elements.
@@ -1260,7 +1260,7 @@ class MappedArray(Analyzable):
             mapping (Union[None, bool, MappingLike]): Mapping configuration;
                 if None or True, the instance's mapping is used.
             mapping_kwargs (KwargsLike): Keyword arguments for configuring the mapping conversion.
-            **kwargs: Keyword arguments passed to `MappedArray.replace`.
+            **kwargs: Keyword arguments for `MappedArray.replace`.
 
         Returns:
             MappedArray: A new instance of the mapped array with the mapping applied.
@@ -1330,7 +1330,7 @@ class MappedArray(Analyzable):
 
         Args:
             apply_func_nb (Union[ApplyFunc, ApplyMetaFunc]): Function to apply to the mapped array.
-            *args: Positional arguments forwarded to the computation function.
+            *args: Positional arguments for `apply_func_nb`.
             group_by (GroupByLike): Grouping specification.
             apply_per_group (bool): If True, apply the function per group of columns.
             dtype (Optional[DTypeLike]): Data type for the resulting array.
@@ -1341,7 +1341,7 @@ class MappedArray(Analyzable):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             col_mapper (Optional[ColumnMapper]): Column mapper used to obtain column mapping.
-            **kwargs: Keyword arguments passed to `MappedArray.replace`.
+            **kwargs: Keyword arguments for `MappedArray.replace`.
 
         Returns:
             MappedArray: The new mapped array after applying the function.
@@ -1399,7 +1399,7 @@ class MappedArray(Analyzable):
 
                 If a string is provided, it represents the suffix of a function
                 from `vectorbtpro.generic.nb` (e.g., "sum" for `sum_reduce_nb`).
-            *args: Positional arguments for the reducing function.
+            *args: Positional arguments for `reduce_func_nb`.
             idx_arr (Optional[Array1d]): Index array to use.
 
                 If not provided, the instance's `idx_arr` must be set.
@@ -1412,7 +1412,7 @@ class MappedArray(Analyzable):
             chunked (ChunkedOption): Option to control chunked processing.
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
-            **kwargs: Keyword arguments passed to `MappedArray.replace`.
+            **kwargs: Keyword arguments for `MappedArray.replace`.
 
         Returns:
             MappedArray: The new mapped array after applying the reduction function.
@@ -1487,7 +1487,7 @@ class MappedArray(Analyzable):
         Args:
             reduce_func_nb (Union[ReduceFunc, MappedReduceMetaFunc, ReduceToArrayFunc, MappedReduceToArrayMetaFunc]):
                 Reduction function to apply.
-            *args: Additional positional arguments.
+            *args: Positional arguments for `reduce_func_nb`.
             idx_arr (Optional[Array1d]): Row index array used when `returns_idx` is True.
             returns_array (bool): Flag indicating that `reduce_func_nb` returns an array.
             returns_idx (bool): Flag indicating that `reduce_func_nb` returns row indices.
@@ -1609,7 +1609,7 @@ class MappedArray(Analyzable):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            **kwargs: Keyword arguments forwarded to `MappedArray.reduce`.
+            **kwargs: Keyword arguments for `MappedArray.reduce`.
 
         Returns:
             MaybeSeries: Series containing the n-th element for each column or group.
@@ -1660,7 +1660,7 @@ class MappedArray(Analyzable):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            **kwargs: Keyword arguments forwarded to `MappedArray.reduce`.
+            **kwargs: Keyword arguments for `MappedArray.reduce`.
 
         Returns:
             MaybeSeries: Series containing the index of the n-th element for each column or group.
@@ -1709,7 +1709,7 @@ class MappedArray(Analyzable):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            **kwargs: Keyword arguments forwarded to `MappedArray.reduce`.
+            **kwargs: Keyword arguments for `MappedArray.reduce`.
 
         Returns:
             MaybeSeries: Series containing the minimum values for each column or group.
@@ -1749,7 +1749,7 @@ class MappedArray(Analyzable):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            **kwargs: Keyword arguments forwarded to `MappedArray.reduce`.
+            **kwargs: Keyword arguments for `MappedArray.reduce`.
 
         Returns:
             MaybeSeries: Series containing the maximum values for each column or group.
@@ -1789,7 +1789,7 @@ class MappedArray(Analyzable):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            **kwargs: Keyword arguments forwarded to `MappedArray.reduce`.
+            **kwargs: Keyword arguments for `MappedArray.reduce`.
 
         Returns:
             MaybeSeries: Series with computed mean values.
@@ -1829,7 +1829,7 @@ class MappedArray(Analyzable):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            **kwargs: Keyword arguments forwarded to `MappedArray.reduce`.
+            **kwargs: Keyword arguments for `MappedArray.reduce`.
 
         Returns:
             MaybeSeries: Series with computed median values.
@@ -1871,7 +1871,7 @@ class MappedArray(Analyzable):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            **kwargs: Keyword arguments forwarded to `MappedArray.reduce`.
+            **kwargs: Keyword arguments for `MappedArray.reduce`.
 
         Returns:
             MaybeSeries: Series with computed standard deviation values.
@@ -1922,7 +1922,7 @@ class MappedArray(Analyzable):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            **kwargs: Keyword arguments forwarded to `MappedArray.reduce`.
+            **kwargs: Keyword arguments for `MappedArray.reduce`.
 
         Returns:
             MaybeSeries: Series with computed summation values.
@@ -1963,7 +1963,7 @@ class MappedArray(Analyzable):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            **kwargs: Keyword arguments forwarded to `MappedArray.reduce`.
+            **kwargs: Keyword arguments for `MappedArray.reduce`.
 
         Returns:
             MaybeSeries: Series with indices corresponding to the minimum values.
@@ -2003,7 +2003,7 @@ class MappedArray(Analyzable):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            **kwargs: Keyword arguments forwarded to `MappedArray.reduce`.
+            **kwargs: Keyword arguments for `MappedArray.reduce`.
 
         Returns:
             MaybeSeries: Series with indices corresponding to the maximum values.
@@ -2049,7 +2049,7 @@ class MappedArray(Analyzable):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            **kwargs: Keyword arguments forwarded to `MappedArray.reduce`.
+            **kwargs: Keyword arguments for `MappedArray.reduce`.
 
         Returns:
             SeriesFrame: DataFrame containing statistics such as count, mean,
@@ -2160,7 +2160,7 @@ class MappedArray(Analyzable):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            **kwargs: Keyword arguments applied to mapping.
+            **kwargs: Keyword arguments for `vectorbtpro.utils.mapping.apply_mapping`.
 
         Returns:
             SeriesFrame: A Series or DataFrame containing the counts of unique mapped values.
@@ -2576,7 +2576,7 @@ class MappedArray(Analyzable):
 
         Args:
             group_by (GroupByLike): Grouping specification.
-            **kwargs: Keyword arguments for creating the histogram.
+            **kwargs: Keyword arguments for `vectorbtpro.generic.accessors.GenericAccessor.histplot`.
 
         Returns:
             BaseFigure: The generated histogram figure.
@@ -2588,7 +2588,7 @@ class MappedArray(Analyzable):
 
         Args:
             group_by (GroupByLike): Grouping specification.
-            **kwargs: Keyword arguments for creating the box plot.
+            **kwargs: Keyword arguments for `vectorbtpro.generic.accessors.GenericAccessor.boxplot`.
 
         Returns:
             BaseFigure: The generated box plot figure.

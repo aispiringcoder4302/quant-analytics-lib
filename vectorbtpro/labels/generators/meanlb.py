@@ -56,8 +56,7 @@ class _MEANLB(MEANLB):
 
         Args:
             column (Optional[Label]): Column to select for plotting.
-            **kwargs: Keyword arguments passed to
-                `vectorbtpro.generic.accessors.GenericAccessor.overlay_with_heatmap`.
+            **kwargs: Keyword arguments for `vectorbtpro.generic.accessors.GenericAccessor.overlay_with_heatmap`.
 
         Returns:
             BaseFigure: A figure displaying the overlaid heatmap.

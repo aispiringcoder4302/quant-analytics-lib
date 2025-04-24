@@ -85,9 +85,9 @@ class CCXTData(RemoteData):
         """Return custom exchange settings using a sub-path based on the exchange name.
 
         Args:
-            *args: Positional arguments passed to `CCXTData.get_custom_settings`.
+            *args: Positional arguments for `CCXTData.get_custom_settings`.
             exchange_name (Optional[str]): Name of the exchange used to form the sub-path.
-            **kwargs: Keyword arguments passed to `CCXTData.get_custom_settings`.
+            **kwargs: Keyword arguments for `CCXTData.get_custom_settings`.
 
         Returns:
             dict: The custom exchange settings.
@@ -103,9 +103,9 @@ class CCXTData(RemoteData):
         """Return whether custom exchange settings exist using a sub-path derived from the exchange name.
 
         Args:
-            *args: Positional arguments passed to `CCXTData.has_custom_settings`.
+            *args: Positional arguments for `CCXTData.has_custom_settings`.
             exchange_name (Optional[str]): Name of the exchange used to form the sub-path.
-            **kwargs: Keyword arguments passed to `CCXTData.has_custom_settings`.
+            **kwargs: Keyword arguments for `CCXTData.has_custom_settings`.
 
         Returns:
             bool: True if custom exchange settings exist, False otherwise.
@@ -121,9 +121,9 @@ class CCXTData(RemoteData):
         """Return a custom exchange setting using a sub-path determined by the exchange name.
 
         Args:
-            *args: Positional arguments passed to `CCXTData.get_custom_setting`.
+            *args: Positional arguments for `CCXTData.get_custom_setting`.
             exchange_name (Optional[str]): Name of the exchange used to specify the sub-path.
-            **kwargs: Keyword arguments passed to `CCXTData.get_custom_setting`.
+            **kwargs: Keyword arguments for `CCXTData.get_custom_setting`.
 
         Returns:
             Any: The retrieved custom exchange setting.
@@ -139,9 +139,9 @@ class CCXTData(RemoteData):
         """Return whether a custom exchange setting exists for the specified exchange name via a sub-path.
 
         Args:
-            *args: Positional arguments passed to `CCXTData.has_custom_setting`.
+            *args: Positional arguments for `CCXTData.has_custom_setting`.
             exchange_name (Optional[str]): Name of the exchange used to form the sub-path.
-            **kwargs: Keyword arguments passed to `CCXTData.has_custom_setting`.
+            **kwargs: Keyword arguments for `CCXTData.has_custom_setting`.
 
         Returns:
             bool: True if the custom exchange setting exists, False otherwise.
@@ -157,9 +157,9 @@ class CCXTData(RemoteData):
         """Resolve a custom exchange setting using a sub-path determined by the exchange name.
 
         Args:
-            *args: Positional arguments passed to `CCXTData.resolve_custom_setting`.
+            *args: Positional arguments for `CCXTData.resolve_custom_setting`.
             exchange_name (Optional[str]): Name of the exchange used to define the sub-path.
-            **kwargs: Keyword arguments passed to `CCXTData.resolve_custom_setting`.
+            **kwargs: Keyword arguments for `CCXTData.resolve_custom_setting`.
 
         Returns:
             Any: The resolved custom exchange setting.
@@ -175,9 +175,9 @@ class CCXTData(RemoteData):
         """Set custom exchange settings using a sub-path based on the provided exchange name.
 
         Args:
-            *args: Positional arguments passed to `CCXTData.set_custom_settings`.
+            *args: Positional arguments for `CCXTData.set_custom_settings`.
             exchange_name (Optional[str]): Name of the exchange used to determine the sub-path.
-            **kwargs: Keyword arguments passed to `CCXTData.set_custom_settings`.
+            **kwargs: Keyword arguments for `CCXTData.set_custom_settings`.
 
         Returns:
             None
@@ -342,7 +342,7 @@ class CCXTData(RemoteData):
         Args:
             symbol (str): The symbol for which to find the earliest date.
             for_internal_use (bool): Flag indicating whether the search is for internal processing.
-            **kwargs: Keyword arguments passed to `CCXTData.fetch_symbol`.
+            **kwargs: Keyword arguments for `CCXTData.fetch_symbol`.
 
         Returns:
             Optional[pd.Timestamp]: The earliest timestamp if data is available, otherwise None.

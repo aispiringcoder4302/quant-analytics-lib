@@ -173,8 +173,8 @@ class frozen_cfg(Config):
     while allowing their modification. It also supports attribute-style access.
 
     Args:
-        *args: Positional arguments passed to `vectorbtpro.utils.config.Config`.
-        **kwargs: Keyword arguments passed to `vectorbtpro.utils.config.Config`.
+        *args: Positional arguments for `vectorbtpro.utils.config.Config`.
+        **kwargs: Keyword arguments for `vectorbtpro.utils.config.Config`.
     """
 
     def __init__(
@@ -201,8 +201,8 @@ class flex_cfg(Config):
     This configuration allows the addition of new keys and does not support attribute-style access.
 
     Args:
-        *args: Positional arguments passed to `vectorbtpro.utils.config.Config`.
-        **kwargs: Keyword arguments passed to `vectorbtpro.utils.config.Config`.
+        *args: Positional arguments for `vectorbtpro.utils.config.Config`.
+        **kwargs: Keyword arguments for `vectorbtpro.utils.config.Config`.
     """
 
     def __init__(
@@ -2798,8 +2798,8 @@ class SettingsConfig(Config):
     """Class representing a global settings configuration.
 
     Args:
-        *args: Positional arguments passed to `vectorbtpro.utils.config.Config`.
-        **kwargs: Keyword arguments passed to `vectorbtpro.utils.config.Config`.
+        *args: Positional arguments for `vectorbtpro.utils.config.Config`.
+        **kwargs: Keyword arguments for `vectorbtpro.utils.config.Config`.
     """
 
     def __init__(

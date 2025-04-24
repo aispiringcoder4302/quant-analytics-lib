@@ -89,7 +89,7 @@ def warn_stdout(func: tp.Callable) -> tp.Callable:
         func (Callable): The function whose standard output is to be captured.
 
     Returns:
-        Callable: The wrapped function that emits captured output as a warning.
+        Callable: The decorated function that emits captured output as a warning.
     """
 
     @wraps(func)
@@ -109,7 +109,7 @@ class WarningsFiltered(warnings.catch_warnings, Base):
 
     Args:
         entries (Optional[MaybeSequence[Union[str, Kwargs]]]): Simple entries to add to the warnings filters.
-        **kwargs: Keyword arguments to pass to `warnings.catch_warnings`.
+        **kwargs: Keyword arguments for `warnings.catch_warnings`.
     """
 
     def __init__(self, entries: tp.Optional[tp.MaybeSequence[tp.Union[str, tp.Kwargs]]] = "ignore", **kwargs) -> None:

@@ -57,8 +57,8 @@ class DefineMixin(Hashable):
     """Mixin class for `define` that provides attribute field management capabilities for attrs-decorated classes.
 
     Args:
-        *args: Positional arguments passed to the underlying initializer.
-        **kwargs: Keyword arguments passed to the underlying initializer.
+        *args: Positional arguments for the underlying initializer.
+        **kwargs: Keyword arguments for the underlying initializer.
     """
 
     def __init__(self, *args, **kwargs) -> None:
@@ -686,8 +686,8 @@ class AttrResolverMixin(Base):
         """Retrieve a nested attribute using the `deep_getattr` function.
 
         Args:
-            *args: Positional arguments passed to `deep_getattr`.
-            **kwargs: Keyword arguments passed to `deep_getattr`.
+            *args: Positional arguments for `deep_getattr`.
+            **kwargs: Keyword arguments for `deep_getattr`.
 
         Returns:
             Any: The value of the nested attribute.

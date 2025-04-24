@@ -39,7 +39,7 @@ class DataSaver(DataUpdater):
             and `DataSaver.save_data`.
         init_save_kwargs (KwargsLike): Keyword arguments overriding `save_kwargs` for initial data
             saving via `DataSaver.init_save_data`.
-        **kwargs: Keyword arguments passed to the constructor of `DataUpdater`.
+        **kwargs: Keyword arguments for `vectorbtpro.data.updater.DataUpdater`.
     """
 
     def __init__(
@@ -113,7 +113,7 @@ class DataSaver(DataUpdater):
 
         Args:
             save_kwargs (KwargsLike): Keyword arguments for `DataSaver.save_data`.
-            **kwargs: Keyword arguments for data updating.
+            **kwargs: Keyword arguments for `vectorbtpro.data.base.Data.update`.
 
         Returns:
             None

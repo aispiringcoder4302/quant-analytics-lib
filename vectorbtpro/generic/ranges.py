@@ -270,7 +270,7 @@ class Ranges(PriceRecords):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
-            **kwargs: Keyword arguments passed to `Ranges`.
+            **kwargs: Keyword arguments for `Ranges`.
 
         Returns:
             Ranges: A new instance constructed from the array.
@@ -326,7 +326,7 @@ class Ranges(PriceRecords):
             chunked (ChunkedOption): Option to control chunked processing.
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
-            **kwargs: Keyword arguments passed to `Ranges`.
+            **kwargs: Keyword arguments for `Ranges`.
 
         Returns:
             Ranges: A new instance constructed based on the applied delta.
@@ -424,7 +424,7 @@ class Ranges(PriceRecords):
         Args:
             min_duration (Union[str, int, FrequencyLike]): The minimum allowed duration.
             real (bool): Whether to use real duration for filtering.
-            **kwargs: Keyword arguments passed to `Ranges.apply_mask`.
+            **kwargs: Keyword arguments for `Ranges.apply_mask`.
 
         Returns:
             Ranges: A new instance with ranges meeting the minimum duration criteria.
@@ -447,7 +447,7 @@ class Ranges(PriceRecords):
         Args:
             max_duration (Union[str, int, FrequencyLike]): The maximum allowed duration.
             real (bool): Whether to use real duration for filtering.
-            **kwargs: Keyword arguments passed to `Ranges.apply_mask`.
+            **kwargs: Keyword arguments for `Ranges.apply_mask`.
 
         Returns:
             Ranges: A new instance with ranges meeting the maximum duration criteria.
@@ -466,7 +466,7 @@ class Ranges(PriceRecords):
 
         Args:
             group_by (GroupByLike): Grouping specification.
-            **kwargs: Keyword arguments passed to `Ranges.get_pd_mask`.
+            **kwargs: Keyword arguments for `Ranges.get_pd_mask`.
 
         Returns:
             SeriesFrame: A mask indicating the first indices of each range.
@@ -478,7 +478,7 @@ class Ranges(PriceRecords):
 
         Args:
             group_by (GroupByLike): Grouping specification.
-            **kwargs: Keyword arguments passed to `Ranges.get_pd_mask`.
+            **kwargs: Keyword arguments for `Ranges.get_pd_mask`.
 
         Returns:
             SeriesFrame: A mask indicating the last indices of each range.
@@ -534,7 +534,7 @@ class Ranges(PriceRecords):
         A valid range is defined as having both the start and end indices not equal to -1.
 
         Args:
-            **kwargs: Keyword arguments passed to `Ranges.apply_mask`.
+            **kwargs: Keyword arguments for `Ranges.apply_mask`.
 
         Returns:
             Ranges: A new instance containing only valid ranges.
@@ -548,7 +548,7 @@ class Ranges(PriceRecords):
         A range is considered invalid if its start or end index equals -1.
 
         Args:
-            **kwargs: Keyword arguments passed to `Ranges.apply_mask`.
+            **kwargs: Keyword arguments for `Ranges.apply_mask`.
 
         Returns:
             Ranges: Ranges with indices marked as invalid.
@@ -560,7 +560,7 @@ class Ranges(PriceRecords):
         """Return the first index for each range.
 
         Args:
-            **kwargs: Keyword arguments passed to `Ranges.map_field`.
+            **kwargs: Keyword arguments for `Ranges.map_field`.
 
         Returns:
             MappedArray: The first index in each range as a mapped array.
@@ -573,7 +573,7 @@ class Ranges(PriceRecords):
         Adjust the end index for ranges with a closed status by subtracting one.
 
         Args:
-            **kwargs: Keyword arguments passed to `Ranges.map_array`.
+            **kwargs: Keyword arguments for `Ranges.map_array`.
 
         Returns:
             MappedArray: The adjusted last index for each range as a mapped array.
@@ -600,7 +600,7 @@ class Ranges(PriceRecords):
             chunked (ChunkedOption): Option to control chunked processing.
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
-            **kwargs: Keyword arguments passed to `Ranges.map_array`.
+            **kwargs: Keyword arguments for `Ranges.map_array`.
 
         Returns:
             MappedArray: An array of effective durations for each range.
@@ -636,7 +636,7 @@ class Ranges(PriceRecords):
             chunked (ChunkedOption): Option to control chunked processing.
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
-            **kwargs: Keyword arguments passed to `Ranges.map_array`.
+            **kwargs: Keyword arguments for `Ranges.map_array`.
 
         Returns:
             MappedArray: An array of durations for each range expressed as timedelta.
@@ -677,7 +677,7 @@ class Ranges(PriceRecords):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            **kwargs: Keyword arguments passed to `vectorbtpro.records.mapped_array.MappedArray.mean`.
+            **kwargs: Keyword arguments for `vectorbtpro.records.mapped_array.MappedArray.mean`.
 
         Returns:
             MaybeSeries: The average duration of the ranges in timedelta.
@@ -714,7 +714,7 @@ class Ranges(PriceRecords):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            **kwargs: Keyword arguments passed to `vectorbtpro.records.mapped_array.MappedArray.max`.
+            **kwargs: Keyword arguments for `vectorbtpro.records.mapped_array.MappedArray.max`.
 
         Returns:
             MaybeSeries: The maximum duration among the ranges in timedelta.
@@ -1103,9 +1103,9 @@ class Ranges(PriceRecords):
                 `plotly.graph_objects.Scatter` for the upper band.
             aux_middle_trace_kwargs (KwargsLike): Keyword arguments
                 for `plotly.graph_objects.Scatter` for the auxiliary middle band.
-            add_trace_kwargs (KwargsLike): Keyword arguments passed to `fig.add_trace` for each trace.
+            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
-            **layout_kwargs: Keyword arguments for configuring the figure layout.
+            **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
         Returns:
             BaseFigure: A figure object containing the plotted projections and price data.
@@ -1361,15 +1361,15 @@ class Ranges(PriceRecords):
             ohlc_type (Union[None, str, BaseTraceType]): Specifies the trace type for OHLC data.
 
                 Either `'OHLC'`, `'Candlestick'` or a Plotly trace. Pass None to use the default.
-            ohlc_trace_kwargs (KwargsLike): Keyword arguments passed to `ohlc_type`.
-            close_trace_kwargs (KwargsLike): Keyword arguments passed to `plotly.graph_objects.Scatter`
+            ohlc_trace_kwargs (KwargsLike): Keyword arguments for `ohlc_type`.
+            close_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter`
                 for plotting close values.
-            add_shape_kwargs (KwargsLike): Keyword arguments passed to `fig.add_shape` for each shape.
-            add_trace_kwargs (KwargsLike): Keyword arguments passed to `fig.add_trace` for each trace.
+            add_shape_kwargs (KwargsLike): Keyword arguments for `fig.add_shape` for each shape.
+            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace.
             xref (str): Reference for the x-axis.
             yref (str): Reference for the y-axis (e.g., "y", "y2").
             fig (BaseFigure): Figure object to which traces are added.
-            **layout_kwargs: Keyword arguments for configuring the figure layout.
+            **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
         Returns:
             BaseFigure: A figure object containing the plotted shapes.
@@ -1559,14 +1559,14 @@ class Ranges(PriceRecords):
                 the `plotly.graph_objects.Scatter` trace for start markers.
             end_trace_kwargs (KwargsLike): Keyword arguments for configuring
                 the `plotly.graph_objects.Scatter` trace for end markers.
-            open_shape_kwargs (KwargsLike): Keyword arguments passed to `fig.add_trace` for open zones.
-            closed_shape_kwargs (KwargsLike): Keyword arguments passed to `fig.add_trace` for closed zones.
-            add_trace_kwargs (KwargsLike): Keyword arguments passed to `fig.add_trace` for each trace.
+            open_shape_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for open zones.
+            closed_shape_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for closed zones.
+            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace.
             xref (str): X-axis reference identifier.
             yref (str): Reference for the y-axis (e.g., "y", "y2").
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
             return_close (bool): Whether to return the close Series along with the figure.
-            **layout_kwargs: Keyword arguments for configuring the figure layout.
+            **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
         Returns:
             BaseFigure: A figure object containing the plotted ranges.
@@ -2045,7 +2045,7 @@ class PatternRanges(Ranges):
         wrapper (ArrayWrapper): Wrapper instance.
         records_arr (RecordArray): Array of records.
         search_configs (List[PSC]): List of `PSC` instances.
-        **kwargs: Keyword arguments passed to `Ranges`.
+        **kwargs: Keyword arguments for `Ranges`.
     """
 
     def __init__(
@@ -2217,7 +2217,7 @@ class PatternRanges(Ranges):
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
-            execute_kwargs (KwargsLike): Keyword arguments passed to the execution handler.
+            execute_kwargs (KwargsLike): Keyword arguments for the execution handler.
 
                 See `vectorbtpro.utils.execution.execute` for details.
             attach_as_close (bool): Attach the input array as the `close` field if True.
@@ -2225,7 +2225,7 @@ class PatternRanges(Ranges):
 
                 See `vectorbtpro.base.indexes.clean_index` for details.
             wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
-            **kwargs: Keyword arguments passed to `PatternRanges`.
+            **kwargs: Keyword arguments for `PatternRanges`.
 
         Returns:
             PatternRanges: A new `PatternRanges` instance with found pattern ranges.
@@ -2415,14 +2415,14 @@ class PatternRanges(Ranges):
     @classmethod
     def resolve_row_stack_kwargs(
         cls: tp.Type[PatternRangesT],
-        *objs: tp.MaybeTuple[PatternRangesT],
+        *objs: tp.MaybeSequence[PatternRangesT],
         **kwargs,
     ) -> tp.Kwargs:
         """Resolve keyword arguments for initializing a `PatternRanges` instance after row stacking.
 
         Args:
-            *objs (MaybeTuple[PatternRanges]): One or more `PatternRanges` instances to merge.
-            **kwargs: Keyword arguments forwarded from the stacking operation.
+            *objs (MaybeSequence[PatternRanges]): `PatternRanges` instances to be stacked.
+            **kwargs: Keyword arguments for `Ranges.resolve_row_stack_kwargs`.
 
         Returns:
             Kwargs: The resolved keyword arguments with an updated 'search_configs' field.
@@ -2449,14 +2449,14 @@ class PatternRanges(Ranges):
     @classmethod
     def resolve_column_stack_kwargs(
         cls: tp.Type[PatternRangesT],
-        *objs: tp.MaybeTuple[PatternRangesT],
+        *objs: tp.MaybeSequence[PatternRangesT],
         **kwargs,
     ) -> tp.Kwargs:
         """Resolve keyword arguments for initializing a `PatternRanges` instance after column stacking.
 
         Args:
-            *objs (MaybeTuple[PatternRanges]): One or more `PatternRanges` instances to merge.
-            **kwargs: Keyword arguments forwarded from the stacking operation.
+            *objs (MaybeSequence[PatternRanges]): `PatternRanges` instances to be stacked.
+            **kwargs: Keyword arguments for `Ranges.resolve_column_stack_kwargs`.
 
         Returns:
             Kwargs: The resolved keyword arguments with an aggregated 'search_configs'
@@ -2477,14 +2477,12 @@ class PatternRanges(Ranges):
         """Index a `PatternRanges` instance and return a new instance with updated indexing
         and search configurations.
 
-        If `ranges_meta` is not provided, it is computed using `Ranges.indexing_func_meta`.
-
         Args:
-            *args: Positional arguments for indexing.
+            *args: Positional arguments for `Ranges.indexing_func_meta`.
             ranges_meta (DictLike): Metadata for indexing.
 
                 If None, it is generated using `Ranges.indexing_func_meta`.
-            **kwargs: Keyword arguments for indexing.
+            **kwargs: Keyword arguments for `Ranges.indexing_func_meta`.
 
         Returns:
             PatternRanges: A new `PatternRanges` instance with updated indexing information.
@@ -2565,17 +2563,17 @@ class PatternRanges(Ranges):
             fill_distance (bool): Controls whether to fill the space between close and pattern.
 
                 Visible for every interpolation mode except discrete.
-            pattern_trace_kwargs (KwargsLike): Keyword arguments passed to
+            pattern_trace_kwargs (KwargsLike): Keyword arguments for
                 `plotly.graph_objects.Scatter` for pattern.
-            lower_max_error_trace_kwargs (KwargsLike): Keyword arguments passed to
+            lower_max_error_trace_kwargs (KwargsLike): Keyword arguments for
                 `plotly.graph_objects.Scatter` for lower max error.
-            upper_max_error_trace_kwargs (KwargsLike): Keyword arguments passed to
+            upper_max_error_trace_kwargs (KwargsLike): Keyword arguments for
                 `plotly.graph_objects.Scatter` for upper max error.
-            add_trace_kwargs (KwargsLike): Keyword arguments passed to `fig.add_trace` for each trace.
+            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace.
             xref (str): Specifies the X coordinate axis.
             yref (str): Reference for the y-axis (e.g., "y", "y2").
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
-            **kwargs: Keyword arguments passed to `Ranges.plot`.
+            **kwargs: Keyword arguments for `Ranges.plot`.
 
         Returns:
             BaseFigure: Figure with plotted pattern ranges.

@@ -80,7 +80,7 @@ def save_animation(
         plot_func (Callable): Plotting function that accepts a slice of `index`, additional
             positional arguments, and keyword arguments, and returns either a Plotly figure, an image file
             path (readable by `imageio.imread`), or a NumPy array representing an image.
-        *args: Positional arguments passed to `plot_func`.
+        *args: Positional arguments for `plot_func`.
         delta (Optional[int]): Window size for each iteration.
 
             Defaults to half the length of `index` if None.
@@ -94,7 +94,7 @@ def save_animation(
 
             See `vectorbtpro.utils.pbar.ProgressBar` for details.
         to_image_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Figure.to_image`.
-        **kwargs: Keyword arguments passed to `plot_func`.
+        **kwargs: Keyword arguments for `plot_func`.
 
     Returns:
         Path: The path to the saved animation file.

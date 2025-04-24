@@ -105,7 +105,7 @@ class NDLData(RemoteData):
             column_indices (Optional[MaybeIterable[int]]): Specific column(s) to retrieve.
 
                 Column 0 (date) is always returned, with data columns starting at index 1.
-            **params: Keyword arguments passed to Nasdaq Data Link as field/value parameters.
+            **params: Keyword arguments for Nasdaq Data Link as field/value parameters.
 
         Returns:
             SymbolData: The fetched data and a metadata dictionary.
@@ -190,7 +190,7 @@ class NDLData(RemoteData):
 
         Args:
             symbol (str): Symbol identifier.
-            **kwargs: Keyword arguments passed to `NDLData.fetch_symbol`.
+            **kwargs: Keyword arguments for `NDLData.fetch_symbol`.
 
         Returns:
             SymbolData: The fetched data and a metadata dictionary.

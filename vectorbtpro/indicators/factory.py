@@ -230,7 +230,7 @@ def build_columns(
         param_settings (KwargsLikeSequence): Settings for parameters such as data type mapping and processing options.
         per_column (bool): If True, processes parameters separately for each column.
         ignore_ranges (bool): If True, ignores range checks during column stacking.
-        **kwargs: Keyword arguments passed to index stacking functions.
+        **kwargs: Keyword arguments for `vectorbtpro.base.indexing.stack_indexes`.
 
     Returns:
         dict: A dictionary containing:
@@ -343,17 +343,14 @@ def combine_objs(
         obj (SeriesFrame): The main series or frame to operate on.
         other (MaybeTupleList[Union[ArrayLike, BaseAccessor]]): The object or objects to be combined with `obj`.
         combine_func (Callable): Function used to combine or compare elements of `obj` and `other`.
-        *args: Positional arguments passed to `combine_func`.
+        *args: Positional arguments for `vectorbtpro.base.accessors.BaseAccessor.combine`.
         level_name (Optional[str]): The name for the new column level when multiple values of `other` are provided.
         keys (Optional[IndexLike]): Keys to use when broadcasting multiple objects.
         allow_multiple (bool): If True, permits `other` to be provided as a tuple or list.
-        **kwargs: Keyword arguments passed to the underlying combine operation.
+        **kwargs: Keyword arguments for `vectorbtpro.base.accessors.BaseAccessor.combine`.
 
     Returns:
         SeriesFrame: The resulting series or frame after combining `obj` with `other`.
-
-    See:
-        `vectorbtpro.base.accessors.BaseAccessor.combine`
     """
     if allow_multiple and isinstance(other, (tuple, list)):
         if keys is None:
@@ -403,7 +400,7 @@ class IndicatorBase(Analyzable):
         param_list (IFParamList): List of parameter value lists.
         mapper_list (IFMapperList): List of mapper indexes.
         short_name (str): Short name of the indicator.
-        **kwargs: Additional keyword arguments.
+        **kwargs: Keyword arguments for `vectorbtpro.generic.analyzable.Analyzable`.
     """
 
     _short_name: tp.ClassVar[str]
@@ -623,7 +620,7 @@ class IndicatorBase(Analyzable):
             custom_func (Callable): Custom function for indicator computation.
 
                 See `IndicatorFactory.with_custom_func`.
-            *args: Positional arguments passed to `custom_func`.
+            *args: Positional arguments for `custom_func`.
             require_input_shape (bool): Flag indicating whether an input shape is required.
 
                 If True, sets `pass_input_shape` to True and raises an error if `input_shape` is None.
@@ -661,7 +658,7 @@ class IndicatorBase(Analyzable):
                 If given as a sequence, it is converted to a mapping with keys formatted as `param_{i}`.
                 Each parameter can be an array-like object or a single value.
             param_product (bool): Flag to build a Cartesian product from all parameters.
-            combine_kwargs (KwargsLike): Keyword arguments passed to `vectorbtpro.utils.params.combine_params`.
+            combine_kwargs (KwargsLike): Keyword arguments for `vectorbtpro.utils.params.combine_params`.
             random_subset (Optional[int]): Number of parameter combinations to select randomly.
             param_settings (Optional[MappingSequence[KwargsLike]]): Settings for each parameter.
 
@@ -706,7 +703,7 @@ class IndicatorBase(Analyzable):
                 The list length must match the number of parameters.
             hide_levels (Optional[Sequence[Union[str, int]]]): List of level names or indices
                 to hide from the output.
-            build_col_kwargs (KwargsLike): Keyword arguments passed to the `build_columns` function.
+            build_col_kwargs (KwargsLike): Keyword arguments for the `build_columns` function.
             return_raw (Union[bool, str]): If set, returns raw outputs and hashed parameter tuples
                 without further post-processing.
 
@@ -716,7 +713,7 @@ class IndicatorBase(Analyzable):
             wrapper_kwargs (KwargsLike): Keyword arguments for configuring the
                 `vectorbtpro.base.wrapping.ArrayWrapper`.
             seed (Optional[int]): Seed to ensure deterministic output.
-            **kwargs: Keyword arguments passed to `custom_func`.
+            **kwargs: Keyword arguments for `custom_func`.
 
                 Common arguments include `return_cache` to return cache and `use_cache` to control
                 caching. If `use_cache` is False, caching is disabled. These apply only to functions
@@ -1205,7 +1202,7 @@ class IndicatorBase(Analyzable):
     @hybrid_method
     def row_stack(
         cls_or_self: tp.MaybeType[IndicatorBaseT],
-        *objs: tp.MaybeTuple[IndicatorBaseT],
+        *objs: tp.MaybeSequence[IndicatorBaseT],
         wrapper_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> IndicatorBaseT:
@@ -1217,9 +1214,10 @@ class IndicatorBase(Analyzable):
         All objects to be merged must have the same columns for parameters.
 
         Args:
-            *objs (tuple[IndicatorBase]): Additional indicator instances to stack.
+            *objs (MaybeSequence[IndicatorBase]): (Additional) indicator instances to stack.
             wrapper_kwargs (KwargsLike): Keyword arguments for row stacking of wrappers.
-            **kwargs: Keyword arguments for stacking inputs and outputs.
+            **kwargs: Keyword arguments for `IndicatorBase` through
+                `IndicatorBase.resolve_row_stack_kwargs` and `IndicatorBase.resolve_stack_kwargs`.
 
         Returns:
             IndicatorBase: A new instance with combined data from the provided indicators.
@@ -1265,7 +1263,7 @@ class IndicatorBase(Analyzable):
     @hybrid_method
     def column_stack(
         cls_or_self: tp.MaybeType[IndicatorBaseT],
-        *objs: tp.MaybeTuple[IndicatorBaseT],
+        *objs: tp.MaybeSequence[IndicatorBaseT],
         wrapper_kwargs: tp.KwargsLike = None,
         reindex_kwargs: tp.KwargsLike = None,
         **kwargs,
@@ -1278,10 +1276,11 @@ class IndicatorBase(Analyzable):
         All objects to be merged must share the same index.
 
         Args:
-            *objs (tuple[IndicatorBase]): Additional indicator instances to stack.
+            *objs (MaybeSequence[IndicatorBase]): (Additional) indicator instances to stack.
             wrapper_kwargs (KwargsLike): Keyword arguments for column stacking of wrappers.
             reindex_kwargs (KwargsLike): Keyword arguments for reindexing the data.
-            **kwargs: Keyword arguments for stacking operations.
+            **kwargs: Keyword arguments for `IndicatorBase` through
+                `IndicatorBase.resolve_column_stack_kwargs` and `IndicatorBase.resolve_stack_kwargs`.
 
         Returns:
             IndicatorBase: A new instance with combined data from the provided indicators.
@@ -1388,9 +1387,9 @@ class IndicatorBase(Analyzable):
         """Perform indexing on an IndicatorBase instance.
 
         Args:
-            *args: Additional positional arguments.
+            *args: Positional arguments for `vectorbtpro.base.wrapping.ArrayWrapper.indexing_func`.
             wrapper_meta (DictLike): Metadata for wrapper indexing.
-            **kwargs: Additional keyword arguments.
+            **kwargs: Keyword arguments for `vectorbtpro.base.wrapping.ArrayWrapper.indexing_func`.
 
         Returns:
             IndicatorBase: A new indicator instance with updated indexing.
@@ -1606,7 +1605,7 @@ class IndicatorBase(Analyzable):
 
         Args:
             include_all (bool): Flag to determine whether to include all outputs (regular, in-place, and lazy).
-            **kwargs: Keyword arguments passed to `pd.Series.dropna` or `pd.DataFrame.dropna`.
+            **kwargs: Keyword arguments for `pd.Series.dropna` or `pd.DataFrame.dropna`.
 
         Returns:
             IndicatorBase: A new indicator instance with missing values dropped.
@@ -1816,7 +1815,7 @@ class IndicatorFactory(Configured):
             `vectorbtpro.generic.plots_builder.PlotsBuilderMixin.plots`.
 
             If a dictionary is provided, it will be converted into a property.
-        **kwargs: Custom keyword arguments passed to the config.
+        **kwargs: Keyword arguments for `vectorbtpro.utils.config.Configured`.
 
     !!! note
         The `__init__` method is not used for running the indicator; use `run` instead.
@@ -2101,8 +2100,8 @@ class IndicatorFactory(Configured):
                     ```
                 
                     Args:
-                        *args: Additional positional arguments.
-                        **kwargs: Additional keyword arguments.
+                        *args: Positional arguments for `vectorbtpro.generic.stats_builder.StatsBuilderMixin.stats`.
+                        **kwargs: Keyword arguments for `vectorbtpro.generic.stats_builder.StatsBuilderMixin.stats`.
                 
                     Returns:
                         SeriesFrame: The computed statistics for `{attr_name}`.
@@ -2148,13 +2147,10 @@ class IndicatorFactory(Configured):
                             
                                 If not provided, a name is auto-generated.
                             allow_multiple (bool): Flag indicating whether multiple comparisons are permitted.
-                            **kwargs: Keyword arguments for combining.
+                            **kwargs: Keyword arguments for `vectorbtpro.indicators.factory.combine_objs`.
 
                         Returns:
                             SeriesFrame: The resulting boolean array.
-
-                        See:
-                            `vectorbtpro.indicators.factory.combine_objs`
                         """
                     )
                     assign_combine_method(func_name, np_func, def_kwargs, attr_name, method_docstring)
@@ -2170,8 +2166,8 @@ class IndicatorFactory(Configured):
                     Compute generic statistics for `{attr_name}`.
                 
                     Args:
-                        *args: Additional positional arguments.
-                        **kwargs: Additional keyword arguments.
+                        *args: Positional arguments for `vectorbtpro.generic.stats_builder.StatsBuilderMixin.stats`.
+                        **kwargs: Keyword arguments for `vectorbtpro.generic.stats_builder.StatsBuilderMixin.stats`.
                 
                     Returns:
                         SeriesFrame: The computed generic statistics for `{attr_name}`.
@@ -2198,13 +2194,10 @@ class IndicatorFactory(Configured):
                             
                                 If not provided, a name is auto-generated.
                             allow_multiple (bool): Flag indicating whether multiple comparisons are permitted.
-                            **kwargs: Keyword arguments for combining.
+                            **kwargs: Keyword arguments for `vectorbtpro.indicators.factory.combine_objs`.
                     
                         Returns:
                             SeriesFrame: The resulting boolean array.
-
-                        See:
-                            `vectorbtpro.indicators.factory.combine_objs`
                         """
                     )
                     assign_combine_method(func_name, np_func, def_kwargs, attr_name, method_docstring)
@@ -2220,8 +2213,8 @@ class IndicatorFactory(Configured):
                     Compute signal statistics for `{attr_name}`.
 
                     Args:
-                        *args: Additional positional arguments.
-                        **kwargs: Additional keyword arguments.
+                        *args: Positional arguments for `vectorbtpro.generic.stats_builder.StatsBuilderMixin.stats`.
+                        **kwargs: Keyword arguments for `vectorbtpro.generic.stats_builder.StatsBuilderMixin.stats`.
                 
                     Returns:
                         SeriesFrame: The computed signal statistics for `{attr_name}`.
@@ -2496,7 +2489,7 @@ class IndicatorFactory(Configured):
             keyword_only_args (bool): Specifies whether run methods should enforce keyword-only arguments.
 
                 Set to True to require keyword arguments and avoid misplacement.
-            **pipeline_kwargs: Keyword arguments passed to `IndicatorBase.run_pipeline`.
+            **pipeline_kwargs: Keyword arguments for `IndicatorBase.run_pipeline`.
 
                 These can include default values and references using `vectorbtpro.base.reshaping.Ref`.
 
@@ -2762,7 +2755,7 @@ Set `hide_default` to False to display column levels for parameters with default
 
 Args:
     *args: Positional arguments corresponding to inputs, parameters, and in-place outputs.
-    **kwargs: Keyword arguments passed to `{0}.run_pipeline`.
+    **kwargs: Keyword arguments for `{0}.run_pipeline`.
 
 Returns:
     Indicator: An instance of the `{0}` indicator, or a tuple of additional objects if applicable.
@@ -2980,11 +2973,11 @@ Returns:
                 to pass as positional arguments to the apply function.
 
                 Should be used with `jitted_loop=True` as Numba does not support variable keyword arguments.
-            jit_kwargs (KwargsLike): Keyword arguments passed to the `@njit` decorator of the parameter
+            jit_kwargs (KwargsLike): Keyword arguments for the `@njit` decorator of the parameter
                 selection function.
 
                 Has `nogil` set to True by default.
-            **kwargs: Keyword arguments forwarded to `IndicatorFactory.with_custom_func`
+            **kwargs: Keyword arguments for `IndicatorFactory.with_custom_func`
                 and ultimately to `vectorbtpro.base.combining.apply_and_concat_each`.
 
         Returns:
@@ -3163,7 +3156,7 @@ Returns:
                 param_index (Optional[Index]): Index for parameter combinations.
                 final_index (Optional[Index]): Final index used for the output.
                 single_comb (bool): Whether to combine outputs into a single result.
-                execute_kwargs (KwargsLike): Keyword arguments passed to the execution handler.
+                execute_kwargs (KwargsLike): Keyword arguments for the execution handler.
 
                     See `vectorbtpro.utils.execution.execute` for details.
                 **kwargs_: Additional keyword arguments.
@@ -3994,10 +3987,10 @@ Returns:
 
         Args:
             func_name (str): The name of the TA-Lib function to wrap.
-            factory_kwargs (KwargsLike): Keyword arguments passed to `IndicatorFactory`.
+            factory_kwargs (KwargsLike): Keyword arguments for `IndicatorFactory`.
 
                 Additional configuration for creating the indicator class.
-            **kwargs: Keyword arguments passed to `IndicatorFactory.with_apply_func`.
+            **kwargs: Keyword arguments for `IndicatorFactory.with_apply_func`.
 
         Returns:
             IndicatorBase: A new indicator class based on the TA-Lib function.
@@ -4079,13 +4072,13 @@ Returns:
             Based on `vbt.talib_func("{func_name}")`.
     
             Args:
-                input_tuple (tuple[Array2d, ...]): Input arrays for the TA-Lib function.
+                input_tuple (Tuple[Array2d, ...]): Input arrays for the TA-Lib function.
                 
                     These arrays provide the indicator data.
-                in_output_tuple (tuple[Array2d, ...]): Intermediate output arrays.
+                in_output_tuple (Tuple[Array2d, ...]): Intermediate output arrays.
                 
                     Not used by this function.
-                param_tuple (tuple[ParamValue, ...]): Tuple of parameter values.
+                param_tuple (Tuple[ParamValue, ...]): Tuple of parameter values.
                 
                     May include the timeframe as the last element.
                 timeframe (Optional[FrequencyLike]): A timeframe value.
@@ -4145,10 +4138,10 @@ Returns:
                 column (Optional[Label]): Column label to select data for plotting.
                 
                     If provided, selects the corresponding column from the indicator output.
-                add_shape_kwargs (KwargsLike): Keyword arguments passed to `fig.add_shape` for each shape.
-                add_trace_kwargs (KwargsLike): Keyword arguments passed to `fig.add_trace` for each trace.
+                add_shape_kwargs (KwargsLike): Keyword arguments for `fig.add_shape` for each shape.
+                add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace.
                 fig (Optional[BaseFigure]): A figure instance to update; if None, a new figure is created.
-                **kwargs: Keyword arguments passed to the plotting function.
+                **kwargs: Keyword arguments for the plotting function.
     
             Returns:
                 BaseFigure: The figure containing the plotted indicator.
@@ -4183,7 +4176,7 @@ Returns:
                 Used to identify input columns if not explicitly annotated.
             test_index_len (int): The number of rows in the generated test DataFrame.
             silence_warnings (bool): Flag to suppress warnings during output parsing.
-            **kwargs: Keyword arguments passed to the indicator function.
+            **kwargs: Keyword arguments for the indicator function.
 
         Returns:
             Kwargs: A dictionary containing the following keys:
@@ -4278,7 +4271,7 @@ Returns:
 
         Args:
             silence_warnings (bool): Flag indicating whether to suppress warnings during parsing.
-            **kwargs: Keyword arguments passed to `IndicatorFactory.parse_pandas_ta_config`.
+            **kwargs: Keyword arguments for `IndicatorFactory.parse_pandas_ta_config`.
 
         Returns:
             List[str]: A sorted list of indicator names in uppercase that were successfully parsed.
@@ -4317,9 +4310,9 @@ Returns:
             func_name (str): Name of the pandas_ta function to wrap.
 
                 The function name is case-insensitive.
-            parse_kwargs (KwargsLike): Keyword arguments passed to `IndicatorFactory.parse_pandas_ta_config`.
-            factory_kwargs (KwargsLike): Keyword arguments passed to `IndicatorFactory`.
-            **kwargs: Keyword arguments passed to `IndicatorFactory.with_apply_func`.
+            parse_kwargs (KwargsLike): Keyword arguments for `IndicatorFactory.parse_pandas_ta_config`.
+            factory_kwargs (KwargsLike): Keyword arguments for `IndicatorFactory`.
+            **kwargs: Keyword arguments for `IndicatorFactory.with_apply_func`.
 
         Returns:
             Type[IndicatorBase]: A new indicator class wrapping the specified Pandas TA function.
@@ -4516,8 +4509,7 @@ Returns:
         Args:
             cls_name (str): The name of the target TA class.
             factory_kwargs (KwargsLike): Keyword arguments for configuring the `IndicatorFactory`.
-            **kwargs: Keyword arguments for configuring the indicator
-                via `IndicatorFactory.with_apply_func`.
+            **kwargs: Keyword arguments for `IndicatorFactory.with_apply_func`.
 
         Returns:
             Type[IndicatorBase]: The built indicator class.
@@ -4706,7 +4698,7 @@ Returns:
 
         Args:
             silence_warnings (bool): Flag to suppress warnings if indicator parsing fails.
-            **kwargs: Keyword arguments passed to `IndicatorFactory.parse_technical_config`.
+            **kwargs: Keyword arguments for `IndicatorFactory.parse_technical_config`.
 
         Returns:
             list[str]: A sorted list of technical indicator names in uppercase.
@@ -4853,7 +4845,7 @@ Returns:
         Args:
             consensus_cls (Type): A consensus class that subclasses `technical.consensus.consensus.Consensus`.
             factory_kwargs (KwargsLike): Keyword arguments for customizing the indicator factory.
-            **kwargs: Keyword arguments passed to `IndicatorFactory.with_apply_func`.
+            **kwargs: Keyword arguments for `IndicatorFactory.with_apply_func`.
 
         Returns:
             Type: The dynamically created indicator class.
@@ -4955,13 +4947,13 @@ Returns:
 
             Args:
                 column (Optional[Label]): Name of the column to plot.
-                buy_trace_kwargs (KwargsLike): Keyword arguments passed to
+                buy_trace_kwargs (KwargsLike): Keyword arguments for
                     `plotly.graph_objects.Scatter` for the buy trace.
-                sell_trace_kwargs (KwargsLike): Keyword arguments passed to
+                sell_trace_kwargs (KwargsLike): Keyword arguments for
                     `plotly.graph_objects.Scatter` for the sell trace.
-                add_trace_kwargs (KwargsLike): Keyword arguments passed to `fig.add_trace` for each trace.
+                add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace.
                 fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
-                **layout_kwargs: Keyword arguments for configuring the figure layout.
+                **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
             Returns:
                 BaseFigure: The updated figure with plotted buy and sell traces.
@@ -5021,7 +5013,7 @@ Returns:
                 * `MACON` (or `MovingAverageConsensus`),
                 * `OSCCON` (or `OscillatorConsensus`), and
                 * `SUMCON` (or `SummaryConsensus`).
-            **kwargs: Keyword arguments passed to `IndicatorFactory.from_custom_techcon`.
+            **kwargs: Keyword arguments for `IndicatorFactory.from_custom_techcon`.
 
         Returns:
             Type[IndicatorBase]: The created indicator class.
@@ -5178,7 +5170,7 @@ Returns:
 
         Args:
             silence_warnings (bool): Flag indicating whether to suppress warnings during parsing.
-            **kwargs: Keyword arguments passed to `IndicatorFactory.parse_smc_config`.
+            **kwargs: Keyword arguments for `IndicatorFactory.parse_smc_config`.
 
         Returns:
             List[str]: Sorted list of indicator names in uppercase.
@@ -5218,7 +5210,7 @@ Returns:
             collapse (bool): Flag to collapse all nested indicators into a single configuration.
             parse_kwargs (KwargsLike): Keyword arguments for `IndicatorFactory.parse_smc_config`.
             factory_kwargs (KwargsLike): Keyword arguments for constructing the indicator.
-            **kwargs: Keyword arguments passed to `IndicatorFactory.with_apply_func`.
+            **kwargs: Keyword arguments for `IndicatorFactory.with_apply_func`.
 
         Returns:
             Type[IndicatorBase]: An indicator class built around the specified smartmoneyconcepts function.
@@ -5835,7 +5827,7 @@ Returns:
 
                 If a string is provided, the prefix "WQA" is removed and the remaining value
                 is converted to an integer.
-            **kwargs: Keyword arguments passed to `IndicatorFactory.from_expr`.
+            **kwargs: Keyword arguments for `IndicatorFactory.from_expr`.
 
         Returns:
             Type[IndicatorBase]: The constructed indicator class.
@@ -5893,11 +5885,11 @@ __pdoc__["IF"] = False
 
 
 def indicator(*args, **kwargs) -> tp.Type[IndicatorBase]:
-    """Return the indicator class using `vectorbtpro.indicators.factory.IndicatorFactory.get_indicator`.
+    """Get an indicator.
 
     Args:
-        *args: Additional positional arguments.
-        **kwargs: Additional keyword arguments.
+        *args: Positional arguments for `IndicatorFactory.get_indicator`.
+        **kwargs: Keyword arguments for `IndicatorFactory.get_indicator`.
 
     Returns:
         IndicatorBase: The indicator class.
@@ -5906,11 +5898,11 @@ def indicator(*args, **kwargs) -> tp.Type[IndicatorBase]:
 
 
 def talib(*args, **kwargs) -> tp.Type[IndicatorBase]:
-    """Return the indicator class using `vectorbtpro.indicators.factory.IndicatorFactory.from_talib`.
+    """Get a TA-Lib indicator.
 
     Args:
-        *args: Additional positional arguments.
-        **kwargs: Additional keyword arguments.
+        *args: Positional arguments for `IndicatorFactory.from_talib`.
+        **kwargs: Keyword arguments for `IndicatorFactory.from_talib`.
 
     Returns:
         IndicatorBase: The indicator class.
@@ -5919,11 +5911,11 @@ def talib(*args, **kwargs) -> tp.Type[IndicatorBase]:
 
 
 def pandas_ta(*args, **kwargs) -> tp.Type[IndicatorBase]:
-    """Return the indicator class using `vectorbtpro.indicators.factory.IndicatorFactory.from_pandas_ta`.
+    """Get a Pandas TA indicator.
 
     Args:
-        *args: Additional positional arguments.
-        **kwargs: Additional keyword arguments.
+        *args: Positional arguments for `IndicatorFactory.from_pandas_ta`.
+        **kwargs: Keyword arguments for `IndicatorFactory.from_pandas_ta`.
 
     Returns:
         IndicatorBase: The indicator class.
@@ -5932,11 +5924,11 @@ def pandas_ta(*args, **kwargs) -> tp.Type[IndicatorBase]:
 
 
 def ta(*args, **kwargs) -> tp.Type[IndicatorBase]:
-    """Return the indicator class using `vectorbtpro.indicators.factory.IndicatorFactory.from_ta`.
+    """Get a TA indicator.
 
     Args:
-        *args: Additional positional arguments.
-        **kwargs: Additional keyword arguments.
+        *args: Positional arguments for `IndicatorFactory.from_ta`.
+        **kwargs: Keyword arguments for `IndicatorFactory.from_ta`.
 
     Returns:
         IndicatorBase: The indicator class.
@@ -5945,11 +5937,11 @@ def ta(*args, **kwargs) -> tp.Type[IndicatorBase]:
 
 
 def wqa101(*args, **kwargs) -> tp.Type[IndicatorBase]:
-    """Return the indicator class using `vectorbtpro.indicators.factory.IndicatorFactory.from_wqa101`.
+    """Get a WorldQuant's 101 alpha indicator.
 
     Args:
-        *args: Additional positional arguments.
-        **kwargs: Additional keyword arguments.
+        *args: Positional arguments for `IndicatorFactory.from_wqa101`.
+        **kwargs: Keyword arguments for `IndicatorFactory.from_wqa101`.
 
     Returns:
         IndicatorBase: The indicator class.
@@ -5958,11 +5950,11 @@ def wqa101(*args, **kwargs) -> tp.Type[IndicatorBase]:
 
 
 def technical(*args, **kwargs) -> tp.Type[IndicatorBase]:
-    """Return the indicator class using `vectorbtpro.indicators.factory.IndicatorFactory.from_technical`.
+    """Get a Technical indicator.
 
     Args:
-        *args: Additional positional arguments.
-        **kwargs: Additional keyword arguments.
+        *args: Positional arguments for `IndicatorFactory.from_technical`.
+        **kwargs: Keyword arguments for `IndicatorFactory.from_technical`.
 
     Returns:
         IndicatorBase: The indicator class.
@@ -5971,11 +5963,11 @@ def technical(*args, **kwargs) -> tp.Type[IndicatorBase]:
 
 
 def techcon(*args, **kwargs) -> tp.Type[IndicatorBase]:
-    """Return the indicator class using `vectorbtpro.indicators.factory.IndicatorFactory.from_techcon`.
+    """Get a Technical Consensus indicator.
 
     Args:
-        *args: Additional positional arguments.
-        **kwargs: Additional keyword arguments.
+        *args: Positional arguments for `IndicatorFactory.from_techcon`.
+        **kwargs: Keyword arguments for `IndicatorFactory.from_techcon`.
 
     Returns:
         IndicatorBase: The indicator class.
@@ -5984,11 +5976,11 @@ def techcon(*args, **kwargs) -> tp.Type[IndicatorBase]:
 
 
 def smc(*args, **kwargs) -> tp.Type[IndicatorBase]:
-    """Return the indicator class using `vectorbtpro.indicators.factory.IndicatorFactory.from_smc`.
+    """Get a Smart Money Concepts indicator.
 
     Args:
-        *args: Additional positional arguments.
-        **kwargs: Additional keyword arguments.
+        *args: Positional arguments for `IndicatorFactory.from_smc`.
+        **kwargs: Keyword arguments for `IndicatorFactory.from_smc`.
 
     Returns:
         IndicatorBase: The indicator class.

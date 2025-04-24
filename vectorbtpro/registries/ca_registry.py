@@ -1837,7 +1837,7 @@ class CASetupDelegatorMixin(CAMetrics):
         Args:
             func (Callable): A function to apply to each child setup.
             exclude (Optional[MaybeIterable[CABaseSetup]]): An iterable of child setups to exclude from delegation.
-            **kwargs: Keyword arguments passed to `func`.
+            **kwargs: Keyword arguments for `func`.
 
         Returns:
             None
@@ -1861,7 +1861,7 @@ class CASetupDelegatorMixin(CAMetrics):
         Calls the `deregister` method on all child setups.
 
         Args:
-            **kwargs: Keyword arguments passed to `CABaseSetup.deregister`.
+            **kwargs: Keyword arguments for `CABaseSetup.deregister`.
 
         Returns:
             None
@@ -1874,7 +1874,7 @@ class CASetupDelegatorMixin(CAMetrics):
         Calls the `enable_whitelist` method on all child setups.
 
         Args:
-            **kwargs: Keyword arguments passed to `CABaseSetup.enable_whitelist`.
+            **kwargs: Keyword arguments for `CABaseSetup.enable_whitelist`.
 
         Returns:
             None
@@ -1887,7 +1887,7 @@ class CASetupDelegatorMixin(CAMetrics):
         Calls the `disable_whitelist` method on all child setups.
 
         Args:
-            **kwargs: Keyword arguments passed to `CABaseSetup.disable_whitelist`.
+            **kwargs: Keyword arguments for `CABaseSetup.disable_whitelist`.
 
         Returns:
             None
@@ -1900,7 +1900,7 @@ class CASetupDelegatorMixin(CAMetrics):
         Calls the `enable_caching` method on all child setups.
 
         Args:
-            **kwargs: Keyword arguments passed to `CABaseSetup.enable_caching`.
+            **kwargs: Keyword arguments for `CABaseSetup.enable_caching`.
 
         Returns:
             None
@@ -1913,7 +1913,7 @@ class CASetupDelegatorMixin(CAMetrics):
         Calls the `disable_caching` method on all child setups.
 
         Args:
-            **kwargs: Keyword arguments passed to `CABaseSetup.disable_caching`.
+            **kwargs: Keyword arguments for `CABaseSetup.disable_caching`.
 
         Returns:
             None
@@ -1926,7 +1926,7 @@ class CASetupDelegatorMixin(CAMetrics):
         Calls the `clear_cache` method on all child setups.
 
         Args:
-            **kwargs: Keyword arguments passed to `CABaseSetup.clear_cache`.
+            **kwargs: Keyword arguments for `CABaseSetup.clear_cache`.
 
         Returns:
             None
@@ -2086,7 +2086,7 @@ class CABaseDelegatorSetup(CABaseSetup, CASetupDelegatorMixin):
         """Delegate deregistration to child setups and then deregister this setup.
 
         Args:
-            **kwargs: Keyword arguments passed to the deregistration methods.
+            **kwargs: Keyword arguments for `CASetupDelegatorMixin.deregister`.
 
         Returns:
             None
@@ -2098,7 +2098,7 @@ class CABaseDelegatorSetup(CABaseSetup, CASetupDelegatorMixin):
         """Delegate enabling whitelist to child setups and then enable it on this setup.
 
         Args:
-            **kwargs: Keyword arguments passed to the whitelist enabling methods.
+            **kwargs: Keyword arguments for `CASetupDelegatorMixin.enable_whitelist`.
 
         Returns:
             None
@@ -2110,7 +2110,7 @@ class CABaseDelegatorSetup(CABaseSetup, CASetupDelegatorMixin):
         """Delegate disabling whitelist to child setups and then disable it on this setup.
 
         Args:
-            **kwargs: Keyword arguments passed to the whitelist disabling methods.
+            **kwargs: Keyword arguments for `CASetupDelegatorMixin.disable_whitelist`.
 
         Returns:
             None
@@ -2124,7 +2124,7 @@ class CABaseDelegatorSetup(CABaseSetup, CASetupDelegatorMixin):
         Args:
             force (bool): Flag to force the enabling of caching.
             silence_warnings (Optional[bool]): Flag to control the suppression of warnings.
-            **kwargs: Keyword arguments passed to the caching enabling methods.
+            **kwargs: Keyword arguments for `CASetupDelegatorMixin.enable_caching`.
 
         Returns:
             None
@@ -2137,7 +2137,7 @@ class CABaseDelegatorSetup(CABaseSetup, CASetupDelegatorMixin):
 
         Args:
             clear_cache (bool): Indicates whether to clear the cache when disabling caching.
-            **kwargs: Keyword arguments passed to the caching disabling methods.
+            **kwargs: Keyword arguments for `CASetupDelegatorMixin.disable_caching`.
 
         Returns:
             None
@@ -2149,7 +2149,7 @@ class CABaseDelegatorSetup(CABaseSetup, CASetupDelegatorMixin):
         """Delegate clearing the cache to all child setups.
 
         Args:
-            **kwargs: Keyword arguments passed to the cache clearing methods.
+            **kwargs: Keyword arguments for `CASetupDelegatorMixin.clear_cache`.
 
         Returns:
             None
@@ -2311,7 +2311,7 @@ class CAClassSetup(CABaseDelegatorSetup, DefineMixin):
         Args:
             cls_ (Type[Cacheable]): The cacheable class to retrieve or register.
             registry (CacheableRegistry): Registry to use for retrieving the setup.
-            **kwargs: Keyword arguments passed to CAClassSetup.
+            **kwargs: Keyword arguments for `CAClassSetup`.
 
         Returns:
             Optional[CAClassSetup]: The retrieved or newly registered setup,
@@ -2487,7 +2487,7 @@ class CAInstanceSetup(CABaseDelegatorSetup, DefineMixin):
         Args:
             instance (Cacheable): The cacheable instance for which to retrieve or create a setup.
             registry (CacheableRegistry): The registry to query for an existing setup.
-            **kwargs: Keyword arguments passed to `CAInstanceSetup`.
+            **kwargs: Keyword arguments for `CAInstanceSetup`.
 
         Returns:
             Optional[CAInstanceSetup]: The active setup for the instance if found, otherwise None.
@@ -2665,7 +2665,7 @@ class CAUnboundSetup(CABaseDelegatorSetup, DefineMixin):
         Args:
             cacheable (cacheable): The cacheable property or method for which to retrieve or create a setup.
             registry (CacheableRegistry): The registry to query for an existing setup.
-            **kwargs: Keyword arguments passed to `CAUnboundSetup`.
+            **kwargs: Keyword arguments for `CAUnboundSetup`.
 
         Returns:
             Optional[CAUnboundSetup]: The active unbound setup if found, otherwise None.
@@ -2896,7 +2896,7 @@ class CARunSetup(CABaseSetup, DefineMixin):
                 that defines caching behavior.
             instance (Optional[Cacheable]): Instance associated with the cacheable.
             registry (CacheableRegistry): Registry used to store and retrieve run setups.
-            **kwargs: Keyword arguments for initialization.
+            **kwargs: Keyword arguments for `CARunSetup`.
 
         Returns:
             Optional[CARunSetupT]: The existing or newly registered run setup,
@@ -3103,8 +3103,8 @@ class CARunSetup(CABaseSetup, DefineMixin):
         """Run the setup's function without caching.
 
         Args:
-            *args: Positional arguments passed to `CARunSetup.cacheable.func`.
-            **kwargs: Keyword arguments passed to `CARunSetup.cacheable.func`.
+            *args: Positional arguments for `CARunSetup.cacheable.func`.
+            **kwargs: Keyword arguments for `CARunSetup.cacheable.func`.
 
         Returns:
             Any: The result returned by `CARunSetup.cacheable.func`.
@@ -3114,7 +3114,7 @@ class CARunSetup(CABaseSetup, DefineMixin):
         return self.cacheable.func(*args, **kwargs)
 
     def get_args_hash(self, *args, **kwargs) -> tp.Optional[int]:
-        """Get the hash of the provided arguments.
+        """Get the hash of the provided arguments using `vectorbtpro.utils.hashing.hash_args`.
 
         This method extends `CARunSetup.ignore_args` with additional ignore arguments defined
         in `vectorbtpro._settings.caching`. If no arguments are provided, it returns the hash of None.
@@ -3156,8 +3156,8 @@ class CARunSetup(CABaseSetup, DefineMixin):
         it is returned via `CARunResult.hit()`.
 
         Args:
-            *args: Positional arguments to pass to the function.
-            **kwargs: Keyword arguments to pass to the function.
+            *args: Positional arguments for `CARunSetup.run_func`.
+            **kwargs: Keyword arguments for `CARunSetup.run_func`.
 
         Returns:
             Any: The result from executing the function.
@@ -3181,8 +3181,8 @@ class CARunSetup(CABaseSetup, DefineMixin):
         `CARunSetup.run_func_and_cache`. Otherwise, it falls back to executing `CARunSetup.run_func` directly.
 
         Args:
-            *args: Positional arguments to pass to the function.
-            **kwargs: Keyword arguments to pass to the function.
+            *args: Positional arguments for `CARunSetup.run_func`.
+            **kwargs: Keyword arguments for `CARunSetup.run_func`.
 
         Returns:
             Any: The result of the function execution.
@@ -3314,8 +3314,8 @@ def get_cache_stats(*args, **kwargs) -> tp.Optional[tp.Frame]:
     """Retrieve caching statistics globally or for a specific object.
 
     Args:
-        *args: Positional arguments for querying cache stats.
-        **kwargs: Keyword arguments for specifying cache stats details.
+        *args: Positional arguments for `CAQueryDelegator`.
+        **kwargs: Keyword arguments distributed between `CAQueryDelegator` and `CAQueryDelegator.get_stats`.
 
     Returns:
         Optional[Frame]: A DataFrame containing caching statistics or None if not available.
@@ -3338,8 +3338,8 @@ def print_cache_stats(*args, **kwargs) -> None:
     """Print caching statistics globally or for a specific object.
 
     Args:
-        *args: Positional arguments for querying cache stats.
-        **kwargs: Keyword arguments for specifying cache stats details.
+        *args: Positional arguments for `get_cache_stats`.
+        **kwargs: Keyword arguments for `get_cache_stats`.
 
     Returns:
         None
@@ -3351,8 +3351,8 @@ def clear_cache(*args, **kwargs) -> None:
     """Clear the global cache or the cache of a specific object.
 
     Args:
-        *args: Positional arguments for clearing the cache.
-        **kwargs: Keyword arguments for clearing the cache.
+        *args: Positional arguments for `CAQueryDelegator`.
+        **kwargs: Keyword arguments for `CAQueryDelegator`.
 
     Returns:
         None
@@ -3668,7 +3668,7 @@ def with_caching_disabled(*args, **caching_disabled_kwargs) -> tp.Callable:
     """Decorator to execute a function within a caching-disabled context using `CachingDisabled`.
 
     Args:
-        *args: Either the function to decorate or empty.
+        func (Callable): Function to be decorated.
         **caching_disabled_kwargs: Keyword arguments used to initialize `CachingDisabled`.
 
     Returns:
@@ -3947,7 +3947,7 @@ def with_caching_enabled(*args, **caching_enabled_kwargs) -> tp.Callable:
     Keyword arguments provided are passed to the `CachingEnabled` context manager.
 
     Args:
-        *args: Additional positional arguments.
+        func (Callable): Function to be decorated.
         **caching_enabled_kwargs: Keyword arguments for configuring `CachingEnabled`.
 
     Returns:

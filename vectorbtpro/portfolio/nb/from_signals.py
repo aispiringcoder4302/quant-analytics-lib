@@ -486,7 +486,7 @@ def prepare_fs_records_nb(
     """Prepare order and log record arrays for from-signals processing.
 
     Args:
-        target_shape (tuple[int, int]): Base dimensions (rows, columns) for record arrays.
+        target_shape (Shape): Base dimensions (rows, columns) for record arrays.
         max_order_records (Optional[int]): Maximum number of order records.
 
             Overrides the first dimension of target_shape if provided.

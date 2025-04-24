@@ -966,7 +966,7 @@ def time_to_timedelta(t: tp.Union[tp.TimeLike, DTC], **kwargs) -> pd.Timedelta:
 
     Args:
         t (Union[TimeLike, DTC]): A time-like object to convert.
-        **kwargs: Keyword arguments for parsing.
+        **kwargs: Keyword arguments for `DTC.parse_time_str`.
 
     Returns:
         Timedelta: A pandas Timedelta instance.
@@ -1009,7 +1009,7 @@ def get_local_tz(**kwargs) -> tzinfo:
     """Return the local timezone object.
 
     Args:
-        **kwargs: Keyword arguments passed to `to_timezone`.
+        **kwargs: Keyword arguments for `to_timezone`.
 
     Returns:
         tzinfo: The local timezone.
@@ -1181,7 +1181,7 @@ def to_timestamp(
         unit (str): Unit of time for numerical timestamps.
         tz (TimezoneLike): Timezone information used for localizing or converting the timestamp.
         to_fixed_offset (Optional[bool]): Flag to convert timezones to a fixed offset.
-        **kwargs: Keyword arguments passed to `pd.Timestamp`.
+        **kwargs: Keyword arguments for `pd.Timestamp`.
 
     Returns:
         pd.Timestamp: The parsed and timezone-adjusted timestamp.
@@ -1290,7 +1290,7 @@ def to_tzaware_timestamp(
         dt (DatetimeLike): The datetime input to parse.
         naive_tz (TimezoneLike): Timezone used to localize naive datetime inputs.
         tz (TimezoneLike): Target timezone for converting the timestamp.
-        **kwargs: Keyword arguments passed to `to_timestamp`.
+        **kwargs: Keyword arguments for `to_timestamp`.
 
     Returns:
         pd.Timestamp: The timezone-aware timestamp.
@@ -1318,7 +1318,7 @@ def to_naive_timestamp(dt: tp.DatetimeLike = "now", **kwargs) -> pd.Timestamp:
 
     Args:
         dt (DatetimeLike): The datetime input to parse.
-        **kwargs: Keyword arguments passed to `to_timestamp`.
+        **kwargs: Keyword arguments for `to_timestamp`.
 
     Returns:
         pd.Timestamp: The timezone-naive timestamp.
@@ -1331,7 +1331,7 @@ def to_datetime(dt: tp.DatetimeLike = "now", **kwargs) -> datetime:
 
     Args:
         dt (DatetimeLike): The input datetime-like value.
-        **kwargs: Keyword arguments passed to `to_timestamp`.
+        **kwargs: Keyword arguments for `to_timestamp`.
 
     Returns:
         datetime: The resulting datetime object.
@@ -1354,7 +1354,7 @@ def to_tzaware_datetime(dt: tp.DatetimeLike = "now", **kwargs) -> datetime:
 
     Args:
         dt (DatetimeLike): The input datetime-like value.
-        **kwargs: Keyword arguments passed to `to_tzaware_timestamp`.
+        **kwargs: Keyword arguments for `to_tzaware_timestamp`.
 
     Returns:
         datetime: The resulting timezone-aware datetime object.
@@ -1369,7 +1369,7 @@ def to_naive_datetime(dt: tp.DatetimeLike = "now", **kwargs) -> datetime:
 
     Args:
         dt (DatetimeLike): The input datetime-like value.
-        **kwargs: Keyword arguments passed to `to_naive_timestamp`.
+        **kwargs: Keyword arguments for `to_naive_timestamp`.
 
     Returns:
         datetime: The resulting timezone-naive datetime object.
@@ -1434,7 +1434,7 @@ def readable_datetime(
         dt (DatetimeLike): The datetime-like input to format.
         drop_tz (Optional[bool]): If True, exclude timezone information from the output.
         freq (Optional[FrequencyLike]): Frequency to guide the formatting precision.
-        **kwargs: Keyword arguments passed to the timestamp conversion functions.
+        **kwargs: Keyword arguments for `to_naive_timestamp` or `to_timestamp`.
 
     Returns:
         str: The formatted human-readable datetime string.
@@ -1650,7 +1650,7 @@ def date_range(
         timestamp_kwargs (KwargsLike): Keyword arguments for `to_timestamp`.
         freq_kwargs (KwargsLike): Keyword arguments for `to_freq`.
         timezone_kwargs (KwargsLike): Keyword arguments for `to_timezone`.
-        **kwargs: Additional keyword arguments passed to `pd.date_range`.
+        **kwargs: Keyword arguments for `pd.date_range`.
 
     Returns:
         pd.DatetimeIndex: The generated datetime index.
@@ -1720,7 +1720,7 @@ def prepare_dt_index(
         parse_index (Optional[bool]): Flag to enable parsing with `pd.to_datetime`.
         parse_with_dateparser (Optional[bool]): Flag to enable parsing with the dateparser library.
         dateparser_kwargs (KwargsLike): Keyword arguments for `dateparser.parse`.
-        **kwargs: Additional keyword arguments passed to `pd.to_datetime`.
+        **kwargs: Keyword arguments for `pd.to_datetime`.
 
     Returns:
         Index: The converted index, which will be a DatetimeIndex if conversion succeeded.
@@ -1801,7 +1801,7 @@ def try_align_to_dt_index(source_index: tp.IndexLike, target_index: tp.Index, **
     Args:
         source_index (IndexLike): The source index to align.
         target_index (Index): The target index to align to.
-        **kwargs: Additional keyword arguments for `prepare_dt_index`.
+        **kwargs: Keyword arguments for `prepare_dt_index`.
 
     Returns:
         Index: The aligned source index.
@@ -1821,7 +1821,7 @@ def try_align_dt_to_index(dt: tp.DatetimeLike, target_index: tp.Index, **kwargs)
     Args:
         dt (DatetimeLike): The datetime-like object to align.
         target_index (Index): The target index to align to.
-        **kwargs: Additional keyword arguments for `to_timestamp`.
+        **kwargs: Keyword arguments for `to_timestamp`.
 
     Returns:
         DatetimeLike: The aligned datetime-like object.

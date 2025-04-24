@@ -189,7 +189,7 @@ class FileData(LocalData):
             sort_paths (Optional[bool]): Indicates if the matched paths should be sorted.
             match_path_kwargs (KwargsLike): Positional arguments for `FileData.match_path`.
             path_to_key_kwargs (KwargsLike): Positional arguments for `FileData.path_to_key`.
-            **kwargs: Keyword arguments passed to the superclass `pull` method.
+            **kwargs: Keyword arguments for `vectorbtpro.data.custom.file.FileData.pull`.
 
         Returns:
             FileData: An instance of `FileData` containing the pulled file data.

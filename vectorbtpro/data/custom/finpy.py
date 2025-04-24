@@ -276,8 +276,7 @@ class FinPyData(RemoteData):
             tz (TimezoneLike): The timezone.
 
                 See `vectorbtpro.utils.datetime_.to_timezone`.
-            **request_kwargs: Keyword arguments passed to
-                `findatapy.market.marketdatarequest.MarketDataRequest`.
+            **request_kwargs: Keyword arguments for `findatapy.market.marketdatarequest.MarketDataRequest`.
 
         Returns:
             SymbolData: The fetched data and a metadata dictionary.

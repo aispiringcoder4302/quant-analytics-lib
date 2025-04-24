@@ -84,11 +84,11 @@ class _HURST(HURST):
 
         Args:
             column (Optional[Label]): Name of the column to plot.
-            hurst_trace_kwargs (KwargsLike): Keyword arguments passed to
+            hurst_trace_kwargs (KwargsLike): Keyword arguments for
                 `plotly.graph_objects.Scatter` for plotting `HURST.hurst`.
-            add_trace_kwargs (KwargsLike): Keyword arguments passed to `fig.add_trace` for each trace.
+            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
-            **layout_kwargs: Keyword arguments for configuring the figure layout.
+            **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
         Returns:
             BaseFigure: The figure updated with the Hurst exponent plot.

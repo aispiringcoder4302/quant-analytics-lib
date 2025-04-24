@@ -170,7 +170,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         defaults (KwargsLike): Overrides for default settings in `vectorbtpro._settings.returns`.
         sim_start (Optional[ArrayLike]): Simulation start, which can be a scalar or array-like.
         sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
-        **kwargs: Keyword arguments passed to `vectorbtpro.generic.accessors.GenericAccessor`.
+        **kwargs: Keyword arguments for `vectorbtpro.generic.accessors.GenericAccessor`.
 
     !!! info
         For default settings, see `vectorbtpro._settings.returns`.
@@ -239,7 +239,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             wrapper (Optional[ArrayWrapper]): Wrapper instance for array operations.
             wrapper_kwargs (KwargsLike): Keyword arguments to configure the wrapper.
             return_values (bool): If True, return wrapped return values instead of a `ReturnsAccessor` instance.
-            **kwargs: Keyword arguments for accessor initialization.
+            **kwargs: Keyword arguments for `ReturnsAccessor`.
 
         Returns:
             Union[ReturnsAccessor, SeriesFrame]: A new accessor instance or wrapped return values.
@@ -276,13 +276,13 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
     @classmethod
     def resolve_row_stack_kwargs(
         cls: tp.Type[ReturnsAccessorT],
-        *objs: tp.MaybeTuple[ReturnsAccessorT],
+        *objs: tp.MaybeSequence[ReturnsAccessorT],
         **kwargs,
     ) -> tp.Kwargs:
         """Resolve keyword arguments for initializing a `ReturnsAccessor` after stacking along rows.
 
         Args:
-            *objs (ReturnsAccessor): Instances of `ReturnsAccessor` to be merged.
+            *objs (MaybeSequence[ReturnsAccessor]): Instances of `ReturnsAccessor` to be merged.
             **kwargs: Additional keyword arguments.
 
         Returns:
@@ -319,14 +319,14 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
     @classmethod
     def resolve_column_stack_kwargs(
         cls: tp.Type[ReturnsAccessorT],
-        *objs: tp.MaybeTuple[ReturnsAccessorT],
+        *objs: tp.MaybeSequence[ReturnsAccessorT],
         reindex_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> tp.Kwargs:
         """Resolve keyword arguments for initializing a `ReturnsAccessor` after stacking along columns.
 
         Args:
-            *objs (ReturnsAccessor): Instances of `ReturnsAccessor` to be merged.
+            *objs (MaybeSequence[ReturnsAccessor]): Instances of `ReturnsAccessor` to be merged.
             reindex_kwargs (KwargsLike): Parameters for reindexing after stacking.
             **kwargs: Additional keyword arguments.
 
@@ -390,11 +390,11 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         """Perform indexing on a `ReturnsAccessor` instance.
 
         Args:
-            *args: Positional arguments for indexing.
+            *args: Positional arguments for `vectorbtpro.base.wrapping.ArrayWrapper.indexing_func_meta`.
             wrapper_meta (DictLike): Indexing metadata.
 
                 If not provided, it is derived from the wrapper.
-            **kwargs: Keyword arguments for indexing.
+            **kwargs: Keyword arguments for `vectorbtpro.base.wrapping.ArrayWrapper.indexing_func_meta`.
 
         Returns:
             ReturnsAccessor: A new accessor instance with the sliced data,
@@ -952,10 +952,10 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         """Resample returns in the accessor.
 
         Args:
-            *args: Positional arguments defining resampling parameters.
+            *args: Positional arguments for `vectorbtpro.base.wrapping.ArrayWrapper.resample_meta`.
             fill_with_zero (bool): Flag indicating whether to fill missing values with zero.
             wrapper_meta (DictLike): Metadata for creating the resampling wrapper.
-            **kwargs: Keyword arguments for resampling operations.
+            **kwargs: Keyword arguments for `vectorbtpro.base.wrapping.ArrayWrapper.resample_meta`.
 
         Returns:
             ReturnsAccessor: A new resampled returns accessor.
@@ -1009,7 +1009,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             chunked (ChunkedOption): Option to control chunked processing.
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
-            **kwargs: Keyword arguments for resampling.
+            **kwargs: Keyword arguments for `ReturnsAccessor.resample_apply`.
 
         Returns:
             SeriesFrame: The resampled returns.
@@ -1052,7 +1052,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             chunked (ChunkedOption): Option to control chunked processing.
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
-            **kwargs: Keyword arguments for resampling returns.
+            **kwargs: Keyword arguments for `ReturnsAccessor.resample_returns`.
 
         Returns:
             SeriesFrame: The daily returns.
@@ -1074,7 +1074,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             chunked (ChunkedOption): Option to control chunked processing.
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
-            **kwargs: Keyword arguments for resampling returns.
+            **kwargs: Keyword arguments for `ReturnsAccessor.resample_returns`.
 
         Returns:
             SeriesFrame: The annual returns.
@@ -3663,8 +3663,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             chunked (ChunkedOption): Option to control chunked processing.
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
-            **kwargs: Keyword arguments forwarded to
-                `vectorbtpro.generic.drawdowns.Drawdowns.from_price`.
+            **kwargs: Keyword arguments for `vectorbtpro.generic.drawdowns.Drawdowns.from_price`.
 
         Returns:
             Drawdowns: An instance containing drawdown records computed from cumulative returns.
@@ -3947,19 +3946,19 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             fit_sim_range (bool): Whether to adjust the figure to the simulation range.
             fill_to_benchmark (bool): Whether to fill between the main plot and the benchmark plot or
                 between the main plot and the start value.
-            main_kwargs (KwargsLike): Keyword arguments passed to
+            main_kwargs (KwargsLike): Keyword arguments for
                 `vectorbtpro.generic.accessors.GenericSRAccessor.plot` for the main plot.
-            bm_kwargs (KwargsLike): Keyword arguments passed to
+            bm_kwargs (KwargsLike): Keyword arguments for
                 `vectorbtpro.generic.accessors.GenericSRAccessor.plot` for the benchmark plot.
             pct_scale (bool): Use percentage scale for the y-axis.
-            hline_shape_kwargs (KwargsLike): Keyword arguments passed to `fig.add_shape` for the horizontal line.
-            add_trace_kwargs (KwargsLike): Keyword arguments passed to `fig.add_trace` for each trace.
+            hline_shape_kwargs (KwargsLike): Keyword arguments for `fig.add_shape` for the horizontal line.
+            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace.
             xref (str): Reference for the x-axis.
             yref (str): Reference for the y-axis (e.g., "y", "y2").
             fig (Optional[BaseFigure]): Figure to update.
 
                 If None, a new figure is created.
-            **layout_kwargs: Keyword arguments for configuring the figure layout.
+            **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
         Returns:
             BaseFigure: Figure displaying the cumulative returns plot.
@@ -4142,7 +4141,7 @@ class ReturnsSRAccessor(ReturnsAccessor, GenericSRAccessor):
         defaults (KwargsLike): Default configuration parameters.
         sim_start (Optional[ArrayLike]): Simulation start, which can be a scalar or array-like.
         sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
-        **kwargs: Keyword arguments passed to `vectorbtpro.generic.accessors.GenericSRAccessor`.
+        **kwargs: Keyword arguments for `vectorbtpro.generic.accessors.GenericSRAccessor` and `ReturnsAccessor`.
     """
 
     def __init__(
@@ -4187,7 +4186,7 @@ class ReturnsDFAccessor(ReturnsAccessor, GenericDFAccessor):
         defaults (KwargsLike): Default configuration parameters.
         sim_start (Optional[ArrayLike]): Simulation start, which can be a scalar or array-like.
         sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
-        **kwargs: Keyword arguments passed to `vectorbtpro.generic.accessors.GenericSRAccessor`.
+        **kwargs: Keyword arguments for `vectorbtpro.generic.accessors.GenericDFAccessor` and `ReturnsAccessor`.
     """
 
     def __init__(

@@ -506,7 +506,7 @@ def contains_in_obj(
             Uses `vectorbtpro.utils.checks.is_instance_of` to check.
         max_len (Optional[int]): Limit processing to objects with a length not exceeding this value.
         max_depth (Optional[int]): Limit recursion to the specified depth (0 disables traversal of iterables).
-        **kwargs: Keyword arguments passed to `match_func`.
+        **kwargs: Keyword arguments for `match_func`.
 
     Returns:
         bool: True if any element matches the criteria, False otherwise.
@@ -615,7 +615,7 @@ def find_in_obj(
         stringify_keys (bool): If True, convert path keys to a string representation.
         max_len (Optional[int]): Limit processing to objects with a length not exceeding this value.
         max_depth (Optional[int]): Limit recursion to the specified depth (0 disables traversal of iterables).
-        **kwargs: Keyword arguments passed to `match_func`.
+        **kwargs: Keyword arguments for `match_func`.
 
     Returns:
         PathDict: A mapping of path-like keys (using tuples for nested levels) to their corresponding values.
@@ -790,7 +790,7 @@ def find_and_replace_in_obj(
         max_depth (Optional[int]): Limit recursion to the specified depth (0 disables traversal of iterables).
         make_copy (bool): Flag to indicate whether to modify a copy of the object.
         check_any_first (bool): If True, checks if any element matches before processing.
-        **kwargs: Keyword arguments passed to `match_func` and `replace_func`.
+        **kwargs: Keyword arguments for `match_func` and `replace_func`.
 
     Returns:
         Any: The modified object with replacements applied.
@@ -1476,7 +1476,7 @@ def find(
             * "start": Returns a list with the starting index of the match.
             * "range": Returns a list with a tuple representing the match range.
             * "match": Returns a list containing the matched string.
-        **kwargs: Keyword arguments for search modes.
+        **kwargs: Keyword arguments for the specific search function.
 
     Returns:
         Union[bool, List[Union[int, str]], List[Tuple[int, int]]]: The match result in the specified format.
@@ -1713,7 +1713,7 @@ def replace(
             * "regex": Use `replace_regex`
             * "fuzzy": Use `replace_fuzzy`
         ignore_case (bool): Whether to ignore case when matching.
-        **kwargs: Keyword arguments passed to the underlying replacement functions.
+        **kwargs: Keyword arguments for the specific replacement function.
 
     Returns:
         str: A new string with the specified replacements applied.

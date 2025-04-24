@@ -359,10 +359,10 @@ if __version_info__ < (20, 0, 0, "alpha", 1):
             Args:
                 kind (str): The type of message to send.
                 chat_id (int): The target chat ID.
-                *args: Positional arguments for the bot's send method.
+                *args: Positional arguments for `TelegramBot.send`.
                 log_msg (Optional[str]): Message description for logging; if not provided,
                     defaults to the value of `kind`.
-                **kwargs: Keyword arguments for sending the message.
+                **kwargs: Keyword arguments for `TelegramBot.send`.
 
             Returns:
                 None
@@ -386,8 +386,8 @@ if __version_info__ < (20, 0, 0, "alpha", 1):
 
             Args:
                 kind (str): The type of message to send.
-                *args: Positional arguments passed to `TelegramBot.send`.
-                **kwargs: Keyword arguments passed to `TelegramBot.send`.
+                *args: Positional arguments for `TelegramBot.send`.
+                **kwargs: Keyword arguments for `TelegramBot.send`.
 
             Returns:
                 None
@@ -401,8 +401,8 @@ if __version_info__ < (20, 0, 0, "alpha", 1):
             Args:
                 chat_id (int): The unique identifier of the target chat.
                 text (str): The content of the message to send.
-                *args: Positional arguments passed to `TelegramBot.send`.
-                **kwargs: Keyword arguments passed to `TelegramBot.send`.
+                *args: Positional arguments for `TelegramBot.send`.
+                **kwargs: Keyword arguments for `TelegramBot.send`.
 
             Returns:
                 None
@@ -415,8 +415,8 @@ if __version_info__ < (20, 0, 0, "alpha", 1):
 
             Args:
                 text (str): The content of the message to send.
-                *args: Positional arguments passed to `TelegramBot.send_to_all`.
-                **kwargs: Keyword arguments passed to `TelegramBot.send_to_all`.
+                *args: Positional arguments for `TelegramBot.send_to_all`.
+                **kwargs: Keyword arguments for `TelegramBot.send_to_all`.
 
             Returns:
                 None
@@ -430,9 +430,9 @@ if __version_info__ < (20, 0, 0, "alpha", 1):
             Args:
                 chat_id (int): The unique identifier of the target chat.
                 text (str): The text from which to generate a GIPHY URL.
-                *args: Positional arguments passed to `TelegramBot.send`.
+                *args: Positional arguments for `TelegramBot.send`.
                 giphy_kwargs (KwargsLike): Keyword arguments for generating the GIPHY URL.
-                **kwargs: Keyword arguments passed to `TelegramBot.send`.
+                **kwargs: Keyword arguments for `TelegramBot.send`.
 
             Returns:
                 None
@@ -448,9 +448,9 @@ if __version_info__ < (20, 0, 0, "alpha", 1):
 
             Args:
                 text (str): The text from which to generate a GIPHY URL.
-                *args: Positional arguments passed to `TelegramBot.send_to_all`.
+                *args: Positional arguments for `TelegramBot.send_to_all`.
                 giphy_kwargs (KwargsLike): Keyword arguments for generating the GIPHY URL.
-                **kwargs: Keyword arguments passed to `TelegramBot.send_to_all`.
+                **kwargs: Keyword arguments for `TelegramBot.send_to_all`.
 
             Returns:
                 None
@@ -552,7 +552,7 @@ if __version_info__ < (20, 0, 0, "alpha", 1):
             Args:
                 update (object): The update that triggered the error.
                 context (CallbackContext): The callback context containing error information.
-                *args: Positional arguments passed to the error handler.
+                *args: Additional positional arguments.
 
             Returns:
                 None
@@ -854,11 +854,11 @@ else:
             Args:
                 kind (str): The type of message to send (e.g., "message", "animation").
                 chat_id (int): The target chat ID.
-                *args: Positional arguments passed for sending the message.
+                *args: Positional arguments for sending the message.
                 log_msg (Optional[str]): Log message for tracking the message.
 
                     Defaults to the message kind if not provided.
-                **kwargs: Keyword arguments passed for sending the message.
+                **kwargs: Keyword arguments for sending the message.
 
             Returns:
                 None
@@ -882,8 +882,8 @@ else:
 
             Args:
                 kind (str): The type of message to send (e.g., "message", "animation").
-                *args: Positional arguments passed to `TelegramBot.send`.
-                **kwargs: Keyword arguments passed to `TelegramBot.send`.
+                *args: Positional arguments for `TelegramBot.send`.
+                **kwargs: Keyword arguments for `TelegramBot.send`.
 
             Returns:
                 None
@@ -897,8 +897,8 @@ else:
             Args:
                 chat_id (int): The target chat ID.
                 text (str): The text message to send.
-                *args: Positional arguments passed to `TelegramBot.send`.
-                **kwargs: Keyword arguments passed to `TelegramBot.send`.
+                *args: Positional arguments for `TelegramBot.send`.
+                **kwargs: Keyword arguments for `TelegramBot.send`.
 
             Returns:
                 None
@@ -911,8 +911,8 @@ else:
 
             Args:
                 text (str): The text message to send.
-                *args: Positional arguments passed to `TelegramBot.send_to_all`.
-                **kwargs: Keyword arguments passed to `TelegramBot.send_to_all`.
+                *args: Positional arguments for `TelegramBot.send_to_all`.
+                **kwargs: Keyword arguments for `TelegramBot.send_to_all`.
 
             Returns:
                 None
@@ -928,11 +928,11 @@ else:
             Args:
                 chat_id (int): The target chat ID.
                 text (str): Text to convert into a GIPHY URL.
-                *args: Positional arguments passed to `TelegramBot.send`.
+                *args: Positional arguments for `TelegramBot.send`.
                 giphy_kwargs (KwargsLike): Keyword arguments for configuring the GIPHY request.
 
                     If not provided, defaults to the `giphy_kwargs` property.
-                **kwargs: Keyword arguments passed to `TelegramBot.send`.
+                **kwargs: Keyword arguments for `TelegramBot.send`.
 
             Returns:
                 None
@@ -948,11 +948,11 @@ else:
 
             Args:
                 text (str): Text to convert into a GIPHY URL.
-                *args: Positional arguments passed to `TelegramBot.send_all`.
+                *args: Positional arguments for `TelegramBot.send_all`.
                 giphy_kwargs (KwargsLike): Keyword arguments for configuring the GIPHY request.
 
                     If not provided, defaults to the `giphy_kwargs` property.
-                **kwargs: Keyword arguments passed to `TelegramBot.send_all`.
+                **kwargs: Keyword arguments for `TelegramBot.send_all`.
 
             Returns:
                 None

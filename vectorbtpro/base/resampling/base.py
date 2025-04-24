@@ -42,6 +42,7 @@ class Resampler(Configured):
 
             Set to False to disable automatic frequency inference.
         silence_warnings (bool): Flag indicating whether warnings should be silenced.
+        **kwargs: Keyword arguments for `vectorbtpro.utils.config.Configured`.
     """
 
     def __init__(
@@ -180,10 +181,10 @@ class Resampler(Configured):
 
         Args:
             source_index (index_like): Source index for resampling.
-            *args: Positional arguments passed to `pandas.Series.resample`.
+            *args: Positional arguments for `pandas.Series.resample`.
             source_freq (Optional[FrequencyLike]): Frequency for the source index.
             silence_warnings (bool): Flag indicating whether warnings should be silenced.
-            **kwargs: Keyword arguments passed to `pandas.Series.resample`.
+            **kwargs: Keyword arguments for `pandas.Series.resample`.
 
         Returns:
             Resampler: A new `Resampler` instance.
@@ -204,10 +205,10 @@ class Resampler(Configured):
 
         Args:
             source_index (index_like): Source index for resampling.
-            *args: Positional arguments passed to `vectorbtpro.utils.datetime_.date_range`.
+            *args: Positional arguments for `vectorbtpro.utils.datetime_.date_range`.
             source_freq (Optional[FrequencyLike]): Frequency for the source index.
             silence_warnings (Optional[bool]): Flag indicating whether warnings should be silenced.
-            **kwargs: Keyword arguments passed to `vectorbtpro.utils.datetime_.date_range`.
+            **kwargs: Keyword arguments for `vectorbtpro.utils.datetime_.date_range`.
 
         Returns:
             Resampler: A new `Resampler` instance.

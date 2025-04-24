@@ -139,7 +139,7 @@ class CSVData(FileData):
 
                 This function is invoked when `iterator` or `chunksize` is specified.
             squeeze (Optional[bool]): If True, a DataFrame with a single column is squeezed into a Series.
-            **read_kwargs: Keyword arguments passed to `pd.read_csv`.
+            **read_kwargs: Keyword arguments for `pd.read_csv`.
 
         Returns:
             SymbolData: The fetched data and a metadata dictionary.
@@ -248,7 +248,7 @@ class CSVData(FileData):
 
         Args:
             feature (hashable): The feature identifier.
-            **kwargs: Keyword arguments to pass to `CSVData.fetch_key`.
+            **kwargs: Keyword arguments for `CSVData.fetch_key`.
 
         Returns:
             FeatureData: The fetched data and a metadata dictionary.
@@ -261,7 +261,7 @@ class CSVData(FileData):
 
         Args:
             symbol (hashable): The symbol identifier.
-            **kwargs: Keyword arguments to pass to `CSVData.fetch_key`.
+            **kwargs: Keyword arguments for `CSVData.fetch_key`.
 
         Returns:
             SymbolData: The fetched data and a metadata dictionary.
@@ -274,7 +274,7 @@ class CSVData(FileData):
         Args:
             key (hashable): The identifier for the feature or symbol.
             key_is_feature (bool): Indicates whether `key` represents a feature.
-            **kwargs: Keyword arguments for data fetching operations.
+            **kwargs: Keyword arguments for `CSVData.fetch_feature` or `CSVData.fetch_symbol`.
 
         Returns:
             KeyData: The updated data and a metadata dictionary.
@@ -292,7 +292,7 @@ class CSVData(FileData):
 
         Args:
             feature (Feature): The feature key to update.
-            **kwargs: Keyword arguments passed to `CSVData.update_key`.
+            **kwargs: Keyword arguments for `CSVData.update_key`.
 
         Returns:
             FeatureData: The updated data and a metadata dictionary.
@@ -309,7 +309,7 @@ class CSVData(FileData):
 
         Args:
             symbol (Symbol): The symbol key whose data will be updated.
-            **kwargs: Keyword arguments passed to `CSVData.update_key`.
+            **kwargs: Keyword arguments for `CSVData.update_key`.
 
         Returns:
             SymbolData: The updated data and a metadata dictionary.

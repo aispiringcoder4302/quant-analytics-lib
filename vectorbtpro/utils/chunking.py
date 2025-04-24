@@ -470,7 +470,7 @@ class ChunkMapper(DefineMixin):
 
         Args:
             chunk_meta (ChunkMeta): Metadata specifying the chunk boundaries.
-            **kwargs: Keyword arguments for mapping.
+            **kwargs: Keyword arguments for `ChunkMapper.map`.
 
         Returns:
             ChunkMeta: Mapped chunk metadata, possibly retrieved from cache.
@@ -488,7 +488,7 @@ class ChunkMapper(DefineMixin):
 
         Args:
             chunk_meta (ChunkMeta): Metadata specifying the chunk boundaries.
-            **kwargs: Keyword arguments for mapping.
+            **kwargs: Additional keyword arguments.
 
         Returns:
             ChunkMeta: The mapped chunk metadata.
@@ -544,7 +544,7 @@ class ChunkTaker(Evaluable, Annotatable, DefineMixin):
 
         Args:
             obj (Any): The input object.
-            **kwargs: Additional keyword arguments.
+            **kwargs: Keyword arguments for `ChunkTaker.get_size`.
 
         Returns:
             Optional[int]: The suggested size of the object, or None if a mapper is configured.
@@ -584,7 +584,7 @@ class ChunkTaker(Evaluable, Annotatable, DefineMixin):
         Args:
             obj (Any): The input object.
             chunk_meta (ChunkMeta): Metadata specifying the chunk boundaries.
-            **kwargs: Additional keyword arguments.
+            **kwargs: Keyword arguments for `ChunkTaker.should_take` or `ChunkTaker.take`.
 
         Returns:
             Any: The resulting object after chunk extraction.
@@ -1025,7 +1025,7 @@ class ArgsTaker(SequenceTaker):
     """Class for taking items from a variable-length positional arguments container.
 
     Args:
-        *args: Additional positional arguments.
+        *args: Positional arguments to be used as `ContainerTaker.cont_take_spec`.
         single_type (Optional[TypeLike]): Type or tuple of types that should be treated as a single value.
         ignore_none (bool): Indicates whether None values should be ignored.
         mapper (Optional[ChunkMapper]): Optional chunk mapper (`ChunkMapper`) to process chunk metadata.
@@ -1054,7 +1054,7 @@ class KwargsTaker(MappingTaker):
         single_type (Optional[TypeLike]): Type or tuple of types that should be treated as a single value.
         ignore_none (bool): Indicates whether None values should be ignored.
         mapper (Optional[ChunkMapper]): Optional chunk mapper (`ChunkMapper`) to process chunk metadata.
-        **kwargs: Additional keyword arguments.
+        **kwargs: Keyword arguments to be used as `ContainerTaker.cont_take_spec`.
     """
 
     def __init__(
@@ -1283,16 +1283,16 @@ class Chunker(Configured):
         arg_take_spec (Optional[ArgTakeSpecLike]): Specification for selecting arguments during chunking.
         template_context (KwargsLike): Additional context for template substitution.
         merge_func (Optional[MergeFuncLike]): Function used to merge results from multiple chunks.
-        merge_kwargs (KwargsLike): Keyword arguments passed to the merging function.
+        merge_kwargs (KwargsLike): Keyword arguments for the merging function.
         return_raw_chunks (Optional[bool]): Determines whether to return raw chunk data.
         silence_warnings (Optional[bool]): Indicates whether to suppress warnings.
         forward_kwargs_as (KwargsLike): Mapping for renaming keyword arguments, including variables
             from the scope of `Chunker.run`.
-        execute_kwargs (KwargsLike): Keyword arguments passed to the execution handler.
+        execute_kwargs (KwargsLike): Keyword arguments for the execution handler.
 
             See `vectorbtpro.utils.execution.execute` for details.
         disable (Optional[bool]): Specifies whether chunking is disabled.
-        **kwargs: Keyword arguments passed for configuration.
+        **kwargs: Keyword arguments for `vectorbtpro.utils.config.Configured`.
 
     !!! info
         For default settings, see `vectorbtpro._settings.chunking`.
@@ -1556,7 +1556,7 @@ class Chunker(Configured):
 
                 It can be an iterable of `ChunkMeta` instances, a `ChunkMeta` generator, or a callable
                 returning chunk metadata.
-            **kwargs: Keyword arguments passed to the metadata generation process.
+            **kwargs: Keyword arguments for the metadata generation process.
 
         Returns:
             Iterable[ChunkMeta]: An iterable of chunk metadata.
@@ -1626,7 +1626,7 @@ class Chunker(Configured):
                 If None or a `NotChunked` instance, the original argument is returned.
             chunk_meta (ChunkMeta): Metadata specifying the chunk boundaries.
             eval_id (Optional[Hashable]): Evaluation identifier.
-            **kwargs: Keyword arguments passed to `ChunkTaker.apply`.
+            **kwargs: Keyword arguments for `ChunkTaker.apply`.
 
         Returns:
             Any: The result after applying the chunk-taking specification.
@@ -1719,7 +1719,7 @@ class Chunker(Configured):
             chunk_meta (ChunkMeta): Metadata specifying the chunk boundaries.
             silence_warnings (bool): Indicator to suppress warnings when a specification is missing.
             eval_id (Optional[Hashable]): Evaluation identifier.
-            **kwargs: Keyword arguments passed to `Chunker.take_from_arg`.
+            **kwargs: Keyword arguments for `Chunker.take_from_arg`.
 
         Returns:
             Tuple[tuple, dict]: A tuple containing the new positional arguments and keyword
@@ -1780,7 +1780,7 @@ class Chunker(Configured):
                     If a callable, it must accept the same arguments as `Chunker.take_from_args`
                     except for `arg_take_spec`.
             template_context (KwargsLike): Additional context for template substitution.
-            **kwargs: Keyword arguments passed to `Chunker.take_from_args` or to
+            **kwargs: Keyword arguments for `Chunker.take_from_args` or to
                 `arg_take_spec` if it is callable.
 
         Yields:
@@ -2061,7 +2061,7 @@ class Chunker(Configured):
             ann_args (AnnArgs): Mapping of annotated arguments with metadata.
             arg_take_spec (ArgTakeSpec): Specification for extracting chunk-taking parameters.
             eval_id (Optional[Hashable]): Evaluation identifier for filtering chunk takers.
-            **kwargs: Keyword arguments passed to the chunk taker's size suggestion.
+            **kwargs: Keyword arguments for `ChunkTaker.suggest_size`.
 
         Returns:
             Optional[int]: The determined global size if found; otherwise, None.
@@ -2287,12 +2287,12 @@ def chunked(
     `Chunker` instance is created by replacing any arguments that are not None.
 
     Args:
-        *args: Positional arguments for the wrapped function.
+        func (Callable): Function to be decorated.
         chunker (Optional[Chunker]): A `Chunker` type used for splitting the inputs.
         replace_chunker (Optional[bool]): If True, create a new `Chunker` instance by replacing provided attributes.
         merge_to_execute_kwargs (Optional[bool]): If True, merge extra keyword arguments into `execute_kwargs`.
         prepend_chunk_meta (Optional[bool]): If True, prepend chunk metadata to the function arguments.
-        **kwargs: Keyword arguments for configuring chunking behavior.
+        **kwargs: Keyword arguments for `Chunker` or the decorated function.
 
     Returns:
         Callable: The decorated function with chunking capability.
@@ -2386,7 +2386,7 @@ def chunked(
         [1.0, 4.0, 6.5, 8.5]
         ```
 
-        When we run the wrapped function, it first generates a list of chunk metadata of type `ChunkMeta`.
+        When we run the decorated function, it first generates a list of chunk metadata of type `ChunkMeta`.
         Chunk metadata contains the chunk index that can be used to split any input:
 
         ```pycon
@@ -2406,10 +2406,10 @@ def chunked(
 
         If we know the size of the space in advance, we can pass it as an integer constant.
         Otherwise, we need to instruct `chunked` to derive the size from the inputs dynamically
-        by passing any subclass of `Sizer`. In the example above, the wrapped function derives
+        by passing any subclass of `Sizer`. In the example above, the decorated function derives
         the size from the length of the input array `a`.
 
-        Once all chunks are generated, the wrapped function attempts to split inputs into chunks.
+        Once all chunks are generated, the decorated function attempts to split inputs into chunks.
         The specification for this operation can be provided via the `arg_take_spec` argument, which
         in most cases is a dictionary of `ChunkTaker` instances keyed by the input name.
         Here's an example of a complex specification:
@@ -2444,7 +2444,7 @@ def chunked(
         [1114, 1118, 1122]
         ```
 
-        After splitting all inputs into chunks, the wrapped function forwards them to an engine.
+        After splitting all inputs into chunks, the decorated function forwards them to an engine.
         The engine can be specified either as the name of a supported engine or as a callable.
         Once the engine completes its tasks and returns a list of results, they can be merged back using `merge_func`:
 
@@ -2666,7 +2666,7 @@ def specialize_chunked_option(option: tp.ChunkedOption = None, **kwargs) -> tp.K
 
     Args:
         option (ChunkedOption): A chunking option to resolve.
-        **kwargs: Keyword arguments for merging.
+        **kwargs: Keyword arguments to be merged with the resolved chunking option.
 
     Returns:
         KwargsLike: A dictionary of merged chunking configuration options, or None if chunking is disabled.
@@ -2683,7 +2683,9 @@ def resolve_chunked(func: tp.Callable, option: tp.ChunkedOption = None, **kwargs
     Args:
         func (Callable): The function to decorate.
         option (ChunkedOption): A chunking option determining whether to apply chunked processing.
-        **kwargs: Keyword arguments for configuring chunked processing.
+        **kwargs: Keyword arguments for `chunked`.
+
+            These are merged with the default chunking settings.
 
     Returns:
         Callable: The decorated function with chunked processing applied if enabled;

@@ -41,8 +41,8 @@ class Comparable(Base):
 
         Args:
             other (Any): The object to compare against.
-            *args: Positional arguments passed to `is_deep_equal`.
-            **kwargs: Keyword arguments passed to `is_deep_equal`.
+            *args: Positional arguments for `is_deep_equal`.
+            **kwargs: Keyword arguments for `is_deep_equal`.
 
         Returns:
             bool: True if the objects are equal, False otherwise.
@@ -666,7 +666,7 @@ def is_deep_equal(
         check_exact (bool): If True, enforce exact matching in comparisons.
         debug (bool): If True, output warning messages on mismatches.
         only_types (bool): If True, only compare the types of the objects.
-        **kwargs: Keyword arguments passed to underlying comparison functions.
+        **kwargs: Keyword arguments for underlying comparison functions.
 
     Returns:
         bool: True if the objects are deeply equal, False otherwise.

@@ -52,7 +52,7 @@ class CustomTemplate(Evaluable, DefineMixin):
     """
 
     context_merge_kwargs: tp.KwargsLike = define.field(default=None)
-    """Keyword arguments passed to `vectorbtpro.utils.config.merge_dicts`."""
+    """Keyword arguments for `vectorbtpro.utils.config.merge_dicts`."""
 
     eval_id: tp.Optional[tp.MaybeSequence[tp.Hashable]] = define.field(default=None)
     """One or more identifiers at which to evaluate this instance."""

@@ -264,7 +264,7 @@ def cut_and_save(
         section_name (str): The name of the section to extract.
         path (Optional[PathLike]): File path or directory in which to save the extracted section.
         mkdir_kwargs (KwargsLike): Keyword arguments for directory creation.
-        **kwargs: Keyword arguments passed to `cut_from_source`.
+        **kwargs: Keyword arguments for `cut_from_source`.
 
     Returns:
         Path: The file path where the extracted section is saved.
@@ -285,8 +285,8 @@ def cut_and_save_module(module: tp.Union[str, ModuleType], *args, **kwargs) -> P
 
     Args:
         module (Union[str, ModuleType]): The target module or its import path.
-        *args: Positional arguments passed to `cut_and_save`.
-        **kwargs: Keyword arguments passed to `cut_and_save`.
+        *args: Positional arguments for `cut_and_save`.
+        **kwargs: Keyword arguments for `cut_and_save`.
 
     Returns:
         Path: The file path where the extracted module section is saved.
@@ -308,8 +308,8 @@ def cut_and_save_func(func: tp.Union[str, FunctionType], *args, **kwargs) -> Pat
         func (Union[str, FunctionType]): A function or its fully qualified name.
 
             If provided as a string, the module will be imported and the function will be retrieved.
-        *args: Positional arguments passed to `cut_and_save`.
-        **kwargs: Keyword arguments passed to `cut_and_save`.
+        *args: Positional arguments for `cut_and_save`.
+        **kwargs: Keyword arguments for `cut_and_save`.
 
     Returns:
         Path: The file path where the extracted function section is saved.
@@ -707,8 +707,7 @@ def refine_source(
         uniform_chunks (bool): Whether to each chunk should start and end at the same base level.
 
             If nested chunks (with level > base) are present, includes them only if they fit as a whole.
-        tokenize_kwargs (KwargsLike): Keyword arguments for
-            `vectorbtpro.utils.knowledge.chatting.tokenize`.
+        tokenize_kwargs (KwargsLike): Keyword arguments for `vectorbtpro.utils.knowledge.chatting.tokenize`.
         show_progress (Optional[bool]): Whether to display progress during chunk processing.
         pbar_kwargs (KwargsLike): Keyword arguments for configuring the progress bar.
 
@@ -1227,7 +1226,7 @@ Your goal is to refine (rewrite for clarity, correctness, consistent format, and
     sim_end (Optional[ArrayLike]): Simulation end.
     fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
     add_trace_kwargs (KwargsLike): Keyword arguments for adding traces to the figure.
-    **layout_kwargs: Keyword arguments for configuring the figure layout.
+    **layout_kwargs: Keyword arguments for `fig.update_layout`.
     ```
 - Flexible types:
     - Type `FlexArray1d` represents a flexible 1D array, such as "Window sizes".
@@ -1301,7 +1300,7 @@ class Chatable(Configured):
                 * "html": HTML format.
             return_chat (bool): Flag indicating whether to return both the completion and 
                 the chat instance of type `Completions`.
-            **kwargs: Keyword arguments passed to `Contextable.create_chat`.
+            **kwargs: Keyword arguments for `Contextable.create_chat`.
     
         Returns:
             MaybeChatOutput: The completion response or a tuple of the response and the chat instance.
@@ -1343,7 +1342,7 @@ def refine_docstrings(source: tp.Any, **kwargs) -> tp.RefineSourceOutput:
 
     Args:
         source (Any): The source code to be refined.
-        **kwargs: Keyword arguments passed to `refine_source`.
+        **kwargs: Keyword arguments for `refine_source`.
 
     Returns:
         RefineSourceOutput: The result of the refinement process.

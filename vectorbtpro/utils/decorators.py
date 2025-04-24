@@ -16,6 +16,11 @@ import threading
 from vectorbtpro import _typing as tp
 from vectorbtpro.utils.base import Base
 
+if tp.TYPE_CHECKING:
+    from vectorbtpro.registries.ca_registry import CARunSetup as CARunSetupT
+else:
+    CARunSetupT = "vectorbtpro.registries.ca_registry.CARunSetup"
+
 __all__ = [
     "memoized_method",
     "class_property",
@@ -40,7 +45,7 @@ def memoized_method(func: tp.Callable) -> tp.Callable:
     (excluding the instance).
 
     Args:
-        func (Callable): The method to be memoized.
+        func (Callable): Function to be decorated.
 
     Returns:
         Callable: The memoized method.
@@ -65,7 +70,7 @@ class class_property(Base):
     """Class for defining properties accessible directly on the class.
 
     Args:
-        func (Callable): The function to be wrapped as a class property.
+        func (Callable): The function to be decorated as a class property.
     """
 
     def __init__(self, func: tp.Callable) -> None:
@@ -79,7 +84,7 @@ class class_property(Base):
         Returns the function itself, not the result of calling it.
 
         Returns:
-            Callable: The wrapped function.
+            Callable: The decorated function.
         """
         return self._func
 
@@ -95,7 +100,7 @@ class hybrid_property(Base):
     via the class, and to an instance when accessed via an instance.
 
     Args:
-        func (Callable): The function to be wrapped as a hybrid property.
+        func (Callable): The function to be decorated as a hybrid property.
     """
 
     def __init__(self, func: tp.Callable) -> None:
@@ -109,7 +114,7 @@ class hybrid_property(Base):
         Returns the function itself, not the result of calling it.
 
         Returns:
-            Callable: The wrapped function.
+            Callable: The decorated function.
         """
         return self._func
 
@@ -137,11 +142,11 @@ custom_propertyT = tp.TypeVar("custom_propertyT", bound="custom_property")
 
 
 class custom_property(property, Base):
-    """Class for defining a custom extensible property that stores the wrapped function and
+    """Class for defining a custom extensible property that stores the decorated function and
     its configuration options as attributes.
 
     Args:
-        func (Callable): The function to be wrapped as a property.
+        func (Callable): The function to be decorated as a property.
         **options: Configuration options for the property.
 
     !!! note
@@ -170,16 +175,16 @@ class custom_property(property, Base):
         Returns the function itself, not the result of calling it.
 
         Returns:
-            Callable: The wrapped function.
+            Callable: The decorated function.
         """
         return self._func
 
     @property
     def name(self) -> str:
-        """Name of the wrapped function.
+        """Name of the decorated function.
 
         Returns:
-            str: The name of the wrapped function.
+            str: The name of the decorated function.
         """
         return self._name
 
@@ -211,7 +216,7 @@ class cacheable_property(custom_property):
     """Class for defining a cacheable property extending `custom_property` to support caching of computed values.
 
     Args:
-        func (Callable): The function to be wrapped as a cacheable property.
+        func (Callable): The function to be decorated as a cacheable property.
         use_cache (bool): Whether to use caching.
         whitelist (bool): Whether to whitelist the property.
         **options: Configuration options for the property.
@@ -253,7 +258,7 @@ class cacheable_property(custom_property):
         """
         return self._init_whitelist
 
-    def get_ca_setup(self, instance: tp.Optional[object] = None) -> tp.Optional["CARunSetup"]:
+    def get_ca_setup(self, instance: tp.Optional[object] = None) -> tp.Optional[CARunSetupT]:
         """Retrieve the caching setup as `vectorbtpro.registries.ca_registry.CARunSetup`
         when an instance is provided, or as `vectorbtpro.registries.ca_registry.CAUnboundSetup` if not.
 
@@ -285,8 +290,8 @@ class cached_property(cacheable_property):
     """Class for defining a cached property, equivalent to using `cacheable_property` with `use_cache=True`.
 
     Args:
-        func (Callable): The function to be wrapped as a cacheable property.
-        **options: Configuration options for the property.
+        func (Callable): The function to be decorated as a cacheable property.
+        **options: Keyword arguments for `cacheable_property`.
     """
 
     def __init__(self, func: tp.Callable, **options) -> None:
@@ -319,11 +324,11 @@ def custom_function(
     """Decorator that augments functions by attaching metadata and configuration options.
 
     Args:
-        func (Callable): The function to be wrapped.
+        func (Callable): Function to be decorated.
         **options: Configuration options for the function.
 
     Returns:
-        Union[Callable, custom_functionT]: The wrapped function with attached metadata.
+        Union[Callable, custom_functionT]: The decorated function with attached metadata.
     """
 
     def decorator(func: tp.Callable) -> custom_functionT:
@@ -349,7 +354,7 @@ def custom_function(
 
 class cacheable_functionT(custom_functionT):
     is_cacheable: bool
-    get_ca_setup: tp.Callable[[], tp.Optional["CARunSetup"]]
+    get_ca_setup: tp.Callable[[], tp.Optional[CARunSetupT]]
 
 
 __pdoc__["cacheable_functionT"] = False
@@ -369,7 +374,7 @@ def cacheable(
     See notes on `cacheable_property`.
 
     Args:
-        func (Callable): The function to be wrapped.
+        func (Callable): Function to be decorated.
         use_cache (bool): Whether to use caching.
         whitelist (bool): Whether to whitelist the function.
         max_size (Optional[int]): Maximum size of the cache.
@@ -377,7 +382,7 @@ def cacheable(
         **options: Configuration options for the function.
 
     Returns:
-        Union[Callable, cacheable_function]: The wrapped function with caching enabled.
+        Union[Callable, cacheable_function]: The decorated function with caching enabled.
 
     !!! note
         To decorate an instance method, use `cacheable_method`.
@@ -439,11 +444,11 @@ def cached(*args, **options) -> tp.Union[tp.Callable, cacheable_functionT]:
     """Decorate a function with caching enabled, equivalent to using `cacheable` with `use_cache=True`.
 
     Args:
-        func (Callable): The function to be wrapped.
+        func (Callable): The function to be decorated.
         **options: Configuration options for the function.
 
     Returns:
-        Union[Callable, cacheable_function]: The wrapped function with caching enabled.
+        Union[Callable, cacheable_function]: The decorated function with caching enabled.
 
     !!! note
         To decorate an instance method, use `cached_method`.
@@ -470,11 +475,11 @@ def custom_method(
     """Decorate an instance method with custom behavior.
 
     Args:
-        func (Callable): The method to be wrapped.
+        func (Callable): Function to be decorated.
         **options: Configuration options for the method.
 
     Returns:
-        Union[Callable, custom_method]: The wrapped method with attached metadata.
+        Union[Callable, custom_method]: The decorated method with attached metadata.
     """
 
     def decorator(func: tp.Callable) -> custom_methodT:
@@ -499,7 +504,7 @@ def custom_method(
 
 
 class cacheable_methodT(custom_methodT):
-    get_ca_setup: tp.Callable[[tp.Optional[object]], tp.Optional["CARunSetup"]]
+    get_ca_setup: tp.Callable[[tp.Optional[object]], tp.Optional[CARunSetupT]]
 
 
 __pdoc__["cacheable_methodT"] = False
@@ -519,7 +524,7 @@ def cacheable_method(
     See notes on `cacheable_property`.
 
     Args:
-        func (Callable): The method to be wrapped.
+        func (Callable): Function to be decorated.
         use_cache (bool): Whether to use caching.
         whitelist (bool): Whether to whitelist the method.
         max_size (Optional[int]): Maximum size of the cache.
@@ -527,7 +532,7 @@ def cacheable_method(
         **options: Configuration options for the method.
 
     Returns:
-        Union[Callable, cacheable_method]: The wrapped method with caching enabled.
+        Union[Callable, cacheable_method]: The decorated method with caching enabled.
 
     !!! info
         For default settings, see `vectorbtpro._settings.caching`.
@@ -589,11 +594,11 @@ def cached_method(*args, **options) -> tp.Union[tp.Callable, cacheable_methodT]:
     `cacheable_method` with `use_cache=True`.
 
     Args:
-        func (Callable): The method to be wrapped.
+        func (Callable): The method to be decorated.
         **options: Configuration options for the method.
 
     Returns:
-        Union[Callable, cacheable_method]: The wrapped method with caching enabled.
+        Union[Callable, cacheable_method]: The decorated method with caching enabled.
     """
     return cacheable_method(*args, use_cache=True, _decorator_name="cached_method", **options)
 

@@ -62,7 +62,7 @@ class PriceRecords(Records):
         high (Optional[ArrayLike]): Array of high prices.
         low (Optional[ArrayLike]): Array of low prices.
         close (Optional[ArrayLike]): Array of close prices.
-        **kwargs: Keyword arguments passed to `vectorbtpro.records.base.Records`.
+        **kwargs: Keyword arguments for `vectorbtpro.records.base.Records`.
     """
 
     def __init__(
@@ -124,7 +124,7 @@ class PriceRecords(Records):
             low (Optional[ArrayLike]): Array of low prices.
             close (Optional[ArrayLike]): Array of close prices.
             attach_data (bool): Flag indicating whether to attach the OHLC data.
-            **kwargs: Keyword arguments passed to `PriceRecords`.
+            **kwargs: Keyword arguments for `PriceRecords`.
 
         Returns:
             PriceRecords: A new instance of `PriceRecords`.
@@ -150,14 +150,14 @@ class PriceRecords(Records):
     @classmethod
     def resolve_row_stack_kwargs(
         cls: tp.Type[PriceRecordsT],
-        *objs: tp.MaybeTuple[PriceRecordsT],
+        *objs: tp.MaybeSequence[PriceRecordsT],
         **kwargs,
     ) -> tp.Kwargs:
         """Resolve keyword arguments for initializing `PriceRecords` after stacking along columns.
 
         Args:
-            *objs (MaybeTuple[PriceRecords]): Additional `PriceRecords` instances to merge.
-            **kwargs: Keyword arguments passed for initialization.
+            *objs (MaybeSequence[PriceRecords]): `PriceRecords` instances to be stacked.
+            **kwargs: Keyword arguments for `PriceRecords`.
 
         Returns:
             Kwargs: Resolved keyword arguments.
@@ -190,7 +190,7 @@ class PriceRecords(Records):
     @classmethod
     def resolve_column_stack_kwargs(
         cls: tp.Type[PriceRecordsT],
-        *objs: tp.MaybeTuple[PriceRecordsT],
+        *objs: tp.MaybeSequence[PriceRecordsT],
         reindex_kwargs: tp.KwargsLike = None,
         ffill_close: bool = False,
         fbfill_close: bool = False,
@@ -199,11 +199,11 @@ class PriceRecords(Records):
         """Resolve keyword arguments for initializing `PriceRecords` after stacking along columns.
 
         Args:
-            *objs (MaybeTuple[PriceRecords]): Additional `PriceRecords` instances to merge.
+            *objs (MaybeSequence[PriceRecords]): `PriceRecords` instances to be stacked.
             reindex_kwargs (KwargsLike): Keyword arguments for reindexing.
             ffill_close (bool): Flag to forward fill close prices.
             fbfill_close (bool): Flag to backward fill close prices.
-            **kwargs: Keyword arguments passed for initialization.
+            **kwargs: Keyword arguments for `PriceRecords`.
 
         Returns:
             Kwargs: Resolved keyword arguments.
@@ -245,9 +245,9 @@ class PriceRecords(Records):
         """Perform indexing on `PriceRecords` and return updated metadata.
 
         Args:
-            *args: Positional arguments used for indexing.
+            *args: Positional arguments for `vectorbtpro.records.base.Records.indexing_func_meta`.
             records_meta (DictLike): Metadata dictionary to update.
-            **kwargs: Keyword arguments used for indexing.
+            **kwargs: Keyword arguments for `vectorbtpro.records.base.Records.indexing_func_meta`.
 
         Returns:
             dict: A dictionary containing updated indexing metadata and OHLC arrays.
@@ -273,9 +273,9 @@ class PriceRecords(Records):
         """Perform indexing on `PriceRecords`.
 
         Args:
-            *args: Positional arguments for indexing.
+            *args: Positional arguments for `PriceRecords.indexing_func_meta`.
             price_records_meta (DictLike): Metadata dictionary produced by indexing.
-            **kwargs: Keyword arguments for indexing.
+            **kwargs: Keyword arguments for `PriceRecords.indexing_func_meta`.
 
         Returns:
             PriceRecords: A new `PriceRecords` instance after indexing.
@@ -302,11 +302,11 @@ class PriceRecords(Records):
         """Perform resampling on `PriceRecords`.
 
         Args:
-            *args: Positional arguments for resampling.
+            *args: Positional arguments for `PriceRecords.resample_meta`.
             ffill_close (bool): Flag to forward fill close prices.
             fbfill_close (bool): Flag to backward fill close prices.
             records_meta (DictLike): Metadata dictionary for resampling.
-            **kwargs: Keyword arguments for resampling.
+            **kwargs: Keyword arguments for `PriceRecords.resample_meta`.
 
         Returns:
             PriceRecords: A new `PriceRecords` instance after resampling.
@@ -402,7 +402,7 @@ class PriceRecords(Records):
         """Return a mapped array with the opening time of the bar.
 
         Args:
-            **kwargs: Keyword arguments passed to the mapping function.
+            **kwargs: Keyword arguments for `PriceRecords.map_array`.
 
         Returns:
             MappedArray: The mapped array of bar open times.
@@ -413,7 +413,7 @@ class PriceRecords(Records):
         """Return a mapped array with the closing time of the bar.
 
         Args:
-            **kwargs: Keyword arguments passed to the mapping function.
+            **kwargs: Keyword arguments for `PriceRecords.map_array`.
 
         Returns:
             MappedArray: The mapped array of bar close times.
@@ -431,7 +431,7 @@ class PriceRecords(Records):
         """Return a mapped array with the opening price of the bar.
 
         Args:
-            **kwargs: Keyword arguments passed to the computation function.
+            **kwargs: Keyword arguments for `PriceRecords.apply`.
 
         Returns:
             MappedArray: The mapped array of bar opening prices.
@@ -442,7 +442,7 @@ class PriceRecords(Records):
         """Return a mapped array with the high price of the bar.
 
         Args:
-            **kwargs: Keyword arguments passed to the computation function.
+            **kwargs: Keyword arguments for `PriceRecords.apply`.
 
         Returns:
             MappedArray: The mapped array of bar high prices.
@@ -453,7 +453,7 @@ class PriceRecords(Records):
         """Return a mapped array with the low price of the bar.
 
         Args:
-            **kwargs: Keyword arguments passed to the computation function.
+            **kwargs: Keyword arguments for `PriceRecords.apply`.
 
         Returns:
             MappedArray: The mapped array of bar low prices.
@@ -464,7 +464,7 @@ class PriceRecords(Records):
         """Return a mapped array with the closing price of the bar.
 
         Args:
-            **kwargs: Keyword arguments passed to the computation function.
+            **kwargs: Keyword arguments for `PriceRecords.apply`.
 
         Returns:
             MappedArray: The mapped array of bar closing prices.

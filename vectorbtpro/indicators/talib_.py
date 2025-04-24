@@ -305,7 +305,7 @@ def talib_func(func_name: str) -> tp.Callable:
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping output arrays.
             wrap (Optional[bool]): Determines whether to wrap the outputs in a Pandas format.
             unpack_to (Optional[str]): If provided, unpacks the output into a dictionary or DataFrame.
-            **kwargs: Keyword arguments passed to the TA-Lib function.
+            **kwargs: Keyword arguments for the TA-Lib function.
         
         Returns:
             Union[MaybeTuple[AnyArray], Dict[str, AnyArray]]: The result from the TA-Lib indicator function. 
@@ -505,7 +505,7 @@ def talib_plot_func(func_name: str) -> tp.Callable:
     run_talib_plot_func.__signature__ = signature.replace(parameters=new_parameters)
     output_trace_kwargs_docstring = "\n    ".join(
         [
-            f"{output_name}_trace_kwargs (KwargsLike): Keyword arguments passed to the trace of `{output_name}`."
+            f"{output_name}_trace_kwargs (KwargsLike): Keyword arguments for the trace of `{output_name}`."
             for output_name in output_names
         ]
     )
@@ -523,10 +523,10 @@ def talib_plot_func(func_name: str) -> tp.Callable:
             column (Optional[Label]): Name of the column to plot.
             limits (Optional[Tuple[float, float]]): Tuple representing the lower and upper limits for the plot.
             {output_trace_kwargs_docstring}
-            add_shape_kwargs (KwargsLike): Keyword arguments passed to `fig.add_shape` for each shape.
-            add_trace_kwargs (KwargsLike): Keyword arguments passed to `fig.add_trace` for each trace.
+            add_shape_kwargs (KwargsLike): Keyword arguments for `fig.add_shape` for each shape.
+            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
-            **layout_kwargs: Keyword arguments for configuring the figure layout.
+            **layout_kwargs: Keyword arguments for `fig.update_layout`.
         
         Returns:
             BaseFigure: The figure updated with the TA-Lib indicator plots.

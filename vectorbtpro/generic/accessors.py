@@ -321,7 +321,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         wrapper (Union[ArrayWrapper, ArrayLike]): Data wrapper for the values.
         obj (Optional[ArrayLike]): Object containing the data.
         mapping (Optional[MappingLike]): Mapping configuration for data transformation.
-        **kwargs: Additional keyword arguments.
+        **kwargs: Keyword arguments for `vectorbtpro.base.accessors.BaseAccessor`.
 
     !!! info
         For default settings, see `vectorbtpro._settings.generic`.
@@ -401,7 +401,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
         Args:
             mapping (Union[None, bool, MappingLike]): The mapping configuration to apply.
-            **kwargs: Keyword arguments passed to `GenericAccessor.apply_mapping`.
+            **kwargs: Keyword arguments for `GenericAccessor.apply_mapping`.
 
         Returns:
             SeriesFrame: The data with the applied mapping.
@@ -424,7 +424,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             n (Union[int, FrequencyLike]): The number of periods to shift the data.
             fill_value (Scalar): The value to fill in for missing data.
             get_indexer_kwargs (KwargsLike): Additional arguments for `get_indexer`.
-            **kwargs: Keyword arguments passed to `GenericAccessor.fshift`.
+            **kwargs: Keyword arguments for `GenericAccessor.fshift`.
 
         Returns:
             SeriesFrame: The data with the shifted values.
@@ -446,7 +446,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
         Args:
             n (Union[int, FrequencyLike]): The number of periods to check for True values.
-            **kwargs: Keyword arguments passed to `GenericAccessor.rolling_any`.
+            **kwargs: Keyword arguments for `GenericAccessor.rolling_any`.
 
         Returns:
             SeriesFrame: A boolean Series/DataFrame indicating if any value is True.
@@ -463,7 +463,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
         Args:
             n (Union[int, FrequencyLike]): The number of periods to check for True values.
-            **kwargs: Keyword arguments passed to `GenericAccessor.rolling_all`.
+            **kwargs: Keyword arguments for `GenericAccessor.rolling_all`.
 
         Returns:
             SeriesFrame: A boolean Series/DataFrame indicating if all values are True.
@@ -523,7 +523,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
         Args:
             minp (Optional[int]): Minimum number of observations required within the window.
-            **kwargs: Keyword arguments passed to `GenericAccessor.rolling_idxmin`.
+            **kwargs: Keyword arguments for `GenericAccessor.rolling_idxmin`.
 
         Returns:
             SeriesFrame: A Series/DataFrame containing the indices of the minimum values
@@ -578,7 +578,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
         Args:
             minp (Optional[int]): Minimum number of observations required before computing the index.
-            **kwargs: Keyword arguments passed to `GenericAccessor.rolling_idxmax`.
+            **kwargs: Keyword arguments for `GenericAccessor.rolling_idxmax`.
 
         Returns:
             SeriesFrame: A Series/DataFrame containing the indices of the maximum values
@@ -628,7 +628,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
         Args:
             minp (Optional[int]): Minimum number of observations required before computing the mean.
-            **kwargs: Keyword arguments passed to `GenericAccessor.rolling_mean`.
+            **kwargs: Keyword arguments for `GenericAccessor.rolling_mean`.
 
         Returns:
             SeriesFrame: Calculated expanding mean values.
@@ -679,7 +679,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
         Args:
             minp (Optional[int]): Minimum number of observations required before computing the standard deviation.
-            **kwargs: Keyword arguments passed to `GenericAccessor.rolling_std`.
+            **kwargs: Keyword arguments for `GenericAccessor.rolling_std`.
 
         Returns:
             SeriesFrame: Calculated expanding standard deviation values.
@@ -729,7 +729,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
         Args:
             minp (Optional[int]): Minimum number of observations required before computing the z-score.
-            **kwargs: Keyword arguments passed to `GenericAccessor.rolling_zscore`.
+            **kwargs: Keyword arguments for `GenericAccessor.rolling_zscore`.
 
         Returns:
             SeriesFrame: Calculated expanding z-score values.
@@ -1075,7 +1075,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         Args:
             other (SeriesFrame): Another data series to compute covariance with.
             minp (Optional[int]): Minimum number of observations required before computing covariance.
-            **kwargs: Keyword arguments passed to `GenericAccessor.rolling_cov`.
+            **kwargs: Keyword arguments for `GenericAccessor.rolling_cov`.
 
         Returns:
             SeriesFrame: Calculated expanding covariance values.
@@ -1131,7 +1131,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         Args:
             other (SeriesFrame): Second series or frame for correlation computation.
             minp (Optional[int]): Minimum number of observations required.
-            **kwargs: Keyword arguments forwarded to `GenericAccessor.rolling_corr`.
+            **kwargs: Keyword arguments for `GenericAccessor.rolling_corr`.
 
         Returns:
             SeriesFrame: The expanding correlation result.
@@ -1200,7 +1200,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         Args:
             other (SeriesFrame): Second series or frame for regression.
             minp (Optional[int]): Minimum number of observations required.
-            **kwargs: Keyword arguments forwarded to `GenericAccessor.rolling_ols`.
+            **kwargs: Keyword arguments for `GenericAccessor.rolling_ols`.
 
         Returns:
             Tuple[SeriesFrame, SeriesFrame]: A tuple containing the slope and intercept arrays.
@@ -1250,7 +1250,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
         Args:
             minp (Optional[int]): Minimum number of observations required.
-            **kwargs: Keyword arguments forwarded to `GenericAccessor.rolling_rank`.
+            **kwargs: Keyword arguments for `GenericAccessor.rolling_rank`.
 
         Returns:
             SeriesFrame: The expanding rank result.
@@ -1400,7 +1400,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 If provided as a string, selects the corresponding Numba function
                 from `nb` with the suffix "_map_nb".
-            *args: Positional arguments passed to the mapping function.
+            *args: Positional arguments for `map_func_nb`.
             broadcast_named_args (KwargsLike): Additional named arguments for broadcasting.
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
 
@@ -1539,7 +1539,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         Args:
             apply_func_nb (Union[str, ApplyFunc, ApplyMetaFunc]): Function or string identifier
                 to apply along the specified axis.
-            *args: Positional arguments passed to the apply function.
+            *args: Positional arguments for `apply_func_nb`.
             axis (int): Axis along which to apply the function.
 
                 Use 1 for column-wise and 0 for row-wise operations.
@@ -1673,8 +1673,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
         """Apply a function row-wise by invoking `GenericAccessor.apply_along_axis` with axis set to 0.
 
         Args:
-            *args: Positional arguments for the apply function.
-            **kwargs: Keyword arguments for the apply function.
+            *args: Positional arguments for `GenericAccessor.apply_along_axis`.
+            **kwargs: Keyword arguments for `GenericAccessor.apply_along_axis`.
 
         Returns:
             SeriesFrame: The result of applying the function row-wise.
@@ -1686,8 +1686,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
         """Apply a function column-wise by invoking `GenericAccessor.apply_along_axis` with axis set to 1.
 
         Args:
-            *args: Positional arguments for the apply function.
-            **kwargs: Keyword arguments for the apply function.
+            *args: Positional arguments for `GenericAccessor.apply_along_axis`.
+            **kwargs: Keyword arguments for `GenericAccessor.apply_along_axis`.
 
         Returns:
             SeriesFrame: The result of applying the function column-wise.
@@ -1719,7 +1719,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 If None, an expanding window is used.
             reduce_func_nb (Union[str, ReduceFunc, RangeReduceMetaFunc]):
                 Reduction function identifier or function.
-            *args: Positional arguments passed to the reduction function.
+            *args: Positional arguments for the reduction function.
             minp (Optional[int]): Minimum number of observations required in the window.
             broadcast_named_args (KwargsLike): Additional named arguments for broadcasting.
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
@@ -1888,8 +1888,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
         resulting in an expanding window reduction.
 
         Args:
-            *args: Positional arguments passed to `GenericAccessor.rolling_apply`.
-            **kwargs: Keyword arguments passed to `GenericAccessor.rolling_apply`.
+            *args: Positional arguments for `GenericAccessor.rolling_apply`.
+            **kwargs: Keyword arguments for `GenericAccessor.rolling_apply`.
 
         Returns:
             SeriesFrame: The result of the expanding reduction.
@@ -1923,7 +1923,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 If a string is provided, it is resolved to a function in `nb` by appending `_reduce_nb`.
                 Use a meta function for operations requiring additional group information.
-            *args: Positional arguments passed to the reduction function.
+            *args: Positional arguments for `reduce_func_nb`.
             groupby_kwargs (KwargsLike): Keyword arguments for groupby operations when
                 using `pd.DataFrame.groupby`.
             broadcast_named_args (KwargsLike): Additional named arguments for broadcasting.
@@ -2084,7 +2084,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         
                 If a string is provided, the corresponding function is retrieved from the `nb`
                 module using the `_transform_nb` suffix.
-            *args: Positional arguments passed to `transform_func_nb`.
+            *args: Positional arguments for `transform_func_nb`.
             groupby_kwargs (KwargsLike): Keyword arguments for the groupby operation.
             broadcast_named_args (KwargsLike): Additional named arguments for broadcasting.
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
@@ -2216,7 +2216,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 The reduction or meta function to apply.
         
                 If provided as a string, it is converted by appending `_reduce_nb` and retrieved from `nb`.
-            *args: Positional arguments passed to the reduction function.
+            *args: Positional arguments for `reduce_func_nb`.
             use_groupby_apply (bool): If True, apply the reduction function using
                 `GenericAccessor.groupby_apply` with post-processing; otherwise, use
                 `GenericAccessor.resample_to_index`.
@@ -2229,7 +2229,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             template_context (KwargsLike): Additional context for template substitution.
             wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            **kwargs: Keyword arguments passed to the reduction function.
+            **kwargs: Keyword arguments for `reduce_func_nb`.
 
         Returns:
             SeriesFrame: The result of the resampling and reduction.
@@ -2555,7 +2555,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 It can be a function or a string representing the suffix of a reducing
                 function from `vectorbtpro.generic.nb` (e.g., "sum" corresponds to `sum_reduce_nb`).
-            *args: Positional arguments passed to the reducing function.
+            *args: Positional arguments for `reduce_func_nb`.
             returns_array (bool): True if the reducing function returns an array.
         
                 Determines whether the output should be processed with array-specific logic.
@@ -2840,7 +2840,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             window (int): Window size over which the reduction function is applied.
             reduce_func_nb (Union[str, ReduceFunc, ProximityReduceMetaFunc]):
                 The reduction function or its string identifier.
-            *args: Positional arguments for the reduction function.
+            *args: Positional arguments for `reduce_func_nb`.
             broadcast_named_args (KwargsLike): Additional named arguments for broadcasting.
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
 
@@ -2989,7 +2989,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 If provided as a string, it is converted into a function by appending
                 "_reduce_nb" and retrieving it from `nb`.
-            *args: Positional arguments passed to the squeeze function.
+            *args: Positional arguments for `squeeze_func_nb`.
             broadcast_named_args (KwargsLike): Additional named arguments for broadcasting.
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
 
@@ -3368,8 +3368,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
         and applies left-bound indexing to both the source and target.
 
         Args:
-            *args: Positional arguments passed to `GenericAccessor.realign`.
-            **kwargs: Keyword arguments passed to `GenericAccessor.realign`.
+            *args: Positional arguments for `GenericAccessor.realign`.
+            **kwargs: Keyword arguments for `GenericAccessor.realign`.
 
         Returns:
             MaybeSeriesFrame: Realigned data as a Series or DataFrame.
@@ -3383,8 +3383,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
         and applies right-bound indexing to both the source and target.
 
         Args:
-            *args: Positional arguments passed to `GenericAccessor.realign`.
-            **kwargs: Keyword arguments passed to `GenericAccessor.realign`.
+            *args: Positional arguments for `GenericAccessor.realign`.
+            **kwargs: Keyword arguments for `GenericAccessor.realign`.
 
         Returns:
             MaybeSeriesFrame: Realigned data as a Series or DataFrame.
@@ -3420,7 +3420,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             index (AnyRuleLike): Target index for resampling.
             reduce_func_nb (Union[str, ReduceFunc, RangeReduceMetaFunc]):
                 Reduction function to apply on each group.
-            *args: Positional arguments passed to the reduction function.
+            *args: Positional arguments for `reduce_func_nb`.
             freq (Union[None, bool, FrequencyLike]): Frequency parameter used during resampling.
             before (bool): If True, use index ranges preceding the target index.
             broadcast_named_args (KwargsLike): Additional named arguments for broadcasting.
@@ -3631,7 +3631,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 Reduction function for aggregating data over index ranges.
 
                 If provided as a string, the corresponding function is resolved by appending `_reduce_nb`.
-            *args: Positional arguments passed to the reduction function.
+            *args: Positional arguments for `reduce_func_nb`.
             closed_lbound (bool): Indicates if the lower bound of the interval is inclusive.
             closed_rbound (bool): Indicates if the upper bound of the interval is inclusive.
             broadcast_named_args (KwargsLike): Additional named arguments for broadcasting.
@@ -4681,7 +4681,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            **kwargs: Keyword arguments passed to `vectorbtpro.utils.mapping.apply_mapping`.
+            **kwargs: Keyword arguments for `vectorbtpro.utils.mapping.apply_mapping`.
 
         Returns:
             SeriesFrame: A Series or DataFrame with counts of unique values.
@@ -4879,7 +4879,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         Args:
             transformer (Transformer): An instance with `transform` and `fit_transform` methods.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            **kwargs: Keyword arguments passed to the transformer methods.
+            **kwargs: Keyword arguments for the transformer methods.
 
         Returns:
             SeriesFrame: The transformed data as a Series or DataFrame.
@@ -4921,7 +4921,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         """Compute the z-score normalization using `sklearn.preprocessing.StandardScaler`.
 
         Args:
-            **kwargs: Keyword arguments passed to `GenericAccessor.scale`.
+            **kwargs: Keyword arguments for `GenericAccessor.scale`.
 
         Returns:
             SeriesFrame: The computed z-score as a Series or DataFrame.
@@ -5000,9 +5000,9 @@ class GenericAccessor(BaseAccessor, Analyzable):
         Utilizes `vectorbtpro.generic.ranges.Ranges.from_array` to generate range records.
 
         Args:
-            *args: Positional arguments passed to `vectorbtpro.generic.ranges.Ranges.from_array`.
+            *args: Positional arguments for `vectorbtpro.generic.ranges.Ranges.from_array`.
             wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
-            **kwargs: Keyword arguments passed to `vectorbtpro.generic.ranges.Ranges.from_array`.
+            **kwargs: Keyword arguments for `vectorbtpro.generic.ranges.Ranges.from_array`.
 
         Returns:
             Ranges: The ranges generated from the data.
@@ -5025,8 +5025,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
         Utilizes `vectorbtpro.generic.drawdowns.Drawdowns.from_price` to generate drawdown records.
 
         Args:
-            *args: Positional arguments passed to `vectorbtpro.generic.drawdowns.Drawdowns.from_price`.
-            **kwargs: Keyword arguments passed to `vectorbtpro.generic.drawdowns.Drawdowns.from_price`.
+            *args: Positional arguments for `vectorbtpro.generic.drawdowns.Drawdowns.from_price`.
+            **kwargs: Keyword arguments for `vectorbtpro.generic.drawdowns.Drawdowns.from_price`.
 
         Returns:
             Drawdowns: The drawdowns generated from the data.
@@ -5057,7 +5057,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             dropna (bool): Whether to drop NaN values.
             dtype (Optional[DTypeLike]): Data type for the mapped array.
             group_by (GroupByLike): Grouping specification.
-            **kwargs: Keyword arguments passed to `vectorbtpro.records.mapped_array.MappedArray`.
+            **kwargs: Keyword arguments for `vectorbtpro.records.mapped_array.MappedArray`.
 
         Returns:
             MappedArray: The mapped array.
@@ -5085,7 +5085,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         with value returns enabled.
 
         Args:
-            **kwargs: Keyword arguments passed to `vectorbtpro.returns.accessors.ReturnsAccessor.from_value`.
+            **kwargs: Keyword arguments for `vectorbtpro.returns.accessors.ReturnsAccessor.from_value`.
 
         Returns:
             SeriesFrame: The return series as a Series or DataFrame.
@@ -5106,7 +5106,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         with log returns enabled.
 
         Args:
-            **kwargs: Keyword arguments passed to `vectorbtpro.returns.accessors.ReturnsAccessor.from_value`.
+            **kwargs: Keyword arguments for `vectorbtpro.returns.accessors.ReturnsAccessor.from_value`.
 
         Returns:
             SeriesFrame: The log return series as a Series or DataFrame.
@@ -5129,8 +5129,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         with value returns disabled, and aggregate them by day.
 
         Args:
-            **kwargs: Keyword arguments passed to
-                `vectorbtpro.returns.accessors.ReturnsAccessor.from_value`.
+            **kwargs: Keyword arguments for `vectorbtpro.returns.accessors.ReturnsAccessor.from_value`.
 
         Returns:
             SeriesFrame: The daily return series as a Series or DataFrame.
@@ -5152,8 +5151,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         with log returns enabled, and aggregate them by day.
 
         Args:
-            **kwargs: Keyword arguments passed to
-            `vectorbtpro.returns.accessors.ReturnsAccessor.from_value`.
+            **kwargs: Keyword arguments for `vectorbtpro.returns.accessors.ReturnsAccessor.from_value`.
 
         Returns:
             SeriesFrame: The daily log return series as a Series or DataFrame.
@@ -5176,10 +5174,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
         Generate pattern range records using `vectorbtpro.generic.ranges.PatternRanges.from_pattern_search`.
 
         Args:
-            *args: Positional arguments passed to
-                `vectorbtpro.generic.ranges.PatternRanges.from_pattern_search`.
-            **kwargs: Keyword arguments passed to
-                `vectorbtpro.generic.ranges.PatternRanges.from_pattern_search`.
+            *args: Positional arguments for `vectorbtpro.generic.ranges.PatternRanges.from_pattern_search`.
+            **kwargs: Keyword arguments for `vectorbtpro.generic.ranges.PatternRanges.from_pattern_search`.
 
         Returns:
             PatternRanges: The generated pattern range records.
@@ -5465,7 +5461,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             trace_names (TraceNames): Names for the plot traces.
             x_labels (Optional[Labels]): Labels for the x-axis.
             return_fig (bool): If True, return the figure; otherwise, return a trace updater.
-            **kwargs: Keyword arguments for configuring the scatter plot.
+            **kwargs: Keyword arguments for `vectorbtpro.generic.plotting.Scatter`.
 
         Returns:
             Union[BaseFigure, TraceUpdater]: The plot figure or trace updater.
@@ -5499,7 +5495,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
         Args:
             column (Optional[Label]): Column label for plotting.
-            **kwargs: Keyword arguments passed to `GenericAccessor.plot`.
+            **kwargs: Keyword arguments for `GenericAccessor.plot`.
 
         Returns:
             Union[BaseFigure, TraceUpdater]: Figure or trace updater instance.
@@ -5519,7 +5515,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
         Args:
             column (Optional[Label]): Column label for plotting.
-            **kwargs: Keyword arguments passed to `GenericAccessor.plot`.
+            **kwargs: Keyword arguments for `GenericAccessor.plot`.
 
         Returns:
             Union[BaseFigure, TraceUpdater]: Figure or trace updater instance.
@@ -5549,7 +5545,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             trace_names (TraceNames): Names for the chart traces.
             x_labels (Optional[Labels]): Labels for the x-axis.
             return_fig (bool): Determines whether to return the figure.
-            **kwargs: Keyword arguments passed to the bar chart constructor.
+            **kwargs: Keyword arguments for `vectorbtpro.generic.plotting.Bar`.
 
         Returns:
             Union[BaseFigure, TraceUpdater]: Figure or bar chart object based on `return_fig`.
@@ -5596,7 +5592,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             trace_names (TraceNames): Names for the histogram traces.
             group_by (GroupByLike): Grouping specification.
             return_fig (bool): Determines whether to return the figure.
-            **kwargs: Keyword arguments passed to the histogram constructor.
+            **kwargs: Keyword arguments for `vectorbtpro.generic.plotting.Histogram`.
 
         Returns:
             Union[BaseFigure, TraceUpdater]: Figure or histogram chart object based on `return_fig`.
@@ -5654,7 +5650,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             trace_names (TraceNames): Names for the box plot traces.
             group_by (GroupByLike): Grouping specification.
             return_fig (bool): Determines whether to return the figure.
-            **kwargs: Keyword arguments passed to the box plot constructor.
+            **kwargs: Keyword arguments for `vectorbtpro.generic.plotting.Box`.
 
         Returns:
             Union[BaseFigure, TraceUpdater]: Figure or box plot object based on `return_fig`.
@@ -5721,9 +5717,9 @@ class GenericAccessor(BaseAccessor, Analyzable):
             pos_trace_kwargs (KwargsLike): Keyword arguments for plotting the positive area between the series.
             neg_trace_kwargs (KwargsLike): Keyword arguments for plotting the negative area between the series.
             hidden_trace_kwargs (KwargsLike): Keyword arguments for plotting hidden lines.
-            add_trace_kwargs (KwargsLike): Keyword arguments passed to `fig.add_trace` for each trace.
+            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
-            **layout_kwargs: Keyword arguments for configuring the figure layout.
+            **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
         Returns:
             BaseFigure: A Plotly figure with the main series, comparative lines, and filled areas.
@@ -5873,9 +5869,9 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 used to plot the line.
             heatmap_kwargs (KwargsLike): Keyword arguments for `GenericDFAccessor.heatmap`
                 used to generate the heatmap.
-            add_trace_kwargs (KwargsLike): Keyword arguments passed to `fig.add_trace` for each trace.
+            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
-            **layout_kwargs: Keyword arguments for configuring the figure layout.
+            **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
         Returns:
             BaseFigure: A Plotly figure with the line plot and heatmap overlay.
@@ -5973,7 +5969,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             slider_labels (Optional[Labels]): Labels for the slider steps.
             return_fig (bool): If True, return the figure; otherwise, return the trace updater.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
-            **kwargs: Keyword arguments passed to `vectorbtpro.generic.plotting.Heatmap`.
+            **kwargs: Keyword arguments for `vectorbtpro.generic.plotting.Heatmap`.
 
         Returns:
             Union[BaseFigure, TraceUpdater]: Figure or heatmap object based on `return_fig`.
@@ -6149,7 +6145,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         Args:
             column (Optional[Label]): Column to select from the object's data.
             is_y_category (bool): Flag indicating whether to treat the y-axis as categorical.
-            **kwargs: Keyword arguments passed to `GenericAccessor.heatmap`.
+            **kwargs: Keyword arguments for `GenericAccessor.heatmap`.
 
         Returns:
             Union[BaseFigure, TraceUpdater]: Figure or heatmap object based on `return_fig`.
@@ -6209,7 +6205,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             fillna (Optional[Number]): Value to replace NaNs in the data.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
             return_fig (bool): If True, return the figure; otherwise, return the volume object.
-            **kwargs: Keyword arguments passed to `vectorbtpro.generic.plotting.Volume`.
+            **kwargs: Keyword arguments for `vectorbtpro.generic.plotting.Volume`.
 
         Returns:
             Union[BaseFigure, TraceUpdater]: The created 3D volume figure or trace updater object.
@@ -6350,11 +6346,11 @@ class GenericAccessor(BaseAccessor, Analyzable):
             sparams (Union[Iterable, tuple, None]): Parameters to pass to `scipy.stats.probplot`.
             dist (str): Distribution name for generating the probability plot.
             plot_line (bool): Whether to add a fitted reference line based on the probability plot.
-            line_shape_kwargs (KwargsLike): Keyword arguments passed to `fig.add_shape` for the reference line.
+            line_shape_kwargs (KwargsLike): Keyword arguments for `fig.add_shape` for the reference line.
             xref (str): X-axis reference for the added line shape.
             yref (str): Reference for the y-axis (e.g., "y", "y2").
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
-            **kwargs: Keyword arguments passed to `GenericAccessor.scatterplot`.
+            **kwargs: Keyword arguments for `GenericAccessor.scatterplot`.
 
         Returns:
             BaseFigure: The generated probability plot figure with an optional reference line.
@@ -6405,9 +6401,9 @@ class GenericAccessor(BaseAccessor, Analyzable):
             colorway (Union[None, str, Sequence[str]]): Name of a built-in qualitative
                 color palette or a sequence of colors.
             trace_kwargs (KwargsLike): Keyword arguments for configuring each `plotly.graph_objects.Scatter` trace.
-            add_trace_kwargs (KwargsLike): Keyword arguments passed to `fig.add_trace` for each trace.
+            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
-            **layout_kwargs: Keyword arguments for configuring the figure layout.
+            **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
         Returns:
             BaseFigure: The generated stacked area chart.
@@ -6551,9 +6547,9 @@ class GenericAccessor(BaseAccessor, Analyzable):
             pattern_trace_kwargs (KwargsLike): Keyword arguments for the pattern trace.
             lower_max_error_trace_kwargs (KwargsLike): Keyword arguments for the lower error bound trace.
             upper_max_error_trace_kwargs (KwargsLike): Keyword arguments for the upper error bound trace.
-            add_trace_kwargs (KwargsLike): Keyword arguments passed to `fig.add_trace` for each trace.
+            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
-            **layout_kwargs: Keyword arguments for configuring the figure layout.
+            **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
         Returns:
             BaseFigure: The figure object with the plotted pattern and error bands.
@@ -6827,7 +6823,7 @@ class GenericSRAccessor(GenericAccessor, BaseSRAccessor):
         wrapper (Union[ArrayWrapper, ArrayLike]): The array wrapper for the series data.
         obj (Optional[ArrayLike]): The underlying data array.
         mapping (Optional[MappingLike]): An optional mapping for metadata.
-        **kwargs: Keyword arguments for base accessor initialization.
+        **kwargs: Keyword arguments for `vectorbtpro.base.accessors.BaseSRAccessor` and `GenericAccessor`.
     """
 
     def __init__(
@@ -7023,7 +7019,7 @@ class GenericDFAccessor(GenericAccessor, BaseDFAccessor):
         wrapper (Union[ArrayWrapper, ArrayLike]): The wrapper that encapsulates the data.
         obj (Optional[ArrayLike]): The underlying data object.
         mapping (Optional[MappingLike]): A mapping for additional configuration.
-        **kwargs: Keyword arguments passed for initialization.
+        **kwargs: Keyword arguments for `vectorbtpro.base.accessors.BaseDFAccessor` and `GenericAccessor`.
     """
 
     def __init__(
@@ -7225,9 +7221,9 @@ class GenericDFAccessor(GenericAccessor, BaseDFAccessor):
             middle_trace_kwargs (KwargsLike): Keyword arguments for the middle band trace.
             lower_trace_kwargs (KwargsLike): Keyword arguments for the lower band trace.
             aux_middle_trace_kwargs (KwargsLike): Keyword arguments for the auxiliary middle band trace.
-            add_trace_kwargs (KwargsLike): Keyword arguments passed to `fig.add_trace` for each trace.
+            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
-            **layout_kwargs: Keyword arguments for configuring the figure layout.
+            **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
         Returns:
             BaseFigure: The updated figure with plotted projections and bands.

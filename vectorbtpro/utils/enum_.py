@@ -36,7 +36,7 @@ def map_enum_fields(
         enum (Union[NamedTuple, EnumMeta]): The enum type used for mapping.
         enum_unkval (Any): Indicator for an unknown enum value.
         ignore_type (type): Type to ignore during mapping.
-        **kwargs: Keyword arguments passed to `vectorbtpro.utils.mapping.apply_mapping`.
+        **kwargs: Keyword arguments for `vectorbtpro.utils.mapping.apply_mapping`.
 
     Returns:
         Any: The mapped enum value.
@@ -60,7 +60,7 @@ def map_enum_values(
         enum (Union[NamedTuple, EnumMeta]): The enum type used for mapping.
         enum_unkval (Any): Indicator for an unknown enum field.
         ignore_type (type): Type to ignore during mapping.
-        **kwargs: Keyword arguments passed to `vectorbtpro.utils.mapping.apply_mapping`.
+        **kwargs: Keyword arguments for `vectorbtpro.utils.mapping.apply_mapping`.
 
     Returns:
         Any: The mapped enum field.

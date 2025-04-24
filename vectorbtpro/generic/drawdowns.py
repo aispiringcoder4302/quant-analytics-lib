@@ -326,7 +326,7 @@ class Drawdowns(Ranges):
                 See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
             wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
-            **kwargs: Keyword arguments passed to `Drawdowns`.
+            **kwargs: Keyword arguments for `Drawdowns`.
 
         Returns:
             Drawdowns: A new instance of `Drawdowns` created from the provided price data.
@@ -370,7 +370,7 @@ class Drawdowns(Ranges):
         """Return peak-to-end range records.
 
         Args:
-            **kwargs: Keyword arguments passed to `vectorbtpro.generic.ranges.Ranges.from_records`.
+            **kwargs: Keyword arguments for `vectorbtpro.generic.ranges.Ranges.from_records`.
 
         Returns:
             Ranges: An instance of `Ranges` representing peak-to-end records.
@@ -395,7 +395,7 @@ class Drawdowns(Ranges):
         """Return peak-to-valley range records.
 
         Args:
-            **kwargs: Keyword arguments passed to `vectorbtpro.generic.ranges.Ranges.from_records`.
+            **kwargs: Keyword arguments for `vectorbtpro.generic.ranges.Ranges.from_records`.
 
         Returns:
             Ranges: An instance of `Ranges` representing peak-to-valley records.
@@ -420,7 +420,7 @@ class Drawdowns(Ranges):
         """Return valley-to-end range records.
 
         Args:
-            **kwargs: Keyword arguments passed to `vectorbtpro.generic.ranges.Ranges.from_records`.
+            **kwargs: Keyword arguments for `vectorbtpro.generic.ranges.Ranges.from_records`.
 
         Returns:
             Ranges: An instance of `Ranges` representing valley-to-end records.
@@ -453,7 +453,7 @@ class Drawdowns(Ranges):
             chunked (ChunkedOption): Option to control chunked processing.
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
-            **kwargs: Keyword arguments passed to `Drawdowns.map_array`.
+            **kwargs: Keyword arguments for `Drawdowns.map_array`.
 
         Returns:
             MappedArray: An array of computed drawdown values.
@@ -488,7 +488,7 @@ class Drawdowns(Ranges):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            **kwargs: Keyword arguments passed to `vectorbtpro.records.mapped_array.MappedArray.mean`.
+            **kwargs: Keyword arguments for `vectorbtpro.records.mapped_array.MappedArray.mean`.
 
         Returns:
             MaybeSeries: The average drawdown value.
@@ -515,7 +515,7 @@ class Drawdowns(Ranges):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            **kwargs: Keyword arguments passed to `vectorbtpro.records.mapped_array.MappedArray.min`.
+            **kwargs: Keyword arguments for `vectorbtpro.records.mapped_array.MappedArray.min`.
 
         Returns:
             MaybeSeries: The maximum drawdown value.
@@ -543,7 +543,7 @@ class Drawdowns(Ranges):
             chunked (ChunkedOption): Option to control chunked processing.
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
-            **kwargs: Keyword arguments passed to `Drawdowns.map_array`.
+            **kwargs: Keyword arguments for `Drawdowns.map_array`.
 
         Returns:
             MappedArray: An array containing the computed recovery return values.
@@ -575,7 +575,7 @@ class Drawdowns(Ranges):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            **kwargs: Keyword arguments passed to `vectorbtpro.records.mapped_array.MappedArray.mean`.
+            **kwargs: Keyword arguments for `vectorbtpro.records.mapped_array.MappedArray.mean`.
 
         Returns:
             MaybeSeries: The average recovery return.
@@ -608,7 +608,7 @@ class Drawdowns(Ranges):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            **kwargs: Keyword arguments passed to `vectorbtpro.records.mapped_array.MappedArray.max`.
+            **kwargs: Keyword arguments for `vectorbtpro.records.mapped_array.MappedArray.max`.
 
         Returns:
             MaybeSeries: The maximum recovery return.
@@ -639,7 +639,7 @@ class Drawdowns(Ranges):
             chunked (ChunkedOption): Option to control chunked processing.
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
-            **kwargs: Keyword arguments passed to `Drawdowns.map_array`.
+            **kwargs: Keyword arguments for `Drawdowns.map_array`.
 
         Returns:
             MappedArray: The computed decline duration.
@@ -670,7 +670,7 @@ class Drawdowns(Ranges):
             chunked (ChunkedOption): Option to control chunked processing.
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
-            **kwargs: Keyword arguments passed to `Drawdowns.map_array`.
+            **kwargs: Keyword arguments for `Drawdowns.map_array`.
 
         Returns:
             MappedArray: The computed recovery duration.
@@ -702,7 +702,7 @@ class Drawdowns(Ranges):
             chunked (ChunkedOption): Option to control chunked processing.
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
-            **kwargs: Keyword arguments passed to `Drawdowns.map_array`.
+            **kwargs: Keyword arguments for `Drawdowns.map_array`.
 
         Returns:
             MappedArray: The computed recovery duration ratio.
@@ -777,7 +777,7 @@ class Drawdowns(Ranges):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            **kwargs: Keyword arguments passed to `vectorbtpro.records.mapped_array.MappedArray.nth`.
+            **kwargs: Keyword arguments for `vectorbtpro.records.mapped_array.MappedArray.nth`.
 
         Returns:
             MaybeSeries: The duration of the active drawdown.
@@ -851,7 +851,7 @@ class Drawdowns(Ranges):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            **kwargs: Keyword arguments passed to `vectorbtpro.records.mapped_array.MappedArray.nth`.
+            **kwargs: Keyword arguments for `vectorbtpro.records.mapped_array.MappedArray.nth`.
 
         Returns:
             MaybeSeries: The recovery return of the active drawdown.
@@ -890,7 +890,7 @@ class Drawdowns(Ranges):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            **kwargs: Keyword arguments passed to `vectorbtpro.records.mapped_array.MappedArray.nth`.
+            **kwargs: Keyword arguments for `vectorbtpro.records.mapped_array.MappedArray.nth`.
 
         Returns:
             MaybeSeries: The recovery duration of the active drawdown.
@@ -1106,17 +1106,17 @@ class Drawdowns(Ranges):
                 when plotting recovery markers.
             active_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter`
                 when plotting active recovery markers.
-            decline_shape_kwargs (KwargsLike): Keyword arguments passed to `fig.add_shape` for
+            decline_shape_kwargs (KwargsLike): Keyword arguments for `fig.add_shape` for
                 shapes representing decline zones.
-            recovery_shape_kwargs (KwargsLike): Keyword arguments passed to `fig.add_shape` for
+            recovery_shape_kwargs (KwargsLike): Keyword arguments for `fig.add_shape` for
                 shapes representing recovery zones.
-            active_shape_kwargs (KwargsLike): Keyword arguments passed to `fig.add_shape` for
+            active_shape_kwargs (KwargsLike): Keyword arguments for `fig.add_shape` for
                 shapes representing active recovery zones
-            add_trace_kwargs (KwargsLike): Keyword arguments passed to `fig.add_trace` for each trace.
+            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace.
             xref (str): X-axis reference.
             yref (str): Reference for the y-axis (e.g., "y", "y2").
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
-            **layout_kwargs: Keyword arguments for configuring the figure layout.
+            **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
         Returns:
             BaseFigure: A figure object containing the plotted drawdowns and price data.

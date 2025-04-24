@@ -548,7 +548,7 @@ class DuckDBData(DBData):
             connection (Union[None, str, DuckDBPyConnection]): Database connection instance or identifier.
             connection_config: Keyword arguments for configuring the connection.
             share_connection (Optional[bool]): If True, uses a shared connection among keys.
-            **kwargs: Keyword arguments passed to the parent method.
+            **kwargs: Keyword arguments for `vectorbtpro.data.custom.db.DBData.pull`.
 
         Returns:
             DuckDBData: An instance containing the pulled data with resolved keys and connection.
@@ -1003,7 +1003,7 @@ class DuckDBData(DBData):
 
         Args:
             feature (str): The identifier for the feature whose data table is to be fetched.
-            **kwargs: Keyword arguments passed to `DuckDBData.fetch_key`.
+            **kwargs: Keyword arguments for `DuckDBData.fetch_key`.
 
         Returns:
             FeatureData: The fetched data and a metadata dictionary.
@@ -1016,7 +1016,7 @@ class DuckDBData(DBData):
 
         Args:
             symbol (str): The identifier for the symbol whose data table is to be fetched.
-            **kwargs: Keyword arguments passed to `DuckDBData.fetch_key`.
+            **kwargs: Keyword arguments for `DuckDBData.fetch_key`.
 
         Returns:
             SymbolData: The fetched data and a metadata dictionary.
@@ -1036,7 +1036,7 @@ class DuckDBData(DBData):
             from_last_index (Optional[bool]): Flag indicating whether to update data starting from the last index.
 
                 If not provided, it is inferred from the presence of a "query" in the merged keyword arguments.
-            **kwargs: Keyword arguments used for fetching the updated data.
+            **kwargs: Keyword arguments for `DuckDBData.fetch_feature` or `DuckDBData.fetch_symbol`.
 
         Returns:
             KeyData: The updated data and a metadata dictionary.
@@ -1060,7 +1060,7 @@ class DuckDBData(DBData):
 
         Args:
             feature (str): The identifier for the feature to update.
-            **kwargs: Keyword arguments passed to `DuckDBData.update_key`.
+            **kwargs: Keyword arguments for `DuckDBData.update_key`.
 
         Returns:
             FeatureData: The updated data and a metadata dictionary.
@@ -1072,7 +1072,7 @@ class DuckDBData(DBData):
 
         Args:
             symbol (str): The identifier for the symbol to update.
-            **kwargs: Keyword arguments passed to `DuckDBData.update_key`.
+            **kwargs: Keyword arguments for `DuckDBData.update_key`.
 
         Returns:
             SymbolData: The updated data and a metadata dictionary.

@@ -481,7 +481,7 @@ class ScheduleManager(Base):
         """Start the asynchronous schedule manager in the background.
 
         Args:
-            **kwargs: Keyword arguments passed to `ScheduleManager.async_start`.
+            **kwargs: Keyword arguments for `ScheduleManager.async_start`.
 
         Returns:
             None

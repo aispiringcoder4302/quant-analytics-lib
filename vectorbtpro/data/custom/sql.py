@@ -95,9 +95,9 @@ class SQLData(DBData):
         """Return custom engine settings with sub_path set to the engine name.
 
         Args:
-            *args: Positional arguments passed to `SQLData.get_custom_settings`.
+            *args: Positional arguments for `SQLData.get_custom_settings`.
             engine_name (Optional[str]): Name of the engine used to determine the settings sub-path.
-            **kwargs: Keyword arguments passed to `SQLData.get_custom_settings`.
+            **kwargs: Keyword arguments for `SQLData.get_custom_settings`.
 
         Returns:
             dict: The resolved engine settings.
@@ -113,9 +113,9 @@ class SQLData(DBData):
         """Return whether custom engine settings exist with sub_path set to the engine name.
 
         Args:
-            *args: Positional arguments passed to `SQLData.has_custom_settings`.
+            *args: Positional arguments for `SQLData.has_custom_settings`.
             engine_name (Optional[str]): Name of the engine used to determine the settings sub-path.
-            **kwargs: Keyword arguments passed to `SQLData.has_custom_settings`.
+            **kwargs: Keyword arguments for `SQLData.has_custom_settings`.
 
         Returns:
             bool: True if custom engine settings exist, False otherwise.
@@ -131,9 +131,9 @@ class SQLData(DBData):
         """Return the custom engine setting with sub_path set to the engine name.
 
         Args:
-            *args: Positional arguments passed to `SQLData.get_custom_setting`.
+            *args: Positional arguments for `SQLData.get_custom_setting`.
             engine_name (Optional[str]): Name of the engine used to determine the settings sub-path.
-            **kwargs: Keyword arguments passed to `SQLData.get_custom_setting`.
+            **kwargs: Keyword arguments for `SQLData.get_custom_setting`.
 
         Returns:
             Any: The retrieved engine setting.
@@ -149,9 +149,9 @@ class SQLData(DBData):
         """Return whether a custom engine setting exists with sub_path set to the engine name.
 
         Args:
-            *args: Positional arguments passed to `SQLData.has_custom_setting`.
+            *args: Positional arguments for `SQLData.has_custom_setting`.
             engine_name (Optional[str]): Name of the engine used to determine the settings sub-path.
-            **kwargs: Keyword arguments passed to `SQLData.has_custom_setting`.
+            **kwargs: Keyword arguments for `SQLData.has_custom_setting`.
 
         Returns:
             bool: True if the custom engine setting exists, False otherwise.
@@ -167,9 +167,9 @@ class SQLData(DBData):
         """Resolve the custom engine setting with sub_path set to the engine name.
 
         Args:
-            *args: Positional arguments passed to `SQLData.resolve_custom_setting`.
+            *args: Positional arguments for `SQLData.resolve_custom_setting`.
             engine_name (Optional[str]): Name of the engine used to determine the settings sub-path.
-            **kwargs: Keyword arguments passed to `SQLData.resolve_custom_setting`.
+            **kwargs: Keyword arguments for `SQLData.resolve_custom_setting`.
 
         Returns:
             Any: The resolved engine setting.
@@ -185,9 +185,9 @@ class SQLData(DBData):
         """Set custom engine settings with sub_path set to the engine name.
 
         Args:
-            *args: Positional arguments passed to `SQLData.set_custom_settings`.
+            *args: Positional arguments for `SQLData.set_custom_settings`.
             engine_name (Optional[str]): Name of the engine used to determine the settings sub-path.
-            **kwargs: Keyword arguments passed to `SQLData.set_custom_settings`.
+            **kwargs: Keyword arguments for `SQLData.set_custom_settings`.
 
         Returns:
             None
@@ -293,7 +293,7 @@ class SQLData(DBData):
             dispose_engine (Optional[bool]): Indicates whether to dispose the engine after use.
 
                 If None, disposal is based on engine metadata.
-            **kwargs: Keyword arguments passed to `inspector.get_schema_names`.
+            **kwargs: Keyword arguments for `inspector.get_schema_names`.
 
         Returns:
             List[str]: The list of available schema names, excluding `information_schema`.
@@ -372,7 +372,7 @@ class SQLData(DBData):
             engine_name (Optional[str]): Name assigned to the engine.
             engine_config (KwargsLike): Additional configuration parameters for engine setup.
             dispose_engine (Optional[bool]): If True, disposes the engine after the operation.
-            **kwargs: Keyword arguments passed to SQLAlchemy's inspector methods.
+            **kwargs: Keyword arguments for SQLAlchemy's inspector methods.
 
         Returns:
             List[str]: A list of table and view names.
@@ -718,7 +718,7 @@ class SQLData(DBData):
             engine_config (KwargsLike): Additional configuration parameters for the engine.
             dispose_engine (Optional[bool]): Flag indicating whether to dispose the engine after use.
             share_engine (Optional[bool]): Flag indicating whether to share the engine among keys.
-            **kwargs: Keyword arguments passed to the pull method.
+            **kwargs: Keyword arguments for `vectorbtpro.data.custom.db.DBData.pull`.
 
         Returns:
             SQLData: Data retrieved from the SQL database.
@@ -890,7 +890,7 @@ class SQLData(DBData):
                 See `pd.read_sql_query`.
             chunk_func (Optional[Callable]): Function to process and concatenate chunks when `chunksize` is set.
             squeeze (Optional[bool]): Determines whether to squeeze a DataFrame with one column into a Series.
-            **read_sql_kwargs: Keyword arguments passed to `pd.read_sql_query`.
+            **read_sql_kwargs: Keyword arguments for `pd.read_sql_query`.
 
                 See https://pandas.pydata.org/docs/reference/api/pandas.read_sql_query.html for additional arguments.
 
@@ -1196,7 +1196,7 @@ class SQLData(DBData):
 
         Args:
             feature (str): Identifier for the feature.
-            **kwargs: Keyword arguments passed to `SQLData.fetch_key`.
+            **kwargs: Keyword arguments for `SQLData.fetch_key`.
 
         Returns:
             FeatureData: The fetched data and a metadata dictionary.
@@ -1209,7 +1209,7 @@ class SQLData(DBData):
 
         Args:
             symbol (str): Identifier for the symbol.
-            **kwargs: Keyword arguments passed to `SQLData.fetch_key`.
+            **kwargs: Keyword arguments for `SQLData.fetch_key`.
 
         Returns:
             SymbolData: The fetched data and a metadata dictionary.
@@ -1229,7 +1229,7 @@ class SQLData(DBData):
             key (str): Identifier for the feature or symbol.
             from_last_row (Optional[bool]): Flag indicating whether to update starting from the last row.
             from_last_index (Optional[bool]): Flag indicating whether to update starting from the last index.
-            **kwargs: Keyword arguments passed to modify query parameters.
+            **kwargs: Keyword arguments for `SQLData.fetch_feature` or `SQLData.fetch_symbol`.
 
         Returns:
             KeyData: The updated data and a metadata dictionary.
@@ -1276,7 +1276,7 @@ class SQLData(DBData):
 
         Args:
             feature (str): Identifier for the feature.
-            **kwargs: Keyword arguments passed to `SQLData.update_key`.
+            **kwargs: Keyword arguments for `SQLData.update_key`.
 
         Returns:
             FeatureData: The updated data and a metadata dictionary.
@@ -1288,7 +1288,7 @@ class SQLData(DBData):
 
         Args:
             symbol (str): Identifier for the symbol.
-            **kwargs: Keyword arguments passed to `SQLData.update_key`.
+            **kwargs: Keyword arguments for `SQLData.update_key`.
 
         Returns:
             SymbolData: The updated data and a metadata dictionary.

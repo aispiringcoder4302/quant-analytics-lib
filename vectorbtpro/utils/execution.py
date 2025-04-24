@@ -75,8 +75,8 @@ class Task(DefineMixin):
 
     Args:
         func (Callable): The function to execute.
-        *args: Positional arguments for the function.
-        **kwargs: Keyword arguments for the function.
+        *args: Positional arguments for `func`.
+        **kwargs: Keyword arguments for `func`.
     """
 
     func: tp.Callable = define.field()
@@ -240,7 +240,7 @@ class SerialEngine(ExecutionEngine):
 
             If provided as an integer, collects garbage every specified number of tasks.
         delay (Optional[float]): Number of seconds to pause after each function call.
-        **kwargs: Keyword arguments passed to `ExecutionEngine`.
+        **kwargs: Keyword arguments for `ExecutionEngine`.
 
     !!! info
         For default settings, see `engines.serial` in `vectorbtpro._settings.execution`.
@@ -388,7 +388,7 @@ class ThreadPoolEngine(ExecutionEngine):
         init_kwargs (KwargsLike): Keyword arguments for initializing `ThreadPoolExecutor`.
         timeout (Optional[int]): Timeout for waiting on task results.
         hide_inner_progress (Optional[bool]): Indicates whether inner progress bars are hidden.
-        **kwargs: Keyword arguments passed to `ExecutionEngine`.
+        **kwargs: Keyword arguments for `ExecutionEngine`.
 
     !!! info
         For default settings, see `engines.threadpool` in `vectorbtpro._settings.execution`.
@@ -471,7 +471,7 @@ class ProcessPoolEngine(ExecutionEngine):
         init_kwargs (KwargsLike): Keyword arguments for initializing `ProcessPoolExecutor`.
         timeout (Optional[int]): Timeout for waiting on task results.
         hide_inner_progress (Optional[bool]): Indicates whether inner progress bars are hidden.
-        **kwargs: Keyword arguments passed to `ExecutionEngine`.
+        **kwargs: Keyword arguments for `ExecutionEngine`.
 
     !!! info
         For default settings, see `engines.processpool` in `vectorbtpro._settings.execution`.
@@ -578,7 +578,7 @@ class PathosEngine(ExecutionEngine):
         hide_inner_progress (Optional[bool]): Flag indicating whether to hide progress bars
             within individual threads.
         join_pool (Optional[bool]): Flag indicating whether the pool should be joined after execution.
-        **kwargs: Keyword arguments passed to `ExecutionEngine`.
+        **kwargs: Keyword arguments for `ExecutionEngine`.
 
     !!! info
         For default settings, see `engines.pathos` in `vectorbtpro._settings.execution`.
@@ -763,9 +763,9 @@ class MpireEngine(ExecutionEngine):
 
     Args:
         init_kwargs (KwargsLike): Keyword arguments used for initializing `mpire.WorkerPool`.
-        apply_kwargs (KwargsLike): Keyword arguments passed to `mpire.WorkerPool.async_apply`.
+        apply_kwargs (KwargsLike): Keyword arguments for `mpire.WorkerPool.async_apply`.
         hide_inner_progress (Optional[bool]): Flag indicating whether inner progress bars should be hidden.
-        **kwargs: Keyword arguments passed to `ExecutionEngine`.
+        **kwargs: Keyword arguments for `ExecutionEngine`.
 
     !!! info
         For default settings, see `engines.mpire` in `vectorbtpro._settings.execution`.
@@ -803,7 +803,7 @@ class MpireEngine(ExecutionEngine):
 
     @property
     def apply_kwargs(self) -> tp.Kwargs:
-        """Keyword arguments passed to `mpire.WorkerPool.async_apply`.
+        """Keyword arguments for `mpire.WorkerPool.async_apply`.
 
         Returns:
             Kwargs: Configuration keyword arguments.
@@ -851,7 +851,7 @@ class DaskEngine(ExecutionEngine):
         compute_kwargs (KwargsLike): Keyword arguments for `dask.compute`.
         hide_inner_progress (Optional[bool]): Flag indicating whether progress bars should be
             hidden within each thread.
-        **kwargs: Keyword arguments passed to `ExecutionEngine`.
+        **kwargs: Keyword arguments for `ExecutionEngine`.
 
     !!! info
         For default settings, see `engines.dask` in `vectorbtpro._settings.execution`.
@@ -931,7 +931,7 @@ class RayEngine(ExecutionEngine):
         init_kwargs (KwargsLike): Keyword arguments for `ray.init`.
         remote_kwargs (KwargsLike): Keyword arguments for `ray.remote`.
         hide_inner_progress (Optional[bool]): Flag indicating if progress bars should be hidden within each thread.
-        **kwargs: Additional keyword arguments.
+        **kwargs: Keyword arguments for `ExecutionEngine`.
 
     !!! info
         For default settings, see `engines.ray` in `vectorbtpro._settings.execution`.
@@ -1270,7 +1270,7 @@ class Executor(Configured):
         pbar_kwargs (KwargsLike): Keyword arguments for configuring the progress bar.
 
             See `vectorbtpro.utils.pbar.ProgressBar` for details.
-        **kwargs: Additional keyword arguments.
+        **kwargs: Keyword arguments for `vectorbtpro.utils.config.Configured`.
 
     !!! info
         For default settings, see `vectorbtpro._settings.execution`.
@@ -1889,9 +1889,9 @@ class Executor(Configured):
         Positional arguments are passed to `Executor.get_settings`.
 
         Args:
-            *args: Positional arguments passed to `Executor.get_settings`.
+            *args: Positional arguments for `Executor.get_settings`.
             engine_name (Optional[str]): Engine name used to determine the settings subpath.
-            **kwargs: Keyword arguments passed to `Executor.get_settings`.
+            **kwargs: Keyword arguments for `Executor.get_settings`.
 
         Returns:
             dict: Settings for the specified engine.
@@ -1909,9 +1909,9 @@ class Executor(Configured):
         Positional arguments are passed to `Executor.has_settings`.
 
         Args:
-            *args: Positional arguments passed to `Executor.has_settings`.
+            *args: Positional arguments for `Executor.has_settings`.
             engine_name (Optional[str]): Engine name used to determine the settings subpath.
-            **kwargs: Keyword arguments passed to `Executor.has_settings`.
+            **kwargs: Keyword arguments for `Executor.has_settings`.
 
         Returns:
             bool: True if engine-specific settings exist, False otherwise.
@@ -1929,9 +1929,9 @@ class Executor(Configured):
         Positional arguments are passed to `Executor.get_setting`.
 
         Args:
-            *args: Positional arguments passed to `Executor.get_setting`.
+            *args: Positional arguments for `Executor.get_setting`.
             engine_name (Optional[str]): Engine name used to determine the settings subpath.
-            **kwargs: Keyword arguments passed to `Executor.get_setting`.
+            **kwargs: Keyword arguments for `Executor.get_setting`.
 
         Returns:
             Any: The value of the specified engine setting.
@@ -1949,9 +1949,9 @@ class Executor(Configured):
         Positional arguments are passed to `Executor.has_setting`.
 
         Args:
-            *args: Positional arguments passed to `Executor.has_setting`.
+            *args: Positional arguments for `Executor.has_setting`.
             engine_name (Optional[str]): Engine name used to determine the settings subpath.
-            **kwargs: Keyword arguments passed to `Executor.has_setting`.
+            **kwargs: Keyword arguments for `Executor.has_setting`.
 
         Returns:
             bool: True if the engine setting exists, False otherwise.
@@ -1969,9 +1969,9 @@ class Executor(Configured):
         Positional arguments are passed to `Executor.resolve_setting`.
 
         Args:
-            *args: Positional arguments passed to `Executor.resolve_setting`.
+            *args: Positional arguments for `Executor.resolve_setting`.
             engine_name (Optional[str]): Engine name used to determine the settings subpath.
-            **kwargs: Keyword arguments passed to `Executor.resolve_setting`.
+            **kwargs: Keyword arguments for `Executor.resolve_setting`.
 
         Returns:
             Any: The resolved engine setting.
@@ -1989,9 +1989,9 @@ class Executor(Configured):
         Positional arguments are passed to `Executor.set_settings`.
 
         Args:
-            *args: Positional arguments passed to `Executor.set_settings`.
+            *args: Positional arguments for `Executor.set_settings`.
             engine_name (Optional[str]): Engine name used to determine the settings subpath.
-            **kwargs: Keyword arguments passed to `Executor.set_settings`.
+            **kwargs: Keyword arguments for `Executor.set_settings`.
 
         Returns:
             None: The function modifies settings in place.
@@ -3132,7 +3132,7 @@ def execute(
             non-None arguments.
         merge_to_engine_config (Optional[bool]): Flag indicating whether extra keyword arguments
             should be merged into `engine_config`.
-        **kwargs: Keyword arguments passed to `Executor` or merged into `engine_config`.
+        **kwargs: Keyword arguments for `Executor` or merged into `engine_config`.
 
     Returns:
         MergeableResults: The merged results from executing the tasks.
@@ -3267,9 +3267,7 @@ def iterated(
     is removed from the final result.
 
     Args:
-        *args: Positional arguments passed to the decorated function.
-
-            The first argument is treated as the iterable when `over_arg` is not specified.
+        func (Callable): Function to be decorated.
         over_arg (Optional[AnnArgQuery]): Query specifying which argument to iterate over.
 
             If None, the first positional argument is used.
@@ -3280,7 +3278,7 @@ def iterated(
             arguments when additional options are provided.
         merge_to_engine_config (Optional[bool]): Flag indicating whether keyword arguments not
             matching `Executor` keys should be merged into its `engine_config`.
-        **kwargs: Keyword arguments forwarded to `Executor` or merged into `engine_config`.
+        **kwargs: Keyword arguments for `Executor` or the decorated function.
 
     Returns:
         Callable: The wrapper function that executes the original function iteratively.

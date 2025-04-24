@@ -37,7 +37,7 @@ class ColumnMapper(Wrapping):
     Args:
         wrapper (ArrayWrapper): The array wrapper instance.
         col_arr (Array1d): The column array.
-        **kwargs: Keyword arguments for configuration.
+        **kwargs: Keyword arguments for `vectorbtpro.base.wrapping.Wrapping`.
     """
 
     def __init__(self, wrapper: ArrayWrapper, col_arr: tp.Array1d, **kwargs) -> None:
@@ -60,7 +60,7 @@ class ColumnMapper(Wrapping):
     @hybrid_method
     def row_stack(
         cls_or_self: tp.MaybeType[ColumnMapperT],
-        *objs: tp.MaybeTuple[ColumnMapperT],
+        *objs: tp.MaybeSequence[ColumnMapperT],
         wrapper_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> ColumnMapperT:
@@ -69,9 +69,10 @@ class ColumnMapper(Wrapping):
         Uses `vectorbtpro.base.wrapping.ArrayWrapper.row_stack` to stack the wrappers.
 
         Args:
-            *objs (MaybeTuple[ColumnMapper]): Additional `ColumnMapper` instances to stack.
+            *objs (MaybeSequence[ColumnMapper]): (Additional) `ColumnMapper` instances to stack.
             wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
-            **kwargs: Keyword arguments for the stacking operation.
+            **kwargs: Keyword arguments for `ColumnMapper` through
+                `ColumnMapper.resolve_row_stack_kwargs` and `ColumnMapper.resolve_stack_kwargs`.
 
         Returns:
             ColumnMapper: A new column mapper instance with row-stacked wrappers and updated column metadata.
@@ -113,7 +114,7 @@ class ColumnMapper(Wrapping):
     @hybrid_method
     def column_stack(
         cls_or_self: tp.MaybeType[ColumnMapperT],
-        *objs: tp.MaybeTuple[ColumnMapperT],
+        *objs: tp.MaybeSequence[ColumnMapperT],
         wrapper_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> ColumnMapperT:
@@ -122,9 +123,10 @@ class ColumnMapper(Wrapping):
         Uses `vectorbtpro.base.wrapping.ArrayWrapper.column_stack` to stack the wrappers.
 
         Args:
-            *objs (MaybeTuple[ColumnMapper]): Additional `ColumnMapper` instances to stack.
+            *objs (MaybeSequence[ColumnMapper]): (Additional) `ColumnMapper` instances to stack.
             wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
-            **kwargs: Keyword arguments for the stacking operation.
+            **kwargs: Keyword arguments for `ColumnMapper` through
+                `ColumnMapper.resolve_column_stack_kwargs` and `ColumnMapper.resolve_stack_kwargs`.
 
         Returns:
             ColumnMapper: A new column mapper instance with column-stacked wrappers and updated column metadata.
@@ -204,12 +206,11 @@ class ColumnMapper(Wrapping):
         """Perform indexing on `ColumnMapper` and return metadata.
 
         Args:
-            *args: Positional arguments for indexing.
+            *args: Positional arguments for `vectorbtpro.base.wrapping.ArrayWrapper.indexing_func_meta`.
             wrapper_meta (DictLike): Optional metadata for the wrapper.
 
-                If not provided, it is derived from
-                `vectorbtpro.base.wrapping.ArrayWrapper.indexing_func_meta`.
-            **kwargs: Keyword arguments for indexing.
+                If not provided, it is derived from `vectorbtpro.base.wrapping.ArrayWrapper.indexing_func_meta`.
+            **kwargs: Keyword arguments for `vectorbtpro.base.wrapping.ArrayWrapper.indexing_func_meta`.
 
         Returns:
             dict: A dictionary with the following keys:
@@ -236,9 +237,11 @@ class ColumnMapper(Wrapping):
         """Perform indexing on `ColumnMapper`.
 
         Args:
-            *args: Positional arguments for indexing.
+            *args: Positional arguments for `ColumnMapper.indexing_func_meta`.
             col_mapper_meta (DictLike): Optional precomputed metadata for column mapping.
-            **kwargs: Keyword arguments for indexing.
+
+                If not provided, it is derived from `ColumnMapper.indexing_func_meta`.
+            **kwargs: Keyword arguments for `ColumnMapper.indexing_func_meta`.
 
         Returns:
             ColumnMapper: A new column mapper instance with indexing applied.

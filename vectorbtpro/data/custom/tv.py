@@ -180,7 +180,7 @@ class TVClient(Configured):
         username (Optional[str]): Username for authentication.
         password (Optional[str]): Password for authentication.
         auth_token (Optional[str]): Authentication token; if provided, username and password should not be used.
-        **kwargs: Keyword arguments passed for configuration.
+        **kwargs: Keyword arguments for `vectorbtpro.utils.config.Configured`.
     """
 
     def __init__(
@@ -647,7 +647,7 @@ class TVClient(Configured):
             market (Optional[str]): Market or region in which to scan for symbols.
 
                 Defaults to "global" if not provided.
-            **kwargs: Keyword arguments passed to the POST request payload.
+            **kwargs: Keyword arguments for the POST request payload.
 
         Returns:
             List[dict]: A list of dictionaries representing the scanned symbols.
@@ -783,7 +783,7 @@ class TVData(RemoteData):
                 or list of dictionaries defining groups for filtering symbols.
             template_context (KwargsLike): Additional context for template substitution.
             return_field_data (bool): If True, return additional field data instead of only symbol codes.
-            **scanner_kwargs: Keyword arguments passed to the market scanner.
+            **scanner_kwargs: Keyword arguments for the market scanner.
 
         Returns:
             Union[List[str], List[Kwargs]]: List of symbols or list of dictionaries

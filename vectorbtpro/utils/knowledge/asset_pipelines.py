@@ -52,12 +52,12 @@ class AssetPipeline(Base):
             func (AssetFuncLike): An asset function identifier, which may be a tuple,
                 `vectorbtpro.utils.execution.Task`, string, or subclass of
                 `vectorbtpro.utils.knowledge.base_asset_funcs.AssetFunc`.
-            *args: Positional arguments used during task resolution.
+            *args: Positional arguments for `vectorbtpro.utils.execution.Task`.
             prepare (bool): Flag indicating whether to prepare the function before execution.
             prepare_once (bool): Flag specifying if the function should be prepared only once.
             cond_kwargs (KwargsLike): Keyword arguments for conditional preparation.
             asset_func_meta (Union[None, dict, list]): Metadata for the asset function.
-            **kwargs: Keyword arguments used during task resolution.
+            **kwargs: Keyword arguments for `vectorbtpro.utils.execution.Task`.
 
         Returns:
             Task: A callable task resolved from the provided definition.
@@ -148,9 +148,11 @@ class BasicAssetPipeline(AssetPipeline):
     Creates a composite function by resolving and chaining individual asset tasks.
 
     Args:
-        *args: The first positional argument can be a task or list of tasks;
+        *args: Positional arguments for `BasicAssetPipeline.resolve_task`.
+
+            The first positional argument can be a task or list of tasks;
             subsequent positional arguments are used in task resolution.
-        **kwargs: Keyword arguments for task resolution.
+        **kwargs: Keyword arguments for `BasicAssetPipeline.resolve_task`.
 
     Examples:
         ```pycon
@@ -190,8 +192,8 @@ class BasicAssetPipeline(AssetPipeline):
             func (AssetFuncLike): An asset function identifier, which may be a tuple,
                 `vectorbtpro.utils.execution.Task`, string, or subclass of
                 `vectorbtpro.utils.knowledge.base_asset_funcs.AssetFunc`.
-            *args: Positional arguments used during task resolution.
-            **kwargs: Keyword arguments used during task resolution.
+            *args: Positional arguments for `BasicAssetPipeline.resolve_task`.
+            **kwargs: Keyword arguments for `BasicAssetPipeline.resolve_task`.
 
         Returns:
             None

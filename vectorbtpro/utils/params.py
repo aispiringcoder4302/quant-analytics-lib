@@ -447,7 +447,7 @@ class Itemable(Base):
         """Return this instance as items.
 
         Args:
-            **kwargs: Keyword arguments passed to the underlying implementation.
+            **kwargs: Keyword arguments for the underlying implementation.
 
         Returns:
             Items: The items representation of the instance.
@@ -462,7 +462,7 @@ class Paramable(Base):
         """Return this instance as a parameter.
 
         Args:
-            **kwargs: Keyword arguments passed to the underlying implementation.
+            **kwargs: Keyword arguments for the underlying implementation.
 
         Returns:
             Param: The parameter representation of the instance.
@@ -1174,10 +1174,10 @@ class Parameterizer(Configured):
         merge_kwargs (KwargsLike): Keyword arguments for merging execution results.
         return_meta (Optional[bool]): Flag indicating if additional metadata should be returned.
         return_param_index (Optional[bool]): Flag indicating if the parameter index should be included in the result.
-        execute_kwargs (KwargsLike): Keyword arguments passed to the execution handler.
+        execute_kwargs (KwargsLike): Keyword arguments for the execution handler.
 
             See `vectorbtpro.utils.execution.execute` for details.
-        **kwargs: Additional keyword arguments.
+        **kwargs: Keyword arguments for `vectorbtpro.utils.config.Configured`.
 
     !!! info
         For default settings, see `vectorbtpro._settings.params`.
@@ -1557,7 +1557,7 @@ class Parameterizer(Configured):
         Args:
             obj (Any): The object to search for `Param` instances.
             eval_id (Optional[Hashable]): Evaluation identifier to filter parameters.
-            **kwargs: Additional keyword arguments to `vectorbtpro.utils.search_.find_in_obj`.
+            **kwargs: Keyword arguments for `vectorbtpro.utils.search_.find_in_obj`.
 
         Returns:
             PathDict: A dictionary containing the paths to `Param` instances found in the object.
@@ -1982,10 +1982,10 @@ class Parameterizer(Configured):
 
         Args:
             func (Callable): The target function to execute.
-            *args: Positional arguments passed to `func`.
+            *args: Positional arguments for `func`.
             param_configs (Optional[MaybeSequence[dict]]): Configuration(s) used to parameterize `func`'s arguments.
             eval_id (Optional[Hashable]): Identifier for evaluation in the parameterization process.
-            **kwargs: Keyword arguments passed to `func`.
+            **kwargs: Keyword arguments for `func`.
 
         Returns:
             Union[dict, MergeableResults, Tuple[MergeableResults, Optional[Index]]]: The result of
@@ -2312,14 +2312,14 @@ def parameterized(
     `Parameterizer` instance by replacing any arguments that are not None.
 
     Args:
-        *args: Positional arguments passed to the wrapped function.
+        func (Callable): Function to be decorated.
         parameterizer (Optional[Type[Parameterizer]]): The `Parameterizer` class or instance for
             parameterizing inputs.
         replace_parameterizer (Optional[bool]): Flag to create a new `Parameterizer` instance with
             non-None arguments replaced.
         merge_to_execute_kwargs (Optional[bool]): Flag that determines whether to merge unspecified
             keyword arguments into `execute_kwargs`.
-        **kwargs: Keyword arguments passed to `Parameterizer`.
+        **kwargs: Keyword arguments for `Parameterizer` or the decorated function.
 
     Returns:
         Callable: A new function with the same signature as the provided function.

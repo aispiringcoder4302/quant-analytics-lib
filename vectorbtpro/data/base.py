@@ -273,7 +273,7 @@ class BaseDataMixin(Base):
 
         Args:
             features (MaybeFeatures): The feature or features to select.
-            **kwargs: Keyword arguments for feature selection.
+            **kwargs: Keyword arguments for `BaseDataMixin.select_feature_idxs`.
 
         Returns:
             BaseDataMixin: A new instance containing the selected features.
@@ -289,7 +289,7 @@ class BaseDataMixin(Base):
 
         Args:
             symbols (MaybeSymbols): The symbol or symbols to select.
-            **kwargs: Keyword arguments for symbol selection.
+            **kwargs: Keyword arguments for `BaseDataMixin.select_symbol_idxs`.
 
         Returns:
             BaseDataMixin: A new instance containing the selected symbols.
@@ -579,8 +579,7 @@ class OHLCDataMixin(BaseDataMixin):
         """Return a `vectorbtpro.returns.accessors.ReturnsAccessor` constructed from the close price data.
 
         Args:
-            **kwargs: Keyword arguments passed to
-                `vectorbtpro.returns.accessors.ReturnsAccessor.from_value`.
+            **kwargs: Keyword arguments for `vectorbtpro.returns.accessors.ReturnsAccessor.from_value`.
 
         Returns:
             ReturnsAccessor: An accessor for return calculations using the close price.
@@ -605,8 +604,7 @@ class OHLCDataMixin(BaseDataMixin):
         """Return computed return values derived from the close price data.
 
         Args:
-            **kwargs: Keyword arguments passed to
-                `vectorbtpro.returns.accessors.ReturnsAccessor.from_value`.
+            **kwargs: Keyword arguments for `vectorbtpro.returns.accessors.ReturnsAccessor.from_value`.
 
         Returns:
             SeriesFrame: Computed returns from the close price.
@@ -631,8 +629,7 @@ class OHLCDataMixin(BaseDataMixin):
         """Return computed logarithmic return values derived from the close price data.
 
         Args:
-            **kwargs: Keyword arguments passed to
-                `vectorbtpro.returns.accessors.ReturnsAccessor.from_value`.
+            **kwargs: Keyword arguments for `vectorbtpro.returns.accessors.ReturnsAccessor.from_value`.
 
         Returns:
             SeriesFrame: Computed logarithmic returns from the close price.
@@ -658,8 +655,7 @@ class OHLCDataMixin(BaseDataMixin):
         """Return daily returns computed from the close price data.
 
         Args:
-            **kwargs: Keyword arguments passed to
-                `vectorbtpro.returns.accessors.ReturnsAccessor.from_value`.
+            **kwargs: Keyword arguments for `vectorbtpro.returns.accessors.ReturnsAccessor.from_value`.
 
         Returns:
             SeriesFrame: Daily returns computed from the close price.
@@ -684,8 +680,7 @@ class OHLCDataMixin(BaseDataMixin):
         """Return daily logarithmic returns computed from the close price data.
 
         Args:
-            **kwargs: Keyword arguments passed to
-                `vectorbtpro.returns.accessors.ReturnsAccessor.from_value`.
+            **kwargs: Keyword arguments for `vectorbtpro.returns.accessors.ReturnsAccessor.from_value`.
 
         Returns:
             SeriesFrame: Daily logarithmic returns computed from the close price.
@@ -712,8 +707,7 @@ class OHLCDataMixin(BaseDataMixin):
         """Generate drawdown records from the OHLC price data.
 
         Args:
-            **kwargs: Keyword arguments passed to
-                `vectorbtpro.generic.drawdowns.Drawdowns.from_price`.
+            **kwargs: Keyword arguments for `vectorbtpro.generic.drawdowns.Drawdowns.from_price`.
 
         Returns:
             Drawdowns: Drawdown records generated using open, high, low, and close prices.
@@ -771,7 +765,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         tz_convert (Union[None, bool, TimezoneLike]): Flag or parameter for time zone conversion.
         missing_index (Optional[str]): Identifier for missing index scenarios.
         missing_columns (Optional[str]): Identifier for missing columns scenarios.
-        **kwargs: Additional keyword arguments.
+        **kwargs: Keyword arguments for `vectorbtpro.generic.analyzable.Analyzable`.
 
     !!! info
         For default settings, see `vectorbtpro._settings.data`.
@@ -1208,8 +1202,8 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         """Retrieve base settings using `CustomData.get_settings` with `path_id="base"`.
 
         Args:
-            *args: Positional arguments passed to `Data.get_settings`.
-            **kwargs: Keyword arguments passed to `Data.get_settings`.
+            *args: Positional arguments for `Data.get_settings`.
+            **kwargs: Keyword arguments for `Data.get_settings`.
 
         Returns:
             dict: The base settings.
@@ -1221,8 +1215,8 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         """Determine whether base settings exist by invoking `CustomData.has_settings` with `path_id="base"`.
 
         Args:
-            *args: Positional arguments passed to `Data.has_settings`.
-            **kwargs: Keyword arguments passed to `Data.has_settings`.
+            *args: Positional arguments for `Data.has_settings`.
+            **kwargs: Keyword arguments for `Data.has_settings`.
 
         Returns:
             bool: True if base settings exist, False otherwise.
@@ -1234,8 +1228,8 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         """Fetch a base setting using `CustomData.get_setting` with `path_id="base"`.
 
         Args:
-            *args: Positional arguments passed to `Data.get_setting`.
-            **kwargs: Keyword arguments passed to `Data.get_setting`.
+            *args: Positional arguments for `Data.get_setting`.
+            **kwargs: Keyword arguments for `Data.get_setting`.
 
         Returns:
             Any: The requested base setting.
@@ -1247,8 +1241,8 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         """Check for the presence of a base setting by using `CustomData.has_setting` with `path_id="base"`.
 
         Args:
-            *args: Positional arguments passed to `Data.has_setting`.
-            **kwargs: Keyword arguments passed to `Data.has_setting`.
+            *args: Positional arguments for `Data.has_setting`.
+            **kwargs: Keyword arguments for `Data.has_setting`.
 
         Returns:
             bool: True if the base setting exists, False otherwise.
@@ -1260,8 +1254,8 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         """Resolve a base setting by calling `CustomData.resolve_setting` with `path_id="base"`.
 
         Args:
-            *args: Positional arguments passed to `Data.resolve_setting`.
-            **kwargs: Keyword arguments passed to `Data.resolve_setting`.
+            *args: Positional arguments for `Data.resolve_setting`.
+            **kwargs: Keyword arguments for `Data.resolve_setting`.
 
         Returns:
             Any: The resolved base setting.
@@ -1273,8 +1267,8 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         """Apply base settings by invoking `CustomData.set_settings` with `path_id="base"`.
 
         Args:
-            *args: Positional arguments passed to `Data.set_settings`.
-            **kwargs: Keyword arguments passed to `Data.set_settings`.
+            *args: Positional arguments for `Data.set_settings`.
+            **kwargs: Keyword arguments for `Data.set_settings`.
 
         Returns:
             None
@@ -1393,7 +1387,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
     @hybrid_method
     def row_stack(
         cls_or_self: tp.MaybeType[DataT],
-        *objs: tp.MaybeTuple[DataT],
+        *objs: tp.MaybeSequence[DataT],
         wrapper_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> DataT:
@@ -1404,10 +1398,9 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         keys and dictionary types, and merges their data along with related attributes.
 
         Args:
-            *objs (tuple[Data]): Additional `Data` instances to stack.
-            wrapper_kwargs (KwargsLike): Keyword arguments for
-                `vectorbtpro.base.wrapping.ArrayWrapper.row_stack`.
-            **kwargs: Keyword arguments for constructing the new `Data` instance.
+            *objs (MaybeSequence[Data]): (Additional) `Data` instances to stack.
+            wrapper_kwargs (KwargsLike): Keyword arguments for `vectorbtpro.base.wrapping.ArrayWrapper.row_stack`.
+            **kwargs: Keyword arguments for `Data`.
 
         Returns:
             Data: A new `Data` instance created by stacking the given instances.
@@ -1467,7 +1460,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
     @hybrid_method
     def column_stack(
         cls_or_self: tp.MaybeType[DataT],
-        *objs: tp.MaybeTuple[DataT],
+        *objs: tp.MaybeSequence[DataT],
         wrapper_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> DataT:
@@ -1478,10 +1471,9 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         to merge the wrappers.
 
         Args:
-            *objs (tuple[Data]): Additional `Data` instances to stack.
-            wrapper_kwargs (KwargsLike): Keyword arguments for
-                `vectorbtpro.base.wrapping.ArrayWrapper.column_stack`.
-            **kwargs: Keyword arguments for constructing the new `Data` instance.
+            *objs (MaybeSequence[Data]): (Additional) `Data` instances to stack.
+            wrapper_kwargs (KwargsLike): Keyword arguments for `vectorbtpro.base.wrapping.ArrayWrapper.column_stack`.
+            **kwargs: Keyword arguments for `Data`.
 
         Returns:
             Data: A new `Data` instance created by stacking the given instances.
@@ -1554,8 +1546,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         data accordingly and handles renaming of attributes if necessary.
 
         Args:
-            **kwargs: Additional keyword arguments, including the new `wrapper` used to determine
-                the updated index and columns.
+            **kwargs: Keyword arguments for `Data`.
 
         Returns:
             Data: A new `Data` instance with updated index and/or columns.
@@ -1608,10 +1599,10 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         `Data` instance with an updated wrapper and modified data.
 
         Args:
-            *args: Positional arguments used for indexing.
-            replace_kwargs (KwargsLike): Keyword arguments to pass to `replace`
+            *args: Positional arguments for `Data.indexing_func_meta`.
+            replace_kwargs (KwargsLike): Keyword arguments to pass to `Data.replace`
                 for further configuration.
-            **kwargs: Keyword arguments for indexing the data.
+            **kwargs: Keyword arguments for `Data.indexing_func_meta`.
 
         Returns:
             Data: A new `Data` instance after indexing.
@@ -1754,7 +1745,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
 
                 See `vectorbtpro.base.indexes.clean_index` for details.
             group_by (GroupByLike): Grouping specification.
-            **kwargs: Keyword arguments passed to the wrapper constructor.
+            **kwargs: Keyword arguments for `vectorbtpro.base.wrapping.ArrayWrapper.replace`.
 
         Returns:
             ArrayWrapper: A new array wrapper updated with the specified keys and dimensions.
@@ -1831,7 +1822,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             features (Optional[MaybeFeatures]): Features to use as columns.
 
                 If None, defaults to a full selection.
-            **kwargs: Keyword arguments passed to `Data.get_key_wrapper` when applicable.
+            **kwargs: Keyword arguments for `Data.get_key_wrapper` when applicable.
 
         Returns:
             ArrayWrapper: The `vectorbtpro.base.wrapping.ArrayWrapper` instance updated to
@@ -1855,7 +1846,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             symbols (Optional[MaybeSymbols]): Symbols to use as columns.
 
                 If None, defaults to the complete symbol set.
-            **kwargs: Keyword arguments passed to the wrapper constructor.
+            **kwargs: Keyword arguments for `Data.get_key_wrapper` when applicable.
 
         Returns:
             ArrayWrapper: The `vectorbtpro.base.wrapping.ArrayWrapper` instance updated to
@@ -2100,7 +2091,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             clean_index_kwargs (KwargsLike): Keyword arguments for cleaning MultiIndex levels.
 
                 See `vectorbtpro.base.indexes.clean_index` for details.
-            **kwargs: Keyword arguments passed to `Data.get_key_wrapper`.
+            **kwargs: Keyword arguments for `Data.get_key_wrapper`.
 
         Returns:
             Union[feature_dict, symbol_dict]: A dictionary-like structure containing the concatenated data.
@@ -2169,7 +2160,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             per (str): Grouping specification for data concatenation,
                 such as "feature", "symbol", "column", or "key".
             as_dict (bool): If True, returns the data as a dictionary mapping keys to the data.
-            **kwargs: Keyword arguments passed to `Data.concat`.
+            **kwargs: Keyword arguments for `Data.concat`.
 
         Returns:
             Union[MaybeTuple[SeriesFrame], dict]: The retrieved data as a tuple or dictionary
@@ -2621,7 +2612,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             new_cls (Type[Data]): New class to assign to the data instance.
             clear_fetch_kwargs (bool): If True, reset fetch keyword arguments for each symbol.
             clear_returned_kwargs (bool): If True, reset returned keyword arguments for each symbol.
-            **kwargs: Keyword arguments passed to `replace`.
+            **kwargs: Keyword arguments for `Data.replace`.
 
         Returns:
             Data: A new instance with the updated class.
@@ -2827,7 +2818,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             last_index (Optional[dict]): Last fetched index per symbol.
             delisted (Optional[dict]): Indicator dictionary for delisted symbols.
             silence_warnings (Optional[bool]): Flag to silence all warnings.
-            **kwargs: Keyword arguments passed to the instance `__init__` method.
+            **kwargs: Keyword arguments for `Data.replace`.
 
         Returns:
             Data: A new `Data` instance constructed from the provided data.
@@ -2910,7 +2901,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
 
         Args:
             key_wrapper_kwargs (KwargsLike): Keyword arguments for `Data.get_key_wrapper`.
-            **kwargs: Keyword arguments passed to `Data.replace` for instance configuration.
+            **kwargs: Keyword arguments for `Data.replace` for instance configuration.
 
         Returns:
             Data: A new instance with the inverted data.
@@ -2941,7 +2932,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         """Convert the instance to the feature-oriented format.
 
         Args:
-            **kwargs: Keyword arguments passed to `Data.invert`.
+            **kwargs: Keyword arguments for `Data.invert`.
 
         Returns:
             Data: The instance in feature-oriented format.
@@ -2956,7 +2947,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         """Convert the instance to the symbol-oriented format.
 
         Args:
-            **kwargs: Keyword arguments passed to `Data.invert`.
+            **kwargs: Keyword arguments for `Data.invert`.
 
         Returns:
             Data: The instance in symbol-oriented format.
@@ -3071,7 +3062,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         Args:
             feature (Feature): The feature whose keyword arguments are to be filtered.
             kwargs (KwargsLike): A dictionary of keyword arguments.
-            **kwargs_: Keyword arguments passed to `Data.select_key_kwargs`.
+            **kwargs_: Keyword arguments for `Data.select_key_kwargs`.
 
         Returns:
             Kwargs: A dictionary containing the filtered keyword arguments.
@@ -3085,7 +3076,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         Args:
             symbol (Symbol): The symbol whose keyword arguments are to be filtered.
             kwargs (KwargsLike): A dictionary of keyword arguments.
-            **kwargs_: Keyword arguments passed to `Data.select_key_kwargs`.
+            **kwargs_: Keyword arguments for `Data.select_key_kwargs`.
 
         Returns:
             Kwargs: A dictionary containing the filtered keyword arguments.
@@ -3128,7 +3119,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         Args:
             feature (Feature): The feature whose value is to be extracted.
             dct (feature_dict): The dictionary containing feature values.
-            **kwargs: Keyword arguments passed to `Data.select_key_kwargs`.
+            **kwargs: Keyword arguments for `Data.select_key_kwargs`.
 
         Returns:
             Any: The value corresponding to the feature.
@@ -3142,7 +3133,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         Args:
             symbol (Symbol): The symbol whose value is to be extracted.
             dct (symbol_dict): The dictionary containing symbol values.
-            **kwargs: Keyword arguments passed to `Data.select_key_kwargs`.
+            **kwargs: Keyword arguments for `Data.select_key_kwargs`.
 
         Returns:
             Any: The value corresponding to the symbol.
@@ -3194,7 +3185,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
 
         Args:
             keys (MaybeKeys): One or more keys to select.
-            **kwargs: Keyword arguments passed to `Data.replace`.
+            **kwargs: Keyword arguments for `Data.replace`.
 
         Returns:
             Data: A new `Data` instance with the selected keys.
@@ -3223,7 +3214,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
 
         Args:
             columns (MaybeColumns): One or more columns to select.
-            **kwargs: Keyword arguments passed to `Data.indexing_func`.
+            **kwargs: Keyword arguments for `Data.indexing_func`.
 
         Returns:
             Data: A new `Data` instance with the selected columns.
@@ -3256,11 +3247,11 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
     def select(self: DataT, keys: tp.MaybeKeys, **kwargs) -> DataT:
         """Creates a new `Data` instance with selected features or symbols based on the provided keys.
 
-        This method attempts to automatically determine the orientation of the selection.
+        Depending on the data orientation, delegates to either `Data.select_features` or `Data.select_symbols`.
 
         Args:
             keys (MaybeKeys): One or more keys representing features or symbols.
-            **kwargs: Keyword arguments passed to the selection method.
+            **kwargs: Keyword arguments for the delegated function.
 
         Returns:
             Data: A new `Data` instance with the selected features or symbols.
@@ -3304,12 +3295,12 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
 
                 If None, data is retrieved using `Data.run` or, if `pull_feature` is True, via `Data.pull`.
             pull_feature (bool): Whether to use `Data.pull` to retrieve data when `data` is None.
-            pull_kwargs (KwargsLike): Keyword arguments passed to `Data.pull`.
+            pull_kwargs (KwargsLike): Keyword arguments for `Data.pull`.
             reuse_fetch_kwargs (bool): Whether to reuse fetch kwargs from the current instance.
-            run_kwargs (KwargsLike): Keyword arguments passed to `Data.run`.
+            run_kwargs (KwargsLike): Keyword arguments for `Data.run`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            merge_kwargs (KwargsLike): Keyword arguments passed to `Data.merge`.
-            **kwargs: Keyword arguments for key dictionary attribute processing.
+            merge_kwargs (KwargsLike): Keyword arguments for `Data.merge`.
+            **kwargs: Keyword arguments for `Data.from_data`.
 
         Returns:
             Data: A new `Data` instance with the added feature.
@@ -3362,10 +3353,10 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             data (Union[None, SeriesFrame, CustomTemplate]): Data corresponding to the symbol.
 
                 If None, data is retrieved using `Data.pull`.
-            pull_kwargs (KwargsLike): Keyword arguments passed to `Data.pull`.
+            pull_kwargs (KwargsLike): Keyword arguments for `Data.pull`.
             reuse_fetch_kwargs (bool): Whether to reuse fetch kwargs from the current instance.
-            merge_kwargs (KwargsLike): Keyword arguments passed to `Data.merge`.
-            **kwargs: Keyword arguments for key dictionary attribute processing.
+            merge_kwargs (KwargsLike): Keyword arguments for `Data.merge`.
+            **kwargs: Keyword arguments for `Data.from_data`.
 
         Returns:
             Data: A new `Data` instance with the added symbol.
@@ -3409,7 +3400,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         Args:
             key (Key): The key identifier to add.
             data (Union[None, SeriesFrame, CustomTemplate]): Data corresponding to the key.
-            **kwargs: Keyword arguments passed to the delegated function.
+            **kwargs: Keyword arguments for the delegated function.
 
         Returns:
             Data: A new `Data` instance with the added key.
@@ -3431,7 +3422,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         Args:
             column (Column): The column identifier to add.
             data (Union[None, SeriesFrame, CustomTemplate]): Data corresponding to the column.
-            **kwargs: Keyword arguments passed to the delegated function.
+            **kwargs: Keyword arguments for the delegated function.
 
         Returns:
             Data: A new `Data` instance with the added key.
@@ -3448,12 +3439,13 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
     ) -> DataT:
         """Create a new `Data` instance with a new feature or symbol based on the data's orientation.
 
+        Depending on the data orientation, delegates to either `Data.add_symbol` or `Data.add_feature`.
         The orientation is automatically determined by comparing data columns with existing features and symbols.
 
         Args:
             key (Key): The identifier corresponding to the feature or symbol.
             data (Union[None, SeriesFrame, CustomTemplate]): Data corresponding to the key.
-            **kwargs: Keyword arguments for processing.
+            **kwargs: Keyword arguments for the delegated function.
 
         Returns:
             Data: A new `Data` instance with the added feature or symbol.
@@ -3504,7 +3496,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         Args:
             rename (Union[MaybeKeys, Dict[Key, Key]]): The key or mapping of keys to be renamed.
             to (Optional[MaybeKeys]): The new key or keys for the provided key(s).
-            **kwargs: Keyword arguments passed to `Data.replace`.
+            **kwargs: Keyword arguments for `Data.replace`.
 
         Returns:
             Data: A new `Data` instance with keys renamed.
@@ -3535,7 +3527,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         Args:
             rename (Union[MaybeColumns, Dict[Column, Column]]): The column or mapping of columns to be renamed.
             to (Optional[MaybeColumns]): The new column name or names corresponding to the old one(s).
-            **kwargs: Keyword arguments passed to `Data.replace`.
+            **kwargs: Keyword arguments for `Data.replace`.
 
         Returns:
             Data: A new `Data` instance with columns renamed.
@@ -3562,13 +3554,12 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
     ) -> DataT:
         """Create a new `Data` instance with features renamed based on a provided mapping.
 
-        Depending on the data orientation, this method delegates to either `Data.rename_keys`
-        (if feature-oriented) or `Data.rename_columns` (otherwise).
+        Depending on the data orientation, delegates to either `Data.rename_keys` or `Data.rename_columns`.
 
         Args:
             rename (Union[MaybeFeatures, Dict[Feature, Feature]]): The feature or mapping of features to be renamed.
             to (Optional[MaybeFeatures]): The new feature name or names corresponding to the old one(s).
-            **kwargs: Keyword arguments passed to the underlying renaming function.
+            **kwargs: Keyword arguments for the delegated function.
 
         Returns:
             Data: A new `Data` instance with features renamed.
@@ -3585,10 +3576,12 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
     ) -> DataT:
         """Create a new `Data` instance with symbols renamed.
 
+        Depending on the data orientation, delegates to either `Data.rename_columns` or `Data.rename_keys`.
+
         Args:
             rename (Union[MaybeSymbols, Dict[Symbol, Symbol]]): A symbol or mapping of symbols to their new names.
             to (Optional[MaybeSymbols]): New symbol name if `rename` is a single symbol.
-            **kwargs: Keyword arguments for renaming.
+            **kwargs: Keyword arguments for the delegated function.
 
         Returns:
             Data: A new `Data` instance with renamed symbols.
@@ -3605,10 +3598,13 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
     ) -> DataT:
         """Create a new `Data` instance with features or symbols renamed by automatically determining orientation.
 
+        Depending on the data orientation, delegates to either `Data.rename_features` or `Data.rename_symbols`.
+        The orientation is automatically determined by comparing data columns with existing features and symbols.
+
         Args:
             rename (Union[MaybeKeys, Dict[Key, Key]]): A key or mapping for renaming features or symbols.
             to (Optional[MaybeKeys]): New key name if a single key is provided.
-            **kwargs: Keyword arguments for renaming.
+            **kwargs: Keyword arguments for the delegated function.
 
         Returns:
             Data: A new `Data` instance with renamed features or symbols.
@@ -3633,7 +3629,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
 
         Args:
             features (MaybeFeatures): A feature or list of features to remove.
-            **kwargs: Keyword arguments for removal.
+            **kwargs: Keyword arguments for `Data.select_feature_idxs`.
 
         Returns:
             Data: A new `Data` instance with the remaining features.
@@ -3652,7 +3648,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
 
         Args:
             symbols (MaybeFeatures): A symbol or list of symbols to remove.
-            **kwargs: Keyword arguments for removal.
+            **kwargs: Keyword arguments for `Data.select_symbol_idxs`.
 
         Returns:
             Data: A new `Data` instance with the remaining symbols.
@@ -3669,12 +3665,11 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
     def remove_keys(self: DataT, keys: tp.MaybeKeys, **kwargs) -> DataT:
         """Create a new `Data` instance with the specified key(s) removed.
 
-        This method delegates to `Data.remove_features` if the instance is feature oriented,
-        or to `Data.remove_symbols` otherwise.
+        Depending on the data orientation, delegates to either `Data.remove_features` or `Data.remove_symbols`.
 
         Args:
             keys (MaybeKeys): A key or collection of keys to remove.
-            **kwargs: Keyword arguments for removal.
+            **kwargs: Keyword arguments for the delegated function.
 
         Returns:
             Data: A new `Data` instance with the specified keys removed.
@@ -3686,11 +3681,11 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
     def remove_columns(self: DataT, columns: tp.MaybeColumns, **kwargs) -> DataT:
         """Create a new `Data` instance with the specified column(s) removed.
 
-        For feature-oriented instances, columns are interpreted as symbols; for others, as features.
+        Depending on the data orientation, delegates to either `Data.remove_symbols` or `Data.remove_features`.
 
         Args:
             columns (MaybeColumns): A column or list of columns to remove.
-            **kwargs: Keyword arguments for removal.
+            **kwargs: Keyword arguments for the delegated function.
 
         Returns:
             Data: A new `Data` instance with the remaining columns.
@@ -3702,9 +3697,12 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
     def remove(self: DataT, keys: tp.MaybeKeys, **kwargs) -> DataT:
         """Create a new `Data` instance with the specified key(s) removed by automatically determining orientation.
 
+        Depending on the data orientation, delegates to either `Data.remove_features` or `Data.remove_symbols`.
+        The orientation is automatically determined by comparing data columns with existing features and symbols.
+
         Args:
             keys (MaybeKeys): A key or collection of keys to remove.
-            **kwargs: Keyword arguments for removal.
+            **kwargs: Keyword arguments for the delegated function.
 
         Returns:
             Data: A new `Data` instance after removal of the specified key(s).
@@ -3724,7 +3722,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
     @hybrid_method
     def merge(
         cls_or_self: tp.MaybeType[DataT],
-        *datas: DataT,
+        *datas: tp.MaybeSequence[DataT],
         rename: tp.Optional[tp.Dict[tp.Key, tp.Key]] = None,
         **kwargs,
     ) -> DataT:
@@ -3734,9 +3732,9 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         merging both symbols and features.
 
         Args:
-            *datas (Data): Additional data instances to merge.
+            *datas (MaybeSequence[Data]): (Additional) data instances to merge.
             rename (Optional[Dict[Key, Key]]): Optional mapping for renaming keys during merging.
-            **kwargs: Keyword arguments for merging.
+            **kwargs: Keyword arguments for `Data.resolve_merge_kwargs` and then `Data.from_data`.
 
         Returns:
             Data: A merged `Data` instance.
@@ -3865,7 +3863,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             feature (Feature): The feature to retrieve.
             skip_on_error (bool): If True, exceptions during fetching are suppressed.
             silence_warnings (bool): If True, warning messages are not displayed.
-            fetch_kwargs (KwargsLike): Keyword arguments passed to `Data.fetch_feature`.
+            fetch_kwargs (KwargsLike): Keyword arguments for `Data.fetch_feature`.
 
         Returns:
             FeatureData: The fetched data and (optionally) a metadata dictionary, or None.
@@ -3927,7 +3925,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             symbol (Symbol): The symbol to retrieve.
             skip_on_error (bool): If True, exceptions during fetching are suppressed.
             silence_warnings (bool): If True, warning messages are not displayed.
-            fetch_kwargs (KwargsLike): Keyword arguments passed to `Data.fetch_symbol`.
+            fetch_kwargs (KwargsLike): Keyword arguments for `Data.fetch_symbol`.
 
         Returns:
             SymbolData: The fetched data and (optionally) a metadata dictionary, or None.
@@ -4083,11 +4081,11 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             silence_warnings (Optional[bool]): Silence all warnings.
 
                 This flag is also forwarded to `Data.fetch_feature`/`Data.fetch_symbol` if applicable.
-            execute_kwargs (KwargsLike): Keyword arguments passed to the execution handler.
+            execute_kwargs (KwargsLike): Keyword arguments for the execution handler.
 
                 See `vectorbtpro.utils.execution.execute` for details.
             return_raw (bool): Return the raw outputs if True.
-            **kwargs: Keyword arguments passed to `Data.fetch_feature`/`Data.fetch_symbol`.
+            **kwargs: Keyword arguments for `Data.fetch_feature`/`Data.fetch_symbol`.
 
                 For features or symbols that require distinct keyword arguments, pass `key_dict` or
                 `feature_dict`/`symbol_dict` for each.
@@ -4272,8 +4270,8 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         This method exists for backward compatibility; use `Data.pull` in new code.
 
         Args:
-            *args: Positional arguments passed to `Data.pull`.
-            **kwargs: Keyword arguments passed to `Data.pull`.
+            *args: Positional arguments for `Data.pull`.
+            **kwargs: Keyword arguments for `Data.pull`.
 
         Returns:
             PullOutput: A `Data` instance or a list of execution outputs if `return_raw` is True.
@@ -4287,8 +4285,8 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         This method exists for backward compatibility; use `Data.pull` in new code.
 
         Args:
-            *args: Positional arguments passed to `Data.pull`.
-            **kwargs: Keyword arguments passed to `Data.pull`.
+            *args: Positional arguments for `Data.pull`.
+            **kwargs: Keyword arguments for `Data.pull`.
 
         Returns:
             PullOutput: A `Data` instance or a list of execution outputs if `return_raw` is True.
@@ -4446,11 +4444,11 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
 
                 Also passed to `Data.update_feature` or `Data.update_symbol` if accepted by
                 `Data.fetch_feature` or `Data.fetch_symbol`.
-            execute_kwargs (KwargsLike): Keyword arguments passed to the execution handler.
+            execute_kwargs (KwargsLike): Keyword arguments for the execution handler.
 
                 See `vectorbtpro.utils.execution.execute` for details.
             return_raw (bool): Whether to return the raw outputs from update operations.
-            **kwargs: Keyword arguments passed to `Data.update_feature` or `Data.update_symbol`.
+            **kwargs: Keyword arguments for `Data.update_feature` or `Data.update_symbol`.
 
                 If different features or symbols require distinct keyword arguments, provide them
                 via `key_dict` or `feature_dict`/`symbol_dict` for each.
@@ -4686,7 +4684,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
 
         Args:
             transform_func (Callable): The function to apply to the data.
-            *args: Positional arguments passed to `transform_func`.
+            *args: Positional arguments for `transform_func`.
             per_feature (bool): Process each feature separately.
             per_symbol (bool): Process each symbol separately.
             pass_frame (bool): Pass a one-column DataFrame instead of a Series when processing individual keys.
@@ -4695,7 +4693,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
 
                 See `vectorbtpro.base.reshaping.broadcast` for details.
             template_context (KwargsLike): Additional context for template substitution.
-            **kwargs: Keyword arguments passed to `transform_func`.
+            **kwargs: Keyword arguments for `transform_func`.
 
         Returns:
             Data: A new instance with the transformed data.
@@ -4852,7 +4850,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         Calls `Data.transform` with a function that applies `dropna` on each Pandas Series or DataFrame.
 
         Args:
-            **kwargs: Keyword arguments passed to `pd.Series.dropna` or `pd.DataFrame.dropna`.
+            **kwargs: Keyword arguments for `pd.Series.dropna` or `pd.DataFrame.dropna`.
 
         Returns:
             Data: A new instance with missing values removed.
@@ -4933,9 +4931,9 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         methods are used based on the feature name.
 
         Args:
-            *args: Positional arguments for configuring resampling.
+            *args: Positional arguments for `vectorbtpro.base.wrapping.ArrayWrapper.resample_meta`.
             wrapper_meta (DictLike): Metadata for resampling generated by the wrapper.
-            **kwargs: Keyword arguments for configuring resampling.
+            **kwargs: Keyword arguments for `vectorbtpro.base.wrapping.ArrayWrapper.resample_meta`.
 
         Returns:
             Data: A new data instance with resampled features.
@@ -5027,10 +5025,10 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             rule (Optional[AnyRuleLike]): Time rule for realignment.
 
                 If not provided, uses `Data.wrapper.freq`.
-            *args: Positional arguments for configuring resampling.
+            *args: Positional arguments for `vectorbtpro.base.wrapping.ArrayWrapper.resample_meta`.
             wrapper_meta (DictLike): Metadata for resampling obtained from the wrapper.
             ffill (bool): Whether to forward-fill missing values during realignment.
-            **kwargs: Keyword arguments for configuring realignment.
+            **kwargs: Keyword arguments for `vectorbtpro.base.wrapping.ArrayWrapper.resample_meta`.
 
         Returns:
             Data: A new data instance with realigned features.
@@ -5094,13 +5092,13 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         Args:
             data (Data): The data instance on which to execute the function.
             func_name (str): The name identifying the function to run.
-            *args: Positional arguments passed to `data.run`.
+            *args: Positional arguments for `Data.run`.
             raise_errors (bool): If True, exceptions encountered during execution are raised.
             silence_warnings (bool): If True, warnings are suppressed when execution fails.
-            **kwargs: Keyword arguments passed to `data.run`.
+            **kwargs: Keyword arguments for `Data.run`.
 
         Returns:
-            Any: The result of executing `data.run`, or `NoResult` if execution fails without raising an error.
+            Any: The result of executing `Data.run`, or `NoResult` if execution fails without raising an error.
         """
         try:
             return data.run(*args, **kwargs)
@@ -5226,7 +5224,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         Args:
             func (MaybeIterable[Union[Hashable, Callable]]): The function, location, indicator name,
                 or simulation method to run, or an iterable of such.
-            *args: Positional arguments passed to the function.
+            *args: Positional arguments for the function.
             on_features (Optional[MaybeFeatures]): Features used to select specific parts of the data.
             on_symbols (Optional[MaybeSymbols]): Symbols used to filter the data.
             func_args (ArgsLike): Extra positional arguments for the function.
@@ -5246,7 +5244,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             data_kwargs (KwargsLike): Keyword arguments for data processing.
             silence_warnings (bool): If True, suppresses warnings during execution.
             raise_errors (bool): If True, raises any exceptions encountered.
-            execute_kwargs (KwargsLike): Keyword arguments passed to the execution handler.
+            execute_kwargs (KwargsLike): Keyword arguments for the execution handler.
 
                 See `vectorbtpro.utils.execution.execute` for details.
             filter_results (bool): If True, filters out function calls that yield no results.
@@ -5255,7 +5253,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             merge_kwargs (KwargsLike): Keyword arguments for merging results.
             template_context (KwargsLike): Additional context for template substitution.
             return_keys (bool): If True, includes keys representing function names in the return.
-            **kwargs: Keyword arguments passed to the function.
+            **kwargs: Keyword arguments for the function.
 
         Returns:
             Any: The result of applying the function(s) to the data. If `return_keys` is True,
@@ -5582,7 +5580,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
                 arguments match expected types.
             template_context (KwargsLike): Additional context for template substitution.
             return_meta (bool): If True, returns metadata about the saved CSV file(s).
-            **kwargs: Keyword arguments passed to `pandas.DataFrame.to_csv`.
+            **kwargs: Keyword arguments for `pandas.DataFrame.to_csv`.
 
         Returns:
             Union[None, feature_dict, symbol_dict]: Dictionary with metadata if `return_meta` is True, or None.
@@ -5647,11 +5645,11 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         to the current class.
 
         Args:
-            *args: Positional arguments passed to `vectorbtpro.data.custom.csv.CSVData.pull`.
+            *args: Positional arguments for `vectorbtpro.data.custom.csv.CSVData.pull`.
             fetch_kwargs (KwargsLike): Keyword arguments originally used for fetching data.
 
                 Refer to the fetching function for further details.
-            **kwargs: Keyword arguments passed to `vectorbtpro.data.custom.csv.CSVData.pull`.
+            **kwargs: Keyword arguments for `vectorbtpro.data.custom.csv.CSVData.pull`.
 
         Returns:
             Data: An instance of the class with the loaded data.
@@ -5698,7 +5696,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
                 arguments match expected types.
             template_context (KwargsLike): Additional context for template substitution.
             return_meta (bool): If True, returns metadata about the saved HDF file(s).
-            **kwargs: Keyword arguments passed to `pandas.DataFrame.to_hdf`.
+            **kwargs: Keyword arguments for `pandas.DataFrame.to_hdf`.
 
         Returns:
             Union[None, feature_dict, symbol_dict]: Dictionary with metadata if `return_meta` is True, or None.
@@ -5761,11 +5759,11 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         to the current class.
 
         Args:
-            *args: Positional arguments passed to `vectorbtpro.data.custom.hdf.HDFData.pull`.
+            *args: Positional arguments for `vectorbtpro.data.custom.hdf.HDFData.pull`.
             fetch_kwargs (KwargsLike): Keyword arguments originally used for fetching data.
 
                 Refer to the fetching function for further details.
-            **kwargs: Keyword arguments passed to `vectorbtpro.data.custom.hdf.HDFData.pull`.
+            **kwargs: Keyword arguments for `vectorbtpro.data.custom.hdf.HDFData.pull`.
 
         Returns:
             Data: An instance of the class with the loaded data.
@@ -5870,9 +5868,9 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         to the current class, and update its fetch parameters.
 
         Args:
-            *args: Positional arguments passed to `vectorbtpro.data.custom.feather.FeatherData.pull`.
+            *args: Positional arguments for `vectorbtpro.data.custom.feather.FeatherData.pull`.
             fetch_kwargs (KwargsLike): Keyword arguments originally used for fetching data.
-            **kwargs: Keyword arguments passed to `vectorbtpro.data.custom.feather.FeatherData.pull`.
+            **kwargs: Keyword arguments for `vectorbtpro.data.custom.feather.FeatherData.pull`.
 
         Returns:
             Data: An instance of the class containing the loaded data.
@@ -5937,7 +5935,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             template_context (KwargsLike): Additional context for template substitution.
             return_meta (bool): If True, returns a metadata dictionary containing
                 file paths and configuration settings.
-            **kwargs: Keyword arguments passed to `DataFrame.to_parquet`.
+            **kwargs: Keyword arguments for `DataFrame.to_parquet`.
 
         Returns:
             Union[None, feature_dict, symbol_dict]: Dictionary with metadata if `return_meta` is True, or None.
@@ -6076,12 +6074,10 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         `vectorbtpro.data.custom.parquet.ParquetData`.
 
         Args:
-            *args: Positional arguments forwarded to
-                `vectorbtpro.data.custom.parquet.ParquetData.pull`.
+            *args: Positional arguments for `vectorbtpro.data.custom.parquet.ParquetData.pull`.
             fetch_kwargs (KwargsLike): Keyword arguments originally used in data fetching,
                 which are applied to the returned object.
-            **kwargs: Keyword arguments forwarded to
-                `vectorbtpro.data.custom.parquet.ParquetData.pull`.
+            **kwargs: Keyword arguments for `vectorbtpro.data.custom.parquet.ParquetData.pull`.
 
         Returns:
             Data: An instance of `cls` with data loaded from Parquet.
@@ -6145,7 +6141,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             template_context (KwargsLike): Additional context for template substitution.
             return_meta (bool): If True, returns metadata for each saved table.
             return_engine (bool): If True, returns the database engine used.
-            **kwargs: Keyword arguments passed to `pandas.DataFrame.to_sql`.
+            **kwargs: Keyword arguments for `pandas.DataFrame.to_sql`.
 
         Returns:
             Union[None, feature_dict, symbol_dict, Engine]: Dictionary with metadata if
@@ -6314,9 +6310,9 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         afterward to update fetch parameters.
 
         Args:
-            *args: Positional arguments passed to `vectorbtpro.data.custom.sql.SQLData.pull`.
+            *args: Positional arguments for `vectorbtpro.data.custom.sql.SQLData.pull`.
             fetch_kwargs (KwargsLike): Keyword arguments originally used for fetching data.
-            **kwargs: Keyword arguments passed to `vectorbtpro.data.custom.sql.SQLData.pull`.
+            **kwargs: Keyword arguments for `vectorbtpro.data.custom.sql.SQLData.pull`.
 
         Returns:
             Data: An instance of the current class containing the loaded data.
@@ -6638,11 +6634,9 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         switch the object's class.
 
         Args:
-            *args: Positional arguments passed to
-                `vectorbtpro.data.custom.duckdb.DuckDBData.pull`.
+            *args: Positional arguments for `vectorbtpro.data.custom.duckdb.DuckDBData.pull`.
             fetch_kwargs (KwargsLike): Keyword arguments originally used for fetching.
-            **kwargs: Keyword arguments passed to
-                `vectorbtpro.data.custom.duckdb.DuckDBData.pull`.
+            **kwargs: Keyword arguments for `vectorbtpro.data.custom.duckdb.DuckDBData.pull`.
 
         Returns:
             Data: An instance of the data with updated fetch parameters.
@@ -6691,7 +6685,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             date_as_object (bool): Whether to return date columns as objects.
             align_dtypes (bool): Whether to align result column data types with the original data.
             squeeze (bool): Convert a one-column DataFrame to a Series if True.
-            **kwargs: Keyword arguments passed to `Data.get`.
+            **kwargs: Keyword arguments for `Data.get`.
 
         Returns:
             SeriesFrame: The query result as a DataFrame or a Series if squeezed.
@@ -6839,7 +6833,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
                     The feature must contain price data.
 
                     Applied only when plotting lines.
-            **kwargs: Keyword arguments passed to
+            **kwargs: Keyword arguments for
                 `vectorbtpro.generic.accessors.GenericAccessor.plot` for lines and to
                 `vectorbtpro.ohlcv.accessors.OHLCVDFAccessor.plot` for OHLC(V).
 

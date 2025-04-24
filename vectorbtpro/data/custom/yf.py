@@ -104,7 +104,7 @@ class YFData(RemoteData):
             tz (TimezoneLike): Time zone for datetime conversion.
 
                 See `vectorbtpro.utils.datetime_.to_timezone` for conversion details.
-            **history_kwargs: Keyword arguments passed to `yfinance.base.TickerBase.history`.
+            **history_kwargs: Keyword arguments for `yfinance.base.TickerBase.history`.
 
         Returns:
             SymbolData: The fetched data and a metadata dictionary.
