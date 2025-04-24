@@ -876,7 +876,7 @@ class Records(Analyzable, metaclass=MetaRecords):
             col_idxs (MaybeIndexArray): Column indices or slice to select.
             jitted (JittedOption): Option to control JIT compilation.
 
-                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
 
         Returns:
             Tuple[Array1d, RecordArray]: A tuple containing the selected indices and the new record array.
@@ -1352,7 +1352,7 @@ class Records(Analyzable, metaclass=MetaRecords):
             incl_id (bool): If True, check sorting using both column and id arrays.
             jitted (JittedOption): Option to control JIT compilation.
 
-                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
 
         Returns:
             bool: True if the records are sorted, False otherwise.
@@ -1418,10 +1418,10 @@ class Records(Analyzable, metaclass=MetaRecords):
             n (int): Number of records to retain from the beginning of each column.
             jitted (JittedOption): Option to control JIT compilation.
 
-                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
             chunked (ChunkedOption): Option to control chunked processing.
 
-                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             **kwargs: Keyword arguments for `Records.apply_mask`.
 
         Returns:
@@ -1448,10 +1448,10 @@ class Records(Analyzable, metaclass=MetaRecords):
             n (int): Number of records to retain from the end of each column.
             jitted (JittedOption): Option to control JIT compilation.
 
-                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
             chunked (ChunkedOption): Option to control chunked processing.
 
-                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             **kwargs: Keyword arguments for `Records.apply_mask`.
 
         Returns:
@@ -1480,10 +1480,10 @@ class Records(Analyzable, metaclass=MetaRecords):
             seed (Optional[int]): Seed for random number generation.
             jitted (JittedOption): Option to control JIT compilation.
 
-                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
             chunked (ChunkedOption): Option to control chunked processing.
 
-                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             **kwargs: Keyword arguments for `Records.apply_mask`.
 
         Returns:
@@ -1568,8 +1568,6 @@ class Records(Analyzable, metaclass=MetaRecords):
     ) -> MappedArray:
         """Map each record to a scalar value and return a mapped array.
 
-        See `vectorbtpro.records.nb.map_records_nb` and `vectorbtpro.records.nb.map_records_meta_nb`.
-
         For class method calls, `col_mapper` must be provided.
 
         Args:
@@ -1578,10 +1576,10 @@ class Records(Analyzable, metaclass=MetaRecords):
             dtype (Optional[DTypeLike]): Data type for the resulting mapped array.
             jitted (JittedOption): Option to control JIT compilation.
 
-                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
             chunked (ChunkedOption): Option to control chunked processing.
 
-                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             col_mapper (Optional[ColumnMapper]): Column mapper for the meta version.
             **kwargs: Keyword arguments for `vectorbtpro.records.mapped_array.MappedArray`
                 or `Records.map_array`.
@@ -1622,8 +1620,6 @@ class Records(Analyzable, metaclass=MetaRecords):
     ) -> MappedArray:
         """Apply a function to records on a per-column or per-group basis and return a mapped array.
 
-        See `vectorbtpro.records.nb.apply_nb` and `vectorbtpro.records.nb.apply_meta_nb`.
-
         If `apply_per_group` is True, the function is applied separately to each group.
 
         Args:
@@ -1634,10 +1630,10 @@ class Records(Analyzable, metaclass=MetaRecords):
             dtype (Optional[DTypeLike]): Data type for the resulting mapped array.
             jitted (JittedOption): Option to control JIT compilation.
 
-                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
             chunked (ChunkedOption): Option to control chunked processing.
 
-                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             col_mapper (Optional[ColumnMapper]): Column mapper for the meta version.
             **kwargs: Keyword arguments for `vectorbtpro.records.mapped_array.MappedArray`
                 or `Records.map_array`.

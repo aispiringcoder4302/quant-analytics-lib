@@ -231,7 +231,7 @@ class SerialEngine(ExecutionEngine):
         show_progress (Optional[bool]): Determines whether to display the progress bar.
         pbar_kwargs (KwargsLike): Keyword arguments for configuring the progress bar.
 
-            See `vectorbtpro.utils.pbar.ProgressBar` for details.
+            See `vectorbtpro.utils.pbar.ProgressBar`.
         clear_cache (Union[None, bool, int]): Indicates whether to clear vectorbtpro's cache after each iteration.
 
             If provided as an integer, clears the cache every specified number of tasks.
@@ -574,7 +574,7 @@ class PathosEngine(ExecutionEngine):
         show_progress (Optional[bool]): Flag indicating whether to display the progress bar.
         pbar_kwargs (KwargsLike): Keyword arguments for configuring the progress bar.
 
-            See `vectorbtpro.utils.pbar.ProgressBar` for details.
+            See `vectorbtpro.utils.pbar.ProgressBar`.
         hide_inner_progress (Optional[bool]): Flag indicating whether to hide progress bars
             within individual threads.
         join_pool (Optional[bool]): Flag indicating whether the pool should be joined after execution.
@@ -1269,7 +1269,7 @@ class Executor(Configured):
         show_progress (Optional[bool]): Flag indicating if a progress bar should be shown.
         pbar_kwargs (KwargsLike): Keyword arguments for configuring the progress bar.
 
-            See `vectorbtpro.utils.pbar.ProgressBar` for details.
+            See `vectorbtpro.utils.pbar.ProgressBar`.
         **kwargs: Keyword arguments for `vectorbtpro.utils.config.Configured`.
 
     !!! info
@@ -2029,7 +2029,7 @@ class Executor(Configured):
             show_progress (Optional[bool]): Flag to enable progress display.
             pbar_kwargs (KwargsLike): Keyword arguments for configuring the progress bar.
 
-                See `vectorbtpro.utils.pbar.ProgressBar` for details.
+                See `vectorbtpro.utils.pbar.ProgressBar`.
             **engine_config: Additional engine configuration parameters.
 
         Returns:

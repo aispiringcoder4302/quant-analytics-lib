@@ -3741,7 +3741,7 @@ class CachingEnabled(Base):
     def query_like(self) -> tp.Optional[tp.Any]:
         """Query specification used for determining caching rules.
 
-        See `CAQuery.parse` for details.
+        See `CAQuery.parse`.
 
         Returns:
             Optional[Any]: The query specification used for caching rules.
@@ -3752,7 +3752,7 @@ class CachingEnabled(Base):
     def use_base_cls(self) -> bool:
         """Flag indicating whether the base class is used in query parsing.
 
-        See `CAQuery.parse` for details.
+        See `CAQuery.parse`.
 
         Returns:
             bool: True if the base class is used during query parsing; otherwise, False.
@@ -3763,7 +3763,7 @@ class CachingEnabled(Base):
     def kind(self) -> tp.Optional[tp.MaybeIterable[str]]:
         """Type indicator for the caching rule.
 
-        See `CARule.kind` for details.
+        See `CARule.kind`.
 
         Returns:
             Optional[Iterable[str]]: The type or types that indicate which caching rule to apply.
@@ -3774,7 +3774,7 @@ class CachingEnabled(Base):
     def exclude(self) -> tp.Optional[tp.MaybeIterable["CABaseSetup"]]:
         """Setups to be excluded from the caching rule.
 
-        See `CARule.exclude` for details.
+        See `CARule.exclude`.
 
         Returns:
             Optional[Iterable[CABaseSetup]]: The caching setups that should be excluded from the rule.
@@ -3785,7 +3785,7 @@ class CachingEnabled(Base):
     def filter_func(self) -> tp.Optional[tp.Callable]:
         """Filter function applied to caching setups.
 
-        See `CARule.filter_func` for details.
+        See `CARule.filter_func`.
 
         Returns:
             Optional[Callable]: The filter function used to select applicable caching setups.

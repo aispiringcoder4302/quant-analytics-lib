@@ -384,19 +384,19 @@ class CCXTData(RemoteData):
                 Refer to `CCXTData.resolve_exchange` for details.
             exchange_config (KwargsLike): Exchange configuration.
 
-                See `CCXTData.resolve_exchange` for details.
+                See `CCXTData.resolve_exchange`.
             start (Optional[DatetimeLike]): Starting datetime for fetching data.
 
-                See `vectorbtpro.utils.datetime_.to_tzaware_datetime` for conversion details.
+                See `vectorbtpro.utils.datetime_.to_tzaware_datetime`.
             end (Optional[DatetimeLike]): Ending datetime for fetching data.
 
-                See `vectorbtpro.utils.datetime_.to_tzaware_datetime` for conversion details.
+                See `vectorbtpro.utils.datetime_.to_tzaware_datetime`.
             timeframe (Optional[str]): Timeframe specification.
 
                 Accepts human-readable strings such as "15 minutes".
             tz (TimezoneLike): Timezone for conversion.
 
-                See `vectorbtpro.utils.datetime_.to_timezone` for conversion details.
+                See `vectorbtpro.utils.datetime_.to_timezone`.
             find_earliest_date (Optional[bool]): Flag to determine the earliest available date.
 
                 Uses `CCXTData.find_earliest_date` when enabled.
@@ -410,7 +410,7 @@ class CCXTData(RemoteData):
             show_progress (Optional[bool]): Flag to display the progress bar.
             pbar_kwargs (KwargsLike): Keyword arguments for configuring the progress bar.
 
-                See `vectorbtpro.utils.pbar.ProgressBar` for details.
+                See `vectorbtpro.utils.pbar.ProgressBar`.
             silence_warnings (Optional[bool]): Flag to suppress warnings.
             return_fetch_method (bool): If True, returns the fetch method and settings instead of fetched data.
 

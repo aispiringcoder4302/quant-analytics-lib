@@ -219,13 +219,13 @@ class BinanceData(RemoteData):
                 See `vectorbtpro.utils.datetime_.to_timezone`.
             klines_type (Union[None, int, str]): Type of klines to fetch.
 
-                See `binance.enums.HistoricalKlinesType` for valid types. Supports strings.
+                See `binance.enums.HistoricalKlinesType` for supported types. Supports strings.
             limit (int): Maximum number of klines to retrieve per API call.
             delay (float): Delay in seconds after each request.
             show_progress (bool): Display a progress bar during data fetching.
             pbar_kwargs (KwargsLike): Keyword arguments for configuring the progress bar.
 
-                See `vectorbtpro.utils.pbar.ProgressBar` for details.
+                See `vectorbtpro.utils.pbar.ProgressBar`.
             silence_warnings (bool): Silence warnings if True.
             **get_klines_kwargs: Keyword arguments for `binance.client.Client.get_klines`.
 

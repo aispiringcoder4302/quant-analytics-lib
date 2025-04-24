@@ -41,10 +41,10 @@ def resolve_pending_conflict_nb(
         is_user_long (bool): Flag indicating whether the user-defined signal is for a long position.
         upon_adj_conflict (int): Conflict resolution mode for signals with matching directions.
 
-            See `vectorbtpro.portfolio.enums.PendingConflictMode` for options.
+            See `vectorbtpro.portfolio.enums.PendingConflictMode`.
         upon_opp_conflict (int): Conflict resolution mode for signals with opposite directions.
 
-            See `vectorbtpro.portfolio.enums.PendingConflictMode` for options.
+            See `vectorbtpro.portfolio.enums.PendingConflictMode`.
 
     Returns:
         Tuple[bool, bool]: A tuple where the first element indicates whether to keep the pending signal,
@@ -83,10 +83,10 @@ def generate_stop_signal_nb(
         position_now (float): Current position size.
         stop_exit_type (int): Stop exit type determining how to process the stop condition.
 
-            See `vectorbtpro.portfolio.enums.StopExitType` for options.
+            See `vectorbtpro.portfolio.enums.StopExitType`.
         accumulate (int): The current accumulation mode flag.
 
-            See `vectorbtpro.portfolio.enums.AccumulationMode` for options.
+            See `vectorbtpro.portfolio.enums.AccumulationMode`.
 
     Returns:
         Tuple[bool, bool, bool, bool, int]: A tuple containing:
@@ -146,10 +146,10 @@ def resolve_signal_conflict_nb(
         is_exit (bool): Flag indicating the presence of an exit signal.
         direction (int): Direction indicator for the signal.
 
-            See `vectorbtpro.portfolio.enums.Direction` for options.
+            See `vectorbtpro.portfolio.enums.Direction`.
         conflict_mode (int): Mode used to resolve conflicts between entry and exit signals.
 
-            See `vectorbtpro.portfolio.enums.ConflictMode` for options.
+            See `vectorbtpro.portfolio.enums.ConflictMode`.
 
     Returns:
         Tuple[bool, bool]: A tuple where the first element indicates the adjusted entry signal,
@@ -217,7 +217,7 @@ def resolve_dir_conflict_nb(
         is_short_entry (bool): Flag indicating a short entry signal.
         upon_dir_conflict (int): Mode for resolving direction conflicts.
 
-            See `vectorbtpro.portfolio.enums.DirectionConflictMode` for options.
+            See `vectorbtpro.portfolio.enums.DirectionConflictMode`.
 
     Returns:
         Tuple[bool, bool]: A tuple where the first element indicates whether the long entry signal
@@ -273,10 +273,10 @@ def resolve_opposite_entry_nb(
         is_short_exit (bool): Flag indicating whether a short exit signal is active.
         upon_opposite_entry (int): Mode for resolving opposite entry signals.
 
-            See `vectorbtpro.portfolio.enums.OppositeEntryMode` for options.
+            See `vectorbtpro.portfolio.enums.OppositeEntryMode`.
         accumulate (int): The current accumulation mode flag.
 
-            See `vectorbtpro.portfolio.enums.AccumulationMode` for options.
+            See `vectorbtpro.portfolio.enums.AccumulationMode`.
 
     Returns:
         Tuple[bool, bool, bool, bool, int]: A tuple containing:
@@ -349,10 +349,10 @@ def signal_to_size_nb(
         size (float): The magnitude of the trading signal.
         size_type (int): Identifier for the type of size specification.
 
-            See `vectorbtpro.portfolio.enums.SizeType` for options.
+            See `vectorbtpro.portfolio.enums.SizeType`.
         accumulate (int): Accumulation mode flag dictating how orders are aggregated.
 
-            See `vectorbtpro.portfolio.enums.AccumulationMode` for options.
+            See `vectorbtpro.portfolio.enums.AccumulationMode`.
 
     Returns:
         Tuple[float, int, int]: A tuple containing:
@@ -678,7 +678,7 @@ def from_basic_signals_nb(
 
             Provided as a scalar, or per row and/or column.
 
-            See `vectorbtpro.portfolio.enums.Order.size` for more details.
+            See `vectorbtpro.portfolio.enums.Order.size`.
 
             !!! note
                 Negative size is not allowed; use signals to express direction.
@@ -686,12 +686,12 @@ def from_basic_signals_nb(
 
             Provided as a scalar, or per row and/or column.
 
-            See `vectorbtpro.portfolio.enums.Order.price` for more details.
+            See `vectorbtpro.portfolio.enums.Order.price`.
         size_type (FlexArray2dLike): Order size type.
 
             Provided as a scalar, or per row and/or column.
 
-            See `vectorbtpro.portfolio.enums.Order.size_type` for more details.
+            See `vectorbtpro.portfolio.enums.Order.size_type`.
 
             Valid options include `SizeType.Amount`, `SizeType.Value`, `SizeType.Percent(100)`, and
             `SizeType.ValuePercent(100)`. Other types are incompatible with signals.
@@ -699,27 +699,27 @@ def from_basic_signals_nb(
 
             Provided as a scalar, or per row and/or column.
 
-            See `vectorbtpro.portfolio.enums.Order.fees` for more details.
+            See `vectorbtpro.portfolio.enums.Order.fees`.
         fixed_fees (FlexArray2dLike): Fixed fee amount.
 
             Provided as a scalar, or per row and/or column.
 
-            See `vectorbtpro.portfolio.enums.Order.fixed_fees` for more details.
+            See `vectorbtpro.portfolio.enums.Order.fixed_fees`.
         slippage (FlexArray2dLike): Slippage amount.
 
             Provided as a scalar, or per row and/or column.
 
-            See `vectorbtpro.portfolio.enums.Order.slippage` for more details.
+            See `vectorbtpro.portfolio.enums.Order.slippage`.
         min_size (FlexArray2dLike): Minimum allowable order size.
 
             Provided as a scalar, or per row and/or column.
 
-            See `vectorbtpro.portfolio.enums.Order.min_size` for more details.
+            See `vectorbtpro.portfolio.enums.Order.min_size`.
         max_size (FlexArray2dLike): Maximum allowable order size.
 
             Provided as a scalar, or per row and/or column.
 
-            See `vectorbtpro.portfolio.enums.Order.max_size` for more details.
+            See `vectorbtpro.portfolio.enums.Order.max_size`.
 
             !!! note
                 With accumulation enabled, a very low `max_size` might hinder proper position closure.
@@ -727,49 +727,49 @@ def from_basic_signals_nb(
 
             Provided as a scalar, or per row and/or column.
 
-            See `vectorbtpro.portfolio.enums.Order.size_granularity` for more details.
+            See `vectorbtpro.portfolio.enums.Order.size_granularity`.
         leverage (FlexArray2dLike): Leverage factor.
 
             Provided as a scalar, or per row and/or column.
 
-            See `vectorbtpro.portfolio.enums.Order.leverage` for more details.
+            See `vectorbtpro.portfolio.enums.Order.leverage`.
         leverage_mode (FlexArray2dLike): Mode for leverage calculation.
 
             Provided as a scalar, or per row and/or column.
 
-            See `vectorbtpro.portfolio.enums.Order.leverage_mode` for more details.
+            See `vectorbtpro.portfolio.enums.Order.leverage_mode`.
         reject_prob (FlexArray2dLike): Probability of order rejection.
 
             Provided as a scalar, or per row and/or column.
 
-            See `vectorbtpro.portfolio.enums.Order.reject_prob` for more details.
+            See `vectorbtpro.portfolio.enums.Order.reject_prob`.
         price_area_vio_mode (FlexArray2dLike): Mode for handling price area violations.
 
             Provided as a scalar, or per row and/or column.
 
-            See `vectorbtpro.portfolio.enums.Order.price_area_vio_mode` for more details.
+            See `vectorbtpro.portfolio.enums.Order.price_area_vio_mode`.
         allow_partial (FlexArray2dLike): Indicator whether partial orders are allowed.
 
             Provided as a scalar, or per row and/or column.
 
-            See `vectorbtpro.portfolio.enums.Order.allow_partial` for more details.
+            See `vectorbtpro.portfolio.enums.Order.allow_partial`.
 
             Does not apply when the order size is `np.inf`.
         raise_reject (FlexArray2dLike): Indicator whether to raise errors on order rejection.
 
             Provided as a scalar, or per row and/or column.
 
-            See `vectorbtpro.portfolio.enums.Order.raise_reject` for more details.
+            See `vectorbtpro.portfolio.enums.Order.raise_reject`.
         log (FlexArray2dLike): Logging flag.
 
             Provided as a scalar, or per row and/or column.
 
-            See `vectorbtpro.portfolio.enums.Order.log` for more details.
+            See `vectorbtpro.portfolio.enums.Order.log`.
         val_price (FlexArray2dLike): Valuation price.
 
             Provided as a scalar, or per row and/or column.
 
-            See `vectorbtpro.portfolio.enums.ValPriceType` for more details.
+            See `vectorbtpro.portfolio.enums.ValPriceType`.
 
             * Any `-np.inf` element is replaced by the latest valuation price
                 (using `open` or a previously known value if `ffill_val_price` is True).
@@ -778,27 +778,27 @@ def from_basic_signals_nb(
 
             Provided as a scalar, or per row and/or column.
 
-            See `vectorbtpro.portfolio.enums.AccumulationMode` for more details.
+            See `vectorbtpro.portfolio.enums.AccumulationMode`.
         upon_long_conflict (FlexArray2dLike): Conflict resolution mode for long signals.
 
             Provided as a scalar, or per row and/or column.
 
-            See `vectorbtpro.portfolio.enums.ConflictMode` for more details.
+            See `vectorbtpro.portfolio.enums.ConflictMode`.
         upon_short_conflict (FlexArray2dLike): Conflict resolution mode for short signals.
 
             Provided as a scalar, or per row and/or column.
 
-            See `vectorbtpro.portfolio.enums.ConflictMode` for more details.
+            See `vectorbtpro.portfolio.enums.ConflictMode`.
         upon_dir_conflict (FlexArray2dLike): Signal direction conflict mode.
 
             Provided as a scalar, or per row and/or column.
 
-            See `vectorbtpro.portfolio.enums.DirectionConflictMode` for more details.
+            See `vectorbtpro.portfolio.enums.DirectionConflictMode`.
         upon_opposite_entry (FlexArray2dLike): Mode for handling opposite entry signals.
 
             Provided as a scalar, or per row and/or column.
 
-            See `vectorbtpro.portfolio.enums.OppositeEntryMode` for more details.
+            See `vectorbtpro.portfolio.enums.OppositeEntryMode`.
         from_ago (FlexArray2dLike): Lookback offset for price selection.
 
             Provided as a scalar, or per row and/or column.
@@ -1652,7 +1652,7 @@ def from_signals_nb(
 
             Provided as a scalar, or per row and/or column.
 
-            See `vectorbtpro.portfolio.enums.Order.size` for more details.
+            See `vectorbtpro.portfolio.enums.Order.size`.
 
             !!! note
                 Negative size is not allowed; use signals to express direction.
@@ -1660,12 +1660,12 @@ def from_signals_nb(
 
             Provided as a scalar, or per row and/or column.
 
-            See `vectorbtpro.portfolio.enums.Order.price` for more details.
+            See `vectorbtpro.portfolio.enums.Order.price`.
         size_type (FlexArray2dLike): Order size type.
 
             Provided as a scalar, or per row and/or column.
 
-            See `vectorbtpro.portfolio.enums.Order.size_type` for more details.
+            See `vectorbtpro.portfolio.enums.Order.size_type`.
 
             Valid options include `SizeType.Amount`, `SizeType.Value`, `SizeType.Percent(100)`, and
             `SizeType.ValuePercent(100)`. Other types are incompatible with signals.
@@ -1673,27 +1673,27 @@ def from_signals_nb(
 
             Provided as a scalar, or per row and/or column.
 
-            See `vectorbtpro.portfolio.enums.Order.fees` for more details.
+            See `vectorbtpro.portfolio.enums.Order.fees`.
         fixed_fees (FlexArray2dLike): Fixed fee amount.
 
             Provided as a scalar, or per row and/or column.
 
-            See `vectorbtpro.portfolio.enums.Order.fixed_fees` for more details.
+            See `vectorbtpro.portfolio.enums.Order.fixed_fees`.
         slippage (FlexArray2dLike): Slippage amount.
 
             Provided as a scalar, or per row and/or column.
 
-            See `vectorbtpro.portfolio.enums.Order.slippage` for more details.
+            See `vectorbtpro.portfolio.enums.Order.slippage`.
         min_size (FlexArray2dLike): Minimum allowable order size.
 
             Provided as a scalar, or per row and/or column.
 
-            See `vectorbtpro.portfolio.enums.Order.min_size` for more details.
+            See `vectorbtpro.portfolio.enums.Order.min_size`.
         max_size (FlexArray2dLike): Maximum allowable order size.
 
             Provided as a scalar, or per row and/or column.
 
-            See `vectorbtpro.portfolio.enums.Order.max_size` for more details.
+            See `vectorbtpro.portfolio.enums.Order.max_size`.
 
             !!! note
                 With accumulation enabled, a very low `max_size` might hinder proper position closure.
@@ -1701,49 +1701,49 @@ def from_signals_nb(
 
             Provided as a scalar, or per row and/or column.
 
-            See `vectorbtpro.portfolio.enums.Order.size_granularity` for more details.
+            See `vectorbtpro.portfolio.enums.Order.size_granularity`.
         leverage (FlexArray2dLike): Leverage factor.
 
             Provided as a scalar, or per row and/or column.
 
-            See `vectorbtpro.portfolio.enums.Order.leverage` for more details.
+            See `vectorbtpro.portfolio.enums.Order.leverage`.
         leverage_mode (FlexArray2dLike): Mode for leverage calculation.
 
             Provided as a scalar, or per row and/or column.
 
-            See `vectorbtpro.portfolio.enums.Order.leverage_mode` for more details.
+            See `vectorbtpro.portfolio.enums.Order.leverage_mode`.
         reject_prob (FlexArray2dLike): Probability of order rejection.
 
             Provided as a scalar, or per row and/or column.
 
-            See `vectorbtpro.portfolio.enums.Order.reject_prob` for more details.
+            See `vectorbtpro.portfolio.enums.Order.reject_prob`.
         price_area_vio_mode (FlexArray2dLike): Mode for handling price area violations.
 
             Provided as a scalar, or per row and/or column.
 
-            See `vectorbtpro.portfolio.enums.Order.price_area_vio_mode` for more details.
+            See `vectorbtpro.portfolio.enums.Order.price_area_vio_mode`.
         allow_partial (FlexArray2dLike): Indicator whether partial orders are allowed.
 
             Provided as a scalar, or per row and/or column.
 
-            See `vectorbtpro.portfolio.enums.Order.allow_partial` for more details.
+            See `vectorbtpro.portfolio.enums.Order.allow_partial`.
 
             Does not apply when the order size is `np.inf`.
         raise_reject (FlexArray2dLike): Indicator whether to raise errors on order rejection.
 
             Provided as a scalar, or per row and/or column.
 
-            See `vectorbtpro.portfolio.enums.Order.raise_reject` for more details.
+            See `vectorbtpro.portfolio.enums.Order.raise_reject`.
         log (FlexArray2dLike): Logging flag.
 
             Provided as a scalar, or per row and/or column.
 
-            See `vectorbtpro.portfolio.enums.Order.log` for more details.
+            See `vectorbtpro.portfolio.enums.Order.log`.
         val_price (FlexArray2dLike): Valuation price.
 
             Provided as a scalar, or per row and/or column.
 
-            See `vectorbtpro.portfolio.enums.ValPriceType` for more details.
+            See `vectorbtpro.portfolio.enums.ValPriceType`.
 
             * Any `-np.inf` element is replaced by the latest valuation price
                 (using `open` or a previously known value if `ffill_val_price` is True).
@@ -1752,32 +1752,32 @@ def from_signals_nb(
 
             Provided as a scalar, or per row and/or column.
 
-            See `vectorbtpro.portfolio.enums.AccumulationMode` for more details.
+            See `vectorbtpro.portfolio.enums.AccumulationMode`.
         upon_long_conflict (FlexArray2dLike): Conflict resolution mode for long signals.
 
             Provided as a scalar, or per row and/or column.
 
-            See `vectorbtpro.portfolio.enums.ConflictMode` for more details.
+            See `vectorbtpro.portfolio.enums.ConflictMode`.
         upon_short_conflict (FlexArray2dLike): Conflict resolution mode for short signals.
 
             Provided as a scalar, or per row and/or column.
 
-            See `vectorbtpro.portfolio.enums.ConflictMode` for more details.
+            See `vectorbtpro.portfolio.enums.ConflictMode`.
         upon_dir_conflict (FlexArray2dLike): Signal direction conflict mode.
 
             Provided as a scalar, or per row and/or column.
 
-            See `vectorbtpro.portfolio.enums.DirectionConflictMode` for more details.
+            See `vectorbtpro.portfolio.enums.DirectionConflictMode`.
         upon_opposite_entry (FlexArray2dLike): Mode for handling opposite entry signals.
 
             Provided as a scalar, or per row and/or column.
 
-            See `vectorbtpro.portfolio.enums.OppositeEntryMode` for more details.
+            See `vectorbtpro.portfolio.enums.OppositeEntryMode`.
         order_type (FlexArray2dLike): Order type.
 
             Provided as a scalar, or per row and/or column.
 
-            See `vectorbtpro.portfolio.enums.OrderType` for more details.
+            See `vectorbtpro.portfolio.enums.OrderType`.
 
             !!! note
                 Only one active limit order is allowed at a time.
@@ -1813,18 +1813,18 @@ def from_signals_nb(
 
             Provided as a scalar, or per row and/or column.
 
-            See `vectorbtpro.portfolio.enums.LimitOrderPrice` for more details. Positive values
+            See `vectorbtpro.portfolio.enums.LimitOrderPrice`. Positive values
             are used directly, while negative values are interpreted as enumerated options.
         upon_adj_limit_conflict (FlexArray2dLike): Conflict mode for adjacent limit and signal conflicts.
 
             Provided as a scalar, or per row and/or column.
 
-            See `vectorbtpro.portfolio.enums.PendingConflictMode` for more details.
+            See `vectorbtpro.portfolio.enums.PendingConflictMode`.
         upon_opp_limit_conflict (FlexArray2dLike): Conflict mode for opposite limit and signal conflicts.
 
             Provided as a scalar, or per row and/or column.
 
-            See `vectorbtpro.portfolio.enums.PendingConflictMode` for more details.
+            See `vectorbtpro.portfolio.enums.PendingConflictMode`.
         use_stops (bool): Flag indicating whether to enable stop orders.
 
             Provided as a scalar, or per row and/or column.
@@ -1835,7 +1835,7 @@ def from_signals_nb(
 
             Provided as a scalar, or per row and/or column.
 
-            See `vectorbtpro.portfolio.enums.StopLadderMode` for more details.
+            See `vectorbtpro.portfolio.enums.StopLadderMode`.
             If enabled, rows in the provided arrays become ladder steps.
             For price-based stops, pad with `np.nan`; for time-based stops, pad with -1.
         sl_stop (FlexArray2dLike): Stop loss level.
@@ -1872,22 +1872,22 @@ def from_signals_nb(
 
             Provided as a scalar, or per row and/or column.
 
-            See `vectorbtpro.portfolio.enums.StopEntryPrice` for more details.
+            See `vectorbtpro.portfolio.enums.StopEntryPrice`.
         stop_exit_price (FlexArray2dLike): Exit price reference for stop orders.
 
             Provided as a scalar, or per row and/or column.
 
-            See `vectorbtpro.portfolio.enums.StopExitPrice` for more details.
+            See `vectorbtpro.portfolio.enums.StopExitPrice`.
         stop_exit_type (FlexArray2dLike): Type of stop order exit.
 
             Provided as a scalar, or per row and/or column.
 
-            See `vectorbtpro.portfolio.enums.StopExitType` for more details.
+            See `vectorbtpro.portfolio.enums.StopExitType`.
         stop_order_type (FlexArray2dLike): Order type used for stops.
 
             Provided as a scalar, or per row and/or column.
 
-            See `vectorbtpro.portfolio.enums.OrderType` for more details.
+            See `vectorbtpro.portfolio.enums.OrderType`.
         stop_limit_delta (FlexArray2dLike): Delta to compute the limit price for stop orders,
             analogous to `limit_delta`.
 
@@ -1896,28 +1896,28 @@ def from_signals_nb(
 
             Provided as a scalar, or per row and/or column.
 
-            See `vectorbtpro.portfolio.enums.StopUpdateMode` for more details.
+            See `vectorbtpro.portfolio.enums.StopUpdateMode`.
             Effective only if accumulation is enabled.
         upon_adj_stop_conflict (FlexArray2dLike): Resolution mode for adjacent stop conflicts.
 
             Provided as a scalar, or per row and/or column.
 
-            See `vectorbtpro.portfolio.enums.PendingConflictMode` for more details.
+            See `vectorbtpro.portfolio.enums.PendingConflictMode`.
         upon_opp_stop_conflict (FlexArray2dLike): Resolution mode for opposite stop conflicts.
 
             Provided as a scalar, or per row and/or column.
 
-            See `vectorbtpro.portfolio.enums.PendingConflictMode` for more details.
+            See `vectorbtpro.portfolio.enums.PendingConflictMode`.
         delta_format (FlexArray2dLike): Format specification for delta values.
 
             Provided as a scalar, or per row and/or column.
 
-            See `vectorbtpro.portfolio.enums.DeltaFormat` for more details.
+            See `vectorbtpro.portfolio.enums.DeltaFormat`.
         time_delta_format (FlexArray2dLike): Format specification for time delta values.
 
             Provided as a scalar, or per row and/or column.
 
-            See `vectorbtpro.portfolio.enums.TimeDeltaFormat` for more details.
+            See `vectorbtpro.portfolio.enums.TimeDeltaFormat`.
         from_ago (FlexArray2dLike): Lookback offset for price selection.
 
             Provided as a scalar, or per row and/or column.
@@ -4506,7 +4506,7 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
 
             Provided as a scalar, or per row and/or column.
 
-            See `vectorbtpro.portfolio.enums.Order.size` for more details.
+            See `vectorbtpro.portfolio.enums.Order.size`.
 
             !!! note
                 Negative size is not allowed; use signals to express direction.
@@ -4514,12 +4514,12 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
 
             Provided as a scalar, or per row and/or column.
 
-            See `vectorbtpro.portfolio.enums.Order.price` for more details.
+            See `vectorbtpro.portfolio.enums.Order.price`.
         size_type (FlexArray2dLike): Order size type.
 
             Provided as a scalar, or per row and/or column.
 
-            See `vectorbtpro.portfolio.enums.Order.size_type` for more details.
+            See `vectorbtpro.portfolio.enums.Order.size_type`.
 
             Valid options include `SizeType.Amount`, `SizeType.Value`, `SizeType.Percent(100)`, and
             `SizeType.ValuePercent(100)`. Other types are incompatible with signals.
@@ -4527,27 +4527,27 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
 
             Provided as a scalar, or per row and/or column.
 
-            See `vectorbtpro.portfolio.enums.Order.fees` for more details.
+            See `vectorbtpro.portfolio.enums.Order.fees`.
         fixed_fees (FlexArray2dLike): Fixed fee amount.
 
             Provided as a scalar, or per row and/or column.
 
-            See `vectorbtpro.portfolio.enums.Order.fixed_fees` for more details.
+            See `vectorbtpro.portfolio.enums.Order.fixed_fees`.
         slippage (FlexArray2dLike): Slippage amount.
 
             Provided as a scalar, or per row and/or column.
 
-            See `vectorbtpro.portfolio.enums.Order.slippage` for more details.
+            See `vectorbtpro.portfolio.enums.Order.slippage`.
         min_size (FlexArray2dLike): Minimum allowable order size.
 
             Provided as a scalar, or per row and/or column.
 
-            See `vectorbtpro.portfolio.enums.Order.min_size` for more details.
+            See `vectorbtpro.portfolio.enums.Order.min_size`.
         max_size (FlexArray2dLike): Maximum allowable order size.
 
             Provided as a scalar, or per row and/or column.
 
-            See `vectorbtpro.portfolio.enums.Order.max_size` for more details.
+            See `vectorbtpro.portfolio.enums.Order.max_size`.
 
             !!! note
                 With accumulation enabled, a very low `max_size` might hinder proper position closure.
@@ -4555,49 +4555,49 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
 
             Provided as a scalar, or per row and/or column.
 
-            See `vectorbtpro.portfolio.enums.Order.size_granularity` for more details.
+            See `vectorbtpro.portfolio.enums.Order.size_granularity`.
         leverage (FlexArray2dLike): Leverage factor.
 
             Provided as a scalar, or per row and/or column.
 
-            See `vectorbtpro.portfolio.enums.Order.leverage` for more details.
+            See `vectorbtpro.portfolio.enums.Order.leverage`.
         leverage_mode (FlexArray2dLike): Mode for leverage calculation.
 
             Provided as a scalar, or per row and/or column.
 
-            See `vectorbtpro.portfolio.enums.Order.leverage_mode` for more details.
+            See `vectorbtpro.portfolio.enums.Order.leverage_mode`.
         reject_prob (FlexArray2dLike): Probability of order rejection.
 
             Provided as a scalar, or per row and/or column.
 
-            See `vectorbtpro.portfolio.enums.Order.reject_prob` for more details.
+            See `vectorbtpro.portfolio.enums.Order.reject_prob`.
         price_area_vio_mode (FlexArray2dLike): Mode for handling price area violations.
 
             Provided as a scalar, or per row and/or column.
 
-            See `vectorbtpro.portfolio.enums.Order.price_area_vio_mode` for more details.
+            See `vectorbtpro.portfolio.enums.Order.price_area_vio_mode`.
         allow_partial (FlexArray2dLike): Indicator whether partial orders are allowed.
 
             Provided as a scalar, or per row and/or column.
 
-            See `vectorbtpro.portfolio.enums.Order.allow_partial` for more details.
+            See `vectorbtpro.portfolio.enums.Order.allow_partial`.
 
             Does not apply when the order size is `np.inf`.
         raise_reject (FlexArray2dLike): Indicator whether to raise errors on order rejection.
 
             Provided as a scalar, or per row and/or column.
 
-            See `vectorbtpro.portfolio.enums.Order.raise_reject` for more details.
+            See `vectorbtpro.portfolio.enums.Order.raise_reject`.
         log (FlexArray2dLike): Logging flag.
 
             Provided as a scalar, or per row and/or column.
 
-            See `vectorbtpro.portfolio.enums.Order.log` for more details.
+            See `vectorbtpro.portfolio.enums.Order.log`.
         val_price (FlexArray2dLike): Valuation price.
 
             Provided as a scalar, or per row and/or column.
 
-            See `vectorbtpro.portfolio.enums.ValPriceType` for more details.
+            See `vectorbtpro.portfolio.enums.ValPriceType`.
 
             * Any `-np.inf` element is replaced by the latest valuation price
                 (using `open` or a previously known value if `ffill_val_price` is True).
@@ -4606,32 +4606,32 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
 
             Provided as a scalar, or per row and/or column.
 
-            See `vectorbtpro.portfolio.enums.AccumulationMode` for more details.
+            See `vectorbtpro.portfolio.enums.AccumulationMode`.
         upon_long_conflict (FlexArray2dLike): Conflict resolution mode for long signals.
 
             Provided as a scalar, or per row and/or column.
 
-            See `vectorbtpro.portfolio.enums.ConflictMode` for more details.
+            See `vectorbtpro.portfolio.enums.ConflictMode`.
         upon_short_conflict (FlexArray2dLike): Conflict resolution mode for short signals.
 
             Provided as a scalar, or per row and/or column.
 
-            See `vectorbtpro.portfolio.enums.ConflictMode` for more details.
+            See `vectorbtpro.portfolio.enums.ConflictMode`.
         upon_dir_conflict (FlexArray2dLike): Signal direction conflict mode.
 
             Provided as a scalar, or per row and/or column.
 
-            See `vectorbtpro.portfolio.enums.DirectionConflictMode` for more details.
+            See `vectorbtpro.portfolio.enums.DirectionConflictMode`.
         upon_opposite_entry (FlexArray2dLike): Mode for handling opposite entry signals.
 
             Provided as a scalar, or per row and/or column.
 
-            See `vectorbtpro.portfolio.enums.OppositeEntryMode` for more details.
+            See `vectorbtpro.portfolio.enums.OppositeEntryMode`.
         order_type (FlexArray2dLike): Order type.
 
             Provided as a scalar, or per row and/or column.
 
-            See `vectorbtpro.portfolio.enums.OrderType` for more details.
+            See `vectorbtpro.portfolio.enums.OrderType`.
 
             !!! note
                 Only one active limit order is allowed at a time.
@@ -4667,18 +4667,18 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
 
             Provided as a scalar, or per row and/or column.
 
-            See `vectorbtpro.portfolio.enums.LimitOrderPrice` for more details. Positive values
+            See `vectorbtpro.portfolio.enums.LimitOrderPrice`. Positive values
             are used directly, while negative values are interpreted as enumerated options.
         upon_adj_limit_conflict (FlexArray2dLike): Conflict mode for adjacent limit and signal conflicts.
 
             Provided as a scalar, or per row and/or column.
 
-            See `vectorbtpro.portfolio.enums.PendingConflictMode` for more details.
+            See `vectorbtpro.portfolio.enums.PendingConflictMode`.
         upon_opp_limit_conflict (FlexArray2dLike): Conflict mode for opposite limit and signal conflicts.
 
             Provided as a scalar, or per row and/or column.
 
-            See `vectorbtpro.portfolio.enums.PendingConflictMode` for more details.
+            See `vectorbtpro.portfolio.enums.PendingConflictMode`.
         use_stops (bool): Flag indicating whether to enable stop orders.
 
             Provided as a scalar, or per row and/or column.
@@ -4689,7 +4689,7 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
 
             Provided as a scalar, or per row and/or column.
 
-            See `vectorbtpro.portfolio.enums.StopLadderMode` for more details.
+            See `vectorbtpro.portfolio.enums.StopLadderMode`.
             If enabled, rows in the provided arrays become ladder steps.
             For price-based stops, pad with `np.nan`; for time-based stops, pad with -1.
         sl_stop (FlexArray2dLike): Stop loss level.
@@ -4726,22 +4726,22 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
 
             Provided as a scalar, or per row and/or column.
 
-            See `vectorbtpro.portfolio.enums.StopEntryPrice` for more details.
+            See `vectorbtpro.portfolio.enums.StopEntryPrice`.
         stop_exit_price (FlexArray2dLike): Exit price reference for stop orders.
 
             Provided as a scalar, or per row and/or column.
 
-            See `vectorbtpro.portfolio.enums.StopExitPrice` for more details.
+            See `vectorbtpro.portfolio.enums.StopExitPrice`.
         stop_exit_type (FlexArray2dLike): Type of stop order exit.
 
             Provided as a scalar, or per row and/or column.
 
-            See `vectorbtpro.portfolio.enums.StopExitType` for more details.
+            See `vectorbtpro.portfolio.enums.StopExitType`.
         stop_order_type (FlexArray2dLike): Order type used for stops.
 
             Provided as a scalar, or per row and/or column.
 
-            See `vectorbtpro.portfolio.enums.OrderType` for more details.
+            See `vectorbtpro.portfolio.enums.OrderType`.
         stop_limit_delta (FlexArray2dLike): Delta to compute the limit price for stop orders,
             analogous to `limit_delta`.
 
@@ -4750,28 +4750,28 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
 
             Provided as a scalar, or per row and/or column.
 
-            See `vectorbtpro.portfolio.enums.StopUpdateMode` for more details.
+            See `vectorbtpro.portfolio.enums.StopUpdateMode`.
             Effective only if accumulation is enabled.
         upon_adj_stop_conflict (FlexArray2dLike): Resolution mode for adjacent stop conflicts.
 
             Provided as a scalar, or per row and/or column.
 
-            See `vectorbtpro.portfolio.enums.PendingConflictMode` for more details.
+            See `vectorbtpro.portfolio.enums.PendingConflictMode`.
         upon_opp_stop_conflict (FlexArray2dLike): Resolution mode for opposite stop conflicts.
 
             Provided as a scalar, or per row and/or column.
 
-            See `vectorbtpro.portfolio.enums.PendingConflictMode` for more details.
+            See `vectorbtpro.portfolio.enums.PendingConflictMode`.
         delta_format (FlexArray2dLike): Format specification for delta values.
 
             Provided as a scalar, or per row and/or column.
 
-            See `vectorbtpro.portfolio.enums.DeltaFormat` for more details.
+            See `vectorbtpro.portfolio.enums.DeltaFormat`.
         time_delta_format (FlexArray2dLike): Format specification for time delta values.
 
             Provided as a scalar, or per row and/or column.
 
-            See `vectorbtpro.portfolio.enums.TimeDeltaFormat` for more details.
+            See `vectorbtpro.portfolio.enums.TimeDeltaFormat`.
         from_ago (FlexArray2dLike): Lookback offset for price selection.
 
             Provided as a scalar, or per row and/or column.
@@ -7211,7 +7211,7 @@ def dir_to_ls_signals_nb(
         exits (FlexArray2d): A 2D array of boolean exit signals.
         direction (FlexArray2d): A 2D array specifying the trade direction.
 
-            See `vectorbtpro.portfolio.enums.Direction` for more details.
+            See `vectorbtpro.portfolio.enums.Direction`.
 
     Returns:
         Tuple[Array2d, Array2d, Array2d, Array2d]: A tuple containing:
@@ -7310,7 +7310,7 @@ def holding_enex_signal_func_nb(  # % line.replace("holding_enex_signal_func_nb"
         c (SignalContext): The signal context holding trading information.
         direction (int): An integer representing the signal direction.
 
-            See `vectorbtpro.portfolio.enums.Direction` for more details.
+            See `vectorbtpro.portfolio.enums.Direction`.
         close_at_end (bool): Flag indicating whether to exit the position at the end of the period.
         adjust_func_nb (AdjustFunc): Function to adjust the context before signal generation.
         adjust_args (Args): Positional arguments for `adjust_func_nb`.
@@ -7479,10 +7479,10 @@ def order_signal_func_nb(  # % line.replace("order_signal_func_nb", "signal_func
         price (FlexArray2d): 2D array of order prices.
         size_type (FlexArray2d): 2D array representing the order size types.
 
-            See `vectorbtpro.portfolio.enums.SizeType` for more details.
+            See `vectorbtpro.portfolio.enums.SizeType`.
         direction (FlexArray2d): 2D array of order directions.
 
-            See `vectorbtpro.portfolio.enums.Direction` for more details.
+            See `vectorbtpro.portfolio.enums.Direction`.
         min_size (FlexArray2d): 2D array of minimum order sizes.
         max_size (FlexArray2d): 2D array of maximum order sizes.
         val_price (FlexArray2d): 2D array of valuation prices for order evaluation.

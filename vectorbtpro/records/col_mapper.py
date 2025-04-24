@@ -179,7 +179,7 @@ class ColumnMapper(Wrapping):
             col_idxs (MaybeIndexArray): Column indices to select.
             jitted (JittedOption): Option to control JIT compilation.
 
-                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
 
         Returns:
             Tuple[Array1d, Array1d]: A tuple containing the new indices and the updated column array.
@@ -293,7 +293,7 @@ class ColumnMapper(Wrapping):
             group_by (GroupByLike): Grouping specification.
             jitted (JittedOption): Option to control JIT compilation.
 
-                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
 
         Returns:
             GroupLens: Group-aware column lengths.
@@ -331,7 +331,7 @@ class ColumnMapper(Wrapping):
             group_by (GroupByLike): Grouping specification.
             jitted (JittedOption): Option to control JIT compilation.
 
-                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
 
         Returns:
             GroupMap: Group-aware column mapping.
@@ -353,7 +353,7 @@ class ColumnMapper(Wrapping):
         Args:
             jitted (JittedOption): Option to control JIT compilation.
 
-                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
 
         Returns:
             bool: True if the column array is sorted, otherwise False.

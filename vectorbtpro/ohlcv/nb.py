@@ -102,7 +102,7 @@ def mirror_ohlc_1d_nb(
             If provided and not NaN, it replaces the first valid reference price.
         ref_feature (int): Indicator for the reference price feature.
 
-            See `vectorbtpro.ohlcv.enums.PriceFeature` for available options.
+            See `vectorbtpro.ohlcv.enums.PriceFeature`.
             A value of -1 enables auto-detection of the first non-NaN price.
 
     Returns:
@@ -239,7 +239,7 @@ def mirror_ohlc_nb(
             If provided and not NaN, it replaces the first valid reference price.
         ref_feature (FlexArray1dLike): Scalar or 1D array specifying the reference price feature.
 
-            See `vectorbtpro.ohlcv.enums.PriceFeature` for available options.
+            See `vectorbtpro.ohlcv.enums.PriceFeature`.
             A value of -1 enables auto-detection of the first non-NaN price.
 
     Returns:

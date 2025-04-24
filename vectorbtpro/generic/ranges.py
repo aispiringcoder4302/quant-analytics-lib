@@ -265,10 +265,10 @@ class Ranges(PriceRecords):
             attach_as_close (bool): Whether to attach the input array as the `close` field.
             jitted (JittedOption): Option to control JIT compilation.
 
-                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
             chunked (ChunkedOption): Option to control chunked processing.
 
-                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
             **kwargs: Keyword arguments for `Ranges`.
 
@@ -322,10 +322,10 @@ class Ranges(PriceRecords):
             idx_field_or_arr (Union[None, str, Array1d]): Field name or array for extracting index values.
             jitted (JittedOption): Option to control JIT compilation.
 
-                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
             chunked (ChunkedOption): Option to control chunked processing.
 
-                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             **kwargs: Keyword arguments for `Ranges`.
 
         Returns:
@@ -502,10 +502,10 @@ class Ranges(PriceRecords):
             group_by (GroupByLike): Grouping specification.
             jitted (JittedOption): Option to control JIT compilation.
 
-                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
             chunked (ChunkedOption): Option to control chunked processing.
 
-                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
@@ -596,10 +596,10 @@ class Ranges(PriceRecords):
         Args:
             jitted (JittedOption): Option to control JIT compilation.
 
-                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
             chunked (ChunkedOption): Option to control chunked processing.
 
-                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             **kwargs: Keyword arguments for `Ranges.map_array`.
 
         Returns:
@@ -632,10 +632,10 @@ class Ranges(PriceRecords):
         Args:
             jitted (JittedOption): Option to control JIT compilation.
 
-                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
             chunked (ChunkedOption): Option to control chunked processing.
 
-                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             **kwargs: Keyword arguments for `Ranges.map_array`.
 
         Returns:
@@ -672,10 +672,10 @@ class Ranges(PriceRecords):
             group_by (GroupByLike): Grouping specification.
             jitted (JittedOption): Option to control JIT compilation.
 
-                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
             chunked (ChunkedOption): Option to control chunked processing.
 
-                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
             **kwargs: Keyword arguments for `vectorbtpro.records.mapped_array.MappedArray.mean`.
 
@@ -709,10 +709,10 @@ class Ranges(PriceRecords):
             group_by (GroupByLike): Grouping specification.
             jitted (JittedOption): Option to control JIT compilation.
 
-                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
             chunked (ChunkedOption): Option to control chunked processing.
 
-                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
             **kwargs: Keyword arguments for `vectorbtpro.records.mapped_array.MappedArray.max`.
 
@@ -745,10 +745,10 @@ class Ranges(PriceRecords):
             group_by (GroupByLike): Grouping specification.
             jitted (JittedOption): Option to control JIT compilation.
 
-                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
             chunked (ChunkedOption): Option to control chunked processing.
 
-                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
@@ -829,11 +829,11 @@ class Ranges(PriceRecords):
                 If a string, it may refer to a field mapping.
             jitted (JittedOption): Option to control JIT compilation.
 
-                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
             clean_index_kwargs (KwargsLike): Keyword arguments for cleaning MultiIndex levels.
 
-                See `vectorbtpro.base.indexes.clean_index` for details.
+                See `vectorbtpro.base.indexes.clean_index`.
 
         Returns:
             Union[Tuple[Array1d, Array2d], Frame]: If `return_raw` is True, returns a tuple with
@@ -1878,13 +1878,13 @@ class PSC(DefineMixin):
     interp_mode: tp.Union[int, str] = define.optional_field()
     """Interpolation mode for mapping array values.
     
-    See `vectorbtpro.generic.enums.InterpMode` for options.
+    See `vectorbtpro.generic.enums.InterpMode`.
     """
 
     rescale_mode: tp.Union[int, str] = define.optional_field()
     """Rescaling mode for adjusting the ranges of `PSC.arr` and `PSC.pattern`.
     
-    See `vectorbtpro.generic.enums.RescaleMode` for options.
+    See `vectorbtpro.generic.enums.RescaleMode`.
     """
 
     vmin: tp.Union[float] = define.optional_field()
@@ -1929,13 +1929,13 @@ class PSC(DefineMixin):
     error_type: tp.Union[int, str] = define.optional_field()
     """Error computation mode.
 
-    See `vectorbtpro.generic.enums.ErrorType` for options.
+    See `vectorbtpro.generic.enums.ErrorType`.
     """
 
     distance_measure: tp.Union[int, str] = define.optional_field()
     """Method for measuring distance (e.g., MAE, MSE, RMSE).
 
-    See `vectorbtpro.generic.enums.DistanceMeasure` for options.
+    See `vectorbtpro.generic.enums.DistanceMeasure`.
     """
 
     max_error: tp.Union[tp.ArrayLike] = define.optional_field()
@@ -1949,7 +1949,7 @@ class PSC(DefineMixin):
     
     If None, defaults to `PSC.interp_mode`.
     
-    See `vectorbtpro.generic.enums.InterpMode` for options.
+    See `vectorbtpro.generic.enums.InterpMode`.
     """
 
     max_error_as_maxdist: tp.Union[bool] = define.optional_field()
@@ -1987,7 +1987,7 @@ class PSC(DefineMixin):
     overlap_mode: tp.Union[int, str] = define.optional_field()
     """Mode for handling overlapping matches. 
     
-    See `vectorbtpro.generic.enums.OverlapMode` for options.
+    See `vectorbtpro.generic.enums.OverlapMode`.
     """
 
     max_records: tp.Optional[int] = define.optional_field()
@@ -2216,14 +2216,14 @@ class PatternRanges(Ranges):
                 otherwise, per array.
             jitted (JittedOption): Option to control JIT compilation.
 
-                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
             execute_kwargs (KwargsLike): Keyword arguments for the execution handler.
 
-                See `vectorbtpro.utils.execution.execute` for details.
+                See `vectorbtpro.utils.execution.execute`.
             attach_as_close (bool): Attach the input array as the `close` field if True.
             clean_index_kwargs (KwargsLike): Keyword arguments for cleaning MultiIndex levels.
 
-                See `vectorbtpro.base.indexes.clean_index` for details.
+                See `vectorbtpro.base.indexes.clean_index`.
             wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
             **kwargs: Keyword arguments for `PatternRanges`.
 

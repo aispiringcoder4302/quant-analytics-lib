@@ -651,7 +651,7 @@ class IndicatorBase(Analyzable):
                 with their broadcasted values.
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
 
-                See `vectorbtpro.base.reshaping.broadcast` for details.
+                See `vectorbtpro.base.reshaping.broadcast`.
             template_context (KwargsLike): Additional context for template substitution.
             params (Optional[MaybeParams]): Parameters provided as a mapping or sequence.
 
@@ -2475,10 +2475,10 @@ class IndicatorFactory(Configured):
             require_input_shape (bool): Indicates whether the input shape is required.
             param_settings (KwargsLike): A dictionary of parameter settings keyed by name.
 
-                See `IndicatorBase.run_pipeline` for details.
+                See `IndicatorBase.run_pipeline`.
             in_output_settings (KwargsLike): A dictionary of in-place output settings keyed by name.
 
-                See `IndicatorBase.run_pipeline` for valid keys.
+                See `IndicatorBase.run_pipeline`.
             hide_params (Union[None, bool, Sequence[str]]): Either a boolean to hide all parameter column
                 levels or a list of parameter names for which the column levels should be hidden.
             hide_default (bool): If True, hides column levels for parameters that have default values.
@@ -3158,7 +3158,7 @@ Returns:
                 single_comb (bool): Whether to combine outputs into a single result.
                 execute_kwargs (KwargsLike): Keyword arguments for the execution handler.
 
-                    See `vectorbtpro.utils.execution.execute` for details.
+                    See `vectorbtpro.utils.execution.execute`.
                 **kwargs_: Additional keyword arguments.
 
             Returns:

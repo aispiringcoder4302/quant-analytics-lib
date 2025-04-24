@@ -205,7 +205,7 @@ def random_allocate_func_nb(
         n_cols (int): Number of columns for the allocation.
         direction (int): Direction for weight assignment.
 
-            See `vectorbtpro.portfolio.enums.Direction` for possible values.
+            See `vectorbtpro.portfolio.enums.Direction`.
         n (Optional[int]): Number of columns to assign random weights.
 
             If None, assign weights to all columns.

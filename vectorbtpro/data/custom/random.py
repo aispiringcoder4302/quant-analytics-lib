@@ -76,7 +76,7 @@ class RandomData(SyntheticData):
                     or generally `vectorbtpro.data.base.key_dict`.
             jitted (JittedOption): Option to control JIT compilation.
 
-                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
 
         Returns:
             KeyData: The generated data and a metadata dictionary.

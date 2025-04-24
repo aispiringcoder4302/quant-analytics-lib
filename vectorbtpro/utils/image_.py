@@ -92,7 +92,7 @@ def save_animation(
         show_progress (bool): Whether to display the progress bar.
         pbar_kwargs (KwargsLike): Keyword arguments for configuring the progress bar.
 
-            See `vectorbtpro.utils.pbar.ProgressBar` for details.
+            See `vectorbtpro.utils.pbar.ProgressBar`.
         to_image_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Figure.to_image`.
         **kwargs: Keyword arguments for `plot_func`.
 

@@ -608,10 +608,10 @@ def find_pattern_1d_nb(
         roll_forward (bool): Process windows in forward direction if True; otherwise, in backward direction.
         interp_mode (int): Interpolation mode.
 
-            See `vectorbtpro.generic.enums.InterpMode` for options.
+            See `vectorbtpro.generic.enums.InterpMode`.
         rescale_mode (int): Rescaling mode for adjusting the ranges of `arr` and `pattern`.
 
-            See `vectorbtpro.generic.enums.RescaleMode` for options.
+            See `vectorbtpro.generic.enums.RescaleMode`.
         vmin (float): Minimum value used for rescaling `arr`.
 
             Use only when the array has fixed bounds. Used in rescaling with `RescaleMode.MinMax`
@@ -639,10 +639,10 @@ def find_pattern_1d_nb(
         invert (bool): Invert the pattern by reflecting its values.
         error_type (int): Error computation mode.
 
-            See `vectorbtpro.generic.enums.ErrorType` for options.
+            See `vectorbtpro.generic.enums.ErrorType`.
         distance_measure (int): Method for measuring distance (e.g., MAE, MSE, RMSE).
 
-            See `vectorbtpro.generic.enums.DistanceMeasure` for options.
+            See `vectorbtpro.generic.enums.DistanceMeasure`.
         max_error (FlexArray1dLike): Maximum error threshold for normalization.
 
             If provided as an array, it must match the size of the pattern and be on the same scale.
@@ -650,7 +650,7 @@ def find_pattern_1d_nb(
 
             If None, defaults to `interp_mode`.
 
-            See `vectorbtpro.generic.enums.InterpMode` for options.
+            See `vectorbtpro.generic.enums.InterpMode`.
         max_error_as_maxdist (bool): Indicates whether `max_error` represents the maximum distance at each point.
 
             If False, exceeding `max_error` sets the distance to the maximum derived from
@@ -669,7 +669,7 @@ def find_pattern_1d_nb(
         minp (Optional[int]): Minimum number of observations in the price window required to yield a value.
         overlap_mode (int): Mode for handling overlapping matches.
 
-            See `vectorbtpro.generic.enums.OverlapMode` for options.
+            See `vectorbtpro.generic.enums.OverlapMode`.
         max_records (Optional[int]): Maximum number of records to be filled.
 
             If None, defaults to the number of rows in `arr`.
@@ -899,10 +899,10 @@ def find_pattern_nb(
         roll_forward (bool): Process windows in forward direction if True; otherwise, in backward direction.
         interp_mode (int): Interpolation mode.
 
-            See `vectorbtpro.generic.enums.InterpMode` for options.
+            See `vectorbtpro.generic.enums.InterpMode`.
         rescale_mode (int): Rescaling mode for adjusting the ranges of `arr` and `pattern`.
 
-            See `vectorbtpro.generic.enums.RescaleMode` for options.
+            See `vectorbtpro.generic.enums.RescaleMode`.
         vmin (float): Minimum value used for rescaling `arr`.
 
             Use only when the array has fixed bounds. Used in rescaling with `RescaleMode.MinMax`
@@ -930,10 +930,10 @@ def find_pattern_nb(
         invert (bool): Invert the pattern by reflecting its values.
         error_type (int): Error computation mode.
 
-            See `vectorbtpro.generic.enums.ErrorType` for options.
+            See `vectorbtpro.generic.enums.ErrorType`.
         distance_measure (int): Method for measuring distance (e.g., MAE, MSE, RMSE).
 
-            See `vectorbtpro.generic.enums.DistanceMeasure` for options.
+            See `vectorbtpro.generic.enums.DistanceMeasure`.
         max_error (FlexArray1dLike): Maximum error threshold for normalization.
 
             If provided as an array, it must match the size of the pattern and be on the same scale.
@@ -941,7 +941,7 @@ def find_pattern_nb(
 
             If None, defaults to `interp_mode`.
 
-            See `vectorbtpro.generic.enums.InterpMode` for options.
+            See `vectorbtpro.generic.enums.InterpMode`.
         max_error_as_maxdist (bool): Indicates whether `max_error` represents the maximum distance at each point.
 
             If False, exceeding `max_error` sets the distance to the maximum derived from
@@ -960,7 +960,7 @@ def find_pattern_nb(
         minp (Optional[int]): Minimum number of observations in the price window required to yield a value.
         overlap_mode (int): Mode for handling overlapping matches.
 
-            See `vectorbtpro.generic.enums.OverlapMode` for options.
+            See `vectorbtpro.generic.enums.OverlapMode`.
         max_records (Optional[int]): Maximum number of records to be filled.
 
             If None, defaults to the number of rows in `arr`.

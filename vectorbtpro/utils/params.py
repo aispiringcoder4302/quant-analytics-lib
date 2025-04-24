@@ -547,7 +547,7 @@ def combine_params(
         seed (Optional[int]): Seed for random number generation.
         clean_index_kwargs (KwargsLike): Keyword arguments for cleaning MultiIndex levels.
 
-            See `vectorbtpro.base.indexes.clean_index` for details.
+            See `vectorbtpro.base.indexes.clean_index`.
         name_tuple_to_str (Union[None, bool, Callable]): If True or a callable, converts tuple
             parameter names to strings.
         build_product (bool): If True, compute the Cartesian product of parameter values.
@@ -1156,7 +1156,7 @@ class Parameterizer(Configured):
         seed (Optional[int]): Random seed for reproducibility.
         clean_index_kwargs (KwargsLike): Keyword arguments for cleaning MultiIndex levels.
 
-            See `vectorbtpro.base.indexes.clean_index` for details.
+            See `vectorbtpro.base.indexes.clean_index`.
         name_tuple_to_str (Union[None, bool, Callable]): Flag or function to convert name tuples to strings.
         selection (Optional[Selection]): Template or criteria to select specific parameter indices.
         forward_kwargs_as (KwargsLike): Mapping to forward keyword arguments.
@@ -1176,7 +1176,7 @@ class Parameterizer(Configured):
         return_param_index (Optional[bool]): Flag indicating if the parameter index should be included in the result.
         execute_kwargs (KwargsLike): Keyword arguments for the execution handler.
 
-            See `vectorbtpro.utils.execution.execute` for details.
+            See `vectorbtpro.utils.execution.execute`.
         **kwargs: Keyword arguments for `vectorbtpro.utils.config.Configured`.
 
     !!! info

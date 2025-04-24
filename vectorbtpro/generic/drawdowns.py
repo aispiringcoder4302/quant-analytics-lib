@@ -320,10 +320,10 @@ class Drawdowns(Ranges):
             attach_data (bool): Whether to attach the price data to the instance.
             jitted (JittedOption): Option to control JIT compilation.
 
-                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
             chunked (ChunkedOption): Option to control chunked processing.
 
-                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
             wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
             **kwargs: Keyword arguments for `Drawdowns`.
@@ -449,10 +449,10 @@ class Drawdowns(Ranges):
         Args:
             jitted (JittedOption): Option to control JIT compilation.
 
-                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
             chunked (ChunkedOption): Option to control chunked processing.
 
-                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             **kwargs: Keyword arguments for `Drawdowns.map_array`.
 
         Returns:
@@ -483,10 +483,10 @@ class Drawdowns(Ranges):
             group_by (GroupByLike): Grouping specification.
             jitted (JittedOption): Option to control JIT compilation.
 
-                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
             chunked (ChunkedOption): Option to control chunked processing.
 
-                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
             **kwargs: Keyword arguments for `vectorbtpro.records.mapped_array.MappedArray.mean`.
 
@@ -510,10 +510,10 @@ class Drawdowns(Ranges):
             group_by (GroupByLike): Grouping specification.
             jitted (JittedOption): Option to control JIT compilation.
 
-                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
             chunked (ChunkedOption): Option to control chunked processing.
 
-                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
             **kwargs: Keyword arguments for `vectorbtpro.records.mapped_array.MappedArray.min`.
 
@@ -539,10 +539,10 @@ class Drawdowns(Ranges):
         Args:
             jitted (JittedOption): Option to control JIT compilation.
 
-                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
             chunked (ChunkedOption): Option to control chunked processing.
 
-                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             **kwargs: Keyword arguments for `Drawdowns.map_array`.
 
         Returns:
@@ -570,10 +570,10 @@ class Drawdowns(Ranges):
             group_by (GroupByLike): Grouping specification.
             jitted (JittedOption): Option to control JIT compilation.
 
-                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
             chunked (ChunkedOption): Option to control chunked processing.
 
-                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
             **kwargs: Keyword arguments for `vectorbtpro.records.mapped_array.MappedArray.mean`.
 
@@ -603,10 +603,10 @@ class Drawdowns(Ranges):
             group_by (GroupByLike): Grouping specification.
             jitted (JittedOption): Option to control JIT compilation.
 
-                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
             chunked (ChunkedOption): Option to control chunked processing.
 
-                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
             **kwargs: Keyword arguments for `vectorbtpro.records.mapped_array.MappedArray.max`.
 
@@ -635,10 +635,10 @@ class Drawdowns(Ranges):
         Args:
             jitted (JittedOption): Option to control JIT compilation.
 
-                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
             chunked (ChunkedOption): Option to control chunked processing.
 
-                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             **kwargs: Keyword arguments for `Drawdowns.map_array`.
 
         Returns:
@@ -666,10 +666,10 @@ class Drawdowns(Ranges):
         Args:
             jitted (JittedOption): Option to control JIT compilation.
 
-                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
             chunked (ChunkedOption): Option to control chunked processing.
 
-                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             **kwargs: Keyword arguments for `Drawdowns.map_array`.
 
         Returns:
@@ -698,10 +698,10 @@ class Drawdowns(Ranges):
         Args:
             jitted (JittedOption): Option to control JIT compilation.
 
-                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
             chunked (ChunkedOption): Option to control chunked processing.
 
-                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             **kwargs: Keyword arguments for `Drawdowns.map_array`.
 
         Returns:
@@ -737,10 +737,10 @@ class Drawdowns(Ranges):
             group_by (GroupByLike): Grouping specification.
             jitted (JittedOption): Option to control JIT compilation.
 
-                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
             chunked (ChunkedOption): Option to control chunked processing.
 
-                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
@@ -772,10 +772,10 @@ class Drawdowns(Ranges):
             group_by (GroupByLike): Grouping specification.
             jitted (JittedOption): Option to control JIT compilation.
 
-                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
             chunked (ChunkedOption): Option to control chunked processing.
 
-                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
             **kwargs: Keyword arguments for `vectorbtpro.records.mapped_array.MappedArray.nth`.
 
@@ -810,10 +810,10 @@ class Drawdowns(Ranges):
             group_by (GroupByLike): Grouping specification.
             jitted (JittedOption): Option to control JIT compilation.
 
-                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
             chunked (ChunkedOption): Option to control chunked processing.
 
-                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
@@ -846,10 +846,10 @@ class Drawdowns(Ranges):
             group_by (GroupByLike): Grouping specification.
             jitted (JittedOption): Option to control JIT compilation.
 
-                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
             chunked (ChunkedOption): Option to control chunked processing.
 
-                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
             **kwargs: Keyword arguments for `vectorbtpro.records.mapped_array.MappedArray.nth`.
 
@@ -885,10 +885,10 @@ class Drawdowns(Ranges):
             group_by (GroupByLike): Grouping specification.
             jitted (JittedOption): Option to control JIT compilation.
 
-                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
             chunked (ChunkedOption): Option to control chunked processing.
 
-                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
             **kwargs: Keyword arguments for `vectorbtpro.records.mapped_array.MappedArray.nth`.
 

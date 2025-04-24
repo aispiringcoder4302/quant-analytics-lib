@@ -1743,7 +1743,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             attach_classes (bool): Whether to attach classes from `Data.classes`.
             clean_index_kwargs (KwargsLike): Keyword arguments for cleaning MultiIndex levels.
 
-                See `vectorbtpro.base.indexes.clean_index` for details.
+                See `vectorbtpro.base.indexes.clean_index`.
             group_by (GroupByLike): Grouping specification.
             **kwargs: Keyword arguments for `vectorbtpro.base.wrapping.ArrayWrapper.replace`.
 
@@ -2090,7 +2090,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             attach_classes (bool): Whether to attach classes to the data using the key wrapper.
             clean_index_kwargs (KwargsLike): Keyword arguments for cleaning MultiIndex levels.
 
-                See `vectorbtpro.base.indexes.clean_index` for details.
+                See `vectorbtpro.base.indexes.clean_index`.
             **kwargs: Keyword arguments for `Data.get_key_wrapper`.
 
         Returns:
@@ -4083,7 +4083,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
                 This flag is also forwarded to `Data.fetch_feature`/`Data.fetch_symbol` if applicable.
             execute_kwargs (KwargsLike): Keyword arguments for the execution handler.
 
-                See `vectorbtpro.utils.execution.execute` for details.
+                See `vectorbtpro.utils.execution.execute`.
             return_raw (bool): Return the raw outputs if True.
             **kwargs: Keyword arguments for `Data.fetch_feature`/`Data.fetch_symbol`.
 
@@ -4446,7 +4446,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
                 `Data.fetch_feature` or `Data.fetch_symbol`.
             execute_kwargs (KwargsLike): Keyword arguments for the execution handler.
 
-                See `vectorbtpro.utils.execution.execute` for details.
+                See `vectorbtpro.utils.execution.execute`.
             return_raw (bool): Whether to return the raw outputs from update operations.
             **kwargs: Keyword arguments for `Data.update_feature` or `Data.update_symbol`.
 
@@ -4691,7 +4691,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             key_wrapper_kwargs (KwargsLike): Keyword arguments for `Data.get_key_wrapper`.
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
 
-                See `vectorbtpro.base.reshaping.broadcast` for details.
+                See `vectorbtpro.base.reshaping.broadcast`.
             template_context (KwargsLike): Additional context for template substitution.
             **kwargs: Keyword arguments for `transform_func`.
 
@@ -4873,10 +4873,10 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         Args:
             jitted (JittedOption): Option to control JIT compilation.
 
-                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
             chunked (ChunkedOption): Option to control chunked processing.
 
-                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             start_value (ArrayLike): Initial value for the transformation.
             ref_feature (ArrayLike): The reference feature used for mirroring.
 
@@ -5246,7 +5246,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             raise_errors (bool): If True, raises any exceptions encountered.
             execute_kwargs (KwargsLike): Keyword arguments for the execution handler.
 
-                See `vectorbtpro.utils.execution.execute` for details.
+                See `vectorbtpro.utils.execution.execute`.
             filter_results (bool): If True, filters out function calls that yield no results.
             raise_no_results (bool): If True, raises an exception when no results are obtained.
             merge_func (MergeFuncLike): Function to merge results from multiple function calls.
@@ -6126,7 +6126,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             to_utc (Union[None, bool, str, Sequence[str], feature_dict, symbol_dict, CustomTemplate]):
                 Option to convert datetime columns to UTC.
 
-                See `Data.prepare_dt` for details.
+                See `Data.prepare_dt`.
             remove_utc_tz (Union[bool, feature_dict, symbol_dict, CustomTemplate]):
                 Indicates whether to remove the UTC timezone from datetime columns.
             attach_row_number (Union[bool, feature_dict, symbol_dict, CustomTemplate]):
@@ -6407,7 +6407,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             to_utc (Union[None, bool, str, tp.Sequence[str], feature_dict, symbol_dict, CustomTemplate]):
                 Whether to convert datetime columns to UTC.
 
-                See `Data.prepare_dt` for details.
+                See `Data.prepare_dt`.
             remove_utc_tz (Union[bool, feature_dict, symbol_dict, CustomTemplate]):
                 Whether to remove UTC timezone information from datetime columns.
             if_exists (Union[str, feature_dict, symbol_dict, CustomTemplate]):

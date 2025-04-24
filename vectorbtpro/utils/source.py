@@ -711,7 +711,7 @@ def refine_source(
         show_progress (Optional[bool]): Whether to display progress during chunk processing.
         pbar_kwargs (KwargsLike): Keyword arguments for configuring the progress bar.
 
-            See `vectorbtpro.utils.pbar.ProgressBar` for details.
+            See `vectorbtpro.utils.pbar.ProgressBar`.
         mult_show_progress (Optional[bool]): Whether to display progress when processing multiple sources.
 
             If not provided, defaults to `show_progress`.
@@ -1198,7 +1198,7 @@ Your goal is to refine (rewrite for clarity, correctness, consistent format, and
     - **Use fully qualified names** when referring to Python objects that exist outside the current scope (e.g., `vectorbtpro.indicators.custom.SMA.run` instead of `SMA.run` or `run`).
     - If the referenced object belongs to the same class (e.g., via `self`, `cls`, or `cls_or_self`), prefix the reference with the class name (e.g., `SMA.run` instead of `run`).
     - If a function forwards its arguments to another function, reference that target (e.g., "Arguments are forwarded to `combine_params`.")
-    - If an argument is a field from a named tuple or an enum, reference that type (e.g., "See `vectorbtpro.generic.enums.WType` for available options.").
+    - If an argument is a field from a named tuple or an enum, reference that type (e.g., "See `vectorbtpro.generic.enums.WType`.").
     - **Do not remove existing references**.
 
 ### 5. Special Arguments

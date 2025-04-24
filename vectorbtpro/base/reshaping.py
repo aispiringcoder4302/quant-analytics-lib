@@ -1177,7 +1177,7 @@ def broadcast(
         check_index_names (Optional[bool]): Whether to check index names during broadcasting via `broadcast_index`.
         clean_index_kwargs (KwargsLike): Keyword arguments for cleaning MultiIndex levels.
 
-            See `vectorbtpro.base.indexes.clean_index` for details.
+            See `vectorbtpro.base.indexes.clean_index`.
         template_context (KwargsLike): Additional context for template substitution.
 
     Returns:

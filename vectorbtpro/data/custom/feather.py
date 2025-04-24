@@ -86,7 +86,7 @@ class FeatherData(FileData):
                 If None, `key` is used as the file path.
             tz (TimezoneLike): Target timezone.
 
-                See `vectorbtpro.utils.datetime_.to_timezone` for conversion details.
+                See `vectorbtpro.utils.datetime_.to_timezone`.
             index_col (Optional[MaybeSequence[IntStr]]): Column position(s) or name(s) to set as the index.
 
                 Applies if the fetched data has a default index.

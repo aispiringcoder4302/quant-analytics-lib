@@ -1290,7 +1290,7 @@ class Chunker(Configured):
             from the scope of `Chunker.run`.
         execute_kwargs (KwargsLike): Keyword arguments for the execution handler.
 
-            See `vectorbtpro.utils.execution.execute` for details.
+            See `vectorbtpro.utils.execution.execute`.
         disable (Optional[bool]): Specifies whether chunking is disabled.
         **kwargs: Keyword arguments for `vectorbtpro.utils.config.Configured`.
 
@@ -1362,7 +1362,7 @@ class Chunker(Configured):
     def size(self) -> tp.Optional[int]:
         """Chunk size used for metadata generation.
 
-        See `Chunker.get_chunk_meta_from_args` for details.
+        See `Chunker.get_chunk_meta_from_args`.
 
         Returns:
             Optional[int]: The configured chunk size.
@@ -1373,7 +1373,7 @@ class Chunker(Configured):
     def min_size(self) -> tp.Optional[int]:
         """Minimum chunk size used in metadata generation.
 
-        See `Chunker.get_chunk_meta_from_args` for details.
+        See `Chunker.get_chunk_meta_from_args`.
 
         Returns:
             Optional[int]: The minimum allowable chunk size.
@@ -1384,7 +1384,7 @@ class Chunker(Configured):
     def n_chunks(self) -> tp.Optional[tp.SizeLike]:
         """Desired number of chunks used in metadata generation.
 
-        See `Chunker.get_chunk_meta_from_args` for details.
+        See `Chunker.get_chunk_meta_from_args`.
 
         Returns:
             Optional[SizeLike]: The target number of chunks.
@@ -1395,7 +1395,7 @@ class Chunker(Configured):
     def chunk_len(self) -> tp.Optional[tp.SizeLike]:
         """Length of each chunk used in metadata generation.
 
-        See `Chunker.get_chunk_meta_from_args` for details.
+        See `Chunker.get_chunk_meta_from_args`.
 
         Returns:
             Optional[SizeLike]: The length assigned to each chunk.
@@ -1406,7 +1406,7 @@ class Chunker(Configured):
     def chunk_meta(self) -> tp.Optional[tp.ChunkMetaLike]:
         """Custom chunk metadata for argument chunking.
 
-        See `Chunker.get_chunk_meta_from_args` for details.
+        See `Chunker.get_chunk_meta_from_args`.
 
         Returns:
             Optional[ChunkMetaLike]: The custom chunk metadata configuration.
@@ -1437,10 +1437,11 @@ class Chunker(Configured):
     def arg_take_spec(self) -> tp.Optional[tp.ArgTakeSpecLike]:
         """Specification for selecting function arguments during chunking.
 
-        See `Chunker.iter_tasks` for usage.
-
         Returns:
             Optional[ArgTakeSpecLike]: The specification dict or object for argument extraction.
+
+        See:
+            `Chunker.iter_tasks`
         """
         return self._arg_take_spec
 

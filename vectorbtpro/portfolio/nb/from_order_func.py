@@ -97,10 +97,10 @@ def sort_call_seq_out_1d_nb(
         size (FlexArray1d): 1D array of order sizes using flexible indexing.
         size_type (FlexArray1d): 1D array of order size types.
 
-            See `vectorbtpro.portfolio.enums.SizeType` for optons.
+            See `vectorbtpro.portfolio.enums.SizeType`.
         direction (FlexArray1d): 1D array of order directions.
 
-            See `vectorbtpro.portfolio.enums.Direction` for optons.
+            See `vectorbtpro.portfolio.enums.Direction`.
         order_value_out (Array1d): Array to store computed order values; must be empty initially.
         call_seq_out (Array1d): Array containing default call sequence indices, which will be sorted in place.
 
@@ -162,10 +162,10 @@ def sort_call_seq_1d_nb(
         size (FlexArray1d): 1D array of order sizes.
         size_type (FlexArray1d): 1D array of order size types.
 
-            See `vectorbtpro.portfolio.enums.SizeType` for optons.
+            See `vectorbtpro.portfolio.enums.SizeType`.
         direction (FlexArray1d): 1D array of order directions.
 
-            See `vectorbtpro.portfolio.enums.Direction` for optons.
+            See `vectorbtpro.portfolio.enums.Direction`.
         order_value_out (Array1d): Array to store computed order values.
 
     Returns:
@@ -198,10 +198,10 @@ def sort_call_seq_out_nb(
         size (FlexArray2d): 2D array of order sizes.
         size_type (FlexArray2d): 2D array of order size types.
 
-            See `vectorbtpro.portfolio.enums.SizeType` for optons.
+            See `vectorbtpro.portfolio.enums.SizeType`.
         direction (FlexArray2d): 2D array of order directions.
 
-            See `vectorbtpro.portfolio.enums.Direction` for optons.
+            See `vectorbtpro.portfolio.enums.Direction`.
         order_value_out (Array1d): Array to hold computed order values; must be empty initially.
         call_seq_out (Array1d): Array containing default call sequence indices, which will be sorted in place.
 
@@ -263,10 +263,10 @@ def sort_call_seq_nb(
         size (FlexArray2d): 2D array of order sizes.
         size_type (FlexArray2d): 2D array of order size types.
 
-            See `vectorbtpro.portfolio.enums.SizeType` for optons.
+            See `vectorbtpro.portfolio.enums.SizeType`.
         direction (FlexArray2d): 2D array of order directions.
 
-            See `vectorbtpro.portfolio.enums.Direction` for optons.
+            See `vectorbtpro.portfolio.enums.Direction`.
         order_value_out (Array1d): Array to store computed order values.
 
     Returns:
@@ -5244,10 +5244,10 @@ def def_pre_segment_func_nb(  # % line.replace("def_pre_segment_func_nb", "pre_s
         size (FlexArray2d): Array of trade sizes.
         size_type (FlexArray2d): Array denoting the type for each trade size.
 
-            See `vectorbtpro.portfolio.enums.SizeType` for optons.
+            See `vectorbtpro.portfolio.enums.SizeType`.
         direction (FlexArray2d): Array indicating the trade direction.
 
-            See `vectorbtpro.portfolio.enums.Direction` for optons.
+            See `vectorbtpro.portfolio.enums.Direction`.
         auto_call_seq (bool): Flag to automatically sort the call sequence.
 
     Returns:
@@ -5296,10 +5296,10 @@ def def_order_func_nb(  # % line.replace("def_order_func_nb", "order_func_nb")
         price (FlexArray2d): Array of order prices.
         size_type (FlexArray2d): Array specifying the type of order sizes.
 
-            See `vectorbtpro.portfolio.enums.SizeType` for optons.
+            See `vectorbtpro.portfolio.enums.SizeType`.
         direction (FlexArray2d): Array indicating the trade direction.
 
-            See `vectorbtpro.portfolio.enums.Direction` for optons.
+            See `vectorbtpro.portfolio.enums.Direction`.
         fees (FlexArray2d): Array of fee values.
         fixed_fees (FlexArray2d): Array of fixed fee values.
         slippage (FlexArray2d): Array representing slippage values.
@@ -5309,11 +5309,11 @@ def def_order_func_nb(  # % line.replace("def_order_func_nb", "order_func_nb")
         leverage (FlexArray2d): Array of leverage amounts.
         leverage_mode (FlexArray2d): Array indicating leverage modes.
 
-            See `vectorbtpro.portfolio.enums.LeverageMode` for optons.
+            See `vectorbtpro.portfolio.enums.LeverageMode`.
         reject_prob (FlexArray2d): Array of rejection probabilities.
         price_area_vio_mode (FlexArray2d): Array specifying violation handling for price areas.
 
-            See `vectorbtpro.portfolio.enums.PriceAreaVioMode` for optons.
+            See `vectorbtpro.portfolio.enums.PriceAreaVioMode`.
         allow_partial (FlexArray2d): Array indicating whether partial orders are allowed.
         raise_reject (FlexArray2d): Array determining if rejections should raise errors.
         log (FlexArray2d): Array containing logging settings.
@@ -5370,10 +5370,10 @@ def def_flex_pre_segment_func_nb(  # % line.replace("def_flex_pre_segment_func_n
         size (FlexArray2d): Array of trade sizes.
         size_type (FlexArray2d): Array indicating the type of trade sizes.
 
-            See `vectorbtpro.portfolio.enums.SizeType` for optons.
+            See `vectorbtpro.portfolio.enums.SizeType`.
         direction (FlexArray2d): Array describing the trade direction.
 
-            See `vectorbtpro.portfolio.enums.SizeType` for optons.
+            See `vectorbtpro.portfolio.enums.SizeType`.
         auto_call_seq (bool): Flag to automatically sort the call sequence.
 
     Returns:
@@ -5425,10 +5425,10 @@ def def_flex_order_func_nb(  # % line.replace("def_flex_order_func_nb", "flex_or
         price (FlexArray2d): Array of order prices.
         size_type (FlexArray2d): Array specifying the type of each order size.
 
-            See `vectorbtpro.portfolio.enums.SizeType` for optons.
+            See `vectorbtpro.portfolio.enums.SizeType`.
         direction (FlexArray2d): Array indicating the order direction.
 
-            See `vectorbtpro.portfolio.enums.Direction` for optons.
+            See `vectorbtpro.portfolio.enums.Direction`.
         fees (FlexArray2d): Array of fee values.
         fixed_fees (FlexArray2d): Array of fixed fee values.
         slippage (FlexArray2d): Array representing slippage.
@@ -5438,11 +5438,11 @@ def def_flex_order_func_nb(  # % line.replace("def_flex_order_func_nb", "flex_or
         leverage (FlexArray2d): Array of leverage amounts.
         leverage_mode (FlexArray2d): Array indicating leverage modes.
 
-            See `vectorbtpro.portfolio.enums.LeverageMode` for optons.
+            See `vectorbtpro.portfolio.enums.LeverageMode`.
         reject_prob (FlexArray2d): Array of rejection probabilities.
         price_area_vio_mode (FlexArray2d): Array specifying handling of price area violations.
 
-            See `vectorbtpro.portfolio.enums.PriceAreaVioMode` for optons.
+            See `vectorbtpro.portfolio.enums.PriceAreaVioMode`.
         allow_partial (FlexArray2d): Array indicating whether partial orders are allowed.
         raise_reject (FlexArray2d): Array determining if rejections should raise errors.
         log (FlexArray2d): Array containing logging configurations.

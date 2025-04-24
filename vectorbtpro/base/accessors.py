@@ -798,7 +798,7 @@ class BaseIDXAccessor(Configured, IndexApplier):
             chunk_kwargs (KwargsLike): Keyword arguments for the chunking process.
             execute_kwargs (KwargsLike): Keyword arguments for the execution handler.
 
-                See `vectorbtpro.utils.execution.execute` for details.
+                See `vectorbtpro.utils.execution.execute`.
             **kwargs: Keyword arguments for `apply_func`.
 
         Returns:
@@ -1969,7 +1969,7 @@ class BaseAccessor(Wrapping):
             broadcast_named_args (KwargsLike): Additional named arguments for broadcasting.
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
 
-                See `vectorbtpro.base.reshaping.broadcast` for details.
+                See `vectorbtpro.base.reshaping.broadcast`.
             template_context (KwargsLike): Additional context for template substitution.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
             **kwargs: Keyword arguments for `apply_func`.
@@ -2047,7 +2047,7 @@ class BaseAccessor(Wrapping):
                 If an element is an instance of `BaseAccessor`, its `.obj` attribute is used.
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
 
-                See `vectorbtpro.base.reshaping.broadcast` for details.
+                See `vectorbtpro.base.reshaping.broadcast`.
             keys (Optional[IndexLike]): Keys to label the columns in the resulting frame.
 
         Returns:
@@ -2112,7 +2112,7 @@ class BaseAccessor(Wrapping):
             broadcast_named_args (KwargsLike): Named arguments for broadcasting, merged with the object's data.
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
 
-                See `vectorbtpro.base.reshaping.broadcast` for details.
+                See `vectorbtpro.base.reshaping.broadcast`.
             template_context (KwargsLike): Additional context for template substitution.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
             **kwargs: Keyword arguments for `apply_func`.
@@ -2257,7 +2257,7 @@ class BaseAccessor(Wrapping):
             broadcast_named_args (KwargsLike): Additional named arguments for broadcasting.
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
 
-                See `vectorbtpro.base.reshaping.broadcast` for details.
+                See `vectorbtpro.base.reshaping.broadcast`.
             template_context (KwargsLike): Additional context for template substitution.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
             **kwargs: Keyword arguments for `combine_func`.
@@ -2442,7 +2442,7 @@ class BaseAccessor(Wrapping):
             global_dict (Optional[Mapping]): Global variables mapping for resolving names in the expression.
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
 
-                See `vectorbtpro.base.reshaping.broadcast` for details.
+                See `vectorbtpro.base.reshaping.broadcast`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:

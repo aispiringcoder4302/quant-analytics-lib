@@ -50,7 +50,7 @@ def ma_1d_nb(
         window (int): The number of elements to include in each calculation window.
         wtype (int): Weighting type.
 
-            See `vectorbtpro.generic.enums.WType` for available types.
+            See `vectorbtpro.generic.enums.WType`.
         minp (Optional[int]): Minimum number of data points required for the calculation.
         adjust (bool): Flag indicating whether to adjust weights.
 
@@ -134,7 +134,7 @@ def msd_1d_nb(
         window (int): The window size used for the calculation.
         wtype (int): Weighting type.
 
-            See `vectorbtpro.generic.enums.WType` for available types.
+            See `vectorbtpro.generic.enums.WType`.
         minp (Optional[int]): Minimum number of elements required for the computation.
         adjust (bool): Flag indicating whether to adjust weights.
         ddof (int): Delta degrees of freedom used in the standard deviation computation.
@@ -224,7 +224,7 @@ def bbands_1d_nb(
         window (int): The number of observations used for computing the moving average.
         wtype (int): Weighting type.
 
-            See `vectorbtpro.generic.enums.WType` for available types.
+            See `vectorbtpro.generic.enums.WType`.
         alpha (float): Multiplier for the moving standard deviation to determine the band width.
         minp (Optional[int]): Minimum data points required for the computation.
         adjust (bool): Flag indicating whether to adjust weights.
@@ -422,7 +422,7 @@ def avg_gain_1d_nb(
         window (int): Window size for the moving average.
         wtype (int): Weighting type.
 
-            See `vectorbtpro.generic.enums.WType` for available types.
+            See `vectorbtpro.generic.enums.WType`.
         minp (Optional[int]): Minimum periods for computation.
         adjust (bool): Flag indicating whether to adjust weights.
 
@@ -513,7 +513,7 @@ def avg_loss_1d_nb(
         window (int): Window size for the moving average.
         wtype (int): Weighting type.
 
-            See `vectorbtpro.generic.enums.WType` for available types.
+            See `vectorbtpro.generic.enums.WType`.
         minp (Optional[int]): Minimum periods for computation.
         adjust (bool): Flag indicating whether to adjust weights.
 
@@ -603,7 +603,7 @@ def rsi_1d_nb(
         window (int): Window size for average gain and loss calculations.
         wtype (int): Weighting type.
 
-            See `vectorbtpro.generic.enums.WType` for available types.
+            See `vectorbtpro.generic.enums.WType`.
         minp (Optional[int]): Minimum periods for computation.
         adjust (bool): Flag indicating whether to adjust weights.
 
@@ -775,7 +775,7 @@ def stoch_1d_nb(
         slow_d_window (int): Window for the slow %D moving average.
         wtype (int): Weighting type.
 
-            See `vectorbtpro.generic.enums.WType` for available types.
+            See `vectorbtpro.generic.enums.WType`.
         slow_k_wtype (Optional[int]): Weight type for the slow %K moving average.
 
             Defaults to `wtype` if not provided.
@@ -991,7 +991,7 @@ def macd_1d_nb(
         signal_window (int): Window size for computing the signal moving average.
         wtype (int): Weighting type.
 
-            See `vectorbtpro.generic.enums.WType` for available types.
+            See `vectorbtpro.generic.enums.WType`.
         macd_wtype (Optional[int]): Alternative weighting type for MACD computation.
 
             Uses `wtype` if not provided.
@@ -1303,7 +1303,7 @@ def atr_1d_nb(
         window (int): Window size for moving average calculation.
         wtype (int): Weighting type.
 
-            See `vectorbtpro.generic.enums.WType` for available types.
+            See `vectorbtpro.generic.enums.WType`.
         minp (Optional[int]): Minimum periods required.
         adjust (bool): Flag indicating whether to adjust weights.
 
@@ -1402,7 +1402,7 @@ def adx_1d_nb(
         window (int): Window size for calculation.
         wtype (int): Weighting type.
 
-            See `vectorbtpro.generic.enums.WType` for available types.
+            See `vectorbtpro.generic.enums.WType`.
         minp (Optional[int]): Minimum periods required.
         adjust (bool): Flag indicating whether to adjust weights.
 
@@ -2989,7 +2989,7 @@ def get_hurst_nb(
         close (Array1d): One-dimensional array of price data.
         method (int): Hurst exponent computation method.
 
-            See `vectorbtpro.indicators.enums.HurstMethod` for details.
+            See `vectorbtpro.indicators.enums.HurstMethod`.
         max_lag (int): Maximum lag parameter for the standard computation.
         min_log (int): Minimum logarithmic scale for the LogRS method.
         max_log (int): Maximum logarithmic scale for the LogRS method.
@@ -3037,7 +3037,7 @@ def rolling_hurst_1d_nb(
         window (int): Size of the rolling window.
         method (int): Hurst exponent computation method.
 
-            See `vectorbtpro.indicators.enums.HurstMethod` for details.
+            See `vectorbtpro.indicators.enums.HurstMethod`.
         max_lag (int): Maximum lag parameter for the standard computation.
         min_log (int): Minimum logarithmic scale for the LogRS method.
         max_log (int): Maximum logarithmic scale for the LogRS method.
@@ -3127,7 +3127,7 @@ def rolling_hurst_nb(
         window (int): Size of the rolling window.
         method (int): Hurst exponent computation method.
 
-            See `vectorbtpro.indicators.enums.HurstMethod` for details.
+            See `vectorbtpro.indicators.enums.HurstMethod`.
         max_lag (int): Maximum lag parameter for the standard computation.
         min_log (int): Minimum logarithmic scale for the LogRS method.
         max_log (int): Maximum logarithmic scale for the LogRS method.

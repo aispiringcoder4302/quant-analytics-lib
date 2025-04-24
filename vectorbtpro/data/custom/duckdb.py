@@ -755,10 +755,10 @@ class DuckDBData(DBData):
                 Cannot be used together with `catalog`, `schema`, or `table`.
             connection (Union[None, str, DuckDBPyConnection]): Connection reference.
 
-                See `DuckDBData.resolve_connection` for details.
+                See `DuckDBData.resolve_connection`.
             connection_config (KwargsLike): Additional configuration for the connection;
 
-                See `DuckDBData.resolve_connection` for details.
+                See `DuckDBData.resolve_connection`.
             start (any): Start value for filtering.
 
                 Interpreted as a datetime when the index is of datetime type and `align_dates` is True.

@@ -187,10 +187,10 @@ def long_buy_nb(
         leverage (float): Leverage factor.
         leverage_mode (int): Mode for leverage calculation (e.g., lazy or eager).
 
-            See `vectorbtpro.portfolio.enums.LeverageMode` for options.
+            See `vectorbtpro.portfolio.enums.LeverageMode`.
         price_area_vio_mode (int): Mode for handling price area violations.
 
-            See `vectorbtpro.portfolio.enums.PriceAreaVioMode` for options.
+            See `vectorbtpro.portfolio.enums.PriceAreaVioMode`.
         allow_partial (bool): Determines whether partial order execution is permitted.
         percent (float): Fraction of free cash to consider for the order.
         price_area (PriceArea): Price area constraint.
@@ -378,7 +378,7 @@ def long_sell_nb(
         size_granularity (float): Granularity factor for rounding the order size.
         price_area_vio_mode (int): Mode to handle price area violations.
 
-            See `vectorbtpro.portfolio.enums.PriceAreaVioMode` for options.
+            See `vectorbtpro.portfolio.enums.PriceAreaVioMode`.
         allow_partial (bool): Indicator whether a partial fill of the order is permitted.
         percent (float): Percentage factor to adjust the order size relative to the current position.
         price_area (PriceArea): Price area constraint.
@@ -523,7 +523,7 @@ def short_sell_nb(
         leverage (float): Leverage multiplier to adjust the cash limit.
         price_area_vio_mode (int): Mode for handling price area violations.
 
-            See `vectorbtpro.portfolio.enums.PriceAreaVioMode` for options.
+            See `vectorbtpro.portfolio.enums.PriceAreaVioMode`.
         allow_partial (bool): Indicates whether a partial fill is permitted.
         percent (float): Fraction of free cash to allocate for the order.
         price_area (PriceArea): Price area constraint.
@@ -1265,7 +1265,7 @@ def get_diraware_size_nb(size: float, direction: int) -> float:
         size (float): Base size value.
         direction (int): Order direction; if equal to `Direction.ShortOnly`, the size is negated.
 
-            See `vectorbtpro.portfolio.enums.Direction` for options.
+            See `vectorbtpro.portfolio.enums.Direction`.
 
     Returns:
         float: Adjusted size reflecting trade direction.
@@ -1297,7 +1297,7 @@ def resolve_size_nb(
         value (float): Total portfolio value.
         target_size_type (int): Desired size type for the output.
 
-            See `vectorbtpro.portfolio.enums.SizeType` for options.
+            See `vectorbtpro.portfolio.enums.SizeType`.
         as_requirement (bool): Whether to treat the size as a requirement adjustment.
 
     Returns:
@@ -1944,10 +1944,10 @@ def order_nb(
         price (float): Order price.
         size_type (int): Type of order size.
 
-            See `vectorbtpro.portfolio.enums.SizeType` for details.
+            See `vectorbtpro.portfolio.enums.SizeType`.
         direction (int): Order direction.
 
-            See `vectorbtpro.portfolio.enums.Direction` for details.
+            See `vectorbtpro.portfolio.enums.Direction`.
         fees (float): Fee rate or amount.
         fixed_fees (float): Fixed fees.
         slippage (float): Expected slippage.
@@ -1957,11 +1957,11 @@ def order_nb(
         leverage (float): Leverage multiplier.
         leverage_mode (int): Leverage mode.
 
-            See `vectorbtpro.portfolio.enums.LeverageMode` for details.
+            See `vectorbtpro.portfolio.enums.LeverageMode`.
         reject_prob (float): Rejection probability threshold.
         price_area_vio_mode (int): Price area violation mode.
 
-            See `vectorbtpro.portfolio.enums.PriceAreaVioMode` for details.
+            See `vectorbtpro.portfolio.enums.PriceAreaVioMode`.
         allow_partial (bool): Allow partial order fulfillment.
         raise_reject (bool): Raise an exception if the order is rejected.
         log (bool): Log the order execution.
@@ -2020,11 +2020,11 @@ def close_position_nb(
         leverage (float): Leverage multiplier.
         leverage_mode (int): Leverage mode.
 
-            See `vectorbtpro.portfolio.enums.LeverageMode` for details.
+            See `vectorbtpro.portfolio.enums.LeverageMode`.
         reject_prob (float): Rejection probability threshold.
         price_area_vio_mode (int): Price area violation mode.
 
-            See `vectorbtpro.portfolio.enums.PriceAreaVioMode` for details.
+            See `vectorbtpro.portfolio.enums.PriceAreaVioMode`.
         allow_partial (bool): Allow partial order fulfillment.
         raise_reject (bool): Raise an exception if the order is rejected.
         log (bool): Log the order execution.
@@ -2328,7 +2328,7 @@ def get_trade_stats_nb(
         exit_fees (float): Fees incurred at exit.
         direction (int): Trade direction.
 
-            See `vectorbtpro.portfolio.enums.TradeDirection` for details.
+            See `vectorbtpro.portfolio.enums.TradeDirection`.
 
     Returns:
         Tuple[float, float]: A tuple containing the profit and loss (pnl) and the return ratio.
@@ -2746,7 +2746,7 @@ def check_limit_expired_nb(
         expiry (int): The explicit expiry time; use -1 if undefined.
         time_delta_format (int): The format for calculating time differences.
 
-            See `vectorbtpro.portfolio.enums.TimeDeltaFormat` for options.
+            See `vectorbtpro.portfolio.enums.TimeDeltaFormat`.
         index (Optional[Array1d]): Array of time indices, required when using index-based time deltas.
 
             Must be in nanosecond format.
@@ -2814,7 +2814,7 @@ def resolve_limit_price_nb(
         limit_delta (float): The delta value used to adjust the limit price.
         delta_format (int): The format of the delta.
 
-            See `vectorbtpro.portfolio.enums.DeltaFormat` for options.
+            See `vectorbtpro.portfolio.enums.DeltaFormat`.
         hit_below (bool): Indicates whether the order should hit below the reference price.
 
     Returns:
@@ -2886,11 +2886,11 @@ def check_limit_hit_nb(
         size (float): The order size (must be non-zero).
         direction (int): The order direction.
 
-            See `vectorbtpro.portfolio.enums.Direction` for options.
+            See `vectorbtpro.portfolio.enums.Direction`.
         limit_delta (float): The delta adjustment for computing the limit price.
         delta_format (int): The format of the delta.
 
-            See `vectorbtpro.portfolio.enums.DeltaFormat` for options.
+            See `vectorbtpro.portfolio.enums.DeltaFormat`.
         limit_reverse (bool): Flag to reverse the limit condition.
         can_use_ohlc (bool): Indicates whether OHLC data can be used for detecting a limit hit.
         check_open (bool): Flag indicating whether to check if the limit is hit at the open price.
@@ -2999,7 +2999,7 @@ def resolve_stop_price_nb(
         stop (float): The stop adjustment value.
         delta_format (int): The format of the stop adjustment.
 
-            See `vectorbtpro.portfolio.enums.DeltaFormat` for options.
+            See `vectorbtpro.portfolio.enums.DeltaFormat`.
         hit_below (bool): Indicates whether the stop should be applied below the initial price.
 
     Returns:
@@ -3056,7 +3056,7 @@ def check_stop_hit_nb(
         stop (float): Stop parameter value.
         delta_format (int): Format for the stop delta.
 
-            See `vectorbtpro.portfolio.enums.DeltaFormat` for options.
+            See `vectorbtpro.portfolio.enums.DeltaFormat`.
         hit_below (bool): Direction flag for stop hit determination.
         can_use_ohlc (bool): Whether to use OHLC data when checking the stop hit.
         check_open (bool): Whether to include the open price in the hit check.
@@ -3106,7 +3106,7 @@ def check_td_stop_hit_nb(
         stop (int): Stop offset; -1 indicates no stop.
         time_delta_format (int): Format for time delta comparisons (e.g., rows or index).
 
-            See `vectorbtpro.portfolio.enums.TimeDeltaFormat` for options.
+            See `vectorbtpro.portfolio.enums.TimeDeltaFormat`.
         index (Optional[Array1d]): Array of index values, required when using index-based time delta.
 
             Must be in nanosecond format.
@@ -3165,7 +3165,7 @@ def check_dt_stop_hit_nb(
         stop (int): Stop threshold offset; -1 indicates no stop.
         time_delta_format (int): Format for time delta calculations (rows or index).
 
-            See `vectorbtpro.portfolio.enums.TimeDeltaFormat` for options.
+            See `vectorbtpro.portfolio.enums.TimeDeltaFormat`.
         index (Optional[Array1d]): Array of index values, required for index-based time delta.
 
             Must be in nanosecond format.
@@ -3226,7 +3226,7 @@ def check_tsl_th_hit_nb(
         threshold (float): TSL threshold value.
         delta_format (int): Format for computing the trailing stop threshold.
 
-            See `vectorbtpro.portfolio.enums.DeltaFormat` for options.
+            See `vectorbtpro.portfolio.enums.DeltaFormat`.
 
     Returns:
         bool: True if the TSL threshold was hit, False otherwise.
@@ -3318,10 +3318,10 @@ def get_stop_ladder_exit_size_nb(
         position_now (float): Current position size.
         ladder (int): Stop ladder mode; must be static.
 
-            See `vectorbtpro.portfolio.enums.StopLadderMode` for options.
+            See `vectorbtpro.portfolio.enums.StopLadderMode`.
         delta_format (int): Format for computing stop deltas.
 
-            See `vectorbtpro.portfolio.enums.DeltaFormat` for options.
+            See `vectorbtpro.portfolio.enums.DeltaFormat`.
         hit_below (bool): Determines the direction for stop price resolution.
 
     Returns:
@@ -3407,10 +3407,10 @@ def get_time_stop_ladder_exit_size_nb(
         position_now (float): Current position size.
         ladder (int): Stop ladder mode.
 
-            See `vectorbtpro.portfolio.enums.StopLadderMode` for available options.
+            See `vectorbtpro.portfolio.enums.StopLadderMode`.
         time_delta_format (int): Time delta format.
 
-            See `vectorbtpro.portfolio.enums.TimeDeltaFormat` for details.
+            See `vectorbtpro.portfolio.enums.TimeDeltaFormat`.
         index (Optional[Array1d]): Array of index values when using index-based time delta.
 
             Must be in nanosecond format.

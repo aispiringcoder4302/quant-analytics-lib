@@ -128,13 +128,13 @@ class CSVData(FileData):
             end_row (Optional[int]): The ending row index (exclusive), excluding header rows.
             header (Optional[Union[int, Sequence[int]]]): Row number(s) to use as the header.
 
-                See `pd.read_csv` for details.
+                See `pd.read_csv` for details on this argument.
             index_col (Optional[int]): Column to use as the index.
 
-                If set to False, it is treated as None. See `pd.read_csv`.
+                If set to False, it is treated as None. See `pd.read_csv` for details on this argument.
             parse_dates (Optional[bool]): Whether to parse dates.
 
-                See `pd.read_csv`.
+                See `pd.read_csv` for details on this argument.
             chunk_func (Optional[Callable]): Function for processing chunks from a `TextFileReader`.
 
                 This function is invoked when `iterator` or `chunksize` is specified.

@@ -110,7 +110,7 @@ def asset_flow_nb(
         col_map (GroupMap): Mapping for grouping orders by column.
         direction (int): Direction filter for orders.
 
-            See `vectorbtpro.portfolio.enums.Direction` for options.
+            See `vectorbtpro.portfolio.enums.Direction`.
         init_position (FlexArray1dLike): Initial position for each column.
         sim_start (Optional[FlexArray1dLike]): Start indices for simulation per column.
         sim_end (Optional[FlexArray1dLike]): End indices for simulation per column.
@@ -199,7 +199,7 @@ def assets_nb(
         asset_flow (Array2d): Array of asset flow values.
         direction (int): Direction specifier.
 
-            See `vectorbtpro.portfolio.enums.Direction` for options.
+            See `vectorbtpro.portfolio.enums.Direction`.
         init_position (FlexArray1dLike): Initial asset position for each column.
         sim_start (Optional[FlexArray1dLike]): Start indices for simulation per column.
         sim_end (Optional[FlexArray1dLike]): End indices for simulation per column.

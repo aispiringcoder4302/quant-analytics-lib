@@ -168,89 +168,89 @@ def from_orders_nb(
 
             Provided as a scalar, or per row and/or column.
 
-            See `vectorbtpro.portfolio.enums.Order.size` for more details.
+            See `vectorbtpro.portfolio.enums.Order.size`.
         price (FlexArray2dLike): Order price.
 
             Provided as a scalar, or per row and/or column.
 
-            See `vectorbtpro.portfolio.enums.Order.price` for more details.
+            See `vectorbtpro.portfolio.enums.Order.price`.
         size_type (FlexArray2dLike): Order size type.
 
             Provided as a scalar, or per row and/or column.
 
-            See `vectorbtpro.portfolio.enums.Order.size_type` for more details.
+            See `vectorbtpro.portfolio.enums.Order.size_type`.
         fees (FlexArray2dLike): Transaction fee rate.
 
             Provided as a scalar, or per row and/or column.
 
-            See `vectorbtpro.portfolio.enums.Order.fees` for more details.
+            See `vectorbtpro.portfolio.enums.Order.fees`.
         fixed_fees (FlexArray2dLike): Fixed fee amount.
 
             Provided as a scalar, or per row and/or column.
 
-            See `vectorbtpro.portfolio.enums.Order.fixed_fees` for more details.
+            See `vectorbtpro.portfolio.enums.Order.fixed_fees`.
         slippage (FlexArray2dLike): Slippage amount.
 
             Provided as a scalar, or per row and/or column.
 
-            See `vectorbtpro.portfolio.enums.Order.slippage` for more details.
+            See `vectorbtpro.portfolio.enums.Order.slippage`.
         min_size (FlexArray2dLike): Minimum allowable order size.
 
             Provided as a scalar, or per row and/or column.
 
-            See `vectorbtpro.portfolio.enums.Order.min_size` for more details.
+            See `vectorbtpro.portfolio.enums.Order.min_size`.
         max_size (FlexArray2dLike): Maximum allowable order size.
 
             Provided as a scalar, or per row and/or column.
 
-            See `vectorbtpro.portfolio.enums.Order.max_size` for more details.
+            See `vectorbtpro.portfolio.enums.Order.max_size`.
         size_granularity (FlexArray2dLike): Granularity for order size.
 
             Provided as a scalar, or per row and/or column.
 
-            See `vectorbtpro.portfolio.enums.Order.size_granularity` for more details.
+            See `vectorbtpro.portfolio.enums.Order.size_granularity`.
         leverage (FlexArray2dLike): Leverage factor.
 
             Provided as a scalar, or per row and/or column.
 
-            See `vectorbtpro.portfolio.enums.Order.leverage` for more details.
+            See `vectorbtpro.portfolio.enums.Order.leverage`.
         leverage_mode (FlexArray2dLike): Mode for leverage calculation.
 
             Provided as a scalar, or per row and/or column.
 
-            See `vectorbtpro.portfolio.enums.Order.leverage_mode` for more details.
+            See `vectorbtpro.portfolio.enums.Order.leverage_mode`.
         reject_prob (FlexArray2dLike): Probability of order rejection.
 
             Provided as a scalar, or per row and/or column.
 
-            See `vectorbtpro.portfolio.enums.Order.reject_prob` for more details.
+            See `vectorbtpro.portfolio.enums.Order.reject_prob`.
         price_area_vio_mode (FlexArray2dLike): Mode for handling price area violations.
 
             Provided as a scalar, or per row and/or column.
 
-            See `vectorbtpro.portfolio.enums.Order.price_area_vio_mode` for more details.
+            See `vectorbtpro.portfolio.enums.Order.price_area_vio_mode`.
         allow_partial (FlexArray2dLike): Indicator whether partial orders are allowed.
 
             Provided as a scalar, or per row and/or column.
 
-            See `vectorbtpro.portfolio.enums.Order.allow_partial` for more details.
+            See `vectorbtpro.portfolio.enums.Order.allow_partial`.
 
             Does not apply when the order size is `np.inf`.
         raise_reject (FlexArray2dLike): Indicator whether to raise errors on order rejection.
 
             Provided as a scalar, or per row and/or column.
 
-            See `vectorbtpro.portfolio.enums.Order.raise_reject` for more details.
+            See `vectorbtpro.portfolio.enums.Order.raise_reject`.
         log (FlexArray2dLike): Logging flag.
 
             Provided as a scalar, or per row and/or column.
 
-            See `vectorbtpro.portfolio.enums.Order.log` for more details.
+            See `vectorbtpro.portfolio.enums.Order.log`.
         val_price (FlexArray2dLike): Valuation price.
 
             Provided as a scalar, or per row and/or column.
 
-            See `vectorbtpro.portfolio.enums.ValPriceType` for more details.
+            See `vectorbtpro.portfolio.enums.ValPriceType`.
 
             * Any `-np.inf` element is replaced by the latest valuation price
                 (using `open` or a previously known value if `ffill_val_price` is True).

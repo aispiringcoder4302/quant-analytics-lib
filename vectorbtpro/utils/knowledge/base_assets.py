@@ -929,7 +929,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
             *args: Positional arguments for the asset pipeline or function.
             execute_kwargs (KwargsLike): Keyword arguments for the execution handler.
 
-                See `vectorbtpro.utils.execution.execute` for details.
+                See `vectorbtpro.utils.execution.execute`.
             wrap (Optional[bool]): If True, return the result wrapped as an asset.
             single_item (Optional[bool]): Determines if data items are treated as single items.
             return_iterator (bool): If True, return an iterator instead of executing tasks.
@@ -2321,7 +2321,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
             show_progress (Optional[bool]): Whether to display a progress bar.
             pbar_kwargs (KwargsLike): Keyword arguments for configuring the progress bar.
 
-                See `vectorbtpro.utils.pbar.ProgressBar` for details.
+                See `vectorbtpro.utils.pbar.ProgressBar`.
             wrap (Optional[bool]): If True, wrap the result in a `KnowledgeAsset` instance.
             return_iterator (bool): If True, return an iterator over the reduction process.
             **kwargs: Keyword arguments for `KnowledgeAsset.groupby_reduce` or the reduction function.
@@ -2470,7 +2470,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
             get_kwargs (KwargsLike): Extra keyword arguments for retrieving keys via `KnowledgeAsset.get`.
             execute_kwargs (KwargsLike): Keyword arguments for the execution handler.
 
-                See `vectorbtpro.utils.execution.execute` for details.
+                See `vectorbtpro.utils.execution.execute`.
             return_group_keys (bool): If True, returns a dictionary mapping group keys to reduction results.
             **kwargs: Keyword arguments for `KnowledgeAsset.reduce`.
 

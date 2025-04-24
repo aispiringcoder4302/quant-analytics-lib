@@ -371,7 +371,7 @@ def concat_indexes(
         keys (Optional[IndexLike]): Index to add an additional level on top of the concatenated indexes.
         clean_index_kwargs (KwargsLike): Keyword arguments for cleaning MultiIndex levels.
 
-            See `vectorbtpro.base.indexes.clean_index` for details.
+            See `vectorbtpro.base.indexes.clean_index`.
         verify_integrity (bool): Whether to perform integrity checks on the concatenated index.
         axis (int): Axis corresponding to the indexes (0 for rows, 1 for columns, or other for groups).
 
@@ -816,7 +816,7 @@ def align_index_to(index1: tp.Index, index2: tp.Index, jitted: tp.JittedOption =
         index2 (Index): The reference index providing the desired shape.
         jitted (JittedOption): Option to control JIT compilation.
 
-            See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
+            See `vectorbtpro.utils.jitting.resolve_jitted_option`.
 
     Returns:
         IndexSlice: An index slice that aligns `index1` with `index2`.

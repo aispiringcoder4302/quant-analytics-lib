@@ -226,7 +226,7 @@ class SignalFactory(IndicatorFactory):
         Returns:
             FactoryMode: Factory mode.
 
-                See `vectorbtpro.signals.enums.FactoryMode` for available modes.
+                See `vectorbtpro.signals.enums.FactoryMode`.
         """
         return self._mode
 
@@ -744,7 +744,7 @@ class SignalFactory(IndicatorFactory):
                 use_cache (Optional[IFCacheOutput]): Cache to use.
                 execute_kwargs (KwargsLike): Keyword arguments for the execution handler.
 
-                    See `vectorbtpro.utils.execution.execute` for details.
+                    See `vectorbtpro.utils.execution.execute`.
                 **kwargs: Default keyword arguments based on the mode.
 
             Returns:

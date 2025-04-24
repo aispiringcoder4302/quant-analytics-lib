@@ -232,10 +232,10 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             sim_end (Optional[Array1d]): Simulation end, which can be a scalar or array-like.
             jitted (JittedOption): Option to control JIT compilation.
 
-                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
             chunked (ChunkedOption): Option to control chunked processing.
 
-                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrapper (Optional[ArrayWrapper]): Wrapper instance for array operations.
             wrapper_kwargs (KwargsLike): Keyword arguments to configure the wrapper.
             return_values (bool): If True, return wrapped return values instead of a `ReturnsAccessor` instance.
@@ -870,10 +870,10 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
             jitted (JittedOption): Option to control JIT compilation.
 
-                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
             chunked (ChunkedOption): Option to control chunked processing.
 
-                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
@@ -914,10 +914,10 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
             jitted (JittedOption): Option to control JIT compilation.
 
-                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
             chunked (ChunkedOption): Option to control chunked processing.
 
-                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
@@ -1005,10 +1005,10 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             rule (AnyRuleLike): The resampling rule or date offset.
             jitted (JittedOption): Option to control JIT compilation.
 
-                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
             chunked (ChunkedOption): Option to control chunked processing.
 
-                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             **kwargs: Keyword arguments for `ReturnsAccessor.resample_apply`.
 
         Returns:
@@ -1048,10 +1048,10 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         Args:
             jitted (JittedOption): Option to control JIT compilation.
 
-                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
             chunked (ChunkedOption): Option to control chunked processing.
 
-                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             **kwargs: Keyword arguments for `ReturnsAccessor.resample_returns`.
 
         Returns:
@@ -1070,10 +1070,10 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         Args:
             jitted (JittedOption): Option to control JIT compilation.
 
-                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
             chunked (ChunkedOption): Option to control chunked processing.
 
-                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             **kwargs: Keyword arguments for `ReturnsAccessor.resample_returns`.
 
         Returns:
@@ -1102,10 +1102,10 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
             jitted (JittedOption): Option to control JIT compilation.
 
-                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
             chunked (ChunkedOption): Option to control chunked processing.
 
-                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
@@ -1159,10 +1159,10 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             sim_end (Optional[ArrayLike]): Simulation period end.
             jitted (JittedOption): Option to control JIT compilation.
 
-                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
             chunked (ChunkedOption): Option to control chunked processing.
 
-                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
@@ -1208,10 +1208,10 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             sim_end (Optional[ArrayLike]): Simulation period end.
             jitted (JittedOption): Option to control JIT compilation.
 
-                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
             chunked (ChunkedOption): Option to control chunked processing.
 
-                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
@@ -1258,10 +1258,10 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             sim_end (Optional[ArrayLike]): Simulation period end.
             jitted (JittedOption): Option to control JIT compilation.
 
-                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
             chunked (ChunkedOption): Option to control chunked processing.
 
-                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
@@ -1307,10 +1307,10 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             sim_end (Optional[ArrayLike]): Simulation period end.
             jitted (JittedOption): Option to control JIT compilation.
 
-                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
             chunked (ChunkedOption): Option to control chunked processing.
 
-                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
@@ -1360,10 +1360,10 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             sim_end (Optional[ArrayLike]): Simulation period end.
             jitted (JittedOption): Option to control JIT compilation.
 
-                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
             chunked (ChunkedOption): Option to control chunked processing.
 
-                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
@@ -1415,10 +1415,10 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             sim_end (Optional[ArrayLike]): Simulation period end.
             jitted (JittedOption): Option to control JIT compilation.
 
-                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
             chunked (ChunkedOption): Option to control chunked processing.
 
-                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
@@ -1479,10 +1479,10 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
             jitted (JittedOption): Option to control JIT compilation.
 
-                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
             chunked (ChunkedOption): Option to control chunked processing.
 
-                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
@@ -1534,10 +1534,10 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
             jitted (JittedOption): Option to control JIT compilation.
 
-                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
             chunked (ChunkedOption): Option to control chunked processing.
 
-                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
@@ -1587,10 +1587,10 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
             jitted (JittedOption): Option to control JIT compilation.
 
-                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
             chunked (ChunkedOption): Option to control chunked processing.
 
-                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
@@ -1642,10 +1642,10 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
             jitted (JittedOption): Option to control JIT compilation.
 
-                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
             chunked (ChunkedOption): Option to control chunked processing.
 
-                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
@@ -1705,10 +1705,10 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
             jitted (JittedOption): Option to control JIT compilation.
 
-                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
             chunked (ChunkedOption): Option to control chunked processing.
 
-                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
@@ -1766,10 +1766,10 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
             jitted (JittedOption): Option to control JIT compilation.
 
-                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
             chunked (ChunkedOption): Option to control chunked processing.
 
-                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
@@ -1840,10 +1840,10 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             stream_mode (bool): Indicates if stream mode processing is enabled.
             jitted (JittedOption): Option to control JIT compilation.
 
-                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
             chunked (ChunkedOption): Option to control chunked processing.
 
-                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
@@ -2050,10 +2050,10 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
             jitted (JittedOption): Option to control JIT compilation.
 
-                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
             chunked (ChunkedOption): Option to control chunked processing.
 
-                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
@@ -2106,10 +2106,10 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
             jitted (JittedOption): Option to control JIT compilation.
 
-                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
             chunked (ChunkedOption): Option to control chunked processing.
 
-                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
@@ -2158,10 +2158,10 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
             jitted (JittedOption): Option to control JIT compilation.
 
-                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
             chunked (ChunkedOption): Option to control chunked processing.
 
-                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
@@ -2214,10 +2214,10 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
             jitted (JittedOption): Option to control JIT compilation.
 
-                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
             chunked (ChunkedOption): Option to control chunked processing.
 
-                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
@@ -2270,10 +2270,10 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
             jitted (JittedOption): Option to control JIT compilation.
 
-                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
             chunked (ChunkedOption): Option to control chunked processing.
 
-                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
@@ -2334,10 +2334,10 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
             jitted (JittedOption): Option to control JIT compilation.
 
-                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
             chunked (ChunkedOption): Option to control chunked processing.
 
-                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
@@ -2394,10 +2394,10 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
             jitted (JittedOption): Option to control JIT compilation.
 
-                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
             chunked (ChunkedOption): Option to control chunked processing.
 
-                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
@@ -2459,10 +2459,10 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
             jitted (JittedOption): Option to control JIT compilation.
 
-                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
             chunked (ChunkedOption): Option to control chunked processing.
 
-                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
@@ -2520,10 +2520,10 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
             jitted (JittedOption): Option to control JIT compilation.
 
-                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
             chunked (ChunkedOption): Option to control chunked processing.
 
-                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
@@ -2585,10 +2585,10 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
             jitted (JittedOption): Option to control JIT compilation.
 
-                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
             chunked (ChunkedOption): Option to control chunked processing.
 
-                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
@@ -2640,10 +2640,10 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             noarr_mode (bool): Flag indicating whether to operate in no-array mode.
             jitted (JittedOption): Option to control JIT compilation.
 
-                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
             chunked (ChunkedOption): Option to control chunked processing.
 
-                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
@@ -2692,10 +2692,10 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             noarr_mode (bool): Flag indicating whether to operate in no-array mode.
             jitted (JittedOption): Option to control JIT compilation.
 
-                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
             chunked (ChunkedOption): Option to control chunked processing.
 
-                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
@@ -2738,10 +2738,10 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
             jitted (JittedOption): Option to control JIT compilation.
 
-                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
             chunked (ChunkedOption): Option to control chunked processing.
 
-                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
@@ -2787,10 +2787,10 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
             jitted (JittedOption): Option to control JIT compilation.
 
-                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
             chunked (ChunkedOption): Option to control chunked processing.
 
-                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
@@ -2832,10 +2832,10 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
             jitted (JittedOption): Option to control JIT compilation.
 
-                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
             chunked (ChunkedOption): Option to control chunked processing.
 
-                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
@@ -2881,10 +2881,10 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
             jitted (JittedOption): Option to control JIT compilation.
 
-                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
             chunked (ChunkedOption): Option to control chunked processing.
 
-                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
@@ -2932,10 +2932,10 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             noarr_mode (bool): Flag indicating whether to use non-array mode.
             jitted (JittedOption): Option to control JIT compilation.
 
-                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
             chunked (ChunkedOption): Option to control chunked processing.
 
-                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
@@ -2991,10 +2991,10 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             noarr_mode (bool): Flag indicating whether to use non-array mode.
             jitted (JittedOption): Option to control JIT compilation.
 
-                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
             chunked (ChunkedOption): Option to control chunked processing.
 
-                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
@@ -3046,10 +3046,10 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             noarr_mode (bool): Flag indicating whether to use non-array mode.
             jitted (JittedOption): Option to control JIT compilation.
 
-                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
             chunked (ChunkedOption): Option to control chunked processing.
 
-                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
@@ -3105,10 +3105,10 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             noarr_mode (bool): Flag to enable no-array mode.
             jitted (JittedOption): Option to control JIT compilation.
 
-                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
             chunked (ChunkedOption): Option to control chunked processing.
 
-                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
@@ -3161,10 +3161,10 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
             jitted (JittedOption): Option to control JIT compilation.
 
-                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
             chunked (ChunkedOption): Option to control chunked processing.
 
-                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
@@ -3223,10 +3223,10 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
             jitted (JittedOption): Option to control JIT compilation.
 
-                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
             chunked (ChunkedOption): Option to control chunked processing.
 
-                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
@@ -3282,10 +3282,10 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
             jitted (JittedOption): Option to control JIT compilation.
 
-                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
             chunked (ChunkedOption): Option to control chunked processing.
 
-                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
@@ -3344,10 +3344,10 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
             jitted (JittedOption): Option to control JIT compilation.
 
-                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
             chunked (ChunkedOption): Option to control chunked processing.
 
-                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
@@ -3403,10 +3403,10 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
             jitted (JittedOption): Option to control JIT compilation.
 
-                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
             chunked (ChunkedOption): Option to control chunked processing.
 
-                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
@@ -3465,10 +3465,10 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
             jitted (JittedOption): Option to control JIT compilation.
 
-                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
             chunked (ChunkedOption): Option to control chunked processing.
 
-                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
@@ -3517,10 +3517,10 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
             jitted (JittedOption): Option to control JIT compilation.
 
-                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
             chunked (ChunkedOption): Option to control chunked processing.
 
-                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
@@ -3554,10 +3554,10 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
             jitted (JittedOption): Option to control JIT compilation.
 
-                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
             chunked (ChunkedOption): Option to control chunked processing.
 
-                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
@@ -3604,10 +3604,10 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
             jitted (JittedOption): Option to control JIT compilation.
 
-                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
             chunked (ChunkedOption): Option to control chunked processing.
 
-                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
@@ -3659,10 +3659,10 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
             jitted (JittedOption): Option to control JIT compilation.
 
-                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
             chunked (ChunkedOption): Option to control chunked processing.
 
-                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             **kwargs: Keyword arguments for `vectorbtpro.generic.drawdowns.Drawdowns.from_price`.
 
         Returns:

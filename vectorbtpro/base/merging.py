@@ -137,7 +137,7 @@ def concat_merge(
         wrap_kwargs (KwargsLikeSequence): Keyword arguments for wrapping arrays.
         clean_index_kwargs (KwargsLike): Keyword arguments for cleaning MultiIndex levels.
 
-            See `vectorbtpro.base.indexes.clean_index` for details.
+            See `vectorbtpro.base.indexes.clean_index`.
         **kwargs: Keyword arguments for `pd.concat`.
 
     Returns:

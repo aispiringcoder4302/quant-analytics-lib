@@ -4004,7 +4004,7 @@ class DocumentRanker(Configured):
         show_progress (Optional[bool]): Flag to display progress during operations.
         pbar_kwargs (KwargsLike): Keyword arguments for configuring the progress bar.
 
-            See `vectorbtpro.utils.pbar.ProgressBar` for details.
+            See `vectorbtpro.utils.pbar.ProgressBar`.
         template_context (KwargsLike): Additional context for template substitution.
         **kwargs: Keyword arguments for `vectorbtpro.utils.config.Configured`.
 
@@ -4297,7 +4297,7 @@ class DocumentRanker(Configured):
     def score_func(self) -> tp.Union[str, tp.Callable]:
         """Score function or its name used for computing document scores.
 
-        See `DocumentRanker.compute_score` for details.
+        See `DocumentRanker.compute_score`.
 
         Returns:
             Union[str, Callable]: The score function used for computing document scores.

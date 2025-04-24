@@ -225,10 +225,10 @@ class Orders(PriceRecords):
             init_price (ArrayLike): Initial price(s).
             jitted (JittedOption): Option to control JIT compilation.
 
-                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
             chunked (ChunkedOption): Option to control chunked processing.
 
-                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
 
         Returns:
             Orders: A new instance with long view orders.
@@ -261,10 +261,10 @@ class Orders(PriceRecords):
             init_price (ArrayLike): Initial price(s).
             jitted (JittedOption): Option to control JIT compilation.
 
-                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
             chunked (ChunkedOption): Option to control chunked processing.
 
-                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
 
         Returns:
             Orders: A new instance with short view orders.
@@ -329,10 +329,10 @@ class Orders(PriceRecords):
             group_by (GroupByLike): Grouping specification.
             jitted (JittedOption): Option to control JIT compilation.
 
-                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
             chunked (ChunkedOption): Option to control chunked processing.
 
-                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
             **kwargs: Keyword arguments for `vectorbtpro.records.mapped_array.MappedArray.reduce`.
 

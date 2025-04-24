@@ -55,7 +55,7 @@ def future_mean_1d_nb(
         window (int): Window length for the rolling calculation.
         wtype (int): Weighting type.
 
-            See `vectorbtpro.generic.enums.WType` for available types.
+            See `vectorbtpro.generic.enums.WType`.
         wait (int): Number of periods to delay the result to exclude the current value.
         minp (Optional[int]): Minimum number of observations required in a window.
         adjust (bool): Flag indicating whether to adjust weights.
@@ -97,7 +97,7 @@ def future_mean_nb(
         window (FlexArray1dLike): Window size(s).
         wtype (FlexArray1dLike): Weighting type(s).
 
-            See `vectorbtpro.generic.enums.WType` for available types.
+            See `vectorbtpro.generic.enums.WType`.
         wait (FlexArray1dLike): Waiting period(s).
         minp (Optional[int]): Minimum number of observations required per window.
         adjust (bool): Flag indicating whether to adjust weights.
@@ -145,7 +145,7 @@ def future_std_1d_nb(
         window (int): Window length for calculating the standard deviation.
         wtype (int): Weighting type.
 
-            See `vectorbtpro.generic.enums.WType` for available types.
+            See `vectorbtpro.generic.enums.WType`.
         wait (int): Number of periods to delay the result to exclude the current value.
         minp (Optional[int]): Minimum number of observations required in a window.
         adjust (bool): Flag indicating whether to adjust weights.
@@ -190,7 +190,7 @@ def future_std_nb(
         window (FlexArray1dLike): Window size(s).
         wtype (FlexArray1dLike): Weighting type(s).
 
-            See `vectorbtpro.generic.enums.WType` for available types.
+            See `vectorbtpro.generic.enums.WType`.
         wait (FlexArray1dLike): Waiting period(s).
         minp (Optional[int]): Minimum number of observations required per window.
         adjust (bool): Flag indicating whether to adjust weights.

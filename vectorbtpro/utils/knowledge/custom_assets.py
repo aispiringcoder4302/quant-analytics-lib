@@ -178,7 +178,7 @@ class VBTAsset(KnowledgeAsset):
             show_progress (Optional[bool]): Display a progress bar during asset download.
             pbar_kwargs (KwargsLike): Keyword arguments for configuring the progress bar.
 
-                See `vectorbtpro.utils.pbar.ProgressBar` for details.
+                See `vectorbtpro.utils.pbar.ProgressBar`.
             template_context (KwargsLike): Additional context for template substitution.
             **kwargs: Keyword arguments for `VBTAsset.from_json_file` or `VBTAsset.from_json_bytes`.
 
@@ -659,7 +659,7 @@ class VBTAsset(KnowledgeAsset):
             show_progress (Optional[bool]): Flag to display a progress bar during file creation.
             pbar_kwargs (KwargsLike): Keyword arguments for configuring the progress bar.
 
-                See `vectorbtpro.utils.pbar.ProgressBar` for details.
+                See `vectorbtpro.utils.pbar.ProgressBar`.
             template_context (KwargsLike): Additional context for template substitution.
             **kwargs: Keyword arguments for `vectorbtpro.utils.knowledge.custom_asset_funcs.ToMarkdownAssetFunc`
                 and forwarded to `vectorbtpro.utils.knowledge.formatting.to_markdown`.
@@ -853,7 +853,7 @@ class VBTAsset(KnowledgeAsset):
             show_progress (Optional[bool]): Flag to display a progress bar during the save process.
             pbar_kwargs (KwargsLike): Keyword arguments for configuring the progress bar.
 
-                See `vectorbtpro.utils.pbar.ProgressBar` for details.
+                See `vectorbtpro.utils.pbar.ProgressBar`.
             template_context (KwargsLike): Additional context for template substitution.
             return_url_map (bool): If True, also return a mapping of links to file paths along
                 with the HTML directory path.

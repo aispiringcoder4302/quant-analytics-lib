@@ -1343,7 +1343,7 @@ def ma_1d_nb(
         window (int): The window size for the moving average calculation.
         wtype (int): Weighting type.
 
-            See `vectorbtpro.generic.enums.WType` for available types.
+            See `vectorbtpro.generic.enums.WType`.
         minp (Optional[int]): Minimum number of observations required for the calculation.
         adjust (bool): Flag indicating whether to adjust weights.
 
@@ -1383,7 +1383,7 @@ def ma_nb(
         window (int): The window size for the moving average calculation.
         wtype (int): Weighting type.
 
-            See `vectorbtpro.generic.enums.WType` for available types.
+            See `vectorbtpro.generic.enums.WType`.
         minp (Optional[int]): Minimum number of observations required for the calculation.
         adjust (bool): Flag indicating whether to adjust weights.
 
@@ -1415,7 +1415,7 @@ def msd_1d_nb(
         window (int): Window size for computation.
         wtype (int): Weighting type.
 
-            See `vectorbtpro.generic.enums.WType` for available types.
+            See `vectorbtpro.generic.enums.WType`.
         minp (Optional[int]): Minimum number of observations required in the window.
         adjust (bool): Flag indicating whether to adjust weights.
         ddof (int): Delta degrees of freedom for standard deviation calculation.
@@ -1455,7 +1455,7 @@ def msd_nb(
         window (int): Window size for computation.
         wtype (int): Weighting type.
 
-            See `vectorbtpro.generic.enums.WType` for available types.
+            See `vectorbtpro.generic.enums.WType`.
         minp (Optional[int]): Minimum number of observations required in the window.
         adjust (bool): Flag indicating whether to adjust weights.
         ddof (int): Delta degrees of freedom for standard deviation calculation.
@@ -2451,10 +2451,10 @@ def rolling_pattern_similarity_1d_nb(
         window_select_prob (float): Probability of selecting a window size.
         interp_mode (int): Interpolation mode.
 
-            See `vectorbtpro.generic.enums.InterpMode` for options.
+            See `vectorbtpro.generic.enums.InterpMode`.
         rescale_mode (int): Rescaling mode for adjusting the ranges of `arr` and `pattern`.
 
-            See `vectorbtpro.generic.enums.RescaleMode` for options.
+            See `vectorbtpro.generic.enums.RescaleMode`.
         vmin (float): Minimum value used for rescaling `arr`.
 
             Use only when the array has fixed bounds. Used in rescaling with `RescaleMode.MinMax`
@@ -2482,10 +2482,10 @@ def rolling_pattern_similarity_1d_nb(
         invert (bool): Invert the pattern by reflecting its values.
         error_type (int): Error computation mode.
 
-            See `vectorbtpro.generic.enums.ErrorType` for options.
+            See `vectorbtpro.generic.enums.ErrorType`.
         distance_measure (int): Method for measuring distance (e.g., MAE, MSE, RMSE).
 
-            See `vectorbtpro.generic.enums.DistanceMeasure` for options.
+            See `vectorbtpro.generic.enums.DistanceMeasure`.
         max_error (FlexArray1dLike): Maximum error threshold for normalization.
 
             If provided as an array, it must match the size of the pattern and be on the same scale.
@@ -2493,7 +2493,7 @@ def rolling_pattern_similarity_1d_nb(
 
             If None, defaults to `interp_mode`.
 
-            See `vectorbtpro.generic.enums.InterpMode` for options.
+            See `vectorbtpro.generic.enums.InterpMode`.
         max_error_as_maxdist (bool): Indicates whether `max_error` represents the maximum distance at each point.
 
             If False, exceeding `max_error` sets the distance to the maximum derived from
@@ -2673,10 +2673,10 @@ def rolling_pattern_similarity_nb(
         window_select_prob (float): Probability of selecting a window size.
         interp_mode (int): Interpolation mode.
 
-            See `vectorbtpro.generic.enums.InterpMode` for options.
+            See `vectorbtpro.generic.enums.InterpMode`.
         rescale_mode (int): Rescaling mode for adjusting the ranges of `arr` and `pattern`.
 
-            See `vectorbtpro.generic.enums.RescaleMode` for options.
+            See `vectorbtpro.generic.enums.RescaleMode`.
         vmin (float): Minimum value used for rescaling `arr`.
 
             Use only when the array has fixed bounds. Used in rescaling with `RescaleMode.MinMax`
@@ -2704,10 +2704,10 @@ def rolling_pattern_similarity_nb(
         invert (bool): Invert the pattern by reflecting its values.
         error_type (int): Error computation mode.
 
-            See `vectorbtpro.generic.enums.ErrorType` for options.
+            See `vectorbtpro.generic.enums.ErrorType`.
         distance_measure (int): Method for measuring distance (e.g., MAE, MSE, RMSE).
 
-            See `vectorbtpro.generic.enums.DistanceMeasure` for options.
+            See `vectorbtpro.generic.enums.DistanceMeasure`.
         max_error (FlexArray1dLike): Maximum error threshold for normalization.
 
             If provided as an array, it must match the size of the pattern and be on the same scale.
@@ -2715,7 +2715,7 @@ def rolling_pattern_similarity_nb(
 
             If None, defaults to `interp_mode`.
 
-            See `vectorbtpro.generic.enums.InterpMode` for options.
+            See `vectorbtpro.generic.enums.InterpMode`.
         max_error_as_maxdist (bool): Indicates whether `max_error` represents the maximum distance at each point.
 
             If False, exceeding `max_error` sets the distance to the maximum derived from

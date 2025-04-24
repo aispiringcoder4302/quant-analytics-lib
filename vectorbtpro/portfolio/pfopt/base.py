@@ -2288,19 +2288,19 @@ class PortfolioOptimizer(Analyzable):
             jitted_loop (bool): Indicates whether to use a Numba-compiled loop for iterating over allocation groups.
             jitted (JittedOption): Option to control JIT compilation.
 
-                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
             chunked (ChunkedOption): Option to control chunked processing.
 
-                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             template_context (KwargsLike): Additional context for template substitution.
             group_execute_kwargs (KwargsLike): Keyword arguments for executing allocation groups.
             execute_kwargs (KwargsLike): Keyword arguments for the execution handler.
 
-                See `vectorbtpro.utils.execution.execute` for details.
+                See `vectorbtpro.utils.execution.execute`.
             random_subset (Optional[int]): Limit for randomly selecting a subset of parameters.
             clean_index_kwargs (KwargsLike): Keyword arguments for cleaning MultiIndex levels.
 
-                See `vectorbtpro.base.indexes.clean_index` for details.
+                See `vectorbtpro.base.indexes.clean_index`.
             wrapper_kwargs (KwargsLike): Keyword arguments for configuring the output
                 `vectorbtpro.base.wrapping.ArrayWrapper`.
             **kwargs: Keyword arguments for `allocate_func`.
@@ -2819,7 +2819,7 @@ class PortfolioOptimizer(Analyzable):
             wrapper (ArrayWrapper): The array wrapper instance.
             direction (Union[str, int]): The market direction for allocation, e.g. "longonly".
 
-                See `vectorbtpro.portfolio.enums.Direction` for available options.
+                See `vectorbtpro.portfolio.enums.Direction`.
             n (Optional[int]): Number of random allocations to generate.
             seed (Optional[int]): Seed for random number generation.
             **kwargs: Keyword arguments for `PortfolioOptimizer.from_allocate_func`.
@@ -3345,19 +3345,19 @@ class PortfolioOptimizer(Analyzable):
             jitted_loop (bool): Indicates whether to use a Numba-compiled loop for iterating over optimization groups.
             jitted (JittedOption): Option to control JIT compilation.
 
-                See `vectorbtpro.utils.jitting.resolve_jitted_option` for details.
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
             chunked (ChunkedOption): Option to control chunked processing.
 
-                See `vectorbtpro.utils.chunking.resolve_chunked_option` for details.
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             template_context (KwargsLike): Additional context for template substitution.
             group_execute_kwargs (KwargsLike): Keyword arguments for executing optimization groups.
             execute_kwargs (KwargsLike): Keyword arguments for the execution handler.
 
-                See `vectorbtpro.utils.execution.execute` for details.
+                See `vectorbtpro.utils.execution.execute`.
             random_subset (Optional[int]): Limit for randomly selecting a subset of parameters.
             clean_index_kwargs (KwargsLike): Keyword arguments for cleaning MultiIndex levels.
 
-                See `vectorbtpro.base.indexes.clean_index` for details.
+                See `vectorbtpro.base.indexes.clean_index`.
             wrapper_kwargs (KwargsLike): Keyword arguments for configuring the output
                 `vectorbtpro.base.wrapping.ArrayWrapper`.
             **kwargs: Keyword arguments for `optimize_func`.
@@ -4018,7 +4018,7 @@ class PortfolioOptimizer(Analyzable):
             column (Optional[Label]): Name of the allocation group to plot.
             dropna (Optional[str]): Parameter for NA handling.
 
-                See `PortfolioOptimizer.fill_allocations` for details.
+                See `PortfolioOptimizer.fill_allocations`.
             line_shape (str): Line shape.
             plot_rb_dates (Optional[bool]): Whether to plot rebalancing dates.
 

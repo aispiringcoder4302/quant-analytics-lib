@@ -887,7 +887,7 @@ class SQLData(DBData):
                 otherwise, only column names are allowed.
             chunksize (Optional[int]): Number of rows per chunk for processing.
 
-                See `pd.read_sql_query`.
+                See `pd.read_sql_query` for details on this argument.
             chunk_func (Optional[Callable]): Function to process and concatenate chunks when `chunksize` is set.
             squeeze (Optional[bool]): Determines whether to squeeze a DataFrame with one column into a Series.
             **read_sql_kwargs: Keyword arguments for `pd.read_sql_query`.

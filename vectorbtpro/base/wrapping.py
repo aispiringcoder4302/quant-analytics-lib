@@ -428,7 +428,7 @@ class HasWrapper(ExtPandasIndexer, ItemParamable):
                 Refer to `Wrapping.chunk` for details.
             execute_kwargs (KwargsLike): Keyword arguments for the execution handler.
 
-                See `vectorbtpro.utils.execution.execute` for details.
+                See `vectorbtpro.utils.execution.execute`.
             **kwargs: Keyword arguments for `apply_func`.
 
         Returns:
@@ -841,7 +841,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
             keys (Optional[IndexLike]): Keys used during index concatenation.
             clean_index_kwargs (KwargsLike): Keyword arguments for cleaning MultiIndex levels.
 
-                See `vectorbtpro.base.indexes.clean_index` for details.
+                See `vectorbtpro.base.indexes.clean_index`.
             verify_integrity (bool): Flag to verify the integrity of the concatenated index.
             **kwargs: Keyword arguments for `ArrayWrapper`.
 
@@ -993,7 +993,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
             keys (Optional[IndexLike]): Keys used for concatenating indexes.
             clean_index_kwargs (KwargsLike): Keyword arguments for cleaning MultiIndex levels.
 
-                See `vectorbtpro.base.indexes.clean_index` for details.
+                See `vectorbtpro.base.indexes.clean_index`.
             verify_integrity (bool): Whether to verify integrity conditions such as index uniqueness.
             **kwargs: Keyword arguments for `ArrayWrapper`.
 

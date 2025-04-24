@@ -238,7 +238,7 @@ def attach_qs_methods(cls: tp.Type[tp.T], replace_signature: bool = True) -> tp.
                 new_method.__name__ = new_method_name
                 new_method.__module__ = cls.__module__
                 new_method.__qualname__ = f"{cls.__name__}.{new_method.__name__}"
-                new_method.__doc__ = f"See `quantstats.{module_name}.{qs_func_name}` for details."
+                new_method.__doc__ = f"See `quantstats.{module_name}.{qs_func_name}`."
                 setattr(cls, new_method_name, new_method)
     return cls
 

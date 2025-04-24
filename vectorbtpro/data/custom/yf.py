@@ -96,14 +96,14 @@ class YFData(RemoteData):
             period (Optional[str]): Period string.
             start (Optional[DatetimeLike]): Start datetime.
 
-                See `vectorbtpro.utils.datetime_.to_tzaware_datetime` for conversion details.
+                See `vectorbtpro.utils.datetime_.to_tzaware_datetime`.
             end (Optional[DatetimeLike]): End datetime.
 
-                See `vectorbtpro.utils.datetime_.to_tzaware_datetime` for conversion details.
+                See `vectorbtpro.utils.datetime_.to_tzaware_datetime`.
             timeframe (Optional[str]): Human-readable timeframe (e.g., "15 minutes").
             tz (TimezoneLike): Time zone for datetime conversion.
 
-                See `vectorbtpro.utils.datetime_.to_timezone` for conversion details.
+                See `vectorbtpro.utils.datetime_.to_timezone`.
             **history_kwargs: Keyword arguments for `yfinance.base.TickerBase.history`.
 
         Returns:
