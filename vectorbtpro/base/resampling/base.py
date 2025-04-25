@@ -152,7 +152,7 @@ class Resampler(Configured):
         """Create a `Resampler` instance from a `pandas.core.resample.Resampler` object.
 
         Args:
-            pd_resampler (pandas.core.resample.Resampler): A pandas resampler object.
+            pd_resampler (pandas.core.resample.Resampler): A Pandas resampler object.
             source_freq (Optional[FrequencyLike]): Frequency for the source index.
             silence_warnings (bool): Flag indicating whether warnings should be silenced.
 
@@ -177,14 +177,14 @@ class Resampler(Configured):
         silence_warnings: bool = True,
         **kwargs,
     ) -> ResamplerT:
-        """Create a `Resampler` instance using the `pandas.Series.resample` method.
+        """Create a `Resampler` instance using the `pd.Series.resample` method.
 
         Args:
             source_index (index_like): Source index for resampling.
-            *args: Positional arguments for `pandas.Series.resample`.
+            *args: Positional arguments for `pd.Series.resample`.
             source_freq (Optional[FrequencyLike]): Frequency for the source index.
             silence_warnings (bool): Flag indicating whether warnings should be silenced.
-            **kwargs: Keyword arguments for `pandas.Series.resample`.
+            **kwargs: Keyword arguments for `pd.Series.resample`.
 
         Returns:
             Resampler: A new `Resampler` instance.
@@ -365,7 +365,7 @@ class Resampler(Configured):
         Args:
             before (bool): Map to the target index before the given value if True.
             raise_missing (bool): Raise an error if a target index value is missing.
-            return_index (bool): Return a pandas Index if True; otherwise, return a numpy array.
+            return_index (bool): Return a Pandas Index if True; otherwise, return a NumPy array.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
@@ -408,7 +408,7 @@ class Resampler(Configured):
 
         Args:
             reverse (bool): Reverse the order of indices for difference calculation if True.
-            return_index (bool): Return the target index mapping if True; otherwise, return a numpy array.
+            return_index (bool): Return the target index mapping if True; otherwise, return a NumPy array.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.

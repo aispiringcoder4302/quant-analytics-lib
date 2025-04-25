@@ -370,6 +370,8 @@ class SimRangeMixin(Base):
             wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
             group_by (GroupByLike): Grouping specification.
 
+                See `vectorbtpro.base.grouping.base.Grouper`.
+
         Returns:
             Optional[ArrayLike]: The resolved simulation start positions, or None if the input is treated as None.
         """
@@ -439,6 +441,8 @@ class SimRangeMixin(Base):
             allow_none (bool): Flag indicating whether None is allowed as a simulation end value.
             wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
             group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
 
         Returns:
             Optional[ArrayLike]: The resolved simulation end positions, or None if the input is treated as None.
@@ -512,6 +516,8 @@ class SimRangeMixin(Base):
             allow_none (bool): Flag indicating whether None is allowed as a simulation start value.
             wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
             group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
@@ -563,6 +569,8 @@ class SimRangeMixin(Base):
             allow_none (bool): Flag indicating whether None is allowed as a simulation end value.
             wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
             group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
@@ -612,6 +620,8 @@ class SimRangeMixin(Base):
             allow_none (bool): Indicates whether None is allowed for the simulation start.
             wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
             group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
@@ -675,6 +685,8 @@ class SimRangeMixin(Base):
             inclusive (bool): Determines if the simulation end should be treated as inclusive.
             wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
             group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
@@ -745,6 +757,8 @@ class SimRangeMixin(Base):
             sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
             wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
             group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
@@ -801,6 +815,8 @@ class SimRangeMixin(Base):
             sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
             wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
             group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
             xref (Optional[str]): Reference for the x-axis (e.g., "x", "x2").
 
                 If None, it is inferred from the figure.

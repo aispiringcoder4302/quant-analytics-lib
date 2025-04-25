@@ -40,7 +40,7 @@ class SQLData(DBData):
 
     See:
         * https://www.sqlalchemy.org/ for the SQLAlchemy API.
-        * https://pandas.pydata.org/docs/reference/api/pandas.read_sql_query.html for the pandas read method.
+        * https://pandas.pydata.org/docs/reference/api/pandas.read_sql_query.html for the Pandas read method.
         * `SQLData.pull` and `SQLData.fetch_key` for argument details.
 
     !!! info

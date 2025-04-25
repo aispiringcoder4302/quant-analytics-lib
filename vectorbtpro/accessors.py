@@ -10,7 +10,7 @@
 
 """Module providing root Pandas accessors.
 
-An accessor adds an additional namespace to pandas objects.
+An accessor adds an additional namespace to Pandas objects.
 
 The `vectorbtpro.accessors` module registers a custom `vbt` accessor on each `pd.Index`, `pd.Series`,
 and `pd.DataFrame` object. It is the main entry point for all other accessors:
@@ -204,7 +204,7 @@ class Vbt_IDXAccessor(DirNamesMixin, BaseIDXAccessor):
     """Class representing the main vectorbtpro accessor for `pd.Index`.
 
     Args:
-        obj (Index): The pandas Index object.
+        obj (Index): The Pandas Index object.
         **kwargs: Keyword arguments for `vectorbtpro.base.accessors.BaseIDXAccessor`.
     """
 

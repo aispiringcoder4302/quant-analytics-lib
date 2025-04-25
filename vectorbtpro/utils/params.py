@@ -204,7 +204,7 @@ def is_single_param_value(
     """Determine whether a parameter represents a single value.
 
     A value is considered single if it is not an instance of list, a Numba List, tuple
-    (unless `is_tuple` is True), or a numpy.ndarray (unless `is_array_like` is True).
+    (unless `is_tuple` is True), or a NumPy array (unless `is_array_like` is True).
     Ranges are also considered non-single.
 
     Args:

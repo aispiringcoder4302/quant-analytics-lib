@@ -28,7 +28,17 @@ from typing import *
 import numpy as np
 import pandas as pd
 from mypy_extensions import VarArg
-from pandas import Series, DataFrame as Frame, Index
+from pandas import (
+    Series,
+    DataFrame as Frame,
+    Index,
+    Timedelta as PandasTimedelta,
+    Timestamp,
+    MultiIndex,
+    DatetimeIndex,
+    PeriodIndex,
+    TimedeltaIndex,
+)
 from pandas.core.groupby import GroupBy as PandasGroupBy
 from pandas.core.indexing import _IndexSlice as IndexSlice
 from pandas.core.resample import Resampler as PandasResampler
@@ -233,18 +243,24 @@ LevelSequence = Sequence[Level]
 MaybeLevelSequence = Union[Level, LevelSequence]
 
 # Datetime
-Datetime = Union[pd.Timestamp, np.datetime64, datetime]
+Datetime = Union[Timestamp, np.datetime64, datetime]
 DatetimeLike = Union[str, int, float, Datetime]
-Timedelta = Union[pd.Timedelta, np.timedelta64, timedelta]
+Timedelta = Union[PandasTimedelta, np.timedelta64, timedelta]
 TimedeltaLike = Union[str, int, float, Timedelta]
 Frequency = Union[BaseOffset, Timedelta]
 FrequencyLike = Union[BaseOffset, TimedeltaLike]
 TimezoneLike = Union[None, str, int, float, timedelta, tzinfo]
 TimeLike = Union[str, time]
-PandasFrequency = Union[BaseOffset, pd.Timedelta]
-PandasDatetimeIndex = Union[pd.DatetimeIndex, pd.PeriodIndex]
+PandasFrequency = Union[BaseOffset, PandasTimedelta]
+PandasDatetimeIndex = Union[DatetimeIndex, PeriodIndex]
 AnyPandasFrequency = Union[None, int, float, PandasFrequency]
 DTCLike = Union[None, str, int, time, date, Datetime, DTC, DTCNT]
+
+
+class SupportsTZInfoT(Protocol):
+    @property
+    def tzinfo(self) -> tzinfo: ...
+
 
 # Indexing
 Slice = Union[slice, hslice]

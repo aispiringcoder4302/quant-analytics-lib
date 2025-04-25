@@ -1210,30 +1210,6 @@ Your goal is to refine (rewrite for clarity, correctness, consistent format, and
     2. If you know the target or the function/method/class these parameters are passed to:
         - For `*args`, use: **"Positional arguments passed to [target]."**
         - For `**kwargs`, use: **"Keyword arguments passed to [target]."**
-- Use the following descriptions if the argument name and type hint match exactly:
-    ```
-    broadcast_named_args (KwargsLike): Additional named arguments for broadcasting.
-    broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
-    template_context (KwargsLike): Additional context for template substitution.
-    jitted (JittedOption): Option to control JIT compilation.
-    chunked (ChunkedOption): Option to control chunked processing.
-    wrapper (ArrayWrapper): Wrapper instance.
-    wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
-    wrap_kwargs (KwargsLike): Keyword arguments for wrapping.
-    wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
-    group_by (GroupByLike): Grouping specification.
-    sim_start (Optional[ArrayLike]): Simulation start.
-    sim_end (Optional[ArrayLike]): Simulation end.
-    fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
-    add_trace_kwargs (KwargsLike): Keyword arguments for adding traces to the figure.
-    **layout_kwargs: Keyword arguments for `fig.update_layout`.
-    ```
-- Flexible types:
-    - Type `FlexArray1d` represents a flexible 1D array, such as "Window sizes".
-    - Type `FlexArray2d` represents a flexible 2D array, such as "Window sizes".
-    - Type `FlexArray1dLike` represents a single value or flexible 1D array, such as "Window size(s)".
-    - Type `FlexArray2dLike` represents a single value or flexible 2D array, such as "Window size(s)".
-    - Type `ArrayLike` represents a single value or any array, such as "Window size(s)".
 
 ### 6. Miscellaneous
 

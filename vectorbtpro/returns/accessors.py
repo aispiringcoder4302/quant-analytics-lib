@@ -512,7 +512,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         return self._log_returns
 
     @classmethod
-    def auto_detect_ann_factor(cls, index: pd.DatetimeIndex) -> tp.Optional[float]:
+    def auto_detect_ann_factor(cls, index: tp.DatetimeIndex) -> tp.Optional[float]:
         """Auto-detect the annualization factor using a datetime index.
 
         Args:
@@ -534,7 +534,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         return ann_factor
 
     @classmethod
-    def parse_ann_factor(cls, index: pd.DatetimeIndex, method_name: str = "max") -> tp.Optional[float]:
+    def parse_ann_factor(cls, index: tp.DatetimeIndex, method_name: str = "max") -> tp.Optional[float]:
         """Parse the annualization factor from a datetime index using a specified method.
 
         Args:
@@ -763,6 +763,8 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
             wrapper (Optional[ArrayWrapper]): Array wrapper for index extraction.
             group_by (GroupByLike): Grouping specification.
+            
+                See `vectorbtpro.base.grouping.base.Grouper`.
 
         Returns:
             Optional[ArrayLike]: Prepared periods array or None.
@@ -1017,7 +1019,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         See:
             `vectorbtpro.returns.nb.total_return_1d_nb`
         """
-        checks.assert_instance_of(self.obj.index, dt.PandasDatetimeIndex)
+        checks.assert_instance_of(self.obj.index, (pd.DatetimeIndex, pd.PeriodIndex))
 
         func = jit_reg.resolve_option(nb.total_return_1d_nb, jitted)
         chunked = ch.specialize_chunked_option(
@@ -3953,7 +3955,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             pct_scale (bool): Use percentage scale for the y-axis.
             hline_shape_kwargs (KwargsLike): Keyword arguments for `fig.add_shape` for the horizontal line.
             add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace.
-            xref (str): Reference for the x-axis.
+            xref (str): Reference for the x-axis (e.g., "x", "x2").
             yref (str): Reference for the y-axis (e.g., "y", "y2").
             fig (Optional[BaseFigure]): Figure to update.
 

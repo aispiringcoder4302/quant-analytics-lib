@@ -1090,7 +1090,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         level_name: tp.Union[None, bool, tp.MaybeIterable[tp.Hashable]] = None,
         feature_oriented: tp.Optional[bool] = None,
     ) -> tp.Index:
-        """Generate pandas Index for the data keys.
+        """Generate Pandas Index for the data keys.
 
         Args:
             keys (Optional[Keys]): List of keys; required for class method calls.
@@ -1100,7 +1100,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
                 required for class method calls.
 
         Returns:
-            Index: A pandas Index, or a MultiIndex if level names are provided as a tuple.
+            Index: A Pandas Index, or a MultiIndex if level names are provided as a tuple.
         """
         if isinstance(cls_or_self, type):
             checks.assert_not_none(keys, arg_name="keys")
@@ -1116,10 +1116,10 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
     def key_index(self) -> tp.Index:
         """Key index property.
 
-        A pandas Index generated from the data keys using `Data.get_key_index`.
+        A Pandas Index generated from the data keys using `Data.get_key_index`.
 
         Returns:
-            Index: A pandas Index, or a MultiIndex if level names are provided as a tuple.
+            Index: A Pandas Index, or a MultiIndex if level names are provided as a tuple.
         """
         return self.get_key_index()
 
@@ -1542,7 +1542,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         """Replace the index and/or columns of the `Data` instance when modified by the wrapper.
 
         This method updates the underlying data to reflect any changes in the index and columns
-        specified by the new wrapper. It adjusts each pandas Series or DataFrame within the
+        specified by the new wrapper. It adjusts each Pandas Series or DataFrame within the
         data accordingly and handles renaming of attributes if necessary.
 
         Args:
@@ -1658,6 +1658,8 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
 
                 Allowed values include "columns", "symbols", "features", or "keys".
             group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
             apply_group_by (bool): Whether to apply grouping during iteration.
 
                 !!! note
@@ -1745,6 +1747,8 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
 
                 See `vectorbtpro.base.indexes.clean_index`.
             group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
             **kwargs: Keyword arguments for `vectorbtpro.base.wrapping.ArrayWrapper.replace`.
 
         Returns:
@@ -2350,7 +2354,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         """Prepare datetime index and columns.
 
         Args:
-            obj (SeriesFrame): A pandas Series or DataFrame.
+            obj (SeriesFrame): A Pandas Series or DataFrame.
             parse_dates (Union[None, bool, Sequence[str]]): Determines whether to parse dates.
 
                 If True, converts any index or column with an object data type to datetime.
@@ -2364,7 +2368,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             remove_utc_tz (bool): Indicates whether to remove the timezone after converting to UTC.
 
         Returns:
-            Frame: A pandas DataFrame or Series with prepared datetime indices and columns.
+            Frame: A Pandas DataFrame or Series with prepared datetime indices and columns.
         """
         obj = obj.copy(deep=False)
         made_frame = False
@@ -2438,10 +2442,10 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         tz_localize: tp.Union[None, bool, tp.TimezoneLike] = None,
         tz_convert: tp.Union[None, bool, tp.TimezoneLike] = None,
     ) -> tp.SeriesFrame:
-        """Prepare a timezone-aware index for a pandas object.
+        """Prepare a timezone-aware index for a Pandas object.
 
         Args:
-            obj (SeriesFrame): A pandas Series or DataFrame.
+            obj (SeriesFrame): A Pandas Series or DataFrame.
             tz_localize (Union[None, bool, TimezoneLike]): The timezone to localize the index.
             tz_convert (Union[None, bool, TimezoneLike]): The timezone to convert the index.
 
@@ -2483,7 +2487,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         """Align data to share a common index.
 
         Args:
-            data (dict): A dictionary of pandas objects.
+            data (dict): A dictionary of Pandas objects.
             missing (Optional[str]): Specifies how to handle missing indices when aligning data.
 
                 * 'nan': Set missing data points to NaN.
@@ -2537,7 +2541,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         """Align data to share a common set of columns.
 
         Args:
-            data (dict): A dictionary of pandas objects.
+            data (dict): A dictionary of Pandas objects.
             missing (Optional[str]): Specifies how to handle missing columns when aligning data.
 
                 * 'nan': Set missing data points to NaN.
@@ -5562,9 +5566,9 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         return_meta: bool = False,
         **kwargs,
     ) -> tp.Union[None, feature_dict, symbol_dict]:
-        """Save data to CSV file(s) using pandas.DataFrame.to_csv.
+        """Save data to CSV file(s) using Pandas.DataFrame.to_csv.
 
-        Uses `pandas.DataFrame.to_csv` to write each data frame to a CSV file. If `path_or_buf` is a directory
+        Uses `pd.DataFrame.to_csv` to write each data frame to a CSV file. If `path_or_buf` is a directory
         or does not include a file suffix, each feature or symbol is saved to an individual file.
 
         Args:
@@ -5580,7 +5584,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
                 arguments match expected types.
             template_context (KwargsLike): Additional context for template substitution.
             return_meta (bool): If True, returns metadata about the saved CSV file(s).
-            **kwargs: Keyword arguments for `pandas.DataFrame.to_csv`.
+            **kwargs: Keyword arguments for `pd.DataFrame.to_csv`.
 
         Returns:
             Union[None, feature_dict, symbol_dict]: Dictionary with metadata if `return_meta` is True, or None.
@@ -5676,7 +5680,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
     ) -> tp.Union[None, feature_dict, symbol_dict]:
         """Save data to an HDF file using PyTables.
 
-        Uses `pandas.DataFrame.to_hdf` to write each data frame to an HDF file.
+        Uses `pd.DataFrame.to_hdf` to write each data frame to an HDF file.
         If `path_or_buf` is a directory or does not have a file suffix, a file named
         after the class (with a .h5 extension) is created automatically.
 
@@ -5696,7 +5700,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
                 arguments match expected types.
             template_context (KwargsLike): Additional context for template substitution.
             return_meta (bool): If True, returns metadata about the saved HDF file(s).
-            **kwargs: Keyword arguments for `pandas.DataFrame.to_hdf`.
+            **kwargs: Keyword arguments for `pd.DataFrame.to_hdf`.
 
         Returns:
             Union[None, feature_dict, symbol_dict]: Dictionary with metadata if `return_meta` is True, or None.
@@ -6112,7 +6116,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         """Save data to a SQL database using SQLAlchemy.
 
         This method saves each feature or symbol from the data into a separate SQL table using
-        the pandas DataFrame.to_sql method. When `engine` is provided as None or a string,
+        the Pandas DataFrame.to_sql method. When `engine` is provided as None or a string,
         it is resolved via `vectorbtpro.data.custom.sql.SQLData.resolve_engine` and may be
         disposed automatically unless overridden by `dispose_engine`.
 
@@ -6141,7 +6145,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             template_context (KwargsLike): Additional context for template substitution.
             return_meta (bool): If True, returns metadata for each saved table.
             return_engine (bool): If True, returns the database engine used.
-            **kwargs: Keyword arguments for `pandas.DataFrame.to_sql`.
+            **kwargs: Keyword arguments for `pd.DataFrame.to_sql`.
 
         Returns:
             Union[None, feature_dict, symbol_dict, Engine]: Dictionary with metadata if

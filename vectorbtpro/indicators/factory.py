@@ -685,7 +685,7 @@ class IndicatorBase(Analyzable):
 
                 When True, each list of parameter values is broadcast to the number of input columns and applied
                 per column rather than globally. Requires a known input shape.
-            keep_pd (bool): If True, retains inputs as pandas objects instead of converting them to NumPy arrays.
+            keep_pd (bool): If True, retains inputs as Pandas objects instead of converting them to NumPy arrays.
             to_2d (bool): If True, reshapes inputs to two-dimensional arrays.
             pass_packed (bool): If True, passes inputs and parameters to `custom_func` as lists.
 
@@ -816,7 +816,7 @@ class IndicatorBase(Analyzable):
         if wrapper_kwargs is None:
             wrapper_kwargs = {}
         if keep_pd and checks.is_numba_func(custom_func):
-            raise ValueError("Cannot pass pandas objects to a Numba-compiled custom_func. Set keep_pd to False.")
+            raise ValueError("Cannot pass Pandas objects to a Numba-compiled custom_func. Set keep_pd to False.")
 
         if seed is not None:
             set_seed(seed)
@@ -1348,7 +1348,7 @@ class IndicatorBase(Analyzable):
         return cls(**kwargs)
 
     @property
-    def _tuple_mapper(self) -> tp.Optional[pd.MultiIndex]:
+    def _tuple_mapper(self) -> tp.Optional[tp.MultiIndex]:
         if len(self.param_names) <= 1:
             return None
         return pd.MultiIndex.from_arrays([getattr(self, f"_{name}_mapper") for name in self.param_names])
@@ -1677,10 +1677,16 @@ class IndicatorBase(Analyzable):
         "params" for only visible parameters, or as a specific parameter name.
 
         Args:
-            group_by (GroupByLike): Grouping criteria, which can be a string, tuple, or list.
+            group_by (GroupByLike): Grouping specification.
 
-                If a string, valid options include a column name in the wrapper, "all_params"
-                for the full parameter mapper, "params" for only visible parameters, or a parameter name.
+                If a string, valid options include: 
+                
+                * a column name in the wrapper, 
+                * "all_params" for the full parameter mapper, 
+                * "params" for only visible parameters, or 
+                * a parameter name.
+                
+                See `vectorbtpro.base.grouping.base.Grouper`.
             apply_group_by (bool): Whether to apply additional grouping logic.
             keep_2d (bool): Whether to maintain the output data in a two-dimensional format.
             key_as_index (bool): Whether to use the key as an index in the output.

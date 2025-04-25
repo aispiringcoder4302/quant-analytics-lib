@@ -247,6 +247,8 @@ class StatsBuilderMixin(Base, metaclass=MetaStatsBuilderMixin):
                     Use the first method for large datasets or when caching is disabled,
                     and the second when most attributes are cached.
             group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
             per_column (Optional[bool]): If True, compute metrics for each column and stack the results.
             split_columns (Optional[bool]): If True and `per_column` is True, split the instance
                 into multiple columns; otherwise, iterate over columns and apply `column` to the entire instance.
@@ -289,7 +291,7 @@ class StatsBuilderMixin(Base, metaclass=MetaStatsBuilderMixin):
                 Extend or override all global and metric settings on a per-metric basis.
 
         Returns:
-            Optional[SeriesFrame]: The computed metrics as a pandas Series
+            Optional[SeriesFrame]: The computed metrics as a Pandas Series
                 (for single-dimensional output) or DataFrame (for multi-dimensional output).
 
         !!! info

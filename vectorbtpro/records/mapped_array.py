@@ -12,7 +12,7 @@
 
 The base class below stores a mapped data array along with its corresponding column and (optionally)
 index arrays, and provides methods to process the mapped array directly without converting it to
-a pandas DataFrame. For example, you can compute column-based statistics such as the standard deviation.
+a Pandas DataFrame. For example, you can compute column-based statistics such as the standard deviation.
 
 Consider the following example:
 
@@ -41,7 +41,7 @@ c    17.0
 dtype: float64
 ```
 
-Alternatively, convert the mapped array to a pandas DataFrame using `MappedArray.to_pd` and
+Alternatively, convert the mapped array to a Pandas DataFrame using `MappedArray.to_pd` and
 reduce manually (less efficient):
 
 ```pycon
@@ -135,7 +135,7 @@ for each group in the second example.
 
 ## Conversion
 
-Convert a `MappedArray` instance to a pandas DataFrame.
+Convert a `MappedArray` instance to a Pandas DataFrame.
 
 When an `idx_arr` is provided:
 
@@ -389,7 +389,7 @@ Generate histograms and boxplots directly from a `MappedArray`:
 ![](/assets/images/api/mapped_boxplot.light.svg#only-light){: .iimg loading=lazy }
 ![](/assets/images/api/mapped_boxplot.dark.svg#only-dark){: .iimg loading=lazy }
 
-For plots that require an index, such as scatterplots, first convert the mapped array to a pandas DataFrame:
+For plots that require an index, such as scatterplots, first convert the mapped array to a Pandas DataFrame:
 
 ```pycon
 >>> ma.to_pd().vbt.plot().show()
@@ -444,7 +444,7 @@ def combine_mapped_with_other(
     """Combine a `MappedArray` with another compatible object.
 
     This function combines the values of the current `MappedArray` instance with the input object
-    using a provided numpy function. If the input object is a `MappedArray`, its `id_arr` and
+    using a provided NumPy function. If the input object is a `MappedArray`, its `id_arr` and
     `col_arr` must match those of the current instance.
 
     Args:
@@ -659,13 +659,13 @@ class MappedArray(Analyzable):
 
         Stacks the provided `MappedArray` instances using `vectorbtpro.base.wrapping.ArrayWrapper.column_stack`
         to merge their wrappers. The `get_indexer_kwargs` are forwarded to
-        [`pandas.Index.get_indexer`](https://pandas.pydata.org/docs/reference/api/pandas.Index.get_indexer.html)
+        [`pd.Index.get_indexer`](https://pandas.pydata.org/docs/reference/api/pandas.Index.get_indexer.html)
         for translating old indices to new ones after reindexing.
 
         Args:
             *objs (MaybeSequence[MappedArray]): (Additional) `MappedArray` instances to stack.
             wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
-            get_indexer_kwargs (KwargsLike): Keyword arguments for `pandas.Index.get_indexer`
+            get_indexer_kwargs (KwargsLike): Keyword arguments for `pd.Index.get_indexer`
                 for index translation.
             **kwargs: Keyword arguments for `MappedArray` through
                 `MappedArray.resolve_column_stack_kwargs` and `MappedArray.resolve_stack_kwargs`.
@@ -1049,7 +1049,9 @@ class MappedArray(Analyzable):
         Args:
             incl_id (bool): If True, sort by both the column and id arrays.
             idx_arr (Array1d): Array of indices; if not provided, the instance's index array is used.
-            group_by (GroupByLike): Grouping specification for regrouping the instance.
+            group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
             **kwargs: Keyword arguments for `MappedArray.replace`.
 
         Returns:
@@ -1086,7 +1088,9 @@ class MappedArray(Analyzable):
             mask (Array1d): Boolean array indicating which elements to retain.
             idx_arr (Array1d): Array of indices for filtering;
                 if not provided, the instance's index array is used.
-            group_by (GroupByLike): Grouping specification for regrouping after filtering.
+            group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
             **kwargs: Keyword arguments for `MappedArray.replace`.
 
         Returns:
@@ -1114,8 +1118,9 @@ class MappedArray(Analyzable):
 
         Args:
             n (int): The number of top elements to select.
-            group_by (GroupByLike): Grouping specification;
-                if provided, selection is performed per group.
+            group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
@@ -1145,8 +1150,9 @@ class MappedArray(Analyzable):
 
         Args:
             n (int): The number of bottom elements to select.
-            group_by (GroupByLike): Grouping specification;
-                if provided, selection is performed per group.
+            group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
@@ -1177,7 +1183,9 @@ class MappedArray(Analyzable):
 
         Args:
             n (int): The number of top elements to select.
-            group_by (GroupByLike): Grouping specification for regrouping after filtering.
+            group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
@@ -1203,7 +1211,9 @@ class MappedArray(Analyzable):
 
         Args:
             n (int): The number of bottom elements to select.
-            group_by (GroupByLike): Grouping specification for regrouping after filtering.
+            group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
@@ -1332,6 +1342,8 @@ class MappedArray(Analyzable):
             apply_func_nb (Union[ApplyFunc, ApplyMetaFunc]): Function to apply to the mapped array.
             *args: Positional arguments for `apply_func_nb`.
             group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
             apply_per_group (bool): If True, apply the function per group of columns.
             dtype (Optional[DTypeLike]): Data type for the resulting array.
             jitted (JittedOption): Option to control JIT compilation.
@@ -1404,6 +1416,8 @@ class MappedArray(Analyzable):
 
                 If not provided, the instance's `idx_arr` must be set.
             group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
             apply_per_group (bool): If True, apply the reduction per group of columns.
             dtype (Optional[DTypeLike]): Data type for the resulting mapped array.
             jitted (JittedOption): Option to control JIT compilation.
@@ -1503,6 +1517,8 @@ class MappedArray(Analyzable):
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             col_mapper (Optional[ColumnMapper]): Column mapper instance used when invoked on a class.
             group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
@@ -1602,6 +1618,8 @@ class MappedArray(Analyzable):
         Args:
             n (int): The index of the element to return.
             group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
@@ -1653,6 +1671,8 @@ class MappedArray(Analyzable):
         Args:
             n (int): The index of the element whose position is to be returned.
             group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
@@ -1702,6 +1722,8 @@ class MappedArray(Analyzable):
 
         Args:
             group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
@@ -1742,6 +1764,8 @@ class MappedArray(Analyzable):
 
         Args:
             group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
@@ -1782,6 +1806,8 @@ class MappedArray(Analyzable):
 
         Args:
             group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
@@ -1822,6 +1848,8 @@ class MappedArray(Analyzable):
 
         Args:
             group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
@@ -1864,6 +1892,8 @@ class MappedArray(Analyzable):
         Args:
             ddof (int): Delta degrees of freedom.
             group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
@@ -1915,6 +1945,8 @@ class MappedArray(Analyzable):
         Args:
             fill_value (Scalar): Value to use for filling missing data.
             group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
@@ -1956,6 +1988,8 @@ class MappedArray(Analyzable):
 
         Args:
             group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
@@ -1996,6 +2030,8 @@ class MappedArray(Analyzable):
 
         Args:
             group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
@@ -2042,6 +2078,8 @@ class MappedArray(Analyzable):
                 If None, defaults are used.
             ddof (int): Delta degrees of freedom for standard deviation calculation.
             group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
@@ -2101,6 +2139,8 @@ class MappedArray(Analyzable):
 
         Args:
             group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
@@ -2150,7 +2190,9 @@ class MappedArray(Analyzable):
             sort (bool): Sort the results based on frequency counts.
             ascending (bool): Order sorting in ascending order when `sort` is True.
             dropna (bool): Exclude NaN values from the counts.
-            group_by (GroupByLike): Grouping specification for column mapping when axis is 1.
+            group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
             mapping (Union[None, bool, MappingLike]): Mapping used to resolve unique value representations.
             incl_all_keys (bool): Include keys from `mapping` that are missing in the data with counts set to zero.
             jitted (JittedOption): Option to control JIT compilation.
@@ -2263,7 +2305,9 @@ class MappedArray(Analyzable):
 
         Args:
             idx_arr (Optional[Array1d]): Array of indices to check. Uses `MappedArray.idx_arr` if not provided.
-            group_by (GroupByLike): Grouping specification for selecting the appropriate columns.
+            group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
@@ -2299,7 +2343,9 @@ class MappedArray(Analyzable):
             idx_arr (Optional[Array1d]): Array of indices to use for the mapping.
 
                 Uses `MappedArray.idx_arr` if not provided.
-            group_by (GroupByLike): Grouping specification for selecting columns.
+            group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
@@ -2362,6 +2408,8 @@ class MappedArray(Analyzable):
             mapping (Union[None, bool, MappingLike]): Mapping configuration for processing.
             mapping_kwargs (KwargsLike): Keyword arguments for mapping.
             group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
@@ -2386,7 +2434,7 @@ class MappedArray(Analyzable):
             Set `ignore_index` to True to bypass this error.
 
         !!! warning
-            Mapped arrays are optimized for memory. Converting them back to pandas may consume
+            Mapped arrays are optimized for memory. Converting them back to Pandas may consume
             significant memory if records are sparse.
         """
         if ignore_index:
@@ -2467,6 +2515,8 @@ class MappedArray(Analyzable):
 
                 If None, uses `MappedArray.idx_arr`.
             group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
@@ -2576,6 +2626,8 @@ class MappedArray(Analyzable):
 
         Args:
             group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
             **kwargs: Keyword arguments for `vectorbtpro.generic.accessors.GenericAccessor.histplot`.
 
         Returns:
@@ -2588,6 +2640,8 @@ class MappedArray(Analyzable):
 
         Args:
             group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
             **kwargs: Keyword arguments for `vectorbtpro.generic.accessors.GenericAccessor.boxplot`.
 
         Returns:

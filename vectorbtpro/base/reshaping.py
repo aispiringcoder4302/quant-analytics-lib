@@ -735,7 +735,7 @@ def broadcast_index(
         return None
     if isinstance(index_from, int):
         if not checks.is_pandas(objs[index_from]):
-            raise TypeError(f"Argument under index {index_from} must be a pandas object")
+            raise TypeError(f"Argument under index {index_from} must be a Pandas object")
         new_index = indexes.get_index(objs[index_from], axis)
     elif isinstance(index_from, str):
         if index_from.lower() == "reset":
@@ -1658,7 +1658,7 @@ def broadcast(
     if to_pd is not None:
         is_pd = to_pd or (return_wrapper and is_pd)
 
-    # Align pandas arrays
+    # Align Pandas arrays
     if index_from is not None and not isinstance(index_from, (int, str, pd.Index)):
         index_from = pd.Index(index_from)
     if columns_from is not None and not isinstance(columns_from, (int, str, pd.Index)):
@@ -2023,7 +2023,7 @@ def broadcast_to(
         arg1 (ArrayLike): Input array or scalar to broadcast.
         arg2 (Union[ArrayLike, ShapeLike, ArrayWrapper]): Target shape, array-like object,
             or instance of `vectorbtpro.base.wrapping.ArrayWrapper`.
-        to_pd (Optional[bool]): Convert result to a pandas object if True.
+        to_pd (Optional[bool]): Convert result to a Pandas object if True.
         index_from (Optional[IndexFromLike]): Index to use for the output;
             if None, uses the index of `arg2`.
         columns_from (Optional[IndexFromLike]): Columns to use for the output;
@@ -2031,7 +2031,7 @@ def broadcast_to(
         **kwargs: Keyword arguments for `broadcast`.
 
     Returns:
-        Any: Broadcasted structure, either as an array or a pandas object depending on `to_pd`.
+        Any: Broadcasted structure, either as an array or a Pandas object depending on `to_pd`.
 
     Examples:
         ```pycon
@@ -2240,7 +2240,7 @@ def get_multiindex_series(obj: tp.SeriesFrame) -> tp.Series:
     """Return a Series with a MultiIndex.
 
     Args:
-        obj (SeriesFrame): A pandas Series or DataFrame.
+        obj (SeriesFrame): A Pandas Series or DataFrame.
 
             If a DataFrame is provided, it must have at most one row or one column.
 

@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module providing classes for wrapping NumPy arrays into pandas Series and DataFrames.
+"""Module providing classes for wrapping NumPy arrays into Pandas Series and DataFrames.
 
 !!! info
     For default settings, see `vectorbtpro._settings.wrapping`.
@@ -114,6 +114,8 @@ class HasWrapper(ExtPandasIndexer, ItemParamable):
 
         Args:
             group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
             **kwargs: Keyword arguments passed for regrouping.
 
         Returns:
@@ -145,6 +147,8 @@ class HasWrapper(ExtPandasIndexer, ItemParamable):
         Args:
             column (Any): Column identifier, which can be a label-based position or an integer position.
             group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
             **kwargs: Keyword arguments for `HasWrapper.regroup`.
 
         Returns:
@@ -212,6 +216,8 @@ class HasWrapper(ExtPandasIndexer, ItemParamable):
             column (Any): Column identifier, which can be a label-based position or an integer position.
             obj_ungrouped (bool): Flag indicating whether the Pandas object is ungrouped.
             group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
             wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
             **kwargs: Keyword arguments for `ArrayWrapper.regroup`.
 
@@ -468,6 +474,8 @@ class HasWrapper(ExtPandasIndexer, ItemParamable):
         Args:
             group_by (GroupByLike): Grouping specification.
 
+                See `vectorbtpro.base.grouping.base.Grouper`.
+
         Returns:
             Index: The index containing the keys for iterating over the items.
         """
@@ -493,6 +501,8 @@ class HasWrapper(ExtPandasIndexer, ItemParamable):
 
         Args:
             group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
             apply_group_by (bool): If True, applies the grouping to both iteration and the final output.
                 If False, `group_by` is used solely as an iteration instruction.
             keep_2d (bool): Determines whether to retain the two-dimensional structure in the yielded items.
@@ -836,6 +846,8 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
                 If not provided, columns are derived from the wrappers.
             freq (Optional[FrequencyLike]): Frequency to enforce across all indexes.
             group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
             stack_columns (bool): Whether to stack differing column levels from wrappers.
             index_concat_method (MaybeTuple[Union[str, Callable]]): Method used for concatenating indexes.
             keys (Optional[IndexLike]): Keys used during index concatenation.
@@ -987,6 +999,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
             group_by (GroupByLike): Grouping specification.
 
                 If not provided, groups are concatenated if any wrapper is grouped, otherwise not applied.
+                See `vectorbtpro.base.grouping.base.Grouper`.
             union_index (bool): Whether to merge differing indexes via a union operation.
             col_concat_method (MaybeTuple[Union[str, Callable]]): Method used to concatenate column indexes.
             group_concat_method (MaybeTuple[Union[str, Callable]]): Method used to concatenate group indexes.
@@ -1167,6 +1180,8 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
             return_none_slices (bool): If True, return a slice `(None, None, None)` if an axis remains unchanged.
             return_scalars (bool): If True, return scalar values for single integer selections.
             group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
             wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
 
         Returns:
@@ -1609,6 +1624,8 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
         Args:
             group_by (GroupByLike): Grouping specification.
 
+                See `vectorbtpro.base.grouping.base.Grouper`.
+
         Returns:
             Index: The columns index.
         """
@@ -1633,6 +1650,8 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
         Args:
             group_by (GroupByLike): Grouping specification.
 
+                See `vectorbtpro.base.grouping.base.Grouper`.
+
         Returns:
             Any: The name for the group-aware `ArrayWrapper`.
         """
@@ -1652,6 +1671,8 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
 
         Args:
             group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
 
         Returns:
             int: The number of dimensions.
@@ -1675,6 +1696,8 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
         Args:
             group_by (GroupByLike): Grouping specification.
 
+                See `vectorbtpro.base.grouping.base.Grouper`.
+
         Returns:
             Shape: A tuple representing the dimensions.
         """
@@ -1696,6 +1719,8 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
 
         Args:
             group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
 
         Returns:
             Shape: A tuple representing the 2D dimensions.
@@ -1848,6 +1873,8 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
 
         Args:
             group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
             **kwargs: Keyword arguments for `ArrayWrapper.replace`.
 
         Returns:
@@ -1884,6 +1911,8 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
 
         Args:
             group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
             **kwargs: Keyword arguments for `ArrayWrapper.regroup`.
 
         Returns:
@@ -1943,13 +1972,15 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
         * Replace NaN values if a fill value is provided.
         * Adjust the array shape to match the stored index and columns.
         * Apply minimum and maximum precision casting if configured.
-        * Create a pandas Series or DataFrame based on the array's dimensionality.
+        * Create a Pandas Series or DataFrame based on the array's dimensionality.
         * Optionally map output values to the original index.
         * Optionally convert data to timedelta using `ArrayWrapper.arr_to_timedelta`.
 
         Args:
             arr (ArrayLike): The array to be wrapped.
             group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
             index (Optional[IndexLike]): Index to assign to the wrapped object.
 
                 Uses the stored index if not provided.
@@ -1960,7 +1991,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
                 when a single column is present.
             force_2d (bool): If True, force the output to be two-dimensional.
             fillna (Optional[Scalar]): Value to replace missing (NaN) entries in the array.
-            dtype (Optional[PandasDTypeLike]): Data type for the resulting pandas object.
+            dtype (Optional[PandasDTypeLike]): Data type for the resulting Pandas object.
             min_precision (Union[None, int, str]): Minimum precision for numerical conversion.
             max_precision (Union[None, int, str]): Maximum precision for numerical conversion.
             prec_float_only (Optional[bool]): If True, apply precision conversion only to floating point numbers.
@@ -1971,7 +2002,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
             silence_warnings (Optional[bool]): If True, suppress warnings during timedelta conversion.
 
         Returns:
-            SeriesFrame: The wrapped pandas Series or DataFrame with applied metadata.
+            SeriesFrame: The wrapped Pandas Series or DataFrame with applied metadata.
 
         !!! info
             For default settings, see `vectorbtpro._settings.wrapping`.
@@ -2083,6 +2114,8 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
         Args:
             arr (ArrayLike): The input array to be wrapped.
             group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
             name_or_index (NameIndex): Name for a scalar reduction per column or index for an array reduction.
             columns (Optional[IndexLike]): Override for the object's default columns.
             force_1d (bool): Flag to force the input array to be treated as one-dimensional.
@@ -2206,6 +2239,8 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
         Args:
             *objs (MaybeSequence[ArrayLike]): Arrays to concatenate.
             group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
             wrap (bool): Flag indicating whether to apply wrapping to the concatenated result.
             **kwargs: Keyword arguments for `ArrayWrapper.wrap_reduced`.
 
@@ -2240,6 +2275,8 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
         Args:
             *objs (MaybeSequence[ArrayLike]): Arrays to stack.
             group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
             wrap (bool): Flag indicating whether to apply wrapping to the stacked result.
             **kwargs: Keyword arguments for `ArrayWrapper.wrap`.
 
@@ -2281,6 +2318,8 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
             *objs (MaybeSequence[ArrayLike]): Arrays to stack.
             reindex_kwargs (KwargsLike): Keyword arguments for `pd.DataFrame.reindex`.
             group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
             wrap (bool): Flag indicating whether to apply wrapping to the concatenated result.
             **kwargs: Keyword arguments for `ArrayWrapper.wrap`.
 
@@ -2318,6 +2357,8 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
 
         Args:
             group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
             **kwargs: Keyword arguments for `ArrayWrapper.wrap`.
 
         Returns:
@@ -2332,6 +2373,8 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
         Args:
             fill_value (Scalar): The value used to fill the Series or DataFrame.
             group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
             **kwargs: Keyword arguments for `ArrayWrapper.wrap`.
 
         Returns:
@@ -2346,6 +2389,8 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
         Args:
             fill_value (Scalar): The value used to fill the reduced output.
             group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
             **kwargs: Keyword arguments for `ArrayWrapper.wrap_reduced`.
 
         Returns:
@@ -2912,6 +2957,8 @@ class Wrapping(Configured, HasWrapper, IndexApplier, AttrResolverMixin):
 
         Args:
             group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
             **kwargs: Keyword arguments for `ArrayWrapper.regroup`.
 
         Returns:

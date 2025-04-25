@@ -280,7 +280,7 @@ class CCXTData(RemoteData):
         end: tp.DatetimeLike = "now",
         tz: tp.TimezoneLike = None,
         for_internal_use: bool = False,
-    ) -> tp.Optional[pd.Timestamp]:
+    ) -> tp.Optional[tp.Timestamp]:
         """Find the earliest timestamp using binary search by calling the provided fetch function.
 
         Args:
@@ -291,7 +291,7 @@ class CCXTData(RemoteData):
             for_internal_use (bool): Flag indicating whether the search is for internal processing.
 
         Returns:
-            Optional[pd.Timestamp]: The earliest timestamp if data is available, otherwise None.
+            Optional[Timestamp]: The earliest timestamp if data is available, otherwise None.
         """
         if start is not None:
             start_ts = dt.datetime_to_ms(dt.to_tzaware_datetime(start, naive_tz=tz, tz="utc"))
@@ -333,7 +333,12 @@ class CCXTData(RemoteData):
         return None
 
     @classmethod
-    def find_earliest_date(cls, symbol: str, for_internal_use: bool = False, **kwargs) -> tp.Optional[pd.Timestamp]:
+    def find_earliest_date(
+        cls, 
+        symbol: str, 
+        for_internal_use: bool = False, 
+        **kwargs,
+    ) -> tp.Optional[tp.Timestamp]:
         """Find the earliest timestamp for a symbol using binary search.
 
         This method calls `CCXTData.fetch_symbol` to retrieve data for the specified symbol,
@@ -345,7 +350,7 @@ class CCXTData(RemoteData):
             **kwargs: Keyword arguments for `CCXTData.fetch_symbol`.
 
         Returns:
-            Optional[pd.Timestamp]: The earliest timestamp if data is available, otherwise None.
+            Optional[Timestamp]: The earliest timestamp if data is available, otherwise None.
         """
         return cls.fetch_find_earliest_date(
             **cls.fetch_symbol(symbol, return_fetch_method=True, **kwargs),

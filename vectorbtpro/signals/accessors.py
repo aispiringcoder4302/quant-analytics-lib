@@ -2309,6 +2309,8 @@ class SignalsAccessor(GenericAccessor):
 
         Args:
             group_by (GroupByLike): Grouping specification.
+            
+                See `vectorbtpro.base.grouping.base.Grouper`.
             **kwargs: Keyword arguments for `SignalsAccessor.pos_rank`.
 
         Returns:
@@ -2321,6 +2323,8 @@ class SignalsAccessor(GenericAccessor):
 
         Args:
             group_by (GroupByLike): Grouping specification.
+            
+                See `vectorbtpro.base.grouping.base.Grouper`.
             **kwargs: Keyword arguments for `SignalsAccessor.partition_pos_rank`.
 
         Returns:
@@ -2399,6 +2403,8 @@ class SignalsAccessor(GenericAccessor):
 
         Args:
             group_by (GroupByLike): Grouping specification.
+            
+                See `vectorbtpro.base.grouping.base.Grouper`.
             **kwargs: Keyword arguments for `vectorbtpro.records.mapped_array.MappedArray`.
 
         Returns:
@@ -2459,6 +2465,8 @@ class SignalsAccessor(GenericAccessor):
         Args:
             delta (Union[str, int, FrequencyLike]): A delta value applied relative to each signal.
             group_by (GroupByLike): Grouping specification.
+            
+                See `vectorbtpro.base.grouping.base.Grouper`.
             **kwargs: Keyword arguments for `vectorbtpro.generic.ranges.Ranges.from_delta`.
 
         Returns:
@@ -2489,7 +2497,9 @@ class SignalsAccessor(GenericAccessor):
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
 
                 See `vectorbtpro.base.reshaping.broadcast`.
-            group_by (GroupByLike): Specification for grouping the resulting ranges.
+            group_by (GroupByLike): Grouping specification.
+            
+                See `vectorbtpro.base.grouping.base.Grouper`.
             attach_target (bool): If True, the target array is attached to the result.
             jitted (JittedOption): Option to control JIT compilation.
 
@@ -2600,7 +2610,9 @@ class SignalsAccessor(GenericAccessor):
         """Build a record array of ranges from signal partitions.
 
         Args:
-            group_by (GroupByLike): Specification for grouping the resulting ranges.
+            group_by (GroupByLike): Grouping specification.
+            
+                See `vectorbtpro.base.grouping.base.Grouper`.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
@@ -2640,7 +2652,9 @@ class SignalsAccessor(GenericAccessor):
         """Build a record array of ranges between partitions.
 
         Args:
-            group_by (GroupByLike): Specification for grouping the resulting ranges.
+            group_by (GroupByLike): Grouping specification.
+            
+                See `vectorbtpro.base.grouping.base.Grouper`.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
@@ -2686,14 +2700,14 @@ class SignalsAccessor(GenericAccessor):
         Args:
             range_ (Array1d): Array of range values for constructing the index.
             row_idxs (Array1d): Array of row indices used for selecting index labels when needed.
-            index (Index): Reference pandas index for deriving labels.
+            index (Index): Reference Pandas index for deriving labels.
             signal_index_type (str): Specifies the type of signal index.
 
                 Valid values are "range", "position", or "label".
             signal_index_name (str): Name to assign to the generated index.
 
         Returns:
-            Index: A pandas Index constructed based on the specified signal index type.
+            Index: A Pandas Index constructed based on the specified signal index type.
         """
         if signal_index_type.lower() == "range":
             return pd.Index(range_, name=signal_index_name)
@@ -3034,6 +3048,8 @@ class SignalsAccessor(GenericAccessor):
 
         Args:
             group_by (GroupByLike): Grouping specification.
+            
+                See `vectorbtpro.base.grouping.base.Grouper`.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
@@ -3083,6 +3099,8 @@ class SignalsAccessor(GenericAccessor):
         Args:
             n (int): The index offset to select the nth signal.
             group_by (GroupByLike): Grouping specification.
+            
+                See `vectorbtpro.base.grouping.base.Grouper`.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
@@ -3160,6 +3178,8 @@ class SignalsAccessor(GenericAccessor):
 
         Args:
             group_by (GroupByLike): Grouping specification.
+            
+                See `vectorbtpro.base.grouping.base.Grouper`.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
@@ -3206,6 +3226,8 @@ class SignalsAccessor(GenericAccessor):
 
         Args:
             group_by (GroupByLike): Grouping specification.
+            
+                See `vectorbtpro.base.grouping.base.Grouper`.
             **kwargs: Keyword arguments for `vectorbtpro.generic.accessors.GenericAccessor.to_mapped`.
 
         Returns:
@@ -3223,6 +3245,8 @@ class SignalsAccessor(GenericAccessor):
         Args:
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
             group_by (GroupByLike): Grouping specification.
+            
+                See `vectorbtpro.base.grouping.base.Grouper`.
 
         Returns:
             MaybeSeries: A series with the total count of True signals.
@@ -3238,6 +3262,8 @@ class SignalsAccessor(GenericAccessor):
         Args:
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
             group_by (GroupByLike): Grouping specification.
+            
+                See `vectorbtpro.base.grouping.base.Grouper`.
             **kwargs: Keyword arguments for `SignalsAccessor.total`.
 
         Returns:
@@ -3259,6 +3285,8 @@ class SignalsAccessor(GenericAccessor):
         Args:
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
             group_by (GroupByLike): Grouping specification.
+            
+                See `vectorbtpro.base.grouping.base.Grouper`.
             **kwargs: Keyword arguments for `SignalsAccessor.partition_ranges`.
 
         Returns:
@@ -3280,6 +3308,8 @@ class SignalsAccessor(GenericAccessor):
         Args:
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
             group_by (GroupByLike): Grouping specification.
+            
+                See `vectorbtpro.base.grouping.base.Grouper`.
             **kwargs: Keyword arguments for `SignalsAccessor.total_partitions` and `SignalsAccessor.total`.
 
         Returns:
@@ -3742,9 +3772,9 @@ SignalsAccessor.override_subplots_doc(__pdoc__)
 
 @register_sr_vbt_accessor("signals")
 class SignalsSRAccessor(SignalsAccessor, GenericSRAccessor):
-    """Class representing an accessor for signal series on pandas Series.
+    """Class representing an accessor for signal series on Pandas Series.
 
-    Provides access to signal-related functionalities for a pandas Series.
+    Provides access to signal-related functionalities for a Pandas Series.
 
     Accessible via `pd.Series.vbt.signals`.
 
@@ -3769,9 +3799,9 @@ class SignalsSRAccessor(SignalsAccessor, GenericSRAccessor):
 
 @register_df_vbt_accessor("signals")
 class SignalsDFAccessor(SignalsAccessor, GenericDFAccessor):
-    """Class representing an accessor for signal series on pandas DataFrame.
+    """Class representing an accessor for signal series on Pandas DataFrame.
 
-    Provides access to signal-related functionalities for a pandas DataFrame.
+    Provides access to signal-related functionalities for a Pandas DataFrame.
 
     Accessible via `pd.DataFrame.vbt.signals`.
 

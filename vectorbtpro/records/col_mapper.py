@@ -259,6 +259,8 @@ class ColumnMapper(Wrapping):
 
         Args:
             group_by (GroupByLike): Grouping specification.
+            
+                See `vectorbtpro.base.grouping.base.Grouper`.
 
         Returns:
             Array1d: The column array adjusted for grouping.
@@ -291,6 +293,8 @@ class ColumnMapper(Wrapping):
 
         Args:
             group_by (GroupByLike): Grouping specification.
+            
+                See `vectorbtpro.base.grouping.base.Grouper`.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
@@ -329,6 +333,8 @@ class ColumnMapper(Wrapping):
 
         Args:
             group_by (GroupByLike): Grouping specification.
+            
+                See `vectorbtpro.base.grouping.base.Grouper`.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
@@ -386,7 +392,9 @@ class ColumnMapper(Wrapping):
         the grouping before generating the id array.
 
         Args:
-            group_by (GroupByLike): Grouping specification used to map the column array.
+            group_by (GroupByLike): Grouping specification.
+            
+                See `vectorbtpro.base.grouping.base.Grouper`.
 
         Returns:
             Array1d: New group-aware id array.

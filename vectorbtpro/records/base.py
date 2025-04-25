@@ -266,7 +266,7 @@ dtype: float64
 
 ## Indexing
 
-Similar to other classes subclassing `vectorbtpro.base.wrapping.Wrapping`, `Records` supports pandas
+Similar to other classes subclassing `vectorbtpro.base.wrapping.Wrapping`, `Records` supports Pandas
 indexing on a per-column basis. Indexing operations are forwarded to each object representing a column:
 
 ```pycon
@@ -793,7 +793,7 @@ class Records(Analyzable, metaclass=MetaRecords):
 
         Uses `vectorbtpro.base.wrapping.ArrayWrapper.column_stack` to stack the wrappers and
         `Records.column_stack_records_arrs` to combine the record arrays. The `get_indexer_kwargs`
-        are passed to `pandas.Index.get_indexer` to map old indices to new ones after reindexing.
+        are passed to `pd.Index.get_indexer` to map old indices to new ones after reindexing.
 
         Args:
             *objs (MaybeSequence[Records]): (Additional) `Records` instances to stack.
@@ -1078,7 +1078,7 @@ class Records(Analyzable, metaclass=MetaRecords):
     def records(self) -> tp.Frame:
         """Records as DataFrame.
 
-        Converts the record array into a pandas DataFrame.
+        Converts the record array into a Pandas DataFrame.
 
         Returns:
             Frame: A DataFrame representation of the records.
@@ -1372,7 +1372,9 @@ class Records(Analyzable, metaclass=MetaRecords):
 
         Args:
             incl_id (bool): If True, include record ids in the sorting criteria.
-            group_by (GroupByLike): Grouping specification to regroup records after sorting.
+            group_by (GroupByLike): Grouping specification.
+            
+                See `vectorbtpro.base.grouping.base.Grouper`.
             **kwargs: Keyword arguments for `Records.replace`.
 
         Returns:
@@ -1396,7 +1398,9 @@ class Records(Analyzable, metaclass=MetaRecords):
 
         Args:
             mask (Array1d): Boolean array indicating which records to retain.
-            group_by (GroupByLike): Grouping specification for the resulting records.
+            group_by (GroupByLike): Grouping specification.
+            
+                See `vectorbtpro.base.grouping.base.Grouper`.
             **kwargs: Keyword arguments for `Records.replace`.
 
         Returns:
@@ -1518,7 +1522,9 @@ class Records(Analyzable, metaclass=MetaRecords):
             idx_arr (Union[None, str, Array1d]): Row indices as an array,
                 a field name, or None to use the default index array.
             mapping (Optional[MappingLike]): Mapping to apply for re-labeling records.
-            group_by (GroupByLike): Grouping specification for the mapped array.
+            group_by (GroupByLike): Grouping specification.
+            
+                See `vectorbtpro.base.grouping.base.Grouper`.
             **kwargs: Keyword arguments for `vectorbtpro.records.mapped_array.MappedArray`.
 
         Returns:
@@ -1625,7 +1631,9 @@ class Records(Analyzable, metaclass=MetaRecords):
         Args:
             apply_func_nb (Union[ApplyFunc, ApplyMetaFunc]): Function to apply to the records.
             *args: Positional arguments for `apply_func_nb`.
-            group_by (GroupByLike): Grouping specification for applying the function.
+            group_by (GroupByLike): Grouping specification.
+            
+                See `vectorbtpro.base.grouping.base.Grouper`.
             apply_per_group (bool): If True, apply the function to each group individually.
             dtype (Optional[DTypeLike]): Data type for the resulting mapped array.
             jitted (JittedOption): Option to control JIT compilation.
@@ -1675,7 +1683,9 @@ class Records(Analyzable, metaclass=MetaRecords):
             idx_arr (Union[None, str, Array1d]): Index array or field name for retrieving row indices.
 
                 If None, `Records.idx_arr` is used.
-            group_by (GroupByLike): Grouping specification to apply when generating the mask.
+            group_by (GroupByLike): Grouping specification.
+            
+                See `vectorbtpro.base.grouping.base.Grouper`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
@@ -1711,6 +1721,8 @@ class Records(Analyzable, metaclass=MetaRecords):
 
         Args:
             group_by (GroupByLike): Grouping specification.
+            
+                See `vectorbtpro.base.grouping.base.Grouper`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:

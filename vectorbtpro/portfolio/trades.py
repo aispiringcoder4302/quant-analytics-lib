@@ -789,6 +789,8 @@ class Trades(Ranges):
 
         Args:
             group_by (GroupByLike): Grouping specification.
+            
+                See `vectorbtpro.base.grouping.base.Grouper`.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
@@ -825,6 +827,8 @@ class Trades(Ranges):
         Args:
             use_returns (bool): Whether to use trade returns instead of profit and loss.
             group_by (GroupByLike): Grouping specification.
+            
+                See `vectorbtpro.base.grouping.base.Grouper`.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
@@ -865,6 +869,8 @@ class Trades(Ranges):
         Args:
             use_returns (bool): Whether to use trade returns instead of profit and loss.
             group_by (GroupByLike): Grouping specification.
+            
+                See `vectorbtpro.base.grouping.base.Grouper`.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
@@ -907,6 +913,8 @@ class Trades(Ranges):
             ddof (int): Degrees of freedom for variance calculation.
             use_returns (bool): Whether to use trade returns instead of profit and loss.
             group_by (GroupByLike): Grouping specification.
+            
+                See `vectorbtpro.base.grouping.base.Grouper`.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
@@ -1417,7 +1425,9 @@ class Trades(Ranges):
             entry_price_open (bool): Include the open price of the entry bar when evaluating prices.
             exit_price_close (bool): Include the close price of the exit bar when evaluating prices.
             max_duration (Optional[int]): Maximum number of bars to evaluate price movements.
-            group_by (GroupByLike): Grouping parameters for data.
+            group_by (GroupByLike): Grouping specification.
+            
+                See `vectorbtpro.base.grouping.base.Grouper`.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
@@ -1506,7 +1516,9 @@ class Trades(Ranges):
             exit_price_close (bool): Include the close price of the exit bar when evaluating prices.
             max_duration (Optional[int]): Maximum number of bars to evaluate price movements.
             incl_shorter (bool): Include trades with shorter durations if True.
-            group_by (GroupByLike): Grouping parameters for data.
+            group_by (GroupByLike): Grouping specification.
+            
+                See `vectorbtpro.base.grouping.base.Grouper`.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
@@ -1750,7 +1762,7 @@ class Trades(Ranges):
 
         Args:
             column (Optional[Label]): Name of the column to plot.
-            group_by (GroupByLike): Grouping specification for columns.
+            group_by (GroupByLike): Grouping specification.
 
                 See `vectorbtpro.base.grouping.base.Grouper`.
             pct_scale (bool): If True, sets the y-axis to display trade returns in percentage format;
@@ -1767,7 +1779,7 @@ class Trades(Ranges):
                 the `plotly.graph_objects.Scatter` trace of open trades.
             hline_shape_kwargs (KwargsLike): Keyword arguments for `fig.add_shape` for the horizontal line.
             add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace.
-            xref (str): Reference for the x-axis.
+            xref (str): Reference for the x-axis (e.g., "x", "x2").
             yref (str): Reference for the y-axis (e.g., "y", "y2").
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
             **layout_kwargs: Keyword arguments for figure layout configuration.
@@ -1968,7 +1980,7 @@ class Trades(Ranges):
                 The field can be specified as a string, a mapped array, or a 1-dimensional array.
             field_label (Optional[str]): Label for the field.
             column (Optional[Label]): Name of the column to plot.
-            group_by (GroupByLike): Specification for grouping columns.
+            group_by (GroupByLike): Grouping specification.
 
                 See `vectorbtpro.base.grouping.base.Grouper`.
             pct_scale (bool): If True, set the x-axis to use returns; otherwise, use PnL.
@@ -1984,7 +1996,7 @@ class Trades(Ranges):
             hline_shape_kwargs (KwargsLike): Keyword arguments for `fig.add_shape` for the horizontal line.
             vline_shape_kwargs (KwargsLike): Keyword arguments for `fig.add_shape` for the vertical line.
             add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace.
-            xref (str): Reference for the x-axis.
+            xref (str): Reference for the x-axis (e.g., "x", "x2").
             yref (str): Reference for the y-axis (e.g., "y", "y2").
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
             **layout_kwargs: Keyword arguments for `fig.update_layout`.
@@ -2260,6 +2272,8 @@ class Trades(Ranges):
             field_label (Optional[str]): The label for the field.
             column (Optional[Label]): The column name to plot.
             group_by (GroupByLike): Grouping specification.
+            
+                See `vectorbtpro.base.grouping.base.Grouper`.
 
                 See `vectorbtpro.base.grouping.base.Grouper`.
             plot_bands (bool): Controls whether to plot bands.
@@ -2417,10 +2431,12 @@ class Trades(Ranges):
             max_duration (Optional[int]): Maximum number of bars to evaluate price movements.
             incl_shorter (bool): Whether to include trades shorter than the maximum duration.
             group_by (GroupByLike): Grouping specification.
+            
+                See `vectorbtpro.base.grouping.base.Grouper`.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
-            xref (str): Reference identifier for the x-axis.
+            xref (str): Reference for the x-axis (e.g., "x", "x2").
             yref (str): Reference for the y-axis (e.g., "y", "y2").
             hline_shape_kwargs (KwargsLike): Keyword arguments for `fig.add_shape` for the horizontal line.
             **kwargs: Keyword arguments for `vectorbtpro.generic.accessors.GenericSRAccessor.plot_against`.
@@ -2526,7 +2542,7 @@ class Trades(Ranges):
             profit_shape_kwargs (KwargsLike): Keyword arguments for `fig.add_shape` for profit zone shapes.
             loss_shape_kwargs (KwargsLike): Keyword arguments for `fig.add_shape` for loss zone shapes.
             add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace.
-            xref (str): Reference for x-axis coordinates.
+            xref (str): Reference for the x-axis (e.g., "x", "x2").
             yref (str): Reference for the y-axis (e.g., "y", "y2").
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
             **layout_kwargs: Keyword arguments for `fig.update_layout`.

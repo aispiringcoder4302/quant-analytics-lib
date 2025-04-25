@@ -56,7 +56,7 @@ def clean_labels(labels: tp.Labels) -> tp.Labels:
     """Clean labels for Plotly compatibility.
 
     Args:
-        labels (Labels): A sequence of labels, which may be a pandas MultiIndex, PeriodIndex, or list.
+        labels (Labels): A sequence of labels, which may be a Pandas MultiIndex, PeriodIndex, or list.
 
     Returns:
         Labels: A list of labels formatted for Plotly.
@@ -413,7 +413,7 @@ class Scatter(TraceType, TraceUpdater):
 
             Must have shape corresponding to (`x_labels`, `trace_names`).
         trace_names (TraceNames): Names of traces corresponding to the columns in the data.
-        x_labels (Optional[Labels]): Labels for the x-axis, typically representing the index in a pandas DataFrame.
+        x_labels (Optional[Labels]): Labels for the x-axis, typically representing the index in a Pandas DataFrame.
         trace_kwargs (KwargsLikeSequence): Keyword arguments for `plotly.graph_objects.Scatter`.
 
             Can be specified individually for each trace when provided as a sequence of dictionaries.

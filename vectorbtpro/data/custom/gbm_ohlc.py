@@ -61,7 +61,7 @@ class GBMOHLCData(SyntheticData):
 
         Args:
             symbol (hashable): The symbol identifier.
-            index (pd.Index): The Pandas index representing time periods.
+            index (Index): The Pandas index representing time periods.
             n_ticks (Optional[ArrayLike]): The number of ticks per bar.
 
                 Can be substituted using a template with a context containing `symbol` and `index`.

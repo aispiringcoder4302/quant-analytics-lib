@@ -204,7 +204,7 @@ def is_np_scalar(obj: tp.Any) -> bool:
 
 
 def is_td(obj: tp.Any) -> bool:
-    """Return whether the object is a timedelta object (from pandas, datetime, or NumPy).
+    """Return whether the object is a timedelta object (from Pandas, datetime, or NumPy).
 
     Args:
         obj (Any): The object to check.
@@ -228,7 +228,7 @@ def is_td_like(obj: tp.Any) -> bool:
 
 
 def is_frequency(obj: tp.Any) -> bool:
-    """Return whether the object is a frequency object (a timedelta or a pandas DateOffset).
+    """Return whether the object is a frequency object (a timedelta or a Pandas DateOffset).
 
     Args:
         obj (Any): The object to check.
@@ -252,7 +252,7 @@ def is_frequency_like(obj: tp.Any) -> bool:
 
 
 def is_dt(obj: tp.Any) -> bool:
-    """Return whether the object is a datetime object (from pandas, datetime, or NumPy).
+    """Return whether the object is a datetime object (from Pandas, datetime, or NumPy).
 
     Args:
         obj (Any): The object to check.
@@ -324,67 +324,67 @@ def is_record_array(obj: tp.Any) -> bool:
 
 
 def is_series(obj: tp.Any) -> bool:
-    """Return whether the object is a pandas Series.
+    """Return whether the object is a Pandas Series.
 
     Args:
         obj (Any): The object to check.
 
     Returns:
-        bool: True if the object is a pandas Series, False otherwise.
+        bool: True if the object is a Pandas Series, False otherwise.
     """
     return isinstance(obj, pd.Series)
 
 
 def is_index(obj: tp.Any) -> bool:
-    """Return whether the object is a pandas Index.
+    """Return whether the object is a Pandas Index.
 
     Args:
         obj (Any): The object to check.
 
     Returns:
-        bool: True if the object is a pandas Index, False otherwise.
+        bool: True if the object is a Pandas Index, False otherwise.
     """
     return isinstance(obj, pd.Index)
 
 
 def is_multi_index(obj: tp.Any) -> bool:
-    """Return whether the object is a pandas MultiIndex.
+    """Return whether the object is a Pandas MultiIndex.
 
     Args:
         obj (Any): The object to check.
 
     Returns:
-        bool: True if the object is a pandas MultiIndex, False otherwise.
+        bool: True if the object is a Pandas MultiIndex, False otherwise.
     """
     return isinstance(obj, pd.MultiIndex)
 
 
 def is_frame(obj: tp.Any) -> bool:
-    """Return whether the object is a pandas DataFrame.
+    """Return whether the object is a Pandas DataFrame.
 
     Args:
         obj (Any): The object to check.
 
     Returns:
-        bool: True if the object is a pandas DataFrame, False otherwise.
+        bool: True if the object is a Pandas DataFrame, False otherwise.
     """
     return isinstance(obj, pd.DataFrame)
 
 
 def is_pandas(obj: tp.Any) -> bool:
-    """Return whether the object is a pandas object (Series, Index, or DataFrame).
+    """Return whether the object is a Pandas object (Series, Index, or DataFrame).
 
     Args:
         obj (Any): The object to check.
 
     Returns:
-        bool: True if the object is a pandas object, False otherwise.
+        bool: True if the object is a Pandas object, False otherwise.
     """
     return is_series(obj) or is_index(obj) or is_frame(obj)
 
 
 def is_any_array(obj: tp.Any) -> bool:
-    """Return whether the object is any array-like object (a NumPy array or a pandas object).
+    """Return whether the object is any array-like object (a NumPy array or a Pandas object).
 
     Args:
         obj (Any): The object to check.
@@ -1385,7 +1385,7 @@ def assert_columns_equal(obj1: tp.Index, obj2: tp.Index, check_names: bool = Tru
 def assert_meta_equal(obj1: tp.ArrayLike, obj2: tp.ArrayLike, axis: tp.Optional[int] = None) -> None:
     """Assert that the metadata of `obj1` and `obj2` are equal.
 
-    The function validates type and shape equality. For pandas objects, it additionally compares
+    The function validates type and shape equality. For Pandas objects, it additionally compares
     indexes and, when applicable, columns or series names.
 
     Args:
@@ -1421,7 +1421,7 @@ def assert_array_equal(obj1: tp.ArrayLike, obj2: tp.ArrayLike) -> None:
 
     The function first compares metadata using `assert_meta_equal`, then checks actual data equality using:
 
-    * A pandas equality check if both objects are pandas.
+    * A Pandas equality check if both objects are Pandas.
     * A NumPy array equality check otherwise.
 
     Args:

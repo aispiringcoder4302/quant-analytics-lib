@@ -38,7 +38,6 @@ __all__ = [
 
 __pdoc__ = {}
 
-PandasDatetimeIndex = (pd.DatetimeIndex, pd.PeriodIndex)
 
 # ############# Frequency ############# #
 
@@ -408,14 +407,14 @@ def prepare_offset_str(offset_str: str, allow_space: bool = False) -> str:
 
 
 def to_offset(freq: tp.FrequencyLike) -> BaseOffset:
-    """Convert a frequency-like object to a pandas DateOffset object.
+    """Convert a frequency-like object to a Pandas DateOffset object.
 
     Args:
         freq (FrequencyLike): A frequency representation that may be a `pd.DateOffset` instance
             or a convertible frequency string.
 
     Returns:
-        BaseOffset: The corresponding pandas DateOffset object.
+        BaseOffset: The corresponding Pandas DateOffset object.
     """
     if isinstance(freq, BaseOffset):
         return freq
@@ -470,14 +469,14 @@ def prepare_timedelta_str(timedelta_str: str, allow_space: bool = False) -> str:
     return " ".join(new_freq_parts)
 
 
-def offset_to_timedelta(offset: BaseOffset) -> pd.Timedelta:
+def offset_to_timedelta(offset: BaseOffset) -> tp.PandasTimedelta:
     """Convert a Pandas offset to a `pd.Timedelta`.
 
     Args:
         offset (BaseOffset): An offset object representing a time duration.
 
     Returns:
-        pd.Timedelta: A timedelta corresponding to the provided offset.
+        PandasTimedelta: A timedelta corresponding to the provided offset.
     """
     from vectorbtpro.utils import datetime_nb as nb
 
@@ -529,11 +528,11 @@ def offset_to_timedelta(offset: BaseOffset) -> pd.Timedelta:
     return pd.Timedelta(offset)
 
 
-def fix_timedelta_precision(freq: pd.Timedelta) -> pd.Timedelta:
+def fix_timedelta_precision(freq: tp.PandasTimedelta) -> tp.PandasTimedelta:
     """Fix the precision of a `pd.Timedelta` to nanoseconds.
 
     Args:
-        freq (pd.Timedelta): A timedelta object to adjust.
+        freq (PandasTimedelta): A timedelta object to adjust.
 
     Returns:
         pd.Timedelta: The adjusted timedelta with nanosecond precision.
@@ -543,7 +542,7 @@ def fix_timedelta_precision(freq: pd.Timedelta) -> pd.Timedelta:
     return freq
 
 
-def to_timedelta(freq: tp.FrequencyLike = 1, approximate: bool = False) -> pd.Timedelta:
+def to_timedelta(freq: tp.FrequencyLike = 1, approximate: bool = False) -> tp.PandasTimedelta:
     """Convert a frequency-like object to a `pd.Timedelta`.
 
     Args:
@@ -551,7 +550,7 @@ def to_timedelta(freq: tp.FrequencyLike = 1, approximate: bool = False) -> pd.Ti
         approximate (bool): Whether to use approximate conversion for offset objects.
 
     Returns:
-        pd.Timedelta: The corresponding timedelta with nanosecond precision.
+        PandasTimedelta: The corresponding timedelta with nanosecond precision.
     """
     if not isinstance(freq, pd.Timedelta):
         if isinstance(freq, str):
@@ -961,7 +960,7 @@ class DTC(DefineMixin):
         )
 
 
-def time_to_timedelta(t: tp.Union[tp.TimeLike, DTC], **kwargs) -> pd.Timedelta:
+def time_to_timedelta(t: tp.Union[tp.TimeLike, DTC], **kwargs) -> tp.PandasTimedelta:
     """Return a `pd.Timedelta` representing the given time-like object.
 
     Args:
@@ -969,7 +968,7 @@ def time_to_timedelta(t: tp.Union[tp.TimeLike, DTC], **kwargs) -> pd.Timedelta:
         **kwargs: Keyword arguments for `DTC.parse_time_str`.
 
     Returns:
-        Timedelta: A pandas Timedelta instance.
+        PandasTimedelta: A Pandas Timedelta instance.
     """
     if isinstance(t, str):
         t = DTC.parse_time_str(t, **kwargs)
@@ -1079,11 +1078,11 @@ def convert_naive_time(t: time, tz_out: tp.Optional[tzinfo]) -> time:
     return datetime.combine(datetime.today(), t).astimezone(tz_out).time()
 
 
-def is_tz_aware(dt: tp.Union[datetime, pd.Timestamp, pd.DatetimeIndex]) -> bool:
+def is_tz_aware(dt: tp.SupportsTZInfoT) -> bool:
     """Determine if a datetime-like object is timezone-aware.
 
     Args:
-        dt (Union[datetime, Timestamp, DatetimeIndex]): The datetime-like object to check.
+        dt (SupportsTZInfo): The datetime-like object to check.
 
     Returns:
         bool: True if the object has timezone information, otherwise False.
@@ -1168,7 +1167,7 @@ def to_timestamp(
     tz: tp.TimezoneLike = None,
     to_fixed_offset: tp.Optional[bool] = None,
     **kwargs,
-) -> tp.Optional[pd.Timestamp]:
+) -> tp.Optional[tp.Timestamp]:
     """Parse the given datetime input as a `pd.Timestamp`.
 
     If `dt` is a string, parsing is attempted with Pandas and with dateparser if
@@ -1184,7 +1183,7 @@ def to_timestamp(
         **kwargs: Keyword arguments for `pd.Timestamp`.
 
     Returns:
-        pd.Timestamp: The parsed and timezone-adjusted timestamp.
+        Timestamp: The parsed and timezone-adjusted timestamp.
 
     !!! info
         For default settings, see `vectorbtpro._settings.datetime`.
@@ -1279,7 +1278,7 @@ def to_tzaware_timestamp(
     naive_tz: tp.TimezoneLike = None,
     tz: tp.TimezoneLike = None,
     **kwargs,
-) -> pd.Timestamp:
+) -> tp.Timestamp:
     """Convert the given datetime input to a timezone-aware `pd.Timestamp`.
 
     If `dt` is a raw timestamp, it is first localized to UTC. If `dt` is naive, it is localized using `naive_tz`
@@ -1293,7 +1292,7 @@ def to_tzaware_timestamp(
         **kwargs: Keyword arguments for `to_timestamp`.
 
     Returns:
-        pd.Timestamp: The timezone-aware timestamp.
+        Timestamp: The timezone-aware timestamp.
 
     !!! info
         For default settings, see `vectorbtpro._settings.datetime`.
@@ -1313,7 +1312,7 @@ def to_tzaware_timestamp(
     return ts
 
 
-def to_naive_timestamp(dt: tp.DatetimeLike = "now", **kwargs) -> pd.Timestamp:
+def to_naive_timestamp(dt: tp.DatetimeLike = "now", **kwargs) -> tp.Timestamp:
     """Convert the given datetime input to a timezone-naive `pd.Timestamp`.
 
     Args:
@@ -1321,7 +1320,7 @@ def to_naive_timestamp(dt: tp.DatetimeLike = "now", **kwargs) -> pd.Timestamp:
         **kwargs: Keyword arguments for `to_timestamp`.
 
     Returns:
-        pd.Timestamp: The timezone-naive timestamp.
+        Timestamp: The timezone-naive timestamp.
     """
     return to_timestamp(dt, **kwargs).tz_localize(None)
 
@@ -1379,8 +1378,8 @@ def to_naive_datetime(dt: tp.DatetimeLike = "now", **kwargs) -> datetime:
     return to_naive_timestamp(dt, **kwargs).to_pydatetime()
 
 
-def get_min_td_component(td: pd.Timedelta) -> int:
-    """Return the index of the smallest non-zero component in a pandas Timedelta.
+def get_min_td_component(td: tp.PandasTimedelta) -> int:
+    """Return the index of the smallest non-zero component in a Pandas Timedelta.
 
     The component mapping is:
 
@@ -1395,7 +1394,7 @@ def get_min_td_component(td: pd.Timedelta) -> int:
     Returns -1 if all components are zero.
 
     Args:
-        td (Timedelta): A pandas Timedelta object.
+        td (PandasTimedelta): A Pandas Timedelta object.
 
     Returns:
         int: The index of the smallest non-zero component, or -1.
@@ -1553,7 +1552,7 @@ def to_ns(obj: tp.ArrayLike, tz_naive_ns: tp.Optional[bool] = None) -> tp.ArrayL
     """Convert various time representations to nanoseconds since the Unix epoch.
 
     The function supports conversion of datetime, date, timedelta, and array-like objects,
-    including pandas and NumPy types. Timezone handling is determined by the `tz_naive_ns` flag.
+    including Pandas and NumPy types. Timezone handling is determined by the `tz_naive_ns` flag.
 
     Args:
         obj (ArrayLike): An object representing a time value.
@@ -1625,7 +1624,7 @@ def date_range(
     freq_kwargs: tp.KwargsLike = None,
     timezone_kwargs: tp.KwargsLike = None,
     **kwargs,
-) -> pd.DatetimeIndex:
+) -> tp.DatetimeIndex:
     """Generate a DatetimeIndex similar to `pd.date_range` with preprocessed parameters.
 
     Preprocesses the following:
@@ -1653,7 +1652,7 @@ def date_range(
         **kwargs: Keyword arguments for `pd.date_range`.
 
     Returns:
-        pd.DatetimeIndex: The generated datetime index.
+        DatetimeIndex: The generated datetime index.
     """
     if timestamp_kwargs is None:
         timestamp_kwargs = {}
@@ -1843,7 +1842,7 @@ def auto_detect_freq(index: tp.Index) -> tp.Optional[tp.PandasFrequency]:
     otherwise, returns None.
 
     Args:
-        index (Index): A pandas datetime index.
+        index (Index): A Pandas datetime index.
 
     Returns:
         Optional[PandasFrequency]: The detected frequency or None.
@@ -1856,14 +1855,14 @@ def auto_detect_freq(index: tp.Index) -> tp.Optional[tp.PandasFrequency]:
     return None
 
 
-def parse_index_freq(index: pd.DatetimeIndex) -> tp.Optional[tp.PandasFrequency]:
+def parse_index_freq(index: tp.DatetimeIndex) -> tp.Optional[tp.PandasFrequency]:
     """Extract frequency information from a datetime index.
 
     Checks the `freqstr` and `freq` attributes, and if necessary infers the frequency when the index
     has at least three elements.
 
     Args:
-        index (DatetimeIndex): A pandas datetime index.
+        index (DatetimeIndex): A Pandas datetime index.
 
     Returns:
         Optional[PandasFrequency]: The parsed frequency or None if undetectable.
@@ -1918,7 +1917,7 @@ def infer_index_freq(
     N elements respectively.
 
     Args:
-        index (Index): A pandas datetime index.
+        index (Index): A Pandas datetime index.
         freq (Optional[FrequencyLike]): A frequency specification as a string or frequency-like object.
         allow_offset (bool): Whether to allow offset frequency conversion.
         allow_numeric (bool): Whether to permit numeric frequency values.

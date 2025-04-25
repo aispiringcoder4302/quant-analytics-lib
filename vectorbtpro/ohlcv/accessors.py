@@ -125,7 +125,7 @@ OHLCVDFAccessorT = tp.TypeVar("OHLCVDFAccessorT", bound="OHLCVDFAccessor")
 
 @register_df_vbt_accessor("ohlcv")
 class OHLCVDFAccessor(OHLCDataMixin, GenericDFAccessor):
-    """Class representing an accessor on top of OHLCV data for pandas DataFrames.
+    """Class representing an accessor on top of OHLCV data for Pandas DataFrames.
 
     Accessible via `pd.DataFrame.vbt.ohlcv`.
 
@@ -152,7 +152,7 @@ class OHLCVDFAccessor(OHLCDataMixin, GenericDFAccessor):
 
     @hybrid_property
     def df_accessor_cls(cls_or_self) -> tp.Type["OHLCVDFAccessor"]:
-        """Accessor class for pandas DataFrames.
+        """Accessor class for Pandas DataFrames.
 
         Returns:
             Type[OHLCVDFAccessor]: The accessor class.

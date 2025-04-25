@@ -61,7 +61,7 @@ class RandomOHLCData(SyntheticData):
 
         Args:
             symbol (hashable): Unique identifier for the symbol.
-            index (pd.Index): Pandas index representing the time stamps.
+            index (Index): Pandas index representing the time stamps.
             n_ticks (Optional[ArrayLike]): Number of ticks per bar.
 
                 Flexible argument that can be provided as a template with a context

@@ -30,7 +30,7 @@ def date_range_nb(
 ) -> tp.Array1d:
     """Generate a datetime index with nanosecond precision for a given date range.
 
-    Inspired by `pandas.date_range`.
+    Inspired by `pd.date_range`.
 
     Args:
         start (np.datetime64): The starting datetime value.

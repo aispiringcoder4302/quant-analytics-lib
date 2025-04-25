@@ -786,7 +786,7 @@ def from_order_func_nb(  # %? line.replace("from_order_func_nb", new_func_name)
             other simulation results.
 
     !!! note
-        Indexing of 2D arrays in vectorbtpro follows the pandas convention: `a[i, col]`.
+        Indexing of 2D arrays in vectorbtpro follows the Pandas convention: `a[i, col]`.
 
     !!! warning
         You can only safely access data from columns left of the current group and rows above the

@@ -437,7 +437,7 @@ def format_array(array: tp.ArrayLike, tabulate: tp.Optional[bool] = None, html: 
     Args:
         array (ArrayLike): An array-like object to be formatted.
         tabulate (Optional[bool]): If True, use `tabulate.tabulate` for formatting;
-            if False, use pandas formatting functions (`DataFrame.to_string` or `DataFrame.to_html`).
+            if False, use Pandas formatting functions (`DataFrame.to_string` or `DataFrame.to_html`).
 
             If None, auto-detect based on the availability of the `tabulate` library and the `html` parameter.
         html (bool): Format the output in HTML if True.

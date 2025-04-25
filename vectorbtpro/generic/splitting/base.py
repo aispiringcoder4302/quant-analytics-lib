@@ -190,7 +190,7 @@ class RelRange(DefineMixin):
         length = self.length
         if not checks.is_number(offset) or not checks.is_number(length):
             if not isinstance(index, pd.DatetimeIndex):
-                raise TypeError(f"Index must be of type pandas.DatetimeIndex, not {index.dtype}")
+                raise TypeError(f"Index must be of type DatetimeIndex, not {index.dtype}")
 
         if offset_anchor == "start":
             if checks.is_number(offset):
@@ -1506,7 +1506,7 @@ class Splitter(Analyzable):
                     raise ValueError(f"Minimum start must be within [{0}, {len(index) - 1}]")
             else:
                 if not isinstance(index, pd.DatetimeIndex):
-                    raise TypeError(f"Index must be of type pandas.DatetimeIndex, not {index.dtype}")
+                    raise TypeError(f"Index must be of type DatetimeIndex, not {index.dtype}")
                 min_start = dt.try_align_dt_to_index(min_start, index)
                 if not isinstance(min_start, pd.Timestamp):
                     raise ValueError(f"Minimum start ({min_start}) could not be parsed")
@@ -1527,7 +1527,7 @@ class Splitter(Analyzable):
                 raise ValueError(f"Maximum end must be within [{1}, {len(index)}]")
         else:
             if not isinstance(index, pd.DatetimeIndex):
-                raise TypeError(f"Index must be of type pandas.DatetimeIndex, not {index.dtype}")
+                raise TypeError(f"Index must be of type DatetimeIndex, not {index.dtype}")
             max_end = dt.try_align_dt_to_index(max_end, index)
             if not isinstance(max_end, pd.Timestamp):
                 raise ValueError(f"Maximum end ({max_end}) could not be parsed")
@@ -2801,14 +2801,14 @@ class Splitter(Analyzable):
                 stop = len(index)
             if not checks.is_int(start):
                 if not isinstance(index, pd.DatetimeIndex):
-                    raise TypeError(f"Index must be of type pandas.DatetimeIndex, not {index.dtype}")
+                    raise TypeError(f"Index must be of type DatetimeIndex, not {index.dtype}")
                 start = dt.try_align_dt_to_index(start, index)
                 if not isinstance(start, pd.Timestamp):
                     raise ValueError(f"Range start ({start}) could not be parsed")
                 meta["was_datetime"] = True
             if not checks.is_int(stop):
                 if not isinstance(index, pd.DatetimeIndex):
-                    raise TypeError(f"Index must be of type pandas.DatetimeIndex, not {index.dtype}")
+                    raise TypeError(f"Index must be of type DatetimeIndex, not {index.dtype}")
                 stop = dt.try_align_dt_to_index(stop, index)
                 if not isinstance(stop, pd.Timestamp):
                     raise ValueError(f"Range start ({stop}) could not be parsed")
@@ -3752,7 +3752,7 @@ class Splitter(Analyzable):
 
         Returns:
             Any: The extracted range, which may be a single slice, a merged object,
-                or a pandas Series depending on the `into` parameter.
+                or a Pandas Series depending on the `into` parameter.
 
         Examples:
             Roll a window and stack it along columns by keeping the index:
@@ -5475,7 +5475,7 @@ class Splitter(Analyzable):
             **kwargs: Keyword arguments for `Splitter.get_bounds_arr`.
 
         Returns:
-            SeriesFrame: A pandas Series or DataFrame with index based on
+            SeriesFrame: A Pandas Series or DataFrame with index based on
                 grouping and columns ['start', 'end'].
         """
         split_group_by = self.get_split_grouper(split_group_by=split_group_by)
@@ -5509,7 +5509,7 @@ class Splitter(Analyzable):
         """Return the bounds by calling `Splitter.get_bounds` with default arguments.
 
         Returns:
-            Frame: A pandas DataFrame with the bounds.
+            Frame: A Pandas DataFrame with the bounds.
         """
         return self.get_bounds()
 
@@ -5519,7 +5519,7 @@ class Splitter(Analyzable):
         with `index_bounds` set to True.
 
         Returns:
-            Frame: A pandas DataFrame with the index bounds.
+            Frame: A Pandas DataFrame with the index bounds.
         """
         return self.get_bounds(index_bounds=True)
 
@@ -5531,7 +5531,7 @@ class Splitter(Analyzable):
             **kwargs: Keyword arguments for `Splitter.get_bounds`.
 
         Returns:
-            Series: A pandas Series of durations.
+            Series: A Pandas Series of durations.
         """
         bounds = self.get_bounds(right_inclusive=False, **kwargs)
         return (bounds["end"] - bounds["start"]).rename("duration")
@@ -5541,7 +5541,7 @@ class Splitter(Analyzable):
         """Return the duration by calling `Splitter.get_duration` with default arguments.
 
         Returns:
-            Series: A pandas Series of durations.
+            Series: A Pandas Series of durations.
         """
         return self.get_duration()
 
@@ -5551,7 +5551,7 @@ class Splitter(Analyzable):
         with `index_bounds` set to True.
 
         Returns:
-            Series: A pandas Series of durations.
+            Series: A Pandas Series of durations.
         """
         return self.get_duration(index_bounds=True)
 
@@ -5852,7 +5852,7 @@ class Splitter(Analyzable):
             **kwargs: Keyword arguments for `Splitter.get_mask_arr`.
 
         Returns:
-            SeriesFrame: A pandas Series or DataFrame representing the split mask.
+            SeriesFrame: A Pandas Series or DataFrame representing the split mask.
 
         !!! warning
             Boolean arrays for a high number of splits may consume substantial memory.
@@ -5881,7 +5881,7 @@ class Splitter(Analyzable):
         """Return the boolean mask computed with default parameters from `Splitter.get_mask`.
 
         Returns:
-            Frame: A pandas DataFrame representing the split mask.
+            Frame: A Pandas DataFrame representing the split mask.
         """
         return self.get_mask()
 
@@ -5948,7 +5948,7 @@ class Splitter(Analyzable):
         """Return the split coverage computed with default parameters from `Splitter.get_split_coverage`.
 
         Returns:
-            Series: A pandas Series of split coverage.
+            Series: A Pandas Series of split coverage.
         """
         return self.get_split_coverage()
 
@@ -6015,7 +6015,7 @@ class Splitter(Analyzable):
         """Return the set coverage computed with default parameters from `Splitter.get_set_coverage`.
 
         Returns:
-            Series: A pandas Series of set coverage.
+            Series: A Pandas Series of set coverage.
         """
         return self.get_set_coverage()
 
@@ -6081,7 +6081,7 @@ class Splitter(Analyzable):
         """Range coverage computed using default parameters from `Splitter.get_range_coverage`.
 
         Returns:
-            Series: A pandas Series of range coverage.
+            Series: A Pandas Series of range coverage.
         """
         return self.get_range_coverage()
 

@@ -72,10 +72,10 @@ class IndexingBase(Base):
     """Class providing indexing support via the `indexing_func` method."""
 
     def indexing_func(self: IndexingBaseT, pd_indexing_func: tp.Callable, **kwargs) -> IndexingBaseT:
-        """Apply the given pandas indexing function on all associated pandas objects and return a new instance.
+        """Apply the given Pandas indexing function on all associated Pandas objects and return a new instance.
 
         Args:
-            pd_indexing_func (Callable): The pandas indexing function to apply.
+            pd_indexing_func (Callable): The Pandas indexing function to apply.
             **kwargs: Keyword arguments for the indexing function.
 
         Returns:
@@ -87,10 +87,10 @@ class IndexingBase(Base):
         raise NotImplementedError
 
     def indexing_setter_func(self, pd_indexing_setter_func: tp.Callable, **kwargs) -> None:
-        """Apply the provided pandas indexing setter function on all associated pandas objects.
+        """Apply the provided Pandas indexing setter function on all associated Pandas objects.
 
         Args:
-            pd_indexing_setter_func (Callable): The pandas indexing setter function to apply.
+            pd_indexing_setter_func (Callable): The Pandas indexing setter function to apply.
             **kwargs: Keyword arguments for the indexing setter function.
 
         Returns:
@@ -123,7 +123,7 @@ class LocBase(Base):
 
     @property
     def indexing_func(self) -> tp.Callable:
-        """The function used to perform indexing operations on associated pandas objects.
+        """The function used to perform indexing operations on associated Pandas objects.
 
         Returns:
             Callable: The function used for indexing.
@@ -132,7 +132,7 @@ class LocBase(Base):
 
     @property
     def indexing_setter_func(self) -> tp.Optional[tp.Callable]:
-        """The function used to set values via indexing on associated pandas objects.
+        """The function used to set values via indexing on associated Pandas objects.
 
         Returns:
             Optional[Callable]: The function used for setting indexed values.
@@ -159,15 +159,15 @@ class LocBase(Base):
 
 
 class pdLoc(LocBase):
-    """Class forwarding a pandas-like indexing operation to each contained Series or DataFrame
+    """Class forwarding a Pandas-like indexing operation to each contained Series or DataFrame
     and returning a new instance."""
 
     @classmethod
     def pd_indexing_func(cls, obj: tp.SeriesFrame, key: tp.Any) -> tp.MaybeSeriesFrame:
-        """Perform a pandas-like indexing operation on a Series or DataFrame.
+        """Perform a Pandas-like indexing operation on a Series or DataFrame.
 
         Args:
-            obj (SeriesFrame): The pandas Series or DataFrame to index.
+            obj (SeriesFrame): The Pandas Series or DataFrame to index.
             key (Any): The key to use for indexing.
 
         Returns:
@@ -177,10 +177,10 @@ class pdLoc(LocBase):
 
     @classmethod
     def pd_indexing_setter_func(cls, obj: tp.SeriesFrame, key: tp.Any, value: tp.Any) -> None:
-        """Perform a pandas-like indexing setter operation on a Series or DataFrame.
+        """Perform a Pandas-like indexing setter operation on a Series or DataFrame.
 
         Args:
-            obj (SeriesFrame): The pandas Series or DataFrame to modify.
+            obj (SeriesFrame): The Pandas Series or DataFrame to modify.
             key (Any): The key identifying the location to set.
             value (Any): The value to assign.
 
@@ -197,7 +197,7 @@ class pdLoc(LocBase):
 
 
 class iLoc(pdLoc):
-    """Class forwarding pandas `iloc` indexing operations to each contained Series or DataFrame
+    """Class forwarding Pandas `iloc` indexing operations to each contained Series or DataFrame
     and returning a new instance."""
 
     @classmethod
@@ -210,7 +210,7 @@ class iLoc(pdLoc):
 
 
 class Loc(pdLoc):
-    """Class forwarding pandas `loc` indexing operations to each contained Series or DataFrame
+    """Class forwarding Pandas `loc` indexing operations to each contained Series or DataFrame
     and returning a new instance."""
 
     @classmethod
@@ -392,7 +392,7 @@ class ParamLoc(LocBase):
     Uses the provided `mapper` to link columns with parameter values.
 
     Args:
-        mapper (pd.Series): A series mapping column names to parameter values.
+        mapper (Series): A series mapping column names to parameter values.
         indexing_func (Callable): Function used to perform indexing.
         indexing_setter_func (Optional[Callable]): Function used for setting indexed values.
         level_name (Level): Name of the column level to adjust after selection.
@@ -509,12 +509,12 @@ def indexing_on_mapper(
     pd_indexing_func: tp.Callable,
 ) -> tp.Optional[tp.Series]:
     """Broadcast the `mapper` Series to match the structure of `ref_obj` and
-    apply the pandas indexing function.
+    apply the Pandas indexing function.
 
     Args:
         mapper (Series): Series used as a mapping to reindex data.
         ref_obj (SeriesFrame): Reference object whose structure defines the target shape.
-        pd_indexing_func (Callable): Function that performs pandas indexing.
+        pd_indexing_func (Callable): Function that performs Pandas indexing.
 
     Returns:
         Optional[Series]: A new Series with values indexed according to the mapping, or None.

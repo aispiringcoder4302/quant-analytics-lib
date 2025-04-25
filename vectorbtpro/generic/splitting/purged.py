@@ -60,7 +60,7 @@ class BasePurgedCV(Base):
     * an evaluation time at which the true response is observed and errors can be computed.
 
     Unlike standard scikit-learn cross-validation, the inputs `X`, `y`, `pred_times`, and `eval_times`
-    must be pandas DataFrame/Series with matching indices, and the samples must be ordered by prediction time.
+    must be Pandas DataFrame/Series with matching indices, and the samples must be ordered by prediction time.
 
     Args:
         n_folds (int): Number of folds used in cross-validation.
@@ -84,11 +84,11 @@ class BasePurgedCV(Base):
         return self._n_folds
 
     @property
-    def purge_td(self) -> pd.Timedelta:
+    def purge_td(self) -> tp.PandasTimedelta:
         """Timedelta period added to evaluation times for purging training samples.
 
         Returns:
-            Timedelta: Purge period.
+            PandasTimedelta: Purge period.
         """
         return self._purge_td
 
@@ -409,12 +409,12 @@ class PurgedKFoldCV(BasePurgedCV):
         return self._n_test_folds
 
     @property
-    def embargo_td(self) -> pd.Timedelta:
+    def embargo_td(self) -> tp.PandasTimedelta:
         """Embargo period duration enforcing a minimum gap between test set evaluation times
         and training set prediction times.
 
         Returns:
-            Timedelta: Embargo period.
+            PandasTimedelta: Embargo period.
         """
         return self._embargo_td
 

@@ -242,7 +242,7 @@ try:
     nanargmax = bn.nanargmax
     nanargmin = bn.nanargmin
 except ImportError:
-    # slower numpy
+    # slower NumPy
     nanmean = np.nanmean
     nanstd = np.nanstd
     nansum = np.nansum
@@ -1916,7 +1916,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         Args:
             by (AnyGroupByLike): Grouping key or object that defines groups.
 
-                It may be an instance of `vectorbtpro.base.grouping.base.Grouper`, a pandas
+                It may be an instance of `vectorbtpro.base.grouping.base.Grouper`, a Pandas
                 `GroupBy`, a `vectorbtpro.base.resampling.base.Resampler`, or any groupby-like object.
                 If not accepted by a Grouper, `pd.DataFrame.groupby` is used with `groupby_kwargs`.
             reduce_func_nb (Union[str, ReduceFunc, GroupByReduceMetaFunc]): Function to reduce groups.
@@ -2580,6 +2580,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
             group_by (GroupByLike): Grouping specification.
+            
+                See `vectorbtpro.base.grouping.base.Grouper`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
@@ -3003,6 +3005,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
             group_by (GroupByLike): Grouping specification.
+            
+                See `vectorbtpro.base.grouping.base.Grouper`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
@@ -3140,6 +3144,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
             group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
@@ -3439,7 +3445,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             silence_warnings (Optional[bool]): If True, suppress warnings during resampling.
 
         Returns:
-            SeriesFrame: The resampled data as a pandas Series or DataFrame.
+            SeriesFrame: The resampled data as a Pandas Series or DataFrame.
 
         See:
             * `vectorbtpro.generic.nb.apply_reduce.reduce_index_ranges_nb` for standard operations.
@@ -3840,6 +3846,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
@@ -3899,6 +3907,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
@@ -3958,6 +3968,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
@@ -4017,6 +4029,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
@@ -4078,6 +4092,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
@@ -4138,6 +4154,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
@@ -4199,6 +4217,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
@@ -4261,6 +4281,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
@@ -4315,6 +4337,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
@@ -4367,7 +4391,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
-            SeriesFrame: The rank as a pandas Series or DataFrame.
+            SeriesFrame: The rank as a Pandas Series or DataFrame.
 
         See:
             `vectorbtpro.generic.nb.base.rank_nb`
@@ -4398,10 +4422,12 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
-            SeriesFrame: The labeled index as a pandas Series or DataFrame.
+            SeriesFrame: The labeled index as a Pandas Series or DataFrame.
 
         See:
             `vectorbtpro.generic.nb.apply_reduce.argmin_reduce_nb`
@@ -4449,10 +4475,12 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
-            SeriesFrame: The labeled index as a pandas Series or DataFrame.
+            SeriesFrame: The labeled index as a panPandasdas Series or DataFrame.
 
         See:
             `vectorbtpro.generic.nb.apply_reduce.argmax_reduce_nb`
@@ -4507,10 +4535,12 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
-            SeriesFrame: The descriptive statistics as a pandas Series or DataFrame.
+            SeriesFrame: The descriptive statistics as a Pandas Series or DataFrame.
 
         See:
             `vectorbtpro.generic.nb.apply_reduce.describe_reduce_nb`
@@ -4672,6 +4702,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
             ascending (bool): If True, sort in ascending order when sorting by frequency.
             dropna (bool): If True, exclude counts for missing values (NaN).
             group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
             mapping (Union[None, bool, MappingLike]): Mapping to relabel unique values.
             incl_all_keys (bool): If True, include all keys from the mapping even if they are absent in the data.
             jitted (JittedOption): Option to control JIT compilation.
@@ -4852,6 +4884,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             group_by (GroupByLike): Grouping specification.
 
                 If provided, the data is demeaned separately for each group.
+                See `vectorbtpro.base.grouping.base.Grouper`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
 
         Returns:
@@ -5057,6 +5090,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
             dropna (bool): Whether to drop NaN values.
             dtype (Optional[DTypeLike]): Data type for the mapped array.
             group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
             **kwargs: Keyword arguments for `vectorbtpro.records.mapped_array.MappedArray`.
 
         Returns:
@@ -5591,6 +5626,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
             by_level (Optional[Level]): Level at which to unstack the data, if applicable.
             trace_names (TraceNames): Names for the histogram traces.
             group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
             return_fig (bool): Determines whether to return the figure.
             **kwargs: Keyword arguments for `vectorbtpro.generic.plotting.Histogram`.
 
@@ -5649,6 +5686,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
             by_level (Optional[Level]): Level at which to unstack the data, if applicable.
             trace_names (TraceNames): Names for the box plot traces.
             group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
             return_fig (bool): Determines whether to return the figure.
             **kwargs: Keyword arguments for `vectorbtpro.generic.plotting.Box`.
 
@@ -6347,7 +6386,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             dist (str): Distribution name for generating the probability plot.
             plot_line (bool): Whether to add a fitted reference line based on the probability plot.
             line_shape_kwargs (KwargsLike): Keyword arguments for `fig.add_shape` for the reference line.
-            xref (str): X-axis reference for the added line shape.
+            xref (str): Reference for the x-axis (e.g., "x", "x2").
             yref (str): Reference for the y-axis (e.g., "y", "y2").
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
             **kwargs: Keyword arguments for `GenericAccessor.scatterplot`.

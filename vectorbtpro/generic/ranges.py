@@ -466,6 +466,8 @@ class Ranges(PriceRecords):
 
         Args:
             group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
             **kwargs: Keyword arguments for `Ranges.get_pd_mask`.
 
         Returns:
@@ -478,6 +480,8 @@ class Ranges(PriceRecords):
 
         Args:
             group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
             **kwargs: Keyword arguments for `Ranges.get_pd_mask`.
 
         Returns:
@@ -500,6 +504,8 @@ class Ranges(PriceRecords):
 
         Args:
             group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
@@ -670,6 +676,8 @@ class Ranges(PriceRecords):
         Args:
             real (bool): If True, use real durations; otherwise, use effective durations.
             group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
@@ -707,6 +715,8 @@ class Ranges(PriceRecords):
         Args:
             real (bool): If True, use real durations; otherwise, use effective durations.
             group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
@@ -743,6 +753,8 @@ class Ranges(PriceRecords):
             overlapping (bool): Whether to consider overlapping ranges.
             normalize (bool): Whether to normalize the coverage.
             group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
@@ -785,7 +797,7 @@ class Ranges(PriceRecords):
         ffill: bool = False,
         remove_empty: bool = True,
         return_raw: bool = False,
-        start_index: tp.Optional[pd.Timestamp] = None,
+        start_index: tp.Optional[tp.Timestamp] = None,
         id_level: tp.Union[None, str, tp.IndexLike] = None,
         jitted: tp.JittedOption = None,
         wrap_kwargs: tp.KwargsLike = None,
@@ -822,7 +834,7 @@ class Ranges(PriceRecords):
             remove_empty (bool): Remove projections that are NaN or contain only a single element.
             return_raw (bool): Return the raw output (range indices and projections)
                 instead of a wrapped DataFrame.
-            start_index (Optional[pd.Timestamp]): Starting timestamp to define
+            start_index (Optional[Timestamp]): Starting timestamp to define
                 the DataFrame index of the projection.
             id_level (Union[None, str, IndexLike]): Identifier or key for naming range IDs.
 
@@ -1366,7 +1378,7 @@ class Ranges(PriceRecords):
                 for plotting close values.
             add_shape_kwargs (KwargsLike): Keyword arguments for `fig.add_shape` for each shape.
             add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace.
-            xref (str): Reference for the x-axis.
+            xref (str): Reference for the x-axis (e.g., "x", "x2").
             yref (str): Reference for the y-axis (e.g., "y", "y2").
             fig (BaseFigure): Figure object to which traces are added.
             **layout_kwargs: Keyword arguments for `fig.update_layout`.
@@ -1562,7 +1574,7 @@ class Ranges(PriceRecords):
             open_shape_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for open zones.
             closed_shape_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for closed zones.
             add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace.
-            xref (str): X-axis reference identifier.
+            xref (str): Reference for the x-axis (e.g., "x", "x2").
             yref (str): Reference for the y-axis (e.g., "y", "y2").
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
             return_close (bool): Whether to return the close Series along with the figure.
@@ -2570,7 +2582,7 @@ class PatternRanges(Ranges):
             upper_max_error_trace_kwargs (KwargsLike): Keyword arguments for
                 `plotly.graph_objects.Scatter` for upper max error.
             add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace.
-            xref (str): Specifies the X coordinate axis.
+            xref (str): Reference for the x-axis (e.g., "x", "x2").
             yref (str): Reference for the y-axis (e.g., "y", "y2").
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
             **kwargs: Keyword arguments for `Ranges.plot`.

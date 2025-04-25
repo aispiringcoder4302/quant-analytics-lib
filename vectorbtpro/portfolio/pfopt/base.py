@@ -883,13 +883,13 @@ def prepare_returns(
 ) -> tp.Frame:
     """Prepare and clean return data.
 
-    Converts the input returns to a pandas DataFrame and processes missing and infinite values
+    Converts the input returns to a Pandas DataFrame and processes missing and infinite values
     based on specified flags.
 
     Args:
         returns (AnyArray2d): A two-dimensional array containing return data.
 
-            Expected to be convertible to a pandas DataFrame.
+            Expected to be convertible to a Pandas DataFrame.
         nan_to_zero (bool): Replace NaN values with 0.
         dropna_rows (bool): Remove rows that have missing or, if NaN values are replaced, zero values.
         dropna_cols (bool): Remove columns that have missing or, if NaN values are replaced, zero values.

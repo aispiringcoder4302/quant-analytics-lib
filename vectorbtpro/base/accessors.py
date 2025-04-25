@@ -104,7 +104,7 @@ class BaseIDXAccessor(Configured, IndexApplier):
         """
         return dt.to_ns(self.obj)
 
-    def to_period(self, freq: tp.FrequencyLike, shift: bool = False) -> pd.PeriodIndex:
+    def to_period(self, freq: tp.FrequencyLike, shift: bool = False) -> tp.PeriodIndex:
         """Convert the index to a PeriodIndex.
 
         Args:
@@ -123,7 +123,7 @@ class BaseIDXAccessor(Configured, IndexApplier):
             raise TypeError(f"Cannot convert index of type {type(index)} to period")
         return index
 
-    def to_period_ts(self, *args, **kwargs) -> pd.DatetimeIndex:
+    def to_period_ts(self, *args, **kwargs) -> tp.DatetimeIndex:
         """Convert the index to a DatetimeIndex.
 
         The index is first converted to a PeriodIndex and then to timestamps.
@@ -526,7 +526,7 @@ class BaseIDXAccessor(Configured, IndexApplier):
 
         Args:
             a (MaybeArray): The input array containing numerical values.
-            to_pd (bool): Determines whether to return a pandas timedelta representation.
+            to_pd (bool): Determines whether to return a Pandas timedelta representation.
             silence_warnings (Optional[bool]): Flag to suppress warning messages regarding frequency parsing.
 
         Returns:
@@ -613,7 +613,7 @@ class BaseIDXAccessor(Configured, IndexApplier):
         Args:
             rule (AnyRuleLike): The resampling rule, which may be frequency-like or a resampler.
             freq (Optional[FrequencyLike]): The target frequency for the resampler.
-            resample_kwargs (KwargsLike): Keyword arguments for the pandas resample method.
+            resample_kwargs (KwargsLike): Keyword arguments for the Pandas resample method.
             return_pd_resampler (bool): Flag indicating whether to return a Pandas resampler.
             silence_warnings (Optional[bool]): If set, suppresses warning messages.
 
@@ -869,7 +869,7 @@ class BaseAccessor(Wrapping):
         2  3.0  NaN  NaN
         ```
 
-        Broadcast pandas objects:
+        Broadcast Pandas objects:
 
         ```pycon
         >>> sr = pd.Series([1])
@@ -1964,7 +1964,7 @@ class BaseAccessor(Wrapping):
         Args:
             apply_func (Callable): The function to apply.
             *args: Positional arguments for `apply_func`.
-            keep_pd (bool): If True, maintain inputs as pandas objects; otherwise, convert them to NumPy arrays.
+            keep_pd (bool): If True, maintain inputs as Pandas objects; otherwise, convert them to NumPy arrays.
             to_2d (bool): If True, reshape inputs to 2-dimensional arrays; otherwise, retain their original shape.
             broadcast_named_args (KwargsLike): Additional named arguments for broadcasting.
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
@@ -2106,7 +2106,7 @@ class BaseAccessor(Wrapping):
             ntimes (int): The number of times to apply `apply_func`.
             apply_func (Callable): The function to execute, with the iteration index as its first parameter.
             *args: Positional arguments for `apply_func`.
-            keep_pd (bool): If True, retain inputs as pandas objects; otherwise, convert inputs to arrays.
+            keep_pd (bool): If True, retain inputs as Pandas objects; otherwise, convert inputs to arrays.
             to_2d (bool): If True, convert input arrays to a two-dimensional format.
             keys (Optional[IndexLike]): Labels for the concatenated results along columns.
             broadcast_named_args (KwargsLike): Named arguments for broadcasting, merged with the object's data.
@@ -2242,7 +2242,7 @@ class BaseAccessor(Wrapping):
             allow_multiple (bool): Determines if a tuple, list, or Index is interpreted as multiple objects.
 
                 Applicable only when using the instance method.
-            keep_pd (bool): Determines whether to retain inputs as pandas objects or
+            keep_pd (bool): Determines whether to retain inputs as Pandas objects or
                 convert them to NumPy arrays.
             to_2d (bool): Determines whether to reshape inputs into 2-dimensional arrays.
             concat (bool): Determines whether to concatenate the results along the column axis or

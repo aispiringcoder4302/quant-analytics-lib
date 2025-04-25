@@ -386,7 +386,7 @@ class TVClient(Configured):
 
     @classmethod
     def convert_raw_data(cls, raw_data: str, symbol: str) -> tp.Frame:
-        """Convert a raw data string into a pandas DataFrame containing historical trading data.
+        """Convert a raw data string into a Pandas DataFrame containing historical trading data.
 
         Args:
             raw_data (str): The raw data string returned by TradingView.

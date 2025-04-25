@@ -10,10 +10,10 @@
 
 """Module providing functionality for index and column manipulations.
 
-Provides functions for stacking, combining, and cleansing pandas MultiIndex levels.
+Provides functions for stacking, combining, and cleansing Pandas MultiIndex levels.
 
 !!! note
-    In the pandas context, "Index" refers to both row indexes and columns."""
+    In the Pandas context, "Index" refers to both row indexes and columns."""
 
 from datetime import datetime, timedelta
 
@@ -45,13 +45,13 @@ class ExceptLevel(DefineMixin):
 
 
 def to_any_index(index_like: tp.IndexLike) -> tp.Index:
-    """Convert any index-like object to a pandas Index.
+    """Convert any index-like object to a Pandas Index.
 
     Args:
-        index_like (IndexLike): An object convertible to a pandas Index.
+        index_like (IndexLike): An object convertible to a Pandas Index.
 
     Returns:
-        Index: The resulting pandas Index instance. Index objects are returned unchanged.
+        Index: The resulting Pandas Index instance. Index objects are returned unchanged.
     """
     if checks.is_np_array(index_like) and index_like.ndim == 0:
         index_like = index_like[None]
@@ -64,7 +64,7 @@ def get_index(obj: tp.SeriesFrame, axis: int) -> tp.Index:
     """Return the index or columns of a Series or DataFrame based on the specified axis.
 
     Args:
-        obj (Union[pd.Series, pd.DataFrame]): A pandas Series or DataFrame.
+        obj (Union[pd.Series, pd.DataFrame]): A Pandas Series or DataFrame.
         axis (int): The axis number (0 for row index, 1 for columns).
 
     Returns:
@@ -81,7 +81,7 @@ def get_index(obj: tp.SeriesFrame, axis: int) -> tp.Index:
         if checks.is_series(obj):
             if obj.name is not None:
                 return pd.Index([obj.name])
-            return pd.Index([0])  # same as how pandas does it
+            return pd.Index([0])  # same as how Pandas does it
         else:
             return obj.columns
 
@@ -91,7 +91,7 @@ def index_from_values(
     single_value: bool = False,
     name: tp.Optional[tp.Hashable] = None,
 ) -> tp.Index:
-    """Create a new pandas Index from a sequence of values.
+    """Create a new Pandas Index from a sequence of values.
 
     Processes each element in the sequence to generate corresponding index labels.
     When the `single_value` flag is True, only the first value is used and repeated for all entries.
@@ -103,7 +103,7 @@ def index_from_values(
         name (Optional[Hashable]): The name to assign to the index.
 
     Returns:
-        Index: A pandas Index with labels generated from the provided values.
+        Index: A Pandas Index with labels generated from the provided values.
     """
     scalar_types = (int, float, complex, str, bool, datetime, timedelta, np.generic)
     type_id_number = {}

@@ -58,7 +58,7 @@ class RandomData(SyntheticData):
 
         Args:
             key (Hashable): Feature or symbol.
-            index (pd.Index): Pandas index.
+            index (Index): Pandas index.
             columns (Union[Hashable, IndexLike]): Column names.
 
                 Provide a single value to create a Series.

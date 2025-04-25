@@ -41,21 +41,23 @@ GrouperT = tp.TypeVar("GrouperT", bound="Grouper")
 class Grouper(Configured):
     """Class for grouping indices and managing group metadata.
 
-    This class stores metadata and offers methods to create and manipulate groupings for a pandas Index.
+    This class stores metadata and offers methods to create and manipulate groupings for a Pandas Index.
     It provides information such as the number of groups, the starting indices for each group, and other details
     that are useful for grouping reduction operations.
 
     Args:
-        index (Index): The original pandas Index to group.
+        index (Index): The original Pandas Index to group.
         group_by (GroupByLike): Grouping specification.
 
             Accepts:
 
             * boolean (False for no grouping, True for one group).
-            * integer (level by position).
-            * string (level by name).
-            * sequence of integers or strings that is shorter than `index` (multiple levels).
-            * any other sequence that has the same length as `index`.
+            * integer (MultiIndex level by position).
+            * string (MultiIndex level by name).
+            * sequence of integers or strings that is shorter than `index` (multiple MultiIndex levels).
+            * any other sequence such as Pandas Index that has the same length as `index`.
+            * `vectorbtpro.base.indexes.ExceptLevel` object (to exclude levels).
+            * `vectorbtpro.base.grouping.CustomTemplate` object with `index` as context (to substitute levels).
         def_lvl_name (Hashable): Default level name for groups when generating new labels.
         allow_enable (bool): Indicates if enabling grouping is permitted when group_by is None.
         allow_disable (bool): Indicates if disabling grouping is permitted when group_by is not None.
@@ -100,10 +102,10 @@ class Grouper(Configured):
 
     @property
     def index(self) -> tp.Index:
-        """Original pandas Index used for grouping.
+        """Original Pandas Index used for grouping.
 
         Returns:
-            Index: The original pandas Index.
+            Index: The original Pandas Index.
         """
         return self._index
 
@@ -159,19 +161,19 @@ class Grouper(Configured):
         group_by: tp.GroupByLike,
         def_lvl_name: tp.Hashable = "group",
     ) -> tp.GroupBy:
-        """Convert the provided `group_by` specification into a pandas Index.
+        """Convert the provided `group_by` specification into a Pandas Index.
 
         Args:
-            index (Index): The original pandas Index.
+            index (Index): The original Pandas Index.
             group_by (GroupByLike): Grouping specification.
             def_lvl_name (Hashable): Default level name for groups if a new group index is generated.
 
         Returns:
-            GroupBy: The resulting group-by mapping as a pandas Index,
+            GroupBy: The resulting group-by mapping as a Pandas Index,
                 or the original `group_by` if it is None or False.
 
         !!! note
-            The index and the group_by mapper must have the same length.
+            The index and the `group_by` mapper must have the same length.
         """
         if group_by is None or group_by is False:
             return group_by
@@ -224,7 +226,7 @@ class Grouper(Configured):
         """Return an array of group indices corresponding to the original index and the grouped index.
 
         Args:
-            index (Index): The original pandas Index.
+            index (Index): The original Pandas Index.
             group_by (GroupByLike): Grouping specification.
             def_lvl_name (Hashable): Default level name for groups.
 
@@ -232,7 +234,7 @@ class Grouper(Configured):
             Tuple[ndarray, Index]: A tuple containing:
 
                 * An array of integer group codes for the original index.
-                * The grouped pandas Index.
+                * The grouped Pandas Index.
         """
         if group_by is None or group_by is False:
             return np.arange(len(index)), index
@@ -291,11 +293,11 @@ class Grouper(Configured):
         pd_group_by: tp.PandasGroupByLike,
         **kwargs,
     ) -> GrouperT:
-        """Build a `Grouper` instance from a pandas `GroupBy` object.
+        """Build a `Grouper` instance from a Pandas `GroupBy` object.
 
         Args:
             cls (Type[Grouper]): The `Grouper` class.
-            pd_group_by (PandasGroupByLike): A pandas `GroupBy` or
+            pd_group_by (PandasGroupByLike): A Pandas `GroupBy` or
                 `vectorbtpro.base.resampling.base.Resampler` object.
             **kwargs: Keyword arguments for `Grouper`.
 
