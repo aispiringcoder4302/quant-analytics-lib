@@ -136,7 +136,7 @@ def records_resample_func(
     Args:
         obj (ArrayLike): The record data array.
         resampler (Union[Resampler, PandasResampler]): The resampler instance used for resampling.
-        wrapper (ArrayWrapper): The array wrapper containing index information.
+        wrapper (ArrayWrapper): Array wrapper instance.
         cls (Union[type, str]): The record class or its attribute name.
         **kwargs: Additional keyword arguments.
 
@@ -162,7 +162,7 @@ def returns_resample_func(
     Args:
         obj (ArrayLike): The returns data array.
         resampler (Union[Resampler, PandasResampler]): The resampler instance used for resampling.
-        wrapper (ArrayWrapper): The array wrapper providing the index.
+        wrapper (ArrayWrapper): Array wrapper instance.
         fill_with_zero (bool): Whether to fill missing values with zero.
         log_returns (bool): Whether to compute logarithmic returns.
         **kwargs: Additional keyword arguments.
@@ -494,7 +494,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
     """Class for simulating a portfolio and measuring its performance.
 
     Args:
-        wrapper (ArrayWrapper): Wrapper instance.
+        wrapper (ArrayWrapper): Array wrapper instance.
 
             See `vectorbtpro.base.wrapping.ArrayWrapper`.
         order_records (Union[RecordArray, SimulationOutput]): Structured NumPy array of order records, or
@@ -512,7 +512,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
             Provided in a format that supports flexible indexing.
         log_records (Optional[RecordArray]): Structured NumPy array of log records.
-        cash_sharing (bool): Determines whether cash is shared among assets in the same group.
+        cash_sharing (bool): Flag indicating whether cash is shared among assets of the same group.
         init_cash (Union[str, ArrayLike]): Initial capital.
 
             Provided in a format that supports flexible indexing.
@@ -767,7 +767,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             obj_name (Optional[str]): Identifier for the object.
             obj_type (Optional[str]): Expected type of the object, which influences the stacking logic.
             wrapper (Optional[ArrayWrapper]): Array wrapper instance.
-            cash_sharing (bool): Flag indicating whether cash sharing is enabled.
+            cash_sharing (bool): Flag indicating whether cash is shared among assets of the same group.
             row_stack_func (Optional[Callable]): Custom function for row stacking that must accept the
                 portfolio class and all provided arguments.
 
@@ -1200,7 +1200,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             obj_name (Optional[str]): Name of the object, used for error messages.
             obj_type (Optional[str]): Type of the object (e.g., "array" or "red_array").
             wrapper (Optional[ArrayWrapper]): Array wrapper instance.
-            cash_sharing (bool): Flag indicating whether cash sharing mode is enabled.
+            cash_sharing (bool): Flag indicating whether cash is shared among assets of the same group.
             column_stack_func (Optional[Callable]): Custom function for stacking columns.
 
                 Must accept the portfolio class and all method arguments.
@@ -2420,7 +2420,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             resampler (Union[Resampler, PandasResampler]): The resampler instance or configuration.
             obj_name (str): Name of the object for reference.
             obj_type (str): Identifier specifying the type of the object.
-            wrapper (ArrayWrapper): ArrayWrapper instance; if None, the portfolio's wrapper is used.
+            wrapper (ArrayWrapper): Array wrapper instance.
             group_by (GroupByLike): Grouping specification.
             
                 See `vectorbtpro.base.grouping.base.Grouper`.
@@ -2834,7 +2834,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             cash_dividends (Optional[ArrayLike]): Cash dividends added at the end of each timestamp.
 
                 Broadcasts, are multiplied by the position, and then added to `cash_earnings`.
-            cash_sharing (Optional[bool]): Indicates whether cash is shared among assets within the same group.
+            cash_sharing (Optional[bool]): Flag indicating whether cash is shared among assets of the same group.
 
                 If `group_by` is None and this is True, all assets are grouped together for cash sharing.
 
@@ -2883,7 +2883,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             max_log_records (Optional[int]): Maximum number of log records expected per column.
 
                 Set to a lower number to conserve memory, or 0 to disable logging.
-            seed (Optional[int]): Seed value for generating the call sequence and initializing the simulation.
+            seed (Optional[int]): Random seed for deterministic output.
             group_by (GroupByLike): Grouping specification.
 
                 See `vectorbtpro.base.grouping.base.Grouper`.
@@ -3583,7 +3583,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             cash_dividends (Optional[ArrayLike]): Cash dividends added at the end of each timestamp.
 
                 Broadcasts, are multiplied by the position, and then added to `cash_earnings`.
-            cash_sharing (Optional[bool]): Indicates whether cash is shared among assets within the same group.
+            cash_sharing (Optional[bool]): Flag indicating whether cash is shared among assets of the same group.
 
                 If `group_by` is None and this is True, all assets are grouped together for cash sharing.
 
@@ -3650,7 +3650,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
                 !!! note
                     When using Numba below 0.54, `in_outputs` must be a globally defined
                     named tuple rather than a mapping.
-            seed (Optional[int]): Seed value for generating the call sequence and initializing the simulation.
+            seed (Optional[int]): Random seed for deterministic output.
             group_by (GroupByLike): Grouping specification.
 
                 See `vectorbtpro.base.grouping.base.Grouper`.
@@ -4315,7 +4315,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 Defaults to `prob` if not specified.
             param_product (bool): Flag to generate the Cartesian product of signal parameters.
-            seed (Optional[int]): Random seed for signal generation.
+            seed (Optional[int]): Random seed for deterministic output.
 
                 If None, the seed from portfolio settings is used.
             run_kwargs (KwargsLike): Keyword arguments for the signal generator's run function.
@@ -4675,7 +4675,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             cash_dividends (Optional[ArrayLike]): Cash dividends added at the end of each timestamp.
 
                 Broadcasts, are multiplied by the position, and then added to `cash_earnings`.
-            cash_sharing (Optional[bool]): Indicates whether cash is shared among assets within the same group.
+            cash_sharing (Optional[bool]): Flag indicating whether cash is shared among assets of the same group.
 
                 If `group_by` is None and this is True, all assets are grouped together for cash sharing.
 
@@ -4793,7 +4793,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
                 !!! note
                     For Numba versions below 0.54, `in_outputs` must be a globally defined named tuple
                     rather than a mapping.
-            seed (Optional[int]): Seed value for generating the call sequence and initializing the simulation.
+            seed (Optional[int]): Random seed for deterministic output.
             group_by (GroupByLike): Grouping specification.
 
                 See `vectorbtpro.base.grouping.base.Grouper`.

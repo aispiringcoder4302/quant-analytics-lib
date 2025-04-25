@@ -2779,7 +2779,7 @@ class Wrapping(Configured, HasWrapper, IndexApplier, AttrResolverMixin):
     """Class for wrapping functionalities with a global `ArrayWrapper`.
 
     Args:
-        wrapper (ArrayWrapper): Wrapper instance.
+        wrapper (ArrayWrapper): Array wrapper instance.
         **kwargs: Keyword arguments for `vectorbtpro.utils.config.Configured`.
     """
 

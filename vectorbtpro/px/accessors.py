@@ -41,7 +41,7 @@ class PXAccessor(BaseAccessor):
     Accessible via `pd.Series.vbt.px` and `pd.DataFrame.vbt.px`.
 
     Args:
-        wrapper (Union[ArrayWrapper, ArrayLike]): The wrapper or array-like object to be wrapped.
+        wrapper (Union[ArrayWrapper, ArrayLike]): Array wrapper instance or array-like object.
         obj (Optional[ArrayLike]): The object to be wrapped.
         **kwargs: Keyword arguments for `vectorbtpro.base.accessors.BaseAccessor`.
 
@@ -72,7 +72,7 @@ class PXSRAccessor(PXAccessor, BaseSRAccessor):
     Accessible via `pd.Series.vbt.px`.
 
     Args:
-        wrapper (Union[ArrayWrapper, ArrayLike]): The wrapper or array-like object to be wrapped.
+        wrapper (Union[ArrayWrapper, ArrayLike]): Array wrapper instance or array-like object.
         obj (Optional[ArrayLike]): The object to be wrapped.
         **kwargs: Keyword arguments for `vectorbtpro.base.accessors.BaseAccessor`.
     """
@@ -97,7 +97,7 @@ class PXDFAccessor(PXAccessor, BaseDFAccessor):
     Accessible via `pd.DataFrame.vbt.px`.
 
     Args:
-        wrapper (Union[ArrayWrapper, ArrayLike]): The wrapper or array-like object to be wrapped.
+        wrapper (Union[ArrayWrapper, ArrayLike]): Array wrapper instance or array-like object.
         obj (Optional[ArrayLike]): The object to be wrapped.
         **kwargs: Keyword arguments for `vectorbtpro.base.accessors.BaseAccessor`.
     """

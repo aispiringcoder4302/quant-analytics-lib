@@ -1079,7 +1079,7 @@ class Ranges(PriceRecords):
             last_n (Optional[int]): Number of most recent range records to select.
             top_n (Optional[int]): Number of range records with the longest durations to select.
             random_n (Optional[int]): Number of range records to select randomly.
-            seed (Optional[int]): Seed to ensure determinism in random selection.
+            seed (Optional[int]): Random seed for deterministic output.
             proj_start (Union[None, str, int, FrequencyLike]): See `Ranges.get_projections`.
 
                 Allows an option "current_or_{value}", which sets `proj_start` to the duration
@@ -2059,7 +2059,7 @@ class PatternRanges(Ranges):
     """Class for working with range records generated from pattern search, extending `Ranges`.
 
     Args:
-        wrapper (ArrayWrapper): Wrapper instance.
+        wrapper (ArrayWrapper): Array wrapper instance.
         records_arr (RecordArray): Array of records.
         search_configs (List[PSC]): List of `PSC` instances.
         **kwargs: Keyword arguments for `Ranges`.
@@ -2226,7 +2226,7 @@ class PatternRanges(Ranges):
             overlap_mode (Union[Param, int, str]): See `PSC.overlap_mode`.
             max_records (Union[Param, None, int]): See `PSC.max_records`.
             random_subset (Optional[int]): Number of random configurations to select.
-            seed (Optional[int]): Seed for random number generation.
+            seed (Optional[int]): Random seed for deterministic output.
             search_configs (Optional[Sequence[MaybeSequence[PSC]]]): Sequence of search configuration instances.
 
                 If a configuration is a list of `PSC` instances, it is applied per column in `arr`;

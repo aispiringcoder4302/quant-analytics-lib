@@ -469,7 +469,7 @@ def cast_to_max_precision(
         max_precision (Union[int, str]): Maximum precision specified as a number of bits or
             one of `half`, `single`, or `double`.
         float_only (bool): If True, applies casting only to floating-point types.
-        check_bounds (bool): If True, verifies that array values remain within bounds after casting.
+        check_bounds (bool): Flag to validate that simulation positions are within bounds.
         strict (bool): If True, raises an error when values exceed the bounds of the target precision.
 
     Returns:

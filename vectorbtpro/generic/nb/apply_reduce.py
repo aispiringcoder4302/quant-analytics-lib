@@ -669,7 +669,7 @@ def groupby_reduce_1d_nb(arr: tp.Array1d, group_map: tp.GroupMap, reduce_func_nb
 
     Args:
         arr (Array1d): The input array to reduce.
-        group_map (GroupMap): A tuple containing group indices and group lengths.
+        group_map (GroupMap): Tuple of group indices and lengths.
         reduce_func_nb (ReduceFunc): Function that accepts a subset of the array and
             additional arguments to compute a single reduced value.
         *args: Positional arguments for `reduce_func_nb`.
@@ -708,7 +708,7 @@ def groupby_reduce_nb(arr: tp.Array2d, group_map: tp.GroupMap, reduce_func_nb: t
 
     Args:
         arr (Array2d): The input 2D array to reduce.
-        group_map (GroupMap): A tuple containing group indices and group lengths.
+        group_map (GroupMap): Tuple of group indices and lengths.
         reduce_func_nb (ReduceFunc): Function that accepts a subset of an array column and
             additional arguments to compute a single reduced value.
         *args: Positional arguments for `reduce_func_nb`.
@@ -738,7 +738,7 @@ def groupby_reduce_1d_meta_nb(
 
     Args:
         col (int): The column index for which to compute the reduction.
-        group_map (GroupMap): A tuple containing group indices and group lengths.
+        group_map (GroupMap): Tuple of group indices and lengths.
         reduce_func_nb (GroupByReduceMetaFunc): Function that accepts the array of group indices,
             the group index, the column index, and additional arguments, returning a single value.
         *args: Positional arguments for `reduce_func_nb`.
@@ -782,7 +782,7 @@ def groupby_reduce_meta_nb(
 
     Args:
         n_cols (int): The number of columns to process.
-        group_map (GroupMap): A tuple containing group indices and group lengths.
+        group_map (GroupMap): Tuple of group indices and lengths.
         reduce_func_nb (GroupByReduceMetaFunc): Function that accepts the array of group indices,
             the group index, the column index, and additional arguments, returning a single value.
         *args: Positional arguments for `reduce_func_nb`.
@@ -812,7 +812,7 @@ def groupby_transform_nb(
 
     Args:
         arr (Array2d): The input 2D array to transform.
-        group_map (GroupMap): A tuple containing group indices and group lengths.
+        group_map (GroupMap): Tuple of group indices and lengths.
         transform_func_nb (GroupByTransformFunc): Function that receives a 2D subarray
             corresponding to a group and additional arguments, returning a scalar or an
             array that broadcasts to the group's shape.
@@ -850,7 +850,7 @@ def groupby_transform_meta_nb(
 
     Args:
         target_shape (Shape): The desired shape of the output array.
-        group_map (GroupMap): A tuple containing group indices and group lengths.
+        group_map (GroupMap): Tuple of group indices and lengths.
         transform_func_nb (GroupByTransformMetaFunc): Function that accepts an array of
             group indices, the group index, and additional arguments, returning a scalar or
             an array that broadcasts to the group's shape.
@@ -1337,7 +1337,7 @@ def reduce_grouped_nb(
 
     Args:
         arr (Array2d): 2-dimensional array containing the columns to be grouped.
-        group_map (GroupMap): Tuple containing the groups of column indices and their lengths.
+        group_map (GroupMap): Tuple of group indices and lengths.
         reduce_func_nb (ReduceGroupedFunc): Function that reduces a 2-dimensional array slice corresponding
             to a group into a single value.
         *args: Positional arguments for `reduce_func_nb`.
@@ -1377,7 +1377,7 @@ def reduce_grouped_meta_nb(group_map: tp.GroupMap, reduce_func_nb: tp.ReduceGrou
     """Meta version of `reduce_grouped_nb` that reduces groups based on metadata.
 
     Args:
-        group_map (GroupMap): Tuple containing the groups of column indices and their lengths.
+        group_map (GroupMap): Tuple of group indices and lengths.
         reduce_func_nb (ReduceGroupedMetaFunc): Function that reduces a group by accepting the column indices,
             the group index, and additional arguments.
         *args: Positional arguments for `reduce_func_nb`.
@@ -1452,7 +1452,7 @@ def reduce_flat_grouped_nb(
 
     Args:
         arr (Array2d): 2-dimensional array containing the data.
-        group_map (GroupMap): Mapping that defines groups of columns.
+        group_map (GroupMap): Tuple of group indices and lengths.
         in_c_order (bool): Determines the order for flattening the group array.
 
             If True, the group is flattened in C order.
@@ -1511,8 +1511,7 @@ def reduce_grouped_to_array_nb(
 
     Args:
         arr (Array2d): The 2D input array.
-        group_map (GroupMap): A tuple containing group indices and group lengths used
-            to partition the array columns.
+        group_map (GroupMap): Tuple of group indices and lengths.
         reduce_func_nb (ReduceGroupedToArrayFunc): A reduction function that returns
             an array for each group.
         *args: Positional arguments for `reduce_func_nb`.
@@ -1560,7 +1559,7 @@ def reduce_grouped_to_array_meta_nb(
     function on each group and stacks the results column-wise.
 
     Args:
-        group_map (GroupMap): A tuple containing group indices and group lengths for grouping.
+        group_map (GroupMap): Tuple of group indices and lengths.
         reduce_func_nb (ReduceGroupedToArrayMetaFunc): A reduction function that returns
             an array for each group.
         *args: Positional arguments for `reduce_func_nb`.
@@ -1613,8 +1612,7 @@ def reduce_flat_grouped_to_array_nb(
 
     Args:
         arr (Array2d): The 2D input array.
-        group_map (GroupMap): A tuple containing group indices and group lengths used
-            to group the columns.
+        group_map (GroupMap): Tuple of group indices and lengths.
         in_c_order (bool): Indicates whether the array should be flattened in C order.
         reduce_func_nb (ReduceToArrayFunc): A reduction function that returns an array
             for a flattened group.
@@ -1667,7 +1665,7 @@ def squeeze_grouped_nb(arr: tp.Array2d, group_map: tp.GroupMap, squeeze_func_nb:
 
     Args:
         arr (Array2d): The 2D input array.
-        group_map (GroupMap): A tuple containing group indices and group lengths used to group the columns.
+        group_map (GroupMap): Tuple of group indices and lengths.
         squeeze_func_nb (ReduceFunc): A function that compresses a group of values into a single value.
         *args: Positional arguments for `squeeze_func_nb`.
 
@@ -1720,7 +1718,7 @@ def squeeze_grouped_meta_nb(
 
     Args:
         n_rows (int): The number of rows in the output array.
-        group_map (GroupMap): A tuple containing group indices and group lengths used for grouping.
+        group_map (GroupMap): Tuple of group indices and lengths.
         squeeze_func_nb (GroupSqueezeMetaFunc): A function that accepts a row index,
             group column indices, and a group index and returns a single value.
         *args: Positional arguments for `squeeze_func_nb`.
@@ -1758,7 +1756,7 @@ def flatten_grouped_nb(arr: tp.Array2d, group_map: tp.GroupMap, in_c_order: bool
 
     Args:
         arr (Array2d): The input 2D array.
-        group_map (GroupMap): A tuple containing group column indices and group lengths.
+        group_map (GroupMap): Tuple of group indices and lengths.
         in_c_order (bool): If True, flatten columns in C order; otherwise, use an alternate order.
 
     Returns:
@@ -1788,7 +1786,7 @@ def flatten_uniform_grouped_nb(arr: tp.Array2d, group_map: tp.GroupMap, in_c_ord
 
     Args:
         arr (Array2d): The input 2D array.
-        group_map (GroupMap): A tuple containing group column indices and uniform group lengths.
+        group_map (GroupMap): Tuple of group indices and lengths.
         in_c_order (bool): If True, flatten columns in C order; otherwise, use an alternate order.
 
     Returns:

@@ -368,7 +368,7 @@ class Splitter(Analyzable):
     """Base class for splitting.
 
     Args:
-        wrapper (ArrayWrapper): Wrapper instance.
+        wrapper (ArrayWrapper): Array wrapper instance.
         index (Index): Index used for splitting.
         splits_arr (SplitsArray): A two-dimensional array representing splits.
 
@@ -1482,7 +1482,7 @@ class Splitter(Analyzable):
                 for the start selection.
 
                 It should accept the iteration index and candidate start positions.
-            seed (Optional[int]): Seed for initializing random number generators.
+            seed (Optional[int]): Random seed for deterministic output.
             split (Optional[SplitLike]): Specification for further splitting of each range.
 
                 If None, the entire range is treated as a single split;
@@ -5049,7 +5049,7 @@ class Splitter(Analyzable):
                 If None, uses the total number of splits.
             replace (bool): Whether to sample with replacement.
             p (Optional[Array1d]): Probabilities associated with each split.
-            seed (Optional[int]): Seed for the random number generator.
+            seed (Optional[int]): Random seed for deterministic output.
             wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
             
                 See `vectorbtpro.base.wrapping.ArrayWrapper`.

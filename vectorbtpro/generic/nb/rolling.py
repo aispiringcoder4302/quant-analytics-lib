@@ -2441,7 +2441,7 @@ def rolling_pattern_similarity_1d_nb(
 
             Can be smaller or larger than the source array. In such cases,
             the smaller array is stretched using the interpolation mode specified by `interp_mode`.
-        window (Optional[int]): Base length of the rolling window for matching.
+        window (Optional[int]): Size of the rolling window.
 
             If None, defaults to the length of `pattern`.
         max_window (Optional[int]): Maximum length of the rolling window for matching.
@@ -2663,7 +2663,7 @@ def rolling_pattern_similarity_nb(
 
             Can be smaller or larger than the source array. In such cases,
             the smaller array is stretched using the interpolation mode specified by `interp_mode`.
-        window (Optional[int]): Base length of the rolling window for matching.
+        window (Optional[int]): Size of the rolling window.
 
             If None, defaults to the length of `pattern`.
         max_window (Optional[int]): Maximum length of the rolling window for matching.

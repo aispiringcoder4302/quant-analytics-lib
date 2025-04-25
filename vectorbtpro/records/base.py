@@ -463,7 +463,7 @@ class Records(Analyzable, metaclass=MetaRecords):
     """Class for wrapping and analyzing record arrays.
 
     Args:
-        wrapper (ArrayWrapper): Wrapper instance.
+        wrapper (ArrayWrapper): Array wrapper instance.
 
             See `vectorbtpro.base.wrapping.ArrayWrapper`.
         records_arr (array_like): A structured NumPy array of records.
@@ -1489,7 +1489,7 @@ class Records(Analyzable, metaclass=MetaRecords):
 
         Args:
             n (int): Number of random records to select per column.
-            seed (Optional[int]): Seed for random number generation.
+            seed (Optional[int]): Random seed for deterministic output.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.

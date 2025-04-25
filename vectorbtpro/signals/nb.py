@@ -1981,7 +1981,7 @@ def ravel_nb(mask: tp.Array2d, group_map: tp.GroupMap) -> tp.Array2d:
 
     Args:
         mask (Array2d): 2D boolean mask to process.
-        group_map (GroupMap): Tuple containing group indices and group lengths.
+        group_map (GroupMap): Tuple of group indices and lengths.
 
     Returns:
         Array2d: 2D boolean mask with True values raveled into individual columns per group.

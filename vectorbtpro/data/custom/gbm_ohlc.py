@@ -71,7 +71,7 @@ class GBMOHLCData(SyntheticData):
             mean (float): The drift representing the mean percentage change.
             std (float): The standard deviation of the percentage change.
             dt (float): The time increment per period.
-            seed (Optional[int]): A seed for deterministic output.
+            seed (Optional[int]): Random seed for deterministic output.
             jitted (any): Jitting option; refer to `vectorbtpro.utils.jitting.resolve_jitted_option`.
             template_context (KwargsLike): Additional context for template substitution.
 

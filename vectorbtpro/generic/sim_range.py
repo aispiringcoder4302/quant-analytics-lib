@@ -366,7 +366,7 @@ class SimRangeMixin(Base):
 
         Args:
             sim_start (Optional[ArrayLike]): Start index of the simulation range.
-            allow_none (bool): Flag indicating whether None is allowed as a simulation start value.
+            allow_none (bool): Allow simulation positions to be None when applicable.
             wrapper (Optional[ArrayWrapper]): Array wrapper instance.
             group_by (GroupByLike): Grouping specification.
 
@@ -438,7 +438,7 @@ class SimRangeMixin(Base):
 
         Args:
             sim_end (Optional[ArrayLike]): End index of the simulation range.
-            allow_none (bool): Flag indicating whether None is allowed as a simulation end value.
+            allow_none (bool): Allow simulation positions to be None when applicable.
             wrapper (Optional[ArrayWrapper]): Array wrapper instance.
             group_by (GroupByLike): Grouping specification.
 
@@ -513,7 +513,7 @@ class SimRangeMixin(Base):
         Args:
             sim_start (Optional[ArrayLike]): Start index of the simulation range.
             keep_flex (bool): If True, return the raw resolved simulation start positions without wrapping.
-            allow_none (bool): Flag indicating whether None is allowed as a simulation start value.
+            allow_none (bool): Allow simulation positions to be None when applicable.
             wrapper (Optional[ArrayWrapper]): Array wrapper instance.
             group_by (GroupByLike): Grouping specification.
 
@@ -568,7 +568,7 @@ class SimRangeMixin(Base):
         Args:
             sim_end (Optional[ArrayLike]): End index of the simulation range.
             keep_flex (bool): If True, return the raw resolved simulation end positions without wrapping.
-            allow_none (bool): Flag indicating whether None is allowed as a simulation end value.
+            allow_none (bool): Allow simulation positions to be None when applicable.
             wrapper (Optional[ArrayWrapper]): Array wrapper instance.
             group_by (GroupByLike): Grouping specification.
 
@@ -621,7 +621,7 @@ class SimRangeMixin(Base):
 
         Args:
             sim_start (Optional[ArrayLike]): Start index of the simulation range.
-            allow_none (bool): Indicates whether None is allowed for the simulation start.
+            allow_none (bool): Allow simulation positions to be None when applicable.
             wrapper (Optional[ArrayWrapper]): Array wrapper instance.
             group_by (GroupByLike): Grouping specification.
 
@@ -687,7 +687,7 @@ class SimRangeMixin(Base):
 
         Args:
             sim_end (Optional[ArrayLike]): End index of the simulation range.
-            allow_none (bool): Indicates whether None is allowed for the simulation end.
+            allow_none (bool): Allow simulation positions to be None when applicable.
             inclusive (bool): Determines if the simulation end should be treated as inclusive.
             wrapper (Optional[ArrayWrapper]): Array wrapper instance.
             group_by (GroupByLike): Grouping specification.

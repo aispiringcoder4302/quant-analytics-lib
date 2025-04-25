@@ -225,7 +225,7 @@ class Vbt_Accessor(DirNamesMixin, GenericAccessor):
     """Class representing the main vectorbtpro accessor for `pd.Series` and `pd.DataFrame`.
 
     Args:
-        wrapper (Union[ArrayWrapper, ArrayLike]): Array wrapper or array-like object.
+        wrapper (Union[ArrayWrapper, ArrayLike]): Array wrapper instance or array-like object.
         obj (Optional[ArrayLike]): An optional object for initialization.
         **kwargs: Keyword arguments for `vectorbtpro.generic.accessors.GenericAccessor`.
     """
@@ -251,7 +251,7 @@ class Vbt_SRAccessor(DirNamesMixin, GenericSRAccessor):
     """Class representing the main vectorbtpro accessor for `pd.Series`.
 
     Args:
-        wrapper (Union[ArrayWrapper, ArrayLike]): Array wrapper or an array-like object.
+        wrapper (Union[ArrayWrapper, ArrayLike]): Array wrapper instance or array-like object.
         obj (Optional[ArrayLike]): An optional object for initialization.
         **kwargs: Keyword arguments for `vectorbtpro.generic.accessors.GenericSRAccessor`.
     """
@@ -277,7 +277,7 @@ class Vbt_DFAccessor(DirNamesMixin, GenericDFAccessor):
     """Class representing the main vectorbtpro accessor for `pd.DataFrame`.
 
     Args:
-        wrapper (Union[ArrayWrapper, ArrayLike]): Array wrapper or array-like data.
+        wrapper (Union[ArrayWrapper, ArrayLike]): Array wrapper instance or array-like object.
         obj (Optional[ArrayLike]): Optional data object.
         **kwargs: Keyword arguments for `vectorbtpro.generic.accessors.GenericDFAccessor`.
     """

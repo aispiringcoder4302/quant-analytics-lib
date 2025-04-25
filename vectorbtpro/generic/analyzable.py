@@ -33,7 +33,7 @@ class Analyzable(Wrapping, StatsBuilderMixin, PlotsBuilderMixin, metaclass=MetaA
     """Class that can be analyzed by computing and plotting various attributes.
 
     Args:
-        wrapper (ArrayWrapper): Wrapper instance.
+        wrapper (ArrayWrapper): Array wrapper instance.
         **kwargs: Keyword arguments for `vectorbtpro.base.wrapping.Wrapping`.
     """
 

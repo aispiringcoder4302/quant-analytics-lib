@@ -130,7 +130,7 @@ class OHLCVDFAccessor(OHLCDataMixin, GenericDFAccessor):
     Accessible via `pd.DataFrame.vbt.ohlcv`.
 
     Args:
-        wrapper (Union[ArrayWrapper, ArrayLike]): The array wrapper or array-like object.
+        wrapper (Union[ArrayWrapper, ArrayLike]): Array wrapper instance or array-like object.
         obj (Optional[ArrayLike]): The underlying data object.
         feature_map (KwargsLike): Mapping for OHLCV features.
         **kwargs: Keyword arguments for `vectorbtpro.generic.accessors.GenericDFAccessor`.

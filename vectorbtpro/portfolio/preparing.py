@@ -1814,11 +1814,11 @@ class FSPreparer(BasePFPreparer):
         """Initialize a `vectorbtpro.portfolio.enums.FSInOutputs` instance.
 
         Args:
-            wrapper (ArrayWrapper): The array wrapper providing the target shape and grouping.
+            wrapper (ArrayWrapper): Array wrapper instance.
             group_lens (Optional[GroupLens]): Optional group lengths.
 
                 If None and cash_sharing is True, they are computed from the wrapper.
-            cash_sharing (bool): If True, enables cash sharing mode.
+            cash_sharing (bool): Flag indicating whether cash is shared among assets of the same group.
             save_state (bool): If True, the state is saved in outputs.
             save_value (bool): If True, the value is saved in outputs.
             save_returns (bool): If True, returns are saved in outputs.

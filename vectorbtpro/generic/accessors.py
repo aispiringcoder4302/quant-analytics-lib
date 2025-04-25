@@ -318,7 +318,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
     Accessible via `pd.Series.vbt` and `pd.DataFrame.vbt`.
 
     Args:
-        wrapper (Union[ArrayWrapper, ArrayLike]): Data wrapper for the values.
+        wrapper (Union[ArrayWrapper, ArrayLike]): Array wrapper instance or array-like object.
         obj (Optional[ArrayLike]): Object containing the data.
         mapping (Optional[MappingLike]): Mapping configuration for data transformation.
         **kwargs: Keyword arguments for `vectorbtpro.base.accessors.BaseAccessor`.
@@ -488,7 +488,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         """Compute the index of the minimum value within each rolling window.
 
         Args:
-            window (Optional[int]): Window size for computing the index of the minimum value.
+            window (Optional[int]): Size of the rolling window.
 
                 If None, uses the full length of the data.
             minp (Optional[int]): Minimum number of observations required.
@@ -545,7 +545,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         """Compute the index of the maximum value within each rolling window.
 
         Args:
-            window (Optional[int]): Window size for computing the index of the maximum value.
+            window (Optional[int]): Size of the rolling window.
 
                 If None, uses the full length of the data.
             minp (Optional[int]): Minimum number of observations required.
@@ -601,7 +601,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         """Compute the rolling mean over a moving window.
 
         Args:
-            window (Optional[int]): Window size for computing the mean.
+            window (Optional[int]): Size of the rolling window.
 
                 If None, uses the full length of the data.
             minp (Optional[int]): Minimum number of observations required.
@@ -653,7 +653,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         """Compute the rolling standard deviation over a moving window.
 
         Args:
-            window (Optional[int]): Window size for computing the standard deviation.
+            window (Optional[int]): Size of the rolling window.
 
                 If None, uses the full length of the data.
             minp (Optional[int]): Minimum number of observations required.
@@ -706,7 +706,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         """Compute the rolling z-score for the instance's data using a specified window.
 
         Args:
-            window (Optional[int]): Window size for computing the z-score.
+            window (Optional[int]): Size of the rolling window.
 
                 If None, uses the full length of the data.
             minp (Optional[int]): Minimum number of observations required.
@@ -1064,7 +1064,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
         Args:
             other (SeriesFrame): Another data series to compute covariance with.
-            window (Optional[int]): Window size for computing covariance.
+            window (Optional[int]): Size of the rolling window.
 
                 If None, uses the full series length.
             minp (Optional[int]): Minimum number of observations required.
@@ -1323,7 +1323,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
         Args:
             pattern (ArrayLike): Reference pattern array for similarity comparison.
-            window (Optional[int]): Base length of the rolling window.
+            window (Optional[int]): Size of the rolling window.
 
                 Defaults to the length of `pattern`.
             max_window (Optional[int]): Maximum length of the rolling window.
@@ -6969,7 +6969,7 @@ class GenericSRAccessor(GenericAccessor, BaseSRAccessor):
     Accessible via `pd.Series.vbt`.
 
     Args:
-        wrapper (Union[ArrayWrapper, ArrayLike]): The array wrapper for the series data.
+        wrapper (Union[ArrayWrapper, ArrayLike]): Array wrapper instance or array-like object.
         obj (Optional[ArrayLike]): The underlying data array.
         mapping (Optional[MappingLike]): An optional mapping for metadata.
         **kwargs: Keyword arguments for `vectorbtpro.base.accessors.BaseSRAccessor` and `GenericAccessor`.
@@ -7169,7 +7169,7 @@ class GenericDFAccessor(GenericAccessor, BaseDFAccessor):
     Accessible via `pd.DataFrame.vbt`.
 
     Args:
-        wrapper (Union[ArrayWrapper, ArrayLike]): The wrapper that encapsulates the data.
+        wrapper (Union[ArrayWrapper, ArrayLike]): Array wrapper instance or array-like object.
         obj (Optional[ArrayLike]): The underlying data object.
         mapping (Optional[MappingLike]): A mapping for additional configuration.
         **kwargs: Keyword arguments for `vectorbtpro.base.accessors.BaseDFAccessor` and `GenericAccessor`.

@@ -159,8 +159,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
     Accessible via `pd.Series.vbt.returns` and `pd.DataFrame.vbt.returns`.
 
     Args:
-        wrapper (Union[ArrayWrapper, ArrayLike]): Wrapper instance or a Pandas object containing
-            return data if `obj` is None.
+        wrapper (Union[ArrayWrapper, ArrayLike]): Array wrapper instance or array-like object.
         obj (Optional[ArrayLike]): The Pandas object containing return data.
 
             Represents the return series.
@@ -1156,7 +1155,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         """Compute rolling final value.
 
         Args:
-            window (Optional[int]): Rolling window size.
+            window (Optional[int]): Size of the rolling window.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
             minp (Optional[int]): Minimum number of observations required.
@@ -1262,7 +1261,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         """Compute rolling total return.
 
         Args:
-            window (Optional[int]): Rolling window size.
+            window (Optional[int]): Size of the rolling window.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
             minp (Optional[int]): Minimum number of observations required.
@@ -1368,7 +1367,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         """Compute rolling annualized return.
 
         Args:
-            window (Optional[int]): Rolling window size.
+            window (Optional[int]): Size of the rolling window.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
             minp (Optional[int]): Minimum number of observations required.
@@ -1485,7 +1484,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         """Calculate rolling annualized volatility.
 
         Args:
-            window (Optional[int]): Window size for the rolling calculation.
+            window (Optional[int]): Size of the rolling window.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
             minp (Optional[int]): Minimum number of observations required.
@@ -1603,7 +1602,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         """Calculate rolling Calmar ratio.
 
         Args:
-            window (Optional[int]): Window size for the rolling calculation.
+            window (Optional[int]): Size of the rolling window.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
             minp (Optional[int]): Minimum number of observations required.
@@ -1719,7 +1718,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         """Calculate rolling Omega ratio.
 
         Args:
-            window (Optional[int]): Window size for the rolling calculation.
+            window (Optional[int]): Size of the rolling window.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
             minp (Optional[int]): Minimum number of observations required.
@@ -1856,7 +1855,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         to the risk-free rate.
 
         Args:
-            window (Optional[int]): Window length for the rolling calculation.
+            window (Optional[int]): Size of the rolling window.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
             minp (Optional[int]): Minimum number of observations required.
@@ -2137,7 +2136,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         """Compute rolling downside risk.
 
         Args:
-            window (Optional[int]): Rolling window size.
+            window (Optional[int]): Size of the rolling window.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
             minp (Optional[int]): Minimum number of observations required.
@@ -2249,7 +2248,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         """Compute rolling sortino ratio.
 
         Args:
-            window (Optional[int]): Rolling window size.
+            window (Optional[int]): Size of the rolling window.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
             minp (Optional[int]): Minimum number of observations required.
@@ -2370,7 +2369,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         """Compute rolling information ratio.
 
         Args:
-            window (Optional[int]): Rolling window size.
+            window (Optional[int]): Size of the rolling window.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
             minp (Optional[int]): Minimum number of observations required.
@@ -2499,7 +2498,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         """Compute rolling beta values.
 
         Args:
-            window (Optional[int]): Window length for the rolling beta calculation.
+            window (Optional[int]): Size of the rolling window.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
             minp (Optional[int]): Minimum number of observations required.
@@ -2629,7 +2628,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         """Compute rolling alpha values.
 
         Args:
-            window (Optional[int]): Window length for the rolling alpha calculation.
+            window (Optional[int]): Size of the rolling window.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
             minp (Optional[int]): Minimum number of observations required.
@@ -2745,7 +2744,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         """Compute rolling tail ratio values.
 
         Args:
-            window (Optional[int]): Window length for the rolling tail ratio calculation.
+            window (Optional[int]): Size of the rolling window.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
             minp (Optional[int]): Minimum number of observations required.
@@ -2845,7 +2844,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         """Compute rolling profit factor.
 
         Args:
-            window (Optional[int]): Rolling window size.
+            window (Optional[int]): Size of the rolling window.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
             minp (Optional[int]): Minimum number of observations required.
@@ -2943,7 +2942,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         """Compute rolling Common Sense Ratio (CSR) over a specified window.
 
         Args:
-            window (Optional[int]): Rolling window size.
+            window (Optional[int]): Size of the rolling window.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
             minp (Optional[int]): Minimum number of observations required.
@@ -3053,7 +3052,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         """Compute rolling Value at Risk (VaR) over a specified window.
 
         Args:
-            window (Optional[int]): Rolling window size.
+            window (Optional[int]): Size of the rolling window.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
             minp (Optional[int]): Minimum number of observations required.
@@ -3171,7 +3170,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         """Rolling Conditional Value at Risk (CVaR).
 
         Args:
-            window (Optional[int]): Rolling window size.
+            window (Optional[int]): Size of the rolling window.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
             minp (Optional[int]): Minimum number of observations required.
@@ -3294,7 +3293,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         """Compute the rolling capture ratio.
 
         Args:
-            window (Optional[int]): Rolling window size.
+            window (Optional[int]): Size of the rolling window.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
             minp (Optional[int]): Minimum number of observations required.
@@ -3419,7 +3418,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         """Compute the rolling up-market capture ratio.
 
         Args:
-            window (Optional[int]): Rolling window size.
+            window (Optional[int]): Size of the rolling window.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
             minp (Optional[int]): Minimum number of observations required.
@@ -3544,7 +3543,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         """Compute the rolling down-market capture ratio over a specified window.
 
         Args:
-            window (Optional[int]): Length of the rolling window.
+            window (Optional[int]): Size of the rolling window.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
             minp (Optional[int]): Minimum number of observations required.
@@ -3692,7 +3691,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         """Calculate rolling maximum drawdown (MDD) over a specified window.
 
         Args:
-            window (Optional[int]): Length of the rolling window.
+            window (Optional[int]): Size of the rolling window.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
             minp (Optional[int]): Minimum number of observations required.
@@ -4235,7 +4234,7 @@ class ReturnsSRAccessor(ReturnsAccessor, GenericSRAccessor):
     Accessible via `pd.Series.vbt.returns`.
 
     Args:
-        wrapper (Union[ArrayWrapper, ArrayLike]): Array wrapper instance or array-like input.
+        wrapper (Union[ArrayWrapper, ArrayLike]): Array wrapper instance or array-like object.
         obj (Optional[ArrayLike]): The underlying data for the Series.
         bm_returns (Optional[ArrayLike]): Benchmark returns.
         year_freq (Optional[FrequencyLike]): Frequency identifier for annualization.
@@ -4280,7 +4279,7 @@ class ReturnsDFAccessor(ReturnsAccessor, GenericDFAccessor):
     Accessible via `pd.DataFrame.vbt.returns`.
 
     Args:
-        wrapper (Union[ArrayWrapper, ArrayLike]): Array wrapper instance or array-like input.
+        wrapper (Union[ArrayWrapper, ArrayLike]): Array wrapper instance or array-like object.
         obj (Optional[ArrayLike]): The underlying data for the DataFrame.
         bm_returns (Optional[ArrayLike]): Benchmark returns.
         year_freq (Optional[FrequencyLike]): Frequency identifier for annualization.

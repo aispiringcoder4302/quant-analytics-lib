@@ -211,7 +211,7 @@ class SignalsAccessor(GenericAccessor):
     Accessible via `pd.Series.vbt.signals` and `pd.DataFrame.vbt.signals`.
 
     Args:
-        wrapper (Union[ArrayWrapper, ArrayLike]): Array wrapper instance or array-like input.
+        wrapper (Union[ArrayWrapper, ArrayLike]): Array wrapper instance or array-like object.
         obj (Optional[ArrayLike]): Underlying object.
         **kwargs: Keyword arguments for `vectorbtpro.generic.accessors.GenericAccessor`.
 
@@ -814,7 +814,7 @@ class SignalsAccessor(GenericAccessor):
                 Must broadcast to match the provided shape.
             pick_first (bool): Determines whether to select the first viable signal in cases
                 where multiple are possible.
-            seed (Optional[int]): Seed for random number generation to ensure reproducibility.
+            seed (Optional[int]): Random seed for deterministic output.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
@@ -961,7 +961,7 @@ class SignalsAccessor(GenericAccessor):
 
                 Must be provided with `entry_prob` to generate signals using
                 `vectorbtpro.signals.nb.rand_by_prob_place_nb`.
-            seed (Optional[int]): Seed for random number generation.
+            seed (Optional[int]): Random seed for deterministic output.
             entry_wait (int): Number of periods to wait before an entry signal is triggered.
             exit_wait (int): Number of periods to wait before an exit signal is triggered.
             entry_pick_first (bool): Whether to stop after generating the first entry signal.
@@ -1117,7 +1117,7 @@ class SignalsAccessor(GenericAccessor):
 
         Args:
             prob (Optional[ArrayLike]): Array-like parameter defining the probability of exit signals.
-            seed (Optional[int]): Seed for random number generation to ensure deterministic results.
+            seed (Optional[int]): Random seed for deterministic output.
             wait (int): Number of periods to wait after generating an exit signal.
             until_next (bool): Whether to place signals up to the next entry signal.
             skip_until_exit (bool): Whether to skip processing entry signals until the next exit.
@@ -3832,7 +3832,7 @@ class SignalsSRAccessor(SignalsAccessor, GenericSRAccessor):
     Accessible via `pd.Series.vbt.signals`.
 
     Args:
-        wrapper (Union[ArrayWrapper, ArrayLike]): Data wrapper or array-like object containing signal data.
+        wrapper (Union[ArrayWrapper, ArrayLike]): Array wrapper instance or array-like object.
         obj (Optional[ArrayLike]): Underlying series data.
         **kwargs: Keyword arguments for `vectorbtpro.generic.accessors.GenericSRAccessor` and `SignalsAccessor`.
     """
@@ -3859,7 +3859,7 @@ class SignalsDFAccessor(SignalsAccessor, GenericDFAccessor):
     Accessible via `pd.DataFrame.vbt.signals`.
 
     Args:
-        wrapper (Union[ArrayWrapper, ArrayLike]): Data wrapper or array-like object containing signal data.
+        wrapper (Union[ArrayWrapper, ArrayLike]): Array wrapper instance or array-like object.
         obj (Optional[ArrayLike]): Underlying DataFrame data.
         **kwargs: Keyword arguments for `vectorbtpro.generic.accessors.GenericDFAccessor` and `SignalsAccessor`.
     """

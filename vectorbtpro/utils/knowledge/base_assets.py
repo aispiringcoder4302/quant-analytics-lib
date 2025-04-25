@@ -812,7 +812,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         """Shuffle the asset's data items randomly.
 
         Args:
-            seed (Optional[int]): Seed for randomizing the data order.
+            seed (Optional[int]): Random seed for deterministic output.
             inplace (bool): If True, shuffle the data in place; otherwise, return a new asset instance.
 
         Returns:
@@ -839,7 +839,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
 
         Args:
             k (Optional[int]): Number of items to sample. Defaults to 1 if not specified.
-            seed (Optional[int]): Seed for random sampling.
+            seed (Optional[int]): Random seed for deterministic output.
             wrap (bool): If True, wrap the sampled data in a new asset; otherwise, return raw data items.
 
         Returns:
@@ -867,7 +867,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
 
         Args:
             k (Optional[int]): Number of items to sample.
-            seed (Optional[int]): Seed for random sampling.
+            seed (Optional[int]): Random seed for deterministic output.
             **kwargs: Keyword arguments for `KnowledgeAsset.print`.
 
         Returns:

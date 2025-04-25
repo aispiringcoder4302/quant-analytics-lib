@@ -35,7 +35,7 @@ class ColumnMapper(Wrapping):
     classes to make use of column and group metadata.
 
     Args:
-        wrapper (ArrayWrapper): The array wrapper instance.
+        wrapper (ArrayWrapper): Array wrapper instance.
         col_arr (Array1d): The column array.
         **kwargs: Keyword arguments for `vectorbtpro.base.wrapping.Wrapping`.
     """

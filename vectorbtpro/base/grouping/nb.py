@@ -126,7 +126,7 @@ def group_map_select_nb(group_map: tp.GroupMap, new_groups: tp.Array1d) -> tp.Tu
     """Perform selection indexing using a provided group map.
 
     Args:
-        group_map (GroupMap): Tuple containing an array of group indices and an array of group lengths.
+        group_map (GroupMap): Tuple of group indices and lengths.
         new_groups (Array1d): Array of original group identifiers to select.
 
     Returns:

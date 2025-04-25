@@ -545,7 +545,7 @@ def combine_params(
             combination (applies when not building the full grid).
         max_misses (Union[None, int, float]): Maximum number of misses allowed in the search for a valid
             combination (applies when not building the full grid).
-        seed (Optional[int]): Seed for random number generation.
+        seed (Optional[int]): Random seed for deterministic output.
         name_tuple_to_str (Union[None, bool, Callable]): If True or a callable, converts tuple
             parameter names to strings.
         clean_index_kwargs (KwargsLike): Keyword arguments for cleaning MultiIndex levels.
@@ -1170,7 +1170,7 @@ class Parameterizer(Configured):
         max_misses (Union[None, int, float]): Maximum allowed misses during parameter search.
         
             See `combine_params`.
-        seed (Optional[int]): Random seed for reproducibility.
+        seed (Optional[int]): Random seed for deterministic output.
         
             See `combine_params`.
         name_tuple_to_str (Union[None, bool, Callable]): Flag or function to convert name tuples to 

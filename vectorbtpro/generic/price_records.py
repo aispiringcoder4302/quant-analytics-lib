@@ -56,7 +56,7 @@ class PriceRecords(Records):
     """Class extending `vectorbtpro.records.base.Records` for records that can make use of OHLC data.
 
     Args:
-        wrapper (ArrayWrapper): Wrapper instance.
+        wrapper (ArrayWrapper): Array wrapper instance.
         records_arr (RecordArray): Array of records.
         open (Optional[ArrayLike]): Array of open prices.
         high (Optional[ArrayLike]): Array of high prices.
@@ -116,7 +116,7 @@ class PriceRecords(Records):
         """Build `PriceRecords` from records.
 
         Args:
-            wrapper (ArrayWrapper): Wrapper instance.
+            wrapper (ArrayWrapper): Array wrapper instance.
             records (RecordArray): Array of records.
             data (Optional[Data]): Data object containing OHLC data.
             open (Optional[ArrayLike]): Array of open prices.

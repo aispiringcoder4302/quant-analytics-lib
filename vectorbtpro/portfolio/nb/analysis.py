@@ -526,7 +526,7 @@ def cash_deposits_nb(
     Args:
         target_shape (Shape): Target shape of the output cash deposit array.
         group_lens (GroupLens): Array defining the number of columns in each group.
-        cash_sharing (bool): Indicates whether cash is shared among columns within each group.
+        cash_sharing (bool): Flag indicating whether cash is shared among assets of the same group.
         cash_deposits_raw (FlexArray2dLike): Raw cash deposit values.
         split_shared (bool): If cash is shared, determines whether to split the deposits evenly across columns.
         weights (Optional[FlexArray1dLike]): Weights applied to cash deposits per column.
@@ -628,7 +628,7 @@ def cash_deposits_grouped_nb(
     Args:
         target_shape (Shape): Target shape of the simulation period.
         group_lens (GroupLens): Array defining the number of columns in each group.
-        cash_sharing (bool): Indicates whether cash is shared among columns within each group.
+        cash_sharing (bool): Flag indicating whether cash is shared among assets of the same group.
         cash_deposits_raw (FlexArray2dLike): Raw cash deposit values.
         weights (Optional[FlexArray1dLike]): Weights applied to cash deposits for each column.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
@@ -1159,7 +1159,7 @@ def init_cash_nb(
     Args:
         init_cash_raw (FlexArray1d): Raw initial cash values.
         group_lens (GroupLens): Array defining the number of columns in each group.
-        cash_sharing (bool): Flag specifying whether cash is shared among columns in a group.
+        cash_sharing (bool): Flag indicating whether cash is shared among assets of the same group.
         split_shared (bool): If True, split shared cash equally among columns in a group.
         weights (Optional[FlexArray1dLike]): Optional weights to adjust the initial cash.
 
@@ -1214,7 +1214,7 @@ def init_cash_grouped_nb(
     Args:
         init_cash_raw (FlexArray1d): Raw initial cash values.
         group_lens (GroupLens): Array defining the number of columns in each group.
-        cash_sharing (bool): Boolean flag indicating if cash sharing is applied across columns within a group.
+        cash_sharing (bool): Flag indicating whether cash is shared among assets of the same group.
         weights (Optional[FlexArray1dLike]): Optional weights to adjust the initial cash.
 
     Returns:

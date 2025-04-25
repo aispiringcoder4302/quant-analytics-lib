@@ -34,7 +34,7 @@ def substitute_anchor(wrapper: ArrayWrapper, anchor: tp.Optional[tp.FrequencyLik
     wrapper's index grouper.
 
     Args:
-        wrapper (ArrayWrapper): Wrapper instance.
+        wrapper (ArrayWrapper): Array wrapper instance.
         anchor (Optional[FrequencyLike]): The reset frequency for grouping.
 
     Returns:

@@ -2529,7 +2529,7 @@ class BaseSRAccessor(BaseAccessor):
     Accessible via `pd.Series.vbt` and its child accessors.
 
     Args:
-        wrapper (Union[ArrayWrapper, ArrayLike]): The primary array wrapper or array-like object.
+        wrapper (Union[ArrayWrapper, ArrayLike]): Array wrapper instance or array-like object.
         obj (Optional[ArrayLike]): An optional array-like object.
         **kwargs: Keyword arguments for `BaseAccessor`.
     """
@@ -2570,7 +2570,7 @@ class BaseDFAccessor(BaseAccessor):
     Accessible via `pd.DataFrame.vbt` and its child accessors.
 
     Args:
-        wrapper (Union[ArrayWrapper, ArrayLike]): The primary array wrapper or array-like object.
+        wrapper (Union[ArrayWrapper, ArrayLike]): Array wrapper instance or array-like object.
         obj (Optional[ArrayLike]): An optional array-like object.
         **kwargs: Keyword arguments for `BaseAccessor`.
     """

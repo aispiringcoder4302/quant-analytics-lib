@@ -392,7 +392,7 @@ class IndicatorBase(Analyzable):
     Set properties before instantiation.
 
     Args:
-        wrapper (ArrayWrapper): Wrapper instance.
+        wrapper (ArrayWrapper): Array wrapper instance.
         input_list (IFArrayList): List of two-dimensional input arrays.
         input_mapper (IFInputMapper): One-dimensional input mapper array.
         in_output_list (IFArrayList): List of two-dimensional input-output arrays.
@@ -713,7 +713,7 @@ class IndicatorBase(Analyzable):
             wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
             
                 See `vectorbtpro.base.wrapping.ArrayWrapper`.
-            seed (Optional[int]): Seed to ensure deterministic output.
+            seed (Optional[int]): Random seed for deterministic output.
             **kwargs: Keyword arguments for `custom_func`.
 
                 Common arguments include `return_cache` to return cache and `use_cache` to control

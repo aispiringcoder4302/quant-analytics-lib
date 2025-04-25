@@ -119,7 +119,7 @@ def shuffle_1d_nb(arr: tp.Array1d, seed: tp.Optional[int] = None) -> tp.Array1d:
 
     Args:
         arr (Array1d): Input array to shuffle.
-        seed (Optional[int]): Seed for the random number generator to produce deterministic output.
+        seed (Optional[int]): Random seed for deterministic output.
 
     Returns:
         Array1d: Shuffled array.
@@ -140,7 +140,7 @@ def shuffle_nb(arr: tp.Array2d, seed: tp.Optional[int] = None) -> tp.Array2d:
 
     Args:
         arr (Array2d): 2-dimensional input array.
-        seed (Optional[int]): Seed for the random number generator to produce deterministic output.
+        seed (Optional[int]): Random seed for deterministic output.
 
     Returns:
         Array2d: Array with each column's elements shuffled.
@@ -1678,7 +1678,7 @@ def value_counts_nb(codes: tp.Array2d, n_uniques: int, group_map: tp.GroupMap) -
     Args:
         codes (Array2d): A 2-dimensional array of code values.
         n_uniques (int): Number of unique values.
-        group_map (GroupMap): Tuple containing group indices and group lengths.
+        group_map (GroupMap): Tuple of group indices and lengths.
 
     Returns:
         Array2d: A 2-dimensional array of counts with shape (n_uniques, number of groups).
@@ -1947,7 +1947,7 @@ def demean_nb(arr: tp.Array2d, group_map: tp.GroupMap) -> tp.Array2d:
 
     Args:
         arr (Array2d): The input 2-dimensional array.
-        group_map (GroupMap): A tuple containing group indices and corresponding group lengths.
+        group_map (GroupMap): Tuple of group indices and lengths.
 
     Returns:
         Array2d: A 2-dimensional array with each element demeaned by its group's mean.

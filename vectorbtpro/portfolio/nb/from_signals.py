@@ -4110,7 +4110,7 @@ def init_FSInOutputs_nb(
     Args:
         target_shape (Shape): Target shape for output arrays.
         group_lens (GroupLens): Array defining the number of columns in each group.
-        cash_sharing (bool): Indicates if cash should be shared among columns within the same group.
+        cash_sharing (bool): Flag indicating whether cash is shared among assets of the same group.
         save_state (bool): Determines if state arrays (position, debt, locked_cash, cash, free_cash) are saved.
         save_value (bool): Determines if the value array is saved.
         save_returns (bool): Determines if the returns array is saved.
@@ -4450,7 +4450,7 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
     Args:
         target_shape (Shape): Target shape for simulation arrays.
         group_lens (GroupLens): Array defining the number of columns in each group.
-        cash_sharing (bool): Indicator whether cash is shared among assets in a group.
+        cash_sharing (bool): Flag indicating whether cash is shared among assets of the same group.
         index (Optional[Array1d]): Array of timestamps or indices.
         freq (Optional[int]): Frequency of the data.
         open (FlexArray2dLike): Opening price.
